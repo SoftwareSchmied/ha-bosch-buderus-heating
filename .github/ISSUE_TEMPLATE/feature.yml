@@ -1,0 +1,24 @@
+name: Feature request
+description: Propose one capability with evidence and a clear user benefit.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: What user problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Available evidence
+      description: Mention device families and redacted structural evidence; never paste secrets or raw responses.
+  - type: dropdown
+    id: behavior
+    attributes:
+      label: Requested behavior
+      options: [Read-only entity, Control, Diagnostics, Other]
+    validations:
+      required: true

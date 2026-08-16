@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+.audit-venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+build/
+dist/
+htmlcov/
+
+# Local Home Assistant and sensitive PointT data
+.storage/
+configuration.yaml
+secrets.yaml
+raw-fixtures/
+*.raw.json
+*.tokens.json

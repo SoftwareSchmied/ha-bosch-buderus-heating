@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ha-bosch-buderus-heating-development"
+version = "0.1.0"
+description = "Development tooling for the Bosch/Buderus Heating Home Assistant integration"
+readme = "README.md"
+requires-python = ">=3.14.2"
+license = "MIT"
+authors = [{ name = "SoftwareSchmied" }]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+  "aiohttp>=3.14.3,<4",
+]
+
+[project.optional-dependencies]
+security = [
+  "pip-audit==2.10.1",
+]
+test = [
+  "hypothesis==6.165.9",
+  "mypy==2.3.0",
+  "pytest==9.0.3",
+  "pytest-asyncio==1.4.0",
+  "pytest-cov==7.1.0",
+  "pytest-homeassistant-custom-component==0.13.356",
+  "ruff==0.16.2",
+]
+
+[tool.setuptools]
+packages = []
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["ASYNC", "B", "E", "F", "I", "RUF", "SIM", "UP"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers --cov=custom_components/bosch_buderus_heating --cov-branch --cov-report=term-missing --cov-fail-under=95"
+asyncio_mode = "auto"
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["custom_components/bosch_buderus_heating"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+files = ["custom_components/bosch_buderus_heating"]
+ignore_missing_imports = true
+disallow_subclassing_any = false
+
+[[tool.mypy.overrides]]
+module = "bosch_buderus_heating.config_flow"
+disable_error_code = ["call-arg"]

@@ -1,0 +1,184 @@
+"""Typed high-level PointT client."""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import Protocol
+from urllib.parse import quote
+
+import aiohttp
+
+from .bulk import chunk_resource_paths, normalize_resource_path
+from .const import DEFAULT_USER_AGENT, MAX_BULK_PATHS, POINTT_BASE_URL
+from .exceptions import AccessTokenRejected
+from .metrics import RequestMetrics
+from .models import BatchItemResult, Gateway, JsonValue, Resource
+from .parsers import (
+    parse_batch_response,
+    parse_gateway,
+    parse_gateways,
+    parse_part_number,
+    parse_resource,
+)
+from .token_manager import StaticTokenProvider
+from .transport import PointTTransport, RetryPolicy
+
+
+class AccessTokenProvider(Protocol):
+    """Access-token interface consumed by PointTClient."""
+
+    async def get_access_token(self, *, force_refresh: bool = False) -> str:
+        """Return an access token and optionally force one refresh."""
+        ...
+
+
+class PointTClient:
+    """Read-only, async client for the observed PointT API."""
+
+    def __init__(
+        self,
+        session: aiohttp.ClientSession,
+        access_token: str | AccessTokenProvider,
+        *,
+        base_url: str = POINTT_BASE_URL,
+        user_agent: str = DEFAULT_USER_AGENT,
+        concurrency: int = 3,
+        retry_policy: RetryPolicy | None = None,
+        metrics: RequestMetrics | None = None,
+    ) -> None:
+        self._token_provider: AccessTokenProvider
+        if isinstance(access_token, str):
+            self._token_provider = StaticTokenProvider(access_token)
+        else:
+            self._token_provider = access_token
+        self._transport = PointTTransport(
+            session,
+            base_url=base_url,
+            user_agent=user_agent,
+            concurrency=concurrency,
+            retry_policy=retry_policy,
+            metrics=metrics,
+        )
+
+    @property
+    def metrics(self) -> RequestMetrics:
+        """Return privacy-safe aggregate request metrics."""
+        return self._transport.metrics
+
+    async def get_gateways(self) -> tuple[Gateway, ...]:
+        """Return the gateways visible to the current account."""
+        payload = await self._request("GET", "gateways/", retryable=True)
+        return parse_gateways(payload)
+
+    async def get_gateway(self, gateway_id: str) -> Gateway:
+        """Return normalized metadata for one gateway."""
+        gateway = _encode_gateway_id(gateway_id)
+        payload = await self._request("GET", f"gateways/{gateway}", retryable=True)
+        return parse_gateway(payload)
+
+    async def get_part_number(self, gateway_id: str) -> str:
+        """Return a gateway part number."""
+        gateway = _encode_gateway_id(gateway_id)
+        payload = await self._request(
+            "GET", f"gateways/{gateway}/partnumber", retryable=True
+        )
+        return parse_part_number(payload)
+
+    async def get_resource(self, gateway_id: str, path: str) -> Resource:
+        """Read and parse one resource path."""
+        gateway = _encode_gateway_id(gateway_id)
+        normalized = normalize_resource_path(path)
+        encoded_path = "/".join(
+            quote(segment, safe="") for segment in normalized.lstrip("/").split("/")
+        )
+        payload = await self._request(
+            "GET",
+            f"gateways/{gateway}/resource/{encoded_path}",
+            retryable=True,
+            resource_path=normalized,
+        )
+        return parse_resource(payload, path=normalized)
+
+    async def put_resource_value(
+        self, gateway_id: str, path: str, value: JsonValue
+    ) -> Resource | None:
+        """Write one scalar value without retrying a potentially applied PUT."""
+        gateway = _encode_gateway_id(gateway_id)
+        normalized = normalize_resource_path(path)
+        encoded_path = "/".join(
+            quote(segment, safe="") for segment in normalized.lstrip("/").split("/")
+        )
+        payload = await self._request(
+            "PUT",
+            f"gateways/{gateway}/resource/{encoded_path}",
+            json_body={"value": value},
+            retryable=False,
+            resource_path=normalized,
+        )
+        if payload is None:
+            return None
+        return parse_resource(payload, path=normalized)
+
+    async def get_resources_bulk(
+        self,
+        gateway_id: str,
+        paths: Sequence[str],
+        *,
+        chunk_size: int = MAX_BULK_PATHS,
+    ) -> tuple[BatchItemResult, ...]:
+        """Read resources sequentially in safe bulk chunks."""
+        _encode_gateway_id(gateway_id)
+        results: list[BatchItemResult] = []
+        for chunk in chunk_resource_paths(paths, size=chunk_size):
+            body: JsonValue = [
+                {
+                    "gatewayId": gateway_id,
+                    "resourcePaths": list(chunk),
+                }
+            ]
+            payload = await self._request(
+                "POST", "bulk", json_body=body, retryable=True
+            )
+            parsed = parse_batch_response(
+                payload, gateway_id=gateway_id, requested_paths=chunk
+            )
+            self.metrics.record_bulk_items(tuple(item.status for item in parsed))
+            results.extend(parsed)
+        return tuple(results)
+
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        json_body: JsonValue = None,
+        retryable: bool,
+        resource_path: str | None = None,
+    ) -> JsonValue:
+        token = await self._token_provider.get_access_token()
+        try:
+            return await self._transport.request_json(
+                method,
+                path,
+                token,
+                json_body=json_body,
+                retryable=retryable,
+                resource_path=resource_path,
+            )
+        except AccessTokenRejected:
+            token = await self._token_provider.get_access_token(force_refresh=True)
+            return await self._transport.request_json(
+                method,
+                path,
+                token,
+                json_body=json_body,
+                retryable=retryable,
+                resource_path=resource_path,
+            )
+
+
+def _encode_gateway_id(gateway_id: str) -> str:
+    value = gateway_id.strip()
+    if not value:
+        raise ValueError("Gateway ID must not be empty")
+    return quote(value, safe="")

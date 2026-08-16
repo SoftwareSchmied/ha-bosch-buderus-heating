@@ -1,0 +1,260 @@
+{
+  "title": "Bosch/Buderus Heating",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect a heating account",
+        "description": "Choose the brand of the mobile app that is already linked to the heating system. Select **Bosch** for the Bosch app or **Buderus** for the Buderus app. The app brand matters more than the logo on the appliance.",
+        "data": {
+          "brand": "Brand"
+        }
+      },
+      "auth": {
+        "title": "Sign in with SingleKey ID",
+        "description": "SingleKey ID is the same sign-in used by your Bosch or Buderus app. Use the same email address or mobile number and password. You do not need a new account, and you do **not** enter your password in Home Assistant.\n\n1. Keep this dialog open and open [SingleKey ID]({authorization_url}) in a new Chrome tab. Always use this newly generated link.\n2. Press `F12` there and open **Console** in the developer tools.\n3. Sign in with the SingleKey ID credentials used by your heating app.\n4. A network-problem message may appear after sign-in. In this case it normally only means that Chrome could not open the `{redirect_scheme}://` app address.\n5. Find the red **Failed to launch** or **Connecting to** message in the console. Right-click the blue `{redirect_scheme}://` address in that message and choose **Copy link address**.\n6. Return to this dialog, paste the complete address below, and select **OK**. The field may display dots for security.\n\nUse the address from this exact sign-in attempt and do not copy only the `code` parameter. The complete address contains a short-lived one-time code. Never share it in an issue, chat, screenshot, or log.",
+        "data": {
+          "redirect_url": "Complete redirect address"
+        }
+      },
+      "retry": {
+        "title": "Retry gateway discovery",
+        "description": "SingleKey ID sign-in succeeded, but the PointT service could not be reached. Check the Home Assistant internet connection, wait a moment, and select **Submit**. You do not need to sign in again."
+      },
+      "gateways": {
+        "title": "Select gateways",
+        "description": "Select every heating gateway that Home Assistant should use. Most homes have one gateway; in that case, select the only item. The final four characters help distinguish gateways with the same model name.",
+        "data": {
+          "gateway_ids": "Gateways"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Sign in again",
+        "description": "The saved PointT authorization is no longer valid. Select **Submit** and repeat the SingleKey ID steps. Your existing gateway selection will be kept."
+      },
+      "reconfigure": {
+        "title": "Reconfigure and rediscover",
+        "description": "Choose the app brand, gateways, and polling profile. Saving reloads the integration and performs a complete resource discovery. Use this after a firmware update or when circuits, hot water systems, heat sources, or gateways have changed. **Standard** reads current operating values every minute. **Cloud-friendly** reduces cloud traffic by reading them every two minutes and all other changing values less often. Changing the app brand requires a new SingleKey ID sign-in.",
+        "data": {
+          "brand": "App brand",
+          "gateway_ids": "Gateways",
+          "polling_profile": "Polling profile"
+        }
+      },
+      "reconfigure_retry": {
+        "title": "Retry gateway discovery",
+        "description": "The current gateway list could not be loaded. Check the Home Assistant internet connection, wait a moment, and select **Submit**."
+      }
+    },
+    "error": {
+      "cannot_connect": "The PointT service cannot be reached. Check the internet connection, wait a moment, and try again.",
+      "invalid_auth": "SingleKey ID rejected or expired the authorization. Use the new SingleKey ID link shown above and repeat sign-in.",
+      "invalid_redirect": "Home Assistant could not use this address. Copy the complete app address from the Chrome console's ‘Failed to launch’ message. It must begin with the scheme shown above and belong to the current sign-in attempt.",
+      "gateway_changed": "The gateway list changed while this dialog was open. Close the dialog and open Reconfigure again.",
+      "select_gateway": "Select at least one gateway from the list before continuing.",
+      "unknown": "An unexpected PointT error occurred. Wait a moment and try again."
+    },
+    "abort": {
+      "already_configured": "This heating account or at least one selected gateway is already configured in Home Assistant.",
+      "invalid_flow": "This setup session is incomplete or expired. Close the dialog and add Bosch/Buderus Heating again.",
+      "no_gateways": "No compatible gateway was found. Check that the selected brand and SingleKey ID account match the heating app and that the gateway is online.",
+      "reauth_required": "The saved authorization is no longer valid. Close this dialog and select Reauthenticate for Bosch/Buderus Heating.",
+      "reauth_successful": "Sign-in was renewed successfully.",
+      "reconfigure_successful": "The settings were saved. Bosch/Buderus Heating is reloading and discovering all available resources again."
+    }
+  },
+  "issues": {
+    "repeated_rate_limit": {
+      "title": "Bosch/Buderus cloud requests are being limited",
+      "description": "The PointT cloud repeatedly rejected requests because too many requests were received. Bosch/Buderus Heating already pauses automatically, but values may update late while this continues.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Use cloud-friendly polling",
+            "description": "Select **Submit** to switch this integration to the cloud-friendly polling profile. Current operating values will then be read every two minutes instead of every minute; control and energy values every ten minutes; slow counters every thirty minutes. The integration reloads and performs a complete resource discovery."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected Bosch/Buderus Heating entry no longer exists."
+        }
+      }
+    },
+    "incompatible_firmware": {
+      "title": "PointT capabilities changed after a firmware update",
+      "description": "Bosch/Buderus Heating found {conflict_count} known capabilities whose data type or unit no longer matches the safely supported PointT schema. The affected values may no longer work reliably. This can happen after a gateway or appliance firmware update.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Rediscover PointT capabilities",
+            "description": "Select **Submit** to reload the integration and inspect all capabilities again. If the warning returns, download the integration diagnostics and report the changed schema without sharing credentials or raw values."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected Bosch/Buderus Heating entry no longer exists."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "write_validation_failed": { "message": "This setting is not currently safe to change. Refresh or reconfigure the integration and try again." },
+    "write_not_confirmed": { "message": "The heating system did not confirm the new operating mode. Its previous displayed state has been retained." },
+    "write_authentication_failed": { "message": "The cloud sign-in is no longer valid. Reauthenticate Bosch/Buderus Heating before trying again." },
+    "write_rate_limited": { "message": "The PointT cloud is currently limiting requests. Wait before trying the change again." },
+    "write_failed": { "message": "The operating mode could not be changed. No success was reported because the heating system did not confirm the value." }
+  },
+  "selector": {
+    "polling_profile": {
+      "options": {
+        "standard": "Standard",
+        "cloud_friendly": "Cloud-friendly"
+      }
+    }
+  },
+  "entity": {
+    "number": {
+      "manual_room_setpoint": { "name": "Manual setpoint" },
+      "heating_temperature": { "name": "Heating" },
+      "reduced_temperature": { "name": "Reduced" },
+      "extra_hot_water_duration": { "name": "Extra hot water duration" },
+      "extra_hot_water_setpoint": { "name": "Extra hot water setpoint" },
+      "hot_water_eco_plus": { "name": "Eco+ start temperature" },
+      "hot_water_comfort": { "name": "Comfort start temperature" },
+      "hot_water_eco": { "name": "Eco start temperature" }
+    },
+    "select": {
+      "heating_circuit_operation_mode": {
+        "name": "Heating circuit operation mode",
+        "state": { "off": "Off", "manual": "Manual", "auto": "Auto" }
+      },
+      "hot_water_operation_mode": {
+        "name": "Hot water operation mode",
+        "state": { "Off": "Off", "low": "Eco", "high": "Comfort", "ownprogram": "Auto", "eco": "Eco+" }
+      }
+    },
+    "switch": {
+      "extra_hot_water": { "name": "Extra hot water" },
+      "reduce_temperature_on_alarm": { "name": "Temperature reduction during fault" },
+      "away_mode": { "name": "Away mode" }
+    },
+    "sensor": {
+      "outdoor_temperature": { "name": "Outdoor temperature" },
+      "supply_temperature": { "name": "Supply temperature" },
+      "return_temperature": { "name": "Return temperature" },
+      "hot_water_temperature": { "name": "Hot water temperature" },
+      "modulation": { "name": "Actual modulation" },
+      "system_pressure": { "name": "System pressure" },
+      "heating_status": { "name": "Heating status" },
+      "hot_water_status": { "name": "Hot water status" },
+      "total_electricity": { "name": "Total – Electricity consumption" },
+      "total_heat_produced": { "name": "Total – Heat produced" },
+      "environmental_energy": { "name": "Total – Environmental energy (calculated)" },
+      "heating_electricity": { "name": "Heating – Electricity consumption" },
+      "heating_heat_produced": { "name": "Heating – Heat produced" },
+      "hot_water_electricity": { "name": "Hot water – Electricity consumption" },
+      "hot_water_heat_produced": { "name": "Hot water – Heat produced" },
+      "heating_circuit_switch_program_mode": {
+        "name": "Heating circuit schedule type",
+        "state": { "level": "Temperature level" }
+      },
+      "heating_circuit_operation_mode": {
+        "name": "Heating circuit operation mode",
+        "state": { "off": "Off", "manual": "Manual", "auto": "Auto" }
+      },
+      "heating_circuit_overall_status": {
+        "name": "Heating circuit status",
+        "state": {
+          "ch_disabled": "Heating disabled",
+          "emergency_mode": "Emergency mode",
+          "floor_drying": "Floor drying",
+          "summer_idle": "Summer pause",
+          "boost": "Boost heating",
+          "away": "Away",
+          "holiday": "Holiday",
+          "cooling_manual_on": "Manual cooling active",
+          "cooling_manual_off": "Manual cooling off",
+          "heating_manual_on": "Manual heating active",
+          "heating_manual_off": "Manual heating off",
+          "heating_auto": "Automatic heating"
+        }
+      },
+      "heating_circuit_summer_winter_mode": {
+        "name": "Summer/winter mode",
+        "state": { "off": "Off", "summer": "Summer", "winter": "Winter", "auto": "Auto" }
+      },
+      "heating_circuit_heat_cool_mode": {
+        "name": "Heating/cooling mode",
+        "state": { "heat": "Heating", "cool": "Cooling", "auto": "Auto" }
+      },
+      "heating_circuit_type": {
+        "name": "Heating circuit type",
+        "state": { "floor": "Underfloor heating", "radiator": "Radiators", "convector": "Convectors" }
+      },
+      "heating_circuit_control_type": {
+        "name": "Control type",
+        "state": {
+          "room": "Room temperature controlled",
+          "outdoor": "Outdoor temperature controlled",
+          "wdc": "Weather-compensated",
+          "wdcoptimized": "Optimized weather-compensated"
+        }
+      },
+      "hot_water_temperature_level": {
+        "name": "Hot water temperature level",
+        "state": { "off": "Off", "low": "Eco", "high": "Comfort", "eco": "Eco+" }
+      },
+      "hot_water_operation_mode": {
+        "name": "Hot water operation mode",
+        "state": { "off": "Off", "Off": "Off", "low": "Eco", "high": "Comfort", "ownprogram": "Auto", "eco": "Eco+" }
+      },
+      "hot_water_overall_status": {
+        "name": "Hot water status",
+        "state": {
+          "off": "Off", "idle": "Idle", "heating": "Heating", "boost": "Extra hot water",
+          "away": "Away", "holiday": "Holiday", "floor_drying": "Floor drying",
+          "thermal_disinfection": "Thermal disinfection"
+        }
+      },
+      "on_off_state": {
+        "name": "Status",
+        "state": { "off": "Off", "on": "On", "stop": "Off", "start": "On" }
+      },
+      "heat_pump_type": {
+        "name": "Heat pump type",
+        "state": { "air_water": "Air/water", "brine_water": "Brine/water", "exhaust_air": "Exhaust air/water" }
+      },
+      "heat_source_type": {
+        "name": "Heat source type",
+        "state": { "Heatpump": "Heat pump", "Boiler": "Boiler", "Hybrid": "Hybrid system" }
+      },
+      "system_type": {
+        "name": "System type",
+        "state": { "heatpump_single": "Single heat pump", "boiler_single": "Single boiler", "hybrid": "Hybrid system" }
+      },
+      "energy_management_status": {
+        "name": "Energy management status",
+        "state": { "notConnected": "Not connected", "connected": "Connected", "active": "Active", "error": "Error" }
+      },
+      "outdoor_temperature_source": {
+        "name": "Outdoor temperature source",
+        "state": { "appliance": "Heating system", "internet": "Internet", "roomcontroller": "Room controller" }
+      },
+      "support_status": {
+        "name": "Support status",
+        "state": { "not_supported": "Not supported", "supported": "Supported", "active": "Active" }
+      },
+      "update_status": {
+        "name": "Update status",
+        "state": { "idle": "Idle", "running": "Running", "success": "Successful", "failed": "Failed" }
+      },
+      "pressure_status": {
+        "name": "System pressure status",
+        "state": {
+          "critical_low": "Critically low",
+          "low": "Low",
+          "normal": "Normal",
+          "high": "High",
+          "critical_high": "Critically high"
+        }
+      }
+    }
+  }
+}
