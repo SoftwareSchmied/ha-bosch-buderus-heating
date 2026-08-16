@@ -1,0 +1,156 @@
+{
+  "title": "Bosch/Buderus Heating",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Heizkonto verbinden",
+        "description": "Wähle die Marke der Smartphone-App, mit der deine Heizung bereits verbunden ist. Wähle **Bosch** für die Bosch-App oder **Buderus** für die Buderus-App. Entscheidend ist die App, nicht nur das Logo auf dem Heizgerät.",
+        "data": { "brand": "Marke" }
+      },
+      "auth": {
+        "title": "Mit SingleKey ID anmelden",
+        "description": "SingleKey ID ist dieselbe Anmeldung, die auch deine Bosch- beziehungsweise Buderus-App verwendet. Nutze dieselbe E-Mail-Adresse oder Mobilnummer und dasselbe Passwort. Du benötigst kein neues Konto; dein Passwort wird **nicht** in Home Assistant eingegeben.\n\n1. Lasse diesen Dialog geöffnet und öffne [SingleKey ID]({authorization_url}) in einem neuen Chrome-Tab. Verwende immer diesen neu erzeugten Link.\n2. Drücke dort `F12` und öffne in den Entwicklertools **Console** beziehungsweise **Konsole**.\n3. Melde dich mit den SingleKey-ID-Zugangsdaten deiner Heizungs-App an.\n4. Nach der Anmeldung kann die Meldung „Haben Sie Netzwerkprobleme?“ erscheinen. Das bedeutet hier normalerweise nur, dass Chrome die `{redirect_scheme}://`-App-Adresse nicht öffnen konnte.\n5. Suche in der Konsole die rote Meldung **Failed to launch** beziehungsweise **Connecting to**. Klicke mit der rechten Maustaste auf die darin blau dargestellte `{redirect_scheme}://`-Adresse und wähle **Linkadresse kopieren** beziehungsweise **Copy link address**.\n6. Kehre zu diesem Dialog zurück, füge die vollständige Adresse unten ein und wähle **OK**. Das Eingabefeld zeigt aus Sicherheitsgründen möglicherweise nur Punkte an.\n\nVerwende die Adresse aus genau diesem Anmeldeversuch und kopiere nicht nur den Parameter `code`. Die vollständige Adresse enthält einen kurzlebigen Einmalcode und darf niemals in einem Issue, Chat, Screenshot oder Protokoll veröffentlicht werden.",
+        "data": { "redirect_url": "Vollständige Weiterleitungsadresse" }
+      },
+      "retry": {
+        "title": "Gateway-Suche wiederholen",
+        "description": "Die SingleKey-ID-Anmeldung war erfolgreich, aber der PointT-Dienst war nicht erreichbar. Prüfe die Internetverbindung von Home Assistant, warte kurz und wähle **Senden**. Eine erneute Anmeldung ist nicht nötig."
+      },
+      "gateways": {
+        "title": "Gateways auswählen",
+        "description": "Wähle alle Heizungs-Gateways aus, die Home Assistant verwenden soll. In den meisten Häusern gibt es nur ein Gateway; wähle dann einfach den einzigen Eintrag. Die letzten vier Zeichen helfen, Geräte mit gleichem Modellnamen zu unterscheiden.",
+        "data": { "gateway_ids": "Gateways" }
+      },
+      "reauth_confirm": {
+        "title": "Erneut anmelden",
+        "description": "Die gespeicherte PointT-Autorisierung ist nicht mehr gültig. Wähle **Senden** und wiederhole die SingleKey-ID-Schritte. Deine bisherige Gateway-Auswahl bleibt erhalten."
+      },
+      "reconfigure": {
+        "title": "Neu konfigurieren und suchen",
+        "description": "Wähle App-Marke, Gateways und Abfrageprofil. Beim Speichern wird die Integration neu geladen und sucht alle Ressourcen vollständig neu. Nutze dies nach einem Firmwareupdate oder wenn sich Heizkreise, Warmwassersysteme, Wärmeerzeuger oder Gateways geändert haben. **Standard** liest aktuelle Betriebswerte jede Minute. **Cloud-schonend** reduziert die Cloudzugriffe: Betriebswerte alle zwei Minuten, andere veränderliche Werte seltener. Beim Wechsel der App-Marke ist eine neue SingleKey-ID-Anmeldung erforderlich.",
+        "data": { "brand": "App-Marke", "gateway_ids": "Gateways", "polling_profile": "Abfrageprofil" }
+      },
+      "reconfigure_retry": {
+        "title": "Gateway-Suche wiederholen",
+        "description": "Die aktuelle Gateway-Liste konnte nicht geladen werden. Prüfe die Internetverbindung von Home Assistant, warte kurz und wähle **Senden**."
+      }
+    },
+    "error": {
+      "cannot_connect": "Der PointT-Dienst ist nicht erreichbar. Prüfe die Internetverbindung, warte kurz und versuche es erneut.",
+      "invalid_auth": "SingleKey ID hat die Autorisierung abgelehnt oder sie ist abgelaufen. Verwende den neu angezeigten SingleKey-ID-Link und wiederhole die Anmeldung.",
+      "invalid_redirect": "Home Assistant konnte diese Adresse nicht verwenden. Kopiere in der Chrome-Konsole aus der Meldung „Failed to launch“ die vollständige App-Adresse. Sie muss mit dem oben genannten Schema beginnen und zum aktuellen Anmeldeversuch gehören.",
+      "gateway_changed": "Die Gateway-Liste hat sich geändert, während dieser Dialog geöffnet war. Schließe den Dialog und öffne Neu konfigurieren erneut.",
+      "select_gateway": "Wähle mindestens ein Gateway aus der Liste aus, bevor du fortfährst.",
+      "unknown": "Ein unerwarteter PointT-Fehler ist aufgetreten. Warte kurz und versuche es erneut."
+    },
+    "abort": {
+      "already_configured": "Dieses Heizkonto oder mindestens eines der ausgewählten Gateways ist bereits in Home Assistant eingerichtet.",
+      "invalid_flow": "Diese Einrichtung ist unvollständig oder abgelaufen. Schließe den Dialog und füge Bosch/Buderus Heating erneut hinzu.",
+      "no_gateways": "Es wurde kein kompatibles Gateway gefunden. Prüfe, ob Marke und SingleKey-ID-Konto zur Heizungs-App passen und ob das Gateway online ist.",
+      "reauth_required": "Die gespeicherte Autorisierung ist nicht mehr gültig. Schließe diesen Dialog und wähle bei Bosch/Buderus Heating Erneut authentifizieren.",
+      "reauth_successful": "Die Anmeldung wurde erfolgreich erneuert.",
+      "reconfigure_successful": "Die Einstellungen wurden gespeichert. Bosch/Buderus Heating wird neu geladen und sucht alle verfügbaren Ressourcen erneut."
+    }
+  },
+  "issues": {
+    "repeated_rate_limit": {
+      "title": "Bosch/Buderus-Cloudzugriffe werden begrenzt",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Cloud-schonende Abfrage verwenden",
+            "description": "Wähle **Senden**, um diese Integration auf das cloud-schonende Abfrageprofil umzustellen. Aktuelle Betriebswerte werden dann alle zwei statt jede Minute gelesen, Steuerungs- und Energiewerte alle zehn Minuten und langsame Zähler alle dreißig Minuten. Anschließend wird die Integration neu geladen und führt eine vollständige Ressourcensuche aus."
+          }
+        },
+        "abort": { "entry_not_found": "Der betroffene Bosch/Buderus-Heating-Eintrag existiert nicht mehr." }
+      }
+    },
+    "incompatible_firmware": {
+      "title": "PointT-Fähigkeiten haben sich nach einem Firmwareupdate geändert",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "PointT-Fähigkeiten neu erkennen",
+            "description": "Bosch/Buderus Heating hat {conflict_count} bekannte Fähigkeiten gefunden, deren Datentyp oder Einheit nicht mehr zum sicher unterstützten PointT-Schema passt. Wähle **Senden**, um die Integration neu zu laden und alle Fähigkeiten erneut zu prüfen. Falls die Warnung wiederkehrt, lade die Integrationsdiagnose herunter und melde das geänderte Schema, ohne Zugangsdaten oder Rohwerte zu teilen."
+          }
+        },
+        "abort": { "entry_not_found": "Der betroffene Bosch/Buderus-Heating-Eintrag existiert nicht mehr." }
+      }
+    }
+  },
+  "exceptions": {
+    "write_validation_failed": { "message": "Diese Einstellung kann derzeit nicht sicher geändert werden. Aktualisiere oder konfiguriere die Integration neu und versuche es erneut." },
+    "write_not_confirmed": { "message": "Die Heizungsanlage hat die neue Betriebsart nicht bestätigt. Der zuvor angezeigte Zustand bleibt erhalten." },
+    "write_authentication_failed": { "message": "Die Cloud-Anmeldung ist nicht mehr gültig. Authentifiziere Bosch/Buderus Heating erneut und versuche es danach noch einmal." },
+    "write_rate_limited": { "message": "Die PointT-Cloud begrenzt derzeit die Anfragen. Warte, bevor du die Änderung erneut versuchst." },
+    "write_failed": { "message": "Die Betriebsart konnte nicht geändert werden. Es wird kein Erfolg gemeldet, weil die Heizungsanlage den Wert nicht bestätigt hat." }
+  },
+  "selector": {
+    "polling_profile": {
+      "options": { "standard": "Standard", "cloud_friendly": "Cloud-schonend" }
+    }
+  },
+  "entity": {
+    "number": {
+      "manual_room_setpoint": { "name": "Manueller Sollwert" },
+      "heating_temperature": { "name": "Heizen" },
+      "reduced_temperature": { "name": "Absenken" },
+      "extra_hot_water_duration": { "name": "Dauer Extra-Warmwasser" },
+      "extra_hot_water_setpoint": { "name": "Solltemperatur Extra-Warmwasser" },
+      "hot_water_eco_plus": { "name": "Eco+ Starttemperatur" },
+      "hot_water_comfort": { "name": "Komfort Starttemperatur" },
+      "hot_water_eco": { "name": "Eco Starttemperatur" }
+    },
+    "select": {
+      "heating_circuit_operation_mode": {
+        "name": "Betriebsart",
+        "state": { "off": "Aus", "manual": "Manuell", "auto": "Auto" }
+      },
+      "hot_water_operation_mode": {
+        "name": "Betriebsart",
+        "state": { "off": "Aus", "low": "Eco", "high": "Komfort", "ownprogram": "Auto", "eco": "Eco+" }
+      }
+    },
+    "switch": {
+      "extra_hot_water": { "name": "Extra-Warmwasser" },
+      "reduce_temperature_on_alarm": { "name": "Temperaturabsenkung bei Störung" },
+      "away_mode": { "name": "Abwesenheitsmodus" }
+    },
+    "sensor": {
+      "outdoor_temperature": { "name": "Außentemperatur" },
+      "supply_temperature": { "name": "Vorlauftemperatur" },
+      "return_temperature": { "name": "Rücklauftemperatur" },
+      "hot_water_temperature": { "name": "Warmwassertemperatur" },
+      "modulation": { "name": "Aktuelle Modulation" },
+      "system_pressure": { "name": "Systemdruck" },
+      "heating_status": { "name": "Heizstatus" },
+      "hot_water_status": { "name": "Warmwasserstatus" },
+      "total_electricity": { "name": "Gesamt – Stromverbrauch" },
+      "total_heat_produced": { "name": "Gesamt – Erzeugte Wärme" },
+      "environmental_energy": { "name": "Gesamt – Umweltenergie (berechnet)" },
+      "heating_electricity": { "name": "Heizung – Stromverbrauch" },
+      "heating_heat_produced": { "name": "Heizung – Erzeugte Wärme" },
+      "hot_water_electricity": { "name": "Warmwasser – Stromverbrauch" },
+      "hot_water_heat_produced": { "name": "Warmwasser – Erzeugte Wärme" },
+      "heating_circuit_switch_program_mode": { "name": "Art des Zeitprogramms", "state": { "level": "Temperaturniveau" } },
+      "heating_circuit_operation_mode": { "name": "Betriebsart", "state": { "off": "Aus", "manual": "Manuell", "auto": "Auto" } },
+      "heating_circuit_overall_status": { "name": "Betriebsstatus", "state": { "ch_disabled": "Heizen deaktiviert", "emergency_mode": "Notbetrieb", "floor_drying": "Estrichtrocknung", "summer_idle": "Sommerpause", "boost": "Schnellaufheizung", "away": "Abwesend", "holiday": "Urlaub", "cooling_manual_on": "Kühlen manuell aktiv", "cooling_manual_off": "Kühlen manuell aus", "heating_manual_on": "Heizen manuell aktiv", "heating_manual_off": "Heizen manuell aus", "heating_auto": "Heizen automatisch" } },
+      "heating_circuit_summer_winter_mode": { "name": "Sommer-/Winterbetrieb", "state": { "off": "Aus", "summer": "Sommer", "winter": "Winter", "auto": "Auto" } },
+      "heating_circuit_heat_cool_mode": { "name": "Heiz-/Kühlbetrieb", "state": { "heat": "Heizen", "cool": "Kühlen", "auto": "Auto" } },
+      "heating_circuit_type": { "name": "Heizsystem", "state": { "floor": "Fußbodenheizung", "radiator": "Heizkörper", "convector": "Konvektoren" } },
+      "heating_circuit_control_type": { "name": "Regelungsart", "state": { "room": "Raumtemperaturgeführt", "outdoor": "Außentemperaturgeführt", "wdc": "Witterungsgeführt", "wdcoptimized": "Witterungsgeführt optimiert" } },
+      "hot_water_temperature_level": { "name": "Warmwasser-Temperaturniveau", "state": { "off": "Aus", "low": "Eco", "high": "Komfort", "eco": "Eco+" } },
+      "hot_water_operation_mode": { "name": "Warmwasser-Betriebsart", "state": { "off": "Aus", "low": "Eco", "high": "Komfort", "ownprogram": "Auto", "eco": "Eco+" } },
+      "hot_water_overall_status": { "name": "Warmwasserstatus", "state": { "off": "Aus", "idle": "Bereit", "heating": "Aufheizen", "boost": "Extra-Warmwasser", "away": "Abwesend", "holiday": "Urlaub", "floor_drying": "Estrichtrocknung", "thermal_disinfection": "Thermische Desinfektion" } },
+      "on_off_state": { "name": "Status", "state": { "off": "Aus", "on": "Ein", "stop": "Aus", "start": "Ein" } },
+      "heat_pump_type": { "name": "Wärmepumpentyp", "state": { "air_water": "Luft/Wasser", "brine_water": "Sole/Wasser", "exhaust_air": "Abluft/Wasser" } },
+      "heat_source_type": { "name": "Wärmeerzeugertyp", "state": { "heatpump": "Wärmepumpe", "boiler": "Heizkessel", "hybrid": "Hybridsystem" } },
+      "system_type": { "name": "Anlagentyp", "state": { "heatpump_single": "Einzelne Wärmepumpe", "boiler_single": "Einzelner Heizkessel", "hybrid": "Hybridsystem" } },
+      "energy_management_status": { "name": "Energiemanagement-Status", "state": { "not_connected": "Nicht verbunden", "connected": "Verbunden", "active": "Aktiv", "error": "Fehler" } },
+      "outdoor_temperature_source": { "name": "Quelle der Außentemperatur", "state": { "appliance": "Heizungsanlage", "internet": "Internet", "roomcontroller": "Raumregler" } },
+      "support_status": { "name": "Unterstützungsstatus", "state": { "not_supported": "Nicht unterstützt", "supported": "Unterstützt", "active": "Aktiv" } },
+      "update_status": { "name": "Updatestatus", "state": { "idle": "Bereit", "running": "Läuft", "success": "Erfolgreich", "failed": "Fehlgeschlagen" } },
+      "pressure_status": { "name": "Systemdruckstatus", "state": { "critical_low": "Kritisch niedrig", "low": "Niedrig", "normal": "Normal", "high": "Hoch", "critical_high": "Kritisch hoch" } }
+    }
+  }
+}

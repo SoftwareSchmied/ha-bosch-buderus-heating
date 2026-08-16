@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14.2"
+          cache: pip
+      - name: Install verification dependencies
+        run: python -m pip install -e ".[test]"
+      - name: Verify source quality
+        run: |
+          ruff format --check .
+          ruff check .
+          mypy
+          pytest
+      - name: Audit Python dependencies
+        run: |
+          python -m venv .audit-venv
+          .audit-venv/bin/python -m pip install -e ".[security]"
+          .audit-venv/bin/python -m pip freeze --exclude-editable > .audit-venv/requirements.txt
+          .audit-venv/bin/python -m pip_audit --strict --requirement .audit-venv/requirements.txt
+      - name: Validate Home Assistant integration
+        uses: home-assistant/actions/hassfest@a7c616ce81ccda50150bf1595786c71b1883fabb
+      - name: Validate HACS repository
+        uses: hacs/action@1ebf01c408f29afcb6406bd431bc98fd8cbb15aa
+        with:
+          category: integration
+      - name: Build release files
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: python scripts/build_release.py --expected-version "${RELEASE_VERSION#v}"
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_flags=()
+          if [[ "${GITHUB_REF_NAME}" == v0.* || "${GITHUB_REF_NAME}" == *-* ]]; then
+            release_flags+=(--prerelease)
+          fi
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" \
+              dist/bosch_buderus_heating.zip \
+              dist/bosch_buderus_heating.zip.sha256 \
+              --clobber
+            gh release edit "${GITHUB_REF_NAME}" \
+              --title "Bosch/Buderus Heating ${GITHUB_REF_NAME}" \
+              "${release_flags[@]}"
+          else
+            gh release create "${GITHUB_REF_NAME}" \
+              dist/bosch_buderus_heating.zip \
+              dist/bosch_buderus_heating.zip.sha256 \
+              --generate-notes \
+              --title "Bosch/Buderus Heating ${GITHUB_REF_NAME}" \
+              "${release_flags[@]}"
+          fi

@@ -1,0 +1,114 @@
+# Diagnostics and request metrics
+
+Home Assistant can generate a diagnostics report for Bosch/Buderus Heating.
+It is intended for troubleshooting and support and does not make additional
+cloud requests.
+
+## Download diagnostics
+
+1. Open **Settings → Devices & services**.
+2. Open **Bosch/Buderus Heating**.
+3. Open the integration's three-dot menu.
+4. Select **Download diagnostics**.
+
+Always review the file before publishing it. Automatic redaction is an
+additional layer of protection, not a replacement for reviewing a file before
+attaching it to a public issue.
+
+## Included information
+
+- selected brand and number of configured gateways;
+- anonymized device class such as `k40`, `k40rf`, `mx300`, or `mx400`;
+- normalized resource paths without specific heating-circuit, hot-water, or
+  heat-source identifiers;
+- resource type, unit, polling group, maturity, default activation, and
+  writeability;
+- counts of allowed options, references, and structured subvalues;
+- availability, freshness, error category, and consecutive failure count;
+- counts of active negative pauses, rate-limit backoff, and circuit-breaker
+  state;
+- aggregated request and polling metrics.
+
+The report explicitly excludes current measurements, settings, and energy
+values.
+
+## Request metrics
+
+Metrics are stored in memory only and reset when Home Assistant restarts. They
+cover:
+
+- actual HTTP attempts grouped by category and method;
+- HTTP status classes such as `2xx`, `4xx`, and `5xx`;
+- outcomes such as success, timeout, rate limiting, and protocol errors;
+- retries and bounded single-request fallbacks;
+- batch count and maximum batch size;
+- successful and failed items within batch responses;
+- latest, average, and maximum request duration;
+- coordinator poll count, failures, and duration;
+- detected decreases in cumulative energy counters.
+
+URLs, resource paths, gateway IDs, payloads, and response values are not stored
+for these metrics.
+
+### Simple overview
+
+`request_metrics` contains immediately understandable totals:
+
+- `observation_seconds`: time since the integration started;
+- `requests_total`: cloud requests that were actually made;
+- `requests_successful` and `requests_failed`: successful and failed cloud
+  requests;
+- `success_rate_percent`: request success rate;
+- `requests_per_hour`: projected hourly cloud load. This is calculated only
+  after an observation period of 60 seconds;
+- `rate_limit_events`: number of limits reported by PointT.
+
+### Counters per capability
+
+Every entry under `gateways → capabilities` contains a `calls` section, for
+example:
+
+```json
+{
+  "name": "Outdoor temperature",
+  "calls": {
+    "attempts_total": 120,
+    "successful": 119,
+    "failed": 1,
+    "success_rate_percent": 99.2,
+    "results": {
+      "success": 119,
+      "timeout": 1
+    },
+    "last_result": "success"
+  }
+}
+```
+
+A call in this section is one attempt to read that capability within a batch.
+One HTTP request can contain up to 30 capability reads, so the total number of
+real cloud requests is reported separately under `request_metrics`.
+
+Possible outcomes include `success`, `not_found`, `forbidden`, `timeout`,
+`rate_limited`, `service_unavailable`, `authentication_error`, and
+`request_failed`. Intentionally paused or not-yet-due capabilities are not
+counted as failed reads.
+
+The counters are derived from normal polling. Opening diagnostics does not
+make another cloud request. All counters restart at zero after Home Assistant
+restarts.
+
+`energy_counter_resets_detected` increases when an individual non-negative
+PointT energy counter becomes smaller than its previously confirmed value. It
+contains neither the old nor the new measurement and exists only to make
+resets after firmware updates, device replacement, or manual resets visible.
+
+## Excluded information
+
+- access or refresh tokens, OAuth codes, and redirect addresses;
+- gateway IDs, config-entry IDs, serial numbers, and UUIDs;
+- IP addresses, MAC addresses, SSIDs, and location data;
+- firmware identifiers and complete model names;
+- user-defined heating-circuit, hot-water, and schedule names;
+- current temperatures, setpoints, operating modes, and energy consumption;
+- complete request or response bodies.

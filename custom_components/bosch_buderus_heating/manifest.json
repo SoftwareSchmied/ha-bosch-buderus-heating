@@ -1,0 +1,12 @@
+{
+  "domain": "bosch_buderus_heating",
+  "name": "Bosch/Buderus Heating",
+  "codeowners": ["@SoftwareSchmied"],
+  "config_flow": true,
+  "documentation": "https://github.com/SoftwareSchmied/ha-bosch-buderus-heating",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

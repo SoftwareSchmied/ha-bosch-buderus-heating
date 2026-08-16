@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <circle cx="128" cy="128" r="120" fill="#126782"/>
+  <rect x="45" y="68" width="166" height="128" rx="17" fill="#fff"/>
+  <path d="M68 92h120" fill="none" stroke="#126782" stroke-linecap="round" stroke-width="7"/>
+
+  <circle cx="100" cy="140" r="33" fill="none" stroke="#126782" stroke-width="7"/>
+  <g fill="#126782" transform="translate(100 140) scale(.64)">
+    <path id="fan-blade" d="M-3-7c-7-9-8-22-3-31 3-5 10-5 14-1 5 6 2 17-1 24L3-7Z"/>
+    <use href="#fan-blade" transform="rotate(120)"/>
+    <use href="#fan-blade" transform="rotate(240)"/>
+    <circle r="7"/>
+  </g>
+
+  <g fill="none" stroke="#ee7c2c" stroke-linecap="round" stroke-width="8">
+    <path d="M154 159c-11-12 15-17 3-29"/>
+    <path d="M178 159c-11-12 15-17 3-29"/>
+  </g>
+</svg>
