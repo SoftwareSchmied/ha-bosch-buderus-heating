@@ -29,6 +29,7 @@ from custom_components.bosch_buderus_heating.diagnostics import (
     async_get_config_entry_diagnostics,
 )
 from custom_components.bosch_buderus_heating.pointt import (
+    BatchItemResult,
     Gateway,
     PointTClient,
     Resource,
@@ -101,6 +102,17 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         reference.path: ResourceSnapshot(reference, True, now),
     }
     coordinator._record_capability(name.path, "not_found", SnapshotSource.BATCH)
+    notification = Resource(path="/notifications", values=({"ccd": 6249, "fc": "12"},))
+    coordinator.faults.process_resources({notification.path: notification})
+    coordinator.faults.record_results(
+        (
+            BatchItemResult(
+                gateway_id,
+                "/devices/private-device/errors",
+                404,
+            ),
+        )
+    )
     client.metrics.record_request(
         category="bulk",
         method="POST",
@@ -129,6 +141,7 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         "private-model-details",
         "private-firmware",
         "private-circuit",
+        "private-device",
     ):
         assert private not in rendered
     assert diagnostics["privacy"] == {
@@ -140,6 +153,12 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
     gateway_report = diagnostics["gateways"][0]
     assert gateway_report["device_class"] == "k40rf"
     assert gateway_report["runtime"]["resources_stale"] == 1
+    assert gateway_report["faults"]["active_faults"] == 1
+    assert gateway_report["faults"]["codes"] == ("6249",)
+    assert gateway_report["faults"]["resource_results"] == {
+        "/devices/{device}/errors": "404",
+        "/notifications": "success",
+    }
     assert gateway_report["inventory"]["current_error_categories"] == {"http_404": 1}
     assert gateway_report["inventory"]["maturity_levels"] == {"understood": 3}
     capability = next(
@@ -180,6 +199,9 @@ def test_diagnostics_normalizers_never_echo_unknown_private_strings() -> None:
     )
     assert _path_template("/heatSources/emon/totalConsumption") == (
         "/heatSources/emon/totalConsumption"
+    )
+    assert _path_template("/devices/private-device/errors") == (
+        "/devices/{device}/errors"
     )
     assert _gateway_class(Gateway("secret", model="unknown-private")) == (
         "heating_gateway"

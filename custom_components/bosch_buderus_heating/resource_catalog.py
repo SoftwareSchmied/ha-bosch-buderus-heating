@@ -15,6 +15,7 @@ class PollGroup(StrEnum):
     """Cloud polling cadence for one discovered resource."""
 
     FAST = "fast"
+    NOTIFICATIONS = "notifications"
     CONTROL = "control"
     ENERGY = "energy"
     SLOW = "slow"
@@ -64,6 +65,9 @@ _OPT_IN_DIAGNOSTIC_PATHS = frozenset(
 
 _NO_ENTITY_PATHS = frozenset(
     {
+        "/notifications",
+        "/devices",
+        "/devices/list",
         "/gateway",
         "/gateway/tzInfo",
         "/gateway/update",
@@ -104,6 +108,9 @@ _VERIFIED_PATTERNS = tuple(
 
 _UNDERSTOOD_PATHS = frozenset(
     {
+        "/notifications",
+        "/devices",
+        "/devices/list",
         "/dhwCircuits",
         "/gateway",
         "/gateway/brand",
@@ -436,6 +443,14 @@ def entity_enabled_by_default(path: str) -> bool:
 
 def poll_group(resource: Resource) -> PollGroup:
     """Classify a discovered resource into a cloud-friendly cadence."""
+    # Historical failure lists are probed during discovery, but are not polled
+    # repeatedly until the integration exposes a history feature that uses them.
+    if resource.path.endswith("/failurelist"):
+        return PollGroup.STATIC
+    if resource.path == "/notifications" or resource.path.endswith(
+        ("/activefailure", "/errors")
+    ):
+        return PollGroup.NOTIFICATIONS
     if resource.references or is_private_resource(resource.path):
         return PollGroup.STATIC
     if resource.path == "/heatSources/systemPressureRange":

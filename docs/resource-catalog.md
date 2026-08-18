@@ -71,6 +71,19 @@ Root resources reference the objects that actually exist:
 /heatSources     -> hs1, hs2, ...
 ```
 
+Current notification discovery additionally reads `/notifications`. Optional
+`/heatSources/{hs}/activefailure`, `/heatSources/{hs}/failurelist`, and
+`/devices/{device}/errors` paths are probed only for component IDs obtained
+from the resource tree or device list. HTTP 403 and 404 responses are treated
+as unsupported capabilities and never block the remaining integration.
+
+On the reference K40, `/notifications` returned an `errorList`. The verified
+active fault 6249 contained `ccd`, `dcd`, `fc`, `orig`, and `dlv`, but no
+human-readable text or timestamp. The legacy heat-source and device-error
+paths returned HTTP 404. PointT therefore supplies the current active state on
+this profile, while the appliance display remains the source for exact history
+and device timestamps.
+
 All entities of a gateway belong to one shared Home Assistant device, for
 example **Buderus K40**. Home Assistant does not support true subgroups within a
 device, so each entity name has a dynamic prefix such as **Heating circuit 1 –

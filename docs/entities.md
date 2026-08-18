@@ -84,6 +84,7 @@ an integration update.
 | Group | Frequency | Content on the reference system |
 |---|---:|---:|
 | Live values | 60 seconds | 25 entities |
+| Notifications | 5 minutes normally; 60 seconds while active | 4 aggregate entities when supported |
 | Settings | 5 minutes | 19 entities |
 | Energy | 5 minutes | up to 15 entities |
 | Long-term values | 15 minutes | 13 entities |
@@ -92,6 +93,30 @@ an integration update.
 Due groups are combined into batch requests of no more than 30 resources.
 HTTP 429 pauses further requests temporarily. Successful partial values and
 the most recent valid state are retained during partial failures.
+
+## Faults and notifications
+
+Fault entities are created once per gateway and become available when at least
+one supported PointT current-notification source is found. They summarize the
+active list and do not create an entity for every possible manufacturer code.
+
+| Entity | HA type | Source | Default | Polling |
+|---|---|---|:---:|---:|
+| System fault | Problem binary sensor | `/notifications` and supported component fault resources | Enabled | 5 min; 60 s while active |
+| Active faults | Sensor | Normalized active fault list | Enabled | 5 min; 60 s while active |
+| Active notifications | Sensor | All normalized current notifications | Enabled | 5 min; 60 s while active |
+| System notifications | Event entity | `appeared` and `resolved` lifecycle transitions | Enabled | event driven from each poll |
+
+Warnings and maintenance messages contribute to **Active notifications** but
+do not by themselves activate **System fault**. Unknown classifications are
+treated conservatively as faults. A missing entry is considered resolved only
+after two complete successful reads; a timeout, rate limit, malformed entry,
+or partial batch response never clears an existing fault.
+
+The integration persists only the normalized active baseline needed to avoid
+duplicate events after a Home Assistant restart. No raw cloud response is
+stored. Timestamps marked `home_assistant_observed` are observation times and
+must not be confused with the exact start or end time shown by the appliance.
 
 ## Gateway and system
 

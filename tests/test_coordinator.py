@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from time import monotonic
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
@@ -18,6 +19,7 @@ from custom_components.bosch_buderus_heating.const import (
     PollingProfile,
 )
 from custom_components.bosch_buderus_heating.coordinator import (
+    ACTIVE_NOTIFICATION_INTERVAL,
     CIRCUIT_FAILURE_THRESHOLD,
     FORBIDDEN_PAUSE_THRESHOLD,
     POLL_INTERVALS,
@@ -41,6 +43,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     ResourceForbidden,
     ResourceMetadata,
     ResourceNotFound,
+    ResourceReference,
     ServiceUnavailable,
     WriteRequest,
     WriteResult,
@@ -106,6 +109,82 @@ async def test_first_refresh_discovers_and_classifies_resources(
     assert coordinator.capability_metrics(fast.path)["attempts_by_source"] == {
         "discovery": 1
     }
+
+
+async def test_discovery_adds_fault_sources_and_adapts_notification_polling(
+    hass: HomeAssistant,
+) -> None:
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    notifications = Resource(
+        path="/notifications",
+        values=({"ccd": 6249, "fc": "12"},),
+        metadata=ResourceMetadata(resource_type="errorList"),
+    )
+    heat_sources = Resource(
+        path="/heatSources",
+        references=(ResourceReference("/heatSources/hs1"),),
+    )
+    heat_source = Resource(path="/heatSources/hs1")
+    active_failure = "/heatSources/hs1/activefailure"
+    failure_list = "/heatSources/hs1/failurelist"
+    client.get_resources_bulk.return_value = (
+        BatchItemResult(
+            "gateway-one",
+            active_failure,
+            404,
+            error=ResourceNotFound(active_failure, 404),
+        ),
+        BatchItemResult(
+            "gateway-one",
+            failure_list,
+            404,
+            error=ResourceNotFound(failure_list, 404),
+        ),
+    )
+    with patch(
+        "custom_components.bosch_buderus_heating.coordinator.async_discover_resources",
+        AsyncMock(
+            return_value={
+                item.path: item for item in (notifications, heat_sources, heat_source)
+            }
+        ),
+    ):
+        result = await coordinator._async_update_data()
+
+    assert set(result) == {"/notifications", "/heatSources", "/heatSources/hs1"}
+    assert active_failure in coordinator.resources
+    assert failure_list in coordinator.resources
+    assert coordinator._paths_by_group[PollGroup.NOTIFICATIONS] == (
+        "/notifications",
+        active_failure,
+    )
+    assert len(coordinator.faults.active_faults) == 1
+    assert coordinator.diagnostics_summary()["notification_poll_interval_seconds"] == 60
+    assert coordinator._negative_until[active_failure] > 0
+
+
+async def test_optional_fault_probe_failure_does_not_block_main_discovery(
+    hass: HomeAssistant,
+) -> None:
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    notifications = Resource(path="/notifications", values=())
+    heat_source = Resource(path="/heatSources/hs1")
+    client.get_resources_bulk.side_effect = ServiceUnavailable()
+    with patch(
+        "custom_components.bosch_buderus_heating.coordinator.async_discover_resources",
+        AsyncMock(
+            return_value={item.path: item for item in (notifications, heat_source)}
+        ),
+    ):
+        result = await coordinator._async_update_data()
+
+    assert set(result) == {"/notifications", "/heatSources/hs1"}
+    assert coordinator.faults.has_supported_source
+    assert (
+        coordinator.diagnostics_summary()["notification_poll_interval_seconds"] == 300
+    )
 
 
 async def test_polling_preserves_last_good_values(hass: HomeAssistant) -> None:
@@ -427,10 +506,29 @@ def test_cloud_friendly_profile_uses_longer_intervals(hass: HomeAssistant) -> No
     )
 
     assert coordinator._poll_intervals == POLL_INTERVALS_CLOUD_FRIENDLY
-    assert coordinator.update_interval == POLL_INTERVALS_CLOUD_FRIENDLY[PollGroup.FAST]
+    assert coordinator.update_interval == ACTIVE_NOTIFICATION_INTERVAL
     coordinator._advance_groups((PollGroup.CONTROL,), 100.0)
     assert coordinator._next_update[PollGroup.CONTROL] == 700.0
     assert coordinator.diagnostics_summary()["polling_profile"] == "cloud_friendly"
+
+
+async def test_manual_refresh_forces_dynamic_groups_due(
+    hass: HomeAssistant,
+) -> None:
+    coordinator = _coordinator(hass, AsyncMock())
+    future = monotonic() + 3_600
+    coordinator._next_update = {group: future for group in coordinator._poll_intervals}
+    refresh = AsyncMock()
+
+    with patch.object(coordinator._debounced_refresh, "async_call", refresh):
+        before = monotonic()
+        await coordinator.async_request_refresh()
+
+    refresh.assert_awaited_once_with()
+    assert all(
+        before <= coordinator._next_update[group] <= monotonic()
+        for group in coordinator._poll_intervals
+    )
 
 
 def test_repeated_rate_limits_create_repair_issue(hass: HomeAssistant) -> None:
@@ -567,6 +665,49 @@ async def test_rate_limit_starts_bounded_no_request_backoff(
         await coordinator._async_update_data()
 
     assert client.get_resources_bulk.await_count == 1
+
+
+async def test_bulk_item_rate_limit_stops_chunks_and_starts_backoff(
+    hass: HomeAssistant,
+) -> None:
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    paths = tuple(f"/heatSources/value{index}" for index in range(31))
+    coordinator.resources = {path: Resource(path=path) for path in paths}
+    coordinator.data = {path: _snapshot(Resource(path=path)) for path in paths}
+    coordinator._paths_by_group = {PollGroup.FAST: paths}
+    coordinator._next_update = {PollGroup.FAST: 0.0}
+    client.get_resources_bulk.return_value = (
+        BatchItemResult("gateway-one", paths[0], 429),
+    )
+
+    with pytest.raises(UpdateFailed, match="no usable resources"):
+        await coordinator._async_update_data()
+
+    assert client.get_resources_bulk.await_count == 1
+    assert coordinator._cloud_backoff_until > monotonic()
+    assert coordinator.diagnostics_summary()["rate_limit_events"] == 1
+
+
+async def test_bulk_item_server_failure_marks_the_poll_failed(
+    hass: HomeAssistant,
+) -> None:
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    path = "/notifications"
+    coordinator.resources = {path: Resource(path=path)}
+    coordinator.data = {path: _snapshot(Resource(path=path))}
+    coordinator._paths_by_group = {PollGroup.NOTIFICATIONS: (path,)}
+    coordinator._next_update = {PollGroup.NOTIFICATIONS: 0.0}
+    client.get_resources_bulk.return_value = (
+        BatchItemResult("gateway-one", path, 503),
+    )
+
+    with pytest.raises(UpdateFailed, match="no usable resources"):
+        await coordinator._async_update_data()
+
+    assert coordinator._gateway_failure_count == 1
+    assert coordinator.faults.diagnostics()["resource_results"] == {path: "503"}
 
 
 async def test_not_found_resource_is_paused_without_blocking_other_paths(

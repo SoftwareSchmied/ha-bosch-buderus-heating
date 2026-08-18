@@ -23,6 +23,8 @@ from custom_components.bosch_buderus_heating.pointt import (
     ResourceMetadata,
 )
 from custom_components.bosch_buderus_heating.sensor import (
+    BoschBuderusActiveFaultsSensor,
+    BoschBuderusActiveNotificationsSensor,
     BoschBuderusSensor,
     _energy_values,
     _native_scalar,
@@ -645,12 +647,15 @@ async def test_platform_adds_every_discovered_safe_scalar(
     entry = SimpleNamespace(
         runtime_data=SimpleNamespace(coordinators=(sensor.coordinator,))
     )
-    added: list[BoschBuderusSensor] = []
+    added: list[object] = []
 
     await async_setup_entry(hass, entry, added.extend)
 
-    assert len(added) == 1
-    assert added[0].entity_description.resource_path == safe.path
+    assert len(added) == 3
+    assert isinstance(added[0], BoschBuderusActiveFaultsSensor)
+    assert isinstance(added[1], BoschBuderusActiveNotificationsSensor)
+    assert isinstance(added[2], BoschBuderusSensor)
+    assert added[2].entity_description.resource_path == safe.path
 
 
 def test_unknown_scalar_capability_remains_diagnostics_only() -> None:
@@ -661,6 +666,36 @@ def test_unknown_scalar_capability_remains_diagnostics_only() -> None:
     )
 
     assert build_sensor_descriptions({unknown.path: unknown}) == ()
+
+
+def test_fault_count_sensors_expose_bounded_details(hass: HomeAssistant) -> None:
+    resource = Resource(
+        path="/notifications",
+        values=(
+            {"ccd": 6249, "fc": "12"},
+            {"ccd": "W1", "fc": "WARNING"},
+        ),
+    )
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    coordinator = BoschBuderusDataUpdateCoordinator(
+        hass, AsyncMock(), Gateway("gateway-one", device_type="K40"), entry
+    )
+    coordinator.last_update_success = True
+    coordinator.faults.process_resources({resource.path: resource})
+
+    faults = BoschBuderusActiveFaultsSensor(coordinator)
+    notifications = BoschBuderusActiveNotificationsSensor(coordinator)
+
+    assert faults.available
+    assert faults.native_value == 1
+    assert faults.extra_state_attributes["faults"][0]["code"] == "6249"
+    assert notifications.native_value == 2
+    assert notifications.extra_state_attributes["severity_counts"] == {
+        "fault": 1,
+        "warning": 1,
+    }
+    assert notifications.device_info["model"] == "K40"
 
 
 def test_default_policy_enables_user_values_and_keeps_technical_values_opt_in() -> None:

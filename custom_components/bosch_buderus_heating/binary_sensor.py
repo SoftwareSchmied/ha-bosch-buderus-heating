@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
@@ -18,6 +19,12 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from . import BoschBuderusConfigEntry
 from .coordinator import BoschBuderusDataUpdateCoordinator, ResourceSnapshot
 from .device import device_info_for_resource, grouped_entity_name
+from .faults import (
+    MAX_FAULT_ATTRIBUTES,
+    fault_severity_label,
+    fault_summary,
+    no_active_faults_label,
+)
 from .pointt import Resource
 from .resource_catalog import (
     CapabilityMaturity,
@@ -49,13 +56,70 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create entities from every safe boolean found during discovery."""
-    entities: list[BoschBuderusBinarySensor] = []
+    entities: list[BinarySensorEntity] = []
     for coordinator in entry.runtime_data.coordinators:
+        entities.append(BoschBuderusSystemFaultBinarySensor(coordinator))
         entities.extend(
             BoschBuderusBinarySensor(coordinator, description)
             for description in build_binary_sensor_descriptions(coordinator.resources)
         )
     async_add_entities(entities)
+
+
+class BoschBuderusSystemFaultBinarySensor(
+    CoordinatorEntity[BoschBuderusDataUpdateCoordinator], BinarySensorEntity
+):
+    """Report whether an actionable or unknown system fault is active."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "system_fault"
+    _attr_device_class = BinarySensorDeviceClass.PROBLEM
+    _attr_icon = "mdi:alert-circle"
+
+    def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{coordinator.gateway.gateway_id}:system_fault"
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.faults.has_supported_source
+
+    @property
+    def is_on(self) -> bool:
+        return bool(self.coordinator.faults.active_faults)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        tracker = self.coordinator.faults
+        codes = sorted(
+            {item.code for item in tracker.active_faults if item.code is not None}
+        )
+        attributes: dict[str, object] = {
+            "active_fault_count": len(tracker.active_faults),
+            "active_notification_count": len(tracker.active),
+            "highest_severity": (
+                tracker.highest_severity.value if tracker.highest_severity else None
+            ),
+            "codes": codes[:MAX_FAULT_ATTRIBUTES],
+            "codes_truncated": len(codes) > MAX_FAULT_ATTRIBUTES,
+        }
+        if tracker.active_faults:
+            attributes["summary"] = fault_summary(
+                tracker.active_faults[0], self.coordinator.hass.config.language
+            )
+            attributes["highest_severity_label"] = fault_severity_label(
+                tracker.active_faults[0].severity,
+                self.coordinator.hass.config.language,
+            )
+        else:
+            attributes["summary"] = no_active_faults_label(
+                self.coordinator.hass.config.language
+            )
+        return attributes
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return device_info_for_resource(self.coordinator, "/gateway")
 
 
 def build_binary_sensor_descriptions(

@@ -45,6 +45,12 @@ new firmware versions merely because their version string is unknown.
 2. Additional anonymized installation inventories and contract fixtures.
 3. A post-deployment long run covering token rotation and cloud failures.
 
+Active system notifications are implemented using `/notifications` as the
+primary source and optional dynamically discovered component resources. The
+K40 fault 6249 is the first real-device contract case. Additional installations
+are still needed to confirm warning, maintenance, critical, device-error, and
+multi-source payload variants.
+
 ## Phase 4 — energy
 
 Release direct EMON counters first. Add calculated totals only when all

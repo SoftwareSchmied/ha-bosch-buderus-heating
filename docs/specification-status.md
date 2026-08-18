@@ -23,6 +23,7 @@ Both deviations are accepted for this project.
 | Negative capabilities | implemented | Active pauses are reported in aggregate diagnostics |
 | State and availability model | implemented | Redacted diagnostics are available |
 | Read-only entities | implemented on one K40 | Maturity levels and default activation are implemented; additional installation profiles remain open |
+| Faults and notifications | implemented on one K40 | Active fault 6249 is verified; warning, maintenance, critical, historical, and optional component-resource variants need additional real installations |
 | Energy | mostly implemented | Direct counters, calculated environmental energy, and reset detection are implemented; long-term testing remains open |
 | Diagnostics and support export | implemented | Understandable HTTP and capability success counters are available; observe additional real support cases |
 | Reconfiguration and repairs | implemented | Gateway selection, brand changes, rediscovery, polling profiles, rate-limit repair, and firmware-schema repair are available |

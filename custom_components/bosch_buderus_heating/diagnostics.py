@@ -23,7 +23,7 @@ from .resource_catalog import (
     supports_entity,
 )
 
-DIAGNOSTICS_SCHEMA_VERSION = 2
+DIAGNOSTICS_SCHEMA_VERSION = 3
 
 
 async def async_get_config_entry_diagnostics(
@@ -75,10 +75,38 @@ def _gateway_diagnostics(
         for snapshot in snapshots.values()
         if snapshot.last_error_category is not None
     )
+    fault_state = coordinator.faults.diagnostics()
+    supported_fault_resources_value = fault_state.pop("supported_resources")
+    supported_fault_resources = (
+        supported_fault_resources_value
+        if isinstance(supported_fault_resources_value, tuple | list)
+        else ()
+    )
+    fault_resource_results_value = fault_state.pop("resource_results")
+    fault_resource_results = (
+        fault_resource_results_value
+        if isinstance(fault_resource_results_value, dict)
+        else {}
+    )
     return {
         "label": f"gateway_{number}",
         "device_class": _gateway_class(coordinator.gateway),
         "runtime": coordinator.diagnostics_summary(),
+        "faults": {
+            **fault_state,
+            "supported_resources": tuple(
+                sorted(
+                    _path_template(path)
+                    for path in supported_fault_resources
+                    if isinstance(path, str)
+                )
+            ),
+            "resource_results": {
+                _path_template(path): _safe_token(result)
+                for path, result in fault_resource_results.items()
+                if isinstance(path, str)
+            },
+        },
         "inventory": {
             "resource_count": len(resources),
             "writable_count": sum(item.metadata.writable for item in resources),
@@ -157,6 +185,12 @@ def _path_template(path: str) -> str:
     path = re.sub(
         r"^/heatSources/hs\d+(?=/|$)",
         "/heatSources/{hs}",
+        path,
+        flags=re.IGNORECASE,
+    )
+    path = re.sub(
+        r"^/devices/[^/]+(?=/|$)",
+        "/devices/{device}",
         path,
         flags=re.IGNORECASE,
     )

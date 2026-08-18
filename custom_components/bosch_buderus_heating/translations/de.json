@@ -150,7 +150,11 @@
       "outdoor_temperature_source": { "name": "Quelle der Außentemperatur", "state": { "appliance": "Heizungsanlage", "internet": "Internet", "roomcontroller": "Raumregler" } },
       "support_status": { "name": "Unterstützungsstatus", "state": { "not_supported": "Nicht unterstützt", "supported": "Unterstützt", "active": "Aktiv" } },
       "update_status": { "name": "Updatestatus", "state": { "idle": "Bereit", "running": "Läuft", "success": "Erfolgreich", "failed": "Fehlgeschlagen" } },
-      "pressure_status": { "name": "Systemdruckstatus", "state": { "critical_low": "Kritisch niedrig", "low": "Niedrig", "normal": "Normal", "high": "Hoch", "critical_high": "Kritisch hoch" } }
-    }
+      "pressure_status": { "name": "Systemdruckstatus", "state": { "critical_low": "Kritisch niedrig", "low": "Niedrig", "normal": "Normal", "high": "Hoch", "critical_high": "Kritisch hoch" } },
+      "active_faults": { "name": "Aktive Störungen" },
+      "active_notifications": { "name": "Aktive Meldungen" }
+    },
+    "binary_sensor": { "system_fault": { "name": "Anlagenstörung" } },
+    "event": { "system_notifications": { "name": "Anlagenmeldungen" } }
   }
 }

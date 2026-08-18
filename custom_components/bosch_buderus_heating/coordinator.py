@@ -20,6 +20,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .const import DOMAIN, RATE_LIMIT_ISSUE_PREFIX, PollingProfile
 from .discovery import async_discover_resources
+from .faults import FaultTracker, fault_resource_candidates, is_fault_resource_path
 from .pointt import (
     AuthenticationError,
     Gateway,
@@ -40,12 +41,14 @@ _LOGGER = logging.getLogger(__name__)
 
 POLL_INTERVALS: dict[PollGroup, timedelta] = {
     PollGroup.FAST: timedelta(seconds=60),
+    PollGroup.NOTIFICATIONS: timedelta(minutes=5),
     PollGroup.CONTROL: timedelta(minutes=5),
     PollGroup.ENERGY: timedelta(minutes=5),
     PollGroup.SLOW: timedelta(minutes=15),
 }
 POLL_INTERVALS_CLOUD_FRIENDLY: dict[PollGroup, timedelta] = {
     PollGroup.FAST: timedelta(minutes=2),
+    PollGroup.NOTIFICATIONS: timedelta(minutes=5),
     PollGroup.CONTROL: timedelta(minutes=10),
     PollGroup.ENERGY: timedelta(minutes=10),
     PollGroup.SLOW: timedelta(minutes=30),
@@ -60,6 +63,7 @@ CIRCUIT_FAILURE_THRESHOLD = 3
 CIRCUIT_OPEN_INTERVAL = timedelta(minutes=5)
 MAX_FALLBACK_PATHS = 5
 RATE_LIMIT_REPAIR_THRESHOLD = 3
+ACTIVE_NOTIFICATION_INTERVAL = timedelta(seconds=60)
 
 _FALLBACK_PRIORITY_PATHS = (
     "/heatSources/actualSupplyTemperature",
@@ -162,7 +166,12 @@ class BoschBuderusDataUpdateCoordinator(
             hass,
             _LOGGER,
             name=f"{DOMAIN}-{gateway.gateway_id[-4:]}",
-            update_interval=min(poll_intervals.values()),
+            # Wake every minute so an active notification can use its promised
+            # cadence even when all ordinary groups use the cloud-friendly
+            # profile. A wake-up with no due group performs no cloud request.
+            update_interval=min(
+                min(poll_intervals.values()), ACTIVE_NOTIFICATION_INTERVAL
+            ),
             config_entry=config_entry,
         )
         self.client = client
@@ -186,6 +195,20 @@ class BoschBuderusDataUpdateCoordinator(
         self._energy_counter_resets = 0
         self._capability_metrics: dict[str, CapabilityMetrics] = {}
         self._write_service = WriteService(client)
+        self.faults = FaultTracker(hass, config_entry.entry_id, gateway.gateway_id)
+
+    async def async_load_fault_state(self) -> None:
+        """Load the persisted active-fault baseline before the first refresh."""
+        await self.faults.async_load()
+
+    async def async_request_refresh(self) -> None:
+        """Force all dynamic groups due for an explicit Home Assistant refresh."""
+        now_monotonic = monotonic()
+        for group in self._poll_intervals:
+            self._next_update[group] = min(
+                self._next_update.get(group, now_monotonic), now_monotonic
+            )
+        await super().async_request_refresh()
 
     async def async_write_control(
         self,
@@ -316,6 +339,11 @@ class BoschBuderusDataUpdateCoordinator(
             "circuit_breaker_active": now < self._circuit_open_until,
             "consecutive_gateway_failures": self._gateway_failure_count,
             "polling_profile": self.polling_profile.value,
+            "notification_poll_interval_seconds": (
+                ACTIVE_NOTIFICATION_INTERVAL.total_seconds()
+                if self.faults.active
+                else self._poll_intervals[PollGroup.NOTIFICATIONS].total_seconds()
+            ),
             "capability_attempts": {
                 "total": capability_attempts,
                 "successful": capability_successful,
@@ -366,6 +394,7 @@ class BoschBuderusDataUpdateCoordinator(
         successful = 0
         failed_chunks = 0
         gateway_failure = False
+        cycle_results: list[BatchItemResult] = []
         for chunk in chunk_resource_paths(paths, size=MAX_BULK_PATHS):
             attempted_at = datetime.now(UTC)
             result_source = SnapshotSource.BATCH
@@ -397,6 +426,7 @@ class BoschBuderusDataUpdateCoordinator(
                     break
                 result_source = SnapshotSource.FALLBACK
 
+            cycle_results.extend(results)
             successful += self._apply_results(
                 snapshots,
                 results,
@@ -404,6 +434,34 @@ class BoschBuderusDataUpdateCoordinator(
                 now_monotonic=now_monotonic,
                 source=result_source,
             )
+            if any(result.status == 429 for result in results):
+                self._activate_rate_limit_backoff(
+                    RateLimited(retry_after=None), now_monotonic
+                )
+                failed_chunks += 1
+                break
+            if results and all(
+                result.resource is None
+                and result.status is not None
+                and result.status >= 500
+                for result in results
+            ):
+                failed_chunks += 1
+                gateway_failure = True
+                break
+
+        self.faults.record_results(cycle_results)
+        successful_fault_resources = {
+            result.path: result.resource
+            for result in cycle_results
+            if result.resource is not None and is_fault_resource_path(result.path)
+        }
+        self.faults.process_resources(
+            successful_fault_resources,
+            successful_paths={
+                result.path for result in cycle_results if result.resource is not None
+            },
+        )
 
         if successful == 0 and failed_chunks:
             if gateway_failure:
@@ -434,20 +492,84 @@ class BoschBuderusDataUpdateCoordinator(
         if not resources:
             raise UpdateFailed("PointT discovery returned no resources")
 
-        self.resources = resources
-        for path in resources:
+        successful_resources = dict(resources)
+        candidates = tuple(
+            path
+            for path in fault_resource_candidates(successful_resources)
+            if path not in successful_resources
+        )
+        probe_results: tuple[BatchItemResult, ...] = ()
+        if candidates:
+            try:
+                probe_results = await self.client.get_resources_bulk(
+                    self.gateway.gateway_id, candidates
+                )
+            except AuthenticationError as err:
+                raise ConfigEntryAuthFailed from err
+            except PointTError:
+                _LOGGER.warning(
+                    "Optional PointT fault-resource discovery failed; "
+                    "continuing with the main resource tree"
+                )
+            else:
+                self.faults.record_results(probe_results)
+                for result in probe_results:
+                    if result.resource is not None:
+                        successful_resources[result.path] = result.resource
+
+        placeholder_paths = {
+            result.path
+            for result in probe_results
+            if result.resource is None and result.status in (403, 404)
+        }
+        self.resources = {
+            **successful_resources,
+            **{
+                path: Resource(path=path)
+                for path in sorted(placeholder_paths)
+                if path not in successful_resources
+            },
+        }
+        self.faults.process_resources(
+            {
+                path: resource
+                for path, resource in successful_resources.items()
+                if is_fault_resource_path(path)
+            },
+            successful_paths={
+                path for path in successful_resources if is_fault_resource_path(path)
+            },
+        )
+        for path in successful_resources:
             self._record_capability(path, "success", SnapshotSource.DISCOVERY)
+        for result in probe_results:
+            if result.resource is None:
+                self._record_capability(
+                    result.path,
+                    _result_category(result.error, result.status),
+                    SnapshotSource.DISCOVERY,
+                )
+                if result.status in (403, 404):
+                    pause = FORBIDDEN_PAUSE if result.status == 403 else NOT_FOUND_PAUSE
+                    self._negative_until[result.path] = (
+                        monotonic() + pause.total_seconds()
+                    )
         self._paths_by_group = {
             group: tuple(
                 path
-                for path, resource in resources.items()
+                for path, resource in self.resources.items()
                 if poll_group(resource) is group
             )
             for group in self._poll_intervals
         }
         now_monotonic = monotonic()
         self._next_update = {
-            group: now_monotonic + interval.total_seconds()
+            group: now_monotonic
+            + (
+                ACTIVE_NOTIFICATION_INTERVAL
+                if group is PollGroup.NOTIFICATIONS and self.faults.active
+                else interval
+            ).total_seconds()
             for group, interval in self._poll_intervals.items()
         }
         updated_at = datetime.now(UTC)
@@ -459,7 +581,7 @@ class BoschBuderusDataUpdateCoordinator(
                 last_attempt=updated_at,
                 source=SnapshotSource.DISCOVERY,
             )
-            for path, resource in resources.items()
+            for path, resource in successful_resources.items()
         }
 
     async def _async_core_fallback(
@@ -553,6 +675,11 @@ class BoschBuderusDataUpdateCoordinator(
                 )
                 snapshots[result.path] = failed
                 self._pause_failed_resource(failed, result.status, now_monotonic)
+            elif result.status in (403, 404):
+                pause = FORBIDDEN_PAUSE if result.status == 403 else NOT_FOUND_PAUSE
+                self._negative_until[result.path] = (
+                    now_monotonic + pause.total_seconds()
+                )
             _LOGGER.debug("PointT resource unavailable: %s", result.path)
         return successful
 
@@ -602,9 +729,12 @@ class BoschBuderusDataUpdateCoordinator(
         self, groups: tuple[PollGroup, ...], now_monotonic: float
     ) -> None:
         for group in groups:
-            self._next_update[group] = (
-                now_monotonic + self._poll_intervals[group].total_seconds()
+            interval = (
+                ACTIVE_NOTIFICATION_INTERVAL
+                if group is PollGroup.NOTIFICATIONS and self.faults.active
+                else self._poll_intervals[group]
             )
+            self._next_update[group] = now_monotonic + interval.total_seconds()
 
     def _record_gateway_failure(self, now_monotonic: float) -> None:
         self._gateway_failure_count += 1

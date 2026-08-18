@@ -5,11 +5,13 @@ from __future__ import annotations
 from .pointt import PointTClient, Resource
 
 ROOT_RESOURCE_PATHS: tuple[str, ...] = (
+    "/notifications",
     "/gateway",
     "/system",
     "/heatingCircuits",
     "/dhwCircuits",
     "/heatSources",
+    "/devices",
 )
 
 MAX_DISCOVERY_DEPTH = 8

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections import Counter
 from collections.abc import Mapping
 from dataclasses import dataclass
 from math import fsum, isfinite
@@ -31,6 +32,13 @@ from . import BoschBuderusConfigEntry
 from .coordinator import BoschBuderusDataUpdateCoordinator, ResourceSnapshot
 from .device import device_info_for_resource, grouped_entity_name
 from .enum_translation import enum_value_to_ha
+from .faults import (
+    MAX_FAULT_ATTRIBUTES,
+    ActiveFault,
+    fault_severity_label,
+    fault_summary,
+    no_active_faults_label,
+)
 from .pointt import Resource
 from .pointt.models import JsonValue
 from .resource_catalog import (
@@ -221,13 +229,113 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create entities from every safe resource found during discovery."""
-    entities: list[BoschBuderusSensor] = []
+    entities: list[SensorEntity] = []
     for coordinator in entry.runtime_data.coordinators:
+        entities.extend(
+            (
+                BoschBuderusActiveFaultsSensor(coordinator),
+                BoschBuderusActiveNotificationsSensor(coordinator),
+            )
+        )
         entities.extend(
             BoschBuderusSensor(coordinator, description)
             for description in build_sensor_descriptions(coordinator.resources)
         )
     async_add_entities(entities)
+
+
+class _BoschBuderusFaultCountSensor(
+    CoordinatorEntity[BoschBuderusDataUpdateCoordinator], SensorEntity
+):
+    """Common behavior for bounded fault and notification counters."""
+
+    _attr_has_entity_name = True
+    _attr_icon = "mdi:alert-circle-outline"
+
+    def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+        super().__init__(coordinator)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.faults.has_supported_source
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return device_info_for_resource(self.coordinator, "/gateway")
+
+
+class BoschBuderusActiveFaultsSensor(_BoschBuderusFaultCountSensor):
+    """Count actionable and conservatively classified unknown faults."""
+
+    _attr_translation_key = "active_faults"
+
+    def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{coordinator.gateway.gateway_id}:active_faults"
+
+    @property
+    def native_value(self) -> int:
+        return len(self.coordinator.faults.active_faults)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        faults = self.coordinator.faults.active_faults
+        return _fault_list_attributes(faults, self.coordinator.hass.config.language)
+
+
+class BoschBuderusActiveNotificationsSensor(_BoschBuderusFaultCountSensor):
+    """Count all active PointT notifications, including maintenance and warnings."""
+
+    _attr_translation_key = "active_notifications"
+
+    def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{coordinator.gateway.gateway_id}:active_notifications"
+
+    @property
+    def native_value(self) -> int:
+        return len(self.coordinator.faults.active)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        notifications = self.coordinator.faults.active
+        counts = Counter(item.severity.value for item in notifications)
+        return {
+            **_fault_list_attributes(
+                notifications, self.coordinator.hass.config.language
+            ),
+            "severity_counts": dict(sorted(counts.items())),
+        }
+
+
+def _fault_list_attributes(
+    faults: tuple[ActiveFault, ...], language: str | None
+) -> dict[str, object]:
+    visible = faults[:MAX_FAULT_ATTRIBUTES]
+    return {
+        "faults": [
+            {
+                "code": fault.code,
+                "subcode": fault.subcode,
+                "severity": fault.severity.value,
+                "severity_label": fault_severity_label(fault.severity, language),
+                "component": fault.component_type or "unknown",
+                "first_seen": fault.first_seen_at.isoformat(),
+                "occurred_at": (
+                    fault.occurred_at.isoformat() if fault.occurred_at else None
+                ),
+                "time_source": fault.time_source.value,
+                "summary": fault_summary(fault, language),
+            }
+            for fault in visible
+        ],
+        "truncated": len(faults) > len(visible),
+        "status": (
+            fault_summary(faults[0], language)
+            if faults
+            else no_active_faults_label(language)
+        ),
+    }
 
 
 def build_sensor_descriptions(

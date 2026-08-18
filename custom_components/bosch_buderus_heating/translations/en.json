@@ -150,7 +150,11 @@
       "outdoor_temperature_source": { "name": "Outdoor temperature source", "state": { "appliance": "Heating system", "internet": "Internet", "roomcontroller": "Room controller" } },
       "support_status": { "name": "Support status", "state": { "not_supported": "Not supported", "supported": "Supported", "active": "Active" } },
       "update_status": { "name": "Update status", "state": { "idle": "Idle", "running": "Running", "success": "Successful", "failed": "Failed" } },
-      "pressure_status": { "name": "System pressure status", "state": { "critical_low": "Critically low", "low": "Low", "normal": "Normal", "high": "High", "critical_high": "Critically high" } }
-    }
+      "pressure_status": { "name": "System pressure status", "state": { "critical_low": "Critically low", "low": "Low", "normal": "Normal", "high": "High", "critical_high": "Critically high" } },
+      "active_faults": { "name": "Active faults" },
+      "active_notifications": { "name": "Active notifications" }
+    },
+    "binary_sensor": { "system_fault": { "name": "System fault" } },
+    "event": { "system_notifications": { "name": "System notifications" } }
   }
 }

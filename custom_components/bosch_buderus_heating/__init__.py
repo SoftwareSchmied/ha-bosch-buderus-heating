@@ -87,6 +87,7 @@ async def async_setup_entry(
         for gateway in selected_gateways
     )
     for coordinator in coordinators:
+        await coordinator.async_load_fault_state()
         await coordinator.async_config_entry_first_refresh()
 
     sync_firmware_compatibility_issue(hass, entry, coordinators)

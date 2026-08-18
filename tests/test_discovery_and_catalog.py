@@ -227,6 +227,7 @@ def test_catalog_privacy_polling_devices_and_names() -> None:
         poll_group(Resource(path="/heatSources/systemPressureRange"))
         is PollGroup.STATIC
     )
+    assert poll_group(Resource(path="/heatSources/hs1/failurelist")) is PollGroup.STATIC
     assert not supports_entity(
         Resource(path="/heatSources/numberOfStarts", value=13, has_value=True)
     )

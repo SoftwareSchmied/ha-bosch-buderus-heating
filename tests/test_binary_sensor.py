@@ -11,6 +11,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.binary_sensor import (
     BoschBuderusBinarySensor,
+    BoschBuderusSystemFaultBinarySensor,
     async_setup_entry,
     build_binary_sensor_descriptions,
 )
@@ -114,12 +115,14 @@ async def test_platform_adds_safe_booleans_only(hass: HomeAssistant) -> None:
     entry = SimpleNamespace(
         runtime_data=SimpleNamespace(coordinators=(sensor.coordinator,))
     )
-    added: list[BoschBuderusBinarySensor] = []
+    added: list[object] = []
 
     await async_setup_entry(hass, entry, added.extend)
 
-    assert len(added) == 1
-    assert added[0].entity_description.resource_path == safe.path
+    assert len(added) == 2
+    assert isinstance(added[0], BoschBuderusSystemFaultBinarySensor)
+    assert isinstance(added[1], BoschBuderusBinarySensor)
+    assert added[1].entity_description.resource_path == safe.path
 
 
 def test_unavailable_or_non_boolean_value_has_no_binary_state(
@@ -134,3 +137,23 @@ def test_unavailable_or_non_boolean_value_has_no_binary_state(
 
     assert not sensor.available
     assert sensor.is_on is None
+
+
+def test_system_fault_binary_sensor_uses_fault_tracker(
+    hass: HomeAssistant,
+) -> None:
+    resource = Resource(path="/notifications", values=({"ccd": 6249, "fc": "12"},))
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    coordinator = BoschBuderusDataUpdateCoordinator(
+        hass, AsyncMock(), Gateway("gateway-one", device_type="K40"), entry
+    )
+    coordinator.last_update_success = True
+    coordinator.faults.process_resources({resource.path: resource})
+    sensor = BoschBuderusSystemFaultBinarySensor(coordinator)
+
+    assert sensor.available
+    assert sensor.is_on
+    assert sensor.extra_state_attributes["codes"] == ["6249"]
+    assert sensor.extra_state_attributes["active_fault_count"] == 1
+    assert sensor.device_info["model"] == "K40"

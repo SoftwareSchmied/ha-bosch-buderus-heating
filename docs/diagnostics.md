@@ -28,9 +28,14 @@ attaching it to a public issue.
 - counts of active negative pauses, rate-limit backoff, and circuit-breaker
   state;
 - aggregated request and polling metrics.
+- supported fault-resource templates, active fault and notification counts,
+  severity counts, known active codes, last successful fault read, and parser
+  status.
 
 The report explicitly excludes current measurements, settings, and energy
-values.
+values. It also excludes raw notification payloads and installation-specific
+component IDs. Error codes remain visible because they are required to match a
+diagnostic report with the appliance display.
 
 ## Request metrics
 

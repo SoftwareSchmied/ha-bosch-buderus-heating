@@ -9,6 +9,9 @@ Versioning after its first tagged preview.
 
 - A guarded calculated environmental-energy sensor based on the complete
   PointT total energy balance.
+- Active PointT fault and notification support with aggregate problem and count
+  entities, appeared/resolved events, restart-safe deduplication, adaptive
+  polling, tolerant parsing, and privacy-safe diagnostics.
 
 ### Changed
 

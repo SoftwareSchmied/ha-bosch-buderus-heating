@@ -252,7 +252,15 @@
           "high": "High",
           "critical_high": "Critically high"
         }
-      }
+      },
+      "active_faults": { "name": "Active faults" },
+      "active_notifications": { "name": "Active notifications" }
+    },
+    "binary_sensor": {
+      "system_fault": { "name": "System fault" }
+    },
+    "event": {
+      "system_notifications": { "name": "System notifications" }
     }
   }
 }

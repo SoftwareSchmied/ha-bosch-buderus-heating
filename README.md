@@ -65,6 +65,8 @@ before.
 - Automatic discovery of supported PointT resources
 - Support for multiple gateways and dynamically discovered circuits
 - Temperatures, system pressure, operating states, starts, and operating hours
+- Active system faults, warnings, and maintenance notifications with lifecycle
+  events for Home Assistant automations
 - Cumulative electricity, produced heat, cooling energy, and calculated
   environmental energy
 - Heating-circuit and hot-water controls exposed only when PointT reports them
@@ -164,6 +166,30 @@ The [entity and polling catalog](docs/entities.md) documents every entity in
 the reference installation, its PointT resource, write status, default state,
 and polling interval.
 
+### System faults and notifications
+
+When the installation exposes PointT notifications, the integration creates:
+
+- **System fault**, a problem binary sensor for faults, critical faults, and
+  conservatively classified unknown notifications;
+- **Active faults**, the number of currently active system problems;
+- **Active notifications**, the number of all current notifications, including
+  warnings and maintenance;
+- **System notifications**, an event entity that emits `appeared` and
+  `resolved` transitions.
+
+Fault details are kept as bounded attributes instead of creating a separate
+entity for every possible code. Known, independently worded summaries are
+shown when their meaning has been verified. Unknown codes remain visible and
+are never guessed. The integration observes when a fault first appears or
+disappears in PointT; these Home Assistant observation times are not presented
+as exact appliance timestamps.
+
+The appliance display and the official
+[Bosch error-code search](https://www.bosch-homecomfort.com/de/de/wohngebaeude/service-und-support/bosch-fehlercode-suche/)
+remain the authoritative sources for detailed service information. Home
+Assistant does not replace a qualified technician or manufacturer diagnosis.
+
 ### Energy counters
 
 All energy entities are cumulative counters in kWh. They do not represent
@@ -207,6 +233,8 @@ The coordinator groups resources by how quickly they need to change:
 | Data | Default interval |
 |---|---:|
 | Live operating values | 60 seconds |
+| Notifications without an active notification | 5 minutes |
+| Notifications while at least one is active | 60 seconds |
 | Settings and energy counters | 5 minutes |
 | Starts and operating hours | 15 minutes |
 | Static device information | At startup |
@@ -241,6 +269,7 @@ gateway IDs, serial numbers, network identifiers, or unredacted API responses.
 |---|---|
 | [Setup guide](docs/setup.md) | Illustrated installation and SingleKey ID walkthrough |
 | [Entities and polling](docs/entities.md) | Entity names, API resources, write access, and intervals |
+| [Faults and notifications](docs/faults.md) | Fault entities, lifecycle behavior, and automation examples |
 | [Resource catalog](docs/resource-catalog.md) | Observed PointT resources and terminology |
 | [Reconfiguration](docs/reconfiguration.md) | Gateway selection, rediscovery, and polling profiles |
 | [Diagnostics](docs/diagnostics.md) | Redacted diagnostics and request metrics |
