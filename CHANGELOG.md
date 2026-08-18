@@ -5,6 +5,8 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-19
+
 ### Added
 
 - A guarded calculated environmental-energy sensor based on the complete
