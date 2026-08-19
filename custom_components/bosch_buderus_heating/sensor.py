@@ -58,6 +58,8 @@ type ValueKind = Literal[
     "value",
     "nested",
     "values",
+    "enum_values",
+    "heat_demand",
     "total_electricity",
     "environmental_energy",
     "system_info",
@@ -73,6 +75,27 @@ _PRESSURE_STATUS_OPTIONS = (
     "normal",
     "high",
     "critical_high",
+)
+
+_HEAT_DEMAND_OPTIONS = (
+    "none",
+    "ch",
+    "dhw",
+    "frost",
+    "ch_dhw",
+    "ch_frost",
+    "dhw_frost",
+    "ch_dhw_frost",
+)
+
+_KNOWN_MULTIPART_KEYS = ("total", "ch", "cooling", "dhw")
+_SYSTEM_PRESSURE_RANGE_KEYS = (
+    "highSystemPressure",
+    "absoluteHighPressure",
+    "lowSystemPressure",
+    "shutOfPressureThreshold",
+    "highPressureThreshold",
+    "lowPressureThreshold",
 )
 
 _SYSTEM_INFO_FIELDS: dict[str, str] = {
@@ -109,6 +132,34 @@ _SYSTEM_INFO_VERSION_FIELDS = ("Ver", "HwVersion", "SwIdenStr")
 _MAX_SENSOR_STATE_LENGTH = 255
 
 _ENUM_OPTIONS: dict[str, tuple[str, ...]] = {
+    "heat_demand": _HEAT_DEMAND_OPTIONS,
+    "compressor_status": (
+        "off",
+        "heating",
+        "cooling",
+        "dhw",
+        "pool",
+        "pool_heat",
+        "defrost",
+        "alarm",
+    ),
+    "electric_auxiliary_heater_status": (
+        "off",
+        "heating",
+        "dhw",
+        "pool",
+        "pool_heat",
+        "defrost",
+        "alarm",
+    ),
+    "data_processing_status": ("in_progress", "completed"),
+    "season_optimizer_mode": ("off", "heating", "cooling"),
+    "isrc_support_status": (
+        "not_supported_incompatible_controller",
+        "not_supported_pairing_enabled",
+        "supported",
+        "in_evaluation",
+    ),
     "heating_circuit_switch_program_mode": ("level",),
     "heating_circuit_operation_mode": ("off", "manual", "auto"),
     "heating_circuit_overall_status": (
@@ -351,25 +402,36 @@ def build_sensor_descriptions(
         if resource.path == "/system/info":
             descriptions.append(_description(resource, None, "system_info"))
             continue
+        if resource.path == "/heatSources/actualHeatDemand":
+            descriptions.append(_description(resource, "values", "heat_demand"))
+            continue
+        if resource.path == "/system/variableTariff/supportStatus":
+            descriptions.append(_description(resource, "values", "enum_values"))
+            continue
         if resource.path.endswith("/name") and (
             not isinstance(resource.value, str)
             or configured_device_name(resource.value) is None
         ):
             continue
-        if resource.metadata.resource_type == "emonValue":
+        if resource.metadata.resource_type == "emonValue" and "/emon/" in resource.path:
             descriptions.extend(_energy_descriptions(resource))
             continue
 
+        known_keys = _known_value_keys(resource.path)
         nested_keys = _nested_scalar_keys(resource.value, include_booleans=False)
         if not nested_keys and resource.values:
             nested_keys = _values_scalar_keys(resource, include_booleans=False)
+        nested_keys = tuple(dict.fromkeys((*known_keys, *nested_keys)))
         if nested_keys:
             descriptions.extend(
                 _description(resource, key, "nested") for key in nested_keys
             )
         elif resource.values:
             descriptions.append(_description(resource, "values", "values"))
-        elif resource.has_value and not _is_boolean_resource(resource):
+        elif (
+            resource.has_value
+            or resource.metadata.resource_type in {"floatValue", "stringValue"}
+        ) and not _is_boolean_resource(resource):
             descriptions.append(_description(resource, None, "value"))
     pressure = resources.get(_SYSTEM_PRESSURE_PATH)
     pressure_range = resources.get(_SYSTEM_PRESSURE_RANGE_PATH)
@@ -585,11 +647,18 @@ class BoschBuderusSensor(
             if environmental < -_ENERGY_BALANCE_EPSILON:
                 return None
             return max(0.0, environmental)
+        if description.value_kind == "heat_demand":
+            return _heat_demand_state(resource)
+        if description.value_kind == "enum_values":
+            for item in resource.values:
+                if isinstance(item, str) and item:
+                    return enum_value_to_ha(description.translation_key or "", item)
+            return None
         if description.value_kind == "values":
             labels = [
                 str(item) for item in resource.values if item is not None and item != ""
             ]
-            return ", ".join(labels) if labels else "Keine"
+            return ", ".join(labels) if labels else None
         if description.value_kind == "system_info":
             return _system_info_summary(resource)
         if description.value_kind == "nested" and description.value_key is not None:
@@ -907,6 +976,8 @@ def _enum_translation_key(resource: Resource, value_key: str | None) -> str | No
         and value_key == "values"
     ):
         return "support_status"
+    if resource.path == "/heatSources/actualHeatDemand" and value_key == "values":
+        return "heat_demand"
     if value_key is not None or not isinstance(resource.value, str):
         return None
     path = resource.path
@@ -935,8 +1006,14 @@ def _enum_translation_key(resource: Resource, value_key: str | None) -> str | No
     if path.startswith("/heatSources/") and tail == "type":
         return "heat_source_type"
     return {
+        "/gateway/dataProcessing/status": "data_processing_status",
         "/system/type": "system_type",
         "/system/awayMode/enabled": "on_off_state",
+        "/system/globalSeasonOptimizer/currentMode": "season_optimizer_mode",
+        "/system/iSRC/supportStatus": "isrc_support_status",
+        "/heatSources/chStatus": "on_off_state",
+        "/heatSources/compressor/status": "compressor_status",
+        "/heatSources/Source/eHeater/status": "electric_auxiliary_heater_status",
         "/heatSources/emStatus": "energy_management_status",
         "/heatSources/flameStatus": "on_off_state",
         "/system/sensors/temperatures/outdoorTemperatureSource": (
@@ -944,6 +1021,34 @@ def _enum_translation_key(resource: Resource, value_key: str | None) -> str | No
         ),
         "/system/variableTariff/supportStatus": "support_status",
     }.get(path)
+
+
+def _known_value_keys(path: str) -> tuple[str, ...]:
+    """Return stable subkeys for resources whose startup payload may be partial."""
+    if path == _SYSTEM_PRESSURE_RANGE_PATH:
+        return _SYSTEM_PRESSURE_RANGE_KEYS
+    if re.fullmatch(r"/heatSources/[^/]+/(?:numberOfStarts|workingTime)", path):
+        return _KNOWN_MULTIPART_KEYS
+    return ()
+
+
+def _heat_demand_state(resource: Resource) -> str:
+    """Combine the active PointT demand list into one stable enum state."""
+    aliases = {
+        "central_heating": "ch",
+        "heating": "ch",
+        "domestic_hot_water": "dhw",
+        "hot_water": "dhw",
+        "frost_protection": "frost",
+    }
+    active: set[str] = set()
+    for item in resource.values:
+        if not isinstance(item, str):
+            continue
+        normalized = re.sub(r"[^a-z0-9]+", "_", item.casefold()).strip("_")
+        active.add(aliases.get(normalized, normalized))
+    ordered = tuple(item for item in ("ch", "dhw", "frost") if item in active)
+    return "_".join(ordered) if ordered else "none"
 
 
 def _enum_options(resource: Resource, translation_key: str) -> list[str]:

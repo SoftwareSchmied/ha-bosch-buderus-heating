@@ -5,6 +5,26 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-20
+
+### Added
+
+- App-aligned operating states for current heat demand, compressor, electric
+  auxiliary heater, central heating, seasonal optimization, data processing,
+  and iSRC support.
+- German and English state labels based on the terminology used by MyBuderus
+  and HomeCom Easy, including blocked, defrost, home cooling, and pool modes.
+
+### Enhanced
+
+- Stable entities are now created for known array and multipart resources even
+  when their startup payload is empty or temporarily incomplete.
+- Dynamic PointT discovery is complemented by a bounded set of optional status
+  resources used by the official apps. Unsupported resources remain ignored
+  and do not add recurring cloud requests.
+- Starts and operating times consistently provide total, heating, cooling, and
+  hot-water entities, ready for values that become available after startup.
+
 ## [0.2.0] - 2026-08-19
 
 ### Added

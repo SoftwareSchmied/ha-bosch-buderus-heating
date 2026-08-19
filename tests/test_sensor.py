@@ -212,6 +212,145 @@ def test_enum_translates_single_value_list_resource(hass: HomeAssistant) -> None
     assert sensor.entity_description.options == ["not_supported", "supported", "active"]
 
 
+def test_known_array_entities_exist_when_empty_at_startup(
+    hass: HomeAssistant,
+) -> None:
+    demand = Resource(
+        path="/heatSources/actualHeatDemand",
+        metadata=ResourceMetadata(resource_type="arrayData"),
+    )
+    demand_sensor = _sensor(hass, demand, value_key="values")
+
+    assert demand_sensor.native_value == "none"
+    assert demand_sensor.entity_description.translation_key == "heat_demand"
+    assert demand_sensor.entity_description.options == [
+        "none",
+        "ch",
+        "dhw",
+        "frost",
+        "ch_dhw",
+        "ch_frost",
+        "dhw_frost",
+        "ch_dhw_frost",
+    ]
+
+    active = Resource(
+        path=demand.path,
+        values=("ch", "dhw"),
+        metadata=demand.metadata,
+    )
+    demand_sensor.coordinator.data[demand.path] = ResourceSnapshot(
+        active, True, datetime.now(UTC)
+    )
+    assert demand_sensor.native_value == "ch_dhw"
+
+    support = Resource(
+        path="/system/variableTariff/supportStatus",
+        metadata=ResourceMetadata(resource_type="arrayData"),
+    )
+    support_sensor = _sensor(hass, support, value_key="values")
+    assert support_sensor.native_value is None
+    assert support_sensor.entity_description.translation_key == "support_status"
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "translation_key", "options"),
+    [
+        (
+            "/heatSources/compressor/status",
+            "dhw",
+            "compressor_status",
+            [
+                "off",
+                "heating",
+                "cooling",
+                "dhw",
+                "pool",
+                "pool_heat",
+                "defrost",
+                "alarm",
+            ],
+        ),
+        (
+            "/heatSources/Source/eHeater/status",
+            "off",
+            "electric_auxiliary_heater_status",
+            ["off", "heating", "dhw", "pool", "pool_heat", "defrost", "alarm"],
+        ),
+        (
+            "/system/globalSeasonOptimizer/currentMode",
+            "heating",
+            "season_optimizer_mode",
+            ["off", "heating", "cooling"],
+        ),
+    ],
+)
+def test_hidden_status_resources_are_translated_enums(
+    hass: HomeAssistant,
+    path: str,
+    value: str,
+    translation_key: str,
+    options: list[str],
+) -> None:
+    sensor = _sensor(
+        hass,
+        Resource(
+            path=path,
+            value=value,
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="stringValue"),
+        ),
+    )
+
+    assert sensor.native_value == value
+    assert sensor.entity_description.translation_key == translation_key
+    assert sensor.entity_description.options == options
+
+
+def test_hidden_status_pointt_camel_case_is_normalized(
+    hass: HomeAssistant,
+) -> None:
+    data_processing = _sensor(
+        hass,
+        Resource(
+            path="/gateway/dataProcessing/status",
+            value="inProgress",
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="stringValue"),
+        ),
+    )
+    isrc = _sensor(
+        hass,
+        Resource(
+            path="/system/iSRC/supportStatus",
+            value="notSupportedIncompatibleController",
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="stringValue"),
+        ),
+    )
+
+    assert data_processing.native_value == "in_progress"
+    assert "inProgress" not in data_processing.entity_description.options
+    assert isrc.native_value == "not_supported_incompatible_controller"
+    assert "notSupportedIncompatibleController" not in isrc.entity_description.options
+
+
+def test_known_multipart_entities_survive_empty_or_partial_startup() -> None:
+    working_time = Resource(
+        path="/heatSources/hs1/workingTime",
+        values=({"total": 3600},),
+        metadata=ResourceMetadata(resource_type="emonValue"),
+    )
+    descriptions = build_sensor_descriptions({working_time.path: working_time})
+
+    assert {item.value_key for item in descriptions} == {
+        "total",
+        "ch",
+        "cooling",
+        "dhw",
+    }
+
+
 def test_pointt_enum_spelling_is_normalized_only_at_ha_boundary(
     hass: HomeAssistant,
 ) -> None:

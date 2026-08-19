@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 _POINTT_TO_HA: dict[str, dict[str, str]] = {
+    "compressor_status": {"poolHeat": "pool_heat"},
+    "data_processing_status": {"inProgress": "in_progress"},
+    "electric_auxiliary_heater_status": {"poolHeat": "pool_heat"},
     "energy_management_status": {"notConnected": "not_connected"},
     "heat_source_type": {
         "Heatpump": "heatpump",
@@ -10,6 +13,11 @@ _POINTT_TO_HA: dict[str, dict[str, str]] = {
         "Hybrid": "hybrid",
     },
     "hot_water_operation_mode": {"Off": "off"},
+    "isrc_support_status": {
+        "notSupportedIncompatibleController": ("not_supported_incompatible_controller"),
+        "notSupportedPairingEnabled": "not_supported_pairing_enabled",
+        "inEvaluation": "in_evaluation",
+    },
 }
 
 _HA_TO_POINTT: dict[str, dict[str, str]] = {

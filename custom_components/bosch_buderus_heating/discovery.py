@@ -17,16 +17,27 @@ ROOT_RESOURCE_PATHS: tuple[str, ...] = (
 MAX_DISCOVERY_DEPTH = 8
 MAX_DISCOVERY_RESOURCES = 256
 
-# Some gateways advertise this container but reject reading it, while its
-# stable public children remain readable. Keep this fallback deliberately
-# narrow so ordinary capabilities still come exclusively from references.
+# Some gateways omit stable public resources from their reference trees or
+# advertise an unreadable container around them. Keep these fallbacks narrow:
+# every listed path is used by the vendor apps and remains optional when a
+# particular installation does not provide it.
 OPAQUE_CONTAINER_CHILDREN: dict[str, tuple[str, ...]] = {
+    "/gateway": ("/gateway/dataProcessing/status",),
+    "/system": (
+        "/system/globalSeasonOptimizer/currentMode",
+        "/system/iSRC/supportStatus",
+    ),
+    "/heatSources": (
+        "/heatSources/chStatus",
+        "/heatSources/compressor/status",
+        "/heatSources/Source/eHeater/status",
+    ),
     "/heatSources/emon": (
         "/heatSources/emon/totalConsumption",
         "/heatSources/emon/chConsumption",
         "/heatSources/emon/dhwConsumption",
         "/heatSources/emon/coolingConsumption",
-    )
+    ),
 }
 
 
@@ -59,6 +70,10 @@ async def async_discover_resources(
             discovered[result.path] = resource
             if len(discovered) >= maximum_resources or depth >= maximum_depth:
                 continue
+            for fallback in OPAQUE_CONTAINER_CHILDREN.get(result.path, ()):
+                if fallback not in queued:
+                    queued.add(fallback)
+                    pending.append((fallback, depth + 1))
             for reference in resource.references:
                 child = reference.path
                 if child in queued or not _is_allowed_reference(child, roots):

@@ -50,7 +50,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           release_flags=()
-          if [[ "${GITHUB_REF_NAME}" == v0.* || "${GITHUB_REF_NAME}" == *-* ]]; then
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
             release_flags+=(--prerelease)
           fi
           if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then

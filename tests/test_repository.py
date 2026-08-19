@@ -30,7 +30,7 @@ def test_stable_project_identity() -> None:
 
     assert manifest["domain"] == "bosch_buderus_heating"
     assert manifest["name"] == "Bosch/Buderus Heating"
-    assert manifest["version"] == "0.2.0"
+    assert manifest["version"] == "0.2.1"
     assert project["project"]["version"] == manifest["version"]
     assert manifest["requirements"] == []
     assert manifest["config_flow"] is True
@@ -87,6 +87,17 @@ def test_state_translation_keys_are_home_assistant_safe(path: Path) -> None:
     visit(load_json(path))
 
     assert invalid == []
+
+
+def test_heat_source_status_translations_match_vendor_app_terms() -> None:
+    """Operational status labels follow the MyBuderus/HomeCom terminology."""
+    german = load_json(INTEGRATION / "translations" / "de.json")
+    sensor = german["entity"]["sensor"]
+
+    assert sensor["compressor_status"]["name"] == "Status Kompressor"
+    assert sensor["compressor_status"]["state"]["alarm"] == "Blockiert"
+    assert sensor["compressor_status"]["state"]["cooling"] == "Kühlung Zuhause"
+    assert sensor["electric_auxiliary_heater_status"]["state"]["defrost"] == ("Abtauen")
 
 
 @pytest.mark.parametrize(

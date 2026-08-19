@@ -215,6 +215,35 @@
         "name": "Status",
         "state": { "off": "Off", "on": "On", "stop": "Off", "start": "On" }
       },
+      "heat_demand": {
+        "name": "Current heat demand",
+        "state": {
+          "none": "None", "ch": "Heating", "dhw": "Hot water", "frost": "Frost protection",
+          "ch_dhw": "Heating and hot water", "ch_frost": "Heating and frost protection",
+          "dhw_frost": "Hot water and frost protection",
+          "ch_dhw_frost": "Heating, hot water and frost protection"
+        }
+      },
+      "compressor_status": {
+        "name": "Compressor status",
+        "state": { "off": "Off", "heating": "Home heating", "cooling": "Home cooling", "dhw": "Hot water", "pool": "Swimming pool heating", "pool_heat": "Home + swimming pool heating", "defrost": "Defrost", "alarm": "Blocked" }
+      },
+      "electric_auxiliary_heater_status": {
+        "name": "Auxiliary heater status",
+        "state": { "off": "Off", "heating": "Home heating", "dhw": "Hot water", "pool": "Swimming pool heating", "pool_heat": "Home + swimming pool heating", "defrost": "Defrost", "alarm": "Blocked" }
+      },
+      "data_processing_status": {
+        "name": "Data processing status",
+        "state": { "in_progress": "In progress", "completed": "Completed" }
+      },
+      "season_optimizer_mode": {
+        "name": "Season optimization",
+        "state": { "off": "Off", "heating": "Heating", "cooling": "Cooling" }
+      },
+      "isrc_support_status": {
+        "name": "iSRC support",
+        "state": { "not_supported_incompatible_controller": "Not supported: incompatible controller", "not_supported_pairing_enabled": "Not supported: pairing enabled", "supported": "Supported", "in_evaluation": "Being evaluated" }
+      },
       "heat_pump_type": {
         "name": "Heat pump type",
         "state": { "air_water": "Air/water", "brine_water": "Brine/water", "exhaust_air": "Exhaust air/water" }

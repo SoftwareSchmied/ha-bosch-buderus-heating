@@ -86,9 +86,11 @@ _NO_ENTITY_PATHS = frozenset(
 
 _VERIFIED_PATHS = frozenset(
     {
+        "/heatSources/Source/eHeater/status",
         "/heatSources/actualHeatDemand",
         "/heatSources/actualModulation",
         "/heatSources/actualSupplyTemperature",
+        "/heatSources/compressor/status",
         "/heatSources/returnTemperature",
         "/heatSources/systemPressure",
         "/system/sensors/temperatures/outdoor_t1",
@@ -115,6 +117,7 @@ _UNDERSTOOD_PATHS = frozenset(
         "/gateway",
         "/gateway/brand",
         "/gateway/dateTime",
+        "/gateway/dataProcessing/status",
         "/gateway/serialId",
         "/gateway/swPrefix",
         "/gateway/tosAccepted",
@@ -126,6 +129,7 @@ _UNDERSTOOD_PATHS = frozenset(
         "/gateway/versionFirmware",
         "/gateway/versionHardware",
         "/heatSources",
+        "/heatSources/chStatus",
         "/heatSources/emStatus",
         "/heatSources/flameStatus",
         "/heatSources/info",
@@ -139,6 +143,8 @@ _UNDERSTOOD_PATHS = frozenset(
         "/system/bus",
         "/system/country",
         "/system/dateTime",
+        "/system/globalSeasonOptimizer/currentMode",
+        "/system/iSRC/supportStatus",
         "/system/info",
         "/system/sensors",
         "/system/sensors/temperatures",
@@ -169,9 +175,12 @@ _UNDERSTOOD_PATTERNS = tuple(
 
 _DEFAULT_ENABLED_PATHS = frozenset(
     {
+        "/heatSources/Source/eHeater/status",
         "/heatSources/actualHeatDemand",
         "/heatSources/actualModulation",
         "/heatSources/actualSupplyTemperature",
+        "/heatSources/chStatus",
+        "/heatSources/compressor/status",
         "/heatSources/emStatus",
         "/heatSources/flameStatus",
         "/heatSources/returnTemperature",
@@ -241,6 +250,7 @@ _GERMAN_NAMES = {
     "charge": "Extra-Warmwasser",
     "chargeDuration": "Dauer Extra-Warmwasser",
     "chargeRemainingTime": "Restzeit Extra-Warmwasser",
+    "chStatus": "Heizbetrieb",
     "controlType": "Regelungsart",
     "country": "Land",
     "currentRoomSetpoint": "Wunschtemperatur",
@@ -281,6 +291,14 @@ _GERMAN_NAMES = {
     "info": "Systeminformationen",
 }
 
+_GERMAN_PATH_NAMES = {
+    "/gateway/dataProcessing/status": "Datenverarbeitungsstatus",
+    "/heatSources/Source/eHeater/status": "Status elektrischer Zuheizer",
+    "/heatSources/compressor/status": "Status Kompressor",
+    "/system/globalSeasonOptimizer/currentMode": "Saisonoptimierung",
+    "/system/iSRC/supportStatus": "iSRC-Unterstützung",
+}
+
 _ENGLISH_NAMES = {
     "activeSwitchProgram": "Active schedule",
     "actualHeatDemand": "Current heat demand",
@@ -292,6 +310,7 @@ _ENGLISH_NAMES = {
     "charge": "Extra hot water",
     "chargeDuration": "Extra hot water duration",
     "chargeRemainingTime": "Extra hot water remaining time",
+    "chStatus": "Central heating status",
     "controlType": "Control type",
     "country": "Country",
     "currentRoomSetpoint": "Target temperature",
@@ -330,6 +349,14 @@ _ENGLISH_NAMES = {
     "outdoorTemperatureSource": "Outdoor temperature source",
     "supportStatus": "Support status",
     "info": "System information",
+}
+
+_ENGLISH_PATH_NAMES = {
+    "/gateway/dataProcessing/status": "Data processing status",
+    "/heatSources/Source/eHeater/status": "Auxiliary heater status",
+    "/heatSources/compressor/status": "Compressor status",
+    "/system/globalSeasonOptimizer/currentMode": "Season optimization",
+    "/system/iSRC/supportStatus": "iSRC support",
 }
 
 _SUBKEY_NAMES = {
@@ -455,6 +482,11 @@ def poll_group(resource: Resource) -> PollGroup:
         return PollGroup.STATIC
     if resource.path == "/heatSources/systemPressureRange":
         return PollGroup.STATIC
+    if resource.path in {
+        "/gateway/dataProcessing/status",
+        "/system/iSRC/supportStatus",
+    }:
+        return PollGroup.STATIC
     if "/emon/" in resource.path:
         return PollGroup.ENERGY
     if resource.path.endswith(("/workingTime", "/numberOfStarts")):
@@ -494,6 +526,7 @@ def resource_name(path: str, subkey: str | None = None, *, language: str = "de")
     """Return a localized user-facing name without exposing technical IDs."""
     german = language.casefold().startswith("de")
     names = _GERMAN_NAMES if german else _ENGLISH_NAMES
+    path_names = _GERMAN_PATH_NAMES if german else _ENGLISH_PATH_NAMES
     subkey_names = _SUBKEY_NAMES if german else _ENGLISH_SUBKEY_NAMES
     tail = path.rsplit("/", 1)[-1]
     if "/heatingCircuits/" in path and "/temperatureLevels/" in path:
@@ -528,7 +561,7 @@ def resource_name(path: str, subkey: str | None = None, *, language: str = "de")
     elif path == "/gateway/update/status":
         base = "Softwareupdate" if german else "Software update"
     else:
-        base = names.get(tail, _humanize(tail))
+        base = path_names.get(path, names.get(tail, _humanize(tail)))
     if "/emon/" in path:
         energy_domains = (
             {

@@ -16,8 +16,10 @@ type** in English and with its translated name in other supported languages.
 User-defined names such as **Upper floor** are not translated. Names that were
 manually changed in Home Assistant also remain unchanged.
 
-The live comparison on August 16, 2026 processed all 94 readable resources
-without parser errors. Known resources can produce up to 91 read-only entities.
+The live comparison on August 16, 2026 processed all 94 reference-advertised
+readable resources without parser errors. The final entity count is dynamic
+and also includes any available documented status paths that the gateway does
+not advertise in that tree.
 Measurements, states, energy counters, and long-term values useful in daily
 operation are enabled by default. Technical, sensitive, and control-duplicate
 sensors are created disabled by default. Unknown manufacturer extensions
@@ -83,11 +85,11 @@ an integration update.
 
 | Group | Frequency | Content on the reference system |
 |---|---:|---:|
-| Live values | 60 seconds | 25 entities |
+| Live values | 60 seconds | Dynamic operating states and measurements |
 | Notifications | 5 minutes normally; 60 seconds while active | 4 aggregate entities when supported |
 | Settings | 5 minutes | 19 entities |
 | Energy | 5 minutes | up to 15 entities |
-| Long-term values | 15 minutes | 13 entities |
+| Long-term values | 15 minutes | Starts, operating times, and slow measurements |
 | Static | at startup only | 20 known possible entities |
 
 Due groups are combined into batch requests of no more than 30 resources.
@@ -127,6 +129,7 @@ must not be confused with the exact start or end time shown by the appliance.
 | Gateway UUID (disabled) | Diagnostic sensor | `/gateway/uuid` | No | No | startup only |
 | Date and time | Diagnostic sensor | `/gateway/dateTime` | No | No | 15 min |
 | Software prefix | Diagnostic sensor | `/gateway/swPrefix` | No | No | startup only |
+| Data processing status (disabled) | Diagnostic sensor | `/gateway/dataProcessing/status` | No | No | startup only |
 | Time zone | Diagnostic sensor | `/gateway/tzInfo/timeZone` | Yes | No | 5 min |
 | Software update – current progress | Diagnostic sensor | `/gateway/update/status` → `progress.cur_percent` | No | No | 60 s |
 | Software update – current step | Diagnostic sensor | `/gateway/update/status` → `progress.cur_step` | No | No | 60 s |
@@ -137,6 +140,9 @@ must not be confused with the exact start or end time shown by the appliance.
 | Hardware version | Diagnostic sensor | `/gateway/versionHardware` | No | No | startup only |
 | Current heat demand | Sensor | `/heatSources/actualHeatDemand` | No | No | 60 s |
 | Current modulation | Sensor | `/heatSources/actualModulation` | No | No | 60 s |
+| Central heating status | Diagnostic sensor | `/heatSources/chStatus` | No | No | 60 s |
+| Compressor status | Sensor | `/heatSources/compressor/status` | No | No | 60 s |
+| Auxiliary-heater status | Sensor | `/heatSources/Source/eHeater/status` | No | No | 60 s |
 | Supply temperature | Sensor | `/heatSources/actualSupplyTemperature` | No | No | 60 s |
 | Energy management status | Sensor | `/heatSources/emStatus` | No | No | 60 s |
 | Flame status | Sensor | `/heatSources/flameStatus` | No | No | 60 s |
@@ -154,6 +160,8 @@ must not be confused with the exact start or end time shown by the appliance.
 | Country (disabled) | Diagnostic sensor | `/system/country` | No | No | startup only |
 | System information (disabled) | Text diagnostic sensor with module names, versions, and sanitized attributes | `/system/info` | No | No | startup only |
 | System bus | Diagnostic sensor | `/system/bus` | No | No | 15 min |
+| Season optimization (disabled) | Diagnostic sensor | `/system/globalSeasonOptimizer/currentMode` | No | No | 60 s |
+| iSRC support (disabled) | Diagnostic sensor | `/system/iSRC/supportStatus` | No | No | startup only |
 | Outdoor temperature source | Diagnostic sensor | `/system/sensors/temperatures/outdoorTemperatureSource` | No | No | 60 s |
 | Outdoor temperature | Sensor | `/system/sensors/temperatures/outdoor_t1` | No | No | 15 min |
 | System type | Diagnostic sensor | `/system/type` | No | No | startup only |
@@ -168,6 +176,13 @@ attributes with the unit in each attribute name:
 states. Attributes and status are created only when all six values are numeric,
 finite, non-negative, and plausibly ordered. Systems without complete pressure
 range information therefore receive no invented limits.
+
+Some K40 gateways serve the status paths above without listing them in the
+PointT reference tree. The integration probes only this bounded, documented
+set during discovery. Unsupported paths are ignored and are not added to
+recurring polling. Known array and multipart entities are defined from their
+stable schema, so an empty startup value does not make an entity disappear for
+the entire Home Assistant session.
 
 ## Heating circuits
 

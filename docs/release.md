@@ -14,7 +14,7 @@ ruff check .
 mypy
 pytest
 python -m pip_audit --strict
-python scripts/build_release.py --expected-version 0.2.0
+python scripts/build_release.py --expected-version 0.2.1
 ```
 
 The official HACS and hassfest validation requires Docker. If Docker is not

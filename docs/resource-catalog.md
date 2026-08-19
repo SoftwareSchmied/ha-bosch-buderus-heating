@@ -188,6 +188,9 @@ PointT codes and app display names for operation mode:
 | `/heatSources/actualHeatDemand` | Current heat demand | R | Heating, hot water, and/or frost protection |
 | `/heatSources/actualModulation` | Current modulation | R | Measurement in % |
 | `/heatSources/actualSupplyTemperature` | Supply temperature | R | Temperature sensor |
+| `/heatSources/chStatus` | Central heating status | R | Optional status; probed when omitted from the reference tree |
+| `/heatSources/compressor/status` | Compressor status | R | Operating mode including heating, cooling, hot water, defrost, and alarm |
+| `/heatSources/Source/eHeater/status` | Auxiliary-heater status | R | Operating mode including heating, hot water, defrost, and blocked states |
 | `/heatSources/emStatus` | Energy management status | R | Diagnostic status |
 | `/heatSources/flameStatus` | Flame status | R | Status; relevant only to suitable hybrid systems |
 | `/heatSources/{hs}` | Heat source | R | Internal: dynamic discovery |
@@ -255,6 +258,8 @@ Derived total values:
 | `/system/bus` | System bus | R | Diagnostic |
 | `/system/country` | System country | R | Diagnostic entity, disabled by default |
 | `/system/dateTime` | System time | R/W | Do not expose as a control |
+| `/system/globalSeasonOptimizer/currentMode` | Season optimization | R | Optional diagnostic status, disabled by default |
+| `/system/iSRC/supportStatus` | iSRC support | R | Static diagnostic status, disabled by default |
 | `/system/info` | System information | R | Static text diagnostic sensor with module names and versions; sanitized details as attributes, internal token fields discarded |
 | `/system/sensors` | System sensors | R | Internal: discovery |
 | `/system/sensors/temperatures` | Temperature sensors | R | Internal: discovery |
@@ -271,6 +276,7 @@ Derived total values:
 | `/gateway` | Gateway resources | R | Internal: discovery |
 | `/gateway/brand` | Gateway brand | R | Device information |
 | `/gateway/dateTime` | Gateway time | R | Diagnostic |
+| `/gateway/dataProcessing/status` | Data processing status | R | Static diagnostic status, disabled by default |
 | `/gateway/serialId` | Serial number | R | Device information and diagnostic entity disabled by default |
 | `/gateway/swPrefix` | Software family | R | Diagnostic |
 | `/gateway/thirdPartyLicenseInformation` | License information | R | No entity |
