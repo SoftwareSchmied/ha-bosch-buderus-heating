@@ -7,18 +7,53 @@ Versioning after its first tagged preview.
 
 ## [0.2.2] - 2026-08-22
 
+This release aligns heating/cooling and circuit states with the enums embedded
+in MyBuderus and HomeCom Easy. It replaces previously inferred labels with the
+terminology and raw values used by both official apps.
+
 ### Added
 
-- Add a read-only heating/cooling switching entity for dynamically discovered
-  `/heatingCircuits/{hc}/suWiSwitchMode` resources.
+- A read-only **Heating/cooling switching** entity is created for every
+  dynamically discovered `/heatingCircuits/{hc}/suWiSwitchMode` resource.
+  Supported states are idle, automatic switching, heating only, and cooling
+  only. The entity is omitted when the gateway does not expose the resource.
+- Complete English and German state labels for all APK-confirmed heating-
+  circuit and hot-water status values, including enabled, disabled, automatic,
+  manual, cooling, holiday, extra hot water, and thermal disinfection states.
 
 ### Fixed
 
-- Align heating/cooling switching, active circuit mode, season optimization,
-  heating/cooling support, and circuit status enums with the values used by
-  MyBuderus and HomeCom Easy.
-- Add localized labels for all APK-confirmed heating-circuit and hot-water
-  status values, including cooling, idle, enabled, manual, and automatic modes.
+- **Current heating/cooling status** now uses the PointT values `off`, `forced`,
+  and `cooling` instead of the previously inferred summer/winter enum.
+- **Heating/cooling support** now recognizes `heat`, `cool`, and `heatCool`;
+  camel-case values are normalized only at the Home Assistant boundary.
+- **Season optimization** now recognizes `off`, `automatic`, `forcedHeat`, and
+  `forcedCool`, with app-aligned labels for automatic switching, heating only,
+  and cooling only.
+- **Heating circuit status** now includes the APK-confirmed `ch_enabled` value
+  in addition to disabled, emergency, floor-drying, summer-pause, boost, away,
+  holiday, manual heating/cooling, and automatic heating states.
+- **Hot water status** now uses the complete app enum: enabled, disabled,
+  automatic, off, Eco, Eco+, Comfort, extra hot water, away, holiday, floor
+  drying, and thermal disinfection.
+
+### Compatibility
+
+- Existing config entries, devices, entity IDs, history, dashboards, and
+  automations are preserved; no migration is required.
+- Only displayed state values and translations change where an older inferred
+  enum did not match the official apps.
+- The new entity remains read-only. Heating/cooling switching is not exposed as
+  a control until a physical write and read-back test confirms safe behavior.
+- Unsupported optional paths are ignored after capability discovery and do not
+  add recurring cloud requests.
+
+### Quality
+
+- 315 automated tests passed with 95.63% coverage.
+- Ruff formatting and linting, Mypy, CodeQL, hassfest, HACS validation, and the
+  dependency audit passed.
+- The release contains a reproducible integration ZIP and a SHA-256 checksum.
 
 ## [0.2.1] - 2026-08-20
 
