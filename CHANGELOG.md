@@ -5,6 +5,21 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-08-22
+
+### Added
+
+- Add a read-only heating/cooling switching entity for dynamically discovered
+  `/heatingCircuits/{hc}/suWiSwitchMode` resources.
+
+### Fixed
+
+- Align heating/cooling switching, active circuit mode, season optimization,
+  heating/cooling support, and circuit status enums with the values used by
+  MyBuderus and HomeCom Easy.
+- Add localized labels for all APK-confirmed heating-circuit and hot-water
+  status values, including cooling, idle, enabled, manual, and automatic modes.
+
 ## [0.2.1] - 2026-08-20
 
 ### Added

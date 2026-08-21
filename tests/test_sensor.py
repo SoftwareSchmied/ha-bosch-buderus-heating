@@ -279,9 +279,27 @@ def test_known_array_entities_exist_when_empty_at_startup(
         ),
         (
             "/system/globalSeasonOptimizer/currentMode",
-            "heating",
+            "automatic",
             "season_optimizer_mode",
-            ["off", "heating", "cooling"],
+            ["off", "automatic", "forced_heat", "forced_cool"],
+        ),
+        (
+            "/heatingCircuits/hc1/currentSuWiMode",
+            "cooling",
+            "heating_circuit_summer_winter_mode",
+            ["off", "forced", "cooling"],
+        ),
+        (
+            "/heatingCircuits/hc1/suWiSwitchMode",
+            "cooling",
+            "heating_circuit_summer_winter_switch_mode",
+            ["off", "automatic", "forced", "cooling"],
+        ),
+        (
+            "/heatingCircuits/hc1/heatCoolMode",
+            "cool",
+            "heating_circuit_heat_cool_mode",
+            ["heat", "cool", "heat_cool"],
         ),
     ],
 )
@@ -328,11 +346,87 @@ def test_hidden_status_pointt_camel_case_is_normalized(
             metadata=ResourceMetadata(resource_type="stringValue"),
         ),
     )
+    season_optimizer = _sensor(
+        hass,
+        Resource(
+            path="/system/globalSeasonOptimizer/currentMode",
+            value="forcedCool",
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="stringValue"),
+        ),
+    )
+    heat_cool_support = _sensor(
+        hass,
+        Resource(
+            path="/heatingCircuits/hc1/heatCoolMode",
+            value="heatCool",
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="stringValue"),
+        ),
+    )
 
     assert data_processing.native_value == "in_progress"
     assert "inProgress" not in data_processing.entity_description.options
     assert isrc.native_value == "not_supported_incompatible_controller"
     assert "notSupportedIncompatibleController" not in isrc.entity_description.options
+    assert season_optimizer.native_value == "forced_cool"
+    assert "forcedCool" not in season_optimizer.entity_description.options
+    assert heat_cool_support.native_value == "heat_cool"
+    assert "heatCool" not in heat_cool_support.entity_description.options
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "expected_options"),
+    [
+        (
+            "/heatingCircuits/hc1/overallStatus",
+            "ch_enabled",
+            {
+                "ch_enabled",
+                "ch_disabled",
+                "emergency_mode",
+                "floor_drying",
+                "summer_idle",
+                "boost",
+                "away",
+                "holiday",
+                "cooling_manual_on",
+                "cooling_manual_off",
+                "heating_manual_on",
+                "heating_manual_off",
+                "heating_auto",
+            },
+        ),
+        (
+            "/dhwCircuits/dhw1/overallStatus",
+            "manual_on_eco",
+            {
+                "dhw_enabled",
+                "dhw_disabled",
+                "auto",
+                "manual_off",
+                "manual_on_low",
+                "manual_on_eco",
+                "manual_on_high",
+                "extra",
+                "away",
+                "holiday",
+                "floor_drying",
+                "td",
+            },
+        ),
+    ],
+)
+def test_apk_confirmed_overall_status_values_are_complete(
+    hass: HomeAssistant,
+    path: str,
+    value: str,
+    expected_options: set[str],
+) -> None:
+    sensor = _sensor(hass, Resource(path=path, value=value, has_value=True))
+
+    assert sensor.native_value == value
+    assert set(sensor.entity_description.options or ()) == expected_options
 
 
 def test_known_multipart_entities_survive_empty_or_partial_startup() -> None:

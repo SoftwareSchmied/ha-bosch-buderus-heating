@@ -7,6 +7,7 @@ _POINTT_TO_HA: dict[str, dict[str, str]] = {
     "data_processing_status": {"inProgress": "in_progress"},
     "electric_auxiliary_heater_status": {"poolHeat": "pool_heat"},
     "energy_management_status": {"notConnected": "not_connected"},
+    "heating_circuit_heat_cool_mode": {"heatCool": "heat_cool"},
     "heat_source_type": {
         "Heatpump": "heatpump",
         "Boiler": "boiler",
@@ -17,6 +18,10 @@ _POINTT_TO_HA: dict[str, dict[str, str]] = {
         "notSupportedIncompatibleController": ("not_supported_incompatible_controller"),
         "notSupportedPairingEnabled": "not_supported_pairing_enabled",
         "inEvaluation": "in_evaluation",
+    },
+    "season_optimizer_mode": {
+        "forcedHeat": "forced_heat",
+        "forcedCool": "forced_cool",
     },
 }
 

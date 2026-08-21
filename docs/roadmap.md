@@ -1,84 +1,98 @@
 # Roadmap
 
-## Phase 0 — decisions and repository
+## Current status — 0.2.2
 
-Complete: stable names/domain, MIT license, ADRs, package skeleton, CI, privacy,
-fixture, contribution, and security rules.
+The integration is available as a stable GitHub release and supports Bosch and
+Buderus PointT heating systems through one capability-based implementation.
+The released foundation includes:
 
-## Phase 1 — client foundation
+- brand-aware SingleKey ID authorization, serialized token rotation, reauth,
+  and selection of one or more gateways;
+- bounded dynamic discovery plus a small catalog of paths verified in both
+  MyBuderus and HomeCom Easy;
+- grouped batch polling, partial-result handling, negative capability pauses,
+  bounded rate-limit backoff, and a gateway circuit breaker;
+- dynamic heating-circuit, hot-water, heat-source, energy, diagnostic, and
+  control entities without assuming `hc1`, `dhw1`, or `hs1`;
+- active faults and notifications with appeared/resolved events, adaptive
+  polling, deduplication, and privacy-safe diagnostics;
+- direct EMON counters and a guarded calculated total environmental-energy
+  value;
+- validated user controls with one PUT, staggered read-back, and no automatic
+  write retry;
+- APK-aligned heating, cooling, hot-water, compressor, auxiliary-heater, and
+  season-optimization states in English and German;
+- stable entity creation for known empty or partial startup payloads.
 
-Complete: internal typed PointT models and error hierarchy, brand-aware PKCE,
-serialized token rotation, gateway listing, single-resource reads, batch reads
-of at most 30 paths, partial-success handling, redaction, and isolated tests.
-
-Implemented locally: the Home Assistant config flow launches the authorization
-URL, validates the pasted app redirect, discovers gateways, persists rotated
-tokens, supports reauthentication, and exposes translated errors. This remains
-a developer feature until it passes a real Bosch and Buderus login.
-
-## Phase 2 — discovery and capabilities
-
-Implemented locally: bounded, batched reference-tree discovery, multiple
-logical circuits, cycle/size protection, privacy classification, immutable
-resources, cloud-friendly polling classes, resource-specific negative pauses,
-a bounded core fallback, and a gateway circuit breaker. Remaining: anonymized
-contract fixtures from additional installations.
-
-## Phase 3 — read-only Home Assistant preview
-
-Config flow, reauthentication, gateway selection, typed runtime data, dynamic
-logical devices, scalar sensors, binary sensors, resource-level availability,
-last-good values, grouped batch polling, redacted diagnostics, and aggregate
-in-memory request metrics are implemented locally. Reconfigure supports gateway
-selection, app-brand correction, explicit rediscovery, and two safe polling
-profiles. Repeated rate limits create an actionable Repair. Curated capability
-maturity prevents unknown API leaves from becoming entities. A separate,
-explicit default policy enables normal measurements, states, energy counters,
-and long-term values while keeping sensitive, technical, and duplicate sensors
-opt-in. Known PointT schemas are checked after
-discovery; changed types or units create a rediscovery Repair without blocking
-new firmware versions merely because their version string is unknown.
+The first physical contract profile is a Buderus heat-pump installation with a
+K40 gateway. The integration is designed for compatible MX300, MX400,
+K30/K30RF, and K40/K40RF installations, but support always depends on the
+capabilities exposed by the individual PointT gateway.
 
 ## Next robustness increments
 
-1. Real-device checks across additional installation profiles.
-2. Additional anonymized installation inventories and contract fixtures.
-3. A post-deployment long run covering token rotation and cloud failures.
+1. Collect anonymized inventories and contract fixtures from additional
+   installation profiles.
+2. Run a post-deployment 30-day test covering token rotation, cloud failures,
+   rate limits, measured request load, and recovery behavior.
+3. Confirm Bosch branding and behavior on a physical Bosch installation.
+4. Test installations with multiple heating circuits, hot-water circuits, and
+   heat sources.
+5. Verify every released control individually on physical equipment and retain
+   write/read-back evidence.
+6. Extend notification fixtures with warning, maintenance, critical,
+   device-error, and simultaneous multi-source payloads.
 
-Active system notifications are implemented using `/notifications` as the
-primary source and optional dynamically discovered component resources. The
-K40 fault 6249 is the first real-device contract case. Additional installations
-are still needed to confirm warning, maintenance, critical, device-error, and
-multi-source payload variants.
+## Planned feature modules
 
-## Phase 4 — energy
+Features are added only when their paths, schemas, semantics, and cloud cost
+are understood. Unsupported paths must remain absent instead of producing
+non-functional entities.
 
-Release direct EMON counters first. Add calculated totals only when all
-components share a proven balance and time basis. Never infer SCOP, standby
-power, or historical values from incomplete snapshots.
+1. Holiday mode, kept separate from away mode.
+2. Additional heat-pump operating values, including source temperatures,
+   passive cooling, instantaneous power, hybrid/bivalence information, silent
+   operation, power limiting, boost, temporary setpoints, and cooling limits.
+3. Historical `/recordings` data as an isolated module with explicit request
+   budgets and no duplication of Home Assistant history.
+4. Variable-tariff information from the separate shared-energy service.
+5. Dynamically available solar, pool, ventilation, room-device, zone, and PV
+   modules.
+6. Schedule editing only after multiple real schemas and safe round trips have
+   been verified.
 
-## Phase 5 — verified controls
+Wallboxes, air conditioners, gateway network configuration, device pairing,
+factory reset, raw EMS commands, gateway removal, and user administration are
+outside the integration scope.
 
-Add one control per small pull request after capability validation, risk
-classification, real-device evidence, translated errors, and read-back tests.
-The generic write transaction and the safe user-control allowlist are
-implemented. Dynamic selects, numbers, and switches cover heating-circuit and
-hot-water modes, user setpoints, extra hot water, and away mode. Administrative
-and installer parameters remain blocked. The K40 sequence Manual → Auto →
-Manual passed; delayed cloud propagation is handled by bounded, staggered
-read-back GETs without repeating the PUT. Remaining controls still need
-individual real-device checks.
+## Optional local backend
+
+An eventual EMS-ESP or Modbus backend may implement the same semantic
+capability model. It would be a separate transport with separate fixtures and
+must not be described as local MX300/MX400 access.
+
+## Official HACS publication
+
+The integration repository passes its own HACS and hassfest validation. The
+official catalog submission is
+[hacs/default#10040](https://github.com/hacs/default/pull/10040). The pull
+request remains open and requires a fresh upstream check run and maintainer
+review before the integration appears in the default HACS catalog.
 
 ## Release gate for 1.0
 
-At minimum: three distinct installation profiles; both brands; MX300 and one
-K30/K40/MX400 profile; a 30-day run without rate-limit cascades; measured cloud
-load; real reauth and fallback tests; verified writes; redacted diagnostics;
-95% coverage; passing HACS/hassfest; complete user and migration documentation.
-
-## Preview 0.1.0
-
-Prepared locally: aligned version metadata, deterministic component-rooted HACS
-ZIP, SHA-256 checksum, isolated archive import test, and a tag-gated prerelease
-workflow. Publishing remains a separate, explicit action. The workflow repeats
-quality, dependency, hassfest, and HACS checks before creating a GitHub release.
+- [ ] At least three distinct installation profiles.
+- [ ] Successful physical tests with both Bosch and Buderus branding.
+- [ ] MX300 plus at least one K30/K40/MX400 profile.
+- [ ] A 30-day run without rate-limit cascades.
+- [ ] Measured cloud request load documented.
+- [ ] Real reauthentication and batch/single-read fallback tests.
+- [ ] Physical write/read-back evidence for every released control.
+- [ ] No known silent write failures or unhandled enum values.
+- [x] Privacy-redacted Home Assistant diagnostics.
+- [x] At least 95 percent automated test coverage.
+- [x] Repository HACS and hassfest validation passing.
+- [ ] Official HACS catalog review completed.
+- [ ] Complete installation, removal, privacy, troubleshooting, and migration
+  documentation.
+- [ ] Migration tests for config entries and unique IDs.

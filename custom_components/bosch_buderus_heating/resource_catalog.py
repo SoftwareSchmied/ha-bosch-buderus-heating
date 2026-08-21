@@ -161,7 +161,7 @@ _UNDERSTOOD_PATTERNS = tuple(
         r"^/heatingCircuits/hc\d+$",
         r"^/dhwCircuits/dhw\d+$",
         r"^/heatSources/hs\d+$",
-        r"^/heatingCircuits/[^/]+/(?:activeSwitchProgram|controlType|heatingType|manualRoomSetpoint|maxFlowTemp|name|switchProgramMode)$",
+        r"^/heatingCircuits/[^/]+/(?:activeSwitchProgram|controlType|heatingType|manualRoomSetpoint|maxFlowTemp|name|suWiSwitchMode|switchProgramMode)$",
         r"^/heatingCircuits/[^/]+/(?:switchPrograms|temperatureLevels)$",
         r"^/heatingCircuits/[^/]+/switchPrograms/(?:[^/]+|name[^/]+)$",
         r"^/heatingCircuits/[^/]+/temperatureLevels/[^/]+$",

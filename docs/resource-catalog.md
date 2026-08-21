@@ -111,8 +111,9 @@ separate Home Assistant devices.
 | `.../activeSwitchProgram` | Active schedule | R/W | Diagnostic; write only after observing multiple schedules |
 | `.../controlType` | Control type | R/W | Diagnostic; safety-relevant configuration, read-only initially |
 | `.../currentRoomSetpoint` | Desired temperature | R | Temperature sensor |
-| `.../currentSuWiMode` | Summer/winter mode | R | Status sensor |
-| `.../heatCoolMode` | Heating/cooling mode | R | Status sensor |
+| `.../currentSuWiMode` | Current heating/cooling status | R | `off`, `forced`, `cooling` |
+| `.../suWiSwitchMode` | Heating/cooling switching | R/W | Read-only sensor initially: `off`, `automatic`, `forced`, `cooling` |
+| `.../heatCoolMode` | Heating/cooling support | R | `heat`, `cool`, `heatCool` |
 | `.../heatingType` | Circuit heating system | R | Diagnostic, for example underfloor heating or radiators |
 | `.../manualRoomSetpoint` | Manual setpoint | R/W | Number in °C |
 | `.../maxFlowTemp` | Maximum supply temperature | R/W | Diagnostic number; range validation required |
@@ -131,6 +132,7 @@ Observed `overallStatus` values:
 
 | Raw value | Display |
 |---|---|
+| `ch_enabled` | Heating enabled |
 | `ch_disabled` | Heating disabled |
 | `emergency_mode` | Emergency mode |
 | `floor_drying` | Screed drying |
@@ -143,6 +145,11 @@ Observed `overallStatus` values:
 | `heating_manual_on` | Manual heating on |
 | `heating_manual_off` | Manual heating off |
 | `heating_auto` | Automatic heating |
+
+APK-confirmed `overallStatus` values for hot-water circuits are
+`dhw_enabled`, `dhw_disabled`, `auto`, `manual_off`, `manual_on_low`,
+`manual_on_eco`, `manual_on_high`, `extra`, `away`, `holiday`,
+`floor_drying`, and `td`.
 
 ## Domestic-hot-water circuits
 
@@ -258,7 +265,7 @@ Derived total values:
 | `/system/bus` | System bus | R | Diagnostic |
 | `/system/country` | System country | R | Diagnostic entity, disabled by default |
 | `/system/dateTime` | System time | R/W | Do not expose as a control |
-| `/system/globalSeasonOptimizer/currentMode` | Season optimization | R | Optional diagnostic status, disabled by default |
+| `/system/globalSeasonOptimizer/currentMode` | Season optimization | R | Optional diagnostic status: `off`, `automatic`, `forcedHeat`, `forcedCool`; disabled by default |
 | `/system/iSRC/supportStatus` | iSRC support | R | Static diagnostic status, disabled by default |
 | `/system/info` | System information | R | Static text diagnostic sensor with module names and versions; sanitized details as attributes, internal token fields discarded |
 | `/system/sensors` | System sensors | R | Internal: discovery |

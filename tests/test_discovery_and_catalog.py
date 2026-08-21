@@ -294,6 +294,10 @@ def test_capability_maturity_controls_entity_publication() -> None:
         is CapabilityMaturity.UNDERSTOOD
     )
     assert (
+        capability_maturity("/heatingCircuits/hc2/suWiSwitchMode")
+        is CapabilityMaturity.UNDERSTOOD
+    )
+    assert (
         capability_maturity("/heatSources/vendorExtension")
         is CapabilityMaturity.OBSERVED
     )

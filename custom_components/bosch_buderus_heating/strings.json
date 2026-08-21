@@ -160,6 +160,7 @@
       "heating_circuit_overall_status": {
         "name": "Heating circuit status",
         "state": {
+          "ch_enabled": "Heating enabled",
           "ch_disabled": "Heating disabled",
           "emergency_mode": "Emergency mode",
           "floor_drying": "Floor drying",
@@ -175,12 +176,16 @@
         }
       },
       "heating_circuit_summer_winter_mode": {
-        "name": "Summer/winter mode",
-        "state": { "off": "Off", "summer": "Summer", "winter": "Winter", "auto": "Auto" }
+        "name": "Current heating/cooling status",
+        "state": { "off": "Idle", "forced": "Heating", "cooling": "Cooling" }
+      },
+      "heating_circuit_summer_winter_switch_mode": {
+        "name": "Heating/cooling switching",
+        "state": { "off": "Idle", "automatic": "Automatic switching", "forced": "Always heating", "cooling": "Always cooling" }
       },
       "heating_circuit_heat_cool_mode": {
-        "name": "Heating/cooling mode",
-        "state": { "heat": "Heating", "cool": "Cooling", "auto": "Auto" }
+        "name": "Heating/cooling support",
+        "state": { "heat": "Heating only", "cool": "Cooling only", "heat_cool": "Heating and cooling" }
       },
       "heating_circuit_type": {
         "name": "Heating circuit type",
@@ -206,9 +211,11 @@
       "hot_water_overall_status": {
         "name": "Hot water status",
         "state": {
-          "off": "Off", "idle": "Idle", "heating": "Heating", "boost": "Extra hot water",
+          "dhw_enabled": "Hot water enabled", "dhw_disabled": "Hot water disabled",
+          "auto": "Automatic", "manual_off": "Off", "manual_on_low": "Eco",
+          "manual_on_eco": "Eco+", "manual_on_high": "Comfort", "extra": "Extra hot water",
           "away": "Away", "holiday": "Holiday", "floor_drying": "Floor drying",
-          "thermal_disinfection": "Thermal disinfection"
+          "td": "Thermal disinfection"
         }
       },
       "on_off_state": {
@@ -238,7 +245,7 @@
       },
       "season_optimizer_mode": {
         "name": "Season optimization",
-        "state": { "off": "Off", "heating": "Heating", "cooling": "Cooling" }
+        "state": { "off": "Idle", "automatic": "Automatic switching", "forced_heat": "Always heating", "forced_cool": "Always cooling" }
       },
       "isrc_support_status": {
         "name": "iSRC support",

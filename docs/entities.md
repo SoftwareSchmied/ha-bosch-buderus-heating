@@ -194,8 +194,9 @@ entity; a configured name is added dynamically.
 | Active schedule | Sensor | `/heatingCircuits/{hc}/activeSwitchProgram` | Yes | No | 5 min |
 | Control type | Sensor | `/heatingCircuits/{hc}/controlType` | Yes | No | 5 min |
 | Desired temperature | Sensor | `/heatingCircuits/{hc}/currentRoomSetpoint` | No | No | 60 s |
-| Summer/winter mode | Sensor | `/heatingCircuits/{hc}/currentSuWiMode` | No | No | 60 s |
-| Heating/cooling mode | Sensor | `/heatingCircuits/{hc}/heatCoolMode` | No | No | 60 s |
+| Current heating/cooling status | Sensor | `/heatingCircuits/{hc}/currentSuWiMode` | No | No | 60 s |
+| Heating/cooling switching | Sensor | `/heatingCircuits/{hc}/suWiSwitchMode` | No | No | 60 s |
+| Heating/cooling support | Sensor | `/heatingCircuits/{hc}/heatCoolMode` | No | No | 60 s |
 | Heating system | Diagnostic sensor | `/heatingCircuits/{hc}/heatingType` | No | No | startup only |
 | Manual setpoint | Sensor and number control | `/heatingCircuits/{hc}/manualRoomSetpoint` | Yes | Yes | 5 min; read back after change |
 | Maximum supply temperature | Sensor | `/heatingCircuits/{hc}/maxFlowTemp` | Yes | No | 5 min |
