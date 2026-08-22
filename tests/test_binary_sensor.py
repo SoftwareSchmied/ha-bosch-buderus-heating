@@ -11,6 +11,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.binary_sensor import (
     BoschBuderusBinarySensor,
+    BoschBuderusHolidayActiveBinarySensor,
     BoschBuderusSystemFaultBinarySensor,
     async_setup_entry,
     build_binary_sensor_descriptions,
@@ -19,6 +20,10 @@ from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
     BoschBuderusDataUpdateCoordinator,
     ResourceSnapshot,
+)
+from custom_components.bosch_buderus_heating.holidays import (
+    HOLIDAY_ACTIVE_MODES_PATH,
+    HOLIDAY_LIST_PATH,
 )
 from custom_components.bosch_buderus_heating.pointt import (
     Gateway,
@@ -157,3 +162,36 @@ def test_system_fault_binary_sensor_uses_fault_tracker(
     assert sensor.extra_state_attributes["codes"] == ["6249"]
     assert sensor.extra_state_attributes["active_fault_count"] == 1
     assert sensor.device_info["model"] == "K40"
+
+
+async def test_platform_adds_read_only_holiday_status(hass: HomeAssistant) -> None:
+    period = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value={"start": "2026-08-01", "end": "2026-08-31"},
+        has_value=True,
+    )
+    active = Resource(
+        path=HOLIDAY_ACTIVE_MODES_PATH,
+        values=({"mode": "eco"},),
+    )
+    coordinator = _binary_sensor(
+        hass, Resource(path="/system/awayMode/enabled", value=False, has_value=True)
+    ).coordinator
+    coordinator.resources = {item.path: item for item in (period, active)}
+    now = datetime.now(UTC)
+    coordinator.data = {
+        item.path: ResourceSnapshot(item, True, now) for item in (period, active)
+    }
+    entry = SimpleNamespace(runtime_data=SimpleNamespace(coordinators=(coordinator,)))
+    added: list[object] = []
+
+    await async_setup_entry(hass, entry, added.extend)
+
+    holiday = next(
+        item
+        for item in added
+        if isinstance(item, BoschBuderusHolidayActiveBinarySensor)
+    )
+    assert holiday.is_on
+    assert holiday.extra_state_attributes["period_count"] == 1
+    assert holiday.unique_id == "gateway-one:holiday_active"

@@ -25,6 +25,7 @@ from custom_components.bosch_buderus_heating.pointt import (
 from custom_components.bosch_buderus_heating.sensor import (
     BoschBuderusActiveFaultsSensor,
     BoschBuderusActiveNotificationsSensor,
+    BoschBuderusNextHolidaySensor,
     BoschBuderusSensor,
     _energy_values,
     _native_scalar,
@@ -889,6 +890,47 @@ async def test_platform_adds_every_discovered_safe_scalar(
     assert isinstance(added[1], BoschBuderusActiveNotificationsSensor)
     assert isinstance(added[2], BoschBuderusSensor)
     assert added[2].entity_description.resource_path == safe.path
+
+
+async def test_next_holiday_sensor_exposes_upcoming_period(
+    hass: HomeAssistant,
+) -> None:
+    holiday = Resource(
+        path="/holidayMode/list",
+        value=[
+            {
+                "start": "2099-08-25T01:45:00+02:00",
+                "end": "2099-09-01T01:45:00+02:00",
+            }
+        ],
+        has_value=True,
+    )
+    coordinator = _sensor(
+        hass, Resource(path="/system/brand", value="Buderus", has_value=True)
+    ).coordinator
+    coordinator.resources = {holiday.path: holiday}
+    coordinator.data = {
+        holiday.path: ResourceSnapshot(holiday, True, datetime.now(UTC))
+    }
+    entry = SimpleNamespace(runtime_data=SimpleNamespace(coordinators=(coordinator,)))
+    added: list[object] = []
+
+    await async_setup_entry(hass, entry, added.extend)
+
+    next_holiday = next(
+        entity for entity in added if isinstance(entity, BoschBuderusNextHolidaySensor)
+    )
+    assert next_holiday.available
+    assert next_holiday.native_value == datetime.fromisoformat(
+        "2099-08-25T01:45:00+02:00"
+    )
+    assert next_holiday.extra_state_attributes == {
+        "end": "2099-09-01T01:45:00+02:00",
+        "active": False,
+        "all_day": False,
+    }
+    assert next_holiday.unique_id == "gateway-one:next_holiday"
+    assert next_holiday.device_info["model"] == "MX300"
 
 
 def test_unknown_scalar_capability_remains_diagnostics_only() -> None:

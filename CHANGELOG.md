@@ -5,6 +5,45 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-22
+
+### Added
+
+- Optional read-only holiday support for `/holidayMode/list`,
+  `/holidayMode/configuration`, and `/holidayMode/activeModes`.
+- A **Holiday mode active** binary sensor and a read-only **Holiday periods**
+  calendar when the connected gateway exposes the corresponding resources.
+- A **Next holiday** timestamp sensor showing the current or next period on
+  the device page, with its end and status available as attributes.
+- Tolerant handling of multiple periods, date-only and timestamp values,
+  gateway or Home Assistant time zones, incomplete entries, and empty lists.
+
+### Changed
+
+- Holiday entities now use terminology aligned with MyBuderus and HomeCom Easy:
+  **Holiday mode active**, **Next holiday**, and **Holiday periods**, with
+  corresponding German translations.
+- The capability roadmap now reflects read-only holiday support as released.
+
+### Security and compatibility
+
+- Holiday mode remains separate from the existing Away mode.
+- No holiday write, edit, or delete action is exposed before physical
+  write/read-back verification.
+- Unsupported holiday paths are discarded during capability discovery and
+  therefore add no recurring requests.
+- Diagnostics contain only support and parser counters, never holiday names,
+  dates, raw payloads, or other user-entered details.
+- The diagnostics schema is version 4 and exposes only bounded holiday support
+  and parser-health metadata.
+
+### Validation
+
+- Verified all three holiday resources on a physical Buderus K40 installation
+  with a configured MyBuderus holiday period.
+- Confirmed discovery, parsing, calendar output, active-state handling, and the
+  next-period timestamp in Home Assistant.
+
 ## [0.2.2] - 2026-08-22
 
 This release aligns heating/cooling and circuit states with the enums embedded

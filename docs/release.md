@@ -14,7 +14,7 @@ ruff check .
 mypy
 pytest
 python -m pip_audit --strict
-python scripts/build_release.py --expected-version 0.2.2
+python scripts/build_release.py --expected-version <version>
 ```
 
 The official HACS and hassfest validation requires Docker. If Docker is not
@@ -43,4 +43,5 @@ create the GitHub release with the ZIP and checksum.
 The preview has been tested on a real Buderus installation with a K40 gateway.
 Bosch systems, other gateway models, installations with multiple circuits, and
 long-term operation do not yet have sufficient field evidence. These limits
-remain visible in the README and roadmap; `0.1.x` is not a stable `1.0`.
+remain visible in the README and roadmap; preview releases are not a stable
+`1.0`.

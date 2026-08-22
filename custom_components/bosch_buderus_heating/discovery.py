@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from .holidays import HOLIDAY_RESOURCE_PATHS
 from .pointt import PointTClient, Resource
 
 ROOT_RESOURCE_PATHS: tuple[str, ...] = (
@@ -12,6 +13,7 @@ ROOT_RESOURCE_PATHS: tuple[str, ...] = (
     "/dhwCircuits",
     "/heatSources",
     "/devices",
+    *HOLIDAY_RESOURCE_PATHS,
 )
 
 MAX_DISCOVERY_DEPTH = 8

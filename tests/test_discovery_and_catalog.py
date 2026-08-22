@@ -7,8 +7,10 @@ from unittest.mock import AsyncMock
 import pytest
 
 from custom_components.bosch_buderus_heating.discovery import (
+    ROOT_RESOURCE_PATHS,
     async_discover_resources,
 )
+from custom_components.bosch_buderus_heating.holidays import HOLIDAY_RESOURCE_PATHS
 from custom_components.bosch_buderus_heating.pointt import (
     BatchItemResult,
     Resource,
@@ -84,6 +86,10 @@ async def test_discovery_skips_missing_optional_nodes_and_validates_bounds() -> 
     assert await async_discover_resources(client, "gateway", roots=("/system",)) == {}
     with pytest.raises(ValueError):
         await async_discover_resources(client, "gateway", maximum_resources=0)
+
+
+def test_discovery_includes_exact_optional_holiday_paths() -> None:
+    assert set(HOLIDAY_RESOURCE_PATHS).issubset(ROOT_RESOURCE_PATHS)
 
 
 async def test_discovery_expands_known_opaque_energy_container() -> None:
@@ -275,6 +281,11 @@ def test_catalog_privacy_polling_devices_and_names() -> None:
         poll_group(Resource(path="/gateway/dataProcessing/status")) is PollGroup.STATIC
     )
     assert poll_group(Resource(path="/heatSources/hs1/failurelist")) is PollGroup.STATIC
+    assert poll_group(Resource(path="/holidayMode/list")) is PollGroup.CONTROL
+    assert not supports_entity(
+        Resource(path="/holidayMode/list", value=[], has_value=True)
+    )
+    assert resource_name("/holidayMode/list", language="en") == "Holiday periods"
     assert not supports_entity(
         Resource(path="/heatSources/numberOfStarts", value=13, has_value=True)
     )

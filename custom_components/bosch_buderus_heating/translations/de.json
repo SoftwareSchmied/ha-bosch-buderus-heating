@@ -159,9 +159,14 @@
       "update_status": { "name": "Updatestatus", "state": { "idle": "Bereit", "running": "Läuft", "success": "Erfolgreich", "failed": "Fehlgeschlagen" } },
       "pressure_status": { "name": "Systemdruckstatus", "state": { "critical_low": "Kritisch niedrig", "low": "Niedrig", "normal": "Normal", "high": "Hoch", "critical_high": "Kritisch hoch" } },
       "active_faults": { "name": "Aktive Störungen" },
-      "active_notifications": { "name": "Aktive Meldungen" }
+      "active_notifications": { "name": "Aktive Meldungen" },
+      "next_holiday": { "name": "Nächster Urlaub" }
     },
-    "binary_sensor": { "system_fault": { "name": "Anlagenstörung" } },
+    "binary_sensor": {
+      "holiday_active": { "name": "Urlaubsmodus aktiv" },
+      "system_fault": { "name": "Anlagenstörung" }
+    },
+    "calendar": { "holiday_periods": { "name": "Urlaubszeiten" } },
     "event": { "system_notifications": { "name": "Anlagenmeldungen" } }
   }
 }

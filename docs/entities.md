@@ -120,6 +120,33 @@ duplicate events after a Home Assistant restart. No raw cloud response is
 stored. Timestamps marked `home_assistant_observed` are observation times and
 must not be confused with the exact start or end time shown by the appliance.
 
+## Holiday periods
+
+Holiday support is optional and is created only when the gateway returns at
+least one of the documented PointT resources. It is deliberately separate from
+`/system/awayMode/enabled`.
+
+| Entity | HA type | PointT resource | PointT reports writable | Controllable in HA | Polling |
+|---|---|---|:---:|:---:|---:|
+| Holiday mode active | Binary sensor | `/holidayMode/activeModes`, with validated-period fallback | No assumption | No | 5 min; 10 min with cloud-friendly profile |
+| Next holiday | Timestamp sensor | `/holidayMode/list`, `/holidayMode/configuration` | No assumption | No | 5 min; 10 min with cloud-friendly profile |
+| Holiday periods | Read-only calendar | `/holidayMode/list`, `/holidayMode/configuration` | No assumption | No | 5 min; 10 min with cloud-friendly profile |
+
+The calendar supports multiple periods. PointT timestamps retain their offset;
+naive timestamps use the gateway time zone where available and otherwise the
+Home Assistant time zone. Invalid or incomplete periods are ignored
+individually, so one malformed entry cannot hide the valid entries. Date-only
+end dates are treated as inclusive, matching the app wording.
+The **Next holiday** sensor shows the start of the current or next period on
+the device page. Its attributes contain the end, whether the period is
+currently active, and whether it is an all-day period.
+
+The integration does not expose create, update, delete, activate, or deactivate
+actions for holidays. These operations remain in MyBuderus/HomeCom Easy until
+the exact payload and a physical write/read-back sequence are verified. Home
+Assistant diagnostics contain only resource support and parser counters—not
+holiday dates, names, or raw configuration data.
+
 ## Gateway and system
 
 | Entity | HA type | PointT resource / subvalue | PointT reports writable | Controllable in HA | Polling |

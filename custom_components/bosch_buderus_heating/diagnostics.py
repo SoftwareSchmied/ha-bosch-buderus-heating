@@ -14,6 +14,7 @@ from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
     ResourceSnapshot,
 )
+from .holidays import parse_holiday_state
 from .pointt import Gateway, Resource
 from .resource_catalog import (
     capability_maturity,
@@ -23,7 +24,7 @@ from .resource_catalog import (
     supports_entity,
 )
 
-DIAGNOSTICS_SCHEMA_VERSION = 3
+DIAGNOSTICS_SCHEMA_VERSION = 4
 
 
 async def async_get_config_entry_diagnostics(
@@ -88,6 +89,10 @@ def _gateway_diagnostics(
         if isinstance(fault_resource_results_value, dict)
         else {}
     )
+    holiday_state = parse_holiday_state(
+        coordinator.resources,
+        fallback_timezone=coordinator.hass.config.time_zone,
+    )
     return {
         "label": f"gateway_{number}",
         "device_class": _gateway_class(coordinator.gateway),
@@ -106,6 +111,13 @@ def _gateway_diagnostics(
                 for path, result in fault_resource_results.items()
                 if isinstance(path, str)
             },
+        },
+        "holidays": {
+            "supported_resources": holiday_state.supported_paths,
+            "valid_period_count": len(holiday_state.periods),
+            "invalid_period_count": holiday_state.invalid_period_count,
+            "active_status_available": holiday_state.active is not None,
+            "timezone_source": holiday_state.timezone_source,
         },
         "inventory": {
             "resource_count": len(resources),

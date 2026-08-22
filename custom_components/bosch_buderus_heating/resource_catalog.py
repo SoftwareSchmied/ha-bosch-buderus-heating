@@ -81,6 +81,9 @@ _NO_ENTITY_PATHS = frozenset(
         "/heatSources",
         "/heatSources/info",
         "/heatSources/numberOfStarts",
+        "/holidayMode/list",
+        "/holidayMode/configuration",
+        "/holidayMode/activeModes",
     }
 )
 
@@ -135,6 +138,9 @@ _UNDERSTOOD_PATHS = frozenset(
         "/heatSources/info",
         "/heatSources/numberOfStarts",
         "/heatSources/systemPressureRange",
+        "/holidayMode/list",
+        "/holidayMode/configuration",
+        "/holidayMode/activeModes",
         "/heatingCircuits",
         "/system",
         "/system/awayMode",
@@ -295,6 +301,9 @@ _GERMAN_PATH_NAMES = {
     "/gateway/dataProcessing/status": "Datenverarbeitungsstatus",
     "/heatSources/Source/eHeater/status": "Status elektrischer Zuheizer",
     "/heatSources/compressor/status": "Status Kompressor",
+    "/holidayMode/activeModes": "Aktive Urlaubsmodi",
+    "/holidayMode/configuration": "Urlaubskonfiguration",
+    "/holidayMode/list": "Urlaubszeiten",
     "/system/globalSeasonOptimizer/currentMode": "Saisonoptimierung",
     "/system/iSRC/supportStatus": "iSRC-Unterstützung",
 }
@@ -355,6 +364,9 @@ _ENGLISH_PATH_NAMES = {
     "/gateway/dataProcessing/status": "Data processing status",
     "/heatSources/Source/eHeater/status": "Auxiliary heater status",
     "/heatSources/compressor/status": "Compressor status",
+    "/holidayMode/activeModes": "Active holiday modes",
+    "/holidayMode/configuration": "Holiday configuration",
+    "/holidayMode/list": "Holiday periods",
     "/system/globalSeasonOptimizer/currentMode": "Season optimization",
     "/system/iSRC/supportStatus": "iSRC support",
 }
@@ -474,6 +486,8 @@ def poll_group(resource: Resource) -> PollGroup:
     # repeatedly until the integration exposes a history feature that uses them.
     if resource.path.endswith("/failurelist"):
         return PollGroup.STATIC
+    if resource.path.startswith("/holidayMode/"):
+        return PollGroup.CONTROL
     if resource.path == "/notifications" or resource.path.endswith(
         ("/activefailure", "/errors")
     ):

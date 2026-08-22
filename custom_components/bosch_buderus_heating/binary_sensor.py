@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import UTC, datetime
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -25,6 +26,7 @@ from .faults import (
     fault_summary,
     no_active_faults_label,
 )
+from .holidays import HOLIDAY_RESOURCE_PATHS, HolidayState, parse_holiday_state
 from .pointt import Resource
 from .resource_catalog import (
     CapabilityMaturity,
@@ -59,11 +61,67 @@ async def async_setup_entry(
     entities: list[BinarySensorEntity] = []
     for coordinator in entry.runtime_data.coordinators:
         entities.append(BoschBuderusSystemFaultBinarySensor(coordinator))
+        if any(path in coordinator.resources for path in HOLIDAY_RESOURCE_PATHS):
+            entities.append(BoschBuderusHolidayActiveBinarySensor(coordinator))
         entities.extend(
             BoschBuderusBinarySensor(coordinator, description)
             for description in build_binary_sensor_descriptions(coordinator.resources)
         )
     async_add_entities(entities)
+
+
+class BoschBuderusHolidayActiveBinarySensor(
+    CoordinatorEntity[BoschBuderusDataUpdateCoordinator], BinarySensorEntity
+):
+    """Report the PointT holiday state independently from away mode."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "holiday_active"
+    _attr_icon = "mdi:palm-tree"
+
+    def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{coordinator.gateway.gateway_id}:holiday_active"
+
+    @property
+    def available(self) -> bool:
+        return super().available and bool(self._available_resources)
+
+    @property
+    def is_on(self) -> bool | None:
+        return self._state.active
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        state = self._state
+        now = datetime.now(UTC)
+        return {
+            "period_count": len(state.periods),
+            "active_period_count": sum(
+                period.start <= now < period.end for period in state.periods
+            ),
+            "invalid_period_count": state.invalid_period_count,
+        }
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return device_info_for_resource(self.coordinator, "/gateway")
+
+    @property
+    def _available_resources(self) -> dict[str, Resource]:
+        snapshots = self.coordinator.data or {}
+        return {
+            path: snapshot.resource
+            for path in HOLIDAY_RESOURCE_PATHS
+            if (snapshot := snapshots.get(path)) is not None and snapshot.available
+        }
+
+    @property
+    def _state(self) -> HolidayState:
+        return parse_holiday_state(
+            self._available_resources,
+            fallback_timezone=self.coordinator.hass.config.time_zone,
+        )
 
 
 class BoschBuderusSystemFaultBinarySensor(

@@ -1,6 +1,6 @@
 # Roadmap
 
-## Current status — 0.2.2
+## Current status — 0.3.0
 
 The integration is available as a stable GitHub release and supports Bosch and
 Buderus PointT heating systems through one capability-based implementation.
@@ -22,7 +22,10 @@ The released foundation includes:
   write retry;
 - APK-aligned heating, cooling, hot-water, compressor, auxiliary-heater, and
   season-optimization states in English and German;
-- stable entity creation for known empty or partial startup payloads.
+- stable entity creation for known empty or partial startup payloads;
+- optional read-only holiday discovery with a dedicated active-state binary
+  sensor, next-period timestamp sensor, and multiple-period calendar;
+- privacy-safe holiday diagnostics without dates, names, or raw payloads.
 
 The first physical contract profile is a Buderus heat-pump installation with a
 K40 gateway. The integration is designed for compatible MX300, MX400,
@@ -49,17 +52,16 @@ Features are added only when their paths, schemas, semantics, and cloud cost
 are understood. Unsupported paths must remain absent instead of producing
 non-functional entities.
 
-1. Holiday mode, kept separate from away mode.
-2. Additional heat-pump operating values, including source temperatures,
+1. Additional heat-pump operating values, including source temperatures,
    passive cooling, instantaneous power, hybrid/bivalence information, silent
    operation, power limiting, boost, temporary setpoints, and cooling limits.
-3. Historical `/recordings` data as an isolated module with explicit request
+2. Historical `/recordings` data as an isolated module with explicit request
    budgets and no duplication of Home Assistant history.
-4. Variable-tariff information from the separate shared-energy service.
-5. Dynamically available solar, pool, ventilation, room-device, zone, and PV
+3. Variable-tariff information from the separate shared-energy service.
+4. Dynamically available solar, pool, ventilation, room-device, zone, and PV
    modules.
-6. Schedule editing only after multiple real schemas and safe round trips have
-   been verified.
+5. Holiday editing and schedule editing only after multiple real schemas and
+   safe round trips have been verified.
 
 Wallboxes, air conditioners, gateway network configuration, device pairing,
 factory reset, raw EMS commands, gateway removal, and user administration are

@@ -28,6 +28,7 @@ from custom_components.bosch_buderus_heating.diagnostics import (
     _safe_unit,
     async_get_config_entry_diagnostics,
 )
+from custom_components.bosch_buderus_heating.holidays import HOLIDAY_LIST_PATH
 from custom_components.bosch_buderus_heating.pointt import (
     BatchItemResult,
     Gateway,
@@ -85,7 +86,18 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         path="/heatingCircuits",
         references=(ResourceReference("/heatingCircuits/private-circuit"),),
     )
-    coordinator.resources = {item.path: item for item in (name, serial, reference)}
+    holiday = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value={
+            "name": "Private holiday name",
+            "start": "2026-08-20",
+            "end": "2026-08-25",
+        },
+        has_value=True,
+    )
+    coordinator.resources = {
+        item.path: item for item in (name, serial, reference, holiday)
+    }
     now = datetime.now(UTC)
     coordinator.data = {
         name.path: ResourceSnapshot(
@@ -100,6 +112,7 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         ),
         serial.path: ResourceSnapshot(serial, True, now),
         reference.path: ResourceSnapshot(reference, True, now),
+        holiday.path: ResourceSnapshot(holiday, True, now),
     }
     coordinator._record_capability(name.path, "not_found", SnapshotSource.BATCH)
     notification = Resource(path="/notifications", values=({"ccd": 6249, "fc": "12"},))
@@ -142,6 +155,9 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         "private-firmware",
         "private-circuit",
         "private-device",
+        "Private holiday name",
+        "2026-08-20",
+        "2026-08-25",
     ):
         assert private not in rendered
     assert diagnostics["privacy"] == {
@@ -159,8 +175,15 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         "/devices/{device}/errors": "404",
         "/notifications": "success",
     }
+    assert gateway_report["holidays"] == {
+        "supported_resources": ("/holidayMode/list",),
+        "valid_period_count": 1,
+        "invalid_period_count": 0,
+        "active_status_available": True,
+        "timezone_source": "home_assistant",
+    }
     assert gateway_report["inventory"]["current_error_categories"] == {"http_404": 1}
-    assert gateway_report["inventory"]["maturity_levels"] == {"understood": 3}
+    assert gateway_report["inventory"]["maturity_levels"] == {"understood": 4}
     capability = next(
         item
         for item in gateway_report["capabilities"]

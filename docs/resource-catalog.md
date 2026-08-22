@@ -102,6 +102,28 @@ discovered ID. The reference system reported `hc1`, `dhw1`, and `hs1`.
 These IDs remain part of the stable entity identifier but do not create
 separate Home Assistant devices.
 
+## Holiday mode
+
+MyBuderus and HomeCom Easy contain matching user flows for several named
+holiday periods and separate holiday behavior for heating, hot water, and
+ventilation. The integration probes only the three known optional resources:
+
+| PointT path | Access | HA mapping / note |
+|---|---:|---|
+| `/holidayMode/list` | R | Source for the read-only Holiday periods calendar |
+| `/holidayMode/configuration` | R | Additional/fallback period configuration source |
+| `/holidayMode/activeModes` | R | Source for the Holiday mode active binary sensor |
+
+HTTP 403 and 404 responses mean the capability is unavailable and prevent
+recurring polling of that path. Returned payloads are parsed defensively:
+multiple periods and common nested container shapes are supported, while
+invalid entries are counted and skipped individually. Names and dates are
+never included in diagnostics.
+
+Holiday mode is independent of `/system/awayMode/enabled`. No holiday resource
+is writable through Home Assistant in this release, even if PointT happens to
+advertise it as writable.
+
 ## Heating circuits
 
 | PointT path | User-facing name | Access | HA mapping / note |

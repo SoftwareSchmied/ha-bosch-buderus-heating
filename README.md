@@ -67,6 +67,8 @@ before.
 - Temperatures, system pressure, operating states, starts, and operating hours
 - Active system faults, warnings, and maintenance notifications with lifecycle
   events for Home Assistant automations
+- Optional read-only holiday status and calendar with support for multiple
+  periods, kept separate from Away mode
 - Cumulative electricity, produced heat, cooling energy, and calculated
   environmental energy
 - Heating-circuit and hot-water controls exposed only when PointT reports them
@@ -189,6 +191,21 @@ The appliance display and the official
 [Bosch error-code search](https://www.bosch-homecomfort.com/de/de/wohngebaeude/service-und-support/bosch-fehlercode-suche/)
 remain the authoritative sources for detailed service information. Home
 Assistant does not replace a qualified technician or manufacturer diagnosis.
+
+### Holiday periods
+
+When the gateway exposes PointT holiday resources, the integration creates a
+**Holiday mode active** binary sensor and a read-only **Holiday periods** calendar.
+The **Next holiday** timestamp sensor makes the upcoming start visible on the
+device page. Multiple configured periods are shown individually. Date-only values,
+timestamps, gateway time zones, empty lists, and incomplete entries are handled
+without affecting the rest of the integration.
+
+Holiday mode is not the same as the existing **Away mode** switch. Holiday
+periods may contain separate behavior for heating, hot water, and ventilation;
+Away mode is a different PointT setting. Holiday editing remains available
+only in the official app until its write format and read-back behavior have
+been confirmed on physical systems.
 
 ### Energy counters
 

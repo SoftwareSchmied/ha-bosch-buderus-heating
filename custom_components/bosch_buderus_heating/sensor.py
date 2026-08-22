@@ -6,6 +6,7 @@ import re
 from collections import Counter
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from math import fsum, isfinite
 from typing import Literal, TypeIs
 
@@ -38,6 +39,13 @@ from .faults import (
     fault_severity_label,
     fault_summary,
     no_active_faults_label,
+)
+from .holidays import (
+    HOLIDAY_PERIOD_PATHS,
+    HOLIDAY_RESOURCE_PATHS,
+    HolidayPeriod,
+    HolidayState,
+    parse_holiday_state,
 )
 from .pointt import Resource
 from .pointt.models import JsonValue
@@ -299,11 +307,76 @@ async def async_setup_entry(
                 BoschBuderusActiveNotificationsSensor(coordinator),
             )
         )
+        if any(path in coordinator.resources for path in HOLIDAY_PERIOD_PATHS):
+            entities.append(BoschBuderusNextHolidaySensor(coordinator))
         entities.extend(
             BoschBuderusSensor(coordinator, description)
             for description in build_sensor_descriptions(coordinator.resources)
         )
     async_add_entities(entities)
+
+
+class BoschBuderusNextHolidaySensor(
+    CoordinatorEntity[BoschBuderusDataUpdateCoordinator], SensorEntity
+):
+    """Show the start of the current or next configured holiday period."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "next_holiday"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_icon = "mdi:calendar-clock"
+
+    def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{coordinator.gateway.gateway_id}:next_holiday"
+
+    @property
+    def available(self) -> bool:
+        return super().available and bool(self._available_resources)
+
+    @property
+    def native_value(self) -> datetime | None:
+        period = self._next_period
+        return period.start if period is not None else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        period = self._next_period
+        if period is None:
+            return {}
+        now = datetime.now(UTC)
+        return {
+            "end": period.end.isoformat(),
+            "active": period.start <= now < period.end,
+            "all_day": period.all_day,
+        }
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return device_info_for_resource(self.coordinator, "/gateway")
+
+    @property
+    def _available_resources(self) -> dict[str, Resource]:
+        snapshots = self.coordinator.data or {}
+        return {
+            path: snapshot.resource
+            for path in HOLIDAY_RESOURCE_PATHS
+            if (snapshot := snapshots.get(path)) is not None and snapshot.available
+        }
+
+    @property
+    def _state(self) -> HolidayState:
+        return parse_holiday_state(
+            self._available_resources,
+            fallback_timezone=self.coordinator.hass.config.time_zone,
+        )
+
+    @property
+    def _next_period(self) -> HolidayPeriod | None:
+        now = datetime.now(UTC)
+        return next(
+            (period for period in self._state.periods if period.end > now), None
+        )
 
 
 class _BoschBuderusFaultCountSensor(

@@ -30,7 +30,7 @@ def test_stable_project_identity() -> None:
 
     assert manifest["domain"] == "bosch_buderus_heating"
     assert manifest["name"] == "Bosch/Buderus Heating"
-    assert manifest["version"] == "0.2.2"
+    assert manifest["version"] == "0.3.0"
     assert project["project"]["version"] == manifest["version"]
     assert manifest["requirements"] == []
     assert manifest["config_flow"] is True
@@ -98,6 +98,19 @@ def test_heat_source_status_translations_match_vendor_app_terms() -> None:
     assert sensor["compressor_status"]["state"]["alarm"] == "Blockiert"
     assert sensor["compressor_status"]["state"]["cooling"] == "Kühlung Zuhause"
     assert sensor["electric_auxiliary_heater_status"]["state"]["defrost"] == ("Abtauen")
+
+
+def test_holiday_translations_are_clear_and_match_vendor_terms() -> None:
+    """Holiday labels stay consistent with the official app terminology."""
+    german = load_json(INTEGRATION / "translations" / "de.json")["entity"]
+    english = load_json(INTEGRATION / "translations" / "en.json")["entity"]
+
+    assert german["binary_sensor"]["holiday_active"]["name"] == ("Urlaubsmodus aktiv")
+    assert german["sensor"]["next_holiday"]["name"] == "Nächster Urlaub"
+    assert german["calendar"]["holiday_periods"]["name"] == "Urlaubszeiten"
+    assert english["binary_sensor"]["holiday_active"]["name"] == ("Holiday mode active")
+    assert english["sensor"]["next_holiday"]["name"] == "Next holiday"
+    assert english["calendar"]["holiday_periods"]["name"] == "Holiday periods"
 
 
 @pytest.mark.parametrize(
