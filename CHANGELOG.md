@@ -7,6 +7,11 @@ Versioning after its first tagged preview.
 
 ## [0.4.0] - 2026-08-22
 
+Version 0.4.0 turns the previously read-only PointT holiday calendar into a
+safe, fully confirmed control. Holiday dates can be managed in Home
+Assistant's calendar, while the new integration dialog exposes the additional
+heating settings that the standard calendar editor cannot represent.
+
 ### Added
 
 - Capability-gated create, edit, and delete support for the **Holiday periods**
@@ -49,6 +54,23 @@ Versioning after its first tagged preview.
 - Recurrence, location, and description fields are rejected because PointT
   does not support them. Unknown modes, malformed IDs, unsupported time steps,
   and incomplete existing periods are never written.
+
+### Validation
+
+- Creating, editing, configuring, and deleting a holiday was verified against
+  a physical Buderus K40 installation. A date or time-only edit preserved all
+  circuit assignments, modes, and temperatures.
+- Multiple periods and Europe/Berlin daylight-saving transitions are covered
+  by automated tests.
+- 414 tests pass with 95.02% coverage. Ruff, Mypy, CodeQL, Hassfest, HACS
+  validation, and the dependency audit pass.
+
+### Upgrade notes
+
+- No entity IDs or existing dashboard references are changed.
+- Holiday controls appear only when the connected gateway advertises the
+  required PointT resources. Unsupported fields remain hidden.
+- Restart Home Assistant after installing or updating the integration.
 
 ## [0.3.0] - 2026-08-22
 

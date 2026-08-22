@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from scripts.build_release import ARCHIVE_NAME, build_release
+from scripts.release_notes import extract_release_notes
 
 
 def test_release_archive_is_reproducible_and_component_rooted(tmp_path: Path) -> None:
@@ -63,3 +64,42 @@ def test_release_archive_imports_from_an_isolated_install(tmp_path: Path) -> Non
     )
 
     assert str(component) in result.stdout
+
+
+def test_release_notes_extract_only_requested_version() -> None:
+    """Release notes come from the matching non-empty changelog section."""
+    changelog = """# Changelog
+
+## [Unreleased]
+
+## [2.0.0] - 2030-02-01
+
+Second release.
+
+### Added
+
+- A feature.
+
+## [1.0.0] - 2030-01-01
+
+First release.
+"""
+
+    assert extract_release_notes(changelog, "2.0.0") == (
+        "Second release.\n\n### Added\n\n- A feature.\n"
+    )
+
+
+@pytest.mark.parametrize(
+    ("changelog", "message"),
+    [
+        ("# Changelog\n", "no section"),
+        ("# Changelog\n\n## [2.0.0] - 2030-02-01\n", "is empty"),
+    ],
+)
+def test_release_notes_reject_missing_or_empty_sections(
+    changelog: str, message: str
+) -> None:
+    """A tag cannot silently publish generic or empty release notes."""
+    with pytest.raises(ValueError, match=message):
+        extract_release_notes(changelog, "2.0.0")

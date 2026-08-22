@@ -44,7 +44,11 @@ jobs:
       - name: Build release files
         env:
           RELEASE_VERSION: ${{ github.ref_name }}
-        run: python scripts/build_release.py --expected-version "${RELEASE_VERSION#v}"
+        run: |
+          python scripts/build_release.py --expected-version "${RELEASE_VERSION#v}"
+          python scripts/release_notes.py \
+            --version "${RELEASE_VERSION#v}" \
+            --output dist/release-notes.md
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -60,12 +64,13 @@ jobs:
               --clobber
             gh release edit "${GITHUB_REF_NAME}" \
               --title "Bosch/Buderus Heating ${GITHUB_REF_NAME}" \
+              --notes-file dist/release-notes.md \
               "${release_flags[@]}"
           else
             gh release create "${GITHUB_REF_NAME}" \
               dist/bosch_buderus_heating.zip \
               dist/bosch_buderus_heating.zip.sha256 \
-              --generate-notes \
               --title "Bosch/Buderus Heating ${GITHUB_REF_NAME}" \
+              --notes-file dist/release-notes.md \
               "${release_flags[@]}"
           fi
