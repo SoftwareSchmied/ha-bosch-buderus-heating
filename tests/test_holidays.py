@@ -1,8 +1,8 @@
-"""Tests for tolerant, read-only holiday resource handling."""
+"""Tests for tolerant PointT holiday resource handling."""
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 import pytest
 
@@ -10,9 +10,16 @@ from custom_components.bosch_buderus_heating.holidays import (
     HOLIDAY_ACTIVE_MODES_PATH,
     HOLIDAY_CONFIGURATION_PATH,
     HOLIDAY_LIST_PATH,
+    HolidayNameCodec,
+    encode_holiday_name,
+    holiday_period_id,
     parse_holiday_state,
+    parse_holiday_write_configuration,
 )
-from custom_components.bosch_buderus_heating.pointt import Resource
+from custom_components.bosch_buderus_heating.pointt import (
+    Resource,
+    ResourceMetadata,
+)
 
 
 def test_multiple_periods_and_gateway_timezone_are_normalized() -> None:
@@ -266,3 +273,237 @@ def test_candidate_count_and_user_text_are_bounded() -> None:
 
     assert len(state.periods) == 64
     assert all(period.name is None for period in state.periods)
+
+
+def test_writable_app_configuration_and_period_are_strictly_parsed() -> None:
+    resources = {
+        HOLIDAY_LIST_PATH: Resource(
+            path=HOLIDAY_LIST_PATH,
+            value=[
+                {
+                    "id": 7,
+                    "startDate": "2030-08-01T08:00:00",
+                    "endDate": "2030-08-08T24:00:00",
+                    "heatingMode": "FIX_TEMPERATURE",
+                    "dhwMode": "OFF",
+                    "ventilationMode": None,
+                    "assignedTo": ["hc1", "dhw1"],
+                    "name": "VXJsYXVi",
+                    "thermalDesinfection": "ON",
+                    "fixTemperature": 17.0,
+                }
+            ],
+            has_value=True,
+        ),
+        HOLIDAY_CONFIGURATION_PATH: Resource(
+            path=HOLIDAY_CONFIGURATION_PATH,
+            value={
+                "values": {
+                    "date": {"allowedValues": ["dateTime"]},
+                    "heatingMode": {"allowedValues": ["OFF", "FIX_TEMPERATURE"]},
+                    "dhwMode": {"allowedValues": ["OFF", "ECO"]},
+                    "ventilationMode": {"allowedValues": []},
+                    "assignedTo": {"allowedValues": ["hc1", "dhw1"]},
+                    "thermalDesinfection": {"allowedValues": ["ON", "OFF"]},
+                    "fixTemperature": {"minValue": 10.0, "maxValue": 25.0},
+                    "name": {
+                        "stringConfig": {
+                            "codingType": "BASE64",
+                            "charset": "UTF8",
+                            "maxLength": 32,
+                        }
+                    },
+                }
+            },
+            has_value=True,
+        ),
+    }
+
+    configuration = parse_holiday_write_configuration(resources)
+    state = parse_holiday_state(resources, fallback_timezone="UTC")
+
+    assert configuration is not None
+    assert configuration.assigned_to == ("hc1", "dhw1")
+    assert configuration.heating_mode == "FIX_TEMPERATURE"
+    assert configuration.thermal_disinfection == "ON"
+    assert configuration.heating_modes == ("OFF", "FIX_TEMPERATURE")
+    assert configuration.dhw_modes == ("OFF", "ECO")
+    assert configuration.fix_temperature_min == 10.0
+    assert configuration.fix_temperature_max == 25.0
+    assert state.periods[0].name == "Urlaub"
+    assert state.periods[0].end.isoformat() == "2030-08-09T00:00:00+00:00"
+    assert not state.periods[0].all_day
+    assert holiday_period_id(state.periods[0]) == 7
+    assert state.periods[0].write_values is not None
+
+
+def test_write_configuration_requires_a_list_and_rejects_unknown_contract() -> None:
+    configuration = Resource(
+        path=HOLIDAY_CONFIGURATION_PATH,
+        value={
+            "values": {
+                "date": {"allowedValues": ["dateTime"]},
+                "heatingMode": {"allowedValues": ["VENDOR_NEW_MODE"]},
+                "assignedTo": {"allowedValues": ["hc1"]},
+            }
+        },
+        has_value=True,
+    )
+    holiday_list = Resource(path=HOLIDAY_LIST_PATH)
+
+    assert (
+        parse_holiday_write_configuration(
+            {HOLIDAY_LIST_PATH: holiday_list, HOLIDAY_CONFIGURATION_PATH: configuration}
+        )
+        is None
+    )
+    assert (
+        parse_holiday_write_configuration({HOLIDAY_CONFIGURATION_PATH: configuration})
+        is None
+    )
+
+
+def test_name_encoding_is_bounded_and_codec_specific() -> None:
+    assert (
+        encode_holiday_name("Urlaub", HolidayNameCodec("BASE64", "UTF8", 32))
+        == "VXJsYXVi"
+    )
+    assert encode_holiday_name("Holiday", HolidayNameCodec("ASCII", None, 32)) is None
+    assert encode_holiday_name("x" * 33, HolidayNameCodec("BASE64", "UTF8", 32)) is None
+    assert encode_holiday_name("Name", None) is None
+    assert encode_holiday_name("\ud800", HolidayNameCodec("BASE64", "UTF8", 32)) is None
+
+
+def test_period_level_name_configuration_decodes_without_global_config() -> None:
+    period = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value={
+            "id": 7,
+            "startDate": "2030-08-01T08:00:00",
+            "endDate": "2030-08-08T18:00:00",
+            "name": "VXJsYXVi",
+            "nameConfig": {
+                "codingType": "BASE64",
+                "charset": "UTF-8",
+                "maxLength": 32,
+            },
+        },
+        has_value=True,
+    )
+
+    state = parse_holiday_state({HOLIDAY_LIST_PATH: period})
+
+    assert state.periods[0].name == "Urlaub"
+
+
+def test_datetime_midnight_to_end_of_day_is_exposed_as_all_day() -> None:
+    resource = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value={
+            "id": 7,
+            "startDate": "2030-08-01T00:00:00",
+            "endDate": "2030-08-08T24:00:00",
+        },
+        has_value=True,
+    )
+
+    period = parse_holiday_state({HOLIDAY_LIST_PATH: resource}).periods[0]
+
+    assert period.all_day
+    assert period.start.date() == date(2030, 8, 1)
+    assert period.end.date() == date(2030, 8, 9)
+
+
+@pytest.mark.parametrize(
+    "changed_values",
+    [
+        {"date": {"allowedValues": []}},
+        {"assignedTo": {"allowedValues": []}},
+        {"heatingMode": {"allowedValues": ["VENDOR"]}},
+        {"dhwMode": {"allowedValues": ["VENDOR"]}},
+        {"ventilationMode": {"allowedValues": ["VENDOR"]}},
+        {"thermalDesinfection": {"allowedValues": ["VENDOR"]}},
+        {"fixTemperature": {"minValue": 18.0}},
+        {"fixTemperature": {"maxValue": 16.0}},
+    ],
+)
+def test_write_configuration_rejects_unsafe_variants(changed_values: dict) -> None:
+    values = {
+        "date": {"allowedValues": ["dateTime"]},
+        "heatingMode": {"allowedValues": ["FIX_TEMPERATURE", "OFF"]},
+        "dhwMode": {"allowedValues": ["OFF"]},
+        "ventilationMode": {"allowedValues": []},
+        "assignedTo": {"allowedValues": ["hc1"]},
+        "thermalDesinfection": {"allowedValues": ["ON", "OFF"]},
+        "fixTemperature": {"minValue": 10.0, "maxValue": 25.0},
+    }
+    values.update(changed_values)
+    resources = {
+        HOLIDAY_LIST_PATH: Resource(
+            path=HOLIDAY_LIST_PATH,
+            metadata=ResourceMetadata(writable=True),
+        ),
+        HOLIDAY_CONFIGURATION_PATH: Resource(
+            path=HOLIDAY_CONFIGURATION_PATH,
+            value={"values": values},
+            has_value=True,
+        ),
+    }
+
+    assert parse_holiday_write_configuration(resources) is None
+
+
+@pytest.mark.parametrize(
+    ("changed_field", "changed_value"),
+    [
+        ("heatingMode", "VENDOR"),
+        ("dhwMode", 1),
+        ("ventilationMode", "VENDOR"),
+        ("thermalDesinfection", "VENDOR"),
+        ("assignedTo", []),
+        ("assignedTo", ["unknown1"]),
+        ("fixTemperature", "17"),
+    ],
+)
+def test_incomplete_period_is_visible_but_never_writable(
+    changed_field: str, changed_value: object
+) -> None:
+    payload = {
+        "id": 7,
+        "startDate": "2030-08-01T08:00:00",
+        "endDate": "2030-08-08T18:00:00",
+        "heatingMode": "FIX_TEMPERATURE",
+        "dhwMode": "OFF",
+        "ventilationMode": None,
+        "assignedTo": ["hc1"],
+        "name": None,
+        "thermalDesinfection": None,
+        "fixTemperature": 17.0,
+    }
+    payload[changed_field] = changed_value
+    resource = Resource(path=HOLIDAY_LIST_PATH, value=payload, has_value=True)
+
+    state = parse_holiday_state({HOLIDAY_LIST_PATH: resource})
+
+    assert len(state.periods) == 1
+    assert state.periods[0].write_values is None
+
+
+def test_invalid_encoded_name_is_not_exposed() -> None:
+    resource = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value={
+            "id": 7,
+            "startDate": "2030-08-01",
+            "endDate": "2030-08-02",
+            "name": "not-base64!",
+            "nameConfig": {
+                "codingType": "BASE64",
+                "charset": "UTF8",
+                "maxLength": 32,
+            },
+        },
+        has_value=True,
+    )
+
+    assert parse_holiday_state({HOLIDAY_LIST_PATH: resource}).periods[0].name is None

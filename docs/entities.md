@@ -130,7 +130,7 @@ least one of the documented PointT resources. It is deliberately separate from
 |---|---|---|:---:|:---:|---:|
 | Holiday mode active | Binary sensor | `/holidayMode/activeModes`, with validated-period fallback | No assumption | No | 5 min; 10 min with cloud-friendly profile |
 | Next holiday | Timestamp sensor | `/holidayMode/list`, `/holidayMode/configuration` | No assumption | No | 5 min; 10 min with cloud-friendly profile |
-| Holiday periods | Read-only calendar | `/holidayMode/list`, `/holidayMode/configuration` | No assumption | No | 5 min; 10 min with cloud-friendly profile |
+| Holiday periods | Calendar | `/holidayMode/list`, `/holidayMode/configuration`; writes use `/holidayMode[/<id>]` | Capability-dependent | Create, edit, delete when safely advertised | 5 min; 10 min with cloud-friendly profile; immediate read-back after writes |
 
 The calendar supports multiple periods. PointT timestamps retain their offset;
 naive timestamps use the gateway time zone where available and otherwise the
@@ -141,11 +141,21 @@ The **Next holiday** sensor shows the start of the current or next period on
 the device page. Its attributes contain the end, whether the period is
 currently active, and whether it is an all-day period.
 
-The integration does not expose create, update, delete, activate, or deactivate
-actions for holidays. These operations remain in MyBuderus/HomeCom Easy until
-the exact payload and a physical write/read-back sequence are verified. Home
-Assistant diagnostics contain only resource support and parser counters—not
-holiday dates, names, or raw configuration data.
+Create, edit, and delete actions appear only when the list and configuration
+resources are current and the schema is fully understood. Editing in the
+calendar preserves all PointT behavior fields and changes only dates and the
+supported cloud name. New periods use the official-app defaults for affected
+circuits and holiday behavior. Recurrence, descriptions, and locations are not
+supported.
+
+The integration's **Configure** dialog edits the PointT-specific fields that
+the standard Home Assistant calendar cannot display: circuit assignments,
+heating mode, hot-water mode, ventilation mode, thermal disinfection, and the
+constant room temperature. Both fields and choices are derived dynamically
+from `/holidayMode/configuration`; unsupported choices are omitted. Every
+mutation is sent once and requires a confirmed list read-back. Home Assistant
+diagnostics contain only resource support, write availability, and parser
+counters—not holiday dates, names, or raw configuration data.
 
 ## Gateway and system
 

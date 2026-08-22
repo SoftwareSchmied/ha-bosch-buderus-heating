@@ -181,6 +181,7 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         "invalid_period_count": 0,
         "active_status_available": True,
         "timezone_source": "home_assistant",
+        "calendar_writes_available": False,
     }
     assert gateway_report["inventory"]["current_error_categories"] == {"http_404": 1}
     assert gateway_report["inventory"]["maturity_levels"] == {"understood": 4}

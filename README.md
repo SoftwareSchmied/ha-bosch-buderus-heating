@@ -67,8 +67,9 @@ before.
 - Temperatures, system pressure, operating states, starts, and operating hours
 - Active system faults, warnings, and maintenance notifications with lifecycle
   events for Home Assistant automations
-- Optional read-only holiday status and calendar with support for multiple
-  periods, kept separate from Away mode
+- Optional holiday status and calendar with support for multiple periods,
+  gateway-aware time zones, and capability-gated create, edit, and delete
+  actions, kept separate from Away mode
 - Cumulative electricity, produced heat, cooling energy, and calculated
   environmental energy
 - Heating-circuit and hot-water controls exposed only when PointT reports them
@@ -195,7 +196,7 @@ Assistant does not replace a qualified technician or manufacturer diagnosis.
 ### Holiday periods
 
 When the gateway exposes PointT holiday resources, the integration creates a
-**Holiday mode active** binary sensor and a read-only **Holiday periods** calendar.
+**Holiday mode active** binary sensor and a **Holiday periods** calendar.
 The **Next holiday** timestamp sensor makes the upcoming start visible on the
 device page. Multiple configured periods are shown individually. Date-only values,
 timestamps, gateway time zones, empty lists, and incomplete entries are handled
@@ -203,9 +204,29 @@ without affecting the rest of the integration.
 
 Holiday mode is not the same as the existing **Away mode** switch. Holiday
 periods may contain separate behavior for heating, hot water, and ventilation;
-Away mode is a different PointT setting. Holiday editing remains available
-only in the official app until its write format and read-back behavior have
-been confirmed on physical systems.
+Away mode is a different PointT setting.
+
+If the gateway advertises a current and complete holiday schema, the standard
+Home Assistant calendar dialog also allows you to create, move, rename, and
+delete periods. Open **Calendar**, select **Holiday periods**, and add or edit
+an event. Use only a title plus start and end; recurrence, location, and
+description are not supported by PointT.
+
+When an existing period is edited, its heating, hot-water, ventilation,
+thermal-disinfection, fixed-temperature, and circuit-assignment settings are
+preserved. A newly created period uses the defaults also used by MyBuderus and
+HomeCom Easy: all advertised circuits, 17 °C fixed-temperature heating when
+supported, hot water off, ventilation off when supported, and thermal
+disinfection on when supported.
+
+To adjust these details in Home Assistant, open **Settings → Devices &
+services → Bosch/Buderus Heating → Configure**, select the holiday, and then
+choose its assigned circuits, heating mode, hot-water mode, ventilation mode,
+thermal-disinfection setting, and constant room temperature. The dialog is
+generated from `/holidayMode/configuration`: options not advertised by the
+connected system are not shown. Dates and the name remain in the calendar
+dialog. Every change is read back from PointT before Home Assistant accepts it
+as successful.
 
 ### Energy counters
 

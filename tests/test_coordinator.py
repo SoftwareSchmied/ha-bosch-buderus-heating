@@ -32,6 +32,11 @@ from custom_components.bosch_buderus_heating.coordinator import (
     _energy_reset_count,
     _error_category,
 )
+from custom_components.bosch_buderus_heating.holidays import (
+    HOLIDAY_CONFIGURATION_PATH,
+    HOLIDAY_LIST_PATH,
+    HolidayWriteValues,
+)
 from custom_components.bosch_buderus_heating.pointt import (
     AuthenticationError,
     BatchItemResult,
@@ -369,6 +374,100 @@ async def test_confirmed_number_write_updates_coordinator(
     coordinator._write_service.async_write_number.assert_awaited_once_with(
         "gateway-one", current, 20.5, policy
     )
+
+
+def _holiday_resources() -> tuple[Resource, Resource]:
+    periods = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value=[],
+        has_value=True,
+        metadata=ResourceMetadata(writable=True),
+    )
+    configuration = Resource(
+        path=HOLIDAY_CONFIGURATION_PATH,
+        value={
+            "values": {
+                "date": {"allowedValues": ["dateTime"]},
+                "heatingMode": {"allowedValues": ["FIX_TEMPERATURE", "OFF"]},
+                "dhwMode": {"allowedValues": ["OFF"]},
+                "assignedTo": {"allowedValues": ["hc1", "dhw1"]},
+            }
+        },
+        has_value=True,
+    )
+    return periods, configuration
+
+
+async def test_holiday_writes_publish_confirmed_list_snapshot(
+    hass: HomeAssistant,
+) -> None:
+    coordinator = _coordinator(hass, AsyncMock())
+    periods, configuration = _holiday_resources()
+    coordinator.resources = {
+        periods.path: periods,
+        configuration.path: configuration,
+    }
+    coordinator.data = {
+        periods.path: _snapshot(periods),
+        configuration.path: _snapshot(configuration),
+    }
+    coordinator.last_update_success = True
+    coordinator._holiday_write_service = AsyncMock()
+    confirmed = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value=[{"id": 7}],
+        has_value=True,
+        metadata=periods.metadata,
+    )
+    coordinator._holiday_write_service.async_create.return_value = confirmed
+    coordinator._holiday_write_service.async_update.return_value = confirmed
+    coordinator._holiday_write_service.async_delete.return_value = confirmed
+    values = HolidayWriteValues(
+        start_date="2030-08-01T08:00:00",
+        end_date="2030-08-08T18:00:00",
+        heating_mode="FIX_TEMPERATURE",
+        dhw_mode="OFF",
+        ventilation_mode=None,
+        assigned_to=("hc1", "dhw1"),
+        name=None,
+        thermal_disinfection=None,
+        fix_temperature=17.0,
+    )
+
+    assert await coordinator.async_create_holiday(values) is confirmed
+    assert await coordinator.async_update_holiday(7, values) is confirmed
+    assert await coordinator.async_delete_holiday(7) is confirmed
+
+    coordinator._holiday_write_service.async_create.assert_awaited_once()
+    coordinator._holiday_write_service.async_update.assert_awaited_once()
+    coordinator._holiday_write_service.async_delete.assert_awaited_once()
+    assert coordinator.resources[HOLIDAY_LIST_PATH] is confirmed
+    assert coordinator.data[HOLIDAY_LIST_PATH].source is SnapshotSource.WRITE
+    assert coordinator.capability_metrics(HOLIDAY_LIST_PATH)["attempts_by_source"] == {
+        "write": 3
+    }
+
+
+async def test_holiday_write_rejects_stale_capabilities(
+    hass: HomeAssistant,
+) -> None:
+    coordinator = _coordinator(hass, AsyncMock())
+    periods, configuration = _holiday_resources()
+    coordinator.data = {
+        periods.path: ResourceSnapshot(
+            periods,
+            True,
+            datetime.now(UTC),
+            freshness=Freshness.STALE,
+        ),
+        configuration.path: _snapshot(configuration),
+    }
+    coordinator._holiday_write_service = AsyncMock()
+
+    with pytest.raises(WriteValidationError, match="not current"):
+        await coordinator.async_delete_holiday(7)
+
+    coordinator._holiday_write_service.async_delete.assert_not_awaited()
 
 
 async def test_number_policy_rejects_non_numeric_value(hass: HomeAssistant) -> None:

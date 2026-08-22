@@ -191,6 +191,50 @@ async def test_client_writes_value_once_and_parses_optional_echo() -> None:
     assert client.metrics.snapshot()["requests_by_method"] == {"PUT": 2}
 
 
+async def test_client_uses_exact_holiday_endpoints_and_unwrapped_list_body() -> None:
+    requests: list[tuple[str, str, object | None]] = []
+
+    async def holiday(request: web.Request) -> web.Response:
+        body = await request.json() if request.can_read_body else None
+        requests.append((request.method, request.path, body))
+        return web.Response(status=204)
+
+    values = {
+        "startDate": "2030-08-01T08:00:00",
+        "endDate": "2030-08-08T18:00:00",
+        "heatingMode": "FIX_TEMPERATURE",
+        "dhwMode": "OFF",
+        "ventilationMode": None,
+        "assignedTo": ["hc1", "dhw1"],
+        "name": "VGVzdA==",
+        "thermalDesinfection": "ON",
+        "fixTemperature": 17.0,
+    }
+    routes = [
+        ("POST", "/gateways/{id}/resource/holidayMode", holiday),
+        ("PUT", "/gateways/{id}/resource/holidayMode/{holiday_id}", holiday),
+        ("DELETE", "/gateways/{id}/resource/holidayMode/{holiday_id}", holiday),
+    ]
+    async with serve(routes) as url, aiohttp.ClientSession() as session:
+        client = PointTClient(session, "token", base_url=url)
+        await client.create_holiday_period("gw one", values)
+        await client.update_holiday_period("gw one", 7, values)
+        await client.delete_holiday_period("gw one", 7)
+        with pytest.raises(ValueError):
+            await client.update_holiday_period("gw one", True, values)  # type: ignore[arg-type]
+
+    assert requests == [
+        ("POST", "/gateways/gw one/resource/holidayMode", [values]),
+        ("PUT", "/gateways/gw one/resource/holidayMode/7", [values]),
+        ("DELETE", "/gateways/gw one/resource/holidayMode/7", None),
+    ]
+    assert client.metrics.snapshot()["requests_by_method"] == {
+        "DELETE": 1,
+        "POST": 1,
+        "PUT": 1,
+    }
+
+
 async def test_transport_retries_temporary_service_failure() -> None:
     calls = 0
     sleeps: list[float] = []

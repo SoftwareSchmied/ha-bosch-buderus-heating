@@ -52,6 +52,41 @@
       "reconfigure_successful": "Die Einstellungen wurden gespeichert. Bosch/Buderus Heating wird neu geladen und sucht alle verfügbaren Ressourcen erneut."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Urlaub konfigurieren",
+        "description": "Wähle einen vorhandenen Urlaub. Urlaube erstellst, benennst, verschiebst oder löschst du im Kalender **Urlaubszeiten**; dieser Dialog ist für die Heizungseinstellungen bestimmt, die der normale Home-Assistant-Kalender nicht anzeigen kann.",
+        "data": { "holiday_period": "Urlaub" }
+      },
+      "holiday": {
+        "title": "Urlaub konfigurieren",
+        "description": "Ändere die PointT-Einstellungen für **{holiday}**. Es werden nur Optionen angezeigt, die diese Heizungsanlage bereitstellt. Die Integration schreibt genau einmal und meldet erst Erfolg, nachdem alle Felder zurückgelesen und bestätigt wurden.",
+        "data": {
+          "holiday_assigned_to": "Zugeordnete Kreise",
+          "holiday_heating_mode": "Betriebsart Heizkreis",
+          "holiday_dhw_mode": "Betriebsart Warmwasser",
+          "holiday_ventilation_mode": "Betriebsart Lüftung",
+          "holiday_thermal_disinfection": "Thermische Desinfektion",
+          "holiday_fix_temperature": "Konstante Raumtemperatur"
+        }
+      }
+    },
+    "error": {
+      "holiday_changed": "Der ausgewählte Urlaub wurde geändert, während dieser Dialog geöffnet war. Schließe den Dialog und versuche es erneut.",
+      "write_authentication_failed": "Die Cloud-Anmeldung ist nicht mehr gültig. Authentifiziere Bosch/Buderus Heating erneut und versuche es danach noch einmal.",
+      "write_failed": "Die Urlaubseinstellungen konnten nicht geändert werden.",
+      "write_not_confirmed": "Die Heizungsanlage hat nicht alle Urlaubseinstellungen bestätigt. Es wurde kein Erfolg gemeldet.",
+      "write_rate_limited": "Die PointT-Cloud begrenzt derzeit die Anfragen. Warte, bevor du die Änderung erneut versuchst.",
+      "write_validation_failed": "Mindestens eine Auswahl wird von der Heizungsanlage nicht mehr unterstützt. Schließe den Dialog, aktualisiere die Integration und versuche es erneut."
+    },
+    "abort": {
+      "holiday_changed": "Der ausgewählte Urlaub ist nicht mehr verfügbar oder schreibbar.",
+      "holiday_updated": "Die Urlaubseinstellungen wurden gespeichert und von der Heizungsanlage bestätigt.",
+      "no_writable_holidays": "Es gibt keinen schreibbaren Urlaub. Erstelle zuerst einen im Kalender Urlaubszeiten oder warte, bis die Urlaubsressourcen verfügbar sind.",
+      "not_loaded": "Bosch/Buderus Heating muss geladen sein, bevor ein Urlaub konfiguriert werden kann."
+    }
+  },
   "issues": {
     "repeated_rate_limit": {
       "title": "Bosch/Buderus-Cloudzugriffe werden begrenzt",
@@ -88,6 +123,38 @@
   "selector": {
     "polling_profile": {
       "options": { "standard": "Standard", "cloud_friendly": "Cloud-schonend" }
+    },
+    "holiday_heating_mode": {
+      "options": {
+        "saturday": "Wie Samstag",
+        "fix_temperature": "Konstante Temperatur",
+        "off": "Aus",
+        "eco": "Absenken"
+      }
+    },
+    "holiday_dhw_mode": {
+      "options": {
+        "saturday": "Wie Samstag",
+        "off": "Aus",
+        "eco": "Eco+",
+        "low": "Eco",
+        "high": "Komfort",
+        "off_td": "Aus mit thermischer Desinfektion"
+      }
+    },
+    "holiday_ventilation_mode": {
+      "options": {
+        "saturday": "Wie Samstag",
+        "off": "Aus",
+        "min": "Lüfterstufe 1",
+        "red": "Lüfterstufe 2",
+        "nom": "Lüfterstufe 3",
+        "max": "Lüfterstufe 4",
+        "dem": "Bedarfsgeführt"
+      }
+    },
+    "holiday_thermal_disinfection": {
+      "options": { "on": "Ein", "off": "Aus" }
     }
   },
   "entity": {

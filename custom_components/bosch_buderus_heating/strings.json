@@ -62,6 +62,43 @@
       "reconfigure_successful": "The settings were saved. Bosch/Buderus Heating is reloading and discovering all available resources again."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure a holiday",
+        "description": "Choose an existing holiday. Create, rename, move, or delete holidays in the **Holiday periods** calendar; use this dialog for the heating-system settings that the standard Home Assistant calendar cannot display.",
+        "data": {
+          "holiday_period": "Holiday"
+        }
+      },
+      "holiday": {
+        "title": "Configure holiday",
+        "description": "Change the PointT settings for **{holiday}**. Only options advertised by this heating system are shown. The integration writes once and reports success only after every field has been read back and confirmed.",
+        "data": {
+          "holiday_assigned_to": "Assigned circuits",
+          "holiday_heating_mode": "Heating circuit mode",
+          "holiday_dhw_mode": "Hot water mode",
+          "holiday_ventilation_mode": "Ventilation mode",
+          "holiday_thermal_disinfection": "Thermal disinfection",
+          "holiday_fix_temperature": "Constant room temperature"
+        }
+      }
+    },
+    "error": {
+      "holiday_changed": "The selected holiday changed while this dialog was open. Close the dialog and try again.",
+      "write_authentication_failed": "The cloud sign-in is no longer valid. Reauthenticate Bosch/Buderus Heating before trying again.",
+      "write_failed": "The holiday settings could not be changed.",
+      "write_not_confirmed": "The heating system did not confirm every holiday setting. No success was reported.",
+      "write_rate_limited": "The PointT cloud is currently limiting requests. Wait before trying again.",
+      "write_validation_failed": "At least one selection is no longer supported by the heating system. Close the dialog, refresh the integration, and try again."
+    },
+    "abort": {
+      "holiday_changed": "The selected holiday is no longer available or writable.",
+      "holiday_updated": "The holiday settings were saved and confirmed by the heating system.",
+      "no_writable_holidays": "No writable holiday exists. Create one in the Holiday periods calendar first, or wait until the holiday resources are available.",
+      "not_loaded": "Bosch/Buderus Heating must be loaded before a holiday can be configured."
+    }
+  },
   "issues": {
     "repeated_rate_limit": {
       "title": "Bosch/Buderus cloud requests are being limited",
@@ -104,6 +141,41 @@
       "options": {
         "standard": "Standard",
         "cloud_friendly": "Cloud-friendly"
+      }
+    },
+    "holiday_heating_mode": {
+      "options": {
+        "saturday": "As Saturday",
+        "fix_temperature": "Constant temperature",
+        "off": "Off",
+        "eco": "Reduced"
+      }
+    },
+    "holiday_dhw_mode": {
+      "options": {
+        "saturday": "As Saturday",
+        "off": "Off",
+        "eco": "Eco+",
+        "low": "Eco",
+        "high": "Comfort",
+        "off_td": "Off with thermal disinfection"
+      }
+    },
+    "holiday_ventilation_mode": {
+      "options": {
+        "saturday": "As Saturday",
+        "off": "Off",
+        "min": "Fan level 1",
+        "red": "Fan level 2",
+        "nom": "Fan level 3",
+        "max": "Fan level 4",
+        "dem": "Demand controlled"
+      }
+    },
+    "holiday_thermal_disinfection": {
+      "options": {
+        "on": "On",
+        "off": "Off"
       }
     }
   },

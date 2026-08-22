@@ -33,7 +33,7 @@ class AccessTokenProvider(Protocol):
 
 
 class PointTClient:
-    """Read-only, async client for the observed PointT API."""
+    """Typed async client for the observed PointT API."""
 
     def __init__(
         self,
@@ -119,6 +119,44 @@ class PointTClient:
             return None
         return parse_resource(payload, path=normalized)
 
+    async def create_holiday_period(
+        self, gateway_id: str, values: dict[str, JsonValue]
+    ) -> None:
+        """Create one holiday period without retrying the non-idempotent POST."""
+        gateway = _encode_gateway_id(gateway_id)
+        await self._request(
+            "POST",
+            f"gateways/{gateway}/resource/holidayMode",
+            json_body=[values],
+            retryable=False,
+            resource_path="/holidayMode",
+        )
+
+    async def update_holiday_period(
+        self, gateway_id: str, holiday_id: int, values: dict[str, JsonValue]
+    ) -> None:
+        """Update one numeric holiday period without an automatic write retry."""
+        gateway = _encode_gateway_id(gateway_id)
+        validated_id = _validate_holiday_id(holiday_id)
+        await self._request(
+            "PUT",
+            f"gateways/{gateway}/resource/holidayMode/{validated_id}",
+            json_body=[values],
+            retryable=False,
+            resource_path=f"/holidayMode/{validated_id}",
+        )
+
+    async def delete_holiday_period(self, gateway_id: str, holiday_id: int) -> None:
+        """Delete one numeric holiday period without an automatic write retry."""
+        gateway = _encode_gateway_id(gateway_id)
+        validated_id = _validate_holiday_id(holiday_id)
+        await self._request(
+            "DELETE",
+            f"gateways/{gateway}/resource/holidayMode/{validated_id}",
+            retryable=False,
+            resource_path=f"/holidayMode/{validated_id}",
+        )
+
     async def get_resources_bulk(
         self,
         gateway_id: str,
@@ -182,3 +220,13 @@ def _encode_gateway_id(gateway_id: str) -> str:
     if not value:
         raise ValueError("Gateway ID must not be empty")
     return quote(value, safe="")
+
+
+def _validate_holiday_id(holiday_id: int) -> int:
+    if (
+        isinstance(holiday_id, bool)
+        or not isinstance(holiday_id, int)
+        or not 0 <= holiday_id <= 2_147_483_647
+    ):
+        raise ValueError("Holiday ID must be a non-negative 32-bit integer")
+    return holiday_id

@@ -110,9 +110,11 @@ ventilation. The integration probes only the three known optional resources:
 
 | PointT path | Access | HA mapping / note |
 |---|---:|---|
-| `/holidayMode/list` | R | Source for the read-only Holiday periods calendar |
+| `/holidayMode/list` | R | Source and read-back for the Holiday periods calendar |
 | `/holidayMode/configuration` | R | Additional/fallback period configuration source |
 | `/holidayMode/activeModes` | R | Source for the Holiday mode active binary sensor |
+| `/holidayMode` | W (POST) | Create one complete period; never retried automatically |
+| `/holidayMode/{id}` | W (PUT/DELETE) | Update or delete one numeric period; never retried automatically |
 
 HTTP 403 and 404 responses mean the capability is unavailable and prevent
 recurring polling of that path. Returned payloads are parsed defensively:
@@ -120,9 +122,11 @@ multiple periods and common nested container shapes are supported, while
 invalid entries are counted and skipped individually. Names and dates are
 never included in diagnostics.
 
-Holiday mode is independent of `/system/awayMode/enabled`. No holiday resource
-is writable through Home Assistant in this release, even if PointT happens to
-advertise it as writable.
+Holiday mode is independent of `/system/awayMode/enabled`. Calendar writes are
+enabled only when PointT returns a current list plus a completely
+recognized configuration. Updates preserve every non-calendar field from the
+current list item. Each POST, PUT, or DELETE is followed by a bounded read-back
+of `/holidayMode/list`; a timeout does not cause the mutation to be repeated.
 
 ## Heating circuits
 

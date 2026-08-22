@@ -21,6 +21,13 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .const import DOMAIN, RATE_LIMIT_ISSUE_PREFIX, PollingProfile
 from .discovery import async_discover_resources
 from .faults import FaultTracker, fault_resource_candidates, is_fault_resource_path
+from .holiday_writes import HolidayWriteService, holiday_resources_from_snapshots
+from .holidays import (
+    HOLIDAY_CONFIGURATION_PATH,
+    HOLIDAY_LIST_PATH,
+    HolidayWriteValues,
+    parse_holiday_write_configuration,
+)
 from .pointt import (
     AuthenticationError,
     Gateway,
@@ -195,6 +202,7 @@ class BoschBuderusDataUpdateCoordinator(
         self._energy_counter_resets = 0
         self._capability_metrics: dict[str, CapabilityMetrics] = {}
         self._write_service = WriteService(client)
+        self._holiday_write_service = HolidayWriteService(client)
         self.faults = FaultTracker(hass, config_entry.entry_id, gateway.gateway_id)
 
     async def async_load_fault_state(self) -> None:
@@ -284,6 +292,118 @@ class BoschBuderusDataUpdateCoordinator(
             self._negative_until.pop(path, None)
             self._record_capability(path, "success", SnapshotSource.WRITE)
             self.async_set_updated_data(snapshots)
+            return confirmed
+
+    async def async_create_holiday(self, values: HolidayWriteValues) -> Resource:
+        """Create one holiday and publish its confirmed list read-back."""
+        return await self._async_write_holiday("create", None, values)
+
+    async def async_update_holiday(
+        self, holiday_id: int, values: HolidayWriteValues
+    ) -> Resource:
+        """Update one holiday and publish its confirmed list read-back."""
+        return await self._async_write_holiday("update", holiday_id, values)
+
+    async def async_delete_holiday(self, holiday_id: int) -> Resource:
+        """Delete one holiday and publish its confirmed list read-back."""
+        return await self._async_write_holiday("delete", holiday_id, None)
+
+    async def _async_write_holiday(
+        self,
+        operation: str,
+        holiday_id: int | None,
+        values: HolidayWriteValues | None,
+    ) -> Resource:
+        """Run one capability-gated holiday mutation and confirm it."""
+        async with self._update_lock:
+            now_monotonic = monotonic()
+            if now_monotonic < self._cloud_backoff_until:
+                raise RateLimited(self._cloud_backoff_until - now_monotonic)
+            if now_monotonic < self._circuit_open_until:
+                raise WriteValidationError(
+                    "Gateway circuit breaker is active; writing is paused"
+                )
+            snapshots = self.data or {}
+            for path in (HOLIDAY_LIST_PATH, HOLIDAY_CONFIGURATION_PATH):
+                snapshot = snapshots.get(path)
+                if (
+                    snapshot is None
+                    or not snapshot.available
+                    or snapshot.freshness is Freshness.STALE
+                ):
+                    raise WriteValidationError(
+                        "Holiday resources are unavailable or not current"
+                    )
+            resources = holiday_resources_from_snapshots(snapshots)
+            if parse_holiday_write_configuration(resources) is None:
+                raise WriteValidationError(
+                    "The gateway does not advertise a complete holiday calendar schema"
+                )
+
+            try:
+                if operation == "create" and values is not None:
+                    confirmed = await self._holiday_write_service.async_create(
+                        self.gateway.gateway_id,
+                        resources,
+                        values,
+                        fallback_timezone=self.hass.config.time_zone,
+                    )
+                elif (
+                    operation == "update"
+                    and holiday_id is not None
+                    and values is not None
+                ):
+                    confirmed = await self._holiday_write_service.async_update(
+                        self.gateway.gateway_id,
+                        resources,
+                        holiday_id,
+                        values,
+                        fallback_timezone=self.hass.config.time_zone,
+                    )
+                elif operation == "delete" and holiday_id is not None:
+                    confirmed = await self._holiday_write_service.async_delete(
+                        self.gateway.gateway_id,
+                        resources,
+                        holiday_id,
+                        fallback_timezone=self.hass.config.time_zone,
+                    )
+                else:
+                    raise WriteValidationError("Invalid holiday write request")
+            except RateLimited as err:
+                self._record_capability(
+                    HOLIDAY_LIST_PATH, "rate_limited", SnapshotSource.WRITE
+                )
+                self._activate_rate_limit_backoff(err, monotonic())
+                raise
+            except AuthenticationError:
+                self._record_capability(
+                    HOLIDAY_LIST_PATH,
+                    "authentication_error",
+                    SnapshotSource.WRITE,
+                )
+                self._config_entry.async_start_reauth(self.hass)
+                raise
+            except WriteValidationError:
+                raise
+            except PointTError as err:
+                self._record_capability(
+                    HOLIDAY_LIST_PATH, _pointt_result(err), SnapshotSource.WRITE
+                )
+                raise
+
+            confirmed_at = datetime.now(UTC)
+            updated = dict(snapshots)
+            updated[HOLIDAY_LIST_PATH] = ResourceSnapshot(
+                resource=confirmed,
+                available=True,
+                last_success=confirmed_at,
+                last_attempt=confirmed_at,
+                source=SnapshotSource.WRITE,
+            )
+            self.resources[HOLIDAY_LIST_PATH] = confirmed
+            self._negative_until.pop(HOLIDAY_LIST_PATH, None)
+            self._record_capability(HOLIDAY_LIST_PATH, "success", SnapshotSource.WRITE)
+            self.async_set_updated_data(updated)
             return confirmed
 
     async def _async_update_data(self) -> dict[str, ResourceSnapshot]:

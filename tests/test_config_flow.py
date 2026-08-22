@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 from urllib.parse import parse_qs, urlparse
 
@@ -11,6 +13,15 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.bosch_buderus_heating.config_flow import (
+    CONF_HOLIDAY_ASSIGNED_TO,
+    CONF_HOLIDAY_DHW_MODE,
+    CONF_HOLIDAY_FIX_TEMPERATURE,
+    CONF_HOLIDAY_HEATING_MODE,
+    CONF_HOLIDAY_PERIOD,
+    CONF_HOLIDAY_THERMAL_DISINFECTION,
+    CONF_HOLIDAY_VENTILATION_MODE,
+)
 from custom_components.bosch_buderus_heating.const import (
     CONF_ACCESS_TOKEN,
     CONF_BRAND,
@@ -21,16 +32,26 @@ from custom_components.bosch_buderus_heating.const import (
     PollingProfile,
     polling_profile_from_options,
 )
+from custom_components.bosch_buderus_heating.coordinator import Freshness
 from custom_components.bosch_buderus_heating.data import tokens_to_data
+from custom_components.bosch_buderus_heating.holidays import (
+    HOLIDAY_CONFIGURATION_PATH,
+    HOLIDAY_LIST_PATH,
+)
 from custom_components.bosch_buderus_heating.pointt import (
     AuthenticationError,
     AuthTokens,
     Brand,
     Gateway,
     InvalidPayload,
+    RateLimited,
     RequestTimeout,
+    Resource,
     ServiceUnavailable,
+    WriteNotConfirmed,
+    WriteValidationError,
 )
+from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 
 
 async def _start_auth_flow(
@@ -349,6 +370,258 @@ def _reconfigure_entry(hass: HomeAssistant) -> MockConfigEntry:
     )
     entry.add_to_hass(hass)
     return entry
+
+
+def _entry_with_writable_holiday(hass: HomeAssistant) -> tuple[MockConfigEntry, object]:
+    entry = _reconfigure_entry(hass)
+    coordinator = SimpleNamespace(
+        hass=hass,
+        gateway=Gateway("gateway-one", model="K40"),
+        data={
+            HOLIDAY_LIST_PATH: SimpleNamespace(
+                resource=Resource(
+                    path=HOLIDAY_LIST_PATH,
+                    value=[
+                        {
+                            "id": 7,
+                            "startDate": "2030-08-01T08:00:00",
+                            "endDate": "2030-08-08T18:00:00",
+                            "heatingMode": "FIX_TEMPERATURE",
+                            "dhwMode": "OFF",
+                            "ventilationMode": "NOM",
+                            "assignedTo": ["hc1", "dhw1", "vent1"],
+                            "name": "VXJsYXVi",
+                            "thermalDesinfection": "ON",
+                            "fixTemperature": 17.0,
+                        }
+                    ],
+                    has_value=True,
+                ),
+                available=True,
+                freshness=Freshness.FRESH,
+            ),
+            HOLIDAY_CONFIGURATION_PATH: SimpleNamespace(
+                resource=Resource(
+                    path=HOLIDAY_CONFIGURATION_PATH,
+                    value={
+                        "values": {
+                            "date": {"allowedValues": ["dateTime"]},
+                            "heatingMode": {
+                                "allowedValues": [
+                                    "SATURDAY",
+                                    "FIX_TEMPERATURE",
+                                    "OFF",
+                                    "ECO",
+                                ]
+                            },
+                            "dhwMode": {
+                                "allowedValues": [
+                                    "SATURDAY",
+                                    "OFF",
+                                    "ECO",
+                                    "LOW",
+                                    "HIGH",
+                                    "OFF_TD",
+                                ]
+                            },
+                            "ventilationMode": {
+                                "allowedValues": [
+                                    "SATURDAY",
+                                    "OFF",
+                                    "MIN",
+                                    "RED",
+                                    "NOM",
+                                    "MAX",
+                                    "DEM",
+                                ]
+                            },
+                            "assignedTo": {"allowedValues": ["hc1", "dhw1", "vent1"]},
+                            "thermalDesinfection": {"allowedValues": ["ON", "OFF"]},
+                            "fixTemperature": {
+                                "minValue": 10.0,
+                                "maxValue": 25.0,
+                            },
+                            "name": {
+                                "stringConfig": {
+                                    "codingType": "BASE64",
+                                    "charset": "UTF8",
+                                    "maxLength": 32,
+                                }
+                            },
+                        }
+                    },
+                    has_value=True,
+                ),
+                available=True,
+                freshness=Freshness.FRESH,
+            ),
+        },
+        async_update_holiday=AsyncMock(),
+    )
+    entry.runtime_data = BoschBuderusRuntimeData(
+        client=AsyncMock(),
+        token_manager=AsyncMock(),
+        gateways=(coordinator.gateway,),
+        coordinators=(coordinator,),
+    )
+    return entry, coordinator
+
+
+async def test_options_flow_configures_only_advertised_holiday_fields(
+    hass: HomeAssistant, enable_custom_integrations: None
+) -> None:
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "init"
+    selection = hashlib.sha256(b"gateway-one\x007").hexdigest()[:24]
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
+    )
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "holiday"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOLIDAY_ASSIGNED_TO: ["hc1", "vent1"],
+            CONF_HOLIDAY_HEATING_MODE: "eco",
+            CONF_HOLIDAY_DHW_MODE: "low",
+            CONF_HOLIDAY_VENTILATION_MODE: "dem",
+            CONF_HOLIDAY_THERMAL_DISINFECTION: "off",
+            CONF_HOLIDAY_FIX_TEMPERATURE: 18.5,
+        },
+    )
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "holiday_updated"
+    holiday_id, values = coordinator.async_update_holiday.await_args.args
+    assert holiday_id == 7
+    assert values.assigned_to == ("hc1", "vent1")
+    assert values.heating_mode == "ECO"
+    assert values.dhw_mode == "LOW"
+    assert values.ventilation_mode == "DEM"
+    assert values.thermal_disinfection == "OFF"
+    assert values.fix_temperature == 18.5
+    assert values.start_date == "2030-08-01T08:00:00"
+    assert values.end_date == "2030-08-08T18:00:00"
+    assert values.name == "VXJsYXVi"
+
+
+async def test_options_flow_rejects_stale_or_missing_holidays(
+    hass: HomeAssistant, enable_custom_integrations: None
+) -> None:
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    coordinator.data[HOLIDAY_LIST_PATH].freshness = Freshness.STALE
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "no_writable_holidays"
+
+
+async def test_options_flow_requires_a_loaded_entry(
+    hass: HomeAssistant, enable_custom_integrations: None
+) -> None:
+    entry = _reconfigure_entry(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "not_loaded"
+
+
+async def test_options_flow_rejects_a_changed_selection(
+    hass: HomeAssistant, enable_custom_integrations: None
+) -> None:
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    selection = hashlib.sha256(b"gateway-one\x007").hexdigest()[:24]
+    original = coordinator.data[HOLIDAY_LIST_PATH].resource.value[0]
+    coordinator.data[HOLIDAY_LIST_PATH].resource = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value=[{**original, "id": 8}],
+        has_value=True,
+    )
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
+    )
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "init"
+    assert result["errors"] == {"base": "holiday_changed"}
+
+
+async def test_options_flow_stops_if_selected_holiday_disappears(
+    hass: HomeAssistant, enable_custom_integrations: None
+) -> None:
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    selection = hashlib.sha256(b"gateway-one\x007").hexdigest()[:24]
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
+    )
+    coordinator.data[HOLIDAY_LIST_PATH].resource = Resource(
+        path=HOLIDAY_LIST_PATH, value=[], has_value=True
+    )
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOLIDAY_ASSIGNED_TO: ["hc1"],
+            CONF_HOLIDAY_HEATING_MODE: "off",
+            CONF_HOLIDAY_DHW_MODE: "off",
+            CONF_HOLIDAY_VENTILATION_MODE: "off",
+            CONF_HOLIDAY_THERMAL_DISINFECTION: "off",
+            CONF_HOLIDAY_FIX_TEMPERATURE: 17.0,
+        },
+    )
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "holiday_changed"
+
+
+@pytest.mark.parametrize(
+    ("error", "expected"),
+    [
+        (WriteNotConfirmed("not confirmed"), "write_not_confirmed"),
+        (RateLimited(60), "write_rate_limited"),
+        (AuthenticationError("expired"), "write_authentication_failed"),
+        (WriteValidationError("changed"), "write_validation_failed"),
+        (InvalidPayload("bad"), "write_failed"),
+    ],
+)
+async def test_options_flow_reports_holiday_write_errors(
+    hass: HomeAssistant,
+    enable_custom_integrations: None,
+    error: Exception,
+    expected: str,
+) -> None:
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    coordinator.async_update_holiday.side_effect = error
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    selection = hashlib.sha256(b"gateway-one\x007").hexdigest()[:24]
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
+    )
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOLIDAY_ASSIGNED_TO: ["hc1", "dhw1", "vent1"],
+            CONF_HOLIDAY_HEATING_MODE: "fix_temperature",
+            CONF_HOLIDAY_DHW_MODE: "off",
+            CONF_HOLIDAY_VENTILATION_MODE: "nom",
+            CONF_HOLIDAY_THERMAL_DISINFECTION: "on",
+            CONF_HOLIDAY_FIX_TEMPERATURE: 17.0,
+        },
+    )
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "holiday"
+    assert result["errors"] == {"base": expected}
 
 
 async def _start_reconfigure(

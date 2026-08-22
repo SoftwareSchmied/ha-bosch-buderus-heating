@@ -30,7 +30,7 @@ def test_stable_project_identity() -> None:
 
     assert manifest["domain"] == "bosch_buderus_heating"
     assert manifest["name"] == "Bosch/Buderus Heating"
-    assert manifest["version"] == "0.3.0"
+    assert manifest["version"] == "0.4.0"
     assert project["project"]["version"] == manifest["version"]
     assert manifest["requirements"] == []
     assert manifest["config_flow"] is True
@@ -111,6 +111,31 @@ def test_holiday_translations_are_clear_and_match_vendor_terms() -> None:
     assert english["binary_sensor"]["holiday_active"]["name"] == ("Holiday mode active")
     assert english["sensor"]["next_holiday"]["name"] == "Next holiday"
     assert english["calendar"]["holiday_periods"]["name"] == "Holiday periods"
+
+
+def test_holiday_options_are_translated_and_structurally_aligned() -> None:
+    """The dynamic holiday dialog remains complete in both supported languages."""
+    source = load_json(INTEGRATION / "strings.json")
+    german = load_json(INTEGRATION / "translations" / "de.json")
+    english = load_json(INTEGRATION / "translations" / "en.json")
+
+    assert source["options"].keys() == german["options"].keys()
+    assert source["options"].keys() == english["options"].keys()
+    assert german["selector"]["holiday_heating_mode"]["options"] == {
+        "saturday": "Wie Samstag",
+        "fix_temperature": "Konstante Temperatur",
+        "off": "Aus",
+        "eco": "Absenken",
+    }
+    assert german["selector"]["holiday_dhw_mode"]["options"]["off_td"] == (
+        "Aus mit thermischer Desinfektion"
+    )
+    for translations in (source, german, english):
+        for selector in translations["selector"].values():
+            assert all(
+                re.fullmatch(r"[a-z0-9]+(?:[-_][a-z0-9]+)*", option)
+                for option in selector["options"]
+            )
 
 
 @pytest.mark.parametrize(

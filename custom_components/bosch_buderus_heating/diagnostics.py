@@ -12,9 +12,15 @@ from . import BoschBuderusConfigEntry
 from .const import CONF_BRAND, CONF_GATEWAY_IDS
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
+    Freshness,
     ResourceSnapshot,
 )
-from .holidays import parse_holiday_state
+from .holidays import (
+    HOLIDAY_RESOURCE_PATHS,
+    HOLIDAY_TIMEZONE_PATH,
+    parse_holiday_state,
+    parse_holiday_write_configuration,
+)
 from .pointt import Gateway, Resource
 from .resource_catalog import (
     capability_maturity,
@@ -24,7 +30,7 @@ from .resource_catalog import (
     supports_entity,
 )
 
-DIAGNOSTICS_SCHEMA_VERSION = 4
+DIAGNOSTICS_SCHEMA_VERSION = 5
 
 
 async def async_get_config_entry_diagnostics(
@@ -93,6 +99,13 @@ def _gateway_diagnostics(
         coordinator.resources,
         fallback_timezone=coordinator.hass.config.time_zone,
     )
+    current_holiday_resources = {
+        path: snapshot.resource
+        for path in (*HOLIDAY_RESOURCE_PATHS, HOLIDAY_TIMEZONE_PATH)
+        if (snapshot := snapshots.get(path)) is not None
+        and snapshot.available
+        and snapshot.freshness is Freshness.FRESH
+    }
     return {
         "label": f"gateway_{number}",
         "device_class": _gateway_class(coordinator.gateway),
@@ -118,6 +131,10 @@ def _gateway_diagnostics(
             "invalid_period_count": holiday_state.invalid_period_count,
             "active_status_available": holiday_state.active is not None,
             "timezone_source": holiday_state.timezone_source,
+            "calendar_writes_available": parse_holiday_write_configuration(
+                current_holiday_resources
+            )
+            is not None,
         },
         "inventory": {
             "resource_count": len(resources),

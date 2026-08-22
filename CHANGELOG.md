@@ -5,6 +5,51 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-22
+
+### Added
+
+- Capability-gated create, edit, and delete support for the **Holiday periods**
+  calendar using Home Assistant's standard calendar interface.
+- Exact PointT holiday payloads derived from MyBuderus and HomeCom Easy,
+  including date mode, affected circuits, heating, hot-water, ventilation,
+  thermal-disinfection, fixed-temperature, and encoded-name fields.
+- Privacy-safe diagnostics indicating whether holiday calendar writes are
+  currently available. The diagnostics schema is now version 5.
+- A separate **Configure holiday** dialog for circuit assignments, heating,
+  hot-water and ventilation modes, thermal disinfection, and constant room
+  temperature. Its fields and choices follow the live PointT configuration.
+
+### Changed
+
+- Editing a holiday changes only its dates and, where PointT supports cloud
+  names, its name. All circuit assignments and operating-mode settings are
+  preserved from the latest confirmed PointT value.
+- New holidays use the same conservative defaults as the official apps:
+  all advertised circuits, fixed-temperature heating at 17 °C when supported,
+  hot water off, ventilation off when supported, and thermal disinfection on
+  when supported.
+- PointT date-only end dates and Home Assistant's exclusive calendar end are
+  converted in both directions without shifting the visible holiday period.
+- Home Assistant's technical `recurrence_id` is accepted for ordinary event
+  edits and deletions. Actual recurrence ranges and `RRULE` values remain
+  unsupported.
+
+### Security and compatibility
+
+- Holiday writes are enabled only while the read-only list and the dedicated
+  write configuration are available, current, and schema-valid.
+- POST, PUT, and DELETE requests are each sent at most once. A timed-out
+  mutation is resolved by bounded read-back and is never blindly repeated.
+- Every mutation must be confirmed from `/holidayMode/list`; otherwise Home
+  Assistant reports it as unsuccessful.
+- Detailed holiday settings are accepted only from the options advertised by
+  `/holidayMode/configuration`, and successful writes preserve the period's
+  name and dates.
+- Recurrence, location, and description fields are rejected because PointT
+  does not support them. Unknown modes, malformed IDs, unsupported time steps,
+  and incomplete existing periods are never written.
+
 ## [0.3.0] - 2026-08-22
 
 ### Added

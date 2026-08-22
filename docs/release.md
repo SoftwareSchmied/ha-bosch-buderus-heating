@@ -13,9 +13,16 @@ ruff format --check .
 ruff check .
 mypy
 pytest
-python -m pip_audit --strict
+python -m venv .audit-venv
+.audit-venv/bin/python -m pip install -e ".[security]"
+.audit-venv/bin/python -m pip freeze --exclude-editable > .audit-venv/requirements.txt
+.audit-venv/bin/python -m pip_audit --strict --requirement .audit-venv/requirements.txt
 python scripts/build_release.py --expected-version <version>
 ```
+
+Use `.audit-venv\Scripts\python.exe` instead on Windows. Keeping the audit in a
+clean environment prevents Home Assistant's test-only dependency set from
+being mistaken for the integration's runtime dependencies.
 
 The official HACS and hassfest validation requires Docker. If Docker is not
 available locally, publication remains gated: the tag-triggered GitHub

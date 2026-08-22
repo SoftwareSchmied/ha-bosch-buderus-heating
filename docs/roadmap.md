@@ -1,6 +1,6 @@
 # Roadmap
 
-## Current status — 0.3.0
+## Current status — 0.4.0
 
 The integration is available as a stable GitHub release and supports Bosch and
 Buderus PointT heating systems through one capability-based implementation.
@@ -23,8 +23,10 @@ The released foundation includes:
 - APK-aligned heating, cooling, hot-water, compressor, auxiliary-heater, and
   season-optimization states in English and German;
 - stable entity creation for known empty or partial startup payloads;
-- optional read-only holiday discovery with a dedicated active-state binary
-  sensor, next-period timestamp sensor, and multiple-period calendar;
+- optional holiday discovery with a dedicated active-state binary sensor,
+  next-period timestamp sensor, and a multiple-period calendar whose create,
+  edit, and delete actions are guarded by current PointT capabilities and
+  mandatory read-back;
 - privacy-safe holiday diagnostics without dates, names, or raw payloads.
 
 The first physical contract profile is a Buderus heat-pump installation with a
@@ -60,7 +62,7 @@ non-functional entities.
 3. Variable-tariff information from the separate shared-energy service.
 4. Dynamically available solar, pool, ventilation, room-device, zone, and PV
    modules.
-5. Holiday editing and schedule editing only after multiple real schemas and
+5. Heating and hot-water schedule editing only after multiple real schemas and
    safe round trips have been verified.
 
 Wallboxes, air conditioners, gateway network configuration, device pairing,
