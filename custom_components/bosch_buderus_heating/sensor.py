@@ -20,9 +20,12 @@ from homeassistant.const import (
     PERCENTAGE,
     EntityCategory,
     UnitOfEnergy,
+    UnitOfPower,
     UnitOfPressure,
     UnitOfTemperature,
     UnitOfTime,
+    UnitOfVolume,
+    UnitOfVolumeFlowRate,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -160,6 +163,8 @@ _ENUM_OPTIONS: dict[str, tuple[str, ...]] = {
         "defrost",
         "alarm",
     ),
+    "auxiliary_heater_operation_mode": ("off", "manual", "auto"),
+    "pv_contact_state": ("inactive", "active"),
     "data_processing_status": ("in_progress", "completed"),
     "season_optimizer_mode": ("off", "automatic", "forced_heat", "forced_cool"),
     "isrc_support_status": (
@@ -283,6 +288,7 @@ _LEGACY_KEYS: dict[tuple[str, str | None], str] = {
 }
 
 _UNSAFE_SUBKEY_TOKENS = (
+    "inclusiontime",
     "ip",
     "mac",
     "serial",
@@ -548,12 +554,17 @@ def _energy_descriptions(
     resource: Resource,
 ) -> list[BoschBuderusSensorEntityDescription]:
     keys = set(_energy_values(resource))
-    if not keys and resource.path in {
-        "/heatSources/emon/totalConsumption",
-        "/heatSources/emon/chConsumption",
-        "/heatSources/emon/dhwConsumption",
-        "/heatSources/emon/coolingConsumption",
-    }:
+    if not keys and (
+        resource.path
+        in {
+            "/heatSources/emon/totalConsumption",
+            "/heatSources/emon/chConsumption",
+            "/heatSources/emon/dhwConsumption",
+            "/heatSources/emon/coolingConsumption",
+            "/heatSources/emon/poolConsumption",
+        }
+        or re.fullmatch(r"/heatSources/hs[^/]+/emon/totalConsumption", resource.path)
+    ):
         keys.update(("compressor", "eheater", "outputProduced"))
     derived_keys = {"electricity", "environmental_energy", "total_electricity"}
     descriptions = [
@@ -1014,12 +1025,13 @@ def _measurement_attributes(
             SensorStateClass.TOTAL_INCREASING,
             1.0,
         )
-    if path.endswith("/workingTime"):
+    if path.endswith(("/workingTime", "/operationHours", "/totalSystem")):
+        scale = 1.0 if unit in {"h", "hours"} else 1 / 3600
         return (
             UnitOfTime.HOURS,
             SensorDeviceClass.DURATION,
             SensorStateClass.TOTAL_INCREASING,
-            1 / 3600,
+            scale,
         )
     if path.endswith("/numberOfStarts"):
         return None, None, SensorStateClass.TOTAL_INCREASING, 1.0
@@ -1037,9 +1049,109 @@ def _measurement_attributes(
             SensorStateClass.MEASUREMENT,
             1.0,
         )
-    if unit == "mins":
+    if unit in {"mbar", "hPa", "kPa", "Pa"}:
+        pressure_unit = {
+            "mbar": UnitOfPressure.MBAR,
+            "hPa": UnitOfPressure.HPA,
+            "kPa": UnitOfPressure.KPA,
+            "Pa": UnitOfPressure.PA,
+        }[unit]
+        return (
+            pressure_unit,
+            SensorDeviceClass.PRESSURE,
+            SensorStateClass.MEASUREMENT,
+            1.0,
+        )
+    if unit == "W":
+        return (
+            UnitOfPower.WATT,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
+            1.0,
+        )
+    if unit == "kW":
+        return (
+            UnitOfPower.KILO_WATT,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
+            1.0,
+        )
+    if unit == "kWh":
+        return (
+            UnitOfEnergy.KILO_WATT_HOUR,
+            SensorDeviceClass.ENERGY,
+            (
+                SensorStateClass.TOTAL_INCREASING
+                if path.endswith(("Consumption", "/solarYield"))
+                else SensorStateClass.MEASUREMENT
+            ),
+            1.0,
+        )
+    if unit == "Wh":
+        return (
+            UnitOfEnergy.WATT_HOUR,
+            SensorDeviceClass.ENERGY,
+            (
+                SensorStateClass.TOTAL_INCREASING
+                if path.endswith(("Consumption", "/solarYield"))
+                else SensorStateClass.MEASUREMENT
+            ),
+            1.0,
+        )
+    if unit in {"l", "L"}:
+        return (
+            UnitOfVolume.LITERS,
+            SensorDeviceClass.WATER,
+            (
+                SensorStateClass.TOTAL_INCREASING
+                if path.endswith("TotalConsumption")
+                else SensorStateClass.MEASUREMENT
+            ),
+            1.0,
+        )
+    if unit in {"m3", "m³"}:
+        device_class = (
+            SensorDeviceClass.GAS
+            if "gas" in path.casefold()
+            else SensorDeviceClass.WATER
+        )
+        return (
+            UnitOfVolume.CUBIC_METERS,
+            device_class,
+            SensorStateClass.TOTAL_INCREASING,
+            1.0,
+        )
+    if unit in {"l/min", "L/min"}:
+        return (
+            UnitOfVolumeFlowRate.LITERS_PER_MINUTE,
+            SensorDeviceClass.VOLUME_FLOW_RATE,
+            SensorStateClass.MEASUREMENT,
+            1.0,
+        )
+    if unit in {"min", "mins"}:
         return (
             UnitOfTime.MINUTES,
+            SensorDeviceClass.DURATION,
+            SensorStateClass.MEASUREMENT,
+            1.0,
+        )
+    if unit in {"h", "hours"}:
+        return (
+            UnitOfTime.HOURS,
+            SensorDeviceClass.DURATION,
+            SensorStateClass.MEASUREMENT,
+            1.0,
+        )
+    if unit in {"s", "seconds"}:
+        return (
+            UnitOfTime.SECONDS,
+            SensorDeviceClass.DURATION,
+            SensorStateClass.MEASUREMENT,
+            1.0,
+        )
+    if unit in {"d", "days"}:
+        return (
+            UnitOfTime.DAYS,
             SensorDeviceClass.DURATION,
             SensorStateClass.MEASUREMENT,
             1.0,
@@ -1088,8 +1200,15 @@ def _enum_translation_key(resource: Resource, value_key: str | None) -> str | No
         }.get(tail)
     if tail == "heatPumpType":
         return "heat_pump_type"
-    if path.startswith("/heatSources/") and tail == "type":
+    if re.fullmatch(r"/heatSources/hs[^/]+/type", path):
         return "heat_source_type"
+    if re.fullmatch(r"/heatSources/hs[^/]+/defrostActive", path):
+        return "on_off_state"
+    if re.fullmatch(
+        r"(?:/heatingCircuits/[^/]+/(?:boostMode|openWindowDetection/(?:enabled|status)|setpointOptimization)|/dhwCircuits/[^/]+/recirculation/enabled|/heatSources/hybrid/(?:reminderEnable|reminderLapsed)|/system/(?:appliance/enabled|powerGuard/active|powerLimitation/active|silentMode/enabled|variableTariff/(?:ch|dhw)/(?:highPriceEnable|lowPriceEnable|optimization))|/solarCircuits/[^/]+/maxTemperatureReached|/pool/enabled|/zones/zone[^/]+/childLock|/pv/(?:enable|surplusAvailable))",
+        path,
+    ):
+        return "on_off_state"
     return {
         "/gateway/dataProcessing/status": "data_processing_status",
         "/system/type": "system_type",
@@ -1099,8 +1218,19 @@ def _enum_translation_key(resource: Resource, value_key: str | None) -> str | No
         "/heatSources/chStatus": "on_off_state",
         "/heatSources/compressor/status": "compressor_status",
         "/heatSources/Source/eHeater/status": "electric_auxiliary_heater_status",
+        "/heatSources/additionalHeater/operationMode": (
+            "auxiliary_heater_operation_mode"
+        ),
+        "/heatSources/additionalHeater/primary/status": (
+            "electric_auxiliary_heater_status"
+        ),
+        "/heatSources/currentEmergencyMode": "on_off_state",
         "/heatSources/emStatus": "energy_management_status",
         "/heatSources/flameStatus": "on_off_state",
+        "/heatSources/pvContactState": "pv_contact_state",
+        "/heatSources/smartFunction/active": "on_off_state",
+        "/heatSources/smartFunction/enabled": "on_off_state",
+        "/heatSources/standbyMode": "on_off_state",
         "/system/sensors/temperatures/outdoorTemperatureSource": (
             "outdoor_temperature_source"
         ),

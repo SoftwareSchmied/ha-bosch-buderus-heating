@@ -5,6 +5,85 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-23
+
+Version 0.5.0 expands heat-pump monitoring with optional PointT
+resources confirmed in both MyBuderus and HomeCom Easy while retaining strict
+capability and schema checks.
+
+### Added
+
+- Optional operating values for emergency and standby mode, the PV contact,
+  Smart Function, primary auxiliary-heater state, and passive-cooling inlet
+  temperature.
+- Per-source current power, power percentage, defrost state, and brine inlet
+  and outlet temperatures for every heat-source ID reported by PointT.
+- Optional read-only capabilities for heating-circuit boost and cooling,
+  fresh-water stations, per-source energy, hybrid systems, low-noise and power
+  limiting, solar, pool, ventilation, room zones, room devices, photovoltaics,
+  and gateway-provided variable-tariff state.
+- English and German names and state translations based on the official app
+  terminology.
+- A capability-gated Silent Mode select with Off, Automatic, and On options.
+- A capability-gated auxiliary-heater mode select with Off, On, and Auto.
+- A maximum-supply-temperature number control with whole-degree steps and an
+  installation-specific range read dynamically from PointT. A broad 0–100 °C
+  plausibility envelope rejects corrupt metadata. It is disabled by default
+  because it is an installer-level setting.
+
+### Changed
+
+- Discovery combines gateway references with a bounded official-app path
+  catalog. Per-source probes are derived dynamically and do not assume `hs1`
+  or `hs2`.
+- Unsupported optional paths are discarded after the initial probe and never
+  enter recurring polling.
+- Fault discovery now derives failure paths only from real `hs<number>` heat
+  sources. Ordinary heat-source resources no longer cause pointless
+  `activefailure` and `failurelist` probes.
+- Optional energy totals, water/gas consumption, volume flow, operating hours,
+  power, pressure, humidity, and temperature values use native Home Assistant
+  units and state classes when the PointT unit is known.
+
+### Security and compatibility
+
+- Optional resources remain read-only unless they have an explicit write
+  policy. Silent Mode and auxiliary-heater mode require their exact writable
+  `stringValue` schemas and complete allowed-value sets. Maximum supply
+  temperature requires a writable Celsius number with complete gateway limits
+  inside a broad 0–100 °C plausibility envelope.
+- All three controls use the existing single-PUT transaction with mandatory,
+  staggered read-back and no blind write retry.
+- Entities are created only when the returned PointT type and unit match a
+  known schema. Unexpected schemas remain excluded and visible in redacted
+  capability diagnostics.
+- Existing entity IDs, devices, and controls are unchanged. New values use the
+  existing cadence groups and do not create new write permissions.
+
+### Validation
+
+- 451 automated tests pass with 95.20% branch coverage.
+- The development build loads successfully on the physical Buderus K40 test
+  system. That profile additionally exposes power-limitation and silent-mode
+  state; unsupported optional families remain absent without setup errors.
+- The K40 Silent Mode completed a physical `off` → `auto` → `off` write and
+  read-back round trip. The original state was restored successfully.
+- The K40 auxiliary-heater mode completed a physical `off` → `auto` → `off`
+  write and read-back round trip. The heater itself remained off and the
+  original setting was restored.
+- The K40 maximum supply temperature completed a physical `40` → `41` → `40`
+  °C write and read-back round trip. The original setting was restored.
+- Ruff formatting and linting and strict Mypy type checking pass.
+
+### Upgrade notes and limitations
+
+- Restart Home Assistant after installing this release so discovery can
+  probe the additional paths.
+- Every value is optional and appears only when the connected gateway supports
+  it. Historical `/recordings` data and the separate shared-energy tariff
+  service remain intentionally excluded until an opt-in request and statistics
+  model is defined.
+
 ## [0.4.1] - 2026-08-23
 
 Version 0.4.1 fixes editing and moving ordinary holiday periods from Home

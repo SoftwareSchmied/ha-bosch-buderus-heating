@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from .holidays import HOLIDAY_RESOURCE_PATHS
 from .pointt import PointTClient, Resource
 
@@ -13,11 +15,16 @@ ROOT_RESOURCE_PATHS: tuple[str, ...] = (
     "/dhwCircuits",
     "/heatSources",
     "/devices",
+    "/solarCircuits",
+    "/pool",
+    "/ventilation",
+    "/zones",
+    "/pv",
     *HOLIDAY_RESOURCE_PATHS,
 )
 
 MAX_DISCOVERY_DEPTH = 8
-MAX_DISCOVERY_RESOURCES = 256
+MAX_DISCOVERY_RESOURCES = 512
 
 # Some gateways omit stable public resources from their reference trees or
 # advertise an unreadable container around them. Keep these fallbacks narrow:
@@ -26,21 +33,235 @@ MAX_DISCOVERY_RESOURCES = 256
 OPAQUE_CONTAINER_CHILDREN: dict[str, tuple[str, ...]] = {
     "/gateway": ("/gateway/dataProcessing/status",),
     "/system": (
+        "/system/appliance/enabled",
+        "/system/appliance/model",
+        "/system/appliance/versionFirmware",
+        "/system/awayMode/temperature",
+        "/system/energyTariff/electricity",
+        "/system/energyTariff/gas",
+        "/system/energyTariff/oil",
+        "/system/energyTariff/pv",
         "/system/globalSeasonOptimizer/currentMode",
+        "/system/healthStatus",
+        "/system/iSRC/installationStatus",
         "/system/iSRC/supportStatus",
+        "/system/lowNoise/duration",
+        "/system/lowNoise/mode",
+        "/system/powerGuard/active",
+        "/system/powerLimitation/active",
+        "/system/seasonOptimizer/coolingThreshold",
+        "/system/seasonOptimizer/heatingThreshold",
+        "/system/seasonOptimizer/mode",
+        "/system/sensors/temperatures/chimney",
+        "/system/sensors/temperatures/return",
+        "/system/sensors/temperatures/supply_t1",
+        "/system/sensors/temperatures/supply_t1_setpoint",
+        "/system/silentMode/enabled",
+        "/system/silentMode/powerReduction",
+        "/system/silentMode/startTime",
+        "/system/silentMode/stopTime",
+        "/system/systemOfUnits",
+    ),
+    "/system/variableTariff": (
+        "/system/variableTariff/ch/currentSetpoint",
+        "/system/variableTariff/ch/highPriceDelta",
+        "/system/variableTariff/ch/lowPriceDelta",
+        "/system/variableTariff/ch/midPriceSetpoint",
+        "/system/variableTariff/ch/optimization",
+        "/system/variableTariff/ch/status",
+        "/system/variableTariff/currentPriceCatagorization",
+        "/system/variableTariff/dhw/currentOpmode",
+        "/system/variableTariff/dhw/highPriceEnable",
+        "/system/variableTariff/dhw/lowPriceEnable",
+        "/system/variableTariff/dhw/optimization",
+        "/system/variableTariff/dhw/status",
+        "/system/variableTariff/priceInfo",
+        "/system/variableTariff/supportStatus",
+        "/system/variableTariff/tariffId",
     ),
     "/heatSources": (
+        "/heatSources/additionalHeater/operationMode",
+        "/heatSources/additionalHeater/primary/status",
+        "/heatSources/additionalHeater/primary/type",
         "/heatSources/chStatus",
         "/heatSources/compressor/status",
+        "/heatSources/currentEmergencyMode",
+        "/heatSources/electricityTotalConsumption",
+        "/heatSources/gasTotalConsumption",
+        "/heatSources/hybrid/activeHeatSource",
+        "/heatSources/hybrid/bivalentSetpoint",
+        "/heatSources/hybrid/controlStrategy",
+        "/heatSources/hybrid/outdoorStatus",
+        "/heatSources/hybrid/outdoorVariant",
+        "/heatSources/hybrid/reminderDate",
+        "/heatSources/hybrid/reminderEnable",
+        "/heatSources/hybrid/reminderLapsed",
+        "/heatSources/numberOfRefrigerantCircuitsInstalled",
         "/heatSources/Source/eHeater/status",
+        "/heatSources/passiveCooling/inflowTemp",
+        "/heatSources/poolSetpointTemperature",
+        "/heatSources/poolStatus",
+        "/heatSources/poolTemperature",
+        "/heatSources/pvContactState",
+        "/heatSources/smartFunction/active",
+        "/heatSources/smartFunction/enabled",
+        "/heatSources/standbyMode",
+        "/heatSources/type",
+        "/heatSources/workingTime/totalSystem",
     ),
     "/heatSources/emon": (
         "/heatSources/emon/totalConsumption",
         "/heatSources/emon/chConsumption",
         "/heatSources/emon/dhwConsumption",
         "/heatSources/emon/coolingConsumption",
+        "/heatSources/emon/poolConsumption",
+    ),
+    "/dhwCircuits": ("/dhwCircuits/waterTotalConsumption",),
+    "/solarCircuits": ("/solarCircuits/sc1",),
+    "/pool": (
+        "/pool/additionalHeater/poolMode",
+        "/pool/currentTemp",
+        "/pool/enabled",
+        "/pool/setpointTemp",
+    ),
+    "/ventilation": (
+        "/ventilation/operationModes/manual/fanSetpoint",
+        "/ventilation/zone1",
+    ),
+    "/zones": (
+        "/zones/configuration",
+        "/zones/list",
+    ),
+    "/pv": (
+        "/pv/enable",
+        "/pv/list",
+        "/pv/surplusAvailable",
     ),
 }
+
+_HEATING_CIRCUIT_PATH = re.compile(r"^/heatingCircuits/hc[^/]+$", re.IGNORECASE)
+_DHW_CIRCUIT_PATH = re.compile(r"^/dhwCircuits/dhw[^/]+$", re.IGNORECASE)
+_HEAT_SOURCE_PATH = re.compile(r"^/heatSources/hs[^/]+$", re.IGNORECASE)
+_SOLAR_CIRCUIT_PATH = re.compile(r"^/solarCircuits/[^/]+$", re.IGNORECASE)
+_VENTILATION_ZONE_PATH = re.compile(r"^/ventilation/zone[^/]+$", re.IGNORECASE)
+_ZONE_PATH = re.compile(r"^/zones/zone[^/]+$", re.IGNORECASE)
+_DEVICE_PATH = re.compile(r"^/devices/(?!list$)[^/]+$", re.IGNORECASE)
+
+_HEATING_CIRCUIT_OPTIONAL_SUFFIXES = (
+    "/actualHumidity",
+    "/actualSupplyTemperature",
+    "/awayTemperature",
+    "/boostDuration",
+    "/boostMode",
+    "/boostRemainingTime",
+    "/boostTemperature",
+    "/cooling/controlType",
+    "/cooling/manualRoomSetpoint",
+    "/cooling/operationMode",
+    "/cooling/outdoorThreshold",
+    "/cooling/roomTempSetpoint",
+    "/cooling/temperatureLevels/on",
+    "/cooling/temporaryRoomSetpoint",
+    "/openWindowDetection/enabled",
+    "/openWindowDetection/status",
+    "/operationSetpoints",
+    "/pumpModulation",
+    "/roomtemperature",
+    "/setpointOptimization",
+    "/suWiCoolingThreshold",
+    "/suWiThreshold",
+    "/temporaryRoomSetpoint",
+)
+
+_DHW_CIRCUIT_OPTIONAL_SUFFIXES = (
+    "/currentFriwaSupplyTemperature",
+    "/friwaPrimaryPumpModulation",
+    "/inletTemperature",
+    "/learningWeek",
+    "/manualsetpoint",
+    "/monitorValues",
+    "/numberOfShowersAvailable",
+    "/operationSetpoints",
+    "/outletTemperature",
+    "/outTemp",
+    "/recirculation/enabled",
+    "/safetyTemperature",
+    "/sensor/airBoxTemperature",
+    "/sensor/atmosphericPressure",
+    "/sensor/exhaustFlueGasTemperature",
+    "/sensor/externalTankTemperature",
+    "/sensor/fanSpeed",
+    "/sensor/gasFlow",
+    "/sensor/heatExchangerFlueGasTemperature",
+    "/sensor/heatExchangerTemperature",
+    "/sensor/waterFlow",
+    "/volumeFlow",
+    "/waterTotalConsumption",
+)
+
+_HEAT_SOURCE_OPTIONAL_SUFFIXES = (
+    "/actualPower",
+    "/brineCircuit/collectorInflowTemp",
+    "/brineCircuit/collectorOutflowTemp",
+    "/defrostActive",
+    "/electricityTotalConsumption",
+    "/emon/totalConsumption",
+    "/operationHours",
+    "/powerPercentage",
+)
+
+_SOLAR_CIRCUIT_OPTIONAL_SUFFIXES = (
+    "/collectorTemperature",
+    "/dhwTankBottomTemperature",
+    "/maxCylinderTemperature",
+    "/maxTemperatureReached",
+    "/pumpModulation",
+    "/solarYield",
+)
+
+_VENTILATION_ZONE_OPTIONAL_SUFFIXES = (
+    "/exhaustFanLevel",
+    "/filter/maxRunTime",
+    "/filter/remainingTime",
+    "/maxIndoorAirQuality",
+    "/maxRelativeHumidity",
+    "/operationMode",
+    "/sensors/supplyTemp",
+    "/ventilationLevels",
+)
+
+_ZONE_OPTIONAL_SUFFIXES = (
+    "/averageActualHumidity",
+    "/averageCurrentTemperature",
+    "/childLock",
+    "/currentRoomSetpoint",
+    "/cool/manualRoomSetpoint",
+    "/cool/operationMode",
+    "/cool/temporaryRoomSetpoint",
+    "/heat/manualRoomSetpoint",
+    "/heat/operationMode",
+    "/heat/temporaryRoomSetpoint",
+    "/heatCool/manualRoomSetpoint",
+    "/heatCool/operationMode",
+    "/heatCool/temporaryRoomSetpoint",
+    "/icon",
+    "/name",
+)
+
+_DEVICE_OPTIONAL_SUFFIXES = (
+    "/actualHumidity",
+    "/assignedHC",
+    "/battery",
+    "/errors",
+    "/name",
+    "/productName",
+    "/rfTimeofConnectionLost",
+    "/roomtemperature",
+    "/signal",
+    "/type",
+    "/versionFirmware",
+    "/zoneId",
+)
 
 
 async def async_discover_resources(
@@ -61,6 +282,8 @@ async def async_discover_resources(
     while pending:
         depth = pending[0][1]
         capacity = maximum_resources - len(discovered)
+        if capacity <= 0:
+            break
         frontier: list[str] = []
         while pending and pending[0][1] == depth and len(frontier) < capacity:
             frontier.append(pending.pop(0)[0])
@@ -72,8 +295,8 @@ async def async_discover_resources(
             discovered[result.path] = resource
             if len(discovered) >= maximum_resources or depth >= maximum_depth:
                 continue
-            for fallback in OPAQUE_CONTAINER_CHILDREN.get(result.path, ()):
-                if fallback not in queued:
+            for fallback in _optional_children(result.path):
+                if depth + 1 <= maximum_depth and fallback not in queued:
                     queued.add(fallback)
                     pending.append((fallback, depth + 1))
             for reference in resource.references:
@@ -82,11 +305,32 @@ async def async_discover_resources(
                     continue
                 queued.add(child)
                 pending.append((child, depth + 1))
-                for fallback in OPAQUE_CONTAINER_CHILDREN.get(child, ()):
-                    if fallback not in queued:
+                for fallback in _optional_children(child):
+                    if depth + 2 <= maximum_depth and fallback not in queued:
                         queued.add(fallback)
                         pending.append((fallback, depth + 2))
     return discovered
+
+
+def _optional_children(path: str) -> tuple[str, ...]:
+    """Return narrowly curated app paths below one discovered container."""
+    fixed = OPAQUE_CONTAINER_CHILDREN.get(path, ())
+    suffixes: tuple[str, ...] = ()
+    if _HEATING_CIRCUIT_PATH.fullmatch(path):
+        suffixes = _HEATING_CIRCUIT_OPTIONAL_SUFFIXES
+    elif _DHW_CIRCUIT_PATH.fullmatch(path) and path != "/dhwCircuits/list":
+        suffixes = _DHW_CIRCUIT_OPTIONAL_SUFFIXES
+    if _HEAT_SOURCE_PATH.fullmatch(path):
+        suffixes = _HEAT_SOURCE_OPTIONAL_SUFFIXES
+    elif _SOLAR_CIRCUIT_PATH.fullmatch(path):
+        suffixes = _SOLAR_CIRCUIT_OPTIONAL_SUFFIXES
+    elif _VENTILATION_ZONE_PATH.fullmatch(path):
+        suffixes = _VENTILATION_ZONE_OPTIONAL_SUFFIXES
+    elif _ZONE_PATH.fullmatch(path):
+        suffixes = _ZONE_OPTIONAL_SUFFIXES
+    elif _DEVICE_PATH.fullmatch(path):
+        suffixes = _DEVICE_OPTIONAL_SUFFIXES
+    return (*fixed, *(f"{path}{suffix}" for suffix in suffixes))
 
 
 def _is_allowed_reference(path: str, roots: tuple[str, ...]) -> bool:

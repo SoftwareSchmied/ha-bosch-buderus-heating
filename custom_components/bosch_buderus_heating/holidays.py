@@ -17,12 +17,16 @@ from .pointt.models import JsonValue
 HOLIDAY_LIST_PATH = "/holidayMode/list"
 HOLIDAY_CONFIGURATION_PATH = "/holidayMode/configuration"
 HOLIDAY_ACTIVE_MODES_PATH = "/holidayMode/activeModes"
+HOLIDAY_ACTIVATED_PATH = "/holidayMode/activated"
+HOLIDAY_ENABLED_PATH = "/holidayMode/enabled"
 HOLIDAY_CREATE_PATH = "/holidayMode"
 HOLIDAY_TIMEZONE_PATH = "/gateway/tzInfo/timeZone"
 HOLIDAY_RESOURCE_PATHS = (
     HOLIDAY_LIST_PATH,
     HOLIDAY_CONFIGURATION_PATH,
     HOLIDAY_ACTIVE_MODES_PATH,
+    HOLIDAY_ACTIVATED_PATH,
+    HOLIDAY_ENABLED_PATH,
 )
 HOLIDAY_PERIOD_PATHS = (HOLIDAY_LIST_PATH, HOLIDAY_CONFIGURATION_PATH)
 
@@ -218,9 +222,18 @@ def parse_holiday_state(
         periods.append(parsed)
     periods.sort(key=lambda item: (item.start, item.end, item.identifier or ""))
 
-    active_resource = resources.get(HOLIDAY_ACTIVE_MODES_PATH)
-    active = (
-        _active_modes_value(active_resource) if active_resource is not None else None
+    active = next(
+        (
+            active_value
+            for path in (
+                HOLIDAY_ACTIVE_MODES_PATH,
+                HOLIDAY_ACTIVATED_PATH,
+                HOLIDAY_ENABLED_PATH,
+            )
+            if (resource := resources.get(path)) is not None
+            if (active_value := _active_modes_value(resource)) is not None
+        ),
+        None,
     )
     if active is None and periods:
         current = now or datetime.now(UTC)

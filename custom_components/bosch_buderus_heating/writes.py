@@ -55,6 +55,16 @@ DHW_OPERATION_MODE_POLICY = EnumWritePolicy(
     frozenset({"stringValue"}),
     frozenset({"Off", "low", "high", "ownprogram", "eco"}),
 )
+SILENT_MODE_POLICY = EnumWritePolicy(
+    r"^/system/silentMode/enabled$",
+    frozenset({"stringValue"}),
+    frozenset({"off", "auto", "on"}),
+)
+AUXILIARY_HEATER_OPERATION_MODE_POLICY = EnumWritePolicy(
+    r"^/heatSources/additionalHeater/operationMode$",
+    frozenset({"stringValue"}),
+    frozenset({"off", "manual", "auto"}),
+)
 STRING_SWITCH_POLICIES = (
     EnumWritePolicy(
         r"^/dhwCircuits/[^/]+/charge$",
@@ -74,6 +84,10 @@ STRING_SWITCH_POLICIES = (
 )
 NUMBER_WRITE_POLICIES = (
     NumberWritePolicy(r"^/heatingCircuits/[^/]+/manualRoomSetpoint$", "C", 5, 30, 0.5),
+    # The user-visible range comes from the individual gateway. The broad
+    # envelope rejects corrupt metadata without imposing the K40 test system's
+    # 30-60 °C limits on other heating systems.
+    NumberWritePolicy(r"^/heatingCircuits/[^/]+/maxFlowTemp$", "C", 0, 100, 1.0),
     NumberWritePolicy(
         r"^/heatingCircuits/[^/]+/temperatureLevels/(?:comfort2|eco)$",
         "C",
@@ -229,6 +243,8 @@ def enum_policy_for_resource(resource: Resource) -> EnumWritePolicy | None:
     policies = (
         HEATING_CIRCUIT_OPERATION_MODE_POLICY,
         DHW_OPERATION_MODE_POLICY,
+        SILENT_MODE_POLICY,
+        AUXILIARY_HEATER_OPERATION_MODE_POLICY,
         *STRING_SWITCH_POLICIES,
     )
     for policy in policies:

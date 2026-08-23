@@ -64,7 +64,11 @@ before.
 
 - Automatic discovery of supported PointT resources
 - Support for multiple gateways and dynamically discovered circuits
-- Temperatures, system pressure, operating states, starts, and operating hours
+- Temperatures, system pressure, operating states, instantaneous heat-source
+  power, brine temperatures, starts, and operating hours
+- Capability-gated read-only monitoring for optional hybrid, low-noise,
+  power-limit, solar, pool, ventilation, room-zone, room-device, photovoltaic,
+  fresh-water-station, and variable-tariff resources
 - Active system faults, warnings, and maintenance notifications with lifecycle
   events for Home Assistant automations
 - Optional holiday status and calendar with support for multiple periods,
@@ -74,6 +78,10 @@ before.
   environmental energy
 - Heating-circuit and hot-water controls exposed only when PointT reports them
   as writable
+- Silent Mode control with Off, Automatic, and On when the gateway advertises
+  the exact writable capability
+- Auxiliary-heater mode control with Off, On, and Auto, plus a guarded
+  maximum-supply-temperature control for supported heating circuits
 - Mandatory read-back after every write; writes are never retried blindly
 - Separate polling intervals for live, configuration, energy, long-term, and
   static values
@@ -84,9 +92,10 @@ before.
   counters
 - German and English entity names and state translations
 
-Normal measurements and controls are enabled on a fresh installation. Identity
-data, detailed system information, raw software-update fields, and read-only
-copies of an existing control remain available only as opt-in diagnostics.
+Normal measurements and everyday controls are enabled on a fresh installation.
+The installer-level maximum-supply-temperature control, identity data, detailed
+system information, raw software-update fields, and read-only copies of an
+existing control remain available only as opt-in diagnostics.
 Unknown or privacy-sensitive resources never become entities.
 
 ## Compatibility
@@ -99,7 +108,8 @@ account, gateway, controller, and heating system.
 |---|---|
 | Tested | Buderus heat-pump installation with K40 gateway |
 | Designed for | Compatible Bosch/Buderus systems using MX300, MX400, K30/K30RF, or K40/K40RF gateways |
-| Not covered | Air conditioners, ventilation, wallboxes, Matter/MQTT devices, and local LAN access |
+| Optional when reported by PointT | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
+| Not covered | Air conditioners, wallboxes, Matter/MQTT devices, gateway network administration, and local LAN access |
 
 An unlisted model may still work because discovery is capability based. A
 listed gateway does not by itself guarantee that every entity or control is

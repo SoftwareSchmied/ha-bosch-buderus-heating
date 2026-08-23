@@ -44,8 +44,8 @@ diagnostics.
   user setting is exposed as a control only when path, data type, write flag,
   range, and allowed options all match exactly.
 - The reference system reports 24 writable resources. Twenty are represented
-  as readable entities. Thirteen safe user settings are also controllable;
-  administrative and installer settings remain locked.
+  as readable entities. Sixteen settings have an explicitly validated Home
+  Assistant control; administrative values remain locked.
 
 ## Maturity and default activation
 
@@ -54,9 +54,10 @@ diagnostics.
 | `observed` | Seen in the resource tree, but its meaning is not sufficiently established | No entity; redacted diagnostics only |
 | `understood` | Type and functional meaning established | Entity possible; default activation follows the user relevance described below |
 | `verified` | Sufficiently confirmed for normal display | Read-only entity, enabled by default |
-| `write_verified` | Write and read-back confirmed on real equipment | Control entity, enabled by default |
+| `write_verified` | Write and read-back confirmed on real equipment | Control entity; default activation follows user relevance |
 
-The heating-circuit operation mode has been write-confirmed on the reference
+Heating-circuit operation mode, Silent Mode, auxiliary-heater operation mode,
+and maximum supply temperature have been write-confirmed on the reference
 system. Other released controls use the same tested write/read-back service and
 are additionally constrained by current gateway metadata. Their individual
 effects have not all been tested on physical equipment.
@@ -65,11 +66,12 @@ Default activation is defined explicitly:
 
 - **Enabled:** temperatures and operating states, all available energy
   counters, starts, operating hours, TC3, system pressure, the derived pressure
-  status, and all released switches, number controls, and selects.
+  status, and released everyday switches, number controls, and selects.
 - **Disabled:** serial number, gateway UUID, country, detailed system
   information, individual raw software-update fields, technical device and
-  configuration values, and read-only sensors whose value is already
-  represented by an active control.
+  configuration values, the installer-level maximum-supply-temperature
+  control, and read-only sensors whose value is already represented by a
+  control.
 - **No entity:** unknown manufacturer extensions, Wi-Fi and network data,
   license text, credentials, and other private or purely internal resources.
 
@@ -180,10 +182,19 @@ counters—not holiday dates, names, or raw configuration data.
 | Central heating status | Diagnostic sensor | `/heatSources/chStatus` | No | No | 60 s |
 | Compressor status | Sensor | `/heatSources/compressor/status` | No | No | 60 s |
 | Auxiliary-heater status | Sensor | `/heatSources/Source/eHeater/status` | No | No | 60 s |
+| Primary auxiliary-heater status | Sensor | `/heatSources/additionalHeater/primary/status` | No | No | 60 s |
+| Auxiliary-heater operation mode | Diagnostic sensor (disabled) and select | `/heatSources/additionalHeater/operationMode` | Yes | Yes | 5 min; staggered read-back after change |
+| Primary auxiliary-heater type (disabled) | Diagnostic sensor | `/heatSources/additionalHeater/primary/type` | No | No | startup only |
+| Emergency mode | Sensor | `/heatSources/currentEmergencyMode` | No | No | 60 s |
 | Supply temperature | Sensor | `/heatSources/actualSupplyTemperature` | No | No | 60 s |
 | Energy management status | Sensor | `/heatSources/emStatus` | No | No | 60 s |
 | Flame status | Sensor | `/heatSources/flameStatus` | No | No | 60 s |
 | Return temperature | Sensor | `/heatSources/returnTemperature` | No | No | 60 s |
+| Passive-cooling inlet temperature | Sensor | `/heatSources/passiveCooling/inflowTemp` | No | No | 60 s |
+| PV contact status | Sensor | `/heatSources/pvContactState` | No | No | 60 s |
+| Smart Function active | Sensor or binary sensor | `/heatSources/smartFunction/active` | No | No | 60 s |
+| Smart Function enabled (disabled) | Diagnostic sensor or binary sensor | `/heatSources/smartFunction/enabled` | Capability-dependent | No | 5 min |
+| Standby mode | Sensor | `/heatSources/standbyMode` | No | No | 60 s |
 | System pressure | Sensor | `/heatSources/systemPressure` | No | No | 60 s |
 | System pressure status | Derived status sensor | System pressure and `/heatSources/systemPressureRange` | No | No | with system pressure |
 | Permitted pressure range – high system pressure | Diagnostic sensor | `/heatSources/systemPressureRange` → `highSystemPressure` | No | No | startup only |
@@ -223,8 +234,9 @@ the entire Home Assistant session.
 
 ## Heating circuits
 
-The reference system creates 14 entities. An empty optional name produces no
-entity; a configured name is added dynamically.
+The reference system creates 14 core entities. Optional app capabilities add
+entities only when the gateway returns them. An empty optional name produces
+no entity; a configured name is added dynamically.
 
 | Entity | HA type | PointT resource | PointT reports writable | Controllable in HA | Polling |
 |---|---|---|:---:|:---:|---:|
@@ -236,7 +248,7 @@ entity; a configured name is added dynamically.
 | Heating/cooling support | Sensor | `/heatingCircuits/{hc}/heatCoolMode` | No | No | 60 s |
 | Heating system | Diagnostic sensor | `/heatingCircuits/{hc}/heatingType` | No | No | startup only |
 | Manual setpoint | Sensor and number control | `/heatingCircuits/{hc}/manualRoomSetpoint` | Yes | Yes | 5 min; read back after change |
-| Maximum supply temperature | Sensor | `/heatingCircuits/{hc}/maxFlowTemp` | Yes | No | 5 min |
+| Maximum supply temperature | Sensor (disabled) and number control (disabled) | `/heatingCircuits/{hc}/maxFlowTemp` | Yes | Yes | 5 min; staggered read-back after change |
 | Name (only when configured) | Diagnostic sensor | `/heatingCircuits/{hc}/name` | Yes | No | startup only |
 | Operation mode | Sensor and select | `/heatingCircuits/{hc}/operationMode` | Yes | Yes | 5 min; staggered read-back after change |
 | Operating status | Sensor | `/heatingCircuits/{hc}/overallStatus` | No | No | 60 s |
@@ -255,7 +267,9 @@ to three staggered read-back checks. It never repeats the PUT. The sequence
 
 ## Domestic hot water
 
-These 16 entities are created for every available domestic-hot-water circuit.
+These 16 core entities are created for every available domestic-hot-water
+circuit. Optional fresh-water-station and service values are added only when
+reported.
 
 | Entity | HA type | PointT resource | PointT reports writable | Controllable in HA | Polling |
 |---|---|---|:---:|:---:|---:|
@@ -284,6 +298,13 @@ temperatures; a physical test with 0.5 °C was not confirmed initially and later
 appeared rounded to the next whole degree. All hot-water temperature controls
 therefore use a 1 °C step.
 
+The maximum-supply-temperature control adopts the minimum and maximum reported
+by each individual gateway instead of assuming the 30–60 °C range observed on
+the reference system. A broad 0–100 °C plausibility envelope only rejects
+obviously corrupt metadata. The control uses whole-degree steps and is disabled
+by default because it is an installer-level limit rather than an everyday
+setpoint.
+
 The K40 also referenced stop temperatures (`highStop`, `lowStop`,
 `ecoStop`) and charging deltas (`highChargingDelta`,
 `lowChargingDelta`, `ecoChargingDelta`), but PointT returned HTTP 403 for
@@ -292,11 +313,18 @@ visible in the local expert menu.
 
 ## Heat sources
 
-These 11 entities are created for every available heat source.
+The core counters and information are created for every available heat source.
+Optional values are omitted when the corresponding PointT path is unavailable
+or its live schema does not match the documented type and unit.
 
 | Entity | HA type | PointT resource / subvalue | PointT reports writable | Controllable in HA | Polling |
 |---|---|---|:---:|:---:|---:|
 | Heat-pump type | Diagnostic sensor | `/heatSources/{hs}/heatPumpType` | No | No | startup only |
+| Current power | Sensor | `/heatSources/{hs}/actualPower` | No | No | 60 s |
+| Current power percentage | Sensor | `/heatSources/{hs}/powerPercentage` | No | No | 60 s |
+| Defrost active | Binary sensor or status sensor | `/heatSources/{hs}/defrostActive` | No | No | 60 s |
+| Brine outlet temperature | Sensor | `/heatSources/{hs}/brineCircuit/collectorInflowTemp` | No | No | 60 s |
+| Brine inlet temperature | Sensor | `/heatSources/{hs}/brineCircuit/collectorOutflowTemp` | No | No | 60 s |
 | Total starts | Diagnostic sensor | `/heatSources/{hs}/numberOfStarts` → `total` | No | No | 15 min |
 | Heating starts | Diagnostic sensor | `/heatSources/{hs}/numberOfStarts` → `ch` | No | No | 15 min |
 | Cooling starts | Diagnostic sensor | `/heatSources/{hs}/numberOfStarts` → `cooling` | No | No | 15 min |
@@ -307,6 +335,11 @@ These 11 entities are created for every available heat source.
 | Heating operating time | Diagnostic sensor | `/heatSources/{hs}/workingTime` → `ch` | No | No | 15 min |
 | Cooling operating time | Diagnostic sensor | `/heatSources/{hs}/workingTime` → `cooling` | No | No | 15 min |
 | Hot-water operating time | Diagnostic sensor | `/heatSources/{hs}/workingTime` → `dhw` | No | No | 15 min |
+
+The brine names use the heating-system perspective: `collectorInflowTemp` is
+the fluid leaving the heat pump for the ground collector, while
+`collectorOutflowTemp` is the fluid returning to the heat pump. Per-source
+paths are probed only for IDs actually reported below `/heatSources`.
 
 ## Energy counters
 
@@ -333,6 +366,53 @@ All values are cumulative energy in kWh, not instantaneous power.
 Calculated environmental energy is created only when all three required raw
 values are present and valid. A negative or incomplete result is not exposed
 as a measurement.
+
+## Optional app capabilities
+
+The following read-only families are probed from the path catalog embedded in
+MyBuderus and HomeCom Easy. They are not assumed to exist. A missing path,
+HTTP 403/404 response, or incompatible value type creates no entity and no
+recurring request. New fields remain diagnostic until their semantics have
+been confirmed on physical equipment.
+
+| Area | PointT resources | Typical entities | Polling |
+|---|---|---|---:|
+| Heating circuit | `/heatingCircuits/{hc}/actualHumidity`, `actualSupplyTemperature`, `roomtemperature`, `awayTemperature` | Humidity and temperature sensors | 60 s |
+| Heating-circuit boost | `boostMode`, `boostDuration`, `boostRemainingTime`, `boostTemperature` | Boost state, duration, remaining time, and temperature | 60 s or 5 min when writable |
+| Heating-circuit cooling | `cooling/controlType`, `operationMode`, `outdoorThreshold`, `roomTempSetpoint`, `manualRoomSetpoint`, `temporaryRoomSetpoint`, `temperatureLevels/on` | Cooling status, thresholds, and setpoints | 60 s or 5 min when writable |
+| Heating-circuit details | `openWindowDetection/enabled`, `openWindowDetection/status`, `operationSetpoints`, `pumpModulation`, `setpointOptimization`, `suWiThreshold`, `suWiCoolingThreshold`, `temporaryRoomSetpoint` | Status, modulation, thresholds, and structured scalar values | 60 s to 15 min |
+| Domestic hot water | `/dhwCircuits/{dhw}/manualsetpoint`, `operationSetpoints`, `learningWeek`, `safetyTemperature`, `waterTotalConsumption` | Setpoints, configuration, and consumption | 5 to 15 min; consumption 5 min |
+| Fresh-water station | `currentFriwaSupplyTemperature`, `friwaPrimaryPumpModulation`, `inletTemperature`, `outletTemperature`, `outTemp`, `volumeFlow`, `numberOfShowersAvailable` | Temperatures, pump output, flow, and available showers | 60 s |
+| Hot-water service sensors | `/dhwCircuits/{dhw}/sensor/{name}` | Air-box, flue-gas, tank, and heat-exchanger temperatures; pressure, fan, gas, and water flow | 60 s to 15 min |
+| Heat source | `/heatSources/{hs}/electricityTotalConsumption`, `operationHours`, `emon/totalConsumption` | Electricity, operating hours, and per-source energy counters | 5 to 15 min |
+| Hybrid system | `/heatSources/hybrid/*` | Active source, bivalence point, strategy, outdoor state, variant, and reminder state | 60 s to 15 min |
+| Pool via heat source | `/heatSources/poolTemperature`, `poolSetpointTemperature`, `poolStatus` | Pool temperature, target, and state | 60 s |
+| System | `/system/healthStatus`, `appliance/*`, `iSRC/installationStatus`, `sensors/temperatures/*` | Health, equipment metadata, installation status, and temperatures | 60 s or startup only |
+| Noise and power | `/system/lowNoise/*`, `silentMode/*`, `powerGuard/active`, `powerLimitation/active` | Operating state, configured time/duration, power reduction, and a capability-gated Silent Mode select | 60 s to 15 min; read-back after a Silent Mode change |
+| Variable tariff | `/system/variableTariff/ch/*`, `dhw/*`, `currentPriceCatagorization`, `priceInfo`, `tariffId` | Current category, optimization state, price-dependent setpoints, and status | 60 s to 15 min |
+| Solar | `/solarCircuits/{sc}/collectorTemperature`, `dhwTankBottomTemperature`, `maxCylinderTemperature`, `maxTemperatureReached`, `pumpModulation`, `solarYield` | Temperatures, pump output, limit state, and yield | 60 s; yield 5 min |
+| Pool | `/pool/currentTemp`, `setpointTemp`, `enabled`, `additionalHeater/poolMode` | Temperature, target, enabled state, and auxiliary-heater mode | 60 s to 15 min |
+| Ventilation | `/ventilation/operationModes/manual/fanSetpoint`, `/ventilation/{zone}/*` | Fan levels, filter time, air-quality/humidity limits, mode, and supply temperature | 60 s to 15 min |
+| Room zones | `/zones/{zone}/*` | Average temperature/humidity, target, child lock, heating/cooling mode and temporary setpoint | 60 s to 15 min |
+| Room devices | `/devices/{device}/*` | Room temperature/humidity, battery, connection state, errors, and static device information | 60 s to startup only |
+| Photovoltaics | `/pv/enable`, `/pv/surplusAvailable` | Enabled and surplus states | 60 s to 15 min |
+
+The catalog does not automatically turn a newly discovered writable field into
+a Home Assistant control. Controls require a separate allowlist, safe limits,
+an exact value mapping, and a successful write/read-back test.
+
+Three optional resources are released as controls after their live contracts
+were confirmed on the K40 reference system. Silent Mode requires the complete
+`off`, `auto`, `on` value set. Auxiliary-heater operation mode requires
+`off`, `manual`, `auto`. Maximum supply temperature requires complete numeric
+PointT limits within a broad 0–100 °C plausibility envelope. Matching read-only sensors remain available as disabled
+diagnostic entities; the maximum-supply-temperature number is also disabled by
+default because it changes an installer-level limit.
+
+Historical `/recordings/...` resources are deliberately not represented by
+ordinary state entities. Home Assistant already records the corresponding live
+states; importing vendor history requires a separate opt-in design with date
+ranges, deduplication, statistics semantics, and a strict request budget.
 
 ## Sensitive diagnostic values
 

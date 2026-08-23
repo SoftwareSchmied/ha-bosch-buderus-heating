@@ -92,6 +92,12 @@ def test_all_released_numeric_controls_are_discovered() -> None:
         resource.path: resource
         for resource in (
             _resource(),
+            _resource(
+                "/heatingCircuits/hc1/maxFlowTemp",
+                40.0,
+                minimum=30.0,
+                maximum=60.0,
+            ),
             _resource("/heatingCircuits/hc1/temperatureLevels/comfort2", 21.0),
             _resource("/heatingCircuits/hc1/temperatureLevels/eco", 18.0),
             _resource(
@@ -130,7 +136,7 @@ def test_all_released_numeric_controls_are_discovered() -> None:
 
     descriptions = build_number_descriptions(resources)
 
-    assert len(descriptions) == 8
+    assert len(descriptions) == 9
     assert {item.translation_key for item in descriptions} == {
         "manual_room_setpoint",
         "heating_temperature",
@@ -140,6 +146,7 @@ def test_all_released_numeric_controls_are_discovered() -> None:
         "hot_water_eco_plus",
         "hot_water_comfort",
         "hot_water_eco",
+        "maximum_supply_temperature",
     }
     assert {
         item.name
@@ -161,7 +168,16 @@ def test_all_released_numeric_controls_are_discovered() -> None:
         item.native_step == 0.5
         for item in descriptions
         if item.resource_path.startswith("/heatingCircuits/")
+        and not item.resource_path.endswith("/maxFlowTemp")
     )
+    maximum_supply = next(
+        item for item in descriptions if item.resource_path.endswith("/maxFlowTemp")
+    )
+    assert maximum_supply.native_min_value == 30.0
+    assert maximum_supply.native_max_value == 60.0
+    assert maximum_supply.native_step == 1.0
+    assert maximum_supply.translation_key == "maximum_supply_temperature"
+    assert not maximum_supply.entity_registry_enabled_default
 
 
 def test_unsafe_numeric_metadata_is_not_exposed() -> None:
@@ -170,10 +186,34 @@ def test_unsafe_numeric_metadata_is_not_exposed() -> None:
         _resource(unit="bar"),
         _resource(minimum=0),
         _resource(maximum=35),
-        _resource("/heatingCircuits/hc1/maxFlowTemp"),
+        _resource(
+            "/heatingCircuits/hc1/maxFlowTemp",
+            minimum=-1,
+            maximum=60,
+        ),
+        _resource(
+            "/heatingCircuits/hc1/maxFlowTemp",
+            minimum=30,
+            maximum=101,
+        ),
     )
 
     assert all(build_number_descriptions({item.path: item}) == () for item in invalid)
+
+
+def test_maximum_supply_temperature_uses_each_gateways_live_range() -> None:
+    resource = _resource(
+        "/heatingCircuits/hc7/maxFlowTemp",
+        55.0,
+        minimum=20.0,
+        maximum=80.0,
+    )
+
+    description = build_number_descriptions({resource.path: resource})[0]
+
+    assert description.native_min_value == 20.0
+    assert description.native_max_value == 80.0
+    assert description.native_step == 1.0
 
 
 def test_number_becomes_unavailable_when_stale(hass: HomeAssistant) -> None:
@@ -197,6 +237,33 @@ async def test_number_calls_confirmed_coordinator_write(hass: HomeAssistant) -> 
     await entity.async_set_native_value(20.5)
 
     writer.assert_awaited_once_with(PATH, 20.5, entity.entity_description.write_policy)
+
+
+async def test_maximum_supply_temperature_uses_confirmed_write(
+    hass: HomeAssistant,
+) -> None:
+    resource = _resource(
+        "/heatingCircuits/hc1/maxFlowTemp",
+        40.0,
+        minimum=30.0,
+        maximum=60.0,
+    )
+    entity = _number(hass, resource)
+    writer = AsyncMock()
+    entity.coordinator.async_write_control = writer
+
+    assert entity.native_value == 40.0
+    assert entity.native_step == 1.0
+    assert entity.name == "Heating circuit 1 \N{EN DASH} Maximum supply temperature"
+    assert not entity.entity_description.entity_registry_enabled_default
+
+    await entity.async_set_native_value(41.0)
+
+    writer.assert_awaited_once_with(
+        resource.path,
+        41.0,
+        entity.entity_description.write_policy,
+    )
 
 
 async def test_platform_adds_numeric_controls(hass: HomeAssistant) -> None:

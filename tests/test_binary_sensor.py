@@ -78,6 +78,23 @@ def test_boolean_resource_is_binary_sensor_not_regular_sensor(
     assert sensor.device_info["model"] == "MX300"
 
 
+def test_optional_defrost_state_is_enabled_for_reported_heat_source(
+    hass: HomeAssistant,
+) -> None:
+    resource = Resource(
+        path="/heatSources/hs2/defrostActive",
+        value=True,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="booleanValue"),
+    )
+
+    sensor = _binary_sensor(hass, resource)
+
+    assert sensor.is_on is True
+    assert sensor.entity_description.entity_registry_enabled_default
+    assert sensor.unique_id == "gateway-one:heatSources:hs2:defrostActive"
+
+
 def test_nested_booleans_are_split_and_follow_logical_device(
     hass: HomeAssistant,
 ) -> None:

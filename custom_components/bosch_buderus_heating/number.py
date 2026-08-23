@@ -86,7 +86,9 @@ def build_number_descriptions(
                 ),
                 entity_category=EntityCategory.CONFIG,
                 translation_key=key,
-                entity_registry_enabled_default=True,
+                entity_registry_enabled_default=not resource.path.endswith(
+                    "/maxFlowTemp"
+                ),
             )
         )
     return tuple(descriptions)
@@ -160,6 +162,10 @@ def _number_identity(path: str) -> tuple[str, str]:
     tail = path.rsplit("/", 1)[-1]
     return {
         "manualRoomSetpoint": ("manual_room_setpoint", "Manueller Sollwert"),
+        "maxFlowTemp": (
+            "maximum_supply_temperature",
+            "Maximale Vorlauftemperatur",
+        ),
         "comfort2": ("heating_temperature", "Heizen"),
         "eco": (
             ("hot_water_eco_plus", "Eco+ Starttemperatur")

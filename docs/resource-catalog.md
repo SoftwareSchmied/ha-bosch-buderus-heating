@@ -69,6 +69,10 @@ Root resources reference the objects that actually exist:
 /heatingCircuits -> hc1, hc2, ...
 /dhwCircuits     -> dhw1, dhw2, ...
 /heatSources     -> hs1, hs2, ...
+/solarCircuits   -> sc1, sc2, ...
+/ventilation     -> zone1, zone2, ...
+/zones           -> zone1, zone2, ...
+/devices         -> gateway-reported room-device IDs
 ```
 
 Current notification discovery additionally reads `/notifications`. Optional
@@ -97,8 +101,9 @@ actual reported number or configured name. Newly added or removed circuits are
 added or marked unavailable after rediscovery. IDs come exclusively from
 PointT references, never from an assumed number sequence.
 
-In the tables, `{hc}`, `{dhw}`, and `{hs}` represent a dynamically
-discovered ID. The reference system reported `hc1`, `dhw1`, and `hs1`.
+In the tables, `{hc}`, `{dhw}`, `{hs}`, `{sc}`, `{zone}`, and `{device}`
+represent dynamically discovered IDs. The reference system reported `hc1`,
+`dhw1`, and `hs1`.
 These IDs remain part of the stable entity identifier but do not create
 separate Home Assistant devices.
 
@@ -113,6 +118,7 @@ ventilation. The integration probes only the three known optional resources:
 | `/holidayMode/list` | R | Source and read-back for the Holiday periods calendar |
 | `/holidayMode/configuration` | R | Additional/fallback period configuration source |
 | `/holidayMode/activeModes` | R | Source for the Holiday mode active binary sensor |
+| `/holidayMode/activated`, `/holidayMode/enabled` | R | Optional app fallbacks for the active state |
 | `/holidayMode` | W (POST) | Create one complete period; never retried automatically |
 | `/holidayMode/{id}` | W (PUT/DELETE) | Update or delete one numeric period; never retried automatically |
 
@@ -142,7 +148,7 @@ of `/holidayMode/list`; a timeout does not cause the mutation to be repeated.
 | `.../heatCoolMode` | Heating/cooling support | R | `heat`, `cool`, `heatCool` |
 | `.../heatingType` | Circuit heating system | R | Diagnostic, for example underfloor heating or radiators |
 | `.../manualRoomSetpoint` | Manual setpoint | R/W | Number in °C |
-| `.../maxFlowTemp` | Maximum supply temperature | R/W | Diagnostic number; range validation required |
+| `.../maxFlowTemp` | Maximum supply temperature | R/W | Number control in °C, disabled by default; uses the gateway's live limits within a broad 0–100 °C plausibility envelope |
 | `.../name` | Heating-circuit name | R/W | Decoded sensor only when configured; renaming not offered initially |
 | `.../operationMode` | Operation mode | R/W | Select: Off, Manual, Auto |
 | `.../overallStatus` | Operating status | R | Status sensor |
@@ -224,17 +230,31 @@ PointT codes and app display names for operation mode:
 | `/heatSources/chStatus` | Central heating status | R | Optional status; probed when omitted from the reference tree |
 | `/heatSources/compressor/status` | Compressor status | R | Operating mode including heating, cooling, hot water, defrost, and alarm |
 | `/heatSources/Source/eHeater/status` | Auxiliary-heater status | R | Operating mode including heating, hot water, defrost, and blocked states |
+| `/heatSources/additionalHeater/operationMode` | Auxiliary-heater operation mode | R/W | Select: Off, On, Auto; only for the exact live capability |
+| `/heatSources/additionalHeater/primary/status` | Primary auxiliary-heater status | R | Optional operating state |
+| `/heatSources/additionalHeater/primary/type` | Primary auxiliary-heater type | R | Static diagnostic, disabled by default |
+| `/heatSources/currentEmergencyMode` | Emergency mode | R | Optional operating state |
 | `/heatSources/emStatus` | Energy management status | R | Diagnostic status |
 | `/heatSources/flameStatus` | Flame status | R | Status; relevant only to suitable hybrid systems |
 | `/heatSources/{hs}` | Heat source | R | Internal: dynamic discovery |
+| `/heatSources/{hs}/actualPower` | Current power | R | Instantaneous power in W or kW |
+| `/heatSources/{hs}/brineCircuit/collectorInflowTemp` | Brine outlet temperature | R | Fluid entering the ground collector, named from the heating-system perspective |
+| `/heatSources/{hs}/brineCircuit/collectorOutflowTemp` | Brine inlet temperature | R | Fluid returning to the heat pump, named from the heating-system perspective |
+| `/heatSources/{hs}/defrostActive` | Defrost active | R | Boolean or app status, depending on the gateway |
 | `/heatSources/{hs}/heatPumpType` | Heat-pump type | R | Diagnostic: air/water, brine/water, or exhaust-air/water |
 | `/heatSources/{hs}/numberOfStarts` | Starts by operation | R | Multipart cumulative counter |
+| `/heatSources/{hs}/powerPercentage` | Current power percentage | R | Instantaneous measurement in % |
 | `/heatSources/{hs}/supplyFlowCondenserTemp` | Condenser outlet temperature (TC3) | R | Diagnostic temperature |
 | `/heatSources/{hs}/type` | Heat-source type | R | Diagnostic |
 | `/heatSources/{hs}/workingTime` | Operating time by operation | R | Multipart cumulative counter |
 | `/heatSources/info` | Heat-source information | R | Internal/diagnostic structured object |
 | `/heatSources/numberOfStarts` | Total starts | R | No separate entity; identical to `total` of the dynamic heat source |
+| `/heatSources/passiveCooling/inflowTemp` | Passive-cooling inlet temperature | R | Optional temperature sensor |
+| `/heatSources/pvContactState` | PV contact status | R | Optional operating state |
 | `/heatSources/returnTemperature` | Return temperature | R | Temperature sensor |
+| `/heatSources/smartFunction/active` | Smart Function active | R | Optional operating state |
+| `/heatSources/smartFunction/enabled` | Smart Function enabled | R | Read-only diagnostic initially |
+| `/heatSources/standbyMode` | Standby mode | R | Optional operating state |
 | `/heatSources/systemPressure` | System pressure | R | Pressure sensor in bar; validated range values as attributes and optional derived status sensor |
 | `/heatSources/systemPressureRange` | Permitted pressure range | R | Six static diagnostic sensors in bar |
 
@@ -243,6 +263,13 @@ integration creates one entity for each of `highSystemPressure`,
 `absoluteHighPressure`, `lowSystemPressure`,
 `shutOfPressureThreshold`, `highPressureThreshold`, and
 `lowPressureThreshold`.
+
+The optional paths listed above are present in both official app variants but
+may be omitted from a gateway's reference tree. Discovery probes this bounded
+catalog once. Per-source paths are generated only for heat-source IDs returned
+by PointT; the integration never assumes that `hs1` or `hs2` exists. A path is
+polled only after a successful response with the expected type and unit.
+Unsupported paths and schema mismatches create no entity.
 
 ## Energy counters
 
@@ -294,6 +321,7 @@ Derived total values:
 | `/system/globalSeasonOptimizer/currentMode` | Season optimization | R | Optional diagnostic status: `off`, `automatic`, `forcedHeat`, `forcedCool`; disabled by default |
 | `/system/iSRC/supportStatus` | iSRC support | R | Static diagnostic status, disabled by default |
 | `/system/info` | System information | R | Static text diagnostic sensor with module names and versions; sanitized details as attributes, internal token fields discarded |
+| `/system/silentMode/enabled` | Silent mode | R/W | Select: Off, Automatic, On; only for the exact live capability |
 | `/system/sensors` | System sensors | R | Internal: discovery |
 | `/system/sensors/temperatures` | Temperature sensors | R | Internal: discovery |
 | `/system/sensors/temperatures/outdoor_t1` | Outdoor temperature | R | Temperature sensor |
@@ -301,6 +329,40 @@ Derived total values:
 | `/system/type` | System type | R | Diagnostic |
 | `/system/variableTariff` | Variable electricity tariff | R | Internal: discovery |
 | `/system/variableTariff/supportStatus` | Variable-tariff support | R | Diagnostic |
+
+## Optional app path catalog
+
+Static analysis of both official app variants found the same optional PointT
+families. The integration now combines these known paths with dynamic
+references returned by the gateway. Concrete circuit, heat-source, solar,
+ventilation-zone, room-zone, and room-device IDs are derived from discovered
+containers; they are never generated as an assumed numeric sequence.
+
+| Family | Read-only paths included in discovery |
+|---|---|
+| Heating circuit | humidity, supply and room temperatures, boost state/duration/remaining time/temperature, cooling control/mode/thresholds/setpoints, open-window state, operation setpoints, pump modulation, setpoint optimization, summer/winter thresholds, temporary setpoint |
+| Hot water and FriWa | FriWa supply temperature and pump modulation, inlet/outlet temperatures, learning week, manual and operation setpoints, showers available, recirculation state, safety temperature, service sensor values, volume flow, water consumption |
+| Heat source and hybrid | electricity/gas totals, per-source operating hours and energy, pool state/temperatures, active hybrid source, bivalence point, strategy, outdoor state/variant, and reminder state |
+| System | appliance state/model/firmware, health, iSRC installation state, power guard/limitation, low-noise and silent mode, season optimizer thresholds/mode, additional system temperatures, units, energy tariff, and variable-tariff state |
+| Solar | collector and tank temperatures, maximum temperature, limit state, pump modulation, and yield |
+| Pool | current and target temperature, enabled state, and auxiliary-heater mode |
+| Ventilation | manual fan target and per-zone fan level, filter lifetime, air-quality/humidity limits, mode, supply temperature, and ventilation level |
+| Zones and room devices | current and target climate values, child lock, heating/cooling modes, battery, signal, connection state, errors, assignment, and static product information |
+| Photovoltaics | enabled and surplus-available states |
+
+Only scalar or safely decomposable structured responses with a curated path
+and plausible schema become entities. New optional fields start read-only until
+an explicit write policy and physical confirmation exist. Successful
+discovery determines polling; HTTP 403/404 and schema mismatches are retained
+only as value-free diagnostics and do not consume the recurring request
+budget.
+
+The apps also contain historical `/recordings/...` paths and a separate Bosch
+shared-energy tariff service. Historical series are not normal current-state
+entities and therefore remain outside this catalog until an opt-in statistics
+import can enforce time ranges, deduplication, and a strict request budget.
+The separate tariff service likewise remains disabled until its response and
+authorization contract are independently verified.
 
 ## Gateway values
 
@@ -336,10 +398,15 @@ automatically as controls. The first safe release tier includes:
 - manual room setpoint and available temperature levels;
 - hot-water operation mode and available temperature levels;
 - extra hot water with duration and setpoint;
-- away mode.
+- away mode;
+- silent mode with the three gateway-advertised values Off, Automatic, and On;
+- auxiliary-heater mode with the values Off, On, and Auto;
+- maximum supply temperature with whole-degree steps and gateway-specific
+  limits, disabled by default as an installer-level control. A broad 0–100 °C
+  plausibility envelope rejects corrupt metadata.
 
-Schedules, control type, maximum supply temperature, names, and all gateway,
-time, and administrative values remain read-only or internal initially. They
+Schedules, control type, names, and all gateway, time, and administrative
+values remain read-only or internal initially. They
 need additional device profiles, verified limits, and physical write/read-back
 tests.
 
@@ -349,5 +416,9 @@ Select options must be announced completely by the gateway. Number controls
 adopt gateway limits only within additional safe bounds. A transaction sends
 one PUT without automatic retry and confirms the state using up to three
 staggered single-resource requests. The **Manual → Auto → Manual** sequence for
-heating-circuit operation mode succeeded on the K40; physical individual tests
+heating-circuit operation mode succeeded on the K40. Silent Mode also completed
+an **Off → Automatic → Off** physical write/read-back round trip. Auxiliary
+heater mode completed an **Off → Auto → Off** round trip without activating the
+heater. Maximum supply temperature completed a **40 → 41 → 40 °C** round trip
+using the live 30–60 °C limits reported by the K40. Physical individual tests
 for the remaining controls are still pending.

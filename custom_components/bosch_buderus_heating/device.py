@@ -64,6 +64,18 @@ def grouped_entity_name(
         group = "Anlage" if german else "System"
     elif resource_path == "/heatSources" or resource_path.startswith("/heatSources/"):
         group = _central_heat_source_name(coordinator, german)
+    elif resource_path == "/solarCircuits" or resource_path.startswith(
+        "/solarCircuits/"
+    ):
+        group = "Solar"
+    elif resource_path == "/pool" or resource_path.startswith("/pool/"):
+        group = "Pool"
+    elif resource_path == "/ventilation" or resource_path.startswith("/ventilation/"):
+        group = "Lüftung" if german else "Ventilation"
+    elif resource_path == "/zones" or resource_path.startswith("/zones/"):
+        group = "Zone"
+    elif resource_path == "/pv" or resource_path.startswith("/pv/"):
+        group = "Photovoltaik" if german else "Photovoltaics"
     else:
         group = "Anlage" if german else "System"
     return f"{group}{_GROUP_SEPARATOR}{name}"
@@ -170,6 +182,10 @@ def _logical_name(kind: str, logical_id: str, german: bool) -> str:
         "heating_circuit": "Heizkreis" if german else "Heating circuit",
         "hot_water_circuit": "Warmwasser" if german else "Hot water",
         "heat_source": "Wärmeerzeuger" if german else "Heat generator",
+        "solar_circuit": "Solarkreis" if german else "Solar circuit",
+        "ventilation_zone": "Lüftungszone" if german else "Ventilation zone",
+        "room_zone": "Zone",
+        "room_device": "Raumgerät" if german else "Room device",
     }[kind]
     suffix = re.search(r"(\d+)$", logical_id)
     return f"{label} {suffix.group(1) if suffix else logical_id}"
@@ -186,6 +202,10 @@ def _localized_generic_name(
         "heating_circuit": {"heizkreis", "heating circuit"},
         "hot_water_circuit": {"warmwasser", "hot water"},
         "heat_source": {"wärmeerzeuger", "waermeerzeuger", "heat generator"},
+        "solar_circuit": {"solarkreis", "solar circuit"},
+        "ventilation_zone": {"lüftungszone", "ventilation zone"},
+        "room_zone": {"zone"},
+        "room_device": {"raumgerät", "room device"},
     }[kind]
     if normalized not in generic_names:
         return configured_name
@@ -193,6 +213,10 @@ def _localized_generic_name(
         "heating_circuit": "Heizkreis" if german else "Heating circuit",
         "hot_water_circuit": "Warmwasser" if german else "Hot water",
         "heat_source": "Wärmeerzeuger" if german else "Heat generator",
+        "solar_circuit": "Solarkreis" if german else "Solar circuit",
+        "ventilation_zone": "Lüftungszone" if german else "Ventilation zone",
+        "room_zone": "Zone",
+        "room_device": "Raumgerät" if german else "Room device",
     }[kind]
 
 

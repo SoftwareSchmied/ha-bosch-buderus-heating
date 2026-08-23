@@ -33,10 +33,14 @@ from custom_components.bosch_buderus_heating.select import (
     build_select_descriptions,
 )
 from custom_components.bosch_buderus_heating.writes import (
+    AUXILIARY_HEATER_OPERATION_MODE_POLICY,
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+    SILENT_MODE_POLICY,
 )
 
 PATH = "/heatingCircuits/hc1/operationMode"
+SILENT_MODE_PATH = "/system/silentMode/enabled"
+AUXILIARY_HEATER_MODE_PATH = "/heatSources/additionalHeater/operationMode"
 
 
 def _resource(**changes: object) -> Resource:
@@ -125,6 +129,120 @@ def test_hot_water_operation_mode_is_dynamic() -> None:
 
     assert description.translation_key == "hot_water_operation_mode"
     assert description.options == ["off", "low", "high", "ownprogram", "eco"]
+
+
+def test_silent_mode_select_requires_exact_live_capability() -> None:
+    resource = Resource(
+        path=SILENT_MODE_PATH,
+        value="auto",
+        has_value=True,
+        metadata=ResourceMetadata(
+            resource_type="stringValue",
+            allowed_values=("off", "auto", "on"),
+            writable=True,
+        ),
+    )
+
+    description = build_select_descriptions({resource.path: resource})[0]
+
+    assert description.translation_key == "silent_mode"
+    assert description.options == ["off", "auto", "on"]
+    assert description.write_policy is SILENT_MODE_POLICY
+
+    incomplete = Resource(
+        path=SILENT_MODE_PATH,
+        value="auto",
+        has_value=True,
+        metadata=ResourceMetadata(
+            resource_type="stringValue",
+            allowed_values=("off", "auto"),
+            writable=True,
+        ),
+    )
+    assert build_select_descriptions({incomplete.path: incomplete}) == ()
+
+
+async def test_silent_mode_select_uses_confirmed_write(hass: HomeAssistant) -> None:
+    resource = Resource(
+        path=SILENT_MODE_PATH,
+        value="auto",
+        has_value=True,
+        metadata=ResourceMetadata(
+            resource_type="stringValue",
+            allowed_values=("off", "auto", "on"),
+            writable=True,
+        ),
+    )
+    entity = _select(hass, resource)
+    writer = AsyncMock()
+    entity.coordinator.async_write_control = writer
+
+    assert entity.current_option == "auto"
+    assert entity.name == "System \N{EN DASH} Silent mode"
+
+    await entity.async_select_option("on")
+
+    writer.assert_awaited_once_with(SILENT_MODE_PATH, "on", SILENT_MODE_POLICY)
+
+
+def test_auxiliary_heater_select_requires_exact_live_capability() -> None:
+    resource = Resource(
+        path=AUXILIARY_HEATER_MODE_PATH,
+        value="off",
+        has_value=True,
+        metadata=ResourceMetadata(
+            resource_type="stringValue",
+            allowed_values=("off", "manual", "auto"),
+            writable=True,
+        ),
+    )
+
+    description = build_select_descriptions({resource.path: resource})[0]
+
+    assert description.translation_key == "auxiliary_heater_operation_mode"
+    assert description.options == ["off", "manual", "auto"]
+    assert description.write_policy is AUXILIARY_HEATER_OPERATION_MODE_POLICY
+
+    not_writable = Resource(
+        path=AUXILIARY_HEATER_MODE_PATH,
+        value="off",
+        has_value=True,
+        metadata=ResourceMetadata(
+            resource_type="stringValue",
+            allowed_values=("off", "manual", "auto"),
+            writable=False,
+        ),
+    )
+    assert build_select_descriptions({not_writable.path: not_writable}) == ()
+
+
+async def test_auxiliary_heater_select_uses_confirmed_write(
+    hass: HomeAssistant,
+) -> None:
+    resource = Resource(
+        path=AUXILIARY_HEATER_MODE_PATH,
+        value="off",
+        has_value=True,
+        metadata=ResourceMetadata(
+            resource_type="stringValue",
+            allowed_values=("off", "manual", "auto"),
+            writable=True,
+        ),
+    )
+    entity = _select(hass, resource)
+    writer = AsyncMock()
+    entity.coordinator.async_write_control = writer
+
+    assert entity.current_option == "off"
+    assert entity.name == "Heat generator \N{EN DASH} Auxiliary heater mode"
+
+    await entity.async_select_option("auto")
+
+    writer.assert_awaited_once_with(
+        AUXILIARY_HEATER_MODE_PATH,
+        "auto",
+        AUXILIARY_HEATER_OPERATION_MODE_POLICY,
+    )
 
 
 async def test_hot_water_off_uses_ha_safe_option_and_raw_pointt_write(

@@ -111,6 +111,7 @@ def test_fault_candidates_use_only_discovered_component_ids() -> None:
             path="/heatSources",
             references=(
                 ResourceReference("/heatSources/hs2"),
+                ResourceReference("/heatSources/actualModulation"),
                 ResourceReference("/heatSources/.."),
             ),
         ),
@@ -126,6 +127,9 @@ def test_fault_candidates_use_only_discovered_component_ids() -> None:
         "/heatSources/hs2/activefailure",
         "/heatSources/hs2/failurelist",
         "/notifications",
+    )
+    assert not any(
+        "actualModulation" in path for path in fault_resource_candidates(resources)
     )
 
 

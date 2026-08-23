@@ -158,6 +158,7 @@ def fault_resource_candidates(resources: Mapping[str, Resource]) -> tuple[str, .
             identifier = _safe_identifier(match[1]) if match else None
             if (
                 identifier is not None
+                and re.fullmatch(r"hs\d+", identifier, re.IGNORECASE)
                 and reference.path.rstrip("/") == f"/heatSources/{identifier}"
             ):
                 candidates.add(f"/heatSources/{identifier}/activefailure")

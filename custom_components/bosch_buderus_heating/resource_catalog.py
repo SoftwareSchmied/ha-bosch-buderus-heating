@@ -40,6 +40,22 @@ class LogicalDevice:
     name: str
 
 
+@dataclass(frozen=True, slots=True)
+class _EntitySchemaRule:
+    """Expected live schema for an optional vendor-app resource."""
+
+    pattern: re.Pattern[str]
+    resource_types: frozenset[str]
+    units: frozenset[str] = frozenset()
+
+    def matches(self, resource: Resource) -> bool:
+        """Return whether a resource matches the narrowly accepted schema."""
+        metadata = resource.metadata
+        return metadata.resource_type in self.resource_types and (
+            not self.units or metadata.unit in self.units
+        )
+
+
 _PRIVATE_PATHS = frozenset(
     {
         "/gateway/serialId",
@@ -53,6 +69,11 @@ _PRIVATE_PATHS = frozenset(
 )
 
 _PRIVATE_PREFIXES = ("/gateway/wifi",)
+
+_PRIVATE_PATTERNS = (
+    re.compile(r"^/devices/[^/]+/(?:inclusionTime|sgtin)$", re.IGNORECASE),
+    re.compile(r"^/pv/commissioning(?:/.*)?$", re.IGNORECASE),
+)
 
 _OPT_IN_DIAGNOSTIC_PATHS = frozenset(
     {
@@ -68,6 +89,15 @@ _NO_ENTITY_PATHS = frozenset(
         "/notifications",
         "/devices",
         "/devices/list",
+        "/solarCircuits",
+        "/pool",
+        "/ventilation",
+        "/ventilation/zone1",
+        "/zones",
+        "/zones/configuration",
+        "/zones/list",
+        "/pv",
+        "/pv/list",
         "/gateway",
         "/gateway/tzInfo",
         "/gateway/update",
@@ -84,29 +114,59 @@ _NO_ENTITY_PATHS = frozenset(
         "/holidayMode/list",
         "/holidayMode/configuration",
         "/holidayMode/activeModes",
+        "/holidayMode/activated",
+        "/holidayMode/enabled",
     }
+)
+
+_NO_ENTITY_PATTERNS = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"^/devices/(?!list$)[^/]+$",
+        r"^/solarCircuits/[^/]+$",
+        r"^/ventilation/zone[^/]+$",
+        r"^/zones/zone[^/]+$",
+    )
 )
 
 _VERIFIED_PATHS = frozenset(
     {
         "/heatSources/Source/eHeater/status",
+        "/heatSources/additionalHeater/primary/status",
         "/heatSources/actualHeatDemand",
         "/heatSources/actualModulation",
         "/heatSources/actualSupplyTemperature",
         "/heatSources/compressor/status",
+        "/heatSources/currentEmergencyMode",
+        "/heatSources/passiveCooling/inflowTemp",
+        "/heatSources/pvContactState",
         "/heatSources/returnTemperature",
+        "/heatSources/smartFunction/active",
         "/heatSources/systemPressure",
+        "/heatSources/standbyMode",
+        "/system/powerLimitation/active",
         "/system/sensors/temperatures/outdoor_t1",
+        "/system/silentMode/enabled",
     }
 )
 
-_WRITE_VERIFIED_PATTERNS = (re.compile(r"^/heatingCircuits/[^/]+/operationMode$"),)
+_WRITE_VERIFIED_PATTERNS = tuple(
+    re.compile(pattern)
+    for pattern in (
+        r"^/heatingCircuits/[^/]+/operationMode$",
+        r"^/heatingCircuits/[^/]+/maxFlowTemp$",
+        r"^/heatSources/additionalHeater/operationMode$",
+        r"^/system/silentMode/enabled$",
+    )
+)
 
 _VERIFIED_PATTERNS = tuple(
     re.compile(pattern)
     for pattern in (
         r"^/heatingCircuits/[^/]+/(?:currentRoomSetpoint|currentSuWiMode|heatCoolMode|operationMode|overallStatus)$",
         r"^/dhwCircuits/[^/]+/(?:actualTemp|chargeRemainingTime|currentSetpoint|currentTemperatureLevel|operationMode|overallStatus|tdMode)$",
+        r"^/heatSources/hs[^/]+/(?:actualPower|defrostActive|powerPercentage)$",
+        r"^/heatSources/hs[^/]+/brineCircuit/(?:collectorInflowTemp|collectorOutflowTemp)$",
         r"^/heatSources/emon/(?:totalConsumption|chConsumption|dhwConsumption)$",
     )
 )
@@ -132,15 +192,20 @@ _UNDERSTOOD_PATHS = frozenset(
         "/gateway/versionFirmware",
         "/gateway/versionHardware",
         "/heatSources",
+        "/heatSources/additionalHeater/operationMode",
+        "/heatSources/additionalHeater/primary/type",
         "/heatSources/chStatus",
         "/heatSources/emStatus",
         "/heatSources/flameStatus",
         "/heatSources/info",
         "/heatSources/numberOfStarts",
         "/heatSources/systemPressureRange",
+        "/heatSources/smartFunction/enabled",
         "/holidayMode/list",
         "/holidayMode/configuration",
         "/holidayMode/activeModes",
+        "/holidayMode/activated",
+        "/holidayMode/enabled",
         "/heatingCircuits",
         "/system",
         "/system/awayMode",
@@ -176,21 +241,46 @@ _UNDERSTOOD_PATTERNS = tuple(
         r"^/dhwCircuits/[^/]+/temperatureLevels/[^/]+$",
         r"^/heatSources/[^/]+/(?:heatPumpType|numberOfStarts|supplyFlowCondenserTemp|type|workingTime)$",
         r"^/heatSources/emon/coolingConsumption$",
+        r"^/heatingCircuits/[^/]+/(?:actualHumidity|actualSupplyTemperature|awayTemperature|boostDuration|boostMode|boostRemainingTime|boostTemperature|operationSetpoints|pumpModulation|roomtemperature|setpointOptimization|suWiCoolingThreshold|suWiThreshold|temporaryRoomSetpoint)$",
+        r"^/heatingCircuits/[^/]+/(?:cooling/(?:controlType|manualRoomSetpoint|operationMode|outdoorThreshold|roomTempSetpoint|temporaryRoomSetpoint)|cooling/temperatureLevels/on|openWindowDetection/(?:enabled|status))$",
+        r"^/dhwCircuits/[^/]+/(?:currentFriwaSupplyTemperature|friwaPrimaryPumpModulation|inletTemperature|learningWeek|manualsetpoint|monitorValues|numberOfShowersAvailable|operationSetpoints|outletTemperature|outTemp|safetyTemperature|volumeFlow|waterTotalConsumption)$",
+        r"^/dhwCircuits/[^/]+/(?:recirculation/enabled|sensor/(?:airBoxTemperature|atmosphericPressure|exhaustFlueGasTemperature|externalTankTemperature|fanSpeed|gasFlow|heatExchangerFlueGasTemperature|heatExchangerTemperature|waterFlow))$",
+        r"^/heatSources/(?:electricityTotalConsumption|gasTotalConsumption|numberOfRefrigerantCircuitsInstalled|poolSetpointTemperature|poolStatus|poolTemperature|type|workingTime/totalSystem)$",
+        r"^/heatSources/hybrid/(?:activeHeatSource|bivalentSetpoint|controlStrategy|outdoorStatus|outdoorVariant|reminderDate|reminderEnable|reminderLapsed)$",
+        r"^/heatSources/hs[^/]+/(?:electricityTotalConsumption|operationHours|emon/totalConsumption)$",
+        r"^/heatSources/emon/poolConsumption$",
+        r"^/system/(?:healthStatus|appliance/(?:enabled|model|versionFirmware)|iSRC/installationStatus|powerGuard/active|powerLimitation/active)$",
+        r"^/system/(?:awayMode/temperature|energyTariff/(?:electricity|gas|oil|pv)|lowNoise/(?:duration|mode)|seasonOptimizer/(?:coolingThreshold|heatingThreshold|mode)|silentMode/(?:enabled|powerReduction|startTime|stopTime)|systemOfUnits)$",
+        r"^/system/variableTariff/(?:currentPriceCatagorization|priceInfo|supportStatus|tariffId|(?:ch|dhw)/(?:currentOpmode|currentSetpoint|highPriceDelta|highPriceEnable|lowPriceDelta|lowPriceEnable|midPriceSetpoint|optimization|status))$",
+        r"^/system/sensors/temperatures/(?:chimney|return|supply_t1|supply_t1_setpoint)$",
+        r"^/solarCircuits/[^/]+(?:/(?:collectorTemperature|dhwTankBottomTemperature|maxCylinderTemperature|maxTemperatureReached|pumpModulation|solarYield))?$",
+        r"^/pool/(?:additionalHeater/poolMode|currentTemp|enabled|setpointTemp)$",
+        r"^/ventilation/(?:operationModes/manual/fanSetpoint|zone[^/]+(?:/(?:exhaustFanLevel|maxIndoorAirQuality|maxRelativeHumidity|operationMode|ventilationLevels|filter/(?:maxRunTime|remainingTime)|sensors/supplyTemp))?)$",
+        r"^/zones/zone[^/]+(?:/(?:averageActualHumidity|averageCurrentTemperature|childLock|currentRoomSetpoint|icon|name|(?:cool|heat|heatCool)/(?:manualRoomSetpoint|operationMode|temporaryRoomSetpoint)))?$",
+        r"^/devices/(?!list$)[^/]+(?:/(?:actualHumidity|assignedHC|battery|errors|name|productName|rfTimeofConnectionLost|roomtemperature|signal|type|versionFirmware|zoneId))?$",
+        r"^/pv/(?:enable|surplusAvailable)$",
+        r"^/dhwCircuits/waterTotalConsumption$",
     )
 )
 
 _DEFAULT_ENABLED_PATHS = frozenset(
     {
         "/heatSources/Source/eHeater/status",
+        "/heatSources/additionalHeater/primary/status",
         "/heatSources/actualHeatDemand",
         "/heatSources/actualModulation",
         "/heatSources/actualSupplyTemperature",
         "/heatSources/chStatus",
         "/heatSources/compressor/status",
+        "/heatSources/currentEmergencyMode",
         "/heatSources/emStatus",
         "/heatSources/flameStatus",
         "/heatSources/returnTemperature",
+        "/heatSources/passiveCooling/inflowTemp",
+        "/heatSources/pvContactState",
+        "/heatSources/smartFunction/active",
         "/heatSources/systemPressure",
+        "/heatSources/standbyMode",
         "/system/sensors/temperatures/outdoor_t1",
     }
 )
@@ -200,9 +290,89 @@ _DEFAULT_ENABLED_PATTERNS = tuple(
     for pattern in (
         r"^/heatingCircuits/[^/]+/(?:currentRoomSetpoint|currentSuWiMode|heatCoolMode|overallStatus)$",
         r"^/dhwCircuits/[^/]+/(?:actualTemp|chargeRemainingTime|currentSetpoint|currentTemperatureLevel|overallStatus|tdMode)$",
+        r"^/heatSources/hs[^/]+/(?:actualPower|defrostActive|powerPercentage)$",
+        r"^/heatSources/hs[^/]+/brineCircuit/(?:collectorInflowTemp|collectorOutflowTemp)$",
         r"^/heatSources/[^/]+/(?:numberOfStarts|supplyFlowCondenserTemp|workingTime)$",
         r"^/heatSources/emon/(?:totalConsumption|chConsumption|dhwConsumption|coolingConsumption)$",
+        r"^/heatingCircuits/[^/]+/(?:actualHumidity|actualSupplyTemperature|boostMode|boostRemainingTime|boostTemperature|pumpModulation|roomtemperature|temporaryRoomSetpoint)$",
+        r"^/heatingCircuits/[^/]+/(?:cooling/(?:operationMode|roomTempSetpoint|temporaryRoomSetpoint)|openWindowDetection/status)$",
+        r"^/dhwCircuits/[^/]+/(?:currentFriwaSupplyTemperature|friwaPrimaryPumpModulation|inletTemperature|numberOfShowersAvailable|outletTemperature|outTemp|volumeFlow|waterTotalConsumption)$",
+        r"^/dhwCircuits/[^/]+/(?:recirculation/enabled|sensor/(?:airBoxTemperature|atmosphericPressure|exhaustFlueGasTemperature|externalTankTemperature|fanSpeed|gasFlow|heatExchangerFlueGasTemperature|heatExchangerTemperature|waterFlow))$",
+        r"^/heatSources/(?:electricityTotalConsumption|gasTotalConsumption|poolTemperature|workingTime/totalSystem)$",
+        r"^/heatSources/hybrid/(?:activeHeatSource|outdoorStatus|reminderLapsed)$",
+        r"^/heatSources/hs[^/]+/(?:electricityTotalConsumption|operationHours|emon/totalConsumption)$",
+        r"^/heatSources/emon/poolConsumption$",
+        r"^/system/(?:healthStatus|lowNoise/mode|powerGuard/active|powerLimitation/active|silentMode/enabled)$",
+        r"^/system/sensors/temperatures/(?:chimney|return|supply_t1|supply_t1_setpoint)$",
+        r"^/solarCircuits/[^/]+/(?:collectorTemperature|dhwTankBottomTemperature|maxCylinderTemperature|maxTemperatureReached|pumpModulation|solarYield)$",
+        r"^/pool/(?:currentTemp|enabled|setpointTemp)$",
+        r"^/ventilation/(?:operationModes/manual/fanSetpoint|zone[^/]+/(?:exhaustFanLevel|maxIndoorAirQuality|maxRelativeHumidity|operationMode|ventilationLevels|filter/remainingTime|sensors/supplyTemp))$",
+        r"^/zones/zone[^/]+/(?:averageActualHumidity|averageCurrentTemperature|childLock|currentRoomSetpoint|(?:cool|heat|heatCool)/(?:operationMode|temporaryRoomSetpoint))$",
+        r"^/devices/(?!list$)[^/]+/(?:actualHumidity|battery|errors|rfTimeofConnectionLost|roomtemperature)$",
+        r"^/pv/surplusAvailable$",
+        r"^/dhwCircuits/waterTotalConsumption$",
     )
+)
+
+_APP_RESOURCE_SCHEMA_RULES = (
+    _EntitySchemaRule(
+        re.compile(
+            r"^/heatSources/(?:currentEmergencyMode|pvContactState|standbyMode)$"
+        ),
+        frozenset({"stringValue"}),
+    ),
+    _EntitySchemaRule(
+        re.compile(
+            r"^/heatSources/(?:additionalHeater/(?:operationMode|primary/(?:status|type))|smartFunction/(?:active|enabled))$"
+        ),
+        frozenset({"booleanValue", "stringValue"}),
+    ),
+    _EntitySchemaRule(
+        re.compile(r"^/heatSources/passiveCooling/inflowTemp$"),
+        frozenset({"floatValue"}),
+        frozenset({"C"}),
+    ),
+    _EntitySchemaRule(
+        re.compile(r"^/heatSources/hs[^/]+/actualPower$"),
+        frozenset({"floatValue"}),
+        frozenset({"W", "kW"}),
+    ),
+    _EntitySchemaRule(
+        re.compile(r"^/heatSources/hs[^/]+/powerPercentage$"),
+        frozenset({"floatValue"}),
+        frozenset({"%"}),
+    ),
+    _EntitySchemaRule(
+        re.compile(
+            r"^/heatSources/hs[^/]+/brineCircuit/(?:collectorInflowTemp|collectorOutflowTemp)$"
+        ),
+        frozenset({"floatValue"}),
+        frozenset({"C"}),
+    ),
+    _EntitySchemaRule(
+        re.compile(r"^/heatSources/hs[^/]+/defrostActive$"),
+        frozenset({"booleanValue", "stringValue"}),
+    ),
+    _EntitySchemaRule(
+        re.compile(
+            r"^(?:/heatingCircuits/[^/]+/(?:actualSupplyTemperature|awayTemperature|boostTemperature|roomtemperature|suWiCoolingThreshold|suWiThreshold|temporaryRoomSetpoint|cooling/(?:manualRoomSetpoint|outdoorThreshold|roomTempSetpoint|temporaryRoomSetpoint)|cooling/temperatureLevels/on)|/dhwCircuits/[^/]+/(?:currentFriwaSupplyTemperature|inletTemperature|manualsetpoint|outletTemperature|outTemp|safetyTemperature|sensor/(?:airBoxTemperature|exhaustFlueGasTemperature|externalTankTemperature|heatExchangerFlueGasTemperature|heatExchangerTemperature))|/system/(?:awayMode/temperature|sensors/temperatures/(?:chimney|return|supply_t1|supply_t1_setpoint)|seasonOptimizer/(?:coolingThreshold|heatingThreshold)|variableTariff/ch/(?:currentSetpoint|highPriceDelta|lowPriceDelta|midPriceSetpoint))|/heatSources/(?:hybrid/bivalentSetpoint|poolSetpointTemperature|poolTemperature)|/solarCircuits/[^/]+/(?:collectorTemperature|dhwTankBottomTemperature|maxCylinderTemperature)|/pool/(?:currentTemp|setpointTemp)|/ventilation/zone[^/]+/sensors/supplyTemp|/zones/zone[^/]+/(?:averageCurrentTemperature|currentRoomSetpoint|(?:cool|heat|heatCool)/(?:manualRoomSetpoint|temporaryRoomSetpoint))|/devices/(?!list$)[^/]+/roomtemperature)$"
+        ),
+        frozenset({"floatValue"}),
+        frozenset({"C"}),
+    ),
+    _EntitySchemaRule(
+        re.compile(
+            r"^(?:/heatingCircuits/[^/]+/(?:actualHumidity|pumpModulation)|/dhwCircuits/[^/]+/(?:friwaPrimaryPumpModulation|sensor/fanSpeed)|/system/silentMode/powerReduction|/solarCircuits/[^/]+/pumpModulation|/zones/zone[^/]+/averageActualHumidity|/devices/(?!list$)[^/]+/(?:actualHumidity|battery|signal))$"
+        ),
+        frozenset({"floatValue"}),
+        frozenset({"%"}),
+    ),
+    _EntitySchemaRule(
+        re.compile(
+            r"^(?:/heatingCircuits/[^/]+/(?:boostMode|openWindowDetection/(?:enabled|status)|setpointOptimization)|/dhwCircuits/[^/]+/recirculation/enabled|/heatSources/hybrid/(?:reminderEnable|reminderLapsed)|/system/(?:appliance/enabled|powerGuard/active|powerLimitation/active|silentMode/enabled)|/solarCircuits/[^/]+/maxTemperatureReached|/pool/enabled|/zones/zone[^/]+/childLock|/pv/(?:enable|surplusAvailable))$"
+        ),
+        frozenset({"booleanValue", "stringValue"}),
+    ),
 )
 
 # A writable Home Assistant control already represents each of these resources.
@@ -212,7 +382,9 @@ _READ_ONLY_CONTROL_MIRROR_PATTERNS = tuple(
     re.compile(pattern)
     for pattern in (
         r"^/system/awayMode/enabled$",
-        r"^/heatingCircuits/[^/]+/(?:manualRoomSetpoint|operationMode)$",
+        r"^/system/silentMode/enabled$",
+        r"^/heatingCircuits/[^/]+/(?:manualRoomSetpoint|maxFlowTemp|operationMode)$",
+        r"^/heatSources/additionalHeater/operationMode$",
         r"^/heatingCircuits/[^/]+/temperatureLevels/(?:comfort2|eco)$",
         r"^/dhwCircuits/[^/]+/(?:charge|chargeDuration|operationMode|reduceTempOnAlarm|singleChargeSetpoint)$",
         r"^/dhwCircuits/[^/]+/temperatureLevels/(?:eco|high|low)$",
@@ -251,6 +423,7 @@ _GERMAN_NAMES = {
     "actualModulation": "Aktuelle Modulation",
     "actualSupplyTemperature": "Vorlauftemperatur",
     "actualTemp": "Warmwasser-Isttemperatur",
+    "actualPower": "Aktuelle Leistung",
     "brand": "Marke",
     "bus": "Systembus",
     "charge": "Extra-Warmwasser",
@@ -258,14 +431,91 @@ _GERMAN_NAMES = {
     "chargeRemainingTime": "Restzeit Extra-Warmwasser",
     "chStatus": "Heizbetrieb",
     "controlType": "Regelungsart",
+    "collectorInflowTemp": "Sole-Austrittstemperatur",
+    "collectorOutflowTemp": "Sole-Eintrittstemperatur",
     "country": "Land",
     "currentRoomSetpoint": "Wunschtemperatur",
     "currentSetpoint": "Aktueller Sollwert",
     "currentSuWiMode": "Sommer-/Winterbetrieb",
     "currentTemperatureLevel": "Aktuelles Temperaturniveau",
     "dateTime": "Datum und Uhrzeit",
+    "defrostActive": "Abtauvorgang",
     "emStatus": "Energiemanagement-Status",
-    "enabled": "Abwesenheitsmodus",
+    "enabled": "Aktiviert",
+    "actualHumidity": "Aktuelle Luftfeuchtigkeit",
+    "activeHeatSource": "Aktiver Wärmeerzeuger",
+    "assignedHC": "Zugeordneter Heizkreis",
+    "atmosphericPressure": "Luftdruck",
+    "averageActualHumidity": "Mittlere Luftfeuchtigkeit",
+    "averageCurrentTemperature": "Mittlere Raumtemperatur",
+    "battery": "Batteriestand",
+    "bivalentSetpoint": "Bivalenzpunkt",
+    "boostDuration": "Boost-Dauer",
+    "boostMode": "Boost",
+    "boostRemainingTime": "Verbleibende Boost-Zeit",
+    "boostTemperature": "Boost-Temperatur",
+    "childLock": "Kindersicherung",
+    "collectorTemperature": "Kollektortemperatur",
+    "currentFriwaSupplyTemperature": "Aktuelle FriWa-Vorlauftemperatur",
+    "currentOpmode": "Aktuelle Betriebsart",
+    "currentPriceCatagorization": "Aktuelle Preisstufe",
+    "currentTemp": "Isttemperatur",
+    "dhwTankBottomTemperature": "Speichertemperatur unten",
+    "electricityTotalConsumption": "Stromverbrauch gesamt",
+    "errors": "Störungen",
+    "exhaustFanLevel": "Abluft-Lüfterstufe",
+    "fanSetpoint": "Lüfter-Sollwert",
+    "fanSpeed": "Lüfterdrehzahl",
+    "filter": "Filter",
+    "friwaPrimaryPumpModulation": "FriWa-Primärpumpe",
+    "gasFlow": "Gasdurchfluss",
+    "gasTotalConsumption": "Gasverbrauch gesamt",
+    "healthStatus": "Anlagenzustand",
+    "highPriceDelta": "Sollwertänderung bei hohem Preis",
+    "highPriceEnable": "Hoher Preis aktiv",
+    "inletTemperature": "Eintrittstemperatur",
+    "installationStatus": "Installationsstatus",
+    "learningWeek": "Lernwoche",
+    "lowPriceDelta": "Sollwertänderung bei niedrigem Preis",
+    "lowPriceEnable": "Niedriger Preis aktiv",
+    "manualsetpoint": "Manueller Sollwert",
+    "maxCylinderTemperature": "Maximale Speichertemperatur",
+    "maxIndoorAirQuality": "Maximale Innenluftqualität",
+    "maxRelativeHumidity": "Maximale relative Luftfeuchtigkeit",
+    "maxRunTime": "Maximale Filterlaufzeit",
+    "maxTemperatureReached": "Maximaltemperatur erreicht",
+    "model": "Modell",
+    "midPriceSetpoint": "Sollwert bei mittlerem Preis",
+    "numberOfRefrigerantCircuitsInstalled": "Anzahl Kältemittelkreise",
+    "numberOfShowersAvailable": "Verfügbare Duschen",
+    "operationHours": "Betriebsstunden",
+    "optimization": "Tarifoptimierung",
+    "outletTemperature": "Austrittstemperatur",
+    "outTemp": "Ausgangstemperatur",
+    "poolMode": "Pool-Betriebsart",
+    "poolSetpointTemperature": "Pool-Solltemperatur",
+    "poolStatus": "Poolstatus",
+    "poolTemperature": "Pooltemperatur",
+    "powerReduction": "Leistungsreduzierung",
+    "productName": "Produktname",
+    "remainingTime": "Restlaufzeit",
+    "rfTimeofConnectionLost": "Funkverbindung unterbrochen seit",
+    "roomtemperature": "Raumtemperatur",
+    "safetyTemperature": "Sicherheitstemperatur",
+    "systemOfUnits": "Einheitensystem",
+    "tariffId": "Tarif-ID",
+    "setpointOptimization": "Sollwertoptimierung",
+    "signal": "Signalstärke",
+    "solarYield": "Solarertrag",
+    "startTime": "Startzeit",
+    "stopTime": "Endzeit",
+    "surplusAvailable": "PV-Überschuss verfügbar",
+    "totalSystem": "Gesamtlaufzeit Anlage",
+    "ventilationLevels": "Lüftungsstufe",
+    "volumeFlow": "Volumenstrom",
+    "waterFlow": "Wasserdurchfluss",
+    "waterTotalConsumption": "Wasserverbrauch gesamt",
+    "zoneId": "Zonenzuordnung",
     "flameStatus": "Brennerstatus",
     "heatCoolMode": "Heiz-/Kühlbetrieb",
     "heatingType": "Heizsystem",
@@ -276,6 +526,7 @@ _GERMAN_NAMES = {
     "numberOfStarts": "Anzahl der Starts",
     "operationMode": "Betriebsart",
     "overallStatus": "Betriebsstatus",
+    "powerPercentage": "Aktuelle Leistung in Prozent",
     "reduceTempOnAlarm": "Temperaturabsenkung bei Störung",
     "returnTemperature": "Rücklauftemperatur",
     "serialId": "Seriennummer",
@@ -300,7 +551,23 @@ _GERMAN_NAMES = {
 _GERMAN_PATH_NAMES = {
     "/gateway/dataProcessing/status": "Datenverarbeitungsstatus",
     "/heatSources/Source/eHeater/status": "Status elektrischer Zuheizer",
+    "/heatSources/additionalHeater/operationMode": "Betriebsart des Zuheizers",
+    "/heatSources/additionalHeater/primary/status": "Status des primären Zuheizers",
+    "/heatSources/additionalHeater/primary/type": "Typ des primären Zuheizers",
     "/heatSources/compressor/status": "Status Kompressor",
+    "/heatSources/currentEmergencyMode": "Notbetrieb",
+    "/heatSources/passiveCooling/inflowTemp": "Eintrittstemperatur passive Kühlung",
+    "/heatSources/pvContactState": "PV-Kontaktstatus",
+    "/heatSources/smartFunction/active": "Smart Function aktiv",
+    "/heatSources/smartFunction/enabled": "Smart Function aktiviert",
+    "/heatSources/standbyMode": "Standby-Betrieb",
+    "/system/awayMode/enabled": "Abwesenheitsmodus",
+    "/system/appliance/enabled": "Anlage aktiviert",
+    "/system/powerGuard/active": "Power Guard aktiv",
+    "/system/powerLimitation/active": "Leistungsbegrenzung aktiv",
+    "/system/silentMode/enabled": "Silent Mode aktiviert",
+    "/pv/enable": "Photovoltaik aktiviert",
+    "/pv/surplusAvailable": "PV-Überschuss verfügbar",
     "/holidayMode/activeModes": "Aktive Urlaubsmodi",
     "/holidayMode/configuration": "Urlaubskonfiguration",
     "/holidayMode/list": "Urlaubszeiten",
@@ -314,6 +581,7 @@ _ENGLISH_NAMES = {
     "actualModulation": "Current modulation",
     "actualSupplyTemperature": "Supply temperature",
     "actualTemp": "Hot water temperature",
+    "actualPower": "Current power",
     "brand": "Brand",
     "bus": "System bus",
     "charge": "Extra hot water",
@@ -321,14 +589,91 @@ _ENGLISH_NAMES = {
     "chargeRemainingTime": "Extra hot water remaining time",
     "chStatus": "Central heating status",
     "controlType": "Control type",
+    "collectorInflowTemp": "Brine outlet temperature",
+    "collectorOutflowTemp": "Brine inlet temperature",
     "country": "Country",
     "currentRoomSetpoint": "Target temperature",
     "currentSetpoint": "Current setpoint",
     "currentSuWiMode": "Summer/winter mode",
     "currentTemperatureLevel": "Current temperature level",
     "dateTime": "Date and time",
+    "defrostActive": "Defrost active",
     "emStatus": "Energy management status",
-    "enabled": "Away mode",
+    "enabled": "Enabled",
+    "actualHumidity": "Current humidity",
+    "activeHeatSource": "Active heat source",
+    "assignedHC": "Assigned heating circuit",
+    "atmosphericPressure": "Atmospheric pressure",
+    "averageActualHumidity": "Average humidity",
+    "averageCurrentTemperature": "Average room temperature",
+    "battery": "Battery level",
+    "bivalentSetpoint": "Bivalence point",
+    "boostDuration": "Boost duration",
+    "boostMode": "Boost",
+    "boostRemainingTime": "Boost remaining time",
+    "boostTemperature": "Boost temperature",
+    "childLock": "Child lock",
+    "collectorTemperature": "Collector temperature",
+    "currentFriwaSupplyTemperature": "Current fresh-water supply temperature",
+    "currentOpmode": "Current operation mode",
+    "currentPriceCatagorization": "Current price category",
+    "currentTemp": "Current temperature",
+    "dhwTankBottomTemperature": "Tank bottom temperature",
+    "electricityTotalConsumption": "Total electricity consumption",
+    "errors": "Faults",
+    "exhaustFanLevel": "Exhaust fan level",
+    "fanSetpoint": "Fan setpoint",
+    "fanSpeed": "Fan speed",
+    "filter": "Filter",
+    "friwaPrimaryPumpModulation": "Fresh-water primary pump",
+    "gasFlow": "Gas flow",
+    "gasTotalConsumption": "Total gas consumption",
+    "healthStatus": "System health",
+    "highPriceDelta": "High-price setpoint delta",
+    "highPriceEnable": "High price enabled",
+    "inletTemperature": "Inlet temperature",
+    "installationStatus": "Installation status",
+    "learningWeek": "Learning week",
+    "lowPriceDelta": "Low-price setpoint delta",
+    "lowPriceEnable": "Low price enabled",
+    "manualsetpoint": "Manual setpoint",
+    "maxCylinderTemperature": "Maximum cylinder temperature",
+    "maxIndoorAirQuality": "Maximum indoor air quality",
+    "maxRelativeHumidity": "Maximum relative humidity",
+    "maxRunTime": "Maximum filter runtime",
+    "maxTemperatureReached": "Maximum temperature reached",
+    "model": "Model",
+    "midPriceSetpoint": "Mid-price setpoint",
+    "numberOfRefrigerantCircuitsInstalled": "Number of refrigerant circuits",
+    "numberOfShowersAvailable": "Available showers",
+    "operationHours": "Operating hours",
+    "optimization": "Tariff optimization",
+    "outletTemperature": "Outlet temperature",
+    "outTemp": "Output temperature",
+    "poolMode": "Pool mode",
+    "poolSetpointTemperature": "Pool target temperature",
+    "poolStatus": "Pool status",
+    "poolTemperature": "Pool temperature",
+    "powerReduction": "Power reduction",
+    "productName": "Product name",
+    "remainingTime": "Remaining time",
+    "rfTimeofConnectionLost": "RF connection lost since",
+    "roomtemperature": "Room temperature",
+    "safetyTemperature": "Safety temperature",
+    "systemOfUnits": "System of units",
+    "tariffId": "Tariff ID",
+    "setpointOptimization": "Setpoint optimization",
+    "signal": "Signal strength",
+    "solarYield": "Solar yield",
+    "startTime": "Start time",
+    "stopTime": "Stop time",
+    "surplusAvailable": "PV surplus available",
+    "totalSystem": "Total system runtime",
+    "ventilationLevels": "Ventilation level",
+    "volumeFlow": "Volume flow",
+    "waterFlow": "Water flow",
+    "waterTotalConsumption": "Total water consumption",
+    "zoneId": "Zone assignment",
     "flameStatus": "Burner status",
     "heatCoolMode": "Heating/cooling mode",
     "heatingType": "Heating system",
@@ -339,6 +684,7 @@ _ENGLISH_NAMES = {
     "numberOfStarts": "Number of starts",
     "operationMode": "Operation mode",
     "overallStatus": "Operating status",
+    "powerPercentage": "Current power percentage",
     "reduceTempOnAlarm": "Temperature reduction during fault",
     "returnTemperature": "Return temperature",
     "serialId": "Serial number",
@@ -363,7 +709,23 @@ _ENGLISH_NAMES = {
 _ENGLISH_PATH_NAMES = {
     "/gateway/dataProcessing/status": "Data processing status",
     "/heatSources/Source/eHeater/status": "Auxiliary heater status",
+    "/heatSources/additionalHeater/operationMode": "Auxiliary heater operation mode",
+    "/heatSources/additionalHeater/primary/status": "Primary auxiliary heater status",
+    "/heatSources/additionalHeater/primary/type": "Primary auxiliary heater type",
     "/heatSources/compressor/status": "Compressor status",
+    "/heatSources/currentEmergencyMode": "Emergency mode",
+    "/heatSources/passiveCooling/inflowTemp": "Passive cooling inlet temperature",
+    "/heatSources/pvContactState": "PV contact status",
+    "/heatSources/smartFunction/active": "Smart Function active",
+    "/heatSources/smartFunction/enabled": "Smart Function enabled",
+    "/heatSources/standbyMode": "Standby mode",
+    "/system/awayMode/enabled": "Away mode",
+    "/system/appliance/enabled": "System enabled",
+    "/system/powerGuard/active": "Power Guard active",
+    "/system/powerLimitation/active": "Power limitation active",
+    "/system/silentMode/enabled": "Silent mode enabled",
+    "/pv/enable": "Photovoltaics enabled",
+    "/pv/surplusAvailable": "PV surplus available",
     "/holidayMode/activeModes": "Active holiday modes",
     "/holidayMode/configuration": "Holiday configuration",
     "/holidayMode/list": "Holiday periods",
@@ -430,7 +792,11 @@ _ENGLISH_SUBKEY_NAMES = {
 
 def is_private_resource(path: str) -> bool:
     """Return whether a resource must never become an entity or diagnostic."""
-    return path in _PRIVATE_PATHS or path.startswith(_PRIVATE_PREFIXES)
+    return (
+        path in _PRIVATE_PATHS
+        or path.startswith(_PRIVATE_PREFIXES)
+        or any(pattern.fullmatch(path) for pattern in _PRIVATE_PATTERNS)
+    )
 
 
 def is_opt_in_diagnostic_resource(path: str) -> bool:
@@ -451,9 +817,19 @@ def supports_entity(resource: Resource) -> bool:
         capability_maturity(resource.path) is not CapabilityMaturity.OBSERVED
         and not is_private_resource(resource.path)
         and resource.path not in _NO_ENTITY_PATHS
+        and not any(pattern.fullmatch(resource.path) for pattern in _NO_ENTITY_PATTERNS)
         and not resource.references
         and resource.metadata.resource_type != "licenseInformation"
+        and _matches_optional_app_schema(resource)
     )
+
+
+def _matches_optional_app_schema(resource: Resource) -> bool:
+    """Reject optional app paths whose live type or unit is unexpected."""
+    for rule in _APP_RESOURCE_SCHEMA_RULES:
+        if rule.pattern.fullmatch(resource.path):
+            return rule.matches(resource)
+    return True
 
 
 def capability_maturity(path: str) -> CapabilityMaturity:
@@ -488,6 +864,15 @@ def poll_group(resource: Resource) -> PollGroup:
         return PollGroup.STATIC
     if resource.path.startswith("/holidayMode/"):
         return PollGroup.CONTROL
+    if not _matches_optional_app_schema(resource):
+        # Keep the unexpected schema in redacted diagnostics without spending
+        # recurring cloud requests on a value that cannot produce an entity.
+        return PollGroup.STATIC
+    if resource.path in {
+        "/heatSources/additionalHeater/operationMode",
+        "/heatSources/smartFunction/enabled",
+    }:
+        return PollGroup.CONTROL
     if resource.path == "/notifications" or resource.path.endswith(
         ("/activefailure", "/errors")
     ):
@@ -498,13 +883,30 @@ def poll_group(resource: Resource) -> PollGroup:
         return PollGroup.STATIC
     if resource.path in {
         "/gateway/dataProcessing/status",
+        "/heatSources/additionalHeater/primary/type",
+        "/system/appliance/model",
+        "/system/appliance/versionFirmware",
         "/system/iSRC/supportStatus",
     }:
         return PollGroup.STATIC
-    if "/emon/" in resource.path:
+    if "/emon/" in resource.path or resource.path.endswith(
+        ("TotalConsumption", "/solarYield")
+    ):
         return PollGroup.ENERGY
-    if resource.path.endswith(("/workingTime", "/numberOfStarts")):
+    if resource.path.endswith(
+        ("/workingTime", "/numberOfStarts", "/operationHours", "/totalSystem")
+    ):
         return PollGroup.SLOW
+    if resource.path in {
+        "/heatSources/pvContactState",
+        "/heatSources/smartFunction/active",
+    }:
+        return PollGroup.FAST
+    if re.fullmatch(
+        r"/heatSources/(?:passiveCooling/inflowTemp|hs[^/]+/(?:actualPower|defrostActive|powerPercentage|brineCircuit/(?:collectorInflowTemp|collectorOutflowTemp)))",
+        resource.path,
+    ):
+        return PollGroup.FAST
     tail = resource.path.rsplit("/", 1)[-1].lower()
     if tail in _STATIC_TOKENS:
         return PollGroup.STATIC
@@ -528,6 +930,18 @@ def logical_device_for_path(path: str) -> LogicalDevice | None:
             "heatSources": "hs",
         }[root]
         match = re.match(rf"^/{root}/({prefix}\d+)(?:/|$)", path, re.IGNORECASE)
+        if match:
+            logical_id = match.group(1)
+            number = re.search(r"(\d+)$", logical_id)
+            suffix = number.group(1) if number else logical_id
+            return LogicalDevice(kind, logical_id, f"{label} {suffix}")
+    for pattern, kind, label in (
+        (r"^/solarCircuits/(sc[^/]+)(?:/|$)", "solar_circuit", "Solar circuit"),
+        (r"^/ventilation/(zone[^/]+)(?:/|$)", "ventilation_zone", "Ventilation zone"),
+        (r"^/zones/(zone[^/]+)(?:/|$)", "room_zone", "Zone"),
+        (r"^/devices/((?!list$)[^/]+)(?:/|$)", "room_device", "Room device"),
+    ):
+        match = re.match(pattern, path, re.IGNORECASE)
         if match:
             logical_id = match.group(1)
             number = re.search(r"(\d+)$", logical_id)

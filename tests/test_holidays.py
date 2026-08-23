@@ -7,6 +7,7 @@ from datetime import UTC, date, datetime
 import pytest
 
 from custom_components.bosch_buderus_heating.holidays import (
+    HOLIDAY_ACTIVATED_PATH,
     HOLIDAY_ACTIVE_MODES_PATH,
     HOLIDAY_CONFIGURATION_PATH,
     HOLIDAY_LIST_PATH,
@@ -121,10 +122,22 @@ def test_active_modes_is_authoritative_and_schedule_is_fallback() -> None:
         fallback_timezone="UTC",
         now=now,
     )
+    activated_fallback = parse_holiday_state(
+        {
+            HOLIDAY_ACTIVATED_PATH: Resource(
+                path=HOLIDAY_ACTIVATED_PATH,
+                value="on",
+                has_value=True,
+            )
+        },
+        fallback_timezone="UTC",
+        now=now,
+    )
 
     assert fallback.active is True
     assert inactive.active is False
     assert active.active is True
+    assert activated_fallback.active is True
 
 
 def test_structured_dates_and_duplicates_are_supported() -> None:

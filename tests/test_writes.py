@@ -16,7 +16,9 @@ from custom_components.bosch_buderus_heating.pointt import (
     WriteValidationError,
 )
 from custom_components.bosch_buderus_heating.writes import (
+    AUXILIARY_HEATER_OPERATION_MODE_POLICY,
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+    SILENT_MODE_POLICY,
     WriteService,
     enum_policy_for_resource,
     number_policy_for_resource,
@@ -300,11 +302,39 @@ def test_policy_discovery_excludes_administrative_writes() -> None:
     )
 
     assert enum_policy_for_resource(enum_resource) is not None
+    silent_mode = _resource(
+        "auto",
+        path="/system/silentMode/enabled",
+        allowed_values=("off", "auto", "on"),
+    )
+    assert enum_policy_for_resource(silent_mode) is SILENT_MODE_POLICY
+    auxiliary_heater_mode = _resource(
+        "off",
+        path="/heatSources/additionalHeater/operationMode",
+        allowed_values=("off", "manual", "auto"),
+    )
+    assert (
+        enum_policy_for_resource(auxiliary_heater_mode)
+        is AUXILIARY_HEATER_OPERATION_MODE_POLICY
+    )
     assert enum_policy_for_resource(admin) is None
     assert number_policy_for_resource(_number_resource()) is not None
-    assert (
-        number_policy_for_resource(
-            _number_resource(path="/heatingCircuits/hc1/maxFlowTemp")
-        )
-        is None
+    maximum_supply = _number_resource(
+        40.0,
+        path="/heatingCircuits/hc1/maxFlowTemp",
+        minimum=30.0,
+        maximum=60.0,
     )
+    maximum_supply_policy = number_policy_for_resource(maximum_supply)
+    assert maximum_supply_policy is not None
+    assert maximum_supply_policy.step == 1.0
+    assert maximum_supply_policy.safe_minimum == 0
+    assert maximum_supply_policy.safe_maximum == 100
+
+    other_system = _number_resource(
+        55.0,
+        path="/heatingCircuits/hc7/maxFlowTemp",
+        minimum=20.0,
+        maximum=80.0,
+    )
+    assert number_policy_for_resource(other_system) is maximum_supply_policy

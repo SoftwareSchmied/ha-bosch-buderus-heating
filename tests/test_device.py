@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 
+import pytest
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -18,6 +19,7 @@ from custom_components.bosch_buderus_heating.device import (
     grouped_entity_name,
 )
 from custom_components.bosch_buderus_heating.pointt import Gateway, Resource
+from custom_components.bosch_buderus_heating.resource_catalog import resource_name
 
 
 def _coordinator(
@@ -217,4 +219,41 @@ def test_dynamic_groups_follow_german_system_language(hass: HomeAssistant) -> No
             coordinator, "/heatingCircuits/hc1/operationMode", "Betriebsart"
         )
         == "Heizkreis 1 \N{EN DASH} Betriebsart"
+    )
+
+
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    (
+        (
+            "/solarCircuits/sc2/solarYield",
+            "Solar circuit 2 \N{EN DASH} Solar yield",
+        ),
+        (
+            "/ventilation/zone1/operationMode",
+            "Ventilation zone 1 \N{EN DASH} Operation mode",
+        ),
+        (
+            "/zones/zone3/currentRoomSetpoint",
+            "Zone 3 \N{EN DASH} Target temperature",
+        ),
+        (
+            "/devices/device7/battery",
+            "Room device 7 \N{EN DASH} Battery level",
+        ),
+        ("/pool/currentTemp", "Pool \N{EN DASH} Current temperature"),
+        (
+            "/pv/surplusAvailable",
+            "Photovoltaics \N{EN DASH} PV surplus available",
+        ),
+    ),
+)
+def test_optional_families_receive_clear_groups(
+    hass: HomeAssistant, path: str, expected: str
+) -> None:
+    coordinator = _coordinator(hass, brand="buderus", resources=(Resource(path),))
+
+    assert (
+        grouped_entity_name(coordinator, path, resource_name(path, language="en"))
+        == expected
     )

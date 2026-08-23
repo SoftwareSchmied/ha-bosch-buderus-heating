@@ -41,6 +41,37 @@ def test_compatibility_checks_only_known_live_schemas() -> None:
     ) == (changed_type.path, changed_unit.path)
 
 
+def test_compatibility_checks_optional_app_resource_schemas() -> None:
+    compatible_power = _resource("/heatSources/hs2/actualPower", "floatValue", "kW")
+    compatible_defrost = _resource("/heatSources/hs2/defrostActive", "booleanValue")
+    wrong_power_unit = _resource("/heatSources/hs2/powerPercentage", "floatValue", "kW")
+    wrong_temperature_type = _resource(
+        "/heatSources/hs2/brineCircuit/collectorOutflowTemp", "stringValue", "C"
+    )
+    compatible_silent_mode = _resource("/system/silentMode/enabled", "stringValue")
+    wrong_power_limitation_type = _resource(
+        "/system/powerLimitation/active", "floatValue"
+    )
+
+    assert incompatible_capabilities(
+        {
+            item.path: item
+            for item in (
+                compatible_power,
+                compatible_defrost,
+                compatible_silent_mode,
+                wrong_power_unit,
+                wrong_power_limitation_type,
+                wrong_temperature_type,
+            )
+        }
+    ) == (
+        wrong_temperature_type.path,
+        wrong_power_unit.path,
+        wrong_power_limitation_type.path,
+    )
+
+
 def test_firmware_issue_is_created_and_removed_from_aggregate_result(
     hass: HomeAssistant,
 ) -> None:

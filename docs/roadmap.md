@@ -1,6 +1,6 @@
 # Roadmap
 
-## Current status — 0.4.0
+## Current status — 0.5.0
 
 The integration is available as a stable GitHub release and supports Bosch and
 Buderus PointT heating systems through one capability-based implementation.
@@ -54,14 +54,20 @@ Features are added only when their paths, schemas, semantics, and cloud cost
 are understood. Unsupported paths must remain absent instead of producing
 non-functional entities.
 
-1. Additional heat-pump operating values, including source temperatures,
-   passive cooling, instantaneous power, hybrid/bivalence information, silent
-   operation, power limiting, boost, temporary setpoints, and cooling limits.
-2. Historical `/recordings` data as an isolated module with explicit request
+1. Continue validating the comprehensive optional read-only catalog on more
+   installations. Discovery now covers hybrid/bivalence information,
+   low-noise and silent modes, power limiting, boost, temporary setpoints,
+   cooling limits, fresh-water-station values, solar, pool, ventilation, room
+   devices, zones, PV status, and the gateway's variable-tariff resources.
+   Unsupported paths are discarded after the initial probe. Silent Mode,
+   auxiliary-heater operation mode, and maximum supply temperature are
+   additionally available as strictly capability-gated controls.
+2. Historical `/recordings` data as an isolated, opt-in module with explicit request
    budgets and no duplication of Home Assistant history.
-3. Variable-tariff information from the separate shared-energy service.
-4. Dynamically available solar, pool, ventilation, room-device, zone, and PV
-   modules.
+3. Tariff offers from the separate shared-energy service. This is distinct
+   from the read-only variable-tariff state already exposed by the gateway.
+4. Promote optional resources from understood diagnostics to normal entities
+   as their schemas and semantics are confirmed on real installations.
 5. Heating and hot-water schedule editing only after multiple real schemas and
    safe round trips have been verified.
 

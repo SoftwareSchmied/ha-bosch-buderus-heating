@@ -7,8 +7,16 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
-from homeassistant.components.sensor import SensorDeviceClass
-from homeassistant.const import EntityCategory
+from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
+from homeassistant.const import (
+    EntityCategory,
+    UnitOfEnergy,
+    UnitOfPower,
+    UnitOfPressure,
+    UnitOfTime,
+    UnitOfVolume,
+    UnitOfVolumeFlowRate,
+)
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -28,6 +36,7 @@ from custom_components.bosch_buderus_heating.sensor import (
     BoschBuderusNextHolidaySensor,
     BoschBuderusSensor,
     _energy_values,
+    _measurement_attributes,
     _native_scalar,
     async_setup_entry,
     build_sensor_descriptions,
@@ -132,6 +141,227 @@ def test_temperature_sensor_value_identity_and_device(hass: HomeAssistant) -> No
     assert sensor.unique_id == "gateway-one:gateway:supply_temperature"
     assert sensor.device_info["manufacturer"] == "Bosch Thermotechnology"
     assert sensor.device_info["model"] == "MX300"
+
+
+def test_optional_heat_source_power_has_safe_measurement_metadata(
+    hass: HomeAssistant,
+) -> None:
+    resource = Resource(
+        path="/heatSources/hs7/actualPower",
+        value=4.2,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="kW"),
+    )
+
+    sensor = _sensor(hass, resource)
+
+    assert sensor.native_value == 4.2
+    assert sensor.entity_description.native_unit_of_measurement == UnitOfPower.KILO_WATT
+    assert sensor.entity_description.device_class is SensorDeviceClass.POWER
+    assert sensor.entity_description.entity_registry_enabled_default
+
+    watts = _sensor(
+        hass,
+        Resource(
+            path="/heatSources/hs8/actualPower",
+            value=4200.0,
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="floatValue", unit="W"),
+        ),
+    )
+    assert watts.entity_description.native_unit_of_measurement == UnitOfPower.WATT
+
+
+@pytest.mark.parametrize(
+    ("path", "unit", "expected_unit", "device_class"),
+    (
+        (
+            "/solarCircuits/sc1/solarYield",
+            "kWh",
+            UnitOfEnergy.KILO_WATT_HOUR,
+            SensorDeviceClass.ENERGY,
+        ),
+        (
+            "/dhwCircuits/dhw1/waterTotalConsumption",
+            "L",
+            UnitOfVolume.LITERS,
+            SensorDeviceClass.WATER,
+        ),
+        (
+            "/dhwCircuits/dhw1/volumeFlow",
+            "L/min",
+            UnitOfVolumeFlowRate.LITERS_PER_MINUTE,
+            SensorDeviceClass.VOLUME_FLOW_RATE,
+        ),
+    ),
+)
+def test_optional_measurements_use_home_assistant_units(
+    hass: HomeAssistant,
+    path: str,
+    unit: str,
+    expected_unit: str,
+    device_class: SensorDeviceClass,
+) -> None:
+    sensor = _sensor(
+        hass,
+        Resource(
+            path=path,
+            value=1.5,
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="floatValue", unit=unit),
+        ),
+    )
+
+    assert sensor.entity_description.native_unit_of_measurement == expected_unit
+    assert sensor.entity_description.device_class is device_class
+
+
+@pytest.mark.parametrize(
+    ("path", "unit", "expected_unit", "device_class", "state_class"),
+    (
+        (
+            "/dhwCircuits/dhw1/sensor/atmosphericPressure",
+            "hPa",
+            UnitOfPressure.HPA,
+            SensorDeviceClass.PRESSURE,
+            SensorStateClass.MEASUREMENT,
+        ),
+        (
+            "/heatSources/electricityTotalConsumption",
+            "Wh",
+            UnitOfEnergy.WATT_HOUR,
+            SensorDeviceClass.ENERGY,
+            SensorStateClass.TOTAL_INCREASING,
+        ),
+        (
+            "/dhwCircuits/dhw1/volumeFlow",
+            "L",
+            UnitOfVolume.LITERS,
+            SensorDeviceClass.WATER,
+            SensorStateClass.MEASUREMENT,
+        ),
+        (
+            "/heatSources/gasTotalConsumption",
+            "m³",
+            UnitOfVolume.CUBIC_METERS,
+            SensorDeviceClass.GAS,
+            SensorStateClass.TOTAL_INCREASING,
+        ),
+        (
+            "/dhwCircuits/dhw1/waterTotalConsumption",
+            "m3",
+            UnitOfVolume.CUBIC_METERS,
+            SensorDeviceClass.WATER,
+            SensorStateClass.TOTAL_INCREASING,
+        ),
+        (
+            "/ventilation/zone1/filter/remainingTime",
+            "min",
+            UnitOfTime.MINUTES,
+            SensorDeviceClass.DURATION,
+            SensorStateClass.MEASUREMENT,
+        ),
+        (
+            "/ventilation/zone1/filter/maxRunTime",
+            "hours",
+            UnitOfTime.HOURS,
+            SensorDeviceClass.DURATION,
+            SensorStateClass.MEASUREMENT,
+        ),
+        (
+            "/devices/device1/rfTimeofConnectionLost",
+            "seconds",
+            UnitOfTime.SECONDS,
+            SensorDeviceClass.DURATION,
+            SensorStateClass.MEASUREMENT,
+        ),
+        (
+            "/system/lowNoise/duration",
+            "days",
+            UnitOfTime.DAYS,
+            SensorDeviceClass.DURATION,
+            SensorStateClass.MEASUREMENT,
+        ),
+    ),
+)
+def test_extended_measurement_unit_mapping(
+    path: str,
+    unit: str,
+    expected_unit: str,
+    device_class: SensorDeviceClass,
+    state_class: SensorStateClass,
+) -> None:
+    resource = Resource(
+        path=path,
+        value=1.0,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit=unit),
+    )
+
+    actual_unit, actual_class, actual_state_class, scale = _measurement_attributes(
+        resource, None
+    )
+
+    assert (actual_unit, actual_class, actual_state_class, scale) == (
+        expected_unit,
+        device_class,
+        state_class,
+        1.0,
+    )
+
+
+def test_optional_string_boolean_uses_translated_on_off_enum(
+    hass: HomeAssistant,
+) -> None:
+    sensor = _sensor(
+        hass,
+        Resource(
+            path="/system/powerLimitation/active",
+            value="on",
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="stringValue"),
+        ),
+    )
+
+    assert sensor.entity_description.translation_key == "on_off_state"
+    assert sensor.native_value == "on"
+
+
+def test_optional_auxiliary_heater_mode_uses_app_translation(
+    hass: HomeAssistant,
+) -> None:
+    resource = Resource(
+        path="/heatSources/additionalHeater/operationMode",
+        value="manual",
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="stringValue"),
+    )
+
+    sensor = _sensor(hass, resource)
+
+    assert sensor.native_value == "manual"
+    assert sensor.entity_description.translation_key == (
+        "auxiliary_heater_operation_mode"
+    )
+    assert sensor.entity_description.options == ["off", "manual", "auto"]
+    assert sensor.entity_description.entity_category is EntityCategory.DIAGNOSTIC
+    assert not sensor.entity_description.entity_registry_enabled_default
+
+
+def test_optional_text_defrost_state_uses_on_off_translation(
+    hass: HomeAssistant,
+) -> None:
+    resource = Resource(
+        path="/heatSources/hs3/defrostActive",
+        value="on",
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="stringValue"),
+    )
+
+    sensor = _sensor(hass, resource)
+
+    assert sensor.native_value == "on"
+    assert sensor.entity_description.translation_key == "on_off_state"
 
 
 def test_dynamic_circuit_uses_configured_name_and_stable_device(

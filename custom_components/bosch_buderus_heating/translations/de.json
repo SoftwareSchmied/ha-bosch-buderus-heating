@@ -166,7 +166,8 @@
       "extra_hot_water_setpoint": { "name": "Solltemperatur Extra-Warmwasser" },
       "hot_water_eco_plus": { "name": "Eco+ Starttemperatur" },
       "hot_water_comfort": { "name": "Komfort Starttemperatur" },
-      "hot_water_eco": { "name": "Eco Starttemperatur" }
+      "hot_water_eco": { "name": "Eco Starttemperatur" },
+      "maximum_supply_temperature": { "name": "Maximale Vorlauftemperatur" }
     },
     "select": {
       "heating_circuit_operation_mode": {
@@ -176,6 +177,14 @@
       "hot_water_operation_mode": {
         "name": "Betriebsart",
         "state": { "off": "Aus", "low": "Eco", "high": "Komfort", "ownprogram": "Auto", "eco": "Eco+" }
+      },
+      "silent_mode": {
+        "name": "Silent Mode",
+        "state": { "off": "Aus", "auto": "Automatisch", "on": "Ein" }
+      },
+      "auxiliary_heater_operation_mode": {
+        "name": "Betriebsart des Zuheizers",
+        "state": { "off": "Aus", "manual": "Ein", "auto": "Auto" }
       }
     },
     "switch": {
@@ -214,6 +223,8 @@
       "heat_demand": { "name": "Aktuelle Wärmeanforderung", "state": { "none": "Keine", "ch": "Heizung", "dhw": "Warmwasser", "frost": "Frostschutz", "ch_dhw": "Heizung und Warmwasser", "ch_frost": "Heizung und Frostschutz", "dhw_frost": "Warmwasser und Frostschutz", "ch_dhw_frost": "Heizung, Warmwasser und Frostschutz" } },
       "compressor_status": { "name": "Status Kompressor", "state": { "off": "AUS", "heating": "Heizen", "cooling": "Kühlung Zuhause", "dhw": "Warmwasser", "pool": "Heizung Pool", "pool_heat": "Heizen + Pool", "defrost": "Abtauen", "alarm": "Blockiert" } },
       "electric_auxiliary_heater_status": { "name": "Status elektrischer Zuheizer", "state": { "off": "AUS", "heating": "Heizen", "dhw": "Warmwasser", "pool": "Poolheizung", "pool_heat": "Heizen + Pool", "defrost": "Abtauen", "alarm": "Blockiert" } },
+      "auxiliary_heater_operation_mode": { "name": "Betriebsart des Zuheizers", "state": { "off": "AUS", "manual": "EIN", "auto": "Auto" } },
+      "pv_contact_state": { "name": "PV-Kontaktstatus", "state": { "inactive": "Inaktiv", "active": "Aktiv" } },
       "data_processing_status": { "name": "Datenverarbeitungsstatus", "state": { "in_progress": "In Bearbeitung", "completed": "Abgeschlossen" } },
       "season_optimizer_mode": { "name": "Saisonoptimierung", "state": { "off": "Standby", "automatic": "Automatische Umschaltung", "forced_heat": "Nur Heizbetrieb", "forced_cool": "Nur Kühlbetrieb" } },
       "isrc_support_status": { "name": "iSRC-Unterstützung", "state": { "not_supported_incompatible_controller": "Nicht unterstützt: inkompatibler Regler", "not_supported_pairing_enabled": "Nicht unterstützt: Kopplungsmodus aktiv", "supported": "Unterstützt", "in_evaluation": "Wird geprüft" } },

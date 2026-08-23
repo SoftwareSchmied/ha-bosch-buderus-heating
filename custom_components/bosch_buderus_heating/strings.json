@@ -188,7 +188,8 @@
       "extra_hot_water_setpoint": { "name": "Extra hot water setpoint" },
       "hot_water_eco_plus": { "name": "Eco+ start temperature" },
       "hot_water_comfort": { "name": "Comfort start temperature" },
-      "hot_water_eco": { "name": "Eco start temperature" }
+      "hot_water_eco": { "name": "Eco start temperature" },
+      "maximum_supply_temperature": { "name": "Maximum supply temperature" }
     },
     "select": {
       "heating_circuit_operation_mode": {
@@ -198,6 +199,14 @@
       "hot_water_operation_mode": {
         "name": "Hot water operation mode",
         "state": { "off": "Off", "low": "Eco", "high": "Comfort", "ownprogram": "Auto", "eco": "Eco+" }
+      },
+      "silent_mode": {
+        "name": "Silent mode",
+        "state": { "off": "Off", "auto": "Automatic", "on": "On" }
+      },
+      "auxiliary_heater_operation_mode": {
+        "name": "Auxiliary heater operation mode",
+        "state": { "off": "Off", "manual": "On", "auto": "Auto" }
       }
     },
     "switch": {
@@ -310,6 +319,14 @@
       "electric_auxiliary_heater_status": {
         "name": "Auxiliary heater status",
         "state": { "off": "Off", "heating": "Home heating", "dhw": "Hot water", "pool": "Swimming pool heating", "pool_heat": "Home + swimming pool heating", "defrost": "Defrost", "alarm": "Blocked" }
+      },
+      "auxiliary_heater_operation_mode": {
+        "name": "Auxiliary heater operation mode",
+        "state": { "off": "Off", "manual": "On", "auto": "Auto" }
+      },
+      "pv_contact_state": {
+        "name": "PV contact status",
+        "state": { "inactive": "Inactive", "active": "Active" }
       },
       "data_processing_status": {
         "name": "Data processing status",

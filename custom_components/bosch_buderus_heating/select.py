@@ -24,8 +24,10 @@ from .pointt import Resource
 from .resource_catalog import resource_name
 from .sensor import _semantic_key
 from .writes import (
+    AUXILIARY_HEATER_OPERATION_MODE_POLICY,
     DHW_OPERATION_MODE_POLICY,
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+    SILENT_MODE_POLICY,
     EnumWritePolicy,
     enum_policy_for_resource,
 )
@@ -44,7 +46,7 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Create controls only for the verified operation-mode capability."""
+    """Create controls only for verified enum capabilities."""
     del hass
     entities: list[BoschBuderusSelect] = []
     for coordinator in entry.runtime_data.coordinators:
@@ -58,21 +60,30 @@ async def async_setup_entry(
 def build_select_descriptions(
     resources: Mapping[str, Resource],
 ) -> tuple[BoschBuderusSelectEntityDescription, ...]:
-    """Expose only released operation-mode capabilities with matching metadata."""
+    """Expose only released enum capabilities with matching metadata."""
     descriptions: list[BoschBuderusSelectEntityDescription] = []
     for resource in resources.values():
         policy = enum_policy_for_resource(resource)
         if policy not in {
             HEATING_CIRCUIT_OPERATION_MODE_POLICY,
             DHW_OPERATION_MODE_POLICY,
+            SILENT_MODE_POLICY,
+            AUXILIARY_HEATER_OPERATION_MODE_POLICY,
         }:
             continue
-        is_heating = policy is HEATING_CIRCUIT_OPERATION_MODE_POLICY
-        options = (
-            ("off", "manual", "auto")
-            if is_heating
-            else ("off", "low", "high", "ownprogram", "eco")
-        )
+        options: tuple[str, ...]
+        if policy is HEATING_CIRCUIT_OPERATION_MODE_POLICY:
+            options = ("off", "manual", "auto")
+            translation_key = "heating_circuit_operation_mode"
+        elif policy is DHW_OPERATION_MODE_POLICY:
+            options = ("off", "low", "high", "ownprogram", "eco")
+            translation_key = "hot_water_operation_mode"
+        elif policy is SILENT_MODE_POLICY:
+            options = ("off", "auto", "on")
+            translation_key = "silent_mode"
+        else:
+            options = ("off", "manual", "auto")
+            translation_key = "auxiliary_heater_operation_mode"
         descriptions.append(
             BoschBuderusSelectEntityDescription(
                 key=_semantic_key(resource.path, None),
@@ -80,11 +91,7 @@ def build_select_descriptions(
                 resource_path=resource.path,
                 write_policy=policy,
                 options=list(options),
-                translation_key=(
-                    "heating_circuit_operation_mode"
-                    if is_heating
-                    else "hot_water_operation_mode"
-                ),
+                translation_key=translation_key,
                 entity_registry_enabled_default=True,
             )
         )
@@ -95,7 +102,7 @@ class BoschBuderusSelect(
     CoordinatorEntity[BoschBuderusDataUpdateCoordinator],
     SelectEntity,
 ):
-    """Set a heating-circuit mode through a confirmed write transaction."""
+    """Set a PointT enum through a confirmed write transaction."""
 
     _attr_has_entity_name = True
     entity_description: BoschBuderusSelectEntityDescription
@@ -107,9 +114,22 @@ class BoschBuderusSelect(
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = description
-        display_name = resource_name(
-            description.resource_path, language=coordinator.hass.config.language
-        )
+        if description.write_policy is SILENT_MODE_POLICY:
+            display_name = (
+                "Silent Mode"
+                if coordinator.hass.config.language.casefold().startswith("de")
+                else "Silent mode"
+            )
+        elif description.write_policy is AUXILIARY_HEATER_OPERATION_MODE_POLICY:
+            display_name = (
+                "Zuheizer-Betriebsart"
+                if coordinator.hass.config.language.casefold().startswith("de")
+                else "Auxiliary heater mode"
+            )
+        else:
+            display_name = resource_name(
+                description.resource_path, language=coordinator.hass.config.language
+            )
         self._attr_name = grouped_entity_name(
             coordinator, description.resource_path, display_name
         )

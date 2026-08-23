@@ -56,11 +56,20 @@ async def test_discovery_follows_references_once_and_stays_in_roots() -> None:
         ),
     }
     client.get_resources_bulk.side_effect = lambda gateway, paths: tuple(
-        BatchItemResult(
-            gateway_id=gateway,
-            path=path,
-            status=200,
-            resource=resources[path],
+        (
+            BatchItemResult(
+                gateway_id=gateway,
+                path=path,
+                status=200,
+                resource=resources[path],
+            )
+            if path in resources
+            else BatchItemResult(
+                gateway_id=gateway,
+                path=path,
+                status=404,
+                error=ResourceNotFound(path, 404),
+            )
         )
         for path in paths
     )
@@ -86,6 +95,23 @@ async def test_discovery_skips_missing_optional_nodes_and_validates_bounds() -> 
     assert await async_discover_resources(client, "gateway", roots=("/system",)) == {}
     with pytest.raises(ValueError):
         await async_discover_resources(client, "gateway", maximum_resources=0)
+
+
+async def test_discovery_stops_cleanly_at_resource_limit() -> None:
+    client = AsyncMock()
+    client.get_resources_bulk.side_effect = lambda gateway, paths: tuple(
+        BatchItemResult(gateway, path, 200, Resource(path=path)) for path in paths
+    )
+
+    resources = await async_discover_resources(
+        client,
+        "gateway",
+        roots=("/system", "/gateway"),
+        maximum_resources=1,
+    )
+
+    assert tuple(resources) == ("/system",)
+    assert client.get_resources_bulk.await_count == 1
 
 
 def test_discovery_includes_exact_optional_holiday_paths() -> None:
@@ -150,9 +176,18 @@ async def test_discovery_probes_known_unadvertised_status_resources() -> None:
         "/gateway/dataProcessing/status",
         "/system/globalSeasonOptimizer/currentMode",
         "/system/iSRC/supportStatus",
+        "/heatSources/additionalHeater/operationMode",
+        "/heatSources/additionalHeater/primary/status",
+        "/heatSources/additionalHeater/primary/type",
         "/heatSources/chStatus",
         "/heatSources/compressor/status",
+        "/heatSources/currentEmergencyMode",
         "/heatSources/Source/eHeater/status",
+        "/heatSources/passiveCooling/inflowTemp",
+        "/heatSources/pvContactState",
+        "/heatSources/smartFunction/active",
+        "/heatSources/smartFunction/enabled",
+        "/heatSources/standbyMode",
     }
 
     def response(gateway: str, paths: tuple[str, ...]):
@@ -178,8 +213,122 @@ async def test_discovery_probes_known_unadvertised_status_resources() -> None:
     assert expected.issubset(resources)
 
 
+async def test_discovery_probes_app_paths_for_each_reported_heat_source() -> None:
+    client = AsyncMock()
+    heat_source = "/heatSources/hs7"
+    expected = {
+        f"{heat_source}/actualPower",
+        f"{heat_source}/brineCircuit/collectorInflowTemp",
+        f"{heat_source}/brineCircuit/collectorOutflowTemp",
+        f"{heat_source}/defrostActive",
+        f"{heat_source}/powerPercentage",
+    }
+    resources = {
+        "/heatSources": Resource(
+            path="/heatSources",
+            references=(ResourceReference(heat_source),),
+        ),
+        heat_source: Resource(path=heat_source),
+    }
+
+    def response(gateway: str, paths: tuple[str, ...]):
+        return tuple(
+            BatchItemResult(
+                gateway,
+                path,
+                200,
+                resources.get(path)
+                or Resource(
+                    path=path,
+                    value=False,
+                    has_value=True,
+                ),
+            )
+            for path in paths
+        )
+
+    client.get_resources_bulk.side_effect = response
+
+    discovered = await async_discover_resources(
+        client, "gateway", roots=("/heatSources",)
+    )
+
+    assert expected.issubset(discovered)
+    assert not any(path.startswith("/heatSources/hs1/") for path in discovered)
+
+
+async def test_discovery_probes_optional_app_families_only_after_container_exists() -> (
+    None
+):
+    client = AsyncMock()
+    roots = {
+        "/heatingCircuits": Resource(
+            "/heatingCircuits",
+            references=(ResourceReference("/heatingCircuits/hc4"),),
+        ),
+        "/heatingCircuits/hc4": Resource("/heatingCircuits/hc4"),
+        "/dhwCircuits": Resource(
+            "/dhwCircuits",
+            references=(ResourceReference("/dhwCircuits/dhw2"),),
+        ),
+        "/dhwCircuits/dhw2": Resource("/dhwCircuits/dhw2"),
+        "/solarCircuits": Resource("/solarCircuits"),
+        "/solarCircuits/sc1": Resource("/solarCircuits/sc1"),
+        "/ventilation": Resource("/ventilation"),
+        "/ventilation/zone1": Resource("/ventilation/zone1"),
+        "/zones": Resource("/zones", references=(ResourceReference("/zones/zone3"),)),
+        "/zones/zone3": Resource("/zones/zone3"),
+        "/devices": Resource(
+            "/devices", references=(ResourceReference("/devices/device9"),)
+        ),
+        "/devices/device9": Resource("/devices/device9"),
+    }
+    requested: set[str] = set()
+
+    def response(gateway: str, paths: tuple[str, ...]):
+        requested.update(paths)
+        return tuple(
+            (
+                BatchItemResult(gateway, path, 200, roots[path])
+                if path in roots
+                else BatchItemResult(
+                    gateway,
+                    path,
+                    404,
+                    error=ResourceNotFound(path, 404),
+                )
+            )
+            for path in paths
+        )
+
+    client.get_resources_bulk.side_effect = response
+
+    await async_discover_resources(
+        client,
+        "gateway",
+        roots=(
+            "/heatingCircuits",
+            "/dhwCircuits",
+            "/solarCircuits",
+            "/ventilation",
+            "/zones",
+            "/devices",
+        ),
+    )
+
+    assert "/heatingCircuits/hc4/boostMode" in requested
+    assert "/dhwCircuits/dhw2/volumeFlow" in requested
+    assert "/solarCircuits/sc1/solarYield" in requested
+    assert "/ventilation/zone1/sensors/supplyTemp" in requested
+    assert "/zones/zone3/averageCurrentTemperature" in requested
+    assert "/devices/device9/battery" in requested
+    assert "/heatingCircuits/hc1/boostMode" not in requested
+
+
 def test_catalog_privacy_polling_devices_and_names() -> None:
     assert is_private_resource("/gateway/wifi/mac")
+    assert is_private_resource("/devices/device1/sgtin")
+    assert is_private_resource("/pv/commissioning/status")
     assert is_opt_in_diagnostic_resource("/gateway/serialId")
     assert is_opt_in_diagnostic_resource("/gateway/uuid")
     assert is_opt_in_diagnostic_resource("/system/country")
@@ -203,6 +352,21 @@ def test_catalog_privacy_polling_devices_and_names() -> None:
     assert resource_name("/heatSources/actualModulation") == "Aktuelle Modulation"
     assert resource_name("/heatSources/systemPressure") == "Systemdruck"
     assert resource_name("/heatSources/compressor/status") == "Status Kompressor"
+    assert resource_name("/heatSources/hs1/collectorInflowTemp") == (
+        "Sole-Austrittstemperatur"
+    )
+    assert (
+        resource_name(
+            "/heatSources/hs1/brineCircuit/collectorOutflowTemp", language="en"
+        )
+        == "Brine inlet temperature"
+    )
+    assert resource_name("/heatSources/hs1/defrostActive") == "Abtauvorgang"
+    assert resource_name("/solarCircuits/sc1/solarYield") == "Solarertrag"
+    assert resource_name("/pool/currentTemp", language="en") == "Current temperature"
+    assert resource_name("/heatSources/hs1/actualPower", language="en") == (
+        "Current power"
+    )
     assert (
         resource_name("/heatSources/Source/eHeater/status", language="en")
         == "Auxiliary heater status"
@@ -282,8 +446,75 @@ def test_catalog_privacy_polling_devices_and_names() -> None:
     )
     assert poll_group(Resource(path="/heatSources/hs1/failurelist")) is PollGroup.STATIC
     assert poll_group(Resource(path="/holidayMode/list")) is PollGroup.CONTROL
+    assert (
+        poll_group(Resource(path="/solarCircuits/sc1/solarYield")) is PollGroup.ENERGY
+    )
+    assert (
+        poll_group(
+            Resource(
+                path="/heatSources/additionalHeater/operationMode",
+                metadata=ResourceMetadata(resource_type="stringValue"),
+            )
+        )
+        is PollGroup.CONTROL
+    )
+    assert (
+        poll_group(
+            Resource(
+                path="/heatSources/smartFunction/active",
+                metadata=ResourceMetadata(resource_type="booleanValue"),
+            )
+        )
+        is PollGroup.FAST
+    )
     assert not supports_entity(
         Resource(path="/holidayMode/list", value=[], has_value=True)
+    )
+
+
+def test_optional_app_paths_require_the_expected_live_schema() -> None:
+    assert supports_entity(
+        Resource(
+            path="/heatSources/hs1/actualPower",
+            value=4.2,
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="floatValue", unit="kW"),
+        )
+    )
+    assert not supports_entity(
+        Resource(
+            path="/heatSources/hs1/actualPower",
+            value=4.2,
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
+        )
+    )
+    assert (
+        poll_group(
+            Resource(
+                path="/heatSources/hs1/actualPower",
+                value=4.2,
+                has_value=True,
+                metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
+            )
+        )
+        is PollGroup.STATIC
+    )
+    assert supports_entity(
+        Resource(
+            path="/heatSources/hs2/defrostActive",
+            value=False,
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="booleanValue"),
+        )
+    )
+    assert not supports_entity(
+        Resource(
+            path="/heatSources/passiveCooling/inflowTemp",
+            value="cold",
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="stringValue"),
+        )
     )
     assert resource_name("/holidayMode/list", language="en") == "Holiday periods"
     assert not supports_entity(
@@ -309,6 +540,22 @@ def test_capability_maturity_controls_entity_publication() -> None:
         is CapabilityMaturity.UNDERSTOOD
     )
     assert (
+        capability_maturity("/system/powerLimitation/active")
+        is CapabilityMaturity.VERIFIED
+    )
+    assert (
+        capability_maturity("/system/silentMode/enabled")
+        is CapabilityMaturity.WRITE_VERIFIED
+    )
+    assert (
+        capability_maturity("/heatSources/additionalHeater/operationMode")
+        is CapabilityMaturity.WRITE_VERIFIED
+    )
+    assert (
+        capability_maturity("/heatingCircuits/hc2/maxFlowTemp")
+        is CapabilityMaturity.WRITE_VERIFIED
+    )
+    assert (
         capability_maturity("/heatSources/vendorExtension")
         is CapabilityMaturity.OBSERVED
     )
@@ -319,19 +566,33 @@ def test_capability_maturity_controls_entity_publication() -> None:
     assert entity_enabled_by_default("/heatSources/emon/coolingConsumption")
     assert entity_enabled_by_default("/heatSources/emStatus")
     assert entity_enabled_by_default("/heatSources/compressor/status")
+    assert entity_enabled_by_default("/solarCircuits/sc1/collectorTemperature")
+    assert entity_enabled_by_default("/pool/currentTemp")
+    assert entity_enabled_by_default("/devices/device2/battery")
     assert entity_enabled_by_default("/heatSources/Source/eHeater/status")
     assert not entity_enabled_by_default("/gateway/dataProcessing/status")
     assert not entity_enabled_by_default("/gateway/versionFirmware")
     assert not entity_enabled_by_default("/gateway/serialId")
     assert not entity_enabled_by_default("/system/info")
+    assert not entity_enabled_by_default("/system/silentMode/enabled")
     assert not entity_enabled_by_default("/gateway/update/status")
     assert not entity_enabled_by_default("/heatingCircuits/hc2/manualRoomSetpoint")
+    assert not entity_enabled_by_default("/heatingCircuits/hc2/maxFlowTemp")
+    assert not entity_enabled_by_default("/heatSources/additionalHeater/operationMode")
     assert not entity_enabled_by_default("/dhwCircuits/dhw2/operationMode")
     assert not supports_entity(
         Resource(
             path="/heatSources/vendorExtension",
             value=1,
             has_value=True,
+        )
+    )
+    assert not supports_entity(
+        Resource(
+            path="/zones/zone1/averageCurrentTemperature",
+            value="warm",
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="stringValue", unit="C"),
         )
     )
 

@@ -18,32 +18,84 @@ from .pointt import Resource
 @dataclass(frozen=True, slots=True)
 class _SchemaRule:
     pattern: re.Pattern[str]
-    resource_type: str
-    unit: str | None = None
+    resource_types: frozenset[str]
+    units: frozenset[str] = frozenset()
+
+
+def _rule(
+    pattern: str,
+    *resource_types: str,
+    units: tuple[str, ...] = (),
+) -> _SchemaRule:
+    """Build one immutable compatibility rule."""
+    return _SchemaRule(
+        re.compile(pattern),
+        frozenset(resource_types),
+        frozenset(units),
+    )
 
 
 _SCHEMA_RULES = (
-    _SchemaRule(re.compile(r"^/heatingCircuits/[^/]+/operationMode$"), "stringValue"),
-    _SchemaRule(re.compile(r"^/dhwCircuits/[^/]+/operationMode$"), "stringValue"),
-    _SchemaRule(
-        re.compile(r"^/dhwCircuits/[^/]+/temperatureLevels/(?:eco|high|low)$"),
+    _rule(r"^/heatingCircuits/[^/]+/operationMode$", "stringValue"),
+    _rule(r"^/dhwCircuits/[^/]+/operationMode$", "stringValue"),
+    _rule(
+        r"^/dhwCircuits/[^/]+/temperatureLevels/(?:eco|high|low)$",
         "floatValue",
-        "C",
+        units=("C",),
     ),
-    _SchemaRule(
-        re.compile(r"^/heatSources/(?:actualSupplyTemperature|returnTemperature)$"),
+    _rule(
+        r"^/heatSources/(?:actualSupplyTemperature|returnTemperature)$",
         "floatValue",
-        "C",
+        units=("C",),
     ),
-    _SchemaRule(re.compile(r"^/heatSources/systemPressure$"), "floatValue", "bar"),
-    _SchemaRule(
-        re.compile(r"^/heatSources/emon/(?:total|ch|dhw|cooling)Consumption$"),
+    _rule(r"^/heatSources/systemPressure$", "floatValue", units=("bar",)),
+    _rule(
+        r"^/heatSources/emon/(?:total|ch|dhw|cooling)Consumption$",
         "emonValue",
     ),
-    _SchemaRule(
-        re.compile(r"^/system/sensors/temperatures/outdoor_t1$"),
+    _rule(
+        r"^/system/sensors/temperatures/outdoor_t1$",
         "floatValue",
-        "C",
+        units=("C",),
+    ),
+    _rule(
+        r"^/heatSources/(?:currentEmergencyMode|pvContactState|standbyMode)$",
+        "stringValue",
+    ),
+    _rule(
+        r"^/heatSources/(?:additionalHeater/(?:operationMode|primary/(?:status|type))|smartFunction/(?:active|enabled))$",
+        "booleanValue",
+        "stringValue",
+    ),
+    _rule(
+        r"^/heatSources/passiveCooling/inflowTemp$",
+        "floatValue",
+        units=("C",),
+    ),
+    _rule(
+        r"^/heatSources/hs[^/]+/actualPower$",
+        "floatValue",
+        units=("W", "kW"),
+    ),
+    _rule(
+        r"^/heatSources/hs[^/]+/powerPercentage$",
+        "floatValue",
+        units=("%",),
+    ),
+    _rule(
+        r"^/heatSources/hs[^/]+/brineCircuit/(?:collectorInflowTemp|collectorOutflowTemp)$",
+        "floatValue",
+        units=("C",),
+    ),
+    _rule(
+        r"^/heatSources/hs[^/]+/defrostActive$",
+        "booleanValue",
+        "stringValue",
+    ),
+    _rule(
+        r"^/system/(?:powerLimitation/active|silentMode/enabled)$",
+        "booleanValue",
+        "stringValue",
     ),
 )
 
@@ -56,8 +108,8 @@ def incompatible_capabilities(resources: dict[str, Resource]) -> tuple[str, ...]
             if not rule.pattern.fullmatch(path):
                 continue
             metadata = resource.metadata
-            if metadata.resource_type != rule.resource_type or (
-                rule.unit is not None and metadata.unit != rule.unit
+            if metadata.resource_type not in rule.resource_types or (
+                rule.units and metadata.unit not in rule.units
             ):
                 conflicts.append(path)
             break
