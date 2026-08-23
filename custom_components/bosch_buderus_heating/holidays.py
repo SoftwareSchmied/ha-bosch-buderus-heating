@@ -32,6 +32,8 @@ _MIN_YEAR = 2000
 _MAX_YEAR = 2100
 _MAX_HOLIDAY_ID = 2_147_483_647
 _MAX_NAME_LENGTH = 80
+_APP_FIX_TEMPERATURE_MIN = 5.0
+_APP_FIX_TEMPERATURE_MAX = 30.0
 
 _CH_MODES = frozenset({"SATURDAY", "FIX_TEMPERATURE", "OFF", "ECO"})
 _DHW_MODES = frozenset({"SATURDAY", "OFF", "ECO", "LOW", "HIGH", "OFF_TD"})
@@ -307,6 +309,10 @@ def parse_holiday_write_configuration(
         }
         fix_temperature_min = _finite_number(normalized_fix.get("minvalue"))
         fix_temperature_max = _finite_number(normalized_fix.get("maxvalue"))
+        if fix_temperature_min is not None:
+            fix_temperature_min = max(fix_temperature_min, _APP_FIX_TEMPERATURE_MIN)
+        if fix_temperature_max is not None:
+            fix_temperature_max = min(fix_temperature_max, _APP_FIX_TEMPERATURE_MAX)
         if fix_temperature_min is not None and fix_temperature < fix_temperature_min:
             return None
         if fix_temperature_max is not None and fix_temperature > fix_temperature_max:

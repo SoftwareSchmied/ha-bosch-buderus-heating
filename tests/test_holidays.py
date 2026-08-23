@@ -305,7 +305,7 @@ def test_writable_app_configuration_and_period_are_strictly_parsed() -> None:
                     "ventilationMode": {"allowedValues": []},
                     "assignedTo": {"allowedValues": ["hc1", "dhw1"]},
                     "thermalDesinfection": {"allowedValues": ["ON", "OFF"]},
-                    "fixTemperature": {"minValue": 10.0, "maxValue": 25.0},
+                    "fixTemperature": {"minValue": 0.0, "maxValue": 50.0},
                     "name": {
                         "stringConfig": {
                             "codingType": "BASE64",
@@ -328,8 +328,8 @@ def test_writable_app_configuration_and_period_are_strictly_parsed() -> None:
     assert configuration.thermal_disinfection == "ON"
     assert configuration.heating_modes == ("OFF", "FIX_TEMPERATURE")
     assert configuration.dhw_modes == ("OFF", "ECO")
-    assert configuration.fix_temperature_min == 10.0
-    assert configuration.fix_temperature_max == 25.0
+    assert configuration.fix_temperature_min == 5.0
+    assert configuration.fix_temperature_max == 30.0
     assert state.periods[0].name == "Urlaub"
     assert state.periods[0].end.isoformat() == "2030-08-09T00:00:00+00:00"
     assert not state.periods[0].all_day

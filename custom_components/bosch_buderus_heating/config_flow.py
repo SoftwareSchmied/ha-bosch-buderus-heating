@@ -631,6 +631,25 @@ class BoschBuderusOptionsFlow(OptionsFlow):
             configuration.heating_modes,
             "holiday_heating_mode",
         )
+        if (
+            "FIX_TEMPERATURE" in configuration.heating_modes
+            and configuration.fix_temperature_min is not None
+            and configuration.fix_temperature_max is not None
+        ):
+            fields[
+                vol.Required(
+                    CONF_HOLIDAY_FIX_TEMPERATURE,
+                    default=current.fix_temperature,
+                )
+            ] = NumberSelector(
+                NumberSelectorConfig(
+                    min=configuration.fix_temperature_min,
+                    max=configuration.fix_temperature_max,
+                    step=0.5,
+                    unit_of_measurement="°C",
+                    mode=NumberSelectorMode.BOX,
+                )
+            )
         _add_mode_field(
             fields,
             CONF_HOLIDAY_DHW_MODE,
@@ -652,25 +671,6 @@ class BoschBuderusOptionsFlow(OptionsFlow):
             configuration.thermal_disinfection_modes,
             "holiday_thermal_disinfection",
         )
-        if (
-            "FIX_TEMPERATURE" in configuration.heating_modes
-            and configuration.fix_temperature_min is not None
-            and configuration.fix_temperature_max is not None
-        ):
-            fields[
-                vol.Required(
-                    CONF_HOLIDAY_FIX_TEMPERATURE,
-                    default=current.fix_temperature,
-                )
-            ] = NumberSelector(
-                NumberSelectorConfig(
-                    min=configuration.fix_temperature_min,
-                    max=configuration.fix_temperature_max,
-                    step=0.5,
-                    unit_of_measurement="°C",
-                    mode=NumberSelectorMode.BOX,
-                )
-            )
         return self.async_show_form(
             step_id="holiday",
             data_schema=vol.Schema(fields),

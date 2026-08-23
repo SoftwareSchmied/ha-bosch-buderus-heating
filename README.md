@@ -213,20 +213,24 @@ an event. Use only a title plus start and end; recurrence, location, and
 description are not supported by PointT.
 
 When an existing period is edited, its heating, hot-water, ventilation,
-thermal-disinfection, fixed-temperature, and circuit-assignment settings are
+thermal-disinfection, constant-temperature, and circuit-assignment settings are
 preserved. A newly created period uses the defaults also used by MyBuderus and
-HomeCom Easy: all advertised circuits, 17 °C fixed-temperature heating when
+HomeCom Easy: all advertised circuits, 17 °C constant-temperature heating when
 supported, hot water off, ventilation off when supported, and thermal
 disinfection on when supported.
 
 To adjust these details in Home Assistant, open **Settings → Devices &
 services → Bosch/Buderus Heating → Configure**, select the holiday, and then
 choose its assigned circuits, heating mode, hot-water mode, ventilation mode,
-thermal-disinfection setting, and constant room temperature. The dialog is
+thermal-disinfection setting, and constant temperature. The dialog is
 generated from `/holidayMode/configuration`: options not advertised by the
 connected system are not shown. Dates and the name remain in the calendar
 dialog. Every change is read back from PointT before Home Assistant accepts it
 as successful.
+
+The step-by-step [holiday-period guide](docs/holiday-periods.md) shows how to
+create, configure, move, rename, and delete a period and explains every
+available heating-system setting.
 
 ### Energy counters
 
@@ -308,6 +312,7 @@ gateway IDs, serial numbers, network identifiers, or unredacted API responses.
 | [Setup guide](docs/setup.md) | Illustrated installation and SingleKey ID walkthrough |
 | [Entities and polling](docs/entities.md) | Entity names, API resources, write access, and intervals |
 | [Faults and notifications](docs/faults.md) | Fault entities, lifecycle behavior, and automation examples |
+| [Holiday periods](docs/holiday-periods.md) | Creating calendar entries and configuring heating behavior |
 | [Resource catalog](docs/resource-catalog.md) | Observed PointT resources and terminology |
 | [Reconfiguration](docs/reconfiguration.md) | Gateway selection, rediscovery, and polling profiles |
 | [Diagnostics](docs/diagnostics.md) | Redacted diagnostics and request metrics |

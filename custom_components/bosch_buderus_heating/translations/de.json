@@ -63,12 +63,12 @@
         "title": "Urlaub konfigurieren",
         "description": "Ändere die PointT-Einstellungen für **{holiday}**. Es werden nur Optionen angezeigt, die diese Heizungsanlage bereitstellt. Die Integration schreibt genau einmal und meldet erst Erfolg, nachdem alle Felder zurückgelesen und bestätigt wurden.",
         "data": {
-          "holiday_assigned_to": "Zugeordnete Kreise",
-          "holiday_heating_mode": "Betriebsart Heizkreis",
-          "holiday_dhw_mode": "Betriebsart Warmwasser",
-          "holiday_ventilation_mode": "Betriebsart Lüftung",
+          "holiday_assigned_to": "Anwenden auf",
+          "holiday_heating_mode": "Heizung",
+          "holiday_dhw_mode": "Warmwasser",
+          "holiday_ventilation_mode": "Lüftung",
           "holiday_thermal_disinfection": "Thermische Desinfektion",
-          "holiday_fix_temperature": "Konstante Raumtemperatur"
+          "holiday_fix_temperature": "Konstante Temperatur"
         }
       }
     },
@@ -128,33 +128,33 @@
       "options": {
         "saturday": "Wie Samstag",
         "fix_temperature": "Konstante Temperatur",
-        "off": "Aus",
+        "off": "AUS",
         "eco": "Absenken"
       }
     },
     "holiday_dhw_mode": {
       "options": {
         "saturday": "Wie Samstag",
-        "off": "Aus",
+        "off": "AUS",
         "eco": "Eco+",
         "low": "Eco",
         "high": "Komfort",
-        "off_td": "Aus mit thermischer Desinfektion"
+        "off_td": "AUS bei thermischer Desinfektion"
       }
     },
     "holiday_ventilation_mode": {
       "options": {
         "saturday": "Wie Samstag",
-        "off": "Aus",
+        "off": "AUS",
         "min": "Lüfterstufe 1",
         "red": "Lüfterstufe 2",
         "nom": "Lüfterstufe 3",
         "max": "Lüfterstufe 4",
-        "dem": "Bedarfsgeführt"
+        "dem": "Bedarf"
       }
     },
     "holiday_thermal_disinfection": {
-      "options": { "on": "Ein", "off": "Aus" }
+      "options": { "on": "EIN", "off": "AUS" }
     }
   },
   "entity": {

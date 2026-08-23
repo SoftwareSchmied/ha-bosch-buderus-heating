@@ -207,6 +207,7 @@ async def test_writable_calendar_creates_updates_and_deletes(
             EVENT_SUMMARY: "Test",
         },
         recurrence_id="ordinary-event-instance",
+        recurrence_range="",
     )
     holiday_id, updated = coordinator.async_update_holiday.await_args.args
     assert holiday_id == 7
@@ -217,7 +218,11 @@ async def test_writable_calendar_creates_updates_and_deletes(
     assert updated.thermal_disinfection == "OFF"
     assert updated.fix_temperature == 16.5
 
-    await entity.async_delete_event("pointt-7")
+    await entity.async_delete_event(
+        "pointt-7",
+        recurrence_id="ordinary-event-instance",
+        recurrence_range="",
+    )
     coordinator.async_delete_holiday.assert_awaited_once_with(7)
 
 

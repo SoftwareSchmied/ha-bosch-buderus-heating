@@ -151,7 +151,7 @@ supported.
 The integration's **Configure** dialog edits the PointT-specific fields that
 the standard Home Assistant calendar cannot display: circuit assignments,
 heating mode, hot-water mode, ventilation mode, thermal disinfection, and the
-constant room temperature. Both fields and choices are derived dynamically
+constant temperature. Both fields and choices are derived dynamically
 from `/holidayMode/configuration`; unsupported choices are omitted. Every
 mutation is sent once and requires a confirmed list read-back. Home Assistant
 diagnostics contain only resource support, write availability, and parser

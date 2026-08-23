@@ -5,6 +5,53 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-08-23
+
+Version 0.4.1 fixes editing and moving ordinary holiday periods from Home
+Assistant and makes the detailed holiday configuration match the terminology
+and limits used by MyBuderus and HomeCom Easy.
+
+### Fixed
+
+- Editing, moving, or deleting an ordinary holiday no longer fails with
+  **Recurring holidays are not supported** when Home Assistant supplies its
+  technical event identifier and the empty recurrence range used for a single
+  event.
+- Actual recurrence ranges such as `THISANDFUTURE` and recurrence rules such
+  as `RRULE` remain explicitly rejected because PointT holiday periods do not
+  support recurring events.
+- A date or time-only change continues to preserve the existing heating,
+  hot-water, ventilation, circuit-assignment, thermal-disinfection, and
+  temperature settings.
+
+### Changed
+
+- **Constant temperature** now appears directly below the central-heating
+  mode in the **Configure holiday** dialog, before the hot-water settings.
+- Constant-temperature input is restricted to the 5–30 °C range supported by
+  the official apps. Stricter limits reported by the connected gateway still
+  take precedence.
+- English and German holiday labels now follow the terms extracted from
+  MyBuderus and HomeCom Easy, including **Apply for**, **Central Heating**,
+  **Constant temperature**, **Hot Water**, **Ventilation**, **Setback**,
+  **OFF with Thermal Disinfection**, and their German equivalents.
+- A new step-by-step guide explains how to create, configure, move, rename,
+  and delete holiday periods and why calendar details and heating-system
+  settings use separate Home Assistant dialogs.
+
+### Validation
+
+- 417 automated tests pass with 95.03% coverage.
+- Ruff formatting and linting and strict Mypy type checking pass.
+- The updated integration was installed on the physical Buderus K40 test
+  system; Home Assistant's configuration check and restart completed
+  successfully.
+
+### Upgrade notes
+
+- No entity IDs, devices, or existing dashboard references are changed.
+- Restart Home Assistant after installing or updating the integration.
+
 ## [0.4.0] - 2026-08-22
 
 Version 0.4.0 turns the previously read-only PointT holiday calendar into a

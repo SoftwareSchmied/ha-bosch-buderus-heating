@@ -482,6 +482,10 @@ async def test_options_flow_configures_only_advertised_holiday_fields(
 
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "holiday"
+    field_order = [marker.schema for marker in result["data_schema"].schema]
+    assert field_order.index(CONF_HOLIDAY_FIX_TEMPERATURE) < field_order.index(
+        CONF_HOLIDAY_DHW_MODE
+    )
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         {

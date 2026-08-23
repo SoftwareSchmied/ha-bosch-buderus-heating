@@ -63,12 +63,12 @@
         "title": "Configure holiday",
         "description": "Change the PointT settings for **{holiday}**. Only options advertised by this heating system are shown. The integration writes once and reports success only after every field has been read back and confirmed.",
         "data": {
-          "holiday_assigned_to": "Assigned circuits",
-          "holiday_heating_mode": "Heating circuit mode",
-          "holiday_dhw_mode": "Hot water mode",
-          "holiday_ventilation_mode": "Ventilation mode",
+          "holiday_assigned_to": "Apply for",
+          "holiday_heating_mode": "Central Heating",
+          "holiday_dhw_mode": "Hot Water",
+          "holiday_ventilation_mode": "Ventilation",
           "holiday_thermal_disinfection": "Thermal disinfection",
-          "holiday_fix_temperature": "Constant room temperature"
+          "holiday_fix_temperature": "Constant temperature"
         }
       }
     },
@@ -128,29 +128,29 @@
       "options": {
         "saturday": "As Saturday",
         "fix_temperature": "Constant temperature",
-        "off": "Off",
-        "eco": "Reduced"
+        "off": "OFF",
+        "eco": "Setback"
       }
     },
     "holiday_dhw_mode": {
       "options": {
         "saturday": "As Saturday",
-        "off": "Off",
+        "off": "OFF",
         "eco": "Eco+",
         "low": "Eco",
         "high": "Comfort",
-        "off_td": "Off with thermal disinfection"
+        "off_td": "OFF with Thermal Disinfection"
       }
     },
     "holiday_ventilation_mode": {
       "options": {
         "saturday": "As Saturday",
-        "off": "Off",
+        "off": "OFF",
         "min": "Fan level 1",
         "red": "Fan level 2",
         "nom": "Fan level 3",
         "max": "Fan level 4",
-        "dem": "Demand controlled"
+        "dem": "Demand"
       }
     },
     "holiday_thermal_disinfection": {

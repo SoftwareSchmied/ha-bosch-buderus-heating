@@ -231,7 +231,9 @@ class BoschBuderusHolidayCalendar(
         # Home Assistant may provide this ID for ordinary calendar events.
         del recurrence_id
 
-        if recurrence_range is not None:
+        # The HA frontend sends an empty string for "this event", including
+        # ordinary non-recurring events edited or dragged in the calendar.
+        if recurrence_range:
             raise HomeAssistantError("Recurring holidays are not supported")
 
     @staticmethod

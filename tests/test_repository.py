@@ -30,7 +30,7 @@ def test_stable_project_identity() -> None:
 
     assert manifest["domain"] == "bosch_buderus_heating"
     assert manifest["name"] == "Bosch/Buderus Heating"
-    assert manifest["version"] == "0.4.0"
+    assert manifest["version"] == "0.4.1"
     assert project["project"]["version"] == manifest["version"]
     assert manifest["requirements"] == []
     assert manifest["config_flow"] is True
@@ -124,12 +124,20 @@ def test_holiday_options_are_translated_and_structurally_aligned() -> None:
     assert german["selector"]["holiday_heating_mode"]["options"] == {
         "saturday": "Wie Samstag",
         "fix_temperature": "Konstante Temperatur",
-        "off": "Aus",
+        "off": "AUS",
         "eco": "Absenken",
     }
     assert german["selector"]["holiday_dhw_mode"]["options"]["off_td"] == (
-        "Aus mit thermischer Desinfektion"
+        "AUS bei thermischer Desinfektion"
     )
+    assert german["options"]["step"]["holiday"]["data"] == {
+        "holiday_assigned_to": "Anwenden auf",
+        "holiday_heating_mode": "Heizung",
+        "holiday_dhw_mode": "Warmwasser",
+        "holiday_ventilation_mode": "Lüftung",
+        "holiday_thermal_disinfection": "Thermische Desinfektion",
+        "holiday_fix_temperature": "Konstante Temperatur",
+    }
     for translations in (source, german, english):
         for selector in translations["selector"].values():
             assert all(
