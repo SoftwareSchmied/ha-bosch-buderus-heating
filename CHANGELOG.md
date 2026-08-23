@@ -24,6 +24,9 @@ PointT communication gateway of an installation.
   gateway as the heating-system model. K-series gateway identity and hardware
   remain available through diagnostics and gateway resources. Ambiguous or
   missing controller data falls back to a neutral Bosch/Buderus Heating device.
+- Development tooling updates Hypothesis to 6.165.10, Mypy to 2.3.1, and Ruff
+  plus its pre-commit hook to 0.16.3. Pytest remains at the Home Assistant test
+  framework's required 9.0.3 release.
 
 ### Security and compatibility
 
