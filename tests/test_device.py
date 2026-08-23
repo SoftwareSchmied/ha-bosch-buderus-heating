@@ -74,12 +74,69 @@ def test_gateway_uses_pointt_brand_and_readable_model(hass: HomeAssistant) -> No
 
     assert info["identifiers"] == {(DOMAIN, "gateway-one")}
     assert info["manufacturer"] == "Buderus"
-    assert info["model"] == "K40"
-    assert info["name"] == "Buderus K40"
+    assert info["model"] == "Heating system"
+    assert info["name"] == "Buderus Heating"
     assert info["serial_number"] == "serial-123"
     assert info["sw_version"] == "2.0.0"
     assert info["hw_version"] == "3.0"
-    assert info["model_id"] == "product-type-1"
+    assert info.get("model_id") is None
+
+
+def test_system_info_distinguishes_controller_from_gateway(
+    hass: HomeAssistant,
+) -> None:
+    coordinator = _coordinator(
+        hass,
+        brand="buderus",
+        gateway=Gateway("gateway-one", device_type="K40"),
+        resources=(
+            Resource("/gateway/versionHardware", "K40RF_v1", True),
+            Resource(
+                "/system/info",
+                values=(
+                    {
+                        "ProductName": "Logatherm WLW176i-12 TP70",
+                        "ProductTtn": "heat-pump-type",
+                    },
+                    {"ModuleHwIdentStr": "HMI_module_02_800-20"},
+                    {
+                        "ModuleHwIdentStr": "MX400",
+                        "ModuleTtn": "controller-type",
+                    },
+                    {"ModuleHwIdentStr": "MX400"},
+                ),
+            ),
+        ),
+    )
+
+    info = device_info_for_resource(coordinator, "/gateway")
+
+    assert info["model"] == "MX400"
+    assert info["name"] == "Buderus MX400"
+    assert info["model_id"] == "controller-type"
+    assert info["hw_version"] == "K40RF_v1"
+
+
+def test_ambiguous_controller_info_does_not_guess(hass: HomeAssistant) -> None:
+    coordinator = _coordinator(
+        hass,
+        brand="bosch",
+        gateway=Gateway("gateway-one", device_type="K40"),
+        resources=(
+            Resource(
+                "/system/info",
+                values=(
+                    {"ModuleHwIdentStr": "MX300"},
+                    {"ModuleHwIdentStr": "MX400"},
+                ),
+            ),
+        ),
+    )
+
+    info = device_info_for_resource(coordinator, "/gateway")
+
+    assert info["model"] == "Heating system"
+    assert info["name"] == "Bosch Heating"
 
 
 def test_configured_brand_is_fallback_when_brand_resource_is_missing(
@@ -115,8 +172,8 @@ def test_logical_entity_uses_configured_group_on_shared_gateway(
 
     assert info["identifiers"] == {(DOMAIN, "gateway-one")}
     assert info["manufacturer"] == "Buderus"
-    assert info["model"] == "K40"
-    assert info["name"] == "Buderus K40"
+    assert info["model"] == "Heating system"
+    assert info["name"] == "Buderus Heating"
     assert name == "Obergeschoss \N{EN DASH} Operation mode"
 
 
@@ -135,8 +192,8 @@ def test_single_heat_source_is_identified_as_heat_pump(hass: HomeAssistant) -> N
 
     assert info["identifiers"] == {(DOMAIN, "gateway-one")}
     assert info["manufacturer"] == "Buderus"
-    assert info["model"] == "K40"
-    assert info["name"] == "Buderus K40"
+    assert info["model"] == "Heating system"
+    assert info["name"] == "Buderus Heating"
     assert name == "Heat pump \N{EN DASH} Operating time Total"
 
 

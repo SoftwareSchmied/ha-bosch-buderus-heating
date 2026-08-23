@@ -5,6 +5,52 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-08-23
+
+Version 0.5.1 corrects how Home Assistant identifies the controller and the
+PointT communication gateway of an installation.
+
+### Added
+
+- Controller-aware device identification for MX300 and MX400 modules reported
+  in structured `/system/info` data.
+- Regression coverage for a real-world MX400 system reported through a
+  K40/K40RF gateway and for ambiguous multi-controller data.
+
+### Changed
+
+- Home Assistant now identifies an MX300 or MX400 controller from structured
+  `/system/info` module data instead of presenting a K30/K40 communication
+  gateway as the heating-system model. K-series gateway identity and hardware
+  remain available through diagnostics and gateway resources. Ambiguous or
+  missing controller data falls back to a neutral Bosch/Buderus Heating device.
+
+### Security and compatibility
+
+- Device and entity identifiers remain unchanged, preserving existing entity
+  IDs, history, automations, and dashboards.
+- Recognition uses a strict MX300/MX400 allowlist. A K30/K40 gateway name alone
+  is never used to infer a controller model, and conflicting controller data is
+  not guessed.
+- No additional cloud requests, permissions, stored credentials, or writable
+  resources are introduced.
+
+### Validation
+
+- 453 automated tests pass with 95.21% branch coverage.
+- Ruff formatting and linting and strict Mypy type checking pass.
+- The model-selection test mirrors the observed MX400 plus K40RF structure and
+  verifies that the gateway hardware remains available.
+
+### Upgrade notes and limitations
+
+- Restart Home Assistant after upgrading so the device registry receives the
+  corrected model and name.
+- Only MX300 and MX400 are currently recognized as controller models. Unknown,
+  missing, or ambiguous controller information is displayed as the neutral
+  Bosch/Buderus Heating device while gateway details remain available in
+  diagnostics.
+
 ## [0.5.0] - 2026-08-23
 
 Version 0.5.0 expands heat-pump monitoring with optional PointT

@@ -1200,7 +1200,7 @@ def test_fault_count_sensors_expose_bounded_details(hass: HomeAssistant) -> None
         "fault": 1,
         "warning": 1,
     }
-    assert notifications.device_info["model"] == "K40"
+    assert notifications.device_info["model"] == "Heating system"
 
 
 def test_default_policy_enables_user_values_and_keeps_technical_values_opt_in() -> None:

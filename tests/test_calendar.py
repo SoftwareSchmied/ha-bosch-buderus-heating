@@ -89,7 +89,7 @@ async def test_calendar_exposes_multiple_overlapping_periods(
     assert entity.available
     assert entity.supported_features == 0
     assert entity.unique_id == "gateway-one:holiday_periods"
-    assert entity.device_info["model"] == "K40"
+    assert entity.device_info["model"] == "Heating system"
     assert [event.summary for event in events] == ["First trip", "Holiday period"]
     assert len({event.uid for event in events}) == 2
     assert entity.event is not None

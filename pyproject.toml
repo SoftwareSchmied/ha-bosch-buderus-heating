@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ha-bosch-buderus-heating-development"
-version = "0.5.0"
+version = "0.5.1"
 description = "Development tooling for the Bosch/Buderus Heating Home Assistant integration"
 readme = "README.md"
 requires-python = ">=3.14.2"
