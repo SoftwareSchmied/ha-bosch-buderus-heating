@@ -106,8 +106,8 @@ account, gateway, controller, and heating system.
 
 | Status | Systems |
 |---|---|
-| Tested | Buderus heat-pump installation with K40 gateway |
-| Designed for | Compatible Bosch/Buderus systems using MX300, MX400, K30/K30RF, or K40/K40RF gateways |
+| Tested | Buderus heat-pump installation with an MX400 controller connected through a gateway reported by PointT as K40/K40RF |
+| Designed for | Compatible Bosch/Buderus systems using MX300 or MX400 controllers and K30/K30RF or K40/K40RF gateways |
 | Optional when reported by PointT | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
 | Not covered | Air conditioners, wallboxes, Matter/MQTT devices, gateway network administration, and local LAN access |
 
@@ -115,6 +115,10 @@ An unlisted model may still work because discovery is capability based. A
 listed gateway does not by itself guarantee that every entity or control is
 available. Missing capabilities are simply omitted without affecting the rest
 of the integration.
+
+Home Assistant shows a uniquely identified MX300/MX400 controller as the
+system model. K30/K40 describes the PointT communication gateway, not the
+controller, and remains visible in diagnostics and the gateway hardware data.
 
 > [!IMPORTANT]
 > The PointT Cloud API is not a publicly guaranteed API. Cloud-side changes may

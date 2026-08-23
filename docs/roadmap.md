@@ -1,6 +1,6 @@
 # Roadmap
 
-## Current status — 0.5.0
+## Current status — 0.5.1
 
 The integration is available as a stable GitHub release and supports Bosch and
 Buderus PointT heating systems through one capability-based implementation.

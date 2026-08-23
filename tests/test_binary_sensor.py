@@ -178,7 +178,7 @@ def test_system_fault_binary_sensor_uses_fault_tracker(
     assert sensor.is_on
     assert sensor.extra_state_attributes["codes"] == ["6249"]
     assert sensor.extra_state_attributes["active_fault_count"] == 1
-    assert sensor.device_info["model"] == "K40"
+    assert sensor.device_info["model"] == "Heating system"
 
 
 async def test_platform_adds_read_only_holiday_status(hass: HomeAssistant) -> None:

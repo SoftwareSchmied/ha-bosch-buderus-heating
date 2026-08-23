@@ -79,7 +79,7 @@ def test_event_contains_bounded_localized_attributes(hass: HomeAssistant) -> Non
         "code": "6249",
     }
     event_entity.async_write_ha_state.assert_called_once_with()
-    assert event_entity.device_info["model"] == "K40"
+    assert event_entity.device_info["model"] == "Heating system"
 
 
 async def test_added_event_entity_subscribes_and_includes_optional_fields(

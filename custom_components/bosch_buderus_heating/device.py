@@ -14,6 +14,13 @@ _UNKNOWN_HEAT_PUMP_TYPES = frozenset(
     {"", "none", "not_available", "undefined", "unknown"}
 )
 _GROUP_SEPARATOR = " \N{EN DASH} "
+_CONTROLLER_MODEL_PATTERN = re.compile(
+    r"(?<![A-Z0-9])MX(?:300|400)(?![A-Z0-9])", re.IGNORECASE
+)
+_GATEWAY_MODEL_PATTERN = re.compile(
+    r"(?<![A-Z0-9])K(?:30|40)(?:RF)?(?:[_ -]V\d+)?(?![A-Z0-9])",
+    re.IGNORECASE,
+)
 
 
 def device_info_for_resource(
@@ -23,14 +30,18 @@ def device_info_for_resource(
     """Build the shared brand-aware gateway device for a PointT resource."""
     gateway = coordinator.gateway
     manufacturer = _manufacturer(coordinator)
-    model = _display_model(gateway.model or gateway.device_type or "PointT Gateway")
     system_info = _system_info_values(coordinator)
+    model, model_id = _system_model(gateway.model, gateway.device_type, system_info)
     return DeviceInfo(
         identifiers={(DOMAIN, gateway.gateway_id)},
         manufacturer=manufacturer,
         model=model,
-        model_id=_first_value(system_info, "ProductTtn", "ModuleTtn"),
-        name=f"{manufacturer} {model}",
+        model_id=model_id,
+        name=(
+            f"{manufacturer} Heating"
+            if model == "Heating system"
+            else f"{manufacturer} {model}"
+        ),
         serial_number=_resource_string(coordinator, "/gateway/serialId")
         or _first_value(system_info, "ProductSerialNumber", "ModuleSerialNumber"),
         sw_version=_resource_string(coordinator, "/gateway/versionFirmware")
@@ -113,6 +124,40 @@ def _display_model(value: str) -> str:
     if re.fullmatch(r"(?:k|mx)\d+(?:rf)?", model, re.IGNORECASE):
         return model.upper()
     return model
+
+
+def _system_model(
+    gateway_model: str | None,
+    gateway_type: str | None,
+    system_info: tuple[dict[str, str], ...],
+) -> tuple[str, str | None]:
+    """Return a controller model without mistaking a K-series gateway for it."""
+    controller_entries: dict[str, list[dict[str, str]]] = {}
+    for item in system_info:
+        for key in ("ProductName", "ModuleHwIdentStr"):
+            value = item.get(key)
+            if (
+                value is None
+                or (match := _CONTROLLER_MODEL_PATTERN.search(value)) is None
+            ):
+                continue
+            controller_entries.setdefault(match.group(0).upper(), []).append(item)
+            break
+
+    if len(controller_entries) == 1:
+        model, entries = next(iter(controller_entries.items()))
+        return model, _first_value(tuple(entries), "ProductTtn", "ModuleTtn")
+
+    for value in (gateway_model, gateway_type):
+        if value is not None and (match := _CONTROLLER_MODEL_PATTERN.search(value)):
+            return match.group(0).upper(), None
+
+    for value in (gateway_model, gateway_type):
+        if value is None or _GATEWAY_MODEL_PATTERN.search(value):
+            continue
+        return _display_model(value), None
+
+    return "Heating system", None
 
 
 def _configured_logical_name(
