@@ -2,17 +2,21 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, call
 
 import pytest
 
 from custom_components.bosch_buderus_heating.discovery import (
+    MAX_DISCOVERY_FALLBACK_PATHS,
     ROOT_RESOURCE_PATHS,
     async_discover_resources,
 )
 from custom_components.bosch_buderus_heating.holidays import HOLIDAY_RESOURCE_PATHS
 from custom_components.bosch_buderus_heating.pointt import (
     BatchItemResult,
+    InvalidBatchEnvelope,
+    InvalidPayload,
+    RequestMetrics,
     Resource,
     ResourceForbidden,
     ResourceMetadata,
@@ -93,8 +97,75 @@ async def test_discovery_skips_missing_optional_nodes_and_validates_bounds() -> 
         ),
     )
     assert await async_discover_resources(client, "gateway", roots=("/system",)) == {}
+    client.get_resource.assert_not_awaited()
     with pytest.raises(ValueError):
         await async_discover_resources(client, "gateway", maximum_resources=0)
+
+
+async def test_discovery_recovers_malformed_bulk_item_with_individual_get() -> None:
+    client = AsyncMock()
+    client.metrics = RequestMetrics()
+    client.get_resources_bulk.return_value = (
+        BatchItemResult(
+            gateway_id="gateway",
+            path="/notifications",
+            status=200,
+            error=InvalidPayload("Resource references must be an array"),
+        ),
+    )
+    notifications = Resource(path="/notifications")
+    client.get_resource.return_value = notifications
+
+    resources = await async_discover_resources(
+        client, "gateway", roots=("/notifications",)
+    )
+
+    assert resources == {"/notifications": notifications}
+    client.get_resource.assert_awaited_once_with("gateway", "/notifications")
+    assert client.metrics.snapshot()["fallback_requests"] == 1
+
+
+async def test_discovery_recovers_unreadable_bulk_envelope_with_individual_get() -> (
+    None
+):
+    client = AsyncMock()
+    client.metrics = RequestMetrics()
+    client.get_resources_bulk.side_effect = InvalidBatchEnvelope(
+        "Bulk response did not contain the requested gateway"
+    )
+    root = Resource(
+        path="/root",
+        references=(ResourceReference("/root/brand"),),
+    )
+    brand = Resource(path="/root/brand", value="buderus", has_value=True)
+    client.get_resource.side_effect = (root, brand)
+
+    resources = await async_discover_resources(client, "gateway", roots=("/root",))
+
+    assert resources == {"/root": root, "/root/brand": brand}
+    assert client.get_resource.await_args_list == [
+        call("gateway", "/root"),
+        call("gateway", "/root/brand"),
+    ]
+    assert client.metrics.snapshot()["fallback_requests"] == 2
+
+
+async def test_discovery_caps_fallback_for_unreadable_bulk_envelope() -> None:
+    client = AsyncMock()
+    client.metrics = RequestMetrics()
+    client.get_resources_bulk.side_effect = InvalidBatchEnvelope(
+        "Bulk response did not contain the requested gateway"
+    )
+    client.get_resource.side_effect = lambda gateway, path: Resource(path=path)
+    roots = tuple(f"/root{index}" for index in range(MAX_DISCOVERY_FALLBACK_PATHS + 1))
+
+    resources = await async_discover_resources(client, "gateway", roots=roots)
+
+    assert len(resources) == MAX_DISCOVERY_FALLBACK_PATHS
+    assert client.get_resource.await_count == MAX_DISCOVERY_FALLBACK_PATHS
+    assert client.metrics.snapshot()["fallback_requests"] == (
+        MAX_DISCOVERY_FALLBACK_PATHS
+    )
 
 
 async def test_discovery_stops_cleanly_at_resource_limit() -> None:

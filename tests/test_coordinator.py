@@ -41,6 +41,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     AuthenticationError,
     BatchItemResult,
     Gateway,
+    InvalidPayload,
     RateLimited,
     RequestMetrics,
     Resource,
@@ -721,6 +722,72 @@ async def test_coordinator_keeps_resource_scoped_failure_local(
 
     assert not result[path].available
     assert result[path].last_error_category == "http_404"
+
+
+async def test_polling_recovers_malformed_bulk_item_with_bounded_get(
+    hass: HomeAssistant,
+) -> None:
+    client = AsyncMock()
+    path = "/heatSources/actualModulation"
+    coordinator = _coordinator(hass, client)
+    previous = _resource(path, 1.0)
+    coordinator.resources = {path: previous}
+    coordinator.data = {path: _snapshot(previous)}
+    coordinator._paths_by_group = {PollGroup.FAST: (path,)}
+    coordinator._next_update = {PollGroup.FAST: 0.0}
+    client.get_resources_bulk.return_value = (
+        BatchItemResult(
+            gateway_id="gateway-one",
+            path=path,
+            status=200,
+            error=InvalidPayload("Expected a string field"),
+        ),
+    )
+    client.get_resource.return_value = _resource(path, 2.0)
+
+    result = await coordinator._async_update_data()
+
+    client.get_resource.assert_awaited_once_with("gateway-one", path)
+    assert result[path].resource.value == 2.0
+    assert result[path].available
+    assert result[path].source is SnapshotSource.FALLBACK
+    assert client.metrics.snapshot()["fallback_requests"] == 1
+
+
+async def test_malformed_bulk_fallback_is_limited_and_skips_http_errors(
+    hass: HomeAssistant,
+) -> None:
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    malformed_paths = tuple(f"/system/test{index}" for index in range(6))
+    forbidden = "/system/forbidden"
+    results = (
+        *(
+            BatchItemResult(
+                "gateway-one",
+                path,
+                200,
+                error=InvalidPayload("Unexpected resource shape"),
+            )
+            for path in malformed_paths
+        ),
+        BatchItemResult(
+            "gateway-one",
+            forbidden,
+            403,
+            error=ResourceForbidden(forbidden, 403),
+        ),
+    )
+    client.get_resource.side_effect = lambda gateway, path: _resource(path, 2.0)
+
+    recovered = await coordinator._async_malformed_bulk_fallback(results)
+
+    assert tuple(item.path for item in recovered) == malformed_paths[:5]
+    assert client.get_resource.await_count == 5
+    assert all(
+        call.args[1] != forbidden for call in client.get_resource.await_args_list
+    )
+    assert client.metrics.snapshot()["fallback_requests"] == 5
 
 
 async def test_polling_chunks_large_cycles_and_preserves_partial_success(

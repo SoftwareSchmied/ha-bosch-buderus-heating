@@ -180,7 +180,10 @@ class PointTClient:
             parsed = parse_batch_response(
                 payload, gateway_id=gateway_id, requested_paths=chunk
             )
-            self.metrics.record_bulk_items(tuple(item.status for item in parsed))
+            self.metrics.record_bulk_items(
+                tuple(item.status for item in parsed),
+                usable=tuple(item.ok for item in parsed),
+            )
             results.extend(parsed)
         return tuple(results)
 

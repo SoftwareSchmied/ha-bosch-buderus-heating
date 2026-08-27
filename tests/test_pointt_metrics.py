@@ -60,12 +60,25 @@ def test_request_metrics_aggregate_without_request_details() -> None:
         "bulk_items_total": 3,
         "bulk_items_successful": 1,
         "bulk_items_failed": 2,
+        "bulk_items_parse_failed": 0,
         "bulk_items_by_status_class": {"2xx": 1, "4xx": 1, "none": 1},
         "maximum_bulk_size": 3,
         "average_duration_ms": 10.8,
         "maximum_duration_ms": 20.0,
         "last_duration_ms": 0.0,
     }
+
+
+def test_bulk_metrics_distinguish_http_success_from_usable_payload() -> None:
+    metrics = RequestMetrics()
+
+    metrics.record_bulk_items((200, 200, 404), usable=(True, False, False))
+
+    snapshot = metrics.snapshot()
+    assert snapshot["bulk_items_total"] == 3
+    assert snapshot["bulk_items_successful"] == 1
+    assert snapshot["bulk_items_failed"] == 2
+    assert snapshot["bulk_items_parse_failed"] == 1
 
 
 def test_empty_metrics_and_request_classification_are_bounded() -> None:

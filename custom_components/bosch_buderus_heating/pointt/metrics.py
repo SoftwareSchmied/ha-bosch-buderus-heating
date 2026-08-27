@@ -19,6 +19,7 @@ class RequestMetrics:
     bulk_items_total: int = 0
     bulk_items_successful: int = 0
     bulk_items_failed: int = 0
+    bulk_items_parse_failed: int = 0
     maximum_bulk_size: int = 0
     total_duration_ms: float = 0.0
     maximum_duration_ms: float = 0.0
@@ -60,15 +61,29 @@ class RequestMetrics:
         """Count one bounded single-resource fallback request."""
         self.fallback_requests += 1
 
-    def record_bulk_items(self, statuses: tuple[int | None, ...]) -> None:
+    def record_bulk_items(
+        self,
+        statuses: tuple[int | None, ...],
+        *,
+        usable: tuple[bool, ...] | None = None,
+    ) -> None:
         """Count item outcomes from a successful bulk response envelope."""
-        for status in statuses:
+        if usable is not None and len(usable) != len(statuses):
+            raise ValueError("Bulk status and usability counts must match")
+        for index, status in enumerate(statuses):
             self.bulk_items_total += 1
             self.bulk_items_by_status_class[_status_class(status)] += 1
-            if status is not None and 200 <= status < 300:
+            item_usable = (
+                usable[index]
+                if usable is not None
+                else status is not None and 200 <= status < 300
+            )
+            if item_usable:
                 self.bulk_items_successful += 1
             else:
                 self.bulk_items_failed += 1
+                if status is not None and 200 <= status < 300:
+                    self.bulk_items_parse_failed += 1
 
     def snapshot(self) -> dict[str, object]:
         """Return a JSON-safe aggregate snapshot for Home Assistant diagnostics."""
@@ -100,6 +115,7 @@ class RequestMetrics:
             "bulk_items_total": self.bulk_items_total,
             "bulk_items_successful": self.bulk_items_successful,
             "bulk_items_failed": self.bulk_items_failed,
+            "bulk_items_parse_failed": self.bulk_items_parse_failed,
             "bulk_items_by_status_class": dict(
                 sorted(self.bulk_items_by_status_class.items())
             ),

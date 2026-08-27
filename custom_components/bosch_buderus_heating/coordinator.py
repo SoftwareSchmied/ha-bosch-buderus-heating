@@ -31,6 +31,7 @@ from .holidays import (
 from .pointt import (
     AuthenticationError,
     Gateway,
+    InvalidPayload,
     PointTClient,
     PointTError,
     RateLimited,
@@ -41,6 +42,7 @@ from .pointt import (
 from .pointt.bulk import chunk_resource_paths
 from .pointt.const import MAX_BULK_PATHS
 from .pointt.models import BatchItemResult
+from .pointt.redaction import resource_path_template
 from .resource_catalog import PollGroup, poll_group
 from .writes import EnumWritePolicy, NumberWritePolicy, WriteService
 
@@ -546,6 +548,11 @@ class BoschBuderusDataUpdateCoordinator(
                     break
                 result_source = SnapshotSource.FALLBACK
 
+            malformed_fallback: tuple[BatchItemResult, ...] = ()
+            if result_source is SnapshotSource.BATCH:
+                self._log_unusable_bulk_results(results)
+                malformed_fallback = await self._async_malformed_bulk_fallback(results)
+
             cycle_results.extend(results)
             successful += self._apply_results(
                 snapshots,
@@ -554,10 +561,22 @@ class BoschBuderusDataUpdateCoordinator(
                 now_monotonic=now_monotonic,
                 source=result_source,
             )
+            if malformed_fallback:
+                cycle_results.extend(malformed_fallback)
+                successful += self._apply_results(
+                    snapshots,
+                    malformed_fallback,
+                    attempted_at=attempted_at,
+                    now_monotonic=now_monotonic,
+                    source=SnapshotSource.FALLBACK,
+                )
             if any(result.status == 429 for result in results):
                 self._activate_rate_limit_backoff(
                     RateLimited(retry_after=None), now_monotonic
                 )
+                failed_chunks += 1
+                break
+            if now_monotonic < self._cloud_backoff_until:
                 failed_chunks += 1
                 break
             if results and all(
@@ -711,8 +730,29 @@ class BoschBuderusDataUpdateCoordinator(
         prioritized = tuple(path for path in _FALLBACK_PRIORITY_PATHS if path in chunk)[
             :MAX_FALLBACK_PATHS
         ]
+        return await self._async_single_get_fallback(prioritized)
+
+    async def _async_malformed_bulk_fallback(
+        self, results: tuple[BatchItemResult, ...]
+    ) -> tuple[BatchItemResult, ...]:
+        """Retry a bounded set of malformed bulk items with individual GETs."""
+        malformed = tuple(
+            result.path
+            for result in results
+            if result.resource is None and isinstance(result.error, InvalidPayload)
+        )
+        if not malformed:
+            return ()
+        selected = tuple(path for path in _FALLBACK_PRIORITY_PATHS if path in malformed)
+        selected += tuple(path for path in malformed if path not in selected)
+        return await self._async_single_get_fallback(selected[:MAX_FALLBACK_PATHS])
+
+    async def _async_single_get_fallback(
+        self, paths: tuple[str, ...]
+    ) -> tuple[BatchItemResult, ...]:
+        """Read a bounded, preselected set of paths individually."""
         results: list[BatchItemResult] = []
-        for path in prioritized:
+        for path in paths:
             self.client.metrics.record_fallback_request()
             try:
                 resource = await self.client.get_resource(self.gateway.gateway_id, path)
@@ -749,6 +789,22 @@ class BoschBuderusDataUpdateCoordinator(
                     )
                 )
         return tuple(results)
+
+    @staticmethod
+    def _log_unusable_bulk_results(
+        results: tuple[BatchItemResult, ...],
+    ) -> None:
+        """Log value-free details for bulk items that could not be parsed."""
+        for result in results:
+            if result.resource is not None:
+                continue
+            _LOGGER.debug(
+                "Ignoring PointT bulk item %s: status=%s, error=%s (%s)",
+                resource_path_template(result.path),
+                result.status,
+                type(result.error).__name__ if result.error else "none",
+                result.error or "no parsed resource",
+            )
 
     def _apply_results(
         self,
