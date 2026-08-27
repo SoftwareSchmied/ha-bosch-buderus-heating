@@ -5,6 +5,57 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-08-28
+
+Version 0.5.3 improves compatibility with evolving PointT enum values and
+makes incomplete but supported capabilities easier to diagnose.
+
+### Added
+
+- Diagnostics identify supported scalar capabilities that currently provide no
+  value.
+- Diagnostics count distinct undeclared enum values without retaining or
+  exposing the values themselves.
+
+### Fixed
+
+- Enum values first reported after entity creation can no longer produce an
+  invalid Home Assistant sensor state. The entity reports `unknown` until the
+  integration knows the value.
+- The PointT heat-source type `gas_boiler` is normalized to the existing
+  translated **Boiler** state (**Heizkessel** in German).
+
+### Behavior changes
+
+- One privacy-safe warning is logged per affected entity, using only a
+  normalized resource-path template.
+- A heat-source type describes that heat source only and is not used to infer
+  the type of the complete installation.
+
+### Security and compatibility
+
+- Raw unknown enum values, gateway identifiers, and resource values remain
+  excluded from logs and diagnostics.
+- Existing entity IDs, device identifiers, history, automations, and dashboards
+  remain unchanged.
+
+### Validation
+
+- 466 automated tests pass with 95.16% branch coverage.
+- Ruff formatting and linting pass.
+- Strict Mypy type checking passes.
+- German, English, and source translation catalogs are covered by repository
+  tests.
+- Dependency audit reports no known vulnerabilities.
+- Hassfest, HACS validation, and CodeQL pass in the protected release workflow.
+
+### Upgrade notes and limitations
+
+- Restart Home Assistant after updating.
+- Previously unknown enum values remain unavailable until they are explicitly
+  understood and translated by the integration.
+- No migration is required.
+
 ## [0.5.2] - 2026-08-28
 
 Version 0.5.2 improves compatibility with MX300 installations using K30

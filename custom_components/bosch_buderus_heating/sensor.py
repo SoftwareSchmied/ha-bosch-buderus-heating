@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from collections import Counter
 from collections.abc import Mapping
@@ -52,6 +53,7 @@ from .holidays import (
 )
 from .pointt import Resource
 from .pointt.models import JsonValue
+from .pointt.redaction import resource_path_template
 from .resource_catalog import (
     CapabilityMaturity,
     PollGroup,
@@ -76,6 +78,9 @@ type ValueKind = Literal[
     "system_info",
     "pressure_status",
 ]
+
+_LOGGER = logging.getLogger(__name__)
+_MAX_TRACKED_UNKNOWN_ENUM_VALUES = 16
 
 _SYSTEM_PRESSURE_PATH = "/heatSources/systemPressure"
 _SYSTEM_PRESSURE_RANGE_PATH = "/heatSources/systemPressureRange"
@@ -655,6 +660,8 @@ class BoschBuderusSensor(
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = description
+        self._unknown_enum_values: set[str] = set()
+        self._unknown_enum_warning_logged = False
         language = coordinator.hass.config.language
         display_subkey = (
             None if description.value_key in {None, "values"} else description.value_key
@@ -743,11 +750,13 @@ class BoschBuderusSensor(
                 return None
             return max(0.0, environmental)
         if description.value_kind == "heat_demand":
-            return _heat_demand_state(resource)
+            return self._validated_enum_state(_heat_demand_state(resource))
         if description.value_kind == "enum_values":
             for item in resource.values:
                 if isinstance(item, str) and item:
-                    return enum_value_to_ha(description.translation_key or "", item)
+                    return self._validated_enum_state(
+                        enum_value_to_ha(description.translation_key or "", item)
+                    )
             return None
         if description.value_kind == "values":
             labels = [
@@ -763,11 +772,36 @@ class BoschBuderusSensor(
         scalar = _native_scalar(value)
         if isinstance(scalar, str) and description.translation_key is not None:
             scalar = enum_value_to_ha(description.translation_key, scalar)
+            return self._validated_enum_state(scalar)
         if isinstance(scalar, str) and _is_name_resource(resource.path):
             return configured_device_name(scalar)
         if isinstance(scalar, (int, float)) and description.value_scale != 1.0:
             return scalar * description.value_scale
         return scalar
+
+    def _validated_enum_state(self, value: str) -> str | None:
+        """Return only enum states declared when this entity was created."""
+        options = self.entity_description.options
+        if options is None or value in options:
+            return value
+
+        if (
+            value not in self._unknown_enum_values
+            and len(self._unknown_enum_values) < _MAX_TRACKED_UNKNOWN_ENUM_VALUES
+        ):
+            self._unknown_enum_values.add(value)
+            self.coordinator.record_unknown_enum_value(
+                self.entity_description.resource_path
+            )
+        if not self._unknown_enum_warning_logged:
+            self._unknown_enum_warning_logged = True
+            _LOGGER.warning(
+                "PointT resource %s returned an undeclared enum value; "
+                "reporting the entity as unknown. The value is omitted from logs "
+                "and counted in diagnostics",
+                resource_path_template(self.entity_description.resource_path),
+            )
+        return None
 
     @property
     def extra_state_attributes(self) -> dict[str, str | float] | None:

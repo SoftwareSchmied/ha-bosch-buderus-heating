@@ -264,6 +264,11 @@ integration creates one entity for each of `highSystemPressure`,
 `shutOfPressureThreshold`, `highPressureThreshold`, and
 `lowPressureThreshold`.
 
+Heat-source type aliases are normalized only at the Home Assistant presentation
+boundary. In particular, `gas_boiler` is displayed as **Boiler** without using
+the type of one heat source to infer that the complete installation is or is
+not a hybrid system.
+
 The optional paths listed above are present in both official app variants but
 may be omitted from a gateway's reference tree. Discovery probes this bounded
 catalog once. Per-source paths are generated only for heat-source IDs returned

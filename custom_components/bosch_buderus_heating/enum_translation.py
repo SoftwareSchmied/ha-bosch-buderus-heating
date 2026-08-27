@@ -12,6 +12,7 @@ _POINTT_TO_HA: dict[str, dict[str, str]] = {
         "Heatpump": "heatpump",
         "Boiler": "boiler",
         "Hybrid": "hybrid",
+        "gas_boiler": "boiler",
     },
     "hot_water_operation_mode": {"Off": "off"},
     "isrc_support_status": {

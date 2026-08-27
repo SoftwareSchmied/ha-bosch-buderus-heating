@@ -32,7 +32,7 @@ from .resource_catalog import (
 )
 from .runtime import BoschBuderusRuntimeData
 
-DIAGNOSTICS_SCHEMA_VERSION = 6
+DIAGNOSTICS_SCHEMA_VERSION = 7
 
 
 async def async_get_config_entry_diagnostics(
@@ -119,6 +119,10 @@ def _gateway_diagnostics(
         and snapshot.available
         and snapshot.freshness is Freshness.FRESH
     }
+    supported_without_value_count = sum(
+        _supported_without_value(resource, snapshots.get(resource.path))
+        for resource in resources
+    )
     return {
         "label": f"gateway_{number}",
         "device_class": _gateway_class(coordinator.gateway),
@@ -157,12 +161,14 @@ def _gateway_diagnostics(
             "polling_groups": dict(sorted(polling_groups.items())),
             "maturity_levels": dict(sorted(maturity_levels.items())),
             "current_error_categories": dict(sorted(errors.items())),
+            "supported_without_value_count": supported_without_value_count,
         },
         "capabilities": [
             _capability_diagnostics(
                 resource,
                 snapshots.get(resource.path),
                 coordinator.capability_metrics(resource.path),
+                coordinator.unknown_enum_value_count(resource.path),
             )
             for resource in sorted(
                 resources, key=lambda item: _path_template(item.path)
@@ -175,6 +181,7 @@ def _capability_diagnostics(
     resource: Resource,
     snapshot: ResourceSnapshot | None,
     metrics: dict[str, object],
+    unknown_enum_values_detected: int,
 ) -> dict[str, object]:
     available: bool | None = None
     freshness: str | None = None
@@ -198,6 +205,7 @@ def _capability_diagnostics(
         "entity_enabled_by_default": entity_enabled_by_default(resource.path),
         "writable": resource.metadata.writable,
         "has_value": resource.has_value,
+        "supported_without_value": _supported_without_value(resource, snapshot),
         "value_shape": _value_shape(resource),
         "values_count": len(resource.values),
         "references_count": len(resource.references),
@@ -209,8 +217,25 @@ def _capability_diagnostics(
         "source": source,
         "last_error_category": error_category,
         "consecutive_failures": consecutive_failures,
+        "unknown_enum_values_detected": unknown_enum_values_detected,
         "calls": metrics,
     }
+
+
+def _supported_without_value(
+    resource: Resource, snapshot: ResourceSnapshot | None
+) -> bool:
+    """Return whether a supported scalar capability currently has no value."""
+    if snapshot is None or not snapshot.available:
+        return False
+    current = snapshot.resource
+    return (
+        supports_entity(current)
+        and current.metadata.resource_type
+        in {"booleanValue", "floatValue", "stringValue"}
+        and not current.values
+        and (not current.has_value or current.value is None)
+    )
 
 
 def _path_template(path: str) -> str:
