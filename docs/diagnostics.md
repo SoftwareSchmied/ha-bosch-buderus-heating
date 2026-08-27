@@ -30,6 +30,8 @@ attaching it to a public issue.
   writeability;
 - counts of allowed options, references, and structured subvalues;
 - availability, freshness, error category, and consecutive failure count;
+- whether a supported scalar resource currently provides no value;
+- bounded counts of undeclared enum values observed after entity creation;
 - counts of active negative pauses, rate-limit backoff, and circuit-breaker
   state;
 - aggregated request and polling metrics.
@@ -113,6 +115,18 @@ restarts.
 PointT energy counter becomes smaller than its previously confirmed value. It
 contains neither the old nor the new measurement and exists only to make
 resets after firmware updates, device replacement, or manual resets visible.
+
+`supported_without_value_count` identifies capabilities that returned a valid,
+supported scalar schema but no current value. Each affected capability also
+contains `supported_without_value: true`. This distinction is useful for
+optional and hybrid equipment: it is different from an unsupported resource
+or a failed request.
+
+`unknown_enum_values_detected` counts distinct enum values that appeared only
+after an entity had been created and were not part of its declared options.
+The entity reports `unknown` instead of passing an invalid state to Home
+Assistant. The actual manufacturer value is deliberately excluded from logs
+and diagnostics.
 
 ## Excluded information
 

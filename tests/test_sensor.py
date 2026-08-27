@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -427,6 +428,69 @@ def test_enum_includes_pointt_advertised_and_current_unknown_values(
         "clock",
         "vendor_extension",
     ]
+
+
+def test_enum_changed_after_setup_becomes_unknown_without_log_spam(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
+    resource = Resource(
+        path="/heatingCircuits/hc1/overallStatus",
+        value="summer_idle",
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="stringValue"),
+    )
+    sensor = _sensor(hass, resource)
+    caplog.set_level(
+        logging.WARNING,
+        logger="custom_components.bosch_buderus_heating.sensor",
+    )
+
+    first_unknown = Resource(
+        path=resource.path,
+        value="private_vendor_state_one",
+        has_value=True,
+        metadata=resource.metadata,
+    )
+    sensor.coordinator.data = {
+        resource.path: ResourceSnapshot(first_unknown, True, datetime.now(UTC))
+    }
+
+    assert sensor.native_value is None
+    assert sensor.native_value is None
+    assert sensor.coordinator.unknown_enum_value_count(resource.path) == 1
+
+    second_unknown = Resource(
+        path=resource.path,
+        value="private_vendor_state_two",
+        has_value=True,
+        metadata=resource.metadata,
+    )
+    sensor.coordinator.data = {
+        resource.path: ResourceSnapshot(second_unknown, True, datetime.now(UTC))
+    }
+
+    assert sensor.native_value is None
+    assert sensor.coordinator.unknown_enum_value_count(resource.path) == 2
+    assert caplog.text.count("returned an undeclared enum value") == 1
+    assert "/heatingCircuits/{hc}/overallStatus" in caplog.text
+    assert "private_vendor_state" not in caplog.text
+    assert "gateway-one" not in caplog.text
+
+
+def test_gas_boiler_heat_source_type_uses_canonical_boiler_state(
+    hass: HomeAssistant,
+) -> None:
+    resource = Resource(
+        path="/heatSources/hs1/type",
+        value="gas_boiler",
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="stringValue"),
+    )
+
+    sensor = _sensor(hass, resource)
+
+    assert sensor.native_value == "boiler"
+    assert sensor.entity_description.options == ["heatpump", "boiler", "hybrid"]
 
 
 def test_enum_translates_single_value_list_resource(hass: HomeAssistant) -> None:

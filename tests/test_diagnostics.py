@@ -95,8 +95,13 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         },
         has_value=True,
     )
+    hybrid_without_value = Resource(
+        path="/heatSources/hybrid/activeHeatSource",
+        metadata=ResourceMetadata(resource_type="stringValue"),
+    )
     coordinator.resources = {
-        item.path: item for item in (name, serial, reference, holiday)
+        item.path: item
+        for item in (name, serial, reference, holiday, hybrid_without_value)
     }
     now = datetime.now(UTC)
     coordinator.data = {
@@ -113,8 +118,10 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         serial.path: ResourceSnapshot(serial, True, now),
         reference.path: ResourceSnapshot(reference, True, now),
         holiday.path: ResourceSnapshot(holiday, True, now),
+        hybrid_without_value.path: ResourceSnapshot(hybrid_without_value, True, now),
     }
     coordinator._record_capability(name.path, "not_found", SnapshotSource.BATCH)
+    coordinator.record_unknown_enum_value(hybrid_without_value.path)
     notification = Resource(path="/notifications", values=({"ccd": 6249, "fc": "12"},))
     coordinator.faults.process_resources({notification.path: notification})
     coordinator.faults.record_results(
@@ -143,6 +150,8 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
 
     diagnostics = await async_get_config_entry_diagnostics(hass, entry)
     rendered = repr(diagnostics)
+
+    assert diagnostics["diagnostics_schema"] == 7
 
     for private in (
         gateway_id,
@@ -184,7 +193,8 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         "calendar_writes_available": False,
     }
     assert gateway_report["inventory"]["current_error_categories"] == {"http_404": 1}
-    assert gateway_report["inventory"]["maturity_levels"] == {"understood": 4}
+    assert gateway_report["inventory"]["maturity_levels"] == {"understood": 5}
+    assert gateway_report["inventory"]["supported_without_value_count"] == 1
     capability = next(
         item
         for item in gateway_report["capabilities"]
@@ -205,6 +215,13 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         "attempts_by_source": {"batch": 1},
         "last_result": "not_found",
     }
+    hybrid_capability = next(
+        item
+        for item in gateway_report["capabilities"]
+        if item["path_template"] == "/heatSources/hybrid/activeHeatSource"
+    )
+    assert hybrid_capability["supported_without_value"]
+    assert hybrid_capability["unknown_enum_values_detected"] == 1
     assert diagnostics["request_metrics"]["requests_total"] == 1
     assert diagnostics["request_metrics"]["requests_successful"] == 1
     assert diagnostics["request_metrics"]["success_rate_percent"] == 100.0

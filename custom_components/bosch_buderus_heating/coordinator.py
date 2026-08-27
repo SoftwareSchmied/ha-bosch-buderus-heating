@@ -203,6 +203,7 @@ class BoschBuderusDataUpdateCoordinator(
         self._rate_limit_events = 0
         self._energy_counter_resets = 0
         self._capability_metrics: dict[str, CapabilityMetrics] = {}
+        self._unknown_enum_value_counts: Counter[str] = Counter()
         self._write_service = WriteService(client)
         self._holiday_write_service = HolidayWriteService(client)
         self.faults = FaultTracker(hass, config_entry.entry_id, gateway.gateway_id)
@@ -458,6 +459,9 @@ class BoschBuderusDataUpdateCoordinator(
             "rate_limit_backoff_active": now < self._cloud_backoff_until,
             "rate_limit_events": self._rate_limit_events,
             "energy_counter_resets_detected": self._energy_counter_resets,
+            "unknown_enum_values_detected": sum(
+                self._unknown_enum_value_counts.values()
+            ),
             "circuit_breaker_active": now < self._circuit_open_until,
             "consecutive_gateway_failures": self._gateway_failure_count,
             "polling_profile": self.polling_profile.value,
@@ -484,6 +488,14 @@ class BoschBuderusDataUpdateCoordinator(
             if metrics is not None
             else CapabilityMetrics().snapshot()
         )
+
+    def record_unknown_enum_value(self, path: str) -> None:
+        """Record one distinct undeclared enum value without retaining it."""
+        self._unknown_enum_value_counts[path] += 1
+
+    def unknown_enum_value_count(self, path: str) -> int:
+        """Return the number of distinct undeclared enum values seen for a path."""
+        return self._unknown_enum_value_counts[path]
 
     async def _async_update_data_locked(self) -> dict[str, ResourceSnapshot]:
         """Refresh due groups while preventing overlapping gateway polls."""

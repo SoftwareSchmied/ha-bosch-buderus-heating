@@ -30,7 +30,7 @@ def test_stable_project_identity() -> None:
 
     assert manifest["domain"] == "bosch_buderus_heating"
     assert manifest["name"] == "Bosch/Buderus Heating"
-    assert manifest["version"] == "0.5.2"
+    assert manifest["version"] == "0.5.3"
     assert project["project"]["version"] == manifest["version"]
     assert manifest["requirements"] == []
     assert manifest["config_flow"] is True
@@ -98,6 +98,25 @@ def test_heat_source_status_translations_match_vendor_app_terms() -> None:
     assert sensor["compressor_status"]["state"]["alarm"] == "Blockiert"
     assert sensor["compressor_status"]["state"]["cooling"] == "Kühlung Zuhause"
     assert sensor["electric_auxiliary_heater_status"]["state"]["defrost"] == ("Abtauen")
+
+
+def test_heat_source_type_translations_are_complete() -> None:
+    """Canonical heat-source types remain explicit in both UI languages."""
+    source = load_json(INTEGRATION / "strings.json")["entity"]["sensor"]
+    german = load_json(INTEGRATION / "translations" / "de.json")["entity"]["sensor"]
+    english = load_json(INTEGRATION / "translations" / "en.json")["entity"]["sensor"]
+
+    assert source["heat_source_type"]["state"] == {
+        "heatpump": "Heat pump",
+        "boiler": "Boiler",
+        "hybrid": "Hybrid system",
+    }
+    assert english["heat_source_type"]["state"] == source["heat_source_type"]["state"]
+    assert german["heat_source_type"]["state"] == {
+        "heatpump": "Wärmepumpe",
+        "boiler": "Heizkessel",
+        "hybrid": "Hybridsystem",
+    }
 
 
 def test_holiday_translations_are_clear_and_match_vendor_terms() -> None:

@@ -5,9 +5,12 @@
 
 ## Decision
 
-Unknown enum codes remain valid observable raw values and never fail a poll.
 Runtime options combine catalog codes, resource `allowedValues`, and the current
-value; presentation translations live only in the HA adapter.
+value when the entity is created; presentation translations live only in the
+HA adapter. If a previously undeclared value first appears later, the entity
+reports `unknown` and records a bounded, value-free diagnostic counter instead
+of passing an invalid enum state to Home Assistant. Logs identify only the
+normalized resource-path template and never contain the raw value.
 
 Every write is risk-classified and follows:
 
