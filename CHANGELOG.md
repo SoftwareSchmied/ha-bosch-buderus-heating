@@ -5,6 +5,70 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-08-28
+
+Version 0.5.2 improves compatibility with MX300 installations using K30
+gateways when individual PointT resources are available but the corresponding
+bulk response cannot be processed.
+
+### Added
+
+- Privacy-safe diagnostics are now available while initial setup is still
+  retrying.
+- Request diagnostics distinguish HTTP-successful bulk items whose payload
+  could not be parsed.
+
+### Fixed
+
+- Malformed successful bulk items and unreadable bulk envelopes are recovered
+  through strictly bounded individual resource reads.
+- MX300/K30 installations with divergent PointT bulk responses can complete
+  discovery.
+- Diagnostics no longer fail because runtime data is unavailable during the
+  first setup attempt.
+
+### Why bulk requests remain the default
+
+A heating installation can expose dozens or hundreds of resources. PointT bulk
+requests retrieve up to 30 resources with one HTTP request, reducing cloud
+traffic, update latency, and the risk of rate limiting.
+
+Individual requests are therefore used only as a bounded compatibility
+fallback. Successfully parsed bulk resources are not requested again
+individually.
+
+### Behavior changes
+
+- Discovery uses no more than 30 individual fallback reads in total.
+- Normal polling uses no more than 5 fallback reads per affected bulk chunk.
+- Unsupported resources returning 403, 404, or 406 do not trigger fallback
+  requests.
+- No entities, controls, entity IDs, or device identifiers are changed.
+
+### Security and compatibility
+
+- Debug output contains only normalized path templates, HTTP status, and parser
+  error categories.
+- Tokens, gateway identifiers, raw payloads, and resource values remain
+  excluded.
+- Authentication and rate-limit handling are unchanged.
+- Existing Home Assistant history, automations, and dashboards are preserved.
+
+### Validation
+
+- 463 automated tests pass with 95.13% branch coverage.
+- Ruff formatting and linting pass.
+- Strict Mypy type checking passes.
+- Dependency audit reports no known vulnerabilities.
+- Hassfest, HACS validation, and CodeQL pass.
+
+### Upgrade notes and limitations
+
+- Restart Home Assistant after updating.
+- An entry currently in `setup_retry` will retry setup automatically.
+- The exact cloud-side response difference could not be reproduced locally.
+  Confirmation on the affected MX300/K30 installation is still required.
+
 ## [0.5.1] - 2026-08-23
 
 Version 0.5.1 corrects how Home Assistant identifies the controller and the

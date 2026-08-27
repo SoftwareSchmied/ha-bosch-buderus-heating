@@ -86,18 +86,21 @@ async def async_setup_entry(
         )
         for gateway in selected_gateways
     )
-    for coordinator in coordinators:
-        await coordinator.async_load_fault_state()
-        await coordinator.async_config_entry_first_refresh()
-
-    sync_firmware_compatibility_issue(hass, entry, coordinators)
-
+    # Publish the safe, partially initialized runtime before the first refresh.
+    # Home Assistant can then produce diagnostics when discovery itself keeps
+    # the config entry in setup_retry.
     entry.runtime_data = BoschBuderusRuntimeData(
         client=client,
         token_manager=token_manager,
         gateways=selected_gateways,
         coordinators=coordinators,
     )
+    for coordinator in coordinators:
+        await coordinator.async_load_fault_state()
+        await coordinator.async_config_entry_first_refresh()
+
+    sync_firmware_compatibility_issue(hass, entry, coordinators)
+
     _remove_unselected_gateway_entries(hass, entry, selected_ids)
     _enable_new_default_entities(hass, entry, coordinators)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

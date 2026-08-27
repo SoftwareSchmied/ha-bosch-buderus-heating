@@ -4,6 +4,11 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Heating.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Diagnostics remain downloadable while the first integration setup is still in
+`setup_retry`. Before runtime initialization they contain only redacted config
+metadata and no gateway data. Once the runtime exists, they also include
+request metrics and any partially initialized gateway coordinators.
+
 ## Download diagnostics
 
 1. Open **Settings → Devices & services**.
@@ -47,7 +52,8 @@ cover:
 - outcomes such as success, timeout, rate limiting, and protocol errors;
 - retries and bounded single-request fallbacks;
 - batch count and maximum batch size;
-- successful and failed items within batch responses;
+- successful and failed items within batch responses, including a separate
+  count for HTTP-successful items whose payload could not be parsed;
 - latest, average, and maximum request duration;
 - coordinator poll count, failures, and duration;
 - detected decreases in cumulative energy counters.

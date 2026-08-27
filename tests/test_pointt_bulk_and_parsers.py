@@ -191,6 +191,44 @@ def test_bulk_response_keeps_partial_success_in_request_order() -> None:
     assert isinstance(results[3].error, InvalidPayload)
 
 
+def test_bulk_response_accepts_observed_k30_reference_envelope() -> None:
+    payload = [
+        {
+            "gatewayId": "k30-gateway",
+            "resourcePaths": [
+                {
+                    "resourcePath": "/system",
+                    "serverStatus": 200,
+                    "gatewayResponse": {
+                        "status": 200,
+                        "payload": {
+                            "id": "/system",
+                            "type": "refEnum",
+                            "references": [
+                                {
+                                    "id": "/system/brand",
+                                    "uri": "http://k30/system/brand",
+                                }
+                            ],
+                        },
+                    },
+                }
+            ],
+        }
+    ]
+
+    result = parse_batch_response(
+        payload, gateway_id="k30-gateway", requested_paths=["/system"]
+    )[0]
+
+    assert result.ok
+    assert result.resource is not None
+    assert result.resource.metadata.resource_type == "refEnum"
+    assert tuple(reference.path for reference in result.resource.references) == (
+        "/system/brand",
+    )
+
+
 @pytest.mark.parametrize(
     "payload", [[], {}, [{"gatewayId": "other", "resourcePaths": []}]]
 )

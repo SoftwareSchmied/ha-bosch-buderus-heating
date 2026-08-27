@@ -55,6 +55,27 @@ _OAUTH_QUERY_PATTERN = re.compile(
 )
 
 
+def resource_path_template(path: str) -> str:
+    """Remove installation-specific logical IDs from a PointT path."""
+    for root, placeholder in (
+        ("heatingCircuits", "{hc}"),
+        ("dhwCircuits", "{dhw}"),
+    ):
+        path = re.sub(rf"^/{root}/[^/]+", f"/{root}/{placeholder}", path)
+    path = re.sub(
+        r"^/heatSources/hs\d+(?=/|$)",
+        "/heatSources/{hs}",
+        path,
+        flags=re.IGNORECASE,
+    )
+    return re.sub(
+        r"^/devices/[^/]+(?=/|$)",
+        "/devices/{device}",
+        path,
+        flags=re.IGNORECASE,
+    )
+
+
 def anonymize_identifier(value: object, *, salt: bytes) -> str:
     """Return an installation-specific, non-reversible short identifier."""
     digest = hmac.new(salt, str(value).encode("utf-8"), hashlib.sha256).hexdigest()

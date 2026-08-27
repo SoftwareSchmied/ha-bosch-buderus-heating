@@ -142,6 +142,28 @@ async def test_entry_setup_retries_missing_or_unavailable_gateway(
         await async_setup_entry(hass, entry)
 
 
+async def test_entry_publishes_runtime_before_first_refresh_failure(
+    hass: HomeAssistant,
+) -> None:
+    entry = _entry(hass)
+    with (
+        patch(
+            "custom_components.bosch_buderus_heating.PointTClient.get_gateways",
+            AsyncMock(return_value=(Gateway("gateway-one"),)),
+        ),
+        patch(
+            "custom_components.bosch_buderus_heating.coordinator."
+            "BoschBuderusDataUpdateCoordinator.async_config_entry_first_refresh",
+            AsyncMock(side_effect=ConfigEntryNotReady("discovery failed")),
+        ),
+        pytest.raises(ConfigEntryNotReady),
+    ):
+        await async_setup_entry(hass, entry)
+
+    assert entry.runtime_data.gateways == (Gateway("gateway-one"),)
+    assert len(entry.runtime_data.coordinators) == 1
+
+
 @pytest.mark.parametrize(
     "bad_data",
     [

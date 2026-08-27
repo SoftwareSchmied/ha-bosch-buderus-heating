@@ -210,6 +210,30 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
     assert diagnostics["request_metrics"]["success_rate_percent"] == 100.0
 
 
+async def test_diagnostics_are_available_before_runtime_setup(
+    hass: HomeAssistant,
+) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        version=3,
+        data={
+            CONF_BRAND: "buderus",
+            CONF_GATEWAY_IDS: ["private-gateway-id"],
+            CONF_ACCESS_TOKEN: "private-access-token",
+            CONF_REFRESH_TOKEN: "private-refresh-token",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert diagnostics["setup"] == {"runtime_available": False}
+    assert diagnostics["request_metrics"] == {}
+    assert diagnostics["gateways"] == []
+    assert "private-gateway-id" not in repr(diagnostics)
+    assert "private-access-token" not in repr(diagnostics)
+
+
 def test_diagnostics_normalizers_never_echo_unknown_private_strings() -> None:
     assert _path_template("/heatingCircuits/hc2/currentRoomSetpoint") == (
         "/heatingCircuits/{hc}/currentRoomSetpoint"

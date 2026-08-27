@@ -22,6 +22,7 @@ from .holidays import (
     parse_holiday_write_configuration,
 )
 from .pointt import Gateway, Resource
+from .pointt.redaction import resource_path_template
 from .resource_catalog import (
     capability_maturity,
     entity_enabled_by_default,
@@ -29,8 +30,9 @@ from .resource_catalog import (
     resource_name,
     supports_entity,
 )
+from .runtime import BoschBuderusRuntimeData
 
-DIAGNOSTICS_SCHEMA_VERSION = 5
+DIAGNOSTICS_SCHEMA_VERSION = 6
 
 
 async def async_get_config_entry_diagnostics(
@@ -38,13 +40,9 @@ async def async_get_config_entry_diagnostics(
 ) -> dict[str, Any]:
     """Return schema and aggregate state without credentials or raw values."""
     del hass
-    runtime = entry.runtime_data
-    gateway_reports = [
-        _gateway_diagnostics(index, coordinator)
-        for index, coordinator in enumerate(runtime.coordinators, start=1)
-    ]
+    runtime = getattr(entry, "runtime_data", None)
     selected = entry.data.get(CONF_GATEWAY_IDS, [])
-    return {
+    base = {
         "diagnostics_schema": DIAGNOSTICS_SCHEMA_VERSION,
         "privacy": {
             "contains_raw_resource_values": False,
@@ -60,6 +58,21 @@ async def async_get_config_entry_diagnostics(
             if isinstance(selected, list)
             else 0,
         },
+    }
+    if not isinstance(runtime, BoschBuderusRuntimeData):
+        return {
+            **base,
+            "setup": {"runtime_available": False},
+            "request_metrics": {},
+            "gateways": [],
+        }
+    gateway_reports = [
+        _gateway_diagnostics(index, coordinator)
+        for index, coordinator in enumerate(runtime.coordinators, start=1)
+    ]
+    return {
+        **base,
+        "setup": {"runtime_available": True},
         "request_metrics": runtime.client.metrics.snapshot(),
         "gateways": gateway_reports,
     }
@@ -202,28 +215,7 @@ def _capability_diagnostics(
 
 def _path_template(path: str) -> str:
     """Remove installation-specific logical IDs from a PointT path."""
-    for root, placeholder in (
-        ("heatingCircuits", "{hc}"),
-        ("dhwCircuits", "{dhw}"),
-    ):
-        path = re.sub(
-            rf"^/{root}/[^/]+",
-            f"/{root}/{placeholder}",
-            path,
-        )
-    path = re.sub(
-        r"^/heatSources/hs\d+(?=/|$)",
-        "/heatSources/{hs}",
-        path,
-        flags=re.IGNORECASE,
-    )
-    path = re.sub(
-        r"^/devices/[^/]+(?=/|$)",
-        "/devices/{device}",
-        path,
-        flags=re.IGNORECASE,
-    )
-    return path
+    return resource_path_template(path)
 
 
 def _gateway_class(gateway: Gateway) -> str:

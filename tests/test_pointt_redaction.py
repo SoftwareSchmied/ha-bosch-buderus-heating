@@ -5,6 +5,9 @@ from custom_components.bosch_buderus_heating.pointt import (
     redact_mapping,
     redact_text,
 )
+from custom_components.bosch_buderus_heating.pointt.redaction import (
+    resource_path_template,
+)
 
 
 def test_mapping_redacts_credentials_and_private_data_recursively() -> None:
@@ -43,3 +46,12 @@ def test_text_redacts_common_sensitive_patterns() -> None:
         "state=secret2",
     ):
         assert secret not in redacted
+
+
+def test_resource_path_template_removes_installation_identifiers() -> None:
+    assert resource_path_template("/heatingCircuits/private-id/status") == (
+        "/heatingCircuits/{hc}/status"
+    )
+    assert resource_path_template("/devices/private-device/errors") == (
+        "/devices/{device}/errors"
+    )

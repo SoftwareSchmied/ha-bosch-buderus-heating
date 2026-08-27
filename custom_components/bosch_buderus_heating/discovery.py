@@ -2,10 +2,23 @@
 
 from __future__ import annotations
 
+import logging
 import re
 
 from .holidays import HOLIDAY_RESOURCE_PATHS
-from .pointt import PointTClient, Resource
+from .pointt import (
+    AuthenticationError,
+    BatchItemResult,
+    PointTClient,
+    PointTError,
+    ProtocolError,
+    RateLimited,
+    Resource,
+    ResourceError,
+)
+from .pointt.redaction import resource_path_template
+
+_LOGGER = logging.getLogger(__name__)
 
 ROOT_RESOURCE_PATHS: tuple[str, ...] = (
     "/notifications",
@@ -25,6 +38,7 @@ ROOT_RESOURCE_PATHS: tuple[str, ...] = (
 
 MAX_DISCOVERY_DEPTH = 8
 MAX_DISCOVERY_RESOURCES = 512
+MAX_DISCOVERY_FALLBACK_PATHS = 30
 
 # Some gateways omit stable public resources from their reference trees or
 # advertise an unreadable container around them. Keep these fallbacks narrow:
@@ -279,6 +293,7 @@ async def async_discover_resources(
     pending = [(path, 0) for path in roots]
     queued = set(roots)
     discovered: dict[str, Resource] = {}
+    fallback_remaining = MAX_DISCOVERY_FALLBACK_PATHS
     while pending:
         depth = pending[0][1]
         capacity = maximum_resources - len(discovered)
@@ -287,10 +302,42 @@ async def async_discover_resources(
         frontier: list[str] = []
         while pending and pending[0][1] == depth and len(frontier) < capacity:
             frontier.append(pending.pop(0)[0])
-        results = await client.get_resources_bulk(gateway_id, frontier)
+        try:
+            results = await client.get_resources_bulk(gateway_id, frontier)
+        except AuthenticationError, RateLimited:
+            raise
+        except ProtocolError as err:
+            _LOGGER.debug(
+                "PointT discovery bulk envelope was unusable for %d paths: %s",
+                len(frontier),
+                type(err).__name__,
+            )
+            results = tuple(
+                BatchItemResult(
+                    gateway_id=gateway_id,
+                    path=path,
+                    status=None,
+                    error=err,
+                )
+                for path in frontier
+            )
+        results, fallback_used = await _recover_invalid_bulk_results(
+            client,
+            gateway_id,
+            results,
+            limit=fallback_remaining,
+        )
+        fallback_remaining -= fallback_used
         for result in results:
             resource = result.resource
             if resource is None:
+                _LOGGER.debug(
+                    "Ignoring PointT discovery item %s: status=%s, error=%s (%s)",
+                    resource_path_template(result.path),
+                    result.status,
+                    type(result.error).__name__ if result.error else "none",
+                    result.error or "no parsed resource",
+                )
                 continue
             discovered[result.path] = resource
             if len(discovered) >= maximum_resources or depth >= maximum_depth:
@@ -310,6 +357,48 @@ async def async_discover_resources(
                         queued.add(fallback)
                         pending.append((fallback, depth + 2))
     return discovered
+
+
+async def _recover_invalid_bulk_results(
+    client: PointTClient,
+    gateway_id: str,
+    results: tuple[BatchItemResult, ...],
+    *,
+    limit: int,
+) -> tuple[tuple[BatchItemResult, ...], int]:
+    """Retry malformed bulk items individually within one discovery budget."""
+    recovered: list[BatchItemResult] = []
+    used = 0
+    for result in results:
+        if result.resource is not None or not isinstance(result.error, ProtocolError):
+            recovered.append(result)
+            continue
+        if used >= limit:
+            recovered.append(result)
+            continue
+
+        used += 1
+        client.metrics.record_fallback_request()
+        _LOGGER.debug(
+            "Retrying malformed PointT discovery item %s with one individual GET: %s",
+            resource_path_template(result.path),
+            result.error,
+        )
+        try:
+            resource = await client.get_resource(gateway_id, result.path)
+        except AuthenticationError, RateLimited:
+            raise
+        except ResourceError as err:
+            recovered.append(
+                BatchItemResult(gateway_id, result.path, err.status, error=err)
+            )
+        except PointTError as err:
+            recovered.append(BatchItemResult(gateway_id, result.path, None, error=err))
+        else:
+            recovered.append(
+                BatchItemResult(gateway_id, result.path, 200, resource=resource)
+            )
+    return tuple(recovered), used
 
 
 def _optional_children(path: str) -> tuple[str, ...]:
