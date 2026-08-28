@@ -366,11 +366,12 @@ async def _recover_invalid_bulk_results(
     *,
     limit: int,
 ) -> tuple[tuple[BatchItemResult, ...], int]:
-    """Retry malformed bulk items individually within one discovery budget."""
+    """Retry recoverable bulk items individually within one discovery budget."""
     recovered: list[BatchItemResult] = []
     used = 0
     for result in results:
-        if result.resource is not None or not isinstance(result.error, ProtocolError):
+        fallback_reason = result.fallback_reason
+        if fallback_reason is None:
             recovered.append(result)
             continue
         if used >= limit:
@@ -378,10 +379,14 @@ async def _recover_invalid_bulk_results(
             continue
 
         used += 1
-        client.metrics.record_fallback_request()
+        client.metrics.record_fallback_request(fallback_reason)
         _LOGGER.debug(
-            "Retrying malformed PointT discovery item %s with one individual GET: %s",
+            "Retrying recoverable PointT discovery item %s with one individual "
+            "GET: reason=%s, server_status=%s, gateway_status=%s, error=%s",
             resource_path_template(result.path),
+            fallback_reason,
+            result.server_status,
+            result.gateway_status,
             result.error,
         )
         try:

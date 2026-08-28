@@ -277,6 +277,7 @@ def parse_batch_response(
                     path=path,
                     status=server_status,
                     error=resource_error(path, status),
+                    server_status=server_status,
                 )
             )
             continue
@@ -291,6 +292,7 @@ def parse_batch_response(
                     error=InvalidPayload(
                         "Bulk item did not contain a gateway response"
                     ),
+                    server_status=server_status,
                 )
             )
             continue
@@ -303,6 +305,8 @@ def parse_batch_response(
                     path=path,
                     status=gateway_status,
                     error=resource_error(path, status),
+                    server_status=server_status,
+                    gateway_status=gateway_status,
                 )
             )
             continue
@@ -316,6 +320,8 @@ def parse_batch_response(
                     path=path,
                     status=gateway_status,
                     error=err,
+                    server_status=server_status,
+                    gateway_status=gateway_status,
                 )
             )
         else:
@@ -325,6 +331,8 @@ def parse_batch_response(
                     path=path,
                     status=gateway_status,
                     resource=resource,
+                    server_status=server_status,
+                    gateway_status=gateway_status,
                 )
             )
     return tuple(results)

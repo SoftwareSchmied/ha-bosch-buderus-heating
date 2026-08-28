@@ -56,6 +56,11 @@ cover:
 - batch count and maximum batch size;
 - successful and failed items within batch responses, including a separate
   count for HTTP-successful items whose payload could not be parsed;
+- separate status-class counts for the PointT `serverStatus` and the inner
+  gateway response, so a bulk frontend failure can be distinguished from a
+  gateway-side failure without recording paths or response values;
+- bounded individual fallback requests grouped by privacy-safe reason, such as
+  malformed payload, bulk-server 5xx, or gateway 5xx;
 - latest, average, and maximum request duration;
 - coordinator poll count, failures, and duration;
 - detected decreases in cumulative energy counters.

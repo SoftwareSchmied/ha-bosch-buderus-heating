@@ -31,7 +31,6 @@ from .holidays import (
 from .pointt import (
     AuthenticationError,
     Gateway,
-    InvalidPayload,
     PointTClient,
     PointTError,
     RateLimited,
@@ -560,10 +559,10 @@ class BoschBuderusDataUpdateCoordinator(
                     break
                 result_source = SnapshotSource.FALLBACK
 
-            malformed_fallback: tuple[BatchItemResult, ...] = ()
+            bulk_item_fallback: tuple[BatchItemResult, ...] = ()
             if result_source is SnapshotSource.BATCH:
                 self._log_unusable_bulk_results(results)
-                malformed_fallback = await self._async_malformed_bulk_fallback(results)
+                bulk_item_fallback = await self._async_bulk_item_fallback(results)
 
             cycle_results.extend(results)
             successful += self._apply_results(
@@ -573,11 +572,11 @@ class BoschBuderusDataUpdateCoordinator(
                 now_monotonic=now_monotonic,
                 source=result_source,
             )
-            if malformed_fallback:
-                cycle_results.extend(malformed_fallback)
+            if bulk_item_fallback:
+                cycle_results.extend(bulk_item_fallback)
                 successful += self._apply_results(
                     snapshots,
-                    malformed_fallback,
+                    bulk_item_fallback,
                     attempted_at=attempted_at,
                     now_monotonic=now_monotonic,
                     source=SnapshotSource.FALLBACK,
@@ -744,28 +743,39 @@ class BoschBuderusDataUpdateCoordinator(
         ]
         return await self._async_single_get_fallback(prioritized)
 
-    async def _async_malformed_bulk_fallback(
+    async def _async_bulk_item_fallback(
         self, results: tuple[BatchItemResult, ...]
     ) -> tuple[BatchItemResult, ...]:
-        """Retry a bounded set of malformed bulk items with individual GETs."""
-        malformed = tuple(
-            result.path
+        """Retry a bounded set of recoverable bulk items with individual GETs."""
+        recoverable = tuple(
+            (result.path, reason)
             for result in results
-            if result.resource is None and isinstance(result.error, InvalidPayload)
+            if (reason := result.fallback_reason) is not None
         )
-        if not malformed:
+        if not recoverable:
             return ()
-        selected = tuple(path for path in _FALLBACK_PRIORITY_PATHS if path in malformed)
-        selected += tuple(path for path in malformed if path not in selected)
-        return await self._async_single_get_fallback(selected[:MAX_FALLBACK_PATHS])
+        reasons = dict(recoverable)
+        paths = tuple(path for path, _reason in recoverable)
+        selected = tuple(path for path in _FALLBACK_PRIORITY_PATHS if path in paths)
+        selected += tuple(path for path in paths if path not in selected)
+        selected = selected[:MAX_FALLBACK_PATHS]
+        return await self._async_single_get_fallback(
+            selected,
+            reasons={path: reasons[path] for path in selected},
+        )
 
     async def _async_single_get_fallback(
-        self, paths: tuple[str, ...]
+        self,
+        paths: tuple[str, ...],
+        *,
+        reasons: dict[str, str] | None = None,
     ) -> tuple[BatchItemResult, ...]:
         """Read a bounded, preselected set of paths individually."""
         results: list[BatchItemResult] = []
         for path in paths:
-            self.client.metrics.record_fallback_request()
+            self.client.metrics.record_fallback_request(
+                reasons.get(path, "batch_failure") if reasons else "batch_failure"
+            )
             try:
                 resource = await self.client.get_resource(self.gateway.gateway_id, path)
             except AuthenticationError as err:
@@ -811,9 +821,12 @@ class BoschBuderusDataUpdateCoordinator(
             if result.resource is not None:
                 continue
             _LOGGER.debug(
-                "Ignoring PointT bulk item %s: status=%s, error=%s (%s)",
+                "Ignoring PointT bulk item %s: status=%s, server_status=%s, "
+                "gateway_status=%s, error=%s (%s)",
                 resource_path_template(result.path),
                 result.status,
+                result.server_status,
+                result.gateway_status,
                 type(result.error).__name__ if result.error else "none",
                 result.error or "no parsed resource",
             )

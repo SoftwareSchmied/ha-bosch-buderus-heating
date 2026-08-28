@@ -183,6 +183,8 @@ class PointTClient:
             self.metrics.record_bulk_items(
                 tuple(item.status for item in parsed),
                 usable=tuple(item.ok for item in parsed),
+                server_statuses=tuple(item.server_status for item in parsed),
+                gateway_statuses=tuple(item.gateway_status for item in parsed),
             )
             results.extend(parsed)
         return tuple(results)
