@@ -5,6 +5,46 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-08-28
+
+Version 0.5.4 improves K30 compatibility when PointT accepts a
+bulk request but reports temporary failures for every resource inside it.
+
+### Added
+
+- Diagnostics separately count bulk `serverStatus` and inner gateway-response
+  status classes.
+- Diagnostics group bounded individual fallback requests by a privacy-safe
+  reason.
+
+### Fixed
+
+- Discovery and polling now retry individually when a correctly formed bulk
+  item reports a temporary 5xx failure, not only when its payload is malformed.
+
+### Behavior changes
+
+- Bulk remains the default. Individual fallback stays bounded and still does
+  not run for unsupported resources, authentication failures, or rate limits.
+
+### Security and compatibility
+
+- The new diagnostics contain only aggregate status classes and reasons. They
+  contain no gateway identifiers, resource values, paths, or raw responses.
+- Existing entity IDs, device identifiers, history, automations, and dashboards
+  remain unchanged.
+
+### Validation
+
+- 469 automated tests pass with 95.13% branch coverage.
+- Ruff formatting and linting pass.
+- Strict Mypy type checking passes.
+
+### Upgrade notes and limitations
+
+- Affected MX300/K30 installations should retry setup after updating and share
+  only reviewed, redacted diagnostics if discovery still fails.
+
 ## [0.5.3] - 2026-08-28
 
 Version 0.5.3 improves compatibility with evolving PointT enum values and

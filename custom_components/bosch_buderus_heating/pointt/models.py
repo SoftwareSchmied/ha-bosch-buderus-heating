@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from time import time
 
-from .exceptions import PointTError
+from .exceptions import PointTError, ProtocolError
 
 type JsonScalar = str | int | float | bool | None
 type JsonValue = JsonScalar | list[JsonValue] | dict[str, JsonValue]
@@ -100,11 +100,28 @@ class BatchItemResult:
     status: int | None
     resource: Resource | None = None
     error: PointTError | None = field(default=None, compare=False)
+    server_status: int | None = None
+    gateway_status: int | None = None
 
     @property
     def ok(self) -> bool:
         """Return whether this item contains a successful resource."""
         return self.resource is not None and self.error is None
+
+    @property
+    def fallback_reason(self) -> str | None:
+        """Return a privacy-safe reason when an individual GET may recover it."""
+        if self.resource is not None:
+            return None
+        if isinstance(self.error, ProtocolError):
+            return "malformed"
+        if self.status is None or not 500 <= self.status <= 599:
+            return None
+        if self.server_status is not None and 500 <= self.server_status <= 599:
+            return "server_5xx"
+        if self.gateway_status is not None and 500 <= self.gateway_status <= 599:
+            return "gateway_5xx"
+        return "item_5xx"
 
 
 @dataclass(frozen=True, slots=True)

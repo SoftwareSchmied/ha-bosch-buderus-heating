@@ -47,6 +47,7 @@ def test_request_metrics_aggregate_without_request_details() -> None:
         "requests_per_hour": None,
         "retry_attempts": 1,
         "fallback_requests": 1,
+        "fallback_requests_by_reason": {"other": 1},
         "requests_by_category": {"bulk": 2, "other": 1},
         "requests_by_method": {"GET": 1, "POST": 2},
         "responses_by_status_class": {"2xx": 1, "4xx": 1, "other": 1},
@@ -62,6 +63,8 @@ def test_request_metrics_aggregate_without_request_details() -> None:
         "bulk_items_failed": 2,
         "bulk_items_parse_failed": 0,
         "bulk_items_by_status_class": {"2xx": 1, "4xx": 1, "none": 1},
+        "bulk_items_by_server_status_class": {},
+        "bulk_items_by_gateway_status_class": {},
         "maximum_bulk_size": 3,
         "average_duration_ms": 10.8,
         "maximum_duration_ms": 20.0,
@@ -79,6 +82,25 @@ def test_bulk_metrics_distinguish_http_success_from_usable_payload() -> None:
     assert snapshot["bulk_items_successful"] == 1
     assert snapshot["bulk_items_failed"] == 2
     assert snapshot["bulk_items_parse_failed"] == 1
+
+
+def test_bulk_metrics_distinguish_server_and_gateway_statuses() -> None:
+    metrics = RequestMetrics()
+
+    metrics.record_bulk_items(
+        (503, 502, 200),
+        usable=(False, False, True),
+        server_statuses=(503, 200, 200),
+        gateway_statuses=(None, 502, 200),
+    )
+
+    snapshot = metrics.snapshot()
+    assert snapshot["bulk_items_by_server_status_class"] == {"2xx": 2, "5xx": 1}
+    assert snapshot["bulk_items_by_gateway_status_class"] == {
+        "2xx": 1,
+        "5xx": 1,
+        "none": 1,
+    }
 
 
 def test_empty_metrics_and_request_classification_are_bounded() -> None:

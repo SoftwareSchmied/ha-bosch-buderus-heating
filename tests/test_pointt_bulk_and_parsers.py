@@ -259,7 +259,13 @@ def test_bulk_response_maps_server_and_gateway_failures() -> None:
     )
     assert all(not result.ok for result in results)
     assert results[0].status is None
+    assert results[0].server_status is None
+    assert results[0].gateway_status is None
     assert isinstance(results[1].error, InvalidPayload)
+    assert results[1].server_status == 200
+    assert results[1].gateway_status is None
+    assert results[2].server_status == 200
+    assert results[2].gateway_status == 406
 
 
 @pytest.mark.parametrize("status", [403, 406, 409])

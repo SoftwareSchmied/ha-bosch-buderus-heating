@@ -754,7 +754,7 @@ async def test_polling_recovers_malformed_bulk_item_with_bounded_get(
     assert client.metrics.snapshot()["fallback_requests"] == 1
 
 
-async def test_malformed_bulk_fallback_is_limited_and_skips_http_errors(
+async def test_bulk_item_fallback_is_limited_and_skips_nonrecoverable_http_errors(
     hass: HomeAssistant,
 ) -> None:
     client = AsyncMock()
@@ -780,7 +780,7 @@ async def test_malformed_bulk_fallback_is_limited_and_skips_http_errors(
     )
     client.get_resource.side_effect = lambda gateway, path: _resource(path, 2.0)
 
-    recovered = await coordinator._async_malformed_bulk_fallback(results)
+    recovered = await coordinator._async_bulk_item_fallback(results)
 
     assert tuple(item.path for item in recovered) == malformed_paths[:5]
     assert client.get_resource.await_count == 5
@@ -788,6 +788,40 @@ async def test_malformed_bulk_fallback_is_limited_and_skips_http_errors(
         call.args[1] != forbidden for call in client.get_resource.await_args_list
     )
     assert client.metrics.snapshot()["fallback_requests"] == 5
+
+
+async def test_polling_recovers_bulk_item_5xx_with_bounded_get(
+    hass: HomeAssistant,
+) -> None:
+    client = AsyncMock()
+    path = "/heatSources/actualModulation"
+    coordinator = _coordinator(hass, client)
+    previous = _resource(path, 1.0)
+    coordinator.resources = {path: previous}
+    coordinator.data = {path: _snapshot(previous)}
+    coordinator._paths_by_group = {PollGroup.FAST: (path,)}
+    coordinator._next_update = {PollGroup.FAST: 0.0}
+    client.get_resources_bulk.return_value = (
+        BatchItemResult(
+            gateway_id="gateway-one",
+            path=path,
+            status=503,
+            error=ResourceError(path, 503),
+            server_status=200,
+            gateway_status=503,
+        ),
+    )
+    client.get_resource.return_value = _resource(path, 2.0)
+
+    result = await coordinator._async_update_data()
+
+    client.get_resource.assert_awaited_once_with("gateway-one", path)
+    assert result[path].resource.value == 2.0
+    assert result[path].available
+    assert result[path].source is SnapshotSource.FALLBACK
+    assert client.metrics.snapshot()["fallback_requests_by_reason"] == {
+        "gateway_5xx": 1
+    }
 
 
 async def test_polling_chunks_large_cycles_and_preserves_partial_success(
@@ -868,9 +902,12 @@ async def test_bulk_item_server_failure_marks_the_poll_failed(
     client.get_resources_bulk.return_value = (
         BatchItemResult("gateway-one", path, 503),
     )
+    client.get_resource.side_effect = ServiceUnavailable(503)
 
     with pytest.raises(UpdateFailed, match="no usable resources"):
         await coordinator._async_update_data()
+
+    client.get_resource.assert_awaited_once_with("gateway-one", path)
 
     assert coordinator._gateway_failure_count == 1
     assert coordinator.faults.diagnostics()["resource_results"] == {path: "503"}

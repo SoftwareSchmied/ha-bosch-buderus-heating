@@ -32,7 +32,7 @@ from .resource_catalog import (
 )
 from .runtime import BoschBuderusRuntimeData
 
-DIAGNOSTICS_SCHEMA_VERSION = 7
+DIAGNOSTICS_SCHEMA_VERSION = 8
 
 
 async def async_get_config_entry_diagnostics(

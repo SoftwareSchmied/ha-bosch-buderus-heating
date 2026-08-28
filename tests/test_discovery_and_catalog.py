@@ -18,6 +18,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     InvalidPayload,
     RequestMetrics,
     Resource,
+    ResourceError,
     ResourceForbidden,
     ResourceMetadata,
     ResourceNotFound,
@@ -123,6 +124,46 @@ async def test_discovery_recovers_malformed_bulk_item_with_individual_get() -> N
     assert resources == {"/notifications": notifications}
     client.get_resource.assert_awaited_once_with("gateway", "/notifications")
     assert client.metrics.snapshot()["fallback_requests"] == 1
+
+
+async def test_discovery_recovers_server_and_gateway_5xx_items() -> None:
+    client = AsyncMock()
+    client.metrics = RequestMetrics()
+    client.get_resources_bulk.return_value = (
+        BatchItemResult(
+            gateway_id="gateway",
+            path="/system",
+            status=503,
+            error=ResourceError("/system", 503),
+            server_status=503,
+        ),
+        BatchItemResult(
+            gateway_id="gateway",
+            path="/gateway",
+            status=502,
+            error=ResourceError("/gateway", 502),
+            server_status=200,
+            gateway_status=502,
+        ),
+    )
+    client.get_resource.side_effect = (
+        Resource(path="/system"),
+        Resource(path="/gateway"),
+    )
+
+    resources = await async_discover_resources(
+        client, "gateway", roots=("/system", "/gateway"), maximum_depth=0
+    )
+
+    assert tuple(resources) == ("/system", "/gateway")
+    assert client.get_resource.await_args_list == [
+        call("gateway", "/system"),
+        call("gateway", "/gateway"),
+    ]
+    assert client.metrics.snapshot()["fallback_requests_by_reason"] == {
+        "gateway_5xx": 1,
+        "server_5xx": 1,
+    }
 
 
 async def test_discovery_recovers_unreadable_bulk_envelope_with_individual_get() -> (
