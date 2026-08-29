@@ -397,6 +397,14 @@ been confirmed on physical equipment.
 | Room devices | `/devices/{device}/*` | Room temperature/humidity, battery, connection state, errors, and static device information | 60 s to startup only |
 | Photovoltaics | `/pv/enable`, `/pv/surplusAvailable` | Enabled and surplus states | 60 s to 15 min |
 
+Known percentage resources receive a semantic Home Assistant device class only
+when both their exact PointT path and `%` unit match. This covers heating-circuit,
+zone, room-device, and ventilation humidity values as well as room-device battery
+levels. Pump modulation, fan output, radio signal, update progress, and power
+reduction remain generic percentages because they represent different physical
+or technical meanings. Bosch and Buderus use the same PointT paths; an entity is
+still created only when the connected installation actually exposes the path.
+
 The catalog does not automatically turn a newly discovered writable field into
 a Home Assistant control. Controls require a separate allowlist, safe limits,
 an exact value mapping, and a successful write/read-back test.

@@ -10,10 +10,12 @@ from unittest.mock import AsyncMock
 import pytest
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import (
+    PERCENTAGE,
     EntityCategory,
     UnitOfEnergy,
     UnitOfPower,
     UnitOfPressure,
+    UnitOfTemperature,
     UnitOfTime,
     UnitOfVolume,
     UnitOfVolumeFlowRate,
@@ -307,6 +309,85 @@ def test_extended_measurement_unit_mapping(
         expected_unit,
         device_class,
         state_class,
+        1.0,
+    )
+
+
+@pytest.mark.parametrize(
+    ("path", "device_class"),
+    (
+        (
+            "/heatingCircuits/hc1/actualHumidity",
+            SensorDeviceClass.HUMIDITY,
+        ),
+        (
+            "/zones/zone1/averageActualHumidity",
+            SensorDeviceClass.HUMIDITY,
+        ),
+        ("/devices/device1/actualHumidity", SensorDeviceClass.HUMIDITY),
+        (
+            "/ventilation/zone1/maxRelativeHumidity",
+            SensorDeviceClass.HUMIDITY,
+        ),
+        ("/devices/device1/battery", SensorDeviceClass.BATTERY),
+    ),
+)
+def test_known_percentage_semantics_use_specific_device_class(
+    path: str,
+    device_class: SensorDeviceClass,
+) -> None:
+    resource = Resource(
+        path=path,
+        value=50.0,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="%"),
+    )
+
+    assert _measurement_attributes(resource, None) == (
+        PERCENTAGE,
+        device_class,
+        SensorStateClass.MEASUREMENT,
+        1.0,
+    )
+
+
+@pytest.mark.parametrize(
+    "path",
+    (
+        "/heatingCircuits/hc1/pumpModulation",
+        "/system/silentMode/powerReduction",
+        "/devices/device1/signal",
+        "/unknown/actualHumidity",
+    ),
+)
+def test_other_percentage_resources_remain_generic(path: str) -> None:
+    resource = Resource(
+        path=path,
+        value=50.0,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="%"),
+    )
+
+    assert _measurement_attributes(resource, None) == (
+        PERCENTAGE,
+        None,
+        SensorStateClass.MEASUREMENT,
+        1.0,
+    )
+
+
+def test_semantic_percentage_class_requires_percentage_unit() -> None:
+    resource = Resource(
+        path="/heatingCircuits/hc1/actualHumidity",
+        value=20.0,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
+    )
+
+    assert _measurement_attributes(resource, None) == (
+        UnitOfTemperature.CELSIUS,
+        SensorDeviceClass.TEMPERATURE,
+        SensorStateClass.MEASUREMENT,
         1.0,
     )
 
