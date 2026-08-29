@@ -93,6 +93,22 @@ _PRESSURE_STATUS_OPTIONS = (
     "critical_high",
 )
 
+# PointT uses percent for several unrelated measurements. Match only resources
+# whose semantics are known, so modulation, signal quality, and power reduction
+# do not accidentally receive a misleading Home Assistant device class.
+_PERCENTAGE_DEVICE_CLASS_PATTERNS = (
+    (
+        re.compile(
+            r"^(?:/heatingCircuits/[^/]+/actualHumidity|/zones/zone[^/]+/averageActualHumidity|/devices/(?!list$)[^/]+/actualHumidity|/ventilation/zone[^/]+/maxRelativeHumidity)$"
+        ),
+        SensorDeviceClass.HUMIDITY,
+    ),
+    (
+        re.compile(r"^/devices/(?!list$)[^/]+/battery$"),
+        SensorDeviceClass.BATTERY,
+    ),
+)
+
 _HEAT_DEMAND_OPTIONS = (
     "none",
     "ch",
@@ -1190,7 +1206,22 @@ def _measurement_attributes(
             SensorStateClass.MEASUREMENT,
             1.0,
         )
-    if unit == "%" or value_key in {"percent", "cur_percent"}:
+    if unit == "%":
+        percentage_device_class = next(
+            (
+                candidate
+                for pattern, candidate in _PERCENTAGE_DEVICE_CLASS_PATTERNS
+                if pattern.fullmatch(path)
+            ),
+            None,
+        )
+        return (
+            PERCENTAGE,
+            percentage_device_class,
+            SensorStateClass.MEASUREMENT,
+            1.0,
+        )
+    if value_key in {"percent", "cur_percent"}:
         return PERCENTAGE, None, SensorStateClass.MEASUREMENT, 1.0
     if resource.metadata.resource_type == "floatValue":
         return None, None, SensorStateClass.MEASUREMENT, 1.0

@@ -5,6 +5,41 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.5.5] - 2026-08-30
+
+Version 0.5.5 gives known PointT percentage measurements their correct Home
+Assistant semantics without changing discovery or cloud traffic.
+
+### Added
+
+- Humidity device classes for supported heating-circuit, room-zone,
+  room-device, and ventilation humidity resources.
+- Battery device classes for supported room-device battery levels.
+
+### Behavior changes
+
+- Pump modulation, fan output, radio signal, update progress, and power
+  reduction remain generic percentages because they have different semantics.
+
+### Security and compatibility
+
+- Device-class selection requires both an exact allowlisted PointT path and the
+  expected percent unit. Existing entity IDs, device identifiers, polling, and
+  availability behavior remain unchanged.
+
+### Validation
+
+- 479 automated tests pass with 95.14% branch coverage.
+- Ruff formatting and linting pass.
+- Strict Mypy type checking passes.
+
+### Upgrade notes and limitations
+
+- No migration or reconfiguration is required.
+- The change annotates only resources exposed by the connected installation;
+  it cannot make a humidity or battery resource appear when PointT returns it
+  as unsupported.
+
 ## [0.5.4] - 2026-08-28
 
 Version 0.5.4 improves K30 compatibility when PointT accepts a
