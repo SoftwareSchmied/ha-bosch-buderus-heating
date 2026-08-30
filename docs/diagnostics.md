@@ -34,7 +34,8 @@ attaching it to a public issue.
 - bounded counts of undeclared enum values observed after entity creation;
 - counts of active negative pauses, rate-limit backoff, and circuit-breaker
   state;
-- aggregated request and polling metrics.
+- aggregated request and polling metrics;
+- a bounded, sanitized log of recent PointT HTTP attempts.
 - supported fault-resource templates, active fault and notification counts,
   severity counts, known active codes, last successful fault read, and parser
   status.
@@ -62,11 +63,19 @@ cover:
 - bounded individual fallback requests grouped by privacy-safe reason, such as
   malformed payload, bulk-server 5xx, or gateway 5xx;
 - latest, average, and maximum request duration;
+- rolling request totals and successful response times for the last 60 minutes;
+- up to 250 recent HTTP attempts from the last 60 minutes, including request
+  type, method, HTTP status, outcome, duration, attempt number, retry flag,
+  bulk size, and fallback reason;
+- for successful bulk envelopes, separate aggregated `serverStatus` and inner
+  gateway-status counts;
 - coordinator poll count, failures, and duration;
 - detected decreases in cumulative energy counters.
 
 URLs, resource paths, gateway IDs, payloads, and response values are not stored
-for these metrics.
+for these metrics. The recent-request log is memory-only, bounded, and cleared
+when Home Assistant restarts. Its sequence number and age are local diagnostic
+values, not cloud identifiers or wall-clock timestamps.
 
 ### Simple overview
 
@@ -80,6 +89,38 @@ for these metrics.
 - `requests_per_hour`: projected hourly cloud load. This is calculated only
   after an observation period of 60 seconds;
 - `rate_limit_events`: number of limits reported by PointT.
+
+`rolling_60_minutes` contains the same operational view for the current and
+previous 59 clock-minute buckets. It includes exact outer HTTP status counts,
+request types (`bulk`, `single`, `fallback`, or `write`), retry and fallback
+counts, and latency statistics. Failed requests are counted as requests but do
+not distort the successful-response-time average or percentile.
+
+`recent_requests` contains the most recent individual attempts. A retry is a
+separate attempt, as is a single-resource fallback after a bulk failure. One
+bulk call remains one HTTP attempt regardless of the number of resources in
+it; `bulk_size` and the item-result counters show that logical work separately.
+This distinction is useful when PointT returns HTTP 200 for the bulk envelope
+but an inner gateway reports a 5xx status.
+
+### Optional diagnostic entities
+
+Three integration-wide diagnostic sensors are created disabled by default:
+
+- **PointT API requests total**;
+- **PointT API requests – last hour**;
+- **PointT API response time – last hour**.
+
+Enable them under **Settings → Devices & services → Entities** when continuous
+monitoring is useful. The response-time sensor is the average of successful
+attempts; its attributes include the sample count, approximate p95, maximum,
+and latest attempt duration. The request sensors expose bounded aggregate
+attributes for success, failures, request types, HTTP statuses, retries,
+fallbacks, and rate limits.
+
+The entities belong to the integration entry rather than to one heating
+device, because one account may contain multiple gateways. Enabling them does
+not change polling and does not create any additional PointT request.
 
 ### Counters per capability
 

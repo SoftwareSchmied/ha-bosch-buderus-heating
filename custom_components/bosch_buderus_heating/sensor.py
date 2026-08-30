@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from math import fsum, isfinite
-from typing import Literal, TypeIs
+from typing import Literal, TypeIs, cast
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -52,6 +52,7 @@ from .holidays import (
     parse_holiday_state,
 )
 from .pointt import Resource
+from .pointt.metrics import RequestMetrics
 from .pointt.models import JsonValue
 from .pointt.redaction import resource_path_template
 from .resource_catalog import (
@@ -81,6 +82,38 @@ type ValueKind = Literal[
 
 _LOGGER = logging.getLogger(__name__)
 _MAX_TRACKED_UNKNOWN_ENUM_VALUES = 16
+
+_REQUEST_METRIC_DESCRIPTIONS = (
+    SensorEntityDescription(
+        key="pointt_api_requests_total",
+        translation_key="pointt_api_requests_total",
+        icon="mdi:counter",
+        native_unit_of_measurement="requests",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="pointt_api_requests_last_hour",
+        translation_key="pointt_api_requests_last_hour",
+        icon="mdi:cloud-sync-outline",
+        native_unit_of_measurement="requests",
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SensorEntityDescription(
+        key="pointt_api_response_time_last_hour",
+        translation_key="pointt_api_response_time_last_hour",
+        icon="mdi:timer-outline",
+        native_unit_of_measurement=UnitOfTime.MILLISECONDS,
+        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=1,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+)
 
 _SYSTEM_PRESSURE_PATH = "/heatSources/systemPressure"
 _SYSTEM_PRESSURE_RANGE_PATH = "/heatSources/systemPressureRange"
@@ -327,6 +360,16 @@ async def async_setup_entry(
 ) -> None:
     """Create entities from every safe resource found during discovery."""
     entities: list[SensorEntity] = []
+    if entry.runtime_data.coordinators:
+        entities.extend(
+            BoschBuderusRequestMetricSensor(
+                entry.entry_id,
+                entry.runtime_data.client.metrics,
+                entry.runtime_data.coordinators,
+                description,
+            )
+            for description in _REQUEST_METRIC_DESCRIPTIONS
+        )
     for coordinator in entry.runtime_data.coordinators:
         entities.extend(
             (
@@ -341,6 +384,87 @@ async def async_setup_entry(
             for description in build_sensor_descriptions(coordinator.resources)
         )
     async_add_entities(entities)
+
+
+class BoschBuderusRequestMetricSensor(SensorEntity):
+    """Expose account-wide PointT request metrics without causing API calls."""
+
+    _attr_has_entity_name = True
+    _attr_should_poll = False
+
+    def __init__(
+        self,
+        entry_id: str,
+        metrics: RequestMetrics,
+        coordinators: tuple[BoschBuderusDataUpdateCoordinator, ...],
+        description: SensorEntityDescription,
+    ) -> None:
+        self.entity_description = description
+        self._metrics = metrics
+        self._coordinators = coordinators
+        self._attr_unique_id = f"{entry_id}:request_metrics:{description.key}"
+
+    async def async_added_to_hass(self) -> None:
+        """Update locally whenever any gateway coordinator completes a cycle."""
+        await super().async_added_to_hass()
+        for coordinator in self._coordinators:
+            self.async_on_remove(
+                coordinator.async_add_listener(self.async_write_ha_state)
+            )
+
+    @property
+    def native_value(self) -> int | float | None:
+        snapshot = self._metrics.snapshot()
+        if self.entity_description.key == "pointt_api_requests_total":
+            return cast(int, snapshot["requests_total"])
+        rolling = cast(dict[str, object], snapshot["rolling_60_minutes"])
+        if self.entity_description.key == "pointt_api_requests_last_hour":
+            return cast(int, rolling["requests_total"])
+        return cast(float | None, rolling["average_successful_response_time_ms"])
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        snapshot = self._metrics.snapshot()
+        if self.entity_description.key == "pointt_api_requests_total":
+            total_keys = (
+                "observation_seconds",
+                "requests_successful",
+                "requests_failed",
+                "success_rate_percent",
+                "retry_attempts",
+                "fallback_requests",
+                "rate_limit_events",
+                "requests_by_category",
+                "requests_by_method",
+                "responses_by_status_class",
+                "outcomes",
+            )
+            return {key: snapshot[key] for key in total_keys}
+        rolling = cast(dict[str, object], snapshot["rolling_60_minutes"])
+        if self.entity_description.key == "pointt_api_requests_last_hour":
+            request_keys = (
+                "requests_successful",
+                "requests_failed",
+                "success_rate_percent",
+                "retry_attempts",
+                "fallback_requests",
+                "rate_limit_events",
+                "requests_by_type",
+                "responses_by_http_status",
+                "outcomes",
+                "bulk_items_total",
+                "bulk_items_successful",
+                "bulk_items_failed",
+                "bulk_items_parse_failed",
+            )
+            return {key: rolling[key] for key in request_keys}
+        latency_keys = (
+            "successful_response_time_samples",
+            "p95_successful_response_time_ms",
+            "maximum_successful_response_time_ms",
+            "latest_response_time_ms",
+        )
+        return {key: rolling[key] for key in latency_keys}
 
 
 class BoschBuderusNextHolidaySensor(

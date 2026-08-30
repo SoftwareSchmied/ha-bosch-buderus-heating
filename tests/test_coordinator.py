@@ -747,11 +747,12 @@ async def test_polling_recovers_malformed_bulk_item_with_bounded_get(
 
     result = await coordinator._async_update_data()
 
-    client.get_resource.assert_awaited_once_with("gateway-one", path)
+    client.get_resource.assert_awaited_once_with(
+        "gateway-one", path, fallback_reason="malformed"
+    )
     assert result[path].resource.value == 2.0
     assert result[path].available
     assert result[path].source is SnapshotSource.FALLBACK
-    assert client.metrics.snapshot()["fallback_requests"] == 1
 
 
 async def test_bulk_item_fallback_is_limited_and_skips_nonrecoverable_http_errors(
@@ -778,7 +779,9 @@ async def test_bulk_item_fallback_is_limited_and_skips_nonrecoverable_http_error
             error=ResourceForbidden(forbidden, 403),
         ),
     )
-    client.get_resource.side_effect = lambda gateway, path: _resource(path, 2.0)
+    client.get_resource.side_effect = lambda gateway, path, **kwargs: _resource(
+        path, 2.0
+    )
 
     recovered = await coordinator._async_bulk_item_fallback(results)
 
@@ -787,7 +790,10 @@ async def test_bulk_item_fallback_is_limited_and_skips_nonrecoverable_http_error
     assert all(
         call.args[1] != forbidden for call in client.get_resource.await_args_list
     )
-    assert client.metrics.snapshot()["fallback_requests"] == 5
+    assert all(
+        call.kwargs == {"fallback_reason": "malformed"}
+        for call in client.get_resource.await_args_list
+    )
 
 
 async def test_polling_recovers_bulk_item_5xx_with_bounded_get(
@@ -815,13 +821,12 @@ async def test_polling_recovers_bulk_item_5xx_with_bounded_get(
 
     result = await coordinator._async_update_data()
 
-    client.get_resource.assert_awaited_once_with("gateway-one", path)
+    client.get_resource.assert_awaited_once_with(
+        "gateway-one", path, fallback_reason="gateway_5xx"
+    )
     assert result[path].resource.value == 2.0
     assert result[path].available
     assert result[path].source is SnapshotSource.FALLBACK
-    assert client.metrics.snapshot()["fallback_requests_by_reason"] == {
-        "gateway_5xx": 1
-    }
 
 
 async def test_polling_chunks_large_cycles_and_preserves_partial_success(
@@ -907,7 +912,9 @@ async def test_bulk_item_server_failure_marks_the_poll_failed(
     with pytest.raises(UpdateFailed, match="no usable resources"):
         await coordinator._async_update_data()
 
-    client.get_resource.assert_awaited_once_with("gateway-one", path)
+    client.get_resource.assert_awaited_once_with(
+        "gateway-one", path, fallback_reason="item_5xx"
+    )
 
     assert coordinator._gateway_failure_count == 1
     assert coordinator.faults.diagnostics()["resource_results"] == {path: "503"}

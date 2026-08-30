@@ -5,6 +5,59 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-30
+
+Version 0.6.0 makes PointT cloud traffic and response behavior observable
+without exposing installation data or increasing the request rate.
+
+### Added
+
+- Rolling request metrics for the current and previous 59 clock-minute
+  buckets, including successes, failures, exact HTTP statuses, request types,
+  retries, fallbacks, rate limits, and bulk-item outcomes.
+- Successful-response-time statistics for the last hour: average,
+  approximate p95, maximum, latest attempt, and sample count.
+- A memory-only diagnostics log containing up to 250 individual HTTP attempts
+  from the last 60 minutes. Each entry records a sequence number, age, method,
+  request type, outcome, response time, retry state, and safe bulk summaries.
+- Three integration-wide diagnostic sensors for total requests, requests in
+  the last hour, and average response time in the last hour.
+
+### Behavior changes
+
+- Retries and bounded single-resource fallbacks are identified on the actual
+  HTTP attempt instead of being represented only by aggregate counters.
+- Successful PointT bulk envelopes keep their outer HTTP status separate from
+  aggregated `serverStatus` and inner gateway response statuses.
+- All three new diagnostic entities are disabled by default and cause no
+  additional cloud requests when enabled.
+
+### Security and compatibility
+
+- Recent request diagnostics never retain URLs, resource paths, gateway or
+  config-entry identifiers, tokens, request bodies, response payloads, or
+  resource values.
+- History is bounded by age and count, held only in memory, and cleared on
+  every Home Assistant restart.
+- Existing device identifiers, entity IDs, polling intervals, controls, and
+  dashboards remain unchanged.
+
+### Validation
+
+- 483 automated tests pass with 95.18% branch coverage, including rolling
+  expiry, bounded history, retry and fallback accounting, bulk status
+  separation, privacy, and disabled-by-default entity behavior.
+- Ruff formatting and linting and strict Mypy type checking pass.
+
+### Upgrade notes and limitations
+
+- Restart Home Assistant after updating.
+- Enable the optional request diagnostic sensors manually under **Settings →
+  Devices & services → Entities** if continuous visibility is wanted.
+- The p95 value is a bounded histogram estimate, not a raw-request percentile.
+- Metrics restart at zero when Home Assistant restarts and are not a billing
+  or provider quota counter.
+
 ## [0.5.5] - 2026-08-30
 
 Version 0.5.5 gives known PointT percentage measurements their correct Home

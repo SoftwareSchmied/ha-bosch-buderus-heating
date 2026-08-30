@@ -379,7 +379,6 @@ async def _recover_invalid_bulk_results(
             continue
 
         used += 1
-        client.metrics.record_fallback_request(fallback_reason)
         _LOGGER.debug(
             "Retrying recoverable PointT discovery item %s with one individual "
             "GET: reason=%s, server_status=%s, gateway_status=%s, error=%s",
@@ -390,7 +389,9 @@ async def _recover_invalid_bulk_results(
             result.error,
         )
         try:
-            resource = await client.get_resource(gateway_id, result.path)
+            resource = await client.get_resource(
+                gateway_id, result.path, fallback_reason=fallback_reason
+            )
         except AuthenticationError, RateLimited:
             raise
         except ResourceError as err:

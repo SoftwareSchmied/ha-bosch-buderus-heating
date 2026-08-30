@@ -136,6 +136,15 @@ async def test_client_reads_all_supported_endpoints_and_encodes_paths() -> None:
     assert metrics["bulk_resource_paths_total"] == 3
     assert metrics["bulk_items_successful"] == 3
     assert metrics["maximum_bulk_size"] == 2
+    bulk_events = [
+        event for event in metrics["recent_requests"] if event["type"] == "bulk"
+    ]
+    assert [event["bulk_size"] for event in bulk_events] == [2, 1]
+    assert [event["bulk_items_successful"] for event in bulk_events] == [2, 1]
+    assert all(
+        event["bulk_server_statuses"] == {"200": event["bulk_size"]}
+        for event in bulk_events
+    )
     assert requests == [
         (
             "GET",
@@ -167,6 +176,36 @@ async def test_client_retries_once_with_forced_token_refresh() -> None:
 
     assert provider.calls == [False, True]
     assert seen == ["Bearer stale", "Bearer fresh"]
+    metrics = client.metrics.snapshot()
+    assert metrics["retry_attempts"] == 1
+    assert [event["http_status"] for event in metrics["recent_requests"]] == [
+        401,
+        200,
+    ]
+    assert metrics["recent_requests"][1]["attempt"] == 2
+    assert metrics["recent_requests"][1]["retry"] is True
+
+
+async def test_client_marks_individual_bulk_fallback_without_exposing_path() -> None:
+    async def handler(_request: web.Request) -> web.Response:
+        return web.json_response({"value": 20.5})
+
+    async with (
+        serve([("GET", "/gateways/{id}/resource/{tail:.*}", handler)]) as url,
+        aiohttp.ClientSession() as session,
+    ):
+        client = PointTClient(session, "token", base_url=url)
+        await client.get_resource(
+            "private-gateway", "/private/resource", fallback_reason="gateway_5xx"
+        )
+
+    metrics = client.metrics.snapshot()
+    assert metrics["fallback_requests"] == 1
+    assert metrics["fallback_requests_by_reason"] == {"gateway_5xx": 1}
+    assert metrics["rolling_60_minutes"]["requests_by_type"] == {"fallback": 1}
+    event = metrics["recent_requests"][0]
+    assert event["fallback_reason"] == "gateway_5xx"
+    assert "private" not in repr(event)
 
 
 async def test_client_writes_value_once_and_parses_optional_echo() -> None:
@@ -271,6 +310,10 @@ async def test_transport_retries_temporary_service_failure() -> None:
         "service_unavailable": 1,
         "success": 1,
     }
+    recent = transport.metrics.snapshot()["recent_requests"]
+    assert [event["attempt"] for event in recent] == [1, 2]
+    assert [event["retry"] for event in recent] == [False, True]
+    assert [event["http_status"] for event in recent] == [503, 200]
 
 
 @pytest.mark.parametrize(

@@ -84,7 +84,13 @@ class PointTClient:
         )
         return parse_part_number(payload)
 
-    async def get_resource(self, gateway_id: str, path: str) -> Resource:
+    async def get_resource(
+        self,
+        gateway_id: str,
+        path: str,
+        *,
+        fallback_reason: str | None = None,
+    ) -> Resource:
         """Read and parse one resource path."""
         gateway = _encode_gateway_id(gateway_id)
         normalized = normalize_resource_path(path)
@@ -96,6 +102,8 @@ class PointTClient:
             f"gateways/{gateway}/resource/{encoded_path}",
             retryable=True,
             resource_path=normalized,
+            request_type="fallback" if fallback_reason is not None else None,
+            fallback_reason=fallback_reason,
         )
         return parse_resource(payload, path=normalized)
 
@@ -174,7 +182,7 @@ class PointTClient:
                     "resourcePaths": list(chunk),
                 }
             ]
-            payload = await self._request(
+            payload, request_sequence = await self._request_with_sequence(
                 "POST", "bulk", json_body=body, retryable=True
             )
             parsed = parse_batch_response(
@@ -185,6 +193,7 @@ class PointTClient:
                 usable=tuple(item.ok for item in parsed),
                 server_statuses=tuple(item.server_status for item in parsed),
                 gateway_statuses=tuple(item.gateway_status for item in parsed),
+                request_sequence=request_sequence,
             )
             results.extend(parsed)
         return tuple(results)
@@ -197,26 +206,55 @@ class PointTClient:
         json_body: JsonValue = None,
         retryable: bool,
         resource_path: str | None = None,
+        request_type: str | None = None,
+        fallback_reason: str | None = None,
     ) -> JsonValue:
+        payload, _request_sequence = await self._request_with_sequence(
+            method,
+            path,
+            json_body=json_body,
+            retryable=retryable,
+            resource_path=resource_path,
+            request_type=request_type,
+            fallback_reason=fallback_reason,
+        )
+        return payload
+
+    async def _request_with_sequence(
+        self,
+        method: str,
+        path: str,
+        *,
+        json_body: JsonValue = None,
+        retryable: bool,
+        resource_path: str | None = None,
+        request_type: str | None = None,
+        fallback_reason: str | None = None,
+    ) -> tuple[JsonValue, int]:
         token = await self._token_provider.get_access_token()
         try:
-            return await self._transport.request_json(
+            return await self._transport.request_json_with_sequence(
                 method,
                 path,
                 token,
                 json_body=json_body,
                 retryable=retryable,
                 resource_path=resource_path,
+                request_type=request_type,
+                fallback_reason=fallback_reason,
             )
         except AccessTokenRejected:
             token = await self._token_provider.get_access_token(force_refresh=True)
-            return await self._transport.request_json(
+            return await self._transport.request_json_with_sequence(
                 method,
                 path,
                 token,
                 json_body=json_body,
                 retryable=retryable,
                 resource_path=resource_path,
+                request_type=request_type,
+                fallback_reason=fallback_reason,
+                attempt_offset=1,
             )
 
 

@@ -87,8 +87,38 @@ class PointTTransport:
         json_body: JsonValue = None,
         retryable: bool = False,
         resource_path: str | None = None,
+        request_type: str | None = None,
+        fallback_reason: str | None = None,
+        attempt_offset: int = 0,
     ) -> JsonValue:
         """Perform one JSON request and optionally retry temporary read failures."""
+        payload, _request_sequence = await self.request_json_with_sequence(
+            method,
+            path,
+            access_token,
+            json_body=json_body,
+            retryable=retryable,
+            resource_path=resource_path,
+            request_type=request_type,
+            fallback_reason=fallback_reason,
+            attempt_offset=attempt_offset,
+        )
+        return payload
+
+    async def request_json_with_sequence(
+        self,
+        method: str,
+        path: str,
+        access_token: str,
+        *,
+        json_body: JsonValue = None,
+        retryable: bool = False,
+        resource_path: str | None = None,
+        request_type: str | None = None,
+        fallback_reason: str | None = None,
+        attempt_offset: int = 0,
+    ) -> tuple[JsonValue, int]:
+        """Perform one JSON request and return its metrics sequence number."""
         attempts = self._retry_policy.attempts if retryable else 1
         last_error: RequestTimeout | ServiceUnavailable | None = None
         for attempt in range(attempts):
@@ -99,12 +129,14 @@ class PointTTransport:
                     access_token,
                     json_body=json_body,
                     resource_path=resource_path,
+                    request_type=request_type,
+                    fallback_reason=fallback_reason,
+                    attempt=attempt_offset + attempt + 1,
                 )
             except (RequestTimeout, ServiceUnavailable) as err:
                 last_error = err
                 if attempt + 1 == attempts:
                     raise
-                self.metrics.record_retry()
                 delay = min(
                     self._retry_policy.base_delay * (2**attempt),
                     self._retry_policy.maximum_delay,
@@ -122,10 +154,14 @@ class PointTTransport:
         *,
         json_body: JsonValue,
         resource_path: str | None,
-    ) -> JsonValue:
+        request_type: str | None,
+        fallback_reason: str | None,
+        attempt: int,
+    ) -> tuple[JsonValue, int]:
         started = monotonic()
         status: int | None = None
         outcome = "success"
+        result: JsonValue = None
         try:
             url = f"{self._base_url}/{path.lstrip('/')}"
             headers = {
@@ -152,8 +188,9 @@ class PointTTransport:
                             response.status, response.headers, resource_path
                         )
                     if response.status == 204:
-                        return None
-                    raw = await response.read()
+                        raw = b""
+                    else:
+                        raw = await response.read()
             except TimeoutError as err:
                 raise RequestTimeout("PointT request timed out") from err
             except aiohttp.ClientError as err:
@@ -161,13 +198,12 @@ class PointTTransport:
 
             if len(raw) > MAX_RESPONSE_BYTES:
                 raise InvalidPayload("PointT response exceeded the size limit")
-            if not raw:
-                return None
-            try:
-                parsed: object = json.loads(raw)
-            except (UnicodeDecodeError, json.JSONDecodeError) as err:
-                raise InvalidPayload("PointT response was not valid JSON") from err
-            return _validate_json(parsed)
+            if raw:
+                try:
+                    parsed: object = json.loads(raw)
+                except (UnicodeDecodeError, json.JSONDecodeError) as err:
+                    raise InvalidPayload("PointT response was not valid JSON") from err
+                result = _validate_json(parsed)
         except AccessTokenRejected:
             outcome = "authentication_error"
             raise
@@ -193,7 +229,7 @@ class PointTTransport:
             outcome = "internal_error"
             raise
         finally:
-            self.metrics.record_request(
+            request_sequence = self.metrics.record_request(
                 category=request_category(path),
                 method=method,
                 status=status,
@@ -204,7 +240,12 @@ class PointTTransport:
                     if request_category(path) == "bulk"
                     else 0
                 ),
+                request_type=request_type,
+                attempt=attempt,
+                retry=attempt > 1,
+                fallback_reason=fallback_reason,
             )
+        return result, request_sequence
 
     @staticmethod
     def _raise_http_error(
@@ -234,7 +275,7 @@ class PointTTransport:
 def _validate_json(value: object) -> JsonValue:
     if isinstance(value, float) and not math.isfinite(value):
         raise InvalidPayload("PointT response contained a non-finite number")
-    if value is None or isinstance(value, (str, int, float, bool)):
+    if value is None or isinstance(value, str | int | float | bool):
         return value
     if isinstance(value, list):
         return [_validate_json(item) for item in value]

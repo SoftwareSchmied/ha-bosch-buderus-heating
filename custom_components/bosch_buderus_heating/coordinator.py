@@ -773,11 +773,15 @@ class BoschBuderusDataUpdateCoordinator(
         """Read a bounded, preselected set of paths individually."""
         results: list[BatchItemResult] = []
         for path in paths:
-            self.client.metrics.record_fallback_request(
+            fallback_reason = (
                 reasons.get(path, "batch_failure") if reasons else "batch_failure"
             )
             try:
-                resource = await self.client.get_resource(self.gateway.gateway_id, path)
+                resource = await self.client.get_resource(
+                    self.gateway.gateway_id,
+                    path,
+                    fallback_reason=fallback_reason,
+                )
             except AuthenticationError as err:
                 self._record_capability(
                     path, "authentication_error", SnapshotSource.FALLBACK

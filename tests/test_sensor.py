@@ -33,10 +33,12 @@ from custom_components.bosch_buderus_heating.pointt import (
     Resource,
     ResourceMetadata,
 )
+from custom_components.bosch_buderus_heating.pointt.metrics import RequestMetrics
 from custom_components.bosch_buderus_heating.sensor import (
     BoschBuderusActiveFaultsSensor,
     BoschBuderusActiveNotificationsSensor,
     BoschBuderusNextHolidaySensor,
+    BoschBuderusRequestMetricSensor,
     BoschBuderusSensor,
     _energy_values,
     _measurement_attributes,
@@ -1254,17 +1256,59 @@ async def test_platform_adds_every_discovered_safe_scalar(
     sensor = _sensor(hass, safe)
     sensor.coordinator.resources = {safe.path: safe, private.path: private}
     entry = SimpleNamespace(
-        runtime_data=SimpleNamespace(coordinators=(sensor.coordinator,))
+        entry_id="entry-one",
+        runtime_data=SimpleNamespace(
+            client=SimpleNamespace(metrics=RequestMetrics()),
+            coordinators=(sensor.coordinator,),
+        ),
     )
     added: list[object] = []
 
     await async_setup_entry(hass, entry, added.extend)
 
-    assert len(added) == 3
-    assert isinstance(added[0], BoschBuderusActiveFaultsSensor)
-    assert isinstance(added[1], BoschBuderusActiveNotificationsSensor)
-    assert isinstance(added[2], BoschBuderusSensor)
-    assert added[2].entity_description.resource_path == safe.path
+    assert len(added) == 6
+    metric_sensors = [
+        entity
+        for entity in added
+        if isinstance(entity, BoschBuderusRequestMetricSensor)
+    ]
+    assert len(metric_sensors) == 3
+    assert all(
+        not entity.entity_description.entity_registry_enabled_default
+        and entity.entity_description.entity_category is EntityCategory.DIAGNOSTIC
+        and entity.device_info is None
+        for entity in metric_sensors
+    )
+    metrics_by_key = {
+        entity.entity_description.key: entity for entity in metric_sensors
+    }
+    assert metrics_by_key["pointt_api_requests_total"].native_value == 0
+    assert metrics_by_key["pointt_api_requests_last_hour"].native_value == 0
+    assert metrics_by_key["pointt_api_response_time_last_hour"].native_value is None
+    assert (
+        metrics_by_key["pointt_api_requests_total"].extra_state_attributes[
+            "requests_successful"
+        ]
+        == 0
+    )
+    assert (
+        metrics_by_key["pointt_api_requests_last_hour"].extra_state_attributes[
+            "requests_by_type"
+        ]
+        == {}
+    )
+    assert (
+        metrics_by_key["pointt_api_response_time_last_hour"].extra_state_attributes[
+            "successful_response_time_samples"
+        ]
+        == 0
+    )
+    assert any(isinstance(entity, BoschBuderusActiveFaultsSensor) for entity in added)
+    assert any(
+        isinstance(entity, BoschBuderusActiveNotificationsSensor) for entity in added
+    )
+    dynamic = next(entity for entity in added if isinstance(entity, BoschBuderusSensor))
+    assert dynamic.entity_description.resource_path == safe.path
 
 
 async def test_next_holiday_sensor_exposes_upcoming_period(
@@ -1287,7 +1331,13 @@ async def test_next_holiday_sensor_exposes_upcoming_period(
     coordinator.data = {
         holiday.path: ResourceSnapshot(holiday, True, datetime.now(UTC))
     }
-    entry = SimpleNamespace(runtime_data=SimpleNamespace(coordinators=(coordinator,)))
+    entry = SimpleNamespace(
+        entry_id="entry-one",
+        runtime_data=SimpleNamespace(
+            client=SimpleNamespace(metrics=RequestMetrics()),
+            coordinators=(coordinator,),
+        ),
+    )
     added: list[object] = []
 
     await async_setup_entry(hass, entry, added.extend)
