@@ -98,6 +98,23 @@ Due groups are combined into batch requests of no more than 30 resources.
 HTTP 429 pauses further requests temporarily. Successful partial values and
 the most recent valid state are retained during partial failures.
 
+## Optional request diagnostics
+
+The following integration-wide entities are created once per config entry and
+are disabled by default. They are not assigned to an individual gateway,
+because their values cover every gateway selected for that account.
+
+| Entity | HA type | Value | Default | Additional cloud requests |
+|---|---|---|:---:|:---:|
+| PointT API requests total | Diagnostic sensor | Actual HTTP attempts since the integration started | Disabled | None |
+| PointT API requests – last hour | Diagnostic sensor | Actual HTTP attempts in rolling minute buckets | Disabled | None |
+| PointT API response time – last hour | Duration diagnostic sensor | Average successful response time; p95, maximum, latest, and sample count as attributes | Disabled | None |
+
+Bulk calls, single reads, fallback reads, writes, and retries are counted by
+the HTTP transport. A retry therefore adds another request. The full sanitized
+recent-attempt list is available in downloaded Home Assistant diagnostics, not
+as entity attributes. See [Diagnostics and request metrics](diagnostics.md).
+
 ## Faults and notifications
 
 Fault entities are created once per gateway and become available when at least

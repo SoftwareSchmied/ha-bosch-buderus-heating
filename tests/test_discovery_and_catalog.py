@@ -122,8 +122,9 @@ async def test_discovery_recovers_malformed_bulk_item_with_individual_get() -> N
     )
 
     assert resources == {"/notifications": notifications}
-    client.get_resource.assert_awaited_once_with("gateway", "/notifications")
-    assert client.metrics.snapshot()["fallback_requests"] == 1
+    client.get_resource.assert_awaited_once_with(
+        "gateway", "/notifications", fallback_reason="malformed"
+    )
 
 
 async def test_discovery_recovers_server_and_gateway_5xx_items() -> None:
@@ -157,13 +158,9 @@ async def test_discovery_recovers_server_and_gateway_5xx_items() -> None:
 
     assert tuple(resources) == ("/system", "/gateway")
     assert client.get_resource.await_args_list == [
-        call("gateway", "/system"),
-        call("gateway", "/gateway"),
+        call("gateway", "/system", fallback_reason="server_5xx"),
+        call("gateway", "/gateway", fallback_reason="gateway_5xx"),
     ]
-    assert client.metrics.snapshot()["fallback_requests_by_reason"] == {
-        "gateway_5xx": 1,
-        "server_5xx": 1,
-    }
 
 
 async def test_discovery_recovers_unreadable_bulk_envelope_with_individual_get() -> (
@@ -185,10 +182,9 @@ async def test_discovery_recovers_unreadable_bulk_envelope_with_individual_get()
 
     assert resources == {"/root": root, "/root/brand": brand}
     assert client.get_resource.await_args_list == [
-        call("gateway", "/root"),
-        call("gateway", "/root/brand"),
+        call("gateway", "/root", fallback_reason="malformed"),
+        call("gateway", "/root/brand", fallback_reason="malformed"),
     ]
-    assert client.metrics.snapshot()["fallback_requests"] == 2
 
 
 async def test_discovery_caps_fallback_for_unreadable_bulk_envelope() -> None:
@@ -197,15 +193,18 @@ async def test_discovery_caps_fallback_for_unreadable_bulk_envelope() -> None:
     client.get_resources_bulk.side_effect = InvalidBatchEnvelope(
         "Bulk response did not contain the requested gateway"
     )
-    client.get_resource.side_effect = lambda gateway, path: Resource(path=path)
+    client.get_resource.side_effect = lambda gateway, path, **kwargs: Resource(
+        path=path
+    )
     roots = tuple(f"/root{index}" for index in range(MAX_DISCOVERY_FALLBACK_PATHS + 1))
 
     resources = await async_discover_resources(client, "gateway", roots=roots)
 
     assert len(resources) == MAX_DISCOVERY_FALLBACK_PATHS
     assert client.get_resource.await_count == MAX_DISCOVERY_FALLBACK_PATHS
-    assert client.metrics.snapshot()["fallback_requests"] == (
-        MAX_DISCOVERY_FALLBACK_PATHS
+    assert all(
+        call.kwargs == {"fallback_reason": "malformed"}
+        for call in client.get_resource.await_args_list
     )
 
 

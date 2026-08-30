@@ -238,7 +238,10 @@
       "pressure_status": { "name": "Systemdruckstatus", "state": { "critical_low": "Kritisch niedrig", "low": "Niedrig", "normal": "Normal", "high": "Hoch", "critical_high": "Kritisch hoch" } },
       "active_faults": { "name": "Aktive Störungen" },
       "active_notifications": { "name": "Aktive Meldungen" },
-      "next_holiday": { "name": "Nächster Urlaub" }
+      "next_holiday": { "name": "Nächster Urlaub" },
+      "pointt_api_requests_total": { "name": "PointT-API-Aufrufe gesamt" },
+      "pointt_api_requests_last_hour": { "name": "PointT-API-Aufrufe – letzte Stunde" },
+      "pointt_api_response_time_last_hour": { "name": "PointT-API-Antwortzeit – letzte Stunde" }
     },
     "binary_sensor": {
       "holiday_active": { "name": "Urlaubsmodus aktiv" },

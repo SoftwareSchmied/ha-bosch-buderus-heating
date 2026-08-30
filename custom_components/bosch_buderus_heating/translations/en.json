@@ -238,7 +238,10 @@
       "pressure_status": { "name": "System pressure status", "state": { "critical_low": "Critically low", "low": "Low", "normal": "Normal", "high": "High", "critical_high": "Critically high" } },
       "active_faults": { "name": "Active faults" },
       "active_notifications": { "name": "Active notifications" },
-      "next_holiday": { "name": "Next holiday" }
+      "next_holiday": { "name": "Next holiday" },
+      "pointt_api_requests_total": { "name": "PointT API requests total" },
+      "pointt_api_requests_last_hour": { "name": "PointT API requests – last hour" },
+      "pointt_api_response_time_last_hour": { "name": "PointT API response time – last hour" }
     },
     "binary_sensor": {
       "holiday_active": { "name": "Holiday mode active" },

@@ -88,8 +88,9 @@ before.
 - Last confirmed values remain available during temporary cloud failures
 - Reauthentication, gateway selection, resource rediscovery, and selectable
   polling profiles
-- Privacy-preserving Home Assistant diagnostics with request and capability
-  counters
+- Privacy-preserving Home Assistant diagnostics with capability counters,
+  rolling 60-minute request and latency metrics, and a bounded sanitized log
+  of individual HTTP attempts
 - German and English entity names and state translations
 
 Normal measurements and everyday controls are enabled on a fresh installation.
