@@ -5,9 +5,12 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
-The next release adds a transparent calculated dew point for heating circuits
+## [0.7.0-beta.1] - 2026-09-03
+
+This beta adds a transparent calculated dew point for heating circuits
 that report both room temperature and relative humidity, without adding PointT
-traffic.
+traffic. It is intended for comparison with the controller's internal dew-point
+display before the feature is included in a stable release.
 
 ### Added
 
@@ -38,6 +41,8 @@ traffic.
 
 ### Validation
 
+- 504 automated tests pass with 95.13% branch coverage.
+- Ruff formatting and linting and strict Mypy validation pass.
 - Automated tests cover the Magnus calculation, invalid inputs, exact
   same-circuit capability matching, availability, Home Assistant metadata,
   attributes, and direct-versus-calculated electricity provenance.
