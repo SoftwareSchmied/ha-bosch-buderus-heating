@@ -5,6 +5,51 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+The next release adds a transparent calculated dew point for heating circuits
+that report both room temperature and relative humidity, without adding PointT
+traffic.
+
+### Added
+
+- A **Dew point (calculated)** temperature sensor for every heating circuit
+  with compatible `roomtemperature` and `actualHumidity` capabilities.
+- Source temperature, source humidity, calculation method, and Magnus
+  coefficients as attributes of the calculated dew-point sensor.
+- A `value_source` attribute on total electricity consumption to distinguish a
+  direct PointT value from the existing complete compressor-plus-auxiliary-
+  heater fallback.
+
+### Behavior changes
+
+- Purely derived entity names consistently use the suffix **(calculated)** in
+  English and **(berechnet)** in German. The existing system-pressure status
+  now follows this convention.
+- The dew-point sensor becomes unavailable with either source resource and
+  never substitutes a room setpoint for a measured room temperature.
+
+### Security and compatibility
+
+- The calculation runs locally from already polled values and creates no new
+  cloud request or write.
+- Existing device identifiers and entity unique IDs remain unchanged. The
+  system-pressure status receives only a display-name clarification.
+- Invalid, non-finite, sentinel, or implausible input values produce no
+  calculated measurement.
+
+### Validation
+
+- Automated tests cover the Magnus calculation, invalid inputs, exact
+  same-circuit capability matching, availability, Home Assistant metadata,
+  attributes, and direct-versus-calculated electricity provenance.
+
+### Upgrade notes and limitations
+
+- The calculated dew point is not the controller's private dew-point value or
+  cooling-flow setpoint and does not include an unknown installer safety
+  offset or minimum-flow-temperature limit.
+- The entity is created only where PointT exposes both required measurements
+  with the expected type and unit.
+
 ## [0.6.0] - 2026-08-30
 
 Version 0.6.0 makes PointT cloud traffic and response behavior observable

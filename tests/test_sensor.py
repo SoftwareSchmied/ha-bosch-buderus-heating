@@ -132,6 +132,56 @@ def _pressure_sensors(
     return pressure_sensor, status_sensor
 
 
+def _dew_point_sensor(
+    hass: HomeAssistant,
+    *,
+    circuit: str = "hc1",
+    room_temperature: object = 25.0,
+    humidity: object = 65.0,
+    temperature_available: bool = True,
+    humidity_available: bool = True,
+) -> BoschBuderusSensor:
+    temperature = Resource(
+        path=f"/heatingCircuits/{circuit}/roomtemperature",
+        value=room_temperature,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
+    )
+    humidity_resource = Resource(
+        path=f"/heatingCircuits/{circuit}/actualHumidity",
+        value=humidity,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="%"),
+    )
+    resources = {
+        temperature.path: temperature,
+        humidity_resource.path: humidity_resource,
+    }
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    coordinator = BoschBuderusDataUpdateCoordinator(
+        hass,
+        AsyncMock(),
+        Gateway("gateway-one", device_type="MX300"),
+        entry,
+    )
+    coordinator.resources = resources
+    now = datetime.now(UTC)
+    coordinator.data = {
+        temperature.path: ResourceSnapshot(temperature, temperature_available, now),
+        humidity_resource.path: ResourceSnapshot(
+            humidity_resource, humidity_available, now
+        ),
+    }
+    coordinator.last_update_success = True
+    description = next(
+        item
+        for item in build_sensor_descriptions(resources)
+        if item.value_kind == "dew_point"
+    )
+    return BoschBuderusSensor(coordinator, description)
+
+
 def test_temperature_sensor_value_identity_and_device(hass: HomeAssistant) -> None:
     resource = Resource(
         path="/heatSources/actualSupplyTemperature",
@@ -854,7 +904,12 @@ def test_energy_resources_expand_and_validate_totals(hass: HomeAssistant) -> Non
         "outputProduced",
         "total_electricity",
     }
-    assert _sensor(hass, resource, value_key="total_electricity").native_value == 42.58
+    total = _sensor(hass, resource, value_key="total_electricity")
+    assert total.native_value == 42.58
+    assert total.extra_state_attributes == {
+        "value_source": "calculated",
+        "calculation": "compressor + auxiliary_heater",
+    }
     assert _sensor(hass, resource, value_key="outputProduced").native_value == 98.15
     assert _sensor(
         hass, resource, value_key="environmental_energy"
@@ -878,7 +933,9 @@ def test_energy_resources_prefer_direct_total_without_duplicate(
 
     assert [item.value_key for item in descriptions].count("total_electricity") == 1
     assert not any(item.value_key == "electricity" for item in descriptions)
-    assert _sensor(hass, resource, value_key="total_electricity").native_value == 48.5
+    total = _sensor(hass, resource, value_key="total_electricity")
+    assert total.native_value == 48.5
+    assert total.extra_state_attributes == {"value_source": "direct"}
 
 
 def test_environmental_energy_requires_complete_non_negative_balance(
@@ -1005,7 +1062,9 @@ def test_system_pressure_exposes_validated_limits_and_derived_status(
     assert status_sensor is not None
     assert status_sensor.available
     assert status_sensor.native_value == "normal"
-    assert status_sensor.name == "Heat generator \N{EN DASH} System pressure status"
+    assert status_sensor.name == (
+        "Heat generator \N{EN DASH} System pressure status (calculated)"
+    )
     assert status_sensor.entity_description.translation_key == "pressure_status"
 
     now = datetime.now(UTC)
@@ -1069,6 +1128,135 @@ def test_pressure_status_becomes_unavailable_with_range_resource(
     assert status_sensor is not None
     assert not status_sensor.available
     assert status_sensor.native_value is None
+
+
+def test_calculated_dew_point_uses_same_circuit_measurements(
+    hass: HomeAssistant,
+) -> None:
+    sensor = _dew_point_sensor(hass)
+
+    assert sensor.available
+    assert sensor.native_value == pytest.approx(17.96)
+    assert sensor.name == "Heating circuit 1 \N{EN DASH} Dew point (calculated)"
+    assert sensor.unique_id == ("gateway-one:heatingCircuits:hc1:calculated_dew_point")
+    assert sensor.entity_description.device_class is SensorDeviceClass.TEMPERATURE
+    assert sensor.entity_description.state_class is SensorStateClass.MEASUREMENT
+    assert (
+        sensor.entity_description.native_unit_of_measurement
+        is UnitOfTemperature.CELSIUS
+    )
+    assert sensor.entity_description.suggested_display_precision == 1
+    assert sensor.extra_state_attributes == {
+        "source_room_temperature_c": 25.0,
+        "source_relative_humidity_percent": 65.0,
+        "calculation_method": "magnus",
+        "magnus_a": 17.62,
+        "magnus_b_c": 243.12,
+    }
+
+
+def test_calculated_dew_point_uses_localized_german_name(
+    hass: HomeAssistant,
+) -> None:
+    hass.config.language = "de"
+
+    sensor = _dew_point_sensor(hass)
+
+    assert sensor.name == "Heizkreis 1 \N{EN DASH} Taupunkt (berechnet)"
+
+
+def test_calculated_dew_point_is_created_for_each_complete_circuit() -> None:
+    resources: dict[str, Resource] = {}
+    for circuit in ("hc1", "hc2"):
+        temperature = Resource(
+            path=f"/heatingCircuits/{circuit}/roomtemperature",
+            value=21.0,
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
+        )
+        humidity = Resource(
+            path=f"/heatingCircuits/{circuit}/actualHumidity",
+            value=50.0,
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="floatValue", unit="%"),
+        )
+        resources[temperature.path] = temperature
+        resources[humidity.path] = humidity
+
+    descriptions = tuple(
+        item
+        for item in build_sensor_descriptions(resources)
+        if item.value_kind == "dew_point"
+    )
+
+    assert [item.unique_key for item in descriptions] == [
+        "heatingCircuits:hc1:calculated_dew_point",
+        "heatingCircuits:hc2:calculated_dew_point",
+    ]
+    assert [item.secondary_resource_path for item in descriptions] == [
+        "/heatingCircuits/hc1/actualHumidity",
+        "/heatingCircuits/hc2/actualHumidity",
+    ]
+
+
+def test_calculated_dew_point_requires_both_valid_capabilities() -> None:
+    temperature = Resource(
+        path="/heatingCircuits/hc1/roomtemperature",
+        value=25.0,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
+    )
+    humidity = Resource(
+        path="/heatingCircuits/hc1/actualHumidity",
+        value=65.0,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="%"),
+    )
+    other_circuit_humidity = Resource(
+        path="/heatingCircuits/hc2/actualHumidity",
+        value=55.0,
+        has_value=True,
+        metadata=humidity.metadata,
+    )
+    wrong_unit = Resource(
+        path=humidity.path,
+        value=65.0,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
+    )
+
+    for resources in (
+        {temperature.path: temperature},
+        {
+            temperature.path: temperature,
+            other_circuit_humidity.path: other_circuit_humidity,
+        },
+        {temperature.path: temperature, wrong_unit.path: wrong_unit},
+    ):
+        assert not any(
+            item.value_kind == "dew_point"
+            for item in build_sensor_descriptions(resources)
+        )
+
+
+def test_calculated_dew_point_follows_input_availability(
+    hass: HomeAssistant,
+) -> None:
+    sensor = _dew_point_sensor(hass, humidity_available=False)
+
+    assert not sensor.available
+    assert sensor.native_value is None
+    assert sensor.extra_state_attributes is None
+
+
+def test_calculated_dew_point_rejects_invalid_runtime_value(
+    hass: HomeAssistant,
+) -> None:
+    sensor = _dew_point_sensor(hass, humidity=0.0)
+
+    assert sensor.available
+    assert sensor.native_value is None
+    assert sensor.extra_state_attributes is None
 
 
 def test_entity_categories_follow_home_assistant_sections() -> None:

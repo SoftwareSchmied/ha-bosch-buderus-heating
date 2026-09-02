@@ -35,6 +35,12 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import BoschBuderusConfigEntry
 from .coordinator import BoschBuderusDataUpdateCoordinator, ResourceSnapshot
+from .derived import (
+    MAGNUS_A,
+    MAGNUS_B_CELSIUS,
+    DewPointCalculation,
+    calculate_dew_point,
+)
 from .device import device_info_for_resource, grouped_entity_name
 from .enum_translation import enum_value_to_ha
 from .faults import (
@@ -78,6 +84,7 @@ type ValueKind = Literal[
     "environmental_energy",
     "system_info",
     "pressure_status",
+    "dew_point",
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -117,6 +124,9 @@ _REQUEST_METRIC_DESCRIPTIONS = (
 
 _SYSTEM_PRESSURE_PATH = "/heatSources/systemPressure"
 _SYSTEM_PRESSURE_RANGE_PATH = "/heatSources/systemPressureRange"
+_HEATING_CIRCUIT_ROOM_TEMPERATURE = re.compile(
+    r"^/heatingCircuits/(?P<circuit>[^/]+)/roomtemperature$"
+)
 _ENERGY_BALANCE_EPSILON = 1e-9
 _PRESSURE_STATUS_OPTIONS = (
     "critical_low",
@@ -319,6 +329,7 @@ class BoschBuderusSensorEntityDescription(SensorEntityDescription):
     value_key: str | None = None
     value_scale: float = 1.0
     unique_key: str
+    secondary_resource_path: str | None = None
 
 
 _LEGACY_KEYS: dict[tuple[str, str | None], str] = {
@@ -677,6 +688,7 @@ def build_sensor_descriptions(
         and _pressure_limits(pressure_range) is not None
     ):
         descriptions.append(_pressure_status_description())
+    descriptions.extend(_dew_point_descriptions(resources))
     return tuple(descriptions)
 
 
@@ -684,7 +696,7 @@ def _pressure_status_description() -> BoschBuderusSensorEntityDescription:
     """Describe the derived status only available with validated thresholds."""
     return BoschBuderusSensorEntityDescription(
         key="system_pressure_status",
-        name="Systemdruckstatus",
+        name="System pressure status (calculated)",
         resource_path=_SYSTEM_PRESSURE_PATH,
         value_kind="pressure_status",
         value_key="pressure_status",
@@ -693,6 +705,44 @@ def _pressure_status_description() -> BoschBuderusSensorEntityDescription:
         options=list(_PRESSURE_STATUS_OPTIONS),
         translation_key="pressure_status",
     )
+
+
+def _dew_point_descriptions(
+    resources: Mapping[str, Resource],
+) -> tuple[BoschBuderusSensorEntityDescription, ...]:
+    """Describe one calculated dew-point sensor per complete circuit pair."""
+    descriptions: list[BoschBuderusSensorEntityDescription] = []
+    for temperature_path in sorted(resources):
+        match = _HEATING_CIRCUIT_ROOM_TEMPERATURE.fullmatch(temperature_path)
+        if match is None:
+            continue
+        humidity_path = f"/heatingCircuits/{match.group('circuit')}/actualHumidity"
+        temperature = resources[temperature_path]
+        humidity = resources.get(humidity_path)
+        if (
+            humidity is None
+            or not supports_entity(temperature)
+            or not supports_entity(humidity)
+        ):
+            continue
+        key = f"heatingCircuits:{match.group('circuit')}:calculated_dew_point"
+        descriptions.append(
+            BoschBuderusSensorEntityDescription(
+                key=key,
+                name="Dew point (calculated)",
+                resource_path=temperature_path,
+                secondary_resource_path=humidity_path,
+                value_kind="dew_point",
+                value_key="calculated_dew_point",
+                unique_key=key,
+                native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+                device_class=SensorDeviceClass.TEMPERATURE,
+                state_class=SensorStateClass.MEASUREMENT,
+                translation_key="calculated_dew_point",
+                suggested_display_precision=1,
+            )
+        )
+    return tuple(descriptions)
 
 
 def _energy_descriptions(
@@ -816,11 +866,17 @@ class BoschBuderusSensor(
                 "environmental_energy",
                 language=language,
             )
+        elif description.value_kind == "dew_point":
+            display_name = (
+                "Taupunkt (berechnet)"
+                if language.casefold().startswith("de")
+                else "Dew point (calculated)"
+            )
         elif description.value_kind == "pressure_status":
             display_name = (
-                "Systemdruckstatus"
+                "Systemdruckstatus (berechnet)"
                 if language.casefold().startswith("de")
-                else "System pressure status"
+                else "System pressure status (calculated)"
             )
         else:
             display_name = resource_name(
@@ -841,6 +897,9 @@ class BoschBuderusSensor(
         snapshot = self._snapshot
         if not (super().available and snapshot is not None and snapshot.available):
             return False
+        if self.entity_description.value_kind == "dew_point":
+            secondary = self._secondary_snapshot
+            return secondary is not None and secondary.available
         if self.entity_description.value_kind != "pressure_status":
             return True
         range_snapshot = self._pressure_range_snapshot
@@ -857,6 +916,9 @@ class BoschBuderusSensor(
             return None
         resource = snapshot.resource
         description = self.entity_description
+        if description.value_kind == "dew_point":
+            calculation = self._dew_point_calculation
+            return calculation.dew_point_celsius if calculation is not None else None
         if description.value_kind == "pressure_status":
             range_snapshot = self._pressure_range_snapshot
             pressure = _pressure_number(resource.value)
@@ -946,6 +1008,35 @@ class BoschBuderusSensor(
     @property
     def extra_state_attributes(self) -> dict[str, str | float] | None:
         description = self.entity_description
+        if description.value_kind == "dew_point":
+            calculation = self._dew_point_calculation
+            if calculation is None:
+                return None
+            return {
+                "source_room_temperature_c": calculation.room_temperature_celsius,
+                "source_relative_humidity_percent": (
+                    calculation.relative_humidity_percent
+                ),
+                "calculation_method": "magnus",
+                "magnus_a": MAGNUS_A,
+                "magnus_b_c": MAGNUS_B_CELSIUS,
+            }
+        if description.value_kind == "total_electricity":
+            snapshot = self._snapshot
+            if snapshot is None:
+                return None
+            values = _energy_values(snapshot.resource)
+            if values.get("electricity") is not None:
+                return {"value_source": "direct"}
+            if (
+                values.get("compressor") is not None
+                and values.get("eheater") is not None
+            ):
+                return {
+                    "value_source": "calculated",
+                    "calculation": "compressor + auxiliary_heater",
+                }
+            return None
         if (
             description.resource_path == _SYSTEM_PRESSURE_PATH
             and description.value_kind == "value"
@@ -982,6 +1073,26 @@ class BoschBuderusSensor(
     def _snapshot(self) -> ResourceSnapshot | None:
         data = self.coordinator.data or {}
         return data.get(self.entity_description.resource_path)
+
+    @property
+    def _secondary_snapshot(self) -> ResourceSnapshot | None:
+        path = self.entity_description.secondary_resource_path
+        if path is None:
+            return None
+        return (self.coordinator.data or {}).get(path)
+
+    @property
+    def _dew_point_calculation(self) -> DewPointCalculation | None:
+        primary = self._snapshot
+        secondary = self._secondary_snapshot
+        if (
+            primary is None
+            or not primary.available
+            or secondary is None
+            or not secondary.available
+        ):
+            return None
+        return calculate_dew_point(primary.resource.value, secondary.resource.value)
 
     @property
     def _pressure_range_snapshot(self) -> ResourceSnapshot | None:
