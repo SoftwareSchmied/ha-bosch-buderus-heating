@@ -213,7 +213,7 @@ counters—not holiday dates, names, or raw configuration data.
 | Smart Function enabled (disabled) | Diagnostic sensor or binary sensor | `/heatSources/smartFunction/enabled` | Capability-dependent | No | 5 min |
 | Standby mode | Sensor | `/heatSources/standbyMode` | No | No | 60 s |
 | System pressure | Sensor | `/heatSources/systemPressure` | No | No | 60 s |
-| System pressure status | Derived status sensor | System pressure and `/heatSources/systemPressureRange` | No | No | with system pressure |
+| System pressure status (calculated) | Derived status sensor | System pressure and `/heatSources/systemPressureRange` | No | No | with system pressure |
 | Permitted pressure range – high system pressure | Diagnostic sensor | `/heatSources/systemPressureRange` → `highSystemPressure` | No | No | startup only |
 | Permitted pressure range – absolute maximum pressure | Diagnostic sensor | `/heatSources/systemPressureRange` → `absoluteHighPressure` | No | No | startup only |
 | Permitted pressure range – low system pressure | Diagnostic sensor | `/heatSources/systemPressureRange` → `lowSystemPressure` | No | No | startup only |
@@ -264,6 +264,7 @@ no entity; a configured name is added dynamically.
 | Heating/cooling switching | Sensor | `/heatingCircuits/{hc}/suWiSwitchMode` | No | No | 60 s |
 | Heating/cooling support | Sensor | `/heatingCircuits/{hc}/heatCoolMode` | No | No | 60 s |
 | Heating system | Diagnostic sensor | `/heatingCircuits/{hc}/heatingType` | No | No | startup only |
+| Dew point (calculated) | Derived temperature sensor | `roomtemperature` + `actualHumidity` | No | No | with both 60 s inputs |
 | Manual setpoint | Sensor and number control | `/heatingCircuits/{hc}/manualRoomSetpoint` | Yes | Yes | 5 min; read back after change |
 | Maximum supply temperature | Sensor (disabled) and number control (disabled) | `/heatingCircuits/{hc}/maxFlowTemp` | Yes | Yes | 5 min; staggered read-back after change |
 | Name (only when configured) | Diagnostic sensor | `/heatingCircuits/{hc}/name` | Yes | No | startup only |
@@ -281,6 +282,14 @@ after a separate GET returns the same value. Because the physical K40 system
 reported rapid consecutive changes with a delay, the integration performs up
 to three staggered read-back checks. It never repeats the PUT. The sequence
 **Manual → Auto → Manual** was confirmed.
+
+The calculated dew point is created only when the same heating circuit exposes
+both `/heatingCircuits/{hc}/roomtemperature` in °C and
+`/heatingCircuits/{hc}/actualHumidity` in percent. It uses the Magnus formula
+with `a = 17.62` and `b = 243.12 °C`, causes no additional cloud requests,
+and becomes unavailable when either source is unavailable. Its attributes show
+the two source measurements and formula constants. It is not the controller's
+cooling-flow setpoint and does not apply an unknown installer safety offset.
 
 ## Domestic hot water
 
@@ -383,6 +392,12 @@ All values are cumulative energy in kWh, not instantaneous power.
 Calculated environmental energy is created only when all three required raw
 values are present and valid. A negative or incomplete result is not exposed
 as a measurement.
+
+The total-electricity entity reports `value_source: direct` when PointT
+provides `electricity`. When it falls back to the complete sum of `compressor`
+and `eheater`, it reports `value_source: calculated` and documents the formula
+in its `calculation` attribute. Its entity name remains stable because the
+source may change between responses.
 
 ## Optional app capabilities
 

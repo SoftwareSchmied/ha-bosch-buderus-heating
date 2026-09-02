@@ -76,6 +76,8 @@ before.
   actions, kept separate from Away mode
 - Cumulative electricity, produced heat, cooling energy, and calculated
   environmental energy
+- A clearly identified calculated dew point when a heating circuit reports
+  both room temperature and relative humidity
 - Heating-circuit and hot-water controls exposed only when PointT reports them
   as writable
 - Silent Mode control with Off, Automatic, and On when the gateway advertises

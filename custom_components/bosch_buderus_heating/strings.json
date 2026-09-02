@@ -230,6 +230,7 @@
       "heating_heat_produced": { "name": "Heating – Heat produced" },
       "hot_water_electricity": { "name": "Hot water – Electricity consumption" },
       "hot_water_heat_produced": { "name": "Hot water – Heat produced" },
+      "calculated_dew_point": { "name": "Dew point (calculated)" },
       "heating_circuit_switch_program_mode": {
         "name": "Heating circuit schedule type",
         "state": { "level": "Temperature level" }
@@ -369,7 +370,7 @@
         "state": { "idle": "Idle", "running": "Running", "success": "Successful", "failed": "Failed" }
       },
       "pressure_status": {
-        "name": "System pressure status",
+        "name": "System pressure status (calculated)",
         "state": {
           "critical_low": "Critically low",
           "low": "Low",

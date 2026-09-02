@@ -160,6 +160,13 @@ of `/holidayMode/list`; a timeout does not cause the mutation to be repeated.
 | `.../temperatureLevels/comfort2` | Heating | R/W | Number in °C, when available |
 | `.../temperatureLevels/eco` | Setback | R/W | Number in °C, when available |
 
+When one circuit exposes both `.../roomtemperature` in °C and
+`.../actualHumidity` in percent, Home Assistant also receives **Dew point
+(calculated)**. It uses the Magnus formula with `a = 17.62` and `b = 243.12
+°C`; the two inputs and constants are included as entity attributes. This is
+not a PointT resource, the controller's own dew-point value, or its cooling
+flow setpoint.
+
 Observed `overallStatus` values:
 
 | Raw value | Display |
