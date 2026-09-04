@@ -152,7 +152,7 @@ of `/holidayMode/list`; a timeout does not cause the mutation to be repeated.
 | `.../name` | Heating-circuit name | R/W | Decoded sensor only when configured; renaming not offered initially |
 | `.../operationMode` | Operation mode | R/W | Select: Off, Manual, Auto |
 | `.../overallStatus` | Operating status | R | Status sensor |
-| `.../switchProgramMode` | Schedule type | R/W | Diagnostic; only temperature-level mode observed so far |
+| `.../switchProgramMode` | Schedule type | R/W | Read-only diagnostic; `level` is Temperature level and `absolute` is the app's Freely Adjustable Temperatures mode |
 | `.../switchPrograms` | Available schedules | R | Internal: dynamic discovery |
 | `.../switchPrograms/{program}` | Schedule | R/W | No separate entity without scalar content; a future editor requires a verified schema |
 | `.../switchPrograms/name{program}` | Schedule name | R/W | Readable decoded configuration value |

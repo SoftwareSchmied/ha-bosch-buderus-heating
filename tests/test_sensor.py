@@ -558,9 +558,29 @@ def test_enum_includes_pointt_advertised_and_current_unknown_values(
     )
     assert sensor.entity_description.options == [
         "level",
+        "absolute",
         "clock",
         "vendor_extension",
     ]
+
+
+def test_absolute_switch_program_mode_is_a_known_app_value(
+    hass: HomeAssistant,
+) -> None:
+    resource = Resource(
+        path="/heatingCircuits/hc1/switchProgramMode",
+        value="absolute",
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="stringValue"),
+    )
+
+    sensor = _sensor(hass, resource)
+
+    assert sensor.native_value == "absolute"
+    assert sensor.entity_description.translation_key == (
+        "heating_circuit_switch_program_mode"
+    )
+    assert sensor.entity_description.options == ["level", "absolute"]
 
 
 def test_enum_changed_after_setup_becomes_unknown_without_log_spam(

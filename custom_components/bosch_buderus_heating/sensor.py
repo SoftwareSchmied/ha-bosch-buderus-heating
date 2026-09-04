@@ -237,7 +237,7 @@ _ENUM_OPTIONS: dict[str, tuple[str, ...]] = {
         "supported",
         "in_evaluation",
     ),
-    "heating_circuit_switch_program_mode": ("level",),
+    "heating_circuit_switch_program_mode": ("level", "absolute"),
     "heating_circuit_operation_mode": ("off", "manual", "auto"),
     "heating_circuit_overall_status": (
         "ch_enabled",

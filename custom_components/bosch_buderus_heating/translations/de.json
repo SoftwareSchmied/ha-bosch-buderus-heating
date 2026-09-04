@@ -209,7 +209,13 @@
       "hot_water_electricity": { "name": "Warmwasser – Stromverbrauch" },
       "hot_water_heat_produced": { "name": "Warmwasser – Erzeugte Wärme" },
       "calculated_dew_point": { "name": "Taupunkt (berechnet)" },
-      "heating_circuit_switch_program_mode": { "name": "Art des Zeitprogramms", "state": { "level": "Temperaturniveau" } },
+      "heating_circuit_switch_program_mode": {
+        "name": "Art des Zeitprogramms",
+        "state": {
+          "level": "Temperaturniveau",
+          "absolute": "Frei einstellbare Temperaturen"
+        }
+      },
       "heating_circuit_operation_mode": { "name": "Betriebsart", "state": { "off": "Aus", "manual": "Manuell", "auto": "Auto" } },
       "heating_circuit_overall_status": { "name": "Betriebsstatus", "state": { "ch_enabled": "Heizen aktiviert", "ch_disabled": "Heizen deaktiviert", "emergency_mode": "Notbetrieb", "floor_drying": "Estrichtrocknung", "summer_idle": "Sommerpause", "boost": "Schnellaufheizung", "away": "Abwesend", "holiday": "Urlaub", "cooling_manual_on": "Kühlen manuell aktiv", "cooling_manual_off": "Kühlen manuell aus", "heating_manual_on": "Heizen manuell aktiv", "heating_manual_off": "Heizen manuell aus", "heating_auto": "Heizen automatisch" } },
       "heating_circuit_summer_winter_mode": { "name": "Aktueller Heiz-/Kühlstatus", "state": { "off": "Standby", "forced": "Heizen", "cooling": "Kühlen" } },

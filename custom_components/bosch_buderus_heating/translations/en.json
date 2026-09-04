@@ -209,7 +209,13 @@
       "hot_water_electricity": { "name": "Hot water – Electricity consumption" },
       "hot_water_heat_produced": { "name": "Hot water – Heat produced" },
       "calculated_dew_point": { "name": "Dew point (calculated)" },
-      "heating_circuit_switch_program_mode": { "name": "Heating circuit schedule type", "state": { "level": "Temperature level" } },
+      "heating_circuit_switch_program_mode": {
+        "name": "Heating circuit schedule type",
+        "state": {
+          "level": "Temperature level",
+          "absolute": "Freely Adjustable Temperatures"
+        }
+      },
       "heating_circuit_operation_mode": { "name": "Heating circuit operation mode", "state": { "off": "Off", "manual": "Manual", "auto": "Auto" } },
       "heating_circuit_overall_status": { "name": "Heating circuit status", "state": { "ch_enabled": "Heating enabled", "ch_disabled": "Heating disabled", "emergency_mode": "Emergency mode", "floor_drying": "Floor drying", "summer_idle": "Summer pause", "boost": "Boost heating", "away": "Away", "holiday": "Holiday", "cooling_manual_on": "Manual cooling active", "cooling_manual_off": "Manual cooling off", "heating_manual_on": "Manual heating active", "heating_manual_off": "Manual heating off", "heating_auto": "Automatic heating" } },
       "heating_circuit_summer_winter_mode": { "name": "Current heating/cooling status", "state": { "off": "Idle", "forced": "Heating", "cooling": "Cooling" } },

@@ -233,7 +233,10 @@
       "calculated_dew_point": { "name": "Dew point (calculated)" },
       "heating_circuit_switch_program_mode": {
         "name": "Heating circuit schedule type",
-        "state": { "level": "Temperature level" }
+        "state": {
+          "level": "Temperature level",
+          "absolute": "Freely Adjustable Temperatures"
+        }
       },
       "heating_circuit_operation_mode": {
         "name": "Heating circuit operation mode",

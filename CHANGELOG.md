@@ -5,6 +5,50 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.7.0-beta.2] - 2026-09-04
+
+This beta recognizes the second heating-circuit schedule type used by the
+official MyBuderus and HomeCom Easy apps. Installations reporting the PointT
+value `absolute` now show a clear translated state instead of a raw or unknown
+value.
+
+### Fixed
+
+- Added the app-confirmed `absolute` value to
+  `/heatingCircuits/{hc}/switchProgramMode`.
+- Displayed that value as **Freely Adjustable Temperatures** in English and
+  **Frei einstellbare Temperaturen** in German.
+
+### Behavior changes
+
+- Schedule-type sensors now recognize both known modes, `level` and
+  `absolute`, even when the gateway does not advertise a complete enum list.
+- The sensor remains read-only; this release does not add schedule editing or
+  additional PointT writes.
+
+### Security and compatibility
+
+- Existing entity unique IDs, device identifiers, history, automations, and
+  dashboards remain unchanged.
+- Polling intervals, cloud-request counts, credentials, and write permissions
+  are unchanged.
+- Unrecognized future enum values continue to use the existing safe fallback
+  instead of being passed to Home Assistant as an invalid enum state.
+
+### Validation
+
+- 506 automated tests pass with 95.13% branch coverage, including the
+  `absolute` PointT value, enum options, and the exact German and English app
+  terminology.
+- Ruff formatting and linting and strict Mypy validation pass.
+
+### Upgrade notes and limitations
+
+- Restart Home Assistant after updating so frontend state translations are
+  reloaded.
+- The schedule type is still informational. Full schedule editing requires a
+  separately verified PointT schema and remains outside this beta.
+
 ## [0.7.0-beta.1] - 2026-09-03
 
 This beta adds a transparent calculated dew point for heating circuits

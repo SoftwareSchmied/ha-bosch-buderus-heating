@@ -283,6 +283,12 @@ reported rapid consecutive changes with a delay, the integration performs up
 to three staggered read-back checks. It never repeats the PUT. The sequence
 **Manual → Auto → Manual** was confirmed.
 
+The read-only schedule-type sensor recognizes both app modes: `level` is shown
+as **Temperature level**, while `absolute` is shown using the official app term
+**Freely Adjustable Temperatures**. The latter means that each schedule period
+can use an independently chosen temperature. Schedule editing itself remains
+outside the current Home Assistant controls.
+
 The calculated dew point is created only when the same heating circuit exposes
 both `/heatingCircuits/{hc}/roomtemperature` in °C and
 `/heatingCircuits/{hc}/actualHumidity` in percent. It uses the Magnus formula
