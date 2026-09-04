@@ -5,6 +5,58 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.7.0-beta.2] - 2026-09-04
+
+This beta closes enum gaps found while investigating an upstream report about
+the `absolute` heating-circuit schedule type. A complete comparison of the
+corresponding models in MyBuderus and HomeCom Easy found several additional
+PointT values that are now handled and translated explicitly.
+
+### Fixed
+
+- Added the app-confirmed `absolute` and `levels` values to
+  `/heatingCircuits/{hc}/switchProgramMode`.
+- Added exact app mappings for heating and cooling control types, hot water
+  following the heating schedule, heat-pump and heat-source variants, system
+  layouts, energy-management activity, and the PV contact state.
+- Accepted the enum-name spellings used by the app model for the gateway data
+  processing states while retaining the already observed PointT spellings.
+- Added English and German state translations for every newly recognized
+  canonical value.
+
+### Behavior changes
+
+- Schedule-type sensors now recognize all app-defined modes: `level`, `levels`,
+  and `absolute`, even when the gateway does not advertise a complete enum
+  list.
+- PointT's legacy or product-specific spellings are normalized at the Home
+  Assistant boundary without changing the underlying cloud data.
+- Schedule type and technical configuration sensors remain read-only; this
+  release does not add schedule editing or additional PointT writes.
+
+### Security and compatibility
+
+- Existing entity unique IDs, device identifiers, history, automations, and
+  dashboards remain unchanged.
+- Polling intervals, cloud-request counts, credentials, and write permissions
+  are unchanged.
+- Unrecognized future enum values continue to use the existing safe fallback
+  instead of being passed to Home Assistant as an invalid enum state.
+
+### Validation
+
+- 547 automated tests pass with 95.16% branch coverage, including the
+  app-confirmed raw values, canonical states, enum options, and matching German
+  and English translations.
+- Ruff formatting and linting and strict Mypy validation pass.
+
+### Upgrade notes and limitations
+
+- Restart Home Assistant after updating so frontend state translations are
+  reloaded.
+- The schedule type is still informational. Full schedule editing requires a
+  separately verified PointT schema and remains outside this beta.
+
 ## [0.7.0-beta.1] - 2026-09-03
 
 This beta adds a transparent calculated dew point for heating circuits

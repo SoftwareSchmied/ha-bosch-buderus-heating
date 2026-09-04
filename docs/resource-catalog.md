@@ -152,7 +152,7 @@ of `/holidayMode/list`; a timeout does not cause the mutation to be repeated.
 | `.../name` | Heating-circuit name | R/W | Decoded sensor only when configured; renaming not offered initially |
 | `.../operationMode` | Operation mode | R/W | Select: Off, Manual, Auto |
 | `.../overallStatus` | Operating status | R | Status sensor |
-| `.../switchProgramMode` | Schedule type | R/W | Diagnostic; only temperature-level mode observed so far |
+| `.../switchProgramMode` | Schedule type | R/W | Read-only diagnostic; supports the app-defined `level`, `levels`, and `absolute` modes |
 | `.../switchPrograms` | Available schedules | R | Internal: dynamic discovery |
 | `.../switchPrograms/{program}` | Schedule | R/W | No separate entity without scalar content; a future editor requires a verified schema |
 | `.../switchPrograms/name{program}` | Schedule name | R/W | Readable decoded configuration value |
@@ -225,6 +225,7 @@ PointT codes and app display names for operation mode:
 | `high` | Comfort |
 | `ownprogram` | Auto |
 | `eco` | Eco+ |
+| `HCprogram` | Follow heating program |
 
 ## Heat sources and central measurements
 
@@ -243,6 +244,7 @@ PointT codes and app display names for operation mode:
 | `/heatSources/currentEmergencyMode` | Emergency mode | R | Optional operating state |
 | `/heatSources/emStatus` | Energy management status | R | Diagnostic status |
 | `/heatSources/flameStatus` | Flame status | R | Status; relevant only to suitable hybrid systems |
+| `/heatSources/type` | Overall heat-source type | R | Diagnostic; used by systems that expose no indexed heat-source type |
 | `/heatSources/{hs}` | Heat source | R | Internal: dynamic discovery |
 | `/heatSources/{hs}/actualPower` | Current power | R | Instantaneous power in W or kW |
 | `/heatSources/{hs}/brineCircuit/collectorInflowTemp` | Brine outlet temperature | R | Fluid entering the ground collector, named from the heating-system perspective |

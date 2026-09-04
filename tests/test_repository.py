@@ -10,6 +10,8 @@ from pathlib import Path
 
 import pytest
 
+from custom_components.bosch_buderus_heating.sensor import _ENUM_OPTIONS
+
 ROOT = Path(__file__).parents[1]
 INTEGRATION = ROOT / "custom_components" / "bosch_buderus_heating"
 
@@ -30,7 +32,7 @@ def test_stable_project_identity() -> None:
 
     assert manifest["domain"] == "bosch_buderus_heating"
     assert manifest["name"] == "Bosch/Buderus Heating"
-    assert manifest["version"] == "0.7.0-beta.1"
+    assert manifest["version"] == "0.7.0-beta.2"
     assert project["project"]["version"] == manifest["version"]
     assert manifest["requirements"] == []
     assert manifest["config_flow"] is True
@@ -89,6 +91,14 @@ def test_state_translation_keys_are_home_assistant_safe(path: Path) -> None:
     assert invalid == []
 
 
+def test_all_known_sensor_enum_options_have_translations() -> None:
+    """Every declared enum option must have an English and German label."""
+    for filename in ("strings.json", "translations/en.json", "translations/de.json"):
+        sensors = load_json(INTEGRATION / filename)["entity"]["sensor"]
+        for translation_key, options in _ENUM_OPTIONS.items():
+            assert set(sensors[translation_key]["state"]) == set(options)
+
+
 def test_heat_source_status_translations_match_vendor_app_terms() -> None:
     """Operational status labels follow the MyBuderus/HomeCom terminology."""
     german = load_json(INTEGRATION / "translations" / "de.json")
@@ -107,16 +117,72 @@ def test_heat_source_type_translations_are_complete() -> None:
     english = load_json(INTEGRATION / "translations" / "en.json")["entity"]["sensor"]
 
     assert source["heat_source_type"]["state"] == {
+        "no_appliance": "No appliance",
         "heatpump": "Heat pump",
         "boiler": "Boiler",
+        "boiler_oil": "Oil boiler",
+        "boiler_gas": "Gas boiler",
+        "boiler_unknown": "Unknown boiler",
         "hybrid": "Hybrid system",
     }
     assert english["heat_source_type"]["state"] == source["heat_source_type"]["state"]
     assert german["heat_source_type"]["state"] == {
+        "no_appliance": "Kein Wärmeerzeuger",
         "heatpump": "Wärmepumpe",
         "boiler": "Heizkessel",
+        "boiler_oil": "Öl-Heizkessel",
+        "boiler_gas": "Gas-Heizkessel",
+        "boiler_unknown": "Unbekannter Heizkessel",
         "hybrid": "Hybridsystem",
     }
+
+
+def test_schedule_type_translations_match_vendor_app_terms() -> None:
+    """Schedule types use the terms found in both official app variants."""
+    source = load_json(INTEGRATION / "strings.json")["entity"]["sensor"]
+    german = load_json(INTEGRATION / "translations" / "de.json")["entity"]["sensor"]
+    english = load_json(INTEGRATION / "translations" / "en.json")["entity"]["sensor"]
+
+    assert source["heating_circuit_switch_program_mode"]["state"] == {
+        "level": "Temperature level",
+        "levels": "Temperature Levels",
+        "absolute": "Freely Adjustable Temperatures",
+    }
+    assert (
+        english["heating_circuit_switch_program_mode"]["state"]
+        == source["heating_circuit_switch_program_mode"]["state"]
+    )
+    assert german["heating_circuit_switch_program_mode"]["state"] == {
+        "level": "Temperaturniveau",
+        "levels": "Temperaturniveaus",
+        "absolute": "Frei einstellbare Temperaturen",
+    }
+
+
+@pytest.mark.parametrize(
+    "translation_key",
+    [
+        "data_processing_status",
+        "energy_management_status",
+        "heating_circuit_cooling_control_type",
+        "heating_circuit_control_type",
+        "heat_pump_type",
+        "hot_water_operation_mode",
+        "pv_contact_state",
+        "system_type",
+    ],
+)
+def test_app_audited_enum_translations_are_complete(translation_key: str) -> None:
+    """Expanded app enum groups remain aligned in both UI languages."""
+    source = load_json(INTEGRATION / "strings.json")["entity"]["sensor"]
+    german = load_json(INTEGRATION / "translations" / "de.json")["entity"]["sensor"]
+    english = load_json(INTEGRATION / "translations" / "en.json")["entity"]["sensor"]
+
+    assert english[translation_key]["state"] == source[translation_key]["state"]
+    assert (
+        german[translation_key]["state"].keys()
+        == source[translation_key]["state"].keys()
+    )
 
 
 def test_holiday_translations_are_clear_and_match_vendor_terms() -> None:
