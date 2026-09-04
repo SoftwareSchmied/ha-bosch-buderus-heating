@@ -18,8 +18,7 @@ Names and semantics are based on:
 
 1. the PointT resource tree read from physical equipment;
 2. the energy semantics verified against MyBuderus, a CSV export, and two
-   physical systems in
-   [BassXT/buderus#15](https://github.com/BassXT/buderus/pull/15);
+   physical systems;
 3. observed MyBuderus user-facing names;
 4. a static comparison of HomeCom Easy 5.0.0 and MyBuderus 5.0.0.
 
