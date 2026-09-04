@@ -237,7 +237,7 @@ _ENUM_OPTIONS: dict[str, tuple[str, ...]] = {
         "supported",
         "in_evaluation",
     ),
-    "heating_circuit_switch_program_mode": ("level", "absolute"),
+    "heating_circuit_switch_program_mode": ("level", "levels", "absolute"),
     "heating_circuit_operation_mode": ("off", "manual", "auto"),
     "heating_circuit_overall_status": (
         "ch_enabled",
@@ -268,9 +268,30 @@ _ENUM_OPTIONS: dict[str, tuple[str, ...]] = {
         "outdoor",
         "wdc",
         "wdcoptimized",
+        "wdcsimplified",
+        "mpc",
+        "room_flow_temperature",
+        "room_power",
+        "constant",
+        "valve_feedback_control",
+        "isrc",
+        "vbh",
+        "external",
+    ),
+    "heating_circuit_cooling_control_type": (
+        "constant",
+        "rtcc_with_dewpoint",
+        "rtcc_no_dewpoint",
     ),
     "hot_water_temperature_level": ("off", "low", "high", "eco"),
-    "hot_water_operation_mode": ("off", "low", "high", "ownprogram", "eco"),
+    "hot_water_operation_mode": (
+        "off",
+        "low",
+        "high",
+        "ownprogram",
+        "eco",
+        "follow_heating_program",
+    ),
     "hot_water_overall_status": (
         "dhw_enabled",
         "dhw_disabled",
@@ -287,9 +308,31 @@ _ENUM_OPTIONS: dict[str, tuple[str, ...]] = {
     ),
     "on_off_state": ("off", "on", "stop", "start"),
     "heat_pump_type": ("air_water", "brine_water", "exhaust_air"),
-    "heat_source_type": ("heatpump", "boiler", "hybrid"),
-    "system_type": ("heatpump_single", "boiler_single", "hybrid"),
-    "energy_management_status": ("not_connected", "connected", "active", "error"),
+    "heat_source_type": (
+        "no_appliance",
+        "heatpump",
+        "boiler",
+        "boiler_oil",
+        "boiler_gas",
+        "boiler_unknown",
+        "hybrid",
+    ),
+    "system_type": (
+        "heatpump_single",
+        "heatpump_cascade",
+        "boiler_single",
+        "hybrid",
+    ),
+    "energy_management_status": (
+        "not_connected",
+        "inactive",
+        "active_ch",
+        "active_dhw",
+        "active_em",
+        "connected",
+        "active",
+        "error",
+    ),
     "outdoor_temperature_source": ("appliance", "internet", "roomcontroller"),
     "support_status": ("not_supported", "supported", "active"),
     "update_status": ("idle", "running", "success", "failed"),
@@ -1479,6 +1522,8 @@ def _enum_translation_key(resource: Resource, value_key: str | None) -> str | No
     path = resource.path
     tail = path.rsplit("/", 1)[-1]
     if path.startswith("/heatingCircuits/"):
+        if re.fullmatch(r"/heatingCircuits/[^/]+/cooling/controlType", path):
+            return "heating_circuit_cooling_control_type"
         return {
             "switchProgramMode": "heating_circuit_switch_program_mode",
             "operationMode": "heating_circuit_operation_mode",
@@ -1500,7 +1545,7 @@ def _enum_translation_key(resource: Resource, value_key: str | None) -> str | No
         }.get(tail)
     if tail == "heatPumpType":
         return "heat_pump_type"
-    if re.fullmatch(r"/heatSources/hs[^/]+/type", path):
+    if path == "/heatSources/type" or re.fullmatch(r"/heatSources/hs[^/]+/type", path):
         return "heat_source_type"
     if re.fullmatch(r"/heatSources/hs[^/]+/defrostActive", path):
         return "on_off_state"

@@ -235,6 +235,7 @@
         "name": "Heating circuit schedule type",
         "state": {
           "level": "Temperature level",
+          "levels": "Temperature Levels",
           "absolute": "Freely Adjustable Temperatures"
         }
       },
@@ -282,7 +283,24 @@
           "room": "Room temperature controlled",
           "outdoor": "Outdoor temperature controlled",
           "wdc": "Weather-compensated",
-          "wdcoptimized": "Optimized weather-compensated"
+          "wdcoptimized": "Optimized weather-compensated",
+          "wdcsimplified": "Simplified weather-compensated",
+          "mpc": "Model predictive control",
+          "room_flow_temperature": "Room-controlled flow temperature",
+          "room_power": "Room-controlled power",
+          "constant": "Constant control",
+          "valve_feedback_control": "Valve feedback control",
+          "isrc": "Individual room control (iSRC)",
+          "vbh": "VBH",
+          "external": "External control"
+        }
+      },
+      "heating_circuit_cooling_control_type": {
+        "name": "Cooling control type",
+        "state": {
+          "constant": "Constant temperature",
+          "rtcc_with_dewpoint": "Room temperature control with dew-point monitoring",
+          "rtcc_no_dewpoint": "Room temperature control without dew-point monitoring"
         }
       },
       "hot_water_temperature_level": {
@@ -291,7 +309,7 @@
       },
       "hot_water_operation_mode": {
         "name": "Hot water operation mode",
-        "state": { "off": "Off", "low": "Eco", "high": "Comfort", "ownprogram": "Auto", "eco": "Eco+" }
+        "state": { "off": "Off", "low": "Eco", "high": "Comfort", "ownprogram": "Auto", "eco": "Eco+", "follow_heating_program": "Follow Heating Program" }
       },
       "hot_water_overall_status": {
         "name": "Hot water status",
@@ -350,15 +368,15 @@
       },
       "heat_source_type": {
         "name": "Heat source type",
-        "state": { "heatpump": "Heat pump", "boiler": "Boiler", "hybrid": "Hybrid system" }
+        "state": { "no_appliance": "No appliance", "heatpump": "Heat pump", "boiler": "Boiler", "boiler_oil": "Oil boiler", "boiler_gas": "Gas boiler", "boiler_unknown": "Unknown boiler", "hybrid": "Hybrid system" }
       },
       "system_type": {
         "name": "System type",
-        "state": { "heatpump_single": "Single heat pump", "boiler_single": "Single boiler", "hybrid": "Hybrid system" }
+        "state": { "heatpump_single": "Single heat pump", "heatpump_cascade": "Heat pump cascade", "boiler_single": "Single boiler", "hybrid": "Hybrid system" }
       },
       "energy_management_status": {
         "name": "Energy management status",
-        "state": { "not_connected": "Not connected", "connected": "Connected", "active": "Active", "error": "Error" }
+        "state": { "not_connected": "Not connected", "inactive": "Inactive", "active_ch": "Active for heating", "active_dhw": "Active for hot water", "active_em": "Active energy management", "connected": "Connected", "active": "Active", "error": "Error" }
       },
       "outdoor_temperature_source": {
         "name": "Outdoor temperature source",

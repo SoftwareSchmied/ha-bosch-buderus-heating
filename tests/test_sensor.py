@@ -558,6 +558,7 @@ def test_enum_includes_pointt_advertised_and_current_unknown_values(
     )
     assert sensor.entity_description.options == [
         "level",
+        "levels",
         "absolute",
         "clock",
         "vendor_extension",
@@ -580,7 +581,94 @@ def test_absolute_switch_program_mode_is_a_known_app_value(
     assert sensor.entity_description.translation_key == (
         "heating_circuit_switch_program_mode"
     )
-    assert sensor.entity_description.options == ["level", "absolute"]
+    assert sensor.entity_description.options == ["level", "levels", "absolute"]
+
+
+def test_temperature_levels_switch_program_mode_is_a_known_app_value(
+    hass: HomeAssistant,
+) -> None:
+    resource = Resource(
+        path="/heatingCircuits/hc1/switchProgramMode",
+        value="levels",
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="stringValue"),
+    )
+
+    sensor = _sensor(hass, resource)
+
+    assert sensor.native_value == "levels"
+    assert "levels" in (sensor.entity_description.options or ())
+
+
+@pytest.mark.parametrize(
+    ("path", "raw_value", "expected_value"),
+    [
+        ("/gateway/dataProcessing/status", "IN_PROGRESS", "in_progress"),
+        ("/gateway/dataProcessing/status", "COMPLETE", "completed"),
+        ("/dhwCircuits/dhw1/operationMode", "HCprogram", "follow_heating_program"),
+        ("/heatSources/pvContactState", "on", "active"),
+        ("/heatSources/pvContactState", "off", "inactive"),
+        ("/heatSources/emStatus", "activeCh", "active_ch"),
+        ("/heatSources/emStatus", "activeDhw", "active_dhw"),
+        ("/heatSources/emStatus", "activeEm", "active_em"),
+        ("/heatSources/hs1/heatPumpType", "liquid_water", "brine_water"),
+        ("/heatSources/hs1/heatPumpType", "exhaustAir_water", "exhaust_air"),
+        ("/heatSources/hs1/type", "No_Appliance", "no_appliance"),
+        ("/heatSources/hs1/type", "OilBoiler", "boiler_oil"),
+        ("/heatSources/hs1/type", "GasBoiler", "boiler_gas"),
+        ("/heatSources/hs1/type", "unknownBoiler", "boiler_unknown"),
+        ("/heatSources/type", "GasBoiler", "boiler_gas"),
+        ("/system/type", "heatpump_cascade", "heatpump_cascade"),
+        ("/system/type", "eHybrid", "hybrid"),
+        ("/system/type", "hybman", "hybrid"),
+        ("/system/type", "hybridBoiler", "hybrid"),
+        ("/system/type", "boiler", "boiler_single"),
+        (
+            "/heatingCircuits/hc1/controlType",
+            "roomflowtemp",
+            "room_flow_temperature",
+        ),
+        ("/heatingCircuits/hc1/controlType", "wdcsimplified", "wdcsimplified"),
+        ("/heatingCircuits/hc1/controlType", "mpc", "mpc"),
+        ("/heatingCircuits/hc1/controlType", "roompower", "room_power"),
+        ("/heatingCircuits/hc1/controlType", "constants", "constant"),
+        (
+            "/heatingCircuits/hc1/controlType",
+            "valvefbcntrl",
+            "valve_feedback_control",
+        ),
+        ("/heatingCircuits/hc1/controlType", "ISRC", "isrc"),
+        ("/heatingCircuits/hc1/controlType", "vbh", "vbh"),
+        ("/heatingCircuits/hc1/controlType", "external", "external"),
+        (
+            "/heatingCircuits/hc1/cooling/controlType",
+            "rtcc_with_dewpoint",
+            "rtcc_with_dewpoint",
+        ),
+        (
+            "/heatingCircuits/hc1/cooling/controlType",
+            "rtcc_no_dewpoint",
+            "rtcc_no_dewpoint",
+        ),
+    ],
+)
+def test_app_confirmed_pointt_enum_values_are_normalized(
+    hass: HomeAssistant,
+    path: str,
+    raw_value: str,
+    expected_value: str,
+) -> None:
+    resource = Resource(
+        path=path,
+        value=raw_value,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="stringValue"),
+    )
+
+    sensor = _sensor(hass, resource)
+
+    assert sensor.native_value == expected_value
+    assert expected_value in (sensor.entity_description.options or ())
 
 
 def test_enum_changed_after_setup_becomes_unknown_without_log_spam(
@@ -643,7 +731,15 @@ def test_gas_boiler_heat_source_type_uses_canonical_boiler_state(
     sensor = _sensor(hass, resource)
 
     assert sensor.native_value == "boiler"
-    assert sensor.entity_description.options == ["heatpump", "boiler", "hybrid"]
+    assert sensor.entity_description.options == [
+        "no_appliance",
+        "heatpump",
+        "boiler",
+        "boiler_oil",
+        "boiler_gas",
+        "boiler_unknown",
+        "hybrid",
+    ]
 
 
 def test_enum_translates_single_value_list_resource(hass: HomeAssistant) -> None:
@@ -902,7 +998,15 @@ def test_pointt_enum_spelling_is_normalized_only_at_ha_boundary(
 
     assert resource.value == "Heatpump"
     assert sensor.native_value == "heatpump"
-    assert sensor.entity_description.options == ["heatpump", "boiler", "hybrid"]
+    assert sensor.entity_description.options == [
+        "no_appliance",
+        "heatpump",
+        "boiler",
+        "boiler_oil",
+        "boiler_gas",
+        "boiler_unknown",
+        "hybrid",
+    ]
 
 
 def test_energy_resources_expand_and_validate_totals(hass: HomeAssistant) -> None:

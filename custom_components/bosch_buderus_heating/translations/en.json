@@ -213,6 +213,7 @@
         "name": "Heating circuit schedule type",
         "state": {
           "level": "Temperature level",
+          "levels": "Temperature Levels",
           "absolute": "Freely Adjustable Temperatures"
         }
       },
@@ -222,9 +223,10 @@
       "heating_circuit_summer_winter_switch_mode": { "name": "Heating/cooling switching", "state": { "off": "Idle", "automatic": "Automatic switching", "forced": "Always heating", "cooling": "Always cooling" } },
       "heating_circuit_heat_cool_mode": { "name": "Heating/cooling support", "state": { "heat": "Heating only", "cool": "Cooling only", "heat_cool": "Heating and cooling" } },
       "heating_circuit_type": { "name": "Heating circuit type", "state": { "floor": "Underfloor heating", "radiator": "Radiators", "convector": "Convectors" } },
-      "heating_circuit_control_type": { "name": "Control type", "state": { "room": "Room temperature controlled", "outdoor": "Outdoor temperature controlled", "wdc": "Weather-compensated", "wdcoptimized": "Optimized weather-compensated" } },
+      "heating_circuit_control_type": { "name": "Control type", "state": { "room": "Room temperature controlled", "outdoor": "Outdoor temperature controlled", "wdc": "Weather-compensated", "wdcoptimized": "Optimized weather-compensated", "wdcsimplified": "Simplified weather-compensated", "mpc": "Model predictive control", "room_flow_temperature": "Room-controlled flow temperature", "room_power": "Room-controlled power", "constant": "Constant control", "valve_feedback_control": "Valve feedback control", "isrc": "Individual room control (iSRC)", "vbh": "VBH", "external": "External control" } },
+      "heating_circuit_cooling_control_type": { "name": "Cooling control type", "state": { "constant": "Constant temperature", "rtcc_with_dewpoint": "Room temperature control with dew-point monitoring", "rtcc_no_dewpoint": "Room temperature control without dew-point monitoring" } },
       "hot_water_temperature_level": { "name": "Hot water temperature level", "state": { "off": "Off", "low": "Eco", "high": "Comfort", "eco": "Eco+" } },
-      "hot_water_operation_mode": { "name": "Hot water operation mode", "state": { "off": "Off", "low": "Eco", "high": "Comfort", "ownprogram": "Auto", "eco": "Eco+" } },
+      "hot_water_operation_mode": { "name": "Hot water operation mode", "state": { "off": "Off", "low": "Eco", "high": "Comfort", "ownprogram": "Auto", "eco": "Eco+", "follow_heating_program": "Follow Heating Program" } },
       "hot_water_overall_status": { "name": "Hot water status", "state": { "dhw_enabled": "Hot water enabled", "dhw_disabled": "Hot water disabled", "auto": "Automatic", "manual_off": "Off", "manual_on_low": "Eco", "manual_on_eco": "Eco+", "manual_on_high": "Comfort", "extra": "Extra hot water", "away": "Away", "holiday": "Holiday", "floor_drying": "Floor drying", "td": "Thermal disinfection" } },
       "on_off_state": { "name": "Status", "state": { "off": "Off", "on": "On", "stop": "Off", "start": "On" } },
       "heat_demand": { "name": "Current heat demand", "state": { "none": "None", "ch": "Heating", "dhw": "Hot water", "frost": "Frost protection", "ch_dhw": "Heating and hot water", "ch_frost": "Heating and frost protection", "dhw_frost": "Hot water and frost protection", "ch_dhw_frost": "Heating, hot water and frost protection" } },
@@ -236,9 +238,9 @@
       "season_optimizer_mode": { "name": "Season optimization", "state": { "off": "Idle", "automatic": "Automatic switching", "forced_heat": "Always heating", "forced_cool": "Always cooling" } },
       "isrc_support_status": { "name": "iSRC support", "state": { "not_supported_incompatible_controller": "Not supported: incompatible controller", "not_supported_pairing_enabled": "Not supported: pairing enabled", "supported": "Supported", "in_evaluation": "Being evaluated" } },
       "heat_pump_type": { "name": "Heat pump type", "state": { "air_water": "Air/water", "brine_water": "Brine/water", "exhaust_air": "Exhaust air/water" } },
-      "heat_source_type": { "name": "Heat source type", "state": { "heatpump": "Heat pump", "boiler": "Boiler", "hybrid": "Hybrid system" } },
-      "system_type": { "name": "System type", "state": { "heatpump_single": "Single heat pump", "boiler_single": "Single boiler", "hybrid": "Hybrid system" } },
-      "energy_management_status": { "name": "Energy management status", "state": { "not_connected": "Not connected", "connected": "Connected", "active": "Active", "error": "Error" } },
+      "heat_source_type": { "name": "Heat source type", "state": { "no_appliance": "No appliance", "heatpump": "Heat pump", "boiler": "Boiler", "boiler_oil": "Oil boiler", "boiler_gas": "Gas boiler", "boiler_unknown": "Unknown boiler", "hybrid": "Hybrid system" } },
+      "system_type": { "name": "System type", "state": { "heatpump_single": "Single heat pump", "heatpump_cascade": "Heat pump cascade", "boiler_single": "Single boiler", "hybrid": "Hybrid system" } },
+      "energy_management_status": { "name": "Energy management status", "state": { "not_connected": "Not connected", "inactive": "Inactive", "active_ch": "Active for heating", "active_dhw": "Active for hot water", "active_em": "Active energy management", "connected": "Connected", "active": "Active", "error": "Error" } },
       "outdoor_temperature_source": { "name": "Outdoor temperature source", "state": { "appliance": "Heating system", "internet": "Internet", "roomcontroller": "Room controller" } },
       "support_status": { "name": "Support status", "state": { "not_supported": "Not supported", "supported": "Supported", "active": "Active" } },
       "update_status": { "name": "Update status", "state": { "idle": "Idle", "running": "Running", "success": "Successful", "failed": "Failed" } },

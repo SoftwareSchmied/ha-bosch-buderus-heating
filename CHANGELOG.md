@@ -7,24 +7,32 @@ Versioning after its first tagged preview.
 
 ## [0.7.0-beta.2] - 2026-09-04
 
-This beta recognizes the second heating-circuit schedule type used by the
-official MyBuderus and HomeCom Easy apps. Installations reporting the PointT
-value `absolute` now show a clear translated state instead of a raw or unknown
-value.
+This beta closes enum gaps found while investigating an upstream report about
+the `absolute` heating-circuit schedule type. A complete comparison of the
+corresponding models in MyBuderus and HomeCom Easy found several additional
+PointT values that are now handled and translated explicitly.
 
 ### Fixed
 
-- Added the app-confirmed `absolute` value to
+- Added the app-confirmed `absolute` and `levels` values to
   `/heatingCircuits/{hc}/switchProgramMode`.
-- Displayed that value as **Freely Adjustable Temperatures** in English and
-  **Frei einstellbare Temperaturen** in German.
+- Added exact app mappings for heating and cooling control types, hot water
+  following the heating schedule, heat-pump and heat-source variants, system
+  layouts, energy-management activity, and the PV contact state.
+- Accepted the enum-name spellings used by the app model for the gateway data
+  processing states while retaining the already observed PointT spellings.
+- Added English and German state translations for every newly recognized
+  canonical value.
 
 ### Behavior changes
 
-- Schedule-type sensors now recognize both known modes, `level` and
-  `absolute`, even when the gateway does not advertise a complete enum list.
-- The sensor remains read-only; this release does not add schedule editing or
-  additional PointT writes.
+- Schedule-type sensors now recognize all app-defined modes: `level`, `levels`,
+  and `absolute`, even when the gateway does not advertise a complete enum
+  list.
+- PointT's legacy or product-specific spellings are normalized at the Home
+  Assistant boundary without changing the underlying cloud data.
+- Schedule type and technical configuration sensors remain read-only; this
+  release does not add schedule editing or additional PointT writes.
 
 ### Security and compatibility
 
@@ -37,9 +45,9 @@ value.
 
 ### Validation
 
-- 506 automated tests pass with 95.13% branch coverage, including the
-  `absolute` PointT value, enum options, and the exact German and English app
-  terminology.
+- 547 automated tests pass with 95.16% branch coverage, including the
+  app-confirmed raw values, canonical states, enum options, and matching German
+  and English translations.
 - Ruff formatting and linting and strict Mypy validation pass.
 
 ### Upgrade notes and limitations

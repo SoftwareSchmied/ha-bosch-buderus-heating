@@ -283,11 +283,19 @@ reported rapid consecutive changes with a delay, the integration performs up
 to three staggered read-back checks. It never repeats the PUT. The sequence
 **Manual → Auto → Manual** was confirmed.
 
-The read-only schedule-type sensor recognizes both app modes: `level` is shown
-as **Temperature level**, while `absolute` is shown using the official app term
-**Freely Adjustable Temperatures**. The latter means that each schedule period
-can use an independently chosen temperature. Schedule editing itself remains
-outside the current Home Assistant controls.
+The read-only schedule-type sensor recognizes all three modes defined by the
+official apps: `level` is shown as **Temperature level**, `levels` as
+**Temperature Levels**, and `absolute` as **Freely Adjustable Temperatures**.
+The latter means that each schedule period can use an independently chosen
+temperature. Schedule editing itself remains outside the current Home
+Assistant controls.
+
+Other enum-like diagnostic values are normalized from the exact PointT
+spellings embedded in MyBuderus and HomeCom Easy. This includes heating and
+cooling control types, hot water following the heating schedule, heat-pump and
+heat-source variants, system layouts, energy-management activity, and the PV
+contact state. Unknown future values remain safely unavailable until their
+meaning is known.
 
 The calculated dew point is created only when the same heating circuit exposes
 both `/heatingCircuits/{hc}/roomtemperature` in °C and

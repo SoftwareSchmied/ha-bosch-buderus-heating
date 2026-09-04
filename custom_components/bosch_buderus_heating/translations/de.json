@@ -213,6 +213,7 @@
         "name": "Art des Zeitprogramms",
         "state": {
           "level": "Temperaturniveau",
+          "levels": "Temperaturniveaus",
           "absolute": "Frei einstellbare Temperaturen"
         }
       },
@@ -222,9 +223,10 @@
       "heating_circuit_summer_winter_switch_mode": { "name": "Heiz-/Kühlumschaltung", "state": { "off": "Standby", "automatic": "Automatische Umschaltung", "forced": "Nur Heizbetrieb", "cooling": "Nur Kühlbetrieb" } },
       "heating_circuit_heat_cool_mode": { "name": "Unterstützte Betriebsarten", "state": { "heat": "Nur Heizen", "cool": "Nur Kühlen", "heat_cool": "Heizen und Kühlen" } },
       "heating_circuit_type": { "name": "Heizsystem", "state": { "floor": "Fußbodenheizung", "radiator": "Heizkörper", "convector": "Konvektoren" } },
-      "heating_circuit_control_type": { "name": "Regelungsart", "state": { "room": "Raumtemperaturgeführt", "outdoor": "Außentemperaturgeführt", "wdc": "Witterungsgeführt", "wdcoptimized": "Witterungsgeführt optimiert" } },
+      "heating_circuit_control_type": { "name": "Regelungsart", "state": { "room": "Raumtemperaturgeführt", "outdoor": "Außentemperaturgeführt", "wdc": "Witterungsgeführt", "wdcoptimized": "Witterungsgeführt optimiert", "wdcsimplified": "Witterungsgeführt vereinfacht", "mpc": "Modellprädiktive Regelung", "room_flow_temperature": "Raumgeführte Vorlauftemperatur", "room_power": "Raumgeführte Leistung", "constant": "Konstantregelung", "valve_feedback_control": "Ventilrückführungsregelung", "isrc": "Einzelraumregelung (iSRC)", "vbh": "VBH", "external": "Externe Regelung" } },
+      "heating_circuit_cooling_control_type": { "name": "Kühlungs-Regelungsart", "state": { "constant": "Konstante Temperatur", "rtcc_with_dewpoint": "Raumtemperaturregelung mit Taupunktüberwachung", "rtcc_no_dewpoint": "Raumtemperaturregelung ohne Taupunktüberwachung" } },
       "hot_water_temperature_level": { "name": "Warmwasser-Temperaturniveau", "state": { "off": "Aus", "low": "Eco", "high": "Komfort", "eco": "Eco+" } },
-      "hot_water_operation_mode": { "name": "Warmwasser-Betriebsart", "state": { "off": "Aus", "low": "Eco", "high": "Komfort", "ownprogram": "Auto", "eco": "Eco+" } },
+      "hot_water_operation_mode": { "name": "Warmwasser-Betriebsart", "state": { "off": "Aus", "low": "Eco", "high": "Komfort", "ownprogram": "Auto", "eco": "Eco+", "follow_heating_program": "Wie Zeitprogramm für Heizung" } },
       "hot_water_overall_status": { "name": "Warmwasserstatus", "state": { "dhw_enabled": "Warmwasser aktiviert", "dhw_disabled": "Warmwasser deaktiviert", "auto": "Automatisch", "manual_off": "Aus", "manual_on_low": "Eco", "manual_on_eco": "Eco+", "manual_on_high": "Komfort", "extra": "Extra-Warmwasser", "away": "Abwesend", "holiday": "Urlaub", "floor_drying": "Estrichtrocknung", "td": "Thermische Desinfektion" } },
       "on_off_state": { "name": "Status", "state": { "off": "Aus", "on": "Ein", "stop": "Aus", "start": "Ein" } },
       "heat_demand": { "name": "Aktuelle Wärmeanforderung", "state": { "none": "Keine", "ch": "Heizung", "dhw": "Warmwasser", "frost": "Frostschutz", "ch_dhw": "Heizung und Warmwasser", "ch_frost": "Heizung und Frostschutz", "dhw_frost": "Warmwasser und Frostschutz", "ch_dhw_frost": "Heizung, Warmwasser und Frostschutz" } },
@@ -236,9 +238,9 @@
       "season_optimizer_mode": { "name": "Saisonoptimierung", "state": { "off": "Standby", "automatic": "Automatische Umschaltung", "forced_heat": "Nur Heizbetrieb", "forced_cool": "Nur Kühlbetrieb" } },
       "isrc_support_status": { "name": "iSRC-Unterstützung", "state": { "not_supported_incompatible_controller": "Nicht unterstützt: inkompatibler Regler", "not_supported_pairing_enabled": "Nicht unterstützt: Kopplungsmodus aktiv", "supported": "Unterstützt", "in_evaluation": "Wird geprüft" } },
       "heat_pump_type": { "name": "Wärmepumpentyp", "state": { "air_water": "Luft/Wasser", "brine_water": "Sole/Wasser", "exhaust_air": "Abluft/Wasser" } },
-      "heat_source_type": { "name": "Wärmeerzeugertyp", "state": { "heatpump": "Wärmepumpe", "boiler": "Heizkessel", "hybrid": "Hybridsystem" } },
-      "system_type": { "name": "Anlagentyp", "state": { "heatpump_single": "Einzelne Wärmepumpe", "boiler_single": "Einzelner Heizkessel", "hybrid": "Hybridsystem" } },
-      "energy_management_status": { "name": "Energiemanagement-Status", "state": { "not_connected": "Nicht verbunden", "connected": "Verbunden", "active": "Aktiv", "error": "Fehler" } },
+      "heat_source_type": { "name": "Wärmeerzeugertyp", "state": { "no_appliance": "Kein Wärmeerzeuger", "heatpump": "Wärmepumpe", "boiler": "Heizkessel", "boiler_oil": "Öl-Heizkessel", "boiler_gas": "Gas-Heizkessel", "boiler_unknown": "Unbekannter Heizkessel", "hybrid": "Hybridsystem" } },
+      "system_type": { "name": "Anlagentyp", "state": { "heatpump_single": "Einzelne Wärmepumpe", "heatpump_cascade": "Wärmepumpenkaskade", "boiler_single": "Einzelner Heizkessel", "hybrid": "Hybridsystem" } },
+      "energy_management_status": { "name": "Energiemanagement-Status", "state": { "not_connected": "Nicht verbunden", "inactive": "Inaktiv", "active_ch": "Aktiv für Heizung", "active_dhw": "Aktiv für Warmwasser", "active_em": "Energiemanagement aktiv", "connected": "Verbunden", "active": "Aktiv", "error": "Fehler" } },
       "outdoor_temperature_source": { "name": "Quelle der Außentemperatur", "state": { "appliance": "Heizungsanlage", "internet": "Internet", "roomcontroller": "Raumregler" } },
       "support_status": { "name": "Unterstützungsstatus", "state": { "not_supported": "Nicht unterstützt", "supported": "Unterstützt", "active": "Aktiv" } },
       "update_status": { "name": "Updatestatus", "state": { "idle": "Bereit", "running": "Läuft", "success": "Erfolgreich", "failed": "Fehlgeschlagen" } },
