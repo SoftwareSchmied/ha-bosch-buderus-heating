@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 
+import pytest
 from homeassistant.core import HomeAssistant
 
 from custom_components.bosch_buderus_heating.faults import (
@@ -27,7 +28,141 @@ NOW = datetime(2026, 8, 19, 0, 2, tzinfo=UTC)
 
 
 def _notifications(*values: object) -> Resource:
-    return Resource(path="/notifications", values=values)  # type: ignore[arg-type]
+    return Resource(path="/notifications", values=values, has_values=True)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("status", [403, 404])
+def test_lost_fault_source_cannot_resolve_active_faults(
+    hass: HomeAssistant, status: int
+) -> None:
+    tracker = FaultTracker(hass, "entry", "gateway")
+    active = _notifications({"ccd": "6249", "fc": "12"})
+    other = Resource(path="/heatSources/hs1/activefailure", has_values=True)
+    tracker.process_resources({active.path: active, other.path: other})
+    tracker.record_results((BatchItemResult("gateway", active.path, status),))
+    for _ in range(3):
+        assert tracker.process_resources({other.path: other}) == ()
+    assert len(tracker.active_faults) == 1
+
+
+@pytest.mark.parametrize(
+    "payload", [{}, {"type": "notification"}, {"values": None}, {"value": None}]
+)
+def test_missing_fault_list_is_not_an_empty_confirmation(
+    hass: HomeAssistant, payload: dict
+) -> None:
+    from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
+
+    tracker = FaultTracker(hass, "entry", "gateway")
+    active = _notifications({"ccd": "6249", "fc": "12"})
+    tracker.process_resources({active.path: active})
+    malformed = parse_resource(payload, path=active.path)
+    for _ in range(3):
+        assert tracker.process_resources({active.path: malformed}) == ()
+    assert len(tracker.active_faults) == 1
+    empty = parse_resource({"values": []}, path=active.path)
+    tracker.process_resources({active.path: empty})
+    assert (
+        tracker.process_resources({active.path: empty})[0].event_type
+        is FaultEventType.RESOLVED
+    )
+
+
+@pytest.mark.parametrize("status", [403, 404, 503])
+async def test_restart_retains_required_fault_sources(
+    hass: HomeAssistant, status: int
+) -> None:
+    source = FaultTracker(hass, "source", "gateway")
+    active = _notifications({"ccd": "6249", "fc": "12"})
+    other = Resource(path="/devices/private-device/errors", has_values=True)
+    source.process_resources({active.path: active, other.path: other})
+    stored = source._serialize()
+    assert "private-device" not in str(stored)
+    restored = FaultTracker(hass, "restored", "gateway")
+    restored._store.async_load = AsyncMock(return_value=stored)
+    await restored.async_load()
+    restored.record_results((BatchItemResult("gateway", active.path, status),))
+    for _ in range(3):
+        assert restored.process_resources({other.path: other}) == ()
+    assert len(restored.active_faults) == 1
+    empty = _notifications()
+    restored.process_resources({empty.path: empty, other.path: other})
+    assert (
+        restored.process_resources({empty.path: empty, other.path: other})[0].event_type
+        is FaultEventType.RESOLVED
+    )
+
+
+@pytest.mark.parametrize("failure", ["http", "malformed", "partial"])
+def test_failed_notification_cycle_restarts_absence_confirmation(
+    hass: HomeAssistant, failure: str
+) -> None:
+    tracker = FaultTracker(hass, "entry", "gateway")
+    active = _notifications({"ccd": "6249", "fc": "12"})
+    empty = _notifications()
+    other = Resource(path="/heatSources/hs1/activefailure", has_values=True)
+    tracker.process_resources({active.path: active, other.path: other})
+    tracker.process_resources({empty.path: empty, other.path: other})
+    if failure == "http":
+        tracker.record_results((BatchItemResult("gateway", active.path, 503),))
+        tracker.process_resources({})
+    elif failure == "malformed":
+        tracker.process_resources(
+            {empty.path: Resource(path=empty.path), other.path: other}
+        )
+    else:
+        tracker.process_resources({other.path: other})
+    assert tracker.process_resources({empty.path: empty, other.path: other}) == ()
+    assert (
+        tracker.process_resources({empty.path: empty, other.path: other})[0].event_type
+        is FaultEventType.RESOLVED
+    )
+
+
+def test_unrelated_poll_does_not_break_notification_confirmation(
+    hass: HomeAssistant,
+) -> None:
+    tracker = FaultTracker(hass, "entry", "gateway")
+    active = _notifications({"ccd": "6249", "fc": "12"})
+    empty = _notifications()
+    tracker.process_resources({active.path: active})
+    tracker.process_resources({empty.path: empty})
+    tracker.process_resources({})
+    assert (
+        tracker.process_resources({empty.path: empty})[0].event_type
+        is FaultEventType.RESOLVED
+    )
+
+
+@pytest.mark.parametrize("source_keys", [None, [], ["invalid"]])
+async def test_legacy_baseline_needs_reobservation_before_resolution(
+    hass: HomeAssistant, source_keys
+) -> None:
+    source = FaultTracker(hass, "source", "gateway")
+    active = _notifications({"ccd": "6249", "fc": "12"})
+    source.process_resources({active.path: active})
+    stored = {
+        "active": source._serialize()["active"],
+        "required_source_keys": source_keys,
+    }
+    restored = FaultTracker(hass, "restored", "gateway")
+    restored._store.async_load = AsyncMock(return_value=stored)
+    await restored.async_load()
+    empty = _notifications()
+    for _ in range(3):
+        assert restored.process_resources({empty.path: empty}) == ()
+    # A second restart must not turn the newly collected source evidence into
+    # permission to clear a legacy fault that was never reobserved.
+    pending = restored._serialize()
+    restored._store.async_load = AsyncMock(return_value=pending)
+    await restored.async_load()
+    assert restored.process_resources({empty.path: empty}) == ()
+    restored.process_resources({active.path: active})
+    restored.process_resources({empty.path: empty})
+    assert (
+        restored.process_resources({empty.path: empty})[0].event_type
+        is FaultEventType.RESOLVED
+    )
 
 
 def test_real_k40_fault_is_normalized_without_inventing_time() -> None:
@@ -390,7 +525,7 @@ def test_listener_removal_and_capability_result_categories(
         )
     )
 
-    assert not tracker.has_supported_source
+    assert tracker.has_supported_source
     assert tracker.highest_severity is None
     assert tracker.diagnostics()["resource_results"] == {"/notifications": "error"}
 

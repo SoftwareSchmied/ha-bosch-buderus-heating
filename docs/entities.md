@@ -30,7 +30,10 @@ paths; the cloud does not expose their content, so they cannot be offered as
 entities.
 
 Cumulative energy entities use the Home Assistant state class
-`total_increasing`. If a counter drops to a lower non-negative value after a
+`total_increasing`, except calculated environmental energy, which uses `total`.
+Its net value may decrease when the source counters update at different times;
+such a decrease must not start a new meter cycle. If a raw counter drops to a
+lower non-negative value after a
 reset or device replacement, Home Assistant treats this as a new meter cycle,
 not negative consumption. The integration does not alter the measurement, but
 records detected drops anonymously as `energy_counter_resets_detected` in

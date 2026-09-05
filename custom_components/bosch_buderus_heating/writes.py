@@ -136,6 +136,11 @@ class WriteService:
         """Write an allowlisted enum and return only a confirmed result."""
         request = WriteRequest(gateway_id, resource.path, value)
         _validate_enum(resource, request, policy)
+        if _values_equal(resource.value, value):
+            resource = await self._client.get_resource(gateway_id, resource.path)
+            _validate_enum(resource, request, policy)
+            if _values_equal(resource.value, value):
+                return WriteResult(request, resource)
         return await self._async_write(request, resource)
 
     async def async_write_number(
@@ -148,14 +153,17 @@ class WriteService:
         """Write a bounded finite number and return only a confirmed result."""
         request = WriteRequest(gateway_id, resource.path, value)
         _validate_number(resource, request, policy)
+        if _values_equal(resource.value, value):
+            resource = await self._client.get_resource(gateway_id, resource.path)
+            _validate_number(resource, request, policy)
+            if _values_equal(resource.value, value):
+                return WriteResult(request, resource)
         return await self._async_write(request, resource)
 
     async def _async_write(
         self, request: WriteRequest, resource: Resource
     ) -> WriteResult:
         value = request.value
-        if _values_equal(resource.value, value):
-            return WriteResult(request, resource)
         put_timed_out = False
         try:
             response = await self._client.put_resource_value(

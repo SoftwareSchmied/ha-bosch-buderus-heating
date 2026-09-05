@@ -161,6 +161,31 @@ def test_unavailable_or_non_boolean_value_has_no_binary_state(
     assert sensor.is_on is None
 
 
+def test_malformed_initial_fault_data_never_advertises_a_healthy_state(
+    hass: HomeAssistant,
+) -> None:
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    coordinator = BoschBuderusDataUpdateCoordinator(
+        hass, AsyncMock(), Gateway("gateway-one"), entry
+    )
+    sensor = BoschBuderusSystemFaultBinarySensor(coordinator)
+    path = "/notifications"
+    coordinator.faults.process_resources({path: Resource(path=path)})
+    assert not sensor.available
+    warning = Resource(path=path, values=({"ccd": "W1", "fc": "WARNING"},))
+    coordinator.faults.process_resources({path: warning})
+    assert sensor.available
+    assert not sensor.is_on
+    coordinator.faults.process_resources({path: Resource(path=path)})
+    assert not sensor.available
+    coordinator.faults.process_resources({path: Resource(path=path, has_values=True)})
+    assert sensor.available
+    assert not sensor.is_on
+    coordinator.faults.process_resources({path: Resource(path=path)})
+    assert not sensor.available
+
+
 def test_system_fault_binary_sensor_uses_fault_tracker(
     hass: HomeAssistant,
 ) -> None:

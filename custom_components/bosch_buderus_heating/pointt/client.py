@@ -21,13 +21,15 @@ from .parsers import (
     parse_resource,
 )
 from .token_manager import StaticTokenProvider
-from .transport import PointTTransport, RetryPolicy
+from .transport import PointTTransport, RateLimitBackoff, RetryPolicy
 
 
 class AccessTokenProvider(Protocol):
     """Access-token interface consumed by PointTClient."""
 
-    async def get_access_token(self, *, force_refresh: bool = False) -> str:
+    async def get_access_token(
+        self, *, force_refresh: bool = False, rejected_token: str | None = None
+    ) -> str:
         """Return an access token and optionally force one refresh."""
         ...
 
@@ -45,6 +47,7 @@ class PointTClient:
         concurrency: int = 3,
         retry_policy: RetryPolicy | None = None,
         metrics: RequestMetrics | None = None,
+        backoff: RateLimitBackoff | None = None,
     ) -> None:
         self._token_provider: AccessTokenProvider
         if isinstance(access_token, str):
@@ -58,7 +61,13 @@ class PointTClient:
             concurrency=concurrency,
             retry_policy=retry_policy,
             metrics=metrics,
+            backoff=backoff,
         )
+
+    @property
+    def backoff(self) -> RateLimitBackoff:
+        """Return the account brake so setup retries can retain its deadline."""
+        return self._transport.backoff
 
     @property
     def metrics(self) -> RequestMetrics:
@@ -196,6 +205,9 @@ class PointTClient:
                 request_sequence=request_sequence,
             )
             results.extend(parsed)
+            if any(item.status == 429 for item in parsed):
+                self._transport.backoff.activate(None)
+                break
         return tuple(results)
 
     async def _request(
@@ -231,6 +243,7 @@ class PointTClient:
         request_type: str | None = None,
         fallback_reason: str | None = None,
     ) -> tuple[JsonValue, int]:
+        self._transport.backoff.raise_if_active()
         token = await self._token_provider.get_access_token()
         try:
             return await self._transport.request_json_with_sequence(
@@ -244,7 +257,10 @@ class PointTClient:
                 fallback_reason=fallback_reason,
             )
         except AccessTokenRejected:
-            token = await self._token_provider.get_access_token(force_refresh=True)
+            self._transport.backoff.raise_if_active()
+            token = await self._token_provider.get_access_token(
+                force_refresh=True, rejected_token=token
+            )
             return await self._transport.request_json_with_sequence(
                 method,
                 path,

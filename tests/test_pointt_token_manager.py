@@ -70,6 +70,32 @@ async def test_async_persistence_and_forced_refresh() -> None:
     assert persisted == [manager.tokens]
 
 
+async def test_concurrent_forced_refreshes_share_one_rotation() -> None:
+    oauth = FakeOAuthClient()
+    manager = TokenManager(
+        oauth,
+        AuthTokens("old", "refresh", expires_at=5000),
+        lambda tokens: None,
+        clock=lambda: 1000,
+    )
+    results = await asyncio.gather(
+        *(
+            manager.get_access_token(force_refresh=True, rejected_token="old")
+            for _ in range(5)
+        )
+    )
+    assert results == ["fresh"] * 5
+    assert oauth.calls == ["refresh"]
+    # A late 401 still belongs to the old token, even after the first refresh ends.
+    assert (
+        await manager.get_access_token(force_refresh=True, rejected_token="old")
+        == "fresh"
+    )
+    assert oauth.calls == ["refresh"]
+    await manager.get_access_token(force_refresh=True, rejected_token="fresh")
+    assert oauth.calls == ["refresh", "rotated"]
+
+
 async def test_missing_refresh_token_is_rejected() -> None:
     manager = TokenManager(
         FakeOAuthClient(),

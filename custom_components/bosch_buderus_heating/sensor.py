@@ -597,7 +597,7 @@ class _BoschBuderusFaultCountSensor(
 
     @property
     def available(self) -> bool:
-        return super().available and self.coordinator.faults.has_supported_source
+        return super().available and self.coordinator.faults.has_known_state
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -838,6 +838,10 @@ def _description(
     unit, device_class, state_class, scale = _measurement_attributes(
         resource, value_key
     )
+    if value_kind == "environmental_energy":
+        # This net total may fall when its input counters update at different times.
+        # A decrease is not evidence of a new meter cycle.
+        state_class = SensorStateClass.TOTAL
     enum_translation_key = _enum_translation_key(resource, value_key)
     enum_options = (
         _enum_options(resource, enum_translation_key)
@@ -1011,7 +1015,11 @@ class BoschBuderusSensor(
         if description.value_kind == "system_info":
             return _system_info_summary(resource)
         if description.value_kind == "nested" and description.value_key is not None:
-            value = _nested_value(resource, description.value_key)
+            value = (
+                _energy_values(resource).get(description.value_key)
+                if "/emon/" in resource.path
+                else _nested_value(resource, description.value_key)
+            )
         else:
             value = resource.value
         scalar = _native_scalar(value)

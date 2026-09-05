@@ -254,6 +254,40 @@ def parse_holiday_state(
     )
 
 
+def parse_confirmed_holiday_list(
+    resource: Resource,
+    resources: Mapping[str, Resource],
+    *,
+    fallback_timezone: str,
+) -> tuple[HolidayPeriod, ...] | None:
+    """Require a complete explicit list before confirming a calendar mutation."""
+    if resource.path != HOLIDAY_LIST_PATH:
+        return None
+    if resource.has_value and isinstance(resource.value, list):
+        rows = resource.value
+    elif resource.has_values or resource.values:
+        rows = list(resource.values)
+    else:
+        return None
+    if len(rows) > _MAX_CANDIDATES:
+        return None
+    timezone, _source = _select_timezone(resources, fallback_timezone)
+    codec = _holiday_name_codec(resources)
+    periods: list[HolidayPeriod] = []
+    seen: set[int] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            return None
+        period = _parse_period(row, timezone, codec)
+        if period is None or (identifier := holiday_period_id(period)) is None:
+            return None
+        if identifier in seen:
+            return None
+        seen.add(identifier)
+        periods.append(period)
+    return tuple(periods)
+
+
 def parse_holiday_write_configuration(
     resources: Mapping[str, Resource],
 ) -> HolidayWriteConfiguration | None:

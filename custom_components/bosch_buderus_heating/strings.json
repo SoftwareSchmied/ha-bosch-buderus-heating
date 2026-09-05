@@ -59,6 +59,7 @@
       "no_gateways": "No compatible gateway was found. Check that the selected brand and SingleKey ID account match the heating app and that the gateway is online.",
       "reauth_required": "The saved authorization is no longer valid. Close this dialog and select Reauthenticate for Bosch/Buderus Heating.",
       "reauth_successful": "Sign-in was renewed successfully.",
+      "reauth_wrong_account": "The selected account does not have any of the configured gateways. Sign in with the original account.",
       "reconfigure_successful": "The settings were saved. Bosch/Buderus Heating is reloading and discovering all available resources again."
     }
   },

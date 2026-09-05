@@ -140,7 +140,7 @@ class BoschBuderusSystemFaultBinarySensor(
 
     @property
     def available(self) -> bool:
-        return super().available and self.coordinator.faults.has_supported_source
+        return super().available and self.coordinator.faults.has_known_state
 
     @property
     def is_on(self) -> bool:

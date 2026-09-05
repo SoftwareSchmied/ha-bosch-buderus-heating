@@ -321,6 +321,8 @@ async def async_discover_resources(
                 )
                 for path in frontier
             )
+        if any(result.status == 429 for result in results):
+            raise RateLimited(retry_after=None)
         results, fallback_used = await _recover_invalid_bulk_results(
             client,
             gateway_id,

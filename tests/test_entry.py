@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
@@ -96,6 +96,35 @@ async def test_entry_setup_selects_gateways_and_persists_rotated_tokens(
         AsyncMock(return_value=True),
     ):
         assert await async_unload_entry(hass, entry)
+
+
+async def test_setup_retries_retain_account_rate_limit(hass: HomeAssistant) -> None:
+    entry = _entry(hass)
+    response = AsyncMock()
+    response.status = 429
+    response.headers = {"Retry-After": "3600"}
+    response.__aenter__.return_value = response
+    session = Mock()
+    session.request.return_value = response
+    with (
+        patch(
+            "custom_components.bosch_buderus_heating.async_get_clientsession",
+            return_value=session,
+        ),
+        patch(
+            "custom_components.bosch_buderus_heating.OAuthClient.refresh",
+            AsyncMock(
+                return_value=AuthTokens("access", "refresh", expires_at=4_000_000_000)
+            ),
+        ),
+    ):
+        with pytest.raises(ConfigEntryNotReady):
+            await async_setup_entry(hass, entry)
+        backoff = entry.runtime_data.client.backoff
+        with pytest.raises(ConfigEntryNotReady):
+            await async_setup_entry(hass, entry)
+        assert entry.runtime_data.client.backoff is backoff
+    session.request.assert_called_once()
 
 
 async def test_entry_setup_maps_authentication_failure(
@@ -312,11 +341,24 @@ def test_deselected_gateway_registry_entries_are_removed(
         config_entry=entry,
         device_id=removed.id,
     )
+    metrics = entity_registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        f"{entry.entry_id}:request_metrics:total",
+        config_entry=entry,
+    )
+    metrics = entity_registry.async_update_entity(
+        metrics.entity_id,
+        name="My request counter",
+        icon="mdi:counter",
+        disabled_by=None,
+    )
 
     _remove_unselected_gateway_entries(hass, entry, frozenset({"gateway-one"}))
 
     assert entity_registry.async_get(selected_entity.entity_id) is not None
     assert entity_registry.async_get(removed_entity.entity_id) is None
+    assert entity_registry.async_get(metrics.entity_id) == metrics
     assert device_registry.async_get(selected.id) is not None
     assert device_registry.async_get(removed.id) is None
 

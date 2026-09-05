@@ -6,7 +6,7 @@ import asyncio
 import math
 from collections.abc import Awaitable, Callable, Mapping
 from contextlib import suppress
-from dataclasses import replace
+from dataclasses import fields, replace
 from datetime import date, datetime, time, timedelta, tzinfo
 
 from .holidays import (
@@ -18,6 +18,7 @@ from .holidays import (
     HolidayWriteValues,
     encode_holiday_name,
     holiday_period_id,
+    parse_confirmed_holiday_list,
     parse_holiday_state,
 )
 from .pointt import (
@@ -63,11 +64,12 @@ class HolidayWriteService:
         fallback_timezone: str,
     ) -> Resource:
         """Create one period and confirm a new matching numeric identifier."""
+        periods = await self._async_current_periods(
+            gateway_id, resources, fallback_timezone=fallback_timezone
+        )
         previous_ids = {
             identifier
-            for period in parse_holiday_state(
-                resources, fallback_timezone=fallback_timezone
-            ).periods
+            for period in periods
             if (identifier := holiday_period_id(period)) is not None
         }
         with suppress(RequestTimeout):
@@ -98,9 +100,43 @@ class HolidayWriteService:
         values: HolidayWriteValues,
         *,
         fallback_timezone: str,
+        expected: HolidayWriteValues | None = None,
     ) -> Resource:
         """Update one period and confirm all known fields by numeric ID."""
         _require_existing_id(resources, holiday_id, fallback_timezone)
+        baseline = expected or next(
+            period.write_values
+            for period in parse_holiday_state(
+                resources, fallback_timezone=fallback_timezone
+            ).periods
+            if holiday_period_id(period) == holiday_id
+        )
+        periods = await self._async_current_periods(
+            gateway_id, resources, fallback_timezone=fallback_timezone
+        )
+        current = next(
+            (
+                period.write_values
+                for period in periods
+                if holiday_period_id(period) == holiday_id
+            ),
+            None,
+        )
+        if baseline is None or current is None:
+            raise WriteValidationError("Holiday is no longer available for editing")
+        values = _merge_holiday_changes(baseline, values, current)
+        merged_resource = Resource(
+            path=HOLIDAY_LIST_PATH,
+            value=[{"id": holiday_id, **values.as_payload()}],
+            has_value=True,
+        )
+        if (
+            parse_confirmed_holiday_list(
+                merged_resource, resources, fallback_timezone=fallback_timezone
+            )
+            is None
+        ):
+            raise WriteValidationError("Updated holiday no longer has a valid timespan")
         with suppress(RequestTimeout):
             await self._client.update_holiday_period(
                 gateway_id, holiday_id, values.as_payload()
@@ -143,6 +179,22 @@ class HolidayWriteService:
             fallback_timezone=fallback_timezone,
         )
 
+    async def _async_current_periods(
+        self,
+        gateway_id: str,
+        resources: Mapping[str, Resource],
+        *,
+        fallback_timezone: str,
+    ) -> tuple[HolidayPeriod, ...]:
+        """Establish an authoritative baseline before a non-idempotent write."""
+        resource = await self._client.get_resource(gateway_id, HOLIDAY_LIST_PATH)
+        periods = parse_confirmed_holiday_list(
+            resource, resources, fallback_timezone=fallback_timezone
+        )
+        if periods is None:
+            raise WriteValidationError("Current holiday list is incomplete or invalid")
+        return periods
+
     async def _async_confirm(
         self,
         gateway_id: str,
@@ -163,16 +215,37 @@ class HolidayWriteService:
                 continue
             current = dict(resources)
             current[HOLIDAY_LIST_PATH] = holiday_list
-            periods = parse_holiday_state(
-                current, fallback_timezone=fallback_timezone
-            ).periods
-            if confirmed(periods):
+            periods = parse_confirmed_holiday_list(
+                holiday_list, current, fallback_timezone=fallback_timezone
+            )
+            if periods is not None and confirmed(periods):
                 return holiday_list
         if last_temporary_error is not None:
             raise WriteNotConfirmed("PointT holiday read-back timed out") from (
                 last_temporary_error
             )
         raise WriteNotConfirmed("PointT holiday read-back did not confirm the change")
+
+
+def _merge_holiday_changes(
+    baseline: HolidayWriteValues,
+    desired: HolidayWriteValues,
+    current: HolidayWriteValues,
+) -> HolidayWriteValues:
+    """Apply only the user's changes and reject conflicting concurrent edits."""
+    changes = {}
+    for field in fields(HolidayWriteValues):
+        before = getattr(baseline, field.name)
+        after = getattr(desired, field.name)
+        live = getattr(current, field.name)
+        if before == after:
+            continue
+        if live != before and live != after:
+            raise WriteValidationError(
+                "Holiday changed concurrently; refresh before editing"
+            )
+        changes[field.name] = after
+    return replace(current, **changes)
 
 
 def create_holiday_values(

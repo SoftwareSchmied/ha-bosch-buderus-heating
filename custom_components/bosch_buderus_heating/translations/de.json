@@ -49,6 +49,7 @@
       "no_gateways": "Es wurde kein kompatibles Gateway gefunden. Prüfe, ob Marke und SingleKey-ID-Konto zur Heizungs-App passen und ob das Gateway online ist.",
       "reauth_required": "Die gespeicherte Autorisierung ist nicht mehr gültig. Schließe diesen Dialog und wähle bei Bosch/Buderus Heating Erneut authentifizieren.",
       "reauth_successful": "Die Anmeldung wurde erfolgreich erneuert.",
+      "reauth_wrong_account": "Das ausgewählte Konto enthält keines der eingerichteten Gateways. Melde dich mit dem ursprünglichen Konto an.",
       "reconfigure_successful": "Die Einstellungen wurden gespeichert. Bosch/Buderus Heating wird neu geladen und sucht alle verfügbaren Ressourcen erneut."
     }
   },

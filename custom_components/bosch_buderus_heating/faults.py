@@ -208,7 +208,7 @@ def parse_fault_resource(
         return FaultParseResult(())
 
     raw_items: Iterable[JsonValue]
-    if resource.values:
+    if resource.values or resource.has_values:
         raw_items = resource.values
     elif resource.has_value and isinstance(resource.value, list):
         raw_items = resource.value
@@ -217,7 +217,7 @@ def parse_fault_resource(
     elif resource.has_value and isinstance(resource.value, str | int | float):
         raw_items = ({"value": resource.value},)
     else:
-        raw_items = ()
+        return FaultParseResult((), 1)
 
     faults: list[ActiveFault] = []
     invalid = 0
@@ -289,6 +289,9 @@ class FaultTracker:
         self._pending_events: list[FaultLifecycleEvent] = []
         self._initialized = False
         self._supported_paths: set[str] = set()
+        self._required_source_keys: set[str] = set()
+        self._unverified_restored: set[str] = set()
+        self._has_valid_state = False
         self._resource_results: dict[str, str] = {}
         self._last_successful_update: datetime | None = None
         self._last_parser_status = "not_run"
@@ -325,6 +328,11 @@ class FaultTracker:
         return bool(self._supported_active_paths())
 
     @property
+    def has_known_state(self) -> bool:
+        """Keep known faults visible, but never infer health from unreadable data."""
+        return bool(self.active_faults) or self._has_valid_state
+
+    @property
     def highest_severity(self) -> FaultSeverity | None:
         """Return the strongest currently active severity."""
         return max(
@@ -344,6 +352,26 @@ class FaultTracker:
             if fault is not None:
                 restored[fault.fingerprint] = fault
         self._active = restored
+        raw_keys = data.get("required_source_keys")
+        if (
+            isinstance(raw_keys, list)
+            and raw_keys
+            and all(
+                isinstance(key, str) and re.fullmatch(r"[0-9a-f]{64}", key)
+                for key in raw_keys
+            )
+        ):
+            self._required_source_keys = set(raw_keys)
+            pending = data.get("unverified_faults", [])
+            self._unverified_restored = (
+                {key for key in pending if isinstance(key, str) and key in restored}
+                if isinstance(pending, list)
+                else set(restored)
+            )
+        else:
+            # Older stores lack source evidence. Reobserve those incidents before
+            # permitting absence-based resolution; never invent an all-clear.
+            self._unverified_restored = set(restored)
         self._initialized = True
 
     def async_add_listener(
@@ -366,11 +394,15 @@ class FaultTracker:
         for result in results:
             if not is_fault_resource_path(result.path):
                 continue
+            if result.resource is None and is_active_fault_resource_path(result.path):
+                self._absence_counts.clear()
+                self._has_valid_state = False
             if result.resource is not None:
                 self._supported_paths.add(result.path)
                 self._resource_results[result.path] = "success"
             elif result.status in (403, 404):
-                self._supported_paths.discard(result.path)
+                # A previously readable source remains required for resolution.
+                # Losing access is not evidence that its faults disappeared.
                 self._resource_results[result.path] = str(result.status)
             elif result.status is not None:
                 self._resource_results[result.path] = str(result.status)
@@ -386,6 +418,8 @@ class FaultTracker:
     ) -> tuple[FaultLifecycleEvent, ...]:
         """Apply one cycle, requiring complete success before resolving faults."""
         now = observed_at or datetime.now(UTC)
+        previous_sources = set(self._required_source_keys)
+        previous_unverified = set(self._unverified_restored)
         successful = set(resources) if successful_paths is None else successful_paths
         for path in successful:
             if is_fault_resource_path(path):
@@ -399,9 +433,11 @@ class FaultTracker:
             if path not in successful or not is_active_fault_resource_path(path):
                 continue
             parsed_resources += 1
+            self._required_source_keys.add(_source_key(path))
             parsed = parse_fault_resource(resource, observed_at=now)
             invalid_entries += parsed.invalid_entries
             for fault in parsed.faults:
+                self._unverified_restored.discard(fault.fingerprint)
                 existing = parsed_faults.get(fault.fingerprint)
                 parsed_faults[fault.fingerprint] = (
                     fault if existing is None else _merge_faults(existing, fault)
@@ -420,6 +456,21 @@ class FaultTracker:
         if parsed_resources:
             self._last_successful_update = now
 
+        complete = (
+            bool(self._required_source_keys)
+            and self._required_source_keys.issubset(
+                _source_key(path)
+                for path in resources
+                if path in successful and is_active_fault_resource_path(path)
+            )
+            and not invalid_entries
+            and not self._unverified_restored
+        )
+        if parsed_resources:
+            self._has_valid_state = complete
+            if not complete:
+                self._absence_counts.clear()
+
         if not self._initialized:
             self._active = parsed_faults
             self._initialized = True
@@ -427,7 +478,10 @@ class FaultTracker:
             return ()
 
         events: list[FaultLifecycleEvent] = []
-        changed = False
+        changed = (
+            previous_sources != self._required_source_keys
+            or previous_unverified != self._unverified_restored
+        )
         for fingerprint, fault in parsed_faults.items():
             previous = self._active.get(fingerprint)
             self._absence_counts.pop(fingerprint, None)
@@ -450,10 +504,6 @@ class FaultTracker:
                 ),
             )
 
-        supported = self._supported_active_paths()
-        complete = (
-            bool(supported) and supported.issubset(successful) and not invalid_entries
-        )
         if complete:
             for fingerprint in set(self._active) - set(parsed_faults):
                 self._absence_counts[fingerprint] += 1
@@ -525,7 +575,14 @@ class FaultTracker:
     def _serialize(self) -> dict[str, Any]:
         return {
             "active": [_serialize_fault(item) for item in self.active],
+            "required_source_keys": sorted(self._required_source_keys),
+            "unverified_faults": sorted(self._unverified_restored),
         }
+
+
+def _source_key(path: str) -> str:
+    """Persist source identity without storing device identifiers or raw paths."""
+    return hashlib.sha256(path.encode()).hexdigest()
 
 
 def _parse_fault_item(

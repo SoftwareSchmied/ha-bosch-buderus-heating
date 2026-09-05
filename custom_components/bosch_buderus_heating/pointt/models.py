@@ -89,6 +89,7 @@ class Resource:
     values: tuple[JsonValue, ...] = ()
     metadata: ResourceMetadata = field(default_factory=ResourceMetadata)
     references: tuple[ResourceReference, ...] = ()
+    has_values: bool = False
 
 
 @dataclass(frozen=True, slots=True)

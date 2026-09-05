@@ -34,6 +34,17 @@ malformed individual entries, and partial batch responses do not clear an
 existing fault. The normalized active baseline is stored privately so a Home
 Assistant restart does not repeat events that are still active.
 
+The baseline also stores hashes of the required source paths so a restart
+cannot forget an unreadable source. Device identifiers and raw source paths
+are not included in that stored evidence. A failed or malformed notification
+read restarts the two-read confirmation sequence; unrelated polling does not.
+Without a valid baseline, an unreadable response leaves the aggregate state
+unavailable instead of reporting that the system is healthy.
+
+Baselines saved by older versions have no source evidence. Their existing
+faults remain conservatively retained until reobserved, after which normal
+resolution checks apply. Restarting again does not bypass this protection.
+
 PointT did not provide an appliance timestamp in the verified K40 fault case.
 In that situation `first_seen` and `observed_at` mean when Home Assistant first
 saw the notification. The event reports `time_source:

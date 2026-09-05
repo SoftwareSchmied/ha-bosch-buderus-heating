@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import aiohttp
 import pytest
@@ -18,10 +21,15 @@ from custom_components.bosch_buderus_heating.pointt import (
     ServiceUnavailable,
     UnexpectedHttpStatus,
 )
-from custom_components.bosch_buderus_heating.pointt.const import DEFAULT_USER_AGENT
+from custom_components.bosch_buderus_heating.pointt.const import (
+    DEFAULT_USER_AGENT,
+    MAX_RESPONSE_BYTES,
+)
 from custom_components.bosch_buderus_heating.pointt.models import AuthTokens
 from custom_components.bosch_buderus_heating.pointt.transport import (
     PointTTransport,
+    RateLimitBackoff,
+    _read_limited,
     _validate_json,
 )
 
@@ -47,11 +55,149 @@ async def serve(routes: list[tuple[str, str, Handler]]) -> AsyncIterator[str]:
         await runner.cleanup()
 
 
+@pytest.mark.parametrize(
+    "delay, expected",
+    [(None, 300), (0, 60), (float("inf"), 300), (99999, 3600), (90, 90)],
+)
+def test_account_backoff_is_bounded_and_expires(delay, expected) -> None:
+    now = 10.0
+    backoff = RateLimitBackoff(clock=lambda: now)
+    backoff.activate(delay)
+    with pytest.raises(RateLimited) as raised:
+        backoff.raise_if_active()
+    assert raised.value.retry_after == expected
+    backoff.activate(0)
+    now += expected
+    backoff.raise_if_active()
+
+
+async def test_http_rate_limit_blocks_other_gateways_and_queued_requests() -> None:
+    entered = asyncio.Event()
+    release = asyncio.Event()
+    calls = 0
+
+    async def limited(request: web.Request) -> web.Response:
+        nonlocal calls
+        calls += 1
+        entered.set()
+        await release.wait()
+        return web.Response(status=429, headers={"Retry-After": "90"})
+
+    async with (
+        serve([("GET", "/gateways/{id}/resource/{tail:.*}", limited)]) as url,
+        aiohttp.ClientSession() as session,
+    ):
+        client = PointTClient(session, "token", base_url=url, concurrency=1)
+        first = asyncio.create_task(client.get_resource("gateway-one", "/system"))
+        await entered.wait()
+        queued = asyncio.create_task(client.get_resource("gateway-two", "/system"))
+        await asyncio.sleep(0)
+        release.set()
+        results = await asyncio.gather(first, queued, return_exceptions=True)
+        assert all(isinstance(result, RateLimited) for result in results)
+        with pytest.raises(RateLimited):
+            await client.put_resource_value("gateway-two", "/system", "on")
+        assert calls == 1
+
+
+async def test_bulk_item_rate_limit_stops_remaining_chunks_and_account_requests() -> (
+    None
+):
+    calls = 0
+
+    async def limited(request: web.Request) -> web.Response:
+        nonlocal calls
+        calls += 1
+        return web.json_response(
+            [
+                {
+                    "gatewayId": "gateway-one",
+                    "resourcePaths": [{"resourcePath": "/system", "serverStatus": 429}],
+                }
+            ]
+        )
+
+    async with (
+        serve([("POST", "/bulk", limited)]) as url,
+        aiohttp.ClientSession() as session,
+    ):
+        client = PointTClient(session, "token", base_url=url)
+        results = await client.get_resources_bulk(
+            "gateway-one", ["/system", "/gateway"], chunk_size=1
+        )
+        assert results[0].status == 429
+        assert len(results) == 1
+        with pytest.raises(RateLimited):
+            await client.get_resource("gateway-two", "/system")
+        assert calls == 1
+
+
+@pytest.mark.parametrize("size", [MAX_RESPONSE_BYTES, MAX_RESPONSE_BYTES + 100_000])
+async def test_response_body_is_bounded_during_read(size: int) -> None:
+    consumed = 0
+
+    async def read(limit: int) -> bytes:
+        nonlocal consumed
+        count = min(limit, size - consumed, 7000)
+        consumed += count
+        return b"x" * count
+
+    response = SimpleNamespace(
+        content=SimpleNamespace(read=AsyncMock(side_effect=read))
+    )
+    if size > MAX_RESPONSE_BYTES:
+        with pytest.raises(InvalidPayload):
+            await _read_limited(response)
+        assert consumed == MAX_RESPONSE_BYTES + 1
+    else:
+        assert len(await _read_limited(response)) == size
+
+
+async def test_simultaneous_401_responses_refresh_the_account_once() -> None:
+    from custom_components.bosch_buderus_heating.pointt import TokenManager
+
+    count = 0
+    entered = asyncio.Event()
+
+    async def handler(request: web.Request) -> web.Response:
+        nonlocal count
+        if request.headers["Authorization"] == "Bearer stale":
+            count += 1
+            if count == 3:
+                entered.set()
+            await entered.wait()
+            return web.Response(status=401)
+        return web.json_response({"value": 1})
+
+    oauth = SimpleNamespace(
+        refresh=AsyncMock(
+            return_value=AuthTokens("fresh", "rotated", expires_at=4_000_000_000)
+        )
+    )
+    manager = TokenManager(
+        oauth,
+        AuthTokens("stale", "refresh", expires_at=4_000_000_000),
+        lambda tokens: None,
+    )
+    async with (
+        serve([("GET", "/gateways/{id}/resource/system", handler)]) as url,
+        aiohttp.ClientSession() as session,
+    ):
+        client = PointTClient(session, manager, base_url=url)
+        results = await asyncio.gather(
+            *(client.get_resource(f"gateway-{n}", "/system") for n in range(3))
+        )
+    assert [item.value for item in results] == [1, 1, 1]
+    oauth.refresh.assert_awaited_once()
+
+
 class RotatingProvider:
     def __init__(self) -> None:
         self.calls: list[bool] = []
 
-    async def get_access_token(self, *, force_refresh: bool = False) -> str:
+    async def get_access_token(
+        self, *, force_refresh: bool = False, rejected_token: str | None = None
+    ) -> str:
         self.calls.append(force_refresh)
         return "fresh" if force_refresh else "stale"
 

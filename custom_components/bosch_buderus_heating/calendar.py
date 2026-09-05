@@ -155,7 +155,9 @@ class BoschBuderusHolidayCalendar(
                 self._timezone,
                 change_name=event[EVENT_SUMMARY] != self._summary_for_period(period),
             )
-            await self.coordinator.async_update_holiday(holiday_id, values)
+            await self.coordinator.async_update_holiday(
+                holiday_id, values, expected=period.write_values
+            )
         except (KeyError, PointTError, TypeError, ValueError) as err:
             raise HomeAssistantError(
                 "The holiday could not be changed or confirmed"
