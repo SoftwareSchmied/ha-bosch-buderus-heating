@@ -210,6 +210,9 @@ async def test_writable_calendar_creates_updates_and_deletes(
         recurrence_range="",
     )
     holiday_id, updated = coordinator.async_update_holiday.await_args.args
+    baseline = coordinator.async_update_holiday.await_args.kwargs["expected"]
+    assert baseline == entity._period_for_uid("pointt-7").write_values
+    assert baseline.start_date != updated.start_date
     assert holiday_id == 7
     assert updated.heating_mode == "ECO"
     assert updated.dhw_mode == "LOW"

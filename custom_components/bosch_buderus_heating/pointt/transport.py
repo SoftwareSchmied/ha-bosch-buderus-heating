@@ -36,6 +36,27 @@ from .metrics import RequestMetrics, bulk_resource_count, request_category
 from .models import JsonValue
 
 
+class RateLimitBackoff:
+    """Stop all account requests for a bounded interval after a rate limit."""
+
+    def __init__(self, *, clock: Callable[[], float] = monotonic) -> None:
+        self._clock = clock
+        self._until = 0.0
+
+    def activate(self, retry_after: float | None) -> None:
+        """Extend the shared deadline without shortening an existing pause."""
+        delay = retry_after
+        if delay is None or not math.isfinite(delay):
+            delay = 300.0
+        self._until = max(self._until, self._clock() + min(3600.0, max(60.0, delay)))
+
+    def raise_if_active(self) -> None:
+        """Reject a locally blocked request before it reaches the cloud."""
+        remaining = self._until - self._clock()
+        if remaining > 0:
+            raise RateLimited(remaining)
+
+
 @dataclass(frozen=True, slots=True)
 class RetryPolicy:
     """Retry settings for idempotent reads."""
@@ -63,6 +84,7 @@ class PointTTransport:
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
         random_value: Callable[[], float] = random.random,
         metrics: RequestMetrics | None = None,
+        backoff: RateLimitBackoff | None = None,
     ) -> None:
         if concurrency < 1:
             raise ValueError("Transport concurrency must be positive")
@@ -77,6 +99,7 @@ class PointTTransport:
             connect=DEFAULT_CONNECT_TIMEOUT, total=DEFAULT_TOTAL_TIMEOUT
         )
         self.metrics = metrics or RequestMetrics()
+        self.backoff = backoff if backoff is not None else RateLimitBackoff()
 
     async def request_json(
         self,
@@ -158,6 +181,33 @@ class PointTTransport:
         fallback_reason: str | None,
         attempt: int,
     ) -> tuple[JsonValue, int]:
+        self.backoff.raise_if_active()
+        async with self._semaphore:
+            # A preceding request may have activated backoff while this waited.
+            self.backoff.raise_if_active()
+            return await self._request_once_locked(
+                method,
+                path,
+                access_token,
+                json_body=json_body,
+                resource_path=resource_path,
+                request_type=request_type,
+                fallback_reason=fallback_reason,
+                attempt=attempt,
+            )
+
+    async def _request_once_locked(
+        self,
+        method: str,
+        path: str,
+        access_token: str,
+        *,
+        json_body: JsonValue,
+        resource_path: str | None,
+        request_type: str | None,
+        fallback_reason: str | None,
+        attempt: int,
+    ) -> tuple[JsonValue, int]:
         started = monotonic()
         status: int | None = None
         outcome = "success"
@@ -173,7 +223,6 @@ class PointTTransport:
             }
             try:
                 async with (
-                    self._semaphore,
                     self._session.request(
                         method,
                         url,
@@ -190,14 +239,12 @@ class PointTTransport:
                     if response.status == 204:
                         raw = b""
                     else:
-                        raw = await response.read()
+                        raw = await _read_limited(response)
             except TimeoutError as err:
                 raise RequestTimeout("PointT request timed out") from err
             except aiohttp.ClientError as err:
                 raise ServiceUnavailable() from err
 
-            if len(raw) > MAX_RESPONSE_BYTES:
-                raise InvalidPayload("PointT response exceeded the size limit")
             if raw:
                 try:
                     parsed: object = json.loads(raw)
@@ -207,7 +254,8 @@ class PointTTransport:
         except AccessTokenRejected:
             outcome = "authentication_error"
             raise
-        except RateLimited:
+        except RateLimited as err:
+            self.backoff.activate(err.retry_after)
             outcome = "rate_limited"
             raise
         except RequestTimeout:
@@ -270,6 +318,18 @@ class PointTTransport:
         if status >= 500:
             raise ServiceUnavailable(status)
         raise UnexpectedHttpStatus(status)
+
+
+async def _read_limited(response: aiohttp.ClientResponse) -> bytes:
+    """Bound the decompressed response while reading, including chunked bodies."""
+    body = bytearray()
+    while chunk := await response.content.read(
+        min(65536, MAX_RESPONSE_BYTES + 1 - len(body))
+    ):
+        body.extend(chunk)
+        if len(body) > MAX_RESPONSE_BYTES:
+            raise InvalidPayload("PointT response exceeded the size limit")
+    return bytes(body)
 
 
 def _validate_json(value: object) -> JsonValue:

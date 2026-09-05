@@ -73,6 +73,13 @@ temperature. Home Assistant may attach a technical event identifier to an
 ordinary edit; the integration handles that identifier without treating the
 event as recurring.
 
+Before creation or editing, the integration reads a complete current holiday
+list. Edits merge only the fields changed in Home Assistant with that live
+period, preserving changes made in the manufacturer app. Conflicting changes
+to the same field stop the write; reopen the event and review its current
+settings before submitting it again. Reading and writing are separate requests,
+so an external edit during that brief interval cannot be excluded atomically.
+
 ## Delete a holiday period
 
 1. Open the event in **Calendar → Holiday periods**.

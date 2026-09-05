@@ -6,7 +6,7 @@ from dataclasses import replace
 from datetime import UTC, date, datetime
 from types import SimpleNamespace
 from typing import Any
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, call
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -77,6 +77,48 @@ def _resource(holiday_id: int, values: HolidayWriteValues) -> Resource:
     )
 
 
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {},
+        {"values": None},
+        {"value": [{"id": 7}]},
+        {"value": [{"id": 7, "startDate": "bad", "endDate": "bad"}]},
+        {"value": [None]},
+        {"value": {"periods": []}},
+        {"value": [{"id": 8, **_values().as_payload()}] * 65},
+        {"value": [{"id": 8, **_values().as_payload()}] * 2},
+    ],
+)
+async def test_delete_requires_a_complete_valid_list(payload: dict) -> None:
+    from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
+
+    client = AsyncMock()
+    client.get_resource.return_value = parse_resource(payload, path=HOLIDAY_LIST_PATH)
+    service = HolidayWriteService(client, sleep=AsyncMock())
+    with pytest.raises(WriteNotConfirmed):
+        await service.async_delete(
+            "gateway-one",
+            {HOLIDAY_LIST_PATH: _resource(7, _values())},
+            7,
+            fallback_timezone="UTC",
+        )
+    client.delete_holiday_period.assert_awaited_once()
+    assert client.get_resource.await_count == 3
+
+
+async def test_delete_accepts_explicit_empty_values_list() -> None:
+    client = AsyncMock()
+    client.get_resource.return_value = Resource(path=HOLIDAY_LIST_PATH, has_values=True)
+    await HolidayWriteService(client, sleep=AsyncMock()).async_delete(
+        "gateway-one",
+        {HOLIDAY_LIST_PATH: _resource(7, _values())},
+        7,
+        fallback_timezone="UTC",
+    )
+    client.get_resource.assert_awaited_once()
+
+
 def test_service_rejects_invalid_confirmation_configuration() -> None:
     with pytest.raises(ValueError, match="negative"):
         HolidayWriteService(AsyncMock(), read_back_delay=-1)
@@ -90,6 +132,7 @@ async def test_create_is_sent_once_and_confirmed_by_a_new_id() -> None:
     sleep = AsyncMock()
     service = HolidayWriteService(client, sleep=sleep, read_back_delay=0)
     previous = _resource(1, _values())
+    client.get_resource.side_effect = [previous, client.get_resource.return_value]
 
     result = await service.async_create(
         "gateway-one",
@@ -102,13 +145,20 @@ async def test_create_is_sent_once_and_confirmed_by_a_new_id() -> None:
     client.create_holiday_period.assert_awaited_once_with(
         "gateway-one", _values().as_payload()
     )
-    client.get_resource.assert_awaited_once_with("gateway-one", HOLIDAY_LIST_PATH)
+    assert (
+        client.get_resource.await_args_list
+        == [call("gateway-one", HOLIDAY_LIST_PATH)] * 2
+    )
 
 
 async def test_timed_out_create_is_not_repeated() -> None:
     client = AsyncMock()
     client.create_holiday_period.side_effect = RequestTimeout()
     client.get_resource.return_value = _resource(1, _values())
+    client.get_resource.side_effect = [
+        Resource(path=HOLIDAY_LIST_PATH, has_values=True),
+        client.get_resource.return_value,
+    ]
     service = HolidayWriteService(client, sleep=AsyncMock(), read_back_delay=0)
 
     await service.async_create("gateway-one", {}, _values(), fallback_timezone="UTC")
@@ -147,6 +197,11 @@ async def test_unconfirmed_write_fails_after_bounded_read_back() -> None:
     client.get_resource.return_value = Resource(
         path=HOLIDAY_LIST_PATH, value=[], has_value=True
     )
+    client.get_resource.side_effect = [
+        _resource(7, _values()),
+        client.get_resource.return_value,
+        client.get_resource.return_value,
+    ]
     service = HolidayWriteService(
         client, sleep=AsyncMock(), read_back_delay=0, read_back_attempts=2
     )
@@ -161,12 +216,16 @@ async def test_unconfirmed_write_fails_after_bounded_read_back() -> None:
         )
 
     assert client.update_holiday_period.await_count == 1
-    assert client.get_resource.await_count == 2
+    assert client.get_resource.await_count == 3
 
 
 async def test_temporary_read_back_errors_are_bounded() -> None:
     client = AsyncMock()
-    client.get_resource.side_effect = [ServiceUnavailable(), RequestTimeout()]
+    client.get_resource.side_effect = [
+        Resource(path=HOLIDAY_LIST_PATH, has_values=True),
+        ServiceUnavailable(),
+        RequestTimeout(),
+    ]
     service = HolidayWriteService(
         client, sleep=AsyncMock(), read_back_delay=0, read_back_attempts=2
     )
@@ -177,7 +236,120 @@ async def test_temporary_read_back_errors_are_bounded() -> None:
         )
 
     assert client.create_holiday_period.await_count == 1
-    assert client.get_resource.await_count == 2
+    assert client.get_resource.await_count == 3
+
+
+async def test_create_does_not_confirm_a_preexisting_uncached_period() -> None:
+    client = AsyncMock()
+    client.get_resource.return_value = _resource(7, _values())
+    client.create_holiday_period.side_effect = RequestTimeout()
+    with pytest.raises(WriteNotConfirmed):
+        await HolidayWriteService(client, sleep=AsyncMock()).async_create(
+            "gateway-one", {}, _values(), fallback_timezone="UTC"
+        )
+    assert client.mock_calls[0] == call.get_resource("gateway-one", HOLIDAY_LIST_PATH)
+    client.create_holiday_period.assert_awaited_once()
+
+
+@pytest.mark.parametrize("operation", ["create", "update"])
+async def test_invalid_live_holiday_list_prevents_mutation(operation: str) -> None:
+    client = AsyncMock()
+    client.get_resource.return_value = Resource(path=HOLIDAY_LIST_PATH)
+    service = HolidayWriteService(client, sleep=AsyncMock())
+    resources = {HOLIDAY_LIST_PATH: _resource(7, _values())}
+    with pytest.raises(WriteValidationError, match="incomplete"):
+        if operation == "create":
+            await service.async_create(
+                "gateway-one", resources, _values(), fallback_timezone="UTC"
+            )
+        else:
+            await service.async_update(
+                "gateway-one", resources, 7, _values(), fallback_timezone="UTC"
+            )
+    client.create_holiday_period.assert_not_awaited()
+    client.update_holiday_period.assert_not_awaited()
+
+
+async def test_date_edit_preserves_live_modes_and_temperature() -> None:
+    client = AsyncMock()
+    baseline = _values()
+    desired = replace(baseline, start_date="2030-08-02T08:00:00")
+    live = replace(baseline, fix_temperature=21.0, dhw_mode="HIGH")
+    merged = replace(live, start_date=desired.start_date)
+    client.get_resource.side_effect = [_resource(7, live), _resource(7, merged)]
+    await HolidayWriteService(client, sleep=AsyncMock()).async_update(
+        "gateway-one",
+        {HOLIDAY_LIST_PATH: _resource(7, baseline)},
+        7,
+        desired,
+        expected=baseline,
+        fallback_timezone="UTC",
+    )
+    client.update_holiday_period.assert_awaited_once_with(
+        "gateway-one", 7, merged.as_payload()
+    )
+    assert client.mock_calls[0] == call.get_resource("gateway-one", HOLIDAY_LIST_PATH)
+
+
+async def test_options_edit_preserves_calendar_change_while_waiting_for_lock() -> None:
+    client = AsyncMock()
+    baseline = _values()
+    desired = replace(baseline, dhw_mode="HIGH")
+    live = replace(baseline, start_date="2030-08-02T08:00:00")
+    merged = replace(live, dhw_mode="HIGH")
+    client.get_resource.side_effect = [_resource(7, live), _resource(7, merged)]
+    await HolidayWriteService(client, sleep=AsyncMock()).async_update(
+        "gateway-one",
+        {HOLIDAY_LIST_PATH: _resource(7, live)},
+        7,
+        desired,
+        expected=baseline,
+        fallback_timezone="UTC",
+    )
+    client.update_holiday_period.assert_awaited_once_with(
+        "gateway-one", 7, merged.as_payload()
+    )
+
+
+@pytest.mark.parametrize(
+    "live",
+    [
+        replace(_values(), fix_temperature=22.0),
+        None,
+    ],
+)
+async def test_changed_or_removed_holiday_rejects_conflicting_update(live) -> None:
+    client = AsyncMock()
+    client.get_resource.return_value = (
+        _resource(7, live)
+        if live
+        else Resource(path=HOLIDAY_LIST_PATH, has_values=True)
+    )
+    with pytest.raises(WriteValidationError):
+        await HolidayWriteService(client, sleep=AsyncMock()).async_update(
+            "gateway-one",
+            {HOLIDAY_LIST_PATH: _resource(7, _values())},
+            7,
+            replace(_values(), fix_temperature=20.0),
+            fallback_timezone="UTC",
+        )
+    client.update_holiday_period.assert_not_awaited()
+
+
+async def test_merging_independent_date_edits_cannot_reverse_the_timespan() -> None:
+    client = AsyncMock()
+    client.get_resource.return_value = _resource(
+        7, replace(_values(), end_date="2030-08-03T08:00:00")
+    )
+    with pytest.raises(WriteValidationError, match="timespan"):
+        await HolidayWriteService(client, sleep=AsyncMock()).async_update(
+            "gateway-one",
+            {HOLIDAY_LIST_PATH: _resource(7, _values())},
+            7,
+            replace(_values(), start_date="2030-08-04T08:00:00"),
+            fallback_timezone="UTC",
+        )
+    client.update_holiday_period.assert_not_awaited()
 
 
 async def test_update_and_delete_reject_an_id_missing_from_current_list() -> None:

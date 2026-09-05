@@ -16,6 +16,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     BatchItemResult,
     InvalidBatchEnvelope,
     InvalidPayload,
+    RateLimited,
     RequestMetrics,
     Resource,
     ResourceError,
@@ -37,6 +38,18 @@ from custom_components.bosch_buderus_heating.resource_catalog import (
     resource_name,
     supports_entity,
 )
+
+
+async def test_discovery_stops_on_item_rate_limit_before_fallback() -> None:
+    client = AsyncMock()
+    client.get_resources_bulk.return_value = (
+        BatchItemResult("gateway", "/notifications", 429),
+        BatchItemResult("gateway", "/system", 200, error=InvalidPayload()),
+    )
+    with pytest.raises(RateLimited):
+        await async_discover_resources(client, "gateway")
+    client.get_resources_bulk.assert_awaited_once()
+    client.get_resource.assert_not_awaited()
 
 
 async def test_discovery_follows_references_once_and_stays_in_roots() -> None:

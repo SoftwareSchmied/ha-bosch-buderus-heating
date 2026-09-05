@@ -70,9 +70,10 @@ async def test_write_is_confirmed_only_after_read_back() -> None:
     assert not result.put_timed_out
 
 
-async def test_matching_value_is_a_noop() -> None:
+async def test_matching_value_is_a_confirmed_noop() -> None:
     client = AsyncMock()
     current = _resource()
+    client.get_resource.return_value = current
 
     result = await WriteService(client).async_write_enum(
         "gateway-one",
@@ -83,7 +84,34 @@ async def test_matching_value_is_a_noop() -> None:
 
     assert result.resource is current
     client.put_resource_value.assert_not_awaited()
-    client.get_resource.assert_not_awaited()
+    client.get_resource.assert_awaited_once_with("gateway-one", PATH)
+
+
+async def test_matching_cache_does_not_skip_an_external_change() -> None:
+    client = AsyncMock()
+    client.put_resource_value.return_value = None
+    client.get_resource.side_effect = [_resource("auto"), _resource("manual")]
+    result = await WriteService(client, sleep=AsyncMock()).async_write_enum(
+        "gateway-one",
+        _resource("manual"),
+        "manual",
+        HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+    )
+    client.put_resource_value.assert_awaited_once_with("gateway-one", PATH, "manual")
+    assert result.resource.value == "manual"
+
+
+async def test_matching_cache_revalidates_live_write_permissions() -> None:
+    client = AsyncMock()
+    client.get_resource.return_value = _resource("auto", writable=False)
+    with pytest.raises(WriteValidationError):
+        await WriteService(client).async_write_enum(
+            "gateway-one",
+            _resource("manual"),
+            "manual",
+            HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+        )
+    client.put_resource_value.assert_not_awaited()
 
 
 async def test_timed_out_put_is_not_retried_and_can_be_confirmed() -> None:
@@ -236,6 +264,22 @@ def _number_resource(
             writable=writable,
         ),
     )
+
+
+@pytest.mark.parametrize("live", [20.0, 22.0])
+async def test_matching_number_cache_is_checked_against_cloud(live: float) -> None:
+    client = AsyncMock()
+    cached = _number_resource(20.0)
+    policy = number_policy_for_resource(cached)
+    assert policy is not None
+    client.put_resource_value.return_value = None
+    client.get_resource.side_effect = [_number_resource(live), cached]
+    result = await WriteService(client, sleep=AsyncMock()).async_write_number(
+        "gateway-one", cached, 20.0, policy
+    )
+    assert result.resource.value == 20.0
+    assert client.put_resource_value.await_count == int(live != 20.0)
+    assert client.get_resource.await_count == 1 + int(live != 20.0)
 
 
 async def test_number_write_is_bounded_and_confirmed() -> None:

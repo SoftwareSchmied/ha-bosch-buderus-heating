@@ -47,15 +47,22 @@ class TokenManager:
         """Return the current token set without logging its contents."""
         return self._tokens
 
-    async def get_access_token(self, *, force_refresh: bool = False) -> str:
+    async def get_access_token(
+        self, *, force_refresh: bool = False, rejected_token: str | None = None
+    ) -> str:
         """Return a valid token and refresh once under a lock when required."""
         if not force_refresh and not self._tokens.is_expired(
             now=self._clock(), margin=self._refresh_margin
         ):
             return self._tokens.access_token
 
+        observed_tokens = self._tokens
         async with self._lock:
-            if not force_refresh and not self._tokens.is_expired(
+            already_refreshed = self._tokens is not observed_tokens or (
+                rejected_token is not None
+                and self._tokens.access_token != rejected_token
+            )
+            if (not force_refresh or already_refreshed) and not self._tokens.is_expired(
                 now=self._clock(), margin=self._refresh_margin
             ):
                 return self._tokens.access_token
@@ -78,7 +85,9 @@ class StaticTokenProvider:
         if not self._access_token:
             raise ValueError("Access token must not be empty")
 
-    async def get_access_token(self, *, force_refresh: bool = False) -> str:
+    async def get_access_token(
+        self, *, force_refresh: bool = False, rejected_token: str | None = None
+    ) -> str:
         """Return the configured token."""
         if force_refresh:
             raise RefreshTokenRejected("Static access token cannot be refreshed")

@@ -61,7 +61,18 @@ async def async_setup_entry(
         )
 
     token_manager = TokenManager(oauth_client, tokens, persist_tokens)
-    client = PointTClient(session, token_manager)
+    previous_runtime = getattr(entry, "runtime_data", None)
+    client = PointTClient(
+        session,
+        token_manager,
+        backoff=(
+            previous_runtime.client.backoff
+            if isinstance(previous_runtime, BoschBuderusRuntimeData)
+            else None
+        ),
+    )
+    # Keep the account brake even when gateway discovery prevents setup.
+    entry.runtime_data = BoschBuderusRuntimeData(client, token_manager, (), ())
 
     try:
         gateways = await client.get_gateways()
@@ -170,6 +181,8 @@ def _remove_unselected_gateway_entries(
     entity_registry = er.async_get(hass)
     device_registry = dr.async_get(hass)
     for entity in er.async_entries_for_config_entry(entity_registry, entry.entry_id):
+        if entity.unique_id.startswith(f"{entry.entry_id}:request_metrics:"):
+            continue
         gateway_id = entity.unique_id.split(":", 1)[0]
         if gateway_id not in selected_ids:
             entity_registry.async_remove(entity.entity_id)

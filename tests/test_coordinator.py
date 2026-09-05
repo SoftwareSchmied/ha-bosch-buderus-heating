@@ -1028,6 +1028,84 @@ async def test_batch_failure_uses_bounded_core_fallback(
     }
 
 
+async def test_bulk_failure_marks_unrecovered_paths_stale(hass: HomeAssistant) -> None:
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    core = "/heatSources/actualSupplyTemperature"
+    other = "/heatSources/noncritical"
+    coordinator.resources = {path: _resource(path, 20.0) for path in (core, other)}
+    coordinator.data = {
+        path: _snapshot(item) for path, item in coordinator.resources.items()
+    }
+    coordinator._paths_by_group = {PollGroup.FAST: (core, other)}
+    client.get_resources_bulk.side_effect = ServiceUnavailable()
+    client.get_resource.return_value = _resource(core, 21.0)
+    result = await coordinator._async_update_data()
+    assert result[core].available
+    assert not result[other].available
+    assert result[other].freshness is Freshness.STALE
+    assert result[other].resource.value == 20.0
+    assert result[other].consecutive_failures == 1
+
+
+async def test_bulk_rate_limit_stops_fallback(hass: HomeAssistant) -> None:
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    path = "/heatSources/actualSupplyTemperature"
+    coordinator.resources = {path: _resource(path, 20.0)}
+    coordinator.data = {path: _snapshot(coordinator.resources[path])}
+    coordinator._paths_by_group = {PollGroup.FAST: (path,)}
+    client.get_resources_bulk.return_value = (
+        BatchItemResult("gateway-one", path, 503, error=ServiceUnavailable()),
+        BatchItemResult("gateway-one", "/notifications", 429),
+    )
+    with pytest.raises(UpdateFailed):
+        await coordinator._async_update_data()
+    client.get_resource.assert_not_awaited()
+
+
+def test_unavailable_resource_log_redacts_device_identifier(
+    hass: HomeAssistant, caplog
+) -> None:
+    import logging
+
+    coordinator = _coordinator(hass, AsyncMock())
+    path = "/devices/private-device-123/errors"
+    with caplog.at_level(logging.DEBUG):
+        coordinator._apply_results(
+            {},
+            (BatchItemResult("gateway-one", path, 404),),
+            attempted_at=datetime.now(UTC),
+            now_monotonic=monotonic(),
+            source=SnapshotSource.BATCH,
+        )
+    assert "PointT resource unavailable" in caplog.text
+    assert "private-device-123" not in caplog.text
+
+
+async def test_fully_failed_poll_cannot_revive_snapshots_during_pause(
+    hass: HomeAssistant,
+) -> None:
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    path = "/heatSources/actualSupplyTemperature"
+    resource = _resource(path, 20.0)
+    coordinator.resources = {path: resource}
+    coordinator.data = {path: _snapshot(resource)}
+    coordinator._paths_by_group = {PollGroup.FAST: (path,)}
+    client.get_resources_bulk.return_value = (
+        BatchItemResult("gateway-one", path, 504, error=ResourceError(path, 504)),
+    )
+    client.get_resource.side_effect = ServiceUnavailable()
+    await coordinator.async_refresh()
+    assert not coordinator.last_update_success
+    assert coordinator.data[path].freshness is Freshness.STALE
+    await coordinator.async_refresh()
+    assert not coordinator.data[path].available
+    assert coordinator.data[path].resource.value == 20.0
+    client.get_resources_bulk.assert_awaited_once()
+
+
 async def test_repeated_gateway_failure_opens_circuit_breaker(
     hass: HomeAssistant,
 ) -> None:

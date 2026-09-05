@@ -308,8 +308,9 @@ async def test_gateway_discovery_maps_additional_errors(
     assert result["errors"] == {"base": expected}
 
 
+@pytest.mark.parametrize("visible_gateway", ["gateway-one", "another-account"])
 async def test_reauthentication_updates_tokens(
-    hass: HomeAssistant, enable_custom_integrations: None
+    hass: HomeAssistant, enable_custom_integrations: None, visible_gateway: str
 ) -> None:
     original = AuthTokens("old-access", "old-refresh", expires_at=1000.0)
     entry = MockConfigEntry(
@@ -344,7 +345,7 @@ async def test_reauthentication_updates_tokens(
         ),
         patch(
             "custom_components.bosch_buderus_heating.config_flow.PointTClient.get_gateways",
-            AsyncMock(return_value=(Gateway("gateway-one"),)),
+            AsyncMock(return_value=(Gateway(visible_gateway),)),
         ),
     ):
         result = await hass.config_entries.flow.async_configure(
@@ -352,8 +353,12 @@ async def test_reauthentication_updates_tokens(
         )
 
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "reauth_successful"
-    assert entry.data[CONF_ACCESS_TOKEN] == "new-access"
+    if visible_gateway == "gateway-one":
+        assert result["reason"] == "reauth_successful"
+        assert entry.data[CONF_ACCESS_TOKEN] == "new-access"
+    else:
+        assert result["reason"] == "reauth_wrong_account"
+        assert entry.data[CONF_ACCESS_TOKEN] == "old-access"
 
 
 def _reconfigure_entry(hass: HomeAssistant) -> MockConfigEntry:
@@ -501,6 +506,9 @@ async def test_options_flow_configures_only_advertised_holiday_fields(
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "holiday_updated"
     holiday_id, values = coordinator.async_update_holiday.await_args.args
+    baseline = coordinator.async_update_holiday.await_args.kwargs["expected"]
+    assert baseline is not None
+    assert baseline.fix_temperature != values.fix_temperature
     assert holiday_id == 7
     assert values.assigned_to == ("hc1", "vent1")
     assert values.heating_mode == "ECO"

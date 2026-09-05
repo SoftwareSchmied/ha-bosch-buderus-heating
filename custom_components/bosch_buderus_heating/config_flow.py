@@ -300,6 +300,10 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
         if not self._gateways:
             return self.async_abort(reason="no_gateways")
         if self._reauth_entry is not None:
+            selected = set(self._reauth_entry.data.get(CONF_GATEWAY_IDS, []))
+            visible = {gateway.gateway_id for gateway in self._gateways}
+            if not selected or selected.isdisjoint(visible):
+                return self.async_abort(reason="reauth_wrong_account")
             return self.async_update_reload_and_abort(
                 self._reauth_entry,
                 data_updates=tokens_to_data(self._tokens),
@@ -521,7 +525,9 @@ class BoschBuderusOptionsFlow(OptionsFlow):
                 holiday_id = holiday_period_id(choice.period)
                 if holiday_id is None:
                     raise WriteValidationError("Holiday ID is not writable")
-                await choice.coordinator.async_update_holiday(holiday_id, values)
+                await choice.coordinator.async_update_holiday(
+                    holiday_id, values, expected=choice.period.write_values
+                )
             except WriteNotConfirmed:
                 return self._show_holiday_form(choice, error="write_not_confirmed")
             except RateLimited:

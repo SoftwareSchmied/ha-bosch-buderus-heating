@@ -301,10 +301,16 @@ class BoschBuderusDataUpdateCoordinator(
         return await self._async_write_holiday("create", None, values)
 
     async def async_update_holiday(
-        self, holiday_id: int, values: HolidayWriteValues
+        self,
+        holiday_id: int,
+        values: HolidayWriteValues,
+        *,
+        expected: HolidayWriteValues | None = None,
     ) -> Resource:
         """Update one holiday and publish its confirmed list read-back."""
-        return await self._async_write_holiday("update", holiday_id, values)
+        return await self._async_write_holiday(
+            "update", holiday_id, values, expected=expected
+        )
 
     async def async_delete_holiday(self, holiday_id: int) -> Resource:
         """Delete one holiday and publish its confirmed list read-back."""
@@ -315,6 +321,8 @@ class BoschBuderusDataUpdateCoordinator(
         operation: str,
         holiday_id: int | None,
         values: HolidayWriteValues | None,
+        *,
+        expected: HolidayWriteValues | None = None,
     ) -> Resource:
         """Run one capability-gated holiday mutation and confirm it."""
         async with self._update_lock:
@@ -361,6 +369,7 @@ class BoschBuderusDataUpdateCoordinator(
                         holiday_id,
                         values,
                         fallback_timezone=self.hass.config.time_zone,
+                        expected=expected,
                     )
                 elif operation == "delete" and holiday_id is not None:
                     confirmed = await self._holiday_write_service.async_delete(
@@ -541,13 +550,37 @@ class BoschBuderusDataUpdateCoordinator(
                 )
                 raise ConfigEntryAuthFailed from err
             except RateLimited as err:
-                self._record_chunk_failure(chunk, "rate_limited", SnapshotSource.BATCH)
+                cycle_results.extend(
+                    BatchItemResult(self.gateway.gateway_id, path, 429, error=err)
+                    for path in chunk
+                )
+                self._apply_results(
+                    snapshots,
+                    tuple(
+                        BatchItemResult(self.gateway.gateway_id, path, 429, error=err)
+                        for path in chunk
+                    ),
+                    attempted_at=attempted_at,
+                    now_monotonic=now_monotonic,
+                    source=SnapshotSource.BATCH,
+                )
                 self._activate_rate_limit_backoff(err, now_monotonic)
                 failed_chunks += 1
                 break
             except PointTError as err:
-                self._record_chunk_failure(
-                    chunk, _pointt_result(err), SnapshotSource.BATCH
+                cycle_results.extend(
+                    BatchItemResult(self.gateway.gateway_id, path, None, error=err)
+                    for path in chunk
+                )
+                self._apply_results(
+                    snapshots,
+                    tuple(
+                        BatchItemResult(self.gateway.gateway_id, path, None, error=err)
+                        for path in chunk
+                    ),
+                    attempted_at=attempted_at,
+                    now_monotonic=now_monotonic,
+                    source=SnapshotSource.BATCH,
                 )
                 failed_chunks += 1
                 gateway_failure = True
@@ -562,7 +595,8 @@ class BoschBuderusDataUpdateCoordinator(
             bulk_item_fallback: tuple[BatchItemResult, ...] = ()
             if result_source is SnapshotSource.BATCH:
                 self._log_unusable_bulk_results(results)
-                bulk_item_fallback = await self._async_bulk_item_fallback(results)
+                if not any(result.status == 429 for result in results):
+                    bulk_item_fallback = await self._async_bulk_item_fallback(results)
 
             cycle_results.extend(results)
             successful += self._apply_results(
@@ -614,6 +648,9 @@ class BoschBuderusDataUpdateCoordinator(
         )
 
         if successful == 0 and failed_chunks:
+            # Retain failures without declaring the coordinator healthy. A later
+            # cycle with only paused paths must not resurrect old fresh snapshots.
+            self.data = snapshots
             if gateway_failure:
                 self._record_gateway_failure(now_monotonic)
             raise UpdateFailed("PointT returned no usable resources")
@@ -885,7 +922,9 @@ class BoschBuderusDataUpdateCoordinator(
                 self._negative_until[result.path] = (
                     now_monotonic + pause.total_seconds()
                 )
-            _LOGGER.debug("PointT resource unavailable: %s", result.path)
+            _LOGGER.debug(
+                "PointT resource unavailable: %s", resource_path_template(result.path)
+            )
         return successful
 
     def _record_capability(

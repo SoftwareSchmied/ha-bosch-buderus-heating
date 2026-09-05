@@ -5,6 +5,74 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.7.0-beta.3] - 2026-09-05
+
+This beta improves fault reporting, calendar writes, cloud error recovery, and
+energy statistics. It prevents incomplete or stale cloud responses from being
+treated as confirmed state and protects holiday edits against changes made in
+another app.
+
+### Fixed
+
+- Keep active faults when a previously readable source becomes unavailable or
+  returns a missing or malformed list; only explicit healthy responses can
+  confirm resolution.
+- Mark unrecovered resources stale after a failed bulk request while preserving
+  their last successful values.
+- Preserve account request-counter registry entries and user customizations when
+  cleaning up deselected gateways.
+- Require a complete, valid holiday list before confirming calendar mutations,
+  including deletions.
+- Read back apparently unchanged controls before skipping a write, and recheck
+  live write permissions when another app has changed the value.
+- Extract individual energy counters from typed PointT energy items.
+- Stop discovery and polling fallbacks on bulk-item rate limits, and share the
+  cloud backoff across all gateway reads, writes, chunks, and queued requests
+  belonging to one account client.
+- Reject reauthentication with an account that has none of the configured
+  gateways, preserving the existing credentials.
+- Redact device identifiers in unavailable-resource debug messages.
+- Retain privacy-safe fault-source evidence across restarts, require consecutive
+  successful confirmations, and avoid reporting health from invalid fault data.
+- Retain stale snapshots after fully failed polls so capability pauses cannot
+  restore an unconfirmed value as fresh.
+- Read the live holiday list before creation and editing. Merge only changed
+  fields, preserve external changes, and reject conflicting concurrent edits.
+- Retain the account rate-limit deadline across failed setup attempts and
+  coalesce concurrent authentication refreshes for a rejected access token.
+- Treat calculated environmental energy as a net total so asynchronous input
+  updates do not trigger false meter resets in Home Assistant statistics.
+- Enforce the response-size limit while reading decompressed response chunks.
+
+### Behavior changes
+
+- Calendar creation and editing read the current holiday list before writing.
+  Apparently unchanged controls are also read back before a write is skipped.
+  These checks add requests when performing the affected user actions.
+- An account rate limit pauses requests across its gateways and remains in
+  effect when Home Assistant retries a failed integration setup.
+- Calculated environmental energy uses the `total` state class; raw cumulative
+  energy counters retain `total_increasing`.
+
+### Validation
+
+- 604 automated tests pass with 95.36% coverage, including branch coverage.
+- Regression tests cover incomplete fault data, restarts, concurrent calendar
+  changes, failed polling, rate limits, concurrent token refreshes, and oversized
+  responses.
+- Ruff formatting and linting and strict Mypy validation pass.
+
+### Upgrade notes and limitations
+
+- Restart Home Assistant after updating. Existing entity and device identifiers
+  are retained.
+- Previously stored active faults without source evidence are retained until
+  they are observed again, preventing an unverified fault clearance on upgrade.
+- Calendar reads and writes are separate cloud requests. A change made by
+  another app between those requests cannot be excluded atomically.
+- These fixes have automated regression coverage; validation against a real
+  heating installation remains necessary for this beta.
+
 ## [0.7.0-beta.2] - 2026-09-04
 
 This beta closes enum gaps found while investigating an upstream report about

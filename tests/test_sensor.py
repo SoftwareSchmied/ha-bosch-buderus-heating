@@ -1062,6 +1062,31 @@ def test_energy_resources_prefer_direct_total_without_duplicate(
     assert total.extra_state_attributes == {"value_source": "direct"}
 
 
+def test_environmental_energy_uses_net_total_without_false_meter_reset(
+    hass: HomeAssistant,
+) -> None:
+    path = "/heatSources/emon/totalConsumption"
+    resource = Resource(
+        path=path,
+        values=({"compressor": 10, "eheater": 0, "outputProduced": 20},),
+        metadata=ResourceMetadata(resource_type="emonValue"),
+    )
+    sensor = _sensor(hass, resource, value_key="environmental_energy")
+    assert sensor.state_class is SensorStateClass.TOTAL
+    assert sensor.native_value == 10
+    changed = Resource(
+        path=path,
+        values=({"compressor": 12, "eheater": 0, "outputProduced": 20},),
+        metadata=resource.metadata,
+    )
+    sensor.coordinator.data[path] = ResourceSnapshot(changed, True, datetime.now(UTC))
+    assert sensor.native_value == 8
+    assert (
+        _sensor(hass, resource, value_key="compressor").state_class
+        is SensorStateClass.TOTAL_INCREASING
+    )
+
+
 def test_environmental_energy_requires_complete_non_negative_balance(
     hass: HomeAssistant,
 ) -> None:
@@ -1111,10 +1136,14 @@ def test_energy_resources_accept_typed_pointt_items_and_empty_startup_shape(
         values=(
             {"type": "compressor", "value": 12.5},
             {"type": "eheater", "value": 1.5},
+            {"type": "outputProduced", "value": 42.0},
         ),
         metadata=ResourceMetadata(resource_type="emonValue"),
     )
     assert _sensor(hass, typed, value_key="total_electricity").native_value == 14
+    assert _sensor(hass, typed, value_key="compressor").native_value == 12.5
+    assert _sensor(hass, typed, value_key="eheater").native_value == 1.5
+    assert _sensor(hass, typed, value_key="outputProduced").native_value == 42.0
 
     empty = Resource(
         path="/heatSources/emon/dhwConsumption",

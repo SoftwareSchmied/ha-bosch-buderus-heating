@@ -199,6 +199,7 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
         value=_json_value(data.get("value")),
         has_value="value" in data,
         values=values,
+        has_values=values_raw is not None,
         metadata=ResourceMetadata(
             resource_type=_optional_string(data.get("type")),
             unit=_optional_string(data.get("unitOfMeasure")),
