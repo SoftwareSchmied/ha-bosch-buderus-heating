@@ -36,11 +36,12 @@ The inventory contains only:
 - writeability and the presence of limits or selectable values;
 - aggregated counts per capability class.
 
-It discards raw values, runtime and request metrics, display names, gateway and
+It discards raw values, runtime and request metrics, discovery details, concrete
+diagnostic paths, display names, gateway and
 config-entry IDs, serial numbers, firmware strings, tokens, network data, and
 user-defined names. The tool aborts unless the report explicitly declares all
-privacy-sensitive fields redacted and no dynamic path contains a concrete
-installation identifier.
+privacy-sensitive fields redacted and the exported heating-circuit, hot-water,
+and heat-source path templates contain no concrete installation identifier.
 
 ## Firmware warning
 

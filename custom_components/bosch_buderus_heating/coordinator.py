@@ -19,7 +19,7 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import DOMAIN, RATE_LIMIT_ISSUE_PREFIX, PollingProfile
-from .discovery import async_discover_resources
+from .discovery import DiscoveryDiagnostics, async_discover_resources
 from .faults import FaultTracker, fault_resource_candidates, is_fault_resource_path
 from .holiday_writes import HolidayWriteService, holiday_resources_from_snapshots
 from .holidays import (
@@ -203,6 +203,7 @@ class BoschBuderusDataUpdateCoordinator(
         self._energy_counter_resets = 0
         self._capability_metrics: dict[str, CapabilityMetrics] = {}
         self._unknown_enum_value_counts: Counter[str] = Counter()
+        self.discovery_diagnostics = DiscoveryDiagnostics()
         self._write_service = WriteService(client)
         self._holiday_write_service = HolidayWriteService(client)
         self.faults = FaultTracker(hass, config_entry.entry_id, gateway.gateway_id)
@@ -667,7 +668,9 @@ class BoschBuderusDataUpdateCoordinator(
         """Discover the bounded tree and use its values as the first snapshot."""
         try:
             resources = await async_discover_resources(
-                self.client, self.gateway.gateway_id
+                self.client,
+                self.gateway.gateway_id,
+                diagnostics=self.discovery_diagnostics,
             )
         except AuthenticationError as err:
             raise ConfigEntryAuthFailed from err

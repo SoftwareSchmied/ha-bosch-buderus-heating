@@ -7,8 +7,9 @@ from unittest.mock import AsyncMock, call
 import pytest
 
 from custom_components.bosch_buderus_heating.discovery import (
-    MAX_DISCOVERY_FALLBACK_PATHS,
     ROOT_RESOURCE_PATHS,
+    DiscoveryDiagnostics,
+    _optional_children,
     async_discover_resources,
 )
 from custom_components.bosch_buderus_heating.holidays import HOLIDAY_RESOURCE_PATHS
@@ -97,7 +98,10 @@ async def test_discovery_follows_references_once_and_stays_in_roots() -> None:
     )
 
     assert set(result) == set(resources)
-    assert client.get_resources_bulk.await_count == 3
+    assert client.get_resources_bulk.await_count == 4
+    assert client.get_resources_bulk.await_args_list[2] == call(
+        "gateway", ("/heatingCircuits/hc1/operationMode",)
+    )
 
 
 async def test_discovery_skips_missing_optional_nodes_and_validates_bounds() -> None:
@@ -200,7 +204,9 @@ async def test_discovery_recovers_unreadable_bulk_envelope_with_individual_get()
     ]
 
 
-async def test_discovery_caps_fallback_for_unreadable_bulk_envelope() -> None:
+async def test_discovery_recovers_all_bounded_roots_without_a_global_fallback_cap() -> (
+    None
+):
     client = AsyncMock()
     client.metrics = RequestMetrics()
     client.get_resources_bulk.side_effect = InvalidBatchEnvelope(
@@ -209,16 +215,102 @@ async def test_discovery_caps_fallback_for_unreadable_bulk_envelope() -> None:
     client.get_resource.side_effect = lambda gateway, path, **kwargs: Resource(
         path=path
     )
-    roots = tuple(f"/root{index}" for index in range(MAX_DISCOVERY_FALLBACK_PATHS + 1))
+    roots = tuple(f"/root{index}" for index in range(40))
 
     resources = await async_discover_resources(client, "gateway", roots=roots)
 
-    assert len(resources) == MAX_DISCOVERY_FALLBACK_PATHS
-    assert client.get_resource.await_count == MAX_DISCOVERY_FALLBACK_PATHS
+    assert len(resources) == len(roots)
+    assert client.get_resource.await_count == len(roots)
     assert all(
         call.kwargs == {"fallback_reason": "malformed"}
         for call in client.get_resource.await_args_list
     )
+
+
+@pytest.mark.parametrize("maximum_resources", [6, 512])
+async def test_discovery_prioritizes_circuits_before_optional_fallbacks(
+    maximum_resources: int,
+) -> None:
+    client = AsyncMock()
+    client.metrics = RequestMetrics()
+    hc1 = "/heatingCircuits/hc1"
+    hc2 = "/heatingCircuits/hc2"
+    hc1_mode = f"{hc1}/operationMode"
+    hc2_mode = f"{hc2}/operationMode"
+    resources = {
+        "/system": Resource("/system"),
+        "/heatingCircuits": Resource(
+            "/heatingCircuits",
+            references=(ResourceReference(hc1), ResourceReference(hc2)),
+        ),
+        hc1: Resource(hc1, references=(ResourceReference(hc1_mode),)),
+        hc2: Resource(hc2, references=(ResourceReference(hc2_mode),)),
+        hc1_mode: Resource(hc1_mode, value="off", has_value=True),
+        hc2_mode: Resource(hc2_mode, value="off", has_value=True),
+    }
+    noisy_optional_paths = {
+        *_optional_children("/system"),
+        *_optional_children(hc1),
+    }
+
+    def response(gateway: str, paths: tuple[str, ...]):
+        results = []
+        for path in paths:
+            if path == hc2 or path in noisy_optional_paths:
+                results.append(
+                    BatchItemResult(
+                        gateway,
+                        path,
+                        502,
+                        error=ResourceError(path, 502),
+                        server_status=200,
+                        gateway_status=502,
+                    )
+                )
+            elif path in resources:
+                results.append(BatchItemResult(gateway, path, 200, resources[path]))
+            else:
+                results.append(
+                    BatchItemResult(
+                        gateway, path, 404, error=ResourceNotFound(path, 404)
+                    )
+                )
+        return tuple(results)
+
+    async def individual(_gateway: str, path: str, **_kwargs: object) -> Resource:
+        if path == hc2:
+            return resources[path]
+        raise ResourceNotFound(path, 404)
+
+    client.get_resources_bulk.side_effect = response
+    client.get_resource.side_effect = individual
+    diagnostics = DiscoveryDiagnostics()
+
+    discovered = await async_discover_resources(
+        client,
+        "gateway",
+        roots=("/system", "/heatingCircuits"),
+        diagnostics=diagnostics,
+        maximum_resources=maximum_resources,
+    )
+
+    assert hc2_mode in discovered
+    assert client.get_resource.await_args_list[0] == call(
+        "gateway", hc2, fallback_reason="gateway_5xx"
+    )
+    assert client.get_resources_bulk.await_args_list[:3] == [
+        call("gateway", ("/system", "/heatingCircuits")),
+        call("gateway", (hc1, hc2)),
+        call("gateway", (hc1_mode, hc2_mode)),
+    ]
+    assert diagnostics.paths[hc2].fallback_result == "success"
+    if maximum_resources == 512:
+        assert client.get_resource.await_count > 30
+        assert diagnostics.snapshot()["fallback_attempts"] > 30
+        assert diagnostics.completed
+    else:
+        assert client.get_resource.await_count == 1
+        assert diagnostics.stop_reason == "resource_limit"
 
 
 async def test_discovery_stops_cleanly_at_resource_limit() -> None:

@@ -36,8 +36,10 @@ system information are never exposed.
 The integration diagnostic export contains schema and aggregate state only.
 It omits config-entry data, credentials, stable identifiers, firmware strings,
 raw resource values, user-defined names, request URLs, and response bodies.
-Dynamic PointT object IDs are replaced with `{hc}`, `{dhw}`, or `{hs}` path
-placeholders. Unknown model strings are reduced to a generic device class.
+Canonical logical IDs such as `hc2`, `dhw1`, and `hs1` remain visible in local
+diagnostics so multi-circuit discovery can be investigated. Arbitrary device IDs
+and unrecognized dynamic IDs are replaced with path placeholders. Unknown model
+strings are reduced to a generic device class.
 
 Request metrics are in-memory counters. They retain categories, status
 classes, batch sizes, outcomes, and durations, but never a URL, gateway ID,
@@ -47,6 +49,7 @@ field and user-review policy.
 
 Maintainers can reduce a downloaded diagnostics report further with the
 [anonymized inventory exporter](anonymized-inventory.md). It removes runtime
-metrics and display names, permits only structural capability fields, and
-rejects reports that do not declare all privacy guarantees or still contain a
-concrete dynamic circuit identifier.
+metrics, discovery details, concrete diagnostic paths, and display names. It
+permits only structural capability fields and rejects reports that do not
+declare all privacy guarantees or contain concrete heating-circuit, hot-water,
+or heat-source IDs in their exported capability templates.

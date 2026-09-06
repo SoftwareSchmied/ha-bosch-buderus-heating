@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import logging
 import re
+from dataclasses import dataclass, field
+from enum import StrEnum
+from itertools import islice
 
 from .holidays import HOLIDAY_RESOURCE_PATHS
 from .pointt import (
@@ -13,9 +16,13 @@ from .pointt import (
     PointTError,
     ProtocolError,
     RateLimited,
+    RequestTimeout,
     Resource,
     ResourceError,
+    ServiceUnavailable,
+    TransportError,
 )
+from .pointt.const import MAX_BULK_PATHS
 from .pointt.redaction import resource_path_template
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,7 +45,125 @@ ROOT_RESOURCE_PATHS: tuple[str, ...] = (
 
 MAX_DISCOVERY_DEPTH = 8
 MAX_DISCOVERY_RESOURCES = 512
-MAX_DISCOVERY_FALLBACK_PATHS = 30
+
+
+class DiscoveryPathSource(StrEnum):
+    """How a path entered the bounded discovery queue."""
+
+    ROOT = "root"
+    REFERENCE = "reference"
+    OPTIONAL = "optional"
+
+
+@dataclass(slots=True)
+class DiscoveryPathDiagnostic:
+    """Privacy-safe result for one requested resource path."""
+
+    source: DiscoveryPathSource
+    bulk_result: str = "not_attempted"
+    fallback_reason: str | None = None
+    fallback_result: str | None = None
+    discovered: bool = False
+
+    @property
+    def failed(self) -> bool:
+        """Whether a finished bulk read remains unrecovered."""
+        return (
+            self.bulk_result not in ("not_attempted", "pending") and not self.discovered
+        )
+
+
+@dataclass(slots=True)
+class DiscoveryDiagnostics:
+    """Collect bounded discovery decisions for Home Assistant diagnostics."""
+
+    paths: dict[str, DiscoveryPathDiagnostic] = field(default_factory=dict)
+    completed: bool = False
+    stop_reason: str = "not_started"
+    depth_limit_reached: bool = False
+    bulk_calls: int = 0
+
+    def reset(self) -> None:
+        """Clear a previous run before rediscovery."""
+        self.paths.clear()
+        self.completed = False
+        self.stop_reason = "running"
+        self.depth_limit_reached = False
+        self.bulk_calls = 0
+
+    def scheduled(self, path: str, source: DiscoveryPathSource) -> None:
+        """Record the highest-priority source assigned to one path."""
+        current = self.paths.get(path)
+        if current is None:
+            self.paths[path] = DiscoveryPathDiagnostic(source=source)
+        elif _source_priority(source) < _source_priority(current.source):
+            current.source = source
+
+    def bulk_started(self, paths: tuple[str, ...]) -> None:
+        """Record one logical batch call, separately from HTTP retries."""
+        self.bulk_calls += 1
+        for path in paths:
+            self.paths[path].bulk_result = "pending"
+
+    def bulk_failed(self, paths: tuple[str, ...], error: PointTError) -> None:
+        """Record a request-wide error for exactly the submitted batch."""
+        self.stop_reason = _error_category(error)
+        for path in paths:
+            self.paths[path].bulk_result = self.stop_reason
+
+    def bulk_result(self, result: BatchItemResult) -> None:
+        """Record one parsed bulk-item result."""
+        item = self.paths[result.path]
+        item.bulk_result = _result_category(result)
+        item.discovered = result.resource is not None
+
+    def fallback_started(self, path: str, reason: str) -> None:
+        """Record one logical individual read, excluding transport retries."""
+        self.paths[path].fallback_reason = reason
+
+    def fallback_finished(self, path: str, result: str, *, discovered: bool) -> None:
+        """Record the outcome of one individual fallback attempt."""
+        item = self.paths[path]
+        item.fallback_result = result
+        item.discovered = discovered
+
+    def snapshot(self) -> dict[str, object]:
+        """Return aggregate counters; callers add selectively redacted paths."""
+        items = tuple(self.paths.values())
+        fallbacks = tuple(item for item in items if item.fallback_reason is not None)
+        references = tuple(
+            item for item in items if item.source is DiscoveryPathSource.REFERENCE
+        )
+        optionals = tuple(
+            item for item in items if item.source is DiscoveryPathSource.OPTIONAL
+        )
+        return {
+            "completed": self.completed,
+            "stop_reason": self.stop_reason,
+            "depth_limit_reached": self.depth_limit_reached,
+            "attempts_scope": "logical_resource_reads",
+            "bulk_calls": self.bulk_calls,
+            "paths_scheduled": len(items),
+            "paths_requested": sum(
+                item.bulk_result != "not_attempted" for item in items
+            ),
+            "resources_discovered": sum(item.discovered for item in items),
+            "paths_failed": sum(item.failed for item in items),
+            "advertised_references": len(references),
+            "advertised_references_discovered": sum(
+                item.discovered for item in references
+            ),
+            "optional_paths": len(optionals),
+            "optional_paths_discovered": sum(item.discovered for item in optionals),
+            "fallback_attempts": len(fallbacks),
+            "fallback_successes": sum(
+                item.fallback_result == "success" for item in fallbacks
+            ),
+            "fallback_failures": sum(
+                item.fallback_result not in (None, "success") for item in fallbacks
+            ),
+        }
+
 
 # Some gateways omit stable public resources from their reference trees or
 # advertise an unreadable container around them. Keep these fallbacks narrow:
@@ -285,27 +410,63 @@ async def async_discover_resources(
     roots: tuple[str, ...] = ROOT_RESOURCE_PATHS,
     maximum_depth: int = MAX_DISCOVERY_DEPTH,
     maximum_resources: int = MAX_DISCOVERY_RESOURCES,
+    diagnostics: DiscoveryDiagnostics | None = None,
 ) -> dict[str, Resource]:
     """Follow PointT references without escaping configured safety bounds."""
     if maximum_depth < 0 or maximum_resources < 1:
         raise ValueError("Discovery bounds must be positive")
 
-    pending = [(path, 0) for path in roots]
-    queued = set(roots)
+    report = diagnostics or DiscoveryDiagnostics()
+    report.reset()
+    referenced_pending: dict[str, int] = {}
+    optional_pending: dict[str, int] = {}
+    processed: set[str] = set()
+    depth_limited: set[str] = set()
+
+    def schedule(path: str, depth: int, source: DiscoveryPathSource) -> None:
+        report.scheduled(path, source)
+        if path in processed:
+            return
+        depth = min(
+            depth,
+            referenced_pending.get(path, depth),
+            optional_pending.get(path, depth),
+        )
+        if depth > maximum_depth:
+            depth_limited.add(path)
+            report.depth_limit_reached = True
+            return
+        depth_limited.discard(path)
+        report.depth_limit_reached = bool(depth_limited)
+        target = (
+            optional_pending
+            if report.paths[path].source is DiscoveryPathSource.OPTIONAL
+            else referenced_pending
+        )
+        if target is referenced_pending:
+            optional_pending.pop(path, None)
+        target[path] = depth
+
+    for root in roots:
+        schedule(root, 0, DiscoveryPathSource.ROOT)
+
     discovered: dict[str, Resource] = {}
-    fallback_remaining = MAX_DISCOVERY_FALLBACK_PATHS
-    while pending:
-        depth = pending[0][1]
-        capacity = maximum_resources - len(discovered)
+    while referenced_pending or optional_pending:
+        capacity = min(MAX_BULK_PATHS, maximum_resources - len(processed))
         if capacity <= 0:
+            report.stop_reason = "resource_limit"
             break
-        frontier: list[str] = []
-        while pending and pending[0][1] == depth and len(frontier) < capacity:
-            frontier.append(pending.pop(0)[0])
+        # Leave spare reference-batch capacity unused: newly returned references
+        # must be expanded before optional probes can spend the path budget.
+        pending = referenced_pending or optional_pending
+        frontier_entries = dict(islice(pending.items(), capacity))
+        frontier = tuple(frontier_entries)
+        for path in frontier:
+            del pending[path]
+        processed.update(frontier)
+        report.bulk_started(frontier)
         try:
             results = await client.get_resources_bulk(gateway_id, frontier)
-        except AuthenticationError, RateLimited:
-            raise
         except ProtocolError as err:
             _LOGGER.debug(
                 "PointT discovery bulk envelope was unusable for %d paths: %s",
@@ -321,16 +482,22 @@ async def async_discover_resources(
                 )
                 for path in frontier
             )
+        except PointTError as err:
+            report.bulk_failed(frontier, err)
+            raise
+        for result in results:
+            report.bulk_result(result)
         if any(result.status == 429 for result in results):
+            report.stop_reason = "rate_limited"
             raise RateLimited(retry_after=None)
-        results, fallback_used = await _recover_invalid_bulk_results(
+        results = await _recover_invalid_bulk_results(
             client,
             gateway_id,
             results,
-            limit=fallback_remaining,
+            diagnostics=report,
         )
-        fallback_remaining -= fallback_used
         for result in results:
+            depth = frontier_entries[result.path]
             resource = result.resource
             if resource is None:
                 _LOGGER.debug(
@@ -342,22 +509,18 @@ async def async_discover_resources(
                 )
                 continue
             discovered[result.path] = resource
-            if len(discovered) >= maximum_resources or depth >= maximum_depth:
-                continue
             for fallback in _optional_children(result.path):
-                if depth + 1 <= maximum_depth and fallback not in queued:
-                    queued.add(fallback)
-                    pending.append((fallback, depth + 1))
+                schedule(fallback, depth + 1, DiscoveryPathSource.OPTIONAL)
             for reference in resource.references:
                 child = reference.path
-                if child in queued or not _is_allowed_reference(child, roots):
+                if not _is_allowed_reference(child, roots):
                     continue
-                queued.add(child)
-                pending.append((child, depth + 1))
+                schedule(child, depth + 1, DiscoveryPathSource.REFERENCE)
                 for fallback in _optional_children(child):
-                    if depth + 2 <= maximum_depth and fallback not in queued:
-                        queued.add(fallback)
-                        pending.append((fallback, depth + 2))
+                    schedule(fallback, depth + 2, DiscoveryPathSource.OPTIONAL)
+    else:
+        report.completed = not report.depth_limit_reached
+        report.stop_reason = "complete" if report.completed else "depth_limit"
     return discovered
 
 
@@ -366,21 +529,17 @@ async def _recover_invalid_bulk_results(
     gateway_id: str,
     results: tuple[BatchItemResult, ...],
     *,
-    limit: int,
-) -> tuple[tuple[BatchItemResult, ...], int]:
-    """Retry recoverable bulk items individually within one discovery budget."""
+    diagnostics: DiscoveryDiagnostics,
+) -> tuple[BatchItemResult, ...]:
+    """Retry every recoverable discovery item once with an individual read."""
     recovered: list[BatchItemResult] = []
-    used = 0
     for result in results:
         fallback_reason = result.fallback_reason
         if fallback_reason is None:
             recovered.append(result)
             continue
-        if used >= limit:
-            recovered.append(result)
-            continue
 
-        used += 1
+        diagnostics.fallback_started(result.path, fallback_reason)
         _LOGGER.debug(
             "Retrying recoverable PointT discovery item %s with one individual "
             "GET: reason=%s, server_status=%s, gateway_status=%s, error=%s",
@@ -394,19 +553,29 @@ async def _recover_invalid_bulk_results(
             resource = await client.get_resource(
                 gateway_id, result.path, fallback_reason=fallback_reason
             )
-        except AuthenticationError, RateLimited:
+        except (AuthenticationError, TransportError) as err:
+            category = _error_category(err)
+            diagnostics.fallback_finished(result.path, category, discovered=False)
+            diagnostics.stop_reason = category
             raise
         except ResourceError as err:
+            diagnostics.fallback_finished(
+                result.path, f"http_{err.status}", discovered=False
+            )
             recovered.append(
                 BatchItemResult(gateway_id, result.path, err.status, error=err)
             )
         except PointTError as err:
+            diagnostics.fallback_finished(
+                result.path, _error_category(err), discovered=False
+            )
             recovered.append(BatchItemResult(gateway_id, result.path, None, error=err))
         else:
+            diagnostics.fallback_finished(result.path, "success", discovered=True)
             recovered.append(
                 BatchItemResult(gateway_id, result.path, 200, resource=resource)
             )
-    return tuple(recovered), used
+    return tuple(recovered)
 
 
 def _optional_children(path: str) -> tuple[str, ...]:
@@ -432,3 +601,40 @@ def _optional_children(path: str) -> tuple[str, ...]:
 
 def _is_allowed_reference(path: str, roots: tuple[str, ...]) -> bool:
     return any(path == root or path.startswith(f"{root}/") for root in roots)
+
+
+def _source_priority(source: DiscoveryPathSource) -> int:
+    """Keep advertised paths ahead of speculative app-path probes."""
+    return 1 if source is DiscoveryPathSource.OPTIONAL else 0
+
+
+def _result_category(result: BatchItemResult) -> str:
+    """Return a stable, payload-free discovery result category."""
+    if result.resource is not None:
+        return "success"
+    if isinstance(result.error, ProtocolError):
+        return "malformed"
+    if result.status is not None:
+        return f"http_{result.status}"
+    if result.error is not None:
+        return _error_category(result.error)
+    return "unavailable"
+
+
+def _error_category(error: PointTError) -> str:
+    """Describe an error without its message, URL, or response body."""
+    if isinstance(error, AuthenticationError):
+        return "authentication_error"
+    if isinstance(error, RateLimited):
+        return "rate_limited"
+    if isinstance(error, RequestTimeout):
+        return "timeout"
+    if isinstance(error, ServiceUnavailable):
+        return "service_unavailable"
+    if isinstance(error, TransportError):
+        return "transport_error"
+    if isinstance(error, ProtocolError):
+        return "malformed"
+    if isinstance(error, ResourceError):
+        return f"http_{error.status}"
+    return "request_failed"
