@@ -5,6 +5,13 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.7.0-beta.6] - 2026-09-06
+
+This beta adapts supported controls to each installation's advertised options
+and limits, and fixes additional discovery, polling, and write-confirmation
+failures. Install the beta and restart Home Assistant once to load the updated
+integration. Newly eligible discovered controls then appear during polling.
+
 ### Changed
 
 - Derive each supported scalar control's options and bounds from its own current
@@ -20,6 +27,9 @@ Versioning after its first tagged preview.
   unknown option texts remain redacted. Numeric steps are identified as UI hints.
 - Allow explicit holiday creation through Configure with per-device modes,
   date/date-time selectors, and advertised temperature limits.
+
+- Include the Ruff hook update from PR #25 and the compatible test-tool updates
+  from PR #26. Keep pytest 9.0.3 as required by the Home Assistant test plugin.
 
 ### Fixed
 
