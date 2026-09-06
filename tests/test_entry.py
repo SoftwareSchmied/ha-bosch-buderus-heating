@@ -105,6 +105,7 @@ async def test_setup_retries_retain_account_rate_limit(hass: HomeAssistant) -> N
     response.headers = {"Retry-After": "3600"}
     response.__aenter__.return_value = response
     session = Mock()
+    session._middlewares = ()
     session.request.return_value = response
     with (
         patch(

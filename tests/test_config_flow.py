@@ -809,3 +809,154 @@ def test_polling_profile_tolerates_legacy_and_invalid_options() -> None:
         )
         is PollingProfile.CLOUD_FRIENDLY
     )
+
+
+async def test_holiday_form_preserves_its_original_baseline_during_polling(
+    hass, enable_custom_integrations
+):
+    from custom_components.bosch_buderus_heating.holiday_writes import (
+        _merge_holiday_changes,
+    )
+
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    selection = hashlib.sha256(b"gateway-one\x007").hexdigest()[:24]
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
+    )
+    old = coordinator.data[HOLIDAY_LIST_PATH].resource.value[0]
+    coordinator.data[HOLIDAY_LIST_PATH].resource = Resource(
+        path=HOLIDAY_LIST_PATH, value=[{**old, "fixTemperature": 19.0}], has_value=True
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOLIDAY_ASSIGNED_TO: ["hc1", "dhw1", "vent1"],
+            CONF_HOLIDAY_HEATING_MODE: "fix_temperature",
+            CONF_HOLIDAY_DHW_MODE: "low",
+            CONF_HOLIDAY_VENTILATION_MODE: "nom",
+            CONF_HOLIDAY_THERMAL_DISINFECTION: "on",
+            CONF_HOLIDAY_FIX_TEMPERATURE: 17.0,
+        },
+    )
+    assert result["reason"] == "holiday_updated"
+    call = coordinator.async_update_holiday.await_args
+    baseline = call.kwargs["expected"]
+    assert baseline.fix_temperature == 17.0
+    from dataclasses import replace
+
+    merged = _merge_holiday_changes(
+        baseline, call.args[1], replace(baseline, fix_temperature=19.0)
+    )
+    assert merged.fix_temperature == 19.0 and merged.dhw_mode == "LOW"
+
+
+async def test_new_holiday_requires_explicit_offered_modes(
+    hass, enable_custom_integrations
+):
+    from custom_components.bosch_buderus_heating.holidays import (
+        HOLIDAY_CONFIGURATION_PATH,
+    )
+
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    coordinator.async_create_holiday = AsyncMock()
+    config = coordinator.data[HOLIDAY_CONFIGURATION_PATH].resource.value["values"]
+    config["heatingMode"]["allowedValues"] = ["ECO", "NewVendorMode"]
+    config["dhwMode"]["allowedValues"] = ["LOW"]
+    config["ventilationMode"]["allowedValues"] = ["NOM"]
+    config["thermalDesinfection"]["allowedValues"] = ["OFF"]
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    selection = "create:" + hashlib.sha256(b"gateway-one").hexdigest()[:24]
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
+    )
+    assert result["step_id"] == "new_holiday"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "holiday_name": "Variant holiday",
+            "holiday_start": "2030-08-01T08:00:00",
+            "holiday_end": "2030-08-08T18:00:00",
+        },
+    )
+    assert result["step_id"] == "holiday"
+    coordinator.async_create_holiday.assert_not_awaited()
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOLIDAY_ASSIGNED_TO: ["hc1", "dhw1", "vent1"],
+            CONF_HOLIDAY_HEATING_MODE: "NewVendorMode",
+            CONF_HOLIDAY_DHW_MODE: "low",
+            CONF_HOLIDAY_VENTILATION_MODE: "nom",
+            CONF_HOLIDAY_THERMAL_DISINFECTION: "off",
+            CONF_HOLIDAY_FIX_TEMPERATURE: 18.0,
+        },
+    )
+    assert result["reason"] == "holiday_created"
+    values = coordinator.async_create_holiday.await_args.args[0]
+    assert values.heating_mode == "NewVendorMode"
+    assert values.dhw_mode == "LOW"
+    assert values.ventilation_mode == "NOM"
+    assert values.thermal_disinfection == "OFF"
+    coordinator.async_update_holiday.assert_not_awaited()
+
+
+async def test_new_holiday_date_only_gateway_rejects_reversed_dates(
+    hass, enable_custom_integrations
+):
+    from custom_components.bosch_buderus_heating.holidays import (
+        HOLIDAY_CONFIGURATION_PATH,
+    )
+
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    coordinator.async_create_holiday = AsyncMock()
+    config = coordinator.data[HOLIDAY_CONFIGURATION_PATH].resource.value["values"]
+    config["date"]["allowedValues"] = ["date"]
+    config["fixTemperature"] = {"minValue": 18, "maxValue": 26}
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    selection = "create:" + hashlib.sha256(b"gateway-one").hexdigest()[:24]
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "holiday_name": "Dates",
+            "holiday_start": "2030-08-03",
+            "holiday_end": "2030-08-01",
+        },
+    )
+    assert result["errors"] == {"base": "write_validation_failed"}
+    coordinator.async_create_holiday.assert_not_awaited()
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "holiday_name": "Dates",
+            "holiday_start": "2030-08-01",
+            "holiday_end": "2030-08-03",
+        },
+    )
+    assert result["step_id"] == "holiday"
+    import voluptuous as vol
+
+    temperature = next(
+        marker
+        for marker in result["data_schema"].schema
+        if marker.schema == CONF_HOLIDAY_FIX_TEMPERATURE
+    )
+    assert temperature.default is vol.UNDEFINED
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOLIDAY_ASSIGNED_TO: ["hc1"],
+            CONF_HOLIDAY_HEATING_MODE: "fix_temperature",
+            CONF_HOLIDAY_DHW_MODE: "off",
+            CONF_HOLIDAY_VENTILATION_MODE: "off",
+            CONF_HOLIDAY_THERMAL_DISINFECTION: "on",
+            CONF_HOLIDAY_FIX_TEMPERATURE: 19.0,
+        },
+    )
+    assert result["reason"] == "holiday_created"
+    values = coordinator.async_create_holiday.await_args.args[0]
+    assert values.start_date == "2030-08-01" and values.end_date == "2030-08-02"
+    assert values.fix_temperature == 19.0

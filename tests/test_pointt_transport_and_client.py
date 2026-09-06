@@ -547,6 +547,135 @@ async def test_transport_rejects_invalid_json(body: bytes, content_type: str) ->
             )
 
 
+@pytest.mark.parametrize("method", ["PUT", "DELETE", "POST"])
+async def test_disconnect_never_replays_mutations_or_changes_shared_session(method):
+    calls = 0
+    middleware_calls = 0
+
+    async def existing_middleware(request, handler):
+        nonlocal middleware_calls
+        middleware_calls += 1
+        request.headers["X-Existing-Middleware"] = "preserved"
+        return await handler(request)
+
+    async def handler(request):
+        nonlocal calls
+        calls += 1
+        assert request.headers["X-Existing-Middleware"] == "preserved"
+        await request.read()
+        request.transport.close()
+        return web.Response(status=204)
+
+    async with (
+        serve([(method, "/write", handler)]) as url,
+        aiohttp.ClientSession(middlewares=(existing_middleware,)) as session,
+    ):
+        transport = PointTTransport(session, base_url=url)
+        original_middlewares = session._middlewares
+        original_retry = session._retry_connection
+        with pytest.raises(ServiceUnavailable):
+            await transport.request_json(
+                method, "write", "token", json_body={"value": "auto"}
+            )
+        assert session._middlewares is original_middlewares
+        assert session._retry_connection == original_retry
+        assert calls == middleware_calls == 1
+        metrics = transport.metrics.snapshot()
+        assert metrics["requests_total"] == 1
+        assert metrics["outcomes"] == {"service_unavailable": 1}
+
+
+async def test_applied_disconnected_put_is_confirmed_over_http():
+    from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
+    from custom_components.bosch_buderus_heating.writes import (
+        HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+        WriteService,
+    )
+
+    mode = "manual"
+    calls = []
+    path = "/heatingCircuits/hc1/operationMode"
+
+    async def handler(request):
+        nonlocal mode
+        calls.append(request.method)
+        if request.method == "PUT":
+            mode = (await request.json())["value"]
+            request.transport.close()
+            return web.Response(status=204)
+        return web.json_response({"value": mode})
+
+    routes = [
+        (method, f"/gateways/gateway/resource{path}", handler)
+        for method in ("PUT", "GET")
+    ]
+    current = parse_resource(
+        {
+            "value": mode,
+            "type": "stringValue",
+            "writeable": True,
+            "allowedValues": ["manual", "auto"],
+        },
+        path=path,
+    )
+    async with serve(routes) as url, aiohttp.ClientSession() as session:
+        client = PointTClient(session, "token", base_url=url)
+        result = await WriteService(client, sleep=AsyncMock()).async_write_enum(
+            "gateway", current, "auto", HEATING_CIRCUIT_OPERATION_MODE_POLICY
+        )
+        assert result.resource.value == "auto"
+        assert calls == ["PUT", "GET"]
+        assert client.metrics.snapshot()["requests_total"] == 2
+
+
+async def test_disconnect_read_retries_are_bounded_and_fully_measured():
+    calls = 0
+
+    async def handler(request):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            request.transport.close()
+            return web.Response(status=204)
+        return web.json_response({"value": 21})
+
+    async with (
+        serve([("GET", "/read", handler)]) as url,
+        aiohttp.ClientSession() as session,
+    ):
+        transport = PointTTransport(session, base_url=url, sleep=AsyncMock())
+        assert await transport.request_json("GET", "read", "token", retryable=True) == {
+            "value": 21
+        }
+        metrics = transport.metrics.snapshot()
+        assert calls == metrics["requests_total"] == 2
+        assert metrics["retry_attempts"] == 1
+        assert [item["attempt"] for item in metrics["recent_requests"]] == [1, 2]
+
+
+@pytest.mark.parametrize("status", [307, 308])
+async def test_mutation_redirect_does_not_send_another_write(status):
+    calls = []
+
+    async def redirect(request):
+        calls.append(request.path)
+        return web.Response(status=status, headers={"Location": "/target"})
+
+    async def target(request):
+        calls.append(request.path)
+        return web.Response(status=204)
+
+    async with (
+        serve([("PUT", "/write", redirect), ("PUT", "/target", target)]) as url,
+        aiohttp.ClientSession() as session,
+    ):
+        with pytest.raises(UnexpectedHttpStatus):
+            await PointTTransport(session, base_url=url).request_json(
+                "PUT", "write", "token", json_body={"value": "auto"}
+            )
+    assert calls == ["/write"]
+
+
 def test_configuration_validation() -> None:
     with pytest.raises(ValueError):
         RetryPolicy(0)
@@ -572,3 +701,45 @@ def test_auth_tokens_expiry_margin() -> None:
     tokens = AuthTokens("token", expires_at=1100.0)
     assert not tokens.is_expired(now=1000.0, margin=50.0)
     assert tokens.is_expired(now=1050.0, margin=50.0)
+
+
+async def test_another_circuit_cannot_confirm_a_write_over_http():
+    from custom_components.bosch_buderus_heating.pointt import InvalidPayload
+    from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
+    from custom_components.bosch_buderus_heating.writes import (
+        HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+        WriteService,
+    )
+
+    path = "/heatingCircuits/hc1/operationMode"
+    calls = []
+
+    async def handler(request):
+        calls.append(request.method)
+        if request.method == "PUT":
+            await request.read()
+            return web.Response(status=204)
+        return web.json_response(
+            {"id": "/heatingCircuits/hc2/operationMode", "value": "auto"}
+        )
+
+    routes = [
+        (method, f"/gateways/gateway/resource{path}", handler)
+        for method in ("PUT", "GET")
+    ]
+    resource = parse_resource(
+        {
+            "value": "manual",
+            "type": "stringValue",
+            "writeable": True,
+            "allowedValues": ["manual", "auto"],
+        },
+        path=path,
+    )
+    async with serve(routes) as url, aiohttp.ClientSession() as session:
+        client = PointTClient(session, "token", base_url=url)
+        with pytest.raises(InvalidPayload):
+            await WriteService(client, sleep=AsyncMock()).async_write_enum(
+                "gateway", resource, "auto", HEATING_CIRCUIT_OPERATION_MODE_POLICY
+            )
+    assert calls == ["PUT", "GET"]

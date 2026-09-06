@@ -58,7 +58,9 @@
       "init": {
         "title": "Urlaub konfigurieren",
         "description": "Wähle einen vorhandenen Urlaub. Urlaube erstellst, benennst, verschiebst oder löschst du im Kalender **Urlaubszeiten**; dieser Dialog ist für die Heizungseinstellungen bestimmt, die der normale Home-Assistant-Kalender nicht anzeigen kann.",
-        "data": { "holiday_period": "Urlaub" }
+        "data": {
+          "holiday_period": "Urlaub"
+        }
       },
       "holiday": {
         "title": "Urlaub konfigurieren",
@@ -70,6 +72,15 @@
           "holiday_ventilation_mode": "Lüftung",
           "holiday_thermal_disinfection": "Thermische Desinfektion",
           "holiday_fix_temperature": "Konstante Temperatur"
+        }
+      },
+      "new_holiday": {
+        "title": "Urlaubszeit anlegen",
+        "description": "{holiday}: Lege den Zeitraum fest. Im nächsten Schritt wählst du die Betriebsarten deiner Anlage.",
+        "data": {
+          "holiday_name": "Name",
+          "holiday_start": "Beginn",
+          "holiday_end": "Ende (exklusiv)"
         }
       }
     },
@@ -85,7 +96,8 @@
       "holiday_changed": "Der ausgewählte Urlaub ist nicht mehr verfügbar oder schreibbar.",
       "holiday_updated": "Die Urlaubseinstellungen wurden gespeichert und von der Heizungsanlage bestätigt.",
       "no_writable_holidays": "Es gibt keinen schreibbaren Urlaub. Erstelle zuerst einen im Kalender Urlaubszeiten oder warte, bis die Urlaubsressourcen verfügbar sind.",
-      "not_loaded": "Bosch/Buderus Heating muss geladen sein, bevor ein Urlaub konfiguriert werden kann."
+      "not_loaded": "Bosch/Buderus Heating muss geladen sein, bevor ein Urlaub konfiguriert werden kann.",
+      "holiday_created": "Die Urlaubszeit wurde angelegt und durch Rücklesen bestätigt."
     }
   },
   "issues": {

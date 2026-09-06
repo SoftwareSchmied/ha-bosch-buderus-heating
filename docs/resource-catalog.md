@@ -415,8 +415,7 @@ automatically as controls. The first safe release tier includes:
 - silent mode with the three gateway-advertised values Off, Automatic, and On;
 - auxiliary-heater mode with the values Off, On, and Auto;
 - maximum supply temperature with whole-degree steps and gateway-specific
-  limits, disabled by default as an installer-level control. A broad 0–100 °C
-  plausibility envelope rejects corrupt metadata.
+  limits, disabled by default as an installer-level control.
 
 Schedules, control type, names, and all gateway, time, and administrative
 values remain read-only or internal initially. They
@@ -425,8 +424,9 @@ tests.
 
 This release tier is implemented as dynamic selects, number controls, and
 switches. A control is created only for an exact path and data-type match.
-Select options must be announced completely by the gateway. Number controls
-adopt gateway limits only within additional safe bounds. A transaction sends
+Each enum uses its own advertised options, including subsets and new codes.
+Number controls adopt finite, ordered gateway limits. UI increments do not
+introduce undocumented write restrictions. A transaction sends
 one PUT without automatic retry and confirms the state using up to three
 staggered single-resource requests. The **Manual → Auto → Manual** sequence for
 heating-circuit operation mode succeeded on the K40. Silent Mode also completed

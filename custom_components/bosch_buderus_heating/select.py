@@ -7,19 +7,20 @@ from dataclasses import dataclass
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import BoschBuderusConfigEntry
-from .control import async_set_control
+from .control import async_set_control, track_control_entities
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
     Freshness,
     ResourceSnapshot,
 )
 from .device import device_info_for_resource, grouped_entity_name
-from .enum_translation import enum_value_to_ha, enum_value_to_pointt
+from .enum_translation import writable_enum_options
 from .pointt import Resource
 from .resource_catalog import resource_name
 from .sensor import _semantic_key
@@ -28,7 +29,9 @@ from .writes import (
     DHW_OPERATION_MODE_POLICY,
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
     SILENT_MODE_POLICY,
+    STRING_SWITCH_POLICIES,
     EnumWritePolicy,
+    assess_control,
     enum_policy_for_resource,
 )
 
@@ -48,13 +51,14 @@ async def async_setup_entry(
 ) -> None:
     """Create controls only for verified enum capabilities."""
     del hass
-    entities: list[BoschBuderusSelect] = []
     for coordinator in entry.runtime_data.coordinators:
-        entities.extend(
-            BoschBuderusSelect(coordinator, description)
-            for description in build_select_descriptions(coordinator.resources)
+        track_control_entities(
+            entry,
+            coordinator,
+            async_add_entities,
+            build_select_descriptions,
+            BoschBuderusSelect,
         )
-    async_add_entities(entities)
 
 
 def build_select_descriptions(
@@ -63,48 +67,53 @@ def build_select_descriptions(
     """Expose only released enum capabilities with matching metadata."""
     descriptions: list[BoschBuderusSelectEntityDescription] = []
     for resource in resources.values():
-        policy = enum_policy_for_resource(resource)
-        if policy not in {
-            HEATING_CIRCUIT_OPERATION_MODE_POLICY,
-            DHW_OPERATION_MODE_POLICY,
-            SILENT_MODE_POLICY,
-            AUXILIARY_HEATER_OPERATION_MODE_POLICY,
-        }:
+        assessment = assess_control(resource)
+        policy = assessment.policy
+        if (
+            not assessment.eligible
+            or not assessment.supports_select
+            or not isinstance(policy, EnumWritePolicy)
+        ):
             continue
         options: tuple[str, ...]
         if policy is HEATING_CIRCUIT_OPERATION_MODE_POLICY:
-            options = _heating_operation_options(resource)
             translation_key = "heating_circuit_operation_mode"
         elif policy is DHW_OPERATION_MODE_POLICY:
-            options = ("off", "low", "high", "ownprogram", "eco")
             translation_key = "hot_water_operation_mode"
         elif policy is SILENT_MODE_POLICY:
-            options = ("off", "auto", "on")
             translation_key = "silent_mode"
-        else:
-            options = ("off", "manual", "auto")
+        elif policy is AUXILIARY_HEATER_OPERATION_MODE_POLICY:
             translation_key = "auxiliary_heater_operation_mode"
+        else:
+            translation_key = ""
+        options = tuple(_option_map(resource, translation_key))
         descriptions.append(
             BoschBuderusSelectEntityDescription(
-                key=_semantic_key(resource.path, None),
+                key=_semantic_key(resource.path, None)
+                + (":options" if policy in STRING_SWITCH_POLICIES else ""),
                 name="Betriebsart",
                 resource_path=resource.path,
                 write_policy=policy,
                 options=list(options),
-                translation_key=translation_key,
+                translation_key=translation_key or None,
                 entity_registry_enabled_default=True,
             )
         )
     return tuple(descriptions)
 
 
-def _heating_operation_options(resource: Resource) -> tuple[str, ...]:
-    """Keep the established order, restricted to this circuit's known options."""
-    return tuple(
-        value
-        for value in ("off", "manual", "auto")
-        if value in resource.metadata.allowed_values
-    )
+def _option_map(resource: Resource, translation_key: str) -> dict[str, str]:
+    """Retain familiar ordering and append every additional advertised code."""
+    advertised = assess_control(resource).options
+    preferred = {
+        "heating_circuit_operation_mode": ("off", "manual", "auto"),
+        "hot_water_operation_mode": ("Off", "low", "high", "ownprogram", "eco"),
+        "silent_mode": ("off", "auto", "on"),
+        "auxiliary_heater_operation_mode": ("off", "manual", "auto"),
+    }.get(translation_key, ())
+    ordered = tuple(value for value in preferred if value in advertised)
+    ordered += tuple(value for value in advertised if value not in ordered)
+    return writable_enum_options(translation_key, ordered)
 
 
 class BoschBuderusSelect(
@@ -160,32 +169,44 @@ class BoschBuderusSelect(
 
     @property
     def options(self) -> list[str]:
-        if (
-            self.entity_description.write_policy
-            is HEATING_CIRCUIT_OPERATION_MODE_POLICY
-        ):
-            snapshot = self._snapshot
-            return (
-                list(_heating_operation_options(snapshot.resource)) if snapshot else []
-            )
-        return list(self.entity_description.options or ())
+        return list(self._options_map)
+
+    @property
+    def _options_map(self) -> dict[str, str]:
+        snapshot = self._snapshot
+        if snapshot is None:
+            return {}
+        return _option_map(
+            snapshot.resource, self.entity_description.translation_key or ""
+        )
 
     @property
     def current_option(self) -> str | None:
         snapshot = self._snapshot
-        if snapshot is None or not isinstance(snapshot.resource.value, str):
+        if (
+            snapshot is None
+            or not snapshot.resource.has_value
+            or not isinstance(snapshot.resource.value, str)
+        ):
             return None
-        value = enum_value_to_ha(
-            self.entity_description.translation_key or "", snapshot.resource.value
+        return next(
+            (
+                key
+                for key, raw in self._options_map.items()
+                if raw == snapshot.resource.value
+            ),
+            None,
         )
-        return value if value in self.options else None
 
     async def async_select_option(self, option: str) -> None:
         """Set the raw PointT enum and rely on the coordinator's read-back."""
+        raw = self._options_map.get(option)
+        if raw is None:
+            raise ServiceValidationError("The option is no longer advertised")
         await async_set_control(
             self.coordinator,
             self.entity_description.resource_path,
-            enum_value_to_pointt(self.entity_description.translation_key or "", option),
+            raw,
             self.entity_description.write_policy,
         )
 

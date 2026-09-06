@@ -3,6 +3,24 @@
 from __future__ import annotations
 
 _POINTT_TO_HA: dict[str, dict[str, str]] = {
+    "holiday_mode": {
+        value: value.lower()
+        for value in (
+            "SATURDAY",
+            "FIX_TEMPERATURE",
+            "OFF",
+            "ECO",
+            "LOW",
+            "HIGH",
+            "OFF_TD",
+            "MIN",
+            "RED",
+            "NOM",
+            "MAX",
+            "DEM",
+            "ON",
+        )
+    },
     "compressor_status": {"poolHeat": "pool_heat"},
     "data_processing_status": {
         "IN_PROGRESS": "in_progress",
@@ -75,3 +93,27 @@ def enum_value_to_ha(translation_key: str, value: str) -> str:
 def enum_value_to_pointt(translation_key: str, value: str) -> str:
     """Restore the exact PointT spelling before a write."""
     return _HA_TO_POINTT.get(translation_key, {}).get(value, value)
+
+
+def writable_enum_options(
+    translation_key: str, values: tuple[str, ...]
+) -> dict[str, str]:
+    """Map display keys to exact wire codes, without aliases swallowing new codes.
+
+    Reserved display keys and the escape prefix are escaped consistently even
+    when only one spelling is advertised. Metadata changes cannot silently
+    redirect an existing option to a different wire value.
+    """
+    aliases = _POINTT_TO_HA.get(translation_key, {})
+    canonical = {key: raw for raw, key in reversed(tuple(aliases.items()))}
+    result: dict[str, str] = {}
+    for raw in values:
+        translated = aliases.get(raw, raw)
+        if canonical.get(translated) == raw:
+            key = translated
+        elif raw in canonical or raw in aliases or raw.startswith("pointt:"):
+            key = f"pointt:{raw}"
+        else:
+            key = raw
+        result[key] = raw
+    return result

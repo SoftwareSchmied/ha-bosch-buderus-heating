@@ -34,7 +34,7 @@ from .resource_catalog import (
 from .runtime import BoschBuderusRuntimeData
 from .writes import EnumWritePolicy, NumberWritePolicy, assess_control
 
-DIAGNOSTICS_SCHEMA_VERSION = 11
+DIAGNOSTICS_SCHEMA_VERSION = 12
 
 
 async def async_get_config_entry_diagnostics(
@@ -200,7 +200,7 @@ def _capability_diagnostics(
     return {
         "path": diagnostic_resource_path(resource.path),
         "path_template": _path_template(resource.path),
-        "name": resource_name(resource.path),
+        "name": resource_name(diagnostic_resource_path(resource.path)),
         "resource_type": _safe_token(resource.metadata.resource_type),
         "unit": _safe_unit(resource.metadata.unit),
         "poll_group": poll_group(resource).value,
@@ -238,24 +238,33 @@ def _control_diagnostics(resource: Resource) -> dict[str, object]:
     }
     policy = assessment.policy
     metadata = resource.metadata
+    if policy is not None:
+        result.update(
+            writable=assessment.writable,
+            current_value_issue=assessment.current_value_issue,
+        )
     if isinstance(policy, EnumWritePolicy):
         result.update(
             advertised_known_options=sorted(
-                policy.allowed_values.intersection(metadata.allowed_values)
+                policy.known_values.intersection(metadata.allowed_values)
             ),
             unrecognized_option_count=sum(
-                value not in policy.allowed_values for value in metadata.allowed_values
+                value not in policy.known_values for value in metadata.allowed_values
             ),
-            requires_all_options=policy.require_all_options,
+            requires_all_options=False,
+            offered_option_count=len(assessment.options),
+            switch_supported=assessment.supports_switch,
+            select_supported=assessment.supports_select,
         )
     elif isinstance(policy, NumberWritePolicy):
         result.update(
             minimum=_finite_bound(metadata.minimum),
             maximum=_finite_bound(metadata.maximum),
-            policy_minimum=policy.safe_minimum,
-            policy_maximum=policy.safe_maximum,
-            policy_step=policy.step,
-            policy_unit=policy.unit,
+            ui_step=assessment.ui_step,
+            write_step=None,
+            unit=assessment.unit
+            if assessment.unit in {"C", "F", "K", "°C", "°F", "mins", "min", "s", "h"}
+            else None,
         )
     return result
 

@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from time import monotonic
 
 import aiohttp
+from aiohttp import ClientHandlerType, ClientRequest, ClientResponse
 
 from .const import (
     DEFAULT_CONCURRENCY,
@@ -34,6 +35,18 @@ from .exceptions import (
 )
 from .metrics import RequestMetrics, bulk_resource_count, request_category
 from .models import JsonValue
+
+
+async def _single_http_attempt(
+    request: ClientRequest, handler: ClientHandlerType
+) -> ClientResponse:
+    """Keep connection retries in our measured, read-only retry loop."""
+    try:
+        return await handler(request)
+    except (aiohttp.ClientOSError, aiohttp.ServerDisconnectedError) as err:
+        # aiohttp otherwise retries these errors internally, including PUT and
+        # DELETE after the server may already have applied the operation.
+        raise ServiceUnavailable() from err
 
 
 class RateLimitBackoff:
@@ -229,10 +242,15 @@ class PointTTransport:
                         headers=headers,
                         json=json_body if json_body is not None else None,
                         timeout=self._timeout,
+                        allow_redirects=False,
+                        # Per-request middleware replaces the session chain.
+                        # Preserve HA's middleware, including its URL checks,
+                        # without changing the shared session's retry settings.
+                        middlewares=(*self._session._middlewares, _single_http_attempt),
                     ) as response,
                 ):
                     status = response.status
-                    if response.status >= 400:
+                    if not 200 <= response.status < 300:
                         self._raise_http_error(
                             response.status, response.headers, resource_path
                         )

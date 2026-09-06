@@ -852,6 +852,104 @@ async def test_polling_chunks_large_cycles_and_preserves_partial_success(
     assert result[paths[-1]].resource.value == 1.0
 
 
+@pytest.mark.parametrize("failure", ["service", "item", "rate_limit"])
+async def test_interrupted_poll_marks_deferred_paths_stale_and_resumes_them(
+    hass: HomeAssistant,
+    failure: str,
+) -> None:
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    paths = tuple(f"/heatSources/value{index}" for index in range(61))
+    coordinator.resources = {path: _resource(path, 1.0) for path in paths}
+    coordinator.data = {
+        path: _snapshot(resource) for path, resource in coordinator.resources.items()
+    }
+    coordinator._paths_by_group = {PollGroup.FAST: paths}
+    coordinator._next_update = {PollGroup.FAST: 0.0}
+    original = coordinator.data[paths[-1]]
+
+    async def read(gateway, requested):
+        if paths[30] in requested:
+            if failure == "service":
+                raise ServiceUnavailable()
+            if failure == "rate_limit":
+                raise RateLimited(60)
+            return tuple(BatchItemResult(gateway, path, 503) for path in requested)
+        return tuple(_success(path, 2.0) for path in requested)
+
+    client.get_resources_bulk.side_effect = read
+    client.get_resource.side_effect = ServiceUnavailable()
+    coordinator.data = await coordinator._async_update_data()
+    deferred = coordinator.data[paths[-1]]
+    assert not deferred.available
+    assert deferred.freshness is Freshness.STALE
+    assert deferred.resource.value == 1.0
+    assert deferred.last_success == original.last_success
+    assert deferred.last_attempt == original.last_attempt
+    assert deferred.consecutive_failures == original.consecutive_failures
+    assert coordinator.capability_metrics(paths[-1])["attempts_total"] == 0
+    assert coordinator._deferred_poll_paths == paths[60:]
+
+    coordinator._cloud_backoff_until = 0
+    client.get_resources_bulk.reset_mock()
+    coordinator.data = await coordinator._async_update_data()
+    assert client.get_resources_bulk.await_args_list[0].args[1][0] == paths[-1]
+    assert coordinator.data[paths[-1]].available
+    assert coordinator.data[paths[-1]].resource.value == 2.0
+    assert all(
+        len(call.args[1]) <= 30 for call in client.get_resources_bulk.await_args_list
+    )
+
+
+@pytest.mark.parametrize("status", [403, 404, 406, 503])
+async def test_local_path_errors_do_not_accelerate_control_polling(hass, status):
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    paths = tuple(f"/heatingCircuits/hc{index}/operationMode" for index in (1, 2))
+    coordinator.resources = {path: _resource(path, 1.0) for path in paths}
+    coordinator.data = {
+        path: _snapshot(resource) for path, resource in coordinator.resources.items()
+    }
+    coordinator._paths_by_group = {PollGroup.CONTROL: paths}
+    coordinator._next_update = {group: 0.0 for group in POLL_INTERVALS}
+    client.get_resources_bulk.return_value = (
+        _success(paths[0], 2.0),
+        BatchItemResult("gateway-one", paths[1], status),
+    )
+    client.get_resource.side_effect = ServiceUnavailable()
+    await coordinator._async_update_data()
+    assert coordinator._next_update[PollGroup.CONTROL] >= (
+        monotonic() + POLL_INTERVALS[PollGroup.CONTROL].total_seconds() - 1
+    )
+    await coordinator._async_update_data()
+    client.get_resources_bulk.assert_awaited_once()
+
+
+async def test_partial_poll_advances_completed_groups_only(hass: HomeAssistant):
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    fast = tuple(f"/heatSources/value{index}" for index in range(30))
+    control = "/heatingCircuits/hc1/operationMode"
+    energy = "/heatSources/emon/totalConsumption"
+    resources = {path: _resource(path, 1.0) for path in (*fast, control, energy)}
+    coordinator.resources = resources
+    coordinator.data = {path: _snapshot(value) for path, value in resources.items()}
+    coordinator._paths_by_group = {
+        PollGroup.FAST: fast,
+        PollGroup.CONTROL: (control,),
+        PollGroup.ENERGY: (energy,),
+    }
+    coordinator._next_update = {group: 0.0 for group in POLL_INTERVALS}
+    client.get_resources_bulk.side_effect = [
+        tuple(_success(path, 2.0) for path in fast),
+        ServiceUnavailable(),
+    ]
+    await coordinator._async_update_data()
+    assert coordinator._next_update[PollGroup.FAST] > monotonic()
+    assert coordinator._next_update[PollGroup.CONTROL] == 0
+    assert coordinator._next_update[PollGroup.ENERGY] == 0
+
+
 async def test_rate_limit_starts_bounded_no_request_backoff(
     hass: HomeAssistant,
 ) -> None:

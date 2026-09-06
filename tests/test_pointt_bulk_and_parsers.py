@@ -57,6 +57,47 @@ def test_chunk_size_never_exceeds_requested_bound(size: int, parts: list[str]) -
     assert all(1 <= len(chunk) <= size for chunk in chunks)
 
 
+@pytest.mark.parametrize("reference", ["../broken", {"id": "../broken"}])
+def test_invalid_cloud_reference_is_a_protocol_error(reference):
+    with pytest.raises(InvalidPayload, match="resource path"):
+        parse_resource({"references": [reference]}, path="/heatingCircuits")
+    with pytest.raises(InvalidPayload, match="resource path"):
+        parse_resource({"id": "../broken"})
+
+
+def test_invalid_bulk_paths_and_references_do_not_discard_healthy_items():
+    payload = [
+        {
+            "gatewayId": "gateway",
+            "resourcePaths": [
+                {"resourcePath": "../broken", "serverStatus": 200},
+                {
+                    "resourcePath": "/heatingCircuits",
+                    "serverStatus": 200,
+                    "gatewayResponse": {
+                        "status": 200,
+                        "payload": {"references": ["../broken"]},
+                    },
+                },
+                {
+                    "resourcePath": "/system/healthStatus",
+                    "serverStatus": 200,
+                    "gatewayResponse": {"status": 200, "payload": {"value": "ok"}},
+                },
+            ],
+        }
+    ]
+    results = parse_batch_response(
+        payload,
+        gateway_id="gateway",
+        requested_paths=("/heatingCircuits", "/system/healthStatus", "/notifications"),
+    )
+    assert results[0].fallback_reason == "malformed"
+    assert isinstance(results[0].error, InvalidPayload)
+    assert results[1].resource.value == "ok"
+    assert results[2].fallback_reason == "malformed"
+
+
 def test_gateway_variants_and_part_number() -> None:
     gateway = parse_gateway(
         {"gatewayId": "gw-1", "deviceType": "heatpump", "unknown": "ignored"}
@@ -273,3 +314,56 @@ def test_resource_error_maps_known_and_generic_statuses(status: int) -> None:
     error = resource_error("/path", status)
     assert error.status == status
     assert error.path == "/path"
+
+
+@pytest.mark.parametrize(
+    "response_id", ["/heatingCircuits/hc2/operationMode", "../broken", None, 7]
+)
+def test_resource_rejects_supplied_id_that_cannot_confirm_requested_path(response_id):
+    with pytest.raises(InvalidPayload):
+        parse_resource(
+            {"id": response_id, "value": "auto"},
+            path="/heatingCircuits/hc1/operationMode",
+        )
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"value": "auto"},
+        {"id": "/resource/heatingCircuits/hc1/operationMode", "value": "auto"},
+    ],
+)
+def test_resource_accepts_missing_id_or_equivalent_normalized_id(payload):
+    resource = parse_resource(payload, path="/heatingCircuits/hc1/operationMode")
+    assert resource.path == "/heatingCircuits/hc1/operationMode"
+
+
+def test_bulk_mismatched_inner_id_is_local_to_its_requested_path():
+    from custom_components.bosch_buderus_heating.pointt.parsers import (
+        parse_batch_response,
+    )
+
+    one = "/heatingCircuits/hc1/operationMode"
+    two = "/heatingCircuits/hc2/operationMode"
+    payload = [
+        {
+            "gatewayId": "synthetic",
+            "resourcePaths": [
+                {
+                    "resourcePath": path,
+                    "serverStatus": 200,
+                    "gatewayResponse": {
+                        "status": 200,
+                        "payload": {"id": two, "value": "auto"},
+                    },
+                }
+                for path in (one, two)
+            ],
+        }
+    ]
+    result = parse_batch_response(
+        payload, gateway_id="synthetic", requested_paths=[one, two]
+    )
+    assert not result[0].ok and isinstance(result[0].error, InvalidPayload)
+    assert result[1].ok and result[1].resource.path == two

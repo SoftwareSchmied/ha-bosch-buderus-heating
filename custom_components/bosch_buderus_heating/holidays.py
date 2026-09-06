@@ -36,13 +36,6 @@ _MIN_YEAR = 2000
 _MAX_YEAR = 2100
 _MAX_HOLIDAY_ID = 2_147_483_647
 _MAX_NAME_LENGTH = 80
-_APP_FIX_TEMPERATURE_MIN = 5.0
-_APP_FIX_TEMPERATURE_MAX = 30.0
-
-_CH_MODES = frozenset({"SATURDAY", "FIX_TEMPERATURE", "OFF", "ECO"})
-_DHW_MODES = frozenset({"SATURDAY", "OFF", "ECO", "LOW", "HIGH", "OFF_TD"})
-_VENTILATION_MODES = frozenset({"SATURDAY", "OFF", "MIN", "RED", "NOM", "MAX", "DEM"})
-_THERMAL_DISINFECTION_MODES = frozenset({"ON", "OFF"})
 _CIRCUIT_PATTERN = re.compile(r"(?:hc|dhw|vent)\d+", re.IGNORECASE)
 
 _START_KEYS = frozenset(
@@ -320,6 +313,34 @@ def parse_holiday_write_configuration(
     if not assigned_to:
         return None
 
+    for field in (
+        "heatingmode",
+        "dhwmode",
+        "ventilationmode",
+        "thermaldesinfection",
+        "thermaldisinfection",
+    ):
+        description = values.get(field)
+        if description is None:
+            continue
+        if not isinstance(description, Mapping):
+            return None
+        mode_description = {
+            _normalize_key(key): value for key, value in description.items()
+        }
+        options = mode_description.get("allowedvalues")
+        if (
+            not isinstance(options, list)
+            or len(options) > 64
+            or any(
+                not isinstance(option, str)
+                or not 0 < len(option) <= 64
+                or not option.isprintable()
+                for option in options
+            )
+        ):
+            return None
+
     heating_mode_values = _allowed_string_values(values.get("heatingmode"))
     dhw_mode_values = _allowed_string_values(values.get("dhwmode"))
     ventilation_mode_values = _allowed_string_values(values.get("ventilationmode"))
@@ -327,18 +348,8 @@ def parse_holiday_write_configuration(
         values.get("thermaldesinfection") or values.get("thermaldisinfection")
     )
     heating_modes = frozenset(heating_mode_values)
-    dhw_modes = frozenset(dhw_mode_values)
     ventilation_modes = frozenset(ventilation_mode_values)
     thermal_modes = frozenset(thermal_mode_values)
-    if not heating_modes.issubset(_CH_MODES):
-        return None
-    if not dhw_modes.issubset(_DHW_MODES):
-        return None
-    if not ventilation_modes.issubset(_VENTILATION_MODES):
-        return None
-    if not thermal_modes.issubset(_THERMAL_DISINFECTION_MODES):
-        return None
-
     # These are the defaults used by both official apps. PointT expects OFF
     # even when a circuit family is not installed and therefore has no list.
     heating_mode = "FIX_TEMPERATURE" if "FIX_TEMPERATURE" in heating_modes else "OFF"
@@ -356,13 +367,10 @@ def parse_holiday_write_configuration(
         }
         fix_temperature_min = _finite_number(normalized_fix.get("minvalue"))
         fix_temperature_max = _finite_number(normalized_fix.get("maxvalue"))
-        if fix_temperature_min is not None:
-            fix_temperature_min = max(fix_temperature_min, _APP_FIX_TEMPERATURE_MIN)
-        if fix_temperature_max is not None:
-            fix_temperature_max = min(fix_temperature_max, _APP_FIX_TEMPERATURE_MAX)
-        if fix_temperature_min is not None and fix_temperature < fix_temperature_min:
-            return None
-        if fix_temperature_max is not None and fix_temperature > fix_temperature_max:
+        if any(
+            key in normalized_fix and _finite_number(normalized_fix[key]) is None
+            for key in ("minvalue", "maxvalue")
+        ):
             return None
         if (
             fix_temperature_min is not None
@@ -521,14 +529,11 @@ def _period_write_values(
     if not isinstance(start, str) or not isinstance(end, str):
         return None
 
-    heating_mode = _optional_mode(normalized.get("heatingmode"), _CH_MODES)
-    dhw_mode = _optional_mode(normalized.get("dhwmode"), _DHW_MODES)
-    ventilation_mode = _optional_mode(
-        normalized.get("ventilationmode"), _VENTILATION_MODES
-    )
+    heating_mode = _optional_mode(normalized.get("heatingmode"))
+    dhw_mode = _optional_mode(normalized.get("dhwmode"))
+    ventilation_mode = _optional_mode(normalized.get("ventilationmode"))
     thermal_disinfection = _optional_mode(
         normalized.get("thermaldesinfection", normalized.get("thermaldisinfection")),
-        _THERMAL_DISINFECTION_MODES,
     )
     if any(
         value is _INVALID_MODE
@@ -548,7 +553,7 @@ def _period_write_values(
     for item in assigned_raw:
         if not isinstance(item, str) or not _CIRCUIT_PATTERN.fullmatch(item):
             return None
-        assigned_to.append(item.casefold())
+        assigned_to.append(item)
 
     fix_temperature = _finite_number(
         normalized.get("fixtemperature", normalized.get("fixtemp"))
@@ -571,15 +576,14 @@ def _period_write_values(
 _INVALID_MODE = object()
 
 
-def _optional_mode(
-    value: JsonValue | None, allowed: frozenset[str]
-) -> str | object | None:
+def _optional_mode(value: JsonValue | None) -> str | object | None:
     if value is None:
         return None
     if not isinstance(value, str):
         return _INVALID_MODE
-    normalized = value.strip().upper()
-    return normalized if normalized in allowed else _INVALID_MODE
+    return (
+        value if value and len(value) <= 64 and value.isprintable() else _INVALID_MODE
+    )
 
 
 def _mode_value(value: str | object | None) -> str | None:
@@ -619,9 +623,9 @@ def _allowed_string_values(value: JsonValue | None) -> tuple[str, ...]:
     if not isinstance(allowed, list) or len(allowed) > 64:
         return ()
     return tuple(
-        item.strip()
+        item
         for item in allowed
-        if isinstance(item, str) and 0 < len(item.strip()) <= 64
+        if isinstance(item, str) and 0 < len(item) <= 64 and item.isprintable()
     )
 
 

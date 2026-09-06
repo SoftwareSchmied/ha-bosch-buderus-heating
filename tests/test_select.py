@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 from datetime import UTC, datetime
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from homeassistant.core import HomeAssistant
@@ -100,14 +100,6 @@ def test_control_requires_exact_current_capability_shape() -> None:
                 writable=True,
             )
         ),
-        _resource(value="holiday"),
-        _resource(
-            metadata=ResourceMetadata(
-                resource_type="stringValue",
-                allowed_values=("auto",),
-                writable=True,
-            )
-        ),
     )
 
     assert all(build_select_descriptions({item.path: item}) == () for item in invalid)
@@ -160,7 +152,10 @@ def test_silent_mode_select_requires_exact_live_capability() -> None:
             writable=True,
         ),
     )
-    assert build_select_descriptions({incomplete.path: incomplete}) == ()
+    assert build_select_descriptions({incomplete.path: incomplete})[0].options == [
+        "off",
+        "auto",
+    ]
 
 
 async def test_silent_mode_select_uses_confirmed_write(hass: HomeAssistant) -> None:
@@ -329,11 +324,13 @@ async def test_select_translates_write_failures(
 async def test_platform_adds_dynamic_controls(hass: HomeAssistant) -> None:
     entity = _select(hass)
     entry = SimpleNamespace(
-        runtime_data=SimpleNamespace(coordinators=(entity.coordinator,))
+        async_on_unload=Mock(),
+        runtime_data=SimpleNamespace(coordinators=(entity.coordinator,)),
     )
     added: list[BoschBuderusOperationModeSelect] = []
 
     await async_setup_entry(hass, entry, added.extend)
+    entry.async_on_unload.call_args.args[0]()
 
     assert len(added) == 1
 
@@ -350,10 +347,14 @@ async def test_two_circuits_keep_independent_operation_mode_options(
     coordinator = _select(hass).coordinator
     coordinator.resources[second.path] = second
     coordinator.data[second.path] = ResourceSnapshot(second, True, datetime.now(UTC))
-    entry = SimpleNamespace(runtime_data=SimpleNamespace(coordinators=(coordinator,)))
+    entry = SimpleNamespace(
+        async_on_unload=Mock(),
+        runtime_data=SimpleNamespace(coordinators=(coordinator,)),
+    )
     added: list[BoschBuderusOperationModeSelect] = []
 
     await async_setup_entry(hass, entry, added.extend)
+    entry.async_on_unload.call_args.args[0]()
 
     assert len(added) == 2
     hc1, hc2 = added
@@ -376,11 +377,14 @@ async def test_two_circuits_keep_independent_operation_mode_options(
     [
         (("manual",), ["manual"]),
         (("manual", "off"), ["off", "manual"]),
-        (("auto", "manual", "future-private-option"), ["manual", "auto"]),
-        (("manual", "manual", "auto", None, 42), ["manual", "auto"]),
+        (
+            ("auto", "manual", "future-private-option"),
+            ["manual", "auto", "future-private-option"],
+        ),
+        (("manual", "manual", "auto"), ["manual", "auto"]),
     ],
 )
-def test_heating_mode_subsets_expose_only_known_advertised_options(
+def test_heating_mode_subsets_expose_all_advertised_string_options(
     hass: HomeAssistant, advertised: tuple[object, ...], expected: list[str]
 ) -> None:
     original = _resource()
@@ -403,7 +407,7 @@ def test_heating_options_follow_current_metadata_without_changing_identity(
     for advertised, expected in (
         (("manual", "auto"), ["manual", "auto"]),
         (("off", "manual", "auto"), ["off", "manual", "auto"]),
-        (("manual", "future-private-option"), ["manual"]),
+        (("manual", "future-private-option"), ["manual", "future-private-option"]),
     ):
         current = replace(
             original,

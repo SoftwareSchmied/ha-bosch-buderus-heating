@@ -234,7 +234,9 @@ thermal-disinfection, constant-temperature, and circuit-assignment settings are
 preserved. A newly created period uses the defaults also used by MyBuderus and
 HomeCom Easy: all advertised circuits, 17 °C constant-temperature heating when
 supported, hot water off, ventilation off when supported, and thermal
-disinfection on when supported.
+disinfection on when supported. These defaults are checked against the actual
+configuration. If a default is not offered, use **Configure → New holiday** to
+choose dates and the modes provided by your installation before creating it.
 
 To adjust these details in Home Assistant, open **Settings → Devices &
 services → Bosch/Buderus Heating → Configure**, select the holiday, and then
@@ -281,9 +283,17 @@ successful request is followed by a bounded read-back. If PointT does not
 confirm the result, Home Assistant reports the change as unsuccessful instead
 of assuming it worked.
 
-Hot-water temperature controls use whole-degree steps where required by the
-tested installation. Heating-circuit setpoints retain the step size reported
-by PointT.
+Each resource provides its own options and numeric bounds. A circuit offering
+only `manual` and `auto` remains writable, and additional advertised enum codes
+are offered even when they have no translation yet. Options and limits update
+during polling. Newly eligible discovered resources gain controls without a
+restart; previously undiscovered paths still require rediscovery.
+
+Numeric increments are UI hints. The observed PointT metadata does not establish
+a write step, so a valid target inside the advertised bounds is not rejected
+because it differs from an increment used on a reference installation. Legacy
+switch IDs remain stable; variants with additional or fewer options also receive
+a separate selection control.
 
 ## Polling and cloud load
 

@@ -50,16 +50,16 @@ TEMPERATURE = Resource(
         ),
         (
             replace(MODE, metadata=replace(MODE.metadata, allowed_values=())),
-            "no_supported_options",
+            "missing_options",
         ),
-        (replace(MODE, has_value=False), "missing_value"),
-        (replace(MODE, value=None), "missing_value"),
-        (replace(MODE, value=12.5), "invalid_value_type"),
-        (replace(MODE, value="private-mode"), "unsupported_current_option"),
-        (replace(MODE, value="off"), "current_option_not_advertised"),
+        (replace(MODE, has_value=False), None),
+        (replace(MODE, value=None), None),
+        (replace(MODE, value=12.5), None),
+        (replace(MODE, value="private-mode"), None),
+        (replace(MODE, value="off"), None),
         (
             replace(MODE, path="/system/silentMode/enabled", value="auto"),
-            "incomplete_options",
+            None,
         ),
     ],
 )
@@ -126,19 +126,19 @@ def test_select_diagnostics_explain_the_actual_creation_decision(
         ),
         (
             replace(TEMPERATURE, metadata=replace(TEMPERATURE.metadata, minimum=0)),
-            "unsafe_bounds",
+            None,
         ),
         (
             replace(TEMPERATURE, metadata=replace(TEMPERATURE.metadata, maximum=35)),
-            "unsafe_bounds",
+            None,
         ),
-        (replace(TEMPERATURE, has_value=False), "missing_value"),
-        (replace(TEMPERATURE, value=None), "missing_value"),
-        (replace(TEMPERATURE, value=True), "invalid_value_type"),
-        (replace(TEMPERATURE, value="private-setpoint"), "invalid_value_type"),
-        (replace(TEMPERATURE, value=float("nan")), "non_finite_value"),
-        (replace(TEMPERATURE, value=31), "value_out_of_bounds"),
-        (replace(TEMPERATURE, value=21.25), "value_off_step"),
+        (replace(TEMPERATURE, has_value=False), None),
+        (replace(TEMPERATURE, value=None), None),
+        (replace(TEMPERATURE, value=True), None),
+        (replace(TEMPERATURE, value="private-setpoint"), None),
+        (replace(TEMPERATURE, value=float("nan")), None),
+        (replace(TEMPERATURE, value=31), None),
+        (replace(TEMPERATURE, value=21.25), None),
     ],
 )
 def test_number_diagnostics_explain_the_actual_creation_decision(
@@ -167,11 +167,16 @@ def test_heating_mode_diagnostics_reveal_only_known_options() -> None:
     assert report["control"] == {
         "platform": "select",
         "eligible": False,
-        "rejection_reason": "unsupported_current_option",
+        "rejection_reason": "invalid_options",
         "enabled_by_default": True,
         "advertised_known_options": ["auto", "manual"],
         "unrecognized_option_count": 3,
         "requires_all_options": False,
+        "writable": True,
+        "current_value_issue": "current_option_not_advertised",
+        "offered_option_count": 3,
+        "switch_supported": False,
+        "select_supported": True,
     }
     serialized = json.dumps(report)
     for private in ("private-current-value", "private-option", "987654321"):
@@ -187,10 +192,11 @@ def test_number_diagnostics_distinguish_metadata_from_current_settings() -> None
         "enabled_by_default": True,
         "minimum": 5,
         "maximum": 30,
-        "policy_minimum": 5,
-        "policy_maximum": 30,
-        "policy_step": 0.5,
-        "policy_unit": "C",
+        "writable": True,
+        "current_value_issue": None,
+        "ui_step": 0.5,
+        "write_step": None,
+        "unit": "C",
     }
     assert "21.5" not in json.dumps(report)
 
@@ -209,7 +215,7 @@ def test_installer_control_is_eligible_but_disabled_by_default() -> None:
     assert not description.entity_registry_enabled_default
     assert report["minimum"] == 30
     assert report["maximum"] == 60
-    assert report["policy_step"] == 1
+    assert report["ui_step"] == 1
 
 
 def test_switch_still_requires_both_options() -> None:
@@ -225,7 +231,8 @@ def test_switch_still_requires_both_options() -> None:
     incomplete = replace(
         resource, metadata=replace(resource.metadata, allowed_values=("stop",))
     )
-    assert _control_diagnostics(incomplete)["rejection_reason"] == "incomplete_options"
+    assert _control_diagnostics(incomplete)["rejection_reason"] is None
+    assert build_select_descriptions({incomplete.path: incomplete})
     assert not build_switch_descriptions({incomplete.path: incomplete})
 
 

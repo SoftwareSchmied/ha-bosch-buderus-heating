@@ -14,7 +14,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import BoschBuderusConfigEntry
-from .control import async_set_control
+from .control import async_set_control, track_control_entities
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
     Freshness,
@@ -24,7 +24,12 @@ from .device import device_info_for_resource, grouped_entity_name
 from .pointt import Resource
 from .resource_catalog import resource_name
 from .sensor import _semantic_key
-from .writes import STRING_SWITCH_POLICIES, EnumWritePolicy, enum_policy_for_resource
+from .writes import (
+    STRING_SWITCH_POLICIES,
+    EnumWritePolicy,
+    assess_control,
+    enum_policy_for_resource,
+)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -44,13 +49,14 @@ async def async_setup_entry(
 ) -> None:
     """Create switches only from exact current capability metadata."""
     del hass
-    entities: list[BoschBuderusSwitch] = []
     for coordinator in entry.runtime_data.coordinators:
-        entities.extend(
-            BoschBuderusSwitch(coordinator, description)
-            for description in build_switch_descriptions(coordinator.resources)
+        track_control_entities(
+            entry,
+            coordinator,
+            async_add_entities,
+            build_switch_descriptions,
+            BoschBuderusSwitch,
         )
-    async_add_entities(entities)
 
 
 def build_switch_descriptions(
@@ -60,7 +66,10 @@ def build_switch_descriptions(
     descriptions: list[BoschBuderusSwitchEntityDescription] = []
     for resource in resources.values():
         policy = enum_policy_for_resource(resource)
-        if policy not in STRING_SWITCH_POLICIES:
+        if (
+            policy not in STRING_SWITCH_POLICIES
+            or not assess_control(resource).supports_switch
+        ):
             continue
         tail = resource.path.rsplit("/", 1)[-1]
         key, name, on_value, off_value = {
@@ -125,6 +134,7 @@ class BoschBuderusSwitch(
             and snapshot is not None
             and snapshot.available
             and snapshot.freshness is Freshness.FRESH
+            and assess_control(snapshot.resource).supports_switch
             and enum_policy_for_resource(snapshot.resource)
             is self.entity_description.write_policy
         )
@@ -132,7 +142,16 @@ class BoschBuderusSwitch(
     @property
     def is_on(self) -> bool | None:
         snapshot = self._snapshot
-        if snapshot is None or not isinstance(snapshot.resource.value, str):
+        if (
+            snapshot is None
+            or not snapshot.resource.has_value
+            or not isinstance(snapshot.resource.value, str)
+        ):
+            return None
+        if snapshot.resource.value not in {
+            self.entity_description.on_value,
+            self.entity_description.off_value,
+        }:
             return None
         return snapshot.resource.value == self.entity_description.on_value
 

@@ -22,18 +22,36 @@ HTTP success without confirmed state is `WriteNotConfirmed`. Administrative or
 unclear resources are never exposed as normal controls. Diagnostics and
 fixtures are redacted by default according to the privacy policy.
 
-Heating-circuit operation-mode controls use only the intersection of the known
-write codes (`off`, `manual`, `auto`) and each circuit's current `allowedValues`.
-The official app's heating-mode mapper accepts each known advertised option
-independently, so a circuit advertising only `manual` and `auto` still receives
-a select control. Its options follow metadata changes during normal polling.
-Unknown values are never added as write options, and every write still checks
-current permissions and advertised values before its single PUT and read-back.
-Other enum controls retain their existing complete-option requirements.
+All supported scalar control families derive their write contracts independently
+from each resource. Enum options are the advertised, valid string codes;
+subsets and new vendor codes need no code release. Known codes retain their
+translations. Reserved display keys are escaped reversibly so similar raw
+codes such as `Off` and `off` never write to the wrong option. Current values
+outside an advertised contract are diagnosed separately and do not prevent
+selecting a valid replacement.
 
-Scalar-control diagnostics share the entity builders' eligibility checks. They
-report fixed rejection codes, known advertised enum options, and numeric
-capability bounds without including current settings or unknown enum text.
+Numeric bounds come from the gateway, without reference-installation ranges.
+Units must belong to the supported physical quantity. The currently observed
+resource schema does not establish a write step. Existing increments are UI
+hints only and never reject an otherwise valid numeric target.
+
+`assess_control` is shared by entities, transactions, and diagnostics. Newly
+eligible discovered resources are added during coordinator updates; identities
+and user registry choices are preserved. A legacy string switch keeps its ID
+when its two actions are supported. Other option sets receive a separate select
+with an `:options:control` suffix; losing an action makes the switch unavailable.
+Unknown administrative paths still require an explicit function implementation.
+
+Writes revalidate under the coordinator lock and remain confirmed only after
+reading back the requested resource. Explicitly conflicting response IDs are
+protocol errors, including inside bulk responses. Holiday dialogs retain the
+baseline shown when opened, merge only user changes, and validate advertised
+modes again before mutation. Creating a holiday with unavailable defaults
+requires explicit choices through the integration's Configure dialog.
+
+Diagnostics report known option names and counts of other options. New option
+text is allowed in the local UI but remains excluded from diagnostic exports,
+as do current settings and measurements.
 
 ## Consequences
 

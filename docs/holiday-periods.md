@@ -16,6 +16,16 @@ the integration displays only options advertised by the current system.
 
 ## Create a holiday period
 
+To choose installation-specific modes before creating a period, open the
+integration's **Configure** dialog and select **New holiday**. Enter its name
+and dates, then choose the advertised modes and circuits. A date-only gateway
+uses date selectors. The end date is exclusive, matching the HA calendar.
+
+The standard calendar dialog still supports creation when the usual defaults
+are valid for this gateway. It never substitutes an unadvertised mode. Use
+**Configure → New holiday** if the defaults do not fit your installation.
+
+
 1. Open **Calendar** in Home Assistant.
 2. Make sure **Holiday periods** is selected in the calendar list.
 3. Select **Add event** or click the desired day or time in the calendar.
@@ -48,7 +58,7 @@ disinfection on when supported. Review these settings as described below.
    |---|---|
    | Apply for | Heating, hot-water, or ventilation circuits assigned to this holiday |
    | Central Heating | As Saturday, Constant temperature, OFF, or Setback |
-   | Constant temperature | Room target used only with Constant temperature; 5–30 °C, or a stricter gateway range |
+   | Constant temperature | Room target used only with Constant temperature; the range advertised by this gateway |
    | Hot Water | As Saturday, OFF, Eco+, Eco, Comfort, or OFF with Thermal Disinfection |
    | Ventilation | As Saturday, OFF, fan level 1–4, or Demand |
    | Thermal disinfection | Whether thermal disinfection remains enabled during the holiday |
@@ -95,8 +105,9 @@ Deletion is also confirmed by reading the holiday list back from PointT.
 - If **Holiday periods** is read-only or **Configure holiday** is absent, the
   gateway has not supplied a current, complete write configuration. Reload
   the integration and try again; unsupported systems remain safely read-only.
-- If a period changed while the configuration dialog was open, close the
-  dialog, reopen it, and apply the change to the freshly read values.
+- Changes made in the app while the configuration dialog is open are preserved
+  for fields you did not edit. Conflicting changes to the same field are
+  rejected; reopen the dialog to review the current values.
 - A failed or unconfirmed write is never retried automatically. Check the
   cloud connection and submit the change again only after reviewing the
   current period.

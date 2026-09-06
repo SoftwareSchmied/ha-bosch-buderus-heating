@@ -20,6 +20,7 @@ from .holidays import (
     holiday_period_id,
     parse_confirmed_holiday_list,
     parse_holiday_state,
+    parse_holiday_write_configuration,
 )
 from .pointt import (
     PointTClient,
@@ -64,6 +65,8 @@ class HolidayWriteService:
         fallback_timezone: str,
     ) -> Resource:
         """Create one period and confirm a new matching numeric identifier."""
+        if configuration := parse_holiday_write_configuration(resources):
+            validate_holiday_values(values, configuration)
         periods = await self._async_current_periods(
             gateway_id, resources, fallback_timezone=fallback_timezone
         )
@@ -72,7 +75,7 @@ class HolidayWriteService:
             for period in periods
             if (identifier := holiday_period_id(period)) is not None
         }
-        with suppress(RequestTimeout):
+        with suppress(RequestTimeout, ServiceUnavailable):
             await self._client.create_holiday_period(gateway_id, values.as_payload())
         # The server may have applied a timed-out non-idempotent POST. Always
         # determine the result from the following read-back instead of retrying.
@@ -125,6 +128,8 @@ class HolidayWriteService:
         if baseline is None or current is None:
             raise WriteValidationError("Holiday is no longer available for editing")
         values = _merge_holiday_changes(baseline, values, current)
+        if configuration := parse_holiday_write_configuration(resources):
+            validate_holiday_values(values, configuration, baseline=current)
         merged_resource = Resource(
             path=HOLIDAY_LIST_PATH,
             value=[{"id": holiday_id, **values.as_payload()}],
@@ -137,7 +142,7 @@ class HolidayWriteService:
             is None
         ):
             raise WriteValidationError("Updated holiday no longer has a valid timespan")
-        with suppress(RequestTimeout):
+        with suppress(RequestTimeout, ServiceUnavailable):
             await self._client.update_holiday_period(
                 gateway_id, holiday_id, values.as_payload()
             )
@@ -166,7 +171,7 @@ class HolidayWriteService:
     ) -> Resource:
         """Delete one period and confirm that its numeric ID disappeared."""
         _require_existing_id(resources, holiday_id, fallback_timezone)
-        with suppress(RequestTimeout):
+        with suppress(RequestTimeout, ServiceUnavailable):
             await self._client.delete_holiday_period(gateway_id, holiday_id)
 
         def confirmed(periods: tuple[HolidayPeriod, ...]) -> bool:
@@ -254,13 +259,15 @@ def create_holiday_values(
     summary: str,
     configuration: HolidayWriteConfiguration,
     timezone: tzinfo,
+    *,
+    validate_defaults: bool = True,
 ) -> HolidayWriteValues:
     """Build a new period using the same safe defaults as the official apps."""
     start_value, end_value = _format_timespan(
         start, end, configuration.date_time_mode, timezone
     )
     encoded_name = _encode_name(summary, configuration)
-    return HolidayWriteValues(
+    values = HolidayWriteValues(
         start_date=start_value,
         end_date=end_value,
         heating_mode=configuration.heating_mode,
@@ -271,6 +278,50 @@ def create_holiday_values(
         thermal_disinfection=configuration.thermal_disinfection,
         fix_temperature=configuration.fix_temperature,
     )
+    if validate_defaults:
+        validate_holiday_values(values, configuration)
+    return values
+
+
+def validate_holiday_values(
+    values: HolidayWriteValues,
+    configuration: HolidayWriteConfiguration,
+    *,
+    baseline: HolidayWriteValues | None = None,
+) -> None:
+    """Check changes against this installation's advertised holiday contract."""
+    if not values.assigned_to or not set(values.assigned_to).issubset(
+        configuration.assigned_to
+    ):
+        raise WriteValidationError("Holiday assignments are not supported")
+    for field, allowed in (
+        ("heating_mode", configuration.heating_modes),
+        ("dhw_mode", configuration.dhw_modes),
+        ("ventilation_mode", configuration.ventilation_modes),
+        ("thermal_disinfection", configuration.thermal_disinfection_modes),
+    ):
+        value = getattr(values, field)
+        if baseline is not None and value == getattr(baseline, field):
+            continue
+        if (allowed and value not in allowed) or (
+            not allowed and value != getattr(configuration, field)
+        ):
+            raise WriteValidationError("Choose an advertised holiday mode explicitly")
+    value = values.fix_temperature
+    if not math.isfinite(value):
+        raise WriteValidationError("Holiday fixed temperature must be finite")
+    if baseline is not None and value == baseline.fix_temperature:
+        return
+    if (
+        configuration.fix_temperature_min is not None
+        and value < configuration.fix_temperature_min
+    ) or (
+        configuration.fix_temperature_max is not None
+        and value > configuration.fix_temperature_max
+    ):
+        raise WriteValidationError(
+            "Choose a holiday temperature within the advertised limits"
+        )
 
 
 def update_holiday_values(

@@ -11,6 +11,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     RequestTimeout,
     Resource,
     ResourceMetadata,
+    ServiceUnavailable,
     WriteNotConfirmed,
     WriteRejected,
     WriteValidationError,
@@ -128,6 +129,35 @@ async def test_timed_out_put_is_not_retried_and_can_be_confirmed() -> None:
 
     assert client.put_resource_value.await_count == 1
     assert result.put_timed_out
+
+
+async def test_disconnected_put_is_confirmed_without_another_write() -> None:
+    client = AsyncMock()
+    client.put_resource_value.side_effect = ServiceUnavailable()
+    client.get_resource.side_effect = [
+        ServiceUnavailable(),
+        _resource("manual"),
+        _resource("auto"),
+    ]
+    result = await WriteService(client, sleep=AsyncMock()).async_write_enum(
+        "gateway-one", _resource(), "auto", HEATING_CIRCUIT_OPERATION_MODE_POLICY
+    )
+    assert result.resource.value == "auto"
+    assert not result.put_timed_out
+    client.put_resource_value.assert_awaited_once()
+    assert client.get_resource.await_count == 3
+
+
+async def test_disconnected_put_with_failed_readback_is_unconfirmed() -> None:
+    client = AsyncMock()
+    client.put_resource_value.side_effect = ServiceUnavailable()
+    client.get_resource.side_effect = ServiceUnavailable()
+    with pytest.raises(WriteNotConfirmed):
+        await WriteService(client, sleep=AsyncMock()).async_write_enum(
+            "gateway-one", _resource(), "auto", HEATING_CIRCUIT_OPERATION_MODE_POLICY
+        )
+    client.put_resource_value.assert_awaited_once()
+    assert client.get_resource.await_count == 3
 
 
 async def test_delayed_read_back_retries_only_get_requests() -> None:
@@ -308,10 +338,7 @@ async def test_number_write_is_bounded_and_confirmed() -> None:
         (_number_resource(unit="bar"), 20.5),
         (_number_resource(minimum=None), 20.5),
         (_number_resource(maximum=None), 20.5),
-        (_number_resource(minimum=0), 20.5),
-        (_number_resource(maximum=40), 20.5),
         (_number_resource(), 30.5),
-        (_number_resource(), 20.25),
         (_number_resource(), float("inf")),
     ],
 )
@@ -332,7 +359,7 @@ async def test_number_write_rejects_unsafe_metadata_or_value(
     client.put_resource_value.assert_not_awaited()
 
 
-async def test_hc2_subset_write_confirms_only_advertised_known_modes() -> None:
+async def test_hc2_subset_write_rejects_unadvertised_modes() -> None:
     path = "/heatingCircuits/hc2/operationMode"
     current = _resource(path=path, allowed_values=("manual", "auto", "future-mode"))
     confirmed = _resource("auto", path=path, allowed_values=("manual", "auto"))
@@ -349,7 +376,7 @@ async def test_hc2_subset_write_confirms_only_advertised_known_modes() -> None:
     client.get_resource.assert_awaited_once_with("gateway-one", path)
 
     client.reset_mock()
-    for rejected in ("off", "future-mode"):
+    for rejected in ("off", "unadvertised-mode"):
         with pytest.raises(WriteValidationError):
             await service.async_write_enum(
                 "gateway-one", current, rejected, HEATING_CIRCUIT_OPERATION_MODE_POLICY
@@ -398,8 +425,6 @@ def test_policy_discovery_excludes_administrative_writes() -> None:
     maximum_supply_policy = number_policy_for_resource(maximum_supply)
     assert maximum_supply_policy is not None
     assert maximum_supply_policy.step == 1.0
-    assert maximum_supply_policy.safe_minimum == 0
-    assert maximum_supply_policy.safe_maximum == 100
 
     other_system = _number_resource(
         55.0,
