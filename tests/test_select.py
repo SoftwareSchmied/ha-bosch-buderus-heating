@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -103,7 +104,7 @@ def test_control_requires_exact_current_capability_shape() -> None:
         _resource(
             metadata=ResourceMetadata(
                 resource_type="stringValue",
-                allowed_values=("manual", "auto"),
+                allowed_values=("auto",),
                 writable=True,
             )
         ),
@@ -335,3 +336,86 @@ async def test_platform_adds_dynamic_controls(hass: HomeAssistant) -> None:
     await async_setup_entry(hass, entry, added.extend)
 
     assert len(added) == 1
+
+
+async def test_two_circuits_keep_independent_operation_mode_options(
+    hass: HomeAssistant,
+) -> None:
+    first = _resource()
+    second = replace(
+        first,
+        path="/heatingCircuits/hc2/operationMode",
+        metadata=replace(first.metadata, allowed_values=("manual", "auto")),
+    )
+    coordinator = _select(hass).coordinator
+    coordinator.resources[second.path] = second
+    coordinator.data[second.path] = ResourceSnapshot(second, True, datetime.now(UTC))
+    entry = SimpleNamespace(runtime_data=SimpleNamespace(coordinators=(coordinator,)))
+    added: list[BoschBuderusOperationModeSelect] = []
+
+    await async_setup_entry(hass, entry, added.extend)
+
+    assert len(added) == 2
+    hc1, hc2 = added
+    assert hc1.options == ["off", "manual", "auto"]
+    assert hc2.options == ["manual", "auto"]
+    assert hc2.available
+    assert hc2.current_option == "manual"
+    assert hc2.name == "Heating circuit 2 \N{EN DASH} Operation mode"
+    assert hc2.unique_id == "gateway-one:heatingCircuits:hc2:operationMode:control"
+    writer = AsyncMock()
+    coordinator.async_write_control = writer
+    await hc2.async_select_option("auto")
+    writer.assert_awaited_once_with(
+        second.path, "auto", HEATING_CIRCUIT_OPERATION_MODE_POLICY
+    )
+
+
+@pytest.mark.parametrize(
+    ("advertised", "expected"),
+    [
+        (("manual",), ["manual"]),
+        (("manual", "off"), ["off", "manual"]),
+        (("auto", "manual", "future-private-option"), ["manual", "auto"]),
+        (("manual", "manual", "auto", None, 42), ["manual", "auto"]),
+    ],
+)
+def test_heating_mode_subsets_expose_only_known_advertised_options(
+    hass: HomeAssistant, advertised: tuple[object, ...], expected: list[str]
+) -> None:
+    original = _resource()
+    resource = replace(
+        original,
+        metadata=replace(original.metadata, allowed_values=advertised),
+    )
+    entity = _select(hass, resource)
+    assert entity.options == expected
+    assert entity.entity_description.options == expected
+    assert entity.available
+
+
+def test_heating_options_follow_current_metadata_without_changing_identity(
+    hass: HomeAssistant,
+) -> None:
+    entity = _select(hass)
+    original = entity.coordinator.data[PATH].resource
+    unique_id = entity.unique_id
+    for advertised, expected in (
+        (("manual", "auto"), ["manual", "auto"]),
+        (("off", "manual", "auto"), ["off", "manual", "auto"]),
+        (("manual", "future-private-option"), ["manual"]),
+    ):
+        current = replace(
+            original,
+            metadata=replace(original.metadata, allowed_values=advertised),
+        )
+        entity.coordinator.data[PATH] = ResourceSnapshot(
+            current, True, datetime.now(UTC)
+        )
+        assert entity.options == expected
+        assert entity.available
+        assert entity.unique_id == unique_id
+    entity.coordinator.data = {}
+    assert entity.options == []
+    assert entity.current_option is None
+    assert not entity.available
