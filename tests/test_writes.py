@@ -332,6 +332,32 @@ async def test_number_write_rejects_unsafe_metadata_or_value(
     client.put_resource_value.assert_not_awaited()
 
 
+async def test_hc2_subset_write_confirms_only_advertised_known_modes() -> None:
+    path = "/heatingCircuits/hc2/operationMode"
+    current = _resource(path=path, allowed_values=("manual", "auto", "future-mode"))
+    confirmed = _resource("auto", path=path, allowed_values=("manual", "auto"))
+    client = AsyncMock()
+    client.put_resource_value.return_value = None
+    client.get_resource.return_value = confirmed
+    service = WriteService(client, sleep=AsyncMock())
+
+    result = await service.async_write_enum(
+        "gateway-one", current, "auto", HEATING_CIRCUIT_OPERATION_MODE_POLICY
+    )
+    assert result.resource is confirmed
+    client.put_resource_value.assert_awaited_once_with("gateway-one", path, "auto")
+    client.get_resource.assert_awaited_once_with("gateway-one", path)
+
+    client.reset_mock()
+    for rejected in ("off", "future-mode"):
+        with pytest.raises(WriteValidationError):
+            await service.async_write_enum(
+                "gateway-one", current, rejected, HEATING_CIRCUIT_OPERATION_MODE_POLICY
+            )
+    client.put_resource_value.assert_not_awaited()
+    client.get_resource.assert_not_awaited()
+
+
 def test_policy_discovery_excludes_administrative_writes() -> None:
     enum_resource = _resource()
     admin = Resource(

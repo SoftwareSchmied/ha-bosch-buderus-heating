@@ -5,6 +5,60 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.7.0-beta.5] - 2026-09-06
+
+This beta restores heating-circuit operation-mode controls when an installation
+offers fewer than all three known modes. Diagnostics now explain why a discovered
+resource does or does not qualify for a control, helping investigate remaining
+missing settings on installations with multiple heating circuits.
+
+### Fixed
+
+- Create heating-circuit operation-mode controls when PointT advertises a
+  supported subset such as `manual` and `auto`. Each circuit keeps its own
+  options; newly advertised known modes appear during normal polling and
+  withdrawn modes disappear. Unknown or unadvertised modes cannot be written.
+- Reject non-finite numeric bounds and resources without a current scalar value
+  consistently when deciding whether to create numeric controls.
+
+### Diagnostics
+
+- Schema 11 explains scalar-control eligibility per resource using the same
+  checks as entity creation. It reports specific rejection reasons, known
+  advertised options, numeric capability bounds, policy limits and steps, and
+  default activation, including disabled installer controls.
+- Current measurements and settings, unknown option text, credentials, and
+  device identifiers remain excluded. Downloading diagnostics adds no requests.
+
+### Safety and compatibility
+
+- Only known operation modes currently advertised by the individual heating
+  circuit are offered. Write permissions, resource types, and the single-PUT
+  transaction with mandatory read-back remain enforced.
+- Other enum controls retain their existing option requirements. Numeric
+  safety limits and installer-control defaults are unchanged.
+- Diagnostics include capability metadata and fixed rejection codes, not current
+  settings or unknown option text. Existing entity and device IDs are preserved.
+
+### Validation
+
+- 687 automated tests pass with 95.59% coverage, including branch coverage.
+- Regression tests cover independent hc1/hc2 options, metadata changes,
+  confirmed subset writes, rejection of unadvertised or unknown values, and
+  diagnostic agreement with entity creation without leaking private values.
+- Ruff formatting and linting and strict Mypy validation pass.
+- The isolated dependency audit found no known vulnerabilities. The local
+  release archive, manifest version, and SHA-256 checksum were verified.
+
+### Upgrade notes and limitations
+
+- Restart Home Assistant after updating so previously excluded controls can be
+  created. Existing entity and device identifiers and polling intervals remain
+  unchanged; write permissions and PUT/read-back validation still apply.
+- The operation-mode correction covers the reproduced metadata mismatch. The
+  remaining controls on the installation in issue #23 still need a field test;
+  the additional diagnostics explain other capability rejections.
+
 ## [0.7.0-beta.4] - 2026-09-06
 
 This beta improves discovery on installations with multiple circuits and makes

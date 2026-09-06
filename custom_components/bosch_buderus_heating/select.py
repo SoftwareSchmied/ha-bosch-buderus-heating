@@ -73,7 +73,7 @@ def build_select_descriptions(
             continue
         options: tuple[str, ...]
         if policy is HEATING_CIRCUIT_OPERATION_MODE_POLICY:
-            options = ("off", "manual", "auto")
+            options = _heating_operation_options(resource)
             translation_key = "heating_circuit_operation_mode"
         elif policy is DHW_OPERATION_MODE_POLICY:
             options = ("off", "low", "high", "ownprogram", "eco")
@@ -96,6 +96,15 @@ def build_select_descriptions(
             )
         )
     return tuple(descriptions)
+
+
+def _heating_operation_options(resource: Resource) -> tuple[str, ...]:
+    """Keep the established order, restricted to this circuit's known options."""
+    return tuple(
+        value
+        for value in ("off", "manual", "auto")
+        if value in resource.metadata.allowed_values
+    )
 
 
 class BoschBuderusSelect(
@@ -148,6 +157,18 @@ class BoschBuderusSelect(
             and enum_policy_for_resource(snapshot.resource)
             is self.entity_description.write_policy
         )
+
+    @property
+    def options(self) -> list[str]:
+        if (
+            self.entity_description.write_policy
+            is HEATING_CIRCUIT_OPERATION_MODE_POLICY
+        ):
+            snapshot = self._snapshot
+            return (
+                list(_heating_operation_options(snapshot.resource)) if snapshot else []
+            )
+        return list(self.entity_description.options or ())
 
     @property
     def current_option(self) -> str | None:

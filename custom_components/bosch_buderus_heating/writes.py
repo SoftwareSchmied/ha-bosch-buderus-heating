@@ -32,6 +32,7 @@ class EnumWritePolicy:
     path_pattern: str
     resource_types: frozenset[str]
     allowed_values: frozenset[str]
+    require_all_options: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,12 +44,14 @@ class NumberWritePolicy:
     safe_minimum: float
     safe_maximum: float
     step: float
+    enabled_by_default: bool = True
 
 
 HEATING_CIRCUIT_OPERATION_MODE_POLICY = EnumWritePolicy(
     r"^/heatingCircuits/[^/]+/operationMode$",
     frozenset({"stringValue"}),
     frozenset({"off", "manual", "auto"}),
+    require_all_options=False,
 )
 DHW_OPERATION_MODE_POLICY = EnumWritePolicy(
     r"^/dhwCircuits/[^/]+/operationMode$",
@@ -87,7 +90,14 @@ NUMBER_WRITE_POLICIES = (
     # The user-visible range comes from the individual gateway. The broad
     # envelope rejects corrupt metadata without imposing the K40 test system's
     # 30-60 °C limits on other heating systems.
-    NumberWritePolicy(r"^/heatingCircuits/[^/]+/maxFlowTemp$", "C", 0, 100, 1.0),
+    NumberWritePolicy(
+        r"^/heatingCircuits/[^/]+/maxFlowTemp$",
+        "C",
+        0,
+        100,
+        1.0,
+        enabled_by_default=False,
+    ),
     NumberWritePolicy(
         r"^/heatingCircuits/[^/]+/temperatureLevels/(?:comfort2|eco)$",
         "C",
@@ -104,6 +114,32 @@ NUMBER_WRITE_POLICIES = (
         1.0,
     ),
 )
+
+
+@dataclass(frozen=True, slots=True)
+class ControlAssessment:
+    """A scalar control's policy and first failed capability check."""
+
+    policy: EnumWritePolicy | NumberWritePolicy | None
+    rejection_reason: str | None
+
+    @property
+    def eligible(self) -> bool:
+        return self.policy is not None and self.rejection_reason is None
+
+    @property
+    def platform(self) -> str | None:
+        if isinstance(self.policy, NumberWritePolicy):
+            return "number"
+        if self.policy is None:
+            return None
+        return "switch" if self.policy in STRING_SWITCH_POLICIES else "select"
+
+    @property
+    def enabled_by_default(self) -> bool | None:
+        if isinstance(self.policy, NumberWritePolicy):
+            return self.policy.enabled_by_default
+        return True if self.policy is not None else None
 
 
 class WriteService:
@@ -219,35 +255,71 @@ def _validate_number(
         policy.path_pattern, resource.path
     ):
         raise WriteValidationError("Resource path is not approved for this write")
+    reason = _number_rejection_reason(resource, request.value, policy)
+    if reason is not None:
+        raise WriteValidationError(f"Numeric control validation failed: {reason}")
+
+
+def _number_rejection_reason(
+    resource: Resource, value: object, policy: NumberWritePolicy
+) -> str | None:
+    """Share numeric validation with control creation and diagnostics."""
     metadata = resource.metadata
-    if not metadata.writable or metadata.resource_type != "floatValue":
-        raise WriteValidationError("Resource is not an approved writable number")
+    if not metadata.writable:
+        return "not_writable"
+    if metadata.resource_type != "floatValue":
+        return "unsupported_resource_type"
     if metadata.unit != policy.unit:
-        raise WriteValidationError("Resource unit is not approved for this write")
+        return "unsupported_unit"
     minimum, maximum = metadata.minimum, metadata.maximum
-    if (
-        minimum is None
-        or maximum is None
-        or minimum < policy.safe_minimum
-        or maximum > policy.safe_maximum
-        or minimum > maximum
-    ):
-        raise WriteValidationError("Resource bounds are missing or unsafe")
-    value = request.value
-    if (
-        isinstance(value, bool)
-        or not isinstance(value, int | float)
-        or not math.isfinite(value)
-        or not minimum <= value <= maximum
-    ):
-        raise WriteValidationError("Requested number is outside current limits")
+    if minimum is None or maximum is None:
+        return "missing_bounds"
+    if not math.isfinite(minimum) or not math.isfinite(maximum):
+        return "non_finite_bounds"
+    if minimum > maximum:
+        return "inverted_bounds"
+    if minimum < policy.safe_minimum or maximum > policy.safe_maximum:
+        return "unsafe_bounds"
+    if value is None:
+        return "missing_value"
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return "invalid_value_type"
+    if not math.isfinite(value):
+        return "non_finite_value"
+    if not minimum <= value <= maximum:
+        return "value_out_of_bounds"
     steps = (float(value) - minimum) / policy.step
     if not math.isclose(steps, round(steps), abs_tol=1e-7):
-        raise WriteValidationError("Requested number does not match the allowed step")
+        return "value_off_step"
+    return None
 
 
-def enum_policy_for_resource(resource: Resource) -> EnumWritePolicy | None:
-    """Return a released enum policy only when live metadata matches."""
+def _enum_rejection_reason(resource: Resource, policy: EnumWritePolicy) -> str | None:
+    """Validate only released options actually advertised by this resource."""
+    metadata = resource.metadata
+    if not metadata.writable:
+        return "not_writable"
+    if metadata.resource_type not in policy.resource_types:
+        return "unsupported_resource_type"
+    if not policy.allowed_values.intersection(metadata.allowed_values):
+        return "no_supported_options"
+    if policy.require_all_options and not policy.allowed_values.issubset(
+        metadata.allowed_values
+    ):
+        return "incomplete_options"
+    if not resource.has_value or resource.value is None:
+        return "missing_value"
+    if not isinstance(resource.value, str):
+        return "invalid_value_type"
+    if resource.value not in policy.allowed_values:
+        return "unsupported_current_option"
+    if resource.value not in metadata.allowed_values:
+        return "current_option_not_advertised"
+    return None
+
+
+def assess_control(resource: Resource) -> ControlAssessment:
+    """Assess scalar controls without cloud requests or exposing raw values."""
     policies = (
         HEATING_CIRCUIT_OPERATION_MODE_POLICY,
         DHW_OPERATION_MODE_POLICY,
@@ -256,33 +328,34 @@ def enum_policy_for_resource(resource: Resource) -> EnumWritePolicy | None:
         *STRING_SWITCH_POLICIES,
     )
     for policy in policies:
-        if (
-            re.fullmatch(policy.path_pattern, resource.path)
-            and resource.metadata.writable
-            and resource.metadata.resource_type in policy.resource_types
-            and policy.allowed_values.issubset(resource.metadata.allowed_values)
-            and resource.has_value
-            and isinstance(resource.value, str)
-            and resource.value in policy.allowed_values
-        ):
-            return policy
+        if re.fullmatch(policy.path_pattern, resource.path):
+            return ControlAssessment(policy, _enum_rejection_reason(resource, policy))
+    for number_policy in NUMBER_WRITE_POLICIES:
+        if re.fullmatch(number_policy.path_pattern, resource.path):
+            return ControlAssessment(
+                number_policy,
+                _number_rejection_reason(
+                    resource,
+                    resource.value if resource.has_value else None,
+                    number_policy,
+                ),
+            )
+    return ControlAssessment(None, "no_scalar_control_policy")
+
+
+def enum_policy_for_resource(resource: Resource) -> EnumWritePolicy | None:
+    """Return a released enum policy only when live metadata matches."""
+    assessment = assess_control(resource)
+    if assessment.eligible and isinstance(assessment.policy, EnumWritePolicy):
+        return assessment.policy
     return None
 
 
 def number_policy_for_resource(resource: Resource) -> NumberWritePolicy | None:
     """Return a released numeric policy only when live metadata is safe."""
-    if isinstance(resource.value, bool) or not isinstance(resource.value, int | float):
-        return None
-    for policy in NUMBER_WRITE_POLICIES:
-        try:
-            _validate_number(
-                resource,
-                WriteRequest("validation", resource.path, resource.value),
-                policy,
-            )
-        except WriteValidationError:
-            continue
-        return policy
+    assessment = assess_control(resource)
+    if assessment.eligible and isinstance(assessment.policy, NumberWritePolicy):
+        return assessment.policy
     return None
 
 
