@@ -51,10 +51,12 @@ integration. Newly eligible discovered controls then appear during polling.
 - Preserve the original holiday-form baseline across polling updates and check
   holiday modes against the current configuration before sending mutations.
 - Reject unadvertised holiday defaults; support explicit selections instead.
+- Use config-entry-scoped device lookups for Home Assistant compatibility and
+  prevent preview-device migration from merging devices into another entry.
 
 ### Validation
 
-- 750 automated tests pass with 95.64% coverage, including branch coverage.
+- 751 automated tests pass with 95.64% coverage, including branch coverage.
 - Regression cases cover disconnected HTTP writes, measured read retries,
   redirects, deferred polling and faults, normal polling cadence after local
   path errors, diagnostic names, malformed references, and changing bounds.
