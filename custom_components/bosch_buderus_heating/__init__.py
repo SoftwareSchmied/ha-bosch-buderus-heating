@@ -143,7 +143,9 @@ async def async_migrate_entry(
                 if len(legacy) != 4 or legacy[0] != DOMAIN:
                     continue
                 replacement = (DOMAIN, f"{legacy[1]}:{legacy[2]}:{legacy[3]}")
-                existing = device_registry.async_get_device(identifiers={replacement})
+                existing = device_registry.async_get_device_by_identifier(
+                    replacement, entry.entry_id
+                )
                 if existing is not None and existing.id != device.id:
                     for entity in er.async_entries_for_device(
                         entity_registry, device.id

@@ -305,7 +305,9 @@ def test_logical_devices_are_consolidated_without_changing_entities(
 
     _consolidate_logical_devices(hass, entry, (coordinator,))
 
-    gateway = device_registry.async_get_device(identifiers={(DOMAIN, "gateway-one")})
+    gateway = device_registry.async_get_device_by_identifier(
+        (DOMAIN, "gateway-one"), entry.entry_id
+    )
     assert gateway is not None
     assert entity_registry.async_get(entity.entity_id).device_id == gateway.id
     assert device_registry.async_get(logical.id) is None
@@ -496,3 +498,22 @@ def test_new_defaults_enable_only_integration_disabled_entities(
         entity_registry.async_get(user_disabled.entity_id).disabled_by
         is er.RegistryEntryDisabler.USER
     )
+
+
+async def test_device_migration_never_merges_into_another_config_entry(hass):
+    entry = _entry(hass)
+    other_entry = MockConfigEntry(domain=DOMAIN)
+    other_entry.add_to_hass(hass)
+    registry = dr.async_get(hass)
+    identifier = (DOMAIN, "gateway-one:heating_circuit:hc1")
+    foreign = registry.async_get_or_create(
+        config_entry_id=other_entry.entry_id, identifiers={identifier}
+    )
+    legacy = registry.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, "gateway-one", "heating_circuit", "hc1")},
+    )
+    assert await async_migrate_entry(hass, entry)
+    migrated = registry.async_get_device_by_identifier(identifier, entry.entry_id)
+    assert migrated is not None and migrated.id == legacy.id
+    assert registry.async_get(foreign.id).config_entries == {other_entry.entry_id}
