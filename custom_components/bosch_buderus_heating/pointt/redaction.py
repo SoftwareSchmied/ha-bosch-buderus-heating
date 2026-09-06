@@ -76,6 +76,85 @@ def resource_path_template(path: str) -> str:
     )
 
 
+# These roots mix logical circuits with static resources. Unknown children must
+# not become trusted static names merely because they lack a circuit prefix.
+_DIAGNOSTIC_STATIC_CHILDREN: dict[str, frozenset[str]] = {
+    "heatingCircuits": frozenset({"list"}),
+    "dhwCircuits": frozenset({"list", "watertotalconsumption"}),
+    "heatSources": frozenset(
+        {
+            "actualheatdemand",
+            "actualmodulation",
+            "actualsupplytemperature",
+            "additionalheater",
+            "chstatus",
+            "compressor",
+            "currentemergencymode",
+            "electricitytotalconsumption",
+            "emon",
+            "emstatus",
+            "flamestatus",
+            "gastotalconsumption",
+            "hybrid",
+            "info",
+            "list",
+            "numberofrefrigerantcircuitsinstalled",
+            "numberofstarts",
+            "overallstatus",
+            "passivecooling",
+            "poolsetpointtemperature",
+            "poolstatus",
+            "pooltemperature",
+            "pvcontactstate",
+            "returntemperature",
+            "smartfunction",
+            "source",
+            "standbymode",
+            "systempressure",
+            "systempressurerange",
+            "type",
+            "workingtime",
+        }
+    ),
+    "solarCircuits": frozenset({"list"}),
+    "ventilation": frozenset({"operationmodes"}),
+    "zones": frozenset({"configuration", "list"}),
+}
+
+
+def diagnostic_resource_path(path: str) -> str:
+    """Keep useful logical paths while hiding unrecognized dynamic identifiers."""
+    for root, canonical, placeholder in (
+        ("heatingCircuits", r"hc\d+", "{hc}"),
+        ("dhwCircuits", r"dhw\d+", "{dhw}"),
+        ("heatSources", r"hs\d+", "{hs}"),
+        ("solarCircuits", r"sc\d+", "{solar}"),
+        ("ventilation", r"zone\d+", "{zone}"),
+        ("zones", r"zone\d+", "{zone}"),
+    ):
+        match = re.match(rf"^/{root}/([^/]+)(?=/|$)", path, re.IGNORECASE)
+        if match is None:
+            continue
+        identifier = match.group(1)
+        if identifier.casefold() in _DIAGNOSTIC_STATIC_CHILDREN[root]:
+            return path
+        if re.fullmatch(canonical, identifier, re.IGNORECASE):
+            return path
+        return re.sub(
+            rf"^/{root}/[^/]+",
+            f"/{root}/{placeholder}",
+            path,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+    return re.sub(
+        r"^/devices/[^/]+(?=/|$)",
+        "/devices/{device}",
+        path,
+        flags=re.IGNORECASE,
+    )
+
+
 def anonymize_identifier(value: object, *, salt: bytes) -> str:
     """Return an installation-specific, non-reversible short identifier."""
     digest = hmac.new(salt, str(value).encode("utf-8"), hashlib.sha256).hexdigest()

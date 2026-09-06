@@ -22,7 +22,7 @@ from .holidays import (
     parse_holiday_write_configuration,
 )
 from .pointt import Gateway, Resource
-from .pointt.redaction import resource_path_template
+from .pointt.redaction import diagnostic_resource_path, resource_path_template
 from .resource_catalog import (
     capability_maturity,
     entity_enabled_by_default,
@@ -32,7 +32,7 @@ from .resource_catalog import (
 )
 from .runtime import BoschBuderusRuntimeData
 
-DIAGNOSTICS_SCHEMA_VERSION = 9
+DIAGNOSTICS_SCHEMA_VERSION = 10
 
 
 async def async_get_config_entry_diagnostics(
@@ -127,6 +127,7 @@ def _gateway_diagnostics(
         "label": f"gateway_{number}",
         "device_class": _gateway_class(coordinator.gateway),
         "runtime": coordinator.diagnostics_summary(),
+        "discovery": _discovery_diagnostics(coordinator),
         "faults": {
             **fault_state,
             "supported_resources": tuple(
@@ -195,6 +196,7 @@ def _capability_diagnostics(
         error_category = _optional_safe_token(snapshot.last_error_category)
         consecutive_failures = max(0, snapshot.consecutive_failures)
     return {
+        "path": diagnostic_resource_path(resource.path),
         "path_template": _path_template(resource.path),
         "name": resource_name(resource.path),
         "resource_type": _safe_token(resource.metadata.resource_type),
@@ -240,7 +242,56 @@ def _supported_without_value(
 
 def _path_template(path: str) -> str:
     """Remove installation-specific logical IDs from a PointT path."""
-    return resource_path_template(path)
+    return resource_path_template(diagnostic_resource_path(path))
+
+
+def _discovery_diagnostics(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, object]:
+    """Return discovery decisions with useful but selectively redacted paths."""
+    report = coordinator.discovery_diagnostics
+    groups: dict[str, Counter[str]] = {}
+    for path, item in report.paths.items():
+        counters = groups.setdefault(_discovery_group(path), Counter())
+        counters["paths_scheduled"] += 1
+        counters["paths_requested"] += item.bulk_result != "not_attempted"
+        counters["resources_discovered"] += item.discovered
+        counters["paths_failed"] += item.failed
+        counters["fallback_attempts"] += item.fallback_reason is not None
+        counters["fallback_successes"] += item.fallback_result == "success"
+        counters["fallback_failures"] += item.fallback_result not in (None, "success")
+    return {
+        **report.snapshot(),
+        "groups": {
+            path: dict(sorted(counters.items()))
+            for path, counters in sorted(groups.items())
+        },
+        "paths": [
+            {
+                "path": diagnostic_resource_path(path),
+                "source": item.source.value,
+                "bulk_result": item.bulk_result,
+                "fallback_reason": item.fallback_reason,
+                "fallback_result": item.fallback_result,
+                "discovered": item.discovered,
+            }
+            for path, item in sorted(
+                report.paths.items(),
+                key=lambda entry: diagnostic_resource_path(entry[0]),
+            )
+        ],
+    }
+
+
+def _discovery_group(path: str) -> str:
+    """Group discovery work by safe root or concrete logical circuit."""
+    safe_path = diagnostic_resource_path(path)
+    parts = safe_path.strip("/").split("/")
+    if len(parts) >= 2 and re.fullmatch(
+        r"(?:hc|dhw|hs|sc|zone)\d+", parts[1], re.IGNORECASE
+    ):
+        return f"/{parts[0]}/{parts[1]}"
+    return f"/{parts[0]}" if parts and parts[0] else "/"
 
 
 def _gateway_class(gateway: Gateway) -> str:

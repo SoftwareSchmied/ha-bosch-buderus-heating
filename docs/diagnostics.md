@@ -24,8 +24,9 @@ attaching it to a public issue.
 
 - selected brand and number of configured gateways;
 - anonymized device class such as `k40`, `k40rf`, `mx300`, or `mx400`;
-- normalized resource paths without specific heating-circuit, hot-water, or
-  heat-source identifiers;
+- concrete canonical logical paths such as
+  `/heatingCircuits/hc2/operationMode`, while device identifiers and
+  unrecognized dynamic IDs remain redacted;
 - resource type, unit, polling group, maturity, default activation, and
   writeability;
 - counts of allowed options, references, and structured subvalues;
@@ -72,8 +73,38 @@ cover:
 - coordinator poll count, failures, and duration;
 - detected decreases in cumulative energy counters.
 
+### Discovery details
+
+Every gateway report contains a `discovery` section. It records how many paths
+were scheduled, requested, and discovered; how many were advertised references
+or optional probes; and the success or failure counts for individual fallbacks.
+The `groups` section aggregates these counters for each logical circuit or
+subsystem, while `paths` shows the bulk result, fallback reason, fallback result,
+and final discovery state, including paths left `not_attempted` at a safety
+bound. `paths_failed` counts requested paths without a recovered resource.
+
+`attempts_scope: logical_resource_reads` distinguishes this work from actual
+HTTP traffic. `bulk_calls` counts logical calls containing up to 30 paths;
+`paths_requested` counts distinct paths included in those calls, and
+`fallback_attempts` counts logical individual reads. A transport retry does not
+increase these discovery counters. Actual HTTP attempts and retries remain in
+the account-wide `request_metrics`; a batch shared by two circuits must not be
+counted twice as cloud traffic.
+
+`completed` is false when discovery stops for a resource or depth limit,
+authentication failure, rate limit, or request-wide transport error.
+`stop_reason` names the cause, including `resource_limit`, `depth_limit`,
+`authentication_error`, `rate_limited`, `timeout`, and `service_unavailable`.
+Individual resource failures remain visible without stopping later circuits.
+
+Canonical circuit identifiers such as `hc2`, `dhw1`, and `hs1` remain visible
+because they are necessary to distinguish missing resources on multi-circuit
+installations. Arbitrary device IDs and unrecognized dynamic identifiers are
+replaced with placeholders. Credentials, gateway IDs, request URLs, payloads,
+and resource values remain excluded. Opening diagnostics causes no cloud calls.
+
 URLs, resource paths, gateway IDs, payloads, and response values are not stored
-for these metrics. The recent-request log is memory-only, bounded, and cleared
+in `request_metrics`. The recent-request log is memory-only, bounded, and cleared
 when Home Assistant restarts. Its sequence number and age are local diagnostic
 values, not cloud identifiers or wall-clock timestamps.
 

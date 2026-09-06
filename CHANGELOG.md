@@ -5,6 +5,52 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.7.0-beta.4] - 2026-09-06
+
+This beta improves discovery on installations with multiple circuits and makes
+missing resources easier to investigate. Advertised resources are processed
+before optional probes, and diagnostics show discovery outcomes for each circuit.
+
+### Fixed
+
+- Prioritize resources explicitly referenced by PointT ahead of optional app-path
+  probes, so fallback traffic from one subsystem cannot prevent later heating
+  circuits or other advertised resources from being discovered.
+- Remove the global 30-item discovery fallback budget. Every recoverable item
+  within the existing bounded discovery graph can receive one individual read;
+  rate limits still stop discovery immediately.
+- Process references fully before optional probes, in individual batches of at
+  most 30 paths. A bad batch no longer replaces successful or unsent batches
+  with individual reads. Request-wide service and connection failures stop the
+  run without continuing through the remaining fallbacks.
+
+### Diagnostics
+
+- Report discovery scheduling, results, fallback outcomes, completion state,
+  and per-subsystem counters. Canonical logical paths such as
+  `/heatingCircuits/hc2/operationMode` remain visible, while device identifiers
+  and unrecognized dynamic IDs remain redacted.
+- Distinguish logical discovery calls from HTTP retries, include failed paths
+  per circuit, and report authentication, rate-limit, transport, depth, and
+  resource-limit aborts accurately.
+
+### Validation
+
+- 647 automated tests pass with 95.47% coverage, including branch coverage.
+- Regression tests cover second-circuit discovery under a tight path budget,
+  malformed middle batches, local resource failures, and request-wide aborts.
+- Ruff formatting and linting and strict Mypy validation pass.
+
+### Upgrade notes and limitations
+
+- Restart Home Assistant after updating to run discovery again. Existing entity
+  and device identifiers are preserved.
+- Discovery may use additional partly filled batches to finish advertised
+  references before optional probes. Runtime polling intervals are unchanged.
+- The reported missing-second-circuit case still needs confirmation on the
+  affected physical installation; this beta includes synthetic regression
+  coverage and the diagnostics needed for that field check.
+
 ## [0.7.0-beta.3] - 2026-09-05
 
 This beta improves fault reporting, calendar writes, cloud error recovery, and

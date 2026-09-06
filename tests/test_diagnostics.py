@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 
+import pytest
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -22,12 +23,14 @@ from custom_components.bosch_buderus_heating.coordinator import (
     SnapshotSource,
 )
 from custom_components.bosch_buderus_heating.diagnostics import (
+    _discovery_diagnostics,
     _gateway_class,
     _path_template,
     _safe_token,
     _safe_unit,
     async_get_config_entry_diagnostics,
 )
+from custom_components.bosch_buderus_heating.discovery import DiscoveryPathSource
 from custom_components.bosch_buderus_heating.holidays import HOLIDAY_LIST_PATH
 from custom_components.bosch_buderus_heating.pointt import (
     BatchItemResult,
@@ -66,6 +69,20 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         firmware_version="private-firmware",
     )
     coordinator = BoschBuderusDataUpdateCoordinator(hass, client, gateway, entry)
+    coordinator.discovery_diagnostics.reset()
+    coordinator.discovery_diagnostics.scheduled(
+        "/heatingCircuits/hc2", DiscoveryPathSource.REFERENCE
+    )
+    coordinator.discovery_diagnostics.bulk_result(
+        BatchItemResult(
+            gateway_id,
+            "/heatingCircuits/hc2",
+            200,
+            resource=Resource("/heatingCircuits/hc2"),
+        )
+    )
+    coordinator.discovery_diagnostics.completed = True
+    coordinator.discovery_diagnostics.stop_reason = "complete"
     name = Resource(
         path="/heatingCircuits/private-circuit/name",
         value=configured_name,
@@ -151,7 +168,7 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
     diagnostics = await async_get_config_entry_diagnostics(hass, entry)
     rendered = repr(diagnostics)
 
-    assert diagnostics["diagnostics_schema"] == 9
+    assert diagnostics["diagnostics_schema"] == 10
 
     for private in (
         gateway_id,
@@ -177,6 +194,29 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
     }
     gateway_report = diagnostics["gateways"][0]
     assert gateway_report["device_class"] == "k40rf"
+    assert gateway_report["discovery"]["completed"]
+    assert gateway_report["discovery"]["advertised_references"] == 1
+    assert gateway_report["discovery"]["groups"] == {
+        "/heatingCircuits/hc2": {
+            "fallback_attempts": 0,
+            "fallback_failures": 0,
+            "fallback_successes": 0,
+            "paths_requested": 1,
+            "paths_failed": 0,
+            "paths_scheduled": 1,
+            "resources_discovered": 1,
+        }
+    }
+    assert gateway_report["discovery"]["paths"] == [
+        {
+            "path": "/heatingCircuits/hc2",
+            "source": "reference",
+            "bulk_result": "success",
+            "fallback_reason": None,
+            "fallback_result": None,
+            "discovered": True,
+        }
+    ]
     assert gateway_report["runtime"]["resources_stale"] == 1
     assert gateway_report["faults"]["active_faults"] == 1
     assert gateway_report["faults"]["codes"] == ("6249",)
@@ -201,6 +241,7 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
         if item["path_template"] == "/heatingCircuits/{hc}/name"
     )
     assert capability["value_shape"] == "string"
+    assert capability["path"] == "/heatingCircuits/{hc}/name"
     assert capability["allowed_values_count"] == 1
     assert capability["last_error_category"] == "http_404"
     assert capability["maturity"] == "understood"
@@ -278,3 +319,65 @@ def test_diagnostics_normalizers_never_echo_unknown_private_strings() -> None:
     assert _safe_token("private value with spaces") == "other"
     assert _safe_unit("bar") == "bar"
     assert _safe_unit("private unit with spaces") == "other"
+
+
+@pytest.mark.parametrize(
+    "root",
+    [
+        "heatingCircuits",
+        "dhwCircuits",
+        "heatSources",
+        "solarCircuits",
+        "ventilation",
+        "zones",
+    ],
+)
+def test_diagnostics_templates_also_hide_unrecognized_identifiers(root: str) -> None:
+    assert "private-id" not in _path_template(f"/{root}/private-id/status")
+
+
+async def test_discovery_diagnostics_counts_reads_and_failures_per_circuit(
+    hass: HomeAssistant,
+) -> None:
+    entry = MockConfigEntry(domain=DOMAIN)
+    coordinator = BoschBuderusDataUpdateCoordinator(
+        hass, AsyncMock(), Gateway("gateway"), entry
+    )
+    report = coordinator.discovery_diagnostics
+    first = "/heatingCircuits/hc1/operationMode"
+    second = "/heatingCircuits/hc2/operationMode"
+    pending = "/heatingCircuits/hc2/boostMode"
+    for path in (first, second, pending):
+        report.scheduled(path, DiscoveryPathSource.REFERENCE)
+    report.bulk_started((first, second))
+    for path in (first, second):
+        report.bulk_result(BatchItemResult("gateway", path, 502))
+        report.fallback_started(path, "gateway_5xx")
+    report.fallback_finished(first, "http_404", discovered=False)
+    report.fallback_finished(second, "success", discovered=True)
+
+    result = _discovery_diagnostics(coordinator)
+
+    assert result["attempts_scope"] == "logical_resource_reads"
+    assert result["bulk_calls"] == 1
+    assert result["paths_requested"] == 2
+    assert result["paths_failed"] == 1
+    assert result["fallback_attempts"] == 2
+    assert result["groups"]["/heatingCircuits/hc1"] == {
+        "paths_scheduled": 1,
+        "paths_requested": 1,
+        "paths_failed": 1,
+        "resources_discovered": 0,
+        "fallback_attempts": 1,
+        "fallback_successes": 0,
+        "fallback_failures": 1,
+    }
+    assert result["groups"]["/heatingCircuits/hc2"] == {
+        "paths_scheduled": 2,
+        "paths_requested": 1,
+        "paths_failed": 0,
+        "resources_discovered": 1,
+        "fallback_attempts": 1,
+        "fallback_successes": 1,
+        "fallback_failures": 0,
+    }
