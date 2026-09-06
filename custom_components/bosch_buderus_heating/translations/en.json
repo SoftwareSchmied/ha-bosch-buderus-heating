@@ -58,7 +58,9 @@
       "init": {
         "title": "Configure a holiday",
         "description": "Choose an existing holiday. Create, rename, move, or delete holidays in the **Holiday periods** calendar; use this dialog for the heating-system settings that the standard Home Assistant calendar cannot display.",
-        "data": { "holiday_period": "Holiday" }
+        "data": {
+          "holiday_period": "Holiday"
+        }
       },
       "holiday": {
         "title": "Configure holiday",
@@ -70,6 +72,15 @@
           "holiday_ventilation_mode": "Ventilation",
           "holiday_thermal_disinfection": "Thermal disinfection",
           "holiday_fix_temperature": "Constant temperature"
+        }
+      },
+      "new_holiday": {
+        "title": "Create holiday",
+        "description": "{holiday}: Set the dates. Next, choose the modes offered by your heating system.",
+        "data": {
+          "holiday_name": "Name",
+          "holiday_start": "Start",
+          "holiday_end": "End (exclusive)"
         }
       }
     },
@@ -85,7 +96,8 @@
       "holiday_changed": "The selected holiday is no longer available or writable.",
       "holiday_updated": "The holiday settings were saved and confirmed by the heating system.",
       "no_writable_holidays": "No writable holiday exists. Create one in the Holiday periods calendar first, or wait until the holiday resources are available.",
-      "not_loaded": "Bosch/Buderus Heating must be loaded before a holiday can be configured."
+      "not_loaded": "Bosch/Buderus Heating must be loaded before a holiday can be configured.",
+      "holiday_created": "The holiday was created and confirmed by reading it back."
     }
   },
   "issues": {

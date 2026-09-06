@@ -28,6 +28,10 @@ Config Flow
 - Batch item failures do not discard successful items or last good values.
 - A rate limit opens a global brake and never triggers an individual-request
   storm.
+- `assess_control` derives each discovered resource's current write contract;
+  UI options, write validation, and diagnostics use the same assessment.
+- Control platforms listen for newly eligible resources without replacing
+  entity identities or registry preferences.
 - Writes validate current metadata and become successful only after read-back.
 - Diagnostics never expose credentials, stable personal identifiers, names, or
   raw usage profiles.

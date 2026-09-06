@@ -45,7 +45,8 @@ diagnostics.
   does not prove that writing is safe on every system.
 - **Controllable in HA** describes the current integration behavior. A safe
   user setting is exposed as a control only when path, data type, write flag,
-  range, and allowed options all match exactly.
+  and advertised enum options or numeric limits form a valid contract.
+  Different devices and circuits can expose different subsets and new codes.
 - The reference system reports 24 writable resources. Twenty are represented
   as readable entities. Sixteen settings have an explicitly validated Home
   Assistant control; administrative values remain locked.

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from dataclasses import dataclass
 
@@ -17,7 +18,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import BoschBuderusConfigEntry
-from .control import async_set_control
+from .control import async_set_control, track_control_entities
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
     Freshness,
@@ -27,7 +28,21 @@ from .device import device_info_for_resource, grouped_entity_name
 from .pointt import Resource
 from .resource_catalog import resource_name
 from .sensor import _semantic_key
-from .writes import NumberWritePolicy, number_policy_for_resource
+from .writes import NumberWritePolicy, assess_control, number_policy_for_resource
+
+
+def _native_unit(unit: str | None) -> str | None:
+    return {
+        "C": UnitOfTemperature.CELSIUS,
+        "°C": UnitOfTemperature.CELSIUS,
+        "F": UnitOfTemperature.FAHRENHEIT,
+        "°F": UnitOfTemperature.FAHRENHEIT,
+        "K": UnitOfTemperature.KELVIN,
+        "mins": UnitOfTime.MINUTES,
+        "min": UnitOfTime.MINUTES,
+        "s": UnitOfTime.SECONDS,
+        "h": UnitOfTime.HOURS,
+    }.get(unit or "")
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -45,13 +60,14 @@ async def async_setup_entry(
 ) -> None:
     """Create numeric controls only from matching live metadata."""
     del hass
-    entities: list[BoschBuderusNumber] = []
     for coordinator in entry.runtime_data.coordinators:
-        entities.extend(
-            BoschBuderusNumber(coordinator, description)
-            for description in build_number_descriptions(coordinator.resources)
+        track_control_entities(
+            entry,
+            coordinator,
+            async_add_entities,
+            build_number_descriptions,
+            BoschBuderusNumber,
         )
-    async_add_entities(entities)
 
 
 def build_number_descriptions(
@@ -74,11 +90,7 @@ def build_number_descriptions(
                 native_min_value=minimum,
                 native_max_value=maximum,
                 native_step=policy.step,
-                native_unit_of_measurement=(
-                    UnitOfTemperature.CELSIUS
-                    if policy.unit == "C"
-                    else UnitOfTime.MINUTES
-                ),
+                native_unit_of_measurement=_native_unit(resource.metadata.unit),
                 mode=(
                     NumberMode.BOX
                     if resource.path.endswith("/chargeDuration")
@@ -130,12 +142,54 @@ class BoschBuderusNumber(
         )
 
     @property
+    def native_min_value(self) -> float:
+        snapshot = self._snapshot
+        if snapshot is not None and number_policy_for_resource(snapshot.resource):
+            minimum = snapshot.resource.metadata.minimum
+            if minimum is not None:
+                return minimum
+        return super().native_min_value
+
+    @property
+    def native_max_value(self) -> float:
+        snapshot = self._snapshot
+        if snapshot is not None and number_policy_for_resource(snapshot.resource):
+            maximum = snapshot.resource.metadata.maximum
+            if maximum is not None:
+                return maximum
+        return super().native_max_value
+
+    @property
     def native_value(self) -> float | None:
         snapshot = self._snapshot
-        if snapshot is None or isinstance(snapshot.resource.value, bool):
+        if (
+            snapshot is None
+            or not snapshot.resource.has_value
+            or isinstance(snapshot.resource.value, bool)
+        ):
             return None
         value = snapshot.resource.value
-        return float(value) if isinstance(value, int | float) else None
+        return (
+            float(value)
+            if isinstance(value, int | float) and math.isfinite(value)
+            else None
+        )
+
+    @property
+    def native_step(self) -> float | None:
+        snapshot = self._snapshot
+        if snapshot is not None:
+            step = assess_control(snapshot.resource).ui_step
+            if step is not None:
+                return step
+        return super().native_step
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        snapshot = self._snapshot
+        if snapshot is not None:
+            return _native_unit(snapshot.resource.metadata.unit)
+        return super().native_unit_of_measurement
 
     async def async_set_native_value(self, value: float) -> None:
         await async_set_control(

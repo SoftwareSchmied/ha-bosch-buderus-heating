@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -103,7 +103,6 @@ def test_unreleased_or_incomplete_switch_is_not_exposed() -> None:
         _resource(path="/gateway/tosAccepted"),
         _resource(writable=False),
         _resource(allowed_values=("start",)),
-        _resource(value="unknown"),
     )
 
     assert all(build_switch_descriptions({item.path: item}) == () for item in invalid)
@@ -143,10 +142,12 @@ async def test_switch_calls_confirmed_coordinator_write(hass: HomeAssistant) -> 
 async def test_platform_adds_switches(hass: HomeAssistant) -> None:
     entity = _switch(hass)
     entry = SimpleNamespace(
-        runtime_data=SimpleNamespace(coordinators=(entity.coordinator,))
+        async_on_unload=Mock(),
+        runtime_data=SimpleNamespace(coordinators=(entity.coordinator,)),
     )
     added: list[BoschBuderusSwitch] = []
 
     await async_setup_entry(hass, entry, added.extend)
+    entry.async_on_unload.call_args.args[0]()
 
     assert len(added) == 1

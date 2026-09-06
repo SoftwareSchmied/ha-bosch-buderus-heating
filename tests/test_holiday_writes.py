@@ -42,7 +42,7 @@ def _configuration(*, date_time_mode: str = "dateTime") -> HolidayWriteConfigura
         assigned_to=("hc1", "dhw1"),
         heating_mode="FIX_TEMPERATURE",
         dhw_mode="OFF",
-        ventilation_mode=None,
+        ventilation_mode="OFF",
         thermal_disinfection="ON",
         fix_temperature=17.0,
         name_codec=HolidayNameCodec("BASE64", "UTF8", 32),
@@ -151,9 +151,10 @@ async def test_create_is_sent_once_and_confirmed_by_a_new_id() -> None:
     )
 
 
-async def test_timed_out_create_is_not_repeated() -> None:
+@pytest.mark.parametrize("error", [RequestTimeout(), ServiceUnavailable()])
+async def test_interrupted_create_is_not_repeated(error) -> None:
     client = AsyncMock()
-    client.create_holiday_period.side_effect = RequestTimeout()
+    client.create_holiday_period.side_effect = error
     client.get_resource.return_value = _resource(1, _values())
     client.get_resource.side_effect = [
         Resource(path=HOLIDAY_LIST_PATH, has_values=True),
@@ -164,6 +165,36 @@ async def test_timed_out_create_is_not_repeated() -> None:
     await service.async_create("gateway-one", {}, _values(), fallback_timezone="UTC")
 
     assert client.create_holiday_period.await_count == 1
+
+
+@pytest.mark.parametrize("operation", ["update", "delete"])
+async def test_interrupted_holiday_mutations_are_confirmed(operation):
+    client = AsyncMock()
+    previous = _resource(7, _values())
+    if operation == "update":
+        client.update_holiday_period.side_effect = ServiceUnavailable()
+        client.get_resource.side_effect = [previous, previous]
+        confirmed = await HolidayWriteService(client, sleep=AsyncMock()).async_update(
+            "gateway-one",
+            {HOLIDAY_LIST_PATH: previous},
+            7,
+            _values(),
+            fallback_timezone="UTC",
+        )
+        assert confirmed == previous
+        client.update_holiday_period.assert_awaited_once()
+    else:
+        client.delete_holiday_period.side_effect = ServiceUnavailable()
+        empty = Resource(path=HOLIDAY_LIST_PATH, has_values=True)
+        client.get_resource.return_value = empty
+        confirmed = await HolidayWriteService(client, sleep=AsyncMock()).async_delete(
+            "gateway-one",
+            {HOLIDAY_LIST_PATH: previous},
+            7,
+            fallback_timezone="UTC",
+        )
+        assert confirmed == empty
+        client.delete_holiday_period.assert_awaited_once()
 
 
 async def test_update_and_delete_require_matching_read_back() -> None:
@@ -715,3 +746,103 @@ def test_invalid_calendar_times_are_rejected(
 ) -> None:
     with pytest.raises(WriteValidationError):
         create_holiday_values(start, end, "Holiday", _configuration(), UTC)
+
+
+@pytest.mark.parametrize(
+    "changed",
+    [
+        {"heating_modes": ("ECO",)},
+        {"dhw_modes": ("LOW",)},
+        {"fix_temperature_min": 18.0},
+    ],
+)
+def test_creation_rejects_defaults_missing_from_advertised_contract(changed):
+    from dataclasses import replace
+    from datetime import UTC, datetime
+
+    configuration = replace(_configuration(), **changed)
+    with pytest.raises(WriteValidationError):
+        create_holiday_values(
+            datetime(2030, 8, 1, tzinfo=UTC),
+            datetime(2030, 8, 2, tzinfo=UTC),
+            "Holiday",
+            configuration,
+            UTC,
+        )
+
+
+async def test_holiday_service_rechecks_modes_before_sending_create_or_update():
+    from custom_components.bosch_buderus_heating.holidays import (
+        HOLIDAY_CONFIGURATION_PATH,
+    )
+
+    config = Resource(
+        path=HOLIDAY_CONFIGURATION_PATH,
+        value={
+            "values": {
+                "date": {"allowedValues": ["dateTime"]},
+                "assignedTo": {"allowedValues": ["hc1", "dhw1"]},
+                "heatingMode": {"allowedValues": ["ECO", "VendorMode"]},
+                "dhwMode": {"allowedValues": ["LOW"]},
+            }
+        },
+        has_value=True,
+    )
+    empty = Resource(path=HOLIDAY_LIST_PATH, value=[], has_value=True)
+    client = AsyncMock()
+    service = HolidayWriteService(client, sleep=AsyncMock())
+    resources = {HOLIDAY_LIST_PATH: empty, HOLIDAY_CONFIGURATION_PATH: config}
+    with pytest.raises(WriteValidationError):
+        await service.async_create(
+            "gateway-one", resources, _values(), fallback_timezone="UTC"
+        )
+    client.create_holiday_period.assert_not_awaited()
+    values = replace(
+        _values(), heating_mode="VendorMode", dhw_mode="LOW", thermal_disinfection=None
+    )
+    client.get_resource.side_effect = [empty, _resource(8, values)]
+    await service.async_create(
+        "gateway-one", resources, values, fallback_timezone="UTC"
+    )
+    client.create_holiday_period.assert_awaited_once_with(
+        "gateway-one", values.as_payload()
+    )
+    resources[HOLIDAY_LIST_PATH] = _resource(8, values)
+    client.get_resource.side_effect = [_resource(8, values)]
+    with pytest.raises(WriteValidationError):
+        await service.async_update(
+            "gateway-one",
+            resources,
+            8,
+            replace(values, dhw_mode="OFF"),
+            fallback_timezone="UTC",
+            expected=values,
+        )
+    client.update_holiday_period.assert_not_awaited()
+    desired = replace(values, heating_mode="ECO")
+    client.get_resource.side_effect = [_resource(8, values), _resource(8, desired)]
+    await service.async_update(
+        "gateway-one", resources, 8, desired, fallback_timezone="UTC", expected=values
+    )
+    client.update_holiday_period.assert_awaited_once_with(
+        "gateway-one", 8, desired.as_payload()
+    )
+
+
+@pytest.mark.parametrize(
+    "changed",
+    [
+        {"assigned_to": ()},
+        {"heating_mode": "unoffered"},
+        {"fix_temperature": float("nan")},
+        {"fix_temperature": 40},
+    ],
+)
+def test_holiday_contract_rejects_invalid_choices(changed):
+    from custom_components.bosch_buderus_heating.holiday_writes import (
+        validate_holiday_values,
+    )
+
+    values = replace(_values(), ventilation_mode="OFF", **changed)
+    with pytest.raises(WriteValidationError):
+        validate_holiday_values(values, _configuration())

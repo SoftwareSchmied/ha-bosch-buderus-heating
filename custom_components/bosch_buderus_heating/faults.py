@@ -409,6 +409,14 @@ class FaultTracker:
             else:
                 self._resource_results[result.path] = "error"
 
+    def record_deferred_paths(self, paths: Iterable[str]) -> None:
+        """Do not retain an all-clear when active sources could not be polled."""
+        for path in paths:
+            if is_active_fault_resource_path(path):
+                self._absence_counts.clear()
+                self._has_valid_state = False
+                self._resource_results[path] = "deferred"
+
     def process_resources(
         self,
         resources: Mapping[str, Resource],

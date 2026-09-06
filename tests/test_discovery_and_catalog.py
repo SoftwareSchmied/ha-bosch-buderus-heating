@@ -41,6 +41,54 @@ from custom_components.bosch_buderus_heating.resource_catalog import (
 )
 
 
+async def test_malformed_reference_uses_fallback_without_losing_other_roots():
+    from custom_components.bosch_buderus_heating.pointt.parsers import (
+        parse_batch_response,
+    )
+
+    client = AsyncMock()
+    payload = [
+        {
+            "gatewayId": "gateway",
+            "resourcePaths": [
+                {
+                    "resourcePath": "/heatingCircuits",
+                    "serverStatus": 200,
+                    "gatewayResponse": {
+                        "status": 200,
+                        "payload": {
+                            "references": ["../broken"],
+                        },
+                    },
+                },
+                {
+                    "resourcePath": "/notifications",
+                    "serverStatus": 200,
+                    "gatewayResponse": {"status": 200, "payload": {"values": []}},
+                },
+            ],
+        }
+    ]
+    client.get_resources_bulk.side_effect = lambda gateway, paths: parse_batch_response(
+        payload,
+        gateway_id=gateway,
+        requested_paths=paths,
+    )
+    client.get_resource.return_value = Resource("/heatingCircuits")
+    report = DiscoveryDiagnostics()
+    result = await async_discover_resources(
+        client,
+        "gateway",
+        roots=("/heatingCircuits", "/notifications"),
+        diagnostics=report,
+    )
+    assert set(result) == {"/heatingCircuits", "/notifications"}
+    assert report.completed
+    client.get_resource.assert_awaited_once_with(
+        "gateway", "/heatingCircuits", fallback_reason="malformed"
+    )
+
+
 async def test_discovery_stops_on_item_rate_limit_before_fallback() -> None:
     client = AsyncMock()
     client.get_resources_bulk.return_value = (

@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
+import pytest
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -184,18 +185,9 @@ def test_unsafe_numeric_metadata_is_not_exposed() -> None:
     invalid = (
         _resource(writable=False),
         _resource(unit="bar"),
-        _resource(minimum=0),
-        _resource(maximum=35),
-        _resource(
-            "/heatingCircuits/hc1/maxFlowTemp",
-            minimum=-1,
-            maximum=60,
-        ),
-        _resource(
-            "/heatingCircuits/hc1/maxFlowTemp",
-            minimum=30,
-            maximum=101,
-        ),
+        _resource(minimum=40, maximum=35),
+        _resource(minimum=float("nan")),
+        _resource(maximum=float("inf")),
     )
 
     assert all(build_number_descriptions({item.path: item}) == () for item in invalid)
@@ -214,6 +206,31 @@ def test_maximum_supply_temperature_uses_each_gateways_live_range() -> None:
     assert description.native_min_value == 20.0
     assert description.native_max_value == 80.0
     assert description.native_step == 1.0
+
+
+@pytest.mark.parametrize(("minimum", "maximum"), [(20, 70), (35, 50)])
+def test_numeric_limits_follow_metadata_changes(hass, minimum, maximum):
+    path = "/heatingCircuits/hc1/maxFlowTemp"
+    entity = _number(hass, _resource(path, 40, minimum=30, maximum=60))
+    assert entity.native_min_value == 30
+    assert entity.native_max_value == 60
+    updated = _resource(path, 40, minimum=minimum, maximum=maximum)
+    entity.coordinator.data[path] = ResourceSnapshot(updated, True, datetime.now(UTC))
+    assert entity.available
+    assert entity.native_min_value == minimum
+    assert entity.native_max_value == maximum
+    assert entity.capability_attributes["min"] == minimum
+    assert entity.capability_attributes["max"] == maximum
+    assert entity.native_step == 1
+
+    invalid = _resource(path, 40, minimum=101, maximum=-1)
+    entity.coordinator.data[path] = ResourceSnapshot(invalid, True, datetime.now(UTC))
+    assert not entity.available
+    assert entity.native_min_value == 30
+    assert entity.native_max_value == 60
+    entity.coordinator.data.clear()
+    assert entity.native_min_value == 30
+    assert entity.native_max_value == 60
 
 
 def test_number_becomes_unavailable_when_stale(hass: HomeAssistant) -> None:
@@ -269,10 +286,12 @@ async def test_maximum_supply_temperature_uses_confirmed_write(
 async def test_platform_adds_numeric_controls(hass: HomeAssistant) -> None:
     entity = _number(hass)
     entry = SimpleNamespace(
-        runtime_data=SimpleNamespace(coordinators=(entity.coordinator,))
+        async_on_unload=Mock(),
+        runtime_data=SimpleNamespace(coordinators=(entity.coordinator,)),
     )
     added: list[BoschBuderusNumber] = []
 
     await async_setup_entry(hass, entry, added.extend)
+    entry.async_on_unload.call_args.args[0]()
 
     assert len(added) == 1

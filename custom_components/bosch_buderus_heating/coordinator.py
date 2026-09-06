@@ -189,6 +189,7 @@ class BoschBuderusDataUpdateCoordinator(
         self._poll_intervals = poll_intervals
         self.resources: dict[str, Resource] = {}
         self._paths_by_group: dict[PollGroup, tuple[str, ...]] = {}
+        self._deferred_poll_paths: tuple[str, ...] = ()
         self._next_update: dict[PollGroup, float] = {}
         self._cloud_backoff_until = 0.0
         self._negative_until: dict[str, float] = {}
@@ -529,6 +530,17 @@ class BoschBuderusDataUpdateCoordinator(
             for path in candidate_paths
             if not self._resource_is_paused(path, now_monotonic)
         ]
+        # Resume work skipped by an interrupted cycle before repeating earlier
+        # batches. A consistently failing batch must not starve later resources.
+        path_set = set(paths)
+        paths = list(
+            dict.fromkeys(
+                (
+                    *[path for path in self._deferred_poll_paths if path in path_set],
+                    *paths,
+                )
+            )
+        )
         if not paths:
             self._advance_groups(due_groups, now_monotonic)
             return dict(self.data or {})
@@ -538,7 +550,10 @@ class BoschBuderusDataUpdateCoordinator(
         failed_chunks = 0
         gateway_failure = False
         cycle_results: list[BatchItemResult] = []
+        attempted_paths: set[str] = set()
+        interrupted_paths: set[str] = set()
         for chunk in chunk_resource_paths(paths, size=MAX_BULK_PATHS):
+            attempted_paths.update(chunk)
             attempted_at = datetime.now(UTC)
             result_source = SnapshotSource.BATCH
             try:
@@ -551,6 +566,7 @@ class BoschBuderusDataUpdateCoordinator(
                 )
                 raise ConfigEntryAuthFailed from err
             except RateLimited as err:
+                interrupted_paths.update(chunk)
                 cycle_results.extend(
                     BatchItemResult(self.gateway.gateway_id, path, 429, error=err)
                     for path in chunk
@@ -569,6 +585,7 @@ class BoschBuderusDataUpdateCoordinator(
                 failed_chunks += 1
                 break
             except PointTError as err:
+                interrupted_paths.update(chunk)
                 cycle_results.extend(
                     BatchItemResult(self.gateway.gateway_id, path, None, error=err)
                     for path in chunk
@@ -617,6 +634,7 @@ class BoschBuderusDataUpdateCoordinator(
                     source=SnapshotSource.FALLBACK,
                 )
             if any(result.status == 429 for result in results):
+                interrupted_paths.update(chunk)
                 self._activate_rate_limit_backoff(
                     RateLimited(retry_after=None), now_monotonic
                 )
@@ -631,11 +649,25 @@ class BoschBuderusDataUpdateCoordinator(
                 and result.status >= 500
                 for result in results
             ):
+                interrupted_paths.update(chunk)
                 failed_chunks += 1
                 gateway_failure = True
                 break
 
+        self._deferred_poll_paths = tuple(
+            path for path in paths if path not in attempted_paths
+        )
+        for path in self._deferred_poll_paths:
+            if (previous := snapshots.get(path)) is not None:
+                # No request was made: retain the attempt timestamp and counters.
+                snapshots[path] = replace(
+                    previous,
+                    available=False,
+                    freshness=Freshness.STALE,
+                    last_error_category="poll_deferred",
+                )
         self.faults.record_results(cycle_results)
+        self.faults.record_deferred_paths(self._deferred_poll_paths)
         successful_fault_resources = {
             result.path: result.resource
             for result in cycle_results
@@ -660,8 +692,24 @@ class BoschBuderusDataUpdateCoordinator(
             return snapshots
         self._gateway_failure_count = 0
         self._circuit_open_until = 0.0
-        if failed_chunks == 0:
-            self._advance_groups(due_groups, now_monotonic)
+        # Advance complete groups even if a different group was interrupted.
+        confirmed_paths = {
+            path
+            for path in attempted_paths
+            if path in snapshots and snapshots[path].available
+        }
+        # Local path errors keep their normal cadence. Only an interrupted
+        # batch or deferred work should prevent a group from advancing.
+        completed_paths = (attempted_paths - interrupted_paths) | confirmed_paths
+        completed_groups = tuple(
+            group
+            for group in due_groups
+            if all(
+                path not in path_set or path in completed_paths
+                for path in self._paths_by_group.get(group, ())
+            )
+        )
+        self._advance_groups(completed_groups, now_monotonic)
         return snapshots
 
     async def _async_discover_data(self) -> dict[str, ResourceSnapshot]:

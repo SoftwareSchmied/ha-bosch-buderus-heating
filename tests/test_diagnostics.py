@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 
@@ -168,7 +169,7 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
     diagnostics = await async_get_config_entry_diagnostics(hass, entry)
     rendered = repr(diagnostics)
 
-    assert diagnostics["diagnostics_schema"] == 11
+    assert diagnostics["diagnostics_schema"] == 12
 
     for private in (
         gateway_id,
@@ -266,6 +267,33 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
     assert diagnostics["request_metrics"]["requests_total"] == 1
     assert diagnostics["request_metrics"]["requests_successful"] == 1
     assert diagnostics["request_metrics"]["success_rate_percent"] == 100.0
+
+
+async def test_diagnostic_names_do_not_leak_dynamic_container_identifiers(hass):
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    client = PointTClient(AsyncMock(), "synthetic-token")
+    gateway = Gateway("synthetic-gateway")
+    coordinator = BoschBuderusDataUpdateCoordinator(hass, client, gateway, entry)
+    marker = "SYNTHETICPRIVATE123456"
+    roots = (
+        "devices",
+        "heatingCircuits",
+        "dhwCircuits",
+        "heatSources",
+        "solarCircuits",
+        "ventilation",
+        "zones",
+    )
+    coordinator.resources = {
+        f"/{root}/{marker}": Resource(f"/{root}/{marker}") for root in roots
+    }
+    entry.runtime_data = BoschBuderusRuntimeData(
+        client, AsyncMock(), (gateway,), (coordinator,)
+    )
+    report = await async_get_config_entry_diagnostics(hass, entry)
+    assert marker.casefold() not in json.dumps(report).casefold()
+    assert len(report["gateways"][0]["capabilities"]) == len(roots)
 
 
 async def test_diagnostics_are_available_before_runtime_setup(

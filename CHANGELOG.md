@@ -5,6 +5,57 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Changed
+
+- Derive each supported scalar control's options and bounds from its own current
+  resource metadata. Accept enum subsets and new vendor codes independently
+  for every gateway and circuit; preserve exact wire spelling through translated
+  options, including colliding aliases. Reference-device numeric ranges and
+  undocumented step restrictions no longer reject valid targets.
+- Add newly eligible discovered controls during polling while preserving entity
+  IDs and user registry settings. Keep legacy switches and offer variant enum
+  sets through a separate select. Missing values remain unknown while valid
+  replacement values remain writable.
+- Diagnose capabilities and current-state issues separately with schema 12;
+  unknown option texts remain redacted. Numeric steps are identified as UI hints.
+- Allow explicit holiday creation through Configure with per-device modes,
+  date/date-time selectors, and advertised temperature limits.
+
+### Fixed
+
+- Prevent hidden HTTP connection retries and redirects from repeating PointT
+  writes. Preserve Home Assistant's shared session and middleware; read retries
+  remain bounded and every HTTP attempt is counted in request diagnostics.
+- Mark resources skipped by an interrupted polling cycle unavailable and stale,
+  resume them before earlier batches, and advance independently completed polling
+  groups. Deferred fault reads cannot preserve an unverified all-clear.
+- Remove dynamic device and circuit identifiers from diagnostic resource names
+  as well as resource paths.
+- Confirm scalar and holiday writes after an ambiguous connection or service
+  failure using bounded read-back attempts without repeating the mutation.
+- Handle invalid cloud resource paths as protocol errors, allowing resource
+  fallback while retaining healthy items from the same bulk response.
+- Update numeric control bounds from current validated metadata during polling.
+- Reject conflicting resource IDs in direct and bulk responses, preventing a
+  different heating circuit from falsely confirming a write.
+- Preserve the original holiday-form baseline across polling updates and check
+  holiday modes against the current configuration before sending mutations.
+- Reject unadvertised holiday defaults; support explicit selections instead.
+
+### Validation
+
+- 750 automated tests pass with 95.64% coverage, including branch coverage.
+- Regression cases cover disconnected HTTP writes, measured read retries,
+  redirects, deferred polling and faults, normal polling cadence after local
+  path errors, diagnostic names, malformed references, and changing bounds.
+- Installation-variant regressions cover independent gateways/circuits, new
+  enum codes and reversible aliases, live control creation, switch compatibility,
+  missing current values, numeric units and bounds, conflicting response IDs,
+  concurrent holiday edits, and explicit date-only/date-time holiday creation.
+- Ruff formatting and linting, strict Mypy, and release-package tests pass.
+- Validation used synthetic data and local HTTP servers; real-system testing
+  remains outstanding.
+
 ## [0.7.0-beta.5] - 2026-09-06
 
 This beta restores heating-circuit operation-mode controls when an installation

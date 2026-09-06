@@ -92,6 +92,14 @@ def _scalar(value: object) -> JsonScalar:
     return parsed
 
 
+def _response_resource_path(path: str) -> str:
+    """Keep invalid paths from cloud payloads inside protocol error handling."""
+    try:
+        return normalize_resource_path(path)
+    except ValueError as err:
+        raise InvalidPayload("Response contained an invalid resource path") from err
+
+
 def parse_gateway(payload: object) -> Gateway:
     """Parse one gateway while tolerating unknown fields."""
     data = _mapping(payload, message="Gateway response must be an object")
@@ -142,7 +150,7 @@ def _parse_references(value: object) -> tuple[ResourceReference, ...]:
     parsed: list[ResourceReference] = []
     for item in references:
         if isinstance(item, str):
-            parsed.append(ResourceReference(path=normalize_resource_path(item)))
+            parsed.append(ResourceReference(path=_response_resource_path(item)))
             continue
         data = _mapping(item, message="Resource reference must be an object")
         path = _required_string(
@@ -151,7 +159,7 @@ def _parse_references(value: object) -> tuple[ResourceReference, ...]:
         )
         parsed.append(
             ResourceReference(
-                path=normalize_resource_path(path),
+                path=_response_resource_path(path),
                 name=_optional_string(data.get("name")),
             )
         )
@@ -164,7 +172,13 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
     resource_path = path or _required_string(
         data.get("id"), message="Resource response did not contain an ID"
     )
-    resource_path = normalize_resource_path(resource_path)
+    resource_path = _response_resource_path(resource_path)
+    if path is not None and "id" in data:
+        response_id = _required_string(
+            data["id"], message="Resource ID must be a string"
+        )
+        if _response_resource_path(response_id) != resource_path:
+            raise InvalidPayload("Resource ID did not match the requested path")
 
     allowed_raw = data.get("allowedValues")
     allowed_values: tuple[JsonScalar, ...] = ()
@@ -252,7 +266,12 @@ def parse_batch_response(
         item = _mapping(raw_item, message="Bulk resource item must be an object")
         raw_path = item.get("resourcePath")
         if isinstance(raw_path, str):
-            indexed[normalize_resource_path(raw_path)] = item
+            try:
+                indexed[_response_resource_path(raw_path)] = item
+            except InvalidPayload:
+                # Ignore an unindexable item; requested paths absent from the
+                # remaining response still receive their own malformed result.
+                continue
 
     results: list[BatchItemResult] = []
     for requested in requested_paths:

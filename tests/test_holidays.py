@@ -341,8 +341,8 @@ def test_writable_app_configuration_and_period_are_strictly_parsed() -> None:
     assert configuration.thermal_disinfection == "ON"
     assert configuration.heating_modes == ("OFF", "FIX_TEMPERATURE")
     assert configuration.dhw_modes == ("OFF", "ECO")
-    assert configuration.fix_temperature_min == 5.0
-    assert configuration.fix_temperature_max == 30.0
+    assert configuration.fix_temperature_min == 0.0
+    assert configuration.fix_temperature_max == 50.0
     assert state.periods[0].name == "Urlaub"
     assert state.periods[0].end.isoformat() == "2030-08-09T00:00:00+00:00"
     assert not state.periods[0].all_day
@@ -350,7 +350,7 @@ def test_writable_app_configuration_and_period_are_strictly_parsed() -> None:
     assert state.periods[0].write_values is not None
 
 
-def test_write_configuration_requires_a_list_and_rejects_unknown_contract() -> None:
+def test_write_configuration_requires_a_list_and_accepts_new_modes() -> None:
     configuration = Resource(
         path=HOLIDAY_CONFIGURATION_PATH,
         value={
@@ -368,7 +368,7 @@ def test_write_configuration_requires_a_list_and_rejects_unknown_contract() -> N
         parse_holiday_write_configuration(
             {HOLIDAY_LIST_PATH: holiday_list, HOLIDAY_CONFIGURATION_PATH: configuration}
         )
-        is None
+        is not None
     )
     assert (
         parse_holiday_write_configuration({HOLIDAY_CONFIGURATION_PATH: configuration})
@@ -432,12 +432,6 @@ def test_datetime_midnight_to_end_of_day_is_exposed_as_all_day() -> None:
     [
         {"date": {"allowedValues": []}},
         {"assignedTo": {"allowedValues": []}},
-        {"heatingMode": {"allowedValues": ["VENDOR"]}},
-        {"dhwMode": {"allowedValues": ["VENDOR"]}},
-        {"ventilationMode": {"allowedValues": ["VENDOR"]}},
-        {"thermalDesinfection": {"allowedValues": ["VENDOR"]}},
-        {"fixTemperature": {"minValue": 18.0}},
-        {"fixTemperature": {"maxValue": 16.0}},
     ],
 )
 def test_write_configuration_rejects_unsafe_variants(changed_values: dict) -> None:
@@ -469,10 +463,10 @@ def test_write_configuration_rejects_unsafe_variants(changed_values: dict) -> No
 @pytest.mark.parametrize(
     ("changed_field", "changed_value"),
     [
-        ("heatingMode", "VENDOR"),
+        ("heatingMode", "bad\nmode"),
         ("dhwMode", 1),
-        ("ventilationMode", "VENDOR"),
-        ("thermalDesinfection", "VENDOR"),
+        ("ventilationMode", 123),
+        ("thermalDesinfection", ""),
         ("assignedTo", []),
         ("assignedTo", ["unknown1"]),
         ("fixTemperature", "17"),
@@ -520,3 +514,29 @@ def test_invalid_encoded_name_is_not_exposed() -> None:
     )
 
     assert parse_holiday_state({HOLIDAY_LIST_PATH: resource}).periods[0].name is None
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("heatingMode", 42),
+        ("heatingMode", {"allowedValues": ["ECO", 42]}),
+        ("dhwMode", {}),
+        ("ventilationMode", {"allowedValues": ["bad\ncode"]}),
+        ("fixTemperature", {"minValue": float("nan")}),
+        ("fixTemperature", {"maxValue": float("inf")}),
+    ],
+)
+def test_malformed_holiday_contract_cannot_be_treated_as_an_omitted_field(field, value):
+    values = {
+        "date": {"allowedValues": ["dateTime"]},
+        "assignedTo": {"allowedValues": ["hc1"]},
+        field: value,
+    }
+    resources = {
+        HOLIDAY_LIST_PATH: Resource(path=HOLIDAY_LIST_PATH, value=[], has_value=True),
+        HOLIDAY_CONFIGURATION_PATH: Resource(
+            path=HOLIDAY_CONFIGURATION_PATH, value={"values": values}, has_value=True
+        ),
+    }
+    assert parse_holiday_write_configuration(resources) is None

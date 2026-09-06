@@ -31,6 +31,31 @@ def _notifications(*values: object) -> Resource:
     return Resource(path="/notifications", values=values, has_values=True)  # type: ignore[arg-type]
 
 
+def test_deferred_fault_poll_invalidates_health_and_resets_absence(hass):
+    tracker = FaultTracker(hass, "entry", "gateway")
+    empty = _notifications()
+    tracker.process_resources({empty.path: empty})
+    assert tracker.has_known_state
+    tracker.record_deferred_paths(("/system/healthStatus",))
+    assert tracker.has_known_state
+    tracker.record_deferred_paths((empty.path,))
+    tracker.process_resources({})
+    assert not tracker.has_known_state
+    assert tracker.diagnostics()["resource_results"][empty.path] == "deferred"
+    tracker.process_resources({empty.path: empty})
+    assert tracker.has_known_state
+
+    active = _notifications({"ccd": "6249", "fc": "12"})
+    tracker.process_resources({active.path: active})
+    tracker.process_resources({empty.path: empty})
+    tracker.record_deferred_paths((empty.path,))
+    tracker.process_resources({empty.path: empty})
+    assert len(tracker.active_faults) == 1
+    assert tracker.has_known_state
+    tracker.process_resources({empty.path: empty})
+    assert not tracker.active_faults
+
+
 @pytest.mark.parametrize("status", [403, 404])
 def test_lost_fault_source_cannot_resolve_active_faults(
     hass: HomeAssistant, status: int
