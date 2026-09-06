@@ -30,6 +30,8 @@ attaching it to a public issue.
 - resource type, unit, polling group, maturity, default activation, and
   writeability;
 - counts of allowed options, references, and structured subvalues;
+- scalar-control eligibility and a specific rejection reason, known advertised
+  enum options, and numeric bounds for released controls;
 - availability, freshness, error category, and consecutive failure count;
 - whether a supported scalar resource currently provides no value;
 - bounded counts of undeclared enum values observed after entity creation;
@@ -45,6 +47,62 @@ The report explicitly excludes current measurements, settings, and energy
 values. It also excludes raw notification payloads and installation-specific
 component IDs. Error codes remain visible because they are required to match a
 diagnostic report with the appliance display.
+
+## Missing controls
+
+Schema 11 adds `control` to each entry under `gateways → capabilities`. It uses
+the same capability checks as select, number, and switch creation:
+
+- `platform`: `select`, `number`, `switch`, or `null` when no scalar control
+  policy matches the path;
+- `eligible`: whether the cached resource currently passes those checks;
+- `rejection_reason`: the first failed check, or `null` when eligible;
+- `enabled_by_default`: the policy's default activation. Maximum flow
+  temperature controls remain disabled by default.
+
+This is a capability assessment, not an entity-registry inventory or a live
+write test. Availability and freshness are reported separately. An eligible
+control can still be disabled by the user or unavailable after a failed poll.
+Restart Home Assistant after updating to create controls previously excluded
+at setup. The separate `holidays` section describes calendar write support.
+
+For enums, `advertised_known_options` contains only the intersection of the
+resource's `allowedValues` and the control's released API codes.
+`unrecognized_option_count` counts other entries without exposing their values.
+Heating-circuit operation mode accepts subsets such as `manual` and `auto`;
+other enum policies still require their full option set, as indicated by
+`requires_all_options`. Unknown options never become write choices.
+
+For numeric controls, `minimum` and `maximum` are the advertised bounds;
+`policy_minimum`, `policy_maximum`, `policy_step`, and `policy_unit` describe
+the integration's validation rules. Missing or non-finite bounds are `null`.
+These fields are capability metadata, not current setpoints or measurements.
+Bounds are exported only for paths with a released numeric control policy.
+
+| Rejection reason | Meaning |
+| --- | --- |
+| `no_scalar_control_policy` | The path has no released select, number, or switch policy. |
+| `not_writable` | The resource does not advertise write permission. |
+| `unsupported_resource_type` | Its type does not match the control policy. |
+| `no_supported_options` | No advertised option is a released write value. |
+| `incomplete_options` | A policy requiring its full set of options is missing one or more. |
+| `missing_value` | There is no current scalar value. |
+| `invalid_value_type` | The value has the wrong scalar type. |
+| `unsupported_current_option` | The current enum value is not a released code. |
+| `current_option_not_advertised` | The current enum value is absent from `allowedValues`. |
+| `unsupported_unit` | The numeric unit does not match the policy. |
+| `missing_bounds` | A minimum or maximum is absent. |
+| `non_finite_bounds` | A bound is NaN or infinite. |
+| `inverted_bounds` | The minimum exceeds the maximum. |
+| `unsafe_bounds` | The advertised range exceeds the released safety envelope. |
+| `non_finite_value` | The current number is NaN or infinite. |
+| `value_out_of_bounds` | The current number is outside the advertised range. |
+| `value_off_step` | The current number does not match the step measured from the minimum. |
+
+If a path is absent from `capabilities`, check `discovery → paths` to determine
+whether it was attempted, failed, or was never scheduled. Controls are not
+created for resources that were not discovered. Downloading this additional
+evidence performs no cloud requests and includes no raw current values.
 
 ## Request metrics
 

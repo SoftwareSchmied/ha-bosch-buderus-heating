@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import re
 from collections import Counter
 from typing import Any
@@ -31,8 +32,9 @@ from .resource_catalog import (
     supports_entity,
 )
 from .runtime import BoschBuderusRuntimeData
+from .writes import EnumWritePolicy, NumberWritePolicy, assess_control
 
-DIAGNOSTICS_SCHEMA_VERSION = 10
+DIAGNOSTICS_SCHEMA_VERSION = 11
 
 
 async def async_get_config_entry_diagnostics(
@@ -214,6 +216,7 @@ def _capability_diagnostics(
         "allowed_values_count": len(resource.metadata.allowed_values),
         "has_minimum": resource.metadata.minimum is not None,
         "has_maximum": resource.metadata.maximum is not None,
+        "control": _control_diagnostics(resource),
         "available": available,
         "freshness": freshness,
         "source": source,
@@ -222,6 +225,43 @@ def _capability_diagnostics(
         "unknown_enum_values_detected": unknown_enum_values_detected,
         "calls": metrics,
     }
+
+
+def _control_diagnostics(resource: Resource) -> dict[str, object]:
+    """Explain scalar control eligibility using the entity builders' checks."""
+    assessment = assess_control(resource)
+    result: dict[str, object] = {
+        "platform": assessment.platform,
+        "eligible": assessment.eligible,
+        "rejection_reason": assessment.rejection_reason,
+        "enabled_by_default": assessment.enabled_by_default,
+    }
+    policy = assessment.policy
+    metadata = resource.metadata
+    if isinstance(policy, EnumWritePolicy):
+        result.update(
+            advertised_known_options=sorted(
+                policy.allowed_values.intersection(metadata.allowed_values)
+            ),
+            unrecognized_option_count=sum(
+                value not in policy.allowed_values for value in metadata.allowed_values
+            ),
+            requires_all_options=policy.require_all_options,
+        )
+    elif isinstance(policy, NumberWritePolicy):
+        result.update(
+            minimum=_finite_bound(metadata.minimum),
+            maximum=_finite_bound(metadata.maximum),
+            policy_minimum=policy.safe_minimum,
+            policy_maximum=policy.safe_maximum,
+            policy_step=policy.step,
+            policy_unit=policy.unit,
+        )
+    return result
+
+
+def _finite_bound(value: float | None) -> float | None:
+    return value if value is not None and math.isfinite(value) else None
 
 
 def _supported_without_value(

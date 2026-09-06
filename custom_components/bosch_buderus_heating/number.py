@@ -86,9 +86,7 @@ def build_number_descriptions(
                 ),
                 entity_category=EntityCategory.CONFIG,
                 translation_key=key,
-                entity_registry_enabled_default=not resource.path.endswith(
-                    "/maxFlowTemp"
-                ),
+                entity_registry_enabled_default=policy.enabled_by_default,
             )
         )
     return tuple(descriptions)
