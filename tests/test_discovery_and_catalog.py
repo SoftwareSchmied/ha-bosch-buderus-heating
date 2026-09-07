@@ -146,7 +146,7 @@ async def test_discovery_follows_references_once_and_stays_in_roots() -> None:
     )
 
     assert set(result) == set(resources)
-    assert client.get_resources_bulk.await_count == 4
+    assert client.get_resources_bulk.await_count == 5
     assert client.get_resources_bulk.await_args_list[2] == call(
         "gateway", ("/heatingCircuits/hc1/operationMode",)
     )

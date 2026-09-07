@@ -52,6 +52,7 @@ class DiscoveryPathSource(StrEnum):
 
     ROOT = "root"
     REFERENCE = "reference"
+    CATALOG = "catalog"
     OPTIONAL = "optional"
 
 
@@ -134,6 +135,9 @@ class DiscoveryDiagnostics:
         references = tuple(
             item for item in items if item.source is DiscoveryPathSource.REFERENCE
         )
+        catalog = tuple(
+            item for item in items if item.source is DiscoveryPathSource.CATALOG
+        )
         optionals = tuple(
             item for item in items if item.source is DiscoveryPathSource.OPTIONAL
         )
@@ -153,6 +157,8 @@ class DiscoveryDiagnostics:
             "advertised_references_discovered": sum(
                 item.discovered for item in references
             ),
+            "catalog_paths": len(catalog),
+            "catalog_paths_discovered": sum(item.discovered for item in catalog),
             "optional_paths": len(optionals),
             "optional_paths_discovered": sum(item.discovered for item in optionals),
             "fallback_attempts": len(fallbacks),
@@ -285,6 +291,17 @@ _SOLAR_CIRCUIT_PATH = re.compile(r"^/solarCircuits/[^/]+$", re.IGNORECASE)
 _VENTILATION_ZONE_PATH = re.compile(r"^/ventilation/zone[^/]+$", re.IGNORECASE)
 _ZONE_PATH = re.compile(r"^/zones/zone[^/]+$", re.IGNORECASE)
 _DEVICE_PATH = re.compile(r"^/devices/(?!list$)[^/]+$", re.IGNORECASE)
+
+# The vendor apps request these known resources for each advertised circuit
+# independently of whether the circuit directory itself can be read.
+_HEATING_CIRCUIT_CATALOG_SUFFIXES = (
+    "/operationMode",
+    "/manualRoomSetpoint",
+    "/controlType",
+    "/temperatureLevels",
+    "/temperatureLevels/comfort2",
+    "/temperatureLevels/eco",
+)
 
 _HEATING_CIRCUIT_OPTIONAL_SUFFIXES = (
     "/actualHumidity",
@@ -419,7 +436,9 @@ async def async_discover_resources(
     report = diagnostics or DiscoveryDiagnostics()
     report.reset()
     referenced_pending: dict[str, int] = {}
+    catalog_pending: dict[str, int] = {}
     optional_pending: dict[str, int] = {}
+    queues = (referenced_pending, catalog_pending, optional_pending)
     processed: set[str] = set()
     depth_limited: set[str] = set()
 
@@ -430,6 +449,7 @@ async def async_discover_resources(
         depth = min(
             depth,
             referenced_pending.get(path, depth),
+            catalog_pending.get(path, depth),
             optional_pending.get(path, depth),
         )
         if depth > maximum_depth:
@@ -438,27 +458,31 @@ async def async_discover_resources(
             return
         depth_limited.discard(path)
         report.depth_limit_reached = bool(depth_limited)
-        target = (
-            optional_pending
-            if report.paths[path].source is DiscoveryPathSource.OPTIONAL
-            else referenced_pending
-        )
-        if target is referenced_pending:
-            optional_pending.pop(path, None)
+        target = queues[_source_priority(report.paths[path].source)]
+        for queue in queues:
+            if queue is not target:
+                queue.pop(path, None)
         target[path] = depth
+
+    def schedule_children(path: str, depth: int) -> None:
+        if _HEATING_CIRCUIT_PATH.fullmatch(path):
+            for suffix in _HEATING_CIRCUIT_CATALOG_SUFFIXES:
+                schedule(f"{path}{suffix}", depth + 1, DiscoveryPathSource.CATALOG)
+        for fallback in _optional_children(path):
+            schedule(fallback, depth + 1, DiscoveryPathSource.OPTIONAL)
 
     for root in roots:
         schedule(root, 0, DiscoveryPathSource.ROOT)
 
     discovered: dict[str, Resource] = {}
-    while referenced_pending or optional_pending:
+    while referenced_pending or catalog_pending or optional_pending:
         capacity = min(MAX_BULK_PATHS, maximum_resources - len(processed))
         if capacity <= 0:
             report.stop_reason = "resource_limit"
             break
-        # Leave spare reference-batch capacity unused: newly returned references
-        # must be expanded before optional probes can spend the path budget.
-        pending = referenced_pending or optional_pending
+        # Leave spare capacity unused so returned references are expanded before
+        # catalog paths, and catalog paths before other optional probes.
+        pending = referenced_pending or catalog_pending or optional_pending
         frontier_entries = dict(islice(pending.items(), capacity))
         frontier = tuple(frontier_entries)
         for path in frontier:
@@ -509,15 +533,13 @@ async def async_discover_resources(
                 )
                 continue
             discovered[result.path] = resource
-            for fallback in _optional_children(result.path):
-                schedule(fallback, depth + 1, DiscoveryPathSource.OPTIONAL)
+            schedule_children(result.path, depth)
             for reference in resource.references:
                 child = reference.path
                 if not _is_allowed_reference(child, roots):
                     continue
                 schedule(child, depth + 1, DiscoveryPathSource.REFERENCE)
-                for fallback in _optional_children(child):
-                    schedule(fallback, depth + 2, DiscoveryPathSource.OPTIONAL)
+                schedule_children(child, depth + 1)
     else:
         report.completed = not report.depth_limit_reached
         report.stop_reason = "complete" if report.completed else "depth_limit"
@@ -604,8 +626,10 @@ def _is_allowed_reference(path: str, roots: tuple[str, ...]) -> bool:
 
 
 def _source_priority(source: DiscoveryPathSource) -> int:
-    """Keep advertised paths ahead of speculative app-path probes."""
-    return 1 if source is DiscoveryPathSource.OPTIONAL else 0
+    """Read advertised paths, then core catalog paths, then optional probes."""
+    if source is DiscoveryPathSource.OPTIONAL:
+        return 2
+    return 1 if source is DiscoveryPathSource.CATALOG else 0
 
 
 def _result_category(result: BatchItemResult) -> str:

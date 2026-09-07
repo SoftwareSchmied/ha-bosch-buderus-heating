@@ -499,6 +499,10 @@ class BoschBuderusDataUpdateCoordinator(
             else CapabilityMetrics().snapshot()
         )
 
+    def resource_pause_remaining_seconds(self, path: str) -> int:
+        """Describe a local resource pause without changing the polling state."""
+        return max(0, math.ceil(self._negative_until.get(path, 0.0) - monotonic()))
+
     def record_unknown_enum_value(self, path: str) -> None:
         """Record one distinct undeclared enum value without retaining it."""
         self._unknown_enum_value_counts[path] += 1
@@ -999,7 +1003,10 @@ class BoschBuderusDataUpdateCoordinator(
     ) -> None:
         pause: timedelta | None = None
         if status == 404:
-            pause = NOT_FOUND_PAUSE
+            # A last-good snapshot proves this resource exists. Retry it at its
+            # next group poll, as the app permits another read after an error.
+            self._negative_until.pop(snapshot.resource.path, None)
+            return
         elif (
             status == 403 and snapshot.consecutive_failures >= FORBIDDEN_PAUSE_THRESHOLD
         ):

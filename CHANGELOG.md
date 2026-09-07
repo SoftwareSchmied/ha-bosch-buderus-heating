@@ -5,6 +5,64 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.7.0-beta.7] - 2026-09-07
+
+This beta combines improved heating-circuit discovery with recovery after a
+temporary 404 response. Install the update and restart Home Assistant once so
+discovery can find additional controls. Availability still depends on the
+resources and write permissions supplied by the installation.
+
+### Fixed
+
+- Try the known operating-mode and temperature-setting paths for each advertised
+  heating circuit, even when its circuit or temperature-level directory returns
+  403, 404, or 406. Process reported references first, these core paths second,
+  and other optional probes last. Keep the existing batch, depth, and path bounds
+  and avoid duplicate reads or guessed circuit numbers.
+- Retry previously discovered resources after a 404 at their next regular group
+  poll instead of pausing them for 24 hours. Mark their values unavailable until
+  a valid response restores the same entities without a restart. Preserve
+  polling intervals, global rate-limit backoff, and other resource pauses.
+- Keep unsuccessful optional control probes out of recurring polling. Controls
+  continue to use their own circuit's options, numeric limits, and write rights,
+  with one PUT followed by read-back verification.
+
+### Diagnostics
+
+- Schema 13 identifies core catalog probes and counts catalog paths and
+  successful discoveries per circuit. Show local polling-pause state and remaining
+  seconds per resource without additional requests or raw current values.
+
+### Validation
+
+- 769 automated test cases passed with 95.65% combined statement and branch
+  coverage. This includes synthetic regressions for unreadable parent
+  directories, path limits, source promotion, and missing circuits.
+- Combined lifecycle tests cover discovery, creation of HC2 controls, repeated
+  404 responses, recovery at the next group poll, stable entity identity, and
+  one verified write to the correct circuit.
+- The affected installation still needs a practical test. No physical HC2
+  write was performed during development.
+
+### Testing this beta
+
+Thank you for taking the time to test this again. I would appreciate one
+combined check after installing Beta.7 and restarting Home Assistant:
+
+1. Check the HC2 controls, including disabled entities and the configuration
+   section, and compare the available options with MyBuderus.
+2. If a familiar, suitable setting is available, note its original value,
+   change it once, check that MyBuderus shows the change, and restore the
+   original value. Please include whether both changes were confirmed.
+3. Download fresh diagnostics from Settings, Devices & services, Bosch/Buderus
+   Heating, the three-dot menu, Download diagnostics. Review the JSON for
+   personal information before attaching it to issue #23, and mention any
+   controls that MyBuderus offers but Home Assistant still lacks.
+
+Heating does not need to be switched on for discovery. There is no need to
+provoke an error: if a 404 happens naturally, the integration now retries the
+known resource during its normal polling cycle.
+
 ## [0.7.0-beta.6] - 2026-09-06
 
 This beta adapts supported controls to each installation's advertised options

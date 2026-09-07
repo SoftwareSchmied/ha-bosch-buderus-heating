@@ -24,8 +24,13 @@ Config Flow
 - An account and brand form one config entry that may contain multiple gateways.
 - Discovery follows bounded, cycle-safe references and runs only on explicit or
   infrequent events.
+- For advertised heating circuits, a small catalog of core child paths is read
+  even if their parent directory fails. References precede catalog paths, which
+  precede other optional probes. Failed probes do not invent capabilities.
 - Only curated capabilities become entities; unknown resources stay diagnostic.
 - Batch item failures do not discard successful items or last good values.
+- A discovered resource returning 404 becomes unavailable until its next valid
+  response, with a new attempt at the next regular group poll.
 - A rate limit opens a global brake and never triggers an individual-request
   storm.
 - `assess_control` derives each discovered resource's current write contract;
