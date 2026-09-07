@@ -1018,7 +1018,7 @@ async def test_bulk_item_server_failure_marks_the_poll_failed(
     assert coordinator.faults.diagnostics()["resource_results"] == {path: "503"}
 
 
-async def test_not_found_resource_is_paused_without_blocking_other_paths(
+async def test_not_found_resource_recovers_at_next_group_poll_without_blocking_others(
     hass: HomeAssistant,
 ) -> None:
     client = AsyncMock()
@@ -1044,16 +1044,27 @@ async def test_not_found_resource_is_paused_without_blocking_other_paths(
             ),
             _success(healthy, 3.0),
         ),
-        (_success(healthy, 4.0),),
+        (_success(missing, 5.0), _success(healthy, 4.0)),
     )
 
+    coordinator.data = await coordinator._async_update_data()
+    assert not coordinator.data[missing].available
+    assert coordinator.data[missing].freshness is Freshness.STALE
+    assert coordinator.data[missing].resource.value == 1.0
+    assert missing not in coordinator._negative_until
+    assert coordinator._next_update[PollGroup.FAST] > monotonic()
     await coordinator._async_update_data()
+    client.get_resources_bulk.assert_awaited_once()
     coordinator._next_update[PollGroup.FAST] = 0.0
     result = await coordinator._async_update_data()
 
-    assert client.get_resources_bulk.await_args.args[1] == (healthy,)
-    assert result[missing].resource.value == 1.0
+    assert client.get_resources_bulk.await_args.args[1] == (missing, healthy)
+    assert result[missing].resource.value == 5.0
+    assert result[missing].available
+    assert result[missing].freshness is Freshness.FRESH
+    assert result[missing].consecutive_failures == 0
     assert result[healthy].resource.value == 4.0
+    client.get_resource.assert_not_awaited()
 
 
 async def test_repeated_forbidden_and_gateway_timeout_pause_resources(

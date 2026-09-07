@@ -33,6 +33,7 @@ attaching it to a public issue.
 - scalar-control eligibility and a specific rejection reason, known advertised
   enum options, and numeric bounds for released controls;
 - availability, freshness, error category, and consecutive failure count;
+- per-resource polling-pause state and remaining pause time in seconds;
 - whether a supported scalar resource currently provides no value;
 - bounded counts of undeclared enum values observed after entity creation;
 - counts of active negative pauses, rate-limit backoff, and circuit-breaker
@@ -50,7 +51,7 @@ diagnostic report with the appliance display.
 
 ## Missing controls
 
-Schema 12 reports `control` under each entry in `gateways → capabilities`.
+Schema 13 reports `control` under each entry in `gateways → capabilities`.
 The same assessment drives the select, number, and switch implementations:
 
 - `platform`: the principal control type or `null` for unsupported paths;
@@ -100,6 +101,23 @@ If a path is absent from `capabilities`, check `discovery → paths` to determin
 whether it was attempted, failed, or was never scheduled. Controls are not
 created for resources that were not discovered. Downloading this additional
 evidence performs no cloud requests and includes no raw current values.
+
+For advertised heating circuits, discovery also tries a small catalog of core
+control paths even if the circuit directory is unreadable. These entries have
+`source: catalog` unless PointT explicitly references them, in which case their
+source is `reference`. `catalog_paths` and `catalog_paths_discovered` count them
+both across discovery and within each `discovery → groups` entry. A failed
+catalog probe is diagnostic evidence, not an invented resource or control.
+
+Each capability includes `polling_paused` and
+`polling_pause_remaining_seconds`. These describe only a local path pause;
+account-wide rate-limit backoff and the gateway circuit breaker are reported
+under `runtime`. Zero does not mean a request is immediately due: the regular
+polling group still determines the next read. A previously discovered resource
+returning 404 is unavailable but has no local 24-hour pause. It is tried again
+at its next group poll and recovers on a valid response. Pauses for repeated
+403 responses, gateway timeouts, and never-successful optional fault probes
+remain visible here. Static resources have no recurring polling group.
 
 ## Request metrics
 

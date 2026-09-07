@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
@@ -26,6 +26,7 @@ from custom_components.bosch_buderus_heating.coordinator import (
 from custom_components.bosch_buderus_heating.diagnostics import (
     _discovery_diagnostics,
     _gateway_class,
+    _gateway_diagnostics,
     _path_template,
     _safe_token,
     _safe_unit,
@@ -169,7 +170,7 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
     diagnostics = await async_get_config_entry_diagnostics(hass, entry)
     rendered = repr(diagnostics)
 
-    assert diagnostics["diagnostics_schema"] == 12
+    assert diagnostics["diagnostics_schema"] == 13
 
     for private in (
         gateway_id,
@@ -199,6 +200,8 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
     assert gateway_report["discovery"]["advertised_references"] == 1
     assert gateway_report["discovery"]["groups"] == {
         "/heatingCircuits/hc2": {
+            "catalog_paths": 0,
+            "catalog_paths_discovered": 0,
             "fallback_attempts": 0,
             "fallback_failures": 0,
             "fallback_successes": 0,
@@ -375,8 +378,9 @@ async def test_discovery_diagnostics_counts_reads_and_failures_per_circuit(
     first = "/heatingCircuits/hc1/operationMode"
     second = "/heatingCircuits/hc2/operationMode"
     pending = "/heatingCircuits/hc2/boostMode"
-    for path in (first, second, pending):
-        report.scheduled(path, DiscoveryPathSource.REFERENCE)
+    report.scheduled(first, DiscoveryPathSource.REFERENCE)
+    for path in (second, pending):
+        report.scheduled(path, DiscoveryPathSource.CATALOG)
     report.bulk_started((first, second))
     for path in (first, second):
         report.bulk_result(BatchItemResult("gateway", path, 502))
@@ -392,6 +396,8 @@ async def test_discovery_diagnostics_counts_reads_and_failures_per_circuit(
     assert result["paths_failed"] == 1
     assert result["fallback_attempts"] == 2
     assert result["groups"]["/heatingCircuits/hc1"] == {
+        "catalog_paths": 0,
+        "catalog_paths_discovered": 0,
         "paths_scheduled": 1,
         "paths_requested": 1,
         "paths_failed": 1,
@@ -401,6 +407,8 @@ async def test_discovery_diagnostics_counts_reads_and_failures_per_circuit(
         "fallback_failures": 1,
     }
     assert result["groups"]["/heatingCircuits/hc2"] == {
+        "catalog_paths": 2,
+        "catalog_paths_discovered": 1,
         "paths_scheduled": 2,
         "paths_requested": 1,
         "paths_failed": 0,
@@ -409,3 +417,33 @@ async def test_discovery_diagnostics_counts_reads_and_failures_per_circuit(
         "fallback_successes": 1,
         "fallback_failures": 0,
     }
+    assert result["catalog_paths"] == 2
+    assert result["catalog_paths_discovered"] == 1
+
+
+def test_resource_pause_diagnostics_are_read_only_local_and_redacted(hass):
+    entry = MockConfigEntry(domain=DOMAIN)
+    session = AsyncMock()
+    client = PointTClient(session, "private-token")
+    coordinator = BoschBuderusDataUpdateCoordinator(
+        hass, client, Gateway("private-gateway"), entry
+    )
+    active = "/devices/private-device/errors"
+    expired = "/heatingCircuits/hc2/operationMode"
+    unpaused = "/heatingCircuits/hc2/manualRoomSetpoint"
+    coordinator.resources = {p: Resource(p) for p in (active, expired, unpaused)}
+    coordinator._negative_until = {active: 160.25, expired: 99.0}
+    with patch(
+        "custom_components.bosch_buderus_heating.coordinator.monotonic",
+        return_value=100,
+    ):
+        report = _gateway_diagnostics(1, coordinator)
+    capabilities = {r["path"]: r for r in report["capabilities"]}
+    paused = next(r for r in capabilities.values() if r["polling_paused"])
+    assert paused["polling_pause_remaining_seconds"] == 61
+    for path in (expired, unpaused):
+        assert not capabilities[path]["polling_paused"]
+        assert capabilities[path]["polling_pause_remaining_seconds"] == 0
+    assert coordinator._negative_until == {active: 160.25, expired: 99.0}
+    assert "private" not in json.dumps(report)
+    session.request.assert_not_called()

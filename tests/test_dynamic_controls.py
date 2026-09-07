@@ -1,7 +1,8 @@
 """Installation variants use their own write contracts and live lifecycle."""
 
 from dataclasses import replace
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from time import monotonic
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -21,11 +22,14 @@ from custom_components.bosch_buderus_heating.number import (
     async_setup_entry as setup_numbers,
 )
 from custom_components.bosch_buderus_heating.pointt import (
+    BatchItemResult,
     Gateway,
     Resource,
     ResourceMetadata,
+    ResourceReference,
     WriteValidationError,
 )
+from custom_components.bosch_buderus_heating.resource_catalog import poll_group
 from custom_components.bosch_buderus_heating.select import (
     BoschBuderusSelect,
     build_select_descriptions,
@@ -137,6 +141,113 @@ async def test_two_gateways_with_the_same_circuit_path_remain_independent(
     await setup_selects(hass, entry, added.extend)
     assert [e.options for e in added] == [["manual"], ["auto", "VendorNew"]]
     assert added[0].unique_id != added[1].unique_id
+
+
+@pytest.mark.parametrize("target", [MODE, NUMBER])
+async def test_hc2_discovery_control_404_recovery_and_confirmed_write(
+    hass, environment, freezer, target
+):
+    """One lifecycle covers the opaque directory, normal retry and same entity."""
+    coordinator, client, entry = environment
+    root = "/heatingCircuits"
+    hc1_mode = enum(f"{root}/hc1/operationMode", ("off", "manual", "auto"))
+    hc1_number = replace(number(22, 30, 23), path=f"{root}/hc1/manualRoomSetpoint")
+    resources = {
+        r.path: r
+        for r in (
+            Resource(
+                root,
+                references=(
+                    ResourceReference(f"{root}/hc1"),
+                    ResourceReference(f"{root}/hc2"),
+                ),
+            ),
+            Resource(
+                f"{root}/hc1",
+                references=tuple(
+                    ResourceReference(r.path) for r in (hc1_mode, hc1_number)
+                ),
+            ),
+            hc1_mode,
+            hc1_number,
+            enum(),
+            number(5, 30, 21),
+        )
+    }
+    missing = set()
+
+    def response(gateway, paths):
+        return tuple(
+            BatchItemResult(gateway, p, 200, resource=resources[p])
+            if p in resources and p not in missing
+            else BatchItemResult(gateway, p, 403 if p == f"{root}/hc2" else 404)
+            for p in paths
+        )
+
+    client.get_resources_bulk.side_effect = response
+    coordinator.async_set_updated_data(await coordinator._async_update_data())
+    selects = []
+    numbers = []
+    await setup_selects(hass, entry, selects.extend)
+    await setup_numbers(hass, entry, numbers.extend)
+    entities = {e.entity_description.resource_path: e for e in (*selects, *numbers)}
+    assert set(entities) == {MODE, NUMBER, hc1_mode.path, hc1_number.path}
+    assert entities[MODE].options == ["manual", "auto"]
+    assert entities[NUMBER].native_min_value == 5
+    assert entities[hc1_number.path].native_min_value == 22
+    assert coordinator.discovery_diagnostics.paths[MODE].source.value == "catalog"
+    assert (
+        coordinator.discovery_diagnostics.paths[f"{root}/hc2"].bulk_result == "http_403"
+    )
+    # Failed, speculative control paths never enter the recurring poll list.
+    polled = {p for paths in coordinator._paths_by_group.values() for p in paths}
+    assert f"{root}/hc2/temperatureLevels/eco" not in polled
+    assert f"{root}/hc2/temperatureLevels/comfort2" not in polled
+    identity = entities[target].unique_id
+    group = poll_group(resources[target])
+    client.get_resources_bulk.reset_mock()
+    missing.add(target)
+
+    # Consecutive local errors keep the normal cadence without an immediate GET.
+    for _ in range(2):
+        freezer.tick(coordinator._poll_intervals[group] + timedelta(seconds=1))
+        coordinator.async_set_updated_data(await coordinator._async_update_data())
+        assert not entities[target].available
+        assert coordinator.data[target].resource == resources[target]
+        assert coordinator.resource_pause_remaining_seconds(target) == 0
+        assert coordinator._next_update[group] > monotonic()
+        with pytest.raises(ServiceValidationError):
+            if target == MODE:
+                await entities[target].async_select_option("auto")
+            else:
+                await entities[target].async_set_native_value(21.25)
+        calls = client.get_resources_bulk.await_count
+        coordinator.async_set_updated_data(await coordinator._async_update_data())
+        assert client.get_resources_bulk.await_count == calls
+    client.get_resource.assert_not_awaited()
+    client.put_resource_value.assert_not_awaited()
+
+    missing.clear()
+    freezer.tick(coordinator._poll_intervals[group] + timedelta(seconds=1))
+    coordinator.async_set_updated_data(await coordinator._async_update_data())
+    assert entities[target].available
+    assert entities[target].unique_id == identity
+    assert len(selects) == len(numbers) == 2
+    assert coordinator.data[target].consecutive_failures == 0
+    expected = "auto" if target == MODE else 21.25
+    client.get_resource.return_value = replace(resources[target], value=expected)
+    if target == MODE:
+        await entities[target].async_select_option(expected)
+        assert entities[target].current_option == expected
+    else:
+        await entities[target].async_set_native_value(expected)
+        assert entities[target].native_value == expected
+    client.put_resource_value.assert_awaited_once_with(
+        "synthetic-gateway", target, expected
+    )
+    client.get_resource.assert_awaited_once()
+    assert client.get_resource.await_args.args == ("synthetic-gateway", target)
+    assert coordinator.data[target].resource.value == expected
 
 
 async def test_aliases_remain_reversible_across_metadata_changes(hass, environment):

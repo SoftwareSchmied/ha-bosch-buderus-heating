@@ -100,8 +100,10 @@ automation:
 
 The aggregate entities remain unavailable if the gateway exposes no readable
 current-notification resource. Other heating entities continue to work.
-Optional resources returning HTTP 403 or 404 are skipped and retried only
-after the bounded capability pause or a rediscovery.
+Optional resources that have never been read successfully and return HTTP 403
+or 404 are skipped and retried only after the bounded capability pause or a
+rediscovery. Previously discovered current-notification resources that return
+404 remain eligible for their next regular poll and recover on a valid read.
 Historical failure lists are capability-probed at startup but are not polled
 repeatedly because no history entity currently consumes them.
 

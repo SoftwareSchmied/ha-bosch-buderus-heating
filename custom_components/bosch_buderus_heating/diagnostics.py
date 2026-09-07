@@ -16,6 +16,7 @@ from .coordinator import (
     Freshness,
     ResourceSnapshot,
 )
+from .discovery import DiscoveryPathSource
 from .holidays import (
     HOLIDAY_RESOURCE_PATHS,
     HOLIDAY_TIMEZONE_PATH,
@@ -34,7 +35,7 @@ from .resource_catalog import (
 from .runtime import BoschBuderusRuntimeData
 from .writes import EnumWritePolicy, NumberWritePolicy, assess_control
 
-DIAGNOSTICS_SCHEMA_VERSION = 12
+DIAGNOSTICS_SCHEMA_VERSION = 13
 
 
 async def async_get_config_entry_diagnostics(
@@ -172,6 +173,7 @@ def _gateway_diagnostics(
                 snapshots.get(resource.path),
                 coordinator.capability_metrics(resource.path),
                 coordinator.unknown_enum_value_count(resource.path),
+                coordinator.resource_pause_remaining_seconds(resource.path),
             )
             for resource in sorted(
                 resources, key=lambda item: _path_template(item.path)
@@ -185,6 +187,7 @@ def _capability_diagnostics(
     snapshot: ResourceSnapshot | None,
     metrics: dict[str, object],
     unknown_enum_values_detected: int,
+    polling_pause_remaining_seconds: int = 0,
 ) -> dict[str, object]:
     available: bool | None = None
     freshness: str | None = None
@@ -204,6 +207,8 @@ def _capability_diagnostics(
         "resource_type": _safe_token(resource.metadata.resource_type),
         "unit": _safe_unit(resource.metadata.unit),
         "poll_group": poll_group(resource).value,
+        "polling_paused": polling_pause_remaining_seconds > 0,
+        "polling_pause_remaining_seconds": polling_pause_remaining_seconds,
         "entity_supported": supports_entity(resource),
         "maturity": capability_maturity(resource.path).value,
         "entity_enabled_by_default": entity_enabled_by_default(resource.path),
@@ -306,6 +311,9 @@ def _discovery_diagnostics(
         counters["paths_requested"] += item.bulk_result != "not_attempted"
         counters["resources_discovered"] += item.discovered
         counters["paths_failed"] += item.failed
+        catalog = item.source is DiscoveryPathSource.CATALOG
+        counters["catalog_paths"] += catalog
+        counters["catalog_paths_discovered"] += catalog and item.discovered
         counters["fallback_attempts"] += item.fallback_reason is not None
         counters["fallback_successes"] += item.fallback_result == "success"
         counters["fallback_failures"] += item.fallback_result not in (None, "success")
