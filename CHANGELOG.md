@@ -5,6 +5,111 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-10
+
+With 0.7.0, I am releasing the improvements from the 0.7 beta series as a stable
+update. This release adds a calculated dew point, improves discovery and controls
+for installations with multiple heating circuits, and fixes missed polling
+intervals and misleading fault-parser diagnostics.
+
+Thank you to everyone who shared diagnostics, repeated tests, and detailed
+feedback. I especially appreciate the patience while I worked through the
+missing controls on the second heating circuit.
+
+### New since 0.6.0
+
+- Calculate a dew point locally for each heating circuit that provides compatible
+  room-temperature and humidity measurements. Source readings and the Magnus
+  calculation parameters are available as attributes.
+- Adapt supported controls to the options and numeric limits advertised by each
+  installation and circuit. Newly eligible controls for already discovered
+  resources can appear during polling, with existing entity IDs retained.
+- Improve discovery of additional heating circuits by processing advertised
+  references first, known core control paths next, and other optional paths last.
+  Unreadable parent directories no longer prevent checks of known circuit paths.
+- Add explicit holiday creation with the modes, date formats, and temperature
+  limits advertised by the installation. Holiday edits check for conflicting
+  changes made in another app.
+- Expand diagnostics through schema 13 with discovery outcomes per circuit,
+  reasons for control eligibility, and local resource pauses. Current values,
+  credentials, and private identifiers remain excluded.
+- Recognize additional app-defined operating states and schedule types, with
+  German and English translations.
+
+### Fixes
+
+- Avoid skipping a polling group when Home Assistant's rounded timer calls the
+  coordinator just before its exact deadline. A maximum one-second tolerance
+  applies only to group scheduling. This fixes the observed gaps of about two
+  minutes between reads intended to run every minute.
+- Preserve the last actual fault-parser result during unrelated polling. A
+  temperature read no longer replaces `empty`, `ok`, or `partial` with `not_run`.
+  Read failures remain visible separately and cannot confirm an all-clear.
+- Recover previously discovered resources after a temporary 404 during their
+  next regular group poll, preserving their entity identity.
+- Retain active faults through incomplete responses, lost sources, and restarts;
+  resolution still requires consecutive valid confirmations.
+- Preserve unavailable and stale states after interrupted batches and resume
+  deferred reads without starving later groups.
+- Verify scalar and holiday writes by reading back their results, including
+  ambiguous connection failures, without blindly repeating a mutation.
+- Improve account-wide rate-limit handling, concurrent token refreshes,
+  reauthentication checks, and energy-counter interpretation.
+
+### Behavior changes
+
+- Live values return to their intended cadence. Request totals may therefore
+  increase compared with a run that was skipping scheduled reads. Existing bulk
+  limits and the standard and cloud-friendly polling profiles remain in place.
+- Unsupported optional fault paths are still checked again after their 24-hour
+  capability pause. Historical failure lists are checked at startup only.
+- `parser_status` now consistently describes the last actual parsing attempt.
+  It is not a current connectivity indicator. Diagnostic fields and schema 13
+  are unchanged from Beta.7.
+- Calculated environmental energy uses the `total` state class; direct cumulative
+  energy counters retain `total_increasing`.
+
+### Safety and compatibility
+
+- Existing device identifiers, entity unique IDs, and user registry settings are
+  retained. Control options, limits, and write permissions still come from the
+  corresponding resource.
+- Rate-limit backoff, gateway circuit-breaker deadlines, and resource pauses
+  keep their full duration. Timer tolerance never shortens these safeguards.
+- The calculated dew point and diagnostic export add no cloud requests or writes.
+
+### Validation
+
+- 790 automated test cases passed with 95.67% combined statement and branch
+  coverage. This count includes separately parametrized cases.
+- 21 added cases cover Home Assistant's actual timer scheduling, the one-second
+  boundary, both polling profiles, unchanged backoff deadlines, delayed cycles,
+  daily fault-source probing and recovery, and preservation of parser results.
+- The new regressions reproduced both faults on Beta.7 before the corrections.
+  The scheduler used by the test environment also matches Home Assistant 2026.9.1.
+- Ruff formatting and linting, strict Mypy, and the isolated dependency audit
+  passed. No known dependency vulnerabilities were found.
+- Release-package tests verify deterministic archives, a component-root manifest,
+  matching version metadata, and import from an isolated installation. Publication
+  also requires the protected-branch checks and the release workflow validation.
+
+### Upgrade notes and limitations
+
+- Restart Home Assistant after updating so discovery runs with the new version.
+  There is no need to enable beta releases in HACS or remove the integration.
+  Check disabled entities if a supported installer control is not visible.
+- The reporter in issue #23 confirmed that all expected controls, including HC2,
+  appeared and that changed values were reflected in the official Buderus app.
+  The report does not list every tested setting or confirm that all original
+  values were restored.
+- The timing and parser corrections have automated regression coverage. I have
+  not yet completed a physical-installation observation period for these two
+  changes. Additional Bosch systems, gateway variants, and extended operation
+  still need broader field testing.
+- The calculated dew point is not the controller's internal cooling limit and
+  does not include an unknown installer safety offset. Holiday reads and writes
+  remain separate cloud operations rather than an atomic transaction.
+
 ## [0.7.0-beta.7] - 2026-09-07
 
 This beta combines improved heating-circuit discovery with recovery after a

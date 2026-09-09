@@ -308,6 +308,10 @@ The coordinator groups resources by how quickly they need to change:
 | Starts and operating hours | 15 minutes |
 | Static device information | At startup |
 
+Group deadlines allow up to one second of timer-rounding tolerance so a slightly
+early Home Assistant callback does not skip the next read. Resource pauses and
+rate-limit deadlines retain their full duration.
+
 Reads are batched where possible. Rate-limit responses trigger bounded
 backoff, and temporary failures do not replace the last confirmed value with
 invented data. Polling profiles can be changed through **Reconfigure**; see

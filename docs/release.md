@@ -45,10 +45,12 @@ The tag starts the release workflow. It repeats tests, type checks, formatting,
 linting, dependency auditing, hassfest, and HACS validation. Only then does it
 create the GitHub release with the ZIP and checksum.
 
-## Preview limitations
+## Field validation
 
-The preview has been tested on a real Buderus installation with a K40 gateway.
-Bosch systems, other gateway models, installations with multiple circuits, and
-long-term operation do not yet have sufficient field evidence. These limits
-remain visible in the README and roadmap; preview releases are not a stable
-`1.0`.
+Version 0.7.0 is a stable release. Field feedback includes a Buderus installation
+with a K40 gateway and an installation with two heating circuits whose reporter
+confirmed the expected controls and changes appearing in MyBuderus. That report
+does not enumerate every tested control or confirm restoration of every value.
+Bosch systems, additional gateway and multi-source configurations, and long-term
+operation still need broader field evidence. A stable release does not imply
+that every supported function has been tested on every installation.

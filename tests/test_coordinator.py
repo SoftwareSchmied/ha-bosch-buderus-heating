@@ -170,6 +170,80 @@ async def test_discovery_adds_fault_sources_and_adapts_notification_polling(
     assert coordinator._negative_until[active_failure] > 0
 
 
+async def test_unsupported_fault_probe_waits_a_day_and_can_recover(hass):
+    client = AsyncMock()
+    coordinator = _coordinator(hass, client)
+    notifications = Resource("/notifications", has_values=True)
+    heat_source = Resource("/heatSources/hs1")
+    active_path = "/heatSources/hs1/activefailure"
+    history_path = "/heatSources/hs1/failurelist"
+    active = Resource(
+        active_path, values=({"ccd": "6249", "fc": "12"},), has_values=True
+    )
+    readable = False
+
+    def read_resources(gateway, paths):
+        available = {notifications.path: notifications}
+        if readable:
+            available[active_path] = active
+        return tuple(
+            BatchItemResult(
+                gateway,
+                path,
+                200 if path in available else 404,
+                available.get(path),
+            )
+            for path in paths
+        )
+
+    def reads_of(path):
+        return sum(
+            path in call.args[1] for call in client.get_resources_bulk.await_args_list
+        )
+
+    client.get_resources_bulk.side_effect = read_resources
+    with (
+        patch(
+            "custom_components.bosch_buderus_heating.coordinator.async_discover_resources",
+            AsyncMock(
+                return_value={item.path: item for item in (notifications, heat_source)}
+            ),
+        ),
+        patch(
+            "custom_components.bosch_buderus_heating.coordinator.monotonic",
+            return_value=1000.0,
+        ),
+    ):
+        coordinator.data = await coordinator._async_update_data()
+    assert active_path in coordinator.resources
+    assert active_path not in coordinator.data
+    assert history_path not in coordinator.data
+    assert reads_of(active_path) == reads_of(history_path) == 1
+
+    for attempt in range(2):
+        deadline = coordinator._negative_until[active_path]
+        with patch(
+            "custom_components.bosch_buderus_heating.coordinator.monotonic",
+            return_value=deadline - 0.5,
+        ):
+            coordinator.data = await coordinator._async_update_data()
+        assert reads_of(active_path) == attempt + 1
+        readable = attempt == 1
+        with patch(
+            "custom_components.bosch_buderus_heating.coordinator.monotonic",
+            return_value=deadline + 300,
+        ):
+            coordinator.data = await coordinator._async_update_data()
+        assert reads_of(active_path) == attempt + 2
+        if not readable:
+            assert coordinator._negative_until[active_path] == deadline + 300 + 86400
+
+    assert reads_of(history_path) == 1
+    assert active_path not in coordinator._negative_until
+    assert coordinator.data[active_path].available
+    assert len(coordinator.faults.active_faults) == 1
+
+
 async def test_optional_fault_probe_failure_does_not_block_main_discovery(
     hass: HomeAssistant,
 ) -> None:
