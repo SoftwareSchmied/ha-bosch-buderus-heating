@@ -31,6 +31,55 @@ def _notifications(*values: object) -> Resource:
     return Resource(path="/notifications", values=values, has_values=True)  # type: ignore[arg-type]
 
 
+@pytest.mark.parametrize(
+    ("values", "status"),
+    [((), "empty"), (({"ccd": "6249", "fc": "12"},), "ok"), (("invalid",), "partial")],
+)
+def test_unrelated_reads_preserve_last_parser_result(hass, values, status):
+    tracker = FaultTracker(hass, "entry", "gateway")
+    assert tracker.diagnostics()["parser_status"] == "not_run"
+    tracker.process_resources({})
+    assert tracker.diagnostics()["parser_status"] == "not_run"
+    notifications = _notifications(*values)
+    tracker.process_resources({notifications.path: notifications}, observed_at=NOW)
+    before = tracker.diagnostics()
+    assert before["parser_status"] == status
+    active = tracker.active
+    known = tracker.has_known_state
+
+    tracker.process_resources(
+        {},
+        successful_paths={"/heatingCircuits/hc1/currentRoomSetpoint"},
+        observed_at=NOW.replace(minute=3),
+    )
+    after = tracker.diagnostics()
+    assert after["parser_status"] == status
+    assert after["last_successful_update"] == before["last_successful_update"]
+    assert after["parser_errors"] == before["parser_errors"]
+    assert tracker.active == active
+    assert tracker.has_known_state == known
+    empty = _notifications()
+    tracker.process_resources({empty.path: empty}, observed_at=NOW.replace(minute=4))
+    assert tracker.diagnostics()["parser_status"] == "empty"
+    assert (
+        tracker.diagnostics()["last_successful_update"]
+        == NOW.replace(minute=4).isoformat()
+    )
+
+
+def test_preserved_empty_parser_result_does_not_hide_read_failure(hass):
+    tracker = FaultTracker(hass, "entry", "gateway")
+    empty = _notifications()
+    tracker.process_resources({empty.path: empty}, observed_at=NOW)
+    assert tracker.has_known_state
+    tracker.record_results((BatchItemResult("gateway", empty.path, 503),))
+    tracker.process_resources({}, observed_at=NOW.replace(minute=3))
+    assert tracker.diagnostics()["parser_status"] == "empty"
+    assert tracker.diagnostics()["last_successful_update"] == NOW.isoformat()
+    assert tracker.diagnostics()["resource_results"][empty.path] == "503"
+    assert not tracker.has_known_state
+
+
 def test_deferred_fault_poll_invalidates_health_and_resets_absence(hass):
     tracker = FaultTracker(hass, "entry", "gateway")
     empty = _notifications()

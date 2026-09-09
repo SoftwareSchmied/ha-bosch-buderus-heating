@@ -72,6 +72,10 @@ CIRCUIT_OPEN_INTERVAL = timedelta(minutes=5)
 MAX_FALLBACK_PATHS = 5
 RATE_LIMIT_REPAIR_THRESHOLD = 3
 ACTIVE_NOTIFICATION_INTERVAL = timedelta(seconds=60)
+# HA rounds scheduled callbacks to whole seconds plus a fixed offset. A callback
+# just before our exact deadline must not postpone a group by another minute.
+# This tolerance applies to group cadence only, never to error/backoff deadlines.
+POLL_DUE_TOLERANCE_SECONDS = 1.0
 
 _FALLBACK_PRIORITY_PATHS = (
     "/heatSources/actualSupplyTemperature",
@@ -524,7 +528,8 @@ class BoschBuderusDataUpdateCoordinator(
         due_groups = tuple(
             group
             for group in self._poll_intervals
-            if now_monotonic >= self._next_update.get(group, 0.0)
+            if now_monotonic + POLL_DUE_TOLERANCE_SECONDS
+            >= self._next_update.get(group, 0.0)
         )
         candidate_paths = [
             path for group in due_groups for path in self._paths_by_group.get(group, ())

@@ -452,16 +452,11 @@ class FaultTracker:
                 )
 
         self._parser_errors += invalid_entries
-        self._last_parser_status = (
-            "partial"
-            if invalid_entries
-            else "empty"
-            if parsed_resources and not parsed_faults
-            else "ok"
-            if parsed_resources
-            else "not_run"
-        )
         if parsed_resources:
+            # Unrelated polling groups are not a new parser observation.
+            self._last_parser_status = (
+                "partial" if invalid_entries else "ok" if parsed_faults else "empty"
+            )
             self._last_successful_update = now
 
         complete = (

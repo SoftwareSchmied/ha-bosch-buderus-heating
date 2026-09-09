@@ -119,6 +119,25 @@ at its next group poll and recovers on a valid response. Pauses for repeated
 403 responses, gateway timeouts, and never-successful optional fault probes
 remain visible here. Static resources have no recurring polling group.
 
+Known optional fault paths that have never returned a resource remain as
+capability placeholders and are checked again after their 24-hour pause. They
+count toward the inventory but not toward available runtime resources. Historical
+failure lists are checked at startup only.
+
+## Fault parser status
+
+`faults.parser_status` describes the last actual parsing attempt for a current
+notification resource. `not_run` means none has been parsed since startup;
+`empty` means the last attempt found a valid empty list; `ok` means it found
+valid notifications; and `partial` means invalid entries were encountered.
+Unrelated temperature, energy, or settings reads preserve this result.
+
+This field is not a connectivity or current-health indicator. A subsequent
+failed request remains visible in `resource_results` and the existing fault
+availability handling, even when the last parser result was `empty`. Unrelated
+reads do not advance `last_successful_update` or confirm a fault resolution.
+The field names and diagnostics schema version 13 are unchanged.
+
 ## Request metrics
 
 Metrics are stored in memory only and reset when Home Assistant restarts. They
