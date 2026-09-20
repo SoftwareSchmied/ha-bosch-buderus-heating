@@ -45,6 +45,18 @@ class HolidayTimeError(WriteValidationError):
         super().__init__(f"Holiday time is {reason} in the heating system time zone")
 
 
+class HolidayTimeStepError(WriteValidationError):
+    """A holiday endpoint does not use the supported clock increments."""
+
+    translation_key = "holiday_time_step"
+
+    def __init__(self, field: Literal["holiday_start", "holiday_end"]) -> None:
+        self.field = field
+        super().__init__(
+            "Holiday times must use the 15-minute steps supported by PointT"
+        )
+
+
 class HolidayWriteService:
     """Write a holiday exactly once and confirm the resulting holiday list."""
 
@@ -497,12 +509,16 @@ def _format_timespan(
     )
     if end_datetime <= start_datetime:
         raise WriteValidationError("Holiday end must be after its start")
-    for value in (start_datetime, end_datetime):
-        if value.minute % _DATE_TIME_STEP_MINUTES or value.second or value.microsecond:
-            raise WriteValidationError(
-                "Holiday times must use the 15-minute steps supported by PointT"
-            )
+    _validate_time_step(start_datetime, "holiday_start")
+    _validate_time_step(end_datetime, "holiday_end")
     return _format_start(start_datetime), _format_end(end_datetime)
+
+
+def _validate_time_step(
+    value: datetime, field: Literal["holiday_start", "holiday_end"]
+) -> None:
+    if value.minute % _DATE_TIME_STEP_MINUTES or value.second or value.microsecond:
+        raise HolidayTimeStepError(field)
 
 
 def _local_datetime(value: date | datetime, timezone: tzinfo) -> datetime:

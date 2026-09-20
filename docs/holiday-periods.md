@@ -18,14 +18,19 @@ the integration displays only options advertised by the current system.
 
 To choose installation-specific modes before creating a period, open the
 integration's **Configure** dialog and select **New holiday**. Enter its name
-and dates, then choose the advertised modes and circuits. A date-only gateway
+and dates, then choose the advertised modes and circuits. If several gateways
+can create holidays, select the installation first. The **New holiday** option
+follows your profile language, independently of the server language. A date-only gateway
 uses date selectors. The end date is exclusive, matching the HA calendar.
 
 Start and end are initially empty. Select both dates explicitly; this avoids
 invalid automatic date values in affected Home Assistant frontends. The fields
 follow your profile's language, date format, and 12-hour or 24-hour preference.
-Times use 15-minute steps. If an input needs correction, the dialog retains
-the name and dates you entered.
+Times use 15-minute steps: minutes must be 00, 15, 30, or 45, with seconds 00.
+For example, 22:38 is rejected with a message at the affected field; choose an
+appropriate quarter-hour time yourself. No automatic rounding takes place.
+If an input needs correction, the dialog retains the name and dates you entered.
+The calendar also reports the quarter-hour requirement before sending a write.
 
 Local times that do not exist or occur twice during a clock change are rejected
 before sending a request. Choose a time outside the affected interval. PointT

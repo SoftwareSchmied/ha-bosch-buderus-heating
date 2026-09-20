@@ -50,6 +50,7 @@ from .data import tokens_from_data, tokens_to_data
 from .enum_translation import writable_enum_options
 from .holiday_writes import (
     HolidayTimeError,
+    HolidayTimeStepError,
     configure_holiday_values,
     create_holiday_values,
     holiday_resources_from_snapshots,
@@ -473,15 +474,52 @@ class BoschBuderusOptionsFlow(OptionsFlow):
 
         if user_input is not None:
             selected = user_input.get(CONF_HOLIDAY_PERIOD)
+            if selected == "create":
+                return await self.async_step_holiday_gateway()
             if isinstance(selected, str) and selected in choices:
                 self._selected_key = selected
                 self._displayed_choice = None
                 self._creation_period = None
-                if selected.startswith("create:"):
-                    return await self.async_step_new_holiday()
                 return await self.async_step_holiday()
             return self._show_holiday_selection(choices, error="holiday_changed")
         return self._show_holiday_selection(choices)
+
+    async def async_step_holiday_gateway(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Choose the destination when several gateways can create holidays."""
+        choices = {
+            key: choice
+            for key, choice in (self._holiday_choices() or {}).items()
+            if key.startswith("create:")
+        }
+        if not choices:
+            return self.async_abort(reason="no_writable_holidays")
+        selected = (user_input or {}).get("holiday_gateway")
+        if user_input is None and len(choices) == 1:
+            selected = next(iter(choices))
+        if isinstance(selected, str) and selected in choices:
+            self._selected_key = selected
+            self._displayed_choice = None
+            self._creation_period = None
+            return await self.async_step_new_holiday()
+        return self.async_show_form(
+            step_id="holiday_gateway",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("holiday_gateway"): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                SelectOptionDict(value=key, label=choice.label)
+                                for key, choice in choices.items()
+                            ],
+                            mode=SelectSelectorMode.DROPDOWN,
+                        )
+                    )
+                }
+            ),
+            errors={"base": "holiday_changed"} if user_input is not None else None,
+        )
 
     async def async_step_new_holiday(
         self, user_input: dict[str, Any] | None = None
@@ -491,7 +529,7 @@ class BoschBuderusOptionsFlow(OptionsFlow):
         choice = (choices or {}).get(self._selected_key or "")
         if choice is None or not (self._selected_key or "").startswith("create:"):
             return self.async_abort(reason="holiday_changed")
-        errors = None
+        errors: dict[str, str] | None = None
         date_only = choice.configuration.date_time_mode == "date"
         suggested_values: dict[str, Any] = {"holiday_start": "", "holiday_end": ""}
         if user_input is not None:
@@ -519,7 +557,11 @@ class BoschBuderusOptionsFlow(OptionsFlow):
                     timezone,
                     validate_defaults=False,
                 )
-                self._creation_period = replace(choice.period, write_values=values)
+                self._creation_period = replace(
+                    choice.period, name=user_input["holiday_name"], write_values=values
+                )
+            except HolidayTimeStepError as err:
+                errors = {err.field: err.translation_key}
             except HolidayTimeError as err:
                 errors = {"base": err.translation_key}
             except KeyError, TypeError, ValueError, WriteValidationError:
@@ -558,7 +600,11 @@ class BoschBuderusOptionsFlow(OptionsFlow):
         if creating:
             if self._creation_period is None:
                 return self.async_abort(reason="holiday_changed")
-            choice = replace(choice, period=self._creation_period)
+            choice = replace(
+                choice,
+                period=self._creation_period,
+                label=self._creation_period.name or choice.label,
+            )
 
         if user_input is not None:
             displayed = self._displayed_choice
@@ -681,20 +727,13 @@ class BoschBuderusOptionsFlow(OptionsFlow):
                     :24
                 ]
             )
-            label = (
-                "Neue Urlaubszeit"
-                if self.hass.config.language.startswith("de")
-                else "New holiday"
-            )
-            if multiple_gateways:
-                label += f" ({_gateway_label(coordinator.gateway)})"
             choices[create_key] = _HolidayChoice(
                 coordinator=coordinator,
                 period=HolidayPeriod(
                     datetime.now(UTC), datetime.now(UTC), identifier="0"
                 ),
                 configuration=configuration,
-                label=label,
+                label=_gateway_label(coordinator.gateway),
             )
         return choices
 
@@ -710,8 +749,11 @@ class BoschBuderusOptionsFlow(OptionsFlow):
                             options=[
                                 SelectOptionDict(value=key, label=choice.label)
                                 for key, choice in choices.items()
-                            ],
+                                if not key.startswith("create:")
+                            ]
+                            + [SelectOptionDict(value="create", label="New holiday")],
                             mode=SelectSelectorMode.DROPDOWN,
+                            translation_key="holiday_period",
                         )
                     )
                 }

@@ -12,6 +12,7 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from custom_components.bosch_buderus_heating.holiday_writes import (
+    HolidayTimeStepError,
     HolidayWriteService,
     configure_holiday_values,
     create_holiday_values,
@@ -503,6 +504,43 @@ def test_unknown_date_mode_is_rejected() -> None:
             _configuration(date_time_mode="vendor-mode"),
             UTC,
         )
+
+
+@pytest.mark.parametrize("field", ["holiday_start", "holiday_end"])
+@pytest.mark.parametrize("clock", [(22, 38, 0, 0), (22, 45, 1, 0), (22, 45, 0, 1)])
+def test_holiday_time_step_error_identifies_the_invalid_endpoint(field, clock):
+    endpoints = {
+        "holiday_start": datetime(2026, 9, 20, 22, 45),
+        "holiday_end": datetime(2026, 9, 24, 15),
+    }
+    current = endpoints[field]
+    endpoints[field] = datetime(current.year, current.month, current.day, *clock)
+    with pytest.raises(HolidayTimeStepError) as caught:
+        create_holiday_values(
+            endpoints["holiday_start"],
+            endpoints["holiday_end"],
+            "Trip",
+            _configuration(),
+            ZoneInfo("Europe/Berlin"),
+        )
+    assert caught.value.field == field
+    assert caught.value.translation_key == "holiday_time_step"
+
+
+@pytest.mark.parametrize("minute", [0, 15, 30, 45])
+@pytest.mark.parametrize(
+    "zone", ["Europe/Berlin", "America/New_York", "Asia/Kathmandu"]
+)
+def test_holiday_quarter_hours_preserve_local_time(minute, zone):
+    timezone = ZoneInfo(zone)
+    start = datetime(2026, 9, 20, 22, minute, tzinfo=timezone)
+    end = datetime(2026, 9, 24, 15, tzinfo=timezone)
+    # Calendar callers can submit UTC; step validation uses installation time.
+    values = create_holiday_values(
+        start.astimezone(UTC), end.astimezone(UTC), "Trip", _configuration(), timezone
+    )
+    assert values.start_date == start.replace(tzinfo=None).isoformat(timespec="seconds")
+    assert values.end_date == end.replace(tzinfo=None).isoformat(timespec="seconds")
 
 
 @pytest.mark.parametrize(

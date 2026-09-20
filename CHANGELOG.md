@@ -5,6 +5,52 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-09-20
+
+This update corrects two holiday-dialog problems reported after 0.7.1: an
+invalid time such as 22:38 showed an unrelated settings error, and the new
+holiday option could remain English in a German profile.
+
+Thank you for testing again and providing the screenshots. They helped me
+identify both remaining problems.
+
+### Fixes
+
+- Show the quarter-hour requirement at the affected start or end field. Minutes
+  must be 00, 15, 30, or 45, with seconds 00. The form also explains this before
+  submission. Times are never rounded automatically.
+- Preserve the name and dates while correcting an input. The subsequent settings
+  step displays the entered holiday name.
+- Report the same translated time error when creating or updating a holiday
+  through the calendar, before sending a write.
+- Translate the new holiday option through Home Assistant's selector translations,
+  using the profile language independently of the server language. German and
+  English are provided, with Home Assistant's English fallback for other languages.
+- When several gateways can create holidays, ask which installation to use.
+  A gateway that disappears during selection is not silently replaced by another.
+- Update the opening instructions to include creation through this dialog.
+
+### Validation
+
+- 855 automated test cases passed, including 31 added cases and parametrized
+  variants, with 95.70% combined statement and branch coverage.
+- Tests cover the reported 22:38 input, invalid seconds and fractional seconds,
+  both endpoints, correction followed by a simulated write, profile
+  translations with a different server language, and multiple gateway selection.
+- Accepted quarter-hour times are checked in European, American, and Nepalese
+  time zones, including UTC calendar inputs.
+- Ruff formatting and linting, strict Mypy, and the isolated dependency audit
+  passed. No known dependency vulnerabilities were found.
+
+### Upgrade
+
+Update through HACS and restart Home Assistant. Version 0.7.2 gives installations
+already running 0.7.1 a distinct update; the published 0.7.1 files are unchanged.
+Existing entity IDs, diagnostics schema 13, supported operating modes, and write
+confirmation checks are unchanged. No additional cloud requests are introduced.
+I have not performed a physical holiday write for this release. Confirmation in
+the user's browser and on the installation remains outstanding.
+
 ## [0.7.1] - 2026-09-20
 
 This update fixes holiday creation when Home Assistant combines its automatic
