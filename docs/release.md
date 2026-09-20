@@ -47,10 +47,13 @@ create the GitHub release with the ZIP and checksum.
 
 ## Field validation
 
-Version 0.7.0 is a stable release. Field feedback includes a Buderus installation
+Version 0.7.1 is a stable release. Existing field feedback includes a Buderus
+installation
 with a K40 gateway and an installation with two heating circuits whose reporter
 confirmed the expected controls and changes appearing in MyBuderus. That report
 does not enumerate every tested control or confirm restoration of every value.
 Bosch systems, additional gateway and multi-source configurations, and long-term
 operation still need broader field evidence. A stable release does not imply
 that every supported function has been tested on every installation.
+The holiday-input corrections in 0.7.1 still need confirmation on a physical
+installation after an update and restart.

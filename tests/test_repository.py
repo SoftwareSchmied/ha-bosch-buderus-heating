@@ -32,7 +32,7 @@ def test_stable_project_identity() -> None:
 
     assert manifest["domain"] == "bosch_buderus_heating"
     assert manifest["name"] == "Bosch/Buderus Heating"
-    assert manifest["version"] == "0.7.0"
+    assert manifest["version"] == "0.7.1"
     assert project["project"]["version"] == manifest["version"]
     assert manifest["requirements"] == []
     assert manifest["config_flow"] is True
@@ -47,6 +47,12 @@ def test_translation_title(language: str) -> None:
     """German and English translation catalogs expose the stable title."""
     translation = load_json(INTEGRATION / "translations" / f"{language}.json")
     assert translation["title"] == "Bosch/Buderus Heating"
+    assert (
+        "{holiday}" not in translation["options"]["step"]["new_holiday"]["description"]
+    )
+    for reason in ("holiday_time_nonexistent", "holiday_time_ambiguous"):
+        assert translation["options"]["error"][reason]
+        assert translation["exceptions"][reason]["message"]
 
 
 def test_brand_icon() -> None:

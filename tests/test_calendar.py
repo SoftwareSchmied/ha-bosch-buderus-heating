@@ -266,6 +266,38 @@ async def test_calendar_rejects_unsupported_fields(hass: HomeAssistant) -> None:
         )
 
 
+@pytest.mark.parametrize("operation", ["create", "update"])
+@pytest.mark.parametrize(
+    ("start", "reason"),
+    [
+        (datetime(2026, 3, 29, 2, 30), "holiday_time_nonexistent"),
+        (datetime(2026, 10, 25, 2, 30), "holiday_time_ambiguous"),
+    ],
+)
+async def test_calendar_rejects_invalid_wall_times_without_writing(
+    hass, operation, start, reason
+):
+    await hass.config.async_set_time_zone("Europe/Berlin")
+    coordinator = _coordinator(hass, _writable_holiday_resources())
+    coordinator.async_create_holiday = AsyncMock()
+    coordinator.async_update_holiday = AsyncMock()
+    entity = BoschBuderusHolidayCalendar(coordinator)
+    event = {
+        EVENT_START: start,
+        EVENT_END: start.replace(hour=5, minute=0),
+        EVENT_SUMMARY: "Trip",
+    }
+    with pytest.raises(HomeAssistantError) as caught:
+        if operation == "create":
+            await entity.async_create_event(**event)
+        else:
+            await entity.async_update_event("pointt-7", event)
+    assert caught.value.translation_domain == DOMAIN
+    assert caught.value.translation_key == reason
+    coordinator.async_create_holiday.assert_not_awaited()
+    coordinator.async_update_holiday.assert_not_awaited()
+
+
 async def test_calendar_reports_unavailable_and_failed_writes(
     hass: HomeAssistant,
 ) -> None:

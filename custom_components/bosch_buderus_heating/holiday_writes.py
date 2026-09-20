@@ -7,7 +7,8 @@ import math
 from collections.abc import Awaitable, Callable, Mapping
 from contextlib import suppress
 from dataclasses import fields, replace
-from datetime import date, datetime, time, timedelta, tzinfo
+from datetime import UTC, date, datetime, time, timedelta, tzinfo
+from typing import Literal
 
 from .holidays import (
     HOLIDAY_CONFIGURATION_PATH,
@@ -34,6 +35,14 @@ from .pointt import (
 DEFAULT_HOLIDAY_READ_BACK_DELAY = 0.5
 DEFAULT_HOLIDAY_READ_BACK_ATTEMPTS = 3
 _DATE_TIME_STEP_MINUTES = 15
+
+
+class HolidayTimeError(WriteValidationError):
+    """A local holiday time cannot identify a unique instant."""
+
+    def __init__(self, reason: Literal["nonexistent", "ambiguous"]) -> None:
+        self.translation_key = f"holiday_time_{reason}"
+        super().__init__(f"Holiday time is {reason} in the heating system time zone")
 
 
 class HolidayWriteService:
@@ -498,10 +507,25 @@ def _format_timespan(
 
 def _local_datetime(value: date | datetime, timezone: tzinfo) -> datetime:
     if not isinstance(value, datetime):
-        return datetime.combine(value, time(), timezone)
-    if value.tzinfo is None:
-        return value.replace(tzinfo=timezone)
-    return value.astimezone(timezone)
+        local = datetime.combine(value, time(), timezone)
+    elif value.tzinfo is None:
+        local = value.replace(tzinfo=timezone)
+    else:
+        local = value.astimezone(timezone)
+
+    # PointT receives wall times without an offset or fold marker. Even an
+    # offset-aware calendar input must remain unambiguous after serialization.
+    wall_time = local.replace(tzinfo=None)
+    instants = set()
+    for fold in (0, 1):
+        candidate = wall_time.replace(tzinfo=timezone, fold=fold).astimezone(UTC)
+        if candidate.astimezone(timezone).replace(tzinfo=None) == wall_time:
+            instants.add(candidate)
+    if not instants:
+        raise HolidayTimeError("nonexistent")
+    if len(instants) > 1:
+        raise HolidayTimeError("ambiguous")
+    return local
 
 
 def _format_start(value: datetime) -> str:

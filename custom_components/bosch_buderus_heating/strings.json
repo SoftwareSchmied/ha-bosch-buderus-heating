@@ -86,7 +86,7 @@
       },
       "new_holiday": {
         "title": "Create holiday",
-        "description": "{holiday}: Set the dates. Next, choose the modes offered by your heating system.",
+        "description": "Set the dates. Next, choose the modes offered by your heating system.",
         "data": {
           "holiday_name": "Name",
           "holiday_start": "Start",
@@ -96,6 +96,8 @@
     },
     "error": {
       "holiday_changed": "The selected holiday changed while this dialog was open. Close the dialog and try again.",
+      "holiday_time_nonexistent": "The selected start or end time does not exist because the clock moves forward in the heating system's time zone. Choose another time.",
+      "holiday_time_ambiguous": "The selected start or end time occurs twice because the clock moves back in the heating system's time zone. Choose an unambiguous time.",
       "write_authentication_failed": "The cloud sign-in is no longer valid. Reauthenticate Bosch/Buderus Heating before trying again.",
       "write_failed": "The holiday settings could not be changed.",
       "write_not_confirmed": "The heating system did not confirm every holiday setting. No success was reported.",
@@ -141,6 +143,8 @@
     }
   },
   "exceptions": {
+    "holiday_time_nonexistent": { "message": "The selected start or end time does not exist because the clock moves forward in the heating system's time zone. Choose another time." },
+    "holiday_time_ambiguous": { "message": "The selected start or end time occurs twice because the clock moves back in the heating system's time zone. Choose an unambiguous time." },
     "write_validation_failed": { "message": "This setting is not currently safe to change. Refresh or reconfigure the integration and try again." },
     "write_not_confirmed": { "message": "The heating system did not confirm the new operating mode. Its previous displayed state has been retained." },
     "write_authentication_failed": { "message": "The cloud sign-in is no longer valid. Reauthenticate Bosch/Buderus Heating before trying again." },

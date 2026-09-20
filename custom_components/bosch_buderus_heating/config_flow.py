@@ -49,6 +49,7 @@ from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .data import tokens_from_data, tokens_to_data
 from .enum_translation import writable_enum_options
 from .holiday_writes import (
+    HolidayTimeError,
     configure_holiday_values,
     create_holiday_values,
     holiday_resources_from_snapshots,
@@ -492,7 +493,9 @@ class BoschBuderusOptionsFlow(OptionsFlow):
             return self.async_abort(reason="holiday_changed")
         errors = None
         date_only = choice.configuration.date_time_mode == "date"
+        suggested_values: dict[str, Any] = {"holiday_start": "", "holiday_end": ""}
         if user_input is not None:
+            suggested_values.update(user_input)
             try:
                 parse_date = date.fromisoformat if date_only else datetime.fromisoformat
                 start = parse_date(user_input["holiday_start"])
@@ -500,15 +503,25 @@ class BoschBuderusOptionsFlow(OptionsFlow):
                 resources = holiday_resources_from_snapshots(
                     choice.coordinator.data or {}
                 )
+                timezone = holiday_timezone(resources, self.hass.config.time_zone)
+                for field, value in (("holiday_start", start), ("holiday_end", end)):
+                    if isinstance(value, datetime):
+                        if value.tzinfo is not None:
+                            value = value.astimezone(timezone).replace(tzinfo=None)
+                        suggested_values[field] = value.isoformat(
+                            sep=" ", timespec="seconds"
+                        )
                 values = create_holiday_values(
                     start,
                     end,
                     user_input["holiday_name"],
                     choice.configuration,
-                    holiday_timezone(resources, self.hass.config.time_zone),
+                    timezone,
                     validate_defaults=False,
                 )
                 self._creation_period = replace(choice.period, write_values=values)
+            except HolidayTimeError as err:
+                errors = {"base": err.translation_key}
             except KeyError, TypeError, ValueError, WriteValidationError:
                 errors = {"base": "write_validation_failed"}
             else:
@@ -516,14 +529,18 @@ class BoschBuderusOptionsFlow(OptionsFlow):
         selector = DateSelector() if date_only else DateTimeSelector()
         return self.async_show_form(
             step_id="new_holiday",
-            data_schema=vol.Schema(
-                {
-                    vol.Required("holiday_name"): TextSelector(),
-                    vol.Required("holiday_start"): selector,
-                    vol.Required("holiday_end"): selector,
-                }
+            # Explicit empty suggestions bypass the malformed date/datetime
+            # defaults in affected HA frontends without relaxing validation.
+            data_schema=self.add_suggested_values_to_schema(
+                vol.Schema(
+                    {
+                        vol.Required("holiday_name"): TextSelector(),
+                        vol.Required("holiday_start"): selector,
+                        vol.Required("holiday_end"): selector,
+                    }
+                ),
+                suggested_values,
             ),
-            description_placeholders={"holiday": choice.label},
             errors=errors,
         )
 
