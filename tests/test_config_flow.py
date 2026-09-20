@@ -901,6 +901,165 @@ async def test_new_holiday_requires_explicit_offered_modes(
     coordinator.async_update_holiday.assert_not_awaited()
 
 
+@pytest.mark.parametrize("date_mode", ["date", "dateTime"])
+@pytest.mark.parametrize("language", ["de", "en", "fr"])
+async def test_new_holiday_dates_start_empty_and_remain_required(
+    hass, enable_custom_integrations, date_mode, language
+):
+    import voluptuous as vol
+    from homeassistant.helpers import config_validation as cv
+    from probatio import to_field_list
+
+    hass.config.language = language
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    coordinator.async_create_holiday = AsyncMock()
+    coordinator.data[HOLIDAY_CONFIGURATION_PATH].resource.value["values"]["date"][
+        "allowedValues"
+    ] = [date_mode]
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOLIDAY_PERIOD: "create:"
+            + hashlib.sha256(b"gateway-one").hexdigest()[:24]
+        },
+    )
+    schema = result["data_schema"]
+    serialized = {
+        field["name"]: field
+        for field in to_field_list(schema, custom_serializer=cv.custom_serializer)
+    }
+    for field in ("holiday_start", "holiday_end"):
+        marker = next(key for key in schema.schema if key.schema == field)
+        assert isinstance(marker, vol.Required)
+        assert marker.description == {"suggested_value": ""}
+        assert serialized[field]["description"]["suggested_value"] == ""
+        assert serialized[field]["required"] is True
+        assert ("date" if date_mode == "date" else "datetime") in serialized[field][
+            "selector"
+        ]
+    with pytest.raises(vol.Invalid):
+        schema({"holiday_name": "Trip", "holiday_start": "", "holiday_end": ""})
+    assert not result.get("description_placeholders")
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "holiday_name": "Urlaub im Grünen",
+            "holiday_start": "2026-09-20"
+            if date_mode == "date"
+            else "2026-09-20 22:00:00",
+            "holiday_end": "2026-09-24"
+            if date_mode == "date"
+            else "2026-09-24 15:00:00",
+        },
+    )
+    assert result["step_id"] == "holiday"
+    coordinator.async_create_holiday.assert_not_awaited()
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOLIDAY_ASSIGNED_TO: ["hc1"],
+            CONF_HOLIDAY_HEATING_MODE: "fix_temperature",
+            CONF_HOLIDAY_DHW_MODE: "off",
+            CONF_HOLIDAY_VENTILATION_MODE: "off",
+            CONF_HOLIDAY_THERMAL_DISINFECTION: "on",
+            CONF_HOLIDAY_FIX_TEMPERATURE: 17.0,
+        },
+    )
+    assert result["reason"] == "holiday_created"
+    coordinator.async_create_holiday.assert_awaited_once()
+    values = coordinator.async_create_holiday.await_args.args[0]
+    assert values.start_date == (
+        "2026-09-20" if date_mode == "date" else "2026-09-20T22:00:00"
+    )
+    assert values.end_date == (
+        "2026-09-23" if date_mode == "date" else "2026-09-24T15:00:00"
+    )
+
+
+@pytest.mark.parametrize(
+    ("start", "end", "expected_error", "suggested_start"),
+    [
+        (
+            "2026-03-29T02:30:00",
+            "2026-03-29T05:00:00",
+            "holiday_time_nonexistent",
+            "2026-03-29 02:30:00",
+        ),
+        (
+            "2026-10-25T02:30:00",
+            "2026-10-25T05:00:00",
+            "holiday_time_ambiguous",
+            "2026-10-25 02:30:00",
+        ),
+        (
+            "2026-09-24T13:00:00+00:00",
+            "2026-09-20T20:00:00+00:00",
+            "write_validation_failed",
+            "2026-09-24 15:00:00",
+        ),
+    ],
+)
+async def test_new_holiday_error_preserves_name_and_canonical_dates(
+    hass, enable_custom_integrations, start, end, expected_error, suggested_start
+):
+    await hass.config.async_set_time_zone("Europe/Berlin")
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    coordinator.async_create_holiday = AsyncMock()
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOLIDAY_PERIOD: "create:"
+            + hashlib.sha256(b"gateway-one").hexdigest()[:24]
+        },
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "holiday_name": "Urlaub im Grünen",
+            "holiday_start": start,
+            "holiday_end": end,
+        },
+    )
+    assert result["step_id"] == "new_holiday"
+    assert result["errors"] == {"base": expected_error}
+    suggestions = {
+        key.schema: key.description["suggested_value"]
+        for key in result["data_schema"].schema
+    }
+    assert suggestions["holiday_name"] == "Urlaub im Grünen"
+    assert suggestions["holiday_start"] == suggested_start
+    coordinator.async_create_holiday.assert_not_awaited()
+
+
+async def test_new_holiday_malformed_datetime_never_reaches_a_write(
+    hass, enable_custom_integrations
+):
+    from homeassistant.data_entry_flow import InvalidData
+
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    coordinator.async_create_holiday = AsyncMock()
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_HOLIDAY_PERIOD: "create:"
+            + hashlib.sha256(b"gateway-one").hexdigest()[:24]
+        },
+    )
+    with pytest.raises(InvalidData):
+        await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            {
+                "holiday_name": "Trip",
+                "holiday_start": "2026-09-20T00:00:00 22:00:00",
+                "holiday_end": "2026-09-24 15:00:00",
+            },
+        )
+    coordinator.async_create_holiday.assert_not_awaited()
+
+
 async def test_new_holiday_date_only_gateway_rejects_reversed_dates(
     hass, enable_custom_integrations
 ):

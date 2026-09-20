@@ -5,6 +5,82 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-09-20
+
+This update fixes holiday creation when Home Assistant combines its automatic
+date value with a second time, producing an `Invalid datetime specified` error.
+It also checks holiday times around clock changes and includes the reviewed
+maintenance updates from PRs #31, #32, and #33.
+
+Thank you for the screenshots, version details, and time spent checking the
+holiday dialog. They helped me reproduce the exact input failure.
+
+### Fixes and behavior changes
+
+- Start and end now begin empty in the holiday creation dialog. Selecting both
+  dates avoids malformed date and datetime defaults in affected Home Assistant
+  frontends. Both fields remain required.
+- Preserve the holiday name and dates after a validation error. Datetime
+  suggestions use the format expected by the selector, including after an
+  offset-aware input is converted to the heating system's time zone.
+- Remove the redundant holiday label from the creation instructions so a global
+  Home Assistant language setting cannot insert English text into that otherwise
+  German description.
+- Reject start or end times that do not exist or occur twice during a clock
+  change. The options dialog and calendar report a translated error before a
+  write. Periods may still span a clock change with unambiguous endpoints.
+
+### Maintenance
+
+- Update Ruff and its pre-commit hook to 0.16.6, Hypothesis to 6.168.0, and the
+  Home Assistant test package to 0.13.364.
+- Keep pytest at 9.0.3, as required by that Home Assistant test package. The
+  proposed pytest 9.1.1 update prevented the test dependencies from installing.
+- Update the pinned hassfest action and CodeQL action to their reviewed versions.
+  All three maintenance PRs passed the required checks before merging.
+
+### Safety and compatibility
+
+- Device identifiers, entity unique IDs, existing holiday identifiers, discovery,
+  polling intervals, and diagnostics schema 13 are unchanged.
+- Supported modes and limits still come from the installation. The fixes add no
+  cloud requests. Writes retain their existing confirmation checks and are not
+  blindly repeated.
+- Date-only gateways retain their date selectors and inclusive PointT end-date
+  conversion. Datetime gateways retain 15-minute steps and midnight handling.
+- PointT holiday timestamps have no UTC offset or fold marker. A repeated local
+  time is therefore rejected even when the calendar supplies an explicit offset.
+
+### Validation
+
+- 824 automated test cases passed with 95.69% combined statement and branch
+  coverage. The count includes 34 added cases and separately parametrized variants.
+- Ruff formatting and linting, strict Mypy, and an isolated dependency audit
+  passed. No known dependency vulnerabilities were found.
+- The new regression cases reproduced the faulty initial fields and acceptance
+  of invalid local clock times before the fixes.
+- Verification covers serialized Home Assistant form schemas, required fields,
+  date-only and datetime creation, preservation of corrected inputs, and rejected
+  options/calendar operations without a write.
+- Isolated execution of the original Frontend 20260826.7 functions covered ten
+  language regions, five date-format settings, four time-format settings, six
+  time zones, and six hours. All 7,200 combinations preserved the machine-readable
+  date and time. This is a function-level check, not a browser or physical-device
+  test.
+- Clock-change cases include Europe, North America, and Lord Howe's half-hour
+  changes, alongside fixed-offset and distant time zones.
+
+### Upgrade notes and limitations
+
+- Update through HACS and restart Home Assistant. No removal or reconfiguration
+  of the integration is needed. Select both dates when creating a holiday.
+- Review the selected modes before confirming the second step. Holiday times
+  still need to follow the installation's 15-minute steps.
+- If an endpoint falls into a skipped or repeated clock-change interval, choose
+  another time. The integration does not silently move it or choose an occurrence.
+- I have not performed a real holiday write on an installation for this release.
+  Confirmation of the corrected dialog in the user's browser remains outstanding.
+
 ## [0.7.0] - 2026-09-10
 
 With 0.7.0, I am releasing the improvements from the 0.7 beta series as a stable

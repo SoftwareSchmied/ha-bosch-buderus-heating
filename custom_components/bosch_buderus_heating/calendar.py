@@ -23,9 +23,14 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import BoschBuderusConfigEntry
+from .const import DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource
-from .holiday_writes import create_holiday_values, update_holiday_values
+from .holiday_writes import (
+    HolidayTimeError,
+    create_holiday_values,
+    update_holiday_values,
+)
 from .holidays import (
     HOLIDAY_PERIOD_PATHS,
     HOLIDAY_RESOURCE_PATHS,
@@ -124,6 +129,10 @@ class BoschBuderusHolidayCalendar(
                 self._timezone,
             )
             await self.coordinator.async_create_holiday(values)
+        except HolidayTimeError as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key=err.translation_key
+            ) from err
         except (KeyError, PointTError, TypeError, ValueError) as err:
             raise HomeAssistantError(
                 "The holiday could not be created or confirmed"
@@ -158,6 +167,10 @@ class BoschBuderusHolidayCalendar(
             await self.coordinator.async_update_holiday(
                 holiday_id, values, expected=period.write_values
             )
+        except HolidayTimeError as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key=err.translation_key
+            ) from err
         except (KeyError, PointTError, TypeError, ValueError) as err:
             raise HomeAssistantError(
                 "The holiday could not be changed or confirmed"

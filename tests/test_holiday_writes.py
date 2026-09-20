@@ -505,6 +505,60 @@ def test_unknown_date_mode_is_rejected() -> None:
         )
 
 
+@pytest.mark.parametrize(
+    ("zone", "wall_time", "reason"),
+    [
+        ("Europe/Berlin", "2026-03-29T02:30:00", "nonexistent"),
+        ("Europe/Berlin", "2026-10-25T02:30:00", "ambiguous"),
+        ("America/Los_Angeles", "2026-03-08T02:30:00", "nonexistent"),
+        ("America/Los_Angeles", "2026-11-01T01:30:00", "ambiguous"),
+        ("Australia/Lord_Howe", "2026-10-04T02:15:00", "nonexistent"),
+        ("Australia/Lord_Howe", "2026-04-05T01:45:00", "ambiguous"),
+    ],
+)
+@pytest.mark.parametrize("endpoint", ["start", "end"])
+def test_holiday_writes_reject_invalid_local_clock_times(
+    zone, wall_time, reason, endpoint
+):
+    selected = datetime.fromisoformat(wall_time)
+    start = selected if endpoint == "start" else selected.replace(hour=0, minute=0)
+    end = selected if endpoint == "end" else selected.replace(hour=5, minute=0)
+    with pytest.raises(WriteValidationError, match=reason):
+        create_holiday_values(start, end, "Trip", _configuration(), ZoneInfo(zone))
+
+
+@pytest.mark.parametrize("fold", [0, 1])
+@pytest.mark.parametrize("utc_input", [False, True])
+def test_aware_time_cannot_disambiguate_an_offset_free_pointt_value(fold, utc_input):
+    zone = ZoneInfo("Europe/Berlin")
+    start = datetime(2026, 10, 25, 2, 30, tzinfo=zone, fold=fold)
+    if utc_input:
+        start = start.astimezone(UTC)
+    with pytest.raises(WriteValidationError, match="ambiguous"):
+        create_holiday_values(
+            start,
+            datetime(2026, 10, 25, 5, tzinfo=zone),
+            "Trip",
+            _configuration(),
+            zone,
+        )
+
+
+@pytest.mark.parametrize(
+    "zone", ["UTC", "Asia/Kolkata", "Pacific/Kiritimati", "Etc/GMT+12"]
+)
+def test_valid_wall_times_keep_their_date_in_distant_time_zones(zone):
+    values = create_holiday_values(
+        datetime(2026, 9, 20, 22),
+        datetime(2026, 9, 24, 15),
+        "Trip",
+        _configuration(),
+        ZoneInfo(zone),
+    )
+    assert values.start_date == "2026-09-20T22:00:00"
+    assert values.end_date == "2026-09-24T15:00:00"
+
+
 def test_update_preserves_all_non_calendar_fields() -> None:
     current = _values()
     period = HolidayPeriod(

@@ -21,6 +21,18 @@ integration's **Configure** dialog and select **New holiday**. Enter its name
 and dates, then choose the advertised modes and circuits. A date-only gateway
 uses date selectors. The end date is exclusive, matching the HA calendar.
 
+Start and end are initially empty. Select both dates explicitly; this avoids
+invalid automatic date values in affected Home Assistant frontends. The fields
+follow your profile's language, date format, and 12-hour or 24-hour preference.
+Times use 15-minute steps. If an input needs correction, the dialog retains
+the name and dates you entered.
+
+Local times that do not exist or occur twice during a clock change are rejected
+before sending a request. Choose a time outside the affected interval. PointT
+holiday dates do not carry a UTC offset, so even an offset-aware calendar event
+cannot distinguish the two occurrences of a repeated time. Periods can still
+span a clock change when their start and end times are unambiguous.
+
 The standard calendar dialog still supports creation when the usual defaults
 are valid for this gateway. It never substitutes an unadvertised mode. Use
 **Configure → New holiday** if the defaults do not fit your installation.

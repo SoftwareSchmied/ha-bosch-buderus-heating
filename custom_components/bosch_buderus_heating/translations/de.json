@@ -76,7 +76,7 @@
       },
       "new_holiday": {
         "title": "Urlaubszeit anlegen",
-        "description": "{holiday}: Lege den Zeitraum fest. Im nächsten Schritt wählst du die Betriebsarten deiner Anlage.",
+        "description": "Lege den Zeitraum fest. Im nächsten Schritt wählst du die Betriebsarten deiner Anlage.",
         "data": {
           "holiday_name": "Name",
           "holiday_start": "Beginn",
@@ -86,6 +86,8 @@
     },
     "error": {
       "holiday_changed": "Der ausgewählte Urlaub wurde geändert, während dieser Dialog geöffnet war. Schließe den Dialog und versuche es erneut.",
+      "holiday_time_nonexistent": "Die gewählte Start- oder Endzeit existiert wegen der Zeitumstellung in der Zeitzone der Heizungsanlage nicht. Bitte wähle eine andere Uhrzeit.",
+      "holiday_time_ambiguous": "Die gewählte Start- oder Endzeit kommt wegen der Zeitumstellung in der Zeitzone der Heizungsanlage zweimal vor. Bitte wähle eine eindeutige Uhrzeit.",
       "write_authentication_failed": "Die Cloud-Anmeldung ist nicht mehr gültig. Authentifiziere Bosch/Buderus Heating erneut und versuche es danach noch einmal.",
       "write_failed": "Die Urlaubseinstellungen konnten nicht geändert werden.",
       "write_not_confirmed": "Die Heizungsanlage hat nicht alle Urlaubseinstellungen bestätigt. Es wurde kein Erfolg gemeldet.",
@@ -127,6 +129,8 @@
     }
   },
   "exceptions": {
+    "holiday_time_nonexistent": { "message": "Die gewählte Start- oder Endzeit existiert wegen der Zeitumstellung in der Zeitzone der Heizungsanlage nicht. Bitte wähle eine andere Uhrzeit." },
+    "holiday_time_ambiguous": { "message": "Die gewählte Start- oder Endzeit kommt wegen der Zeitumstellung in der Zeitzone der Heizungsanlage zweimal vor. Bitte wähle eine eindeutige Uhrzeit." },
     "write_validation_failed": { "message": "Diese Einstellung kann derzeit nicht sicher geändert werden. Aktualisiere oder konfiguriere die Integration neu und versuche es erneut." },
     "write_not_confirmed": { "message": "Die Heizungsanlage hat die neue Betriebsart nicht bestätigt. Der zuvor angezeigte Zustand bleibt erhalten." },
     "write_authentication_failed": { "message": "Die Cloud-Anmeldung ist nicht mehr gültig. Authentifiziere Bosch/Buderus Heating erneut und versuche es danach noch einmal." },
