@@ -57,7 +57,7 @@
     "step": {
       "init": {
         "title": "Urlaub konfigurieren",
-        "description": "Wähle einen vorhandenen Urlaub. Urlaube erstellst, benennst, verschiebst oder löschst du im Kalender **Urlaubszeiten**; dieser Dialog ist für die Heizungseinstellungen bestimmt, die der normale Home-Assistant-Kalender nicht anzeigen kann.",
+        "description": "Wähle eine vorhandene Urlaubszeit oder lege eine neue an. Die Heizungseinstellungen legst du anschließend fest. Vorhandene Urlaubszeiten kannst du im Kalender Urlaubszeiten umbenennen, verschieben oder löschen.",
         "data": {
           "holiday_period": "Urlaub"
         }
@@ -74,9 +74,16 @@
           "holiday_fix_temperature": "Konstante Temperatur"
         }
       },
+      "holiday_gateway": {
+        "title": "Anlage auswählen",
+        "description": "Wähle die Anlage, für die du die Urlaubszeit anlegen möchtest.",
+        "data": {
+          "holiday_gateway": "Anlage"
+        }
+      },
       "new_holiday": {
         "title": "Urlaubszeit anlegen",
-        "description": "Lege den Zeitraum fest. Im nächsten Schritt wählst du die Betriebsarten deiner Anlage.",
+        "description": "Lege den Zeitraum fest. Uhrzeiten müssen auf einer vollen Viertelstunde liegen: Minuten 00, 15, 30 oder 45 und Sekunden 00. Im nächsten Schritt wählst du die Betriebsarten deiner Anlage.",
         "data": {
           "holiday_name": "Name",
           "holiday_start": "Beginn",
@@ -86,6 +93,7 @@
     },
     "error": {
       "holiday_changed": "Der ausgewählte Urlaub wurde geändert, während dieser Dialog geöffnet war. Schließe den Dialog und versuche es erneut.",
+      "holiday_time_step": "Bitte wähle eine volle Viertelstunde: Minuten 00, 15, 30 oder 45 und Sekunden 00.",
       "holiday_time_nonexistent": "Die gewählte Start- oder Endzeit existiert wegen der Zeitumstellung in der Zeitzone der Heizungsanlage nicht. Bitte wähle eine andere Uhrzeit.",
       "holiday_time_ambiguous": "Die gewählte Start- oder Endzeit kommt wegen der Zeitumstellung in der Zeitzone der Heizungsanlage zweimal vor. Bitte wähle eine eindeutige Uhrzeit.",
       "write_authentication_failed": "Die Cloud-Anmeldung ist nicht mehr gültig. Authentifiziere Bosch/Buderus Heating erneut und versuche es danach noch einmal.",
@@ -129,6 +137,7 @@
     }
   },
   "exceptions": {
+    "holiday_time_step": { "message": "Bitte wähle eine volle Viertelstunde: Minuten 00, 15, 30 oder 45 und Sekunden 00." },
     "holiday_time_nonexistent": { "message": "Die gewählte Start- oder Endzeit existiert wegen der Zeitumstellung in der Zeitzone der Heizungsanlage nicht. Bitte wähle eine andere Uhrzeit." },
     "holiday_time_ambiguous": { "message": "Die gewählte Start- oder Endzeit kommt wegen der Zeitumstellung in der Zeitzone der Heizungsanlage zweimal vor. Bitte wähle eine eindeutige Uhrzeit." },
     "write_validation_failed": { "message": "Diese Einstellung kann derzeit nicht sicher geändert werden. Aktualisiere oder konfiguriere die Integration neu und versuche es erneut." },
@@ -138,6 +147,9 @@
     "write_failed": { "message": "Die Betriebsart konnte nicht geändert werden. Es wird kein Erfolg gemeldet, weil die Heizungsanlage den Wert nicht bestätigt hat." }
   },
   "selector": {
+    "holiday_period": {
+      "options": { "create": "Neue Urlaubszeit" }
+    },
     "polling_profile": {
       "options": { "standard": "Standard", "cloud_friendly": "Cloud-schonend" }
     },

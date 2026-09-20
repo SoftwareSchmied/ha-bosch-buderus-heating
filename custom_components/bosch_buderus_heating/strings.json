@@ -67,7 +67,7 @@
     "step": {
       "init": {
         "title": "Configure a holiday",
-        "description": "Choose an existing holiday. Create, rename, move, or delete holidays in the **Holiday periods** calendar; use this dialog for the heating-system settings that the standard Home Assistant calendar cannot display.",
+        "description": "Select an existing holiday or create a new one. You will choose its heating settings next. You can rename, move, or delete existing holidays in the Holiday periods calendar.",
         "data": {
           "holiday_period": "Holiday"
         }
@@ -84,9 +84,16 @@
           "holiday_fix_temperature": "Constant temperature"
         }
       },
+      "holiday_gateway": {
+        "title": "Choose installation",
+        "description": "Choose the installation for the new holiday.",
+        "data": {
+          "holiday_gateway": "Installation"
+        }
+      },
       "new_holiday": {
         "title": "Create holiday",
-        "description": "Set the dates. Next, choose the modes offered by your heating system.",
+        "description": "Set the period. Times must fall on a quarter hour: minutes 00, 15, 30, or 45 and seconds 00. In the next step, choose the operating modes for your installation.",
         "data": {
           "holiday_name": "Name",
           "holiday_start": "Start",
@@ -96,6 +103,7 @@
     },
     "error": {
       "holiday_changed": "The selected holiday changed while this dialog was open. Close the dialog and try again.",
+      "holiday_time_step": "Choose a quarter-hour time: minutes 00, 15, 30, or 45 and seconds 00.",
       "holiday_time_nonexistent": "The selected start or end time does not exist because the clock moves forward in the heating system's time zone. Choose another time.",
       "holiday_time_ambiguous": "The selected start or end time occurs twice because the clock moves back in the heating system's time zone. Choose an unambiguous time.",
       "write_authentication_failed": "The cloud sign-in is no longer valid. Reauthenticate Bosch/Buderus Heating before trying again.",
@@ -143,6 +151,7 @@
     }
   },
   "exceptions": {
+    "holiday_time_step": { "message": "Choose a quarter-hour time: minutes 00, 15, 30, or 45 and seconds 00." },
     "holiday_time_nonexistent": { "message": "The selected start or end time does not exist because the clock moves forward in the heating system's time zone. Choose another time." },
     "holiday_time_ambiguous": { "message": "The selected start or end time occurs twice because the clock moves back in the heating system's time zone. Choose an unambiguous time." },
     "write_validation_failed": { "message": "This setting is not currently safe to change. Refresh or reconfigure the integration and try again." },
@@ -152,6 +161,9 @@
     "write_failed": { "message": "The operating mode could not be changed. No success was reported because the heating system did not confirm the value." }
   },
   "selector": {
+    "holiday_period": {
+      "options": { "create": "New holiday" }
+    },
     "polling_profile": {
       "options": {
         "standard": "Standard",

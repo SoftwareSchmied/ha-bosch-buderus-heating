@@ -28,6 +28,7 @@ from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource
 from .holiday_writes import (
     HolidayTimeError,
+    HolidayTimeStepError,
     create_holiday_values,
     update_holiday_values,
 )
@@ -129,7 +130,7 @@ class BoschBuderusHolidayCalendar(
                 self._timezone,
             )
             await self.coordinator.async_create_holiday(values)
-        except HolidayTimeError as err:
+        except (HolidayTimeError, HolidayTimeStepError) as err:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key=err.translation_key
             ) from err
@@ -167,7 +168,7 @@ class BoschBuderusHolidayCalendar(
             await self.coordinator.async_update_holiday(
                 holiday_id, values, expected=period.write_values
             )
-        except HolidayTimeError as err:
+        except (HolidayTimeError, HolidayTimeStepError) as err:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key=err.translation_key
             ) from err

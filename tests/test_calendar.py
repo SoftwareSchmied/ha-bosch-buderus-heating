@@ -272,6 +272,8 @@ async def test_calendar_rejects_unsupported_fields(hass: HomeAssistant) -> None:
     [
         (datetime(2026, 3, 29, 2, 30), "holiday_time_nonexistent"),
         (datetime(2026, 10, 25, 2, 30), "holiday_time_ambiguous"),
+        (datetime(2026, 9, 20, 2, 38), "holiday_time_step"),
+        (datetime(2026, 9, 20, 2, 45, 1), "holiday_time_step"),
     ],
 )
 async def test_calendar_rejects_invalid_wall_times_without_writing(
