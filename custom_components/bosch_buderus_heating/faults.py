@@ -286,6 +286,7 @@ class FaultTracker:
         self._active: dict[str, ActiveFault] = {}
         self._absence_counts: Counter[str] = Counter()
         self._listeners: set[Callable[[FaultLifecycleEvent], None]] = set()
+        self._state_listeners: set[Callable[[], None]] = set()
         self._pending_events: list[FaultLifecycleEvent] = []
         self._initialized = False
         self._supported_paths: set[str] = set()
@@ -331,6 +332,31 @@ class FaultTracker:
     def has_known_state(self) -> bool:
         """Keep known faults visible, but never infer health from unreadable data."""
         return bool(self.active_faults) or self._has_valid_state
+
+    @property
+    def current_state_confirmed(self) -> bool:
+        """Whether the last fault read fully confirmed the retained baseline."""
+        return self._has_valid_state and not self._absence_counts
+
+    def async_add_state_listener(
+        self, listener: Callable[[], None]
+    ) -> Callable[[], None]:
+        """Observe complete state updates without consuming lifecycle events."""
+        self._state_listeners.add(listener)
+        return lambda: self._state_listeners.discard(listener)
+
+    def mark_unavailable(self) -> None:
+        """Invalidate freshness without resolving any retained faults."""
+        self._has_valid_state = False
+        self._absence_counts.clear()
+        self._notify_state_listeners()
+
+    def _notify_state_listeners(self) -> None:
+        for listener in tuple(self._state_listeners):
+            try:
+                listener()
+            except Exception:
+                _LOGGER.error("A fault-state observer could not update")
 
     @property
     def highest_severity(self) -> FaultSeverity | None:
@@ -388,6 +414,10 @@ class FaultTracker:
             self._listeners.discard(listener)
 
         return remove_listener
+
+    async def async_flush(self) -> None:
+        """Save incident identities before a dependent dismissal store is flushed."""
+        await self._store.async_save(self._serialize())
 
     def record_results(self, results: Iterable[BatchItemResult]) -> None:
         """Record bounded capability outcomes without response bodies."""
@@ -478,6 +508,7 @@ class FaultTracker:
             self._active = parsed_faults
             self._initialized = True
             self._schedule_save()
+            self._notify_state_listeners()
             return ()
 
         events: list[FaultLifecycleEvent] = []
@@ -521,6 +552,7 @@ class FaultTracker:
             self._schedule_save()
         for event in events:
             self._emit(event)
+        self._notify_state_listeners()
         return tuple(events)
 
     def diagnostics(self) -> dict[str, object]:

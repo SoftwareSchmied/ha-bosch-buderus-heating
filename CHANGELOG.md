@@ -5,6 +5,34 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Added
+
+- Show persistent Home Assistant notifications for heating system faults, enabled
+  by default and configurable for each installation. Notifications share the
+  existing fault state without additional cloud requests or appliance writes.
+- Remember dismissed incidents across restarts. New incidents, confirmed
+  recurrences and increased severity can show the notification again. Visible
+  messages update after confirmed resolution; uncertain states never report
+  an all-clear.
+- Separate local notification settings from holiday configuration. Notification
+  options remain accessible while offline and preserve existing settings.
+
+### Compatibility
+
+- Existing fault sensors, events, entity identities and polling intervals remain
+  unchanged. Bell notifications and dismissals are shared by Home Assistant
+  users. Notification text follows the system language; options follow the
+  profile language.
+- This feature still requires testing in the actual Home Assistant frontend.
+  Automated tests cover dismissal, restart, multiple installations, partial
+  responses, recurrence, severity changes and option updates.
+
+### Validation
+
+- 901 automated test cases passed, including 46 additional cases, with 95.80%
+  combined statement and branch coverage. Formatting, Ruff and strict Mypy
+  passed with the proposed compatible development dependency updates.
+
 ### Appearance
 
 - Use the new heat pump icon with three blue-to-red thermal waves.

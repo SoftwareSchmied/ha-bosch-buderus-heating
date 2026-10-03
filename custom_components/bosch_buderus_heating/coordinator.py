@@ -431,6 +431,7 @@ class BoschBuderusDataUpdateCoordinator(
                 return await self._async_update_data_locked()
         except Exception:
             self._poll_failures += 1
+            self.faults.mark_unavailable()
             raise
         finally:
             duration = (monotonic() - started) * 1000

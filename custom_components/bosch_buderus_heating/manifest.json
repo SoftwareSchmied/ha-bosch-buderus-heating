@@ -3,6 +3,7 @@
   "name": "Bosch/Buderus Heating",
   "codeowners": ["@SoftwareSchmied"],
   "config_flow": true,
+  "dependencies": ["persistent_notification"],
   "documentation": "https://github.com/SoftwareSchmied/ha-bosch-buderus-heating",
   "integration_type": "hub",
   "iot_class": "cloud_polling",

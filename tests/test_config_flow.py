@@ -54,6 +54,15 @@ from custom_components.bosch_buderus_heating.pointt import (
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 
 
+async def _start_holiday_options(hass, entry):
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["type"] is FlowResultType.MENU
+    assert result["menu_options"] == ["notifications", "holidays"]
+    return await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "holidays"}
+    )
+
+
 async def _start_auth_flow(
     hass: HomeAssistant, brand: Brand = Brand.BUDERUS
 ) -> dict[str, object]:
@@ -476,10 +485,10 @@ async def test_options_flow_configures_only_advertised_holiday_fields(
     hass: HomeAssistant, enable_custom_integrations: None
 ) -> None:
     entry, coordinator = _entry_with_writable_holiday(hass)
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
 
     assert result["type"] is FlowResultType.FORM
-    assert result["step_id"] == "init"
+    assert result["step_id"] == "holidays"
     selection = hashlib.sha256(b"gateway-one\x007").hexdigest()[:24]
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
@@ -527,7 +536,7 @@ async def test_options_flow_rejects_stale_or_missing_holidays(
     entry, coordinator = _entry_with_writable_holiday(hass)
     coordinator.data[HOLIDAY_LIST_PATH].freshness = Freshness.STALE
 
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
 
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "no_writable_holidays"
@@ -538,7 +547,7 @@ async def test_options_flow_requires_a_loaded_entry(
 ) -> None:
     entry = _reconfigure_entry(hass)
 
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
 
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "not_loaded"
@@ -548,7 +557,7 @@ async def test_options_flow_rejects_a_changed_selection(
     hass: HomeAssistant, enable_custom_integrations: None
 ) -> None:
     entry, coordinator = _entry_with_writable_holiday(hass)
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     selection = hashlib.sha256(b"gateway-one\x007").hexdigest()[:24]
     original = coordinator.data[HOLIDAY_LIST_PATH].resource.value[0]
     coordinator.data[HOLIDAY_LIST_PATH].resource = Resource(
@@ -562,7 +571,7 @@ async def test_options_flow_rejects_a_changed_selection(
     )
 
     assert result["type"] is FlowResultType.FORM
-    assert result["step_id"] == "init"
+    assert result["step_id"] == "holidays"
     assert result["errors"] == {"base": "holiday_changed"}
 
 
@@ -570,7 +579,7 @@ async def test_options_flow_stops_if_selected_holiday_disappears(
     hass: HomeAssistant, enable_custom_integrations: None
 ) -> None:
     entry, coordinator = _entry_with_writable_holiday(hass)
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     selection = hashlib.sha256(b"gateway-one\x007").hexdigest()[:24]
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
@@ -613,7 +622,7 @@ async def test_options_flow_reports_holiday_write_errors(
 ) -> None:
     entry, coordinator = _entry_with_writable_holiday(hass)
     coordinator.async_update_holiday.side_effect = error
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     selection = hashlib.sha256(b"gateway-one\x007").hexdigest()[:24]
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
@@ -819,7 +828,7 @@ async def test_holiday_form_preserves_its_original_baseline_during_polling(
     )
 
     entry, coordinator = _entry_with_writable_holiday(hass)
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     selection = hashlib.sha256(b"gateway-one\x007").hexdigest()[:24]
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
@@ -865,7 +874,7 @@ async def test_new_holiday_requires_explicit_offered_modes(
     config["dhwMode"]["allowedValues"] = ["LOW"]
     config["ventilationMode"]["allowedValues"] = ["NOM"]
     config["thermalDesinfection"]["allowedValues"] = ["OFF"]
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     selection = "create"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}
@@ -909,7 +918,7 @@ async def test_new_holiday_time_error_can_be_corrected_without_losing_input(
     await hass.config.async_set_time_zone("Europe/Berlin")
     entry, coordinator = _entry_with_writable_holiday(hass)
     coordinator.async_create_holiday = AsyncMock()
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_HOLIDAY_PERIOD: "create"}
     )
@@ -972,7 +981,7 @@ async def test_new_holiday_selector_uses_profile_translations(
 
     hass.config.language = system_language
     entry, _ = _entry_with_writable_holiday(hass)
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     selector = to_field_list(
         result["data_schema"], custom_serializer=cv.custom_serializer
     )[0]["selector"]["select"]
@@ -1016,7 +1025,7 @@ async def test_new_holiday_routes_to_explicit_gateway(
     )
     entry.runtime_data.coordinators = (first, second)
     entry.runtime_data.gateways = (first.gateway, second.gateway)
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_HOLIDAY_PERIOD: "create"}
     )
@@ -1078,7 +1087,7 @@ async def test_new_holiday_dates_start_empty_and_remain_required(
     coordinator.data[HOLIDAY_CONFIGURATION_PATH].resource.value["values"]["date"][
         "allowedValues"
     ] = [date_mode]
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         {CONF_HOLIDAY_PERIOD: "create"},
@@ -1165,7 +1174,7 @@ async def test_new_holiday_error_preserves_name_and_canonical_dates(
     await hass.config.async_set_time_zone("Europe/Berlin")
     entry, coordinator = _entry_with_writable_holiday(hass)
     coordinator.async_create_holiday = AsyncMock()
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         {CONF_HOLIDAY_PERIOD: "create"},
@@ -1196,7 +1205,7 @@ async def test_new_holiday_malformed_datetime_never_reaches_a_write(
 
     entry, coordinator = _entry_with_writable_holiday(hass)
     coordinator.async_create_holiday = AsyncMock()
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         {CONF_HOLIDAY_PERIOD: "create"},
@@ -1225,7 +1234,7 @@ async def test_new_holiday_date_only_gateway_rejects_reversed_dates(
     config = coordinator.data[HOLIDAY_CONFIGURATION_PATH].resource.value["values"]
     config["date"]["allowedValues"] = ["date"]
     config["fixTemperature"] = {"minValue": 18, "maxValue": 26}
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _start_holiday_options(hass, entry)
     selection = "create"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_HOLIDAY_PERIOD: selection}

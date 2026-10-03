@@ -20,6 +20,7 @@ from .const import (
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .data import tokens_from_data, tokens_to_data
 from .device import device_info_for_resource
+from .notifications import async_setup_notifications, async_update_notification_options
 from .pointt import (
     AuthenticationError,
     AuthTokens,
@@ -117,6 +118,8 @@ async def async_setup_entry(
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     _consolidate_logical_devices(hass, entry, coordinators)
     _remove_retired_entities(hass, entry, coordinators)
+    entry.runtime_data.notifications = await async_setup_notifications(hass, entry)
+    entry.async_on_unload(entry.add_update_listener(async_update_notification_options))
     return True
 
 
@@ -124,7 +127,11 @@ async def async_unload_entry(
     hass: HomeAssistant, entry: BoschBuderusConfigEntry
 ) -> bool:
     """Unload a Bosch/Buderus Heating config entry."""
-    return bool(await hass.config_entries.async_unload_platforms(entry, PLATFORMS))
+    unloaded = bool(await hass.config_entries.async_unload_platforms(entry, PLATFORMS))
+    if unloaded:
+        for manager in entry.runtime_data.notifications:
+            await manager.async_close()
+    return unloaded
 
 
 async def async_migrate_entry(

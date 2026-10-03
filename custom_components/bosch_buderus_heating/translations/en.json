@@ -56,6 +56,20 @@
   "options": {
     "step": {
       "init": {
+        "title": "Settings",
+        "menu_options": {
+          "notifications": "Notifications",
+          "holidays": "Holiday periods"
+        }
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Heating system faults appear under the bell in Home Assistant. For multiple installations, select those you want notifications for. Notifications and dismissals are shared by all users. Their text uses the system language. Dismissing a notification does not acknowledge a fault on the appliance. New or more critical faults appear again. Changes take effect immediately.",
+        "data": {
+          "fault_notifications": "Show heating system faults"
+        }
+      },
+      "holidays": {
         "title": "Configure a holiday",
         "description": "Select an existing holiday or create a new one. You will choose its heating settings next. You can rename, move, or delete existing holidays in the Holiday periods calendar.",
         "data": {
@@ -103,6 +117,8 @@
       "write_validation_failed": "At least one selection is no longer supported by the heating system. Close the dialog, refresh the integration, and try again."
     },
     "abort": {
+      "no_notification_gateways": "No heating system is configured.",
+      "notification_gateways_changed": "The installation selection changed. Open the settings again.",
       "holiday_changed": "The selected holiday is no longer available or writable.",
       "holiday_updated": "The holiday settings were saved and confirmed by the heating system.",
       "no_writable_holidays": "No writable holiday exists. Create one in the Holiday periods calendar first, or wait until the holiday resources are available.",
