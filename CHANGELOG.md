@@ -33,6 +33,13 @@ Versioning after its first tagged preview.
   combined statement and branch coverage. Formatting, Ruff and strict Mypy
   passed with the proposed compatible development dependency updates.
 
+### Appearance
+
+- Use the new heat pump icon with three blue-to-red thermal waves.
+- Include matching light and dark variants at standard and double resolution.
+  Home Assistant loads the icons from the integration package. The README
+  selects the matching SVG for the reader's color scheme.
+
 ## [0.7.2] - 2026-09-20
 
 This update corrects two holiday-dialog problems reported after 0.7.1: an
