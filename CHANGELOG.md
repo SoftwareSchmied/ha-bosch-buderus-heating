@@ -5,6 +5,12 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.8.0-beta.2] - 2026-10-03
+
+This beta keeps fault details visible after a fault has cleared and improves
+notification recovery after interrupted setup or storage failures. It includes
+the bell notifications and new icon from beta.1. Version 0.7.2 remains stable.
+
 ### Fixed
 
 - Keep fault codes, subcodes and known descriptions in visible notifications
@@ -45,6 +51,19 @@ fault details in Home Assistant after installing this fix.
 - An abrupt termination before persistence can lose a recent dismissal or first
   observation time. Recovery uses the last completed files and does not infer
   resolution from a failure. Physical power loss is not simulated.
+
+### Upgrade and beta testing
+
+Enable beta versions for this integration in HACS, select 0.8.0-beta.2, install
+the update and restart Home Assistant. When a fault occurs and clears during
+normal operation, check that its code, known description and observation and
+resolution times remain visible. With multiple faults, active and resolved
+incidents should appear separately.
+
+The message retains up to 25 resolved incidents. These details are cleared on
+dismissal, disabling notifications, unloading or restart; this is not a permanent
+fault history. Dismissing the message does not acknowledge or reset the fault
+on the appliance. Issue #36 remains open until the remaining checks are complete.
 
 ## [0.8.0-beta.1] - 2026-10-03
 

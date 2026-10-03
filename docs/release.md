@@ -47,11 +47,14 @@ create the GitHub release with the ZIP and checksum.
 
 ## Field validation
 
-Version 0.8.0-beta.1 is a prerelease for field testing of the new icon and
-Home Assistant bell notifications. Version 0.7.2 remains Stable/Latest.
-Actual Home Assistant and HACS frontend confirmation of the beta is still
-outstanding. No appliance write or deliberately triggered fault is part of
-its release validation. Issue #36 remains open for field feedback.
+Version 0.8.0-beta.2 is a prerelease for checking retained fault details and
+notification recovery in Home Assistant. Version 0.7.2 remains Stable/Latest.
+I tested beta.1 on my installation: notifications appeared when faults occurred
+and changed to resolved when they cleared. I still need to check the retained
+details and timestamps after installing beta.2. Resolved details are kept only
+for the visible message and are cleared on dismissal, disabling notifications,
+unloading or restart. No appliance write or deliberately triggered fault is
+part of this release validation. Issue #36 remains open for the remaining checks.
 
 Existing field feedback includes a Buderus installation
 with a K40 gateway and an installation with two heating circuits whose reporter

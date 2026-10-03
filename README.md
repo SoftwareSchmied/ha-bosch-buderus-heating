@@ -21,11 +21,12 @@
 > The illustrated [setup guide](docs/setup.md) explains installation and
 > sign-in step by step.
 
-Version **0.8.0-beta.1** previews Home Assistant bell notifications for heating
-faults and the new icon. Version **0.7.2** remains stable. To test the beta,
-enable beta versions for this integration in HACS, select 0.8.0-beta.1 and
-restart Home Assistant after installation. See the [release notes](CHANGELOG.md)
-for changes and the remaining field checks.
+Version **0.8.0-beta.2** keeps fault details visible after resolution and improves
+notification recovery after interrupted setup or storage failures. It includes
+the bell notifications and new icon introduced in beta.1. Version **0.7.2**
+remains stable. To test the beta, enable beta versions for this integration in
+HACS, select 0.8.0-beta.2 and restart Home Assistant after installation. See the
+[release notes](CHANGELOG.md) for changes and the remaining field checks.
 
 Bosch/Buderus Heating is an unofficial Home Assistant custom integration. It
 discovers the capabilities exposed by a heating system instead of assuming a
