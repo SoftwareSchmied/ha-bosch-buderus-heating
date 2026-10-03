@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from homeassistant.components import persistent_notification as pn
+from homeassistant.core import callback
 from homeassistant.helpers import device_registry as dr
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -51,6 +52,7 @@ async def rig(hass):
     events = []
     current = {}
 
+    @callback
     def record(kind, notifications):
         events.append((kind, dict(notifications)))
         for key, value in notifications.items():
