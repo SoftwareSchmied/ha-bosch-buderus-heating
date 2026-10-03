@@ -5,6 +5,16 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.8.0-beta.1] - 2026-10-03
+
+This beta adds heating fault notifications to the Home Assistant bell and a
+new integration icon for light and dark backgrounds. It also includes the
+reviewed maintenance updates from PRs #37, #38 and #39. Version 0.7.2 remains
+the stable release.
+
+Thank you for suggesting the notification feature and helping test the
+integration on real installations.
+
 ### Added
 
 - Show persistent Home Assistant notifications for heating system faults, enabled
@@ -16,6 +26,21 @@ Versioning after its first tagged preview.
   an all-clear.
 - Separate local notification settings from holiday configuration. Notification
   options remain accessible while offline and preserve existing settings.
+
+### Appearance
+
+- Use the new heat pump icon with three blue-to-red thermal waves.
+- Include matching light and dark variants at standard and double resolution.
+  Home Assistant loads the icons from the integration package. The README
+  selects the matching SVG for the reader's color scheme.
+
+### Maintenance
+
+- Update Ruff and its pre-commit hook to 0.16.8, Hypothesis to 6.168.1, and the
+  Home Assistant test package to 0.13.366.
+- Retain pytest 9.0.3 to satisfy the Home Assistant test package's exact
+  dependency requirement.
+- Update both pinned CodeQL actions to 4.38.2.
 
 ### Compatibility
 
@@ -31,14 +56,27 @@ Versioning after its first tagged preview.
 
 - 901 automated test cases passed, including 46 additional cases, with 95.80%
   combined statement and branch coverage. Formatting, Ruff and strict Mypy
-  passed with the proposed compatible development dependency updates.
+  passed with the combined feature and maintenance changes.
+- Package construction and isolated imports passed. The isolated runtime
+  dependency audit found no known vulnerabilities.
 
-### Appearance
+### Upgrade and beta testing
 
-- Use the new heat pump icon with three blue-to-red thermal waves.
-- Include matching light and dark variants at standard and double resolution.
-  Home Assistant loads the icons from the integration package. The README
-  selects the matching SVG for the reader's color scheme.
+Select version 0.8.0-beta.1 in HACS with beta versions enabled, install it and
+restart Home Assistant. Under Settings > Devices & services > Bosch/Buderus
+Heating > Configure, choose Notifications to select the installations to
+notify for. Holiday periods has its own entry in the same menu. An existing
+active fault can appear immediately because notifications start enabled.
+
+Check the icon in light and dark themes, the configuration menu, and any
+notifications arising during normal operation. Dismissing a Home Assistant
+message does not acknowledge or reset the fault on the appliance. Bell
+notifications do not automatically send mobile push notifications.
+
+I have not performed a physical appliance write or deliberately triggered a
+fault for this release. Actual Home Assistant and HACS frontend confirmation
+remains outstanding, and issue #36 stays open for that feedback. The holiday
+input corrections inherited from 0.7.2 also still need field confirmation.
 
 ## [0.7.2] - 2026-09-20
 
