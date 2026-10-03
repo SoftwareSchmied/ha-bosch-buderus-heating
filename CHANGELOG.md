@@ -5,6 +5,34 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep fault codes, subcodes and known descriptions in visible notifications
+  after confirmed resolution. Active and resolved faults appear separately
+  when several faults end at different times.
+- Show the first Home Assistant observation and confirmation of resolution in
+  the configured time zone, including the applicable UTC offset. Repeated
+  incidents of the same code retain separate observation times.
+- Distinguish a fault reclassified as a warning, maintenance or information
+  from a confirmed resolution. Changed classification alone is not an all-clear.
+- Retain the latest 25 resolved incidents within the visible message, explaining
+  any older omissions. Details are cleared on dismissal, disabling notifications,
+  unloading or restart. No permanent fault history or additional cloud requests
+  are introduced; existing event delivery and dismissal persistence are preserved.
+
+Thank you for testing the first beta and reporting that the resolved message
+no longer showed which fault had occurred. The active-to-resolved notification
+flow is now field-confirmed; these detail improvements still need field testing.
+
+### Validation
+
+- 917 automated test cases passed, including 16 added cases, with 95.80%
+  combined statement and branch coverage. Ruff formatting and linting and
+  strict Mypy passed.
+- Cases cover retained details, partial resolution, recurrence, reclassification,
+  failed reads, dismissal, bounded retention, restart, event delivery and the
+  repeated hour during a daylight-saving clock change.
+
 ## [0.8.0-beta.1] - 2026-10-03
 
 This beta adds heating fault notifications to the Home Assistant bell and a

@@ -41,9 +41,25 @@ can show the notification again. Turning the option off removes the
 notification; explicitly enabling it again shows remaining faults.
 
 After two complete, valid confirmations that all reported faults have ended,
-a notification that is still visible changes to a resolved message. A dismissed
-notification is not recreated just to announce resolution. Resolved messages
-are not restored after a Home Assistant restart.
+a notification that is still visible changes to a resolved message. Codes,
+subcodes and known descriptions remain available in that message. When only
+some faults have ended, active faults and confirmed resolutions appear in
+separate sections. A fault that is still reported with a changed classification,
+such as a warning, remains separately labelled until its absence is confirmed.
+
+Each entry shows when Home Assistant first detected it; resolved entries also
+show when Home Assistant confirmed resolution. These are observation times,
+not the exact appliance start or repair times. The Home Assistant time zone
+and the UTC offset at each observation distinguish repeated hours during a
+clock change. A recurrence of the same code keeps its own observation times.
+
+The visible message retains the latest 25 resolved incidents, with a count of
+older omitted entries. Those details exist only in memory for that message
+and are cleared when it is dismissed, notifications are disabled, or the
+integration is unloaded or Home Assistant restarted. This is not a permanent
+fault archive. A dismissed notification is not recreated just to announce
+resolution. Resolved messages are not restored after a Home Assistant restart.
+Already lost details from an older version cannot be recovered by updating.
 
 Retained faults whose current status could not be fully confirmed are
 explicitly described as last reported faults. Missing, invalid or failed

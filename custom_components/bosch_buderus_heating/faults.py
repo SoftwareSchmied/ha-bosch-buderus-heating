@@ -286,6 +286,7 @@ class FaultTracker:
         self._active: dict[str, ActiveFault] = {}
         self._absence_counts: Counter[str] = Counter()
         self._listeners: set[Callable[[FaultLifecycleEvent], None]] = set()
+        self._event_observers: set[Callable[[FaultLifecycleEvent], None]] = set()
         self._state_listeners: set[Callable[[], None]] = set()
         self._pending_events: list[FaultLifecycleEvent] = []
         self._initialized = False
@@ -418,6 +419,13 @@ class FaultTracker:
     async def async_flush(self) -> None:
         """Save incident identities before a dependent dismissal store is flushed."""
         await self._store.async_save(self._serialize())
+
+    def async_add_event_observer(
+        self, observer: Callable[[FaultLifecycleEvent], None]
+    ) -> Callable[[], None]:
+        """Observe future transitions without consuming the entity's event backlog."""
+        self._event_observers.add(observer)
+        return lambda: self._event_observers.discard(observer)
 
     def record_results(self, results: Iterable[BatchItemResult]) -> None:
         """Record bounded capability outcomes without response bodies."""
@@ -585,6 +593,8 @@ class FaultTracker:
         }
 
     def _emit(self, event: FaultLifecycleEvent) -> None:
+        for observer in tuple(self._event_observers):
+            self._notify_listener(observer, event)
         if not self._listeners:
             self._pending_events.append(event)
             self._pending_events = self._pending_events[-50:]

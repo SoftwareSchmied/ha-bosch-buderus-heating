@@ -7,7 +7,9 @@ import html
 import logging
 import re
 from collections.abc import Callable, Mapping
+from datetime import datetime
 from typing import TYPE_CHECKING, Any
+from zoneinfo import ZoneInfo
 
 from homeassistant.components import persistent_notification as pn
 from homeassistant.core import HomeAssistant, callback
@@ -15,7 +17,14 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
 
 from .const import CONF_FAULT_NOTIFICATIONS, CONF_GATEWAY_IDS, DOMAIN
-from .faults import ActiveFault, FaultSeverity, fault_severity_label, fault_summary
+from .faults import (
+    ActiveFault,
+    FaultEventType,
+    FaultLifecycleEvent,
+    FaultSeverity,
+    fault_severity_label,
+    fault_summary,
+)
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -29,12 +38,20 @@ _TEXT = {
     "en": {
         "title": "{name}: heating system fault",
         "resolved_title": "{name}: faults resolved",
+        "changed_title": "{name}: heating system notifications",
         "active": "Active faults: {count}",
+        "changed": "Still reported with a changed classification: {count}",
+        "resolved_details": "Confirmed resolved: {count}",
+        "first_seen": "First detected",
+        "resolved_at": "Confirmed resolved",
+        "observation_times": "Times observed by Home Assistant ({zone}).",
         "unconfirmed": (
             "Last reported faults. Their current status has not yet been confirmed."
         ),
         "resolved": "The previously reported faults are no longer active.",
         "more": "{count} additional active faults.",
+        "more_changed": "{count} additional notifications with changed classification.",
+        "more_resolved": "{count} older resolved faults are no longer listed.",
         "open": "Open heating system",
         "dismiss": (
             "Dismissing this notification does not acknowledge or reset a fault "
@@ -45,13 +62,25 @@ _TEXT = {
     "de": {
         "title": "{name}: Anlagenstörung",
         "resolved_title": "{name}: Störungen behoben",
+        "changed_title": "{name}: Anlagenmeldungen",
         "active": "Aktive Störungen: {count}",
+        "changed": "Weiterhin gemeldet, mit geänderter Einstufung: {count}",
+        "resolved_details": "Bestätigt behoben: {count}",
+        "first_seen": "Erstmals erkannt",
+        "resolved_at": "Als behoben bestätigt",
+        "observation_times": (
+            "Zeitpunkte nach Beobachtung durch Home Assistant ({zone})."
+        ),
         "unconfirmed": (
             "Zuletzt gemeldete Störungen. "
             "Ihr aktueller Status ist noch nicht bestätigt."
         ),
         "resolved": "Die zuvor gemeldeten Störungen sind nicht mehr aktiv.",
         "more": "{count} weitere aktive Störungen.",
+        "more_changed": "{count} weitere Meldungen mit geänderter Einstufung.",
+        "more_resolved": (
+            "{count} ältere behobene Störungen werden nicht mehr aufgelistet."
+        ),
         "open": "Anlage öffnen",
         "dismiss": (
             "Das Entfernen dieser Benachrichtigung quittiert oder setzt keine "
@@ -161,6 +190,9 @@ class FaultNotifications:
         self._reset = 0
         self._visible = False
         self._last_content: tuple[str, str] | None = None
+        self._reported: dict[str, ActiveFault] = {}
+        self._resolved: dict[str, FaultLifecycleEvent] = {}
+        self._omitted_resolved = 0
         self._remove_callbacks: list[Callable[[], None]] = []
         self._closed = False
         self._dirty = False
@@ -191,6 +223,7 @@ class FaultNotifications:
         self._remove_callbacks = [
             pn.async_register_callback(self.hass, self._notification_changed),
             self._tracker.async_add_state_listener(self.async_update),
+            self._tracker.async_add_event_observer(self._fault_changed),
         ]
         self.async_update()
 
@@ -228,14 +261,70 @@ class FaultNotifications:
         if not enabled:
             self._remove_notification()
             return
+        # Keep the current classification of previously shown faults. A change
+        # to warning or maintenance alone does not confirm their resolution.
+        for fault in self._tracker.active:
+            key = _incident_key(fault)
+            if key in self._reported:
+                self._reported[key] = fault
         if active:
             if not self._visible and not any(
                 rank > self._dismissed.get(key, -1) for key, rank in current.items()
             ):
                 return
+            if not self._visible:
+                self._clear_details()
+            self._reported.update({_incident_key(fault): fault for fault in active})
             self._show(*self._content(active))
-        elif self._visible and self._tracker.current_state_confirmed:
+        elif self._visible and (
+            self._reported or self._tracker.current_state_confirmed
+        ):
             self._show(*self._content(()))
+
+    @callback
+    def _fault_changed(self, event: FaultLifecycleEvent) -> None:
+        """Retain only confirmed resolutions belonging to the visible notification."""
+        if (
+            self._closed
+            or not self._visible
+            or event.event_type is not FaultEventType.RESOLVED
+        ):
+            return
+        key = _incident_key(event.fault)
+        if self._reported.pop(key, None) is None:
+            return
+        self._resolved[key] = event
+        if len(self._resolved) > _MAX_DETAILS:
+            oldest = min(
+                self._resolved,
+                key=lambda item: (self._resolved[item].observed_at, item),
+            )
+            del self._resolved[oldest]
+            self._omitted_resolved += 1
+
+    def _time(self, value: datetime, language: str) -> str:
+        """Show HA observation times with the configured zone's actual UTC offset."""
+        local = value.astimezone(ZoneInfo(self.hass.config.time_zone))
+        date_format = "%d.%m.%Y" if language == "de" else "%Y-%m-%d"
+        return local.strftime(f"{date_format} %H:%M:%S %z")
+
+    def _detail(
+        self, fault: ActiveFault, language: str, resolved_at: datetime | None = None
+    ) -> str:
+        texts = _TEXT[language]
+        details = [
+            fault_severity_label(fault.severity, language),
+            fault.code or "",
+            fault.subcode or "",
+            fault_summary(fault, language),
+        ]
+        line = "- " + ": ".join(_safe_text(part) for part in details if part)
+        line += (
+            f"  \n  {texts['first_seen']}: {self._time(fault.first_seen_at, language)}"
+        )
+        if resolved_at is not None:
+            line += f"  \n  {texts['resolved_at']}: {self._time(resolved_at, language)}"
+        return line
 
     def _content(self, active: tuple[ActiveFault, ...]) -> tuple[str, str]:
         language = "de" if self.hass.config.language.lower().startswith("de") else "en"
@@ -256,6 +345,9 @@ class FaultNotifications:
         if names.count(name) > 1:
             name = f"{name} ({number})"
         name = " ".join(name.split())[:240]
+        changed = tuple(
+            fault for fault in self._reported.values() if fault.severity not in _RANK
+        )
         if active:
             title = texts["title"].format(name=name)
             lines = [texts["active"].format(count=len(active))]
@@ -270,21 +362,50 @@ class FaultNotifications:
                 ),
             )
             for fault in ordered[:_MAX_DETAILS]:
-                details = [
-                    fault_severity_label(fault.severity, language),
-                    fault.code or "",
-                    fault.subcode or "",
-                    fault_summary(fault, language),
-                ]
-                lines.append(
-                    "- " + ": ".join(_safe_text(part) for part in details if part)
-                )
+                lines.append(self._detail(fault, language))
             if len(active) > _MAX_DETAILS:
                 lines += ["", texts["more"].format(count=len(active) - _MAX_DETAILS)]
-            lines += ["", texts["dismiss"]]
+        elif changed:
+            title = texts["changed_title"].format(name=name)
+            lines = []
+            if not self._tracker.current_state_confirmed:
+                lines.append(texts["unconfirmed"])
         else:
             title = texts["resolved_title"].format(name=name)
             lines = [texts["resolved"]]
+        if changed:
+            lines += ["", texts["changed"].format(count=len(changed))]
+            for fault in sorted(changed, key=_incident_key)[:_MAX_DETAILS]:
+                lines.append(self._detail(fault, language))
+            if len(changed) > _MAX_DETAILS:
+                lines += [
+                    "",
+                    texts["more_changed"].format(count=len(changed) - _MAX_DETAILS),
+                ]
+        if self._resolved:
+            lines += [
+                "",
+                texts["resolved_details"].format(
+                    count=len(self._resolved) + self._omitted_resolved
+                ),
+            ]
+            for event in sorted(
+                self._resolved.values(),
+                key=lambda item: (item.observed_at, _incident_key(item.fault)),
+                reverse=True,
+            ):
+                lines.append(self._detail(event.fault, language, event.observed_at))
+            if self._omitted_resolved:
+                lines += [
+                    "",
+                    texts["more_resolved"].format(count=self._omitted_resolved),
+                ]
+        lines += [
+            "",
+            texts["observation_times"].format(zone=self.hass.config.time_zone),
+        ]
+        if active or changed:
+            lines += ["", texts["dismiss"]]
         device = installation_device(self.hass, self.entry.entry_id, self._gateway_id)
         if device:
             lines += ["", f"[{texts['open']}](/config/devices/device/{device.id})"]
@@ -316,11 +437,18 @@ class FaultNotifications:
             self._schedule_save()
         self._visible = False
         self._last_content = None
+        self._clear_details()
+
+    def _clear_details(self) -> None:
+        self._reported.clear()
+        self._resolved.clear()
+        self._omitted_resolved = 0
 
     def _remove_notification(self) -> None:
         # Our own cleanup is not a user dismissal.
         self._visible = False
         self._last_content = None
+        self._clear_details()
         pn.async_dismiss(self.hass, self._id)
 
     def _schedule_save(self) -> None:

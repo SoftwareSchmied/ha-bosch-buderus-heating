@@ -44,6 +44,7 @@ def _apply(tracker, *faults, when=NOW):
 
 @pytest.fixture
 async def rig(hass):
+    await hass.config.async_set_time_zone("UTC")
     entry = MockConfigEntry(domain=DOMAIN, data={CONF_GATEWAY_IDS: ["gateway-one"]})
     entry.add_to_hass(hass)
     coordinator = BoschBuderusDataUpdateCoordinator(
@@ -493,3 +494,256 @@ async def test_identically_named_installations_remain_distinguishable(hass, rig)
     }
     await other_manager.async_close()
     await other.async_shutdown()
+
+
+@pytest.mark.parametrize(
+    "language,first_seen,resolved_at,description,date",
+    [
+        (
+            "de",
+            "Erstmals erkannt",
+            "Als behoben bestätigt",
+            "Kommunikation zwischen",
+            "03.10.2026",
+        ),
+        (
+            "en",
+            "First detected",
+            "Confirmed resolved",
+            "Communication between",
+            "2026-10-03",
+        ),
+        (
+            "fr",
+            "First detected",
+            "Confirmed resolved",
+            "Communication between",
+            "2026-10-03",
+        ),
+    ],
+)
+async def test_resolved_details_keep_codes_and_observation_times(
+    hass, rig, language, first_seen, resolved_at, description, date
+):
+    _, coordinator, manager, current, events = rig
+    hass.config.language = language
+    await hass.config.async_set_time_zone("Europe/Berlin")
+    # An appliance/cloud timestamp must not replace the HA observation time.
+    _apply(coordinator.faults, {**A, "dcd": "X7", "t": "2026-10-02T00:00:00Z"})
+    await manager.async_start()
+    _apply(coordinator.faults, when=NOW + timedelta(minutes=1))
+    _apply(coordinator.faults, when=NOW + timedelta(minutes=2))
+    await hass.async_block_till_done()
+    message = next(iter(current.values()))["message"]
+    assert "6249: X7" in message and description in message
+    assert f"{first_seen}: {date} 14:00:00 +0200" in message
+    assert f"{resolved_at}: {date} 14:02:00 +0200" in message
+    assert "Home Assistant (Europe/Berlin)" in message
+    before = len(events)
+    for offset in (3, 4, 5):
+        _apply(coordinator.faults, when=NOW + timedelta(minutes=offset))
+    manager.async_update()
+    await hass.async_block_till_done()
+    assert len(events) == before
+    coordinator.client.get_resources_bulk.assert_not_called()
+
+
+async def test_partial_resolution_keeps_each_fault_in_the_correct_section(hass, rig):
+    _, coordinator, manager, current, _ = rig
+    _apply(coordinator.faults, A, B)
+    await manager.async_start()
+    _apply(coordinator.faults, B, when=NOW + timedelta(minutes=1))
+    _apply(coordinator.faults, B, when=NOW + timedelta(minutes=2))
+    await hass.async_block_till_done()
+    message = next(iter(current.values()))["message"]
+    active, resolved = message.split("Confirmed resolved: 1", 1)
+    assert "Active faults: 1" in active and "1038" in active and "6249" not in active
+    assert "6249" in resolved and "1038" not in resolved
+    _apply(coordinator.faults, when=NOW + timedelta(minutes=3))
+    _apply(coordinator.faults, when=NOW + timedelta(minutes=4))
+    await hass.async_block_till_done()
+    item = next(iter(current.values()))
+    assert "faults resolved" in item["title"]
+    assert "Confirmed resolved: 2" in item["message"]
+    assert "6249" in item["message"] and "1038" in item["message"]
+    assert "12:02:00 +0000" in item["message"]
+    assert "12:04:00 +0000" in item["message"]
+
+
+async def test_same_code_recurrence_keeps_distinct_observed_incidents(hass, rig):
+    _, coordinator, manager, current, _ = rig
+    _apply(coordinator.faults, A)
+    await manager.async_start()
+    _apply(coordinator.faults, when=NOW + timedelta(minutes=1))
+    _apply(coordinator.faults, when=NOW + timedelta(minutes=2))
+    _apply(coordinator.faults, A, when=NOW + timedelta(hours=1))
+    await hass.async_block_till_done()
+    message = next(iter(current.values()))["message"]
+    active, resolved = message.split("Confirmed resolved: 1", 1)
+    assert "6249" in active and "13:00:00" in active
+    assert "6249" in resolved and "12:00:00" in resolved and "12:02:00" in resolved
+
+
+@pytest.mark.parametrize("severity", ["WARNING", "MAINTENANCE", "INFO"])
+async def test_reclassification_is_not_reported_as_resolution(hass, rig, severity):
+    _, coordinator, manager, current, _ = rig
+    _apply(coordinator.faults, A)
+    await manager.async_start()
+    _apply(coordinator.faults, {**A, "fc": severity}, when=NOW + timedelta(minutes=1))
+    await hass.async_block_till_done()
+    item = next(iter(current.values()))
+    assert "faults resolved" not in item["title"]
+    assert "6249" in item["message"]
+    assert "Still reported with a changed classification: 1" in item["message"]
+    assert "Confirmed resolved" not in item["message"]
+    coordinator.faults.mark_unavailable()
+    await hass.async_block_till_done()
+    assert "not yet been confirmed" in next(iter(current.values()))["message"]
+    _apply(coordinator.faults, when=NOW + timedelta(minutes=2))
+    _apply(coordinator.faults, when=NOW + timedelta(minutes=3))
+    await hass.async_block_till_done()
+    item = next(iter(current.values()))
+    assert "faults resolved" in item["title"] and "6249" in item["message"]
+    assert "Confirmed resolved:" in item["message"]
+
+
+async def test_dismissed_details_do_not_leak_into_the_next_notification(hass, rig):
+    _, coordinator, manager, current, _ = rig
+    _apply(coordinator.faults, A, B)
+    await manager.async_start()
+    _apply(coordinator.faults, B)
+    _apply(coordinator.faults, B)
+    pn.async_dismiss_all(hass)
+    await hass.async_block_till_done()
+    _apply(coordinator.faults, B, {"ccd": "new", "fc": "12"})
+    await hass.async_block_till_done()
+    message = next(iter(current.values()))["message"]
+    assert "6249" not in message and "Confirmed resolved:" not in message
+    assert "1038" in message and "new" in message
+
+
+async def test_disable_clears_resolved_details_before_reenable(hass, rig):
+    entry, coordinator, manager, current, _ = rig
+    _apply(coordinator.faults, A, B)
+    await manager.async_start()
+    _apply(coordinator.faults, B)
+    _apply(coordinator.faults, B)
+    key = gateway_notification_key("gateway-one")
+    for enabled, reset in ((False, 0), (True, 1)):
+        hass.config_entries.async_update_entry(
+            entry,
+            options={
+                CONF_FAULT_NOTIFICATIONS: {key: {"enabled": enabled, "reset": reset}}
+            },
+        )
+        manager.async_update()
+        await hass.async_block_till_done()
+    message = next(iter(current.values()))["message"]
+    assert "1038" in message and "6249" not in message
+
+
+async def test_unconfirmed_reads_never_add_resolved_details(hass, rig):
+    _, coordinator, manager, current, _ = rig
+    _apply(coordinator.faults, A)
+    await manager.async_start()
+    _apply(coordinator.faults)
+    coordinator.faults.mark_unavailable()
+    _apply(coordinator.faults)
+    await hass.async_block_till_done()
+    message = next(iter(current.values()))["message"]
+    assert "6249" in message and "Confirmed resolved:" not in message
+    _apply(coordinator.faults, "invalid")
+    await hass.async_block_till_done()
+    assert "Confirmed resolved:" not in next(iter(current.values()))["message"]
+
+
+async def test_resolution_history_is_bounded_and_explains_omissions(hass, rig):
+    _, coordinator, manager, current, _ = rig
+    _apply(coordinator.faults, B)
+    await manager.async_start()
+    for index in range(28):
+        _apply(
+            coordinator.faults,
+            B,
+            {"ccd": f"OLD-{index:02}", "fc": "12"},
+            when=NOW + timedelta(minutes=index * 3),
+        )
+        _apply(coordinator.faults, B, when=NOW + timedelta(minutes=index * 3 + 1))
+        _apply(coordinator.faults, B, when=NOW + timedelta(minutes=index * 3 + 2))
+    await hass.async_block_till_done()
+    message = next(iter(current.values()))["message"]
+    assert "Active faults: 1" in message and "Confirmed resolved: 28" in message
+    assert "3 older resolved faults" in message
+    assert "OLD-00" not in message and "OLD-02" not in message
+    assert "OLD-03" in message and "OLD-27" in message
+    assert message.count("\n- ") == 26
+
+
+async def test_resolved_untrusted_codes_are_escaped_and_not_persisted(hass, rig):
+    entry, coordinator, manager, current, _ = rig
+    _apply(
+        coordinator.faults,
+        {"ccd": "<script>[link](https://invalid.example)", "fc": "12"},
+    )
+    await manager.async_start()
+    _apply(coordinator.faults)
+    _apply(coordinator.faults)
+    await hass.async_block_till_done()
+    message = next(iter(current.values()))["message"]
+    assert "&lt;script" in message and "[link](" not in message
+    await manager.async_close()
+    stored = await notification_store(hass, entry.entry_id, "gateway-one").async_load()
+    assert stored is None or set(stored) == {"dismissed", "reset"}
+    assert "script" not in str(stored)
+
+
+async def test_observer_keeps_future_events_queued_for_the_event_entity(hass, rig):
+    _, coordinator, manager, _, _ = rig
+    _apply(coordinator.faults)
+    await manager.async_start()
+    _apply(coordinator.faults, A)
+    _apply(coordinator.faults)
+    _apply(coordinator.faults)
+    events = []
+    remove = coordinator.faults.async_add_listener(events.append)
+    assert [event.event_type for event in events] == ["appeared", "resolved"]
+    assert all(event.fault.code == "6249" for event in events)
+    remove()
+
+
+async def test_restart_preserves_active_first_seen_but_does_not_restore_history(
+    hass, rig
+):
+    entry, coordinator, manager, current, _ = rig
+    _apply(coordinator.faults, A, B)
+    await manager.async_start()
+    _apply(coordinator.faults, B)
+    _apply(coordinator.faults, B)
+    await manager.async_close()
+    restarted = BoschBuderusDataUpdateCoordinator(
+        hass, AsyncMock(), Gateway("gateway-one"), entry
+    )
+    await restarted.async_load_fault_state()
+    restored = FaultNotifications(hass, entry, restarted)
+    await restored.async_start()
+    _apply(restarted.faults, B, when=NOW + timedelta(hours=1))
+    await hass.async_block_till_done()
+    message = next(iter(current.values()))["message"]
+    assert "1038" in message and "6249" not in message
+    assert "First detected: 2026-10-03 12:00:00" in message
+    await restored.async_close()
+    await restarted.async_shutdown()
+
+
+async def test_observation_times_disambiguate_clock_change(hass, rig):
+    _, coordinator, manager, current, _ = rig
+    await hass.config.async_set_time_zone("Europe/Berlin")
+    first = datetime(2026, 10, 25, 0, 30, tzinfo=UTC)
+    _apply(coordinator.faults, A, when=first)
+    await manager.async_start()
+    _apply(coordinator.faults, when=first + timedelta(minutes=59))
+    _apply(coordinator.faults, when=first + timedelta(hours=1))
+    await hass.async_block_till_done()
+    message = next(iter(current.values()))["message"]
+    assert "First detected: 2026-10-25 02:30:00 +0200" in message
+    assert "Confirmed resolved: 2026-10-25 02:30:00 +0100" in message
