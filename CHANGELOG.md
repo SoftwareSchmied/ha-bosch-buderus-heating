@@ -26,9 +26,9 @@ Versioning after its first tagged preview.
   prevent a stopped or concurrently started manager from registering late or
   duplicate observers. An unreadable baseline allows fresh fault detection.
 
-Thank you for testing the first beta and reporting that the resolved message
-no longer showed which fault had occurred. The active-to-resolved notification
-flow is now field-confirmed; these detail improvements still need field testing.
+I tested beta.1 on my installation: notifications appeared when faults occurred
+and changed to resolved when they cleared. I still need to check the retained
+fault details in Home Assistant after installing this fix.
 
 ### Validation
 
