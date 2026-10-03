@@ -41,9 +41,25 @@ can show the notification again. Turning the option off removes the
 notification; explicitly enabling it again shows remaining faults.
 
 After two complete, valid confirmations that all reported faults have ended,
-a notification that is still visible changes to a resolved message. A dismissed
-notification is not recreated just to announce resolution. Resolved messages
-are not restored after a Home Assistant restart.
+a notification that is still visible changes to a resolved message. Codes,
+subcodes and known descriptions remain available in that message. When only
+some faults have ended, active faults and confirmed resolutions appear in
+separate sections. A fault that is still reported with a changed classification,
+such as a warning, remains separately labelled until its absence is confirmed.
+
+Each entry shows when Home Assistant first detected it; resolved entries also
+show when Home Assistant confirmed resolution. These are observation times,
+not the exact appliance start or repair times. The Home Assistant time zone
+and the UTC offset at each observation distinguish repeated hours during a
+clock change. A recurrence of the same code keeps its own observation times.
+
+The visible message retains the latest 25 resolved incidents, with a count of
+older omitted entries. Those details exist only in memory for that message
+and are cleared when it is dismissed, notifications are disabled, or the
+integration is unloaded or Home Assistant restarted. This is not a permanent
+fault archive. A dismissed notification is not recreated just to announce
+resolution. Resolved messages are not restored after a Home Assistant restart.
+Already lost details from an older version cannot be recovered by updating.
 
 Retained faults whose current status could not be fully confirmed are
 explicitly described as last reported faults. Missing, invalid or failed
@@ -60,6 +76,28 @@ Only opaque incident fingerprints, dismissed severities and the local option
 revision are added to private Home Assistant storage. This does not store
 cloud payloads, device identifiers or tokens. Existing sensors and lifecycle
 events remain available independently of this option.
+
+## Restarts, interrupted writes and recovery
+
+A normal Home Assistant shutdown flushes pending fault and dismissal state.
+After a restart, restored active faults are labelled unconfirmed until fresh
+reads establish their current state. A restart does not preserve a partially
+completed resolution check: two complete, valid reads are still required.
+
+State writes are delayed briefly and use Home Assistant's storage helper,
+which writes a temporary file before replacing the destination. An abrupt
+process termination recovers the last completed files. If a dismissal or a
+new incident had not been written yet, the notification may appear again and
+its first observation time may be reset. The same limitation applies after
+a failed disk write. The two stores are not a single atomic transaction.
+Missing or unreadable local storage does not prevent fresh cloud fault
+detection, but cannot restore information that was never saved.
+
+Tests terminate separate Linux processes before saving, during the temporary
+write, and before and after replacement. They also cover corrupt JSON, disk
+write errors, normal shutdown, repeated reloads, cancelled startup, and rapid
+notification option changes. These are process and filesystem tests; they do
+not simulate physical power loss or a failing storage controller.
 
 ## Timing and reliability
 

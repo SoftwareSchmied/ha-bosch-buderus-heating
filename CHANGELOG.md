@@ -5,6 +5,47 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep fault codes, subcodes and known descriptions in visible notifications
+  after confirmed resolution. Active and resolved faults appear separately
+  when several faults end at different times.
+- Show the first Home Assistant observation and confirmation of resolution in
+  the configured time zone, including the applicable UTC offset. Repeated
+  incidents of the same code retain separate observation times.
+- Distinguish a fault reclassified as a warning, maintenance or information
+  from a confirmed resolution. Changed classification alone is not an all-clear.
+- Retain the latest 25 resolved incidents within the visible message, explaining
+  any older omissions. Details are cleared on dismissal, disabling notifications,
+  unloading or restart. No permanent fault history or additional cloud requests
+  are introduced; existing event delivery and dismissal persistence are preserved.
+- Keep notification changes and resolution events working if a storage write
+  cannot be queued; retry queueing on a normal update. A failed baseline save
+  during unload no longer skips the separate dismissal save.
+- Clean up already started notification observers when setup is cancelled, and
+  prevent a stopped or concurrently started manager from registering late or
+  duplicate observers. An unreadable baseline allows fresh fault detection.
+
+I tested beta.1 on my installation: notifications appeared when faults occurred
+and changed to resolved when they cleared. I still need to check the retained
+fault details in Home Assistant after installing this fix.
+
+### Validation
+
+- 945 automated test cases passed, including 44 added cases, with 95.77%
+  combined statement and branch coverage. Ruff formatting and linting and
+  strict Mypy passed.
+- Cases cover retained details, partial resolution, recurrence, reclassification,
+  failed reads, dismissal, bounded retention, restart, event delivery and the
+  repeated hour during a daylight-saving clock change.
+- Restart and failure tests include four real SIGKILL boundaries in separate
+  Linux processes using Home Assistant storage, corrupt JSON, a failed disk
+  replacement, eight persisted-state restart scenarios, normal final-write
+  shutdown, repeated reloads and cancelled or overlapping starts.
+- An abrupt termination before persistence can lose a recent dismissal or first
+  observation time. Recovery uses the last completed files and does not infer
+  resolution from a failure. Physical power loss is not simulated.
+
 ## [0.8.0-beta.1] - 2026-10-03
 
 This beta adds heating fault notifications to the Home Assistant bell and a

@@ -286,6 +286,7 @@ class FaultTracker:
         self._active: dict[str, ActiveFault] = {}
         self._absence_counts: Counter[str] = Counter()
         self._listeners: set[Callable[[FaultLifecycleEvent], None]] = set()
+        self._event_observers: set[Callable[[FaultLifecycleEvent], None]] = set()
         self._state_listeners: set[Callable[[], None]] = set()
         self._pending_events: list[FaultLifecycleEvent] = []
         self._initialized = False
@@ -297,6 +298,7 @@ class FaultTracker:
         self._last_successful_update: datetime | None = None
         self._last_parser_status = "not_run"
         self._parser_errors = 0
+        self._save_schedule_failed = False
 
     @property
     def active(self) -> tuple[ActiveFault, ...]:
@@ -369,7 +371,11 @@ class FaultTracker:
 
     async def async_load(self) -> None:
         """Restore the minimal active baseline used for restart deduplication."""
-        data = await self._store.async_load()
+        try:
+            data = await self._store.async_load()
+        except Exception:
+            _LOGGER.warning("The stored fault baseline could not be read")
+            return
         if not isinstance(data, dict) or not isinstance(data.get("active"), list):
             return
         restored: dict[str, ActiveFault] = {}
@@ -418,6 +424,13 @@ class FaultTracker:
     async def async_flush(self) -> None:
         """Save incident identities before a dependent dismissal store is flushed."""
         await self._store.async_save(self._serialize())
+
+    def async_add_event_observer(
+        self, observer: Callable[[FaultLifecycleEvent], None]
+    ) -> Callable[[], None]:
+        """Observe future transitions without consuming the entity's event backlog."""
+        self._event_observers.add(observer)
+        return lambda: self._event_observers.discard(observer)
 
     def record_results(self, results: Iterable[BatchItemResult]) -> None:
         """Record bounded capability outcomes without response bodies."""
@@ -515,6 +528,7 @@ class FaultTracker:
         changed = (
             previous_sources != self._required_source_keys
             or previous_unverified != self._unverified_restored
+            or self._save_schedule_failed
         )
         for fingerprint, fault in parsed_faults.items():
             previous = self._active.get(fingerprint)
@@ -585,6 +599,8 @@ class FaultTracker:
         }
 
     def _emit(self, event: FaultLifecycleEvent) -> None:
+        for observer in tuple(self._event_observers):
+            self._notify_listener(observer, event)
         if not self._listeners:
             self._pending_events.append(event)
             self._pending_events = self._pending_events[-50:]
@@ -605,7 +621,14 @@ class FaultTracker:
             )
 
     def _schedule_save(self) -> None:
-        self._store.async_delay_save(self._serialize, FAULT_STORAGE_SAVE_DELAY)
+        try:
+            self._store.async_delay_save(self._serialize, FAULT_STORAGE_SAVE_DELAY)
+        except Exception:
+            if not self._save_schedule_failed:
+                _LOGGER.warning("The fault baseline could not be queued for storage")
+            self._save_schedule_failed = True
+        else:
+            self._save_schedule_failed = False
 
     def _serialize(self) -> dict[str, Any]:
         return {
