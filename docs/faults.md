@@ -18,6 +18,49 @@ Details can include the code, subcode, normalized severity, component class,
 summary, and first Home Assistant observation. At most 25 entries are attached
 to an entity state; `truncated: true` indicates additional entries.
 
+## Home Assistant bell notifications
+
+Fault notifications are enabled by default. Open **Configure**, then
+**Notifications** to turn them off for an installation. With multiple
+installations, select those you want notifications for. This local setting
+remains accessible while the integration is offline and takes effect without
+a reload or an additional cloud request. **Holiday periods** remains available
+as a separate configuration menu item.
+
+Each installation has one notification containing its active faults, critical
+faults and notifications with an unknown class, matching the System fault
+sensor. Warnings and maintenance alone do not create a bell notification.
+Details include known descriptions and codes, with a link to the device page.
+Unknown codes are not given an invented explanation.
+
+The notification is updated only when its content changes. Dismissing it
+suppresses the same incidents across subsequent polls and Home Assistant
+restarts. Resolving only part of that dismissed list does not recreate it.
+A new incident, a recurrence after confirmed resolution, or a higher severity
+can show the notification again. Turning the option off removes the
+notification; explicitly enabling it again shows remaining faults.
+
+After two complete, valid confirmations that all reported faults have ended,
+a notification that is still visible changes to a resolved message. A dismissed
+notification is not recreated just to announce resolution. Resolved messages
+are not restored after a Home Assistant restart.
+
+Retained faults whose current status could not be fully confirmed are
+explicitly described as last reported faults. Missing, invalid or failed
+responses never establish resolution. Notifications use the existing tracker,
+polling intervals and read-confirmation rules, and do not acknowledge or reset
+anything on the appliance.
+
+Bell notifications and dismissals are shared by all Home Assistant users.
+Their text uses the Home Assistant system language, while the configuration
+dialog follows the user's profile language. German and English are available.
+Mobile push notifications remain available through your own automations.
+
+Only opaque incident fingerprints, dismissed severities and the local option
+revision are added to private Home Assistant storage. This does not store
+cloud payloads, device identifiers or tokens. Existing sensors and lifecycle
+events remain available independently of this option.
+
 ## Timing and reliability
 
 PointT is checked every five minutes during normal operation and every minute

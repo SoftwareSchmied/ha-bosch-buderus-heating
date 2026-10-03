@@ -10,6 +10,7 @@ from typing import Any, cast, override
 from urllib.parse import urlparse
 
 import voluptuous as vol
+from homeassistant.components import persistent_notification
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -20,6 +21,7 @@ from homeassistant.core import callback
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
+    BooleanSelector,
     DateSelector,
     DateTimeSelector,
     NumberSelector,
@@ -36,6 +38,7 @@ from homeassistant.helpers.selector import (
 
 from .const import (
     CONF_BRAND,
+    CONF_FAULT_NOTIFICATIONS,
     CONF_GATEWAY_IDS,
     CONF_POLLING_PROFILE,
     CONF_REDIRECT_URL,
@@ -62,6 +65,12 @@ from .holidays import (
     holiday_timezone,
     parse_holiday_state,
     parse_holiday_write_configuration,
+)
+from .notifications import (
+    gateway_notification_key,
+    installation_name,
+    notification_id,
+    notification_policy,
 )
 from .pointt import (
     AuthenticationError,
@@ -461,8 +470,108 @@ class BoschBuderusOptionsFlow(OptionsFlow):
         self._selected_key: str | None = None
         self._displayed_choice: _HolidayChoice | None = None
         self._creation_period: HolidayPeriod | None = None
+        self._notification_gateway_keys: tuple[str, ...] | None = None
 
     async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Keep local notification settings accessible even when offline."""
+        return self.async_show_menu(
+            step_id="init", menu_options=["notifications", "holidays"]
+        )
+
+    async def async_step_notifications(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Select notifications per installation without querying PointT."""
+        configured = self._entry.data.get(CONF_GATEWAY_IDS)
+        if not isinstance(configured, list):
+            configured = []
+        gateway_ids = tuple(
+            dict.fromkeys(
+                gateway_id
+                for gateway_id in configured
+                if isinstance(gateway_id, str) and gateway_id
+            )
+        )
+        if not gateway_ids:
+            return self.async_abort(reason="no_notification_gateways")
+        current_keys = tuple(gateway_notification_key(item) for item in gateway_ids)
+        if self._notification_gateway_keys is None:
+            self._notification_gateway_keys = current_keys
+        if current_keys != self._notification_gateway_keys:
+            return self.async_abort(reason="notification_gateways_changed")
+        if user_input is not None:
+            if len(gateway_ids) == 1:
+                enabled_keys = (
+                    set(current_keys) if user_input[CONF_FAULT_NOTIFICATIONS] else set()
+                )
+            else:
+                enabled_keys = set(user_input[CONF_FAULT_NOTIFICATIONS])
+                if not enabled_keys.issubset(current_keys):
+                    return self.async_abort(reason="notification_gateways_changed")
+            options: dict[str, Any] = {}
+            for gateway_id, key in zip(gateway_ids, current_keys, strict=True):
+                was_enabled, reset = notification_policy(
+                    self._entry.options, gateway_id
+                )
+                enabled = key in enabled_keys
+                options[key] = {
+                    "enabled": enabled,
+                    "reset": reset + int(enabled and not was_enabled),
+                }
+                if not enabled:
+                    persistent_notification.async_dismiss(
+                        self.hass, notification_id(self._entry.entry_id, gateway_id)
+                    )
+            return self.async_create_entry(
+                title="",
+                data={**self._entry.options, CONF_FAULT_NOTIFICATIONS: options},
+            )
+        selected = [
+            key
+            for gateway_id, key in zip(gateway_ids, current_keys, strict=True)
+            if notification_policy(self._entry.options, gateway_id)[0]
+        ]
+        if len(gateway_ids) == 1:
+            schema = vol.Schema(
+                {
+                    vol.Required(
+                        CONF_FAULT_NOTIFICATIONS, default=bool(selected)
+                    ): BooleanSelector()
+                }
+            )
+        else:
+            names = [
+                installation_name(self.hass, self._entry.entry_id, gateway_id, index)
+                for index, gateway_id in enumerate(gateway_ids, 1)
+            ]
+            schema = vol.Schema(
+                {
+                    vol.Required(
+                        CONF_FAULT_NOTIFICATIONS, default=selected
+                    ): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                SelectOptionDict(
+                                    value=key,
+                                    label=f"{name} ({index})"
+                                    if names.count(name) > 1
+                                    else name,
+                                )
+                                for index, (key, name) in enumerate(
+                                    zip(current_keys, names, strict=True), 1
+                                )
+                            ],
+                            multiple=True,
+                            mode=SelectSelectorMode.LIST,
+                        )
+                    )
+                }
+            )
+        return self.async_show_form(step_id="notifications", data_schema=schema)
+
+    async def async_step_holidays(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Select the holiday that should be configured."""
@@ -741,7 +850,7 @@ class BoschBuderusOptionsFlow(OptionsFlow):
         self, choices: dict[str, _HolidayChoice], *, error: str | None = None
     ) -> ConfigFlowResult:
         return self.async_show_form(
-            step_id="init",
+            step_id="holidays",
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_HOLIDAY_PERIOD): SelectSelector(

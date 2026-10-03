@@ -12,6 +12,7 @@ NAME: Final = "Bosch/Buderus Heating"
 CONF_BRAND: Final = "brand"
 CONF_GATEWAY_IDS: Final = "gateway_ids"
 CONF_POLLING_PROFILE: Final = "polling_profile"
+CONF_FAULT_NOTIFICATIONS: Final = "fault_notifications"
 CONF_REDIRECT_URL: Final = "redirect_url"
 
 CONF_ACCESS_TOKEN: Final = "access_token"
