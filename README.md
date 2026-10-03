@@ -21,6 +21,12 @@
 > The illustrated [setup guide](docs/setup.md) explains installation and
 > sign-in step by step.
 
+Version **0.8.0-beta.1** previews Home Assistant bell notifications for heating
+faults and the new icon. Version **0.7.2** remains stable. To test the beta,
+enable beta versions for this integration in HACS, select 0.8.0-beta.1 and
+restart Home Assistant after installation. See the [release notes](CHANGELOG.md)
+for changes and the remaining field checks.
+
 Bosch/Buderus Heating is an unofficial Home Assistant custom integration. It
 discovers the capabilities exposed by a heating system instead of assuming a
 fixed device layout. Heating circuits, hot-water circuits, heat generators,
@@ -74,6 +80,10 @@ before.
   fresh-water-station, and variable-tariff resources
 - Active system faults, warnings, and maintenance notifications with lifecycle
   events for Home Assistant automations
+- Home Assistant bell notifications for active faults, enabled by default and
+  configurable per installation under **Configure > Notifications**. Dismissed
+  incidents stay hidden across polls and restarts; no extra cloud requests are
+  needed. See [fault notifications](docs/faults.md) for the full behavior.
 - Optional holiday status and calendar with support for multiple periods,
   gateway-aware time zones, and capability-gated create, edit, and delete
   actions, kept separate from Away mode

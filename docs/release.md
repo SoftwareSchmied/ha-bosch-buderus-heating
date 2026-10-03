@@ -47,8 +47,13 @@ create the GitHub release with the ZIP and checksum.
 
 ## Field validation
 
-Version 0.7.2 is a stable release. Existing field feedback includes a Buderus
-installation
+Version 0.8.0-beta.1 is a prerelease for field testing of the new icon and
+Home Assistant bell notifications. Version 0.7.2 remains Stable/Latest.
+Actual Home Assistant and HACS frontend confirmation of the beta is still
+outstanding. No appliance write or deliberately triggered fault is part of
+its release validation. Issue #36 remains open for field feedback.
+
+Existing field feedback includes a Buderus installation
 with a K40 gateway and an installation with two heating circuits whose reporter
 confirmed the expected controls and changes appearing in MyBuderus. That report
 does not enumerate every tested control or confirm restoration of every value.
