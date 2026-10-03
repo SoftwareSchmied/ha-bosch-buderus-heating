@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import html
 import logging
@@ -196,15 +197,20 @@ class FaultNotifications:
         self._remove_callbacks: list[Callable[[], None]] = []
         self._closed = False
         self._dirty = False
+        self._save_schedule_failed = False
         self._update_error_logged = False
 
     async def async_start(self) -> None:
         """Restore suppression before inspecting already active faults."""
+        if self._closed or self._remove_callbacks:
+            return
         try:
             stored = await self._store.async_load()
         except Exception:
             _LOGGER.warning("Stored fault notification preferences could not be read")
             stored = None
+        if self._closed or self._remove_callbacks:
+            return
         if isinstance(stored, dict):
             reset = stored.get("reset")
             if isinstance(reset, int) and not isinstance(reset, bool) and reset >= 0:
@@ -242,6 +248,8 @@ class FaultNotifications:
             self._update_error_logged = False
 
     def _update(self) -> None:
+        if self._save_schedule_failed:
+            self._schedule_save()
         enabled, reset = notification_policy(self.entry.options, self._gateway_id)
         if reset != self._reset:
             self._reset = reset
@@ -453,7 +461,14 @@ class FaultNotifications:
 
     def _schedule_save(self) -> None:
         self._dirty = True
-        self._store.async_delay_save(self._serialize, 1)
+        try:
+            self._store.async_delay_save(self._serialize, 1)
+        except Exception:
+            if not self._save_schedule_failed:
+                _LOGGER.warning("Fault notification preferences could not be queued")
+            self._save_schedule_failed = True
+        else:
+            self._save_schedule_failed = False
 
     def _serialize(self) -> dict[str, Any]:
         return {"dismissed": dict(self._dismissed), "reset": self._reset}
@@ -463,10 +478,13 @@ class FaultNotifications:
         self.stop()
         try:
             await self._tracker.async_flush()
-            if self._dirty:
-                await self._store.async_save(self._serialize())
         except Exception:
-            _LOGGER.warning("Fault notification preferences could not be saved")
+            _LOGGER.warning("The fault baseline could not be saved during unload")
+        if self._dirty:
+            try:
+                await self._store.async_save(self._serialize())
+            except Exception:
+                _LOGGER.warning("Fault notification preferences could not be saved")
 
     @callback
     def stop(self) -> None:
@@ -490,6 +508,11 @@ async def async_setup_notifications(
         manager = FaultNotifications(hass, entry, coordinator)
         try:
             await manager.async_start()
+        except asyncio.CancelledError:
+            manager.stop()
+            for started in managers:
+                started.stop()
+            raise
         except Exception:
             manager.stop()
             _LOGGER.error("Heating fault notifications could not be initialized")

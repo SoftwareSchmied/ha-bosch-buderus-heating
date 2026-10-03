@@ -77,6 +77,28 @@ revision are added to private Home Assistant storage. This does not store
 cloud payloads, device identifiers or tokens. Existing sensors and lifecycle
 events remain available independently of this option.
 
+## Restarts, interrupted writes and recovery
+
+A normal Home Assistant shutdown flushes pending fault and dismissal state.
+After a restart, restored active faults are labelled unconfirmed until fresh
+reads establish their current state. A restart does not preserve a partially
+completed resolution check: two complete, valid reads are still required.
+
+State writes are delayed briefly and use Home Assistant's storage helper,
+which writes a temporary file before replacing the destination. An abrupt
+process termination recovers the last completed files. If a dismissal or a
+new incident had not been written yet, the notification may appear again and
+its first observation time may be reset. The same limitation applies after
+a failed disk write. The two stores are not a single atomic transaction.
+Missing or unreadable local storage does not prevent fresh cloud fault
+detection, but cannot restore information that was never saved.
+
+Tests terminate separate Linux processes before saving, during the temporary
+write, and before and after replacement. They also cover corrupt JSON, disk
+write errors, normal shutdown, repeated reloads, cancelled startup, and rapid
+notification option changes. These are process and filesystem tests; they do
+not simulate physical power loss or a failing storage controller.
+
 ## Timing and reliability
 
 PointT is checked every five minutes during normal operation and every minute

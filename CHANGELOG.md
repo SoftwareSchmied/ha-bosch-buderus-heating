@@ -19,6 +19,12 @@ Versioning after its first tagged preview.
   any older omissions. Details are cleared on dismissal, disabling notifications,
   unloading or restart. No permanent fault history or additional cloud requests
   are introduced; existing event delivery and dismissal persistence are preserved.
+- Keep notification changes and resolution events working if a storage write
+  cannot be queued; retry queueing on a normal update. A failed baseline save
+  during unload no longer skips the separate dismissal save.
+- Clean up already started notification observers when setup is cancelled, and
+  prevent a stopped or concurrently started manager from registering late or
+  duplicate observers. An unreadable baseline allows fresh fault detection.
 
 Thank you for testing the first beta and reporting that the resolved message
 no longer showed which fault had occurred. The active-to-resolved notification
@@ -26,12 +32,19 @@ flow is now field-confirmed; these detail improvements still need field testing.
 
 ### Validation
 
-- 917 automated test cases passed, including 16 added cases, with 95.80%
+- 945 automated test cases passed, including 44 added cases, with 95.77%
   combined statement and branch coverage. Ruff formatting and linting and
   strict Mypy passed.
 - Cases cover retained details, partial resolution, recurrence, reclassification,
   failed reads, dismissal, bounded retention, restart, event delivery and the
   repeated hour during a daylight-saving clock change.
+- Restart and failure tests include four real SIGKILL boundaries in separate
+  Linux processes using Home Assistant storage, corrupt JSON, a failed disk
+  replacement, eight persisted-state restart scenarios, normal final-write
+  shutdown, repeated reloads and cancelled or overlapping starts.
+- An abrupt termination before persistence can lose a recent dismissal or first
+  observation time. Recovery uses the last completed files and does not infer
+  resolution from a failure. Physical power loss is not simulated.
 
 ## [0.8.0-beta.1] - 2026-10-03
 
