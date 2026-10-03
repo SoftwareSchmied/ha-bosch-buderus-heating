@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="docs/assets/icon.svg" width="128" height="128" alt="Bosch/Buderus Heating icon">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/icon-dark.svg">
+    <img src="docs/assets/icon.svg" width="128" height="128" alt="Bosch/Buderus Heating icon">
+  </picture>
 </p>
 
 <h1 align="center">Bosch/Buderus Heating</h1>

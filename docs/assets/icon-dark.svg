@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><title>Bosch/Buderus Heating</title>
-<desc>A dark gray heat pump with three thermal waves transitioning from blue at the bottom to red at the top.</desc>
+<desc>A light gray heat pump with three thermal waves transitioning from blue at the bottom to red at the top.</desc>
 <defs>
     <linearGradient id="gradient-light" gradientUnits="userSpaceOnUse" x1="186" y1="163" x2="186" y2="94">
       <stop offset="0" stop-color="#258de0"/>
@@ -7,9 +7,9 @@
       <stop offset="1" stop-color="#ec4b50"/>
     </linearGradient>
   </defs>
-  <rect x="25" y="60" width="206" height="135" rx="22" fill="none" stroke="#555555" stroke-width="14"/>
-  <circle cx="101" cy="128" r="44" fill="none" stroke="#555555" stroke-width="10"/>
-  <g fill="#555555">
+  <rect x="25" y="60" width="206" height="135" rx="22" fill="none" stroke="#dce2e8" stroke-width="14"/>
+  <circle cx="101" cy="128" r="44" fill="none" stroke="#dce2e8" stroke-width="10"/>
+  <g fill="#dce2e8">
     <path d="M96 118C82 99 91 88 101 90C115 93 111 109 106 118Z"/>
     <path d="M96 118C82 99 91 88 101 90C115 93 111 109 106 118Z" transform="rotate(120 101 128)"/>
     <path d="M96 118C82 99 91 88 101 90C115 93 111 109 106 118Z" transform="rotate(240 101 128)"/>
@@ -20,4 +20,4 @@
     <path d="M186 163C176 150 196 138 186 124C177 113 179 103 186 94"/>
     <path d="M206 163C196 150 216 138 206 124C197 113 199 103 206 94"/>
   </g>
-  <path d="M59 201V211M197 201V211" fill="none" stroke="#555555" stroke-width="13" stroke-linecap="round"/></svg>
+  <path d="M59 201V211M197 201V211" fill="none" stroke="#dce2e8" stroke-width="13" stroke-linecap="round"/></svg>
