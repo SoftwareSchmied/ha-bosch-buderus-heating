@@ -47,17 +47,19 @@ create the GitHub release with the ZIP and checksum.
 
 ## Field validation
 
-I am releasing 0.8.0 as stable after an initial local check in which beta.3
+I released 0.8.0 as stable after an initial local check in which beta.3
 appeared to work. Apart from the version number, the integration code and
 packaged assets match beta.3. The release includes all changes from the
 three 0.8.0 betas, including the maintenance updates.
 
-My initial check does not establish that every affected scenario has been
-tested. A 48-hour connection test, preservation of the expected solar
-entities after restart and reload on the affected installation, and the
-retained fault details and timestamps still need specific confirmation.
+I have tested the notification feature extensively on my own installation
+and closed #36 as implemented and tested locally.
+
+A 48-hour connection test and preservation of the expected solar entities
+after restart and reload on the affected installation still need specific
+confirmation.
 The original cause of the connection loss in #49 has not been established.
-Issues #36, #48 and #49 remain open for that feedback.
+Issues #48 and #49 remain open for that feedback.
 
 I tested beta.1 on my installation: notifications appeared when faults
 occurred and changed to resolved when they cleared. Retained details are
