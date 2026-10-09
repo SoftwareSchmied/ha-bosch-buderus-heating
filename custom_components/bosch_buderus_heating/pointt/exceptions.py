@@ -27,6 +27,10 @@ class OAuthRedirectError(AuthenticationError):
     """The OAuth redirect was invalid or contained an authorization error."""
 
 
+class OAuthFlowExpired(OAuthRedirectError):
+    """The authorization attempt expired before its redirect was accepted."""
+
+
 class AuthorizationCodeConsumed(AuthenticationError):
     """The authorization redirect was already consumed."""
 

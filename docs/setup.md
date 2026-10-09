@@ -210,8 +210,21 @@ launch** or **Connecting to** message as described above.
 
 - Confirm that the complete address was pasted.
 - Do not use an address from an older sign-in attempt.
-- Restart setup if the sign-in page remained open for a long time.
+- If Home Assistant shows a new sign-in link, open that link and repeat sign-in.
 - Confirm that the selected Bosch or Buderus brand matches the app.
+
+Each sign-in attempt is valid for ten minutes. If it expires, Home Assistant
+shows an explanation and a fresh SingleKey ID link. Open that new link and
+repeat sign-in; an address from the previous attempt will not work. During
+reauthentication, the existing integration entry and gateway selection are kept.
+There is no need to delete the integration.
+
+### SingleKey ID asks you to wait
+
+If SingleKey ID limits sign-in requests, Home Assistant shows the remaining
+wait in seconds. Wait for that interval and select **Submit** to obtain a new
+sign-in link. Submitting early does not send another token request or extend
+the wait. Without a usable wait time from the server, the pause is five minutes.
 
 ### PointT service cannot be reached
 

@@ -9,6 +9,8 @@ import math
 import secrets
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
+from datetime import UTC
+from email.utils import parsedate_to_datetime
 from time import monotonic, time
 from urllib.parse import parse_qs, urlencode, urlparse
 
@@ -27,8 +29,10 @@ from .exceptions import (
     AuthenticationError,
     AuthorizationCodeConsumed,
     InvalidPayload,
+    OAuthFlowExpired,
     OAuthRedirectError,
     OAuthStateMismatch,
+    RateLimited,
     RefreshTokenRejected,
     RequestTimeout,
     ServiceUnavailable,
@@ -140,14 +144,18 @@ class OAuthFlow:
         """Validate and consume one redirect URL."""
         if self._consumed:
             raise AuthorizationCodeConsumed("OAuth redirect was already consumed")
-        current = monotonic() if now is None else now
-        if current - self.context.created_at > self.max_age:
-            raise OAuthRedirectError("OAuth flow expired")
+        if self.is_expired(now=now):
+            raise OAuthFlowExpired("OAuth flow expired")
         code = parse_redirect_url(
             self.brand, redirect_url, expected_state=self.context.state
         )
         self._consumed = True
         return AuthorizationGrant(code=code, code_verifier=self.context.code_verifier)
+
+    def is_expired(self, *, now: float | None = None) -> bool:
+        """Return whether this attempt needs a new authorization link."""
+        current = monotonic() if now is None else now
+        return current - self.context.created_at > self.max_age
 
 
 class OAuthClient:
@@ -219,6 +227,12 @@ class OAuthClient:
                     if refresh_request:
                         raise RefreshTokenRejected("Refresh token was rejected")
                     raise AuthenticationError("Authorization code was rejected")
+                if response.status == 429:
+                    raise RateLimited(
+                        _parse_retry_after(
+                            response.headers.get("Retry-After"), now=self._clock()
+                        )
+                    )
                 if response.status >= 500:
                     raise ServiceUnavailable(response.status)
                 if response.status >= 400:
@@ -237,8 +251,10 @@ class OAuthClient:
         if not isinstance(access_token, str) or not access_token:
             raise InvalidPayload("OAuth token response did not contain an access token")
         refresh_token = payload.get("refresh_token", fallback_refresh_token)
-        if refresh_token is not None and not isinstance(refresh_token, str):
-            raise InvalidPayload("OAuth refresh token must be a string")
+        if "refresh_token" in payload and (
+            not isinstance(refresh_token, str) or not refresh_token.strip()
+        ):
+            raise InvalidPayload("OAuth refresh token must be a non-empty string")
         expires_in = payload.get("expires_in")
         if isinstance(expires_in, bool) or not isinstance(expires_in, (int, float)):
             raise InvalidPayload("OAuth token response did not contain expires_in")
@@ -263,3 +279,20 @@ class OAuthClient:
             token_type=token_type,
             scope=scope,
         )
+
+
+def _parse_retry_after(value: str | None, *, now: float) -> float | None:
+    """Read a delay or HTTP date without retaining response headers or bodies."""
+    if value is None:
+        return None
+    try:
+        delay = float(value)
+    except ValueError:
+        try:
+            retry_at = parsedate_to_datetime(value)
+            if retry_at.tzinfo is None:
+                retry_at = retry_at.replace(tzinfo=UTC)
+            delay = retry_at.timestamp() - now
+        except TypeError, ValueError, OverflowError:
+            return None
+    return max(0.0, delay) if math.isfinite(delay) else None
