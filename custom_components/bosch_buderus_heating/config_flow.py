@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+import math
 import re
 from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime
+from time import monotonic
 from typing import Any, cast, override
 from urllib.parse import urlparse
 
@@ -80,6 +82,7 @@ from .pointt import (
     Gateway,
     OAuthClient,
     OAuthFlow,
+    OAuthFlowExpired,
     OAuthRedirectError,
     OAuthStateMismatch,
     PointTClient,
@@ -136,6 +139,7 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
     _reauth_entry: ConfigEntry | None = None
     _reconfigure_entry: ConfigEntry | None = None
     _pending_polling_profile: PollingProfile = DEFAULT_POLLING_PROFILE
+    _auth_retry_at: float = 0.0
 
     @staticmethod
     @callback
@@ -210,6 +214,8 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Accept and exchange the application redirect URL."""
+        if self._auth_retry_at > monotonic():
+            return self._show_auth_wait()
         if user_input is None:
             return self._show_auth_form()
         if self._brand is None or self._oauth_flow is None:
@@ -217,7 +223,11 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
 
         try:
             grant = self._oauth_flow.consume_redirect(user_input[CONF_REDIRECT_URL])
-        except OAuthRedirectError, OAuthStateMismatch, AuthorizationCodeConsumed:
+        except OAuthFlowExpired:
+            return self._restart_authorization(error="auth_expired")
+        except AuthorizationCodeConsumed:
+            return self._restart_authorization(error="auth_restart")
+        except OAuthRedirectError, OAuthStateMismatch:
             return self._show_auth_form(error="invalid_redirect")
 
         session = async_get_clientsession(self.hass)
@@ -225,6 +235,12 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
             self._tokens = await OAuthClient(session).exchange_code(self._brand, grant)
         except AuthenticationError, ValueError:
             return self._restart_authorization(error="invalid_auth")
+        except RateLimited as err:
+            delay = err.retry_after
+            if delay is None or not math.isfinite(delay):
+                delay = 300.0
+            self._auth_retry_at = monotonic() + max(60.0, delay)
+            return self._show_auth_wait()
         except RequestTimeout, ServiceUnavailable:
             return self._restart_authorization(error="cannot_connect")
         except PointTError:
@@ -233,6 +249,15 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
         if not self._tokens.refresh_token:
             return self._restart_authorization(error="invalid_auth")
         return await self._async_discover_gateways()
+
+    async def async_step_auth_wait(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Wait out the server limit before issuing a fresh sign-in link."""
+        if self._auth_retry_at > monotonic():
+            return self._show_auth_wait()
+        self._auth_retry_at = 0.0
+        return self._start_authorization()
 
     async def async_step_retry(
         self, user_input: dict[str, Any] | None = None
@@ -427,6 +452,8 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
     def _show_auth_form(self, *, error: str | None = None) -> ConfigFlowResult:
         if self._oauth_flow is None:
             return self.async_abort(reason="invalid_flow")
+        if self._oauth_flow.is_expired():
+            return self._restart_authorization(error="auth_expired")
         errors = {"base": error} if error else None
         return self.async_show_form(
             step_id="auth",
@@ -436,6 +463,14 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
                 "redirect_scheme": urlparse(self._oauth_flow.brand.redirect_uri).scheme,
             },
             errors=errors,
+        )
+
+    def _show_auth_wait(self) -> ConfigFlowResult:
+        """Display the remaining wait without starting another cloud request."""
+        seconds = max(0, math.ceil(self._auth_retry_at - monotonic()))
+        return self.async_show_form(
+            step_id="auth_wait",
+            description_placeholders={"seconds": str(seconds)},
         )
 
     def _find_duplicate_entry(self, selected: set[str]) -> ConfigEntry | None:

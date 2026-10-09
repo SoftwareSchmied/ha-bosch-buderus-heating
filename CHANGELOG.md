@@ -5,6 +5,26 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Fixed
+
+- I fixed startup cleanup deleting supported solar entities immediately after
+  discovery. An unrecognized directory no longer causes all entities below its
+  path to be removed. Cleanup now targets the resource itself and its own scalar
+  fields, while preserving catalogued children even if discovery temporarily
+  omits them. The same protection covers other supported resources below
+  unrecognized directories, including pool, ventilation, room zones and PV.
+- I preserved existing entity IDs, names and choices to disable entities across
+  polling and reloads while retaining cleanup of obsolete scalar entries.
+- I fixed sign-in attempts getting stuck after their ten-minute limit. Expired
+  attempts now receive a fresh link and a specific explanation. Reauthentication
+  updates the existing entry without replacing its devices or entities.
+- I added a waiting step for SingleKey ID request limits. Early submissions do
+  not repeat token requests. After the pause, a new sign-in link replaces the
+  previous one-time authorization attempt.
+- I reject explicitly empty refresh tokens before they can replace saved
+  credentials. Responses that omit a replacement refresh token continue to
+  retain the previous token.
+
 ## [0.8.0-beta.2] - 2026-10-03
 
 This beta keeps fault details visible after a fault has cleared and improves

@@ -517,4 +517,4 @@ async def test_device_migration_never_merges_into_another_config_entry(hass):
     assert await async_migrate_entry(hass, entry)
     migrated = registry.async_get_device_by_identifier(identifier, entry.entry_id)
     assert migrated is not None and migrated.id == legacy.id
-    assert registry.async_get(foreign.id).config_entries == {other_entry.entry_id}
+    assert registry.async_get(foreign.id).config_entry_id == other_entry.entry_id
