@@ -12,14 +12,17 @@ from custom_components.bosch_buderus_heating.pointt import (
     AuthenticationError,
     AuthorizationCodeConsumed,
     AuthorizationGrant,
+    AuthTokens,
     Brand,
     InvalidPayload,
     OAuthClient,
     OAuthFlow,
     OAuthRedirectError,
     OAuthStateMismatch,
+    RateLimited,
     RefreshTokenRejected,
     ServiceUnavailable,
+    TokenManager,
     UnexpectedHttpStatus,
     create_pkce_context,
     parse_redirect_url,
@@ -219,5 +222,87 @@ async def test_oauth_client_rejects_malformed_json() -> None:
         async with aiohttp.ClientSession() as session:
             with pytest.raises(InvalidPayload, match="valid JSON"):
                 await OAuthClient(session, token_url=url).refresh("secret")
+    finally:
+        await runner.cleanup()
+
+
+@pytest.mark.parametrize("replacement", [None, "", "   "])
+async def test_invalid_refresh_token_does_not_replace_or_persist_tokens(replacement):
+    async def handler(request: web.Request) -> web.Response:
+        return web.json_response(
+            {
+                "access_token": "new-access",
+                "refresh_token": replacement,
+                "expires_in": 3600,
+            }
+        )
+
+    runner, url = await _serve(handler)
+    try:
+        async with aiohttp.ClientSession() as session:
+            original = AuthTokens("old-access", "old-refresh", 0.0)
+            persisted = []
+            manager = TokenManager(
+                OAuthClient(session, token_url=url), original, persisted.append
+            )
+            with pytest.raises(InvalidPayload):
+                await manager.get_access_token()
+            assert manager.tokens is original
+            assert not persisted
+    finally:
+        await runner.cleanup()
+
+
+async def test_missing_refresh_token_keeps_previous_token():
+    async def handler(request: web.Request) -> web.Response:
+        return web.json_response({"access_token": "new-access", "expires_in": 3600})
+
+    runner, url = await _serve(handler)
+    try:
+        async with aiohttp.ClientSession() as session:
+            tokens = await OAuthClient(session, token_url=url).refresh("old-refresh")
+            assert tokens.refresh_token == "old-refresh"
+    finally:
+        await runner.cleanup()
+
+
+@pytest.mark.parametrize("refresh", [False, True])
+@pytest.mark.parametrize(
+    ("header", "expected"),
+    [
+        ("120", 120.0),
+        ("Thu, 01 Jan 1970 00:18:40 GMT", 120.0),
+        ("invalid", None),
+        ("inf", None),
+        ("-2", 0.0),
+        (None, None),
+    ],
+)
+async def test_oauth_rate_limit_preserves_retry_after(refresh, header, expected):
+    calls = 0
+
+    async def handler(request: web.Request) -> web.Response:
+        nonlocal calls
+        calls += 1
+        return web.Response(
+            status=429,
+            headers={"Retry-After": header} if header is not None else {},
+            text="sensitive response body",
+        )
+
+    runner, url = await _serve(handler)
+    try:
+        async with aiohttp.ClientSession() as session:
+            client = OAuthClient(session, token_url=url, clock=lambda: 1000.0)
+            with pytest.raises(RateLimited) as caught:
+                if refresh:
+                    await client.refresh("refresh-token")
+                else:
+                    await client.exchange_code(
+                        Brand.BUDERUS, AuthorizationGrant("code", "verifier")
+                    )
+            assert caught.value.retry_after == expected
+            assert "sensitive" not in str(caught.value)
+            assert calls == 1
     finally:
         await runner.cleanup()
