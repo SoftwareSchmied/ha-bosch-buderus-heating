@@ -12,6 +12,10 @@
         "description": "SingleKey ID is the same sign-in used by your Bosch or Buderus app. Use the same email address or mobile number and password. You do not need a new account, and you do **not** enter your password in Home Assistant.\n\n1. Keep this dialog open and open [SingleKey ID]({authorization_url}) in a new Chrome tab. Always use this newly generated link.\n2. Press `F12` there and open **Console** in the developer tools.\n3. Sign in with the SingleKey ID credentials used by your heating app.\n4. A network-problem message may appear after sign-in. In this case it normally only means that Chrome could not open the `{redirect_scheme}://` app address.\n5. Find the red **Failed to launch** or **Connecting to** message in the console. Right-click the blue `{redirect_scheme}://` address in that message and choose **Copy link address**.\n6. Return to this dialog, paste the complete address below, and select **OK**. The field may display dots for security.\n\nUse the address from this exact sign-in attempt and do not copy only the `code` parameter. The complete address contains a short-lived one-time code. Never share it in an issue, chat, screenshot, or log.",
         "data": { "redirect_url": "Complete redirect address" }
       },
+      "auth_wait": {
+        "title": "Wait before signing in again",
+        "description": "SingleKey ID is temporarily limiting sign-in requests. Wait at least another {seconds} seconds, then select **Submit**. The next step will provide a new sign-in link."
+      },
       "retry": {
         "title": "Retry gateway discovery",
         "description": "SingleKey ID sign-in succeeded, but the PointT service could not be reached. Check the Home Assistant internet connection, wait a moment, and select **Submit**. You do not need to sign in again."
@@ -36,6 +40,8 @@
       }
     },
     "error": {
+      "auth_expired": "This sign-in attempt has expired. Open the new SingleKey ID link shown above and sign in again.",
+      "auth_restart": "This sign-in attempt can no longer be used. Open the new SingleKey ID link shown above and sign in again.",
       "cannot_connect": "The PointT service cannot be reached. Check the internet connection, wait a moment, and try again.",
       "invalid_auth": "SingleKey ID rejected or expired the authorization. Use the new SingleKey ID link shown above and repeat sign-in.",
       "invalid_redirect": "Home Assistant could not use this address. Copy the complete app address from the Chrome console's ‘Failed to launch’ message. It must begin with the scheme shown above and belong to the current sign-in attempt.",

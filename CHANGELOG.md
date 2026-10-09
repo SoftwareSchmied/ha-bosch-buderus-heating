@@ -15,6 +15,15 @@ Versioning after its first tagged preview.
   unrecognized directories, including pool, ventilation, room zones and PV.
 - I preserved existing entity IDs, names and choices to disable entities across
   polling and reloads while retaining cleanup of obsolete scalar entries.
+- I fixed sign-in attempts getting stuck after their ten-minute limit. Expired
+  attempts now receive a fresh link and a specific explanation. Reauthentication
+  updates the existing entry without replacing its devices or entities.
+- I added a waiting step for SingleKey ID request limits. Early submissions do
+  not repeat token requests. After the pause, a new sign-in link replaces the
+  previous one-time authorization attempt.
+- I reject explicitly empty refresh tokens before they can replace saved
+  credentials. Responses that omit a replacement refresh token continue to
+  retain the previous token.
 
 ## [0.8.0-beta.2] - 2026-10-03
 
