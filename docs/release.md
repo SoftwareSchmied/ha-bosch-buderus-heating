@@ -47,14 +47,27 @@ create the GitHub release with the ZIP and checksum.
 
 ## Field validation
 
-Version 0.8.0-beta.2 is a prerelease for checking retained fault details and
-notification recovery in Home Assistant. Version 0.7.2 remains Stable/Latest.
-I tested beta.1 on my installation: notifications appeared when faults occurred
-and changed to resolved when they cleared. I still need to check the retained
-details and timestamps after installing beta.2. Resolved details are kept only
+I prepared version 0.8.0-beta.3 for local validation of the solar entity
+cleanup and reauthentication fixes, together with the maintenance updates
+from PRs #45, #46 and #47. Version 0.7.2 remains Stable/Latest.
+
+After the HACS update and a Home Assistant restart, I need to confirm that
+expected solar entities, where present, remain after another restart and an
+integration reload. They belong to the gateway device; a separate solar
+device is not introduced. For any requested reauthentication, I need to
+confirm that the current sign-in link works, existing devices and entities
+remain, and the connection stays available for at least 48 hours. The
+original cause of the connection loss in #49 has not been established.
+Issues #48 and #49 remain open pending field confirmation. I will assess
+the local results and remaining beta issues before publishing 0.8.0 as stable.
+
+The fault-notification checks from beta.2 also remain relevant. I tested
+beta.1 on my installation: notifications appeared when faults occurred and
+changed to resolved when they cleared. The retained details and timestamps
+still need confirmation in Home Assistant. Resolved details are kept only
 for the visible message and are cleared on dismissal, disabling notifications,
 unloading or restart. No appliance write or deliberately triggered fault is
-part of this release validation. Issue #36 remains open for the remaining checks.
+part of these checks. Issue #36 remains open for the remaining validation.
 
 Existing field feedback includes a Buderus installation
 with a K40 gateway and an installation with two heating circuits whose reporter

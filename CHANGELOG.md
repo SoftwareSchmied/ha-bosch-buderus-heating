@@ -5,25 +5,84 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.8.0-beta.3] - 2026-10-09
+
+I prepared this beta to address disappearing solar entities and sign-in attempts
+that could get stuck during reauthentication. It also includes the maintenance
+updates from PRs #45, #46 and #47, along with the fault notifications and icon
+variants from the earlier 0.8.0 betas. Version 0.7.2 remains Stable/Latest.
+
+Thank you to ph15ch and lanebe for reporting the problems in #48 and #49 and
+providing the details that helped me investigate them.
+
 ### Fixed
 
-- I fixed startup cleanup deleting supported solar entities immediately after
-  discovery. An unrecognized directory no longer causes all entities below its
-  path to be removed. Cleanup now targets the resource itself and its own scalar
-  fields, while preserving catalogued children even if discovery temporarily
-  omits them. The same protection covers other supported resources below
-  unrecognized directories, including pool, ventilation, room zones and PV.
-- I preserved existing entity IDs, names and choices to disable entities across
-  polling and reloads while retaining cleanup of obsolete scalar entries.
-- I fixed sign-in attempts getting stuck after their ten-minute limit. Expired
-  attempts now receive a fresh link and a specific explanation. Reauthentication
-  updates the existing entry without replacing its devices or entities.
-- I added a waiting step for SingleKey ID request limits. Early submissions do
-  not repeat token requests. After the pause, a new sign-in link replaces the
-  previous one-time authorization attempt.
-- I reject explicitly empty refresh tokens before they can replace saved
-  credentials. Responses that omit a replacement refresh token continue to
-  retain the previous token.
+- **Solar entities disappearing after discovery (#48, PR #50):** I fixed startup
+  cleanup removing supported entities below an unrecognized directory. Solar
+  entities now survive this cleanup, including after restart or reload. The
+  same protection covers supported descendants in other subsystems. Existing
+  entity IDs, custom names and choices to disable entities are preserved.
+  Solar entities remain attached to the existing gateway device.
+- **Expired sign-in attempts (#49, PR #51):** I added a clear explanation and a
+  fresh sign-in link when an attempt exceeds its ten-minute limit or must be
+  restarted after an interrupted token exchange. Reauthentication continues
+  to update the existing integration entry.
+- **SingleKey ID request limits:** I added a waiting step that respects the
+  required pause. Submitting again during the pause does not send another
+  token request. A fresh sign-in link is provided after the wait.
+- **Refresh-token validation:** I prevent explicitly empty replacement refresh
+  tokens from overwriting saved credentials. If the server omits a replacement
+  token, the existing token is retained.
+
+### Maintenance
+
+- I updated Hypothesis to 6.168.3, the Home Assistant test package to 0.13.367
+  and Ruff to 0.16.9. I kept pytest at 9.0.3 because the Home Assistant test
+  package requires that version; the originally proposed 9.1.1 update could
+  not be installed with it.
+- I aligned the Ruff pre-commit hook with 0.16.9 and updated the pinned
+  hassfest action used by CI and releases. These are development and
+  validation updates, with no new heating controls.
+
+### Validation
+
+- I ran 1,003 automated test cases on Home Assistant 2026.9.4 and 2026.10.0.
+  Both runs passed with 95.95% combined statement and branch coverage. The
+  cases include discovery, entity cleanup, restart and reload
+  behavior, saved entity preferences, expired sign-in attempts, token
+  responses and request-limit waiting.
+- I checked formatting, linting and strict typing, and the dependency audit
+  found no known vulnerabilities. The release workflow repeats these checks
+  and validates HACS compatibility and hassfest before publication.
+- These automated checks do not confirm the original cause of the connection
+  loss in #49 or prove that a connection will remain stable for 48 hours.
+  Field validation of both fixes is still pending.
+
+### Upgrade and local testing
+
+Enable beta versions for this integration in HACS, select **0.8.0-beta.3**,
+install the update and restart Home Assistant.
+
+1. **Solar entities (#48), if present on the installation:** Check the entities
+   assigned to the gateway, including disabled entities. Confirm that the
+   expected solar entities remain after a Home Assistant restart and after
+   reloading the integration, and that available values continue to update.
+2. **Reauthentication (#49):** If Home Assistant requests a new sign-in, complete
+   it using the latest link shown in the dialog. Confirm that the existing
+   devices and entities remain, then observe the connection for at least
+   48 hours. There is no need to delete and recreate the integration to test it.
+3. **Earlier beta features:** When a fault occurs and clears during normal
+   operation, check that its code, known description and observation and
+   resolution times remain visible in the notification. Retained details
+   are cleared on dismissal, disabling notifications, unloading or restart.
+
+If a problem remains, record when it happened and provide a fresh diagnostic
+export after the update, reviewed for personal information before sharing.
+Do not include sign-in links or tokens.
+
+I am keeping #48 and #49 open until the fixes have been confirmed on the
+affected installations. I will assess the local results and any remaining
+beta issues before publishing 0.8.0 as stable.
 
 ## [0.8.0-beta.2] - 2026-10-03
 
