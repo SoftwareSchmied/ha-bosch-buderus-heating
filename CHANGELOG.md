@@ -46,12 +46,14 @@ providing the details that helped me investigate them.
 
 ### Validation
 
-- I ran 1,003 automated test cases with 95.95% combined statement and branch
-  coverage. The cases include discovery, entity cleanup, restart and reload
+- I ran 1,003 automated test cases on Home Assistant 2026.9.4 and 2026.10.0.
+  Both runs passed with 95.95% combined statement and branch coverage. The
+  cases include discovery, entity cleanup, restart and reload
   behavior, saved entity preferences, expired sign-in attempts, token
   responses and request-limit waiting.
-- I checked formatting, linting and strict typing. The release workflow also
-  checks dependencies, HACS compatibility and hassfest before publication.
+- I checked formatting, linting and strict typing, and the dependency audit
+  found no known vulnerabilities. The release workflow repeats these checks
+  and validates HACS compatibility and hassfest before publication.
 - These automated checks do not confirm the original cause of the connection
   loss in #49 or prove that a connection will remain stable for 48 hours.
   Field validation of both fixes is still pending.
