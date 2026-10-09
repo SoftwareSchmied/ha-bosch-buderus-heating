@@ -47,27 +47,24 @@ create the GitHub release with the ZIP and checksum.
 
 ## Field validation
 
-I prepared version 0.8.0-beta.3 for local validation of the solar entity
-cleanup and reauthentication fixes, together with the maintenance updates
-from PRs #45, #46 and #47. Version 0.7.2 remains Stable/Latest.
+I am releasing 0.8.0 as stable after an initial local check in which beta.3
+appeared to work. Apart from the version number, the integration code and
+packaged assets match beta.3. The release includes all changes from the
+three 0.8.0 betas, including the maintenance updates.
 
-After the HACS update and a Home Assistant restart, I need to confirm that
-expected solar entities, where present, remain after another restart and an
-integration reload. They belong to the gateway device; a separate solar
-device is not introduced. For any requested reauthentication, I need to
-confirm that the current sign-in link works, existing devices and entities
-remain, and the connection stays available for at least 48 hours. The
-original cause of the connection loss in #49 has not been established.
-Issues #48 and #49 remain open pending field confirmation. I will assess
-the local results and remaining beta issues before publishing 0.8.0 as stable.
+My initial check does not establish that every affected scenario has been
+tested. A 48-hour connection test, preservation of the expected solar
+entities after restart and reload on the affected installation, and the
+retained fault details and timestamps still need specific confirmation.
+The original cause of the connection loss in #49 has not been established.
+Issues #36, #48 and #49 remain open for that feedback.
 
-The fault-notification checks from beta.2 also remain relevant. I tested
-beta.1 on my installation: notifications appeared when faults occurred and
-changed to resolved when they cleared. The retained details and timestamps
-still need confirmation in Home Assistant. Resolved details are kept only
-for the visible message and are cleared on dismissal, disabling notifications,
-unloading or restart. No appliance write or deliberately triggered fault is
-part of these checks. Issue #36 remains open for the remaining validation.
+I tested beta.1 on my installation: notifications appeared when faults
+occurred and changed to resolved when they cleared. Retained details are
+kept only for the visible message and are cleared on dismissal, disabling
+notifications, unloading or restart. Solar entities belong to the gateway
+device. These checks do not require appliance writes or deliberately
+triggering a fault.
 
 Existing field feedback includes a Buderus installation
 with a K40 gateway and an installation with two heating circuits whose reporter

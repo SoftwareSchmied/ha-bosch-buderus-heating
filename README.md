@@ -21,14 +21,13 @@
 > The illustrated [setup guide](docs/setup.md) explains installation and
 > sign-in step by step.
 
-I prepared **0.8.0-beta.3** to fix disappearing solar entities and improve
-reauthentication after expired sign-in attempts or request limits. It includes
-the earlier beta features and the reviewed maintenance updates. Version
-**0.7.2** remains Stable/Latest. To test this beta, enable beta versions for
-this integration in HACS, select 0.8.0-beta.3 and restart Home Assistant.
-Please check entity persistence and, after any required reauthentication,
-observe the connection for at least 48 hours. See the
-[release notes](CHANGELOG.md) for details and the remaining field checks.
+I am releasing **0.8.0** as the current stable version. It brings heating fault
+notifications to the Home Assistant bell, a new icon for light and dark themes,
+and fixes for disappearing solar entities and reauthentication. Install the
+update through HACS and restart Home Assistant. Notifications are enabled by
+default and can be configured for each installation. See the
+[release notes](CHANGELOG.md) for all changes since 0.7.2 and the field checks
+that remain open.
 
 Bosch/Buderus Heating is an unofficial Home Assistant custom integration. It
 discovers the capabilities exposed by a heating system instead of assuming a
