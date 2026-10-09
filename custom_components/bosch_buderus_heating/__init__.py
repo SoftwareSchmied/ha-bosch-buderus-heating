@@ -248,7 +248,7 @@ def _remove_retired_entities(
 ) -> None:
     """Remove preview entities that never represented a distinct scalar value."""
     retired_unique_ids: set[str] = set()
-    retired_unique_id_prefixes: set[str] = set()
+    observed_resource_paths: dict[str, str] = {}
     for coordinator in coordinators:
         gateway_id = coordinator.gateway.gateway_id
         retired_unique_ids.add(f"{gateway_id}:heatSources:numberOfStarts")
@@ -264,7 +264,7 @@ def _remove_retired_entities(
         for resource in coordinator.resources.values():
             if capability_maturity(resource.path) is CapabilityMaturity.OBSERVED:
                 semantic_path = resource.path.strip("/").replace("/", ":")
-                retired_unique_id_prefixes.add(f"{gateway_id}:{semantic_path}")
+                observed_resource_paths[f"{gateway_id}:{semantic_path}"] = resource.path
             empty_name = resource.path.endswith("/name") and (
                 not isinstance(resource.value, str)
                 or configured_device_name(resource.value) is None
@@ -279,11 +279,29 @@ def _remove_retired_entities(
 
     entity_registry = er.async_get(hass)
     for entity in er.async_entries_for_config_entry(entity_registry, entry.entry_id):
-        if entity.unique_id in retired_unique_ids or any(
-            entity.unique_id == prefix or entity.unique_id.startswith(f"{prefix}:")
-            for prefix in retired_unique_id_prefixes
+        if entity.unique_id in retired_unique_ids or _is_observed_scalar_entity(
+            entity.unique_id, observed_resource_paths
         ):
             entity_registry.async_remove(entity.entity_id)
+
+
+def _is_observed_scalar_entity(
+    unique_id: str, observed_resource_paths: dict[str, str]
+) -> bool:
+    """Match an observed resource's own scalar IDs, never its entire subtree."""
+    if unique_id in observed_resource_paths:
+        return True
+    # Preview scalar IDs append one value key; nested keys use dots, not colons.
+    resource_id, _, value_key = unique_id.rpartition(":")
+    resource_path = observed_resource_paths.get(resource_id)
+    if resource_path is None:
+        return False
+    # A direct child resource can share the shape of a scalar field ID. Keep
+    # catalogued children even when discovery temporarily omits their values.
+    return (
+        capability_maturity(f"{resource_path}/{value_key}")
+        is CapabilityMaturity.OBSERVED
+    )
 
 
 def _enable_new_default_entities(

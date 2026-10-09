@@ -7,6 +7,14 @@ Versioning after its first tagged preview.
 
 ### Fixed
 
+- I fixed startup cleanup deleting supported solar entities immediately after
+  discovery. An unrecognized directory no longer causes all entities below its
+  path to be removed. Cleanup now targets the resource itself and its own scalar
+  fields, while preserving catalogued children even if discovery temporarily
+  omits them. The same protection covers other supported resources below
+  unrecognized directories, including pool, ventilation, room zones and PV.
+- I preserved existing entity IDs, names and choices to disable entities across
+  polling and reloads while retaining cleanup of obsolete scalar entries.
 - I fixed sign-in attempts getting stuck after their ten-minute limit. Expired
   attempts now receive a fresh link and a specific explanation. Reauthentication
   updates the existing entry without replacing its devices or entities.
