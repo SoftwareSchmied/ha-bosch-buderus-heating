@@ -12,6 +12,10 @@
         "description": "SingleKey ID ist dieselbe Anmeldung, die auch deine Bosch- beziehungsweise Buderus-App verwendet. Nutze dieselbe E-Mail-Adresse oder Mobilnummer und dasselbe Passwort. Du benötigst kein neues Konto; dein Passwort wird **nicht** in Home Assistant eingegeben.\n\n1. Lasse diesen Dialog geöffnet und öffne [SingleKey ID]({authorization_url}) in einem neuen Chrome-Tab. Verwende immer diesen neu erzeugten Link.\n2. Drücke dort `F12` und öffne in den Entwicklertools **Console** beziehungsweise **Konsole**.\n3. Melde dich mit den SingleKey-ID-Zugangsdaten deiner Heizungs-App an.\n4. Nach der Anmeldung kann die Meldung „Haben Sie Netzwerkprobleme?“ erscheinen. Das bedeutet hier normalerweise nur, dass Chrome die `{redirect_scheme}://`-App-Adresse nicht öffnen konnte.\n5. Suche in der Konsole die rote Meldung **Failed to launch** beziehungsweise **Connecting to**. Klicke mit der rechten Maustaste auf die darin blau dargestellte `{redirect_scheme}://`-Adresse und wähle **Linkadresse kopieren** beziehungsweise **Copy link address**.\n6. Kehre zu diesem Dialog zurück, füge die vollständige Adresse unten ein und wähle **OK**. Das Eingabefeld zeigt aus Sicherheitsgründen möglicherweise nur Punkte an.\n\nVerwende die Adresse aus genau diesem Anmeldeversuch und kopiere nicht nur den Parameter `code`. Die vollständige Adresse enthält einen kurzlebigen Einmalcode und darf niemals in einem Issue, Chat, Screenshot oder Protokoll veröffentlicht werden.",
         "data": { "redirect_url": "Vollständige Weiterleitungsadresse" }
       },
+      "auth_wait": {
+        "title": "Vor der erneuten Anmeldung warten",
+        "description": "SingleKey ID lässt derzeit keine weiteren Anmeldeanfragen zu. Warte noch mindestens {seconds} Sekunden und wähle dann **Senden**. Anschließend erhältst du einen neuen Anmeldelink."
+      },
       "retry": {
         "title": "Gateway-Suche wiederholen",
         "description": "Die SingleKey-ID-Anmeldung war erfolgreich, aber der PointT-Dienst war nicht erreichbar. Prüfe die Internetverbindung von Home Assistant, warte kurz und wähle **Senden**. Eine erneute Anmeldung ist nicht nötig."
@@ -36,6 +40,8 @@
       }
     },
     "error": {
+      "auth_expired": "Dieser Anmeldeversuch ist abgelaufen. Öffne den oben neu angezeigten SingleKey-ID-Link und melde dich erneut an.",
+      "auth_restart": "Dieser Anmeldeversuch kann nicht mehr verwendet werden. Öffne den oben neu angezeigten SingleKey-ID-Link und melde dich erneut an.",
       "cannot_connect": "Der PointT-Dienst ist nicht erreichbar. Prüfe die Internetverbindung, warte kurz und versuche es erneut.",
       "invalid_auth": "SingleKey ID hat die Autorisierung abgelehnt oder sie ist abgelaufen. Verwende den neu angezeigten SingleKey-ID-Link und wiederhole die Anmeldung.",
       "invalid_redirect": "Home Assistant konnte diese Adresse nicht verwenden. Kopiere in der Chrome-Konsole aus der Meldung „Failed to launch“ die vollständige App-Adresse. Sie muss mit dem oben genannten Schema beginnen und zum aktuellen Anmeldeversuch gehören.",

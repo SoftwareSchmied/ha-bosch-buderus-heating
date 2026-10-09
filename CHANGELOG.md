@@ -5,6 +5,18 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Fixed
+
+- I fixed sign-in attempts getting stuck after their ten-minute limit. Expired
+  attempts now receive a fresh link and a specific explanation. Reauthentication
+  updates the existing entry without replacing its devices or entities.
+- I added a waiting step for SingleKey ID request limits. Early submissions do
+  not repeat token requests. After the pause, a new sign-in link replaces the
+  previous one-time authorization attempt.
+- I reject explicitly empty refresh tokens before they can replace saved
+  credentials. Responses that omit a replacement refresh token continue to
+  retain the previous token.
+
 ## [0.8.0-beta.2] - 2026-10-03
 
 This beta keeps fault details visible after a fault has cleared and improves
