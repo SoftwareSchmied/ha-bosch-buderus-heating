@@ -5,6 +5,96 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-10
+
+I am releasing 0.8.0 with heating fault notifications, a refreshed icon and
+fixes for disappearing solar entities and reauthentication. This stable
+release brings together the changes from beta.1 through beta.3. Apart from
+the version number, the integration code and packaged assets match beta.3.
+
+Thank you to ph15ch and lanebe for reporting the problems in #48 and #49
+and providing the details that helped me investigate them.
+
+### Heating fault notifications
+
+- I added persistent notifications to the Home Assistant bell. Notifications
+  are enabled by default and can be configured for each installation,
+  including while the cloud connection is unavailable.
+- Messages include fault codes, known descriptions and the times when Home
+  Assistant first observed the fault and confirmed its resolution. Active
+  and resolved incidents appear separately, with up to 25 resolved incidents
+  retained in the visible message.
+- Dismissed incidents are remembered across restarts. New incidents,
+  confirmed recurrences and increased severity can show the message again.
+  Failed readings and changes in fault classification do not imply resolution.
+- I improved recovery after interrupted setup or storage failures and
+  prevented duplicate notification observers during overlapping starts.
+  Notifications use the existing fault data and add no cloud requests.
+- Retained message details are cleared on dismissal, disabling notifications,
+  unloading or restart. They are not a permanent fault history. Dismissing
+  a message does not acknowledge or reset a fault on the appliance, and bell
+  notifications do not automatically send mobile push notifications.
+
+### Solar entities and sign-in
+
+- **Solar entities (#48):** I fixed startup cleanup deleting supported
+  entities below an unrecognized directory. The same protection covers
+  supported descendants in other subsystems. Existing entity IDs, custom
+  names and choices to disable entities are preserved across reloads.
+  Solar entities remain attached to the gateway device.
+- **Reauthentication (#49):** I added a clear explanation and a fresh sign-in
+  link when an attempt exceeds its ten-minute limit or must be restarted
+  after an interrupted token exchange. Reauthentication updates the existing
+  integration entry.
+- **SingleKey ID request limits:** A waiting step respects the required
+  pause. Submitting again during the pause does not send another token
+  request, and a fresh sign-in link is provided afterward.
+- **Refresh tokens:** I prevent explicitly empty replacement tokens from
+  overwriting saved credentials. If the server omits a replacement token,
+  the existing token is retained.
+
+### Appearance and maintenance
+
+- I added a heat pump icon with three blue-to-red thermal waves, with light
+  and dark variants at standard and double resolution. Home Assistant loads
+  the matching icon from the integration package.
+- I updated Hypothesis to 6.168.3, the Home Assistant test package to 0.13.367,
+  Ruff and its pre-commit hook to 0.16.9, the pinned CodeQL actions to 4.38.2
+  and the hassfest action. Pytest remains at 9.0.3 to satisfy the Home
+  Assistant test package's compatibility requirement.
+
+### Validation and field status
+
+- I ran 1,003 automated test cases on Home Assistant 2026.9.4 and 2026.10.0.
+  Both runs passed with 95.95% combined statement and branch coverage.
+  Formatting, linting, strict typing and the dependency audit also passed;
+  the audit found no known vulnerabilities.
+- I confirmed during beta.1 that notifications appeared on my installation
+  and changed to resolved when faults cleared. Beta.3 appeared to work in
+  my initial local check.
+- A 48-hour connection test and the specific solar restart and retained
+  fault-detail checks remain unconfirmed. The original cause of the
+  connection loss in #49 has not been established. I am keeping #36, #48
+  and #49 open for the remaining field feedback.
+
+### Upgrade
+
+Install **0.8.0** through HACS and restart Home Assistant. This is a stable
+release, so selecting beta versions is no longer necessary.
+
+When updating from 0.7.2, an existing active heating fault may immediately
+appear in the Home Assistant bell because notifications start enabled.
+Under **Settings > Devices & services > Bosch/Buderus Heating > Configure**,
+choose **Notifications** to select the installations to notify for.
+Holiday configuration has a separate entry in the same menu.
+
+For installations with solar entities, check that the expected entities
+remain after restart and reload and that their values update. If a new
+sign-in is requested, use the latest link in the dialog and observe the
+connection afterward. A fresh diagnostic export and the time of any
+failure will help with remaining problems. Review diagnostics for personal
+information before sharing and do not include sign-in links or tokens.
+
 ## [0.8.0-beta.3] - 2026-10-09
 
 I prepared this beta to address disappearing solar entities and sign-in attempts
