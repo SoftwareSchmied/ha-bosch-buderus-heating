@@ -69,13 +69,13 @@ and providing the details that helped me investigate them.
   Both runs passed with 95.95% combined statement and branch coverage.
   Formatting, linting, strict typing and the dependency audit also passed;
   the audit found no known vulnerabilities.
-- I confirmed during beta.1 that notifications appeared on my installation
-  and changed to resolved when faults cleared. Beta.3 appeared to work in
-  my initial local check.
-- A 48-hour connection test and the specific solar restart and retained
-  fault-detail checks remain unconfirmed. The original cause of the
-  connection loss in #49 has not been established. I am keeping #36, #48
-  and #49 open for the remaining field feedback.
+- I have tested the notification feature extensively on my own installation
+  and closed #36 as implemented and tested locally. Beta.3 also appeared
+  to work in my initial local check.
+- A 48-hour connection test and the specific solar restart checks remain
+  unconfirmed. The original cause of the connection loss in #49 has not
+  been established. I am keeping #48 and #49 open for the remaining field
+  feedback.
 
 ### Upgrade
 
