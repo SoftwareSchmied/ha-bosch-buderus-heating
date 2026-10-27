@@ -122,13 +122,18 @@ link directly from that dialog.
 size, and language. Enter the email address or mobile number of the existing
 SingleKey ID account.*
 
-The following procedure has been verified with Google Chrome. Open Developer
-Tools before signing in so Chrome displays the required redirect address:
+Use Google Chrome on a computer for the steps below. Open Developer Tools
+before signing in and keep its messages across page changes:
 
 1. Keep the Home Assistant setup dialog open.
 2. Open its **SingleKey ID** link in a new Chrome tab.
 3. Press `F12` in the SingleKey ID tab.
 4. Select **Console** at the top of Developer Tools.
+
+   Open **Console settings** using the small gear on the Console toolbar and
+   enable **Preserve log** (German: **Protokoll beibehalten**). This keeps
+   messages when the sign-in page redirects. Clear the **Filter** field and
+   select **All levels** so errors are not hidden.
 
    ![Chrome Developer Tools with the Console tab highlighted](images/setup/04-chrome-console.png)
 
@@ -165,10 +170,11 @@ Tools before signing in so Chrome displays the required redirect address:
     `code=`.
 16. Select **OK**.
 
-If the Console contains no matching message, repeat sign-in while Developer
-Tools is open. Always use the redirect address from the same attempt as the
-currently open Home Assistant setup dialog. An address from an older attempt
-is rejected for security reasons.
+If the Console contains no matching message, follow
+[Chrome Console is empty or the redirect address is missing](#chrome-console-is-empty-or-the-redirect-address-is-missing).
+Always use the redirect address from the same attempt as the currently open
+Home Assistant setup dialog. An address from an older attempt is rejected for
+security reasons.
 
 > [!IMPORTANT]
 > The redirect address contains a short-lived one-time code. Never publish it
@@ -242,6 +248,73 @@ is not necessary.
 - A profile-language change translates dialogs but does not rename entities.
   Names follow the system language or a custom name; see the
   [language guide](resource-names-and-languages.md).
+
+### Chrome Console is empty or the redirect address is missing
+
+An empty Console does not show whether sign-in completed or the browser tried
+to open the app address. It is not enough to identify an expired token.
+
+1. Start a fresh sign-in attempt in Home Assistant. Keep that dialog open and
+   open its **SingleKey ID** link in a new Chrome tab. Use this link rather
+   than a bookmark or the general SingleKey ID website.
+2. In the **SingleKey ID tab**, press `F12` and select **Console** before
+   signing in. Open the small **Console settings** gear and enable
+   **Preserve log**. Clear **Filter** and select **All levels**. Keep Developer
+   Tools open while completing every sign-in step.
+3. Look for **Failed to launch** or **Connecting to** and the
+   `com.bosch...://` or `com.buderus...://` address. If it appears, use
+   **Copy link address** and paste the full address into the still-open
+   Home Assistant dialog.
+4. If no address appears, note the page displayed after sign-in. If it is the
+   SingleKey ID account home page, follow
+   [SingleKey ID home page appears after sign-in](#singlekey-id-home-page-appears-after-sign-in).
+   Otherwise, [request help](#request-help) with your Chrome version, operating
+   system, Home Assistant version and integration version, plus any visible
+   page error. Mention whether Developer Tools was open before signing in.
+
+Each Home Assistant sign-in attempt is valid for ten minutes. After that,
+start a new attempt and use its new link. Do not delete an existing integration
+entry to do this. If a rate-limit message asks you to wait, wait for that
+interval before trying again.
+
+When describing the page, share only its domain and path, omitting everything
+from `?` or `#` onward. Do not share the app redirect address, sign-in codes,
+tokens or account details. Check any screenshot for these details first.
+
+**Preserve log** prevents messages from being cleared during page changes; it
+does not guarantee that Chrome will produce the expected redirect message.
+See the [Chrome documentation](https://developer.chrome.com/docs/devtools/console/reference#persist)
+for the setting.
+
+#### Deutsch: Keine Rückleitungsadresse in der Konsole
+
+Eine leere Konsole allein zeigt nicht, ob die Anmeldung abgeschlossen wurde
+oder der Browser versucht hat, die App-Adresse zu öffnen.
+
+1. Starte in Home Assistant einen neuen Anmeldeversuch und öffne dessen
+   **SingleKey ID**-Link in einem neuen Chrome-Tab. Lasse den Dialog in
+   Home Assistant geöffnet. Verwende kein Lesezeichen und nicht die allgemeine
+   SingleKey-ID-Webseite.
+2. Öffne im **SingleKey-ID-Tab vor der Anmeldung** mit `F12` die **Konsole**.
+   Aktiviere über das kleine Zahnrad der Konsolenleiste
+   **Protokoll beibehalten / Preserve log**. Leere das Filterfeld und wähle
+   **Alle Ebenen / All levels**. Lasse die Entwicklerwerkzeuge während der
+   gesamten Anmeldung geöffnet.
+3. Suche nach **Failed to launch** oder **Connecting to** und der
+   `com.bosch...://`- beziehungsweise `com.buderus...://`-Adresse. Kopiere sie
+   über **Link-Adresse kopieren** vollständig in den offenen HA-Dialog.
+4. Bleibt die Adresse aus, nenne bei einer Rückfrage die Chrome-Version,
+   das Betriebssystem, die HA- und Integrationsversion sowie die nach der
+   Anmeldung angezeigte Seite oder Fehlermeldung. Schreibe dazu, ob die
+   Entwicklerwerkzeuge schon vor der Anmeldung geöffnet waren.
+
+Ein Anmeldeversuch gilt zehn Minuten. Beginne danach mit einem neuen Link;
+ein bestehender Integrationseintrag muss dafür nicht gelöscht werden. Halte
+eine angezeigte Wartezeit ein. Teile von einer Webseitenadresse nur Domain
+und Pfad ohne den Teil ab `?` oder `#`. Veröffentliche keine App-Rückleitungsadresse,
+Anmeldecodes, Tokens oder Kontodaten, auch nicht in Screenshots.
+**Protokoll beibehalten** erhält vorhandene Meldungen bei Seitenwechseln,
+garantiert aber nicht, dass die erwartete Meldung entsteht.
 
 ### SingleKey ID home page appears after sign-in
 

@@ -5,6 +5,20 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Deutsch
+
+- Ich habe die Anmeldeanleitung um **Protokoll beibehalten**, die Prüfung der
+  Konsolenfilter und Hilfe bei einer fehlenden Rückleitungsadresse ergänzt.
+  Die Hinweise erklären auch die zehnminütige Gültigkeit eines Anmeldeversuchs
+  und welche Angaben bei einer Rückfrage helfen, ohne Anmeldedaten zu teilen.
+
+### English
+
+- I added **Preserve log**, Console filter checks and help for a missing
+  redirect address to the sign-in guide. The instructions also explain the
+  ten-minute lifetime of a sign-in attempt and which details help investigate
+  the problem without sharing sign-in credentials.
+
 ## [0.8.2-beta.7] - 2026-10-25
 
 > [!IMPORTANT]
