@@ -1,0 +1,223 @@
+{
+  "schema": 1,
+  "family": "connectkey",
+  "provenance": {
+    "kind": "anonymized_capture",
+    "basis": "observed_structure",
+    "reference": "Logatherm WLW186i-12 TP70 (BC400 system control) with MX400 gateway, read with plain GET requests",
+    "firmware": null,
+    "capture_date": "2026-10-29",
+    "created": "2026-10-29",
+    "redaction": "uri fields removed; every switch point time replaced by a constructed schedule. Field names, key order inside switch points, level keys, limits and HTTP results are as observed. No identifiers, names or real routines.",
+    "physical_device_verified": true,
+    "observed_errors": {
+      "/heatingCircuits/hc1/switchPrograms/B": 404,
+      "/dhwCircuits/dhw1/switchPrograms": 403,
+      "/dhwCircuits/dhw1/switchPrograms/B": 404,
+      "/dhwCircuits/dhw1/switchPrograms/cp": 403
+    },
+    "contract": "Read-only weekly time programs: dayOfWeek Mo..Su, time = minutes after local midnight, setpoint = key of the referenced temperature levels."
+  },
+  "cases": [
+    {
+      "id": "heating_program_a",
+      "payload": {
+        "id": "/heatingCircuits/hc1/switchPrograms/A",
+        "type": "switchProgram",
+        "setpointProperty": {
+          "id": "/heatingCircuits/hc1/temperatureLevels"
+        },
+        "writeable": 1,
+        "maxNbOfSwitchPoints": 14,
+        "maxNbOfSwitchPointsPerDay": 2,
+        "switchPointTimeRaster": 15,
+        "switchPoints": [
+          {
+            "dayOfWeek": "Mo",
+            "time": 360,
+            "setpoint": "comfort2"
+          },
+          {
+            "dayOfWeek": "Mo",
+            "time": 1290,
+            "setpoint": "eco"
+          },
+          {
+            "dayOfWeek": "Tu",
+            "time": 360,
+            "setpoint": "comfort2"
+          },
+          {
+            "dayOfWeek": "Tu",
+            "time": 1290,
+            "setpoint": "eco"
+          },
+          {
+            "dayOfWeek": "We",
+            "time": 360,
+            "setpoint": "comfort2"
+          },
+          {
+            "dayOfWeek": "We",
+            "time": 1290,
+            "setpoint": "eco"
+          },
+          {
+            "dayOfWeek": "Th",
+            "time": 360,
+            "setpoint": "comfort2"
+          },
+          {
+            "dayOfWeek": "Th",
+            "time": 1290,
+            "setpoint": "eco"
+          },
+          {
+            "dayOfWeek": "Fr",
+            "time": 360,
+            "setpoint": "comfort2"
+          },
+          {
+            "dayOfWeek": "Fr",
+            "time": 1290,
+            "setpoint": "eco"
+          },
+          {
+            "dayOfWeek": "Sa",
+            "time": 450,
+            "setpoint": "comfort2"
+          },
+          {
+            "dayOfWeek": "Sa",
+            "time": 1290,
+            "setpoint": "eco"
+          },
+          {
+            "dayOfWeek": "Su",
+            "time": 450,
+            "setpoint": "comfort2"
+          },
+          {
+            "dayOfWeek": "Su",
+            "time": 1290,
+            "setpoint": "eco"
+          }
+        ]
+      },
+      "expected": {
+        "levels": [
+          "comfort2",
+          "eco"
+        ],
+        "monday": [
+          "06:00 comfort2",
+          "21:30 eco"
+        ],
+        "saturday": [
+          "07:30 comfort2",
+          "21:30 eco"
+        ]
+      }
+    },
+    {
+      "id": "dhw_program_a",
+      "payload": {
+        "id": "/dhwCircuits/dhw1/switchPrograms/A",
+        "type": "switchProgram",
+        "setpointProperty": {
+          "id": "/dhwCircuits/dhw1/temperatureLevels"
+        },
+        "writeable": 1,
+        "maxNbOfSwitchPoints": 42,
+        "maxNbOfSwitchPointsPerDay": 6,
+        "switchPointTimeRaster": 15,
+        "switchPoints": [
+          {
+            "time": 330,
+            "setpoint": "low",
+            "dayOfWeek": "Mo"
+          },
+          {
+            "time": 1230,
+            "setpoint": "off",
+            "dayOfWeek": "Mo"
+          },
+          {
+            "time": 330,
+            "setpoint": "low",
+            "dayOfWeek": "Tu"
+          },
+          {
+            "time": 1230,
+            "setpoint": "off",
+            "dayOfWeek": "Tu"
+          },
+          {
+            "time": 330,
+            "setpoint": "low",
+            "dayOfWeek": "We"
+          },
+          {
+            "time": 1230,
+            "setpoint": "off",
+            "dayOfWeek": "We"
+          },
+          {
+            "time": 330,
+            "setpoint": "low",
+            "dayOfWeek": "Th"
+          },
+          {
+            "time": 1230,
+            "setpoint": "off",
+            "dayOfWeek": "Th"
+          },
+          {
+            "time": 330,
+            "setpoint": "low",
+            "dayOfWeek": "Fr"
+          },
+          {
+            "time": 1230,
+            "setpoint": "off",
+            "dayOfWeek": "Fr"
+          },
+          {
+            "time": 420,
+            "setpoint": "low",
+            "dayOfWeek": "Sa"
+          },
+          {
+            "time": 1230,
+            "setpoint": "off",
+            "dayOfWeek": "Sa"
+          },
+          {
+            "time": 420,
+            "setpoint": "low",
+            "dayOfWeek": "Su"
+          },
+          {
+            "time": 1230,
+            "setpoint": "off",
+            "dayOfWeek": "Su"
+          }
+        ]
+      },
+      "expected": {
+        "levels": [
+          "low",
+          "off"
+        ],
+        "monday": [
+          "05:30 low",
+          "20:30 off"
+        ],
+        "saturday": [
+          "07:00 low",
+          "20:30 off"
+        ]
+      }
+    }
+  ]
+}

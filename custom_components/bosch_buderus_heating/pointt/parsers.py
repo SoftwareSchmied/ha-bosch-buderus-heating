@@ -190,6 +190,15 @@ def _parse_numeric_error_states(value: object) -> tuple[tuple[int | float, ...],
     return tuple(sorted(markers)), True
 
 
+SWITCH_PROGRAM_FIELDS = (
+    "setpointProperty",
+    "maxNbOfSwitchPoints",
+    "maxNbOfSwitchPointsPerDay",
+    "switchPointTimeRaster",
+    "switchPoints",
+)
+
+
 def parse_resource(payload: object, *, path: str | None = None) -> Resource:
     """Parse one resource without rejecting unknown vendor fields."""
     data = _mapping(payload, message="Resource response must be an object")
@@ -241,6 +250,11 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
         step_size = None
     step_size_valid = "stepSize" not in data or step_size is not None
     used_raw, available_raw = data.get("used"), data.get("available")
+    program_fields = (
+        {key: _json_value(data[key]) for key in SWITCH_PROGRAM_FIELDS if key in data}
+        if data.get("type") == "switchProgram"
+        else {}
+    )
     return Resource(
         path=resource_path,
         value=_json_value(data.get("value")),
@@ -266,7 +280,9 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
             ),
         ),
         references=_parse_references(data.get("references")),
+        program_fields=program_fields,
         unknown_fields=frozenset(data)
+        - frozenset(program_fields)
         - {
             "id",
             "type",

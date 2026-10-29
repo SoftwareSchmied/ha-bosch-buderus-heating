@@ -5,6 +5,45 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Read-only time programs
+
+Heating and hot-water time programs (`switchPrograms/A`, also `B` where a
+gateway reports it) are shown as read-only diagnostic sensors (#95). The state
+is the level the program currently selects, for example **Heating** or
+**Reduced** for a heating circuit and **Eco** or **Off** for hot water. The
+attributes list the weekly switch points as local wall-clock times
+(`HH:MM level`) and the limits the device reports: total switch points,
+switch points per day and the time raster in minutes.
+
+The shape is validated strictly: weekdays `Mo`…`Su`, minutes after midnight
+within the raster, level keys of the referenced temperature levels and the
+reported limits. Unexpected shapes create no sensor. The program is read in the
+15/30-minute slow group; the state changes locally at the next switch point
+without an extra cloud request. Hot-water program A is probed directly because
+the program list can be forbidden while the program itself is readable. Editing
+switch points is not offered. Switch times are not written to diagnostics.
+
+The structure was confirmed on a Logatherm WLW186i-12 TP70 with MX400; the
+circulation program returned HTTP 403 there and is not shown. The fixture
+contains constructed times only.
+
+#### Deutsch
+
+Zeitprogramme für Heizung und Warmwasser (`switchPrograms/A`, sowie `B`, wenn
+ein Gateway es meldet) erscheinen als schreibgeschützte Diagnose-Sensoren
+(#95). Der Zustand ist die Stufe, die das Programm gerade wählt, z. B.
+**Heizen** oder **Absenken** beim Heizkreis und **Eco** oder **Aus** beim
+Warmwasser. Die Attribute zeigen die wöchentlichen Schaltpunkte als lokale
+Uhrzeiten (`HH:MM Stufe`) und die vom Gerät gemeldeten Grenzen: Schaltpunkte
+insgesamt, Schaltpunkte pro Tag und das Zeitraster in Minuten.
+
+Die Struktur wird streng geprüft; unerwartete Formen erzeugen keinen Sensor.
+Gelesen wird in der langsamen Gruppe, der Zustand wechselt lokal zum nächsten
+Schaltpunkt ohne zusätzliche Cloud-Abfrage. Schaltpunkte lassen sich nicht
+bearbeiten und erscheinen nicht in der Diagnose. Bestätigt an einer
+Logatherm WLW186i-12 TP70 mit MX400; das Zirkulationsprogramm lieferte dort
+HTTP 403 und wird nicht angezeigt.
+
 ## [0.8.2] - 2026-10-27
 
 I am releasing **Bosch/Buderus Home Comfort 0.8.2 as Stable/Latest**. It brings

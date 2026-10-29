@@ -1563,7 +1563,7 @@ def test_structured_values_do_not_raise_while_rendering_labels(
     hass: HomeAssistant,
 ) -> None:
     resource = Resource(
-        path="/heatingCircuits/hc1/switchPrograms/A",
+        path="/heatingCircuits/hc1/temperatureLevels",
         values=({"periods": ["06:00", "22:00"]},),
     )
 

@@ -139,6 +139,12 @@ def test_family_reading_contracts_reach_ha(hass, case):
 def test_fixtures_distinguish_synthetic_evidence_from_device_captures(path):
     fixture = json.loads(path.read_text(encoding="utf-8"))
     provenance = fixture["provenance"]
+    if provenance["kind"] == "anonymized_capture":
+        assert provenance["basis"] == "observed_structure"
+        assert provenance["capture_date"]
+        assert provenance["redaction"]
+        assert provenance["physical_device_verified"] is True
+        return
     assert provenance["kind"] == "synthetic"
     assert provenance["basis"] == "compatibility_mapping"
     assert provenance["firmware"] is None

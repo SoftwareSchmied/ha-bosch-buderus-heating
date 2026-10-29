@@ -2496,16 +2496,16 @@
       "model": "ConnectKeyDhwCircuitResource$DhwSwitchProgramA",
       "path": "/dhwCircuits/dhw{circuitNumber}/switchPrograms/A",
       "previous_path": "/dhwCircuits/{dhw}/switchPrograms/A",
-      "disposition": "missing_contract",
-      "reason": "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-      "followup_packages": [
-        "P07"
-      ],
+      "disposition": "supported_read",
+      "reason": "Read-only switch-program mapping: strict switchProgram schema (Mo..Su, minutes after local midnight, temperature-level keys, reported limits); the anonymized structure was observed on one physical installation.",
+      "followup_packages": [],
       "contract": {
         "transport": "PointT",
         "path_template": "/dhwCircuits/dhw{circuitNumber}/switchPrograms/A",
-        "model_value_types": [],
-        "response_shape": "not_established",
+        "model_value_types": [
+          "switchProgram"
+        ],
+        "response_shape": "switch_program",
         "unit_policy": "requires_live_metadata_review",
         "reviewed_units": [],
         "default_unit": null,
@@ -2520,7 +2520,7 @@
         },
         "write_permission": "Requires live writability and an applicable validated write policy",
         "control_platform": null,
-        "write_confirmation": "No scalar write policy",
+        "write_confirmation": "Read only; no write policy",
         "time_basis": "current_response",
         "poll_group": "slow",
         "provenance": {
@@ -2530,15 +2530,42 @@
           "firmware": null,
           "capture_date": null
         },
-        "fixture_refs": [],
-        "family_fixture": "tests/fixtures/contracts/connectkey/readings.json",
+        "fixture_refs": [
+          "tests/fixtures/contracts/connectkey/switch-programs.json"
+        ],
+        "family_fixture": "tests/fixtures/contracts/connectkey/switch-programs.json",
         "missing_evidence": [
-          "Physical response for the exact model and firmware, including unit and response shape",
-          "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-          "Current writable metadata, offered values or bounds, and an individual read-back test before adding or enabling controls"
+          "Other models and firmware, program B and further temperature-level keys",
+          "Editing switch points: capacity, conflict handling and read-back are not established; no write is offered",
+          "Behaviour around daylight-saving transitions on the controller"
         ]
       },
-      "schema_probe": null
+      "schema_probe": {
+        "payload": {
+          "id": "/dhwCircuits/dhw1/switchPrograms/A",
+          "type": "switchProgram",
+          "setpointProperty": {
+            "id": "/dhwCircuits/dhw1/temperatureLevels"
+          },
+          "writeable": 1,
+          "maxNbOfSwitchPoints": 42,
+          "maxNbOfSwitchPointsPerDay": 6,
+          "switchPointTimeRaster": 15,
+          "switchPoints": [
+            {
+              "time": 330,
+              "setpoint": "low",
+              "dayOfWeek": "Mo"
+            },
+            {
+              "time": 1230,
+              "setpoint": "off",
+              "dayOfWeek": "Mo"
+            }
+          ]
+        },
+        "catalog_supported": true
+      }
     },
     {
       "model_id": "R024",
@@ -7217,16 +7244,16 @@
       "model": "ConnectKeyHeatingCircuitResource$SwitchProgram$A",
       "path": "/heatingCircuits/hc{circuitNumber}/switchPrograms/A",
       "previous_path": "/heatingCircuits/{hc}/switchPrograms/A",
-      "disposition": "missing_contract",
-      "reason": "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-      "followup_packages": [
-        "P07"
-      ],
+      "disposition": "supported_read",
+      "reason": "Read-only switch-program mapping: strict switchProgram schema (Mo..Su, minutes after local midnight, temperature-level keys, reported limits); the anonymized structure was observed on one physical installation.",
+      "followup_packages": [],
       "contract": {
         "transport": "PointT",
         "path_template": "/heatingCircuits/hc{circuitNumber}/switchPrograms/A",
-        "model_value_types": [],
-        "response_shape": "not_established",
+        "model_value_types": [
+          "switchProgram"
+        ],
+        "response_shape": "switch_program",
         "unit_policy": "requires_live_metadata_review",
         "reviewed_units": [],
         "default_unit": null,
@@ -7241,7 +7268,7 @@
         },
         "write_permission": "Requires live writability and an applicable validated write policy",
         "control_platform": null,
-        "write_confirmation": "No scalar write policy",
+        "write_confirmation": "Read only; no write policy",
         "time_basis": "current_response",
         "poll_group": "slow",
         "provenance": {
@@ -7251,15 +7278,42 @@
           "firmware": null,
           "capture_date": null
         },
-        "fixture_refs": [],
-        "family_fixture": "tests/fixtures/contracts/connectkey/readings.json",
+        "fixture_refs": [
+          "tests/fixtures/contracts/connectkey/switch-programs.json"
+        ],
+        "family_fixture": "tests/fixtures/contracts/connectkey/switch-programs.json",
         "missing_evidence": [
-          "Physical response for the exact model and firmware, including unit and response shape",
-          "Structured response, semantic mapping or adapter support is not established by a path definition alone.",
-          "Current writable metadata, offered values or bounds, and an individual read-back test before adding or enabling controls"
+          "Other models and firmware, program B and further temperature-level keys",
+          "Editing switch points: capacity, conflict handling and read-back are not established; no write is offered",
+          "Behaviour around daylight-saving transitions on the controller"
         ]
       },
-      "schema_probe": null
+      "schema_probe": {
+        "payload": {
+          "id": "/heatingCircuits/hc1/switchPrograms/A",
+          "type": "switchProgram",
+          "setpointProperty": {
+            "id": "/heatingCircuits/hc1/temperatureLevels"
+          },
+          "writeable": 1,
+          "maxNbOfSwitchPoints": 14,
+          "maxNbOfSwitchPointsPerDay": 2,
+          "switchPointTimeRaster": 15,
+          "switchPoints": [
+            {
+              "dayOfWeek": "Mo",
+              "time": 360,
+              "setpoint": "comfort2"
+            },
+            {
+              "dayOfWeek": "Mo",
+              "time": 1290,
+              "setpoint": "eco"
+            }
+          ]
+        },
+        "catalog_supported": true
+      }
     },
     {
       "model_id": "R106",

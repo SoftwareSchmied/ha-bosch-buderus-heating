@@ -6,8 +6,8 @@ import logging
 import re
 from collections import Counter
 from collections.abc import Mapping
-from dataclasses import dataclass
-from datetime import UTC, datetime
+from dataclasses import dataclass, replace
+from datetime import UTC, datetime, timedelta
 from math import fsum, isfinite
 from typing import Literal, cast
 
@@ -28,9 +28,10 @@ from homeassistant.const import (
     UnitOfVolume,
     UnitOfVolumeFlowRate,
 )
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.event import async_track_point_in_time
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 from homeassistant.util.unit_conversion import TemperatureConverter
@@ -95,6 +96,12 @@ from .start_counters import (
     start_counter_placeholder,
 )
 from .startup_data import startup_placeholder
+from .switch_programs import (
+    DAYS,
+    assess_switch_program,
+    is_dhw_switch_program_path,
+    is_switch_program_path,
+)
 from .unit_contracts import DURATION_UNITS, ENERGY_UNITS, TEMPERATURE_UNITS
 from .wallbox_sensor import DESCRIPTIONS as WALLBOX_DESCRIPTIONS
 from .wallbox_sensor import WallboxSensor
@@ -111,6 +118,7 @@ type ValueKind = Literal[
     "system_info",
     "pressure_status",
     "dew_point",
+    "switch_program",
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -780,6 +788,9 @@ def build_sensor_descriptions(
                 for key, _ in assess_start_counter(resource).readings
             )
             continue
+        if is_switch_program_path(resource.path):
+            descriptions.append(_switch_program_description(resource))
+            continue
         if is_runtime_path(resource.path):
             descriptions.extend(
                 _description(resource, key, "value" if key is None else "nested")
@@ -926,6 +937,41 @@ def _energy_descriptions(
     return descriptions
 
 
+_SWITCH_PROGRAM_LEVELS = {
+    "heating_switch_program": ("comfort1", "comfort2", "comfort3", "eco", "off"),
+    "dhw_switch_program": ("low", "eco", "high", "off"),
+}
+
+
+def _switch_program_description(
+    resource: Resource,
+) -> BoschBuderusSensorEntityDescription:
+    """Describe one read-only program: the level it currently selects."""
+    translation_key = (
+        "dhw_switch_program"
+        if is_dhw_switch_program_path(resource.path)
+        else "heating_switch_program"
+    )
+    options = list(
+        dict.fromkeys(
+            (
+                *_SWITCH_PROGRAM_LEVELS[translation_key],
+                *assess_switch_program(resource).levels,
+            )
+        )
+    )
+    return replace(
+        _description(resource, None, "switch_program"),
+        native_unit_of_measurement=None,
+        device_class=SensorDeviceClass.ENUM,
+        state_class=None,
+        options=options,
+        translation_key=translation_key,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:calendar-clock",
+    )
+
+
 def _description(
     resource: Resource,
     value_key: str | None,
@@ -1012,6 +1058,7 @@ class BoschBuderusSensor(
         self.entity_description = description
         self._unknown_enum_values: set[str] = set()
         self._unknown_enum_warning_logged = False
+        self._switch_timer: CALLBACK_TYPE | None = None
         language = coordinator.hass.config.language
         display_subkey = (
             None if description.value_key in {None, "values"} else description.value_key
@@ -1087,6 +1134,14 @@ class BoschBuderusSensor(
             return None
         resource = snapshot.resource
         description = self.entity_description
+        if description.value_kind == "switch_program":
+            if not snapshot.available:
+                return None
+            now = dt_util.now()
+            level = assess_switch_program(resource).active_level(
+                now.weekday(), now.hour * 60 + now.minute
+            )
+            return None if level is None else self._validated_enum_state(level)
         if rrc.scalar_field(resource.path):
             return rrc.scalar_value(resource) if self.available else None
         if is_monitor_collection(resource.path):
@@ -1230,8 +1285,10 @@ class BoschBuderusSensor(
         return self.entity_description.native_unit_of_measurement
 
     @property
-    def extra_state_attributes(self) -> dict[str, str | float] | None:
+    def extra_state_attributes(self) -> Mapping[str, object] | None:
         description = self.entity_description
+        if description.value_kind == "switch_program":
+            return self._switch_program_attributes()
         if description.value_kind == "dew_point":
             calculation = self._dew_point_calculation
             if calculation is None:
@@ -1275,7 +1332,7 @@ class BoschBuderusSensor(
         snapshot = self._snapshot
         if snapshot is None:
             return None
-        attributes: dict[str, str | float] = {}
+        attributes: dict[str, object] = {}
         module_number = 0
         for item in snapshot.resource.values:
             if not isinstance(item, dict):
@@ -1286,6 +1343,64 @@ class BoschBuderusSensor(
                 if isinstance(value, str) and value.strip():
                     attributes[f"modul_{module_number}_{attribute_key}"] = value.strip()
         return attributes or None
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        if self.entity_description.value_kind == "switch_program":
+            self.async_on_remove(self._cancel_switch_timer)
+            self._schedule_next_switch()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        if self.entity_description.value_kind == "switch_program":
+            self._schedule_next_switch()
+        super()._handle_coordinator_update()
+
+    @callback
+    def _schedule_next_switch(self) -> None:
+        """Refresh the state at the next switch point, without a cloud request."""
+        self._cancel_switch_timer()
+        snapshot = self._snapshot
+        if snapshot is None or not snapshot.available:
+            return
+        now = dt_util.now()
+        minutes = assess_switch_program(snapshot.resource).next_switch_in_minutes(
+            now.weekday(), now.hour * 60 + now.minute
+        )
+        if minutes is None:
+            return
+        at = now.replace(second=0, microsecond=0) + timedelta(minutes=minutes)
+        self._switch_timer = async_track_point_in_time(
+            self.hass, self._handle_switch_point, at
+        )
+
+    @callback
+    def _handle_switch_point(self, _now: datetime) -> None:
+        self._switch_timer = None
+        self.async_write_ha_state()
+        self._schedule_next_switch()
+
+    @callback
+    def _cancel_switch_timer(self) -> None:
+        if self._switch_timer is not None:
+            self._switch_timer()
+            self._switch_timer = None
+
+    def _switch_program_attributes(self) -> dict[str, object] | None:
+        """Expose the weekly switch points and reported limits, never a URI."""
+        snapshot = self._snapshot
+        if snapshot is None or not snapshot.available:
+            return None
+        assessment = assess_switch_program(snapshot.resource)
+        if not assessment.supported:
+            return None
+        schedule = assessment.schedule()
+        return {
+            "switch_points": {day: schedule[day] for day in DAYS if day in schedule},
+            "max_switch_points": assessment.max_switch_points,
+            "max_switch_points_per_day": assessment.max_switch_points_per_day,
+            "time_raster_minutes": assessment.time_raster,
+        }
 
     @property
     def device_info(self) -> DeviceInfo:

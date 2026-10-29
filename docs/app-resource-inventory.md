@@ -20,10 +20,10 @@ The family fixtures contain separately chosen semantic examples.
 | directory | 28 |
 | excluded | 34 |
 | history | 11 |
-| missing_contract | 47 |
+| missing_contract | 45 |
 | separate_package | 2 |
 | supported_control | 4 |
-| supported_read | 231 |
+| supported_read | 233 |
 | supported_transaction | 4 |
 
 The [P03 report](resource-contracts.md) describes duration corrections,
@@ -55,7 +55,7 @@ No real device capture is claimed for these new examples.
 | R020 | connectkeyprovider | `ConnectKeyDhwCircuitResource$DhwOperationMode` | `/dhwCircuits/dhw{circuitNumber}/operationMode` | supported_read | device confirmation as applicable |
 | R021 | connectkeyprovider | `ConnectKeyDhwCircuitResource$DhwOutTemp` | `/dhwCircuits/dhw{circuitNumber}/outTemp` | supported_read | device confirmation as applicable |
 | R022 | connectkeyprovider | `ConnectKeyDhwCircuitResource$DhwSingleChargeSetpoint` | `/dhwCircuits/dhw{circuitNumber}/singleChargeSetpoint` | supported_read | device confirmation as applicable |
-| R023 | connectkeyprovider | `ConnectKeyDhwCircuitResource$DhwSwitchProgramA` | `/dhwCircuits/dhw{circuitNumber}/switchPrograms/A` | missing_contract | P07 |
+| R023 | connectkeyprovider | `ConnectKeyDhwCircuitResource$DhwSwitchProgramA` | `/dhwCircuits/dhw{circuitNumber}/switchPrograms/A` | supported_read | read only; other models and editing |
 | R024 | connectkeyprovider | `ConnectKeyDhwCircuitResource$DhwTemperatureLevels` | `/dhwCircuits/dhw{circuitNumber}/temperatureLevels` | missing_contract | P03 |
 | R025 | connectkeyprovider | `ConnectKeyDhwCircuitResource$DhwTemperatureLevelsEco` | `/dhwCircuits/dhw{circuitNumber}/temperatureLevels/eco` | supported_read | device confirmation as applicable |
 | R026 | connectkeyprovider | `ConnectKeyDhwCircuitResource$DhwTemperatureLevelsHigh` | `/dhwCircuits/dhw{circuitNumber}/temperatureLevels/high` | supported_read | device confirmation as applicable |
@@ -137,7 +137,7 @@ No real device capture is claimed for these new examples.
 | R102 | connectkeyprovider | `ConnectKeyHeatingCircuitResource$SuWiCoolingThreshold` | `/heatingCircuits/hc{circuitNumber}/suWiCoolingThreshold` | supported_read | device confirmation as applicable |
 | R103 | connectkeyprovider | `ConnectKeyHeatingCircuitResource$SuWiSwitchMode` | `/heatingCircuits/hc{circuitNumber}/suWiSwitchMode` | supported_read | device confirmation as applicable |
 | R104 | connectkeyprovider | `ConnectKeyHeatingCircuitResource$SuWiThreshold` | `/heatingCircuits/hc{circuitNumber}/suWiThreshold` | supported_read | device confirmation as applicable |
-| R105 | connectkeyprovider | `ConnectKeyHeatingCircuitResource$SwitchProgram$A` | `/heatingCircuits/hc{circuitNumber}/switchPrograms/A` | missing_contract | P07 |
+| R105 | connectkeyprovider | `ConnectKeyHeatingCircuitResource$SwitchProgram$A` | `/heatingCircuits/hc{circuitNumber}/switchPrograms/A` | supported_read | read only; other models and editing |
 | R106 | connectkeyprovider | `ConnectKeyHeatingCircuitResource$SwitchProgram$B` | `/heatingCircuits/hc{circuitNumber}/switchPrograms/B` | missing_contract | P07 |
 | R107 | connectkeyprovider | `ConnectKeyHeatingCircuitResource$SwitchProgram$NameA` | `/heatingCircuits/hc{circuitNumber}/switchPrograms/nameA` | supported_read | device confirmation as applicable |
 | R108 | connectkeyprovider | `ConnectKeyHeatingCircuitResource$SwitchProgram$NameB` | `/heatingCircuits/hc{circuitNumber}/switchPrograms/nameB` | supported_read | device confirmation as applicable |

@@ -629,6 +629,25 @@
       "calculated_dew_point": {
         "name": "Dew point (calculated)"
       },
+      "heating_switch_program": {
+        "name": "Heating time program",
+        "state": {
+          "comfort1": "Comfort 1",
+          "comfort2": "Heating",
+          "comfort3": "Comfort 3",
+          "eco": "Reduced",
+          "off": "Off"
+        }
+      },
+      "dhw_switch_program": {
+        "name": "Hot-water time program",
+        "state": {
+          "low": "Eco",
+          "eco": "Eco+",
+          "high": "Comfort",
+          "off": "Off"
+        }
+      },
       "heating_circuit_switch_program_mode": {
         "name": "Heating circuit schedule type",
         "state": {

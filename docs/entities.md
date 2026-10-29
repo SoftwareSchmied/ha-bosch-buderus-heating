@@ -336,6 +336,7 @@ no entity; a configured name is added dynamically.
 | Operating status | Sensor | `/heatingCircuits/{hc}/overallStatus` | No | No | 60 s |
 | Schedule type | Sensor | `/heatingCircuits/{hc}/switchProgramMode` | Yes | No | 5 min |
 | Schedule name A | Sensor | `/heatingCircuits/{hc}/switchPrograms/nameA` | Yes | No | 5 min |
+| Time program A (B) | Diagnostic enum sensor | `/heatingCircuits/{hc}/switchPrograms/A` | Yes | No | 15/30 min; state changes locally at each switch point |
 | Heating | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/comfort2` | Yes | Yes | 5 min; read back after change |
 | Setback | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/eco` | Yes | Yes | 5 min; read back after change |
 
@@ -353,6 +354,16 @@ official apps: `level` is shown as **Temperature level**, `levels` as
 The latter means that each schedule period can use an independently chosen
 temperature. Schedule editing itself remains outside the current Home
 Assistant controls.
+
+The read-only time-program sensors show the level that program A (or B)
+currently selects. Their attributes list the switch points per weekday as
+local wall-clock times (`HH:MM level`), the total and per-day limits and the
+time raster reported by the device. The state is recalculated at the next
+switch point without a cloud request. A program with an unexpected shape, no
+switch points or an unknown setpoint reference creates no sensor; an existing
+sensor becomes unknown until a valid program is read again. On the reference
+WLW186i, heating allowed two and hot water six switch points per day in a
+15-minute raster, matching the app.
 
 Other enum-like diagnostic values are normalized from the exact PointT
 spellings embedded in MyBuderus and HomeCom Easy. This includes heating and
@@ -393,6 +404,7 @@ reported.
 | Comfort start temperature | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/high` | Yes | Yes | 5 min; read back after change |
 | Eco start temperature | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/low` | Yes | Yes | 5 min; read back after change |
 | Off | Sensor | `/dhwCircuits/{dhw}/temperatureLevels/off` | No | No | 15 min |
+| Time program A | Diagnostic enum sensor | `/dhwCircuits/{dhw}/switchPrograms/A` | Yes | No | 15/30 min; state changes locally at each switch point |
 
 Number controls use the minimum and maximum reported by the gateway. They are
 created only when both limits are complete and fall within additional safe

@@ -357,6 +357,7 @@ _HEATING_CIRCUIT_OPTIONAL_SUFFIXES = (
 
 _DHW_CIRCUIT_OPTIONAL_SUFFIXES = (
     "/dhwType",
+    "/switchPrograms/A",
     "/currentFriwaSupplyTemperature",
     "/friwaPrimaryPumpModulation",
     "/inletTemperature",

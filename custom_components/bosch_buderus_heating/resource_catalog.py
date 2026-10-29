@@ -16,6 +16,7 @@ from .pointt import Resource
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
 from .start_counters import assess_start_counter, is_start_counter_path
 from .startup_data import is_static_startup_resource
+from .switch_programs import assess_switch_program, is_switch_program_path
 from .unit_contracts import canonical_unit
 from .water_softener import softener_capability, softener_schema_issue
 
@@ -800,6 +801,10 @@ _ENGLISH_PATH_NAMES = {
 # Keep both languages together so a technical leaf such as "on" or "gas"
 # cannot acquire the meaning of a different device family.
 _APP_PATH_NAMES = {
+    "/heatingCircuits/*/switchPrograms/A": ("Zeitprogramm A", "Time program A"),
+    "/heatingCircuits/*/switchPrograms/B": ("Zeitprogramm B", "Time program B"),
+    "/dhwCircuits/*/switchPrograms/A": ("Zeitprogramm A", "Time program A"),
+    "/dhwCircuits/*/switchPrograms/B": ("Zeitprogramm B", "Time program B"),
     "/heatSources/hybrid/controlStrategy": (
         "Hybrid-Regelungsstrategie",
         "Hybrid control strategy",
@@ -1003,6 +1008,8 @@ def _matches_optional_app_schema(resource: Resource) -> bool:
         return softener_schema_issue(resource) is None
     if is_start_counter_path(resource.path):
         return assess_start_counter(resource).supported
+    if is_switch_program_path(resource.path):
+        return assess_switch_program(resource).supported
     for rule in _ADDITIONAL_SCALAR_RULES:
         if rule.pattern.fullmatch(resource.path):
             return (
@@ -1020,6 +1027,8 @@ def _matches_optional_app_schema(resource: Resource) -> bool:
 def capability_maturity(path: str) -> CapabilityMaturity:
     """Return the curated evidence level for a concrete PointT path."""
     if rrc.scalar_field(path):
+        return CapabilityMaturity.UNDERSTOOD
+    if is_switch_program_path(path):
         return CapabilityMaturity.UNDERSTOOD
     if softener_capability(path) is not None:
         return CapabilityMaturity.UNDERSTOOD
@@ -1085,6 +1094,8 @@ def poll_group(resource: Resource) -> PollGroup:
         return PollGroup.STATIC
     if is_start_counter_path(resource.path):
         # An empty or malformed sample must not permanently stop recovery.
+        return PollGroup.SLOW
+    if is_switch_program_path(resource.path):
         return PollGroup.SLOW
     if is_static_startup_resource(resource):
         return PollGroup.STATIC

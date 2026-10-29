@@ -98,6 +98,7 @@ class Resource:
     references: tuple[ResourceReference, ...] = ()
     has_values: bool = False
     unknown_fields: frozenset[str] = frozenset()
+    program_fields: dict[str, JsonValue] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
