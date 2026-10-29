@@ -52,7 +52,7 @@ from .resource_catalog import (
 from .runtime import BoschBuderusRuntimeData
 from .start_counters import is_start_counter_path, registered_start_counter_path
 from .startup_data import STARTUP_BUDGET_SECONDS, StartupSession, is_startup_entity_path
-from .switch_programs import assess_switch_program
+from .switch_programs import is_switch_program_path
 from .wallbox import WallboxCoordinator, is_wallbox
 
 if TYPE_CHECKING:
@@ -475,7 +475,9 @@ def _remove_retired_entities(
                 resource.metadata.resource_type == "switchProgram"
                 and not resource.has_value
                 and not resource.values
-                and not assess_switch_program(resource).supported
+                # A known program may be temporarily empty or malformed. Keep
+                # its registry entry, including the user's name and activation.
+                and not is_switch_program_path(resource.path)
             ) or empty_name:
                 semantic_path = resource.path.strip("/").replace("/", ":")
                 retired_unique_ids.add(f"{gateway_id}:{semantic_path}")

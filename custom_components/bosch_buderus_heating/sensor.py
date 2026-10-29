@@ -7,7 +7,7 @@ import re
 from collections import Counter
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from math import fsum, isfinite
 from typing import Literal, cast
 
@@ -31,7 +31,7 @@ from homeassistant.const import (
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
-from homeassistant.helpers.event import async_track_point_in_time
+from homeassistant.helpers.event import async_track_utc_time_change
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 from homeassistant.util.unit_conversion import TemperatureConverter
@@ -67,6 +67,7 @@ from .holiday_writes import holiday_resources_from_snapshots
 from .holidays import (
     HolidayPeriod,
     HolidayState,
+    holiday_timezone,
     is_holiday_period_path,
     is_holiday_resource_path,
     parse_holiday_state,
@@ -943,6 +944,20 @@ _SWITCH_PROGRAM_LEVELS = {
 }
 
 
+def _switch_program_options(resource: Resource) -> list[str]:
+    """Include the known levels and the current program's validated level keys."""
+    key = (
+        "dhw_switch_program"
+        if is_dhw_switch_program_path(resource.path)
+        else "heating_switch_program"
+    )
+    return list(
+        dict.fromkeys(
+            (*_SWITCH_PROGRAM_LEVELS[key], *assess_switch_program(resource).levels)
+        )
+    )
+
+
 def _switch_program_description(
     resource: Resource,
 ) -> BoschBuderusSensorEntityDescription:
@@ -952,20 +967,12 @@ def _switch_program_description(
         if is_dhw_switch_program_path(resource.path)
         else "heating_switch_program"
     )
-    options = list(
-        dict.fromkeys(
-            (
-                *_SWITCH_PROGRAM_LEVELS[translation_key],
-                *assess_switch_program(resource).levels,
-            )
-        )
-    )
     return replace(
         _description(resource, None, "switch_program"),
         native_unit_of_measurement=None,
         device_class=SensorDeviceClass.ENUM,
         state_class=None,
-        options=options,
+        options=_switch_program_options(resource),
         translation_key=translation_key,
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:calendar-clock",
@@ -1059,6 +1066,7 @@ class BoschBuderusSensor(
         self._unknown_enum_values: set[str] = set()
         self._unknown_enum_warning_logged = False
         self._switch_timer: CALLBACK_TYPE | None = None
+        self._last_switch_level: str | None = None
         language = coordinator.hass.config.language
         display_subkey = (
             None if description.value_key in {None, "values"} else description.value_key
@@ -1100,6 +1108,20 @@ class BoschBuderusSensor(
         )
 
     @property
+    def options(self) -> list[str] | None:
+        """Keep program enum options in sync with validated polling data."""
+        if self.entity_description.value_kind != "switch_program":
+            return super().options
+        snapshot = self._snapshot
+        if (
+            snapshot is None
+            or not snapshot.available
+            or not assess_switch_program(snapshot.resource).supported
+        ):
+            return self.entity_description.options
+        return _switch_program_options(snapshot.resource)
+
+    @property
     def available(self) -> bool:
         snapshot = self._snapshot
         if not (super().available and snapshot is not None and snapshot.available):
@@ -1135,13 +1157,7 @@ class BoschBuderusSensor(
         resource = snapshot.resource
         description = self.entity_description
         if description.value_kind == "switch_program":
-            if not snapshot.available:
-                return None
-            now = dt_util.now()
-            level = assess_switch_program(resource).active_level(
-                now.weekday(), now.hour * 60 + now.minute
-            )
-            return None if level is None else self._validated_enum_state(level)
+            return self._switch_program_level()
         if rrc.scalar_field(resource.path):
             return rrc.scalar_value(resource) if self.available else None
         if is_monitor_collection(resource.path):
@@ -1249,8 +1265,8 @@ class BoschBuderusSensor(
         return scalar
 
     def _validated_enum_state(self, value: str) -> str | None:
-        """Return only enum states declared when this entity was created."""
-        options = self.entity_description.options
+        """Return only enum states declared by the sensor's current schema."""
+        options = self.options
         if options is None or value in options:
             return value
 
@@ -1348,43 +1364,66 @@ class BoschBuderusSensor(
         await super().async_added_to_hass()
         if self.entity_description.value_kind == "switch_program":
             self.async_on_remove(self._cancel_switch_timer)
-            self._schedule_next_switch()
+            self._update_switch_timer()
 
     @callback
     def _handle_coordinator_update(self) -> None:
         if self.entity_description.value_kind == "switch_program":
-            self._schedule_next_switch()
+            self._update_switch_timer()
         super()._handle_coordinator_update()
 
     @callback
-    def _schedule_next_switch(self) -> None:
-        """Refresh the state at the next switch point, without a cloud request."""
-        self._cancel_switch_timer()
+    def _update_switch_timer(self) -> None:
+        """Observe UTC minute boundaries while a valid program is available."""
         snapshot = self._snapshot
-        if snapshot is None or not snapshot.available:
+        if (
+            snapshot is None
+            or not self.available
+            or not assess_switch_program(snapshot.resource).supported
+        ):
+            self._cancel_switch_timer()
             return
-        now = dt_util.now()
-        minutes = assess_switch_program(snapshot.resource).next_switch_in_minutes(
-            now.weekday(), now.hour * 60 + now.minute
-        )
-        if minutes is None:
-            return
-        at = now.replace(second=0, microsecond=0) + timedelta(minutes=minutes)
-        self._switch_timer = async_track_point_in_time(
-            self.hass, self._handle_switch_point, at
-        )
+        self._last_switch_level = self._switch_program_level()
+        if self._switch_timer is None:
+            # Wall-clock minutes are not elapsed minutes across a DST change.
+            # UTC ticks also catch the jump over a missing hour or back into a
+            # repeated hour. Only a changed level writes state; no API call runs.
+            self._switch_timer = async_track_utc_time_change(
+                self.hass, self._handle_switch_minute, second=0
+            )
 
     @callback
-    def _handle_switch_point(self, _now: datetime) -> None:
-        self._switch_timer = None
-        self.async_write_ha_state()
-        self._schedule_next_switch()
+    def _handle_switch_minute(self, _now: datetime) -> None:
+        if not self.available:
+            self._cancel_switch_timer()
+            return
+        level = self._switch_program_level()
+        if level != self._last_switch_level:
+            self._last_switch_level = level
+            self.async_write_ha_state()
 
     @callback
     def _cancel_switch_timer(self) -> None:
         if self._switch_timer is not None:
             self._switch_timer()
             self._switch_timer = None
+        self._last_switch_level = None
+
+    def _switch_program_level(self) -> str | None:
+        """Calculate the scheduled level using the gateway's local clock."""
+        snapshot = self._snapshot
+        if snapshot is None or not snapshot.available:
+            return None
+        zone = holiday_timezone(
+            self.coordinator.resources,
+            dt_util.get_default_time_zone(),
+            timezones=self.coordinator.holiday_timezones,
+        )
+        now = dt_util.utcnow().astimezone(zone)
+        level = assess_switch_program(snapshot.resource).active_level(
+            now.weekday(), now.hour * 60 + now.minute
+        )
+        return None if level is None else self._validated_enum_state(level)
 
     def _switch_program_attributes(self) -> dict[str, object] | None:
         """Expose the weekly switch points and reported limits, never a URI."""

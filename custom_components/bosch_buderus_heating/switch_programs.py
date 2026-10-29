@@ -70,7 +70,7 @@ class SwitchProgramAssessment:
         return None if point is None else point.level
 
     def next_switch_in_minutes(self, day: int, minute: int) -> int | None:
-        """Return the minutes until the next switch point, at most one week."""
+        """Return wall-clock minutes, not elapsed time across clock changes."""
         if not self.points:
             return None
         now = day * MINUTES_PER_DAY + minute

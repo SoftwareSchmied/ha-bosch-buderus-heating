@@ -513,7 +513,7 @@ def test_observed_vendor_entities_are_retired_from_registry(
     assert entity_registry.async_get(verified.entity_id) is not None
 
 
-def test_retired_empty_and_duplicate_entities_are_removed(
+def test_retirement_keeps_known_programs_and_removes_obsolete_entities(
     hass: HomeAssistant,
 ) -> None:
     entry = _entry(hass)
@@ -564,7 +564,7 @@ def test_retired_empty_and_duplicate_entities_are_removed(
     _remove_retired_entities(hass, entry, (coordinator,))
 
     assert entity_registry.async_get(duplicate.entity_id) is not None
-    assert entity_registry.async_get(empty_program.entity_id) is None
+    assert entity_registry.async_get(empty_program.entity_id) is not None
     assert entity_registry.async_get(empty_name.entity_id) is None
     assert entity_registry.async_get(direct_electricity.entity_id) is None
     assert entity_registry.async_get(retained.entity_id) is not None

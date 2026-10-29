@@ -8,20 +8,29 @@ Versioning after its first tagged preview.
 ### Read-only time programs
 
 Heating and hot-water time programs (`switchPrograms/A`, also `B` where a
-gateway reports it) are shown as read-only diagnostic sensors (#95). The state
-is the level the program currently selects, for example **Heating** or
-**Reduced** for a heating circuit and **Eco** or **Off** for hot water. The
-attributes list the weekly switch points as local wall-clock times
+gateway reports it) are shown as read-only diagnostic sensors (#95), disabled
+by default. The state is the level scheduled for the current local time, for
+example **Heating** or **Reduced** for a heating circuit and **Eco** or **Off**
+for hot water. The attributes list the weekly switch points as local wall-clock times
 (`HH:MM level`) and the limits the device reports: total switch points,
 switch points per day and the time raster in minutes.
 
 The shape is validated strictly: weekdays `Mo`…`Su`, minutes after midnight
-within the raster, level keys of the referenced temperature levels and the
-reported limits. Unexpected shapes create no sensor. The program is read in the
-15/30-minute slow group; the state changes locally at the next switch point
-without an extra cloud request. Hot-water program A is probed directly because
-the program list can be forbidden while the program itself is readable. Editing
-switch points is not offered. Switch times are not written to diagnostics.
+within the raster, level-key syntax, the same circuit's temperature-level
+reference and the reported limits. Unexpected shapes create no sensor.
+The program is read in the 15/30-minute slow group. The scheduled level is
+recalculated locally each minute
+using the gateway's time zone, with Home Assistant's zone as a fallback. Only a
+changed level updates the state, without an extra cloud request. The calculation
+follows local clock changes, including skipped and repeated hours. It does not
+confirm which program or operating mode the controller is actually using.
+Hot-water program A is probed directly because the program list can be forbidden
+while the program itself is readable. Editing switch points is not offered.
+Switch times are not written to diagnostics.
+
+I also preserve existing entity names and activation settings when a program is
+temporarily empty or malformed. New valid level keys are accepted after normal
+polling without recreating the entity or restarting Home Assistant.
 
 The structure was confirmed on a Logatherm WLW186i-12 TP70 with MX400; the
 circulation program returned HTTP 403 there and is not shown. The fixture
@@ -31,18 +40,28 @@ contains constructed times only.
 
 Zeitprogramme für Heizung und Warmwasser (`switchPrograms/A`, sowie `B`, wenn
 ein Gateway es meldet) erscheinen als schreibgeschützte Diagnose-Sensoren
-(#95). Der Zustand ist die Stufe, die das Programm gerade wählt, z. B.
-**Heizen** oder **Absenken** beim Heizkreis und **Eco** oder **Aus** beim
-Warmwasser. Die Attribute zeigen die wöchentlichen Schaltpunkte als lokale
+(#95), die standardmäßig deaktiviert sind. Der Zustand ist die für die aktuelle
+lokale Uhrzeit vorgesehene Stufe, z. B. **Heizen** oder **Absenken** beim Heizkreis
+und **Eco** oder **Aus** beim Warmwasser. Die Attribute zeigen die wöchentlichen
+Schaltpunkte als lokale
 Uhrzeiten (`HH:MM Stufe`) und die vom Gerät gemeldeten Grenzen: Schaltpunkte
 insgesamt, Schaltpunkte pro Tag und das Zeitraster in Minuten.
 
 Die Struktur wird streng geprüft; unerwartete Formen erzeugen keinen Sensor.
-Gelesen wird in der langsamen Gruppe, der Zustand wechselt lokal zum nächsten
-Schaltpunkt ohne zusätzliche Cloud-Abfrage. Schaltpunkte lassen sich nicht
-bearbeiten und erscheinen nicht in der Diagnose. Bestätigt an einer
-Logatherm WLW186i-12 TP70 mit MX400; das Zirkulationsprogramm lieferte dort
-HTTP 403 und wird nicht angezeigt.
+Gelesen wird in der langsamen Gruppe. Die Stufe wird lokal jede Minute mit der
+Zeitzone des Gateways neu berechnet; ersatzweise gilt die Zeitzone von Home
+Assistant. Nur eine geänderte Stufe aktualisiert den Zustand, ohne zusätzliche
+Cloud-Abfrage. Die Berechnung berücksichtigt übersprungene und wiederholte
+Stunden bei Zeitumstellungen. Sie bestätigt nicht, welches Programm oder welche
+Betriebsart die Anlage tatsächlich verwendet. Schaltpunkte lassen sich nicht
+bearbeiten und erscheinen nicht in der Diagnose. Die Programmstruktur wurde an
+einer Logatherm WLW186i-12 TP70 mit MX400 bestätigt; das Zirkulationsprogramm
+lieferte dort HTTP 403 und wird nicht angezeigt.
+
+Ich erhalte außerdem bestehende Entitätsnamen und Aktivierungseinstellungen,
+wenn ein Programm vorübergehend leer oder fehlerhaft ist. Neue gültige
+Stufenschlüssel werden nach dem regulären Abruf ohne Neuerstellung der Entität
+oder Neustart von Home Assistant übernommen.
 
 ## [0.8.2] - 2026-10-27
 
