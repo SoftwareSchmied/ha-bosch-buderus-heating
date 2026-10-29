@@ -4,6 +4,39 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.8.3-beta.1 verification
+
+I prepared **0.8.3-beta.1 as a pre-release** for the read-only heating and
+hot-water time-program contribution in #96. **0.8.2 remains Stable/Latest.**
+Thank you to ReuDa for the implementation and the initial WLW186i/MX400
+device evidence. I corrected clock-change scheduling, gateway time-zone
+selection, preservation of existing entities and updates to program levels.
+
+The local checks passed **3,277 automated cases**, including parametrized
+variants, with **96.82% combined statement and branch coverage**. Ruff,
+formatting and strict Mypy passed. The tests cover both clock changes using
+Home Assistant's timer helpers, actual HA enum-state validation, recovery
+after invalid or unavailable data, preserved registry preferences and cleanup.
+The new program module has full statement and branch coverage.
+
+Two local Linux builds produced the same **98-file**, **337,379-byte** archive
+with manifest version **0.8.3-beta.1**. SHA-256:
+`b843bfcbc9331388fd6628a9923f3231d8135f8c4b84a941b9e691555a466182`.
+The package tests verify an import from an isolated ZIP installation. An
+isolated runtime dependency audit found no known vulnerabilities.
+
+The release must pass all GitHub checks on the final PR revision, including
+the browser tests, followed by the tag-triggered release workflow. Publication
+uses an annotated tag from the verified merged result. I compare the downloaded
+ZIP and checksum with the local Linux build and the English release notes with
+the exact CHANGELOG section before considering publication verified.
+
+The new sensors are disabled by default and make no appliance writes. They
+show the level scheduled for the current local time, which can differ from
+actual operation under a manual setting, holiday or other override. I have
+not installed this beta on a physical system or confirmed the controller's
+clock-change behavior. Issue #95 remains open for the updated display checks.
+
 ## 0.8.2 verification
 
 I prepared **0.8.2 as Stable/Latest** on 2026-10-27 from the 0.8.2 beta series,

@@ -5,63 +5,62 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
-### Read-only time programs
+## [0.8.3-beta.1] - 2026-10-29
 
-Heating and hot-water time programs (`switchPrograms/A`, also `B` where a
-gateway reports it) are shown as read-only diagnostic sensors (#95), disabled
-by default. The state is the level scheduled for the current local time, for
-example **Heating** or **Reduced** for a heating circuit and **Eco** or **Off**
-for hot water. The attributes list the weekly switch points as local wall-clock times
-(`HH:MM level`) and the limits the device reports: total switch points,
-switch points per day and the time raster in minutes.
+> [!IMPORTANT]
+> **This beta adds read-only time-program sensors.** The new feature does not
+> change appliance settings or write switch points. The sensors are disabled
+> by default. **0.8.2 remains Stable/Latest.**
 
-The shape is validated strictly: weekdays `Mo`…`Su`, minutes after midnight
-within the raster, level-key syntax, the same circuit's temperature-level
-reference and the reported limits. Unexpected shapes create no sensor.
-The program is read in the 15/30-minute slow group. The scheduled level is
-recalculated locally each minute
-using the gateway's time zone, with Home Assistant's zone as a fallback. Only a
-changed level updates the state, without an extra cloud request. The calculation
-follows local clock changes, including skipped and repeated hours. It does not
-confirm which program or operating mode the controller is actually using.
-Hot-water program A is probed directly because the program list can be forbidden
-while the program itself is readable. Editing switch points is not offered.
-Switch times are not written to diagnostics.
+I am publishing this beta to test heating and hot-water time programs from
+[#96](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/pull/96).
+Thank you, [ReuDa](https://github.com/ReuDa), for the implementation and the
+initial readings from a Logatherm WLW186i-12 TP70 with MX400.
 
-I also preserve existing entity names and activation settings when a program is
-temporarily empty or malformed. New valid level keys are accepted after normal
-polling without recreating the entity or restarting Home Assistant.
+### What the new sensors show
 
-The structure was confirmed on a Logatherm WLW186i-12 TP70 with MX400; the
-circulation program returned HTTP 403 there and is not shown. The fixture
-contains constructed times only.
+- Program A, and B where reported, appear as diagnostic sensors for the
+  corresponding heating or hot-water circuit.
+- The state is the level scheduled for the current local time, such as
+  Heating, Reduced, Eco or Off. The attributes list weekly switch points as
+  `HH:MM level`, together with the limits reported by the device.
+- The calculation uses the gateway's time zone when available, with Home
+  Assistant's zone as a fallback. It is refreshed locally each minute without
+  an extra cloud request. Programs use the existing 15/30-minute slow polling
+  group.
+- Hot-water program A is also checked directly when its parent program list
+  cannot be read. Unsupported or malformed program data creates no new sensor.
 
-#### Deutsch
+The displayed level is a calculation from that program. It does not confirm
+which program is selected or whether a manual setting, holiday or other
+override is active. The circulation program is not included. Switch times
+are excluded from integration diagnostics.
 
-Zeitprogramme für Heizung und Warmwasser (`switchPrograms/A`, sowie `B`, wenn
-ein Gateway es meldet) erscheinen als schreibgeschützte Diagnose-Sensoren
-(#95), die standardmäßig deaktiviert sind. Der Zustand ist die für die aktuelle
-lokale Uhrzeit vorgesehene Stufe, z. B. **Heizen** oder **Absenken** beim Heizkreis
-und **Eco** oder **Aus** beim Warmwasser. Die Attribute zeigen die wöchentlichen
-Schaltpunkte als lokale
-Uhrzeiten (`HH:MM Stufe`) und die vom Gerät gemeldeten Grenzen: Schaltpunkte
-insgesamt, Schaltpunkte pro Tag und das Zeitraster in Minuten.
+### Review corrections
 
-Die Struktur wird streng geprüft; unerwartete Formen erzeugen keinen Sensor.
-Gelesen wird in der langsamen Gruppe. Die Stufe wird lokal jede Minute mit der
-Zeitzone des Gateways neu berechnet; ersatzweise gilt die Zeitzone von Home
-Assistant. Nur eine geänderte Stufe aktualisiert den Zustand, ohne zusätzliche
-Cloud-Abfrage. Die Berechnung berücksichtigt übersprungene und wiederholte
-Stunden bei Zeitumstellungen. Sie bestätigt nicht, welches Programm oder welche
-Betriebsart die Anlage tatsächlich verwendet. Schaltpunkte lassen sich nicht
-bearbeiten und erscheinen nicht in der Diagnose. Die Programmstruktur wurde an
-einer Logatherm WLW186i-12 TP70 mit MX400 bestätigt; das Zirkulationsprogramm
-lieferte dort HTTP 403 und wird nicht angezeigt.
+I corrected repeated timer callbacks around clock changes and aligned the
+calculation with the gateway's local time. Existing entity identities, names
+and activation settings now survive temporarily empty or invalid programs.
+New valid level keys update after normal polling without a restart. Timers
+stop when the data is unavailable and are removed when the entity is unloaded.
 
-Ich erhalte außerdem bestehende Entitätsnamen und Aktivierungseinstellungen,
-wenn ein Programm vorübergehend leer oder fehlerhaft ist. Neue gültige
-Stufenschlüssel werden nach dem regulären Abruf ohne Neuerstellung der Entität
-oder Neustart von Home Assistant übernommen.
+### Validation and testing
+
+My local checks passed **3,277 automated cases**, including parametrized
+variants, with **96.82% combined statement and branch coverage**. Ruff,
+formatting and strict Mypy passed. Regression tests cover both clock changes,
+Home Assistant enum-state validation, recovery and preserved user settings.
+
+To try the beta, enable pre-release versions for this integration in HACS,
+select **0.8.3-beta.1**, update and restart Home Assistant. Enable the required
+**Time program A/B** diagnostic sensors in the entity settings. Compare their
+switch points and scheduled levels with the app, including a real switch time.
+
+I have not installed this beta on a physical system or confirmed the
+controller's clock-change behavior. The initial device evidence came from
+ReuDa's contribution; the corrected display still needs field confirmation.
+[#95](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/95)
+remains open for that feedback.
 
 ## [0.8.2] - 2026-10-27
 

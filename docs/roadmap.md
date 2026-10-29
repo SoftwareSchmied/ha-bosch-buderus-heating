@@ -2,8 +2,11 @@
 
 ## Published releases
 
-As of 2026-10-27, **0.8.2 is Stable/Latest** and includes the work from all
+As of 2026-10-29, **0.8.2 is Stable/Latest** and includes the work from all
 0.8.2 betas plus the compatible maintenance updates and sign-in guide changes.
+**0.8.3-beta.1** adds read-only time programs for heating and hot water.
+The new sensors are disabled by default and await field confirmation of the
+review corrections in #95. Existing control features remain part of 0.8.2.
 The [project status](specification-status.md) separates
 release results from remaining development work. The released foundation
 supports Bosch and Buderus PointT systems and includes:

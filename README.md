@@ -19,6 +19,14 @@
 > The illustrated [setup guide](docs/setup.md) explains installation and
 > sign-in step by step.
 
+> [!NOTE]
+> **0.8.3-beta.1 adds read-only heating and hot-water time programs.** The new
+> diagnostic sensors are disabled by default. They show the scheduled level
+> and weekly switch points; this feature does not change appliance settings.
+> **0.8.2 remains Stable/Latest.** See the
+> [beta release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.8.3-beta.1)
+> for installation and the requested display checks.
+
 **Bosch/Buderus Home Comfort** is the new display name for **Bosch/Buderus Heating**.
 The new name is included in stable **0.8.2**, following its introduction in Beta.7.
 The repository, integration domain and existing installation stay the same.

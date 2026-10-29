@@ -32,7 +32,7 @@ def test_stable_project_identity() -> None:
 
     assert manifest["domain"] == "bosch_buderus_heating"
     assert manifest["name"] == "Bosch/Buderus Home Comfort"
-    assert manifest["version"] == "0.8.2"
+    assert manifest["version"] == "0.8.3-beta.1"
     assert project["project"]["version"] == manifest["version"]
     assert manifest["requirements"] == ["aiomqtt==2.5.1"]
     assert set(manifest["requirements"]).issubset(project["project"]["dependencies"])

@@ -5,8 +5,21 @@ project specification. The source specification itself is intentionally not
 part of this repository. The status reflects implemented and verified code,
 not merely planned architecture.
 
-Status updated on **2026-10-27**. The current stable release, its
+Status updated on **2026-10-29**. The current stable release, its
 locally tested controls and remaining work are listed below.
+
+## Current beta: 0.8.3-beta.1
+
+This beta adds read-only heating and hot-water time-program sensors from #96.
+I corrected time-zone handling, clock-change timers, entity preservation after
+invalid data and updates to the available level keys. The sensors are disabled
+by default and show the scheduled level, not the controller's actual operating
+mode. The new feature makes no appliance writes.
+
+The initial structure and readings were confirmed by ReuDa on a WLW186i with
+MX400. My software checks cover the corrections; a physical comparison of the
+updated display and a real switch point remains open in #95. See the
+[release verification](release.md#083-beta1-verification).
 
 ## Current stable release: 0.8.2
 
