@@ -8,6 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.util.hass_dict import HassKey
 
+from .auth_diagnostics import auth_diagnostics_for
 from .const import DOMAIN
 from .data import tokens_from_data, tokens_to_data
 from .pointt import AuthTokens, OAuthClient, TokenManager
@@ -35,10 +36,18 @@ def entry_auth(
     )
     managers = hass.data.setdefault(_TOKEN_MANAGERS, {})
     previous = managers.get(entry.entry_id)
+    recorder = auth_diagnostics_for(hass, entry.entry_id)
     if previous is not None and previous.tokens == tokens:
+        if recorder is not None:
+            previous.set_observer(recorder.refresh_finished)
         return previous, backoff
 
     persisted_tokens = tokens
+
+    @callback
+    def record_persist(outcome: str) -> None:
+        if (current_recorder := auth_diagnostics_for(hass, entry.entry_id)) is not None:
+            current_recorder.persist_result(outcome)
 
     @callback
     def persist_tokens(updated_tokens: AuthTokens) -> None:
@@ -46,21 +55,41 @@ def entry_auth(
         # A refresh from the previous login must not overwrite replacement
         # credentials or restore an entry that the user has removed.
         if hass.config_entries.async_get_entry(entry.entry_id) is not entry:
+            record_persist("skipped_entry_removed")
             return
         try:
             current = tokens_from_data(entry.data)
         except ValueError:
+            record_persist("skipped_invalid_entry_data")
             return
         if current != persisted_tokens:
+            record_persist("skipped_entry_credentials_changed")
             return
         persisted_tokens = updated_tokens
         hass.config_entries.async_update_entry(
             entry, data={**entry.data, **tokens_to_data(updated_tokens)}
         )
+        record_persist("saved")
 
-    manager = TokenManager(oauth_client, tokens, persist_tokens, backoff=backoff)
+    manager = TokenManager(
+        oauth_client,
+        tokens,
+        persist_tokens,
+        backoff=backoff,
+        observer=recorder.refresh_finished if recorder is not None else None,
+    )
     managers[entry.entry_id] = manager
+    if recorder is not None:
+        recorder.credentials_loaded(
+            tokens, reason="start" if previous is None else "credentials_changed"
+        )
     return manager, backoff
+
+
+@callback
+def entry_token_manager(hass: HomeAssistant, entry_id: str) -> TokenManager | None:
+    """Return the retained token manager of an entry, if any."""
+    return hass.data.get(_TOKEN_MANAGERS, {}).get(entry_id)
 
 
 @callback

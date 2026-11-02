@@ -6,6 +6,7 @@ import base64
 import hashlib
 import json
 import math
+import re
 import secrets
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
@@ -36,6 +37,7 @@ from .exceptions import (
     RefreshTokenRejected,
     RequestTimeout,
     ServiceUnavailable,
+    TokenEndpointRejection,
     UnexpectedHttpStatus,
 )
 from .models import AuthTokens, Brand
@@ -225,7 +227,9 @@ class OAuthClient:
             ) as response:
                 if response.status in {400, 401, 403}:
                     if refresh_request:
-                        raise RefreshTokenRejected("Refresh token was rejected")
+                        raise RefreshTokenRejected(
+                            rejection=await _read_rejection(response)
+                        )
                     raise AuthenticationError("Authorization code was rejected")
                 if response.status == 429:
                     raise RateLimited(
@@ -272,13 +276,85 @@ class OAuthClient:
             scope = tuple(scope_value)
         else:
             raise InvalidPayload("OAuth scope must be a string or string array")
+        issued_at = self._clock()
         return AuthTokens(
             access_token=access_token,
             refresh_token=refresh_token,
-            expires_at=self._clock() + float(expires_in),
+            expires_at=issued_at + float(expires_in),
             token_type=token_type,
             scope=scope,
+            issued_at=issued_at,
+            refresh_expires_in=_optional_duration(payload.get("refresh_expires_in")),
+            refresh_token_returned="refresh_token" in payload,
         )
+
+
+_MAX_REJECTION_BODY = 4096
+_OAUTH_ERROR = re.compile(r"[A-Za-z0-9_.-]{1,64}")
+_CONTENT_TYPE = re.compile(r"[a-z0-9.+-]{1,32}/[a-z0-9.+-]{1,64}")
+# Long opaque runs could be tokens, codes or identifiers; never keep them.
+_OPAQUE_RUN = re.compile(r"[A-Za-z0-9_\-+/=.]{24,}")
+_DESCRIPTION_DISALLOWED = re.compile(r"[^A-Za-z0-9 .,:;()'\[\]_-]")
+
+
+async def _read_rejection(response: aiohttp.ClientResponse) -> TokenEndpointRejection:
+    """Summarize a rejected token response without retaining its body."""
+    content_type = response.headers.get("Content-Type", "").split(";", 1)[0]
+    content_type = content_type.strip().lower()
+    safe_type = content_type if _CONTENT_TYPE.fullmatch(content_type) else None
+    if content_type and safe_type is None:
+        safe_type = "other"
+    try:
+        raw = await response.content.read(_MAX_REJECTION_BODY)
+    except aiohttp.ClientError, TimeoutError:
+        return TokenEndpointRejection(
+            response.status, body_format="unreadable", content_type=safe_type
+        )
+    if not raw.strip():
+        return TokenEndpointRejection(
+            response.status, body_format="empty", content_type=safe_type
+        )
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except UnicodeDecodeError, ValueError:
+        return TokenEndpointRejection(
+            response.status, body_format="non_json", content_type=safe_type
+        )
+    if not isinstance(payload, Mapping):
+        return TokenEndpointRejection(
+            response.status, body_format="json_non_object", content_type=safe_type
+        )
+    error = payload.get("error")
+    safe_error = None
+    if isinstance(error, str):
+        safe_error = error if _OAUTH_ERROR.fullmatch(error) else "other"
+    return TokenEndpointRejection(
+        response.status,
+        oauth_error=safe_error,
+        oauth_error_description=_safe_description(payload.get("error_description")),
+        body_format="json",
+        content_type=safe_type,
+    )
+
+
+def _safe_description(value: object) -> str | None:
+    """Keep a short human-readable reason; drop anything resembling a secret."""
+    if not isinstance(value, str):
+        return None
+    text = _OPAQUE_RUN.sub("[redacted]", value)
+    if "@" in text:
+        # E-mail addresses or account names are not needed to classify the reason.
+        text = re.sub(r"\S*@\S*", "[redacted]", text)
+    text = _DESCRIPTION_DISALLOWED.sub(" ", text)
+    text = " ".join(text.split())[:120].strip()
+    return text or None
+
+
+def _optional_duration(value: object) -> float | None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    duration = float(value)
+    return duration if math.isfinite(duration) and duration >= 0 else None
 
 
 def _parse_retry_after(value: str | None, *, now: float) -> float | None:

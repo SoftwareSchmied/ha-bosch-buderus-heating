@@ -5,6 +5,72 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.8.4-beta.1] - 2026-11-02
+
+> [!IMPORTANT]
+> **This beta adds diagnostics for repeated sign-in requests.** It does not
+> change how sign-in, token renewal or reauthentication work. **0.8.3 remains
+> Stable/Latest.**
+
+I am publishing this beta to find out why Home Assistant sometimes asks for a
+new SingleKey ID sign-in, as reported again in
+[#49](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/49).
+Thank you, [lanebe](https://github.com/lanebe), for reporting the renewed
+sign-in request with the log lines and a screenshot. Until now, the
+integration only logged that the refresh token was rejected, not why.
+
+### What is now recorded
+
+- **Reason for a rejected renewal.** The log message and diagnostics show the
+  HTTP status, the OAuth error code such as `invalid_grant`, and a shortened,
+  sanitized description from the sign-in service. A response that is not an
+  OAuth error, such as an HTML page, is identified only by its type.
+- **Sign-in history across restarts.** The integration keeps the last 60
+  events: starts with the stored sign-in data, each renewal with its trigger,
+  duration and result, the access and refresh lifetimes reported by the
+  service, whether a new refresh token was issued and whether it was saved.
+- **Reuse of a replaced token.** Each refresh token is recognized only through
+  a local, keyed fingerprint. The history therefore shows whether a rejected
+  token had already been used before or had been replaced by a newer one, for
+  example because a save was lost. The log also warns at startup if the stored
+  sign-in data is older than the newest token the integration received.
+
+### Privacy
+
+Diagnostics schema 28 adds an `authentication` section with timestamps,
+durations, counters, status codes and the sanitized reason. It contains no
+tokens, codes, fingerprints, account names or e-mail addresses. The history is
+stored locally in Home Assistant's `.storage` folder and is deleted together
+with the integration entry. Please still review the file before sharing it.
+
+### How to help
+
+1. Enable pre-release versions for this integration in HACS, select
+   **0.8.4-beta.1**, update and restart Home Assistant.
+2. Use the integration as usual. The history starts with this version, so a
+   rejection that happened earlier cannot be explained retroactively.
+3. If Home Assistant asks for a new sign-in, **download the diagnostics first**
+   under **Settings → Devices & services → Bosch/Buderus Home Comfort →
+   three-dot menu → Download diagnostics**. Then copy the log message starting
+   with `SingleKey ID rejected the token refresh`.
+4. Sign in again and attach both to #49 after reviewing them.
+
+### Verification
+
+The automated checks passed **3,318 cases on Home Assistant 2026.10.4** and
+**3,318 on 2026.9.2**, both with Python 3.14.7 and **96.87% combined statement
+and branch coverage**. These are the same cases on two HA versions, including
+parametrized variants. The new tests use synthetic tokens and a strict test
+sign-in service: a rotated token reused after a restart, rejections with and
+without an OAuth error, temporary failures, a skipped save, damaged history
+files and removal of the entry. They also check that no token, fingerprint or
+key appears in log messages or diagnostics. Ruff, formatting and strict Mypy
+passed. Runtime dependencies are unchanged.
+
+I have not installed this beta on a physical system. It does not establish the
+cause of the sign-in requests in #49; it records the details of the next
+occurrence.
+
 ## [0.8.3] - 2026-11-02
 
 I fixed startup on Home Assistant 2026.9.2 by using the public fan, humidifier

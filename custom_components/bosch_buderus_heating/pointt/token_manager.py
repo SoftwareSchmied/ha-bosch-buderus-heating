@@ -3,14 +3,18 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Awaitable, Callable
+from dataclasses import dataclass, field
 from inspect import isawaitable
-from time import time
+from time import monotonic, time
 from typing import Protocol
 
-from .exceptions import RateLimited, RefreshTokenRejected
+from .exceptions import RateLimited, RefreshTokenRejected, TokenEndpointRejection
 from .models import AuthTokens
 from .transport import RateLimitBackoff
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class OAuthTokenClient(Protocol):
@@ -22,6 +26,27 @@ class OAuthTokenClient(Protocol):
 
 
 PersistTokens = Callable[[AuthTokens], Awaitable[None] | None]
+
+
+@dataclass(frozen=True, slots=True)
+class RefreshAttempt:
+    """One finished refresh attempt, reported for diagnostics only.
+
+    Token values are carried so that an observer can correlate them locally;
+    they are excluded from the representation and must never be exported.
+    """
+
+    trigger: str
+    outcome: str
+    started_at: float
+    duration: float
+    access_token_remaining: float
+    presented_refresh_token: str | None = field(repr=False)
+    new_tokens: AuthTokens | None = field(default=None, repr=False)
+    error: BaseException | None = field(default=None, repr=False)
+
+
+RefreshObserver = Callable[[RefreshAttempt], None]
 
 
 class TokenManager:
@@ -36,6 +61,7 @@ class TokenManager:
         clock: Callable[[], float] = time,
         refresh_margin: float = 60.0,
         backoff: RateLimitBackoff | None = None,
+        observer: RefreshObserver | None = None,
     ) -> None:
         self._oauth_client = oauth_client
         self._tokens = tokens
@@ -44,7 +70,18 @@ class TokenManager:
         self._refresh_margin = refresh_margin
         self._refresh_task: asyncio.Task[str] | None = None
         self._refresh_rejected = False
+        self._rejection: TokenEndpointRejection | None = None
         self._backoff = backoff if backoff is not None else RateLimitBackoff()
+        self._observer = observer
+
+    def set_observer(self, observer: RefreshObserver | None) -> None:
+        """Attach the diagnostics observer for subsequent refresh attempts."""
+        self._observer = observer
+
+    @property
+    def refresh_rejected(self) -> bool:
+        """Return whether this manager stopped after a rejected refresh."""
+        return self._refresh_rejected
 
     @property
     def tokens(self) -> AuthTokens:
@@ -58,7 +95,7 @@ class TokenManager:
         if self._refresh_task is not None and not self._refresh_task.done():
             return await asyncio.shield(self._refresh_task)
         if self._refresh_rejected:
-            raise RefreshTokenRejected("Refresh token was rejected")
+            raise RefreshTokenRejected(rejection=self._rejection)
         already_refreshed = (
             rejected_token is not None and self._tokens.access_token != rejected_token
         )
@@ -69,7 +106,10 @@ class TokenManager:
         self._backoff.raise_if_active()
         # Keep a strong reference and retrieve errors even when all original
         # callers are cancelled. A rotating credential must still be saved.
-        self._refresh_task = asyncio.create_task(self._refresh(), name="pointt_refresh")
+        trigger = "access_token_rejected" if force_refresh else "expiry"
+        self._refresh_task = asyncio.create_task(
+            self._refresh(trigger), name="pointt_refresh"
+        )
         self._refresh_task.add_done_callback(self._refresh_finished)
         return await asyncio.shield(self._refresh_task)
 
@@ -78,25 +118,111 @@ class TokenManager:
         if not task.cancelled():
             task.exception()
 
-    async def _refresh(self) -> str:
+    async def _refresh(self, trigger: str) -> str:
+        refresh_token = self._tokens.refresh_token
+        started_at = self._clock()
+        started = monotonic()
+        remaining = self._tokens.expires_at - started_at
+        new_tokens: AuthTokens | None = None
         try:
-            refresh_token = self._tokens.refresh_token
             if not refresh_token:
                 raise RefreshTokenRejected("No refresh token is available")
             new_tokens = await self._oauth_client.refresh(refresh_token)
             # The old refresh token may already be invalid. Retain the new one
             # in memory even if the persistence callback itself fails.
             self._tokens = new_tokens
+            self._report(
+                trigger,
+                "success",
+                started_at,
+                started,
+                remaining,
+                refresh_token,
+                new_tokens=new_tokens,
+            )
             persisted = self._persist(new_tokens)
             if isawaitable(persisted):
                 await persisted
             return new_tokens.access_token
-        except RefreshTokenRejected:
+        except RefreshTokenRejected as err:
             self._refresh_rejected = True
+            self._rejection = err.rejection
+            self._report(
+                trigger,
+                "rejected",
+                started_at,
+                started,
+                remaining,
+                refresh_token,
+                error=err,
+            )
             raise
         except RateLimited as err:
             self._backoff.activate(err.retry_after)
+            self._report(
+                trigger,
+                "rate_limited",
+                started_at,
+                started,
+                remaining,
+                refresh_token,
+                error=err,
+            )
             raise
+        except asyncio.CancelledError:
+            if new_tokens is None:
+                self._report(
+                    trigger,
+                    "cancelled",
+                    started_at,
+                    started,
+                    remaining,
+                    refresh_token,
+                )
+            raise
+        except Exception as err:
+            if new_tokens is None:
+                self._report(
+                    trigger,
+                    "failed",
+                    started_at,
+                    started,
+                    remaining,
+                    refresh_token,
+                    error=err,
+                )
+            raise
+
+    def _report(
+        self,
+        trigger: str,
+        outcome: str,
+        started_at: float,
+        started: float,
+        remaining: float,
+        refresh_token: str | None,
+        *,
+        new_tokens: AuthTokens | None = None,
+        error: BaseException | None = None,
+    ) -> None:
+        observer = self._observer
+        if observer is None:
+            return
+        attempt = RefreshAttempt(
+            trigger=trigger,
+            outcome=outcome,
+            started_at=started_at,
+            duration=max(0.0, monotonic() - started),
+            access_token_remaining=remaining,
+            presented_refresh_token=refresh_token,
+            new_tokens=new_tokens,
+            error=error,
+        )
+        try:
+            observer(attempt)
+        except Exception:
+            # Diagnostics must never change authentication behavior.
+            _LOGGER.debug("Refresh diagnostics observer failed", exc_info=True)
 
 
 class StaticTokenProvider:

@@ -648,7 +648,7 @@ async def test_diagnostics_are_local_and_inventory_drops_technical_values(enviro
     coordinator.startup_data.schedule(PRODUCT, 2, advertised=True)
     coordinator.startup_data.omit_license()
     diagnostics = await async_get_config_entry_diagnostics(coordinator.hass, entry)
-    assert diagnostics["diagnostics_schema"] == 27
+    assert diagnostics["diagnostics_schema"] == 28
     assert diagnostics["privacy"]["contains_raw_resource_values"] is True
     metadata = diagnostics["gateways"][0]["technical_metadata"]
     assert {item["path"] for item in metadata} == {

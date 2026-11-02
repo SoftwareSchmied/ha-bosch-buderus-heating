@@ -14,6 +14,10 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .auth_diagnostics import (
+    async_load_auth_diagnostics,
+    async_remove_auth_diagnostics,
+)
 from .auth_lifecycle import entry_auth, forget_entry_auth
 from .bacon.client import BaconClient
 from .bacon.models import (
@@ -83,6 +87,7 @@ async def async_setup_entry(
     session = async_get_clientsession(hass)
     oauth_client = OAuthClient(session)
     previous_runtime = getattr(entry, "runtime_data", None)
+    await async_load_auth_diagnostics(hass, entry.entry_id)
     token_manager, account_backoff = entry_auth(hass, entry, oauth_client)
     startup = StartupSession(tuple(sorted(selected_ids)), options=dict(entry.options))
     if (
@@ -270,6 +275,7 @@ async def async_remove_entry(
 ) -> None:
     """Forget the memory-only authentication state when its entry is deleted."""
     forget_entry_auth(hass, entry)
+    await async_remove_auth_diagnostics(hass, entry.entry_id)
 
 
 def _restore_registered_startup_paths(

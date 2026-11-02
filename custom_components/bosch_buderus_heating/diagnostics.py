@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import re
 from collections import Counter
-from time import monotonic
+from time import monotonic, time
 from typing import Any
 
 from homeassistant.core import HomeAssistant
@@ -13,6 +13,8 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
 from . import BoschBuderusConfigEntry, rrc
+from .auth_diagnostics import auth_diagnostics_for
+from .auth_lifecycle import entry_token_manager
 from .const import CONF_BRAND, CONF_GATEWAY_IDS
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
@@ -49,14 +51,13 @@ from .water_softener import (
 )
 from .writes import EnumWritePolicy, NumberWritePolicy, assess_control
 
-DIAGNOSTICS_SCHEMA_VERSION = 27
+DIAGNOSTICS_SCHEMA_VERSION = 28
 
 
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: BoschBuderusConfigEntry
 ) -> dict[str, Any]:
     """Return schema, aggregates and reviewed metadata without private values."""
-    del hass
     runtime = getattr(entry, "runtime_data", None)
     selected = entry.data.get(CONF_GATEWAY_IDS, [])
     base: dict[str, Any] = {
@@ -75,6 +76,7 @@ async def async_get_config_entry_diagnostics(
             if isinstance(selected, list)
             else 0,
         },
+        "authentication": _authentication_diagnostics(hass, entry),
     }
     if not isinstance(runtime, BoschBuderusRuntimeData):
         return {
@@ -100,6 +102,31 @@ async def async_get_config_entry_diagnostics(
         if runtime.bacon
         else {"configured": False},
     }
+
+
+def _authentication_diagnostics(
+    hass: HomeAssistant, entry: BoschBuderusConfigEntry
+) -> dict[str, Any]:
+    """Describe token refresh history without credentials or fingerprints."""
+    manager = entry_token_manager(hass, entry.entry_id)
+    recorder = auth_diagnostics_for(hass, entry.entry_id)
+    if recorder is None:
+        report: dict[str, Any] = {"history_available": False}
+        if manager is not None:
+            report["current"] = {
+                "access_token_remaining_s": round(
+                    manager.tokens.expires_at - _wall_clock(), 1
+                ),
+                "has_refresh_token": bool(manager.tokens.refresh_token),
+                "refresh_rejected": manager.refresh_rejected,
+            }
+        return report
+    return recorder.diagnostics(manager)
+
+
+def _wall_clock() -> float:
+    """Return wall-clock time; separated for tests."""
+    return time()
 
 
 def _gateway_diagnostics(
