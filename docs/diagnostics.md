@@ -4,6 +4,39 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 28 adds an `authentication` section for investigating repeated sign-in
+requests. It is built from memory and local storage, without a cloud request,
+so it does not depend on a working sign-in. It contains:
+
+- `current`: remaining access-token lifetime in seconds, whether a refresh
+  token exists, its relation to the recorded history, the granted scope names
+  and whether renewal stopped after a rejection;
+- `events`: the last 60 sign-in events with UTC time and age. Starts record
+  whether the stored refresh token is the newest known one. Renewals record
+  their trigger (`expiry` or `access_token_rejected`), duration and outcome,
+  and on success the reported access and refresh lifetimes, whether a new
+  refresh token was issued and whether it was saved;
+- for a rejected renewal: HTTP status, OAuth error code, a sanitized
+  description of at most 120 characters, body format and content type;
+- `presented_refresh_token`: whether the rejected token was the newest known
+  one, how long ago it was first seen, how often it had been presented before
+  and whether the service had accepted it before;
+- `issued_refresh_tokens` and `counters`: anonymous rank, source, age and use
+  count of recently seen refresh tokens, plus totals per outcome.
+
+Refresh tokens are recognized through an HMAC fingerprint whose random key
+stays in Home Assistant's local `.storage` folder. Neither the key, the
+fingerprints nor any token are exported. Long opaque strings and anything
+resembling an e-mail address are removed from the service description. The
+history is stored in `.storage/bosch_buderus_heating.auth_history.<entry>`
+and deleted together with the integration entry. It survives restarts, so the
+history starts with the first version that records it.
+
+A rejected renewal is also written to the Home Assistant log as a warning that
+starts with `SingleKey ID rejected the token refresh`. A start with stored
+sign-in data older than the newest received token and a refreshed token that
+could not be saved are logged as warnings as well.
+
 Schema 23 adds aggregate Midea Climate Series identification and stream
 freshness counts under `air_conditioners`. No climate settings, values or
 identifiers are included. See [air conditioners](bacon-air-conditioners.md).
@@ -388,6 +421,7 @@ and diagnostics.
 ## Excluded information
 
 - access or refresh tokens, OAuth codes, and redirect addresses;
+- token fingerprints, their key, account names and e-mail addresses;
 - gateway IDs, config-entry IDs, serial numbers, and UUIDs;
 - IP addresses, MAC addresses, SSIDs, and location data;
 - firmware identifiers and complete model names;

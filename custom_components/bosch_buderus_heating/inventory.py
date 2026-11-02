@@ -92,7 +92,7 @@ def _validate_privacy(value: object, *, schema: object = None) -> None:
     if value.get("contains_raw_resource_values") is False:
         return
     if (
-        schema in (14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27)
+        schema in (14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28)
         and value.get("contains_raw_resource_values") is True
         and value.get("raw_resource_values_scope") == "allowlisted_technical_metadata"
     ):

@@ -20,6 +20,13 @@
 > sign-in step by step.
 
 > [!NOTE]
+> **0.8.4-beta.1 adds diagnostics for repeated sign-in requests** without
+> changing sign-in or token renewal. If Home Assistant asks you to sign in again,
+> download the diagnostics before signing in and add them to
+> [#49](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/49).
+> **0.8.3 remains Stable/Latest.**
+
+> [!NOTE]
 > **0.8.3 fixes startup on Home Assistant 2026.9.2 and includes read-only time programs.** The new
 > diagnostic sensors are disabled by default. They show the scheduled level
 > and weekly switch points; this feature does not change appliance settings.

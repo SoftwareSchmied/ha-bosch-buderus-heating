@@ -42,6 +42,11 @@ class AuthTokens:
     expires_at: float = 0.0
     token_type: str = "Bearer"
     scope: tuple[str, ...] = ()
+    # Response metadata for diagnostics only. It is neither persisted nor part
+    # of equality, so stored credentials compare exactly as before.
+    issued_at: float | None = field(default=None, compare=False)
+    refresh_expires_in: float | None = field(default=None, compare=False)
+    refresh_token_returned: bool | None = field(default=None, compare=False)
 
     def is_expired(self, *, now: float | None = None, margin: float = 60.0) -> bool:
         """Return whether the access token is expired or near expiry."""

@@ -4,6 +4,30 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.8.4-beta.1 verification
+
+I prepared **0.8.4-beta.1 as a pre-release** on 2026-11-02 to investigate the
+renewed sign-in request reported in #49. **0.8.3 remains Stable/Latest.**
+Thank you to lanebe for the report with log lines and a screenshot. The beta
+adds diagnostics only; sign-in, token renewal and reauthentication behave as
+in 0.8.3.
+
+The full suite passed **3,318 automated cases on HA 2026.10.4** and
+**3,318 on HA 2026.9.2**, both with Python **3.14.7** and **96.87% combined
+statement and branch coverage**. These are the same cases on two HA versions,
+including parametrized variants. The new history module has 98% statement
+and branch coverage in its targeted tests. Ruff, formatting and strict Mypy
+passed. Runtime dependencies are unchanged; the tag-triggered release
+workflow repeats the dependency audit, hassfest and HACS validation.
+
+Two Linux builds produced the same **99-file**, **344,936-byte** archive with
+manifest version **0.8.4-beta.1**. SHA-256:
+`c55126668234296c2467086b4e94ca3dd04ccf576e65afb9f29ddfc569276ab1`.
+The package tests verify an import from an isolated ZIP installation.
+
+I have not installed this beta on a physical system. The diagnostics start
+recording with this version and cannot explain earlier rejections.
+
 ## 0.8.3 verification
 
 I prepared **0.8.3 as Stable/Latest** on 2026-11-02 from **0.8.3-beta.1**,
