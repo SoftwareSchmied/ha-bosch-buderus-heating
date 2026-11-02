@@ -39,15 +39,24 @@ paths are identical and only four platform modules and the manifest differ.
 SHA-256:
 `1b814d0daf80ff0acc2c65a006cd9030c7ef2abc069d92da4d20ab3e6c503b8e`.
 
-Publication requires all checks on the final PR revision, including the new
-HA 2026.9.2 compatibility job and browser tests, followed by the release
-workflow. I compare the published archive and checksum with the local Linux
-build and the release notes with this version's CHANGELOG section.
+All checks passed on the final revision of #100, including the new HA 2026.9.2
+compatibility job and browser tests, followed by the release workflow.
+The main branch requires a linear history, so I included the dependency
+updates through #100 and closed #97, #98 and #99 as superseded.
+The published archive and checksum match the local Linux build byte for byte.
+
+I corrected an outdated note in the release text after checking ReuDa's
+2026-11-01 field report in #95. He confirmed the displayed programs and timely
+heating and hot-water transitions against MyBuderus on a WLW186i with MX400.
+Issue #95 was already closed. The published release notes follow this
+corrected CHANGELOG section; the release tag and installation archive stay
+unchanged. The original documentation at the tag predates this correction.
 
 Update through HACS and restart Home Assistant. I have not installed this
 release on a physical system or performed appliance writes for this fix.
-The low-salt check in #60 and the remaining time-program display checks in
-#95 still need field confirmation. Neither issue is closed by this release.
+The low-salt check in #60 still needs field confirmation, so that issue remains
+open. The time-program feedback confirms one installation; I have not tested
+physical clock changes or additional system configurations for this release.
 
 ## 0.8.3-beta.1 verification
 

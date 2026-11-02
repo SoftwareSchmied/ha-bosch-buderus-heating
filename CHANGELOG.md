@@ -29,8 +29,9 @@ unchanged.
 Update through HACS and restart Home Assistant. The WE800i low-salt indicator
 can then be checked with the fallback threshold already included in 0.8.2.
 Confirmation of that indicator on the reported installation remains open in
-issue #60. The remaining time-program display checks in issue #95 also remain
-open. Earlier releases and tags are unchanged.
+issue #60. Thank you to @ReuDa for confirming in issue #95 that the time-program
+displays match MyBuderus and switch on time on a WLW186i with MX400. Issue #95
+is already closed. Earlier releases and tags are unchanged.
 
 ## [0.8.3-beta.1] - 2026-10-29
 

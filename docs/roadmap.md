@@ -7,8 +7,10 @@ As of 2026-11-02, **0.8.3 is Stable/Latest** and includes the work from all
 It fixes platform imports on Home Assistant 2026.9.2, includes compatible
 maintenance updates from PRs #97 through #99 and promotes the read-only time
 programs for heating and hot water from **0.8.3-beta.1**.
-The new sensors are disabled by default and await field confirmation of the
-review corrections in #95. Existing control features remain part of 0.8.2.
+The new sensors are disabled by default. ReuDa confirmed the displayed levels
+and switch points against MyBuderus and checked several heating and hot-water
+transitions on a WLW186i with MX400. Issue #95 was closed on 2026-11-01.
+Existing control features remain part of 0.8.2.
 The [project status](specification-status.md) separates
 release results from remaining development work. The released foundation
 supports Bosch and Buderus PointT systems and includes:
