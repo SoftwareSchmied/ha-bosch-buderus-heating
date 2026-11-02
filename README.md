@@ -25,7 +25,7 @@
 > and weekly switch points; this feature does not change appliance settings.
 > **0.8.3 is Stable/Latest.** See the
 > [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.8.3)
-> for installation and the remaining display checks.
+> for installation and the WE800i low-salt check that remains open.
 
 **Bosch/Buderus Home Comfort** is the new display name for **Bosch/Buderus Heating**.
 The new name is included in stable **0.8.2**, following its introduction in Beta.7.
