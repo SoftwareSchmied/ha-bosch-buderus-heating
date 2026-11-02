@@ -2,9 +2,11 @@
 
 ## Published releases
 
-As of 2026-10-29, **0.8.2 is Stable/Latest** and includes the work from all
+As of 2026-11-02, **0.8.3 is Stable/Latest** and includes the work from all
 0.8.2 betas plus the compatible maintenance updates and sign-in guide changes.
-**0.8.3-beta.1** adds read-only time programs for heating and hot water.
+It fixes platform imports on Home Assistant 2026.9.2, includes compatible
+maintenance updates from PRs #97 through #99 and promotes the read-only time
+programs for heating and hot water from **0.8.3-beta.1**.
 The new sensors are disabled by default and await field confirmation of the
 review corrections in #95. Existing control features remain part of 0.8.2.
 The [project status](specification-status.md) separates
@@ -60,7 +62,7 @@ Home Assistant and MyBuderus on my Buderus installation and restored the
 original settings. This validates those operations on that system. It does
 not replace testing on other devices or during real connection failures.
 
-Install stable 0.8.2 through HACS, restart Home Assistant and reload the browser
+Install stable 0.8.3 through HACS, restart Home Assistant and reload the browser
 to receive these controls and the Home Comfort display name.
 
 ## Easier sign-in in a later beta

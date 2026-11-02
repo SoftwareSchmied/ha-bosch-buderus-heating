@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from homeassistant.components.water_heater.const import WaterHeaterEntityFeature
+from homeassistant.components.water_heater import WaterHeaterEntityFeature
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 

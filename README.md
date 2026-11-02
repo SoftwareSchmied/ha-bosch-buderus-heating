@@ -20,12 +20,12 @@
 > sign-in step by step.
 
 > [!NOTE]
-> **0.8.3-beta.1 adds read-only heating and hot-water time programs.** The new
+> **0.8.3 fixes startup on Home Assistant 2026.9.2 and includes read-only time programs.** The new
 > diagnostic sensors are disabled by default. They show the scheduled level
 > and weekly switch points; this feature does not change appliance settings.
-> **0.8.2 remains Stable/Latest.** See the
-> [beta release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.8.3-beta.1)
-> for installation and the requested display checks.
+> **0.8.3 is Stable/Latest.** See the
+> [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.8.3)
+> for installation and the remaining display checks.
 
 **Bosch/Buderus Home Comfort** is the new display name for **Bosch/Buderus Heating**.
 The new name is included in stable **0.8.2**, following its introduction in Beta.7.
@@ -33,14 +33,15 @@ The repository, integration domain and existing installation stay the same.
 Update the existing integration rather than adding
 a second one. Existing saved entry names and custom device/entity names are retained.
 
-**0.8.2 is the current stable version.** I included the changes from the
+**0.8.3 is the current stable version.** It includes the compatibility correction,
+time-program sensors and compatible dependency updates, alongside the changes from the
 0.8.2 betas: a tabbed appliance dialog, native PointT heating and hot-water
 entities, more reliable discovery and token renewal, additional appliance
 families, corrected readings and the Home Comfort display name. This release
 also includes the updated sign-in guide and compatible maintenance updates.
 
 Update through HACS, restart Home Assistant and reload the browser. See the
-[release notes](CHANGELOG.md#082---2026-10-27),
+[release notes](CHANGELOG.md#083---2026-11-02),
 [holiday guide](docs/holiday-periods.md),
 [request and recovery rules](docs/request-behavior.md) and
 [season-switching guide](docs/season-switching.md) for details and the remaining

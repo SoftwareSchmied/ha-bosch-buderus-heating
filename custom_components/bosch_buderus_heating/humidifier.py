@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.humidifier import HumidifierEntity
 from homeassistant.components.humidifier.const import (
     HumidifierAction,
-    HumidifierDeviceClass,
     HumidifierEntityFeature,
 )
 from homeassistant.core import HomeAssistant, callback
@@ -18,6 +17,11 @@ from .bacon import dry
 from .bacon.dry_entities import DryEntity
 from .bacon.metadata import metadata, writable
 from .bacon.session import BaconAccount
+
+if TYPE_CHECKING:
+    from homeassistant.components.humidifier.const import HumidifierDeviceClass
+else:
+    from homeassistant.components.humidifier import HumidifierDeviceClass
 
 
 async def async_setup_entry(

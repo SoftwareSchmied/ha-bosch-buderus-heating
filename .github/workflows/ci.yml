@@ -78,6 +78,27 @@ jobs:
       - name: Test with coverage
         run: pytest
 
+  compatibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14.7"
+          cache: pip
+      - name: Install Home Assistant 2026.9.2 test environment
+        run: >-
+          python -m pip install
+          pytest-homeassistant-custom-component==0.13.365
+          hypothesis==6.170.13 aiomqtt==2.5.1
+      - name: Run the full suite on Home Assistant 2026.9.2
+        run: pytest
+
   dependency-audit:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -109,7 +130,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Validate Home Assistant integration
-        uses: home-assistant/actions/hassfest@cd6f3635a740c84d8a14f6121a90068b8ece6bf6
+        uses: home-assistant/actions/hassfest@86d4564712fa02543c808e3a693dd04f9d3f8361
 
   hacs:
     runs-on: ubuntu-latest

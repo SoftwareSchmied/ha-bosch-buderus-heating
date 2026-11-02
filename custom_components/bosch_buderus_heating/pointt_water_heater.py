@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.water_heater import WaterHeaterEntity
-from homeassistant.components.water_heater.const import WaterHeaterEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import callback
@@ -23,6 +22,11 @@ from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource, temperature
 from .pointt import Resource
 from .writes import DHW_OPERATION_MODE_POLICY, assess_control
+
+if TYPE_CHECKING:
+    from homeassistant.components.water_heater.const import WaterHeaterEntityFeature
+else:
+    from homeassistant.components.water_heater import WaterHeaterEntityFeature
 
 _MODE_PATH = re.compile(r"^(/dhwCircuits/dhw\d+)/operationMode$")
 # Keep the exact wire spelling. In particular, `eco` denotes Eco+, not Eco.
