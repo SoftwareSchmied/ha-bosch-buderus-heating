@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.fan import FanEntity
-from homeassistant.components.fan.const import FanEntityFeature as Feature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -13,6 +12,11 @@ from . import BoschBuderusConfigEntry
 from .bacon import purifier
 from .bacon.purifier_entities import PurifierEntity, invalid_command
 from .bacon.session import BaconAccount
+
+if TYPE_CHECKING:
+    from homeassistant.components.fan.const import FanEntityFeature as Feature
+else:
+    from homeassistant.components.fan import FanEntityFeature as Feature
 
 
 async def async_setup_entry(

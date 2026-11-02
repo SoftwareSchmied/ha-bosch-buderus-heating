@@ -4,17 +4,18 @@
 
 Vielen Dank für die bereits bereitgestellte Diagnose und die Angaben zum WE800i.
 
-Ich habe die Unterstützung vorbereitet und mit synthetischen Antworten geprüft.
-Für eine Bestätigung am WE800i benötige ich weiterhin die Rückmeldung des
-Melders von [Issue #60](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/60).
-Die dort am 13.10.2026 angehängte Diagnose bestätigt noch keine Enthärterwerte.
-Bei meiner Prüfung am 23.10.2026 lag keine neuere Praxisrückmeldung vor.
+Der Melder von [Issue #60](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/60)
+hat inzwischen Salzfüllstand, verfügbare Weichwassermenge, Durchfluss,
+Regenerationsaktivität und Restdauer bis zur nächsten Regeneration mit MyBuderus
+verglichen und bestätigt. Die App zeigt ebenfalls keine Phase oder genauen
+Zeitstempel der letzten beziehungsweise nächsten Regeneration. Die Prüfung
+der korrigierten Salzwarnung nach einem erfolgreichen Update bleibt offen.
 
 ### Anzeigen vergleichen
 
-1. **v0.8.2-beta.6** ausdrücklich in HACS auswählen, installieren und Home
+1. **v0.8.3** in HACS installieren und Home
    Assistant neu starten. Die tatsächlich installierte Version notieren.
-   Die Enthärterunterstützung und die Phasenkorrektur sind in dieser Beta enthalten.
+   Die Enthärterunterstützung und die Phasenkorrektur sind in dieser Version enthalten.
 2. Beim richtigen Gateway die elf Ressourcen aus der Tabelle unten und die
    zusätzliche Anzeige „Salzvorrat niedrig“ prüfen. Auch deaktivierte Entitäten
    ansehen. Bitte je Anzeige unterscheiden: vorhanden, deaktiviert, unbekannt,
@@ -52,18 +53,17 @@ wird nur gesondert vereinbart; diese Anleitung fordert ihn nicht an.
 
 Thank you for the diagnostics and the details about the WE800i.
 
-I have prepared support and tested it with synthetic responses. Confirmation
-on the WE800i still needs the reporter's feedback in
-[issue #60](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/60).
-The diagnostics attached on 13 October 2026 do not yet contain softener
-readings. When I checked on 23 October, no newer physical-device feedback
-was available.
+The reporter in [issue #60](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/60)
+has now confirmed that salt level, available soft water, flow, regeneration
+activity and time until the next regeneration match MyBuderus. The app also
+does not show a phase or exact last/next regeneration timestamps. Confirmation
+of the corrected low-salt indicator after a successful update remains open.
 
 ### Compare the readings
 
-1. Select **v0.8.2-beta.6** explicitly in HACS, install it and restart Home
-   Assistant. Record the installed version. This beta includes softener support
-   and the phase correction.
+1. Install **v0.8.3** through HACS and restart Home Assistant. Record the installed
+   version. This release fixes startup on HA 2026.9.2 and includes the existing
+   low-salt fallback and phase correction.
 2. On the correct gateway, check the eleven resources below and the additional
    “Low salt” indicator. Include disabled entities. Please distinguish between
    present, disabled, unknown, unavailable and missing.

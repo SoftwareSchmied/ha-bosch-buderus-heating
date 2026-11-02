@@ -4,6 +4,51 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.8.3 verification
+
+I prepared **0.8.3 as Stable/Latest** on 2026-11-02 from **0.8.3-beta.1**,
+with the startup correction for issue #60 and compatible dependency updates
+from #97, #98 and #99. Thank you to marcinchrzest for the traceback that
+identified the failure on Home Assistant 2026.9.2.
+
+I reproduced the failure with the previous code in an actual HA 2026.9.2
+test environment. Fan, humidifier and water-heater types now use their public
+component exports at runtime. The static type checker uses the locations in
+the newer HA test package. All twelve entity platforms are imported even
+when the installation has no purifier or dehumidifier, so this correction
+also restores startup for heating and water-softener installations.
+
+The full suite passed **3,279 automated cases on HA 2026.9.2** and
+**3,279 on HA 2026.10.4**, both with Python **3.14.7** and **96.82% combined
+statement and branch coverage**. These are the same cases on two HA versions,
+including parametrized variants. The new regression checks start and unload
+all platforms with synthetic water-softener data, with and without heating.
+The isolated ZIP test now imports every platform as well. I also made five
+existing tests explicitly stop their coordinators so the older HA test
+environment can verify their cleanup.
+
+Ruff, formatting and strict Mypy passed. The isolated runtime dependency
+audit found no known vulnerabilities. I retained pytest **9.0.3** and
+pytest-asyncio **1.4.0**, as required by the updated HA test plugin, while
+including the compatible Hypothesis, Mypy, HA test plugin, Ruff and hassfest
+updates.
+
+Two Linux builds produced the same **98-file**, **337,504-byte** archive with
+manifest version **0.8.3**. Compared with the published beta.1 archive, the
+paths are identical and only four platform modules and the manifest differ.
+SHA-256:
+`1b814d0daf80ff0acc2c65a006cd9030c7ef2abc069d92da4d20ab3e6c503b8e`.
+
+Publication requires all checks on the final PR revision, including the new
+HA 2026.9.2 compatibility job and browser tests, followed by the release
+workflow. I compare the published archive and checksum with the local Linux
+build and the release notes with this version's CHANGELOG section.
+
+Update through HACS and restart Home Assistant. I have not installed this
+release on a physical system or performed appliance writes for this fix.
+The low-salt check in #60 and the remaining time-program display checks in
+#95 still need field confirmation. Neither issue is closed by this release.
+
 ## 0.8.3-beta.1 verification
 
 I prepared **0.8.3-beta.1 as a pre-release** for the read-only heating and

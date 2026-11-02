@@ -5,6 +5,33 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-11-02
+
+I fixed startup on Home Assistant 2026.9.2 by using the public fan, humidifier
+and water-heater imports. The previous imports could stop the entire integration
+from loading, including installations without an air purifier or dehumidifier.
+Thank you to @marcinchrzest for reporting the failure and providing the traceback
+in issue #60.
+
+I added a compatibility check against Home Assistant 2026.9.2 and strengthened
+the release archive test to import every entity platform. Native platform startup
+is also checked for a water softener alone and alongside heating.
+
+This stable release includes the read-only heating and hot-water time-program
+sensors from 0.8.3-beta.1. They are disabled by default and show the scheduled
+level and weekly switch points. They do not change appliance settings.
+
+I included the compatible maintenance updates from PRs #97, #98 and #99.
+Pytest remains at 9.0.3 and pytest-asyncio at 1.4.0 because the updated Home
+Assistant test plugin requires those exact versions. Runtime dependencies are
+unchanged.
+
+Update through HACS and restart Home Assistant. The WE800i low-salt indicator
+can then be checked with the fallback threshold already included in 0.8.2.
+Confirmation of that indicator on the reported installation remains open in
+issue #60. The remaining time-program display checks in issue #95 also remain
+open. Earlier releases and tags are unchanged.
+
 ## [0.8.3-beta.1] - 2026-10-29
 
 > [!IMPORTANT]

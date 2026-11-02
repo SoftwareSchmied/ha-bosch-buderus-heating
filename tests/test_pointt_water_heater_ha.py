@@ -3,7 +3,7 @@
 from unittest.mock import patch
 
 import pytest
-from homeassistant.components.water_heater.const import WaterHeaterEntityFeature
+from homeassistant.components.water_heater import WaterHeaterEntityFeature
 from homeassistant.const import EntityCategory, Platform
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import entity_registry as er

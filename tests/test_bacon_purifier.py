@@ -8,7 +8,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
-from homeassistant.components.fan.const import FanEntityFeature as Feature
+from homeassistant.components.fan import FanEntityFeature as Feature
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 
 from custom_components.bosch_buderus_heating.bacon import purifier

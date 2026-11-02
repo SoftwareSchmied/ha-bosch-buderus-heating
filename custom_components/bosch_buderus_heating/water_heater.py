@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.water_heater import (
     WaterHeaterEntity,
 )
-from homeassistant.components.water_heater.const import WaterHeaterEntityFeature
 from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
@@ -21,6 +20,11 @@ from .bacon.models import BaconError, Device
 from .bacon.session import BaconAccount
 from .const import DOMAIN
 from .pointt_water_heater import track_pointt_water_heaters
+
+if TYPE_CHECKING:
+    from homeassistant.components.water_heater.const import WaterHeaterEntityFeature
+else:
+    from homeassistant.components.water_heater import WaterHeaterEntityFeature
 
 
 async def async_setup_entry(

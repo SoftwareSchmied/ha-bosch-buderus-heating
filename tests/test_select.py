@@ -333,6 +333,7 @@ async def test_platform_adds_dynamic_controls(hass: HomeAssistant) -> None:
     entry.async_on_unload.call_args.args[0]()
 
     assert len(added) == 1
+    await entity.coordinator.async_shutdown()
 
 
 async def test_two_circuits_keep_independent_operation_mode_options(
@@ -370,6 +371,7 @@ async def test_two_circuits_keep_independent_operation_mode_options(
     writer.assert_awaited_once_with(
         second.path, "auto", HEATING_CIRCUIT_OPERATION_MODE_POLICY
     )
+    await coordinator.async_shutdown()
 
 
 @pytest.mark.parametrize(

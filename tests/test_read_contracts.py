@@ -314,7 +314,7 @@ def test_monitor_collection_preserves_reference_paths_but_no_scalar_entity():
     assert poll_group(resource) is PollGroup.STATIC
 
 
-def test_duration_polling_creates_once_and_recovers_without_extra_requests(hass):
+async def test_duration_polling_creates_once_and_recovers_without_extra_requests(hass):
     initial = runtime("/heatSources/hs2/operationHours", 2, "h")
     coordinator = sensor_for(hass, initial).coordinator
     invalid = replace(initial, metadata=replace(initial.metadata, unit="C"))
@@ -357,6 +357,7 @@ def test_duration_polling_creates_once_and_recovers_without_extra_requests(hass)
     assert not added[0].available
     coordinator.client.get_resource.assert_not_awaited()
     coordinator.client.put_resource_value.assert_not_awaited()
+    await coordinator.async_shutdown()
 
 
 def test_multipart_errors_preserve_valid_siblings_and_reject_mixed_envelopes():

@@ -146,6 +146,7 @@ async def test_platform_adds_safe_booleans_only(hass: HomeAssistant) -> None:
     assert isinstance(added[0], BoschBuderusSystemFaultBinarySensor)
     assert isinstance(added[1], BoschBuderusBinarySensor)
     assert added[1].entity_description.resource_path == safe.path
+    await sensor.coordinator.async_shutdown()
 
 
 def test_unavailable_or_non_boolean_value_has_no_binary_state(
@@ -241,3 +242,4 @@ async def test_platform_adds_read_only_holiday_status(hass: HomeAssistant) -> No
     assert holiday.is_on
     assert holiday.extra_state_attributes["period_count"] == 1
     assert holiday.unique_id == "gateway-one:holiday_active"
+    await coordinator.async_shutdown()
