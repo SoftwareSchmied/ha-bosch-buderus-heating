@@ -13,17 +13,34 @@ previously confirmed full certificate fingerprint for the resource port, a
 gateway budget handle and a guard for the current configuration generation.
 The client cannot approve a certificate, create a token or send a write request.
 
-Before every GET, anonymous TLS inspection checks the entire leaf certificate
-and selects a numerical peer. The credentialed connection checks that same
-SHA-256 fingerprint again before sending its headers. Even a renewed certificate
-with the same public key stops the client. The caller must complete the explicit
-trust workflow before constructing a replacement client.
+Before the first GET, and again after a connection failure or an address
+change, anonymous TLS inspection checks the entire leaf certificate and selects
+a numerical peer. Every new credentialed connection checks that same SHA-256
+fingerprint again, right after the handshake and before any request line or
+header is written. Even a renewed certificate with the same public key stops
+the client. The caller must complete the explicit trust workflow before
+constructing a replacement client.
 
-The client owns its HTTP session. Connections close after each request so a
-pooled connection cannot bypass a later certificate check. Redirects, ambient
-proxy settings, cookies, automatic decompression and automatic HTTP retries
-are disabled. Only a validated catalog target is appended to the selected
-resource origin. Queries and Unicode signal IDs retain their validated encoding.
+The client owns its HTTP session. An answered connection is kept and used again
+for the next request within 4 seconds of idle time (keep-alive), so TLS
+handshakes are only needed after pauses and failures. The pool keys a kept
+connection by numerical peer, server name and the client's single pin object,
+so no request is ever sent over a connection that was not checked against the
+pin. An error answer releases its connection without reading the body; the
+connection is only kept when that answer was already complete. Redirects,
+ambient proxy settings, cookies, automatic decompression and automatic HTTP
+retries are disabled. Only a validated catalog target is appended to the
+selected resource origin. Queries and Unicode signal IDs retain their validated
+encoding.
+
+When kept connections misbehave, the client falls back automatically to a new
+connection per read, the behaviour before keep-alive. Three failures on kept
+connections (closed or reset before an answer, no answer in time, or a broken
+answer) within 15 minutes start the fallback for 6 hours; a repeated fallback
+lasts 12 and then 24 hours. Keep-alive is then tried again. The first fallback
+is logged once as a warning. The fallback only changes how connections are
+opened, so reads continue during it. The
+[diagnostics](diagnostics.md) report the counts under `connection_reuse`.
 
 ## Bounded reads and shared pauses
 
@@ -59,6 +76,7 @@ request all of it. History windows and discovery have separate limits.
 | --- | --- |
 | Valid HTTP 200 response | Immutable observation with its original source context and observation times |
 | Busy gate or active pause | Deferred, without a network request |
+| Kept connection closed or reset before any answer | Deferred (`reused_connection_closed`) without a pause; the next read opens a new connection |
 | HTTP 400, 403, 404 or 406 | Path error; no permanent unsupported-device decision |
 | Redirect or other non-success status below 500 | Path error; no redirect is followed |
 | Invalid body, wrong resource or timeout after request headers start | Path error; earlier successful observations remain intact |

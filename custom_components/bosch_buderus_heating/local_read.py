@@ -30,6 +30,7 @@ from .local_budget import (
     LocalReadBudget,
 )
 from .local_credentials import validate_local_token
+from .local_keepalive import ConnectionKind, ConnectionReuse, ReuseFailure
 from .local_probe import ProbeContext, TransportFailure
 from .local_transport import CertificateBinding, PortRole, StaleLocalRequest
 
@@ -58,6 +59,8 @@ class ReadProblem(StrEnum):
     RATE_LIMITED = "rate_limited"
     SERVICE_UNAVAILABLE = "service_unavailable"
     HTTP_ERROR = "http_error"
+    # A kept connection was closed before any answer (G4): read again later.
+    REUSED_CONNECTION_CLOSED = "reused_connection_closed"
 
 
 @dataclass(frozen=True, slots=True)
@@ -135,6 +138,8 @@ class _Attempt:
     lease: BudgetLease
     headers: int = 0
     status: int | None = None
+    # Whether the request went over a new or a kept connection (G4).
+    connection: ConnectionKind | None = None
 
 
 class LocalReadClient:
@@ -161,7 +166,14 @@ class LocalReadClient:
         self._budget = budget
         self._is_current = is_current
         self._limits = limits
+        # One pin object per client: aiohttp keeps connections per ``ssl``
+        # argument, so only connections checked against it are used again.
+        self._pin = aiohttp.Fingerprint(binding.sha256)
+        # The kept-alive session, and the one opening a connection per read
+        # while the gateway does not keep connections reliably (G4).
         self._session: aiohttp.ClientSession | None = None
+        self._fallback_session: aiohttp.ClientSession | None = None
+        self._reuse = ConnectionReuse()
         self._active: set[asyncio.Task[ReadResult]] = set()
         self._close_task: asyncio.Task[None] | None = None
         self._closed = False
@@ -198,12 +210,19 @@ class LocalReadClient:
             "deferred_reasons": dict(sorted(self._deferred_reasons.items())),
         }
 
-    def _record(self, result: ReadResult, started: float) -> None:
+    def connection_reuse(self) -> dict[str, object]:
+        """Keep-alive counts and fallback state (G4, O56), fixed codes only."""
+        return self._reuse.diagnostics(self._metrics.tls_inspections)
+
+    def _record(self, result: ReadResult, started: float, attempt: _Attempt) -> None:
         if result.state is ReadState.DEFERRED:
             self._deferred_reasons[str(result.problem or "unknown")] += 1
             return
         if result.http_requests:
-            self._durations.append((monotonic() - started) * 1000)
+            duration = (monotonic() - started) * 1000
+            self._durations.append(duration)
+            if attempt.connection is not None and attempt.status is not None:
+                self._reuse.timed(attempt.connection, duration)
         if (failure := _failure_class(result)) is not None:
             self._failure_classes[failure] += 1
 
@@ -238,14 +257,43 @@ class LocalReadClient:
         attempt.headers += 1
         self._count(http_requests=1)
 
-    def _get_session(self) -> aiohttp.ClientSession:
-        if self._session is None:
+    async def _connection_created(
+        self,
+        session: aiohttp.ClientSession,
+        trace: SimpleNamespace,
+        params: aiohttp.TraceConnectionCreateStartParams,
+    ) -> None:
+        self._connected(trace, ConnectionKind.NEW)
+
+    async def _connection_reused(
+        self,
+        session: aiohttp.ClientSession,
+        trace: SimpleNamespace,
+        params: aiohttp.TraceConnectionReuseconnParams,
+    ) -> None:
+        self._connected(trace, ConnectionKind.REUSED)
+
+    def _connected(self, trace: SimpleNamespace, kind: ConnectionKind) -> None:
+        attempt = trace.trace_request_ctx
+        assert isinstance(attempt, _Attempt)
+        attempt.connection = kind
+        self._reuse.connected(kind)
+
+    def _get_session(self, keep_alive: bool = True) -> aiohttp.ClientSession:
+        session = self._session if keep_alive else self._fallback_session
+        if session is None:
             trace = aiohttp.TraceConfig()
             trace.on_request_headers_sent.append(self._headers_sent)
-            self._session = transport.create_local_session(
-                trace_configs=[trace], maximum_connections=2
+            trace.on_connection_create_start.append(self._connection_created)
+            trace.on_connection_reuseconn.append(self._connection_reused)
+            session = transport.create_local_session(
+                trace_configs=[trace], maximum_connections=2, keep_alive=keep_alive
             )
-        return self._session
+            if keep_alive:
+                self._session = session
+            else:
+                self._fallback_session = session
+        return session
 
     async def _access_error(
         self,
@@ -366,9 +414,10 @@ class LocalReadClient:
         self._current()
         origin = URL.build(scheme="https", host=peer, port=PortRole.RESOURCES.port)
         url = URL(str(origin) + request.target, encoded=True)
-        async with self._get_session().get(
+        keep_alive = self._reuse.keep_alive
+        async with self._get_session(keep_alive).get(
             url,
-            ssl=aiohttp.Fingerprint(self._binding.sha256),
+            ssl=self._pin,
             headers={
                 "Authorization": f"Bearer {self._token}",
                 "Accept-Encoding": "identity",
@@ -385,12 +434,18 @@ class LocalReadClient:
         ) as response:
             attempt.status = response.status
             self._count(http_responses=1)
+            if keep_alive:
+                self._reuse.answered(
+                    closes="close" in response.headers.get("Connection", "").lower()
+                )
             delay = (
                 transport._retry_after(response.headers.get("Retry-After"))
                 if response.status in {429, 503}
                 else None
             )
             if response.status != 200:
+                # Without reading the error body. aiohttp has already kept the
+                # connection when the answer was complete; any other is closed.
                 response.close()
                 result = await self._http_error(request, attempt, delay)
                 # Preserve an already observed gateway pause even after a change.
@@ -450,6 +505,8 @@ class LocalReadClient:
                     MINIMUM_START_GAP, self._budget.remaining_seconds
                 ),
             )
+        if self._active:
+            self._reuse.overlapping()
         task = asyncio.create_task(self._execute(request, lease))
         self._active.add(task)
         task.add_done_callback(lambda done: self._finished(done, lease))
@@ -461,14 +518,21 @@ class LocalReadClient:
 
     async def _execute(self, request: ReadRequest, lease: BudgetLease) -> ReadResult:
         started = monotonic()
-        result = await self._execute_counted(request, lease)
-        self._record(result, started)
+        attempt = _Attempt(lease)
+        result = await self._execute_counted(request, attempt)
+        self._record(result, started, attempt)
         return result
 
+    def _reuse_failed(self, attempt: _Attempt, failure: ReuseFailure) -> bool:
+        """Count a failure of a kept connection; True when it was one."""
+        if attempt.connection is not ConnectionKind.REUSED:
+            return False
+        self._reuse.failed(failure)
+        return True
+
     async def _execute_counted(
-        self, request: ReadRequest, lease: BudgetLease
+        self, request: ReadRequest, attempt: _Attempt
     ) -> ReadResult:
-        attempt = _Attempt(lease)
         try:
             return await self._execute_admitted(request, attempt)
         except BudgetDeferred as error:
@@ -536,6 +600,7 @@ class LocalReadClient:
             return await self._access_error(request, attempt, TransportFailure.TLS)
         except TimeoutError, aiohttp.ServerTimeoutError:
             self._current()
+            self._reuse_failed(attempt, ReuseFailure.TIMEOUT)
             if attempt.headers:
                 return ReadResult(
                     request,
@@ -547,6 +612,7 @@ class LocalReadClient:
             return await self._access_error(request, attempt, TransportFailure.TIMEOUT)
         except aiohttp.ClientPayloadError:
             self._current()
+            self._reuse_failed(attempt, ReuseFailure.INVALID_RESPONSE)
             return ReadResult(
                 request,
                 ReadState.PATH_ERROR,
@@ -556,6 +622,22 @@ class LocalReadClient:
             )
         except aiohttp.ClientError, OSError, transport._RepeatBlocked:
             self._current()
+            if (
+                self._reuse_failed(attempt, ReuseFailure.CLOSED)
+                and attempt.status is None
+            ):
+                # A kept connection the gateway closed or reset before any
+                # answer: no sign of an unavailable gateway, so no pause and
+                # no new certificate inspection. The read is not repeated
+                # here; it is due again at once and opens a new connection.
+                self._count(deferred=1)
+                return ReadResult(
+                    request,
+                    ReadState.DEFERRED,
+                    problem=ReadProblem.REUSED_CONNECTION_CLOSED,
+                    http_requests=attempt.headers,
+                    retry_after_seconds=MINIMUM_START_GAP,
+                )
             return await self._access_error(request, attempt, TransportFailure.CONNECT)
 
     async def __aenter__(self) -> Self:
@@ -571,8 +653,13 @@ class LocalReadClient:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
         try:
-            if self._session is not None:
-                await self._session.close()
+            await asyncio.gather(
+                *(
+                    session.close()
+                    for session in (self._session, self._fallback_session)
+                    if session is not None
+                )
+            )
         finally:
             self._token = ""
 

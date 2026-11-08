@@ -38,6 +38,10 @@ REQUEST_TIMEOUT = 5.0
 PROBE_TIMEOUT = 15.0
 PEER_TIMEOUT = 2.0
 _CLOSE_TIMEOUT = 0.25
+# An open connection to the gateway is used again only within this idle time
+# (G4). It stays below the short idle limits common in small HTTP servers, so
+# the client gives up a connection before the gateway would close it.
+KEEPALIVE_IDLE_SECONDS = 4.0
 
 
 class PortRole(StrEnum):
@@ -316,13 +320,29 @@ def create_local_session(
     *,
     trace_configs: list[aiohttp.TraceConfig] | None = None,
     maximum_connections: int = 1,
+    keep_alive: bool = False,
 ) -> aiohttp.ClientSession:
-    """Own local sockets and check the fingerprint on every new connection."""
+    """Own local sockets and check the fingerprint on every new connection.
+
+    With ``keep_alive`` an answered connection is kept for the next request
+    for ``KEEPALIVE_IDLE_SECONDS``. aiohttp keys its pool by address, server
+    name and the ``ssl`` argument, so a kept connection is only ever used
+    again for a request with the same pin object; the fingerprint itself is
+    checked once per connection, right after the handshake and before the
+    first request line is written.
+    """
+    connector = (
+        aiohttp.TCPConnector(
+            limit=maximum_connections, keepalive_timeout=KEEPALIVE_IDLE_SECONDS
+        )
+        if keep_alive
+        else aiohttp.TCPConnector(force_close=True, limit=maximum_connections)
+    )
     return aiohttp.ClientSession(
         trust_env=False,
         cookie_jar=aiohttp.DummyCookieJar(),
         auto_decompress=False,
-        connector=aiohttp.TCPConnector(force_close=True, limit=maximum_connections),
+        connector=connector,
         max_line_size=4096,
         max_field_size=4096,
         trace_configs=trace_configs,
