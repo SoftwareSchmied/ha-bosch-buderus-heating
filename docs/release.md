@@ -51,6 +51,30 @@ browser tests, followed by the tag-triggered release workflow. I compare the
 published archive and checksum with the local Linux build and the release
 notes with this version's CHANGELOG section.
 
+## 0.8.4-beta.1 verification
+
+I prepared **0.8.4-beta.1 as a pre-release** on 2026-11-02 to investigate the
+renewed sign-in request reported in #49. **0.8.3 remains Stable/Latest.**
+Thank you to lanebe for the report with log lines and a screenshot. The beta
+adds diagnostics only; sign-in, token renewal and reauthentication behave as
+in 0.8.3.
+
+The full suite passed **3,318 automated cases on HA 2026.10.4** and
+**3,318 on HA 2026.9.2**, both with Python **3.14.7** and **96.87% combined
+statement and branch coverage**. These are the same cases on two HA versions,
+including parametrized variants. The new history module has 98% statement
+and branch coverage in its targeted tests. Ruff, formatting and strict Mypy
+passed. Runtime dependencies are unchanged; the tag-triggered release
+workflow repeats the dependency audit, hassfest and HACS validation.
+
+Two Linux builds produced the same **99-file**, **344,936-byte** archive with
+manifest version **0.8.4-beta.1**. SHA-256:
+`c55126668234296c2467086b4e94ca3dd04ccf576e65afb9f29ddfc569276ab1`.
+The package tests verify an import from an isolated ZIP installation.
+
+I have not installed this beta on a physical system. The diagnostics start
+recording with this version and cannot explain earlier rejections.
+
 ## 0.8.3 verification
 
 I prepared **0.8.3 as Stable/Latest** on 2026-11-02 from **0.8.3-beta.1**,
@@ -86,15 +110,24 @@ paths are identical and only four platform modules and the manifest differ.
 SHA-256:
 `1b814d0daf80ff0acc2c65a006cd9030c7ef2abc069d92da4d20ab3e6c503b8e`.
 
-Publication requires all checks on the final PR revision, including the new
-HA 2026.9.2 compatibility job and browser tests, followed by the release
-workflow. I compare the published archive and checksum with the local Linux
-build and the release notes with this version's CHANGELOG section.
+All checks passed on the final revision of #100, including the new HA 2026.9.2
+compatibility job and browser tests, followed by the release workflow.
+The main branch requires a linear history, so I included the dependency
+updates through #100 and closed #97, #98 and #99 as superseded.
+The published archive and checksum match the local Linux build byte for byte.
+
+I corrected an outdated note in the release text after checking ReuDa's
+2026-11-01 field report in #95. He confirmed the displayed programs and timely
+heating and hot-water transitions against MyBuderus on a WLW186i with MX400.
+Issue #95 was already closed. The published release notes follow this
+corrected CHANGELOG section; the release tag and installation archive stay
+unchanged. The original documentation at the tag predates this correction.
 
 Update through HACS and restart Home Assistant. I have not installed this
 release on a physical system or performed appliance writes for this fix.
-The low-salt check in #60 and the remaining time-program display checks in
-#95 still need field confirmation. Neither issue is closed by this release.
+The low-salt check in #60 still needs field confirmation, so that issue remains
+open. The time-program feedback confirms one installation; I have not tested
+physical clock changes or additional system configurations for this release.
 
 ## 0.8.3-beta.1 verification
 
@@ -412,9 +445,9 @@ The tag-triggered workflow repeats verification, including the dependency
 audit, Hassfest and HACS, before publication. Published notes, archive and
 checksum must match the verified local artifacts.
 
-I performed no physical appliance writes for this beta. The recovery delay on
-a real installation has not been established yet; field confirmation remains
-open. Select the beta explicitly in HACS and
+I performed no physical appliance writes for this beta. The static APK
+comparison does not establish the recovery delay on a real installation.
+Field confirmation remains open. Select the beta explicitly in HACS and
 restart Home Assistant after updating.
 
 ## 0.8.1 verification
