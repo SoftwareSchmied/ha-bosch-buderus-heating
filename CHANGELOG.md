@@ -56,6 +56,18 @@ The hydraulic card preset keeps working unchanged; the pool-heating start
 counter is disabled by default on new installations; systems set up with local
 access only are not recognised by the preset yet.
 
+### Related issues
+
+- [#106](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/106): Home Assistant 2026.11 no longer logs deprecation warnings
+  for the integration.
+- [#104](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/104) and [#105](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/105): when the cloud times out or the discovery
+  gets no answer at start-up, a system that was set up before starts from its
+  saved setup and searches again for missing parts, instead of leaving its
+  entities unavailable.
+- [#49](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/49): the sign-in renewal diagnostics from 0.8.4-beta.1 are included
+  for every saved cloud access; they help to find out why a renewal was
+  rejected.
+
 ### Setup and local access
 
 Adding the integration now starts with a choice: cloud access, cloud and local
