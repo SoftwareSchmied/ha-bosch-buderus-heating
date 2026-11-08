@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 from dataclasses import dataclass, field
 from typing import Any, cast
 
@@ -34,6 +35,8 @@ _FIELDS = frozenset(
         "resource_path",
     }
 )
+# O23: these repeat across thousands of records; one shared string each.
+_INTERNED = ("platform", "target_id", "binding_id", "adapter")
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,6 +79,10 @@ class RetainedEntity:
             or not path.isprintable()
         ):
             raise ConfigurationError("invalid_inventory_path")
+        for name in _INTERNED:
+            value = data[name]
+            if type(value) is str:
+                data[name] = sys.intern(value)
         return cls(**cast(dict[str, Any], data))
 
 
@@ -86,7 +93,11 @@ class ConnectionInventory:
         self.hass = hass
         self.entry = entry
         self._store = Store[dict[str, Any]](
-            hass, 1, f"{DOMAIN}.inventory.{entry.entry_id}"
+            hass,
+            1,
+            f"{DOMAIN}.inventory.{entry.entry_id}",
+            private=True,
+            atomic_writes=True,
         )
         self._entities: dict[tuple[str, str], RetainedEntity] = {}
         self._lock = asyncio.Lock()

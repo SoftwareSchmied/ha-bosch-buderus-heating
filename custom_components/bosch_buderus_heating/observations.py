@@ -56,6 +56,14 @@ class PairResult(StrEnum):
     AGREE = "agree"
     DIFFER = "differ"
     INCOMPARABLE = "incomparable"
+    # O91: a counter whose later reading is higher, read at least one poll
+    # period apart: it most likely counted on between the two reads.
+    CHANGED_BETWEEN_READS = "changed_between_reads"
+
+
+# The shortest poll period of either access; reads closer together than this
+# that still differ are reported as differing.
+CHANGE_GAP_SECONDS = 60.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -183,6 +191,8 @@ PAIR_CATALOG: tuple[PairDefinition, ...] = (
     _pair("working_time_system", "/heatSources/workingTime/totalSystem", counter=True),
     _pair("working_time_heat_source", "/heatSources/{hs}/workingTime", counter=True),
 )
+
+WORKING_TIME_MEASUREMENT = "working_time_heat_source"
 
 _PLACEHOLDERS = {"{hc}": r"(hc\d+)", "{dhw}": r"(dhw\d+)", "{hs}": r"(hs\d+)"}
 
@@ -395,19 +405,52 @@ def compare(cloud: Observation, local: Observation) -> PairComparison | None:
         same = _number_equal(cloud.value, local.value)
     else:
         same = cloud.value == local.value
-    return result(PairResult.AGREE if same else PairResult.DIFFER, "compared")
+    if same:
+        return result(PairResult.AGREE, "compared")
+    if pair.counter and gap > CHANGE_GAP_SECONDS and _counted_on(cloud, local):
+        return result(PairResult.CHANGED_BETWEEN_READS, "compared")
+    return result(PairResult.DIFFER, "compared")
+
+
+def _counted_on(cloud: Observation, local: Observation) -> bool:
+    """The later reading of a counter is higher, never lower in any part."""
+    if cloud.timing.received_at == local.timing.received_at:
+        return False
+    earlier, later = (
+        (cloud, local)
+        if cloud.timing.received_at < local.timing.received_at
+        else (local, cloud)
+    )
+    before, after = _numbers(earlier), _numbers(later)
+    if not before or before.keys() != after.keys():
+        return False
+    return all(after[key] >= before[key] for key in before) and any(
+        after[key] > before[key] for key in before
+    )
+
+
+def is_working_time(path: str) -> bool:
+    """The working time of one heat source (``/heatSources/{hs}/workingTime``).
+
+    Its cloud value has no unit and counts seconds, the local value reports
+    ``s``: the pair agreed in scale on a reference installation (O90).
+    """
+    pair = pair_for_path(path)
+    return pair is not None and pair.measurement == WORKING_TIME_MEASUREMENT
 
 
 def units_match(pair: PairDefinition, cloud: Observation, local: Observation) -> bool:
-    """Same unit, or the established unitless kWh contract of energy counters."""
+    """Same unit, or an established unitless cloud contract of a counter: kWh
+    for energy counters, seconds for the working time of a heat source."""
     if canonical_unit(cloud.unit) == canonical_unit(local.unit):
         return True
+    if not pair.counter or cloud.unit is not None:
+        return False
+    if cloud.resource_type == "emonValue" and "/emon/" in cloud.path:
+        return canonical_unit(local.unit) == "kWh"
     return (
-        pair.counter
-        and cloud.resource_type == "emonValue"
-        and "/emon/" in cloud.path
-        and cloud.unit is None
-        and canonical_unit(local.unit) == "kWh"
+        pair.measurement == WORKING_TIME_MEASUREMENT
+        and canonical_unit(local.unit) == "s"
     )
 
 
@@ -507,13 +550,41 @@ def pair_summary(comparisons: Iterable[PairComparison]) -> dict[str, Any]:
                 ).items()
             )
         ),
+        # O91: the catalog names of pairs whose values differ, never values.
+        "differing_measurements": sorted(
+            {
+                item.pair.measurement
+                for item in items
+                if item.result is PairResult.DIFFER
+            }
+        ),
         "counter_pairs": sum(item.pair.counter for item in items),
         "counter_evidence": counter_evidence(items),
         "both_current": sum(
             item.cloud.current and item.local.current for item in items
         ),
         "maximum_receive_gap_seconds": max(gaps) if gaps else None,
+        # Rarely read static values would hide the gaps of live readings.
+        "maximum_receive_gap_seconds_by_class": _gaps_by_class(items),
     }
+
+
+def _gaps_by_class(items: Iterable[PairComparison]) -> dict[str, float]:
+    """The largest receive gap per local poll class of the paired path."""
+    from .local_api.catalog import request_for_path
+    from .local_api.errors import LocalResourceError
+    from .local_polling.policy import category
+
+    gaps: dict[str, float] = {}
+    for item in items:
+        if item.receive_gap_seconds is None:
+            continue
+        try:
+            name = category(request_for_path(item.cloud.path)).value
+        except LocalResourceError, KeyError, ValueError:
+            name = "other"
+        gaps[name] = max(gaps.get(name, 0.0), item.receive_gap_seconds)
+    return dict(sorted(gaps.items()))
 
 
 # ---------------------------------------------------------------- helpers

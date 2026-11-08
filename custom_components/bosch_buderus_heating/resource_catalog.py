@@ -8,6 +8,7 @@ import math
 import re
 from dataclasses import dataclass
 from enum import StrEnum
+from functools import lru_cache
 
 from . import rrc
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
@@ -29,6 +30,8 @@ class PollGroup(StrEnum):
     CONTROL = "control"
     ENERGY = "energy"
     SLOW = "slow"
+    # O50: containers and lists without an entity (new devices or zones).
+    HOURLY = "hourly"
     STATIC = "static"
 
 
@@ -1007,6 +1010,9 @@ _PRIVATE_LAST_WORDS = frozenset(
         "lng",
     }
 )
+# Since 0.9.0-alpha.2; like all words added since then, only for the last
+# segment of a path when deciding whether a known entity is retired.
+_ADDED_LAST_WORDS = frozenset({"ids", "addr"})
 # Words that mark a name wherever they appear.
 _PRIVATE_WORDS = frozenset(
     {
@@ -1027,6 +1033,20 @@ _PRIVATE_WORDS = frozenset(
         "longitude",
     }
 )
+_ADDED_WORDS = frozenset(
+    {
+        "latlong",
+        "latlng",
+        "gps",
+        "identifier",
+        "identifiers",
+        "identification",
+        "customer",
+        "host",
+        "hostname",
+        "netmask",
+    }
+)
 _PRIVATE_WORD_PREFIXES = (
     "mac",
     "ipv",
@@ -1043,9 +1063,18 @@ _PRIVATE_WORD_PREFIXES = (
     "iban",
     "secret",
 )
+_ADDED_WORD_PREFIXES = ("geoloc", "geopos", "bssid", "subnet", "ipaddr")
+# "...Number" or "...Nr" after one of these words is a number that identifies.
+_NUMBER_OWNERS = frozenset(
+    {"house", "customer", "contract", "account", "order", "article", "part", "ser"}
+)
+_NUMBER_WORDS = frozenset({"number", "nr"})
+_LONGITUDE_WORDS = frozenset({"long", "lng", "lon"})
 # A code is private when it opens something.
 _PRIVATE_CODE_WORDS = frozenset({"installer", "pairing", "access", "pin", "pass"})
 _IP_VERSION = re.compile(r"ip(?:v?[46])(?![a-z])", re.IGNORECASE)
+# "IDs" as one word ("gatewayIDs"), like "Ids".
+_ID_PLURAL = re.compile(r"IDs(?![a-z])")
 _WORD = re.compile(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|[0-9]+", re.ASCII)
 # Types of a single readable value; everything else is a structure, a list
 # or configuration that feeds other features.
@@ -1057,16 +1086,60 @@ UNKNOWN_FLAG = "flag"
 
 def identifier_name(name: str) -> bool:
     """A reading name that denotes an identifier, address, location or secret."""
+    return _identifier_name(name, added=True)
+
+
+def _earlier_identifier_name(name: str) -> bool:
+    """The rules before 0.9.0-alpha.2, for the parents of a path."""
+    return _identifier_name(name, added=False)
+
+
+def _identifier_name(name: str, *, added: bool) -> bool:
     # "IPv4", "ipv6", "Ip4" as one word, whatever their spelling.
     last = _IP_VERSION.sub("_Ip_", name.rsplit(".", 1)[-1])
-    words = [word.casefold() for word in _WORD.findall(last)]
-    return bool(words) and (
+    if added:
+        last = _ID_PLURAL.sub("Ids", last)
+    spelled = _WORD.findall(last)
+    words = [word.casefold() for word in spelled]
+    if not words:
+        return False
+    if (
         words[-1] in _PRIVATE_LAST_WORDS
         or any(
             word in _PRIVATE_WORDS or word.startswith(_PRIVATE_WORD_PREFIXES)
             for word in words
         )
         or ("code" in words and not _PRIVATE_CODE_WORDS.isdisjoint(words))
+    ):
+        return True
+    return (
+        added
+        and (
+            words[-1] in _ADDED_LAST_WORDS
+            # "moduleNo", "SerNo": "No" only as its own last word of a longer
+            # name, never inside a word or at the start ("NoOfStarts").
+            or (len(spelled) > 1 and spelled[-1] == "No")
+            or any(
+                word in _ADDED_WORDS or word.startswith(_ADDED_WORD_PREFIXES)
+                for word in words
+            )
+            or ("lat" in words and not _LONGITUDE_WORDS.isdisjoint(words))
+            or (
+                len(words) > 1
+                and words[-1] in _NUMBER_WORDS
+                and words[-2] in _NUMBER_OWNERS
+            )
+            or words[-2:] == ["net", "mask"]
+        )
+    )
+
+
+def _identifier_path(path: str) -> bool:
+    """An identifier in a path: the leaf by every rule, its parents only by
+    the earlier ones, so a newer word never retires a whole subtree."""
+    *parents, leaf = path.strip("/").split("/")
+    return identifier_name(leaf) or any(
+        _earlier_identifier_name(part) for part in parents
     )
 
 
@@ -1080,7 +1153,7 @@ def unknown_never_entity(resource: Resource) -> bool:
         or is_opt_in_diagnostic_resource(path)
         or path in _NO_ENTITY_PATHS
         or any(pattern.fullmatch(path) for pattern in _NO_ENTITY_PATTERNS)
-        or any(identifier_name(part) for part in path.strip("/").split("/"))
+        or _identifier_path(path)
         or path.endswith("/name")
         or resource.references
         or isinstance(resource.value, dict | list)
@@ -1178,6 +1251,7 @@ def _matches_optional_app_schema(resource: Resource) -> bool:
     return True
 
 
+@lru_cache(maxsize=4096)
 def capability_maturity(path: str) -> CapabilityMaturity:
     """Return the curated evidence level for a concrete PointT path."""
     if rrc.scalar_field(path):
@@ -1223,8 +1297,50 @@ def entity_enabled_by_default(path: str) -> bool:
 FIRMWARE_PATHS = ("/gateway/versionFirmware", "/system/appliance/versionFirmware")
 
 
+# O50: cloud containers and lists that never become an entity. They only
+# show new devices, zones or circuits, so an hourly read is enough.
+_HOURLY_CONTAINER_PATHS = frozenset(
+    {
+        "/devices",
+        "/devices/list",
+        "/devices/inclusionWhitelist",
+        "/solarCircuits",
+        "/ventilation",
+        "/zones/list",
+        "/zones/configuration",
+        "/heatSources/info",
+    }
+)
+_HOURLY_CONTAINER_PATTERN = re.compile(r"^/(?:solarCircuits|ventilation)/[^/]+$")
+# O40: settled cloud values that the 60-second group read only because their
+# names contain "status" or "temperature".
+_STATIC_SETTLED_PATHS = frozenset(
+    {"/system/iSRC/installationStatus", "/system/variableTariff/supportStatus"}
+)
+_SLOW_SETTLED_PATHS = frozenset(
+    {"/system/sensors/temperatures/outdoorTemperatureSource", "/gateway/update/status"}
+)
+_FAST_HEAT_SOURCE_PATTERN = re.compile(
+    r"/heatSources/(?:passiveCooling/inflowTemp|hs[^/]+/(?:actualPower|defrostActive|powerPercentage|brineCircuit/(?:collectorInflowTemp|collectorOutflowTemp)))"
+)
+
+
 def poll_group(resource: Resource) -> PollGroup:
     """Classify a discovered resource into a cloud-friendly cadence."""
+    group = _poll_group(resource)
+    if (
+        group in (PollGroup.FAST, PollGroup.CONTROL, PollGroup.SLOW)
+        and (
+            resource.path in _HOURLY_CONTAINER_PATHS
+            or _HOURLY_CONTAINER_PATTERN.fullmatch(resource.path) is not None
+        )
+        and not supports_entity(resource)
+    ):
+        return PollGroup.HOURLY
+    return group
+
+
+def _poll_group(resource: Resource) -> PollGroup:
     if resource.path in FIRMWARE_PATHS:
         return PollGroup.SLOW
     if rrc.scalar_field(resource.path):
@@ -1292,6 +1408,10 @@ def poll_group(resource: Resource) -> PollGroup:
         "/system/iSRC/supportStatus",
     }:
         return PollGroup.STATIC
+    if resource.path in _STATIC_SETTLED_PATHS:
+        return PollGroup.STATIC
+    if resource.path in _SLOW_SETTLED_PATHS:
+        return PollGroup.SLOW
     if "/emon/" in resource.path or resource.path.endswith(
         ("TotalConsumption", "/solarYield")
     ):
@@ -1305,10 +1425,7 @@ def poll_group(resource: Resource) -> PollGroup:
         "/heatSources/smartFunction/active",
     }:
         return PollGroup.FAST
-    if re.fullmatch(
-        r"/heatSources/(?:passiveCooling/inflowTemp|hs[^/]+/(?:actualPower|defrostActive|powerPercentage|brineCircuit/(?:collectorInflowTemp|collectorOutflowTemp)))",
-        resource.path,
-    ):
+    if _FAST_HEAT_SOURCE_PATTERN.fullmatch(resource.path):
         return PollGroup.FAST
     tail = resource.path.rsplit("/", 1)[-1].lower()
     if tail in _STATIC_TOKENS:
@@ -1320,36 +1437,42 @@ def poll_group(resource: Resource) -> PollGroup:
     return PollGroup.SLOW
 
 
+_FUNCTION_GROUP_PATTERNS = (
+    *(
+        (re.compile(rf"^/{root}/({prefix}\d+)(?:/|$)", re.IGNORECASE), kind, label)
+        for root, prefix, kind, label in (
+            ("heatingCircuits", "hc", "heating_circuit", "Heizkreis"),
+            ("dhwCircuits", "dhw", "hot_water_circuit", "Warmwasser"),
+            ("heatSources", "hs", "heat_source", "Wärmeerzeuger"),
+        )
+    ),
+    *(
+        (re.compile(pattern, re.IGNORECASE), kind, label)
+        for pattern, kind, label in (
+            (rf"^/zones/(zn{rrc.RRC_ID})(?:/|$)", "rrc_zone", "RRC zone"),
+            (r"^/swCircuits/([^/]+)(?:/|$)", "water_softener", "Water softener"),
+            (r"^/solarCircuits/(sc[^/]+)(?:/|$)", "solar_circuit", "Solar circuit"),
+            (
+                r"^/ventilation/(zone[^/]+)(?:/|$)",
+                "ventilation_zone",
+                "Ventilation zone",
+            ),
+            (r"^/zones/(zone[^/]+)(?:/|$)", "room_zone", "Zone"),
+            (r"^/devices/((?!list$)[^/]+)(?:/|$)", "room_device", "Room device"),
+        )
+    ),
+)
+_TRAILING_NUMBER = re.compile(r"(\d+)$")
+
+
+@lru_cache(maxsize=4096)
 def function_group_for_path(path: str) -> FunctionGroup | None:
     """Classify a PointT path without creating devices or proving presence."""
-    for root, kind, label in (
-        ("heatingCircuits", "heating_circuit", "Heizkreis"),
-        ("dhwCircuits", "hot_water_circuit", "Warmwasser"),
-        ("heatSources", "heat_source", "Wärmeerzeuger"),
-    ):
-        prefix = {
-            "heatingCircuits": "hc",
-            "dhwCircuits": "dhw",
-            "heatSources": "hs",
-        }[root]
-        match = re.match(rf"^/{root}/({prefix}\d+)(?:/|$)", path, re.IGNORECASE)
+    for pattern, kind, label in _FUNCTION_GROUP_PATTERNS:
+        match = pattern.match(path)
         if match:
             logical_id = match.group(1)
-            number = re.search(r"(\d+)$", logical_id)
-            suffix = number.group(1) if number else logical_id
-            return FunctionGroup(kind, logical_id, f"{label} {suffix}")
-    for pattern, kind, label in (
-        (rf"^/zones/(zn{rrc.RRC_ID})(?:/|$)", "rrc_zone", "RRC zone"),
-        (r"^/swCircuits/([^/]+)(?:/|$)", "water_softener", "Water softener"),
-        (r"^/solarCircuits/(sc[^/]+)(?:/|$)", "solar_circuit", "Solar circuit"),
-        (r"^/ventilation/(zone[^/]+)(?:/|$)", "ventilation_zone", "Ventilation zone"),
-        (r"^/zones/(zone[^/]+)(?:/|$)", "room_zone", "Zone"),
-        (r"^/devices/((?!list$)[^/]+)(?:/|$)", "room_device", "Room device"),
-    ):
-        match = re.match(pattern, path, re.IGNORECASE)
-        if match:
-            logical_id = match.group(1)
-            number = re.search(r"(\d+)$", logical_id)
+            number = _TRAILING_NUMBER.search(logical_id)
             suffix = number.group(1) if number else logical_id
             return FunctionGroup(kind, logical_id, f"{label} {suffix}")
     return None
@@ -1360,6 +1483,14 @@ LogicalDevice = FunctionGroup
 logical_device_for_path = function_group_for_path
 
 
+_APP_PATH_ROOT = re.compile(
+    r"^/(heatingCircuits|dhwCircuits|solarCircuits|ventilation)/[^/]+/"
+)
+_PROGRAM_NAME = re.compile(r"name[A-Z0-9]+")
+_CAMEL_BOUNDARY = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
+
+
+@lru_cache(maxsize=4096)
 def resource_name(path: str, subkey: str | None = None, *, language: str = "de") -> str:
     """Return a localized user-facing name without exposing technical IDs."""
     if (label := rrc.name(path, language)) is not None:
@@ -1388,11 +1519,7 @@ def resource_name(path: str, subkey: str | None = None, *, language: str = "de")
     path_names = _GERMAN_PATH_NAMES if german else _ENGLISH_PATH_NAMES
     subkey_names = _SUBKEY_NAMES if german else _ENGLISH_SUBKEY_NAMES
     tail = path.rsplit("/", 1)[-1]
-    app_path = re.sub(
-        r"^/(heatingCircuits|dhwCircuits|solarCircuits|ventilation)/[^/]+/",
-        r"/\1/*/",
-        path,
-    )
+    app_path = _APP_PATH_ROOT.sub(r"/\1/*/", path)
     if (app_names := _APP_PATH_NAMES.get(app_path)) is not None:
         base = app_names[0] if german else app_names[1]
     elif "/heatingCircuits/" in path and "/temperatureLevels/" in path:
@@ -1419,7 +1546,7 @@ def resource_name(path: str, subkey: str | None = None, *, language: str = "de")
             }
         )
         base = temperature_names.get(tail, _humanize(tail))
-    elif re.fullmatch(r"name[A-Z0-9]+", tail):
+    elif _PROGRAM_NAME.fullmatch(tail):
         suffix = tail.removeprefix("name")
         base = (
             f"Name des Zeitprogramms {suffix}" if german else f"Schedule {suffix} name"
@@ -1478,7 +1605,7 @@ def configured_device_name(value: str) -> str | None:
 
 
 def _humanize(value: str) -> str:
-    words = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", value)
+    words = _CAMEL_BOUNDARY.sub(" ", value)
     words = words.replace("_", " ").replace(".", " ").strip()
     return words[:1].upper() + words[1:] if words else "Wert"
 

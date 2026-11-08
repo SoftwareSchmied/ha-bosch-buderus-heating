@@ -575,6 +575,14 @@ def test_retry_after_seconds_dates_and_past_dates():
     assert 58 <= transport._retry_after(future) <= 60
 
 
+def test_retry_after_is_never_longer_than_one_day():
+    assert transport._retry_after("86400") == 86400
+    assert transport._retry_after("86401") == 86400
+    assert transport._retry_after("9" * 128) == 86400
+    later = format_datetime(datetime.now(UTC) + timedelta(days=400))
+    assert transport._retry_after(later) == 86400
+
+
 def dns_row(host, family=socket.AF_INET, scope=0):
     return (
         family,

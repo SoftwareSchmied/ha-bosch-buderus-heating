@@ -233,6 +233,74 @@ async def test_retained_targets_cannot_be_claimed_by_new_entry(hass, backend):
     assert entry.data == before and len(hass.config_entries.async_entries(DOMAIN)) == 1
 
 
+async def test_an_unreadable_entry_keeps_its_gateways_claimed(hass, backend):
+    broken = MockConfigEntry(
+        domain=DOMAIN,
+        entry_id="broken-owner",
+        version=4,
+        minor_version=1,
+        data={
+            "targets": {
+                "t": {
+                    "identities": [{"namespace": "pointt_gateway", "value": "000123"}]
+                }
+            },
+            "bindings": "damaged",
+        },
+        options={},
+    )
+    broken.add_to_hass(hass)
+    result = await new_setup(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"gateway_ids": ["000123"]}
+    )
+    assert result["reason"] == "cloud_target_owned"
+    assert len(hass.config_entries.async_entries(DOMAIN)) == 1
+
+
+async def test_unreadable_entries_claim_what_their_raw_data_names(hass, caplog):
+    from custom_components.bosch_buderus_heating.cloud_configuration import (
+        cloud_snapshots,
+        foreign_identities,
+        unreadable_gateway_ids,
+    )
+
+    assert unreadable_gateway_ids(
+        {
+            "gateway_ids": ["legacy-gw", 5],
+            "targets": {
+                "a": {
+                    "identities": [
+                        {"namespace": "local_system_gateway", "value": "local-gw"},
+                        {"namespace": "bacon_device", "value": "softener"},
+                        "damaged",
+                    ],
+                    "legacy_identity": {"gateway_id": "old-gw"},
+                },
+                "b": "damaged",
+            },
+            "bindings": {
+                "x": {"locator": {"namespace": "pointt_gateway", "value": "bound-gw"}},
+                "y": {"locator": {"namespace": "bacon_device", "value": "dev"}},
+            },
+        }
+    ) == {"legacy-gw", "local-gw", "old-gw", "bound-gw"}
+    assert unreadable_gateway_ids({"targets": [], "bindings": None}) == set()
+    MockConfigEntry(
+        domain=DOMAIN, entry_id="legacy-broken", version=3, data={"gateway_ids": ["9"]}
+    ).add_to_hass(hass)
+    assert cloud_snapshots(hass) == ()
+    assert "cannot be read" not in caplog.text
+    assert foreign_identities(hass, "other") == {("pointt_gateway", "", "9")}
+    assert foreign_identities(hass, "legacy-broken") == set()
+    # Nothing to protect: still skipped, but never silently.
+    MockConfigEntry(
+        domain=DOMAIN, entry_id="empty-broken", version=4, minor_version=1, data={}
+    ).add_to_hass(hass)
+    assert cloud_snapshots(hass) == ()
+    assert "Configuration entry empty-broken cannot be read" in caplog.text
+
+
 @pytest.mark.parametrize("native", [False, True])
 async def test_remove_and_reconnect_preserves_targets_names_and_connection_id(
     hass, backend, native
@@ -516,8 +584,17 @@ async def test_expired_new_listing_cannot_register_connection(hass, backend, pha
             result["flow_id"], {"gateway_ids": ["000123"]}
         )
     if phase == "new":
-        assert result["reason"] == "cloud_selection_expired"
+        # A slow selection lists the devices again, without a new sign-in.
+        assert result["step_id"] == "selection_expired"
         assert not hass.config_entries.async_entries(DOMAIN)
+        assert backend.gateways.await_count == 1
+        result = await manager.async_configure(result["flow_id"], {})
+        assert result["step_id"] == "gateways"
+        assert backend.gateways.await_count == 2
+        result = await manager.async_configure(
+            result["flow_id"], {"gateway_ids": ["000123"]}
+        )
+        assert result["type"] is FlowResultType.CREATE_ENTRY
     else:
         assert result["step_id"] == "cloud_retry" and not entry.data["connections"]
         result = await manager.async_configure(result["flow_id"], {})

@@ -144,6 +144,18 @@ class ConfigurationRuns:
         self._runtime = object()
         self._connections: dict[str, int] = {}
         self._bindings: dict[str, int] = {}
+        self._options_cache: tuple[ConfigurationSnapshot, JsonObject] | None = None
+
+    def _options(self) -> JsonObject:
+        """The current snapshot's options, decoded once per snapshot (O5).
+
+        Keyed by snapshot identity: a new snapshot is decoded again at once.
+        Read-only; never modify the returned object.
+        """
+        snapshot, cached = self._snapshot, self._options_cache
+        if cached is None or cached[0] is not snapshot:
+            cached = self._options_cache = (snapshot, snapshot.to_options())
+        return cached[1]
 
     def update(self, snapshot: ConfigurationSnapshot) -> ConfigurationChanges:
         changes = configuration_changes(self._snapshot, snapshot)
@@ -158,7 +170,7 @@ class ConfigurationRuns:
         self, connection_id: str, binding_id: str | None = None
     ) -> RequestGeneration:
         """Allow a generation only for a currently enabled, existing scope."""
-        options = self._snapshot.to_options()
+        options = self._options()
         if (
             connection_id not in self._snapshot.connections
             or not _section(options, "connections")[connection_id]["enabled"]

@@ -9,6 +9,7 @@ import re
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta, timezone, tzinfo
+from functools import lru_cache
 
 from .legacy_holidays import (
     icom_assignments,
@@ -473,11 +474,13 @@ def parse_holiday_write_configuration(
     )
 
 
+@lru_cache(maxsize=4096)
 def is_holiday_resource_path(path: str) -> bool:
     """Include all three contracts without treating timezone metadata as state."""
     return path in HOLIDAY_RESOURCE_PATHS or is_legacy_holiday_path(path)
 
 
+@lru_cache(maxsize=4096)
 def is_holiday_period_path(path: str) -> bool:
     """WDDW2 has no dates and therefore cannot create a calendar."""
     return path in HOLIDAY_PERIOD_PATHS or (

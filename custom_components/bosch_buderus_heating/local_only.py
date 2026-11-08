@@ -357,11 +357,13 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         ("Kondensatwannentemperatur", "Drip pan temperature"),
         enabled=True,
     ),
+    # O100: despite its name the heat output, not the electric power (it
+    # matches the heat meter); existing entities keep their entity ID.
     _signal(
         _HP1 + "CompressorPower",
         "compressor_output",
         POWER,
-        ("Verdichterleistung", "Compressor power"),
+        ("Wärmeleistung (Verdichter)", "Heat output (compressor)"),
         enabled=True,
     ),
     _signal(
@@ -970,6 +972,7 @@ _MAP_TRANSLATIONS = {
     frozenset({"true", "false"}): "signal_true_false",
     frozenset({"off", "on"}): "on_off_state",
 }
+_TRUE_FALSE = frozenset({"true", "false"})
 _MARKER_STATE = re.compile(
     r"(?:^|_)(?:na|open|short|invalid\d*|overflow|underflow|low_?flow|error)(?:_|$)"
 )
@@ -1015,14 +1018,15 @@ def generic_form(
     data = getattr(observation, "data", None)
     if getattr(observation, "type", None) == "stringValue":
         declared = _declared(getattr(data, "allowed_values", ()))
-        if declared:
+        if declared and not _TRUE_FALSE.issuperset(declared):
             return replace(
                 definition,
                 kind=STATE,
                 options=declared,
                 translation_key=_MAP_TRANSLATIONS.get(frozenset(declared)),
             )
-        if state_key(getattr(data, "value", None)) in ("true", "false"):
+        if declared or state_key(getattr(data, "value", None)) in _TRUE_FALSE:
+            # O107: declared or answered true/false is an on/off state.
             return replace(
                 definition,
                 kind=FLAG,
@@ -1037,6 +1041,14 @@ def generic_form(
         and not all(is_marker_state(name) for name in names)
     ):
         keys = _declared(names)
+        if keys and _TRUE_FALSE.issuperset(keys):
+            # O107: a TRUE/FALSE map is an on/off state, as a text answer is.
+            return replace(
+                definition,
+                kind=FLAG,
+                options=_FLAG_OPTIONS,
+                translation_key="on_off_state",
+            )
         return replace(
             definition,
             kind=STATE,
@@ -1171,8 +1183,21 @@ def unit_and_class(
     return mapped
 
 
-def state_class(definition: LocalOnlyDefinition) -> SensorStateClass | None:
-    """Statistics only for reviewed measurements, never for generic signals."""
+# Units of a generic signal that make it a measurement (#80); run and
+# remaining times stay without statistics, like the reviewed ones.
+_MEASUREMENT_UNITS = frozenset(
+    unit
+    for unit, device_class in _UNITS.values()
+    if device_class is not SensorDeviceClass.DURATION
+)
+
+
+def state_class(
+    definition: LocalOnlyDefinition, unit: str | None = None
+) -> SensorStateClass | None:
+    """Statistics for measurements: reviewed ones, and controller signals
+    whose reading has the unit of a measurement (``unit``, as Home Assistant
+    shows it). States, text, times and other generic readings get none."""
     # Run and remaining times are counters, not measurements: no statistics.
     if definition.kind in (
         TEMPERATURE,
@@ -1182,6 +1207,12 @@ def state_class(definition: LocalOnlyDefinition) -> SensorStateClass | None:
         HUMIDITY,
         ROTATION,
         CONCENTRATION,
+    ):
+        return SensorStateClass.MEASUREMENT
+    if (
+        definition.kind == GENERIC
+        and definition.key == "signal"
+        and unit in _MEASUREMENT_UNITS
     ):
         return SensorStateClass.MEASUREMENT
     return None
@@ -1205,10 +1236,21 @@ def state_options(
 def state_key(value: object) -> str | None:
     """C5: a state as an option key: casefolded, other characters as one
     ``_``, bounded; None when nothing usable remains."""
-    if not isinstance(value, str) or not value.isprintable():
+    if not isinstance(value, str):
         return None
-    key = re.sub(r"[^a-z0-9_]+", "_", value.casefold())
-    key = re.sub(r"_+", "_", key).strip("_")
+    return _state_key(value)
+
+
+_NOT_KEY = re.compile(r"[^a-z0-9_]+")
+_REPEATED_UNDERSCORE = re.compile(r"_+")
+
+
+@lru_cache(maxsize=4096)
+def _state_key(value: str) -> str | None:
+    if not value.isprintable():
+        return None
+    key = _NOT_KEY.sub("_", value.casefold())
+    key = _REPEATED_UNDERSCORE.sub("_", key).strip("_")
     return key if 0 < len(key) <= _MAX_STATE_LENGTH else None
 
 

@@ -33,17 +33,16 @@ class LocalSourceState:
     last_observations: tuple[LocalObservation, ...] = field(default=(), repr=False)
     resources: tuple[ResourceView, ...] = field(default=(), repr=False)
     problem: str | None = None
+    # Worked out once: a published state never changes, and every entity
+    # update asks for it again.
+    _current: tuple[LocalObservation, ...] = field(
+        default=(), init=False, repr=False, compare=False
+    )
 
     @property
     def current_observations(self) -> tuple[LocalObservation, ...]:
         """Only explicitly current resource views can supply measurement data."""
-        if self.condition is not LocalCondition.READY or not self.identity_confirmed:
-            return ()
-        return tuple(
-            v.observation
-            for v in self.resources
-            if v.available and v.observation is not None
-        )
+        return self._current
 
     def __post_init__(self) -> None:
         if (
@@ -74,3 +73,13 @@ class LocalSourceState:
             or len({v.request.target for v in self.resources}) != len(self.resources)
         ):
             raise ValueError("invalid_local_resource_views")
+        if self.condition is LocalCondition.READY and self.identity_confirmed:
+            object.__setattr__(
+                self,
+                "_current",
+                tuple(
+                    v.observation
+                    for v in self.resources
+                    if v.available and v.observation is not None
+                ),
+            )

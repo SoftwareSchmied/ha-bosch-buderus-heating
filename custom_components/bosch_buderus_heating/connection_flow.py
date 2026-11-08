@@ -174,13 +174,13 @@ class ConnectionOptionsFlow(OptionsFlow):
 
     @staticmethod
     def _forgettable(snapshot: Any, connection_id: str) -> dict[str, str]:
-        """Deselected systems of a cloud access, by binding (P50, R1)."""
+        """Deselected systems and devices of a cloud access, by binding (P50, R1)."""
         options = section(snapshot.to_options(), "bindings")
         return {
             key: str(cast(dict[str, Any], binding.to_data()["locator"])["value"])
             for key, binding in snapshot.bindings.items()
             if binding.connection_id == connection_id
-            and binding.adapter == "pointt"
+            and binding.adapter in ("pointt", "bacon")
             and not options[key]["enabled"]
         }
 

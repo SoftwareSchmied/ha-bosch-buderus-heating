@@ -114,7 +114,16 @@ async def test_native_setup_then_data_status_interval_and_offline_restart(
         if (value := entry.runtime_data.connections.source_data(key)) is not None
         and getattr(value, "local_selection", None) is not None
     )
-    assert coordinator.local_selection.enabled is False
+    # Owner decision (0.9.0-alpha.2): on by default after the first local setup.
+    assert coordinator.local_selection.enabled is True
+    result = await manager.async_init(entry.entry_id)
+    result = await submit(hass, manager, result, {"next_step_id": "connections"})
+    result = await submit(hass, manager, result, {"connection": connection})
+    result = await submit(hass, manager, result, {"next_step_id": "local_values"})
+    assert result["data_schema"]({})["enabled"] is True
+    result = await submit(hass, manager, result, {"enabled": False})
+    assert result["type"] == "create_entry"
+    await eventually(lambda: not coordinator.local_selection.enabled, timeout=SLOW)
     result = await manager.async_init(entry.entry_id)
     result = await submit(hass, manager, result, {"next_step_id": "connections"})
     result = await submit(hass, manager, result, {"connection": connection})

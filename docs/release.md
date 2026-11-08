@@ -4,16 +4,62 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.0-alpha.2 verification
+
+I am publishing **0.9.0-alpha.2 as a pre-release** for testing from the commit
+tagged `v0.9.0-alpha.2`. **0.8.3 remains Stable/Latest.** Alpha.2 always shows local
+readings while the cloud cannot be used, accepts a new sign-in when a system
+was removed from the account, makes the local access more robust and adds an
+estimated energy sensor for heat sources that report only their current
+power. It also reduces the load on Home Assistant, its database, the cloud and
+the gateway. Updating from alpha.1 needs no new setup; the storage format
+stays 4.
+
+Automated checks on the release state (2026-11-08, run locally):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite, minimum version | Home Assistant 2026.5.4, local | 7768 passed, 2 skipped (version-dependent); coverage 95.48 % |
+| Full suite | Home Assistant 2026.9.2 | GitHub compatibility check only |
+| Full suite | Home Assistant 2026.10.4, local | 7770 passed; coverage 95.50 % |
+| Full suite with coverage, current version | Home Assistant 2026.11.0, official test package, local | 7770 passed; coverage 95.50 %; no deprecation warnings from the integration |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 163 files (2026.10.4 and 2026.11.0); Ruff clean; 354 files formatted |
+| All GitHub checks, including the browser tests | PR and release workflow | required; the release workflow publishes only after its checks pass |
+| Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
+
+Checks of the performance and load changes:
+
+| Check | Environment | Result |
+|---|---|---|
+| Entity updates only after real changes of value, availability or source; caches give the same results as before (diagnostics, schema keys, catalog lookups) | full suites above | passed |
+| Request-count sensors: at most one state write per minute, unrecorded attributes, total count with state class `total` and `last_reset` | full suites above; recorder on my own system | automated: passed; my own system: pending |
+| Units, options and limits kept while an entity is unavailable; climate entity within the validity limit | full suites above | passed |
+| Fewer requests: settled cloud values, hourly containers, weekly re-check of missing local paths, hourly local system metadata, daily installation date, no serial numbers | full suites above; request counts on my own system over one day | automated: passed; my own system: pending |
+| One-time restart of the local search after the update | my own system | pending |
+| Storage: compact files (older files still load), parallel loading, hourly "still seen" confirmations, 60-second counter-source delay, private atomic connection inventory, token renewal 2 minutes before expiry | full suites above | passed |
+| Log messages: one warning per cloud outage, info lines on recovery, hand-over warning once per path | full suites above; cloud switched off on my own system | automated: passed; my own system: pending |
+| Diagnostics schema 42 | full suites above; download on my own system | automated: passed; my own system: pending |
+| Working time of a heat source from the local access; "Heat output (compressor)"; statistics of signal measurements; translated and on/off states | full suites above; my own system | automated: passed; my own system: pending |
+
+On 2026-11-08 I installed a development build of this state on my own system
+(heat pump with MX400 controller and K40RF gateway, Home Assistant 2026.10.4,
+cloud and local access) after a full Home Assistant backup. Apart from the
+version number, its files are identical to this release. It started without
+warnings or errors from the integration, and the climate and water heater
+entities kept their states and attributes. A longer run, the load and request
+measurements on my own system and any check of the estimated energy sensor on
+a real device are still pending.
+
 ## 0.9.0-alpha.1 verification
 
 I am preparing **0.9.0-alpha.1 as a pre-release** for testing from commit
-`<final commit>`. **0.8.3 remains Stable/Latest.** The alpha adds the optional
+`a795e81`. **0.8.3 remains Stable/Latest.** The alpha adds the optional
 local access to K40/K40RF gateways, operation without the cloud, more robust
 cloud operation and the entity review. It requires Home Assistant 2026.5.0 or
 newer and moves the configuration entry to storage format 4, which 0.8.x
 cannot load.
 
-Automated checks on the release state (08.11.2026, run locally; the GitHub checks follow on the PR):
+Automated checks on the release state (2026-11-08, run locally; all GitHub checks passed on the PR and in the release workflow):
 
 | Check | Environment | Result |
 |---|---|---|
@@ -23,6 +69,7 @@ Automated checks on the release state (08.11.2026, run locally; the GitHub check
 | Full suite with coverage, current version | Home Assistant 2026.11.0, official test package | 7,045 passed, 95.5 % coverage, no deprecation warnings from the integration |
 | Strict Mypy | Home Assistant 2026.11.0 and 2026.10.4 | no issues in 162 files |
 | Ruff lint and formatting | | no findings |
+| Browser test of **Search the system again** in the options | Chromium, English and German | passed |
 | Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
 
 Checks I performed on my own system (heat pump with MX400 controller and
@@ -445,9 +492,8 @@ The tag-triggered workflow repeats verification, including the dependency
 audit, Hassfest and HACS, before publication. Published notes, archive and
 checksum must match the verified local artifacts.
 
-I performed no physical appliance writes for this beta. The static APK
-comparison does not establish the recovery delay on a real installation.
-Field confirmation remains open. Select the beta explicitly in HACS and
+I performed no physical appliance writes for this beta. Field confirmation
+of the recovery delay remains open. Select the beta explicitly in HACS and
 restart Home Assistant after updating.
 
 ## 0.8.1 verification

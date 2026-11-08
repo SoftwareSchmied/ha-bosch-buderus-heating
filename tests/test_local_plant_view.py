@@ -520,6 +520,11 @@ def test_lists_are_bounded() -> None:
     report = shadow_comparison(view, cloud={}, registry=registry)
     assert report["counts"]["needs_cloud"] == 400
     assert len(report["needs_cloud"]) == MAX_LISTED and report["truncated"]
+    # O94: how many each list shows and how many entries were left out.
+    assert report["listed_at_most"] == MAX_LISTED
+    assert report["omitted_entries"] == 400 - MAX_LISTED
+    small = shadow_comparison(view, cloud={}, registry=dict(list(registry.items())[:3]))
+    assert small["omitted_entries"] == 0 and not small["truncated"]
 
 
 def test_registry_shapes_take_one_gateway_without_per_source_entities() -> None:

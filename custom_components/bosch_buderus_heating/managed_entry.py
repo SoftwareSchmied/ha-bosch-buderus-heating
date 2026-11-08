@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import Callable, Mapping
 from contextlib import suppress
@@ -17,7 +18,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import issue_registry as ir
 
 from .configuration import CLOUD_KIND, LOCAL_KIND, ConfigurationError, JsonObject
-from .configuration_management import section
+from .configuration_management import section, sync_not_found_issues
 from .connection_inventory import ConnectionInventory
 from .connection_runtime import ConnectionPhase, ConnectionRuntime, DriverFactory
 from .const import DOMAIN, PLATFORMS
@@ -81,11 +82,18 @@ class ManagedEntry:
         self._closed = False
 
     async def start(self) -> None:
-        await self.inventory.load()
-        self.inventory.restore_unavailable()
         from .discovery_inventory import discovery_inventory
 
-        await discovery_inventory(self.hass, self.entry.entry_id).async_load()
+        # O64: both files load side by side; each keeps its own error handling.
+        results = await asyncio.gather(
+            self.inventory.load(),
+            discovery_inventory(self.hass, self.entry.entry_id).async_load(),
+            return_exceptions=True,
+        )
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
+        self.inventory.restore_unavailable()
         self._keep_templates()
         self._unsubscribe.append(self.connections.subscribe(self._state_changed))
         self.connections.start()
@@ -120,8 +128,23 @@ class ManagedEntry:
             self.inventory.restore_unavailable(bindings=changed)
         self._unavailable = unavailable
         self._sync_setup_issue()
+        self._sync_not_found_issues()
         self.schedule_reauthentication()
         self._keep_templates()
+
+    @callback
+    def _sync_not_found_issues(self) -> None:
+        """A system a sign-in did not find is no longer named once it delivers."""
+        if self._closed:
+            return
+        sync_not_found_issues(
+            self.hass,
+            self.entry,
+            self.connections.snapshot,
+            found=lambda key: (
+                self.connections.source_phase(key) is ConnectionPhase.READY
+            ),
+        )
 
     @callback
     def _keep_templates(self) -> None:

@@ -1,11 +1,13 @@
 """Retained identities cannot grant writes or override HA registry ownership."""
 
 import asyncio
+import inspect
 from dataclasses import replace
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.storage import Store
 
 from custom_components.bosch_buderus_heating.configuration import ConfigurationError
 from custom_components.bosch_buderus_heating.connection_inventory import (
@@ -195,3 +197,46 @@ async def test_inventory_storage_failure_does_not_block_source_lifecycle(
     ):
         await getattr(inventory, operation)()
     assert not inventory.healthy
+
+
+def test_repeated_inventory_strings_are_shared():
+    """O23: identical identifiers of many records share one string object."""
+
+    def fresh(text):
+        return "".join(list(text))  # a new, equal string object
+
+    def data(unique_id):
+        return {
+            "platform": fresh("sensor"),
+            "unique_id": unique_id,
+            "target_id": fresh("target-identity"),
+            "binding_id": fresh("binding-identity"),
+            "adapter": fresh("k40_local"),
+            "semantic_key": fresh("outdoor_temperature"),
+            "resource_path": None,
+        }
+
+    first, second = (RetainedEntity.from_data(data(key)) for key in ("one", "two"))
+    for name in ("platform", "target_id", "binding_id", "adapter"):
+        assert getattr(first, name) is getattr(second, name), name
+    assert first.to_data() == data("one")
+    assert second == RetainedEntity.from_data(second.to_data())
+
+
+async def test_inventory_store_is_private_and_atomic(hass):
+    """O68: written like the integration's other stores."""
+    entry, _, _ = entry_for(hass)
+    calls: list[inspect.BoundArguments] = []
+
+    class RecordingStore[T](Store[T]):
+        def __init__(self, *args, **kwargs) -> None:
+            calls.append(inspect.signature(Store).bind(*args, **kwargs))
+            super().__init__(*args, **kwargs)
+
+    # Home Assistant 2026.11 keeps both options in its own file writer, so
+    # the options passed to the store are checked instead.
+    with patch(f"{ConnectionInventory.__module__}.Store", RecordingStore):
+        ConnectionInventory(hass, entry)
+    assert len(calls) == 1
+    assert calls[0].arguments["private"] is True
+    assert calls[0].arguments["atomic_writes"] is True

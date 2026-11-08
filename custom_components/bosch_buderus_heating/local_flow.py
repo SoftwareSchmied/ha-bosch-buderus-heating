@@ -3,11 +3,16 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import math
 from collections.abc import Awaitable, Callable
 from typing import Any, cast
 
-from homeassistant.config_entries import ConfigEntryBaseFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntryBaseFlow,
+    ConfigFlow,
+    ConfigFlowResult,
+)
 from homeassistant.core import callback
 from homeassistant.helpers.selector import (
     BooleanSelector,
@@ -59,6 +64,8 @@ from .local_transport import (
 
 # P49b step 7: the choice of a new plant set up from its local access alone.
 NEW_PLANT = "new_plant"
+# The unique ID of a discovery notice (never of an entry that holds an access).
+DISCOVERY_UNIQUE_ID_PREFIX = "local_discovery_"
 
 
 def local_error(error: object) -> str:
@@ -125,6 +132,17 @@ def local_error(error: object) -> str:
         "local_save_outcome_uncertain": "local_completion_uncertain",
         "local_runtime_restart_failed": "local_completion_uncertain",
     }.get(str(error), "local_unexpected")
+
+
+def discovery_unique_id(info: ZeroconfServiceInfo) -> str:
+    """A stable flow ID of one announced gateway service, without identifiers.
+
+    Derived from the announced service name (or host name), never shown. Only
+    lets HA ignore the notice; it does not establish a gateway identity.
+    """
+    announced = (info.name or info.hostname or "").strip().lower().rstrip(".")
+    digest = hashlib.sha256(("zeroconf\0" + announced).encode()).hexdigest()
+    return DISCOVERY_UNIQUE_ID_PREFIX + digest[:32]
 
 
 def selection(choices: list[SelectOptionDict]) -> SelectSelector:
@@ -208,6 +226,11 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             return self.async_abort(reason="local_discovery_invalid")
         if configured_discovery(self.hass, self._local_choices):
             return self.async_abort(reason="already_configured")
+        # Lets the notice be ignored; an ignored announcement stays ignored.
+        if await cast(ConfigFlow, self).async_set_unique_id(
+            discovery_unique_id(discovery_info)
+        ):
+            return self.async_abort(reason="already_configured")
         if not track_discovery_flow(self.hass, self.flow_id, self._local_choices):
             return self.async_abort(reason="already_in_progress")
         self.context["title_placeholders"] = {"host": self._local_choices[0].host}
@@ -235,7 +258,9 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             return denied
         entries = {
             entry.entry_id: entry
-            for entry in self.hass.config_entries.async_entries(DOMAIN)
+            for entry in self.hass.config_entries.async_entries(
+                DOMAIN, include_ignore=False
+            )
             if entry.version == 4
         }
         if not entries:
@@ -463,14 +488,29 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                     )
             else:
                 return self.async_abort(reason="local_session_changed")
-        methods = ["keep", "label", "token"] if stored else ["label", "token"]
+        # A new sign-in with the device label comes first and is preselected.
+        # Keeping the token trusts the newly confirmed certificate on first
+        # use, so it is offered after it, with a warning (P39 review).
+        methods = ["label", "keep", "token"] if stored else ["label", "token"]
         return self._local_form(
-            "local_method",
+            "local_method_keep" if stored else "local_method",
             vol.Schema(
-                {vol.Required("method"): translated_selection(methods, "local_method")}
+                {
+                    vol.Required("method", default="label"): translated_selection(
+                        methods, "local_method"
+                    )
+                }
             ),
             errors=errors,
         )
+
+    async def async_step_local_method_keep(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """The method choice with the warning before keeping the stored token."""
+        if self._local_phase == "local_method_keep":
+            self._local_phase = "local_method"
+        return await self.async_step_local_method(user_input)
 
     def _stored_local_token(self) -> str | None:
         """The working token of the local access being changed, if any."""

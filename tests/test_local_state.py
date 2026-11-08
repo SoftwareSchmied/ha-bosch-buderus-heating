@@ -111,3 +111,37 @@ def test_invalid_health_state_is_rejected(condition, confirmed):
 
     with pytest.raises(ValueError):
         LocalSourceState(CONTEXT.identity, condition, confirmed)
+
+
+def test_current_observations_are_worked_out_once_and_only_when_ready():
+    from custom_components.bosch_buderus_heating.local_polling.inventory import (
+        Freshness,
+        ResourceView,
+    )
+    from tests.test_local_probe import CONTEXT
+
+    request = request_for_path("/heatingCircuits/hc2/currentRoomSetpoint")
+    observation = decode_resource(
+        request,
+        payload(),
+        context=CONTEXT.identity,
+        observed_at=datetime.now(UTC),
+        observed_monotonic=100,
+    )
+    views = (
+        ResourceView(request, Freshness.FRESH, True, 0.0, 60, None, None, observation),
+    )
+    state = LocalSourceState(
+        CONTEXT.identity, LocalCondition.READY, True, resources=views
+    )
+    assert state.current_observations == (observation,)
+    assert state.current_observations is state.current_observations
+    for condition in (LocalCondition.PAUSED, LocalCondition.UNAVAILABLE):
+        assert replace(state, condition=condition).current_observations == ()
+    assert (
+        replace(state, condition=LocalCondition.INITIALIZING).current_observations == ()
+    )
+    unavailable = replace(views[0], available=False)
+    assert replace(state, resources=(unavailable,)).current_observations == ()
+    # Not part of the comparison: equal states stay equal.
+    assert replace(state) == state

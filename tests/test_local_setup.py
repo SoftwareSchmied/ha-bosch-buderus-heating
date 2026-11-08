@@ -107,6 +107,39 @@ def proposal(edit, proof, *snapshots, pairs=PAIRS, contract=CONTRACT):
     )
 
 
+@pytest.mark.parametrize("stored", [None, False, True])
+async def test_a_first_local_access_uses_local_values_unless_chosen(
+    monkeypatch, stored
+):
+    """Owner decision (0.9.0-alpha.2): on by default, a stored choice stays."""
+    snapshot, _, target = starting()
+    data, options = snapshot.to_data(), snapshot.to_options()
+    if stored is not None:
+        options["targets"][target]["local_values"] = stored
+    snapshot = load_configuration(OWNER, data, options)
+    edit = begin(snapshot, target)
+    after = proposal(edit, await verified(monkeypatch, snapshot, edit), snapshot)
+    expected = True if stored is None else stored
+    assert after.to_options()["targets"][target]["local_values"] is expected
+    # Changing that local access later never sets the option again.
+    data, options = after.to_data(), after.to_options()
+    del options["targets"][target]["local_values"]
+    changed = load_configuration(
+        OWNER, data, options, minor_version=after.minor_version
+    )
+    (connection,) = (
+        key for key, value in changed.connections.items() if value.kind == "k40_local"
+    )
+    again = begin_local_setup(
+        changed,
+        target,
+        LocalEndpoint("gateway.example.invalid"),
+        connection_id=connection,
+    )
+    result = proposal(again, await verified(monkeypatch, changed, again), changed)
+    assert "local_values" not in result.to_options()["targets"][target]
+
+
 @pytest.mark.parametrize("created", [False, True])
 async def test_actual_tls_probe_prepares_access_for_selected_existing_target(
     gateways, created

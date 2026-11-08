@@ -17,6 +17,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import entity_registry as er
 
@@ -739,13 +740,224 @@ def test_a_local_only_entry_is_removed_when_unclear(hass, case) -> None:
     assert registry.async_get_entity_id("sensor", DOMAIN, cloud_id) == existing
 
 
-def test_while_running_a_local_only_entry_is_still_removed(hass) -> None:
+def _sensor_platform(hass, entry):
+    import logging
+    from datetime import timedelta
+
+    from homeassistant.helpers.entity_platform import EntityPlatform
+
+    platform = EntityPlatform(
+        hass=hass,
+        logger=logging.getLogger(__name__),
+        domain="sensor",
+        platform_name=DOMAIN,
+        platform=None,
+        scan_interval=timedelta(seconds=30),
+        entity_namespace=None,
+    )
+    platform.config_entry = entry
+    platform.async_prepare()
+    return platform
+
+
+def _plain_sensor(unique_id, value, state_class="measurement"):
+    from homeassistant.components.sensor import SensorEntity
+
+    sensor = SensorEntity()
+    sensor._attr_unique_id = unique_id
+    sensor._attr_native_value = value
+    sensor._attr_state_class = state_class
+    sensor._attr_should_poll = False
+    return sensor
+
+
+@pytest.mark.parametrize("clear", [True, False])
+async def test_while_running_a_local_only_entity_is_handed_over(hass, clear) -> None:
+    """The cloud starts offering the path while Home Assistant runs (8C-c)."""
     entry, coordinator, cloud_id = sensor_entry(hass)
-    entity_id = register(hass, entry, LOCAL_ONLY)
-    local_only_sensor._remove_registered(coordinator, paths={ROOM})
+    state_class = "measurement" if clear else "total_increasing"
+    entity_id = register(
+        hass, entry, LOCAL_ONLY, capabilities={"state_class": state_class}
+    )
+    removed = []
+
+    @callback
+    def note(event) -> None:
+        if event.data["action"] == "remove":
+            removed.append(event.data["entity_id"])
+
+    hass.bus.async_listen(er.EVENT_ENTITY_REGISTRY_UPDATED, note)
+    platform = _sensor_platform(hass, entry)
+    await platform.async_add_entities([_plain_sensor(LOCAL_ONLY, 21.5, state_class)])
+    assert hass.states.get(entity_id).state == "21.5"
+
+    paths, done = local_only_sensor.hand_over_while_running(coordinator, {ROOM})
+    assert paths == {ROOM}
+    # Asked again before it finished: the same hand-over, not a second one.
+    again, _ = local_only_sensor.hand_over_while_running(coordinator, {ROOM})
+    assert again == {ROOM}
+    await done
     registry = er.async_get(hass)
-    assert registry.async_get(entity_id) is None
-    assert registry.async_get_entity_id("sensor", DOMAIN, cloud_id) is None
+    assert registry.async_get_entity_id("sensor", DOMAIN, LOCAL_ONLY) is None
+    assert hass.states.get(entity_id) is None  # the local-only entity left
+
+    cloud = _plain_sensor(cloud_id, 22.0)
+    await platform.async_add_entities([cloud])
+    await hass.async_block_till_done()
+    if clear:
+        # The same entry: entity ID, settings and recorded history continue.
+        assert registry.async_get_entity_id("sensor", DOMAIN, cloud_id) == entity_id
+        assert cloud.entity_id == entity_id and not removed
+        assert DOMAIN not in registry.async_get(entity_id).options
+    else:
+        # Another state class: removed as before, never a mixed statistic.
+        assert removed == [entity_id]
+    assert hass.states.get(cloud.entity_id).state == "22.0"
+    # Nothing left to hand over.
+    assert local_only_sensor.hand_over_while_running(coordinator, {ROOM}) is None
+    await platform.async_reset()
+
+
+async def test_a_new_cloud_sensor_waits_for_the_hand_over(hass) -> None:
+    """The resource sensors' listener adds the cloud sensor only afterwards."""
+    from datetime import UTC, datetime
+
+    from custom_components.bosch_buderus_heating import sensor
+    from custom_components.bosch_buderus_heating.coordinator import ResourceSnapshot
+    from custom_components.bosch_buderus_heating.pointt import Gateway
+    from tests.test_validity import _coordinator
+
+    entry, _, cloud_id = sensor_entry(hass)
+    coordinator = _coordinator(hass)
+    coordinator.config_entry = entry
+    coordinator.gateway = Gateway(GATEWAY, device_type="MX400")
+    entity_id = register(hass, entry, LOCAL_ONLY)
+    added: list = []
+
+    def add(entities):
+        if entities:
+            # When the cloud sensor is added, its entry is already handed over.
+            assert (
+                er.async_get(hass).async_get_entity_id("sensor", DOMAIN, LOCAL_ONLY)
+                is None
+            )
+        added.extend(entities)
+
+    scope = SimpleNamespace(async_on_unload=lambda _: None)
+    sensor._track_resource_sensors(scope, coordinator, add)
+    resource = sensor_entry_resource()
+    coordinator.resources = {ROOM: resource}
+    coordinator.data = {ROOM: ResourceSnapshot(resource, True, datetime.now(UTC))}
+    coordinator.async_update_listeners()
+    await hass.async_block_till_done()
+    assert [item.unique_id for item in added] == [cloud_id]
+    registry = er.async_get(hass)
+    assert registry.async_get_entity_id("sensor", DOMAIN, cloud_id) == entity_id
+    await coordinator.async_shutdown()
+
+
+def _resource_sensor_setup(hass):
+    from datetime import UTC, datetime
+
+    from custom_components.bosch_buderus_heating import sensor
+    from custom_components.bosch_buderus_heating.coordinator import ResourceSnapshot
+    from custom_components.bosch_buderus_heating.pointt import Gateway
+    from tests.test_validity import _coordinator
+
+    entry, _, cloud_id = sensor_entry(hass)
+    coordinator = _coordinator(hass)
+    coordinator.config_entry = entry
+    coordinator.gateway = Gateway(GATEWAY, device_type="MX400")
+    added: list = []
+    scope = SimpleNamespace(async_on_unload=lambda _: None)
+    sensor._track_resource_sensors(scope, coordinator, added.extend)
+    resource = sensor_entry_resource()
+    coordinator.resources = {ROOM: resource}
+    coordinator.data = {ROOM: ResourceSnapshot(resource, True, datetime.now(UTC))}
+    return entry, coordinator, cloud_id, added
+
+
+async def test_a_failed_hand_over_never_adds_a_second_entity(hass, caplog) -> None:
+    """The hand-over raises midway: no cloud sensor now, a later update retries."""
+    entry, coordinator, cloud_id, added = _resource_sensor_setup(hass)
+    entity_id = register(hass, entry, LOCAL_ONLY)
+    real = local_only_sensor._async_hand_over
+
+    async def broken(*_args) -> None:
+        raise RuntimeError("midway")
+
+    caplog.set_level("DEBUG")
+    with patch.object(local_only_sensor, "_async_hand_over", broken):
+        coordinator.async_update_listeners()
+        await hass.async_block_till_done()
+        coordinator.async_update_listeners()  # fails again: debug only
+        await hass.async_block_till_done()
+    assert added == []
+    failures = [
+        record
+        for record in caplog.records
+        if "Handing local-only entities over to cloud sensors failed"
+        in record.getMessage()
+    ]
+    # O83: one warning per path with the error type, then debug.
+    assert [record.levelname for record in failures] == ["WARNING", "DEBUG"]
+    assert "(RuntimeError)" in failures[0].getMessage()
+    assert "midway" not in caplog.text
+    registry = er.async_get(hass)
+    assert registry.async_get_entity_id("sensor", DOMAIN, LOCAL_ONLY) == entity_id
+    assert local_only_sensor._async_hand_over is real
+    coordinator.async_update_listeners()  # the next update tries again
+    await hass.async_block_till_done()
+    assert [item.unique_id for item in added] == [cloud_id]
+    assert [
+        record.levelname
+        for record in caplog.records
+        if "succeeded on a later try" in record.getMessage()
+    ] == ["INFO"]
+    assert registry.async_get_entity_id("sensor", DOMAIN, cloud_id) == entity_id
+    await coordinator.async_shutdown()
+
+
+async def test_a_local_only_entity_still_being_added_counts_as_present(
+    hass, monkeypatch
+) -> None:
+    entry, coordinator, cloud_id, added = _resource_sensor_setup(hass)
+    clock = {"now": 100.0}
+    monkeypatch.setattr(local_only_sensor, "monotonic", lambda: clock["now"])
+    # Handed to Home Assistant, not registered yet.
+    local_only_sensor._note_pending_adds(coordinator, [ROOM])
+    assert local_only_sensor.hand_over_open(coordinator, ROOM)
+    coordinator.async_update_listeners()
+    await hass.async_block_till_done()
+    assert added == []  # deferred, never a second entity ID
+    # Now registered and added: handed over with the next update.
+    entity_id = register(hass, entry, LOCAL_ONLY)
+    platform = _sensor_platform(hass, entry)
+    await platform.async_add_entities([_plain_sensor(LOCAL_ONLY, 21.5)])
+    coordinator.async_update_listeners()
+    await hass.async_block_till_done()
+    assert [item.unique_id for item in added] == [cloud_id]
+    registry = er.async_get(hass)
+    assert registry.async_get_entity_id("sensor", DOMAIN, cloud_id) == entity_id
+    # A pending add that never completes is waited for only for a while.
+    local_only_sensor._note_pending_adds(coordinator, ["/other"])
+    assert local_only_sensor._pending_adds(coordinator, ["/other"])
+    clock["now"] += local_only_sensor.PENDING_ADD_SECONDS + 1
+    assert not local_only_sensor._pending_adds(coordinator, ["/other"])
+    await platform.async_reset()
+    await coordinator.async_shutdown()
+
+
+def sensor_entry_resource():
+    return parse_resource(
+        {
+            "id": ROOM,
+            "type": "floatValue",
+            "value": 35.0,
+            "unitOfMeasure": "C",
+            "writeable": False,
+        }
+    )
 
 
 async def test_the_sensor_keeps_the_native_unit_of_its_last_reading(hass) -> None:
@@ -811,6 +1023,7 @@ def test_the_hand_over_runs_before_any_sensor_is_added(hass) -> None:
         patch.object(sensor, "_track_resource_sensors", eager),
         patch.object(sensor, "_track_source_sensors", Mock()),
         patch.object(sensor, "track_local_only_sensors", Mock()),
+        patch.object(sensor, "track_estimated_energy_sensors", Mock()),
         patch.object(sensor, "track_entity_once", Mock()),
         patch.object(sensor, "BoschBuderusActiveFaultsSensor", Mock()),
         patch.object(sensor, "BoschBuderusActiveNotificationsSensor", Mock()),

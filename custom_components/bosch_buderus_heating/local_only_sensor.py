@@ -2,26 +2,35 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+import asyncio
+from collections.abc import Callable, Collection, Mapping
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 from functools import partial
+from time import monotonic
 from typing import TYPE_CHECKING, Protocol, cast
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.const import EntityCategory, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util.hass_dict import HassKey
 
 from .const import DOMAIN
+from .control import HeldCapabilities
 from .device import device_info_for_resource, grouped_entity_name
 from .local_only import (
     CONCENTRATION,
     ENUM_KINDS,
     FLAG,
     FLOW,
+    GENERIC,
     HUMIDITY,
     MAX_STATES,
     PERCENT,
@@ -56,6 +65,16 @@ OPTIONS_KEY = DOMAIN
 NATIVE_UNIT = "native_unit"
 # Readings offered as generic local-only sensors because of their type (3A).
 NUMBER_TYPES = frozenset({"floatValue", "integerValue"})
+# Running hand-overs (8C-c while running) per entry and gateway, by path.
+_HAND_OVERS: HassKey[dict[tuple[str | None, str], dict[str, asyncio.Task[None]]]] = (
+    HassKey(f"{DOMAIN}.local_only_hand_overs")
+)
+# Local-only entities handed to Home Assistant but not added yet, per entry
+# and gateway: path and when. A cloud sensor of such a path waits (bounded).
+_PENDING_ADDS: HassKey[dict[tuple[str | None, str], dict[str, float]]] = HassKey(
+    f"{DOMAIN}.local_only_pending_adds"
+)
+PENDING_ADD_SECONDS = 60.0
 _PRECISION = {
     TEMPERATURE: 1,
     POWER: 0,
@@ -77,12 +96,15 @@ def local_only_unique_id(gateway_id: str, path: str) -> str:
 
 
 class BoschBuderusLocalOnlySensor(
+    HeldCapabilities,
     CoordinatorEntity["BoschBuderusDataUpdateCoordinator"],
     SensorEntity,
 ):
     """One reading that only the local access of this plant provides."""
 
     _attr_has_entity_name = True
+    # O30: the native unit of the last reading, kept while there is none.
+    _held_unit: str | None = None
 
     def __init__(
         self,
@@ -183,8 +205,23 @@ class BoschBuderusLocalOnlySensor(
     def native_unit_of_measurement(self) -> str | None:
         shape = self._shape()
         if shape is not None and shape[1] is not None:
+            self._held_unit = shape[1]
             return shape[1]
-        return static_unit(self._definition)[0]
+        if (unit := static_unit(self._definition)[0]) is not None:
+            return unit
+        if self._held_unit is None and (entry := self.registry_entry) is not None:
+            # The unit stored with the last reading before a restart (8C-c).
+            stored = entry.options.get(OPTIONS_KEY)
+            unit = stored.get(NATIVE_UNIT) if stored is not None else None
+            self._held_unit = unit if isinstance(unit, str) else None
+        return self._held_unit
+
+    @property
+    def state_class(self) -> SensorStateClass | None:
+        """Generic signals: a measurement when their unit is one (#80)."""
+        if self._definition.kind != GENERIC:
+            return self._attr_state_class
+        return state_class(self._definition, self.native_unit_of_measurement)
 
     @property
     def device_class(self) -> SensorDeviceClass | None:
@@ -389,11 +426,20 @@ def track_local_only_sensors(
                 date_added.append(True)
                 additions.append(BoschBuderusInstallationDateSensor(coordinator))
         # A path the cloud offers later (for example after a new discovery):
-        # its cloud entity takes over, the local-only one is removed.
+        # its cloud entity takes over; the entry is handed over when that is
+        # unambiguous (8C-c), otherwise removed as before.
         if taken := (seen & set(coordinator.resources)) - superseded:
             superseded.update(taken)
-            _remove_registered(coordinator, paths=taken)
+            hand_over_while_running(coordinator, taken)
         if additions:
+            _note_pending_adds(
+                coordinator,
+                [
+                    item.resource_path
+                    for item in additions
+                    if isinstance(item, BoschBuderusLocalOnlySensor)
+                ],
+            )
             async_add_entities(additions)
 
     discover()
@@ -507,15 +553,14 @@ def _remove_registered(
     coordinator: BoschBuderusDataUpdateCoordinator,
     *,
     everything: bool = False,
-    paths: set[str] | None = None,
 ) -> None:
-    """Remove the entries of a removed local access, or of paths the cloud
-    offers (always at setup: ``paths`` defaults to the cloud's resources).
+    """At setup: remove the entries of a removed local access, or of paths
+    the cloud offers.
 
-    8C-c (P49b): at setup, the entry of a path the cloud now offers becomes
-    the entry of the cloud's sensor when that is unambiguous, so its entity
-    ID, name, area and recorded history continue. Otherwise it is removed as
-    before.
+    8C-c (P49b): the entry of a path the cloud now offers becomes the entry
+    of the cloud's sensor when that is unambiguous, so its entity ID, name,
+    area and recorded history continue. Otherwise it is removed as before.
+    While running, ``hand_over_while_running`` applies the same rules.
     """
     entry = coordinator.config_entry
     if entry is None:
@@ -523,8 +568,7 @@ def _remove_registered(
     gateway_id = coordinator.gateway.gateway_id
     prefix = f"{gateway_id}{UNIQUE_ID_PART}"
     cloud = {
-        local_only_unique_id(gateway_id, path): path
-        for path in (coordinator.resources if paths is None else paths)
+        local_only_unique_id(gateway_id, path): path for path in coordinator.resources
     }
     registry = er.async_get(coordinator.hass)
     successors: dict[str, list[_CloudSensor]] | None = None
@@ -544,9 +588,7 @@ def _remove_registered(
         ):
             continue
         path = cloud.get(entity.unique_id)
-        if path is not None and paths is None:
-            # While running, the local-only entity still exists: only a new
-            # setup hands its entry over, before the cloud sensor is added.
+        if path is not None:
             if successors is None:
                 successors = _cloud_sensors(coordinator)
             successor = _successor(registry, entity, successors, path)
@@ -558,6 +600,173 @@ def _remove_registered(
                 )
                 continue
         registry.async_remove(entity.entity_id)
+
+
+@callback
+def hand_over_while_running(
+    coordinator: BoschBuderusDataUpdateCoordinator, paths: Collection[str]
+) -> tuple[frozenset[str], asyncio.Future[list[BaseException | None]]] | None:
+    """8C-c while running: the cloud now offers these paths.
+
+    Each registered local-only entry of them is handed over to the cloud's
+    sensor by the same rules as at setup, so entity ID, name, area and
+    recorded history continue; otherwise it is removed as before. The
+    running local-only entity leaves first, so the cloud's sensor can take
+    its entity ID. Returns the affected paths and what to wait for before
+    their cloud sensors are added; ``None`` when no path is affected.
+    """
+    entry = getattr(coordinator, "config_entry", None)
+    if entry is None:
+        return None
+    hass = coordinator.hass
+    gateway_id = coordinator.gateway.gateway_id
+    registry = er.async_get(hass)
+    running = hass.data.setdefault(_HAND_OVERS, {}).setdefault(
+        (entry.entry_id, gateway_id), {}
+    )
+    waiting = {path: running[path] for path in paths if path in running}
+    # A local-only entity still being added counts as present: its cloud
+    # sensor waits for a later update instead of taking another entity ID.
+    pending = _pending_adds(coordinator, paths)
+    fresh = frozenset(
+        path
+        for path in paths
+        if path not in running
+        and path not in pending
+        and registry.async_get_entity_id(
+            "sensor", DOMAIN, local_only_unique_id(gateway_id, path)
+        )
+        is not None
+    )
+    if fresh:
+        task = hass.async_create_task(
+            _async_hand_over(coordinator, fresh),
+            "home_comfort_local_only_hand_over",
+            eager_start=False,
+        )
+        for path in fresh:
+            running[path] = task
+            waiting[path] = task
+
+        @callback
+        def finished(done: asyncio.Task[None]) -> None:
+            for path in fresh:
+                if running.get(path) is done:
+                    del running[path]
+
+        task.add_done_callback(finished)
+    if not waiting and not pending:
+        return None
+    return frozenset(waiting) | pending, asyncio.gather(
+        *set(waiting.values()), return_exceptions=True
+    )
+
+
+@callback
+def hand_over_open(coordinator: BoschBuderusDataUpdateCoordinator, path: str) -> bool:
+    """The local-only entity of a path is still added, being added or kept.
+
+    After a hand-over its entry is gone (continued by the cloud sensor or
+    removed); if it is still there, the hand-over failed or was skipped and
+    the cloud sensor must not take another entity ID now.
+    """
+    registry = er.async_get(coordinator.hass)
+    unique_id = local_only_unique_id(coordinator.gateway.gateway_id, path)
+    return registry.async_get_entity_id(
+        "sensor", DOMAIN, unique_id
+    ) is not None or path in _pending_adds(coordinator, (path,))
+
+
+def _adds_key(coordinator: BoschBuderusDataUpdateCoordinator) -> tuple[str | None, str]:
+    entry = getattr(coordinator, "config_entry", None)
+    return (
+        entry.entry_id if entry is not None else None,
+        coordinator.gateway.gateway_id,
+    )
+
+
+@callback
+def _note_pending_adds(
+    coordinator: BoschBuderusDataUpdateCoordinator, paths: Collection[str]
+) -> None:
+    pending = coordinator.hass.data.setdefault(_PENDING_ADDS, {}).setdefault(
+        _adds_key(coordinator), {}
+    )
+    now = monotonic()
+    for path in paths:
+        pending[path] = now
+
+
+@callback
+def _pending_adds(
+    coordinator: BoschBuderusDataUpdateCoordinator, paths: Collection[str]
+) -> frozenset[str]:
+    """Paths whose local-only entity was handed to Home Assistant recently
+    and is neither added nor registered as disabled yet."""
+    from homeassistant.helpers.entity_platform import async_get_platforms
+
+    pending = coordinator.hass.data.get(_PENDING_ADDS, {}).get(_adds_key(coordinator))
+    if not pending:
+        return frozenset()
+    registry = er.async_get(coordinator.hass)
+    now = monotonic()
+    result = set()
+    for path in paths:
+        since = pending.get(path)
+        if since is None:
+            continue
+        entity_id = registry.async_get_entity_id(
+            "sensor", DOMAIN, local_only_unique_id(coordinator.gateway.gateway_id, path)
+        )
+        entry = registry.async_get(entity_id) if entity_id is not None else None
+        added = entity_id is not None and any(
+            platform.domain == "sensor" and entity_id in platform.entities
+            for platform in async_get_platforms(coordinator.hass, DOMAIN)
+        )
+        if (
+            not 0 <= now - since <= PENDING_ADD_SECONDS
+            or added
+            or (entry is not None and entry.disabled_by is not None)
+        ):
+            del pending[path]  # added, never added (disabled) or given up
+            continue
+        result.add(path)
+    return frozenset(result)
+
+
+async def _async_hand_over(
+    coordinator: BoschBuderusDataUpdateCoordinator, paths: frozenset[str]
+) -> None:
+    from homeassistant.helpers.entity_platform import async_get_platforms
+
+    hass = coordinator.hass
+    registry = er.async_get(hass)
+    gateway_id = coordinator.gateway.gateway_id
+    successors = _cloud_sensors(coordinator)
+    for path in sorted(paths):
+        unique_id = local_only_unique_id(gateway_id, path)
+        entity_id = registry.async_get_entity_id("sensor", DOMAIN, unique_id)
+        entity = registry.async_get(entity_id) if entity_id is not None else None
+        if entity_id is None or entity is None:
+            continue
+        successor = _successor(registry, entity, successors, path)
+        for platform in async_get_platforms(hass, DOMAIN):
+            if platform.domain == "sensor" and (
+                current := platform.entities.get(entity_id)
+            ):
+                # Leaves the registry entry untouched.
+                await current.async_remove(force_remove=True)
+        if registry.async_get_entity_id("sensor", DOMAIN, unique_id) != entity_id:
+            continue  # changed meanwhile (for example removed by the user)
+        if (
+            successor is not None
+            and registry.async_get_entity_id("sensor", DOMAIN, successor) is None
+        ):
+            registry.async_update_entity(entity_id, new_unique_id=successor)
+            # The stored local unit served only this comparison.
+            registry.async_update_entity_options(entity_id, OPTIONS_KEY, None)
+        else:
+            registry.async_remove(entity_id)
 
 
 @dataclass(frozen=True, slots=True)

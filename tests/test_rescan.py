@@ -125,7 +125,7 @@ async def test_the_dialog_plans_one_search_within_the_limits(hass) -> None:
 
 
 @bounded
-async def test_a_paused_cloud_refuses_the_search(hass) -> None:
+async def test_a_paused_cloud_is_skipped_and_the_ready_parts_search(hass) -> None:
     backend = Backend()
     async with running(hass, backend) as (entry, _, owner, _):
         await eventually(lambda: source_for(owner, HEAT) is not None)
@@ -134,13 +134,16 @@ async def test_a_paused_cloud_refuses_the_search(hass) -> None:
         other = source_for(owner, "gateway-b")
         coordinator._cloud_backoff_until = monotonic() + 600
         result = await flow_for(hass, entry).async_step_rescan({})
-        assert result["reason"] == "rescan_paused"
-        # Nothing is planned anywhere, also not for the other gateway.
-        assert coordinator._rescan_due is None and other._rescan_due is None
-        coordinator._cloud_backoff_until = 0.0
-        coordinator._circuit_open_until = monotonic() + 600
+        assert result["reason"] == "rescan_partial"
+        # The paused gateway is skipped; the other one searches.
+        assert coordinator._rescan_due is None and other._rescan_due is not None
+        assert request_rescan(owner) == "running"
+        other._rescan_due, other.rescan_result = None, None
+        # Every reachable part paused: nothing starts.
+        other._circuit_open_until = monotonic() + 600
         assert request_rescan(owner) == "paused"
-        coordinator._circuit_open_until = 0.0
+        assert coordinator._rescan_due is None and other._rescan_due is None
+        coordinator._cloud_backoff_until = other._circuit_open_until = 0.0
         assert request_rescan(owner) == "planned"
         assert coordinator._rescan_due is not None and other._rescan_due is not None
 
@@ -217,9 +220,7 @@ def test_the_local_search_is_refused_while_it_cannot_run(
     service.wake.assert_not_called()
 
 
-def test_one_paused_part_refuses_the_whole_search() -> None:
-    cloud = SimpleNamespace(rescan_state=lambda: "ready", request_rescan=Mock())
-    local = SimpleNamespace(rescan_state=lambda: "paused", rescan=Mock())
+def owner_with(cloud, local):
     runtime = SimpleNamespace(
         snapshot=SimpleNamespace(
             bindings={
@@ -230,6 +231,47 @@ def test_one_paused_part_refuses_the_whole_search() -> None:
         source_data=lambda key: cloud if key == "cloud" else None,
         source_driver=lambda key: local if key == "local" else None,
     )
-    assert request_rescan(SimpleNamespace(connections=runtime)) == "paused"
-    cloud.request_rescan.assert_not_called()
+    return SimpleNamespace(connections=runtime)
+
+
+def part(state, method):
+    return SimpleNamespace(
+        rescan_state=lambda: state, **{method: Mock(return_value="planned")}
+    )
+
+
+def test_a_paused_local_part_is_skipped_and_the_cloud_searches() -> None:
+    cloud, local = part("ready", "request_rescan"), part("paused", "rescan")
+    assert request_rescan(owner_with(cloud, local)) == "partial"
+    cloud.request_rescan.assert_called_once()
     local.rescan.assert_not_called()
+
+
+def test_a_paused_cloud_is_skipped_and_the_local_part_searches() -> None:
+    cloud, local = part("paused", "request_rescan"), part("ready", "rescan")
+    assert request_rescan(owner_with(cloud, local)) == "partial"
+    cloud.request_rescan.assert_not_called()
+    local.rescan.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    ("cloud_state", "local_state", "expected"),
+    [
+        ("paused", "paused", "paused"),
+        ("paused", "unavailable", "paused"),
+        ("unavailable", "unavailable", "unavailable"),
+        ("ready", "running", "running"),
+        ("paused", "running", "running"),
+        ("ready", "unavailable", "planned"),
+        ("ready", "ready", "planned"),
+    ],
+)
+def test_the_whole_search_is_refused_only_without_a_ready_part(
+    cloud_state, local_state, expected
+) -> None:
+    cloud = part(cloud_state, "request_rescan")
+    local = part(local_state, "rescan")
+    assert request_rescan(owner_with(cloud, local)) == expected
+    planned = expected in ("planned", "partial")
+    assert cloud.request_rescan.called is (planned and cloud_state == "ready")
+    assert local.rescan.called is (planned and local_state == "ready")

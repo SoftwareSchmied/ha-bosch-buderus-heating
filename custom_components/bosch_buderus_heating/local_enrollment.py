@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, cast
 from uuid import uuid4
 
 from homeassistant.core import CoreState
-from homeassistant.helpers.json import save_json
+from homeassistant.util.file import write_utf8_file_atomic
 
 from .configuration import (
     ConfigurationError,
@@ -32,7 +32,11 @@ from .local_auth import (
     LabelCredentials,
     request_local_token,
 )
-from .local_budget import LocalReadBudget, local_budget_manager
+from .local_budget import (
+    MAX_LOCAL_PAUSE_SECONDS,
+    LocalReadBudget,
+    local_budget_manager,
+)
 from .local_completion import (
     CompletionIntent,
     RecoveryStatus,
@@ -208,12 +212,20 @@ def _record(raw: object, *, version: int = 3) -> PendingEnrollment:
     )
 
 
-def _load(path: Path) -> tuple[PendingEnrollment, ...]:
+def _read(path: Path) -> bytes | None:
     try:
         with path.open("rb") as stream:
-            body = stream.read(MAX_JOURNAL_BYTES + 1)
+            return stream.read(MAX_JOURNAL_BYTES + 1)
     except FileNotFoundError:
-        return ()
+        return None
+
+
+def _load(path: Path) -> tuple[PendingEnrollment, ...]:
+    body = _read(path)
+    return () if body is None else _parse(body)
+
+
+def _parse(body: bytes) -> tuple[PendingEnrollment, ...]:
     if len(body) > MAX_JOURNAL_BYTES:
         raise LocalEnrollmentError("invalid_enrollment_journal")
     raw = json.loads(body.decode("utf-8"), object_pairs_hook=unique_object)
@@ -235,18 +247,18 @@ def _load(path: Path) -> tuple[PendingEnrollment, ...]:
 def _save(path: Path, entries: tuple[PendingEnrollment, ...]) -> None:
     rows = [r.to_data() for r in entries]
     data = {"version": 3, "attempts": rows}
-    if (
-        len(entries) > MAX_PENDING_ENROLLMENTS
-        or len(json.dumps(data).encode()) > MAX_JOURNAL_BYTES
-    ):
+    # Serialized once and compact; files written before with indentation
+    # load the same way. Non-finite numbers are refused.
+    body = json.dumps(data, allow_nan=False, separators=(",", ":")).encode()
+    if len(entries) > MAX_PENDING_ENROLLMENTS or len(body) > MAX_JOURNAL_BYTES:
         raise LocalEnrollmentError("enrollment_journal_full")
-    if tuple(_record(row) for row in rows) != entries:
+    if tuple(_record(row) for row in rows) != entries or _parse(body) != entries:
         raise LocalEnrollmentError("invalid_enrollment_journal")
     path.parent.mkdir(parents=True, exist_ok=True)
     # Unlike Store.async_save, this helper propagates write failures. Its atomic
     # replacement is private. A successful call is not a power-loss guarantee.
-    save_json(str(path), data, private=True, atomic_writes=True)
-    if _load(path) != entries:
+    write_utf8_file_atomic(str(path), body, True, mode="wb")
+    if _read(path) != body:
         raise LocalEnrollmentError("enrollment_storage_unconfirmed")
 
 
@@ -400,7 +412,7 @@ class LocalEnrollmentJournal:
 
     async def defer(self, attempt_id: str, owner_id: str, seconds: float) -> None:
         """Retain resource Retry-After as well as token-endpoint pauses."""
-        seconds = _timestamp(seconds)
+        seconds = min(_timestamp(seconds), MAX_LOCAL_PAUSE_SECONDS)
         self._mutated = True
         async with self._lock:
             entries = await self._load_records()
@@ -486,7 +498,8 @@ class LocalEnrollmentJournal:
                     state=outcome.state,
                     credentials=outcome.credentials,
                     problem=outcome.problem,
-                    retry_not_before=time() + outcome.retry_after_seconds
+                    retry_not_before=time()
+                    + min(outcome.retry_after_seconds, MAX_LOCAL_PAUSE_SECONDS)
                     if outcome.retry_after_seconds is not None
                     else 0,
                 )

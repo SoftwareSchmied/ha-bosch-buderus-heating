@@ -325,6 +325,7 @@ async def test_polling_preserves_last_good_values(hass: HomeAssistant) -> None:
         "total": 2,
         "successful": 1,
         "failed": 1,
+        "paths_failing": 1,
         "success_rate_percent": 50.0,
     }
 

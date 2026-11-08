@@ -23,6 +23,10 @@ if TYPE_CHECKING:
 _operation: ContextVar[BaconSource | None] = ContextVar(
     "cloud_device_operation", default=None
 )
+# Failures a stop itself causes before its cancellation arrives.
+_STOP_OUTCOMES = frozenset(
+    {"source_stopped", "command_unconfirmed", "connection", "device_unavailable"}
+)
 
 
 class BaconPool:
@@ -283,6 +287,12 @@ class BaconSource:
             return await task
         except asyncio.CancelledError as error:
             if not self.current():
+                raise BaconError("source_stopped") from error
+            raise
+        except BaconError as error:
+            # Stopped before the cancellation arrived (for example right after
+            # a publish): the same outcome as a cancelled operation.
+            if not self.current() and error.category in _STOP_OUTCOMES:
                 raise BaconError("source_stopped") from error
             raise
         finally:

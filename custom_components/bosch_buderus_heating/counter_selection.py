@@ -8,6 +8,12 @@ reading is valid, and the counter becomes unavailable after that: a gap, never
 an artificial consumption. Within one source nothing is corrected, so a real
 device reset stays visible. The last shown numbers and source are stored, so
 the rule also holds after a restart.
+
+When the source shown last is gone for good (its access removed or switched
+off), the other source may take over once it is not lower for the parts both
+report. A stored part that no source has reported for ``STALE_PART_SECONDS``
+since the last switch no longer binds anything and is dropped; a part that is
+reported stays bound until it reaches its stored number.
 """
 
 from __future__ import annotations
@@ -15,8 +21,9 @@ from __future__ import annotations
 import logging
 import math
 import re
+import time
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.core import HomeAssistant
@@ -36,13 +43,23 @@ _LOGGER = logging.getLogger(__name__)
 
 STORAGE_VERSION = 1
 STORAGE_KEY = f"{DOMAIN}.counter_sources"
-SAVE_DELAY_SECONDS = 10
+# O69: shown counters change slowly; a source switch is still written at once
+# and a pending save is written when Home Assistant stops.
+SAVE_DELAY_SECONDS = 60
 MAX_ROWS = 2048
 SOURCES = frozenset({"local", "cloud"})
 _ID = re.compile(r"[^|\x00-\x1f\x7f]{1,256}")
 # Without stored history only the cloud may set the first count: it is what the
 # counter showed before local values existed.
 BASELINE_SOURCE = "cloud"
+# A part no source reports any more stops binding after this time.
+STALE_PART_SECONDS = 7 * 24 * 3600.0
+
+
+def _now() -> float:
+    """Wall-clock seconds; the waiting time must survive a restart."""
+    return time.time()
+
 
 _STORES: HassKey[CounterSourceStore] = HassKey(f"{DOMAIN}.counter_source_store")
 
@@ -57,6 +74,9 @@ class ShownCounter:
     # of older versions). A part taken over from the previous source is not
     # confirmed until this source shows it at least as high (P49b).
     confirmed: frozenset[str] | None = None
+    # Wall-clock time from which the unconfirmed parts wait; None: not known
+    # yet (the wait starts with the next decision).
+    since: float | None = None
 
     def unconfirmed(self) -> frozenset[str]:
         if self.confirmed is None:
@@ -194,6 +214,8 @@ def _row_data(row: ShownCounter) -> dict[str, Any]:
     data: dict[str, Any] = {"source": row.source, "values": dict(row.values)}
     if row.confirmed is not None:
         data["confirmed"] = sorted(row.confirmed)
+        if row.since is not None:
+            data["since"] = row.since
     return data
 
 
@@ -230,12 +252,20 @@ def _rows(stored: object) -> Iterable[tuple[str, ShownCounter]]:
         confirmed = row["confirmed"]
         if not isinstance(confirmed, list):
             confirmed = []  # damaged: nothing counts as confirmed
+        since = row.get("since")
+        if (
+            isinstance(since, bool)
+            or not isinstance(since, int | float)
+            or not math.isfinite(since)
+        ):
+            since = None  # missing or damaged: the wait starts again
         yield (
             key,
             ShownCounter(
                 row["source"],
                 clean,
                 frozenset(name for name in confirmed if name in clean),
+                float(since) if since is not None else None,
             ),
         )
 
@@ -265,6 +295,7 @@ class CounterGuard:
         candidates: Iterable[tuple[str, ResourceSnapshot | None]],
         *,
         partial: bool = False,
+        gone: frozenset[str] = frozenset(),
     ) -> ResourceSnapshot | None:
         """Return the first valid candidate the rule allows, in preference order.
 
@@ -276,18 +307,26 @@ class CounterGuard:
         the sole source), a reading lacking some parts may take over. The
         parts it lacks stay unconfirmed: when the same source shows one of
         them later, it is held back while it is below its stored number.
+
+        ``gone`` names sources whose access was removed or switched off. When
+        the stored source is one of them, another source may take over once
+        it is not lower for the parts both report.
         """
         key = self._prefix + path
         last = self._store.get(key)
-        ordered = list(candidates)
+        ordered = [
+            (source, snapshot, counter_vector(snapshot.resource))
+            for source, snapshot in candidates
+            if snapshot is not None and snapshot.available
+        ]
+        if last is not None:
+            last = self._drop_stale(key, last, ordered)
         if last is not None and path not in self._decided:
-            ordered.sort(key=lambda item: item[0] != last.source)
+            first = last.source
+            ordered.sort(key=lambda item: item[0] != first)
         blocked = False
         without_numbers: ResourceSnapshot | None = None
-        for source, snapshot in ordered:
-            if snapshot is None or not snapshot.available:
-                continue
-            vector = counter_vector(snapshot.resource)
+        for source, snapshot, vector in ordered:
             if vector is None:
                 # No count yet (e.g. a registered counter awaiting its first
                 # value): nothing can go backwards, show it as before.
@@ -301,7 +340,9 @@ class CounterGuard:
             if (
                 switch
                 and last is not None
-                and not not_lower(vector, last.values, partial=partial)
+                and not not_lower(
+                    vector, last.values, partial=partial or last.source in gone
+                )
             ):
                 blocked = True
                 continue
@@ -334,8 +375,12 @@ class CounterGuard:
                 confirmed = previous | frozenset(vector)
                 if confirmed >= frozenset(values):
                     confirmed = None  # every part shown by this source
+            since: float | None = None
+            if confirmed is not None and last is not None:
+                # The parts this source has not shown wait from the switch on.
+                since = _now() if switch else last.since
             self._store.set(
-                key, ShownCounter(source, values, confirmed), immediate=switch
+                key, ShownCounter(source, values, confirmed, since), immediate=switch
             )
             self._decided.add(path)
             self.shown[path] = source
@@ -347,6 +392,46 @@ class CounterGuard:
             return without_numbers
         self.shown[path] = "unavailable"
         return None
+
+    def _drop_stale(
+        self,
+        key: str,
+        last: ShownCounter,
+        ordered: list[tuple[str, ResourceSnapshot, dict[str, float] | None]],
+    ) -> ShownCounter:
+        """Drop waiting parts that no source has reported for a long time.
+
+        Only unconfirmed parts that no current reading reports: a reported
+        part keeps binding until it reaches its stored number, and a part
+        nobody reports shows nothing, so no shown number goes backwards.
+        """
+        waiting = last.unconfirmed()
+        if not waiting:
+            return last
+        now = _now()
+        if last.since is None:
+            row = replace(last, since=now)
+            self._store.set(key, row)
+            return row
+        if now - last.since < STALE_PART_SECONDS:
+            return last  # also with a clock set back: not stale
+        if not any(vector for *_, vector in ordered):
+            return last  # no current reading: no evidence that a part ended
+        reported = {name for *_, vector in ordered if vector for name in vector}
+        drop = waiting - reported
+        values = {
+            name: value for name, value in last.values.items() if name not in drop
+        }
+        if not drop or not values:
+            return last
+        confirmed = (last.confirmed or frozenset()) & values.keys()
+        row = (
+            ShownCounter(last.source, values)
+            if confirmed >= values.keys()
+            else ShownCounter(last.source, values, frozenset(confirmed), last.since)
+        )
+        self._store.set(key, row, immediate=True)
+        return row
 
     def forget_shown(self) -> None:
         """A stopped source shows nothing; keep the stored history."""

@@ -432,6 +432,11 @@ def prepare_local_configuration(
                 item["comparison_contract"] = contract_id
                 item["evidence"] = "verified_local_setup"
     bindings = _section(data, "bindings")
+    if edit.binding_id not in bindings and not new_plant:
+        # A system's first local access shows its local readings in the
+        # existing entities by default. A stored choice stays; a changed
+        # local access and older entries without the option are unchanged.
+        _section(options, "targets")[edit.target_id].setdefault("local_values", True)
     bindings[edit.binding_id] = {
         **bindings.get(edit.binding_id, {}),
         "connection_id": connection_id,

@@ -4,8 +4,9 @@ on:
   push:
     tags: ["v*"]
 
+# Only the publishing job may write; every verification job only reads.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   # The same older Home Assistant versions as CI must pass before publishing.
@@ -55,11 +56,13 @@ jobs:
       - name: Run the full suite on the minimum supported Home Assistant
         run: pytest
 
-  release:
+  verify:
     # Keep the pinned Python version on a supported runner image.
     needs: [compatibility, minimum-version]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    permissions:
+      contents: read
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -90,6 +93,23 @@ jobs:
         uses: hacs/action@1ebf01c408f29afcb6406bd431bc98fd8cbb15aa
         with:
           category: integration
+
+  release:
+    # Builds the archive again from the verified tag and publishes it.
+    needs: [verify]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14.2"
       - name: Build release files
         env:
           RELEASE_VERSION: ${{ github.ref_name }}

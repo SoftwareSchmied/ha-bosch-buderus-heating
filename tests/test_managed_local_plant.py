@@ -231,6 +231,31 @@ async def test_the_view_keeps_cloud_ids_and_adds_local_sensors(
     await coordinator.async_release_retention()
 
 
+async def test_reading_the_same_answers_again_updates_nothing(
+    hass: HomeAssistant,
+) -> None:
+    """G1: new reads with unchanged answers start no entity update pass; the
+    shape and each local-only reading are worked out once per reading."""
+    coordinator, runtime = await plant(hass)
+    updates = Mock()
+    coordinator.async_add_listener(updates)
+    runtime.publish(everyday())
+    assert updates.call_count == 1
+    first = coordinator.local_only_reading(ROOM)
+    assert coordinator.local_only_reading(ROOM) is first
+    runtime.publish(everyday())  # the same answers, read anew
+    assert updates.call_count == 1
+    assert coordinator.local_only_reading(ROOM) == first
+    assert coordinator.local_only_reading(ROOM) is not first  # the newer reading
+    runtime.publish(everyday(room=21.5))
+    assert updates.call_count == 2
+    assert coordinator.local_only_reading(ROOM).value == Decimal("21.5")
+    runtime.publish(everyday(room=21.5)[:2])  # one reading no longer current
+    assert updates.call_count == 3
+    assert coordinator.local_only_reading(ROOM) is None
+    await coordinator.async_release_retention()
+
+
 async def test_the_view_only_grows_and_missing_readings_become_unavailable(
     hass: HomeAssistant,
 ) -> None:

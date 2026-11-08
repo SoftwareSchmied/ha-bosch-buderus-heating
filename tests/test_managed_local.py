@@ -488,3 +488,83 @@ def test_refresh_after_write_uses_bounded_explicit_reads() -> None:
     assert source.refresh(paths) == 0
     source.service.request.side_effect = StaleLocalRequest()
     assert source.refresh(paths) == 0
+
+
+# ------------------------------------------- health history (O80, O93, O94)
+
+
+def test_condition_changes_are_bounded_and_a_recovery_is_logged_once(
+    caplog, monkeypatch
+):
+    import logging
+
+    source = module.LocalSource(SimpleNamespace(closed=False), "local", None)
+    now = [100.0]
+    monkeypatch.setattr(module, "monotonic", lambda: now[0])
+    caplog.set_level(logging.INFO, logger=module.__name__)
+    source._note(LocalCondition.INITIALIZING, None)
+    source._note(LocalCondition.READY, None)
+    assert not caplog.records  # a normal start is no recovery
+    source._note(LocalCondition.PAUSED, "rate_limited")
+    now[0] += 30
+    source._note(LocalCondition.PAUSED, "rate_limited")  # unchanged: not kept
+    source._note(LocalCondition.INITIALIZING, None)
+    now[0] += 15
+    source._note(LocalCondition.READY, None)
+    assert [record.getMessage() for record in caplog.records] == [
+        "The local access is available again after 45 s"
+    ]
+    assert [item["condition"] for item in source._changes] == [
+        "initializing",
+        "ready",
+        "paused",
+        "initializing",
+        "ready",
+    ]
+    assert source._changes[2]["reason"] == "rate_limited"
+    assert set(source._changes[0]) == {"at", "condition", "reason"}
+    for _ in range(30):
+        source._note(LocalCondition.UNAVAILABLE, "local_poll_failed")
+        source._note(LocalCondition.READY, None)
+    assert len(source._changes) == module.CONDITION_CHANGES
+    assert len(caplog.records) == 31
+
+
+def test_diagnostics_show_the_read_signal_list_and_bounded_health() -> None:
+    from custom_components.bosch_buderus_heating.local_api.catalog import (
+        request_for_path,
+    )
+    from custom_components.bosch_buderus_heating.local_polling.inventory import (
+        ResourceView,
+    )
+
+    def view(path, freshness, observation):
+        return ResourceView(
+            request_for_path(path), freshness, False, None, 900, None, None, observation
+        )
+
+    snapshot = SimpleNamespace(
+        resources=(
+            view("/signals", Freshness.UNCONFIRMED, object()),
+            view("/gateway/brand", Freshness.UNCONFIRMED, None),
+            view("/gateway/versionFirmware", Freshness.LATE, object()),
+        ),
+        discovery_cursor=3,
+        discovery_exhausted=False,
+        discovery_pause_seconds=0,
+        gateway_pause_seconds=0,
+    )
+    source = module.LocalSource(SimpleNamespace(closed=False), "local", None)
+    source.context = SimpleNamespace(
+        configuration_current=True, runtime=SimpleNamespace(local_state=lambda _: None)
+    )
+    source.service = SimpleNamespace(snapshot=lambda: snapshot)
+    report = source.diagnostics()
+    assert [item["freshness"] for item in report["resources"]] == [
+        "read",
+        "unconfirmed",
+        "late",
+    ]
+    assert report["condition_changes"] == []
+    assert report["failures_by_class"] == {} and report["deferred_reasons"] == {}
+    assert report["response_times"] == {"samples": 0}

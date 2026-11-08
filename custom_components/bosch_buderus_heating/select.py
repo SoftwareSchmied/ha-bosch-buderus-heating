@@ -20,7 +20,7 @@ from .bacon.purifier_entities import (
 from .bacon.purifier_entities import (
     track_entities as track_purifier_entities,
 )
-from .control import async_set_control, track_control_entities
+from .control import HeldCapabilities, async_set_control, track_control_entities
 from .control_presentation import control_category, control_icon, control_name
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
@@ -165,6 +165,7 @@ def _option_map(resource: Resource, translation_key: str) -> dict[str, str]:
 
 
 class BoschBuderusSelect(
+    HeldCapabilities,
     CoordinatorEntity[BoschBuderusDataUpdateCoordinator],
     SelectEntity,
 ):

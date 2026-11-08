@@ -208,9 +208,10 @@ def test_signals_follow_the_local_only_rules() -> None:
     sensors = [local_sensor(item)[0] for item in signals()]
     kinds = Counter(sensor.definition.kind for sensor in sensors if sensor)
     assert kinds == {
-        "flag": 51,  # text true/false (C7-1)
+        # text true/false (C7-1) and the two TRUE/FALSE state maps (O107)
+        "flag": 53,
         "generic": 27,
-        "state": 19,  # state maps of real names, no unit (C7-2)
+        "state": 17,  # state maps of real names, no unit (C7-2)
         "duration": 3,
         "temperature": 2,
         "power": 1,
@@ -224,6 +225,26 @@ def test_signals_follow_the_local_only_rules() -> None:
         if sensor is not None and sensor.enabled
     )
     assert len(enabled) == 24  # 13 on/off, 3 states, 8 measurements
+    # #80: generic signals with a measurement unit get statistics; states,
+    # on/off signals, times and numbers without a unit never do.
+    classes = Counter(
+        (sensor.definition.kind, sensor.unit, str(sensor.state_class))
+        for sensor in sensors
+        if sensor is not None and sensor.definition.kind in ("generic", "flag", "state")
+    )
+    assert all(
+        (state_class == "measurement")
+        == (kind == "generic" and unit not in (None, "s", "min", "h"))
+        for (kind, unit, state_class) in classes
+    )
+    assert (
+        sum(
+            count
+            for (kind, _, state_class), count in classes.items()
+            if kind == "generic" and state_class == "measurement"
+        )
+        > 0
+    )
     assert "SRC.CUHP.HMI.CompressorActive" in enabled
     assert "SRC.CUHP.HP1.CompressorStatus" not in enabled  # its duplicate
 

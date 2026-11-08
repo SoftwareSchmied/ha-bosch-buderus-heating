@@ -67,7 +67,7 @@ from .water_softener import (
 )
 from .writes import EnumWritePolicy, NumberWritePolicy, assess_control
 
-DIAGNOSTICS_SCHEMA_VERSION = 41
+DIAGNOSTICS_SCHEMA_VERSION = 42
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -595,15 +595,16 @@ def _gateway_diagnostics(
         ],
         "faults": {
             **fault_state,
+            # O94: masked like every other path (hs1 stays, IDs are hidden).
             "supported_resources": tuple(
                 sorted(
-                    _path_template(path)
+                    diagnostic_resource_path(path)
                     for path in supported_fault_resources
                     if isinstance(path, str)
                 )
             ),
             "resource_results": {
-                _path_template(path): _safe_token(result)
+                diagnostic_resource_path(path): _safe_token(result)
                 for path, result in fault_resource_results.items()
                 if isinstance(path, str)
             },
@@ -989,6 +990,13 @@ def _startup_diagnostics(
     """Describe pending reads locally without performing a diagnostic request."""
     state = coordinator.startup_data
     now = monotonic()
+    masked = Counter(diagnostic_resource_path(path) for path in state.reads)
+    indexes: dict[str, int] = {}
+    seen: Counter[str] = Counter()
+    for path in sorted(state.reads):
+        if masked[shown := diagnostic_resource_path(path)] > 1:
+            seen[shown] += 1
+            indexes[path] = seen[shown]
     return {
         "scope": "current_entry_session",
         "successful_reads_repeat": False,
@@ -1009,6 +1017,11 @@ def _startup_diagnostics(
         "paths": [
             {
                 "path": diagnostic_resource_path(path),
+                # O94: the same masked path more than once (for example the
+                # product name of two devices) is told apart by its number.
+                **(
+                    {"index": index} if (index := indexes.get(path)) is not None else {}
+                ),
                 "advertised": read.advertised,
                 "registered_before_setup": read.registered,
                 "active": read.active,

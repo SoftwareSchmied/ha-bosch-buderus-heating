@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import math
+from collections import Counter, deque
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
@@ -33,6 +34,11 @@ from .local_probe import ProbeContext, TransportFailure
 from .local_transport import CertificateBinding, PortRole, StaleLocalRequest
 
 DEFAULT_FAILURE_PAUSE = 60.0
+# A resolved address list is used again for this long (O48). Every new
+# resolution runs the address checks; a connection failure resolves anew.
+RESOLVE_REUSE_SECONDS = 60.0
+# Response times of the most recent reads kept for the diagnostics (O93).
+RESPONSE_SAMPLES = 256
 
 
 class ReadState(StrEnum):
@@ -100,6 +106,30 @@ class ReadResult:
         return self.state in {ReadState.ACCESS_ERROR, ReadState.DEFERRED}
 
 
+def _failure_class(result: ReadResult) -> str | None:
+    """The class of a failed read for the diagnostics; None for a success."""
+    if result.state is ReadState.SUCCESS:
+        return None
+    problem, status = result.problem, result.status
+    if problem == TransportFailure.TIMEOUT:
+        return "timeout"
+    if problem in {TransportFailure.TLS, TransportFailure.TLS_CHANGED}:
+        return "tls"
+    if status == 404:
+        return "not_found"
+    if status is not None and 400 <= status < 500:
+        return "http_4xx"
+    if status is not None and status >= 500:
+        return "http_5xx"
+    if problem in {
+        TransportFailure.CONNECT,
+        TransportFailure.DNS,
+        TransportFailure.INTERFACE,
+    }:
+        return "connection"
+    return "other"
+
+
 @dataclass(slots=True)
 class _Attempt:
     lease: BudgetLease
@@ -136,11 +166,46 @@ class LocalReadClient:
         self._close_task: asyncio.Task[None] | None = None
         self._closed = False
         self._halted: str | None = None
+        # The last inspected peer whose certificate matched the binding.
+        self._peer: str | None = None
+        # The endpoint's checked addresses and when they were resolved.
+        self._resolved: tuple[tuple[str, ...], float] | None = None
         self._metrics = ReadMetrics()
+        self._durations: deque[float] = deque(maxlen=RESPONSE_SAMPLES)
+        self._failure_classes: Counter[str] = Counter()
+        self._deferred_reasons: Counter[str] = Counter()
 
     @property
     def metrics(self) -> ReadMetrics:
         return self._metrics
+
+    def health(self) -> dict[str, object]:
+        """Failure classes, response times and deferral reasons (O93).
+
+        Fixed codes and durations only: no addresses, paths or values.
+        """
+        durations = sorted(self._durations)
+        times: dict[str, object] = {"samples": len(durations)}
+        if durations:
+            times |= {
+                "average_ms": round(sum(durations) / len(durations), 1),
+                "p95_ms": round(durations[math.ceil(0.95 * len(durations)) - 1], 1),
+                "maximum_ms": round(durations[-1], 1),
+            }
+        return {
+            "failures_by_class": dict(sorted(self._failure_classes.items())),
+            "response_times": times,
+            "deferred_reasons": dict(sorted(self._deferred_reasons.items())),
+        }
+
+    def _record(self, result: ReadResult, started: float) -> None:
+        if result.state is ReadState.DEFERRED:
+            self._deferred_reasons[str(result.problem or "unknown")] += 1
+            return
+        if result.http_requests:
+            self._durations.append((monotonic() - started) * 1000)
+        if (failure := _failure_class(result)) is not None:
+            self._failure_classes[failure] += 1
 
     def _count(self, **increments: int) -> None:
         self._metrics = replace(
@@ -189,6 +254,12 @@ class LocalReadClient:
         problem: str,
         delay: float | None = None,
     ) -> ReadResult:
+        if problem not in {ReadProblem.RATE_LIMITED, ReadProblem.SERVICE_UNAVAILABLE}:
+            # The next read resolves the address and inspects the certificate
+            # again (another address, a restarted gateway); an answered
+            # request keeps the peer.
+            self._peer = None
+            self._resolved = None
         if problem in {ReadProblem.AUTH_REQUIRED, TransportFailure.TLS_CHANGED}:
             self._halted = problem
         else:
@@ -244,18 +315,56 @@ class LocalReadClient:
             http_requests=attempt.headers,
         )
 
-    async def _get(self, request: ReadRequest, attempt: _Attempt) -> ReadResult:
+    async def _peer_for(self, attempt: _Attempt) -> str:
+        """The address to read from, inspected only when it is not known yet.
+
+        The address checks run for every read. The separate certificate
+        inspection is skipped while the inspected peer is still one of the
+        endpoint's addresses: the request pins the same SHA-256 fingerprint,
+        and aiohttp compares it right after the handshake, before any request
+        line or header (and so the token) is written. A mismatch is reported
+        as a changed certificate, as the inspection would.
+        """
+
+        def is_current() -> bool:
+            return not self._closed and self._is_current()
+
+        peer = self._peer
+        if peer is not None:
+            transport._current(is_current)
+            peers = await self._resolve()
+            await self._budget.bind_peers(peers)
+            self._budget.check_lease(attempt.lease)
+            if peer in peers:
+                return peer
+            self._peer = None
+            self._resolved = None
         self._count(tls_inspections=1)
-        peer = await transport._inspect(
+        observation = await transport._inspect(
             self._context,
             PortRole.RESOURCES,
-            lambda: not self._closed and self._is_current(),
+            is_current,
             self._binding.sha256,
             budget=self._budget,
             lease=attempt.lease,
         )
+        self._peer = observation.peer
+        return observation.peer
+
+    async def _resolve(self) -> tuple[str, ...]:
+        """The endpoint's checked addresses, resolved at most once a minute."""
+        resolved = self._resolved
+        now = monotonic()
+        if resolved is not None and 0 <= now - resolved[1] < RESOLVE_REUSE_SECONDS:
+            return resolved[0]
+        peers = await transport._resolve(self._context.endpoint)
+        self._resolved = (peers, now)
+        return peers
+
+    async def _get(self, request: ReadRequest, attempt: _Attempt) -> ReadResult:
+        peer = await self._peer_for(attempt)
         self._current()
-        origin = URL.build(scheme="https", host=peer.peer, port=PortRole.RESOURCES.port)
+        origin = URL.build(scheme="https", host=peer, port=PortRole.RESOURCES.port)
         url = URL(str(origin) + request.target, encoded=True)
         async with self._get_session().get(
             url,
@@ -331,10 +440,12 @@ class LocalReadClient:
             )
         if lease is None:
             self._count(deferred=1)
+            problem = ReadProblem.BUSY if busy else ReadProblem.PAUSED
+            self._deferred_reasons[problem.value] += 1
             return ReadResult(
                 request,
                 ReadState.DEFERRED,
-                problem=ReadProblem.BUSY if busy else ReadProblem.PAUSED,
+                problem=problem,
                 retry_after_seconds=max(
                     MINIMUM_START_GAP, self._budget.remaining_seconds
                 ),
@@ -349,6 +460,14 @@ class LocalReadClient:
         self._budget.release(lease)
 
     async def _execute(self, request: ReadRequest, lease: BudgetLease) -> ReadResult:
+        started = monotonic()
+        result = await self._execute_counted(request, lease)
+        self._record(result, started)
+        return result
+
+    async def _execute_counted(
+        self, request: ReadRequest, lease: BudgetLease
+    ) -> ReadResult:
         attempt = _Attempt(lease)
         try:
             return await self._execute_admitted(request, attempt)

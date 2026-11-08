@@ -10,7 +10,7 @@ from enum import StrEnum
 from itertools import product
 
 from ..local_api.catalog import CATALOG, SOURCE_SHA256, ReadRequest, make_request
-from ._data import ANCHORS, CLASSES
+from ._data import ANCHORS, CLASSES, SIGNAL_CLASSES
 
 MAX_RECORDS = 2048
 MAX_SIGNALS = 512
@@ -24,8 +24,17 @@ SLICE_PAUSE = 300.0
 RESCAN_SECONDS = 86400.0
 POLICY_VERSION = 1
 REVISION = hashlib.sha256(
-    repr((SOURCE_SHA256, POLICY_VERSION, tuple(CLASSES.items()), ANCHORS)).encode()
+    repr(
+        (
+            SOURCE_SHA256,
+            POLICY_VERSION,
+            tuple(CLASSES.items()),
+            ANCHORS,
+            tuple(SIGNAL_CLASSES.items()),
+        )
+    ).encode()
 ).hexdigest()
+_SIGNAL_TEMPLATE = "/signals/{signalId}"
 
 
 class PollClass(StrEnum):
@@ -35,6 +44,10 @@ class PollClass(StrEnum):
     DIAGNOSTICS = "diagnostics"
     COUNTERS = "counters"
     METADATA = "metadata"
+    # O43: descriptive gateway and system values that rarely change.
+    SYSTEM_METADATA = "system_metadata"
+    # The gateway firmware: a change rechecks the paths not found (P41).
+    FIRMWARE = "firmware"
     STATIC = "static"
     HISTORY = "history"
     ADMINISTRATION = "administration"
@@ -47,7 +60,10 @@ PERIODS: Mapping[PollClass, int] = {
     PollClass.ENERGY: 300,
     PollClass.DIAGNOSTICS: 300,
     PollClass.COUNTERS: 900,
+    # Device and zone values (battery, radio pairing, names) stay at 15 min.
     PollClass.METADATA: 900,
+    PollClass.SYSTEM_METADATA: 3600,
+    PollClass.FIRMWARE: 900,
     PollClass.STATIC: 86400,
     PollClass.DISCOVERY: 900,
 }
@@ -60,7 +76,12 @@ def validate_interval(value: int) -> int:
 
 
 def category(request: ReadRequest) -> PollClass:
-    return PollClass(CLASSES[request.definition.template])
+    template = request.definition.template
+    if template == _SIGNAL_TEMPLATE and (
+        special := SIGNAL_CLASSES.get(request.path.removeprefix("/signals/"))
+    ):
+        return PollClass(special)
+    return PollClass(CLASSES[template])
 
 
 def period(request: ReadRequest, configured: int, cap: int | None = None) -> int | None:

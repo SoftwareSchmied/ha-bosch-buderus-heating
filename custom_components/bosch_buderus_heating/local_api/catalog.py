@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Collection, Mapping
 from dataclasses import dataclass, field
+from functools import lru_cache
 from typing import Any, Literal
 from urllib.parse import quote, urlencode
 
@@ -96,6 +97,41 @@ def _refs(schema: dict[str, Any]) -> set[str]:
     }
 
 
+def _shared(value: Any, seen: dict[object, Any]) -> tuple[Any, object]:
+    """One instance for each distinct substructure, and its comparison key.
+
+    The tables are only read, so equal parts can be one object. The key keeps
+    types and key order, so only truly identical parts are joined; a shared
+    part is identified by its object, which ``seen`` keeps alive.
+    """
+    shared: Any
+    if isinstance(value, dict):
+        items = [(name, _shared(child, seen)) for name, child in value.items()]
+        key: object = (dict, tuple((name, part[1]) for name, part in items))
+        shared = seen.get(key)
+        if shared is None:
+            shared = seen[key] = {name: part[0] for name, part in items}
+        return shared, id(shared)
+    if isinstance(value, list):
+        parts = [_shared(child, seen) for child in value]
+        key = (list, tuple(part[1] for part in parts))
+        shared = seen.get(key)
+        if shared is None:
+            shared = seen[key] = [part[0] for part in parts]
+        return shared, id(shared)
+    return value, (type(value), value)
+
+
+def _share_tables() -> None:
+    """Replace repeated parts of the read-only API tables by one instance."""
+    seen: dict[object, Any] = {}
+    for table in (SCHEMAS, OPERATIONS):
+        for name, value in table.items():
+            table[name] = _shared(value, seen)[0]
+
+
+_share_tables()
+
 CATALOG = tuple(
     ResourceDefinition(
         path,
@@ -115,14 +151,50 @@ _PATTERNS = tuple(
 )
 
 
+def _first_segment(path: str) -> str:
+    return path[1:].partition("/")[0]
+
+
+def _pattern_groups() -> tuple[
+    dict[str, tuple[tuple[re.Pattern[str], ResourceDefinition], ...]],
+    tuple[tuple[re.Pattern[str], ResourceDefinition], ...],
+]:
+    """The patterns per literal first path segment, in catalog order.
+
+    A template whose first segment holds a parameter can match any path, so
+    it is part of every group at its catalog position.
+    """
+    groups: dict[str, list[tuple[re.Pattern[str], ResourceDefinition]]] = {}
+    anywhere: list[tuple[re.Pattern[str], ResourceDefinition]] = []
+    for item in _PATTERNS:
+        first = _first_segment(item[1].template)
+        if "{" in first:
+            anywhere.append(item)
+            for members in groups.values():
+                members.append(item)
+        else:
+            groups.setdefault(first, list(anywhere)).append(item)
+    return (
+        {first: tuple(members) for first, members in groups.items()},
+        tuple(anywhere),
+    )
+
+
+# A lookup tries only the templates that can match the path's first segment,
+# in the same order as a scan of all templates.
+_PATTERN_GROUPS, _ANY_FIRST_SEGMENT = _pattern_groups()
+# Characters that never occur in a canonical resource ID: controls, space,
+# DEL, the escape and percent signs, query and fragment markers.
+_FORBIDDEN = re.compile(r"[\x00-\x20\x7f\\%?#]")
+
+
 def validate_path(path: str) -> None:
     """Accept a canonical resource ID, never a URI or query-bearing input."""
     if not isinstance(path, str) or not path.startswith("/") or len(path) > 1024:
         raise LocalResourceError(Problem.INVALID_PATH)
     if (
         any(part in {"", ".", ".."} for part in path[1:].split("/"))
-        or any(c in path for c in "\\%?#")
-        or any(ord(c) < 33 or ord(c) == 127 for c in path)
+        or _FORBIDDEN.search(path) is not None
     ):
         raise LocalResourceError(Problem.INVALID_PATH)
     try:
@@ -185,7 +257,9 @@ def request_for_path(
 ) -> ReadRequest:
     """Match the exact canonical path without expanding any address domain."""
     validate_path(path)
-    for pattern, definition in _PATTERNS:
+    for pattern, definition in _PATTERN_GROUPS.get(
+        _first_segment(path), _ANY_FIRST_SEGMENT
+    ):
         if matched := pattern.fullmatch(path):
             names = (p.name for p in definition.parameters if p.location == "path")
             return make_request(
@@ -198,7 +272,25 @@ def request_for_path(
 
 
 def response_schema(request: ReadRequest) -> dict[str, Any]:
-    """Revalidate constructed requests before selecting their response contract."""
+    """Revalidate constructed requests before selecting their response contract.
+
+    The result is kept per request: the catalog is fixed, and a request equal
+    to a checked one is valid as well. The query value types are part of the
+    key, so ``1`` never stands in for ``True``. A rejected request is never
+    kept and is checked again each time.
+    """
+    try:
+        return _cached_schema(request, tuple(type(value) for _, value in request.query))
+    except TypeError:
+        return _checked_schema(request)  # unhashable, so never valid: not kept
+
+
+@lru_cache(maxsize=4096)
+def _cached_schema(request: ReadRequest, _types: tuple[type, ...]) -> dict[str, Any]:
+    return _checked_schema(request)
+
+
+def _checked_schema(request: ReadRequest) -> dict[str, Any]:
     signal = (
         request.path.removeprefix("/signals/")
         if request.path.startswith("/signals/")

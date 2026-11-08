@@ -448,7 +448,7 @@ async def test_a_source_switch_is_saved_at_once(hass) -> None:
     calls = []
     store.store.async_delay_save = lambda data, delay: calls.append(delay)
     coordinator, runtime, _ = _setup(hass, cloud_energy(10.0, 2.0, 40.0), store=store)
-    assert calls == [10]  # first count: regular delayed save
+    assert calls == [60]  # first count: regular delayed save (O69)
     runtime.observations = [local_energy(10.0, 2.0, 41.0)]
     shown(coordinator)
     assert calls[-1] == 0  # the switch is written immediately
@@ -740,3 +740,253 @@ async def test_rows_keep_their_confirmed_parts(hass) -> None:
     assert store._data()["counters"]["a|t|/y"]["confirmed"] == ["outputProduced"]
     store.set("a|t|/x", rows["a|t|/x"])
     assert "confirmed" not in store._data()["counters"]["a|t|/x"]
+
+
+# ------------------------------- without the cloud always local (0.9 owner)
+
+
+def stop_cloud(coordinator, *, retained=True) -> None:
+    coordinator.data[TOTAL] = replace(
+        coordinator.data[TOTAL],
+        available=False,
+        freshness=Freshness.STALE,
+        last_error_category=SOURCE_STOPPED_CATEGORY,
+        ended=True,
+    )
+    coordinator.local_retained = retained
+
+
+async def test_a_switched_off_cloud_shows_local_counters_with_the_option_off(
+    hass,
+) -> None:
+    coordinator, runtime, _ = _setup(hass, cloud_energy(10.0, 2.0, 40.0), enabled=False)
+    runtime.observations = [local_energy(10.0, 2.0, 40.5)]
+    # Cloud running, option off: the cloud counter, never the local one.
+    assert shown(coordinator).source.value != "local"
+    stop_cloud(coordinator)
+    snapshot = shown(coordinator)
+    assert snapshot.source.value == "local"
+    assert parts(snapshot)["outputProduced"] == 40.5
+
+
+async def test_without_the_cloud_a_lower_local_counter_is_still_held(hass) -> None:
+    coordinator, runtime, _ = _setup(hass, cloud_energy(10.0, 2.0, 40.0), enabled=False)
+    stop_cloud(coordinator)
+    runtime.observations = [local_energy(10.0, 2.0, 39.0)]
+    assert shown(coordinator) is None  # never backwards
+    assert coordinator.counter_guard.blocked == {TOTAL: 1}
+    runtime.observations = [local_energy(10.0, 2.0, 40.0, monotonic=20.0)]
+    assert shown(coordinator).source.value == "local"
+
+
+async def test_a_limited_cloud_offers_the_local_counter_with_the_option_off(
+    hass,
+) -> None:
+    from time import monotonic
+
+    coordinator, runtime, _ = _setup(hass, cloud_energy(10.0, 2.0, 40.0), enabled=False)
+    runtime.observations = [local_energy(10.0, 2.0, 40.5)]
+    # A pause is a durable outage: the local counter at once.
+    coordinator._cloud_backoff_until = monotonic() + 60
+    assert shown(coordinator).source.value == "local"
+    coordinator._cloud_backoff_until = 0.0
+    # Back with the option off: the cloud only when not backwards.
+    assert shown(coordinator) is None
+
+
+async def test_one_failed_cloud_cycle_never_switches_a_counter(
+    hass, monkeypatch
+) -> None:
+    from custom_components.bosch_buderus_heating import coordinator as module
+
+    clock = {"now": 5_000.0}
+    monkeypatch.setattr(module, "monotonic", lambda: clock["now"])
+    coordinator, runtime, _ = _setup(hass, cloud_energy(10.0, 2.0, 40.0), enabled=False)
+    runtime.observations = [local_energy(10.0, 2.0, 40.5)]
+    coordinator.last_update_success = False  # one blip
+    assert coordinator.cloud_unavailable()  # other readings: at once
+    assert not coordinator.counter_cloud_unavailable()
+    assert shown(coordinator).source.value != "local"
+    clock["now"] += module.COUNTER_OUTAGE_SECONDS - 1
+    coordinator.last_update_success = False  # a later failed cycle keeps the start
+    assert shown(coordinator).source.value != "local"
+    coordinator.last_update_success = True  # back: the cloud counter stays shown
+    clock["now"] += 60
+    coordinator.last_update_success = False  # a new blip starts a new count
+    assert not coordinator.counter_cloud_unavailable()
+    assert shown(coordinator).source.value != "local"
+    assert coordinator.counter_guard.blocked == {}
+
+
+async def test_a_durable_unreachable_cloud_switches_counters_to_local(
+    hass, monkeypatch
+) -> None:
+    from custom_components.bosch_buderus_heating import coordinator as module
+
+    clock = {"now": 5_000.0}
+    monkeypatch.setattr(module, "monotonic", lambda: clock["now"])
+    coordinator, runtime, _ = _setup(hass, cloud_energy(10.0, 2.0, 40.0), enabled=False)
+    runtime.observations = [local_energy(10.0, 2.0, 40.5)]
+    coordinator.last_update_success = False
+    clock["now"] += module.COUNTER_OUTAGE_SECONDS
+    coordinator.last_update_success = False
+    assert coordinator.counter_cloud_unavailable()
+    snapshot = shown(coordinator)
+    assert snapshot.source.value == "local"
+    assert parts(snapshot)["outputProduced"] == 40.5
+    # Sign-in required counts at once, without waiting.
+    coordinator.last_update_success = True
+    monkeypatch.setattr(coordinator, "_cloud_auth_required", lambda: True)
+    assert coordinator.counter_cloud_unavailable()
+
+
+# ------------------------------------- gone sources and waiting parts (0.9)
+
+
+async def test_a_gone_source_lets_the_other_take_over_for_shared_parts(hass) -> None:
+    store = CounterSourceStore(hass)
+    full = energy(compressor=1000.0, eheater=20.0, outputProduced=3000.0)
+    store.set(ROW, ShownCounter("local", counter_vector(full)))
+    guard = CounterGuard(store, "owner", TARGET)
+    fewer = snap(energy(compressor=1001.0, outputProduced=3005.0))
+    # The local access still exists: every stored part must be present.
+    assert guard.decide(TOTAL, (("cloud", fewer),)) is None
+    shown_now = guard.decide(TOTAL, (("cloud", fewer),), gone=frozenset({"local"}))
+    assert shown_now is not None
+    row = store.get(ROW)
+    assert row.source == "cloud" and "eheater" in row.unconfirmed()
+    lower = snap(energy(compressor=999.0, outputProduced=3010.0))
+    assert (
+        CounterGuard(store, "owner", TARGET).decide(
+            TOTAL, (("cloud", lower),), gone=frozenset({"local"})
+        )
+        is not None
+    )  # the same source now: a real reset of a confirmed part stays visible
+
+
+async def test_a_gone_source_never_allows_a_lower_shared_part(hass) -> None:
+    store = CounterSourceStore(hass)
+    store.set(ROW, ShownCounter("local", {"compressor": 1000.0, "eheater": 20.0}))
+    guard = CounterGuard(store, "owner", TARGET)
+    lower = snap(energy(compressor=999.0))
+    assert guard.decide(TOTAL, (("cloud", lower),), gone=frozenset({"local"})) is None
+
+
+async def test_parts_nobody_reports_are_dropped_after_the_waiting_time(
+    hass, monkeypatch
+) -> None:
+    from custom_components.bosch_buderus_heating import counter_selection
+
+    clock = {"now": 1_000_000.0}
+    monkeypatch.setattr(counter_selection, "_now", lambda: clock["now"])
+    store, guard = cloud_baseline(hass)
+    produced = energy(outputProduced=3010.0)
+    assert view_decide(guard, produced) is not None
+    row = store.get(ROW)
+    assert row.since == 1_000_000.0 and "compressor" in row.unconfirmed()
+    # Within the waiting time the parts keep binding.
+    clock["now"] += counter_selection.STALE_PART_SECONDS - 1
+    assert view_decide(guard, energy(outputProduced=3011.0)) is not None
+    assert "compressor" in store.get(ROW).values
+    # No current reading: no evidence, nothing is dropped.
+    clock["now"] += 2
+    assert guard.decide(TOTAL, (("local", None),), partial=True) is None
+    assert "compressor" in store.get(ROW).values
+    # A reported part is never dropped: it waits until it reaches its number.
+    assert view_decide(guard, energy(eheater=19.0, outputProduced=3012.0)) is None
+    assert store.get(ROW).values["eheater"] == 20.0
+    # Parts nobody reports any more are dropped; shown numbers stay.
+    assert view_decide(guard, energy(outputProduced=3013.0)) is not None
+    row = store.get(ROW)
+    assert set(row.values) == {"outputProduced"} and row.confirmed is None
+    assert row.values["outputProduced"] == 3013.0
+    # A later full cloud reading must not be lower than the shown part.
+    behind = energy(compressor=1.0, eheater=1.0, outputProduced=3000.0)
+    assert view_decide(guard, behind, "cloud") is None
+
+
+async def test_a_row_without_a_waiting_time_starts_it(hass, monkeypatch) -> None:
+    from custom_components.bosch_buderus_heating import counter_selection
+
+    monkeypatch.setattr(counter_selection, "_now", lambda: 500.0)
+    store = CounterSourceStore(hass)
+    store.set(
+        ROW,
+        ShownCounter(
+            "local",
+            {"compressor": 1.0, "outputProduced": 2.0},
+            frozenset({"outputProduced"}),
+        ),
+    )
+    guard = CounterGuard(store, "owner", TARGET)
+    view_decide(guard, energy(outputProduced=3.0))
+    assert store.get(ROW).since == 500.0
+    monkeypatch.setattr(
+        counter_selection, "_now", lambda: 500.0 - 10 * 24 * 3600.0
+    )  # clock set back: never stale
+    view_decide(guard, energy(outputProduced=4.0))
+    assert "compressor" in store.get(ROW).values
+
+
+async def test_rows_keep_their_waiting_time(hass) -> None:
+    from custom_components.bosch_buderus_heating.counter_selection import _rows
+
+    values = {"compressor": 1.0, "outputProduced": 2.0}
+    stored = {
+        "counters": {
+            "a|t|/y": {
+                "source": "local",
+                "values": values,
+                "confirmed": ["outputProduced"],
+                "since": 123.5,
+            },
+            "a|t|/z": {
+                "source": "local",
+                "values": values,
+                "confirmed": ["outputProduced"],
+                "since": "x",
+            },
+        }
+    }
+    rows = dict(_rows(stored))
+    assert rows["a|t|/y"].since == 123.5
+    assert rows["a|t|/z"].since is None  # damaged: the wait starts again
+    store = CounterSourceStore(hass)
+    store.set("a|t|/y", rows["a|t|/y"])
+    assert store._data()["counters"]["a|t|/y"]["since"] == 123.5
+
+
+async def test_shown_counters_save_within_a_minute_and_at_shutdown(
+    hass, hass_storage
+) -> None:
+    """O69: 60 s save delay; a switch is written at once, a pending save at stop."""
+    from homeassistant.const import EVENT_HOMEASSISTANT_FINAL_WRITE
+    from homeassistant.util import dt as dt_util
+
+    from custom_components.bosch_buderus_heating import counter_selection
+    from tests.ha_test_helpers import async_fire_time_changed
+
+    assert counter_selection.SAVE_DELAY_SECONDS == 60
+    key = counter_selection.STORAGE_KEY
+    store = CounterSourceStore(hass)
+    await store.async_initialize()
+    start = dt_util.utcnow()
+    store.set("o|t|/a", ShownCounter("cloud", {"v": 1.0}))
+    async_fire_time_changed(hass, start + timedelta(seconds=59))
+    await hass.async_block_till_done()
+    assert key not in hass_storage  # not after ten seconds any more
+    async_fire_time_changed(hass, start + timedelta(seconds=61))
+    await hass.async_block_till_done()
+    assert hass_storage[key]["data"]["counters"]["o|t|/a"]["values"] == {"v": 1.0}
+    # A source switch is written at once.
+    store.set("o|t|/a", ShownCounter("local", {"v": 2.0}), immediate=True)
+    async_fire_time_changed(hass, start + timedelta(seconds=62))
+    await hass.async_block_till_done()
+    assert hass_storage[key]["data"]["counters"]["o|t|/a"]["source"] == "local"
+    # A pending regular save is written when Home Assistant stops.
+    store.set("o|t|/a", ShownCounter("local", {"v": 3.0}))
+    await hass.async_block_till_done()
+    assert hass_storage[key]["data"]["counters"]["o|t|/a"]["values"] == {"v": 2.0}
+    hass.bus.async_fire(EVENT_HOMEASSISTANT_FINAL_WRITE)
+    await hass.async_block_till_done()
+    assert hass_storage[key]["data"]["counters"]["o|t|/a"]["values"] == {"v": 3.0}

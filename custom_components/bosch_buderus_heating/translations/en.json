@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Connect Home Comfort",
-        "description": "Choose how Home Assistant connects to your system.\n\n**Cloud access** signs in to your account. It offers controls, time programs, holidays and system information.\n\n**Local access** connects to the gateway in your home network. It only reads: no controls and no settings. It updates many readings more often and can add technical readings the cloud does not offer, such as the refrigerant circuit, pumps and internal signals.\n\nEach access has readings the other does not have. If both are possible, we recommend **cloud and local access**.",
+        "description": "Choose how Home Assistant connects to your system.\n\n**Cloud access** signs in to your account. It offers controls, time programs, holidays and system information.\n\n**Local access** connects to the gateway in your home network. It only reads: no controls and no settings. It updates many readings more often and can add technical readings the cloud does not offer, such as the refrigerant circuit, pumps and internal signals.\n\nEach access has readings the other does not have. If both are possible, **cloud and local access** is recommended.",
         "menu_options": {
           "cloud": "Cloud access",
           "cloud_local": "Cloud and local access (recommended)",
@@ -32,6 +32,10 @@
       "retry": {
         "title": "Retry gateway discovery",
         "description": "Sign-in succeeded, but the device list could not be loaded. Check the Home Assistant internet connection, wait a moment, and try again."
+      },
+      "selection_expired": {
+        "title": "Load the device list again",
+        "description": "The device list is older than five minutes and has to be loaded again before saving. You stay signed in. Select **Submit** to load the list again, then choose the devices."
       },
       "gateways": {
         "title": "Select devices",
@@ -82,7 +86,14 @@
       },
       "local_method": {
         "title": "Connect to the local gateway",
-        "description": "Sign in with the device label or use an existing access token. Local appliance access is read-only. When you change an existing access at the same address, you can also keep its current token.",
+        "description": "Sign in with the device label or use an existing access token. Local appliance access is read-only.",
+        "data": {
+          "method": "Sign-in method"
+        }
+      },
+      "local_method_keep": {
+        "title": "Connect to the local gateway again",
+        "description": "A new sign-in with the **device label** is recommended.\n\nKeep the current token only if you are sure that the certificate you are about to confirm belongs to your own gateway, for example right after an update or reset you started yourself. With this option, the stored token is sent to the device that presents the newly confirmed certificate. If that is not your gateway, it receives a working token for your system. Signing in with the device label is safer: the label details only work together with the buttons on the gateway, while a stored token works right away for anyone who receives it.\n\nLocal appliance access is read-only.",
         "data": {
           "method": "Sign-in method"
         }
@@ -141,7 +152,7 @@
       "unknown": "An unexpected PointT error occurred. Wait a moment and try again.",
       "bacon_unavailable": "The additional cloud device list is currently unavailable. Wait at least one minute and try again.",
       "bacon_selection_unavailable": "Additional cloud devices could not be queried at this time. You can select reachable heating gateways. Existing cloud device selections will be preserved.",
-      "reauth_targets_missing": "Not all assigned systems and devices could be confirmed with this sign-in. The previous credentials are retained. Check the account and try again when every device is available.",
+      "reauth_targets_missing": "This sign-in found none of the switched-on systems and devices. The previous credentials are kept. Check that you signed in with the same account as before. If the systems were removed from the account, open Configure → Connections → the cloud access: switch on a system that is still in the account under **Use for systems and devices**, or switch the removed ones off and remove them with **Forget deselected systems**. If none is left, remove the cloud access and connect it again.",
       "cloud_rate_limited": "The cloud has requested a pause. Please wait before trying again.",
       "local_invalid_address": "Enter an IP address or hostname without a URL, path or credentials.",
       "local_interface_required": "This IPv6 address needs the network interface on the Home Assistant host.",
@@ -162,7 +173,7 @@
       "local_unsupported_brand": "This gateway brand is not supported by the documented local interface.",
       "local_incomplete_system": "The gateway system information is not complete yet. Try the read check again later.",
       "local_invalid_response": "A required gateway response could not be verified.",
-      "local_identity_unverified": "This system has not yet been matched unambiguously. The first setup requires an available PointT connection and matching gateway and module identifiers from both interfaces. Verified links can subsequently be used without the cloud.",
+      "local_identity_unverified": "This system has not yet been matched unambiguously. The first setup requires an available cloud access and matching gateway and module identifiers from both interfaces. Verified links can subsequently be used without the cloud.",
       "local_identity_conflict": "The gateway identity conflicts with the selected installation or another setup.",
       "local_configuration_changed": "The selected connection or installation changed. Close this dialog and review the current setup before continuing.",
       "local_pending_exists": "Another pending attempt exists for this installation or gateway address. Resume or deliberately discard it first.",
@@ -171,9 +182,9 @@
       "local_unexpected": "The local check could not be completed. The pending token, if received, is retained for recovery.",
       "local_confirmation_required": "Confirm this action explicitly before continuing.",
       "local_busy": "Local access is currently busy or paused. Wait before trying again.",
-      "local_cloud_auth_required": "Sign in to the cloud connection again so I can verify the first link. An already verified local connection starts independently of the cloud.",
+      "local_cloud_auth_required": "Sign in to the cloud access again so the first link can be verified. An already verified local access starts independently of the cloud.",
       "local_cloud_rate_limited": "The cloud is currently limiting requests. Wait for its pause to end, then retry the identity comparison.",
-      "local_cloud_unavailable": "I could not read the cloud system information. Check the cloud connection and retry the identity comparison.",
+      "local_cloud_unavailable": "The cloud system information could not be read. Check the cloud access and retry the identity comparison.",
       "local_auth_forbidden": "The gateway's sign-in service refused the request. Check that local access is allowed on the gateway, then try again.",
       "local_creation_uncertain": "It is unclear whether the gateway created a token, because its answer was incomplete. Continue with the pending attempt; a new token is not created automatically.",
       "local_plant_known": "This gateway already belongs to a configured system. Choose that system instead of a new one."
@@ -186,6 +197,8 @@
       "reauth_required": "The saved authorization is no longer valid. Close this dialog and select Reauthenticate for Bosch/Buderus Home Comfort.",
       "reauth_successful": "Sign-in was renewed successfully.",
       "reauth_wrong_account": "The selected account does not match the configured devices. Sign in with the original account.",
+      "reauth_no_targets": "This cloud access has no systems or devices left, and the account it belongs to cannot be confirmed. The previous credentials are kept. To use a cloud account again, remove the cloud access under Configure → Connections and connect it again.",
+      "reauth_successful_targets_missing": "Sign-in was renewed. {count} switched-on systems or devices were not found in the account; they stay configured. A repair note names them and explains how to forget them.",
       "reconfigure_successful": "The settings were saved. Bosch/Buderus Home Comfort is reloading and discovering all available resources again.",
       "connection_required": "Select the connection under Settings before signing in again.",
       "connection_settings_required": "Manage this access under Settings and Connections.",
@@ -502,7 +515,14 @@
       },
       "local_method": {
         "title": "Connect to the local gateway",
-        "description": "Sign in with the device label or use an existing access token. Local appliance access is read-only. When you change an existing access at the same address, you can also keep its current token.",
+        "description": "Sign in with the device label or use an existing access token. Local appliance access is read-only.",
+        "data": {
+          "method": "Sign-in method"
+        }
+      },
+      "local_method_keep": {
+        "title": "Connect to the local gateway again",
+        "description": "A new sign-in with the **device label** is recommended.\n\nKeep the current token only if you are sure that the certificate you are about to confirm belongs to your own gateway, for example right after an update or reset you started yourself. With this option, the stored token is sent to the device that presents the newly confirmed certificate. If that is not your gateway, it receives a working token for your system. Signing in with the device label is safer: the label details only work together with the buttons on the gateway, while a stored token works right away for anyone who receives it.\n\nLocal appliance access is read-only.",
         "data": {
           "method": "Sign-in method"
         }
@@ -558,7 +578,7 @@
       },
       "local_values": {
         "title": "Local values for existing entities",
-        "description": "When enabled, existing sensors use the local value of a reading that both connections provide under the same documented resource, as long as it is current. If the local value is outdated or missing, the current cloud value is used; if both are outdated, the sensor becomes unavailable. Energy, start and operating-time counters use the local value too, but only change their source when every shown count is at least the last shown count, so a source change never makes them count backwards. Adjustable settings keep using the cloud. Entity IDs, names and history stay unchanged. Controls and changes are still sent through the cloud.",
+        "description": "While the cloud is running, this option decides whether existing sensors use the local value of a reading that both accesses provide under the same documented resource. Without the cloud (switched off, sign-in required, paused, limited or unreachable), local values are always used. The option is on by default for new setups with cloud and local access.\n\nWhen enabled, the local value is used as long as it is current. If the local value is outdated or missing, the current cloud value is used; if both are outdated, the sensor becomes unavailable. Energy, start and operating-time counters use the local value too, but only change their source when every shown count is at least the last shown count, so a source change never makes them count backwards. Adjustable settings keep using the cloud. Entity IDs, names and history stay unchanged. Controls and changes are still sent through the cloud.",
         "data": {
           "enabled": "Use local values"
         }
@@ -625,7 +645,7 @@
       "local_unsupported_brand": "This gateway brand is not supported by the documented local interface.",
       "local_incomplete_system": "The gateway system information is not complete yet. Try the read check again later.",
       "local_invalid_response": "A required gateway response could not be verified.",
-      "local_identity_unverified": "This system has not yet been matched unambiguously. The first setup requires an available PointT connection and matching gateway and module identifiers from both interfaces. Verified links can subsequently be used without the cloud.",
+      "local_identity_unverified": "This system has not yet been matched unambiguously. The first setup requires an available cloud access and matching gateway and module identifiers from both interfaces. Verified links can subsequently be used without the cloud.",
       "local_identity_conflict": "The gateway identity conflicts with the selected installation or another setup.",
       "local_configuration_changed": "The selected connection or installation changed. Close this dialog and review the current setup before continuing.",
       "local_pending_exists": "Another pending attempt exists for this installation or gateway address. Resume or deliberately discard it first.",
@@ -635,9 +655,9 @@
       "local_confirmation_required": "Confirm this action explicitly before continuing.",
       "local_busy": "Local access is currently busy or paused. Wait before trying again.",
       "local_invalid_interval": "Choose 60 to 900 seconds in steps of 60 seconds.",
-      "local_cloud_auth_required": "Sign in to the cloud connection again so I can verify the first link. An already verified local connection starts independently of the cloud.",
+      "local_cloud_auth_required": "Sign in to the cloud access again so the first link can be verified. An already verified local access starts independently of the cloud.",
       "local_cloud_rate_limited": "The cloud is currently limiting requests. Wait for its pause to end, then retry the identity comparison.",
-      "local_cloud_unavailable": "I could not read the cloud system information. Check the cloud connection and retry the identity comparison.",
+      "local_cloud_unavailable": "The cloud system information could not be read. Check the cloud access and retry the identity comparison.",
       "local_auth_forbidden": "The gateway's sign-in service refused the request. Check that local access is allowed on the gateway, then try again.",
       "local_creation_uncertain": "It is unclear whether the gateway created a token, because its answer was incomplete. Continue with the pending attempt; a new token is not created automatically.",
       "cloud_local_first_other_entry": "This system is already set up through its local access in another entry of this integration. Add the cloud access in that entry instead.",
@@ -690,9 +710,10 @@
       "local_pending_saved": "The pending attempt is retained. You can resume it from local setup.",
       "local_storage_failed": "The private setup record could not be read or saved. Check Home Assistant storage before continuing.",
       "cloud_local_first_other_entry": "This system is already set up through its local access in another entry of this integration. Add the cloud access in that entry instead.",
-      "rescan_planned": "The search has been started. It runs with the next regular update; new parts appear as soon as they are found.",
+      "rescan_planned": "The search is planned and runs with the next regular update; new parts appear as soon as they are found.",
       "rescan_paused": "The search was not started: requests are paused right now (for example after the cloud asked for a pause). Please try again later.",
       "rescan_running": "A search is already running or planned. Please wait until it has finished.",
+      "rescan_partial": "The search is planned for the parts that are ready and runs with the next regular update. Parts that are paused right now were skipped; please try again later for them.",
       "rescan_unavailable": "The search was not started: no access to the system is ready right now."
     },
     "progress": {
@@ -701,7 +722,7 @@
   },
   "issues": {
     "repeated_rate_limit": {
-      "title": "Bosch/Buderus cloud requests are being limited",
+      "title": "Cloud requests are being limited",
       "fix_flow": {
         "step": {
           "confirm": {
@@ -729,7 +750,7 @@
       }
     },
     "managed_rate_limit": {
-      "title": "Bosch/Buderus cloud requests are being limited",
+      "title": "Cloud requests are being limited",
       "fix_flow": {
         "step": {
           "confirm": {
@@ -760,7 +781,11 @@
     },
     "local_certificate_changed": {
       "title": "Local gateway certificate changed",
-      "description": "The gateway of a local access presents a different certificate. The integration does not accept it on its own and stops reading locally. If you know why the certificate changed (for example after a gateway update or reset), open the integration options, choose the local access and select \"Change local access\". You confirm the new certificate there and can keep the current token, as long as the gateway address is unchanged."
+      "description": "The gateway of a local access presents a different certificate. The integration does not accept it on its own and stops reading locally. If you know why the certificate changed (for example after a gateway update or reset), open the integration options, choose the local access and select \"Change local access\". You confirm the new certificate there. A new sign-in with the device label is recommended; keep the current token only if you are sure the new certificate belongs to your own gateway."
+    },
+    "cloud_targets_not_found": {
+      "title": "Systems not found in the cloud account",
+      "description": "The last sign-in of the cloud access in \"{title}\" did not find {count} switched-on systems or devices (ending in {systems}). They stay configured and unavailable until they appear in the account again; this note then disappears.\n\nIf they were removed from the account, open Configure → Connections → the cloud access, switch them off under **Use for systems and devices** and remove them with **Forget deselected systems**. Their devices and entities stay in Home Assistant until you delete them. If a gateway was exchanged, keep it switched on: a separate repair note offers to continue the system with its history."
     },
     "gateway_exchange": {
       "title": "Gateway replaced?",
@@ -835,6 +860,9 @@
     }
   },
   "exceptions": {
+    "invalid_stored_configuration": {
+      "message": "The saved configuration of this entry cannot be read ({reason}). Nothing was changed. Restore a backup from before the problem, or delete the entry and add it again."
+    },
     "holiday_previous_request_found": {
       "message": "The earlier unresolved request is now confirmed. Your new inputs were not sent. Check the existing holiday under Configure → Manage holiday periods."
     },
@@ -966,9 +994,9 @@
     },
     "local_method": {
       "options": {
-        "label": "Device label",
+        "label": "Device label (recommended)",
         "token": "Existing token",
-        "keep": "Keep the current token"
+        "keep": "Keep the current token (not recommended)"
       }
     },
     "local_pending_action": {
@@ -1195,6 +1223,9 @@
       },
       "calculated_dew_point": {
         "name": "Dew point (calculated)"
+      },
+      "estimated_energy": {
+        "name": "Energy (estimated from current power)"
       },
       "heating_switch_program": {
         "name": "Heating time program",
@@ -1461,6 +1492,12 @@
           "not_supported_pairing_enabled": "Not supported: pairing enabled",
           "supported": "Supported",
           "in_evaluation": "Being evaluated"
+        }
+      },
+      "isrc_installation_status": {
+        "name": "iSRC installation status",
+        "state": {
+          "timeout": "Timed out"
         }
       },
       "heat_pump_type": {

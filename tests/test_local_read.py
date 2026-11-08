@@ -141,14 +141,15 @@ async def test_pacing_has_no_waiting_queue_and_counts_actual_header_time(
     gateways, clock, monkeypatch
 ):
     _, seen, _, binding = await gateways(success)
-    inspect = transport._inspect
+    resolve = transport._resolve
 
-    async def slow_inspection(*args, **kwargs):
-        result = await inspect(*args, **kwargs)
+    async def slow_connection(*args, **kwargs):
+        # Time spent before the request starts (address lookup, handshake).
+        result = await resolve(*args, **kwargs)
         clock.advance(0.125)
         return result
 
-    monkeypatch.setattr(transport, "_inspect", slow_inspection)
+    monkeypatch.setattr(transport, "_resolve", slow_connection)
     transport_client, budget = client(binding, clock)
     async with transport_client:
         assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
@@ -345,6 +346,26 @@ async def test_http_date_retry_after_is_kept_beyond_one_hour(gateways, clock):
         assert 7198 <= result.retry_after_seconds <= 7200
         assert result.retry_after_seconds == budget.remaining_seconds
         assert len(seen) == 1
+
+
+@pytest.mark.parametrize(
+    "header",
+    [
+        "999999999",
+        format_datetime(datetime.now(UTC) + timedelta(days=30)),
+    ],
+)
+async def test_retry_after_longer_than_one_day_is_shortened(gateways, clock, header):
+    async def reply(raw, writer):
+        writer.write(wire_reply(status=429, headers={"Retry-After": header}))
+        await writer.drain()
+
+    _, _, _, binding = await gateways(reply)
+    transport_client, budget = client(binding, clock)
+    async with transport_client:
+        result = await transport_client.read(REQUEST)
+        assert result.problem == ReadProblem.RATE_LIMITED
+        assert 86398 <= budget.remaining_seconds <= 86400
 
 
 async def test_successful_value_is_not_mutated_by_later_404_and_recovery(
@@ -931,3 +952,206 @@ async def test_zero_retry_after_keeps_minimum_spacing(gateways, clock):
         assert budget.remaining_seconds == 0.25 and result.retry_after_seconds == 0.25
         assert (await transport_client.read(REQUEST)).state is ReadState.DEFERRED
         assert len(seen) == 1
+
+
+# ------------------------------------------- one TLS connection per read (A3)
+
+
+@pytest.fixture
+def connections(monkeypatch):
+    """Every TLS connection the loopback gateways accept (after the handshake)."""
+    accepted = []
+    start_server = asyncio.start_server
+
+    async def counting(handle, *args, **kwargs):
+        async def counted(reader, writer):
+            accepted.append(writer)
+            await handle(reader, writer)
+
+        return await start_server(counted, *args, **kwargs)
+
+    monkeypatch.setattr(asyncio, "start_server", counting)
+    return accepted
+
+
+async def test_reads_after_the_first_need_one_tls_connection_each(
+    gateways, clock, connections
+):
+    _, seen, _, binding = await gateways(success)
+    transport_client, _ = client(binding, clock)
+    async with transport_client:
+        for _ in range(3):
+            assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
+            clock.advance()
+        # One certificate inspection, then only the pinned requests.
+        assert transport_client.metrics.tls_inspections == 1
+        assert len(seen) == 3 and len(connections) == 4
+
+
+async def test_changed_certificate_without_inspection_sends_no_token(
+    gateways, clock, connections
+):
+    server, seen, _, binding = await gateways(success)
+    port = server.sockets[0].getsockname()[1]
+    transport_client, _ = client(binding, clock)
+    async with transport_client:
+        assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
+        server.close()
+        await server.wait_closed()
+        _, replaced_seen, _, _ = await gateways(success, certificate=1, port=port)
+        clock.advance()
+        result = await transport_client.read(REQUEST)
+        assert result.state is ReadState.ACCESS_ERROR
+        assert result.problem == TransportFailure.TLS_CHANGED
+        assert result.http_requests == 0 and not replaced_seen
+        assert transport_client.metrics.tls_inspections == 1
+        clock.advance(500)
+        # Stopped: no further connection to the changed gateway.
+        count = len(connections)
+        again = await transport_client.read(REQUEST)
+        assert again.problem == TransportFailure.TLS_CHANGED
+        assert len(connections) == count and not replaced_seen
+    assert len(seen) == 1
+
+
+async def test_connection_failure_inspects_the_certificate_again(gateways, clock):
+    server, _, _, binding = await gateways(success)
+    port = server.sockets[0].getsockname()[1]
+    transport_client, budget = client(binding, clock)
+    async with transport_client:
+        assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
+        server.close()
+        await server.wait_closed()
+        clock.advance()
+        result = await transport_client.read(REQUEST)
+        assert result.problem == TransportFailure.CONNECT
+        await gateways(success, port=port)
+        clock.advance(budget.remaining_seconds)
+        assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
+        assert transport_client.metrics.tls_inspections == 2
+
+
+async def test_address_change_inspects_the_certificate_again(
+    gateways, clock, monkeypatch
+):
+    _, seen, _, binding = await gateways(success)
+    transport_client, _ = client(binding, clock)
+    async with transport_client:
+        assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
+        # The name now resolves to another address only.
+        monkeypatch.setattr(
+            transport, "_resolve", AsyncMock(return_value=("192.0.2.77",))
+        )
+        clock.advance()
+        inspect = AsyncMock(side_effect=LocalTransportError(TransportFailure.CONNECT))
+        monkeypatch.setattr(transport, "_inspect", inspect)
+        result = await transport_client.read(REQUEST)
+        assert result.problem == TransportFailure.CONNECT
+        inspect.assert_awaited_once()
+        assert len(seen) == 1
+
+
+# ------------------------------------- address reuse and health (O48, O93)
+
+
+async def test_a_resolved_address_is_reused_for_a_minute_only(
+    gateways, clock, monkeypatch
+):
+    _, seen, _, binding = await gateways(success)
+    resolve, calls = transport._resolve, []
+
+    async def counted(endpoint):
+        calls.append(endpoint)
+        return await resolve(endpoint)
+
+    monkeypatch.setattr(transport, "_resolve", counted)
+    now = [1000.0]
+    monkeypatch.setattr(reader, "monotonic", lambda: now[0])
+    transport_client, _ = client(binding, clock)
+    async with transport_client:
+        for _ in range(3):  # the first read resolves inside the inspection
+            assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
+            clock.advance()
+            now[0] += 10
+        assert len(calls) == 2  # inspection, then one checked resolution
+        now[0] += reader.RESOLVE_REUSE_SECONDS
+        assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
+        assert len(calls) == 3 and len(seen) == 4
+        assert transport_client.metrics.tls_inspections == 1
+
+
+async def test_a_connection_failure_resolves_the_address_again(gateways, clock):
+    server, _, _, binding = await gateways(success)
+    port = server.sockets[0].getsockname()[1]
+    transport_client, budget = client(binding, clock)
+    async with transport_client:
+        assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
+        clock.advance()
+        assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
+        assert transport_client._resolved is not None
+        server.close()
+        await server.wait_closed()
+        clock.advance()
+        assert (await transport_client.read(REQUEST)).problem == (
+            TransportFailure.CONNECT
+        )
+        assert transport_client._resolved is None and transport_client._peer is None
+        await gateways(success, port=port)
+        clock.advance(budget.remaining_seconds)
+        assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
+
+
+async def test_health_counts_failure_classes_times_and_deferrals(gateways, clock):
+    replies = iter((200, 404, 403, 500))
+
+    async def reply(raw, writer):
+        status = next(replies)
+        writer.write(wire_reply(payload() if status == 200 else b"{}", status=status))
+        await writer.drain()
+
+    _, _, _, binding = await gateways(reply)
+    transport_client, budget = client(binding, clock)
+    async with transport_client:
+        assert transport_client.health() == {
+            "failures_by_class": {},
+            "response_times": {"samples": 0},
+            "deferred_reasons": {},
+        }
+        for _ in range(4):
+            await transport_client.read(REQUEST)
+            clock.advance(budget.remaining_seconds or 1)
+        # The 500 paused the access: the next read is deferred.
+        budget.defer(60)
+        assert (await transport_client.read(REQUEST)).state is ReadState.DEFERRED
+        health = transport_client.health()
+        assert health["failures_by_class"] == {
+            "http_4xx": 1,
+            "http_5xx": 1,
+            "not_found": 1,
+        }
+        assert health["deferred_reasons"] == {"paused": 1}
+        times = health["response_times"]
+        assert times["samples"] == 4
+        assert 0 < times["average_ms"] <= times["p95_ms"] <= times["maximum_ms"]
+        assert "127.0.0.1" not in json.dumps(health) and PATH not in json.dumps(health)
+
+
+@pytest.mark.parametrize(
+    "status,problem,expected",
+    [
+        (None, TransportFailure.TIMEOUT, "timeout"),
+        (None, TransportFailure.TLS, "tls"),
+        (None, TransportFailure.TLS_CHANGED, "tls"),
+        (404, ReadProblem.NOT_FOUND, "not_found"),
+        (403, ReadProblem.FORBIDDEN, "http_4xx"),
+        (429, ReadProblem.RATE_LIMITED, "http_4xx"),
+        (503, ReadProblem.SERVICE_UNAVAILABLE, "http_5xx"),
+        (None, TransportFailure.CONNECT, "connection"),
+        (None, TransportFailure.DNS, "connection"),
+        (200, TransportFailure.INVALID_RESPONSE, "other"),
+    ],
+)
+def test_failure_classes(status, problem, expected):
+    result = reader.ReadResult(REQUEST, ReadState.PATH_ERROR, status, problem)
+    assert reader._failure_class(result) == expected
+    assert reader._failure_class(replace(result, state=ReadState.SUCCESS)) is None

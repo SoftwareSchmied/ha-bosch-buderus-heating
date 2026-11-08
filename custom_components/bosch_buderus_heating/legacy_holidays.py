@@ -6,6 +6,7 @@ import math
 import re
 from collections.abc import Mapping
 from datetime import date
+from functools import lru_cache
 
 from .pointt import Resource
 
@@ -27,6 +28,7 @@ def is_icom_slot(path: str) -> bool:
     return ICOM_SLOT_PATTERN.fullmatch(path) is not None
 
 
+@lru_cache(maxsize=4096)
 def is_legacy_holiday_path(path: str) -> bool:
     """Identify only the documented resources, including circuit activation."""
     return (

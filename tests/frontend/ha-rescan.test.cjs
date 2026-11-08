@@ -26,7 +26,7 @@ const path = require("node:path");
     ? {
       entry: "Anlage neu durchsuchen",
       configure: "Konfigurieren",
-      planned: "Die Suche wurde gestartet.",
+      planned: "Die Suche ist geplant und läuft",
       running: "Eine Suche läuft bereits oder ist geplant.",
       paused: "Die Suche wurde nicht gestartet: Anfragen sind gerade pausiert",
       submit: /^(Absenden|Weiter|OK)$/i,
@@ -34,7 +34,7 @@ const path = require("node:path");
     : {
       entry: "Search the system again",
       configure: "Configure",
-      planned: "The search has been started.",
+      planned: "The search is planned and runs",
       running: "A search is already running or planned.",
       paused: "The search was not started: requests are paused right now",
       submit: /^(Submit|Next|OK)$/i,

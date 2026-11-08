@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from dataclasses import dataclass, field
 from typing import Any, cast
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .auth_lifecycle import (
@@ -18,7 +19,7 @@ from .auth_lifecycle import (
     forget_connection_auth,
 )
 from .bacon.flow import discover
-from .bacon.models import BaconError
+from .bacon.models import BaconError, account_key, token_subject
 from .configuration import (
     CLOUD_KIND,
     LOCAL_KIND,
@@ -29,14 +30,165 @@ from .configuration import (
     validate_cloud_credentials,
 )
 from .configuration_access import EntryConfiguration
-from .const import PollingProfile
+from .const import DOMAIN, PollingProfile
 from .data import tokens_to_data
 from .pointt import AuthTokens, PointTClient
+from .repair_scope import repair_data, repair_id
+
+# Switched-on systems a new sign-in did not find; they stay configured.
+TARGETS_NOT_FOUND_PREFIX = "cloud_targets_not_found_"
 
 
 def section(data: JsonObject, name: str) -> dict[str, JsonObject]:
     """Use a collection from an already validated snapshot."""
     return cast(dict[str, JsonObject], data[name])
+
+
+def signed_in_account(tokens: AuthTokens) -> str | None:
+    """Hash of the sign-in's account subject, or ``None`` if unreadable.
+
+    Only the hash is ever stored, never the subject itself.
+    """
+    try:
+        return account_key(token_subject(tokens.access_token))
+    except BaconError:
+        return None
+
+
+def account_evidence(account: str | None) -> JsonObject | None:
+    """The stored form of an account hash for a cloud connection."""
+    return {"account_key": account} if account else None
+
+
+def stored_account(connection: JsonObject) -> str | None:
+    """The account hash a cloud access belongs to, if known.
+
+    New accesses store it as account evidence; older ones still have the
+    hash of the account their additional cloud devices were found with.
+    """
+    evidence = connection.get("account_evidence")
+    if isinstance(evidence, dict):
+        key = evidence.get("account_key")
+        if isinstance(key, str) and key:
+            return key
+    legacy = connection.get("legacy_bacon_account")
+    return legacy if isinstance(legacy, str) and legacy else None
+
+
+def _not_found_issue_id(entry: ConfigEntry[Any], connection_id: str) -> str:
+    return repair_id(TARGETS_NOT_FOUND_PREFIX, entry, connection_id)
+
+
+@callback
+def not_found_bindings(
+    hass: HomeAssistant, entry: ConfigEntry[Any], connection_id: str
+) -> tuple[str, ...]:
+    """The bindings a repair note currently names as not found, if any."""
+    issue = ir.async_get(hass).async_get_issue(
+        DOMAIN, _not_found_issue_id(entry, connection_id)
+    )
+    value = (issue.data or {}).get("bindings") if issue is not None else None
+    if not isinstance(value, str):
+        return ()
+    return tuple(key for key in value.split(",") if key)
+
+
+@callback
+def set_not_found_issue(
+    hass: HomeAssistant,
+    entry: ConfigEntry[Any],
+    snapshot: ConfigurationSnapshot,
+    connection_id: str,
+    binding_ids: Collection[str],
+) -> None:
+    """Name switched-on systems a sign-in did not find; remove the note otherwise.
+
+    Only existing, switched-on bindings of this access are named. The texts
+    show the last four characters of each identifier, as the selection does.
+    """
+    issue_id = _not_found_issue_id(entry, connection_id)
+    options = section(snapshot.to_options(), "bindings")
+    kept = sorted(
+        key
+        for key in set(binding_ids)
+        if (binding := snapshot.bindings.get(key)) is not None
+        and binding.connection_id == connection_id
+        and options[key]["enabled"]
+    )
+    if not kept:
+        ir.async_delete_issue(hass, DOMAIN, issue_id)
+        return
+    if tuple(kept) == not_found_bindings(hass, entry, connection_id):
+        return
+    names = ", ".join(
+        str(cast(JsonObject, snapshot.bindings[key].to_data()["locator"])["value"])[-4:]
+        for key in kept
+    )
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        issue_id,
+        is_fixable=False,
+        is_persistent=True,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key="cloud_targets_not_found",
+        translation_placeholders={
+            "title": entry.title,
+            "count": str(len(kept)),
+            "systems": names,
+        },
+        data={**repair_data(entry, connection_id), "bindings": ",".join(kept)},
+    )
+
+
+@callback
+def sync_not_found_issues(
+    hass: HomeAssistant,
+    entry: ConfigEntry[Any],
+    snapshot: ConfigurationSnapshot,
+    *,
+    found: Callable[[str], bool] = lambda _: False,
+) -> None:
+    """Keep the "not found" notes of an entry current.
+
+    A system that delivers data again, was switched off, forgotten or whose
+    access was removed is no longer named. Never sends a request.
+    """
+    registry = ir.async_get(hass)
+    for (domain, issue_id), issue in tuple(registry.issues.items()):
+        data = issue.data or {}
+        if (
+            domain != DOMAIN
+            or not issue_id.startswith(TARGETS_NOT_FOUND_PREFIX)
+            or data.get("entry_id") != entry.entry_id
+        ):
+            continue
+        connection = data.get("connection_id")
+        if not isinstance(connection, str) or connection not in snapshot.connections:
+            ir.async_delete_issue(hass, DOMAIN, issue_id)
+            continue
+        listed = not_found_bindings(hass, entry, connection)
+        set_not_found_issue(
+            hass,
+            entry,
+            snapshot,
+            connection,
+            [key for key in listed if not found(key)],
+        )
+
+
+@callback
+def clear_not_found_issues(hass: HomeAssistant, entry_id: str) -> None:
+    """Every "not found" note of a removed entry, loaded or not."""
+    registry = ir.async_get(hass)
+    for domain, issue_id in tuple(registry.issues):
+        issue = registry.issues[(domain, issue_id)]
+        if (
+            domain == DOMAIN
+            and issue_id.startswith(TARGETS_NOT_FOUND_PREFIX)
+            and (issue.data or {}).get("entry_id") == entry_id
+        ):
+            ir.async_delete_issue(hass, DOMAIN, issue_id)
 
 
 @dataclass(frozen=True, slots=True)
@@ -140,6 +292,8 @@ class ConfigurationManagement:
             self.hass.config_entries.async_update_entry(
                 self.entry, data=snapshot.to_data(), options=snapshot.to_options()
             )
+        # A switched-off, forgotten or removed system is no longer "not found".
+        sync_not_found_issues(self.hass, self.entry, snapshot)
         for listener in tuple(self._listeners):
             listener(snapshot)
         return snapshot
@@ -296,18 +450,18 @@ class ConfigurationManagement:
     def forget_bindings(
         self, edit: ConnectionEdit, binding_ids: set[str]
     ) -> ConfigurationSnapshot:
-        """Forget switched-off systems of a cloud access (P50, R1).
+        """Forget switched-off systems and devices of a cloud access (P50, R1).
 
-        Only deselected PointT systems of this access. Their targets, the
-        Home Assistant devices and entities stay; a later sign-in no longer
-        needs to see them.
+        Only deselected systems (PointT) and devices of this access. Their
+        targets, the Home Assistant devices and entities stay; a later sign-in
+        no longer needs to see them.
         """
         before = self._checked(edit)
         options_before = section(before.to_options(), "bindings")
         if not binding_ids or any(
             (binding := before.bindings.get(key)) is None
             or binding.connection_id != edit.connection_id
-            or binding.adapter != "pointt"
+            or binding.adapter not in ("pointt", "bacon")
             or options_before[key]["enabled"]
             for key in binding_ids
         ):
@@ -448,10 +602,16 @@ class ConfigurationManagement:
         *,
         request_guard: Callable[[], None] = lambda: None,
     ) -> ConfigurationSnapshot:
-        """Confirm every assigned target using the new authenticated session.
+        """Confirm the account using the new authenticated session.
 
-        A successful subset is not proof for the remaining targets. Unavailable
-        services leave the old credentials untouched and surface a retryable error.
+        A stored account (its hash) must match the sign-in; another account
+        is refused. Without a stored account, at least one switched-on system
+        or device must be listed (any assigned one while all are switched
+        off), and an access without any system cannot be confirmed at all.
+        Switched-off systems are not looked up and never block.
+        Switched-on systems the listing lacks stay configured and are named in
+        a repair note that explains how to forget them. Unavailable services
+        leave the old credentials untouched and surface a retryable error.
         """
 
         def ensure_current() -> None:
@@ -465,23 +625,40 @@ class ConfigurationManagement:
         validate_cloud_credentials(tokens_to_data(tokens))
         configuration = EntryConfiguration(self.entry, edit.connection_id)
         selected = configuration.cloud_data()
-        gateways = set(selected["gateway_ids"])
-        devices = set(selected["bacon_device_ids"])
-        assigned = [
-            item
-            for item in before.bindings.values()
+        # A stored account must match; only without one do the systems the
+        # sign-in can see confirm it.
+        evidence = stored_account(before.connections[edit.connection_id].to_data())
+        signed_in = signed_in_account(tokens)
+        if evidence is not None and signed_in is not None and signed_in != evidence:
+            raise ConfigurationError("reauth_wrong_account")
+        confirmed = evidence is not None and signed_in == evidence
+        assigned = {
+            key: item
+            for key, item in before.bindings.items()
             if item.connection_id == edit.connection_id
-        ]
-        if not assigned or any(
-            item.adapter not in ("pointt", "bacon") for item in assigned
-        ):
+        }
+        if not assigned:
+            # Nothing left to look up: only the stored account can confirm it.
+            if not confirmed:
+                raise ConfigurationError("reauth_no_targets")
+            ensure_current()
+            return self._save_reauthentication(edit, tokens, signed_in, set())
+        if any(item.adapter not in ("pointt", "bacon") for item in assigned.values()):
             raise ConfigurationError("unverifiable_targets")
+        binding_options = section(before.to_options(), "bindings")
+        enabled = {key for key in assigned if binding_options[key]["enabled"]}
+        candidates = enabled or set(assigned)
+        locators = {
+            key: str(cast(JsonObject, item.to_data()["locator"])["value"])
+            for key, item in assigned.items()
+        }
         session = async_get_clientsession(self.hass)
         backoff = connection_backoff(self.hass, before.owner_id, edit.connection_id)
         resources = connection_resources(self.hass, before.owner_id, edit.connection_id)
         backoff.raise_if_active()
-        if gateways:
-            visible = await PointTClient(
+        visible: set[str] = set()
+        if any(assigned[key].adapter == "pointt" for key in candidates):
+            listed = await PointTClient(
                 session,
                 tokens.access_token,
                 backoff=backoff,
@@ -489,9 +666,17 @@ class ConfigurationManagement:
                 request_semaphore=resources.semaphore,
                 request_guard=ensure_current,
             ).get_gateways()
-            if not gateways.issubset(item.gateway_id for item in visible):
-                raise ConfigurationError("reauth_targets_missing")
-        if devices:
+            gateway_ids = {item.gateway_id for item in listed}
+            visible.update(
+                key
+                for key, item in assigned.items()
+                if item.adapter == "pointt" and locators[key] in gateway_ids
+            )
+        # Switched-on devices are looked up to name missing ones; switched-off
+        # ones only while no system has confirmed the account yet.
+        if any(assigned[key].adapter == "bacon" for key in candidates) and (
+            enabled or not visible
+        ):
             ensure_current()
             backoff.raise_if_active()
             try:
@@ -506,11 +691,25 @@ class ConfigurationManagement:
                 if error.category == "rate_limited":
                     backoff.activate(error.retry_after)
                 raise
-            if account != selected.get("bacon_account") or not devices.issubset(
-                visible_devices
-            ):
-                raise ConfigurationError("reauth_targets_missing")
+            if account != selected.get("bacon_account"):
+                raise ConfigurationError("reauth_wrong_account")
+            visible.update(
+                key
+                for key, item in assigned.items()
+                if item.adapter == "bacon" and locators[key] in visible_devices
+            )
+        if not confirmed and not visible & candidates:
+            raise ConfigurationError("reauth_targets_missing")
         ensure_current()
+        return self._save_reauthentication(edit, tokens, signed_in, enabled - visible)
+
+    def _save_reauthentication(
+        self,
+        edit: ConnectionEdit,
+        tokens: AuthTokens,
+        signed_in: str | None,
+        missing: set[str],
+    ) -> ConfigurationSnapshot:
         latest = self._checked(edit)
         data, options = latest.to_data(), latest.to_options()
         connection = section(data, "connections")[edit.connection_id]
@@ -519,4 +718,10 @@ class ConfigurationManagement:
             **tokens_to_data(tokens),
         }
         connection["auth_epoch"] = latest.connections[edit.connection_id].auth_epoch + 1
-        return self._save(data, options)
+        if connection.get("account_evidence") is None and signed_in is not None:
+            # Accepted by the stored account or its systems: later sign-ins
+            # must match this account (only its hash is stored).
+            connection["account_evidence"] = account_evidence(signed_in)
+        result = self._save(data, options)
+        set_not_found_issue(self.hass, self.entry, result, edit.connection_id, missing)
+        return result

@@ -279,6 +279,44 @@ async def test_private_unknown_resources_lose_their_entity(hass) -> None:
         ("errorCode", False),
         ("pumpSpeed", False),
         ("supplyTemperature", False),
+        # 0.9.0-alpha.2: more identifiers, addresses and locations.
+        ("geolocation", True),
+        ("siteGeoLocation", True),
+        ("latLong", True),
+        ("latlong", True),
+        ("gpsPosition", True),
+        ("nodeIdentifier", True),
+        ("IDs", True),
+        ("gatewayIds", True),
+        ("gatewayIDs", True),
+        ("moduleNo", True),
+        ("SerNo", True),
+        ("customerNumber", True),
+        ("houseNumber", True),
+        ("bssid", True),
+        ("wifiBssid", True),
+        ("hostname", True),
+        ("hostName", True),
+        ("netmask", True),
+        ("subnetMask", True),
+        ("netMask", True),
+        ("ipaddr", True),
+        ("ipAddr", True),
+        ("gatewayAddr", True),
+        # Real readings stay: "No" only as its own last word, never inside
+        # a word or for a count.
+        ("numberOfStarts", False),
+        ("NoOfStarts", False),
+        ("No", False),
+        ("nominalPower", False),
+        ("noiseLevel", False),
+        ("lowNoiseMode", False),
+        ("pumpNumber", False),
+        ("compressorStarts", False),
+        ("longTermAverage", False),
+        ("houseHeatingDemand", False),
+        ("maskedAlarms", False),
+        ("idsPresent", False),
     ],
 )
 def test_identifier_words(name, private) -> None:
@@ -350,3 +388,28 @@ async def test_a_child_of_an_unknown_node_is_never_retired(hass) -> None:
     _remove_retired_entities(hass, entry, (coordinator,))
     assert registry.async_get(own.entity_id) is None
     assert registry.async_get(child.entity_id) is not None
+
+
+@pytest.mark.parametrize(
+    "parent",
+    ["customerData", "host", "moduleNo", "gpsUnit", "deviceIdentifiers", "subnetA"],
+)
+def test_newer_identifier_words_only_retire_by_the_last_segment(parent) -> None:
+    from custom_components.bosch_buderus_heating.resource_catalog import (
+        unknown_never_entity,
+    )
+
+    # A reading below a parent with a newer word is not retired for it.
+    below = resource(f"/system/{parent}/supplyTemperature", 21.0)
+    assert not unknown_never_entity(below)
+    # As the last segment the word still counts.
+    assert unknown_never_entity(resource(f"/system/{parent}", 21.0))
+
+
+@pytest.mark.parametrize("parent", ["macInfo", "serialData", "ipSettings", "pinCode"])
+def test_earlier_identifier_words_still_retire_a_whole_subtree(parent) -> None:
+    from custom_components.bosch_buderus_heating.resource_catalog import (
+        unknown_never_entity,
+    )
+
+    assert unknown_never_entity(resource(f"/system/{parent}/supplyTemperature", 1.0))

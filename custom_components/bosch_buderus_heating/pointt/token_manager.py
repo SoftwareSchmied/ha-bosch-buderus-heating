@@ -16,6 +16,10 @@ from .transport import RateLimitBackoff
 
 _LOGGER = logging.getLogger(__name__)
 
+# Refresh while at least this much lifetime remains. Requests only check the
+# token when they run, so a smaller margin was often met with 30-40 s left.
+REFRESH_MARGIN_SECONDS = 120.0
+
 
 class OAuthTokenClient(Protocol):
     """Token refresh interface required by TokenManager."""
@@ -59,7 +63,7 @@ class TokenManager:
         persist: PersistTokens,
         *,
         clock: Callable[[], float] = time,
-        refresh_margin: float = 60.0,
+        refresh_margin: float = REFRESH_MARGIN_SECONDS,
         backoff: RateLimitBackoff | None = None,
         observer: RefreshObserver | None = None,
     ) -> None:

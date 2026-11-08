@@ -94,7 +94,8 @@ while the heat pump defrosts, because defrosting takes heat back from the
 heating water; I observed drops of up to about 1 kWh within a few minutes on my
 installation, through the cloud and the local access alike. Such a decrease
 must not start a new meter cycle, and Home Assistant records it as a small
-negative amount. If a `total_increasing` counter drops to a lower
+negative amount: the energy dashboard can show small negative hourly values of
+the produced heat during defrosting. If a `total_increasing` counter drops to a lower
 non-negative value after a reset or device replacement, Home Assistant treats
 this as a new meter cycle, not negative consumption. For the `total` entities,
 such a reset appears as one large negative amount in the long-term statistics
@@ -191,7 +192,7 @@ because their values cover every gateway selected for that account.
 
 | Entity | HA type | Value | Default | Additional cloud requests |
 |---|---|---|:---:|:---:|
-| PointT API requests total | Diagnostic sensor | Actual HTTP attempts since the integration started | Disabled | None |
+| PointT API requests total | Diagnostic sensor, state class `total` | Actual HTTP attempts since the integration started | Disabled | None |
 | PointT API requests – last hour | Diagnostic sensor | Actual HTTP attempts in rolling minute buckets | Disabled | None |
 | PointT API response time – last hour | Duration diagnostic sensor | Average successful response time; p95, maximum, latest, and sample count as attributes | Disabled | None |
 
@@ -199,6 +200,15 @@ Bulk calls, single reads, fallback reads, writes, and retries are counted by
 the HTTP transport. A retry therefore adds another request. The full sanitized
 recent-attempt list is available in downloaded Home Assistant diagnostics, not
 as entity attributes. See [Diagnostics and request metrics](diagnostics.md).
+
+Since 0.9.0-alpha.2 these sensors check their values once a minute and write a
+new state only when a shown value changed, at most once per minute; the last
+counts are written when Home Assistant stops. The observation time and the
+per-category counters (by category, method, type, status and outcome) are
+still shown as attributes but no longer recorded, which keeps the database
+much smaller. The total request sensor starts again at zero with each start
+of the integration; its `last_reset` is that start, so its statistics do not
+treat the new start as a drop.
 
 ## Faults and notifications
 
@@ -272,11 +282,11 @@ counters—not holiday dates, names, or raw configuration data.
 | Software prefix | Diagnostic sensor | `/gateway/swPrefix` | No | No | startup only |
 | Data processing status (disabled) | Diagnostic sensor | `/gateway/dataProcessing/status` | No | No | startup only |
 | Time zone | Diagnostic sensor | `/gateway/tzInfo/timeZone` | Yes | No | 5 min |
-| Software update – current progress | Diagnostic sensor | `/gateway/update/status` → `progress.cur_percent` | No | No | 60 s |
-| Software update – current step | Diagnostic sensor | `/gateway/update/status` → `progress.cur_step` | No | No | 60 s |
-| Software update – total steps | Diagnostic sensor | `/gateway/update/status` → `progress.nsteps` | No | No | 60 s |
-| Software update – progress | Diagnostic sensor | `/gateway/update/status` → `progress.percent` | No | No | 60 s |
-| Software update – status | Diagnostic sensor | `/gateway/update/status` → `status.value` | No | No | 60 s |
+| Software update – current progress | Diagnostic sensor | `/gateway/update/status` → `progress.cur_percent` | No | No | 15 min |
+| Software update – current step | Diagnostic sensor | `/gateway/update/status` → `progress.cur_step` | No | No | 15 min |
+| Software update – total steps | Diagnostic sensor | `/gateway/update/status` → `progress.nsteps` | No | No | 15 min |
+| Software update – progress | Diagnostic sensor | `/gateway/update/status` → `progress.percent` | No | No | 15 min |
+| Software update – status | Diagnostic sensor | `/gateway/update/status` → `status.value` | No | No | 15 min |
 | Firmware version | Diagnostic sensor | `/gateway/versionFirmware` | No | No | startup only |
 | Hardware version | Diagnostic sensor | `/gateway/versionHardware` | No | No | startup only |
 | Current heat demand | Sensor | `/heatSources/actualHeatDemand` | No | No | 60 s |
@@ -313,10 +323,10 @@ counters—not holiday dates, names, or raw configuration data.
 | Season switching | Select | `/system/seasonOptimizer/mode` | Capability-dependent | Yes, with advertised options and write permission | 5 min; read back after change |
 | Current heating/cooling status (disabled) | Diagnostic sensor | `/system/globalSeasonOptimizer/currentMode` | No | No | 60 s |
 | iSRC support (disabled) | Diagnostic sensor | `/system/iSRC/supportStatus` | No | No | startup only |
-| Outdoor temperature source | Diagnostic sensor | `/system/sensors/temperatures/outdoorTemperatureSource` | No | No | 60 s |
+| Outdoor temperature source | Diagnostic sensor | `/system/sensors/temperatures/outdoorTemperatureSource` | No | No | 15 min |
 | Outdoor temperature | Sensor | `/system/sensors/temperatures/outdoor_t1` | No | No | 15 min |
 | System type | Diagnostic sensor | `/system/type` | No | No | startup only |
-| Support status | Diagnostic sensor | `/system/variableTariff/supportStatus` | No | No | 60 s |
+| Support status | Diagnostic sensor | `/system/variableTariff/supportStatus` | No | No | startup only |
 
 The system-pressure sensor also receives the six validated limits as numeric
 attributes with the unit in each attribute name:
@@ -327,6 +337,21 @@ attributes with the unit in each attribute name:
 states. Attributes and status are created only when all six values are numeric,
 finite, non-negative, and plausibly ordered. Systems without complete pressure
 range information therefore receive no invented limits.
+
+The iSRC installation status, the iSRC support status and the season
+switching shown as a read-only sensor show translated states. Device spellings such as `TIMEOUT`, `SUPPORTED` or
+`forcedHeat` become the states `timeout`, `supported` and `forced_heat`; an
+unknown value stays as reported. Since 0.9.0-alpha.2 the state values of these
+entities are therefore different: automations and templates that check the
+raw values need the new ones.
+
+The software update status, the outdoor temperature source, the iSRC
+installation status and the variable-tariff support status rarely change.
+Since 0.9.0-alpha.2 the last two are read at startup only and the first two
+with the long-term values (15 minutes, 30 minutes with the cloud-friendly
+profile). Lists and containers
+that only reveal new devices, zones, solar circuits or ventilation zones and
+give no entity (for example `/devices/list` or `/zones/list`) are read hourly.
 
 Some K40 gateways serve the status paths above without listing them in the
 PointT reference tree. The integration probes only this bounded, documented
@@ -546,17 +571,18 @@ stored inventory or from its local readings alone (see
 | --- | --- |
 | yes | current supply setpoint, volume flow (L/h), compressor and electric heater power (W), refrigerant circuit status, heating circuit pump, thermal disinfection running, silent mode, utility power block |
 | no | cylinder temperature (the same value as the hot water temperature), hot gas, suction gas, high- and low-pressure, liquid line (heating and cooling), compressor and evaporator temperatures; outdoor fan, heat carrier pump and compressor speed (%); additional heater flow temperature; a second compressor power reading and a coarse electric heater power; ventilation readings: exhaust, extract, outdoor and supply air temperatures, indoor, outdoor and highest humidity (%), indoor, outdoor and highest air quality (ppm, no device class), exhaust and supply fan power, summer bypass flap and auxiliary heater power (%), exhaust fan speed (rpm), supply fan speed (no device class or statistics), run time and filter remaining time (min, no statistics) and the exhaust fan level |
-| no, diagnostic | the controller's other internal signals (`/signals/…`) with numeric readings: unit taken from the reading, no long-term statistics, meaning not documented in detail. Identifiers, addresses or keys (for example the energy-management link ID) and free text are never offered. |
+| no, diagnostic | the controller's other internal signals (`/signals/…`) with numeric readings: unit taken from the reading, long-term statistics when that unit is one of a measurement (not for run and remaining times), meaning not documented in detail. Identifiers, addresses or keys (for example the energy-management link ID) and free text are never offered. |
 
 The controller's signals are offered as follows. Signals reported as true or
-false are on/off states; compressor, hot water valve, four-way valve, electric
+false, also as declared TRUE/FALSE states, are on/off states (`on`/`off`, not
+`true`/`false`, since 0.9.0-alpha.2); compressor, hot water valve, four-way valve, electric
 heater stages 1 to 3, drip pan and crankcase heaters, heating pump, cooling,
 low-noise mode, low heating volume flow and an overheated inverter are enabled.
 Signals that declare named states without a unit are states; season mode,
 heating/cooling state and smart grid mode are enabled, the holiday slots and
 other states disabled. A signal with a unit stays a number: its named marker
 states (for example an open sensor) show no value. Damped outdoor temperature,
-drip pan temperature, compressor power, expansion valve opening, the
+drip pan temperature, heat output (compressor), expansion valve opening, the
 compressor run times for heating, hot water and cooling (shown in hours, no
 long-term statistics) and the heating circuit 1 volume flow are enabled. An
 **Installation date** sensor is derived from the three installation date
@@ -567,6 +593,11 @@ When an existing entity of a signal gets its reviewed form, it keeps its
 unique ID and entity ID; its device class, unit or state class may change. A
 run time that was shown in seconds keeps that unit (choose hours in the entity
 settings if you like); new ones start in hours.
+
+The signal formerly named "Compressor power" is called "Heat output
+(compressor)" since 0.9.0-alpha.2: its value matches the heat meter, so it is
+the heat output, not the electric power. Its entity ID stays; a name you set
+yourself stays as well.
 
 Hybrid systems with an HM200 hybrid manager report additional readings of the
 outdoor unit and the hybrid manager through the local access: temperatures of
@@ -619,6 +650,38 @@ provides `electricity`. When it falls back to the complete sum of `compressor`
 and `eheater`, it reports `value_source: calculated` and documents the formula
 in its `calculation` attribute. Its entity name remains stable because the
 source may change between responses.
+
+### Energy estimated from current power
+
+Some appliances report a heat source's current power
+(`/heatSources/{hs}/actualPower`, kW) but no consumption or energy counter.
+For each such heat source, and only when neither the heat source nor the
+plant has a native counter (`…Consumption` or `emon/…`), the integration
+creates **Energy (estimated from current power)**. It adds up the reported
+power over time (a left Riemann sum: each reading counts until the next one)
+and reports kWh with the state class `total_increasing`. The attributes state
+that the value is an estimate, the method, the polling interval and the
+longest gap that is still counted.
+
+It is an estimate, not a meter reading:
+
+- Its accuracy depends on the polling interval; short changes between two
+  readings are not seen.
+- Two readings are only combined when they are at most three polling
+  intervals and at most 30 minutes apart. Across a longer gap, an unavailable
+  or expired reading, an error value, negative power, or a change between the
+  local and the cloud reading, nothing is counted; the total stays where it
+  was and counting starts again with the next reading.
+- It is not confirmed whether the reported power is the fuel input (for
+  example gas) or the delivered heat. The name therefore says neither.
+- The total never decreases and survives restarts; the first reading after a
+  restart only sets the new starting point.
+
+The entity is disabled by default and counts only from the moment it is
+enabled; earlier periods cannot be filled in. To use it in the energy
+dashboard, enable it, wait for the first statistics (up to one hour), and add
+it, for example, under gas consumption, which accepts kWh. I have not yet
+confirmed this entity on a real device.
 
 ## Optional capabilities
 

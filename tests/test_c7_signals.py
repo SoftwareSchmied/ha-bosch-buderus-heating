@@ -139,7 +139,16 @@ def test_a_name_map_without_a_unit_is_a_state() -> None:
     sensor, value = shown(
         signal("SC.DHW1.SD.ExtraActive", 1, state={"TRUE": 1, "FALSE": 0})
     )
-    assert (value, sensor.definition.translation_key) == ("true", "signal_true_false")
+    # O107: a TRUE/FALSE map is an on/off state like a true/false text.
+    assert (value, sensor.definition.translation_key) == ("on", "on_off_state")
+    assert (sensor.definition.kind, sensor.options) == (FLAG, ("on", "off"))
+    assert shown(signal("SC.DHW1.SD.ExtraActive", 0, state={"TRUE": 1, "FALSE": 0}))[
+        1
+    ] == ("off")
+    # Declared true/false text values: the same on/off state.
+    sensor, value = shown(signal("SRC.Some.Flag", "FALSE", allowed=["TRUE", "FALSE"]))
+    assert (sensor.definition.kind, value) == (FLAG, "off")
+    assert sensor.definition.translation_key == "on_off_state"
     sensor, value = shown(
         signal(
             "SRC.CUHP.SmartGridMode",

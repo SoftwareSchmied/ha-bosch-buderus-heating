@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -680,3 +681,91 @@ def test_global_start_counter_registry_is_independent(
     _remove_retired_entities(hass, entry, (coordinator,))
 
     assert registry.async_get(global_counter.entity_id) is not None
+
+
+def _setup_stores(started, done, *, budget_error=None, pause_error=None):
+    """Stand-ins for the stores async_setup loads; all must start together."""
+    together = asyncio.Event()
+
+    def load(name, error=None):
+        async def run(*_args):
+            started.append(name)
+            if len(started) == 3:
+                together.set()
+            await asyncio.wait_for(together.wait(), 5)
+            if error is not None:
+                raise error
+            done.append(name)
+
+        return run
+
+    budget = SimpleNamespace(initialize=load("budget", budget_error))
+
+    async def journal_step(*_args):
+        assert "budget" in done  # the journal reads pauses from the budget
+        done.append("journal")
+
+    journal = SimpleNamespace(records=journal_step, initialize=journal_step)
+    package = "custom_components.bosch_buderus_heating"
+    return (
+        patch(
+            f"{package}.cloud_pause_store",
+            return_value=SimpleNamespace(async_initialize=load("pauses", pause_error)),
+        ),
+        patch(
+            f"{package}.counter_source_store",
+            return_value=SimpleNamespace(async_initialize=load("counters")),
+        ),
+        patch(f"{package}.local_budget_manager", return_value=budget),
+        patch(f"{package}.enrollment_journal", return_value=journal),
+        patch(f"{package}.async_setup_holiday_ui", AsyncMock()),
+        patch(f"{package}.async_setup_controls_ui", AsyncMock()),
+        patch(f"{package}.local_identity.install_local_support"),
+        patch(f"{package}.update_load.install_update_load"),
+    )
+
+
+async def test_integration_setup_loads_independent_stores_side_by_side(
+    hass: HomeAssistant,
+) -> None:
+    """O64: pauses, counters and local access storage load in parallel."""
+    from contextlib import ExitStack
+
+    from custom_components.bosch_buderus_heating import async_setup
+
+    started: list[str] = []
+    done: list[str] = []
+    with ExitStack() as stack:
+        for item in _setup_stores(started, done):
+            stack.enter_context(item)
+        assert await async_setup(hass, {})
+    assert sorted(started) == ["budget", "counters", "pauses"]
+    assert sorted(done) == ["budget", "counters", "journal", "journal", "pauses"]
+
+
+async def test_integration_setup_keeps_error_handling_per_store(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
+    from contextlib import ExitStack
+
+    from custom_components.bosch_buderus_heating import async_setup
+    from custom_components.bosch_buderus_heating.local_budget import LocalBudgetError
+
+    # Damaged local access storage: a warning, the other stores still load.
+    started: list[str] = []
+    done: list[str] = []
+    with ExitStack() as stack:
+        for item in _setup_stores(started, done, budget_error=LocalBudgetError("x")):
+            stack.enter_context(item)
+        assert await async_setup(hass, {})
+    assert sorted(done) == ["counters", "pauses"]
+    assert "Local access storage could not be reconciled" in caplog.text
+    # An unexpected error still fails the set-up, after the others loaded.
+    started.clear()
+    done.clear()
+    with ExitStack() as stack:
+        for item in _setup_stores(started, done, pause_error=RuntimeError("boom")):
+            stack.enter_context(item)
+        with pytest.raises(RuntimeError, match="boom"):
+            await async_setup(hass, {})
+    assert sorted(done) == ["budget", "counters", "journal", "journal"]

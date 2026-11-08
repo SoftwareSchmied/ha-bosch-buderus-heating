@@ -7,6 +7,7 @@ import math
 import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, replace
+from functools import lru_cache
 
 from . import rrc
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
@@ -575,67 +576,85 @@ def assess_control(resource: Resource) -> ControlAssessment:
         or resource.metadata.unit not in (None, "")
     ):
         schema_issue = "unsupported_holiday_mode"
-    policies = (
-        RRC_OPERATION_MODE_POLICY,
-        ZONE_OPERATION_MODE_POLICY,
-        HEATING_CIRCUIT_OPERATION_MODE_POLICY,
-        DHW_OPERATION_MODE_POLICY,
-        SILENT_MODE_POLICY,
-        SEASON_SWITCHING_POLICY,
-        AUXILIARY_HEATER_OPERATION_MODE_POLICY,
-        VENTILATION_FAN_LEVEL_POLICY,
-        SOFTENER_REGENERATION_POLICY,
-        *STRING_SWITCH_POLICIES,
-    )
-    for policy in policies:
-        if re.fullmatch(policy.path_pattern, resource.path):
-            return ControlAssessment(
-                policy,
-                schema_issue or _enum_rejection_reason(resource, policy),
-                writable=resource.metadata.writable,
-                options=tuple(
-                    dict.fromkeys(
-                        value
-                        for value in resource.metadata.allowed_values
-                        if isinstance(value, str)
-                        and value
-                        and value.isprintable()
-                        and (not policy.known_only or value in policy.known_values)
-                    )
-                ),
-                current_value_issue=_enum_current_value_issue(resource),
-            )
-    for number_policy in NUMBER_WRITE_POLICIES:
-        if re.fullmatch(number_policy.path_pattern, resource.path):
-            return ControlAssessment(
-                number_policy,
-                schema_issue
-                or _number_rejection_reason(resource, number_policy)
-                or (
-                    _number_value_rejection_reason(resource, resource.value)
-                    if is_zone_control(resource.path) or rrc.is_control(resource.path)
-                    else None
-                ),
-                writable=resource.metadata.writable,
-                minimum=resource.metadata.minimum,
-                maximum=resource.metadata.maximum,
-                unit=softener_unit(resource)
-                if softener_capability(resource.path) is not None
-                else resource.metadata.unit,
-                ui_step=(
-                    resource.metadata.step_size
-                    if (is_zone_control(resource.path) or rrc.is_control(resource.path))
-                    and schema_issue is None
-                    and resource.metadata.step_size is not None
-                    else _live_step(resource)
-                    if number_policy.live_step and _live_step(resource) is not None
-                    else number_policy.step
-                ),
-                current_value_issue=_number_value_rejection_reason(
-                    resource, resource.value if resource.has_value else None
-                ),
-            )
+    policy = _policy_for_path(resource.path)
+    if isinstance(policy, EnumWritePolicy):
+        return ControlAssessment(
+            policy,
+            schema_issue or _enum_rejection_reason(resource, policy),
+            writable=resource.metadata.writable,
+            options=tuple(
+                dict.fromkeys(
+                    value
+                    for value in resource.metadata.allowed_values
+                    if isinstance(value, str)
+                    and value
+                    and value.isprintable()
+                    and (not policy.known_only or value in policy.known_values)
+                )
+            ),
+            current_value_issue=_enum_current_value_issue(resource),
+        )
+    if isinstance(policy, NumberWritePolicy):
+        number_policy = policy
+        return ControlAssessment(
+            number_policy,
+            schema_issue
+            or _number_rejection_reason(resource, number_policy)
+            or (
+                _number_value_rejection_reason(resource, resource.value)
+                if is_zone_control(resource.path) or rrc.is_control(resource.path)
+                else None
+            ),
+            writable=resource.metadata.writable,
+            minimum=resource.metadata.minimum,
+            maximum=resource.metadata.maximum,
+            unit=softener_unit(resource)
+            if softener_capability(resource.path) is not None
+            else resource.metadata.unit,
+            ui_step=(
+                resource.metadata.step_size
+                if (is_zone_control(resource.path) or rrc.is_control(resource.path))
+                and schema_issue is None
+                and resource.metadata.step_size is not None
+                else _live_step(resource)
+                if number_policy.live_step and _live_step(resource) is not None
+                else number_policy.step
+            ),
+            current_value_issue=_number_value_rejection_reason(
+                resource, resource.value if resource.has_value else None
+            ),
+        )
     return ControlAssessment(None, "no_scalar_control_policy")
+
+
+# The enum policies in the order ``assess_control`` tries them.
+_ENUM_POLICIES = (
+    RRC_OPERATION_MODE_POLICY,
+    ZONE_OPERATION_MODE_POLICY,
+    HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+    DHW_OPERATION_MODE_POLICY,
+    SILENT_MODE_POLICY,
+    SEASON_SWITCHING_POLICY,
+    AUXILIARY_HEATER_OPERATION_MODE_POLICY,
+    VENTILATION_FAN_LEVEL_POLICY,
+    SOFTENER_REGENERATION_POLICY,
+    *STRING_SWITCH_POLICIES,
+)
+
+
+@lru_cache(maxsize=4096)
+def _policy_for_path(path: str) -> EnumWritePolicy | NumberWritePolicy | None:
+    """O4: the first policy whose pattern matches, enum before number.
+
+    The policies are constants, so the answer depends on the path alone.
+    """
+    for policy in _ENUM_POLICIES:
+        if re.fullmatch(policy.path_pattern, path):
+            return policy
+    for number_policy in NUMBER_WRITE_POLICIES:
+        if re.fullmatch(number_policy.path_pattern, path):
+            return number_policy
+    return None
 
 
 def enum_policy_for_resource(resource: Resource) -> EnumWritePolicy | None:

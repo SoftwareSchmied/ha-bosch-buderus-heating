@@ -1,6 +1,7 @@
 """Gateway-wide bounds, durable pauses and storage failure isolation."""
 
 import asyncio
+import json
 import threading
 from dataclasses import replace
 from unittest.mock import patch
@@ -281,19 +282,71 @@ async def test_checkpoint_and_clean_stop_save_remaining_monotonic_duration(manag
         budget.claim()
 
 
-async def test_storage_failure_blocks_every_new_local_admission(manager, monkeypatch):
+async def test_storage_failure_keeps_pauses_in_memory_and_saves_later(
+    manager, monkeypatch, caplog
+):
     first = await manager.budget(CONTEXT)
     second = await manager.budget(context())
+    original = module._save
 
     def fail(*args):
         raise OSError("synthetic private storage path")
 
     monkeypatch.setattr(module, "_save", fail)
-    with pytest.raises(LocalBudgetError, match="local_budget_storage_failed"):
-        await first.pause(7200)
-    for budget in (first, second):
+    await first.pause(7200)
+    await first.pause(7300)
+    # The pause holds; other gateways are admitted as before.
+    assert first.pause_seconds == 7300 and first.claim() is None
+    lease = second.claim()
+    assert lease is not None
+    second.release(lease)
+    warnings = [r for r in caplog.records if "could not be saved" in r.getMessage()]
+    assert len(warnings) == 1 and "private" not in caplog.text
+    assert manager._unsaved and manager._checkpoint is not None
+    monkeypatch.setattr(module, "_save", original)
+    manager._checkpoint._run()
+    await manager._hass.async_block_till_done()
+    assert module._load(manager._path)[0]["remaining"] == 7300
+    assert not manager._unsaved
+
+
+async def test_pauses_never_exceed_one_day(manager):
+    budget = await manager.budget(CONTEXT)
+    await budget.pause(10**9, "rate_limited")
+    assert budget.pause_seconds == module.MAX_LOCAL_PAUSE_SECONDS == 86400
+    standalone = LocalReadBudget(context(connection="standalone"), clock=Clock())
+    standalone.defer(10**9)
+    assert standalone.pause_seconds == 86400
+
+
+async def test_stored_pause_longer_than_one_day_is_shortened(hass, tmp_path):
+    path = tmp_path / "long-budget.json"
+    alias = "a" * 64
+    row = {"aliases": [alias], "remaining": 1e9, "reason": "rate_limited"}
+    path.write_text(json.dumps({"version": 1, "pauses": [row]}))
+    loaded = LocalBudgetManager(hass, clock=Clock())
+    loaded._path = path
+    try:
+        await loaded.initialize()
+        assert loaded._aliases[alias].pause_until - loaded._clock() == 86400
+    finally:
+        await loaded.close()
+
+
+async def test_unreadable_store_is_read_again_on_the_next_start(hass, tmp_path):
+    path = tmp_path / "budget.json"
+    path.write_bytes(b"{}")
+    loaded = LocalBudgetManager(hass, clock=Clock())
+    loaded._path = path
+    try:
         with pytest.raises(LocalBudgetError):
-            budget.claim()
+            await loaded.budget(CONTEXT)
+        assert path.read_bytes() == b"{}"  # never overwritten
+        path.unlink()
+        budget = await loaded.budget(CONTEXT)
+        assert budget.claim() is not None
+    finally:
+        await loaded.close()
 
 
 @pytest.mark.parametrize("value", [True, -1, float("inf"), float("nan"), "1", None])
@@ -391,3 +444,17 @@ async def test_waiter_and_alias_limits_preserve_existing_gateway(manager, monkey
     lease = budget.claim()
     assert lease is not None
     budget.release(lease)
+
+
+async def test_pauses_are_written_compact_and_pretty_ones_still_load(manager):
+    budget = await manager.budget(CONTEXT)
+    await budget.pause(7200, "rate_limited")
+    body = manager._path.read_bytes()
+    assert b"\n" not in body and body.startswith(b'{"version":1,"pauses":[')
+    rows = module._load(manager._path)
+    assert rows[0]["remaining"] == 7200
+    manager._path.write_text(json.dumps({"version": 1, "pauses": rows}, indent=2))
+    assert module._load(manager._path) == rows
+    with pytest.raises(LocalBudgetError, match="invalid_local_read_pause"):
+        module._save(manager._path, [{**rows[0], "remaining": float("inf")}])
+    assert module._load(manager._path) == rows

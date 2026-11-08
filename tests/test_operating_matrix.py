@@ -633,15 +633,17 @@ async def test_counters_without_a_current_cloud_reading_show_nothing(
         try:
             coordinator = await stop_cloud(hass, backend, owner, cloud, case)
             if case == "sign_in":
-                # A stopped connection ends its readings at once; counters
-                # are unavailable even with a current local count.
+                # A stopped connection ends its readings at once. Without the
+                # cloud the local count continues (0.9 owner decision), but
+                # only when it is not below the count shown before.
                 assert shown(hass, owner, COUNTER) == "unavailable"
-                for value in (1200, 1240):
-                    publish(owner, {CURRENT: 23.5, STARTS: value})
-                    await settle(hass)
-                    assert shown(hass, owner, COUNTER) == "unavailable"
-                    current = native(owner, "sensor", COUNTER)
-                    assert current is None or current.native_value is None
+                publish(owner, {CURRENT: 23.5, STARTS: 1200})  # lower: held
+                await settle(hass)
+                assert shown(hass, owner, COUNTER) == "unavailable"
+                current = native(owner, "sensor", COUNTER)
+                assert current is None or current.native_value is None
+                publish(owner, {CURRENT: 23.5, STARTS: 1240})
+                await eventually(lambda: shown(hass, owner, COUNTER) == "1240")
             else:
                 # A failed cycle keeps the last good count within its limit.
                 assert shown(hass, owner, COUNTER) == "1234"

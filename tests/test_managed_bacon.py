@@ -22,7 +22,6 @@ from custom_components.bosch_buderus_heating.bacon.models import (
     topic,
 )
 from custom_components.bosch_buderus_heating.climate import BaconClimate
-from custom_components.bosch_buderus_heating.configuration import ConfigurationError
 from custom_components.bosch_buderus_heating.configuration_access import (
     EntryConfiguration,
 )
@@ -410,6 +409,36 @@ async def test_stopping_a_pending_write_never_confirms_or_replays(hass, stage):
         assert len(broker.connections) == 1
 
 
+@pytest.mark.parametrize(
+    ("category", "stopped", "expected"),
+    [
+        ("command_unconfirmed", True, "source_stopped"),
+        ("connection", True, "source_stopped"),
+        ("command_unconfirmed", False, "command_unconfirmed"),
+        ("authentication", True, "authentication"),
+    ],
+)
+async def test_a_stop_before_the_cancellation_is_still_a_stop(
+    category, stopped, expected
+):
+    """A publish finishing right after the stop, before close() cancels it."""
+    from custom_components.bosch_buderus_heating.managed_bacon import BaconSource
+
+    source = object.__new__(BaconSource)
+    source._closed = False
+    source._operations = set()
+    source.pool = SimpleNamespace(auth_failed=asyncio.Event())
+    source.context = SimpleNamespace(current=True)
+
+    async def action():
+        source.context.current = not stopped
+        raise BaconError(category)
+
+    with pytest.raises(BaconError, match=expected):
+        await source.operation(action)
+    assert not source._operations
+
+
 async def test_retired_read_and_wrong_device_cannot_publish(hass):
     broker = Broker()
     async with connected(hass, broker) as (_, _, owner, _):
@@ -532,9 +561,7 @@ async def test_disabled_device_cannot_send_a_command_waiting_for_publish(hass):
 
 
 @pytest.mark.parametrize("missing", [False, True])
-async def test_new_login_requires_disabled_devices_before_replacing_session(
-    hass, missing
-):
+async def test_new_login_replaces_session_even_without_disabled_devices(hass, missing):
     broker = Broker()
     async with connected(hass, broker) as (entry, cloud, owner, _):
         await eventually(lambda: ready(owner) and source_for(owner, HEAT))
@@ -562,37 +589,28 @@ async def test_new_login_requires_disabled_devices_before_replacing_session(
                 ),
             ),
         ):
-            if missing:
-                with pytest.raises(ConfigurationError, match="reauth_targets_missing"):
-                    await manager.async_reauthenticate(manager.edit(cloud), renewed)
-            else:
-                await manager.async_reauthenticate(manager.edit(cloud), renewed)
-        if missing:
-            assert EntryConfiguration(entry, cloud).tokens() == old_tokens
-            assert view(owner) is previous and previous.available(A)
-            assert len(broker.connections) == 1
-        else:
-            await eventually(
-                lambda: (
-                    ready(owner)
-                    and view(owner) is not previous
-                    and source_for(owner, HEAT) is not None
-                    and source_for(owner, HEAT) is not heating
-                )
+            # A switched-off device missing from the account never blocks.
+            await manager.async_reauthenticate(manager.edit(cloud), renewed)
+        assert EntryConfiguration(entry, cloud).tokens() != old_tokens
+        await eventually(
+            lambda: (
+                ready(owner)
+                and view(owner) is not previous
+                and source_for(owner, HEAT) is not None
+                and source_for(owner, HEAT) is not heating
             )
-            current = view(owner)
-            assert (
-                current.client.tokens is source_for(owner, HEAT).client._token_provider
-            )
-            assert current.client.tokens is not previous.client.tokens
-            assert current.client.backoff is previous.client.backoff
-            assert EntryConfiguration(entry, cloud).tokens() == renewed
-            assert len(broker.connections) == 2
-            assert broker.connections[-1] == "Bearer " + renewed.access_token
-            assert view(owner, B) is None
-            with pytest.raises(BaconError, match="source_stopped"):
-                await previous.read_state(A)
-            assert not previous.available(A)
+        )
+        current = view(owner)
+        assert current.client.tokens is source_for(owner, HEAT).client._token_provider
+        assert current.client.tokens is not previous.client.tokens
+        assert current.client.backoff is previous.client.backoff
+        assert EntryConfiguration(entry, cloud).tokens() == renewed
+        assert len(broker.connections) == 2
+        assert broker.connections[-1] == "Bearer " + renewed.access_token
+        assert view(owner, B) is None
+        with pytest.raises(BaconError, match="source_stopped"):
+            await previous.read_state(A)
+        assert not previous.available(A)
         assert owner.connections.source_data("local") is local
 
 

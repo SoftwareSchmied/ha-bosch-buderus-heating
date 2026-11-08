@@ -10,8 +10,10 @@ acceptance remain separate steps.
 
 The reviewed policy assigns every one of the 261 GET templates to a class.
 Live values, current operating modes and manual room setpoints use 60 seconds.
-Other settings, energy values and radio diagnostics use 300 seconds. Counters,
-names, firmware and other metadata use 900 seconds; static identifiers use a day.
+Other settings, energy values and radio diagnostics use 300 seconds. Counters
+and the gateway firmware use 900 seconds, as do room-device and zone metadata
+such as battery level and names; descriptive system metadata uses an hour;
+static identifiers and the installation date signals use a day.
 The signal directory uses 900 seconds and participates in initial discovery.
 History and administration require explicit requests.
 
@@ -90,7 +92,8 @@ immediately, retaining its last observation and timestamps. Its next regular
 request can restore the same record. A timeout after HTTP starts leaves the last
 value usable only within its original validity period.
 
-New forbidden or missing paths retry after one, six and then 24 hours. Invalid
+New forbidden or missing paths retry after one, six and then 168 hours (a
+week); a changed answer schema keeps that pause. Invalid
 responses use 15 minutes, one hour and 24 hours. Timeouts use five, 15, 60 minutes
 and then a day. These retries still need a discovery slot. Access failures use
 60, 120, 300 and then 600 seconds through the shared persistent budget. A received

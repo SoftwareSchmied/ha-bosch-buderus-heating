@@ -236,6 +236,17 @@ def _signature_part(observation: LocalObservation) -> tuple[object, ...]:
     )
 
 
+def _same_current(
+    before: Mapping[str, LocalObservation], after: Mapping[str, LocalObservation]
+) -> bool:
+    """The same current readings with the same answers, read anew or not."""
+    from .local_selection import same_answer
+
+    return before.keys() == after.keys() and all(
+        same_answer(before[path], item) for path, item in after.items()
+    )
+
+
 def _part_names(resource: Resource) -> set[str] | None:
     names: set[str] = set()
     for item in resource.values:
@@ -288,8 +299,12 @@ class LocalPlantCoordinator(ManagedPointTCoordinator):
         self._templates = dict(templates or {})
         self._sensors: dict[str, LocalOnlyDefinition] = {}
         self._current: dict[str, LocalObservation] = {}
-        self._shape_signature: tuple[object, ...] | None = None
-        self._value_marker: tuple[object, ...] | None = None
+        self._shape_signature: dict[str, tuple[object, ...]] | None = None
+        # Per path: the reading whose shape was worked out, and that shape.
+        self._shape_parts: dict[str, tuple[LocalObservation, tuple[object, ...]]] = {}
+        self._value_marker: dict[str, LocalObservation] | None = None
+        # Per path: the reading last interpreted for a local-only sensor.
+        self._readings: dict[str, tuple[LocalObservation, Observation | None]] = {}
         self._counter_paths: frozenset[str] = frozenset()
         self.data = {}
         self.last_update_success = False
@@ -301,9 +316,20 @@ class LocalPlantCoordinator(ManagedPointTCoordinator):
         return dict(self._sensors)
 
     def local_only_reading(self, path: str) -> Observation | None:
-        """The current reading of one local-only sensor of the view."""
+        """The current reading of one local-only sensor of the view.
+
+        Interpreted once per reading: the sensor asks for it several times
+        in every update pass.
+        """
         observation = self._current.get(path) if path in self._sensors else None
-        return local_reading(observation) if observation is not None else None
+        if observation is None:
+            return None
+        cached = self._readings.get(path)
+        if cached is not None and cached[0] is observation:
+            return cached[1]
+        reading = local_reading(observation)
+        self._readings[path] = (observation, reading)
+        return reading
 
     @property
     def counter_paths(self) -> frozenset[str]:
@@ -323,21 +349,37 @@ class LocalPlantCoordinator(ManagedPointTCoordinator):
             for observation in state.current_observations:
                 current[observation.request.path] = observation
         shape.update(current)
-        signature = tuple(sorted(_signature_part(item) for item in shape.values()))
+        signature = {path: self._shape_part(item) for path, item in shape.items()}
+        # The parts of readings no longer offered are not kept.
+        for path in self._shape_parts.keys() - shape.keys():
+            del self._shape_parts[path]
         grown = False
         if signature != self._shape_signature:
             self._shape_signature = signature
             grown = self._grow(shape.values())
         self._current = current
-        marker = tuple(
-            sorted((path, item.observed_monotonic) for path, item in current.items())
+        for path in self._readings.keys() - current.keys():
+            del self._readings[path]
+        # A new read with the same answer changes nothing shown (G1).
+        unchanged = self._value_marker is not None and _same_current(
+            self._value_marker, current
         )
-        if not grown and marker == self._value_marker:
+        self._value_marker = current
+        if not grown and unchanged:
             return False
-        self._value_marker = marker
         self.data = self._snapshots(current)
         self.last_update_success = bool(current)
         return True
+
+    def _shape_part(self, observation: LocalObservation) -> tuple[object, ...]:
+        """The shape of one reading, worked out once per reading."""
+        path = observation.request.path
+        cached = self._shape_parts.get(path)
+        if cached is not None and cached[0] is observation:
+            return cached[1]
+        part = _signature_part(observation)
+        self._shape_parts[path] = (observation, part)
+        return part
 
     def _registered_form(self, path: str) -> str | None:
         from .local_only_sensor import registered_form

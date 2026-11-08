@@ -31,6 +31,12 @@ RECORDING = "/recordings/heatSources/actualSupplyTemperature"
 WIFI = "/gateway/wifi/apList"
 
 
+def _parsed(value: Any) -> Any:
+    """A copy as a parsed document has it: the pinned tables share equal parts
+    (O20), a downloaded specification never does."""
+    return json.loads(json.dumps(value))
+
+
 def spec_from_pinned() -> dict[str, Any]:
     """An OpenAPI document equivalent to the pinned facts."""
     facts = pinned_facts()
@@ -39,7 +45,7 @@ def spec_from_pinned() -> dict[str, Any]:
         examples.setdefault(row["template"], {})[row["name"]] = row["response"]
     paths = {}
     for template, operation in facts.operations.items():
-        content: dict[str, Any] = {"schema": copy.deepcopy(operation["response"])}
+        content: dict[str, Any] = {"schema": _parsed(operation["response"])}
         named = examples.get(template, {})
         if "default" in named:
             content["example"] = named["default"]
@@ -49,7 +55,7 @@ def spec_from_pinned() -> dict[str, Any]:
         paths[template] = {
             "get": {
                 "tags": [operation["group"]],
-                "parameters": copy.deepcopy(operation["parameters"]),
+                "parameters": _parsed(operation["parameters"]),
                 "responses": {"200": {"content": {"application/json": content}}},
             }
         }
@@ -60,7 +66,7 @@ def spec_from_pinned() -> dict[str, Any]:
         "security": [{"bearerAuth": []}],
         "paths": paths,
         "components": {
-            "schemas": copy.deepcopy(facts.schemas),
+            "schemas": _parsed(facts.schemas),
             "parameters": {},
             "securitySchemes": {
                 "bearerAuth": {"type": "http", "scheme": "bearer", "description": "x"}

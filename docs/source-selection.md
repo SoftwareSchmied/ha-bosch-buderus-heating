@@ -1,9 +1,20 @@
 # Source selection for paired readings
 
-With **Use local values for existing entities** enabled, an existing sensor or
-binary sensor of a paired reading can be supplied by the local or the cloud
-connection. Paired readings use the same documented path on both interfaces,
-are not counters and cannot be adjusted through the cloud.
+An existing sensor or binary sensor of a paired reading can be supplied by the
+local or the cloud connection. Paired readings use the same documented path on
+both interfaces, are not counters and cannot be adjusted through the cloud.
+
+- **With the cloud running**, the option **Use local values for existing
+  entities** decides: when it is on, the local value is shown; when it is off,
+  the cloud value. The option is on by default when a system gets its first
+  local access and when a system set up with local access only joins the
+  cloud; a choice saved before stays.
+- **Without the cloud** (switched off, a new sign-in needed, paused,
+  rate-limited or unreachable), paired readings always show their local
+  values, whether the option is on or off. Counters follow the same rule
+  under the counter rule below, so they never count backwards.
+
+The rules below describe the selection whenever local values are used.
 
 ## Rules
 
@@ -50,13 +61,22 @@ that adds the whole count again to the statistics.
 - Within one source nothing is corrected: a real reset of the device counter
   stays visible as before.
 - Parts must match exactly. Units must be the same spelling, or the established
-  unitless kWh of cloud energy counters against local kWh. Runtime counters
-  whose units differ stay on the cloud.
+  unitless kWh of cloud energy counters against local kWh. Since
+  0.9.0-alpha.2 the same applies to the working time of a heat source
+  (`/heatSources/{hs}/workingTime`): its cloud value has no unit and counts
+  seconds, the local one reports `s`, so it can now follow the local access
+  too. Other runtime counters whose units differ stay on the cloud.
 - Without stored history, for example after enabling the feature or with an
   unreadable store, the cloud sets the first count; a local count is only used
   after that.
 - A part missing in one reading keeps its last shown number, so it still binds a
   later source change.
+- When the source a counter was shown from last is gone for good (its access
+  removed or switched off), the other source may take over as soon as its
+  numbers are not lower for the parts both report. A stored part that no
+  current reading reports any more is dropped seven days after the change; a
+  part that is reported waits until it reaches its number. A shown number
+  never goes backwards.
 - The last shown numbers and source are stored in Home Assistant and a source
   change is written immediately. After a restart the source shown last goes
   first. Only an abrupt stop within seconds after a count changed can leave an
@@ -160,16 +180,21 @@ entities it disabled itself and never enables the per-source entities.
 A short overview of both accesses and of operation without the cloud is in
 [cloud and local access](operation-without-cloud.md).
 
+Whenever the cloud is paused, rate-limited or unreachable, paired readings
+with a current local value show it, independent of **Use local values for
+existing entities**.
+
 If the cloud access of a system needs a new sign-in, is switched off in the
 connection settings or cannot sign in at start, and the system has an enabled
 local access, its entities stay in place:
 
-- paired readings keep showing current local values (with **Use local values
-  for existing entities** on), and so do the per-source entities and the
-  readings only the local access provides;
-- everything else, counters and all controls are unavailable; a control
-  reports why (sign-in required or cloud stopped) and no cloud request is
-  sent;
+- paired readings keep showing current local values, also with **Use local
+  values for existing entities** off, and so do the per-source entities and
+  the readings only the local access provides;
+- paired counters continue from the local access under the
+  [counter rule](#counters), so they never count backwards;
+- everything else and all controls are unavailable; a control reports why
+  (sign-in required or cloud stopped) and no cloud request is sent;
 - at start without a working sign-in, or with the cloud access switched off,
   the entities come from the stored inventory, if the cloud confirmed it
   within the last 30 days; with the access switched off, nothing is requested
@@ -193,8 +218,8 @@ manufacturer and controller model its gateway reported during the setup.
 
 #### Adding the cloud later
 
-The cloud access can be added later in the same entry's options (**Add cloud
-access**), or, if the entry already has a cloud access, by selecting the
+The cloud access can be added later in the same entry's options (**Connect
+cloud access**), or, if the entry already has a cloud access, by selecting the
 system in that access's system selection. Selecting the system joins it with
 the cloud as the same system; a second system is never created. Selections
 that do not include such a system are saved as before, without any request:
@@ -309,6 +334,8 @@ first answer is announced once, by the cloud.
 | ended (403/404, invalid data) | missing | on | unavailable |
 | sign-in required or access switched off, local access enabled | current | on | local |
 | sign-in required or access switched off, local access enabled | missing | on | unavailable |
+| no answer, paused or rate-limited | current | off | local |
+| sign-in required or access switched off, local access enabled | current | off | local |
 | connection stopped without an enabled local access | any | on | unavailable |
 | resource withdrawn | any | on | unavailable |
 | expired | current | off | unavailable |

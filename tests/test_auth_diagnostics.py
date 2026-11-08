@@ -210,7 +210,7 @@ async def test_entry_diagnostics_include_history_without_credentials(
     diagnostics = await async_get_config_entry_diagnostics(hass, entry)
     assert [item["connection"] for item in diagnostics["authentication"]] == [1]
     authentication = diagnostics["authentication"][0]
-    assert diagnostics["diagnostics_schema"] == 41
+    assert diagnostics["diagnostics_schema"] == 42
     assert diagnostics["privacy"]["contains_credentials"] is False
     assert authentication["history_available"] is True
     assert authentication["current"]["has_refresh_token"] is True

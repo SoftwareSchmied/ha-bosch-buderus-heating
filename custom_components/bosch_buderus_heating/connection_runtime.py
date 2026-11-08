@@ -9,6 +9,7 @@ from collections.abc import Awaitable, Callable, Coroutine, Mapping
 from contextlib import suppress
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
+from types import MappingProxyType
 from typing import Any, Protocol
 
 from homeassistant.config_entries import ConfigEntry
@@ -19,6 +20,7 @@ from .configuration import (
     LOCAL_KIND,
     ConfigurationError,
     ConfigurationSnapshot,
+    JsonObject,
     StoredBinding,
     StoredConnection,
 )
@@ -65,6 +67,50 @@ def plant_gateway(kind: str, target: Mapping[str, Any]) -> str | None:
     if gateway is None and kind == "local_installation":
         gateway = values.get("local_system_gateway")
     return gateway if isinstance(gateway, str) else None
+
+
+class CachedConfiguration(ConfigurationManagement):
+    """Parse the entry's configuration once per stored version.
+
+    Home Assistant replaces ``data`` and ``options`` with new objects on every
+    entry update, so the parsed snapshot is kept while both objects (and the
+    stored revision and versions) are the same ones. ``invalidate`` drops it
+    explicitly on every update notice.
+    """
+
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry[Any]) -> None:
+        super().__init__(hass, entry)
+        self._cached: tuple[object, object, object, ConfigurationSnapshot] | None = None
+
+    def invalidate(self) -> None:
+        self._cached = None
+
+    def current(self) -> ConfigurationSnapshot:
+        entry = self.entry
+        data, options = entry.data, entry.options
+        key = (
+            entry.version,
+            entry.minor_version,
+            data.get("revision") if isinstance(data, Mapping) else None,
+        )
+        cached = self._cached
+        if (
+            cached is not None
+            and cached[0] is data
+            and cached[1] is options
+            and cached[2] == key
+            and self.hass.config_entries.async_get_entry(entry.entry_id) is entry
+        ):
+            return cached[3]
+        snapshot = super().current()
+        # Only read-only mappings: a plain dict could change in place.
+        self._cached = (
+            (data, options, key, snapshot)
+            if isinstance(data, MappingProxyType)
+            and isinstance(options, MappingProxyType)
+            else None
+        )
+        return snapshot
 
 
 class SourceFailure(Exception):
@@ -183,8 +229,10 @@ class ConnectionRuntime:
     ) -> None:
         self.hass = hass
         self.entry = entry
-        self.management = ConfigurationManagement(hass, entry)
+        self.management = CachedConfiguration(hass, entry)
         self.snapshot = self.management.current()
+        # The decoded options of ``snapshot``, read-only (``_options``).
+        self._options_cache: tuple[ConfigurationSnapshot, JsonObject] | None = None
         self._generations = ConfigurationRuns(self.snapshot)
         self._factories = dict(factories)
         self._sleep = sleep
@@ -214,6 +262,8 @@ class ConnectionRuntime:
         self._local_states: dict[str, LocalSourceState] = {}
         self._listeners: list[RuntimeListener] = []
         self._tasks: set[asyncio.Task[None]] = set()
+        # Dormant and target view builds, cancelled when the runtime closes.
+        self._builds: set[asyncio.Task[None]] = set()
         self._connection_locks: dict[str, asyncio.Lock] = {}
         self._source_locks: dict[str, asyncio.Lock] = {}
         self._contexts: dict[str, SourceContext] = {}
@@ -231,6 +281,7 @@ class ConnectionRuntime:
         self._unsubscribe.append(self.management.subscribe(self.synchronize))
 
         async def updated(hass: HomeAssistant, entry: ConfigEntry[Any]) -> None:
+            self.management.invalidate()
             if not self._closed:
                 try:
                     self.synchronize(self.management.current())
@@ -260,8 +311,21 @@ class ConnectionRuntime:
         task.add_done_callback(self._tasks.discard)
         return task
 
+    def _options(self) -> JsonObject:
+        """The current snapshot's options, decoded once; never modify them."""
+        snapshot, cached = self.snapshot, self._options_cache
+        if cached is None or cached[0] is not snapshot:
+            cached = self._options_cache = (snapshot, snapshot.to_options())
+        return cached[1]
+
+    def _build(self, work: Coroutine[Any, Any, None]) -> asyncio.Task[None]:
+        task = self._task(work)
+        self._builds.add(task)
+        task.add_done_callback(self._builds.discard)
+        return task
+
     def _bindings(self, connection_id: str) -> dict[str, StoredBinding]:
-        options = section(self.snapshot.to_options(), "bindings")
+        options = section(self._options(), "bindings")
         return {
             key: binding
             for key, binding in self.snapshot.bindings.items()
@@ -376,7 +440,7 @@ class ConnectionRuntime:
             return
         self._target_building.add(target_id)
         generation = self._next_target_generation(target_id)
-        self._task(self._build_target_view(build, target_id, gateway_id, generation))
+        self._build(self._build_target_view(build, target_id, gateway_id, generation))
 
     def _target_current(self, target_id: str, generation: int) -> bool:
         return (
@@ -428,6 +492,15 @@ class ConnectionRuntime:
             self._target_views[target_id] = view
             self._notify()
         except asyncio.CancelledError:
+            if view is not None and self._target_views.get(target_id) is not view:
+                # Cancelled while building (unload): never writes or listens.
+                view.faults.discard()
+                with suppress(Exception):
+                    async with asyncio.timeout(CLOSE_TIMEOUT):
+                        if view.local_retained:
+                            await view.async_release_retention()
+                        else:
+                            await view.async_stop_source()
             raise
         except Exception:
             _LOGGER.warning("A system's local readings could not be shown; retrying")
@@ -748,7 +821,7 @@ class ConnectionRuntime:
         except ConfigurationError:
             self._reject_configuration()
             return False
-        if current != self.snapshot:
+        if current is not self.snapshot and current != self.snapshot:
             self.synchronize(current)
         return self._generations.accepts(generation)
 
@@ -921,7 +994,7 @@ class ConnectionRuntime:
         build = getattr(factory, "dormant_view", None)
         if build is None:
             return
-        options = section(self.snapshot.to_options(), "bindings")
+        options = section(self._options(), "bindings")
         for binding_id, binding in self.snapshot.bindings.items():
             if (
                 binding.connection_id != connection_id
@@ -934,7 +1007,7 @@ class ConnectionRuntime:
                 self, self._generations.peek(connection_id, binding_id)
             )
             self._dormant.add(binding_id)
-            self._task(self._build_dormant(build, binding_id, binding, context))
+            self._build(self._build_dormant(build, binding_id, binding, context))
 
     async def _build_dormant(
         self,
@@ -1028,14 +1101,14 @@ class ConnectionRuntime:
         self._release(binding_id)
         self._notify()
         self._dormant.add(binding_id)
-        self._task(self._build_dormant(build, binding_id, binding, context))
+        self._build(self._build_dormant(build, binding_id, binding, context))
         return True
 
     def _dormant_acceptable(self, context: SourceContext, data: object) -> bool:
         generation = context.generation
         binding_id = generation.binding_id
         binding = self.snapshot.bindings.get(binding_id or "")
-        options = self.snapshot.to_options()
+        options = self._options()
         check = getattr(data, "retain_for_local", None)
         return not (
             binding_id is None
@@ -1171,7 +1244,7 @@ class ConnectionRuntime:
         connection = self.connection_phase(binding.connection_id)
         if connection is not ConnectionPhase.READY:
             return connection
-        if not section(self.snapshot.to_options(), "bindings")[binding_id]["enabled"]:
+        if not section(self._options(), "bindings")[binding_id]["enabled"]:
             return ConnectionPhase.DISABLED
         return self._source_phases.get(binding_id, ConnectionPhase.STOPPED)
 
@@ -1180,6 +1253,13 @@ class ConnectionRuntime:
             return
         self._closed = True
         self._cancel_target_retry()  # never waits for its pause
+        # Views still being built end with the runtime; a view a build already
+        # kept is released below with the others.
+        builds = tuple(self._builds)
+        for task in builds:
+            task.cancel()
+        if builds:
+            await asyncio.wait(builds, timeout=CLOSE_TIMEOUT)
         for unsubscribe in self._unsubscribe:
             unsubscribe()
         self._unsubscribe.clear()

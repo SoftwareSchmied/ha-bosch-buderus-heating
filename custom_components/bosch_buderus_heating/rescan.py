@@ -6,8 +6,10 @@ follows a firmware change, P22/P41: readings it does not report stay, so no
 entity is removed), and every running local access searches its resources
 again in its usual search slots and read budget.
 
-Nothing starts while any part is paused (a cloud pause, a protection pause or
-the local read budget) or already searching: the result names the reason.
+Parts that are paused (a cloud pause, a protection pause or the local read
+budget) are skipped while the ready parts search; the result says so
+(``partial``). Nothing starts while any part is already searching, or when
+every reachable part is paused: the result names the reason.
 """
 
 from __future__ import annotations
@@ -23,7 +25,9 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 PLANNED = "planned"
+PARTIAL = "partial"
 PAUSED = "paused"
+READY = "ready"
 RUNNING = "running"
 UNAVAILABLE = "unavailable"
 
@@ -63,22 +67,29 @@ def _parts(owner: ManagedEntry) -> tuple[list[_Searchable], list[_LocalSearchabl
 def request_rescan(owner: ManagedEntry) -> str:
     """Plan the search for every ready part, or name why it is refused.
 
-    ``planned``, ``paused``, ``running`` or ``unavailable`` (no part of the
-    system is reachable right now).
+    ``planned``, ``partial`` (planned for the ready parts; paused parts were
+    skipped), ``paused`` (every reachable part is paused), ``running`` or
+    ``unavailable`` (no part of the system is reachable right now).
     """
     cloud, local = _parts(owner)
-    states = [item.rescan_state() for item in cloud]
-    states += [part.rescan_state() for part in local]
-    if PAUSED in states:
-        return PAUSED
+    cloud_states = [item.rescan_state() for item in cloud]
+    local_states = [part.rescan_state() for part in local]
+    states = cloud_states + local_states
     if RUNNING in states:
         return RUNNING
     planned = 0
-    for item in cloud:
-        planned += item.request_rescan() == PLANNED
-    for part in local:
-        planned += part.rescan() == PLANNED
+    for item, state in zip(cloud, cloud_states, strict=True):
+        if state == READY:
+            planned += item.request_rescan() == PLANNED
+    for part, state in zip(local, local_states, strict=True):
+        if state == READY:
+            planned += part.rescan() == PLANNED
+    paused = states.count(PAUSED)
     if not planned:
-        return UNAVAILABLE
-    _LOGGER.info("Searching the system again on request (%d parts)", planned)
-    return PLANNED
+        return PAUSED if paused else UNAVAILABLE
+    _LOGGER.info(
+        "Searching the system again on request (%d parts, %d paused)",
+        planned,
+        paused,
+    )
+    return PARTIAL if paused else PLANNED

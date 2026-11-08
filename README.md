@@ -19,14 +19,34 @@
 > The illustrated [setup guide](docs/setup.md) explains installation and
 > sign-in step by step.
 
+> [!TIP]
+> **Testers wanted: local access in the 0.9 alpha pre-releases.** The 0.9
+> alpha versions can read K40/K40RF gateways (for example with an MX400
+> controller) directly in the home network. The local access only reads –
+> changes still go through the cloud – but it updates many readings more
+> often, adds readings the cloud does not offer (for example refrigerant
+> circuit, compressor and pump values) and keeps your readings available when
+> the cloud is not. It runs without problems on my own heat pump (K40RF
+> gateway, firmware 15.00.01, MX400 controller). I would be glad about more
+> testers and feedback – especially other gateways, firmware versions and
+> device families – so that I can publish a stable 0.9 that has been checked
+> on as many installations as possible. The alpha is a pre-release: install it
+> via HACS with pre-releases shown, make a backup first, and report what works
+> and what doesn't in the
+> [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues).
+> 0.8.3 remains the latest stable release.
+
 > [!NOTE]
-> **0.9.0-alpha.1 is a pre-release for testing.** It adds an optional local
-> access to K40/K40RF gateways, keeps a system with a local access running
-> without the cloud and reviews the entities. It requires Home Assistant
-> 2026.5.0 or newer and moves the entry to a storage format that 0.8.x cannot
-> load, so make a full backup first. HACS shows it only with pre-releases
-> enabled. **0.8.3 remains the latest stable release.** See the
-> [alpha release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.1);
+> **0.9.0-alpha.2 is the current pre-release for testing.** The 0.9.0 alphas
+> add an optional local access to K40/K40RF gateways, keep a system with a
+> local access running without the cloud and review the entities. Alpha.2
+> always shows local readings while the cloud cannot be used, accepts a new
+> sign-in when a system was removed from the account and makes the local
+> access more robust. It requires Home Assistant 2026.5.0 or newer and moves
+> the entry to a storage format that 0.8.x cannot load, so make a full backup
+> first. HACS shows it only with pre-releases enabled. **0.8.3 remains the
+> latest stable release.** See the
+> [alpha.2 release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.2);
 > feedback is welcome.
 
 **Bosch/Buderus Home Comfort** is the new display name for **Bosch/Buderus Heating**.
@@ -145,12 +165,15 @@ the local access to a K40/K40RF gateway in your home network, or both:
 - the **cloud access** shows the readings and lets you operate the system;
 - the **local access** only reads, but updates many readings more often and
   can add technical readings the cloud does not offer;
-- with **both**, each reading is shown once, from the local access while it is
-  current; changes always go through the cloud.
+- with **both**, each reading is shown once; with the cloud running, it comes
+  from the local access while it is current and **Use local values for
+  existing entities** is on (the default when a system gets its first local
+  access), otherwise from the cloud; changes always go through the cloud.
 
-Without the cloud, a system with a local access keeps showing its readings,
-read-only. When the cloud comes back, it takes over the same entities with
-their history. See [operation without the cloud](docs/operation-without-cloud.md).
+Without the cloud (switched off, a new sign-in needed, paused, rate-limited or
+unreachable), a system with a local access always shows its readings from the
+local access, independent of that option, read-only. When the cloud comes
+back, it takes over the same entities with their history. See [operation without the cloud](docs/operation-without-cloud.md).
 
 ## Features
 

@@ -4,6 +4,34 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 42 extends existing sections, again without values, addresses or
+identifiers:
+
+- each local access under `connections[].local[]` adds `condition_changes`
+  (the last 20 changes of its condition with UTC time and a fixed reason),
+  `failures_by_class` (`timeout`, `tls`, `not_found`, `http_4xx`, `http_5xx`,
+  `connection` or `other`), `response_times` (number of samples and the
+  average, 95th percentile and maximum in milliseconds of the last 256 reads)
+  and `deferred_reasons` (reads not sent, by reason, for example `busy` or
+  `paused`). A path that was read once but has no expiry of its own, such as
+  the signal list, shows the freshness `read`;
+- `observation_pairs` adds the result `changed_between_reads`: a counter
+  whose later reading is higher in at least one part and lower in none, read
+  more than 60 seconds apart, most likely counted on between the two reads.
+  `differing_measurements` names the catalog measurements of pairs that
+  really differ, and `maximum_receive_gap_seconds_by_class` reports the
+  largest receive gap per local polling class, so rarely read values no
+  longer hide the gaps of live readings;
+- each gateway `runtime` adds `p95_poll_duration_ms` and
+  `poll_duration_samples` (the 95th percentile of the last 200 cloud cycles),
+  and `capability_attempts` adds `failed` and `paths_failing` (paths whose
+  latest attempt failed);
+- `startup_data.paths` gives the same masked path an `index` when it occurs
+  more than once, for example the product names of two devices, and the
+  fault paths are masked like all other paths;
+- `local_plant_view` adds `listed_at_most` and `omitted_entries`, the number
+  of entries its lists leave out, next to `truncated`.
+
 Schema 41 adds `views_without_cloud`: one entry per plant that is shown
 without a running cloud source. `kind` is `dormant` (a switched-off cloud
 access shown from its stored inventory), `held` (the cloud access was switched
@@ -384,6 +412,11 @@ availability handling, even when the last parser result was `empty`. Unrelated
 reads do not advance `last_successful_update` or confirm a fault resolution.
 These fault-parser fields retain their existing meanings in schema 15.
 
+`/heatSources/{hs}/activefailure` and `failurelist` are probed only for heat
+sources found during discovery. A 404 or 403 counts as "not supported": that
+path pauses for 24 hours (counted in the gateway `runtime` as
+`negative_pauses_active`), and a 403 or 404 never clears a known fault.
+
 ## Supplementary startup data
 
 See [Request behavior and recovery](request-behavior.md) for the complete path
@@ -493,6 +526,12 @@ values, not cloud identifiers or wall-clock timestamps.
 - `requests_per_hour`: projected hourly cloud load. This is calculated only
   after an observation period of 60 seconds;
 - `rate_limit_events`: number of limits reported by PointT.
+
+`polls_total` in a gateway's `runtime` counts update cycles of that gateway's
+coordinator. `requests_per_hour` counts every cloud HTTP request since start
+(discovery, start-up data, writes, retries, fallbacks), projected to one hour,
+and appears after 60 seconds. One poll can send several requests or none, so
+the two do not match.
 
 `rolling_60_minutes` contains the same operational view for the current and
 previous 59 clock-minute buckets. It includes exact outer HTTP status counts,

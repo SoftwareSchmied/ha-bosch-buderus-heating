@@ -5,10 +5,12 @@ credentials and never changes write paths; its only request is a hint to a
 running local source to read a circuit again after a confirmed cloud write.
 When the target's ``local_values`` option is enabled, a reading that the pair
 catalog lists and that is neither a counter nor adjustable through the cloud
-uses the current local value. If the local value is not current, the current
-cloud value is kept; otherwise the existing cloud freshness rules decide
-availability. Type and unit must match the cloud resource that created the
-entity.
+uses the current local value. Without a cloud (switched off, sign-in required,
+paused, limited or unreachable) the local value is used also with the option
+off; paired counters then follow the counter rule, never backwards. If the
+local value is not current, the current cloud value is kept; otherwise the
+existing cloud freshness rules decide availability. Type and unit must match
+the cloud resource that created the entity.
 
 After a confirmed cloud write, a local reading of the same circuit received
 before the confirmation loses against a cloud reading received after it; a
@@ -40,6 +42,7 @@ from .observations import (
     compare,
     from_cloud_snapshot,
     from_local_observation,
+    is_working_time,
     pair_for_path,
 )
 
@@ -55,6 +58,8 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 _T = TypeVar("_T")
+# A current local reading and the binding of the local access that supplied it.
+type _Reading = tuple[str, LocalObservation]
 
 # A written value whose local read-back does not arrive within this time is
 # counted as unchecked; regular reads continue unchanged.
@@ -79,7 +84,15 @@ class LocalSelection:
     def __init__(self, runtime: ConnectionRuntime, target_id: str) -> None:
         self._runtime = runtime
         self._target_id = target_id
-        self._last_marker: tuple[bool, tuple[tuple[str, float], ...]] | None = None
+        self._last_marker: (
+            tuple[
+                bool,
+                dict[str, _Reading],
+                dict[str, _Reading | None],
+                tuple[object, ...],
+            ]
+            | None
+        ) = None
         # Circuit scope -> time of the latest confirmed cloud write.
         self._confirmed_writes: dict[str, datetime] = {}
         # Written catalog path -> (confirmed cloud snapshot, confirmation time).
@@ -99,6 +112,8 @@ class LocalSelection:
         # 4A (P49b): registered local-only entities of documented readings
         # without a reviewed entry (created by the local plant view).
         self._registered_local_only: frozenset[str] = frozenset()
+        # Last answer of the cloud check, only for the diagnostics summary.
+        self._without_cloud = False
 
     def serve_registered_local_only(self, paths: frozenset[str]) -> None:
         """Also supply these registered local-only paths (never new ones)."""
@@ -246,7 +261,16 @@ class LocalSelection:
         return result
 
     def local_only_reading(self, path: str) -> Observation | None:
-        """The interpreted current reading of one local-only path, if any."""
+        """The interpreted current reading of one local-only path, if any.
+
+        Within an update pass worked out once per path: the entity asks for
+        it for its availability, value, unit and attributes.
+        """
+        return self._cached(
+            ("local_only_reading", path), lambda: self._local_only_reading(path)
+        )
+
+    def _local_only_reading(self, path: str) -> Observation | None:
         observation = self.local_only_observations().get(path)
         if observation is None:
             return None
@@ -441,6 +465,27 @@ class LocalSelection:
         target = section(options, "targets").get(self._target_id, {})
         return target.get("local_values", False) is True
 
+    def uses_local(
+        self,
+        without_cloud: Callable[[], bool] | None = None,
+        *,
+        counters: bool = False,
+    ) -> bool:
+        """Local values come first: with the option on, or without a cloud.
+
+        ``without_cloud`` reports that the cloud cannot be used now; it is
+        asked once per update pass and only with the option off. Counters
+        use their own, stricter answer (a durable outage only).
+        """
+        if self.enabled:
+            return True
+        if without_cloud is None:
+            return False
+        down = self._cached(("without_cloud", counters), without_cloud)
+        if not counters:
+            self._without_cloud = down
+        return down
+
     def local_observations(
         self, *, counters: bool = False
     ) -> Mapping[str, LocalObservation]:
@@ -472,9 +517,19 @@ class LocalSelection:
         path: str,
         cloud: ResourceSnapshot | None,
         local: Mapping[str, LocalObservation] | None = None,
+        *,
+        without_cloud: Callable[[], bool] | None = None,
     ) -> ResourceSnapshot | None:
-        """Return the snapshot an existing entity should display."""
-        if cloud is None or not self.enabled or not eligible(path, cloud):
+        """Return the snapshot an existing entity should display.
+
+        ``without_cloud`` (see ``uses_local``) lets local values come first
+        while the cloud cannot be used, also with the option off.
+        """
+        if (
+            cloud is None
+            or not eligible(path, cloud)
+            or not self.uses_local(without_cloud)
+        ):
             if cloud is not None and path in self._shown_source:
                 self._note_source(path, "cloud")  # e.g. after switching the option off
             return cloud
@@ -501,10 +556,22 @@ class LocalSelection:
             )
 
     def counter_candidate(
-        self, path: str, cloud: ResourceSnapshot | None
+        self,
+        path: str,
+        cloud: ResourceSnapshot | None,
+        *,
+        without_cloud: Callable[[], bool] | None = None,
     ) -> ResourceSnapshot | None:
-        """Current local counter in the cloud entity's shape, if comparable."""
-        if cloud is None or not self.enabled or not counter_path(path):
+        """Current local counter in the cloud entity's shape, if comparable.
+
+        Offered with the option on or without a cloud; the counter rule
+        decides whether it may be shown.
+        """
+        if (
+            cloud is None
+            or not counter_path(path)
+            or not self.uses_local(without_cloud, counters=True)
+        ):
             return None
         if cloud.resource.metadata.writable:
             return None
@@ -514,46 +581,75 @@ class LocalSelection:
         return local_counter_snapshot(cloud, observation, self._target_id)
 
     def changed(self) -> bool:
-        """Report new local observations or a changed option since the last call.
+        """Report changed local readings or a changed option since the last call.
 
         Also with the option off while a local access exists: the per-source
         entities (P18) show the local reading independently of the option.
         Switching the option itself always counts as a change.
+
+        A reading counts as changed when its answer (value, unit, states), its
+        currency (it became current or no longer is) or the local access that
+        supplied it changed. Reading the same answer again is no change, so
+        it causes no entity update; the expiry of a reading is published by
+        the local source and counts as a change.
         """
         enabled = self.enabled
-        if not enabled and not self.has_local_access:
-            readings: tuple[tuple[str, float], ...] = ()
-            local_only: tuple[tuple[str, float], ...] = ()
-        else:
-            readings = tuple(
-                sorted(
-                    (path, item.observed_monotonic)
-                    for path, item in self.local_observations(counters=True).items()
-                )
-            )
-            # Readable local-only paths count, so new entities can be added;
-            # reading times only for paths with an enabled entity (P45).
-            observations = self.local_only_observations()
-            local_only = tuple(
-                sorted(
-                    (
-                        path,
-                        item.observed_monotonic
-                        if path in self._tracked_local_only
-                        else 0.0,
-                    )
-                    for path, item in observations.items()
-                )
-            )
-        marker = (enabled, readings + local_only)
-        if marker == self._last_marker:
-            return False
-        self._last_marker = marker
-        return True
+        readings: dict[str, _Reading] = {}
+        # Readable local-only paths count, so new entities can be added;
+        # their answers only for paths with an enabled entity (P45).
+        local_only: dict[str, _Reading | None] = {}
+        if enabled or self.has_local_access:
+            readable = self.local_only_observations()
+            tracked = self._tracked_local_only
+            for binding_id in self._local_bindings():
+                state = self._runtime.local_state(binding_id)
+                if state is None:
+                    continue
+                for observation in state.current_observations:
+                    path = observation.request.path
+                    if pair_for_path(path) is not None:
+                        readings[path] = (binding_id, observation)
+                    if path in readable:
+                        local_only[path] = (
+                            (binding_id, observation) if path in tracked else None
+                        )
+        writes = self._write_marker(readings)
+        previous = self._last_marker
+        self._last_marker = (enabled, readings, local_only, writes)
+        return not (
+            previous is not None
+            and previous[0] == enabled
+            and previous[3] == writes
+            and _same_readings(previous[1], readings)
+            and _same_readings(previous[2], local_only)
+        )
+
+    def _write_marker(self, readings: Mapping[str, _Reading]) -> tuple[object, ...]:
+        """What a confirmed cloud write changes about the readings.
+
+        A reading from before the write loses against the cloud (``select``),
+        so a newer reading with the same answer is still a change; a pending
+        write check waits for the first newer reading (``check_writes``).
+        """
+        if not self._confirmed_writes and not self._pending_checks:
+            return ()
+        older = frozenset(
+            path
+            for path, (_, item) in readings.items()
+            if (written := self._confirmed_writes.get(write_scope(path))) is not None
+            and item.observed_at <= written
+        )
+        pending = tuple(
+            (path, readings[path][1].observed_monotonic)
+            for path in self._pending_checks
+            if path in readings
+        )
+        return older, pending
 
     def summary(self, cloud: dict[str, ResourceSnapshot]) -> dict[str, Any]:
         """Diagnostics counts without values, paths or identifiers."""
-        local = self.local_observations() if self.enabled else {}
+        using = self.enabled or self._without_cloud
+        local = self.local_observations() if using else {}
         eligible_paths = [path for path, item in cloud.items() if eligible(path, item)]
         from .coordinator import SOURCE_STOPPED_CATEGORY
 
@@ -562,7 +658,7 @@ class LocalSelection:
         for path in eligible_paths:
             observation = local.get(path)
             reason: str | None
-            if not self.enabled:
+            if not using:
                 reason = "option_off"
             elif cloud[path].last_error_category == SOURCE_STOPPED_CATEGORY:
                 reason = "source_stopped"
@@ -591,6 +687,54 @@ class LocalSelection:
         }
 
 
+def same_answer(before: LocalObservation, after: LocalObservation) -> bool:
+    """Two readings of one path with exactly the same answer.
+
+    The decoded reading follows from the request and the received document,
+    so equal documents give equal readings; the reading times are ignored.
+    Numbers count as equal only with the same type and spelling.
+    """
+    return before is after or _same_json(before.document, after.document)
+
+
+def _same_json(before: object, after: object) -> bool:
+    if type(before) is not type(after):
+        return False
+    if isinstance(before, Mapping):
+        other = cast("Mapping[str, object]", after)
+        return before.keys() == other.keys() and all(
+            _same_json(value, other[key]) for key, value in before.items()
+        )
+    if isinstance(before, tuple):
+        items = cast("tuple[object, ...]", after)
+        return len(before) == len(items) and all(
+            map(_same_json, before, items, strict=True)
+        )
+    if isinstance(before, Decimal):
+        return str(before) == str(after)
+    return before == after
+
+
+def _same_readings(
+    before: Mapping[str, _Reading | None], after: Mapping[str, _Reading | None]
+) -> bool:
+    """The same paths, each from the same access with the same answer."""
+    if before.keys() != after.keys():
+        return False
+    for path, now in after.items():
+        then = before[path]
+        if then is now:
+            continue
+        if (
+            then is None
+            or now is None
+            or then[0] != now[0]
+            or not same_answer(then[1], now[1])
+        ):
+            return False
+    return True
+
+
 def eligible_path(path: str) -> bool:
     pair = pair_for_path(path)
     return pair is not None and not pair.counter
@@ -602,16 +746,17 @@ def counter_path(path: str) -> bool:
 
 
 def _counter_units_match(cloud: Resource, local_unit: str | None) -> bool:
-    """Same unit, or the established unitless kWh contract of energy counters."""
+    """Same unit, or an established unitless cloud contract: kWh for energy
+    counters, seconds for the working time of a heat source."""
     from .energy_contracts import is_energy_collection
 
     if canonical_unit(local_unit) == canonical_unit(cloud.metadata.unit):
         return True
-    return (
-        is_energy_collection(cloud)
-        and cloud.metadata.unit is None
-        and canonical_unit(local_unit) == "kWh"
-    )
+    if cloud.metadata.unit is not None:
+        return False
+    if is_energy_collection(cloud):
+        return canonical_unit(local_unit) == "kWh"
+    return is_working_time(cloud.path) and canonical_unit(local_unit) == "s"
 
 
 def local_counter_snapshot(

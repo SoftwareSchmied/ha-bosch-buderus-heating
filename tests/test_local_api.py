@@ -804,3 +804,129 @@ def test_system_information_contract_is_not_just_a_type_label(change):
     raw.update(change)
     with pytest.raises(LocalResourceError, match="invalid_schema"):
         read(raw)
+
+
+# ------------------------------------------ catalog lookups (O7, O9, O20, O62)
+
+
+def _full_scan(path, signal_ids=()):
+    """The lookup before O62: every template in catalog order."""
+    from custom_components.bosch_buderus_heating.local_api import catalog
+
+    catalog.validate_path(path)
+    for pattern, definition in catalog._PATTERNS:
+        if matched := pattern.fullmatch(path):
+            names = (p.name for p in definition.parameters if p.location == "path")
+            return make_request(
+                definition.template,
+                parameters=dict(zip(names, matched.groups(), strict=True)),
+                signal_ids=signal_ids,
+            )
+    raise LocalResourceError(Problem.INVALID_PATH)
+
+
+def _known_paths():
+    from custom_components.bosch_buderus_heating.local_polling._data import ANCHORS
+    from custom_components.bosch_buderus_heating.local_polling.policy import (
+        candidates,
+    )
+    from tests.test_local_capture import capture
+
+    paths = {request.path for request in candidates()} | set(ANCHORS)
+    paths |= {path for path, _ in capture()}
+    for definition in CATALOG:
+        names = [p for p in definition.parameters if p.location == "path"]
+        choices = [p.options[:3] or ("x1", "hs1", "zone2") for p in names]
+        for values in product(*choices):
+            path = definition.template
+            for parameter, value in zip(names, values, strict=True):
+                path = path.replace("{" + parameter.name + "}", str(value))
+            paths.add(path)
+    return sorted(paths)
+
+
+def test_the_indexed_lookup_matches_a_scan_of_all_templates():
+    paths = _known_paths()
+    assert len(paths) > 1300
+    for path in [*paths, "/unknown/x", "/heatSources", "/x", "/signals"]:
+        signal_ids = (path.removeprefix("/signals/"),)
+        try:
+            expected = _full_scan(path, signal_ids)
+        except LocalResourceError as error:
+            with pytest.raises(LocalResourceError) as raised:
+                request_for_path(path, signal_ids=signal_ids)
+            assert raised.value.problem is error.problem
+            continue
+        assert request_for_path(path, signal_ids=signal_ids) == expected
+
+
+def test_the_api_tables_keep_every_entry_and_share_equal_parts():
+    import runpy
+
+    from custom_components.bosch_buderus_heating.local_api import _data, catalog
+
+    fresh = runpy.run_path(_data.__file__)
+    for name in ("SCHEMAS", "OPERATIONS"):
+        assert getattr(catalog, name) is getattr(_data, name)
+        assert repr(getattr(_data, name)) == repr(fresh[name])
+        assert getattr(_data, name) == fresh[name]
+
+    def containers(value, found):
+        if isinstance(value, dict | list):
+            found.add(id(value))
+            for child in value.values() if isinstance(value, dict) else value:
+                containers(child, found)
+        return found
+
+    shared = containers(_data.OPERATIONS, containers(_data.SCHEMAS, set()))
+    separate = containers(fresh["OPERATIONS"], containers(fresh["SCHEMAS"], set()))
+    assert len(shared) < len(separate) / 2
+    # Equal parts of another type or key order stay apart.
+    seen = {}
+    one = catalog._shared({"a": 1, "b": True}, seen)[0]
+    assert catalog._shared({"a": 1, "b": True}, seen)[0] is one
+    assert catalog._shared({"b": True, "a": 1}, seen)[0] is not one
+    assert catalog._shared({"a": True, "b": True}, seen)[0] is not one
+    assert catalog._shared({"a": 1.0, "b": True}, seen)[0] is not one
+
+
+def test_response_schemas_are_kept_per_request_but_never_a_rejection():
+    from custom_components.bosch_buderus_heating.local_api import catalog
+
+    request = request_for_path("/heatSources/returnTemperature")
+    catalog._cached_schema.cache_clear()
+    first = catalog.response_schema(request)
+    assert catalog.response_schema(request) is first
+    assert catalog.response_schema(replace(request)) is first
+    assert catalog._cached_schema.cache_info().hits == 2
+    forged = replace(request, path="/heatSources/actualSupplyTemperature")
+    for _ in range(2):
+        with pytest.raises(LocalResourceError):
+            catalog.response_schema(forged)
+    assert catalog._cached_schema.cache_info().currsize == 1
+    unhashable = replace(request, query=(("startDate", ["2026-11-01"]),))
+    with pytest.raises(LocalResourceError):
+        catalog.response_schema(unhashable)
+
+
+@pytest.mark.parametrize("code", range(0, 256))
+def test_the_character_check_is_unchanged(code):
+    from custom_components.bosch_buderus_heating.local_api.catalog import (
+        validate_path,
+    )
+
+    character = chr(code)
+    path = f"/heatSources/a{character}b"
+    rejected = character in "\\%?#/" or code < 33 or code == 127
+    if rejected and character != "/":
+        with pytest.raises(LocalResourceError):
+            validate_path(path)
+    elif character != "/":
+        validate_path(path)
+
+
+def test_parsed_key_names_are_shared():
+    first = load_json(b'{"unitOfMeasure": "C", "values": [{"total": 1}]}')
+    second = load_json(b'{"unitOfMeasure": "K", "values": [{"total": 2}]}')
+    assert next(iter(first)) is next(iter(second))
+    assert next(iter(first["values"][0])) is next(iter(second["values"][0]))

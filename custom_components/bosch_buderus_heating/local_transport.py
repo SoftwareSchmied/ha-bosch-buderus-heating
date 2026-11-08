@@ -19,7 +19,7 @@ import aiohttp
 from yarl import URL
 
 from .ha_compat import local_header_limits
-from .local_budget import BudgetLease, LocalReadBudget
+from .local_budget import MAX_LOCAL_PAUSE_SECONDS, BudgetLease, LocalReadBudget
 from .local_credentials import validate_local_token
 from .local_probe import (
     MAX_BODY_BYTES,
@@ -267,6 +267,10 @@ async def inspect_local_certificate(
 
 
 def _retry_after(value: str | None) -> float | None:
+    """Seconds of a Retry-After header, at most ``MAX_LOCAL_PAUSE_SECONDS``.
+
+    A date in the past means no pause (0).
+    """
     if value is None or len(value) > 128:
         return None
     try:
@@ -279,7 +283,7 @@ def _retry_after(value: str | None) -> float | None:
             delay = max(0.0, (date - datetime.now(UTC)).total_seconds())
     except ValueError, OverflowError, TypeError:
         return None
-    return delay if math.isfinite(delay) else None
+    return min(delay, MAX_LOCAL_PAUSE_SECONDS) if math.isfinite(delay) else None
 
 
 class _RepeatBlocked(Exception):

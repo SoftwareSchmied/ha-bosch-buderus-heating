@@ -123,14 +123,16 @@ def test_complete_classification_and_bounded_domains_have_no_admin_or_history():
         "energy": 9,
         "diagnostics": 4,
         "counters": 6,
-        "metadata": 23,
+        "metadata": 13,
+        "system_metadata": 8,
+        "firmware": 1,
         "static": 3,
         "history": 49,
-        "administration": 14,
+        "administration": 15,
         "discovery": 1,
     }
     requests = list(candidates())
-    assert len(requests) == len({r.target for r in requests}) == 1172
+    assert len(requests) == len({r.target for r in requests}) == 1140
     assert all(
         not r.query and category(r) not in {PollClass.HISTORY, PollClass.ADMINISTRATION}
         for r in requests
@@ -209,8 +211,8 @@ def test_timeout_does_not_refresh_or_prematurely_invalidate_known_value():
 @pytest.mark.parametrize(
     "status,problem,delays",
     [
-        (403, "forbidden", [3600, 21600, 86400, 86400]),
-        (404, "not_found", [3600, 21600, 86400, 86400]),
+        (403, "forbidden", [3600, 21600, 604800, 604800]),
+        (404, "not_found", [3600, 21600, 604800, 604800]),
         (200, "invalid_response", [900, 3600, 86400, 86400]),
         (None, TransportFailure.TIMEOUT, [300, 900, 3600, 86400]),
     ],
@@ -339,7 +341,7 @@ def test_discovery_reaches_late_hc2_solar_and_every_fixed_candidate_despite_erro
             now = max(now + 0.25, planner.next_wake(now))
     assert planner.exhausted
     assert {path for _, path in starts} == {r.path for r in candidates()}
-    assert len(planner.inventory.records) == 1172
+    assert len(planner.inventory.records) == 1140
     assert all(not r.confirmed for r in planner.inventory.records.values())
     assert any(path == "/heatingCircuits/hc2/maxFlowTemp" for _, path in starts)
     batches = []
@@ -737,3 +739,221 @@ def test_slice_time_limit_and_explicit_deadline_reserve_are_independent():
     assert planner._explicit(115) is None
     planner.expire_operations(120)
     assert operation.done and operation.problem == "deadline"
+
+
+# ------------------------------------------- reading plan (O42, O43, O47)
+
+
+def signal_request(name):
+    return make_request(
+        "/signals/{signalId}", parameters={"signalId": name}, signal_ids=(name,)
+    )
+
+
+def test_fixed_values_are_read_rarely_and_serial_numbers_never():
+    hourly = request_for_path("/gateway/tzInfo/timeZone")
+    assert category(hourly) is PollClass.SYSTEM_METADATA
+    for path in (
+        "/gateway/dataProcessing/status",
+        "/gateway/tzInfo/timeZone",
+        "/system/basicInfo",
+        "/system/bus",
+        "/system/iSRC/installationStatus",
+        "/system/iSRC/supportStatus",
+        "/system/variableTariff/supportStatus",
+        "/system/variableTariff/tariffId",
+    ):
+        assert period(request_for_path(path), 60) == 3600, path
+    # Device and zone values keep 15 min: a low battery or a lost radio
+    # pairing shows up as before, also without a cloud.
+    for path in (
+        "/devices/device1/battery",
+        "/devices/device1/rfPairedStatus",
+        "/devices/device1/name",
+        "/devices/device1/assignedHC",
+        "/devices/device1/zoneId",
+        "/devices/device1/type",
+        "/devices/device1/versionFirmware",
+        "/devices/uhc/assignedTo",
+        "/zones/zone1/name",
+        "/zones/zone1/icon",
+        "/zones/configuration",
+        "/heatSources/hs1/heatPumpType",
+    ):
+        request = request_for_path(path)
+        assert category(request) is PollClass.METADATA, path
+        assert period(request, 60) == 900, path
+    firmware = request_for_path("/gateway/versionFirmware")
+    assert category(firmware) is PollClass.FIRMWARE and period(firmware, 60) == 900
+    assert period(request_for_path("/gateway/brand"), 60) == 86400
+    for part in ("Day", "Month", "Year"):
+        request = signal_request(f"SC.InstallationDate.{part}")
+        assert category(request) is PollClass.STATIC
+        assert period(request, 60) == 86400
+    other = signal_request("SC.RTC.RelativeTimer")
+    assert category(other) is PollClass.LIVE and period(other, 60) == 60
+    # A paired cloud reading still keeps the local reading at its pace.
+    assert period(hourly, 60, 300) == 300
+    # O47: device serial numbers are neither searched nor read.
+    assert not any(r.path.endswith("/sgtin") for r in candidates())
+    with pytest.raises(ValueError, match="local_periodic_request_required"):
+        ResourceInventory(CONTEXT.identity).add(
+            request_for_path("/devices/device1/sgtin"), 0
+        )
+
+
+def stored_negative(problem="not_found", status=404, rounds=3):
+    planner = PollPlanner(ResourceInventory(CONTEXT.identity), 0)
+    record = planner.inventory.add(REQUEST, 0)
+    now = 0
+    for _ in range(rounds):
+        planner.inventory.accept(missing(REQUEST, status=status, problem=problem), now)
+        now = record.due
+    return planner, record, now
+
+
+def test_a_path_not_found_three_times_is_asked_again_weekly():
+    planner, record, now = stored_negative()
+    assert record.failures == 3 and record.problem == "not_found"
+    assert record.due - (3600 + 21600) == 604800
+    saved = checkpoint(planner, 3600 + 21600)
+    row = saved["records"][0]
+    assert row["problem"] == "not_found" and row["remaining"] == 604800
+    # A firmware change and a new search ask at once again.
+    planner.reconsider(now)
+    assert record.due == now and record.failures == 0
+    planner, record, _ = stored_negative()
+    planner.restart_search(30000)
+    assert record.due == 30000 and record.failures == 0
+
+
+@pytest.mark.parametrize("schema_changed", [False, True])
+def test_restored_negatives_keep_reason_failures_and_pause(schema_changed):
+    planner, _, _ = stored_negative()
+    saved = checkpoint(planner, 3600 + 21600)
+    if schema_changed:
+        saved["revision"] = "f" * 64
+        saved["records"][0]["schema"] = "0" * 64
+    restored = PollPlanner(ResourceInventory(CONTEXT.identity), 1000)
+    restore(restored, saved, 1000)
+    record = restored.inventory.records[REQUEST.target]
+    assert (record.problem, record.failures, record.due) == (
+        "not_found",
+        3,
+        1000 + 604800,
+    )
+    view = restored.inventory.view(record, 1000, source_ready=True)
+    assert view.problem == "not_found" and not view.available
+
+
+def test_a_changed_schema_still_asks_soon_after_other_failures():
+    planner, _, _ = stored_negative(TransportFailure.TIMEOUT, None)
+    saved = checkpoint(planner, 0)
+    saved["records"][0]["schema"] = "0" * 64
+    restored = PollPlanner(ResourceInventory(CONTEXT.identity), 1000)
+    restore(restored, saved, 1000)
+    record = restored.inventory.records[REQUEST.target]
+    assert record.due == 1000 and record.problem == TransportFailure.TIMEOUT
+
+
+def test_a_changed_access_asks_restored_negatives_at_once():
+    planner, _, _ = stored_negative()
+    planner.access_key = "1:1"
+    saved = checkpoint(planner, 0)
+    restored = PollPlanner(ResourceInventory(CONTEXT.identity), 1000)
+    restored.access_key = "1:2"
+    restore(restored, saved, 1000)
+    record = restored.inventory.records[REQUEST.target]
+    assert record.due == 1000 and record.failures == 0
+
+
+def test_older_schedules_and_dropped_serial_numbers_still_load():
+    planner, _, _ = stored_negative()
+    saved = checkpoint(planner, 0)
+    del saved["records"][0]["problem"]  # saved before O94
+    restored = PollPlanner(ResourceInventory(CONTEXT.identity), 1000)
+    restore(restored, saved, 1000)
+    assert restored.inventory.records[REQUEST.target].problem is None
+    # A record of a path no longer read is dropped with the new revision.
+    saved["revision"] = "f" * 64
+    saved["records"].append({**saved["records"][0], "path": "/devices/device1/sgtin"})
+    restore(restored, saved, 1000)
+    assert list(restored.inventory.records) == [REQUEST.target]
+    # ... but never within the same revision.
+    from custom_components.bosch_buderus_heating.local_polling.policy import REVISION
+
+    saved["revision"] = REVISION
+    with pytest.raises(ScheduleStorageError):
+        restore(restored, saved, 1000)
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("problem", "Not Found"),
+        ("problem", 404),
+        ("problem", "x" * 65),
+        ("remaining", 604801),
+        ("other", 1),
+    ],
+)
+def test_invalid_stored_records_are_rejected(field, value):
+    planner, _, _ = stored_negative()
+    saved = checkpoint(planner, 0)
+    saved["records"][0][field] = value
+    with pytest.raises(ScheduleStorageError):
+        restore(PollPlanner(ResourceInventory(CONTEXT.identity), 0), saved, 0)
+
+
+# ------------------------------------------------- schema keys (O60, O61)
+
+
+def test_schema_keys_stay_byte_identical_and_are_worked_out_once(monkeypatch):
+    import hashlib
+
+    from custom_components.bosch_buderus_heating.local_api import catalog
+    from custom_components.bosch_buderus_heating.local_polling import storage
+
+    # Keys of earlier releases: stored schedules keep matching.
+    assert (
+        storage.schema_key(REQUEST)
+        == "d38338bb0ed24522235538dd0e9bad6d8cfb2a6d9df8a2cb34b5fc1908147991"
+    )
+    assert (
+        storage.schema_key(signal_request("SC.InstallationDate.Day"))
+        == "269cdf738e77f7e9a0a6f8dda0bf0114e58c2de2908648385708b557f23fb9ea"
+    )
+    assert (
+        storage.schema_key(request_for_path("/heatSources/hs1/workingTime"))
+        == "5827c8fb5f01acdd045d7449df27c6cd69e940380537fa51cc56bd1f42cf9cf2"
+    )
+    for request in (*candidates(), signal_request("any")):
+        assert (
+            storage.schema_key(request)
+            == hashlib.sha256(
+                repr(
+                    (
+                        request.definition,
+                        catalog.OPERATIONS[request.definition.template]["response"],
+                    )
+                ).encode()
+            ).hexdigest()
+        )
+    # A restore parses each stored path once.
+    planner = PollPlanner(ResourceInventory(CONTEXT.identity), 0)
+    for request in list(candidates())[:50]:
+        planner.inventory.add(request, 0)
+    saved = checkpoint(planner, 0)
+    parsed = []
+    original = storage.request_for_path
+
+    def counted(path, **kwargs):
+        parsed.append(path)
+        return original(path, **kwargs)
+
+    monkeypatch.setattr(storage, "request_for_path", counted)
+    monkeypatch.setattr(catalog, "request_for_path", counted)
+    catalog._cached_schema.cache_clear()
+    restore(PollPlanner(ResourceInventory(CONTEXT.identity), 0), saved, 0)
+    # Once per stored path; the schema keys of known templates are kept.
+    assert len(parsed) == len(saved["records"]) == 50

@@ -450,15 +450,32 @@ async def test_rejected_sign_in_during_the_deferred_discovery_asks_for_sign_in(
         assert {"climate", "number", "select"} <= {
             current[unique_id].domain for unique_id in controls
         }
-        assert set(controls.values()) == {"unavailable"}
+        # O101: the climate is shown like the sensors while its readings are
+        # valid, but accepts no change; every other control is unavailable.
+        climates = {uid for uid in controls if current[uid].domain == "climate"}
+        assert {state for uid, state in controls.items() if uid not in climates} == {
+            "unavailable"
+        }
+        for unique_id in climates:
+            sent = len(setup.cloud.requests)
+            with pytest.raises(HomeAssistantError):
+                await hass.services.async_call(
+                    "climate",
+                    "set_temperature",
+                    {"entity_id": current[unique_id].entity_id, "temperature": 21},
+                    blocking=True,
+                )
+            assert len(setup.cloud.requests) == sent
         # Read-only readings follow the documented display rule: a reading of
         # the working cycle stays shown within its validity after a failed
         # cycle; everything else is unavailable. Nothing comes from storage.
         modulation = next(uid for uid in states if "modulation" in uid.lower())
         assert states[modulation].state == "40.0"
-        assert {state.state for uid, state in states.items() if uid != modulation} == {
-            "unavailable"
-        }
+        assert {
+            state.state
+            for uid, state in states.items()
+            if uid != modulation and uid not in climates
+        } == {"unavailable"}
         report = coordinator.startup_inventory_diagnostics(setup.clock.now)
         assert report["discovery_result"] != "success"
         assert inventory.resources(GATEWAY.gateway_id) == stored
@@ -840,3 +857,63 @@ async def test_reported_age_is_the_age_of_the_confirmed_resources(
     assert _start_from_inventory(coordinator, inventory, "gateway_list_timeout")
     report = coordinator.startup_inventory_diagnostics(0)
     assert report["inventory_age_hours"] == 5
+
+
+async def test_confirmations_are_written_at_most_hourly(hass: HomeAssistant) -> None:
+    """O66: "still seen" saves at most hourly; content changes save as before."""
+    from importlib import import_module
+
+    # The package re-exports a function under the module's name.
+    module = import_module(f"{PACKAGE}.discovery_inventory")
+    clock = Clock()
+    inventory = discovery_inventory(hass, "confirm-entry")
+    inventory._loaded = True
+    saves: list[int] = []
+    inventory.store.async_delay_save = lambda data, delay: saves.append(delay)
+    other = Gateway("gateway-two")
+    with patch.object(module, "monotonic", clock):
+        inventory.record(GATEWAY, {MODULATION: leaf(MODULATION, 40.0)})
+        inventory.record(other, {MODULATION: leaf(MODULATION, 41.0)})
+        assert saves == [module.SAVE_DELAY_SECONDS] * 2
+        saves.clear()
+        # Older than the age limit in memory and on disk.
+        old = datetime.now(UTC) - MAX_AGE - timedelta(days=1)
+        for gateway in (GATEWAY, other):
+            stored = inventory.gateway(gateway.gateway_id)
+            stored.saved_at = old
+            stored.resources[MODULATION].seen = old
+        assert inventory.resources(GATEWAY.gateway_id) == {}
+        inventory.confirm(GATEWAY.gateway_id, [MODULATION])
+        assert saves == [module.SAVE_DELAY_SECONDS]  # first confirmation
+        # Ten minutes later, another gateway: counted at once, not written.
+        clock.now += 600
+        inventory.confirm(other.gateway_id, [MODULATION])
+        assert saves == [module.SAVE_DELAY_SECONDS]
+        assert MODULATION in inventory.resources(other.gateway_id)
+        assert inventory.startup_gateways([other.gateway_id]) == (other,)
+        # A real content change is still written with the usual delay and
+        # carries the held confirmation along.
+        inventory.forget(GATEWAY.gateway_id, ["/not-stored"])
+        assert saves == [module.SAVE_DELAY_SECONDS]  # nothing removed
+        inventory.record(other, {MODE: leaf(MODE, 1.0)})
+        assert saves == [module.SAVE_DELAY_SECONDS] * 2
+        reloaded = dict(module._gateways(inventory._data(), datetime.now(UTC)))
+        assert MODULATION in reloaded[other.gateway_id].resources
+        # Just under an hour after the first: still held.
+        clock.now += module.CONFIRM_SAVE_SECONDS - 601
+        inventory.confirm(GATEWAY.gateway_id, [MODULATION])
+        assert len(saves) == 2
+        # One hour after the first written confirmation: written again.
+        clock.now += 1
+        inventory.confirm(GATEWAY.gateway_id, [MODULATION])
+        assert saves == [module.SAVE_DELAY_SECONDS] * 3
+        # The age limit still applies to parts nobody confirms.
+        stored = inventory.gateway(GATEWAY.gateway_id)
+        stored.resources[MODULATION].seen = old
+        clock.now += module.CONFIRM_SAVE_SECONDS
+        inventory.confirm(GATEWAY.gateway_id, ["/not-stored"])
+        assert len(saves) == 3  # nothing confirmed, nothing written
+        assert inventory.resources(GATEWAY.gateway_id) == {}
+        reloaded = dict(module._gateways(inventory._data(), datetime.now(UTC)))
+        assert reloaded[GATEWAY.gateway_id].resources == {}
+        assert MODULATION in reloaded[other.gateway_id].resources

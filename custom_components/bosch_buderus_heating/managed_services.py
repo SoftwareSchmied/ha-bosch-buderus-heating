@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from functools import partial
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from homeassistant.helpers import issue_registry as ir
@@ -30,6 +31,12 @@ class ManagedServices:
         self.owner = owner
         self.notifications: dict[str, FaultNotifications] = {}
         self._jobs: dict[str, asyncio.Task[None]] = {}
+        # Managers of gateways no longer configured, still saving on close.
+        self._closing: set[asyncio.Task[None]] = set()
+        # The configured gateways per stored entry version (data, options).
+        self._gateway_cache: (
+            tuple[object, object, int, tuple[str, ...] | None] | None
+        ) = None
         self._closed = False
         self._unsubscribe = owner.connections.subscribe(self.changed)
 
@@ -61,18 +68,58 @@ class ManagedServices:
         )
         return sources
 
+    def _gateways(self) -> tuple[str, ...] | None:
+        """The configured gateways, parsed once per stored entry version."""
+        entry = self.owner.entry
+        data, options = entry.data, entry.options
+        cached = self._gateway_cache
+        if (
+            cached is not None
+            and cached[0] is data
+            and cached[1] is options
+            and cached[2] == entry.version
+        ):
+            return cached[3]
+        try:
+            gateways: tuple[str, ...] | None = notification_gateways(entry)
+        except ValueError:
+            gateways = None
+        # Only read-only mappings: a plain dict could change in place.
+        self._gateway_cache = (
+            (data, options, entry.version, gateways)
+            if isinstance(data, MappingProxyType)
+            and isinstance(options, MappingProxyType)
+            else None
+        )
+        return gateways
+
+    def _remove(self, gateway: str) -> None:
+        """A gateway no longer configured: end its notification at once."""
+        manager = self.notifications.pop(gateway)
+        job = self._jobs.pop(gateway, None)
+        if job is not None:
+            job.cancel()
+        manager.stop()  # removes the notification now
+        task = self.owner.hass.async_create_background_task(
+            manager.async_close(), "home_comfort_notifications", eager_start=False
+        )
+        self._closing.add(task)
+        task.add_done_callback(self._closing.discard)
+
     def changed(self) -> None:
         if self._closed:
             return
         sources = self._sources()
+        configured = self._gateways()
+        if configured is not None:
+            for gateway in tuple(self.notifications):
+                if gateway not in configured:
+                    self._remove(gateway)
         for gateway, manager in self.notifications.items():
             if manager.coordinator is not sources.get(gateway):
                 manager.detach_source()
             manager.async_update()
-        try:
-            gateways = notification_gateways(self.owner.entry)
-        except ValueError:
-            gateways = tuple(sources)
+        gateways = configured if configured is not None else tuple(sources)
         for gateway in gateways:
             source = sources.get(gateway)
             existing = self.notifications.get(gateway)
@@ -200,7 +247,8 @@ class ManagedServices:
             task.cancel()
         await asyncio.gather(*tuple(self._jobs.values()), return_exceptions=True)
         await asyncio.gather(
-            *(manager.async_close() for manager in self.notifications.values())
+            *(manager.async_close() for manager in self.notifications.values()),
+            *tuple(self._closing),
         )
 
     def remove_owner(self) -> None:

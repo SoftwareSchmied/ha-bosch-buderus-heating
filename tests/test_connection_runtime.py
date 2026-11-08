@@ -365,35 +365,235 @@ async def test_removing_last_access_keeps_targets_registry_and_preferences(hass)
 
 
 @pytest.mark.parametrize(
-    "mode", ["all", "missing_gateway", "missing_device", "wrong_account"]
+    "mode",
+    ["all", "missing_gateway", "missing_device", "wrong_account", "none_found"],
 )
-async def test_reauthentication_confirms_every_assigned_target(hass, mode):
+async def test_reauthentication_confirms_the_account_and_names_missing_targets(
+    hass, mode
+):
+    from homeassistant.helpers import issue_registry as ir
+
+    from custom_components.bosch_buderus_heating.configuration_management import (
+        not_found_bindings,
+    )
+
     entry, cloud, _ = entry_for(hass)
     management = ConfigurationManagement(hass, entry)
     edit = management.edit(cloud)
     before = deepcopy(dict(entry.data))
     tokens = AuthTokens("new-access", "new-refresh", 10**12, scope=("bacon",))
     selected = EntryConfiguration(entry, cloud).cloud_data()
-    gateways = (
-        (Gateway("000123"), Gateway("gateway-b"))
-        if mode != "missing_gateway"
-        else (Gateway("000123"),)
-    )
-    devices = ("softener",) if mode != "missing_device" else ()
+    gateways = {
+        "missing_gateway": (Gateway("000123"),),
+        "none_found": (),
+    }.get(mode, (Gateway("000123"), Gateway("gateway-b")))
+    devices = () if mode in ("missing_device", "none_found") else ("softener",)
     account = selected["bacon_account"] if mode != "wrong_account" else "wrong"
+    missing = {
+        key
+        for key, value in entry.data["bindings"].items()
+        if value["locator"]["value"]
+        == {"missing_gateway": "gateway-b", "missing_device": "softener"}.get(mode)
+    }
     with (
         patch(MODULE + ".PointTClient.get_gateways", AsyncMock(return_value=gateways)),
         patch(MODULE + ".discover", AsyncMock(return_value=(devices, account))),
     ):
-        if mode == "all":
-            await management.async_reauthenticate(edit, tokens)
-            assert EntryConfiguration(entry, cloud).tokens() == tokens
-            assert entry.data["connections"][cloud]["auth_epoch"] == 1
-            assert entry.data["connections"]["local"] == before["connections"]["local"]
-        else:
-            with pytest.raises(ConfigurationError, match="reauth_targets_missing"):
+        if mode in ("wrong_account", "none_found"):
+            # Another account, or nothing of this access: refused, unchanged.
+            with pytest.raises(
+                ConfigurationError,
+                match="reauth_wrong_account"
+                if mode == "wrong_account"
+                else "reauth_targets_missing",
+            ):
                 await management.async_reauthenticate(edit, tokens)
             assert entry.data == before
+            assert not not_found_bindings(hass, entry, cloud)
+            return
+        await management.async_reauthenticate(edit, tokens)
+    assert EntryConfiguration(entry, cloud).tokens() == tokens
+    assert entry.data["connections"][cloud]["auth_epoch"] == 1
+    assert entry.data["connections"]["local"] == before["connections"]["local"]
+    # A missing switched-on target stays and is named in a repair note.
+    assert entry.data["bindings"] == before["bindings"]
+    assert set(not_found_bindings(hass, entry, cloud)) == missing
+    issues = [
+        issue
+        for (domain, key), issue in ir.async_get(hass).issues.items()
+        if domain == DOMAIN and key.startswith("cloud_targets_not_found_")
+    ]
+    assert len(issues) == (1 if missing else 0)
+    if missing:
+        assert issues[0].translation_placeholders["count"] == "1"
+        assert issues[0].is_persistent and not issues[0].is_fixable
+        # Switching it off ends the note; nothing else changes.
+        management.set_targets_enabled(
+            management.edit(cloud),
+            {
+                key
+                for key, value in entry.data["bindings"].items()
+                if value["connection_id"] == cloud
+            }
+            - missing,
+        )
+        assert not not_found_bindings(hass, entry, cloud)
+
+
+def _cloud_only_entry(hass, *, evidence):
+    """Two PointT systems of one access; with or without a stored account."""
+    snapshot = convert_legacy_configuration(
+        OWNER, legacy(["000123", "gateway-b"], []), {}
+    )
+    data, options = snapshot.to_data(), snapshot.to_options()
+    cloud = next(iter(snapshot.connections))
+    if not evidence:
+        data["connections"][cloud]["legacy_bacon_account"] = ""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        entry_id=OWNER,
+        version=4,
+        minor_version=1,
+        data=data,
+        options=options,
+    )
+    entry.add_to_hass(hass)
+    return entry, cloud
+
+
+def _signed_in(subject):
+    from tests.test_configuration import token
+
+    return AuthTokens(token(subject), "new-refresh", 10**12)
+
+
+async def test_the_same_account_with_a_missing_system_is_accepted(hass):
+    from custom_components.bosch_buderus_heating.bacon.models import account_key
+    from custom_components.bosch_buderus_heating.configuration_management import (
+        not_found_bindings,
+    )
+    from tests.test_configuration import SUBJECT
+
+    entry, cloud = _cloud_only_entry(hass, evidence=True)
+    management = ConfigurationManagement(hass, entry)
+    tokens = _signed_in(SUBJECT)
+    with patch(
+        MODULE + ".PointTClient.get_gateways",
+        AsyncMock(return_value=(Gateway("000123"),)),
+    ):
+        await management.async_reauthenticate(management.edit(cloud), tokens)
+    assert EntryConfiguration(entry, cloud).tokens() == tokens
+    assert len(not_found_bindings(hass, entry, cloud)) == 1  # gateway-b
+    # From now on the account itself is stored, only as a hash.
+    evidence = entry.data["connections"][cloud]["account_evidence"]
+    assert evidence == {"account_key": account_key(SUBJECT)}
+    assert SUBJECT not in str(entry.data["connections"][cloud]["account_evidence"])
+
+
+async def test_another_account_seeing_a_shared_system_is_refused(hass):
+    entry, cloud = _cloud_only_entry(hass, evidence=True)
+    management = ConfigurationManagement(hass, entry)
+    before = deepcopy(dict(entry.data))
+    listing = AsyncMock(return_value=(Gateway("000123"),))
+    with (
+        patch(MODULE + ".PointTClient.get_gateways", listing),
+        pytest.raises(ConfigurationError, match="reauth_wrong_account"),
+    ):
+        await management.async_reauthenticate(
+            management.edit(cloud), _signed_in("family-member")
+        )
+    assert entry.data == before
+    listing.assert_not_awaited()
+
+
+@pytest.mark.parametrize("found", [True, False])
+async def test_without_a_stored_account_a_visible_system_confirms_it(hass, found):
+    from custom_components.bosch_buderus_heating.bacon.models import account_key
+
+    entry, cloud = _cloud_only_entry(hass, evidence=False)
+    management = ConfigurationManagement(hass, entry)
+    before = deepcopy(dict(entry.data))
+    tokens = _signed_in("family-member")
+    with patch(
+        MODULE + ".PointTClient.get_gateways",
+        AsyncMock(return_value=(Gateway("000123"),) if found else ()),
+    ):
+        if not found:
+            with pytest.raises(ConfigurationError, match="reauth_targets_missing"):
+                await management.async_reauthenticate(management.edit(cloud), tokens)
+            assert entry.data == before
+            return
+        await management.async_reauthenticate(management.edit(cloud), tokens)
+    assert EntryConfiguration(entry, cloud).tokens() == tokens
+    assert entry.data["connections"][cloud]["account_evidence"] == {
+        "account_key": account_key("family-member")
+    }
+
+
+@pytest.mark.parametrize("evidence", [True, False])
+async def test_an_access_without_systems_needs_its_stored_account(hass, evidence):
+    from tests.test_configuration import SUBJECT
+
+    entry, cloud = _cloud_only_entry(hass, evidence=evidence)
+    management = ConfigurationManagement(hass, entry)
+    bindings = {
+        key
+        for key, value in entry.data["bindings"].items()
+        if value["connection_id"] == cloud
+    }
+    management.set_targets_enabled(management.edit(cloud), set())
+    management.forget_bindings(management.edit(cloud), bindings)
+    before = deepcopy(dict(entry.data))
+    listing = AsyncMock(return_value=())
+    with patch(MODULE + ".PointTClient.get_gateways", listing):
+        with pytest.raises(
+            ConfigurationError,
+            match="reauth_wrong_account" if evidence else "reauth_no_targets",
+        ):
+            await management.async_reauthenticate(
+                management.edit(cloud), _signed_in("family-member")
+            )
+        assert entry.data == before
+        if evidence:
+            tokens = _signed_in(SUBJECT)
+            await management.async_reauthenticate(management.edit(cloud), tokens)
+            assert EntryConfiguration(entry, cloud).tokens() == tokens
+        else:
+            # Without a stored account nothing can confirm it.
+            with pytest.raises(ConfigurationError, match="reauth_no_targets"):
+                await management.async_reauthenticate(
+                    management.edit(cloud), _signed_in(SUBJECT)
+                )
+    listing.assert_not_awaited()
+
+
+async def test_missing_switched_off_targets_never_block_a_sign_in(hass):
+    """A removed, switched-off gateway and Bacon device are not looked up."""
+    entry, cloud, _ = entry_for(hass)
+    management = ConfigurationManagement(hass, entry)
+    gateway = next(
+        key
+        for key, value in entry.data["bindings"].items()
+        if value["locator"]["value"] == "000123"
+    )
+    management.set_targets_enabled(management.edit(cloud), {gateway})
+    tokens = AuthTokens("new-access", "new-refresh", 10**12, scope=("bacon",))
+    bacon = AsyncMock(side_effect=AssertionError("switched-off device looked up"))
+    with (
+        patch(
+            MODULE + ".PointTClient.get_gateways",
+            AsyncMock(return_value=(Gateway("000123"),)),
+        ),
+        patch(MODULE + ".discover", bacon),
+    ):
+        await management.async_reauthenticate(management.edit(cloud), tokens)
+    assert EntryConfiguration(entry, cloud).tokens() == tokens
+    bacon.assert_not_awaited()
+    from custom_components.bosch_buderus_heating.configuration_management import (
+        not_found_bindings,
+    )
+
+    assert not not_found_bindings(hass, entry, cloud)
 
 
 @pytest.mark.parametrize(

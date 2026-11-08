@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from enum import StrEnum
 from time import time
 
@@ -91,6 +91,34 @@ class ResourceMetadata:
     availability_flags_valid: bool = True
 
 
+# O25: equal metadata objects are shared between resources and polls; the
+# table is bounded, a new metadata beyond it simply stays unshared.
+MAX_SHARED_METADATA = 2048
+_SHARED_METADATA: dict[object, ResourceMetadata] = {}
+_METADATA_FIELDS = tuple(item.name for item in fields(ResourceMetadata))
+
+
+def _typed(value: object) -> object:
+    """A key that also tells 0, 0.0 and False apart, also inside tuples."""
+    if isinstance(value, tuple):
+        return tuple(_typed(item) for item in value)
+    return type(value), value
+
+
+def shared_metadata(metadata: ResourceMetadata) -> ResourceMetadata:
+    """The one stored object equal to ``metadata`` with the same types."""
+    key = tuple(_typed(getattr(metadata, name)) for name in _METADATA_FIELDS)
+    try:
+        shared = _SHARED_METADATA.get(key)
+    except TypeError:  # an unhashable value: kept as it is
+        return metadata
+    if shared is not None:
+        return shared
+    if len(_SHARED_METADATA) < MAX_SHARED_METADATA:
+        _SHARED_METADATA[key] = metadata
+    return metadata
+
+
 @dataclass(frozen=True, slots=True)
 class Resource:
     """A parsed PointT resource without unknown vendor fields."""
@@ -104,6 +132,9 @@ class Resource:
     has_values: bool = False
     unknown_fields: frozenset[str] = frozenset()
     program_fields: dict[str, JsonValue] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "metadata", shared_metadata(self.metadata))
 
 
 @dataclass(frozen=True, slots=True)

@@ -5,10 +5,10 @@ from __future__ import annotations
 import asyncio
 import logging
 import math
-from collections import Counter
-from collections.abc import Awaitable, Callable, Iterator, Mapping
+from collections import Counter, deque
+from collections.abc import Awaitable, Callable, Iterable, Iterator, Mapping
 from contextlib import ExitStack, contextmanager
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta, tzinfo
 from enum import StrEnum
 from itertools import islice
@@ -107,6 +107,7 @@ POLL_INTERVALS: dict[PollGroup, timedelta] = {
     PollGroup.CONTROL: timedelta(minutes=5),
     PollGroup.ENERGY: timedelta(minutes=5),
     PollGroup.SLOW: timedelta(minutes=15),
+    PollGroup.HOURLY: timedelta(hours=1),
 }
 POLL_INTERVALS_CLOUD_FRIENDLY: dict[PollGroup, timedelta] = {
     PollGroup.FAST: timedelta(minutes=2),
@@ -114,11 +115,14 @@ POLL_INTERVALS_CLOUD_FRIENDLY: dict[PollGroup, timedelta] = {
     PollGroup.CONTROL: timedelta(minutes=10),
     PollGroup.ENERGY: timedelta(minutes=10),
     PollGroup.SLOW: timedelta(minutes=30),
+    PollGroup.HOURLY: timedelta(hours=1),
 }
 # A cloud reading stays valid for three polling intervals of its group, the
 # same rule as for local readings. Static resources are read once and do not
 # expire while the connection exists.
 VALIDITY_INTERVALS = 3
+# Cloud cycle durations kept for the 95th percentile in diagnostics.
+RECENT_POLL_DURATIONS = 200
 # A wall clock set back by more than this no longer confirms stored readings.
 CLOCK_SKEW_TOLERANCE = timedelta(seconds=60)
 VALIDITY_TIMER_MARGIN = timedelta(seconds=1)
@@ -126,6 +130,9 @@ EXPIRED_CATEGORY = "expired"
 SOURCE_STOPPED_CATEGORY = "source_stopped"
 # A counter whose only valid source would count backwards is not shown.
 COUNTER_HELD_CATEGORY = "counter_held"
+# Counters switch to the local access with the option off only for a durable
+# outage: an unreachable cloud counts after this many seconds of failed cycles.
+COUNTER_OUTAGE_SECONDS = 15 * 60
 NO_ANSWER_PREFIX = "no_answer_"
 # Categories of failures that are no answer for the reading itself: the last
 # good value stays displayed within its validity limit. Explicit answers for
@@ -291,13 +298,19 @@ class CapabilityMetrics:
     attempts: int = 0
     successful: int = 0
     failed: int = 0
-    results: Counter[str] = field(default_factory=Counter)
-    sources: Counter[str] = field(default_factory=Counter)
+    # Created with the first attempt (O24): most paths share one result and
+    # one source, and an unread path never needs counters at all.
+    results: Counter[str] | None = None
+    sources: Counter[str] | None = None
     last_result: str | None = None
 
     def record(self, *, result: str, source: SnapshotSource) -> None:
         """Record one resource-level attempt."""
         self.attempts += 1
+        if self.sources is None:
+            self.sources = Counter()
+        if self.results is None:
+            self.results = Counter()
         self.sources[source.value] += 1
         self.results[result] += 1
         self.last_result = result
@@ -313,8 +326,8 @@ class CapabilityMetrics:
             "successful": self.successful,
             "failed": self.failed,
             "success_rate_percent": _percentage(self.successful, self.attempts),
-            "results": dict(sorted(self.results.items())),
-            "attempts_by_source": dict(sorted(self.sources.items())),
+            "results": dict(sorted((self.results or {}).items())),
+            "attempts_by_source": dict(sorted((self.sources or {}).items())),
             "last_result": self.last_result,
         }
 
@@ -389,6 +402,11 @@ class BoschBuderusDataUpdateCoordinator(
         self._negative_until: dict[str, float] = {}
         self._gateway_failure_count = 0
         self._circuit_open_until = 0.0
+        # O80: monotonic time the breaker first opened in the current outage;
+        # None while closed. Only the first opening logs a warning.
+        self._circuit_outage_since: float | None = None
+        # O81: the failed batch request was reported once in this outage.
+        self._batch_failure_logged = False
         self._update_lock = asyncio.Lock()
         self._manual_setpoint_tasks: dict[str, asyncio.Task[None]] = {}
         self._manual_setpoint_attempted: set[str] = set()
@@ -401,6 +419,10 @@ class BoschBuderusDataUpdateCoordinator(
         self._maximum_poll_duration_ms = 0.0
         self._polls_longer_than_interval = 0
         self._cycles_over_budget = 0
+        # O94: the latest cycle durations, for the 95th percentile.
+        self._recent_poll_durations_ms: deque[float] = deque(
+            maxlen=RECENT_POLL_DURATIONS
+        )
         # Paths of a due group already read in an earlier, budget-limited
         # cycle: they are not read again until the group completes (P41).
         self._budget_progress: dict[PollGroup, set[str]] = {}
@@ -413,6 +435,8 @@ class BoschBuderusDataUpdateCoordinator(
         self.counter_guard: CounterGuard | None = None
         self._counter_views: dict[str, ResourceSnapshot | None] = {}
         self._validity_unsub: CALLBACK_TYPE | None = None
+        # The expiry the armed timer waits for; re-armed only when it changes.
+        self._validity_due: datetime | None = None
         self._validity_index: dict[str, PollGroup] = {}
         # Holds the scheduled tuples themselves, so equal keys mean equal plans.
         self._validity_index_key: tuple[tuple[PollGroup, tuple[str, ...]], ...] = ()
@@ -1107,6 +1131,7 @@ class BoschBuderusDataUpdateCoordinator(
             self._maximum_poll_duration_ms = max(
                 self._maximum_poll_duration_ms, duration
             )
+            self._recent_poll_durations_ms.append(duration)
             # A longer cycle is not overlapped; the next poll simply starts later.
             if (
                 self.update_interval is not None
@@ -1179,6 +1204,63 @@ class BoschBuderusDataUpdateCoordinator(
         ``(None, None)`` means controls can be used. The reason never contains
         values, paths or identifiers.
         """
+        reason, until = self._cloud_down()
+        if reason is not None:
+            return reason, until
+        from .entity_resources import fresh_resource
+
+        if not any(
+            (resource := fresh_resource(self, path)) is not None
+            and resource.metadata.writable
+            for path in self.data or {}
+        ):
+            return "not_current", None
+        return None, None
+
+    def cloud_unavailable(self) -> bool:
+        """Without a cloud now: sign-in required, switched off or stopped,
+        paused, limited or unreachable.
+
+        Paired readings then show their local values, independent of the
+        ``local_values`` option. A view kept for local readings after its
+        cloud source stopped counts as without a cloud.
+        """
+        return self.local_retained or self._cloud_down()[0] is not None
+
+    def counter_cloud_unavailable(self) -> bool:
+        """Without a cloud for paired counters: only a durable outage.
+
+        Sign-in required, switched off or stopped, a retained view and pauses
+        count at once; an unreachable cloud only after
+        ``COUNTER_OUTAGE_SECONDS`` of failed cycles. A single failed cycle
+        therefore never switches a counter to the local access, whose higher
+        value would hold the lagging cloud counter afterwards.
+        """
+        if self.local_retained:
+            return True
+        reason = self._cloud_down()[0]
+        if reason != "cloud_unreachable":
+            return reason is not None
+        since = self._unreachable_since
+        return since is not None and monotonic() - since >= COUNTER_OUTAGE_SECONDS
+
+    @property
+    def last_update_success(self) -> bool:
+        return self.__dict__.get("_update_success", True) is True
+
+    @last_update_success.setter
+    def last_update_success(self, value: bool) -> None:
+        # Remember when the failed cycles began (only the first one counts).
+        if value:
+            self._unreachable_since = None
+        elif self.last_update_success or self._unreachable_since is None:
+            self._unreachable_since = monotonic()
+        self._update_success = value
+
+    _unreachable_since: float | None = None
+
+    def _cloud_down(self) -> tuple[str | None, datetime | None]:
+        """The reason the cloud cannot be used now, without checking values."""
         now = monotonic()
         if self._cloud_auth_required():
             return "auth_required", None
@@ -1195,14 +1277,6 @@ class BoschBuderusDataUpdateCoordinator(
             return "protection_pause", _pause_end(self._circuit_open_until - now)
         if not self.last_update_success:
             return "cloud_unreachable", None
-        from .entity_resources import fresh_resource
-
-        if not any(
-            (resource := fresh_resource(self, path)) is not None
-            and resource.metadata.writable
-            for path in self.data or {}
-        ):
-            return "not_current", None
         return None, None
 
     def source_snapshot(self, path: str, source: str) -> ResourceSnapshot | None:
@@ -1248,10 +1322,21 @@ class BoschBuderusDataUpdateCoordinator(
 
         A current local reading of an enabled selection comes first, otherwise
         the cloud reading within its validity limit. A failed or paused cloud
-        cycle therefore no longer hides readings that are still valid.
+        cycle therefore no longer hides readings that are still valid. Without
+        a cloud the local reading comes first also with the option off.
         """
         if self.counter_guard is not None and path in self._counter_views:
             return self._counter_views[path]
+        selection = self.local_selection
+        if selection is None:
+            return self.displayed_cloud_snapshot(path)
+        # O2: entities ask several times per pass (availability, value, unit,
+        # attributes); within one synchronous pass the answer cannot change.
+        return selection._cached(
+            ("display_snapshot", path), lambda: self._display_snapshot(path)
+        )
+
+    def _display_snapshot(self, path: str) -> ResourceSnapshot | None:
         snapshot = self.displayed_cloud_snapshot(path)
         selection = self.local_selection
         if (
@@ -1263,7 +1348,7 @@ class BoschBuderusDataUpdateCoordinator(
             )
         ):
             return snapshot
-        return selection.select(path, snapshot)
+        return selection.select(path, snapshot, without_cloud=self.cloud_unavailable)
 
     def _refresh_counter_views(self) -> None:
         """Decide each paired counter once: local first, never backwards."""
@@ -1273,16 +1358,35 @@ class BoschBuderusDataUpdateCoordinator(
         from .local_selection import counter_path
 
         selection = self.local_selection
+        # A removed or switched-off local access no longer binds the cloud.
+        local_gone = selection is None or not selection.has_local_access
         views: dict[str, ResourceSnapshot | None] = {}
         for path in self.data or {}:
             if not counter_path(path):
                 continue
             cloud = self.displayed_cloud_snapshot(path)
-            if cloud is None or cloud.last_error_category == SOURCE_STOPPED_CATEGORY:
+            stopped = (
+                cloud is not None
+                and cloud.last_error_category == SOURCE_STOPPED_CATEGORY
+            )
+            if cloud is None or (stopped and not self.local_retained):
                 views[path] = cloud
                 continue
-            local = selection.counter_candidate(path, cloud) if selection else None
-            chosen = guard.decide(path, (("local", local), ("cloud", cloud)))
+            local = (
+                selection.counter_candidate(
+                    path, cloud, without_cloud=self.counter_cloud_unavailable
+                )
+                if selection
+                else None
+            )
+            # A stopped cloud kept for local readings: the local access is the
+            # sole source, so a reading lacking some parts may continue.
+            chosen = guard.decide(
+                path,
+                (("local", local), ("cloud", cloud)),
+                partial=stopped,
+                gone=frozenset({"local"}) if local_gone else frozenset(),
+            )
             views[path] = (
                 chosen
                 if chosen is not None
@@ -1315,8 +1419,8 @@ class BoschBuderusDataUpdateCoordinator(
     @callback
     def _schedule_validity_refresh(self) -> None:
         """Re-evaluate entities when the next reading expires, without a request."""
-        self._cancel_validity_timer()
         if not self._listeners or self.hass.is_stopping:
+            self._cancel_validity_timer()
             return
         now = dt_util.utcnow()
         due = min(
@@ -1335,7 +1439,15 @@ class BoschBuderusDataUpdateCoordinator(
             ),
             default=None,
         )
+        if (
+            due is not None
+            and due == self._validity_due
+            and self._validity_unsub is not None
+        ):
+            return  # O14: the armed timer already fires at this time
+        self._cancel_validity_timer()
         if due is not None:
+            self._validity_due = due
             self._validity_unsub = async_track_point_in_utc_time(
                 self.hass, self._validity_reached, due + VALIDITY_TIMER_MARGIN
             )
@@ -1343,10 +1455,12 @@ class BoschBuderusDataUpdateCoordinator(
     @callback
     def _validity_reached(self, _now: datetime) -> None:
         self._validity_unsub = None
+        self._validity_due = None
         self.async_update_listeners()
 
     @callback
     def _cancel_validity_timer(self) -> None:
+        self._validity_due = None
         if self._validity_unsub is not None:
             self._validity_unsub()
             self._validity_unsub = None
@@ -1372,11 +1486,14 @@ class BoschBuderusDataUpdateCoordinator(
             if self._polls_total
             else None
         )
-        capability_attempts = sum(
-            item.attempts for item in self._capability_metrics.values()
-        )
-        capability_successful = sum(
-            item.successful for item in self._capability_metrics.values()
+        capabilities = self._capability_metrics.values()
+        capability_attempts = sum(item.attempts for item in capabilities)
+        capability_successful = sum(item.successful for item in capabilities)
+        # O94: failed attempts as each path counts them, and the paths whose
+        # latest attempt failed (a path may fail several times).
+        capability_failed = sum(item.failed for item in capabilities)
+        failing_paths = sum(
+            item.last_result not in (None, "success") for item in capabilities
         )
         return {
             "last_update_success": self.last_update_success,
@@ -1387,6 +1504,10 @@ class BoschBuderusDataUpdateCoordinator(
             "maximum_poll_duration_ms": _rounded_duration(
                 self._maximum_poll_duration_ms if self._polls_total else None
             ),
+            "p95_poll_duration_ms": _rounded_duration(
+                _percentile(self._recent_poll_durations_ms, 0.95)
+            ),
+            "poll_duration_samples": len(self._recent_poll_durations_ms),
             "poll_interval_seconds": (
                 self.update_interval.total_seconds() if self.update_interval else None
             ),
@@ -1434,7 +1555,8 @@ class BoschBuderusDataUpdateCoordinator(
             "capability_attempts": {
                 "total": capability_attempts,
                 "successful": capability_successful,
-                "failed": capability_attempts - capability_successful,
+                "failed": capability_failed,
+                "paths_failing": failing_paths,
                 "success_rate_percent": _percentage(
                     capability_successful, capability_attempts
                 ),
@@ -1524,6 +1646,8 @@ class BoschBuderusDataUpdateCoordinator(
         successful = 0
         failed_chunks = 0
         gateway_failure = False
+        # O82: the error category a whole failed cycle reports.
+        failure_category: str | None = None
         cycle_results: list[BatchItemResult] = []
         attempted_paths: set[str] = set()
         interrupted_paths: set[str] = set()
@@ -1551,6 +1675,7 @@ class BoschBuderusDataUpdateCoordinator(
                 raise ConfigEntryAuthFailed from err
             except RateLimited as err:
                 interrupted_paths.update(chunk)
+                failure_category = "rate_limited"
                 cycle_results.extend(
                     BatchItemResult(self.gateway.gateway_id, path, 429, error=err)
                     for path in chunk
@@ -1588,13 +1713,18 @@ class BoschBuderusDataUpdateCoordinator(
                 )
                 failed_chunks += 1
                 gateway_failure = True
-                _LOGGER.warning(
-                    "PointT batch refresh failed; trying bounded core fallback"
-                )
+                failure_category = _pointt_result(err)
                 results = await self._async_core_fallback(chunk)
+                self._log_batch_failure(
+                    failure_category,
+                    fallback_usable=any(item.resource is not None for item in results),
+                )
                 if not results:
                     break
                 result_source = SnapshotSource.FALLBACK
+            else:
+                # O81: a batch request answered; a later failure is a new outage.
+                self._batch_failure_logged = False
 
             bulk_item_fallback: tuple[BatchItemResult, ...] = ()
             if result_source is SnapshotSource.BATCH:
@@ -1681,12 +1811,14 @@ class BoschBuderusDataUpdateCoordinator(
                 # HA skips listeners after consecutive failures; publish the
                 # readings that failed explicitly in this cycle.
                 self.async_update_listeners()
-            raise UpdateFailed("PointT returned no usable resources")
+            raise UpdateFailed(
+                "PointT returned no usable resources ("
+                f"{failure_category or _cycle_failure_category(cycle_results)})"
+            )
         if successful == 0 and not over_budget:
             self._advance_groups(due_groups, now_monotonic)
             return snapshots
-        self._gateway_failure_count = 0
-        self._circuit_open_until = 0.0
+        self._record_gateway_recovery(monotonic())
         # Advance complete groups even if a different group was interrupted.
         confirmed_paths = {
             path
@@ -2585,9 +2717,10 @@ class BoschBuderusDataUpdateCoordinator(
     def _record_capability(
         self, path: str, result: str, source: SnapshotSource
     ) -> None:
-        self._capability_metrics.setdefault(path, CapabilityMetrics()).record(
-            result=result, source=source
-        )
+        metrics = self._capability_metrics.get(path)
+        if metrics is None:
+            metrics = self._capability_metrics[path] = CapabilityMetrics()
+        metrics.record(result=result, source=source)
 
     def _record_chunk_failure(
         self, paths: tuple[str, ...], result: str, source: SnapshotSource
@@ -2645,12 +2778,61 @@ class BoschBuderusDataUpdateCoordinator(
     def _record_gateway_failure(self, now_monotonic: float) -> None:
         self._gateway_failure_count += 1
         if self._gateway_failure_count >= CIRCUIT_FAILURE_THRESHOLD:
-            self._circuit_open_until = (
-                now_monotonic + CIRCUIT_OPEN_INTERVAL.total_seconds()
+            pause = CIRCUIT_OPEN_INTERVAL.total_seconds()
+            self._circuit_open_until = now_monotonic + pause
+            if self._circuit_outage_since is None:
+                # O80: one warning when the breaker opens; while the outage
+                # lasts, each further opening is a debug message.
+                self._circuit_outage_since = now_monotonic
+                _LOGGER.warning(
+                    "PointT gateway circuit breaker opened after %d consecutive "
+                    "failures; the next attempt follows in %.0f seconds",
+                    self._gateway_failure_count,
+                    pause,
+                )
+            else:
+                _LOGGER.debug(
+                    "PointT gateway circuit breaker opened again after %d "
+                    "consecutive failures; the next attempt follows in %.0f seconds",
+                    self._gateway_failure_count,
+                    pause,
+                )
+
+    def _log_batch_failure(self, category: str, *, fallback_usable: bool) -> None:
+        """O81: warn once per outage; a working fallback is only a debug note."""
+        if fallback_usable:
+            _LOGGER.debug(
+                "PointT batch refresh failed (%s); the bounded core fallback answered",
+                category,
             )
-            _LOGGER.warning(
-                "PointT gateway circuit breaker opened for %.0f seconds",
-                CIRCUIT_OPEN_INTERVAL.total_seconds(),
+            return
+        if self._batch_failure_logged:
+            _LOGGER.debug(
+                "PointT batch refresh failed again (%s); the bounded core "
+                "fallback did not answer",
+                category,
+            )
+            return
+        self._batch_failure_logged = True
+        _LOGGER.warning(
+            "PointT batch refresh failed (%s); the bounded core fallback did not "
+            "answer either. Further failures of this outage are logged at debug "
+            "level",
+            category,
+        )
+
+    def _record_gateway_recovery(self, now_monotonic: float) -> None:
+        """Close the breaker after a usable cycle; report a recovered outage once."""
+        self._gateway_failure_count = 0
+        self._circuit_open_until = 0.0
+        # O81: a usable cycle ends the outage; the next one warns again.
+        self._batch_failure_logged = False
+        since, self._circuit_outage_since = self._circuit_outage_since, None
+        if since is not None:
+            _LOGGER.info(
+                "PointT gateway answers again; the circuit breaker closed after "
+                "%.0f seconds",
+                max(0.0, now_monotonic - since),
             )
 
     def _activate_rate_limit_backoff(
@@ -2712,6 +2894,19 @@ def _result_category(error: PointTError | None, status: int | None) -> str:
     }.get(status, _pointt_result(error))
 
 
+def _cycle_failure_category(results: list[BatchItemResult]) -> str:
+    """The most frequent error category of a cycle without usable readings."""
+    categories = Counter(
+        _result_category(result.error, result.status)
+        for result in results
+        if result.resource is None
+    )
+    categories.pop("success", None)
+    if not categories:
+        return "unknown"
+    return max(sorted(categories), key=categories.__getitem__)
+
+
 def _pointt_result(error: PointTError | None) -> str:
     if error is None:
         return "unknown"
@@ -2725,6 +2920,14 @@ def _pointt_result(error: PointTError | None) -> str:
     if "unavailable" in name:
         return "service_unavailable"
     return "request_failed"
+
+
+def _percentile(values: Iterable[float], share: float) -> float | None:
+    """The nearest-rank percentile; None without values."""
+    ordered = sorted(values)
+    if not ordered:
+        return None
+    return ordered[max(0, math.ceil(share * len(ordered)) - 1)]
 
 
 def _rounded_duration(value: float | None) -> float | None:

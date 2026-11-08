@@ -258,15 +258,126 @@ def test_numeric_and_string_readings_keep_their_native_types() -> None:
     assert _native("x", "floatValue") is None
 
 
-def test_change_detection_reports_only_new_local_readings() -> None:
+def test_change_detection_reports_only_changed_local_readings() -> None:
     runtime = FakeRuntime([local(RETURN, 31.5, monotonic=10.0)])
     selection = LocalSelection(runtime, TARGET)
     assert selection.changed() is True
     assert selection.changed() is False
+    # G1: the same answer read again is no change (no entity update pass).
     runtime.observations = [local(RETURN, 31.5, monotonic=70.0)]
+    assert selection.changed() is False
+    # A changed value is.
+    runtime.observations = [local(RETURN, 31.6, monotonic=130.0)]
+    assert selection.changed() is True
+    assert selection.changed() is False
+    # So is another unit or another spelling of the same number.
+    runtime.observations = [local(RETURN, 31.6, monotonic=190.0, unitOfMeasure="K")]
+    assert selection.changed() is True
+    runtime.observations = [local(RETURN, 31.6, monotonic=250.0)]
+    assert selection.changed() is True
+    body = (
+        b'{"id": "%s", "type": "floatValue", "value": 31.60, "writeable": 0,'
+        b' "unitOfMeasure": "C"}' % RETURN.encode()
+    )
+    runtime.observations = [
+        read(body, path=RETURN, observed_at=NOW, observed_monotonic=310.0)
+    ]
     assert selection.changed() is True
     runtime.snapshot.enabled = False
     assert selection.changed() is True
+    assert selection.changed() is False
+
+
+def test_change_detection_sees_currency_and_source_changes() -> None:
+    reading = local(RETURN, 31.5, monotonic=10.0)
+    runtime = FakeRuntime([reading])
+    selection = LocalSelection(runtime, TARGET)
+    assert selection.changed() is True
+    # The reading expired: the source publishes it as no longer current.
+    runtime.observations = []
+    assert selection.changed() is True
+    assert selection.changed() is False
+    runtime.observations = [local(RETURN, 31.5, monotonic=70.0)]
+    assert selection.changed() is True
+    # The same answer from another local access of the target.
+    other = "binding-local-2"
+    runtime.snapshot.bindings[other] = SimpleNamespace(
+        target_id=TARGET, adapter=LOCAL_KIND
+    )
+    options = runtime.snapshot.to_options()
+    runtime.snapshot.to_options = lambda: {
+        **options,
+        "bindings": {**options["bindings"], other: {"enabled": True}},
+    }
+    states = {
+        LOCAL_BINDING: SimpleNamespace(current_observations=()),
+        other: SimpleNamespace(
+            current_observations=(local(RETURN, 31.5, monotonic=130.0),)
+        ),
+    }
+    runtime.local_state = states.get
+    selection._bindings_cache = None
+    assert selection.changed() is True
+    assert selection.changed() is False
+
+
+def test_change_detection_of_local_only_readings_follows_enabled_entities() -> None:
+    setpoint = "/heatSources/currentSupplySetpoint"  # reviewed local-only
+    runtime = FakeRuntime([local(setpoint, 34.5, monotonic=10.0)], enabled=False)
+    selection = LocalSelection(runtime, TARGET)
+    assert selection.changed() is True
+    # Without an enabled entity only its presence counts.
+    runtime.observations = [local(setpoint, 35.0, monotonic=70.0)]
+    assert selection.changed() is False
+    selection.track_local_only(setpoint)
+    assert selection.changed() is True
+    runtime.observations = [local(setpoint, 35.0, monotonic=130.0)]
+    assert selection.changed() is False
+    runtime.observations = [local(setpoint, 35.5, monotonic=190.0)]
+    assert selection.changed() is True
+    runtime.observations = []
+    assert selection.changed() is True
+
+
+def test_change_detection_after_a_confirmed_write() -> None:
+    """A newer reading with the same answer still counts after a write: it
+    replaces the cloud value again, and a pending write check needs it."""
+    current = "/heatingCircuits/hc1/currentRoomSetpoint"
+    flow = "/heatingCircuits/hc1/maxFlowTemp"
+    runtime = FakeRuntime(
+        [local(current, 21.0, monotonic=10.0), local(flow, 55.0, monotonic=10.0)]
+    )
+    selection = LocalSelection(runtime, TARGET)
+    assert selection.changed() is True
+    written = NOW + timedelta(seconds=30)
+    confirmed = replace(cloud(flow, 50.0, writable=True), last_success=written)
+    selection.note_confirmed_write(flow, confirmed)
+    assert selection.changed() is True  # both readings are now older
+    assert selection.changed() is False
+
+    def again(at, monotonic, flow_value=55.0):
+        return [
+            read(
+                scalar(current, value=21.0),
+                observed_at=at,
+                observed_monotonic=monotonic,
+            ),
+            read(
+                scalar(flow, value=flow_value),
+                observed_at=at,
+                observed_monotonic=monotonic,
+            ),
+        ]
+
+    runtime.observations = again(written + timedelta(seconds=10), 70.0)
+    assert selection.changed() is True  # newer than the write
+    # The check of the written setting waits for this pass.
+    runtime.observations = again(written + timedelta(seconds=20), 80.0)
+    assert selection.changed() is True
+    selection.check_writes(written + timedelta(seconds=20))
+    assert selection.write_check_summary() == {"max_flow_temperature": {"differ": 1}}
+    assert selection.changed() is True  # the check is no longer pending
+    runtime.observations = again(written + timedelta(seconds=80), 140.0)
     assert selection.changed() is False
 
 
@@ -501,3 +612,42 @@ def test_repeated_lookups_do_not_rescan_the_catalog() -> None:
     for _ in range(50):
         selection.select(RETURN, snapshot)
     assert pair_for_path.cache_info().misses == misses
+
+
+def test_the_local_working_time_continues_the_unitless_cloud_counter() -> None:
+    """O90: the cloud reports the heat source working time without a unit,
+    in seconds like the local access (checked on a reference installation)."""
+    path = "/heatSources/hs1/workingTime"
+    parts = [{"ch": 1318928}, {"dhw": 116031}, {"cooling": 0}, {"total": 1434959}]
+    snapshot = ResourceSnapshot(
+        Resource(
+            path,
+            values=tuple(parts),
+            has_values=True,
+            metadata=ResourceMetadata(resource_type="emonValue", unit=None),
+        ),
+        True,
+        NOW - timedelta(minutes=2),
+    )
+
+    def reading(unit):
+        raw = {
+            "id": path,
+            "type": "emonValue",
+            "writeable": 0,
+            "unit": unit,
+            "values": [
+                {"ch": 1319348},
+                {"dhw": 116031},
+                {"cooling": 0},
+                {"total": 1435379},
+            ],
+        }
+        return read(raw, observed_at=NOW, observed_monotonic=10.0)
+
+    selection = LocalSelection(FakeRuntime([reading("s")]), TARGET)
+    shown = selection.counter_candidate(path, snapshot)
+    assert shown is not None and shown.source is SnapshotSource.LOCAL
+    assert shown.resource.values[-1] == {"total": 1435379}
+    other = LocalSelection(FakeRuntime([reading("min")]), TARGET)
+    assert other.counter_candidate(path, snapshot) is None

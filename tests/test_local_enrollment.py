@@ -312,7 +312,7 @@ async def test_initial_save_failure_sends_nothing(journal, auth_gateway, monkeyp
     calls, _, pin = await auth_gateway()
     monkeypatch.setattr(
         enrollment,
-        "save_json",
+        "write_utf8_file_atomic",
         lambda *a, **k: (_ for _ in ()).throw(OSError("private path")),
     )
     with pytest.raises(
@@ -446,7 +446,7 @@ async def test_no_silent_success_when_write_helper_does_not_persist(
 ):
     snapshot, _, target = starting()
     calls, _, pin = await auth_gateway()
-    monkeypatch.setattr(enrollment, "save_json", lambda *a, **k: None)
+    monkeypatch.setattr(enrollment, "write_utf8_file_atomic", lambda *a, **k: None)
     with pytest.raises(LocalEnrollmentError, match="local_enrollment_storage_failed"):
         await create(journal, snapshot, begin(snapshot, target), pin)
     assert not calls
@@ -563,3 +563,16 @@ async def test_config_change_while_initial_save_runs_prevents_post(
         is_active=lambda: True,
     )
     assert record.state == AuthState.NOT_SENT and not calls
+
+
+async def test_the_journal_is_written_compact_and_pretty_ones_still_load(
+    journal, auth_gateway
+):
+    snapshot, _, target = starting()
+    _, _, pin = await auth_gateway()
+    await create(journal, snapshot, begin(snapshot, target), pin)
+    body = journal._path.read_bytes()
+    assert b"\n" not in body and body.startswith(b'{"version":3,"attempts":[')
+    records = await journal.records()
+    journal._path.write_text(json.dumps(json.loads(body), indent=2))
+    assert await journal.records() == records

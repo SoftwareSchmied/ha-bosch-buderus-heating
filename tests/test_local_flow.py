@@ -161,6 +161,72 @@ async def test_options_import_to_completion_preserves_owner_and_reads_twice(
     assert management.current().connections[cloud] == before.connections[cloud]
     assert entry.minor_version == 2
     assert (await journal.records())[0].completion is not None
+    # Owner decision: a system's first local access uses its local values.
+    assert "local_values" not in before.to_options()["targets"][target]
+    assert management.current().to_options()["targets"][target]["local_values"]
+
+
+async def test_a_kept_token_is_sent_only_after_the_new_certificate_is_confirmed(
+    hass, supported, journal, monkeypatch
+):
+    entry, management, _, target = registered(hass)
+    manager = hass.config_entries.options
+    result = await imported(hass, entry, target)
+    result = await submit(hass, manager, result, {"confirm": True})
+    result = await submit(hass, manager, result, {"confirm": True})
+    assert result["reason"] == "local_setup_complete"
+    # The running owner resolves the finished attempt; without one, here.
+    (record,) = await journal.records()
+    await journal.discard(record.attempt_id, entry.entry_id, confirmed=True)
+    management.set_local_values(
+        management.edit(
+            next(
+                key
+                for key, value in management.current().connections.items()
+                if value.kind == "k40_local"
+            )
+        ),
+        False,
+    )
+    _, reads = supported
+    sent = len(reads)
+    original = flow.inspect_local_certificate
+
+    async def changed(context, role, *, is_current, budget):
+        observed = await original(context, role, is_current=is_current, budget=budget)
+        return replace(observed, sha256=b"b" * 32)  # e.g. after a gateway reset
+
+    monkeypatch.setattr(flow, "inspect_local_certificate", changed)
+    local = next(
+        key
+        for key, value in management.current().connections.items()
+        if value.kind == "k40_local"
+    )
+    result = await manager.async_init(entry.entry_id)
+    result = await submit(hass, manager, result, {"next_step_id": "connections"})
+    result = await submit(hass, manager, result, {"connection": local})
+    result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
+    if result["step_id"] == "local_target":
+        result = await submit(hass, manager, result, {"target": target})
+    assert result["step_id"] == "local_address", result
+    result = await submit(hass, manager, result, {"address": "gateway.example.invalid"})
+    # The warning step: a new sign-in first and preselected, keeping after it.
+    assert result["step_id"] == "local_method_keep"
+    selector = next(iter(result["data_schema"].schema.values()))
+    assert selector.config["options"] == ["label", "keep", "token"]
+    assert result["data_schema"]({})["method"] == "label"
+    result = await submit(hass, manager, result, {"method": "keep"})
+    assert result["step_id"] == "local_certificate", result.get("errors")
+    assert len(reads) == sent  # nothing sent with the token yet
+    result = await submit(hass, manager, result, {"confirm": True})
+    assert result["step_id"] == "local_result"
+    assert len(reads) == sent + 1  # the read check with the kept token
+    result = await submit(hass, manager, result, {"confirm": True})
+    assert result["reason"] == "local_setup_complete"
+    # A changed local access keeps the stored choice of local values.
+    assert management.current().to_options()["targets"][target]["local_values"] is (
+        False
+    )
 
 
 @pytest.mark.parametrize(
@@ -171,6 +237,7 @@ async def test_options_import_to_completion_preserves_owner_and_reads_twice(
         "local_target",
         "local_address",
         "local_method",
+        "local_method_keep",
         "local_certificate",
         "local_auth",
         "local_token",
@@ -232,6 +299,47 @@ async def test_native_discovery_selects_existing_owner_without_secret_access(
     assert [e.entry_id for e in hass.config_entries.async_entries(DOMAIN)] == [
         entry.entry_id
     ]
+
+
+async def test_an_ignored_discovery_stays_ignored(hass, supported, journal):
+    entry, _, _, _ = registered(hass)
+    manager = hass.config_entries.flow
+    result = await manager.async_init(
+        DOMAIN, context={"source": "zeroconf"}, data=info()
+    )
+    assert result["step_id"] == "local_owner"
+    unique_id = manager.async_get(result["flow_id"])["context"]["unique_id"]
+    assert unique_id == flow.discovery_unique_id(info())
+    # Stable and opaque: no announced name, host or address in it.
+    assert unique_id.startswith("local_discovery_")
+    assert not any(part in unique_id for part in ("192.0.2", "gateway", "arbitrary"))
+    assert flow.discovery_unique_id(info(host="192.0.2.9")) == unique_id
+    assert flow.discovery_unique_id(info(name="other")) != unique_id
+    ignored = await manager.async_init(
+        DOMAIN,
+        context={"source": "ignore"},
+        data={"unique_id": unique_id, "title": "Local gateway"},
+    )
+    assert ignored["type"] is FlowResultType.CREATE_ENTRY
+    assert not manager.async_progress_by_handler(DOMAIN)
+    # Also after a restart: the hints in memory are gone, the entry stays.
+    hass.data.pop(discovery._HINTS, None)
+    hass.data.pop(discovery._FLOWS, None)
+    again = await manager.async_init(
+        DOMAIN, context={"source": "zeroconf"}, data=info(host="192.0.2.9")
+    )
+    assert again["type"] is FlowResultType.ABORT
+    assert again["reason"] == "already_configured"
+    # Another gateway is still offered, and never with the ignored entry.
+    other = await manager.async_init(
+        DOMAIN,
+        context={"source": "zeroconf"},
+        data=info(name="other", host="192.0.2.7"),
+    )
+    assert other["step_id"] == "local_owner"
+    owners = next(iter(other["data_schema"].schema.values())).config["options"]
+    assert [item["value"] for item in owners] == [entry.entry_id]
+    assert entry.unique_id == entry.entry_id  # existing entries keep theirs
 
 
 async def test_discovery_without_owner_does_not_create_installation(hass, supported):

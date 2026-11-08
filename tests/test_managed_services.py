@@ -116,7 +116,7 @@ async def test_diagnostics_keep_scoped_relationships_without_requests_or_ids(
         calls = list(backend.calls)
         result = await async_get_config_entry_diagnostics(hass, entry)
         assert backend.calls == calls
-        assert result["diagnostics_schema"] == 41
+        assert result["diagnostics_schema"] == 42
         assert result["setup"]["runtime_available"]
         assert len(result["connections"]) == (2 if state == "removed" else 3)
         assert len(result["targets"]) == len(manager.current().targets)
@@ -542,3 +542,21 @@ async def test_managed_wallbox_diagnostics_reference_correct_source(hass):
             for item in data["sources"]
         )
         assert "gateway-b" not in json.dumps(data)
+
+
+async def test_notification_of_a_gateway_no_longer_configured_ends_at_once(
+    hass, notices
+):
+    async with running(hass, FaultBackend()) as (entry, _, owner, _):
+        await ready(owner)
+        key = notification_id(entry.entry_id, HEAT)
+        await eventually(lambda: key in notices)
+        notification = owner.services.notifications[HEAT]
+        manager = owner.connections.management
+        # The system continues on another gateway (P50): the old one is gone.
+        manager.exchange_gateway(binding_for(owner, HEAT), HEAT, "000999")
+        assert HEAT not in notification_gateways(entry)
+        await eventually(lambda: HEAT not in owner.services.notifications)
+        await hass.async_block_till_done()
+        assert key not in notices and notification._closed
+        await eventually(lambda: not owner.services._closing)

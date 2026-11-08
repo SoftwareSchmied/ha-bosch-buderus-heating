@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import re
+from functools import lru_cache
 
 from .pointt import Resource
 from .resource_catalog import additional_app_value
@@ -14,14 +15,13 @@ _ZONE_TEMPORARY = re.compile(
     r"^/zones/zone[^/:]+/(?:heating|cooling)/temporaryRoomSetpoint$"
 )
 ZONE_MODES = frozenset({"off", "manual", "auto"})
+_ZONE_CONTROLS = (re.compile(ZONE_MODE_PATTERN), re.compile(ZONE_MANUAL_PATTERN))
 
 
+@lru_cache(maxsize=4096)
 def is_zone_control(path: str) -> bool:
     """Keep RRC, legacy paths and temporary schedule overrides outside."""
-    return any(
-        re.fullmatch(pattern, path)
-        for pattern in (ZONE_MODE_PATTERN, ZONE_MANUAL_PATTERN)
-    )
+    return any(pattern.fullmatch(path) for pattern in _ZONE_CONTROLS)
 
 
 def is_zone_temporary(path: str) -> bool:

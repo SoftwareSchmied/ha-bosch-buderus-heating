@@ -38,6 +38,7 @@ from collections import Counter
 from collections.abc import Callable, Collection, Iterable, Mapping
 from dataclasses import dataclass, replace
 from decimal import Decimal
+from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
@@ -249,7 +250,7 @@ class LocalSensor:
 
     @property
     def state_class(self) -> SensorStateClass | None:
-        return state_class(self.definition)
+        return state_class(self.definition, self.unit)
 
     @property
     def options(self) -> tuple[str, ...] | None:
@@ -417,13 +418,7 @@ def build_local_plant_view(
                 resource = from_template(resource, template)
             else:
                 template = None
-            if resource is not None and (
-                _known_cloud_entity(resource)
-                # An unknown cloud path the cloud offered (a registered cloud
-                # entity or the stored inventory) keeps its cloud ID; never a
-                # local-only twin next to it.
-                or (offered and description_shapes({path: resource}))
-            ):
+            if resource is not None and _cloud_entity(resource, offered=offered):
                 resources[path] = resource
                 used += template is not None
                 continue
@@ -437,18 +432,24 @@ def build_local_plant_view(
     )
 
 
-def _known_cloud_entity(resource: Resource) -> bool:
+def _cloud_entity(resource: Resource, *, offered: bool) -> bool:
     """The cloud form gives an entity of a known reading. A resource the
     integration does not know follows the local-only rules here, so its
-    local-only entity keeps its ID (create-all)."""
+    local-only entity keeps its ID (create-all). An unknown cloud path the
+    cloud offered (a registered cloud entity or the stored inventory) keeps
+    its cloud ID; never a local-only twin next to it.
+
+    O10: each builder runs once per resource for both questions.
+    """
     from .binary_sensor import build_binary_sensor_descriptions
     from .sensor import build_sensor_descriptions
 
     resources = {resource.path: resource}
-    return any(
-        not item.value_kind.startswith("unknown_")
-        for item in build_sensor_descriptions(resources)
-    ) or bool(build_binary_sensor_descriptions(resources))
+    sensors = build_sensor_descriptions(resources)
+    if any(not item.value_kind.startswith("unknown_") for item in sensors):
+        return True
+    binaries = build_binary_sensor_descriptions(resources)
+    return bool(binaries) or (offered and bool(sensors))
 
 
 def description_shapes(
@@ -505,6 +506,7 @@ def registry_shapes(
     return shapes, per_source
 
 
+@lru_cache(maxsize=4096)
 def diagnostic_suffix(suffix: str) -> str:
     """A unique ID after the gateway, with unrecognized dynamic IDs hidden."""
     prefix = ""
@@ -627,6 +629,10 @@ def shadow_comparison(
         "mismatches": mismatches[:MAX_LISTED],
         "truncated": len(mismatches) > MAX_LISTED
         or any(len(items) > MAX_LISTED for items in groups.values()),
+        # O94: each list shows at most this many entries; the rest is left out.
+        "listed_at_most": MAX_LISTED,
+        "omitted_entries": max(0, len(mismatches) - MAX_LISTED)
+        + sum(max(0, len(items) - MAX_LISTED) for items in groups.values()),
     }
 
 

@@ -234,3 +234,43 @@ def test_binding_provenance_change_only_invalidates_its_own_source():
     actions = runs.update(load_configuration(OWNER, data, options))
     assert actions.targets == {target} and actions.bindings == {"local"}
     assert not runs.accepts(local_stamp) and runs.accepts(cloud_stamp)
+
+
+def test_capture_decodes_options_once_per_snapshot_and_sees_changes_at_once(
+    monkeypatch,
+):
+    """O5: one JSON decode per stored version; a new version is read at once."""
+    from custom_components.bosch_buderus_heating.configuration import (
+        ConfigurationSnapshot,
+    )
+
+    before, cloud, _, binding, _ = topology()
+    decoded = []
+    original = ConfigurationSnapshot.to_options
+
+    def counting(snapshot):
+        decoded.append(snapshot)
+        return original(snapshot)
+
+    monkeypatch.setattr(ConfigurationSnapshot, "to_options", counting)
+    runs = ConfigurationRuns(before)
+    stamps = [runs.capture(cloud, binding) for _ in range(20)]
+    assert all(runs.accepts(stamp) for stamp in stamps)
+    assert len(decoded) == 1 and decoded[0] is before
+    data, options = before.to_data(), before.to_options()
+    options["bindings"][binding]["enabled"] = False
+    after = load_configuration(OWNER, data, options)
+    runs.update(after)
+    decoded.clear()
+    # The switched-off source is refused at once, not from the old decode.
+    with pytest.raises(ConfigurationError, match="binding_unavailable"):
+        runs.capture(cloud, binding)
+    assert len(decoded) == 1 and decoded[0] is after
+    # Back on: the next stored version is decoded again and accepted.
+    options["bindings"][binding]["enabled"] = True
+    restored = load_configuration(OWNER, data, options)
+    runs.update(restored)
+    decoded.clear()
+    assert runs.capture(cloud, binding).binding_id == binding
+    runs.capture(cloud)
+    assert len(decoded) == 1 and decoded[0] is restored

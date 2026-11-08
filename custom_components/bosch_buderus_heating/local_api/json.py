@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import sys
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
@@ -30,11 +31,16 @@ DEFAULT_LIMITS = JsonLimits()
 
 
 def unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Reject duplicate keys; the few distinct key names are shared.
+
+    Every reading repeats the same keys (``id``, ``type``, ``value`` …), and
+    the decoded documents keep them, so one string per name is kept.
+    """
     result: dict[str, object] = {}
     for key, value in pairs:
         if key in result:
             raise ValueError("Duplicate key")
-        result[key] = value
+        result[sys.intern(key)] = value
     return result
 
 

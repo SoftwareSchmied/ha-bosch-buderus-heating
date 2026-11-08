@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import suppress
 from time import monotonic
@@ -9,7 +10,11 @@ from typing import TYPE_CHECKING, Any, cast
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import callback
-from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.exceptions import (
+    ConfigEntryAuthFailed,
+    ConfigEntryError,
+    ConfigEntryNotReady,
+)
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
@@ -91,16 +96,18 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     """Register the holiday form selector when the frontend is available."""
-    # Saved cloud pauses must be known before any entry sends a cloud request.
-    await cloud_pause_store(hass).async_initialize()
-    # Last shown counters must be known before an entity shows a counter.
-    await counter_source_store(hass).async_initialize()
-    try:
-        await local_budget_manager(hass).initialize()
-        await enrollment_journal(hass).records()
-        await enrollment_journal(hass).initialize()
-    except LocalEnrollmentError, LocalBudgetError:
-        _LOGGER.warning("Local access storage could not be reconciled")
+    # O64: the independent stores load side by side; each keeps its own error
+    # handling. Saved cloud pauses must be known before any entry sends a cloud
+    # request, last shown counters before an entity shows a counter.
+    results = await asyncio.gather(
+        cloud_pause_store(hass).async_initialize(),
+        counter_source_store(hass).async_initialize(),
+        _async_load_local_access_storage(hass),
+        return_exceptions=True,
+    )
+    for result in results:
+        if isinstance(result, BaseException):
+            raise result
     await async_setup_holiday_ui(hass)
     await async_setup_controls_ui(hass)
     from .local_identity import install_local_support
@@ -111,6 +118,16 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     return True
 
 
+async def _async_load_local_access_storage(hass: HomeAssistant) -> None:
+    """The enrollment journal reads pauses from the budget: one after the other."""
+    try:
+        await local_budget_manager(hass).initialize()
+        await enrollment_journal(hass).records()
+        await enrollment_journal(hass).initialize()
+    except LocalEnrollmentError, LocalBudgetError:
+        _LOGGER.warning("Local access storage could not be reconciled")
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: BoschBuderusConfigEntry
 ) -> bool:
@@ -118,11 +135,31 @@ async def async_setup_entry(
     # Sign-in histories must be loaded before any token manager starts.
     await async_load_auth_histories(hass, entry)
     if entry.version == 4:
+        from .configuration import ConfigurationError, load_configuration
         from .gateway_exchange import async_resume_gateway_exchange
+
+        try:
+            load_configuration(
+                entry.entry_id,
+                entry.data,
+                entry.options,
+                version=entry.version,
+                minor_version=entry.minor_version,
+            )
+        except ConfigurationError as error:
+            # Static codes only; never data, credentials or identifiers.
+            _LOGGER.error("The stored configuration cannot be read (%s)", error)
+            raise ConfigEntryError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_stored_configuration",
+                translation_placeholders={"reason": str(error)},
+            ) from None
 
         # P50: an interrupted gateway exchange is finished before any source
         # starts, so no source runs against half-changed identities.
         await async_resume_gateway_exchange(hass, entry)
+        # Before any source starts: no entity of this entry is running yet.
+        _remove_unconfigured_gateway_entries(hass, entry)
         await async_setup_managed_entry(hass, entry)
         return True
     return await _async_setup_legacy_entry(hass, cast(LegacyConfigEntry, entry))
@@ -397,6 +434,9 @@ async def async_remove_entry(
             with suppress(UnknownFlow):
                 hass.config_entries.options.async_abort(flow["flow_id"])
     delete_setup_issue(hass, entry.entry_id)  # also without a runtime
+    from .configuration_management import clear_not_found_issues
+
+    clear_not_found_issues(hass, entry.entry_id)
     runtime = getattr(entry, "runtime_data", None)
     if isinstance(runtime, ManagedEntry):
         await runtime.remove()
@@ -539,6 +579,22 @@ async def async_migrate_entry(
 
     if entry.version > BoschBuderusConfigFlow.VERSION:
         return False
+    if BoschBuderusConfigFlow.VERSION == 4 and entry.version == 4:
+        if entry.minor_version > BoschBuderusConfigFlow.MINOR_VERSION:
+            _LOGGER.error(
+                "The configuration was saved by a newer version of this integration"
+            )
+            return False
+        try:
+            await async_wait_for_entry_refresh(hass, entry.entry_id)
+            migrate_entry_storage(
+                hass, entry, minor_version=BoschBuderusConfigFlow.MINOR_VERSION
+            )
+        except Exception:
+            # Not a migration failure: the setup reports the stored
+            # configuration with a clear message and retries at every start.
+            _LOGGER.warning("The stored configuration could not be checked")
+        return True
     if BoschBuderusConfigFlow.VERSION == 4:
         try:
             await async_wait_for_entry_refresh(hass, entry.entry_id)
@@ -553,7 +609,9 @@ async def async_migrate_entry(
                     minor_version=entry.minor_version,
                 )
             _migrate_preview_devices(hass, entry)
-            migrate_entry_storage(hass, entry)
+            migrate_entry_storage(
+                hass, entry, minor_version=BoschBuderusConfigFlow.MINOR_VERSION
+            )
         except Exception:
             # Neither credentials nor arbitrary transport exception text belongs
             # in logs. HA reports MIGRATION_ERROR and requires a restart.
@@ -667,6 +725,104 @@ def _remove_unselected_gateway_entries(
             device_registry.async_remove_device(device.id)
 
 
+def _user_customised(entity: er.RegistryEntry) -> bool:
+    """The user named, placed, labelled, hid or switched off this entry."""
+    return bool(
+        entity.name
+        or entity.icon
+        or entity.area_id
+        or entity.labels
+        or entity.disabled_by is er.RegistryEntryDisabler.USER
+        or entity.hidden_by is er.RegistryEntryHider.USER
+    )
+
+
+def _remove_unconfigured_gateway_entries(
+    hass: HomeAssistant, entry: BoschBuderusConfigEntry
+) -> None:
+    """Managed entries: remove the entries of gateways no system has any more.
+
+    A deselected or forgotten system keeps its target, devices and entities
+    (it may be selected again, is shown from its local access or moves to an
+    exchanged gateway), so only a gateway that belongs to no stored system
+    loses its entries, and only those the user never customised. Entries of
+    other cloud devices and of the access statistics are never touched.
+    Nothing happens when a system's gateway cannot be told.
+    """
+    from .configuration import load_configuration
+    from .connection_runtime import plant_gateway
+
+    try:
+        snapshot = load_configuration(
+            entry.entry_id,
+            entry.data,
+            entry.options,
+            version=entry.version,
+            minor_version=entry.minor_version,
+        )
+    except ValueError, TypeError, KeyError:  # also ConfigurationError
+        return
+    gateways: set[str] = set()
+    for target in snapshot.targets.values():
+        data = target.to_data()
+        gateway = plant_gateway(target.kind, data)
+        if gateway is not None:
+            gateways.add(gateway)
+            continue
+        identities = data.get("identities")
+        namespaces = {
+            item.get("namespace")
+            for item in (identities if isinstance(identities, list) else ())
+            if isinstance(item, dict)
+        }
+        if not namespaces or not namespaces <= {"bacon_device"}:
+            return  # a system without a known gateway: keep everything
+    for binding in snapshot.bindings.values():
+        locator = binding.to_data().get("locator")
+        value = locator.get("value") if isinstance(locator, dict) else None
+        if isinstance(value, str):
+            gateways.add(value)
+    registry = er.async_get(hass)
+    for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
+        unique_id = entity.unique_id
+        if (
+            unique_id.startswith(("bacon:", f"{entry.entry_id}:"))
+            or ":" not in unique_id
+            or unique_id.split(":", 1)[0] in gateways
+            or _user_customised(entity)
+        ):
+            continue
+        registry.async_remove(entity.entity_id)
+
+
+@callback
+def remove_never_entities(coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+    """Managed entries: the cleanup of the entry setup for one cloud view.
+
+    Removes the entries of resources that can never be entities (private
+    data, identifiers, structures and their former field entries) and the
+    retired preview entries, only for resources this view currently has.
+    Entries the user customised stay. A read-only local view never removes.
+    """
+    entry = getattr(coordinator, "config_entry", None)
+    if (
+        entry is None
+        or entry.version != 4
+        or getattr(coordinator, "read_only_view", False) is True
+    ):
+        return
+    try:
+        _remove_retired_entities(
+            coordinator.hass,
+            cast("BoschBuderusConfigEntry", entry),
+            (coordinator,),
+            keep_customised=True,
+        )
+    except Exception:
+        # A cleanup never keeps the entities of a view from being added.
+        _LOGGER.exception("Registry entries could not be cleaned up")
+
+
 def _consolidate_logical_devices(
     hass: HomeAssistant,
     entry: BoschBuderusConfigEntry,
@@ -704,11 +860,15 @@ def _remove_retired_entities(
     hass: HomeAssistant,
     entry: BoschBuderusConfigEntry,
     coordinators: tuple[BoschBuderusDataUpdateCoordinator, ...],
+    *,
+    keep_customised: bool = False,
 ) -> None:
     """Remove preview entities that never represented a distinct scalar value."""
     retired_unique_ids: set[str] = set()
     observed_resource_paths: dict[str, str] = {}
-    field_structures: set[str] = set()
+    # Semantic ID of a structure -> its resource path.
+    field_structures: dict[str, str] = {}
+    present: set[str] = set()
     for coordinator in coordinators:
         gateway_id = coordinator.gateway.gateway_id
         for domain in (
@@ -721,6 +881,7 @@ def _remove_retired_entities(
                 f"{gateway_id}:heatSources:emon:{domain}:electricity"
             )
         for resource in coordinator.resources.values():
+            present.add(f"{gateway_id}:{resource.path.strip('/').replace('/', ':')}")
             if capability_maturity(resource.path) is CapabilityMaturity.OBSERVED:
                 semantic_path = resource.path.strip("/").replace("/", ":")
                 if unknown_never_entity(resource):
@@ -735,7 +896,9 @@ def _remove_retired_entities(
                     if isinstance(resource.value, dict | list):
                         # Its fields had preview entities ("P:field"); a
                         # child resource of a reference node never does.
-                        field_structures.add(f"{gateway_id}:{semantic_path}")
+                        field_structures[f"{gateway_id}:{semantic_path}"] = (
+                            resource.path
+                        )
             empty_name = resource.path.endswith("/name") and (
                 not isinstance(resource.value, str)
                 or configured_device_name(resource.value) is None
@@ -753,12 +916,33 @@ def _remove_retired_entities(
 
     entity_registry = er.async_get(hass)
     for entity in er.async_entries_for_config_entry(entity_registry, entry.entry_id):
+        if keep_customised and _user_customised(entity):
+            continue
         if (
             entity.unique_id in retired_unique_ids
             or entity.unique_id in observed_resource_paths
-            or entity.unique_id.rpartition(":")[0] in field_structures
+            or _former_field_entity(entity.unique_id, field_structures, present)
         ):
             entity_registry.async_remove(entity.entity_id)
+
+
+def _former_field_entity(
+    unique_id: str, field_structures: dict[str, str], present: set[str]
+) -> bool:
+    """A preview field entry ("P:field") of a structure, never a resource.
+
+    A direct child resource can share the shape of a field ID: a catalogued
+    child and any resource present now keep their entities, also while
+    discovery temporarily omits a catalogued child's value.
+    """
+    if unique_id in present:
+        return False
+    structure, _, field = unique_id.rpartition(":")
+    path = field_structures.get(structure)
+    return (
+        path is not None
+        and capability_maturity(f"{path}/{field}") is CapabilityMaturity.OBSERVED
+    )
 
 
 def _enable_new_default_entities(

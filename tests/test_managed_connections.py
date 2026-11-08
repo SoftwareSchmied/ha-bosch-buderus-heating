@@ -1,5 +1,6 @@
 """Exercise the managed owner and its dialogs through Home Assistant APIs."""
 
+import asyncio
 from copy import deepcopy
 from unittest.mock import AsyncMock, patch
 
@@ -184,9 +185,18 @@ async def test_managed_reauth_requires_an_existing_explicit_cloud_connection(
 
 
 @pytest.mark.parametrize(
-    "mode", ["all", "missing", "pointt_service", "bacon_service", "bacon_auth"]
+    "mode",
+    [
+        "all",
+        "missing",
+        "none",
+        "wrong_account",
+        "pointt_service",
+        "bacon_service",
+        "bacon_auth",
+    ],
 )
-async def test_cloud_reauth_dialog_requires_every_assigned_target(
+async def test_cloud_reauth_dialog_confirms_the_account(
     hass, enable_custom_integrations, mode
 ):
     entry, cloud, _ = entry_for(hass)
@@ -202,6 +212,11 @@ async def test_cloud_reauth_dialog_requires_every_assigned_target(
     )
     if mode == "missing":
         pointt.return_value = (Gateway("000123"),)
+    if mode == "none":
+        pointt.return_value = ()
+        bacon.return_value = ((), bacon.return_value[1])
+    if mode == "wrong_account":
+        bacon.return_value = (("softener",), "another-account")
     if mode == "pointt_service":
         pointt.side_effect = ServiceUnavailable()
     if mode.startswith("bacon_"):
@@ -220,21 +235,32 @@ async def test_cloud_reauth_dialog_requires_every_assigned_target(
         )
         await settle(hass)
         reload.assert_not_awaited()
-        if mode == "all":
-            assert result["reason"] == "reauth_successful"
+        if mode in ("all", "missing"):
+            # A switched-on system missing from the account no longer blocks.
+            assert result["reason"] == (
+                "reauth_successful"
+                if mode == "all"
+                else "reauth_successful_targets_missing"
+            )
+            if mode == "missing":
+                assert result["description_placeholders"] == {"count": "1"}
             assert EntryConfiguration(entry, cloud).tokens() == tokens
+        elif mode == "wrong_account":
+            assert result["reason"] == "reauth_wrong_account"
+            assert entry.data == before
         else:
             assert entry.data == before
             assert result["errors"] == {
                 "base": "reauth_targets_missing"
-                if mode == "missing"
+                if mode == "none"
                 else "invalid_auth"
                 if mode == "bacon_auth"
                 else "cannot_connect"
             }
             assert result["step_id"] == ("auth" if mode == "bacon_auth" else "retry")
-            if mode == "missing":
+            if mode == "none":
                 pointt.return_value = (Gateway("000123"), Gateway("gateway-b"))
+                bacon.return_value = (("softener",), bacon.return_value[1])
                 result = await hass.config_entries.flow.async_configure(
                     result["flow_id"], {}
                 )
@@ -242,22 +268,31 @@ async def test_cloud_reauth_dialog_requires_every_assigned_target(
     assert entry.data["connections"]["local"] == before["connections"]["local"]
 
 
-async def test_reauthentication_verifies_disabled_targets_too(hass):
+@pytest.mark.parametrize("found", [True, False])
+async def test_with_every_target_switched_off_one_listed_target_suffices(hass, found):
     entry, cloud, _ = entry_for(hass)
     management = ConfigurationManagement(hass, entry)
     management.set_targets_enabled(management.edit(cloud), set())
     before = deepcopy(dict(entry.data))
+    tokens = AuthTokens("new", "new", 10**12)
+    account = EntryConfiguration(entry, cloud).cloud_data()["bacon_account"]
+    bacon = AsyncMock(return_value=((), account))
     with (
         patch(
             MODULE + ".PointTClient.get_gateways",
-            AsyncMock(return_value=(Gateway("000123"),)),
+            AsyncMock(return_value=(Gateway("000123"),) if found else ()),
         ),
-        pytest.raises(ConfigurationError, match="reauth_targets_missing"),
+        patch(MODULE + ".discover", bacon),
     ):
-        await management.async_reauthenticate(
-            management.edit(cloud), AuthTokens("new", "new", 10**12)
-        )
-    assert entry.data == before
+        if found:
+            await management.async_reauthenticate(management.edit(cloud), tokens)
+            assert EntryConfiguration(entry, cloud).tokens() == tokens
+            bacon.assert_not_awaited()  # a listed system confirmed the account
+        else:
+            with pytest.raises(ConfigurationError, match="reauth_targets_missing"):
+                await management.async_reauthenticate(management.edit(cloud), tokens)
+            assert entry.data == before
+            bacon.assert_awaited_once()
 
 
 async def test_cloud_rate_limit_during_verification_is_retained_between_attempts(hass):
@@ -344,6 +379,44 @@ async def test_unknown_access_is_retained_without_running_an_adapter(hass):
         assert entry.data["connections"]["local"]["kind"] == "future_connection"
     finally:
         await runtime.close()
+
+
+async def test_a_not_found_note_ends_when_the_target_delivers_again(
+    hass, enable_custom_integrations
+):
+    import asyncio
+
+    from custom_components.bosch_buderus_heating.configuration_management import (
+        not_found_bindings,
+        set_not_found_issue,
+    )
+
+    entry, cloud, _ = entry_for(hass)
+    management = ConfigurationManagement(hass, entry)
+    missing = next(
+        key
+        for key, value in entry.data["bindings"].items()
+        if value["locator"]["value"] == "gateway-b"
+    )
+    set_not_found_issue(hass, entry, management.current(), cloud, {missing})
+    assert not_found_bindings(hass, entry, cloud) == (missing,)
+    harness = Harness()
+    harness.gates[cloud] = asyncio.Event()  # the cloud is still connecting
+    hass.config.components.add(DOMAIN)
+    entry._async_set_state(hass, ConfigEntryState.LOADED, None)
+    owner = await async_setup_managed_entry(
+        hass, entry, {"singlekey_cloud": harness.factory, "k40_local": harness.factory}
+    )
+    try:
+        await settle(hass)
+        assert owner.connections.source_phase(missing) is not ConnectionPhase.READY
+        assert not_found_bindings(hass, entry, cloud) == (missing,)
+        harness.gates[cloud].set()  # the system delivers data again
+        await settle(hass)
+        assert owner.connections.source_phase(missing) is ConnectionPhase.READY
+        assert not not_found_bindings(hass, entry, cloud)
+    finally:
+        await owner.close()
 
 
 async def test_managed_owner_retains_only_affected_entities_and_handles_global_unload(
@@ -644,3 +717,67 @@ async def test_notification_options_find_gateways_across_explicit_cloud_connecti
     assert result["step_id"] == "notifications"
     field = next(iter(result["data_schema"].schema.values()))
     assert len(field.config["options"]) == 2
+
+
+async def test_owner_loads_both_inventories_side_by_side(
+    hass, enable_custom_integrations
+):
+    """O64: the entity and the discovery inventory load in parallel."""
+    from custom_components.bosch_buderus_heating.discovery_inventory import (
+        DiscoveryInventory,
+        discovery_inventory,
+    )
+
+    entry, _, _ = entry_for(hass)
+    hass.config.components.add(DOMAIN)
+    entry._async_set_state(hass, ConfigEntryState.LOADED, None)
+    started = []
+    together = asyncio.Event()
+
+    def waiting(name, original):
+        async def load(self):
+            started.append(name)
+            if len(started) == 2:
+                together.set()
+            await asyncio.wait_for(together.wait(), 5)
+            await original(self)
+
+        return load
+
+    with (
+        patch.object(
+            ConnectionInventory, "load", waiting("entities", ConnectionInventory.load)
+        ),
+        patch.object(
+            DiscoveryInventory,
+            "async_load",
+            waiting("discovery", DiscoveryInventory.async_load),
+        ),
+    ):
+        owner = await async_setup_managed_entry(hass, entry, {})
+    try:
+        assert sorted(started) == ["discovery", "entities"]
+        assert owner.inventory.healthy
+        assert discovery_inventory(hass, entry.entry_id).loaded
+    finally:
+        await owner.close()
+
+
+async def test_a_failing_inventory_load_still_loads_the_other(
+    hass, enable_custom_integrations
+):
+    from custom_components.bosch_buderus_heating.discovery_inventory import (
+        discovery_inventory,
+    )
+
+    entry, _, _ = entry_for(hass)
+    hass.config.components.add(DOMAIN)
+    entry._async_set_state(hass, ConfigEntryState.LOADED, None)
+    with (
+        patch.object(
+            ConnectionInventory, "load", AsyncMock(side_effect=RuntimeError("boom"))
+        ),
+        pytest.raises(RuntimeError, match="boom"),
+    ):
+        await async_setup_managed_entry(hass, entry, {})
+    assert discovery_inventory(hass, entry.entry_id).loaded

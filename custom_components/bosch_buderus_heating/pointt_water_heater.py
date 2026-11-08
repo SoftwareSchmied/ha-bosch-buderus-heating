@@ -15,7 +15,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from .control import async_set_control
+from .control import HeldCapabilities, async_set_control
 from .coordinator import BoschBuderusDataUpdateCoordinator, SnapshotSource
 from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource, temperature
@@ -76,7 +76,9 @@ def track_pointt_water_heaters(
 
 @temperature_members
 class PointTWaterHeater(
-    CoordinatorEntity[BoschBuderusDataUpdateCoordinator], WaterHeaterEntity
+    HeldCapabilities,
+    CoordinatorEntity[BoschBuderusDataUpdateCoordinator],
+    WaterHeaterEntity,
 ):
     """Show the circuit's own readings without treating start levels as targets."""
 
@@ -188,8 +190,7 @@ class PointTWaterHeater(
             else WaterHeaterEntityFeature(0)
         )
 
-    @property
-    def capability_attributes(self) -> dict[str, Any]:
+    def _live_capabilities(self) -> dict[str, Any]:
         # HA's base defaults would invent temperature-control bounds. This
         # entity has no direct target-temperature command or temperature step.
         return {"operation_list": self.operation_list} if self.operation_list else {}

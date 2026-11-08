@@ -5,6 +5,141 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.0-alpha.2] - 2026-11-08
+
+> [!IMPORTANT]
+> **This is an alpha pre-release for testing. 0.8.3 remains the latest stable
+> release.** HACS offers it only when pre-releases are shown for this
+> repository. Make a full Home Assistant backup before installing it. Updating
+> from alpha.1 needs no new setup; coming from 0.8.x, the notes of alpha.1
+> below apply as well.
+
+### What changed since alpha.1
+
+- **Without the cloud, local readings are always used.** When the cloud access
+  is switched off, needs a new sign-in, is paused, rate-limited or
+  unreachable, a system with a local access shows its paired readings from the
+  local access, whatever the option says. With the cloud running, **Use local
+  values for existing entities** decides as before. Energy, start and runtime
+  counters follow only longer outages: a required sign-in, a switched-off or
+  paused cloud at once, an unreachable cloud after 15 minutes; they never
+  count backwards. The option is now on by
+  default when a system gets its first local access and when a system set up
+  locally joins the cloud; stored choices stay. See
+  [operation without the cloud](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/operation-without-cloud.md).
+- **Sign-in:** a new sign-in must use the same account as before; the
+  integration compares a hash of the account, no personal data. It is
+  accepted when at least one switched-on system or device appears in the
+  account. Missing ones stay configured, and a repair note names them. A
+  cloud access without any system left can only sign in again with the same
+  account; otherwise remove it and add it again. This fixes a lock-out after a device was removed from the
+  account. Additional devices can now be forgotten like gateways; a different
+  account is still refused. See
+  [setup](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/setup.md#a-new-sign-in-does-not-find-every-system).
+- **More robust local access:** it recovers by itself after unexpected errors
+  (retries after 1, 2, 4 and 8 minutes, then at most every 15 minutes); a
+  failed save no longer stops the reads; local pauses last at most 24 hours;
+  a corrupt schedule file is set aside. Each read uses one TLS connection
+  instead of two, which halves the load on the gateway. The polling schedule
+  is saved only when it really changes, otherwise at most every 30 minutes,
+  which spares SD cards, and the configuration is read again less often.
+- **Search the system again** also searches the parts that are ready while
+  another part is paused.
+- A reading only the local access provides keeps its entity ID and history
+  when the cloud starts offering it while Home Assistant is running.
+- Counters are no longer held unavailable when the source shown last is gone
+  for good; they still never count backwards.
+- Entity registry entries of deselected gateways and of resources that can
+  never become entities are cleaned up in the managed storage format;
+  entries you customised are kept.
+- The filter that keeps identifiers, addresses and locations out of entities
+  recognises more names.
+- The notice for a gateway discovered in the network can be ignored for good.
+- An unreadable stored configuration now shows a setup error instead of a
+  migration error, and the migration no longer runs at every start. Its
+  gateways stay reserved, so a new setup cannot take them over twice.
+- A command to an additional device that is interrupted because its access is
+  switched off now reports "source stopped" instead of an unconfirmed command.
+- **Certificate change of a gateway:** signing in again with the device label
+  is now the recommended default; keeping the stored token warns first. See
+  [setup](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/setup.md#the-local-gateway-certificate-changed).
+- A device list that expired during the first setup can be loaded again
+  without a new sign-in.
+- **New for [#107](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/107):**
+  "Energy (estimated from current power)" for heat sources that report a
+  current power but no consumption counter. It is disabled by default and only
+  an estimate: it does not count across gaps, continues across a switch
+  between local and cloud readings, saves its total every minute and only
+  counts from the moment it is enabled. I have not confirmed it on a real device yet. Thank you,
+  @flame4ever, for the detailed request. See
+  [entities](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/entities.md#energy-estimated-from-current-power).
+- **Texts:** the rate-limit notices no longer name a brand, dialogs use
+  neutral wording, and messages say "cloud access" instead of internal names.
+- **Release workflow:** only the publishing job has write access.
+
+### Performance and load
+
+- Entities update only when a value, its availability or its source really
+  changes, no longer after every local read, and repeated work is cached.
+- The request-count sensors write at most once per minute and no longer
+  record their large attributes, so the database grows much less. The total
+  request sensor counts from the start of the integration (state class `total`).
+- Unit, options and limits stay while an entity is briefly unavailable. The
+  climate entity stays available while its readings are within their validity
+  limit; changes still need the cloud.
+- **Fewer requests:** settled cloud values are read once or every 15 minutes,
+  containers and lists without an entity hourly. Local paths the gateway does
+  not have are asked again weekly after the third answer; a firmware change, a
+  new sign-in or changed settings and **Search the system again** still check
+  them at once. Descriptive system metadata of the gateway, such as the time
+  zone, the bus and tariff or iSRC support, is read hourly, the installation
+  date daily; room-device metadata such as battery level and name stays at
+  15 minutes; device serial numbers are no longer read.
+- **Storage:** compact files, stores load in parallel, "still seen"
+  confirmations are saved at most hourly, counter sources after 60 seconds
+  (a source change at once), the connection inventory privately and
+  atomically. The cloud token is renewed 2 minutes before it expires.
+- **Log:** one warning per cloud outage with its category, an info line when
+  the cloud or the local access answers again, and the hand-over warning once
+  per path.
+- **Diagnostics schema 42** adds local condition changes, failure classes,
+  response times and reasons for deferred reads, the pair result
+  `changed_between_reads`, receive gaps per polling class, the 95th percentile
+  of cloud cycles and numbered start-up paths. See
+  [diagnostics](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/diagnostics.md).
+- The working time of a heat source can now come from the local access.
+- The controller signal "Compressor power" is now "Heat output (compressor)";
+  its entity ID stays. Signal measurements with a unit get long-term statistics.
+- **Changed states:** iSRC installation status, iSRC support status, the season
+  optimizer mode and controller signals reported as true/false now show
+  translated states, for example `timeout` instead of `TIMEOUT`, `forced_heat`
+  instead of `forcedHeat` and `on`/`off` instead of `true`/`false`. Please
+  update automations and templates that check the raw values.
+
+### Produced heat during defrosting
+
+Since alpha.1 the "Heat produced" energy sensors use the state class `total`,
+because the counter falls briefly while the heat pump defrosts. The energy
+dashboard can therefore show small negative hourly values during defrosting.
+See [entities](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/entities.md#published-device-families-and-reference-inventory).
+
+### Related issues
+
+- [#104](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/104)
+  and [#105](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/105):
+  the start from the saved setup after a cloud timeout from alpha.1 is
+  included, together with the more robust local access above. Thank you,
+  @gejomo, for the diagnostics and logs.
+- [#106](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/106):
+  the deprecation warnings stay fixed. Thank you, @lanebe, for the exact
+  warnings.
+- [#49](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/49):
+  the renewal diagnostics stay included, and a new sign-in is no longer
+  refused because a system or device is missing from the account. Thank you,
+  @lanebe, for the details.
+- [#107](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/107):
+  new, see above.
+
 ## [0.9.0-alpha.1] - 2026-11-08
 
 > [!IMPORTANT]
@@ -77,7 +212,7 @@ readings the cloud does not offer; the cloud adds controls, time programs,
 holidays and system information. With "local access only" the system is set up
 from its gateway in the home network and shown read-only under its gateway ID,
 with the manufacturer and controller model the gateway reports. See
-[setup](docs/setup.md).
+[setup](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/setup.md).
 
 The local setup explains each failure separately (wrong sign-in details, a
 refused sign-in service, missing confirmation on the device, a full token list,
@@ -100,7 +235,7 @@ Technical readings of the refrigerant circuit, the drives and the controller's
 internal signals are available as disabled sensors. These sensors are created
 only for readings the local access of the system could read, are unavailable
 without a current local reading and are removed together with the local
-access. See [entities](docs/entities.md#readings-only-the-local-access-provides).
+access. See [entities](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/entities.md#readings-only-the-local-access-provides).
 
 I added the option **Use local values for existing entities** to the local
 connection settings. It is off by default. When enabled, existing sensors of
@@ -188,7 +323,7 @@ entities and continues from the local fault list. Local readings reported as
 numbers are offered as local-only sensors also while they report an error
 marker. Sensors created without the cloud for documented readings without a
 reviewed meaning keep their local values once the cloud runs again. See
-[source selection](docs/source-selection.md).
+[source selection](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/source-selection.md).
 
 Switching the cloud access off while Home Assistant runs now also takes the
 current faults from the local error list at once, without a restart; switched
@@ -202,7 +337,7 @@ parts through the cloud and local access within the usual limits. Heat demand
 and the variable tariff support status now also show the local reading; their
 lists previously always fell back to the cloud. Diagnostics
 schema 41 describes the systems shown without the cloud. See
-[faults](docs/faults.md) and [reconfiguration](docs/reconfiguration.md).
+[faults](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/faults.md) and [reconfiguration](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/reconfiguration.md).
 
 Removing the cloud access no longer leaves a system with a local access
 without values: if it was selected, it keeps showing its local readings under
@@ -211,7 +346,7 @@ again after its local access was switched off and on. Other systems keep their
 entities without current values, and a new sign-in that selects the same
 system continues the same entities. The remove dialog now explains this and recommends switching
 the access off only for a temporary pause. See
-[source selection](docs/source-selection.md).
+[source selection](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/source-selection.md).
 
 A system set up with local access only can now get its cloud access later in
 the same entry: add the cloud access in the entry's options, or select the
@@ -228,14 +363,14 @@ sensors of readings the cloud now offers continue as the cloud's sensors with
 their entity ID and recorded history where this is unambiguous (exactly one
 matching sensor, the same native unit, no change of an existing state class);
 otherwise they are removed as before. See
-[source selection](docs/source-selection.md#adding-the-cloud-later).
+[source selection](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/source-selection.md#adding-the-cloud-later).
 
 If the cloud access needs a new sign-in or is switched off, a system with a
 local access keeps showing its local values instead of turning every entity
 unavailable. The entities stay in place; controls stay unavailable until the
 cloud is back and say why. A start without a working sign-in uses the stored
 inventory, so the local values appear right away. See
-[source selection](docs/source-selection.md#when-the-cloud-stops).
+[source selection](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/source-selection.md#when-the-cloud-stops).
 
 A system with a local access now also shows its local readings after a Home
 Assistant restart while its cloud access is switched off, from the stored
@@ -279,7 +414,7 @@ the cloud where the reading is the same, and compares them with the cloud's
 entities and the entity registry: matching, only local, only with the cloud, and
 differences in unit, device class or allowed values. The preview creates no
 entities, sends no requests and lists no values or identifiers. See
-[diagnostics](docs/diagnostics.md).
+[diagnostics](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/diagnostics.md).
 
 ### Entities
 
@@ -346,7 +481,7 @@ once and counted in diagnostics. A reading in another unit of the same quantity
 (for example °F instead of °C) is shown with the unit it was reported in, and
 Home Assistant converts it for display. The local access pauses with a clear
 cause if a gateway falls below the minimum firmware. The new
-[compatibility page](docs/compatibility.md) lists the specification version,
+[compatibility page](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/compatibility.md) lists the specification version,
 the checked systems and how each kind of change is handled. For maintenance, a
 new version of the official local API specification can now be compared with
 the reviewed one before it is adopted (`scripts/compare_local_api_spec.py`);
@@ -381,7 +516,7 @@ Energy, runtime and start counters keep clean statistics after the exchange,
 whether they continue or start again: a counter that starts again begins a new
 cycle, and a slightly lower value shows no value until the counter has caught
 up, so there are no jumps and no negative consumption. See
-[architecture](docs/architecture.md#gateway-exchange).
+[architecture](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/architecture.md#gateway-exchange).
 
 Switched-off systems of a cloud access can now be forgotten in the access's
 options ("Forget deselected systems"). A forgotten system is no longer listed
@@ -411,8 +546,8 @@ markers such as `-32768` show no value. When the cloud reports
 them writable, the exhaust fan level becomes a select (only with the
 documented levels), the pool target temperature a number with the reported
 limits and step, and the pool's enabled state an on/off switch (only for
-exactly `on`/`off`), each with read-back confirmation. See [connection](docs/bacon-connection.md)
-and [entities](docs/entities.md).
+exactly `on`/`off`), each with read-back confirmation. See [connection](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/bacon-connection.md)
+and [entities](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/entities.md).
 
 I made cloud pauses after rate limits complete. A `Retry-After` value is now
 honored in seconds or as an HTTP date, in full up to a safety bound of 24 hours

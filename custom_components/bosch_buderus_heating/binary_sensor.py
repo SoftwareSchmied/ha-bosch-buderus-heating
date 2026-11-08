@@ -25,7 +25,7 @@ from .bacon.access import BaconAccess
 from .bacon.dhw_status import track_status
 from .bacon.dry_entities import track_entities as track_dry_entities
 from .bacon.entity import BaconConnectivity
-from .control import track_entity_once
+from .control import track_entity_once, unchanged_input
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness, ResourceSnapshot
 from .device import device_info_for_resource, grouped_entity_name
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
@@ -152,6 +152,7 @@ def _track_binary_sensors(
 ) -> None:
     """Add recovered capabilities once, using the shared polling listener."""
     seen: set[str] = set()
+    checked: list[Mapping[str, Resource]] = []
 
     @callback
     def discover() -> None:
@@ -163,6 +164,8 @@ def _track_binary_sensors(
                 if snapshot.available
             }
         )
+        if unchanged_input(checked, resources):
+            return
         additions = []
         for description in build_binary_sensor_descriptions(resources):
             if description.key not in seen:
@@ -247,6 +250,8 @@ class BoschBuderusCloudControlBinarySensor(
         self._attr_unique_id = f"{coordinator.gateway.gateway_id}:cloud_control"
         self._status: tuple[str | None, datetime | None] | None = None
         self._cancel_end: Callable[[], None] | None = None
+        # The pause end the armed timer waits for (O14).
+        self._end_until: datetime | None = None
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -289,21 +294,26 @@ class BoschBuderusCloudControlBinarySensor(
     @callback
     def _refresh_status(self) -> None:
         self._status = self.coordinator.control_status()
-        self._cancel_pause_end()
         until = self._status[1]
+        if until is not None and until == self._end_until and self._cancel_end:
+            return  # O14: the armed timer already ends this pause
+        self._cancel_pause_end()
         if until is not None and self.hass is not None:
             # A pause ends without a coordinator update: re-evaluate then.
             delay = max(1.0, (until - dt_util.utcnow()).total_seconds() + 1)
+            self._end_until = until
             self._cancel_end = async_call_later(self.hass, delay, self._pause_ended)
 
     @callback
     def _pause_ended(self, _now: datetime) -> None:
         self._cancel_end = None
+        self._end_until = None
         self._refresh_status()
         self.async_write_ha_state()
 
     @callback
     def _cancel_pause_end(self) -> None:
+        self._end_until = None
         if self._cancel_end is not None:
             self._cancel_end()
             self._cancel_end = None

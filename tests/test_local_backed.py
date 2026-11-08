@@ -513,3 +513,100 @@ async def test_a_retained_live_view_is_not_replaced_by_an_inventory_start(
         poorer = SimpleNamespace(retain_for_local=lambda: True)
         assert not runtime.retain_startup(context, poorer)
         assert owner.connections._retained[binding][0] is old
+
+
+# ------------------------------- without the cloud always local (0.9 owner)
+
+
+def _option_off(hass, path=CURRENT):
+    from custom_components.bosch_buderus_heating.local_selection import (
+        LocalSelection,
+    )
+    from tests.test_local_selection import TARGET, FakeRuntime
+
+    coordinator = _paired(hass, path)
+    coordinator.local_selection = LocalSelection(
+        FakeRuntime([local(path, 45.5, monotonic=20.0)], enabled=False), TARGET
+    )
+    return coordinator
+
+
+async def test_with_the_cloud_running_the_option_off_shows_cloud_values(
+    hass,
+) -> None:
+    coordinator = _option_off(hass)
+    assert not coordinator.cloud_unavailable()
+    shown = coordinator.display_snapshot(CURRENT)
+    assert shown.resource.value == 40.0 and shown is coordinator.data[CURRENT]
+    await coordinator.async_shutdown()
+
+
+async def test_a_switched_off_cloud_shows_local_values_with_the_option_off(
+    hass,
+) -> None:
+    from dataclasses import replace
+
+    from custom_components.bosch_buderus_heating.coordinator import (
+        SOURCE_STOPPED_CATEGORY,
+        Freshness,
+    )
+
+    coordinator = _option_off(hass)
+    coordinator.data[CURRENT] = replace(
+        coordinator.data[CURRENT],
+        available=False,
+        freshness=Freshness.STALE,
+        last_error_category=SOURCE_STOPPED_CATEGORY,
+        ended=True,
+    )
+    coordinator.local_retained = True
+    with patch.object(type(coordinator), "_cloud_source_stopped", return_value=True):
+        shown = coordinator.display_snapshot(CURRENT)
+    assert shown.available and shown.resource.value == 45.5
+    # Not kept for local readings: nothing is shown, as before.
+    coordinator.local_retained = False
+    assert not coordinator.display_snapshot(CURRENT).available
+    await coordinator.async_shutdown()
+
+
+@pytest.mark.parametrize("cause", ["sign_in", "paused", "rate_limited", "outage"])
+async def test_without_the_cloud_local_values_win_with_the_option_off(
+    hass, cause
+) -> None:
+    from time import monotonic
+
+    coordinator = _option_off(hass)
+    if cause == "sign_in":
+        patcher = patch.object(
+            type(coordinator), "_cloud_auth_required", return_value=True
+        )
+    else:
+        patcher = patch.object(type(coordinator), "_cloud_auth_required")
+    if cause == "paused":
+        coordinator._circuit_open_until = monotonic() + 60
+    if cause == "rate_limited":
+        coordinator._cloud_backoff_until = monotonic() + 60
+    if cause == "outage":
+        coordinator.last_update_success = False
+    with patcher as auth:
+        if cause != "sign_in":
+            auth.return_value = False
+        assert coordinator.cloud_unavailable()
+        shown = coordinator.display_snapshot(CURRENT)
+        assert shown.available and shown.resource.value == 45.5
+        assert coordinator.control_status()[0] is not None
+    # The cloud answers again: the option decides as before.
+    coordinator._circuit_open_until = coordinator._cloud_backoff_until = 0.0
+    coordinator.last_update_success = True
+    assert coordinator.display_snapshot(CURRENT).resource.value == 40.0
+    await coordinator.async_shutdown()
+
+
+async def test_the_cloud_check_keeps_the_control_status(hass) -> None:
+    """Only the reasons without a cloud count; stale values do not."""
+    coordinator = _option_off(hass)
+    with patch.object(type(coordinator), "_cloud_auth_required", return_value=False):
+        coordinator.data = {}
+        assert coordinator.control_status() == ("not_current", None)
+        assert not coordinator.cloud_unavailable()
+    await coordinator.async_shutdown()

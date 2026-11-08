@@ -648,9 +648,25 @@ async def test_diagnostics_are_local_and_inventory_drops_technical_values(enviro
     ):
         coordinator.resources[resource.path] = resource
     coordinator.startup_data.schedule(PRODUCT, 2, advertised=True)
+    coordinator.startup_data.schedule(
+        "/devices/synthetic-other/productName", 2, advertised=True
+    )
     coordinator.startup_data.omit_license()
     diagnostics = await async_get_config_entry_diagnostics(coordinator.hass, entry)
-    assert diagnostics["diagnostics_schema"] == 41
+    assert diagnostics["diagnostics_schema"] == 42
+    # O94: the same masked path twice is told apart by its number.
+    products = [
+        item
+        for item in diagnostics["gateways"][0]["startup_data"]["paths"]
+        if item["path"].endswith("/productName")
+    ]
+    assert len({item["path"] for item in products}) == 1
+    assert sorted(item["index"] for item in products) == [1, 2]
+    assert all(
+        "index" not in item
+        for item in diagnostics["gateways"][0]["startup_data"]["paths"]
+        if not item["path"].endswith("/productName")
+    )
     assert diagnostics["privacy"]["contains_raw_resource_values"] is True
     metadata = diagnostics["gateways"][0]["technical_metadata"]
     assert {item["path"] for item in metadata} == {

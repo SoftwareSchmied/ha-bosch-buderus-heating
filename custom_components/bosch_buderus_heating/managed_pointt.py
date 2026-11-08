@@ -250,6 +250,10 @@ class PointTSource:
 
         @callback
         def updated() -> None:
+            if getattr(coordinator, "local_refreshing", False):
+                # Only paired local readings changed: the runtime already
+                # notified about them, and the cloud data is unchanged.
+                return
             if self.current():
                 if context.publish(coordinator):
                     self._published = True
@@ -557,6 +561,9 @@ class ManagedPointTCoordinator(BoschBuderusDataUpdateCoordinator):
         self.inventory_view = False
         # A1: the stored fault baseline is loaded before the view holds.
         self._hold_loading = False
+        self._hold_task: asyncio.Task[None] | None = None
+        # True while entities refresh for new paired local readings.
+        self.local_refreshing = False
 
     def schedule_inventory_expiry(self, *, recheck: bool = False) -> None:
         """P49b (S1): when the stored inventory of this dormant view passes
@@ -609,7 +616,11 @@ class ManagedPointTCoordinator(BoschBuderusDataUpdateCoordinator):
             # Fault tracking must never stop local values from updating.
             _LOGGER.exception("The local error list could not be applied")
         if selection.changed() or faults_changed:
-            self.async_update_listeners()
+            self.local_refreshing = True
+            try:
+                self.async_update_listeners()
+            finally:
+                self.local_refreshing = False
 
     def _local_faults_updated(self, selection: LocalSelection) -> bool:
         """P42: the local error list feeds the same fault tracker.
@@ -667,7 +678,7 @@ class ManagedPointTCoordinator(BoschBuderusDataUpdateCoordinator):
             # the stored baseline: load it first; until then the local list
             # decides nothing (review A1).
             self._hold_loading = True
-            self.hass.async_create_background_task(
+            self._hold_task = self.hass.async_create_background_task(
                 self._async_hold_after_load(),
                 "home_comfort_fault_baseline",
                 eager_start=False,
@@ -746,6 +757,7 @@ class ManagedPointTCoordinator(BoschBuderusDataUpdateCoordinator):
     async def async_release_retention(self) -> None:
         """The retained view ends (cloud back, access removed or unloaded)."""
         _cancel_inventory_expiry(self)
+        _cancel_hold(self)
         if not self.local_retained:
             return
         self.local_retained = False
@@ -760,6 +772,8 @@ class ManagedPointTCoordinator(BoschBuderusDataUpdateCoordinator):
         # Set before the first await, so a release during the stop is not lost.
         self.local_retained = retain
         _cancel_inventory_expiry(self)
+        if not retain:
+            _cancel_hold(self)
         if self._remove_local_listener is not None and not retain:
             self._remove_local_listener()
             self._remove_local_listener = None
@@ -790,6 +804,18 @@ class ManagedPointTCoordinator(BoschBuderusDataUpdateCoordinator):
         DataUpdateCoordinator.async_update_listeners(self)
         if not retain:
             await self.faults.async_close()
+
+
+def _cancel_hold(coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+    """The view ends: a fault baseline still loading for it is not needed.
+
+    Safe for every coordinator, also one that never started such a load.
+    """
+    task = getattr(coordinator, "_hold_task", None)
+    if task is not None:
+        coordinator._hold_task = None  # type: ignore[attr-defined]
+        if not task.done():
+            task.cancel()
 
 
 def _cancel_inventory_expiry(coordinator: BoschBuderusDataUpdateCoordinator) -> None:

@@ -214,9 +214,38 @@ the account.
    distinguish them.
 4. Select **Submit**.
 
+If the device list was loaded more than five minutes ago, Home Assistant asks
+to load it again before saving. You stay signed in; select **Submit** and
+choose the devices again.
+
 **Bosch/Buderus Home Comfort** now appears as a configured integration. Open
 **Devices** on its integration card to find the detected heating equipment and
 entities. Devices can then be assigned to areas and dashboards.
+
+## Set up the local access
+
+The local access reads the system directly from a K40 or K40RF gateway in the
+home network. I checked it with gateway firmware 15.00.01; older firmware
+pauses the local access (see [compatibility](compatibility.md#checked-systems)).
+
+1. Choose **Cloud and local access** when adding the integration, or add the
+   local access later with **Set up local access** in the entry's options.
+2. Select the discovered gateway address or enter its IP address or hostname.
+3. Confirm the gateway certificate when Home Assistant asks for it.
+4. Sign in with the device label: enter **Login** and **Pass** from the label
+   on the gateway. Home Assistant does not save them.
+5. When asked, press the buttons on the gateway as described in the dialog to
+   release the local sign-in, then continue within five minutes.
+
+The local access only reads. With the first local access of a system,
+**Use local values for existing entities** is switched on, so existing
+entities show the current local readings; a choice saved before stays.
+Without the cloud, local readings are shown whatever this option says. Details
+are in [operation without the cloud](operation-without-cloud.md).
+
+When Home Assistant finds a gateway in the network, it shows a discovery
+notice. If you select **Ignore**, that notice stays ignored, also after a
+restart; you can still add the local access from the entry's options.
 
 <a id="everyday-operation-in-the-development-version"></a>
 
@@ -421,6 +450,47 @@ sign-in is required.
 - Confirm the selected brand.
 - Compare the gateway with the compatibility list in the README. If it is
   listed, create a bug report as described below.
+
+### A new sign-in does not find every system
+
+A new sign-in of the cloud access must use the same account as before; the
+integration compares a hash of the account and refuses a different one. It is
+accepted when at least one switched-on system or additional device of that
+access appears in the account. Missing
+ones stay configured but unavailable, and the repair note **Systems not found
+in the cloud account** names them by their last characters. It disappears
+when they appear in the account again.
+
+If they were removed from the account, open **Configure → Connections →** the
+cloud access, switch them off under **Use for systems and devices** and remove
+them with **Forget deselected systems**; this works for gateways and
+additional devices alike. Their devices and entities stay in Home Assistant
+until you delete them. If a gateway was exchanged, keep it switched on: a
+separate repair note offers to continue the system with its history.
+
+A cloud access that has no system or device left can only sign in again with
+the same account. If that is not possible, remove the cloud access and add it
+again.
+
+A sign-in that finds none of the switched-on systems and devices, or that
+belongs to a different account, is refused, and the previous sign-in is kept.
+
+### The local gateway certificate changed
+
+The local access stops reading and the repair note **Local gateway
+certificate changed** appears. If you know why, for example after a gateway
+update or reset, open the entry's options, choose the local access and select
+**Change local access**. Confirm the new certificate there and sign in again
+with the device label, which is recommended. **Keep the current token** sends
+the stored token to the device with the newly confirmed certificate; the
+dialog warns about this first, so choose it only if you are sure that it is
+your own gateway.
+
+### The saved configuration cannot be read
+
+If the entry does not start and reports that its saved configuration cannot
+be read, nothing was changed. Restore a backup from before the problem, or
+delete the entry and add the integration again.
 
 ### Integration is not shown in search
 

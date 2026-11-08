@@ -136,6 +136,18 @@ class _Phase(Enum):
 class ExchangeCounterGuard:
     """The 4B rule for one counter entity of a managed target."""
 
+    # O25: one guard per counter entity; no per-instance dictionary.
+    __slots__ = (
+        "_at",
+        "_baseline",
+        "_exchanged",
+        "_phase",
+        "_store",
+        "_target_id",
+        "_total",
+        "_unique_id",
+    )
+
     def __init__(
         self,
         store: ModuleFingerprints,

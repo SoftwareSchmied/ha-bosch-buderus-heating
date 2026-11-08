@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter, deque
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from math import ceil
 from time import monotonic
 
@@ -98,6 +99,8 @@ class RequestMetrics:
     """Collect request metadata without URLs, identifiers, or payload values."""
 
     started_at: float = field(default_factory=monotonic)
+    # Wall-clock start, the reset time of the request counter sensor.
+    started_utc: datetime = field(default_factory=lambda: datetime.now(UTC))
     requests_total: int = 0
     retry_attempts: int = 0
     fallback_requests: int = 0
@@ -329,6 +332,33 @@ class RequestMetrics:
             },
             "rolling_60_minutes": self._rolling_snapshot(now),
             "recent_requests": [event.as_dict(now) for event in self._recent_requests],
+        }
+
+    def entity_summary(self) -> dict[str, object]:
+        """The values the request sensors show, without the recent requests.
+
+        A lighter form of ``snapshot`` for state writes: the same totals and
+        rolling hour, but no per-request list and no diagnostics-only fields.
+        """
+        now = monotonic()
+        self._prune(now)
+        successful = self.outcomes.get("success", 0)
+        return {
+            "observation_seconds": round(max(0.0, now - self.started_at)),
+            "requests_total": self.requests_total,
+            "requests_successful": successful,
+            "requests_failed": max(0, self.requests_total - successful),
+            "success_rate_percent": _percentage(successful, self.requests_total),
+            "retry_attempts": self.retry_attempts,
+            "fallback_requests": self.fallback_requests,
+            "rate_limit_events": self.outcomes.get("rate_limited", 0),
+            "requests_by_category": dict(sorted(self.requests_by_category.items())),
+            "requests_by_method": dict(sorted(self.requests_by_method.items())),
+            "responses_by_status_class": dict(
+                sorted(self.responses_by_status_class.items())
+            ),
+            "outcomes": dict(sorted(self.outcomes.items())),
+            "rolling_60_minutes": self._rolling_snapshot(now),
         }
 
     def record_slot_wait(self, seconds: float) -> None:

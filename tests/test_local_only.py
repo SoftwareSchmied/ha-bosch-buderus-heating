@@ -80,6 +80,10 @@ def track(coordinator) -> list[BoschBuderusLocalOnlySensor]:
     added: list = []
     entry = SimpleNamespace(async_on_unload=Mock())
     track_local_only_sensors(entry, coordinator, added.extend)
+    from custom_components.bosch_buderus_heating import local_only_sensor
+
+    # This add completes at once: nothing is still being added.
+    coordinator.hass.data.pop(local_only_sensor._PENDING_ADDS, None)
     return added
 
 
@@ -193,11 +197,12 @@ async def test_values_units_and_classes(hass: HomeAssistant) -> None:
     assert status.native_value == "heating"
     assert "passive_defrost" in status.options
     assert status.translation_key == "refrigerant_status"
-    # Generic signals: unit from the reading, no statistics.
+    # Generic signals: unit from the reading; a measurement unit gives
+    # statistics (#80).
     signal = entities[SIGNAL]
     assert (signal.native_value, signal.native_unit_of_measurement) == (28.5, "°C")
     assert signal.device_class is SensorDeviceClass.TEMPERATURE
-    assert signal.state_class is None
+    assert signal.state_class is SensorStateClass.MEASUREMENT
     await coordinator.async_shutdown()
 
 
@@ -394,6 +399,8 @@ async def test_a_cloud_resource_found_later_takes_over(hass: HomeAssistant) -> N
     )
     coordinator.async_update_listeners()
     assert not entity.available
+    # Handed over while running (8C-c); without a stored unit: removed.
+    await hass.async_block_till_done()
     assert registry.async_get(entity_id) is None
     await coordinator.async_shutdown()
 

@@ -36,8 +36,9 @@ their own polling classes in the same way; see [local polling](local-polling.md)
   also not through local values.
 - During a long cloud pause, readings therefore expire after three intervals
   at the latest, instead of being shown with an unknown age.
-- With **Use local values for existing entities**, a current local reading keeps
-  the sensor available even while the whole cloud cycle fails or pauses.
+- With an enabled local access, a current local reading of a paired reading
+  keeps the sensor available while the whole cloud cycle fails or pauses,
+  whether **Use local values for existing entities** is on or off.
 
 A cloud cycle stops starting new requests after 50 seconds. Readings it did
 not reach keep their value within its limit and are read first in the next

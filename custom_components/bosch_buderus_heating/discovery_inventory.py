@@ -15,6 +15,7 @@ import math
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
+from time import monotonic
 from typing import Any
 
 from homeassistant.core import HomeAssistant
@@ -29,6 +30,9 @@ _LOGGER = logging.getLogger(__name__)
 
 STORAGE_VERSION = 1
 SAVE_DELAY_SECONDS = 30
+# O66: a pure "still seen" confirmation is written at most this often; content
+# changes keep SAVE_DELAY_SECONDS. A later write includes held confirmations.
+CONFIRM_SAVE_SECONDS = 3600
 # A part not seen for this long is no longer expected after a start.
 MAX_AGE = timedelta(days=30)
 MAX_RESOURCES_PER_GATEWAY = 1024
@@ -274,6 +278,7 @@ class DiscoveryInventory:
         )
         self._gateways: dict[str, GatewayInventory] = {}
         self._loaded = False
+        self._confirm_saved_at: float | None = None
 
     @property
     def store(self) -> Store[dict[str, Any]]:
@@ -356,8 +361,16 @@ class DiscoveryInventory:
             if (item := stored.resources.get(path)) is not None:
                 item.seen = now
                 confirmed = True
-        if confirmed:
-            stored.saved_at = now
+        if not confirmed:
+            return
+        stored.saved_at = now
+        # O66: ages count in memory at once; the file follows at most hourly.
+        moment = monotonic()
+        if (
+            self._confirm_saved_at is None
+            or moment - self._confirm_saved_at >= CONFIRM_SAVE_SECONDS
+        ):
+            self._confirm_saved_at = moment
             self._store.async_delay_save(self._data, SAVE_DELAY_SECONDS)
 
     def seen(self, gateway_id: str) -> dict[str, datetime]:

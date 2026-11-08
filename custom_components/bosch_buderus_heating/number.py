@@ -25,7 +25,7 @@ from .bacon.purifier_entities import (
 from .bacon.purifier_entities import (
     track_entities as track_purifier_entities,
 )
-from .control import async_set_control, track_control_entities
+from .control import HeldCapabilities, async_set_control, track_control_entities
 from .control_presentation import control_category, control_icon, control_name
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
@@ -117,6 +117,7 @@ def build_number_descriptions(
 
 
 class BoschBuderusNumber(
+    HeldCapabilities,
     CoordinatorEntity[BoschBuderusDataUpdateCoordinator],
     NumberEntity,
 ):
@@ -124,6 +125,8 @@ class BoschBuderusNumber(
 
     _attr_has_entity_name = True
     entity_description: BoschBuderusNumberEntityDescription
+    # O30: the unit of the last reading, kept while there is none.
+    _held_unit: str | None = None
 
     def __init__(
         self,
@@ -210,7 +213,11 @@ class BoschBuderusNumber(
     def native_unit_of_measurement(self) -> str | None:
         snapshot = self._snapshot
         if snapshot is not None:
-            return _native_unit(assess_control(snapshot.resource).unit)
+            unit = _native_unit(assess_control(snapshot.resource).unit)
+            self._held_unit = unit
+            return unit
+        if self._held_unit is not None:
+            return self._held_unit
         return super().native_unit_of_measurement
 
     async def async_set_native_value(self, value: float) -> None:

@@ -7,7 +7,7 @@ have independent lifecycles and intervals.
 
 This change provides regular local data to the managed source. Existing normal
 entities use their cloud adapters unless **local values for existing entities**
-are enabled; then verified [observation pairs](observation-pairs.md) prefer the
+are enabled or the cloud cannot be used; then verified [observation pairs](observation-pairs.md) prefer the
 current local reading and fall back to the cloud. Local paths do not create additional Home Assistant devices.
 A first installation using only local access remains outside this step.
 
@@ -57,6 +57,29 @@ precedence. Authentication, identity and certificate failures stop automatic
 attempts. Disabling, removing or replacing the connection cancels owned work;
 late results cannot update another generation. Retained observations do not
 become current again merely because a source restarts.
+
+Since 0.9.0-alpha.2 the local access asks less often for values that rarely
+change:
+
+- descriptive system metadata of the gateway, for example the time zone,
+  the bus and the tariff or iSRC support, is read hourly instead of every
+  15 minutes; room-device and zone metadata such as battery level, name and
+  assignment stays at 15 minutes;
+- the gateway firmware stays at 15 minutes, so a firmware update is still
+  noticed quickly;
+- the three installation date signals are read once a day;
+- device serial numbers are no longer searched or read;
+- a path the gateway answers with 403, 404 or 406 is asked again after one
+  hour, six hours and then weekly instead of daily. A firmware change, a new
+  sign-in or changed connection settings and **Search the system again** still
+  ask such paths again at once; a changed answer schema alone keeps the pause.
+
+Because the polling classes changed, the local search starts once from the
+beginning after updating to 0.9.0-alpha.2. Known readings stay and are read
+as before, learned pauses are kept, and stored records of serial-number paths
+are dropped. The search uses the usual search slots, so the gateway answers a
+few more search requests until it is complete again. See
+[local polling](local-polling.md).
 
 ## Diagnostics and validation
 

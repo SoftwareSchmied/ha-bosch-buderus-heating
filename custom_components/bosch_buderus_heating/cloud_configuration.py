@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from collections.abc import Callable, Collection, Mapping
 from dataclasses import dataclass, field
 from time import monotonic
-from typing import cast
+from typing import Any, cast
 from uuid import uuid4
 
-from homeassistant.config_entries import SOURCE_IGNORE
+from homeassistant.config_entries import SOURCE_IGNORE, ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -20,13 +21,21 @@ from .bacon.models import BaconError, device_key, token_subject
 from .configuration import (
     CLOUD_KIND,
     STORAGE_MINOR_VERSION,
+    STORAGE_VERSION,
+    SUPPORTED_MINOR_VERSIONS,
     ConfigurationError,
     ConfigurationSnapshot,
     JsonObject,
     load_configuration,
     require_identifier,
 )
-from .configuration_management import ConfigurationManagement, ConnectionEdit, section
+from .configuration_management import (
+    ConfigurationManagement,
+    ConnectionEdit,
+    account_evidence,
+    section,
+    signed_in_account,
+)
 from .configuration_migration import (
     convert_legacy_configuration,
     legacy_cloud_connection_id,
@@ -38,6 +47,7 @@ from .pointt import AuthTokens, Brand, Gateway, OAuthClient, PointTClient
 
 CLAIM = DOMAIN + "_cloud_setup"
 DISCOVERY_VALID_SECONDS = 300
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,7 +142,10 @@ def _join_local_first(
     target["kind"] = "pointt_object"
     target.setdefault("legacy_identity", {"format": "pointt_v3", "gateway_id": gateway})
     target.pop("local_details", None)
-    section(options, "targets")[target_id].pop("local_plant", None)
+    target_options = section(options, "targets")[target_id]
+    target_options.pop("local_plant", None)
+    # Now cloud and local access: local values by default, a stored choice stays.
+    target_options.setdefault("local_values", True)
     binding["link_evidence"] = {
         **cast(JsonObject, binding["link_evidence"]),
         "contract": CONTRACT,
@@ -140,32 +153,104 @@ def _join_local_first(
 
 
 def cloud_snapshots(hass: HomeAssistant) -> tuple[ConfigurationSnapshot, ...]:
-    """Include disabled entries and targets whose access has been removed."""
+    """Include disabled entries and targets whose access has been removed.
+
+    An entry whose stored configuration cannot be read is skipped: it cannot
+    be set up, and its own error explains why. It must not turn every new
+    cloud setup into a misleading "configuration changed". An entry saved by
+    a newer version is never interpreted and still refuses (its ownership is
+    unknown).
+    """
     result = []
+    for entry, snapshot in _read_entries(hass):
+        if snapshot is not None:
+            result.append(snapshot)
+        elif not unreadable_gateway_ids(entry.data):
+            # Never logs data; its gateways cannot be protected from a new setup.
+            _LOGGER.warning(
+                "Configuration entry %s cannot be read and is skipped; its "
+                "systems are unknown to new setups",
+                entry.entry_id,
+            )
+    return tuple(result)
+
+
+def _read_entries(
+    hass: HomeAssistant,
+) -> list[tuple[ConfigEntry[Any], ConfigurationSnapshot | None]]:
+    """Every non-ignored entry with its configuration, ``None`` if unreadable."""
+    result: list[tuple[ConfigEntry[Any], ConfigurationSnapshot | None]] = []
     for entry in hass.config_entries.async_entries(DOMAIN):
         if entry.source == SOURCE_IGNORE:
             continue
-        if entry.version >= 4:
-            result.append(
-                load_configuration(
+        if entry.version > STORAGE_VERSION or (
+            entry.version == STORAGE_VERSION
+            and entry.minor_version > max(SUPPORTED_MINOR_VERSIONS)
+        ):
+            raise ConfigurationError("unsupported_version")
+        snapshot: ConfigurationSnapshot | None
+        try:
+            if entry.version >= 4:
+                snapshot = load_configuration(
                     entry.entry_id,
                     entry.data,
                     entry.options,
                     version=entry.version,
                     minor_version=entry.minor_version,
                 )
-            )
-        else:
-            result.append(
-                convert_legacy_configuration(
+            else:
+                snapshot = convert_legacy_configuration(
                     entry.entry_id,
                     entry.data,
                     entry.options,
                     version=3,
                     minor_version=entry.minor_version,
                 )
-            )
-    return tuple(result)
+        except ValueError:  # ConfigurationError included; never logs data
+            snapshot = None
+        result.append((entry, snapshot))
+    return result
+
+
+def unreadable_gateway_ids(data: Mapping[str, Any]) -> set[str]:
+    """Gateway IDs an unreadable entry may still own, read conservatively.
+
+    Looks at targets (identities and legacy identities), bindings and the
+    legacy gateway list; anything that is not a plain string is ignored.
+    """
+    found: set[str] = set()
+
+    def add(value: object) -> None:
+        if isinstance(value, str) and value:
+            found.add(value)
+
+    def items(value: object) -> list[Any]:
+        if isinstance(value, Mapping):
+            return list(value.values())
+        return list(value) if isinstance(value, list) else []
+
+    for value in items(data.get("gateway_ids")):
+        add(value)
+    for target in items(data.get("targets")):
+        if not isinstance(target, Mapping):
+            continue
+        for identity in items(target.get("identities")):
+            if isinstance(identity, Mapping) and identity.get("namespace") in (
+                "pointt_gateway",
+                "local_system_gateway",
+            ):
+                add(identity.get("value"))
+        legacy = target.get("legacy_identity")
+        if isinstance(legacy, Mapping):
+            add(legacy.get("gateway_id"))
+    for binding in items(data.get("bindings")):
+        locator = binding.get("locator") if isinstance(binding, Mapping) else None
+        if isinstance(locator, Mapping) and locator.get("namespace") in (
+            "pointt_gateway",
+            "local_system_gateway",
+        ):
+            add(locator.get("value"))
+    return found
 
 
 def check_new_cloud(hass: HomeAssistant, flow_id: str) -> None:
@@ -277,14 +362,24 @@ def _identifier(kind: str) -> str:
 
 
 def foreign_identities(hass: HomeAssistant, owner_id: str) -> set[tuple[str, str, str]]:
-    """Provider identities stored by any other configuration entry."""
-    return {
-        identity
-        for snapshot in cloud_snapshots(hass)
-        if snapshot.owner_id != owner_id
-        for target in snapshot.targets.values()
-        for identity in _signatures(target.to_data())
-    }
+    """Provider identities stored by any other configuration entry.
+
+    The gateways of an unreadable entry count as claimed: a new setup taking
+    them would later collide with its entities.
+    """
+    claimed: set[tuple[str, str, str]] = set()
+    for entry, snapshot in _read_entries(hass):
+        if entry.entry_id == owner_id:
+            continue
+        if snapshot is None:
+            claimed.update(
+                ("pointt_gateway", "", gateway)
+                for gateway in unreadable_gateway_ids(entry.data)
+            )
+            continue
+        for target in snapshot.targets.values():
+            claimed.update(_signatures(target.to_data()))
+    return claimed
 
 
 def _merge_targets(
@@ -451,7 +546,8 @@ def new_cloud_configuration(
         "auth_epoch": 0,
         "config_revision": 0,
         "credentials": tokens_to_data(tokens),
-        "account_evidence": None,
+        # Only the hash of the account; a later sign-in must match it.
+        "account_evidence": account_evidence(signed_in_account(tokens)),
         "legacy_bacon_account": discovery.account,
     }
     section(options, "connections")[connection] = {

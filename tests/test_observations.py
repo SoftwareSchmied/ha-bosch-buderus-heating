@@ -401,11 +401,145 @@ def test_pairing_and_summary_contain_no_values_or_paths() -> None:
         "results": {"agree": 1, "differ": 1},
         "incomparable_reasons": {},
         "incomparable_units": {},
+        "differing_measurements": ["supply_temperature"],
         "counter_pairs": 0,
         "counter_evidence": {},
         "both_current": 1,
         "maximum_receive_gap_seconds": 0.0,
+        "maximum_receive_gap_seconds_by_class": {"live": 0.0},
     }
     rendered = repr(summary)
     assert "31.5" not in rendered and "/heatSources" not in rendered
     assert pair_summary(())["maximum_receive_gap_seconds"] is None
+
+
+# ------------------------------------------- counters between reads (O90, O91)
+
+WORKING_TIME = "/heatSources/hs1/workingTime"
+
+
+def working_time(total, *, unit="s"):
+    raw = {
+        "id": WORKING_TIME,
+        "type": "emonValue",
+        "writeable": 0,
+        "values": [{"ch": total - 100}, {"dhw": 100}, {"cooling": 0}, {"total": total}],
+    }
+    if unit is not None:
+        raw["unit"] = unit
+    return raw
+
+
+def cloud_working_time(total, *, at=NOW):
+    return cloud(
+        WORKING_TIME,
+        values=[{"ch": total - 100}, {"dhw": 100}, {"cooling": 0}, {"total": total}],
+        resource_type="emonValue",
+        unit=None,
+        at=at,
+        writable=False,
+    )
+
+
+def test_the_unitless_cloud_working_time_counts_seconds():
+    comparison = compare(cloud_working_time(1434959), local(working_time(1434959)))
+    assert comparison.result is PairResult.AGREE
+    # Only seconds, and only this pair.
+    other = compare(
+        cloud_working_time(1434959), local(working_time(1434959, unit="min"))
+    )
+    assert other.result is PairResult.INCOMPARABLE and other.reason == "unit_differs"
+    starts = compare(
+        cloud(
+            "/heatSources/hs1/numberOfStarts",
+            values=[{"total": 5}],
+            resource_type="emonValue",
+            unit=None,
+            writable=False,
+        ),
+        local(
+            {
+                "id": "/heatSources/hs1/numberOfStarts",
+                "type": "emonValue",
+                "writeable": 0,
+                "unit": "s",
+                "values": [{"total": 5}],
+            }
+        ),
+    )
+    assert starts.reason == "unit_differs"
+
+
+@pytest.mark.parametrize(
+    "cloud_total,local_total,gap,result",
+    [
+        (1434959, 1435379, 457, PairResult.CHANGED_BETWEEN_READS),  # live pair
+        (1434959, 1435379, 60, PairResult.DIFFER),  # within one poll period
+        (1435379, 1434959, 457, PairResult.DIFFER),  # the later one is lower
+        (1434959, 1434959, 457, PairResult.AGREE),
+    ],
+)
+def test_a_counter_read_later_and_higher_changed_between_reads(
+    cloud_total, local_total, gap, result
+):
+    later = NOW + timedelta(seconds=gap)
+    comparison = compare(
+        cloud_working_time(cloud_total), local(working_time(local_total), at=later)
+    )
+    assert comparison.result is result
+    # The cloud read later and higher counts the same way.
+    swapped = compare(
+        cloud_working_time(local_total, at=later), local(working_time(cloud_total))
+    )
+    assert swapped.result is result
+
+
+def test_a_setting_that_differs_is_never_a_change_between_reads():
+    later = NOW + timedelta(minutes=10)
+    comparison = compare(
+        cloud("/heatSources/returnTemperature", 30.0, writable=False),
+        local(scalar("/heatSources/returnTemperature", value=31.0), at=later),
+    )
+    assert comparison.result is PairResult.DIFFER
+
+
+def test_the_summary_names_differing_pairs_and_gaps_per_class():
+    later = NOW + timedelta(seconds=457)
+    comparisons = pair_observations(
+        [
+            cloud_working_time(1434959),
+            cloud("/heatSources/returnTemperature", 30.0, writable=False),
+            cloud("/gateway/brand", "B", resource_type="stringValue", unit=None),
+        ],
+        [
+            local(working_time(1435379), at=later),
+            local(scalar("/heatSources/returnTemperature", value=31.0), at=later),
+            local(
+                {
+                    "id": "/gateway/brand",
+                    "type": "stringValue",
+                    "writeable": 0,
+                    "value": "B",
+                },
+                at=NOW + timedelta(hours=9),
+            ),
+        ],
+    )
+    summary = pair_summary(comparisons)
+    assert summary["results"] == {
+        "agree": 1,
+        "changed_between_reads": 1,
+        "differ": 1,
+    }
+    assert summary["differing_measurements"] == ["return_temperature"]
+    assert summary["counter_evidence"]["working_time_heat_source"]["result"] == (
+        "changed_between_reads"
+    )
+    assert summary["maximum_receive_gap_seconds"] == 32400.0
+    assert summary["maximum_receive_gap_seconds_by_class"] == {
+        "counters": 457.0,
+        "live": 457.0,
+        "static": 32400.0,
+    }
+    rendered = repr(summary)
+    assert "1435379" not in rendered and "/heatSources" not in rendered

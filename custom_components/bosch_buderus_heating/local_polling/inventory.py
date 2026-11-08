@@ -25,6 +25,9 @@ from .policy import (
     validate_interval,
 )
 
+NOT_FOUND_STATUSES = frozenset({403, 404, 406})
+NOT_FOUND_RETRY = 7 * 86400
+
 
 class Freshness(StrEnum):
     UNCONFIRMED = "unconfirmed"
@@ -206,9 +209,11 @@ class ResourceInventory:
             schedule = (
                 (300, 900, 3600, 86400)
                 if timed_out
+                # O42: after the third "not found/denied" only weekly; a
+                # firmware or access change and a new search ask at once.
                 else (
-                    (3600, 21600, 86400)
-                    if result.status in {403, 404, 406}
+                    (3600, 21600, NOT_FOUND_RETRY)
+                    if result.status in NOT_FOUND_STATUSES
                     else (900, 3600, 86400)
                 )
             )

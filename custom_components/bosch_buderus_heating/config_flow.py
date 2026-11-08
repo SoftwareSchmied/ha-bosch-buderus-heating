@@ -55,7 +55,11 @@ from .cloud_configuration import (
 from .cloud_options_flow import CloudOptionsFlow
 from .configuration import CLOUD_KIND, ConfigurationError, load_configuration
 from .configuration_access import CredentialContext, EntryConfiguration
-from .configuration_management import ConfigurationManagement, ConnectionEdit
+from .configuration_management import (
+    ConfigurationManagement,
+    ConnectionEdit,
+    not_found_bindings,
+)
 from .const import (
     CONF_BRAND,
     CONF_FAULT_NOTIFICATIONS,
@@ -437,6 +441,14 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
             return await self._async_discover_gateways()
         return self.async_show_form(step_id="retry")
 
+    async def async_step_selection_expired(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """List the devices again after an expired selection, keeping the sign-in."""
+        if user_input is not None:
+            return await self._async_discover_gateways()
+        return self.async_show_form(step_id="selection_expired")
+
     async def async_step_gateways(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -539,6 +551,10 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
                 set(self._selected_bacon or []),
             )
         except ConfigurationError as error:
+            if str(error) == "cloud_selection_expired":
+                # A slow selection lists the devices again, without a new sign-in.
+                self._new_cloud_listing = None
+                return self.async_show_form(step_id="selection_expired")
             return self.async_abort(
                 reason=str(error)
                 if str(error)
@@ -547,7 +563,6 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
                     "cloud_setup_in_progress",
                     "cloud_target_owned",
                     "cloud_local_first_other_entry",
-                    "cloud_selection_expired",
                 }
                 else "configuration_changed"
             )
@@ -720,6 +735,8 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
                 request_guard=lambda: ensure_active_cloud_flow(self.hass, self.flow_id),
             )
         except ConfigurationError as error:
+            if str(error) in ("reauth_wrong_account", "reauth_no_targets"):
+                return self.async_abort(reason=str(error))
             if str(error) in ("reauth_targets_missing", "unverifiable_targets"):
                 return self.async_show_form(
                     step_id="retry", errors={"base": "reauth_targets_missing"}
@@ -742,6 +759,14 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
         runtime = getattr(self._reauth_entry, "runtime_data", None)
         if isinstance(runtime, ManagedEntry):
             self.hass.loop.call_soon(runtime.schedule_reauthentication)
+        if missing := not_found_bindings(
+            self.hass, self._reauth_entry, self._managed_edit.connection_id
+        ):
+            # Renewed; a repair note names the systems that were not found.
+            return self.async_abort(
+                reason="reauth_successful_targets_missing",
+                description_placeholders={"count": str(len(missing))},
+            )
         return self.async_abort(reason="reauth_successful")
 
     async def _async_prepare_reconfigure(self) -> ConfigFlowResult:

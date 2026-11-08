@@ -60,6 +60,10 @@ def test_every_message_is_translated() -> None:
             assert keys <= set(data[section]["error"]), (name, section)
         assert "keep" in data["selector"]["local_method"]["options"], name
         assert data["issues"]["local_certificate_changed"]["description"], name
+        for section in ("config", "options"):
+            # The warning before keeping a token after a certificate change.
+            keep = data[section]["step"]["local_method_keep"]["description"]
+            assert "**" in keep and len(keep) > 300, (name, section)
 
 
 # --------------------------------------------- keep the current token
@@ -100,9 +104,13 @@ async def test_a_certificate_change_can_keep_the_current_token(hass) -> None:
         patch.object(flow, "enrollment_journal", return_value=journal),
         patch.object(flow, "translated_selection", side_effect=capture),
     ):
-        await handler.async_step_local_method()
-        assert offered[-1] == ("keep", "label", "token")
-        result = await handler.async_step_local_method({"method": "keep"})
+        form = await handler.async_step_local_method()
+        # The new sign-in comes first and is preselected; keeping is warned.
+        assert offered[-1] == ("label", "keep", "token")
+        assert form["step_id"] == "local_method_keep"
+        assert form["data_schema"]({})["method"] == "label"
+        journal.import_token.assert_not_awaited()
+        result = await handler.async_step_local_method_keep({"method": "keep"})
     assert result["step_id"] == "next"
     assert journal.import_token.await_args.args[1] == "stored-token"
     handler._local_start.assert_awaited_once()
@@ -124,9 +132,10 @@ async def test_without_a_stored_token_only_the_usual_methods_are_offered(
         patch.object(flow, "translated_selection", side_effect=capture),
         patch.object(flow, "enrollment_journal", return_value=journal),
     ):
-        await handler.async_step_local_method()
+        form = await handler.async_step_local_method()
         result = await handler.async_step_local_method({"method": "keep"})
     assert offered[-1] == ("label", "token")
+    assert form["step_id"] == "local_method"
     assert result["type"] == "abort"
     journal.import_token.assert_not_awaited()  # nothing to keep: nothing sent
 

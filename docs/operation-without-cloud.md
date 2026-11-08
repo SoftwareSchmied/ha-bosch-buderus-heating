@@ -12,14 +12,19 @@ A system can be connected in two ways:
   updates many readings more often and can add technical readings the cloud
   does not offer, for example from the refrigerant circuit or pumps.
 
-Using **both** is recommended. A reading that both deliver is shown once, from
-the local access while its value is current, otherwise from the cloud.
+Using **both** is recommended. A reading that both deliver is shown once. With
+the cloud running, it comes from the local access while its value is current
+and **Use local values for existing entities** is on; otherwise from the
+cloud. The option is on by default when a system gets its first local access
+and when a system set up with local access only joins the cloud; a choice
+saved before stays.
 Anything you change is always sent through the cloud.
 
-Without the cloud, a system with a local access keeps showing its readings
-from the local access, **read-only**: there are no controls, time programs or
-holidays. When the cloud comes back, it takes over the same entities; entity
-IDs and history stay.
+Without the cloud (switched off, a new sign-in needed, paused, rate-limited or
+unreachable), a system with a local access always shows its readings from the
+local access, whether the option is on or off, **read-only**: there are no
+controls, time programs or holidays. When the cloud comes back, it takes over
+the same entities; entity IDs and history stay.
 
 | What you do | What you get |
 | --- | --- |

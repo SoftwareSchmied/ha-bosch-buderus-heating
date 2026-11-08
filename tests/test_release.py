@@ -14,7 +14,7 @@ import pytest
 from scripts.build_release import ARCHIVE_NAME, ROOT, build_release
 from scripts.release_notes import extract_release_notes
 
-RELEASE_VERSION = "0.9.0-alpha.1"
+RELEASE_VERSION = "0.9.0-alpha.2"
 
 
 @pytest.fixture

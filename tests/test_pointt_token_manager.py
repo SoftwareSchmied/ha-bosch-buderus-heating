@@ -252,3 +252,20 @@ async def test_missing_refresh_token_is_reported_as_rejection() -> None:
         await manager.get_access_token()
     assert attempts[0].outcome == "rejected"
     assert attempts[0].presented_refresh_token is None
+
+
+@pytest.mark.parametrize(("remaining", "refreshed"), [(121.0, False), (119.0, True)])
+async def test_access_token_is_renewed_with_two_minutes_left(
+    remaining: float, refreshed: bool
+) -> None:
+    """O94: renew while 120 s remain, not first with 30-40 s left."""
+    oauth = FakeOAuthClient()
+    manager = TokenManager(
+        oauth,
+        AuthTokens("current", "refresh", expires_at=1000.0 + remaining),
+        lambda tokens: None,
+        clock=lambda: 1000.0,
+    )
+    token = await manager.get_access_token()
+    assert token == ("fresh" if refreshed else "current")
+    assert oauth.calls == (["refresh"] if refreshed else [])

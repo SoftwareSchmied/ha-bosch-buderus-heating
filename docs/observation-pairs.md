@@ -39,12 +39,16 @@ no requests.
 ## Local values for existing entities
 
 The local connection settings offer **Use local values for existing entities**.
-It is off by default and applies to the installations linked to that local
-access. When enabled, existing sensors and binary sensors of paired readings show
+It applies to the installations linked to that local access and is on by
+default when a system gets its first local access or a system set up with
+local access only joins the cloud; a choice saved before stays. When enabled,
+existing sensors and binary sensors of paired readings show
 the current local value. If it is outdated or missing, the current cloud value is
-shown; if both are outdated, the entity becomes unavailable. A current local
-value also keeps the entity available while the whole cloud cycle fails or
-pauses. See [validity of readings](reading-validity.md).
+shown; if both are outdated, the entity becomes unavailable. Without the cloud
+(switched off, a new sign-in needed, paused, rate-limited or unreachable),
+current local values are shown whether the option is on or off. See
+[validity of readings](reading-validity.md) and
+[source selection](source-selection.md).
 
 Counters may use local readings too, but never count backwards when their
 source changes; see [source selection](source-selection.md#counters).

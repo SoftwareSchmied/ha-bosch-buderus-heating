@@ -219,7 +219,7 @@ def test_capped_period_is_reported_and_drives_expiry() -> None:
     )
     plain = ResourceInventory(context, 60)
     request = request_for_path(ISRC)
-    assert plain.period(request) == 900
+    assert plain.period(request) == 3600  # metadata: hourly (O43)
     assert capped.period(request) == 60
     record = capped.add(request, 0.0)
     view = capped.view(record, 0.0, source_ready=True)

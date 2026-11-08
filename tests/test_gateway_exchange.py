@@ -81,7 +81,9 @@ def _pointt_bindings(entry, cloud):
 # ------------------------------------------------------------- R1: forgetting
 
 
-async def test_a_forgotten_gateway_no_longer_blocks_a_new_sign_in(hass) -> None:
+async def test_a_switched_off_or_forgotten_gateway_never_blocks_a_sign_in(
+    hass,
+) -> None:
     entry, cloud, _ = entry_for(hass)
     management = ConfigurationManagement(hass, entry)
     bindings = _pointt_bindings(entry, cloud)
@@ -102,11 +104,27 @@ async def test_a_forgotten_gateway_no_longer_blocks_a_new_sign_in(hass) -> None:
             AsyncMock(return_value=(("softener",), _account(entry, cloud))),
         ),
     ):
-        with pytest.raises(ConfigurationError, match="reauth_targets_missing"):
-            await management.async_reauthenticate(management.edit(cloud), tokens)
+        await management.async_reauthenticate(management.edit(cloud), tokens)
         management.forget_bindings(management.edit(cloud), {old})
         assert old not in entry.data["bindings"]
         await management.async_reauthenticate(management.edit(cloud), tokens)
+
+
+async def test_a_switched_off_cloud_device_can_be_forgotten(hass) -> None:
+    entry, cloud, _ = entry_for(hass)
+    management = ConfigurationManagement(hass, entry)
+    device = next(
+        key
+        for key, value in entry.data["bindings"].items()
+        if value["connection_id"] == cloud and value["adapter"] == "bacon"
+    )
+    target = entry.data["bindings"][device]["target_id"]
+    with pytest.raises(ConfigurationError, match="binding_changed"):
+        management.forget_bindings(management.edit(cloud), {device})  # still on
+    management.set_binding_enabled(management.edit(cloud), device, False)
+    management.forget_bindings(management.edit(cloud), {device})
+    assert device not in entry.data["bindings"]
+    assert target in entry.data["targets"]  # devices and entities stay
 
 
 def _account(entry, cloud):

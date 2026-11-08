@@ -238,6 +238,8 @@ async def test_cloud_and_local_continue_with_the_new_plant(
     snapshot = management.current()
     assert {b.adapter for b in snapshot.bindings.values()} == {"pointt", "k40_local"}
     assert {b.target_id for b in snapshot.bindings.values()} == {target}
+    # Owner decision: cloud and local access use the local values by default.
+    assert snapshot.to_options()["targets"][target]["local_values"] is True
 
 
 # ------------------------------------------------------- 7D: no double claim
@@ -312,6 +314,43 @@ def test_the_same_entry_merges_a_local_first_gateway_only_with_a_proof(
     _merge_targets(
         hass, entry.entry_id, data, options, "cloud", {"other-gw"}, set(), "", None
     )
+
+
+@pytest.mark.parametrize("stored", [None, False, True])
+def test_a_local_first_plant_joining_the_cloud_uses_local_values_unless_chosen(
+    stored,
+) -> None:
+    """Owner decision: joining the cloud makes a cloud and local setup."""
+    from copy import deepcopy
+
+    from custom_components.bosch_buderus_heating.cloud_configuration import (
+        LocalFirstProof,
+        _join_local_first,
+        target_fingerprint,
+    )
+
+    data = {
+        "targets": {"t": deepcopy(LOCAL_FIRST_TARGET)},
+        "bindings": {
+            "b": {
+                "target_id": "t",
+                "adapter": "k40_local",
+                "link_evidence": {"basis": "verified_local_setup", "contract": None},
+            }
+        },
+    }
+    options = {"targets": {"t": {"read_order": ["b"], "local_plant": True}}}
+    if stored is not None:
+        options["targets"]["t"]["local_values"] = stored
+    proof = LocalFirstProof(
+        "owner", "t", GATEWAY, "b", target_fingerprint(data["targets"]["t"])
+    )
+    _join_local_first("owner", data, options, "t", GATEWAY, proof)
+    assert data["targets"]["t"]["kind"] == "pointt_object"
+    assert options["targets"]["t"]["local_values"] is (
+        True if stored is None else stored
+    )
+    assert "local_plant" not in options["targets"]["t"]
 
 
 # ------------------------------------------------- the plant without a cloud

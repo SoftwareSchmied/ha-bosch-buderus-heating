@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 import asyncio
+import logging
+from collections import deque
 from collections.abc import Callable
 from dataclasses import asdict, replace
 from datetime import timedelta
+from time import monotonic
 from typing import Any, cast
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.util import dt as dt_util
 
 from .configuration import (
     LOCAL_KIND,
@@ -28,6 +32,7 @@ from .local_credentials import (
     StoredLocalAccess,
     load_local_access,
 )
+from .local_polling.inventory import Freshness
 from .local_polling.policy import validate_interval
 from .local_polling.service import LocalPollingService, PollSnapshot
 from .local_polling.storage import LocalScheduleStore
@@ -54,6 +59,19 @@ SYSTEM_READ_ATTEMPTS = 6
 SYSTEM_READ_WAIT_SECONDS = 4.0
 # Within the comparison's 30 s limit, so a busy access is reported as busy.
 SYSTEM_READ_SECONDS = 20.0
+# A start that failed on the stored local pauses is tried again after these.
+START_RETRY = (60.0, 120.0, 240.0, 480.0, 900.0)
+# Condition changes kept for the diagnostics.
+CONDITION_CHANGES = 20
+_DOWN = frozenset(
+    {
+        LocalCondition.PAUSED,
+        LocalCondition.UNAVAILABLE,
+        LocalCondition.AUTH_REQUIRED,
+        LocalCondition.CERTIFICATE_CHANGED,
+    }
+)
+_LOGGER = logging.getLogger(__name__)
 
 
 class LocalDriverFactory:
@@ -132,6 +150,11 @@ class LocalSource:
         self.service: LocalPollingService | None = None
         self.client: LocalReadClient | None = None
         self._closed = False
+        # O93: the most recent condition changes, with time and fixed reason.
+        self._changes: deque[dict[str, object]] = deque(maxlen=CONDITION_CHANGES)
+        self._condition: LocalCondition | None = None
+        # Since when the access is paused or unavailable (monotonic seconds).
+        self._down_since: float | None = None
 
     def refresh(self, paths: tuple[str, ...]) -> int:
         """Read these paths again soon, within the existing explicit-read limits.
@@ -287,6 +310,16 @@ class LocalSource:
             if self.service is not None and self.current()
             else None
         )
+        reader = getattr(self.client, "health", None)
+        health = (
+            reader()
+            if callable(reader)
+            else {
+                "failures_by_class": {},
+                "response_times": {"samples": 0},
+                "deferred_reasons": {},
+            }
+        )
         return {
             "condition": state.condition.value if state else "unavailable",
             "identity_confirmed": state.identity_confirmed if state else False,
@@ -294,6 +327,9 @@ class LocalSource:
             "request_metrics": asdict(self.client.metrics)
             if self.client is not None
             else {},
+            # O93: bounded history and counts, fixed codes only.
+            "condition_changes": list(self._changes),
+            **health,
             "discovery_cursor": snapshot.discovery_cursor if snapshot else 0,
             "discovery_complete": snapshot.discovery_exhausted if snapshot else False,
             "discovery_pause_seconds": snapshot.discovery_pause_seconds
@@ -305,7 +341,12 @@ class LocalSource:
                     "path": v.request.definition.template
                     if v.request.path.startswith(("/devices/", "/signals/"))
                     else v.request.path,
-                    "freshness": v.freshness.value,
+                    # The signal list has no expiry of its own: once read it
+                    # is "read", not "unconfirmed".
+                    "freshness": "read"
+                    if v.freshness is Freshness.UNCONFIRMED
+                    and v.observation is not None
+                    else v.freshness.value,
                     "available": v.available,
                     "age_seconds": v.age_seconds,
                     "target_interval_seconds": v.target_interval_seconds,
@@ -318,8 +359,39 @@ class LocalSource:
             else [],
         }
 
-    def _state(self, condition: LocalCondition, problem: str | None = None) -> None:
+    def _note(self, condition: LocalCondition, reason: str | None) -> None:
+        """Keep a condition change for the diagnostics (O93); a recovery after
+        a pause or outage is logged once with its duration (O80)."""
+        if condition is self._condition:
+            return
+        self._condition = condition
+        self._changes.append(
+            {
+                "at": dt_util.utcnow().isoformat(timespec="seconds"),
+                "condition": condition.value,
+                "reason": reason,
+            }
+        )
+        now = monotonic()
+        if condition in _DOWN:
+            if self._down_since is None:
+                self._down_since = now
+        elif condition is LocalCondition.READY and self._down_since is not None:
+            _LOGGER.info(
+                "The local access is available again after %d s",
+                round(now - self._down_since),
+            )
+            self._down_since = None
+
+    def _state(
+        self,
+        condition: LocalCondition,
+        problem: str | None = None,
+        *,
+        reason: str | None = None,
+    ) -> None:
         if self.context is not None and self.current():
+            self._note(condition, problem or reason)
             self.context.publish_local(
                 LocalSourceState(
                     self.context.identity_context(GatewayNamespace.K40_LOCAL),
@@ -367,6 +439,16 @@ class LocalSource:
     def _publish(self, snapshot: PollSnapshot) -> None:
         if self.context is None or not self.current():
             return
+        service = self.service
+        self._note(
+            snapshot.condition,
+            snapshot.problem
+            or (
+                getattr(service.budget, "pause_reason", None)
+                if service is not None and snapshot.condition is LocalCondition.PAUSED
+                else None
+            ),
+        )
         self._certificate_issue(snapshot.condition)
         self.context.publish_local(
             LocalSourceState(
@@ -393,7 +475,9 @@ class LocalSource:
         failures = 0
         while self.current():
             if budget.pause_seconds:
-                self._state(LocalCondition.PAUSED)
+                self._state(
+                    LocalCondition.PAUSED, reason=getattr(budget, "pause_reason", None)
+                )
                 await asyncio.sleep(budget.pause_seconds)
                 continue
             self._state(LocalCondition.INITIALIZING)
@@ -478,6 +562,41 @@ class LocalSource:
 
     async def run(self, context: SourceContext) -> None:
         self.context = context
+        failures = 0
+        while True:
+            try:
+                await self._start(context)
+            except LocalBudgetError:
+                # The stored pauses could not be read: try again after a
+                # bounded, growing pause instead of stopping until a reload.
+                self._state(LocalCondition.UNAVAILABLE, "local_budget_storage_failed")
+                await self._reset()
+                await asyncio.sleep(START_RETRY[min(failures, len(START_RETRY) - 1)])
+                failures += 1
+                if not self.current():
+                    return
+                continue
+            except StaleLocalRequest:
+                return
+            break
+        # Pause/auth/identity failures remain available for settings and recovery.
+        # A changed connection replaces this source through the normal lifecycle.
+        await asyncio.Future[None]()
+
+    async def _reset(self) -> None:
+        """Close a half-started service or client before the next start."""
+        service, client, self.service, self.client = (
+            self.service,
+            self.client,
+            None,
+            None,
+        )
+        if service is not None:
+            await service.close()
+        elif client is not None:
+            await client.close()
+
+    async def _start(self, context: SourceContext) -> None:
         self._state(LocalCondition.INITIALIZING)
         try:
             access = load_local_access(self.connection.record.to_data())
@@ -533,13 +652,6 @@ class LocalSource:
                 await self.service.start()
         except LocalCredentialError:
             self._state(LocalCondition.AUTH_REQUIRED, "local_revalidation_required")
-        except LocalBudgetError:
-            self._state(LocalCondition.UNAVAILABLE, "local_budget_storage_failed")
-        except StaleLocalRequest:
-            return
-        # Pause/auth/identity failures remain available for settings and recovery.
-        # A changed connection replaces this source through the normal lifecycle.
-        await asyncio.Future[None]()
 
     async def close(self) -> None:
         self._closed = True

@@ -10,7 +10,6 @@ from aiohttp import web
 from homeassistant.config_entries import SOURCE_REAUTH
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.bosch_buderus_heating.configuration import ConfigurationError
 from custom_components.bosch_buderus_heating.configuration_access import (
     EntryConfiguration,
 )
@@ -456,10 +455,11 @@ async def test_reauthentication_verifies_wallbox_and_replaces_only_valid_sources
             backend.gateways.remove(WB)
         with reauth_server(entry, cloud, previous.client._transport._base_url):
             if missing_disabled_wallbox:
-                with pytest.raises(ConfigurationError, match="reauth_targets_missing"):
-                    await manager.async_reauthenticate(manager.edit(cloud), new_tokens)
-                assert source_for(owner, HEAT) is heating
-                assert EntryConfiguration(entry, cloud).tokens() == old_tokens
+                # A switched-off wallbox missing from the account never blocks.
+                await manager.async_reauthenticate(manager.edit(cloud), new_tokens)
+                await eventually(lambda: source_for(owner, HEAT) is not heating)
+                assert EntryConfiguration(entry, cloud).tokens() == new_tokens
+                assert old_tokens != new_tokens
             else:
                 await manager.async_reauthenticate(manager.edit(cloud), new_tokens)
                 await eventually(

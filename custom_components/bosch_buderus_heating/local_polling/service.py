@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from time import monotonic
@@ -18,7 +19,26 @@ from ..local_transport import StaleLocalRequest
 from .inventory import ResourceInventory, ResourceView
 from .planner import ExplicitOperation, PollPlanner, Work
 from .policy import start_offset
-from .storage import LocalScheduleStore, ScheduleStorageError, checkpoint, restore
+from .storage import (
+    LocalScheduleStore,
+    ScheduleCorrupt,
+    ScheduleStorageError,
+    checkpoint,
+    restore,
+    schedule_state,
+)
+
+_LOGGER = logging.getLogger(__name__)
+
+# A recoverable problem (an unexpected error, a failed store or listener)
+# pauses the reads for a bounded, growing time; they then start again.
+FAULT_BACKOFF = (60.0, 120.0, 240.0, 480.0, 900.0)
+# A changed schedule (search progress, confirmed or failed records) is saved
+# at most this often; only its timing changed: at most every 30 minutes.
+SAVE_GAP = 60.0
+SAVE_INTERVAL = 1800.0
+# A failed save is tried again after these delays; the reads go on meanwhile.
+SAVE_RETRY = (60.0, 120.0, 300.0, 600.0, 1800.0)
 
 
 def _firmware_string(observation: object) -> str | None:
@@ -94,12 +114,23 @@ class LocalPollingService:
         )
         self.planner.access_key = access_key
         self._identity_confirmed = False
+        # Stops the reads until the source is replaced (sign-in, certificate,
+        # configuration, identity, firmware).
         self._blocked: str | None = None
+        # Pauses the reads until ``_fault_until``; then they start again.
+        self._fault: str | None = None
+        self._fault_until = 0.0
+        self._faults = 0
         self._closed = False
         self._started = False
         self._loaded = False
-        self._storage_ok = True
         self._failures = 0
+        # What the schedule file holds, without the time that passes.
+        self._saved_state: tuple[object, object] | None = None
+        self._last_save = clock()
+        self._next_save_check = self._last_save + SAVE_GAP
+        self._save_failures = 0
+        self._save_warned = False
         self._wake, self._age_wake = asyncio.Event(), asyncio.Event()
         self._main: asyncio.Task[None] | None = None
         self._age: asyncio.Task[None] | None = None
@@ -113,7 +144,7 @@ class LocalPollingService:
             return LocalCondition.AUTH_REQUIRED
         if self._blocked == TransportFailure.TLS_CHANGED:
             return LocalCondition.CERTIFICATE_CHANGED
-        if self._closed or self._blocked or not self._current():
+        if self._closed or self._blocked or self._fault or not self._current():
             return LocalCondition.UNAVAILABLE
         if not self._identity_confirmed:
             return LocalCondition.INITIALIZING
@@ -139,6 +170,7 @@ class LocalPollingService:
             self.budget.pause_seconds,
             len(self.planner.operations),
             self._blocked
+            or self._fault
             or self.planner.discovery_problem
             or self.inventory.signal_problem,
         )
@@ -164,8 +196,30 @@ class LocalPollingService:
         try:
             self._publish_callback(snapshot)
         except Exception:
-            self._blocked = "local_listener_failed"
-            self.wake()
+            _LOGGER.debug("A local reading listener failed", exc_info=True)
+            self._recover("local_listener_failed")
+
+    def _recover(self, problem: str) -> None:
+        """Pause the reads after a recoverable problem, for a bounded time.
+
+        The pause grows with repeated problems (``FAULT_BACKOFF``) and starts
+        again from its first step after a successful read.
+        """
+        if self._closed or self._blocked or self._fault is not None:
+            return
+        delay = FAULT_BACKOFF[min(self._faults, len(FAULT_BACKOFF) - 1)]
+        if not self._faults:
+            _LOGGER.warning(
+                "Local readings paused after an unexpected problem (%s); "
+                "trying again in %d s",
+                problem,
+                delay,
+            )
+        else:
+            _LOGGER.debug("Local readings paused again (%s) for %d s", problem, delay)
+        self._faults += 1
+        self._fault, self._fault_until = problem, self._clock() + delay
+        self.wake()
 
     def wake(self) -> None:
         self._wake.set()
@@ -213,7 +267,7 @@ class LocalPollingService:
         return "planned"
 
     def request(self, requests: tuple[ReadRequest, ...]) -> ExplicitOperation:
-        if self._closed or not self._current() or self._blocked:
+        if self._closed or not self._current() or self._blocked or self._fault:
             raise StaleLocalRequest()
         operation = self.planner.explicit(requests, self._clock())
         self.wake()
@@ -223,19 +277,44 @@ class LocalPollingService:
         if self._started or self._closed:
             raise ValueError("local_poll_service_already_started")
         self._started = True
-        try:
-            saved = await self.store.load()
-            if saved is not None:
-                restore(self.planner, saved, self._clock())
-            self._loaded = True
-        except ScheduleStorageError:
-            self._storage_ok = False
-            self._blocked = "local_schedule_storage_failed"
-            self._publish()
-            return
+        await self._load()
         self._main = asyncio.create_task(self._run(), name="local polling")
         self._age = asyncio.create_task(self._expiry(), name="local value expiry")
         self._publish()
+
+    async def _load(self) -> None:
+        """Restore the saved schedule.
+
+        The schedule only caches the polling progress: an unusable one is kept
+        as a backup and the reads start with a new schedule. A read error is
+        tried again later; until then nothing is read and nothing overwritten.
+        """
+        try:
+            saved = await self.store.load()
+            if saved is not None:
+                try:
+                    restore(self.planner, saved, self._clock())
+                except ScheduleStorageError:
+                    raise ScheduleCorrupt() from None
+        except ScheduleCorrupt:
+            try:
+                await self.store.set_aside()
+            except ScheduleStorageError:
+                self._recover("local_schedule_storage_failed")
+                return
+            _LOGGER.warning(
+                "The saved local reading schedule could not be used; it was kept "
+                "as a backup and the local readings start with a new schedule"
+            )
+            saved = None
+        except ScheduleStorageError:
+            self._recover("local_schedule_storage_failed")
+            return
+        self._loaded = True
+        self._last_save = self._clock()
+        self._next_save_check = self._last_save + SAVE_GAP
+        if saved is not None:
+            self._saved_state = schedule_state(self.planner)
 
     async def _wait(self, event: asyncio.Event, delay: float) -> None:
         try:
@@ -248,11 +327,13 @@ class LocalPollingService:
         if result.problem in {
             ReadProblem.AUTH_REQUIRED,
             TransportFailure.TLS_CHANGED,
-            "local_budget_storage_failed",
             "local_identity_conflict",
         }:
             self._blocked = result.problem
             self._identity_confirmed = False
+            return
+        if result.problem == "local_budget_storage_failed":
+            self._recover(result.problem)
             return
         if result.problem == ReadProblem.RATE_LIMITED:
             delay = (
@@ -274,7 +355,7 @@ class LocalPollingService:
     async def _read(self, work: Work) -> None:
         try:
             result = await self.client.read(work.request)
-            if self._closed or not self._current() or self._blocked:
+            if self._closed or not self._current() or self._blocked or self._fault:
                 return
             if result.state is ReadState.ACCESS_ERROR:
                 await self._access_error(result)
@@ -312,65 +393,120 @@ class LocalPollingService:
                     self._blocked = "firmware_update_required"
 
             self._publish()
+            if result.state is ReadState.SUCCESS and self._fault is None:
+                self._faults = 0  # the next problem pauses briefly again
         except StaleLocalRequest:
             self._identity_confirmed = False
             self._blocked = "local_configuration_changed"
         except LocalBudgetError:
-            self._blocked = "local_budget_storage_failed"
+            self._recover("local_budget_storage_failed")
         except asyncio.CancelledError:
             raise
         except Exception:
-            self._blocked = "local_poll_failed"
+            _LOGGER.debug("A local read failed unexpectedly", exc_info=True)
+            self._recover("local_poll_failed")
         finally:
             self.planner.abandon(work)
             self._workers.pop(work.request.target, None)
             self.wake()
 
-    async def _save(self) -> None:
+    def _save_due(self, now: float) -> tuple[object, object] | None:
+        """The schedule to save now, or None when the file is still current.
+
+        A changed search or record result is saved within ``SAVE_GAP``; due
+        times and pauses alone at most every ``SAVE_INTERVAL``. Nothing is
+        written while the schedule did not change.
+        """
+        if not self._loaded or now < self._next_save_check:
+            return None
+        state = schedule_state(self.planner)
+        saved = self._saved_state
+        if (
+            saved is None
+            or state[0] != saved[0]
+            or (state[1] != saved[1] and now - self._last_save >= SAVE_INTERVAL)
+        ):
+            return state
+        self._next_save_check = now + SAVE_GAP
+        return None
+
+    async def _save(self, state: tuple[object, object] | None = None) -> None:
+        """Save the schedule; a failure keeps the reads going and retries."""
+        if state is None:
+            state = schedule_state(self.planner)
         try:
             await self.store.save(checkpoint(self.planner, self._clock()))
         except ScheduleStorageError:
-            self._storage_ok = False
-            self._blocked = "local_schedule_storage_failed"
+            delay = SAVE_RETRY[min(self._save_failures, len(SAVE_RETRY) - 1)]
+            self._save_failures += 1
+            self._next_save_check = self._clock() + delay
+            if not self._save_warned:
+                self._save_warned = True
+                _LOGGER.warning(
+                    "The local reading schedule could not be saved; the reads "
+                    "go on and saving is tried again later"
+                )
+            return
+        self._saved_state, self._last_save = state, self._clock()
+        self._next_save_check = self._last_save + SAVE_GAP
+        self._save_failures, self._save_warned = 0, False
+
+    async def _step(self) -> float:
+        """One pass of the scheduler; returns how long to wait at most."""
+        now = self._clock()
+        if self._fault is not None and now >= self._fault_until:
+            # Start again with a clean state: nothing in flight, publish anew.
+            self._fault, self._signature = None, None
+        if not self._loaded and self._fault is None:
+            await self._load()
+            now = self._clock()
+        if (state := self._save_due(now)) is not None:
+            await self._save(state)
+        self.inventory.prune(now)
+        if (
+            self.condition is LocalCondition.READY
+            and not self.budget.busy
+            and self.budget.remaining_seconds <= 0
+        ):
+            work = self.planner.pick(now)
+            if work is not None:
+                self._workers[work.request.target] = asyncio.create_task(
+                    self._read(work), name="local scheduled read"
+                )
+        if self._blocked or self._fault:
+            for task in tuple(self._workers.values()):
+                task.cancel()
+        self._publish()
+        delay = 60.0
+        if self._loaded:
+            delay = min(delay, max(0.01, self._next_save_check - self._clock()))
+        if self._fault is not None:
+            delay = min(delay, max(0.01, self._fault_until - self._clock()))
+        if self.condition is LocalCondition.READY:
+            delay = min(delay, max(0.01, self.planner.next_wake(now) - now))
+            if self.budget.busy or self.budget.remaining_seconds > 0:
+                delay = min(delay, max(0.25, self.budget.remaining_seconds))
+        elif self.condition is LocalCondition.PAUSED:
+            delay = min(delay, self.budget.pause_seconds)
+        return delay
 
     async def _run(self) -> None:
-        next_save = self._clock() + 60
         try:
             while not self._closed and self._current():
                 self._wake.clear()
-                now = self._clock()
-                if now >= next_save and self._storage_ok:
-                    await self._save()
-                    next_save = self._clock() + 60
-                self.inventory.prune(now)
-                if (
-                    self.condition is LocalCondition.READY
-                    and not self.budget.busy
-                    and self.budget.remaining_seconds <= 0
-                ):
-                    work = self.planner.pick(now)
-                    if work is not None:
-                        self._workers[work.request.target] = asyncio.create_task(
-                            self._read(work), name="local scheduled read"
-                        )
-                if self._blocked:
-                    for task in tuple(self._workers.values()):
-                        task.cancel()
-                self._publish()
-                delay = (
-                    min(60.0, max(0.01, next_save - self._clock()))
-                    if self._storage_ok
-                    else 60.0
-                )
-                if self.condition is LocalCondition.READY:
-                    delay = min(delay, max(0.01, self.planner.next_wake(now) - now))
-                    if self.budget.busy or self.budget.remaining_seconds > 0:
-                        delay = min(delay, max(0.25, self.budget.remaining_seconds))
-                elif self.condition is LocalCondition.PAUSED:
-                    delay = min(delay, self.budget.pause_seconds)
+                try:
+                    delay = await self._step()
+                except asyncio.CancelledError:
+                    raise
+                except Exception:
+                    _LOGGER.debug("Local polling failed unexpectedly", exc_info=True)
+                    self._recover("local_poll_failed")
+                    delay = (
+                        max(0.01, self._fault_until - self._clock())
+                        if self._fault is not None
+                        else 60.0
+                    )
                 await self._wait(self._wake, delay)
-        except Exception:
-            self._blocked = "local_poll_failed"
         finally:
             if not self._current():
                 self._identity_confirmed = False
@@ -383,15 +519,19 @@ class LocalPollingService:
         while not self._closed and self._current():
             self._age_wake.clear()
             now = self._clock()
-            self.planner.expire_operations(now)
-            self._publish()
-            deadlines = [op.deadline for op in self.planner.operations]
-            expiry = self.inventory.next_expiry(now)
-            if expiry is not None:
-                deadlines.append(expiry)
-            await self._wait(
-                self._age_wake, min((d - now for d in deadlines), default=60.0)
-            )
+            try:
+                self.planner.expire_operations(now)
+                self._publish()
+                deadlines = [op.deadline for op in self.planner.operations]
+                expiry = self.inventory.next_expiry(now)
+                if expiry is not None:
+                    deadlines.append(expiry)
+                delay = min((d - now for d in deadlines), default=60.0)
+            except Exception:
+                _LOGGER.debug("Local value expiry failed unexpectedly", exc_info=True)
+                self._recover("local_poll_failed")
+                delay = 60.0
+            await self._wait(self._age_wake, delay)
             self._wake.set()
 
     async def _close(self) -> None:
@@ -406,8 +546,8 @@ class LocalPollingService:
         for operation in tuple(self.planner.operations):
             self.planner.cancel(operation)
         await self.client.close()
-        if self._loaded and self._storage_ok:
-            await self._save()
+        if self._loaded:
+            await self._save()  # also unchanged: the remaining times are current
         self._publish()
 
     async def close(self) -> None:

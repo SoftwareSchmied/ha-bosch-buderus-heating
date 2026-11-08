@@ -22,8 +22,8 @@ from homeassistant.util.unit_conversion import (
 )
 
 from .const import DOMAIN
-from .control import async_set_control
-from .coordinator import BoschBuderusDataUpdateCoordinator
+from .control import HeldCapabilities, async_set_control
+from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource, temperature
 from .ha_compat import temperature_members, temperature_unit
@@ -74,9 +74,15 @@ def track_heating_climates(
 
 @temperature_members
 class HeatingCircuitClimate(
-    CoordinatorEntity[BoschBuderusDataUpdateCoordinator], ClimateEntity
+    HeldCapabilities,
+    CoordinatorEntity[BoschBuderusDataUpdateCoordinator],
+    ClimateEntity,
 ):
-    """Combine the circuit's own mode, target and optional room measurement."""
+    """Combine the circuit's own mode, target and optional room measurement.
+
+    O101: shown like the sensors, while each reading is within its validity
+    limit; changes still need current readings of a ready cloud.
+    """
 
     _attr_has_entity_name = True
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
@@ -94,12 +100,23 @@ class HeatingCircuitClimate(
             coordinator, root + "/operationMode", ""
         ).rstrip(" \N{EN DASH}")
 
-    def _resource(self, suffix: str) -> Resource | None:
-        return fresh_resource(self.coordinator, self.root + "/" + suffix)
+    def _resource(self, suffix: str, *, strict: bool = False) -> Resource | None:
+        """A reading within its validity limit; ``strict`` for a change.
+
+        A change compares its readings with the cloud's current ones, so it
+        keeps the strict rule: a fresh reading of a successful cloud cycle.
+        """
+        path = self.root + "/" + suffix
+        if strict:
+            return fresh_resource(self.coordinator, path)
+        return valid_resource(self.coordinator, path)
 
     @property
     def _mode(self) -> Resource | None:
-        resource = self._resource("operationMode")
+        return self._checked_mode(strict=False)
+
+    def _checked_mode(self, *, strict: bool) -> Resource | None:
+        resource = self._resource("operationMode", strict=strict)
         if resource is None:
             return None
         assessment = assess_control(resource)
@@ -116,6 +133,9 @@ class HeatingCircuitClimate(
 
     @property
     def _heating_context(self) -> tuple[Resource, ...] | None:
+        return self._checked_context(strict=False)
+
+    def _checked_context(self, *, strict: bool) -> tuple[Resource, ...] | None:
         conditions = []
         for path, allowed in (
             (self.root + "/heatCoolMode", {"heat", "heatCool"}),
@@ -128,7 +148,11 @@ class HeatingCircuitClimate(
         ):
             if path not in (self.coordinator.data or {}):
                 continue
-            resource = fresh_resource(self.coordinator, path)
+            resource = (
+                fresh_resource(self.coordinator, path)
+                if strict
+                else valid_resource(self.coordinator, path)
+            )
             if (
                 resource is None
                 or resource.metadata.resource_type != "stringValue"
@@ -192,7 +216,10 @@ class HeatingCircuitClimate(
 
     @property
     def _target(self) -> Resource | None:
-        resource = self._resource("manualRoomSetpoint")
+        return self._checked_target(strict=False)
+
+    def _checked_target(self, *, strict: bool) -> Resource | None:
+        resource = self._resource("manualRoomSetpoint", strict=strict)
         return (
             resource
             if (
@@ -248,9 +275,8 @@ class HeatingCircuitClimate(
         source = TEMPERATURE_UNITS[resource.metadata.unit or ""]
         return TemperatureDeltaConverter.convert(step, source, temperature_unit(self))
 
-    @property
-    def capability_attributes(self) -> dict[str, Any]:
-        attributes = super().capability_attributes or {}
+    def _live_capabilities(self) -> dict[str, Any]:
+        attributes = dict(super()._live_capabilities() or {})
         if (step := self.target_temperature_step) is not None:
             attributes["target_temp_step"] = TemperatureDeltaConverter.convert(
                 step, temperature_unit(self), self.hass.config.units.temperature_unit
@@ -262,7 +288,8 @@ class HeatingCircuitClimate(
         return device_info_for_resource(self.coordinator, self.root)
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
-        mode, context = self._mode, self._heating_context
+        mode = self._checked_mode(strict=True)
+        context = self._checked_context(strict=True)
         if mode is None or context is None or hvac_mode not in self.hvac_modes:
             raise _invalid()
         raw = next(raw for raw, mapped in _MODES.items() if mapped == hvac_mode)
@@ -276,7 +303,9 @@ class HeatingCircuitClimate(
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         value = kwargs.get(ATTR_TEMPERATURE)
-        mode, target, context = self._mode, self._target, self._heating_context
+        mode = self._checked_mode(strict=True)
+        target = self._checked_target(strict=True)
+        context = self._checked_context(strict=True)
         # A combined mode/temperature command must never partly change a mode.
         if (
             set(kwargs)
@@ -309,6 +338,35 @@ class HeatingCircuitClimate(
             policy,
             expected=(mode, target, *context),
         )
+
+
+def valid_resource(
+    coordinator: BoschBuderusDataUpdateCoordinator, path: str
+) -> Resource | None:
+    """O101: a reading within its validity limit, like a sensor shows it.
+
+    The stored-inventory decision at creation and the reading checks stay
+    those of ``fresh_resource``; only a failed or older cloud cycle no
+    longer hides a reading that is still valid.
+    """
+    assumed = getattr(coordinator, "assumed_fresh", None)
+    if assumed is not None and assumed(path) is not None:
+        return fresh_resource(coordinator, path)
+    shown = coordinator.display_snapshot(path)
+    if shown is None or not shown.available or shown.freshness is not Freshness.FRESH:
+        return None
+    resource = shown.resource
+    metadata = resource.metadata
+    if (
+        resource.path != path
+        or not resource.has_value
+        or resource.has_values
+        or not metadata.availability_flags_valid
+        or metadata.available is False
+        or metadata.used is False
+    ):
+        return None
+    return resource
 
 
 def _invalid() -> ServiceValidationError:

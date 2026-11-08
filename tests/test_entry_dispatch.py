@@ -259,6 +259,77 @@ async def test_migration_failure_is_reported_without_starting_transport(
         assert await hass.config_entries.async_unload(restored.entry_id)
 
 
+async def test_a_current_entry_only_moves_to_the_advertised_minor_version(
+    hass, active_version
+):
+    entry = legacy_entry(hass)
+    migrate_entry_storage(hass, entry)
+    assert (entry.version, entry.minor_version) == (4, 1)
+    before = stored(entry)
+    assert await async_migrate_entry(hass, entry)
+    assert entry.minor_version == BoschBuderusConfigFlow.MINOR_VERSION
+    after = stored(entry)
+    # Stored data and options stay; no local_values appear on an old entry.
+    assert (after["data"], after["options"]) == (before["data"], before["options"])
+    assert all(
+        "local_values" not in item for item in after["options"]["targets"].values()
+    )
+    with patch.object(hass.config_entries, "async_update_entry") as update:
+        assert await async_migrate_entry(hass, entry)
+        update.assert_not_called()
+
+
+async def test_a_legacy_entry_ends_at_the_advertised_minor_version(
+    hass, active_version
+):
+    entry = legacy_entry(hass)
+    assert await async_migrate_entry(hass, entry)
+    assert (entry.version, entry.minor_version) == (
+        4,
+        BoschBuderusConfigFlow.MINOR_VERSION,
+    )
+
+
+@pytest.mark.parametrize("problem", ["unreadable", "newer_minor"])
+async def test_an_unreadable_current_entry_is_a_setup_error(
+    hass, active_version, problem
+):
+    from custom_components.bosch_buderus_heating.cloud_configuration import (
+        check_new_cloud,
+        cloud_snapshots,
+    )
+
+    entry = legacy_entry(hass)
+    migrate_entry_storage(hass, entry)
+    if problem == "unreadable":
+        hass.config_entries.async_update_entry(
+            entry, options={**entry.options, "targets": "broken"}
+        )
+    else:
+        hass.config_entries.async_update_entry(
+            entry, minor_version=BoschBuderusConfigFlow.MINOR_VERSION + 1
+        )
+    before = stored(entry)
+    if problem == "unreadable":
+        # A new cloud setup is not blocked by "configuration changed".
+        assert entry.entry_id not in {s.owner_id for s in cloud_snapshots(hass)}
+        check_new_cloud(hass, "new-flow")
+    else:
+        # A newer format is never interpreted; its ownership is unknown.
+        with pytest.raises(ValueError, match="unsupported_version"):
+            check_new_cloud(hass, "new-flow")
+    with patch(ROOT + ".async_setup_managed_entry") as setup:
+        assert not await hass.config_entries.async_setup(entry.entry_id)
+        setup.assert_not_called()
+    assert stored(entry) == before
+    if problem == "unreadable":
+        # Not a migration error: a clear setup error, retried at every start.
+        assert entry.state is ConfigEntryState.SETUP_ERROR
+        assert entry.error_reason_translation_key == "invalid_stored_configuration"
+    else:
+        assert entry.state is ConfigEntryState.MIGRATION_ERROR
+
+
 @pytest.mark.parametrize("initial_version", [1, 2, 3, 4])
 async def test_dispatch_respects_preview_migration_and_repeat(
     hass, active_version, initial_version
