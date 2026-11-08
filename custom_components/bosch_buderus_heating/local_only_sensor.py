@@ -26,20 +26,26 @@ from .const import DOMAIN
 from .control import HeldCapabilities
 from .device import device_info_for_resource, grouped_entity_name
 from .local_only import (
+    BELOW_MEASURING_RANGE,
     CONCENTRATION,
+    ENERGY_MANAGER_STATUS_PATH,
     ENUM_KINDS,
     FLAG,
     FLOW,
     GENERIC,
     HUMIDITY,
     MAX_STATES,
+    MEASURING_RANGE,
     PERCENT,
     POWER,
     ROTATION,
     TEMPERATURE,
     LocalOnlyDefinition,
+    below_measuring_range,
     definition_for,
     diagnostic,
+    energy_manager_not_connected,
+    energy_manager_setpoint,
     entity_name,
     native_value,
     state_class,
@@ -84,6 +90,8 @@ _PRECISION = {
     ROTATION: 0,
     CONCENTRATION: 0,
 }
+# #73: translates the measuring range attribute of the volume flows.
+FLOW_TRANSLATION_KEY = "volume_flow"
 
 
 def local_only_suffix(path: str) -> str:
@@ -124,7 +132,9 @@ class BoschBuderusLocalOnlySensor(
             coordinator.gateway.gateway_id, path
         )
         self._attr_entity_registry_enabled_default = definition.enabled
-        self._attr_translation_key = definition.translation_key
+        self._attr_translation_key = definition.translation_key or (
+            FLOW_TRANSLATION_KEY if definition.kind == FLOW else None
+        )
         self._attr_state_class = state_class(definition)
         # Fixed, so the shown precision does not depend on whether a reading
         # had arrived when Home Assistant registered the entity.
@@ -180,6 +190,8 @@ class BoschBuderusLocalOnlySensor(
         if definition.kind in ENUM_KINDS:
             return native_value(definition, reading), None, SensorDeviceClass.ENUM
         value = native_value(definition, reading)
+        if value is not None and self._energy_manager_placeholder():
+            value = None  # #76: no energy manager, so no setpoint of it
         if reading.status is ValueStatus.UNKNOWN_UNIT:
             return value, None, None  # C7: the number, without an unknown unit
         mapped = unit_and_class(definition, reading.unit)
@@ -188,10 +200,31 @@ class BoschBuderusLocalOnlySensor(
         unit, device_class = mapped
         return value, unit, device_class
 
+    def _energy_manager_placeholder(self) -> bool:
+        """#76: a setpoint of an energy manager the system reports as not
+        connected; its 0 °C is a placeholder, not a setpoint."""
+        if not energy_manager_setpoint(self._path):
+            return False
+        status = (self.coordinator.data or {}).get(ENERGY_MANAGER_STATUS_PATH)
+        return status is not None and energy_manager_not_connected(
+            status.resource.value
+        )
+
     @property
     def available(self) -> bool:
         """Only a current local reading; there is no cloud value to fall back to."""
         return self._shape() is not None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str] | None:
+        """#73: a flow below the sensor's measuring range is unknown; the
+        attribute tells it apart from a missing reading."""
+        if self._definition.kind in ENUM_KINDS or self._shape() is None:
+            return None
+        reading = self._reading()
+        if reading is not None and below_measuring_range(reading):
+            return {MEASURING_RANGE: BELOW_MEASURING_RANGE}
+        return None
 
     @property
     def native_value(self) -> int | float | str | None:

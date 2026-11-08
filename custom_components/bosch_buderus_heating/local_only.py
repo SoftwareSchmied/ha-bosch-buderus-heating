@@ -1004,6 +1004,36 @@ def is_marker_state(name: object) -> bool:
     return bool(_MARKER_STATE.search(state_key(name) or ""))
 
 
+# #73: the attribute of a flow reading below its sensor's measuring range.
+MEASURING_RANGE = "measuring_range"
+BELOW_MEASURING_RANGE = "below"
+_LOW_FLOW_STATE = re.compile(r"(?:^|_)low_?flow(?:_|$)")
+
+
+def below_measuring_range(observation: Observation) -> bool:
+    """#73: the reading is the declared low-flow state ("lowflow",
+    "LOW_FLOW"): the flow is too low for the sensor to measure, not zero."""
+    return any(
+        _LOW_FLOW_STATE.search(state_key(name) or "") for name in observation.matched
+    )
+
+
+# #76: a setpoint an energy manager uses. While none is connected, the
+# controller reports a placeholder (0 °C) instead of a setpoint.
+ENERGY_MANAGER_STATUS_PATH = "/heatSources/emStatus"
+_ENERGY_MANAGER_SETPOINT = re.compile(r"/signals/(?:[^/.]+\.)*EM\.[^/]*Setp")
+
+
+def energy_manager_setpoint(path: str) -> bool:
+    """#76: a controller signal with a setpoint of the energy manager."""
+    return _ENERGY_MANAGER_SETPOINT.fullmatch(path) is not None
+
+
+def energy_manager_not_connected(status: object) -> bool:
+    """#76: the energy management status reports no connected manager."""
+    return (state_key(status) or "").replace("_", "") == "notconnected"
+
+
 def generic_form(
     definition: LocalOnlyDefinition, observation: object
 ) -> LocalOnlyDefinition | None:
