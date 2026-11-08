@@ -43,6 +43,8 @@ class RrcProgramSelect(
 ):
     _attr_has_entity_name = True
     entity_description: RrcSelectDescription
+    # The options come from the program list (G3/O51: read for this entity).
+    extra_resource_paths = (rrc.PROGRAM_LIST,)
 
     def __init__(
         self,

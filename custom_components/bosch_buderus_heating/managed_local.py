@@ -16,12 +16,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 
 from .configuration import (
+    CLOUD_KIND,
     LOCAL_KIND,
     ConfigurationError,
     StoredBinding,
     StoredConnection,
 )
 from .connection_runtime import ConnectionRuntime, SourceContext
+from .entity_use import EntityUse, entity_use
 from .gateway_identity import GatewayNamespace
 from .local_api.catalog import ReadRequest, request_for_path
 from .local_api.errors import LocalResourceError
@@ -33,7 +35,7 @@ from .local_credentials import (
     load_local_access,
 )
 from .local_polling.inventory import Freshness
-from .local_polling.policy import validate_interval
+from .local_polling.policy import PollClass, category, validate_interval
 from .local_polling.service import LocalPollingService, PollSnapshot
 from .local_polling.storage import LocalScheduleStore
 from .local_probe import (
@@ -44,7 +46,11 @@ from .local_probe import (
     assess_local_probe,
 )
 from .local_read import LocalReadClient, ReadResult, ReadState
-from .local_selection import paired_cloud_interval
+from .local_selection import (
+    UNUSED_SIGNAL_PERIOD,
+    paired_cloud_interval,
+    signal_slows_when_unused,
+)
 from .local_state import LocalCondition, LocalSourceState
 from .local_transport import (
     CertificateBinding,
@@ -155,6 +161,8 @@ class LocalSource:
         self._condition: LocalCondition | None = None
         # Since when the access is paused or unavailable (monotonic seconds).
         self._down_since: float | None = None
+        # G3: stops the running service hearing of enabled or disabled entities.
+        self._remove_use_listener: Callable[[], None] | None = None
 
     def refresh(self, paths: tuple[str, ...]) -> int:
         """Read these paths again soon, within the existing explicit-read limits.
@@ -560,6 +568,66 @@ class LocalSource:
 
         return cap
 
+    @staticmethod
+    def _unused_floor(
+        use: EntityUse, gateway_id: str
+    ) -> Callable[[ReadRequest], int | None]:
+        """G3: a signal whose entities are all disabled is read hourly.
+
+        Never for observation pairs, counters, faults and the installation
+        date; enabling one of its entities restores the usual pace.
+        """
+
+        def floor(request: ReadRequest) -> int | None:
+            if (
+                request.path not in use.disabled_paths(gateway_id)
+                or request.definition.template != "/signals/{signalId}"
+                or not signal_slows_when_unused(request.path)
+                or category(request) in (PollClass.COUNTERS, PollClass.STATIC)
+            ):
+                return None
+            return UNUSED_SIGNAL_PERIOD
+
+        return floor
+
+    def _period_token(
+        self, context: SourceContext, use: EntityUse, gateway_id: str
+    ) -> Callable[[], tuple[object, ...]]:
+        """O13: what the cap and the floor depend on, compared by identity.
+
+        The options, the disabled entities and the plan of each cloud source
+        of this target; a cloud source without a plan of its own changes the
+        token every time, so its cap is always asked again.
+        """
+        runtime, target = context.runtime, self.binding.target_id
+
+        def token() -> tuple[object, ...]:
+            snapshot = runtime.snapshot
+            parts: list[object] = [snapshot, use.disabled_paths(gateway_id)]
+            for key, binding in snapshot.bindings.items():
+                connection = snapshot.connections.get(binding.connection_id)
+                if (
+                    binding.target_id != target
+                    or connection is None
+                    or connection.kind != CLOUD_KIND
+                ):
+                    continue
+                data = runtime.source_data(key)
+                parts.append(data)
+                plan = getattr(data, "schedule_token", None)
+                if callable(plan):
+                    parts.extend(plan())
+                elif data is not None:
+                    parts.append(object())
+            return tuple(parts)
+
+        return token
+
+    def _stop_use_listener(self) -> None:
+        if self._remove_use_listener is not None:
+            self._remove_use_listener()
+            self._remove_use_listener = None
+
     async def run(self, context: SourceContext) -> None:
         self.context = context
         failures = 0
@@ -585,6 +653,7 @@ class LocalSource:
 
     async def _reset(self) -> None:
         """Close a half-started service or client before the next start."""
+        self._stop_use_listener()
         service, client, self.service, self.client = (
             self.service,
             self.client,
@@ -623,6 +692,8 @@ class LocalSource:
                     self.connection.identifier
                 ]
                 interval = validate_interval(settings.get("local_interval", 60))
+                factory = self.connection.factory
+                use = entity_use(factory.hass, factory.entry)
                 self.client = LocalReadClient(
                     probe,
                     access.credentials.token,
@@ -647,6 +718,12 @@ class LocalSource:
                     interval=interval,
                     cap=self._paired_cap(context),
                     access_key=_access_key(context, self.binding.connection_id),
+                    floor=self._unused_floor(use, access.gateway_id),
+                    period_token=self._period_token(context, use, access.gateway_id),
+                )
+                self._stop_use_listener()
+                self._remove_use_listener = use.add_listener(
+                    self.service.periods_changed
                 )
                 self.service.confirm_identity(probe.identity)
                 await self.service.start()
@@ -655,6 +732,7 @@ class LocalSource:
 
     async def close(self) -> None:
         self._closed = True
+        self._stop_use_listener()
         if self.binding_id not in self.connection.factory.runtime().snapshot.bindings:
             # The access is gone: its certificate note goes with it (P39).
             from homeassistant.helpers import issue_registry as ir

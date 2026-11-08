@@ -1340,6 +1340,31 @@ def poll_group(resource: Resource) -> PollGroup:
     return group
 
 
+# O51: control paths the climate entity of a heating circuit reads besides
+# its own entities; with the hot water, holiday and calendar paths they keep
+# the control pace while their own entities are disabled.
+_CLIMATE_CONTROL_PATTERN = re.compile(
+    r"/heatingCircuits/[^/]+/(?:operationMode|heatCoolMode|currentSuWiMode"
+    r"|roomtemperature|manualRoomSetpoint|currentRoomSetpoint)"
+)
+_CLIMATE_CONTROL_PATHS = frozenset(
+    {"/system/seasonOptimizer/mode", "/system/globalSeasonOptimizer/currentMode"}
+)
+
+
+@lru_cache(maxsize=4096)
+def slows_when_unused(path: str) -> bool:
+    """O51: a control path whose entities are all disabled may use the slow
+    group (15 minutes), except the holiday, calendar, climate and hot water
+    paths (also those the entities of their own read)."""
+    return not (
+        path.startswith(("/holidayMode", "/dhwCircuits/"))
+        or is_legacy_holiday_path(path)
+        or path in _CLIMATE_CONTROL_PATHS
+        or _CLIMATE_CONTROL_PATTERN.fullmatch(path) is not None
+    )
+
+
 def _poll_group(resource: Resource) -> PollGroup:
     if resource.path in FIRMWARE_PATHS:
         return PollGroup.SLOW

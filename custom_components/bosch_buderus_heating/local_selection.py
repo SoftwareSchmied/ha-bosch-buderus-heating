@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 import math
+import re
 from collections import Counter
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
@@ -939,6 +940,39 @@ def _native(value: object, resource_type: str | None) -> int | float | str | Non
     if resource_type == "stringValue" and isinstance(value, str):
         return value
     return None
+
+
+# G3: a signal whose entities are all disabled is read at most this often.
+UNUSED_SIGNAL_PERIOD = 3600
+# G3: signals that keep their pace also without an enabled entity: counters
+# and faults (by name), besides the pairs and the installation date.
+_COUNTER_SIGNAL = re.compile(
+    r"stats\.|count|starts|energy|consumption|hours|runtime|workingtime", re.I
+)
+_FAULT_SIGNAL = re.compile(r"error|fault|alarm|fail|warn", re.I)
+
+
+@lru_cache(maxsize=4096)
+def signal_slows_when_unused(path: str) -> bool:
+    """G3: whether a local signal may be read hourly while every entity that
+    shows it is disabled.
+
+    Never for observation pairs (the cloud compares them, counters included),
+    counters, faults and the parts of the installation date.
+    """
+    from .local_only import DURATION, definition_for
+
+    if not path.startswith("/signals/") or pair_for_path(path) is not None:
+        return False
+    signal = path.removeprefix("/signals/")
+    if (
+        signal.startswith("SC.InstallationDate.")
+        or _COUNTER_SIGNAL.search(signal) is not None
+        or _FAULT_SIGNAL.search(signal) is not None
+    ):
+        return False
+    definition = definition_for(path)
+    return definition is None or definition.kind != DURATION
 
 
 @lru_cache(maxsize=4096)

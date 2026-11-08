@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Any, Protocol
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
+from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .bacon.access import BaconAccess
@@ -55,6 +56,34 @@ def setup_platform(
     if isinstance(runtime, ManagedEntry):
         runtime.platforms.register(platform, build)
         return
+    # G3/O51: the entry's entity use, as its coordinators know it.
+    use = next(
+        (
+            value
+            for coordinator in getattr(runtime, "coordinators", ())
+            if (value := getattr(coordinator, "entity_use", None)) is not None
+        ),
+        None,
+    )
+
+    def add(
+        new_entities: Iterable[Entity],
+        update_before_add: bool = False,
+        *,
+        config_subentry_id: str | None = None,
+    ) -> None:
+        # G3/O51: note each entity, also one the registry keeps disabled.
+        new_entities = list(new_entities)
+        if use is not None:
+            for entity in new_entities:
+                use.note(platform, entity)
+        if update_before_add or config_subentry_id is not None:
+            add_entities(
+                new_entities, update_before_add, config_subentry_id=config_subentry_id
+            )
+        else:
+            add_entities(new_entities)
+
     build(
         PlatformScope(
             entry_id=entry.entry_id if platform is Platform.SENSOR else "",
@@ -68,5 +97,5 @@ def setup_platform(
                 else None
             ),
         ),
-        add_entities,
+        add,
     )
