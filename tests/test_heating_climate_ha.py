@@ -14,6 +14,7 @@ from tests.test_heating_controls import MODE, TARGET, setup
 
 
 @pytest.mark.parametrize("fahrenheit", [False, True])
+@pytest.mark.usefixtures("legacy_platform_runtime")
 async def test_real_climate_services_and_old_control_registry(
     hass, enable_custom_integrations, fahrenheit
 ):

@@ -6,7 +6,6 @@ from types import SimpleNamespace
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.compatibility import (
     incompatible_capabilities,
@@ -17,6 +16,7 @@ from custom_components.bosch_buderus_heating.const import (
     FIRMWARE_ISSUE_PREFIX,
 )
 from custom_components.bosch_buderus_heating.pointt import Resource, ResourceMetadata
+from tests.ha_test_helpers import MockConfigEntry
 
 
 def _resource(path: str, resource_type: str, unit: str | None = None) -> Resource:
@@ -41,7 +41,7 @@ def test_compatibility_checks_only_known_live_schemas() -> None:
     ) == (changed_type.path, changed_unit.path)
 
 
-def test_compatibility_checks_optional_app_resource_schemas() -> None:
+def test_compatibility_checks_optional_catalog_resource_schemas() -> None:
     compatible_power = _resource("/heatSources/hs2/actualPower", "floatValue", "kW")
     compatible_defrost = _resource("/heatSources/hs2/defrostActive", "booleanValue")
     wrong_power_unit = _resource("/heatSources/hs2/powerPercentage", "floatValue", "kW")

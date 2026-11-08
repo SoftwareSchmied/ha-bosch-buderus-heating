@@ -21,3 +21,4 @@ raw-fixtures/
 *.raw.json
 *.tokens.json
 .vs
+.hypothesis/

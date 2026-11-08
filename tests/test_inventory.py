@@ -65,7 +65,9 @@ def _diagnostics() -> dict[str, object]:
     }
 
 
-@pytest.mark.parametrize("schema", [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26])
+@pytest.mark.parametrize(
+    "schema", [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+)
 def test_reviewed_schemas_drop_technical_and_counter_details(schema: int) -> None:
     diagnostics = _diagnostics()
     diagnostics["diagnostics_schema"] = schema
@@ -83,7 +85,7 @@ def test_reviewed_schemas_drop_technical_and_counter_details(schema: int) -> Non
 
 def test_future_schema_cannot_bypass_raw_value_restrictions() -> None:
     diagnostics = _diagnostics()
-    diagnostics["diagnostics_schema"] = 28
+    diagnostics["diagnostics_schema"] = 42
     diagnostics["privacy"].update(
         contains_raw_resource_values=True,
         raw_resource_values_scope="allowlisted_technical_metadata",

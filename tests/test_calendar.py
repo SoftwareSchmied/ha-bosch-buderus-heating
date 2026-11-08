@@ -17,7 +17,6 @@ from homeassistant.components.calendar.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.calendar import (
     BoschBuderusHolidayCalendar,
@@ -42,6 +41,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     Resource,
     WriteNotConfirmed,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 
 def _coordinator(
@@ -117,12 +117,19 @@ async def test_calendar_setup_requires_a_period_resource(
 ) -> None:
     active_modes = Resource(path=HOLIDAY_ACTIVE_MODES_PATH, value=[], has_value=True)
     coordinator = _coordinator(hass, (active_modes,))
-    entry = SimpleNamespace(runtime_data=SimpleNamespace(coordinators=(coordinator,)))
+    unloads: list[object] = []
+    entry = SimpleNamespace(
+        runtime_data=SimpleNamespace(coordinators=(coordinator,)),
+        async_on_unload=unloads.append,
+    )
     added: list[object] = []
 
     await async_setup_entry(hass, entry, added.extend)
 
     assert added == []
+    assert len(unloads) == 1  # waits for holiday periods found later
+    for remove in unloads:
+        remove()
 
 
 def _writable_holiday_resources() -> tuple[Resource, ...]:

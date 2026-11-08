@@ -4,7 +4,7 @@ import json
 from dataclasses import replace
 from datetime import UTC, date, datetime
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -254,10 +254,16 @@ async def test_failure_mid_transaction_stops_without_retry_or_rollback(
         await original(gateway, path, value)
 
     client.put_resource_value.side_effect = put
-    with pytest.raises(type(failure)):
+    # Starting the real reauthentication flow in the background would race the
+    # test teardown; the synthetic entry intentionally has no sign-in data.
+    with (
+        patch.object(coordinator._config_entry, "async_start_reauth") as reauth,
+        pytest.raises(type(failure)),
+    ):
         await coordinator.async_update_holiday(
             2, replace(baseline, dhw_mode="LOW", heating_mode="ECO"), expected=baseline
         )
+    assert reauth.call_count == int(isinstance(failure, AuthenticationError))
     assert client.put_resource_value.await_count == 2
     assert state[f"{SLOT}/dhwMode"].value == "LOW"
     assert state[START].value == RESOURCES[START].value

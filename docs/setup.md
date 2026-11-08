@@ -94,10 +94,32 @@ required.
 
 4. Search for **Bosch/Buderus**, then select the name shown by the installed version.
 5. Confirm the Home Assistant prompt with **OK**.
+6. Choose how Home Assistant connects to the system:
+
+   - **Cloud access** signs in to your account. It offers controls, time
+     programs, holidays and system information.
+   - **Cloud and local access** (recommended when both are possible) first
+     sets up the cloud access and then continues directly with the local
+     access to the gateway in your home network.
+   - **Local access only** sets up the system from its gateway in the home
+     network, without an account. The local access only reads: no controls
+     and no settings. It updates many readings more often and can add
+     technical readings the cloud does not offer, such as the refrigerant circuit,
+     pumps and internal signals. The system is shown under its gateway ID,
+     with the manufacturer and controller model the gateway reports.
+
+   If the local setup is cancelled, the entry stays and a repair note asks to
+   finish it with **Set up local access** in the entry's options. The cloud
+   access can be added to a system set up with local access only later, in the
+   same entry's options; the system is compared with the cloud first and then
+   continues as the same system (see
+   [adding the cloud later](source-selection.md#adding-the-cloud-later)).
+
+For the cloud access:
 
 ![Setup prompt using the former Bosch/Buderus Heating display name](images/setup/02-start-integration.jpg)
 
-6. Select the brand of the smartphone app that is already connected to the
+7. Select the brand of the smartphone app that is already connected to the
    heating system:
 
    - **Bosch** when using the Bosch app;
@@ -250,6 +272,34 @@ is not necessary.
 - A profile-language change translates dialogs but does not rename entities.
   Names follow the system language or a custom name; see the
   [language guide](resource-names-and-languages.md).
+
+### Entities are "not provided" or unavailable after a restart
+
+- **All entities unavailable after a restart:** if the cloud does not answer
+  while Home Assistant starts, each cloud access starts its systems with the
+  resources it found at an earlier start (at most 30 days since they were last
+  confirmed). The entities exist but are
+  unavailable until the cloud answers again; their values then return within
+  one polling cycle, without a restart. The log shows a warning starting with
+  `PointT start-up failed temporarily`.
+- **All entities "not provided":** this happens only without such a saved
+  inventory, for example right after installing or upgrading, or if the
+  system has not answered successfully for more than 30 days. Home Assistant
+  then retries on its own: the cloud access starts the system again about
+  every minute (the setup of older entries is retried by Home Assistant).
+- **Other cloud devices** (air conditioners, air purifiers, dehumidifiers or
+  water heaters) do not hold back the start either. If they cannot sign in
+  while Home Assistant starts, they connect in the background and their
+  entities return once the connection is up; until then they are shown as
+  "not provided". The log shows `Other cloud devices could not sign in during
+  start-up`.
+- **Some entities "not provided":** if parts of the system were missing after
+  the start, the integration searches them again 5, 15 and 60 minutes later
+  and then every six hours until one day has passed. The log names the missing
+  parts as path templates.
+
+Diagnostics show both under `startup_inventory` and `discovery_recovery` for
+each gateway.
 
 ### Chrome Console is empty or the redirect address is missing
 

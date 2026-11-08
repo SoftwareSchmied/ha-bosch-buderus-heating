@@ -20,10 +20,6 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_component import EntityComponent
-from pytest_homeassistant_custom_component.common import (
-    MockConfigEntry,
-    async_fire_time_changed,
-)
 
 from custom_components.bosch_buderus_heating import _remove_retired_entities
 from custom_components.bosch_buderus_heating.const import DOMAIN
@@ -63,6 +59,10 @@ from custom_components.bosch_buderus_heating.switch_programs import (
     assess_switch_program,
     is_dhw_switch_program_path,
     is_switch_program_path,
+)
+from tests.ha_test_helpers import (
+    MockConfigEntry,
+    async_fire_time_changed,
 )
 
 FIXTURE = json.loads(
@@ -638,8 +638,13 @@ async def test_real_timer_handles_clock_changes_without_repeated_state_writes(
     async_fire_time_changed(hass)
     await hass.async_block_till_done()
     assert observed == []
+    path = next(iter(sensor.coordinator.data))
     for tick in ticks:
         freezer.move_to(tick)
+        # Regular cloud reads keep the program within its validity limit.
+        sensor.coordinator.data[path] = replace(
+            sensor.coordinator.data[path], last_success=datetime.now(UTC)
+        )
         async_fire_time_changed(hass)
         await hass.async_block_till_done()
     assert observed == expected

@@ -3,6 +3,15 @@
   "config": {
     "step": {
       "user": {
+        "title": "Home Comfort verbinden",
+        "description": "Wähle, wie Home Assistant deine Anlage verbindet.\n\n**Cloud-Zugang** meldet sich mit deinem Konto an. Er bietet Bedienung, Zeitprogramme, Urlaube und Systeminformationen.\n\n**Lokaler Zugang** verbindet sich mit dem Gateway in deinem Heimnetz. Er liest nur: keine Bedienung und keine Einstellungen. Er aktualisiert viele Werte häufiger und kann technische Werte ergänzen, die die Cloud nicht bietet, etwa zum Kältekreis, zu Pumpen und internen Signalen.\n\nJeder Zugang hat Werte, die der andere nicht hat. Wenn beides möglich ist, empfehlen wir **Cloud und lokaler Zugang**.",
+        "menu_options": {
+          "cloud": "Cloud-Zugang",
+          "cloud_local": "Cloud und lokaler Zugang (empfohlen)",
+          "local_only": "Nur lokaler Zugang"
+        }
+      },
+      "cloud": {
         "title": "Heizkonto verbinden",
         "description": "Wähle die Marke der Smartphone-App, mit der deine Heizung bereits verbunden ist. Wähle **Bosch** für die Bosch-App oder **Buderus** für die Buderus-App. Entscheidend ist die App, nicht nur das Logo auf dem Heizgerät.",
         "data": {
@@ -49,6 +58,76 @@
       "reconfigure_retry": {
         "title": "Gateway-Suche wiederholen",
         "description": "Die aktuelle Gateway-Liste konnte nicht geladen werden. Prüfe die Internetverbindung von Home Assistant, warte kurz und wähle **Senden**."
+      },
+      "local_owner": {
+        "title": "Vorhandene Einrichtung auswählen",
+        "description": "Wähle die Einrichtung, zu der dieses lokale Gateway gehört. Es wird keine weitere Anlage angelegt.",
+        "data": {
+          "owner": "Vorhandene Einrichtung"
+        }
+      },
+      "local_target": {
+        "title": "Anlage auswählen",
+        "description": "Wähle die Anlage für den lokalen Zugang. Vor dem Speichern wird geprüft, ob die Gateway-Kennung dazu passt.",
+        "data": {
+          "target": "Anlage / Gateway"
+        }
+      },
+      "local_address": {
+        "title": "Adresse des lokalen Gateways",
+        "description": "Wähle eine gefundene Adresse oder gib eine IP-Adresse beziehungsweise einen Hostnamen ein. Die Erkennung ändert keinen gespeicherten Zugang.",
+        "data": {
+          "address": "IP-Adresse oder Hostname"
+        }
+      },
+      "local_method": {
+        "title": "Mit dem lokalen Gateway verbinden",
+        "description": "Melde dich mit den Angaben vom Geräteaufkleber an oder verwende einen vorhandenen Zugriffstoken. Lokal können Anlagenwerte nur gelesen werden. Änderst du einen vorhandenen Zugang unter derselben Adresse, kannst du auch seinen aktuellen Token behalten.",
+        "data": {
+          "method": "Anmeldeweg"
+        }
+      },
+      "local_certificate": {
+        "title": "Gateway-Zertifikat bestätigen",
+        "description": "Home Assistant hat **{host}:{port}** erreicht. Bestätige vor der Übertragung von Zugangsdaten, dass dies dein Gateway ist. Ein Fingerprint allein beweist die Geräteidentität nicht.\n\nSHA-256: `{fingerprint}`\n\nBisheriger Fingerprint: `{previous}`. Ein Fragezeichen bedeutet, dass für diese Adresse und diesen Port kein passendes Zertifikat gespeichert ist.",
+        "data": {
+          "confirm": "Ich bestätige dieses Gateway und sein Zertifikat"
+        }
+      },
+      "local_auth": {
+        "title": "Mit dem Geräteaufkleber anmelden",
+        "description": "Gib Login und Pass vom Gateway-Aufkleber ein. Drücke zur Freigabe der lokalen Anmeldung die WLAN- und die Wireless-Taste gleichzeitig etwa zwei Sekunden, insgesamt unter drei Sekunden, und lasse beide zusammen los. Bestätige das kurze blaue Signal und fahre innerhalb von fünf Minuten fort. Der Zugriff bleibt über die gewählte LAN-Adresse. Ob die Freigabe erfolgt ist, entscheidet die Antwort des Gateways. Login und Passwort werden nicht gespeichert.",
+        "data": {
+          "login": "Login vom Geräteaufkleber",
+          "password": "Pass vom Geräteaufkleber",
+          "unlocked": "Ich habe die lokale Anmeldung freigegeben und das blaue Signal gesehen"
+        }
+      },
+      "local_token": {
+        "title": "Vorhandenen Token verwenden",
+        "description": "Gib einen Zugriffstoken für die lokale API ein. Er wird vorübergehend privat gespeichert, damit du die Einrichtung fortsetzen kannst. Datenzugang und Gateway-Kennung werden anschließend geprüft.",
+        "data": {
+          "token": "Lokaler Zugriffstoken"
+        }
+      },
+      "local_pending": {
+        "title": "Lokale Einrichtung fortsetzen",
+        "description": "Ein früherer Versuch ist gespeichert. Wurde ein Token empfangen, kannst du damit fortfahren. Ging die Antwort verloren, kann am Gateway bereits ein Token existieren, den Home Assistant nicht speichern konnte. Verwerfen entfernt nur die lokale Zwischenkopie und ermöglicht einen neuen Versuch. Am Gateway wird kein Token widerrufen.\n\nVerbleibende Wartefrist: {seconds} Sekunden.",
+        "data": {
+          "action": "Nächste Aktion",
+          "confirm": "Ich habe den Hinweis verstanden und möchte diesen offenen Versuch verwerfen"
+        }
+      },
+      "local_result": {
+        "title": "Lokalen Zugang bestätigen",
+        "description": "Der Lesetest für **{host}** war erfolgreich. Gateway **{gateway}** passt zur ausgewählten Anlage. Beim Speichern werden die aktuellen Daten erneut geprüft und dieser Zugang in der vorhandenen Einrichtung ergänzt oder aktualisiert.",
+        "data": {
+          "confirm": "Diesen lokalen Zugang speichern"
+        }
+      },
+      "local_retry": {
+        "title": "Lokale Prüfung nicht abgeschlossen",
+        "description": "Prüfe den Hinweis unten und versuche es anschließend erneut. Es wird kein Token automatisch erstellt oder ersetzt."
       }
     },
     "error": {
@@ -61,17 +140,77 @@
       "select_gateway": "Wähle mindestens ein Gerät aus der Liste aus, bevor du fortfährst.",
       "unknown": "Ein unerwarteter PointT-Fehler ist aufgetreten. Warte kurz und versuche es erneut.",
       "bacon_unavailable": "Die Liste der weiteren Cloud-Geräte ist derzeit nicht verfügbar. Warte mindestens eine Minute und versuche es erneut.",
-      "bacon_selection_unavailable": "Die weiteren Cloud-Geräte konnten derzeit nicht abgefragt werden. Du kannst die erreichbaren Heizungs-Gateways auswählen. Bereits eingerichtete Cloud-Geräte bleiben unverändert ausgewählt."
+      "bacon_selection_unavailable": "Die weiteren Cloud-Geräte konnten derzeit nicht abgefragt werden. Du kannst die erreichbaren Heizungs-Gateways auswählen. Bereits eingerichtete Cloud-Geräte bleiben unverändert ausgewählt.",
+      "reauth_targets_missing": "Nicht alle zugeordneten Anlagen und Geräte konnten mit dieser Anmeldung bestätigt werden. Die bisherigen Zugangsdaten bleiben erhalten. Prüfe das Konto und versuche es erneut, sobald alle Geräte erreichbar sind.",
+      "cloud_rate_limited": "Die Cloud verlangt eine Abfragepause. Bitte warte vor dem nächsten Versuch.",
+      "local_invalid_address": "Gib eine IP-Adresse oder einen Hostnamen ohne URL, Pfad oder Zugangsdaten ein.",
+      "local_interface_required": "Für diese IPv6-Adresse fehlt die Netzwerkschnittstelle des Home-Assistant-Hosts.",
+      "local_invalid_token": "Das Tokenformat ist ungültig. Kopiere den vollständigen Token ohne Leerzeichen.",
+      "local_invalid_credentials": "Prüfe Login und Pass auf dem Gateway-Aufkleber und gib sie erneut ein.",
+      "local_unlock_required": "Gib die lokale Anmeldung am Gateway frei und bestätige das blaue Signal, bevor du es erneut versuchst.",
+      "local_token_database_full": "Die Token-Datenbank des Gateways ist voll. Prüfe die vorhandenen Tokens, bevor du einen weiteren anlegst. Es wurde kein Token gelöscht.",
+      "local_rate_limited": "Das Gateway verlangt eine Pause. Warte, bis die angezeigte Frist abgelaufen ist.",
+      "local_service_unavailable": "Der Gateway-Dienst ist vorübergehend nicht verfügbar. Warte etwas und versuche es erneut.",
+      "local_timeout": "Das lokale Gateway hat nicht rechtzeitig geantwortet. Prüfe die Verbindung und versuche es erneut.",
+      "local_connection_failed": "Home Assistant konnte dieses Gateway nicht erreichen. Prüfe seine Adresse und die Netzwerkverbindung.",
+      "local_certificate_changed": "Das Zertifikat konnte nicht bestätigt werden oder hat sich geändert. Prüfe es erneut, bevor du fortfährst.",
+      "local_token_rejected": "Das Gateway hat diesen Token abgelehnt. Prüfe ihn oder verwirf diesen Versuch bewusst, um einen anderen zu verwenden.",
+      "local_resource_forbidden": "Das Gateway verweigert den Zugriff auf eine benötigte Ressource. Ein Token allein bestätigt noch keine Leserechte.",
+      "local_missing_resource": "Das Gateway stellt eine für die Einrichtung benötigte Ressource nicht bereit.",
+      "local_unknown_firmware": "Die Firmwareversion konnte nicht geprüft werden.",
+      "local_old_firmware": "Aktualisiere die Gateway-Firmware, bevor du den lokalen Zugang einrichtest.",
+      "local_unsupported_brand": "Diese Gateway-Marke wird von der dokumentierten lokalen Schnittstelle nicht unterstützt.",
+      "local_incomplete_system": "Die Systeminformationen des Gateways sind noch unvollständig. Wiederhole den Lesetest später.",
+      "local_invalid_response": "Eine benötigte Gateway-Antwort konnte nicht geprüft werden.",
+      "local_identity_unverified": "Für diese Anlage fehlt noch ein eindeutiger Abgleich. Die erste Einrichtung benötigt einen verfügbaren PointT-Zugang sowie passende Gateway- und Modulkennungen aus beiden Schnittstellen. Bereits bestätigte Zuordnungen funktionieren danach auch ohne Cloud.",
+      "local_identity_conflict": "Die Gateway-Kennung widerspricht der ausgewählten Anlage oder einer anderen Einrichtung.",
+      "local_configuration_changed": "Der ausgewählte Zugang oder die Anlage wurde geändert. Schließe den Dialog und prüfe die aktuelle Einrichtung, bevor du fortfährst.",
+      "local_pending_exists": "Für diese Anlage oder Gateway-Adresse gibt es bereits einen offenen Versuch. Setze ihn fort oder verwirf ihn zunächst bewusst.",
+      "local_storage_failed": "Der private Einrichtungsstand konnte nicht gelesen oder gespeichert werden. Prüfe den Home-Assistant-Speicher, bevor du fortfährst.",
+      "local_completion_uncertain": "Der Zugang wurde möglicherweise bereits gespeichert. Öffne die lokale Einrichtung erneut, um ihren Stand vor einer weiteren Änderung zu prüfen.",
+      "local_unexpected": "Die lokale Prüfung konnte nicht abgeschlossen werden. Ein bereits empfangener Token bleibt zur Wiederaufnahme gespeichert.",
+      "local_confirmation_required": "Bestätige diese Aktion ausdrücklich, bevor du fortfährst.",
+      "local_busy": "Der lokale Zugang ist gerade belegt oder pausiert. Warte, bevor du es erneut versuchst.",
+      "local_cloud_auth_required": "Melde den Cloud-Zugang erneut an, damit ich die erstmalige Zuordnung prüfen kann. Ein bereits bestätigter lokaler Zugang startet unabhängig von der Cloud.",
+      "local_cloud_rate_limited": "Die Cloud erlaubt gerade keine weiteren Anfragen. Warte die Pause ab und wiederhole die Zuordnungsprüfung.",
+      "local_cloud_unavailable": "Die Cloud-Systeminformationen konnten nicht gelesen werden. Prüfe den Cloud-Zugang und wiederhole die Zuordnungsprüfung.",
+      "local_auth_forbidden": "Der Anmeldedienst des Gateways hat die Anfrage abgelehnt. Prüfe, ob der lokale Zugriff am Gateway erlaubt ist, und versuche es dann erneut.",
+      "local_creation_uncertain": "Es ist unklar, ob das Gateway einen Token erstellt hat, weil seine Antwort unvollständig war. Setze den offenen Versuch fort; ein neuer Token wird nicht automatisch erstellt.",
+      "local_plant_known": "Dieses Gateway gehört bereits zu einer eingerichteten Anlage. Wähle diese Anlage statt einer neuen."
     },
     "abort": {
+      "configuration_changed": "Die Verbindungseinstellungen haben sich geändert, während dieser Dialog geöffnet war. Bitte schließe ihn und versuche es erneut.",
       "already_configured": "Dieses Heizkonto oder mindestens eines der ausgewählten Gateways ist bereits in Home Assistant eingerichtet.",
       "invalid_flow": "Diese Einrichtung ist unvollständig oder abgelaufen. Schließe den Dialog und füge Bosch/Buderus Home Comfort erneut hinzu.",
       "no_gateways": "Es wurden keine Geräte gefunden. Prüfe, ob Marke und SingleKey-ID-Konto zur verwendeten App passen.",
       "reauth_required": "Die gespeicherte Autorisierung ist nicht mehr gültig. Schließe diesen Dialog und wähle bei Bosch/Buderus Home Comfort Erneut authentifizieren.",
       "reauth_successful": "Die Anmeldung wurde erfolgreich erneuert.",
       "reauth_wrong_account": "Das gewählte Konto passt nicht zu den eingerichteten Geräten. Melde dich mit dem ursprünglichen Konto an.",
-      "reconfigure_successful": "Die Einstellungen wurden gespeichert. Bosch/Buderus Home Comfort wird neu geladen und sucht alle verfügbaren Ressourcen erneut."
-    }
+      "reconfigure_successful": "Die Einstellungen wurden gespeichert. Bosch/Buderus Home Comfort wird neu geladen und sucht alle verfügbaren Ressourcen erneut.",
+      "connection_required": "Wähle unter Einstellungen zuerst den Zugang für die Wiederanmeldung aus.",
+      "connection_settings_required": "Verwalte diesen Zugang unter Einstellungen und Verbindungen.",
+      "cloud_already_connected": "Es ist bereits ein Cloud-Zugang eingerichtet. Über dessen Einstellungen kannst du weitere Geräte auswählen oder dich erneut anmelden. Eine zweite parallele Cloud-Anmeldung wird vorerst nicht unterstützt.",
+      "cloud_setup_in_progress": "Eine andere Cloud-Einrichtung ist bereits geöffnet. Bitte beende oder schließe zuerst diesen Dialog.",
+      "cloud_target_owned": "Eine ausgewählte Anlage oder ein Gerät gehört bereits zu einem anderen Eintrag oder Cloud-Zugang. Verbinde es über den vorhandenen Eintrag erneut.",
+      "cloud_selection_expired": "Diese Geräteliste ist nicht mehr aktuell. Bitte öffne die Gerätesuche erneut, bevor du speicherst.",
+      "cloud_selection_changed": "Das ausgewählte Gerät ist nicht in der bestätigten Liste. Bitte suche erneut.",
+      "cloud_connection_disabled": "Aktiviere diesen Cloud-Zugang, bevor du nach Geräten suchst.",
+      "cloud_rate_limited": "Die Cloud verlangt eine Abfragepause. Bitte warte vor dem nächsten Versuch.",
+      "local_setup_unavailable": "Die lokale Einrichtung steht erst mit laufender lokaler Datenversorgung zur Verfügung.",
+      "local_session_changed": "Diese Einrichtungssitzung ist beendet oder ihre Auswahl wurde geändert. Öffne die lokale Einrichtung erneut.",
+      "local_discovery_invalid": "Diese Erkennungsmeldung beschreibt keinen unterstützten lokalen Gateway-Endpunkt.",
+      "local_existing_owner_required": "Eine Anlage ohne Cloud richtest du beim Hinzufügen der Integration mit „Nur lokaler Zugang“ ein. Ein gefundenes Gateway kann einer vorhandenen Einrichtung hinzugefügt werden.",
+      "local_target_required": "Diese Einrichtung hat keine geeignete vorhandene Anlage für einen lokalen Zugang.",
+      "local_setup_complete": "Der lokale Zugang wurde eingerichtet.",
+      "local_pending_saved": "Der offene Versuch bleibt gespeichert. Du kannst ihn über die lokale Einrichtung fortsetzen.",
+      "local_storage_failed": "Der private Einrichtungsstand konnte nicht gelesen oder gespeichert werden. Prüfe den Home-Assistant-Speicher, bevor du fortfährst.",
+      "already_in_progress": "Die Einrichtung dieses lokalen Gateways läuft bereits.",
+      "cloud_local_first_other_entry": "Diese Anlage ist bereits in einem anderen Eintrag dieser Integration über ihren lokalen Zugang eingerichtet. Füge den Cloud-Zugang stattdessen in jenem Eintrag hinzu."
+    },
+    "progress": {
+      "local_work": "Die lokale Verbindung wird geprüft. Bitte warte einen Moment."
+    },
+    "flow_title": "Lokales Gateway ({host})"
   },
   "options": {
     "step": {
@@ -81,7 +220,11 @@
           "notifications": "Benachrichtigungen",
           "holidays": "Urlaubszeiten verwalten",
           "rrc_programs": "RRC-Zeitprogramme",
-          "controls": "Anlage bedienen"
+          "controls": "Anlage bedienen",
+          "connections": "Verbindungen",
+          "connection_add_cloud": "Cloud-Zugang verbinden",
+          "local_setup": "Lokalen Zugang einrichten",
+          "rescan": "Anlage neu durchsuchen"
         }
       },
       "notifications": {
@@ -197,7 +340,7 @@
       },
       "rrc_readonly": {
         "title": "Zeitprogramm ansehen",
-        "description": "**{program}**\n\n**Montag:** {mo}\n\n**Dienstag:** {tu}\n\n**Mittwoch:** {we}\n\n**Donnerstag:** {th}\n\n**Freitag:** {fr}\n\n**Samstag:** {sa}\n\n**Sonntag:** {su}\n\nDieses Programm kann hier nur angezeigt werden. Es enthält keine bearbeitbaren Schaltpunkte oder meldet nicht unterstützte Angaben. ∅ bedeutet, dass kein eigener Schaltpunkt gespeichert ist. Änderungen kannst du in MyBuderus vornehmen."
+        "description": "**{program}**\n\n**Montag:** {mo}\n\n**Dienstag:** {tu}\n\n**Mittwoch:** {we}\n\n**Donnerstag:** {th}\n\n**Freitag:** {fr}\n\n**Samstag:** {sa}\n\n**Sonntag:** {su}\n\nDieses Programm kann hier nur angezeigt werden. Es enthält keine bearbeitbaren Schaltpunkte oder meldet nicht unterstützte Angaben. ∅ bedeutet, dass kein eigener Schaltpunkt gespeichert ist. Änderungen kannst du in der Hersteller-App vornehmen."
       },
       "rrc_point": {
         "title": "Schaltpunkt bearbeiten",
@@ -227,6 +370,202 @@
           "controls": "Bedienung"
         },
         "submit": "Übernehmen"
+      },
+      "connections": {
+        "title": "Verbindungen",
+        "description": "Wähle den Zugang, den du verwalten möchtest.",
+        "data": {
+          "connection": "Zugang"
+        }
+      },
+      "connection_test": {
+        "title": "Verbindungstest",
+        "description": "{result}"
+      },
+      "connection": {
+        "title": "Zugang verwalten",
+        "description": "{status}",
+        "menu_options": {
+          "connection_test": "Verbindung jetzt testen",
+          "connection_enabled": "Zugang aktivieren oder deaktivieren",
+          "connection_forget": "Abgewählte Anlagen vergessen",
+          "connection_targets": "Verwendung für Anlagen und Geräte",
+          "connection_reauthenticate": "Erneut anmelden",
+          "connection_remove": "Zugang entfernen",
+          "connection_discover": "Geräte suchen und auswählen",
+          "connection_polling": "Abfragehäufigkeit",
+          "local_setup": "Lokalen Zugang ändern",
+          "local_polling": "Lokale Abfragehäufigkeit und Status",
+          "local_values": "Lokale Werte für vorhandene Entitäten"
+        }
+      },
+      "connection_enabled": {
+        "title": "Zugang aktivieren",
+        "description": "Das Abschalten betrifft nur diesen Zugang. Andere Verbindungen laufen weiter. Anlagen und Entitäten bleiben erhalten.",
+        "data": {
+          "enabled": "Aktiviert"
+        }
+      },
+      "connection_forget": {
+        "title": "Abgewählte Anlagen vergessen",
+        "description": "Diese Anlagen sind für diesen Zugang abgeschaltet. Vergessene Anlagen stehen hier nicht mehr, und eine neue Anmeldung muss sie nicht mehr finden. Ihre Geräte und Entitäten bleiben in Home Assistant, bis du sie löschst. Wurde das Gateway getauscht, lass die Anlage stattdessen eingeschaltet: Ein Reparaturhinweis bietet dann an, sie mit ihrem Verlauf weiterzuführen.",
+        "data": {
+          "bindings": "Anlagen"
+        }
+      },
+      "connection_targets": {
+        "title": "Anlagen und Geräte",
+        "description": "Wähle die Ziele, für die dieser Zugang verwendet werden soll. Andere Ziele nutzen ihre Zugänge unabhängig weiter.",
+        "data": {
+          "targets": "Verwenden für"
+        }
+      },
+      "connection_remove_cloud": {
+        "title": "Cloud-Zugang entfernen",
+        "description": "Die Anmeldung wird entfernt. Ausgewählte Anlagen mit eingeschaltetem lokalem Zugang zeigen weiter ihre lokalen Werte (nur lesend, keine Bedienung; Zähler laufen ab dem zuletzt gezeigten Stand weiter). Andere Anlagen behalten ihre Entitäten ohne aktuelle Werte. Meldest du dich später wieder an, laufen dieselben Entitäten weiter. Für eine vorübergehende Pause schalte den Zugang besser aus.",
+        "data": {
+          "confirm": "Diesen Zugang entfernen"
+        }
+      },
+      "connection_remove": {
+        "title": "Zugang entfernen",
+        "description": "Die Zugangsdaten werden entfernt. Anlagen und Entitäten bleiben erhalten, auch wenn dies der letzte Zugang ist. Ohne einen verfügbaren Zugang zeigen die Entitäten keine aktuellen Werte.",
+        "data": {
+          "confirm": "Diesen Zugang entfernen"
+        }
+      },
+      "connection_polling": {
+        "title": "Abfragehäufigkeit",
+        "description": "Standard liest aktuelle Heizungsbetriebswerte jede Minute, Einstellungen und Energiewerte alle 5 Minuten und langsamere Angaben alle 15 Minuten. Cloud-schonend verdoppelt diese Abstände. Aktive Störungen werden in beiden Profilen jede Minute geprüft. Das Profil gilt für die PointT-Abfragen von Heizung und Wallbox des ausgewählten Cloud-Zugangs; weitere Cloud-Geräte melden Änderungen als Nachrichten. Anmeldung, Geräteprüfung und die Bestätigung nach einer Änderung können zusätzliche Anfragen außerhalb dieses Rasters auslösen. Dauert ein Abrufdurchlauf länger als sein Intervall, beginnt der nächste entsprechend später.",
+        "data": {
+          "polling_profile": "Abfrageprofil"
+        }
+      },
+      "connection_add_cloud": {
+        "title": "Cloud-Zugang verbinden",
+        "description": "Wähle die von dir verwendete App-Marke. Nach der Anmeldung wählst du die Anlagen und Geräte für diesen Eintrag aus. Vorhandene Anlagen und Entitäten bleiben erhalten.",
+        "data": {
+          "brand": "App-Marke"
+        }
+      },
+      "cloud_auth": {
+        "title": "Bei SingleKey ID anmelden",
+        "description": "[Anmeldung öffnen]({authorization_url}). Kopiere nach der Anmeldung die vollständige abschließende Weiterleitungsadresse in dieses Feld.",
+        "data": {
+          "redirect_url": "Weiterleitungsadresse"
+        }
+      },
+      "cloud_retry": {
+        "title": "Cloud-Verbindung erneut versuchen",
+        "description": "Versuche es erneut, sobald die Cloud wieder erreichbar ist. Dein Eintrag wurde noch nicht geändert."
+      },
+      "cloud_select": {
+        "title": "Anlagen und Geräte auswählen",
+        "description": "Wähle die Anlagen und Geräte aus, die du verbinden möchtest. Eine passende vorhandene Anlage behält ihre Entitäten und Einstellungen.",
+        "data": {
+          "gateway_ids": "Gateways",
+          "bacon_device_ids": "Weitere Cloud-Geräte"
+        }
+      },
+      "connection_discover": {
+        "title": "Geräte suchen und auswählen",
+        "description": "Wähle die Anlagen und Geräte für diesen Cloud-Zugang aus. Bereits konfigurierte Geräte bleiben auch bei vorübergehender Nichterreichbarkeit aufgelistet. Abwählen beendet ihre Abfragen und erhält ihre Entitäten.",
+        "data": {
+          "gateway_ids": "Gateways",
+          "bacon_device_ids": "Weitere Cloud-Geräte"
+        }
+      },
+      "connection_discover_retry": {
+        "title": "Gerätesuche erneut versuchen",
+        "description": "Die Auswahl wurde nicht geändert. Lade beim nächsten Versuch eine neue Liste."
+      },
+      "local_owner": {
+        "title": "Vorhandene Einrichtung auswählen",
+        "description": "Wähle die Einrichtung, zu der dieses lokale Gateway gehört. Es wird keine weitere Anlage angelegt.",
+        "data": {
+          "owner": "Vorhandene Einrichtung"
+        }
+      },
+      "local_target": {
+        "title": "Anlage auswählen",
+        "description": "Wähle die Anlage für den lokalen Zugang. Vor dem Speichern wird geprüft, ob die Gateway-Kennung dazu passt.",
+        "data": {
+          "target": "Anlage / Gateway"
+        }
+      },
+      "local_address": {
+        "title": "Adresse des lokalen Gateways",
+        "description": "Wähle eine gefundene Adresse oder gib eine IP-Adresse beziehungsweise einen Hostnamen ein. Die Erkennung ändert keinen gespeicherten Zugang.",
+        "data": {
+          "address": "IP-Adresse oder Hostname"
+        }
+      },
+      "local_method": {
+        "title": "Mit dem lokalen Gateway verbinden",
+        "description": "Melde dich mit den Angaben vom Geräteaufkleber an oder verwende einen vorhandenen Zugriffstoken. Lokal können Anlagenwerte nur gelesen werden. Änderst du einen vorhandenen Zugang unter derselben Adresse, kannst du auch seinen aktuellen Token behalten.",
+        "data": {
+          "method": "Anmeldeweg"
+        }
+      },
+      "local_certificate": {
+        "title": "Gateway-Zertifikat bestätigen",
+        "description": "Home Assistant hat **{host}:{port}** erreicht. Bestätige vor der Übertragung von Zugangsdaten, dass dies dein Gateway ist. Ein Fingerprint allein beweist die Geräteidentität nicht.\n\nSHA-256: `{fingerprint}`\n\nBisheriger Fingerprint: `{previous}`. Ein Fragezeichen bedeutet, dass für diese Adresse und diesen Port kein passendes Zertifikat gespeichert ist.",
+        "data": {
+          "confirm": "Ich bestätige dieses Gateway und sein Zertifikat"
+        }
+      },
+      "local_auth": {
+        "title": "Mit dem Geräteaufkleber anmelden",
+        "description": "Gib Login und Pass vom Gateway-Aufkleber ein. Drücke zur Freigabe der lokalen Anmeldung die WLAN- und die Wireless-Taste gleichzeitig etwa zwei Sekunden, insgesamt unter drei Sekunden, und lasse beide zusammen los. Bestätige das kurze blaue Signal und fahre innerhalb von fünf Minuten fort. Der Zugriff bleibt über die gewählte LAN-Adresse. Ob die Freigabe erfolgt ist, entscheidet die Antwort des Gateways. Login und Passwort werden nicht gespeichert.",
+        "data": {
+          "login": "Login vom Geräteaufkleber",
+          "password": "Pass vom Geräteaufkleber",
+          "unlocked": "Ich habe die lokale Anmeldung freigegeben und das blaue Signal gesehen"
+        }
+      },
+      "local_token": {
+        "title": "Vorhandenen Token verwenden",
+        "description": "Gib einen Zugriffstoken für die lokale API ein. Er wird vorübergehend privat gespeichert, damit du die Einrichtung fortsetzen kannst. Datenzugang und Gateway-Kennung werden anschließend geprüft.",
+        "data": {
+          "token": "Lokaler Zugriffstoken"
+        }
+      },
+      "local_pending": {
+        "title": "Lokale Einrichtung fortsetzen",
+        "description": "Ein früherer Versuch ist gespeichert. Wurde ein Token empfangen, kannst du damit fortfahren. Ging die Antwort verloren, kann am Gateway bereits ein Token existieren, den Home Assistant nicht speichern konnte. Verwerfen entfernt nur die lokale Zwischenkopie und ermöglicht einen neuen Versuch. Am Gateway wird kein Token widerrufen.\n\nVerbleibende Wartefrist: {seconds} Sekunden.",
+        "data": {
+          "action": "Nächste Aktion",
+          "confirm": "Ich habe den Hinweis verstanden und möchte diesen offenen Versuch verwerfen"
+        }
+      },
+      "local_result": {
+        "title": "Lokalen Zugang bestätigen",
+        "description": "Der Lesetest für **{host}** war erfolgreich. Gateway **{gateway}** passt zur ausgewählten Anlage. Beim Speichern werden die aktuellen Daten erneut geprüft und dieser Zugang in der vorhandenen Einrichtung ergänzt oder aktualisiert.",
+        "data": {
+          "confirm": "Diesen lokalen Zugang speichern"
+        }
+      },
+      "local_retry": {
+        "title": "Lokale Prüfung nicht abgeschlossen",
+        "description": "Prüfe den Hinweis unten und versuche es anschließend erneut. Es wird kein Token automatisch erstellt oder ersetzt."
+      },
+      "local_polling": {
+        "title": "Lokale Abfragen",
+        "description": "Bestätigte Ressourcen: {known}. Aktuell verfügbar: {available}. Die Zahlen zeigen den Stand beim Öffnen des Dialogs. Das Intervall ist das Ziel für Livewerte. Einstellungen, Energiewerte und Diagnose werden alle 5 Minuten und Zähler alle 15 Minuten gelesen, bei einem längeren Intervall in dessen Abstand; statische Angaben täglich. Ein Wert wird nach drei verpassten Intervallen als nicht verfügbar angezeigt. Bei vielen Ressourcen können die tatsächlichen Abstände länger sein. Cloud-Abfragen bleiben unabhängig. Werte, die auch die Cloud liefert, werden lokal mindestens so oft gelesen wie in der Cloud.",
+        "data": {
+          "interval": "Zielintervall für Livewerte"
+        }
+      },
+      "local_values": {
+        "title": "Lokale Werte für vorhandene Entitäten",
+        "description": "Wenn aktiviert, verwenden vorhandene Sensoren den lokalen Wert einer Messgröße, die beide Zugänge unter derselben dokumentierten Ressource liefern, solange er aktuell ist. Ist der lokale Wert veraltet oder fehlt er, wird der aktuelle Cloud-Wert verwendet; sind beide veraltet, wird der Sensor nicht verfügbar. Energie-, Start- und Laufzeitzähler verwenden den lokalen Wert ebenfalls, wechseln ihre Quelle aber nur, wenn jeder angezeigte Zählerstand mindestens den zuletzt angezeigten erreicht; ein Quellenwechsel lässt sie dadurch nie rückwärts zählen. Einstellbare Werte verwenden weiterhin die Cloud. Entitäts-IDs, Namen und Verläufe bleiben unverändert. Bedienung und Änderungen laufen weiterhin über die Cloud.",
+        "data": {
+          "enabled": "Lokale Werte verwenden"
+        }
+      },
+      "rescan": {
+        "title": "Anlage neu durchsuchen",
+        "description": "Durchsucht die Anlage noch einmal nach Bauteilen und Messwerten, über den Cloud-Zugang und den lokalen Zugang. Sinnvoll, nachdem Komponenten hinzugekommen sind oder sich geändert haben. Die Suche läuft mit der nächsten regulären Aktualisierung und innerhalb der üblichen Grenzen für Anfragen; sie entfernt keine Entität, und Messwerte, die sie nicht erneut findet, bleiben erhalten."
       }
     },
     "error": {
@@ -254,7 +593,60 @@
       "controls_auth": "Die Anmeldung ist abgelaufen. Bitte melde die Integration erneut an. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
       "controls_rate_limit": "Die Anlage begrenzt gerade die Anfragen. Bitte warte vor dem nächsten Versuch. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
       "controls_unconfirmed": "Die letzte Änderung konnte nicht bestätigt werden. Sie kann an der Anlage bereits wirksam sein. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
-      "controls_failed": "Die Verbindung zur Anlage ist fehlgeschlagen. Die letzte Änderung kann bereits wirksam sein. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst."
+      "controls_failed": "Die Verbindung zur Anlage ist fehlgeschlagen. Die letzte Änderung kann bereits wirksam sein. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
+      "cloud_already_connected": "Es ist bereits ein Cloud-Zugang eingerichtet. Über dessen Einstellungen kannst du weitere Geräte auswählen oder dich erneut anmelden. Eine zweite parallele Cloud-Anmeldung wird vorerst nicht unterstützt.",
+      "cloud_setup_in_progress": "Eine andere Cloud-Einrichtung ist bereits geöffnet. Bitte beende oder schließe zuerst diesen Dialog.",
+      "cloud_target_owned": "Eine ausgewählte Anlage oder ein Gerät gehört bereits zu einem anderen Eintrag oder Cloud-Zugang. Verbinde es über den vorhandenen Eintrag erneut.",
+      "cloud_selection_expired": "Diese Geräteliste ist nicht mehr aktuell. Bitte öffne die Gerätesuche erneut, bevor du speicherst.",
+      "cloud_selection_changed": "Das ausgewählte Gerät ist nicht in der bestätigten Liste. Bitte suche erneut.",
+      "cloud_connection_disabled": "Aktiviere diesen Cloud-Zugang, bevor du nach Geräten suchst.",
+      "cloud_rate_limited": "Die Cloud verlangt eine Abfragepause. Bitte warte vor dem nächsten Versuch.",
+      "invalid_auth": "SingleKey ID hat die Autorisierung abgelehnt oder sie ist abgelaufen. Verwende den neu angezeigten SingleKey-ID-Link und wiederhole die Anmeldung.",
+      "invalid_redirect": "Home Assistant konnte diese Adresse nicht verwenden. Kopiere in der Chrome-Konsole aus der Meldung „Failed to launch“ die vollständige App-Adresse. Sie muss mit dem oben genannten Schema beginnen und zum aktuellen Anmeldeversuch gehören.",
+      "cannot_connect": "Der PointT-Dienst ist nicht erreichbar. Prüfe die Internetverbindung, warte kurz und versuche es erneut.",
+      "select_gateway": "Wähle mindestens ein Gerät aus der Liste aus, bevor du fortfährst.",
+      "no_gateways": "Es wurden keine Geräte gefunden. Prüfe, ob Marke und SingleKey-ID-Konto zur verwendeten App passen.",
+      "local_invalid_address": "Gib eine IP-Adresse oder einen Hostnamen ohne URL, Pfad oder Zugangsdaten ein.",
+      "local_interface_required": "Für diese IPv6-Adresse fehlt die Netzwerkschnittstelle des Home-Assistant-Hosts.",
+      "local_invalid_token": "Das Tokenformat ist ungültig. Kopiere den vollständigen Token ohne Leerzeichen.",
+      "local_invalid_credentials": "Prüfe Login und Pass auf dem Gateway-Aufkleber und gib sie erneut ein.",
+      "local_unlock_required": "Gib die lokale Anmeldung am Gateway frei und bestätige das blaue Signal, bevor du es erneut versuchst.",
+      "local_token_database_full": "Die Token-Datenbank des Gateways ist voll. Prüfe die vorhandenen Tokens, bevor du einen weiteren anlegst. Es wurde kein Token gelöscht.",
+      "local_rate_limited": "Das Gateway verlangt eine Pause. Warte, bis die angezeigte Frist abgelaufen ist.",
+      "local_service_unavailable": "Der Gateway-Dienst ist vorübergehend nicht verfügbar. Warte etwas und versuche es erneut.",
+      "local_timeout": "Das lokale Gateway hat nicht rechtzeitig geantwortet. Prüfe die Verbindung und versuche es erneut.",
+      "local_connection_failed": "Home Assistant konnte dieses Gateway nicht erreichen. Prüfe seine Adresse und die Netzwerkverbindung.",
+      "local_certificate_changed": "Das Zertifikat konnte nicht bestätigt werden oder hat sich geändert. Prüfe es erneut, bevor du fortfährst.",
+      "local_token_rejected": "Das Gateway hat diesen Token abgelehnt. Prüfe ihn oder verwirf diesen Versuch bewusst, um einen anderen zu verwenden.",
+      "local_resource_forbidden": "Das Gateway verweigert den Zugriff auf eine benötigte Ressource. Ein Token allein bestätigt noch keine Leserechte.",
+      "local_missing_resource": "Das Gateway stellt eine für die Einrichtung benötigte Ressource nicht bereit.",
+      "local_unknown_firmware": "Die Firmwareversion konnte nicht geprüft werden.",
+      "local_old_firmware": "Aktualisiere die Gateway-Firmware, bevor du den lokalen Zugang einrichtest.",
+      "local_unsupported_brand": "Diese Gateway-Marke wird von der dokumentierten lokalen Schnittstelle nicht unterstützt.",
+      "local_incomplete_system": "Die Systeminformationen des Gateways sind noch unvollständig. Wiederhole den Lesetest später.",
+      "local_invalid_response": "Eine benötigte Gateway-Antwort konnte nicht geprüft werden.",
+      "local_identity_unverified": "Für diese Anlage fehlt noch ein eindeutiger Abgleich. Die erste Einrichtung benötigt einen verfügbaren PointT-Zugang sowie passende Gateway- und Modulkennungen aus beiden Schnittstellen. Bereits bestätigte Zuordnungen funktionieren danach auch ohne Cloud.",
+      "local_identity_conflict": "Die Gateway-Kennung widerspricht der ausgewählten Anlage oder einer anderen Einrichtung.",
+      "local_configuration_changed": "Der ausgewählte Zugang oder die Anlage wurde geändert. Schließe den Dialog und prüfe die aktuelle Einrichtung, bevor du fortfährst.",
+      "local_pending_exists": "Für diese Anlage oder Gateway-Adresse gibt es bereits einen offenen Versuch. Setze ihn fort oder verwirf ihn zunächst bewusst.",
+      "local_storage_failed": "Der private Einrichtungsstand konnte nicht gelesen oder gespeichert werden. Prüfe den Home-Assistant-Speicher, bevor du fortfährst.",
+      "local_completion_uncertain": "Der Zugang wurde möglicherweise bereits gespeichert. Öffne die lokale Einrichtung erneut, um ihren Stand vor einer weiteren Änderung zu prüfen.",
+      "local_unexpected": "Die lokale Prüfung konnte nicht abgeschlossen werden. Ein bereits empfangener Token bleibt zur Wiederaufnahme gespeichert.",
+      "local_confirmation_required": "Bestätige diese Aktion ausdrücklich, bevor du fortfährst.",
+      "local_busy": "Der lokale Zugang ist gerade belegt oder pausiert. Warte, bevor du es erneut versuchst.",
+      "local_invalid_interval": "Wähle 60 bis 900 Sekunden in Schritten von 60 Sekunden.",
+      "local_cloud_auth_required": "Melde den Cloud-Zugang erneut an, damit ich die erstmalige Zuordnung prüfen kann. Ein bereits bestätigter lokaler Zugang startet unabhängig von der Cloud.",
+      "local_cloud_rate_limited": "Die Cloud erlaubt gerade keine weiteren Anfragen. Warte die Pause ab und wiederhole die Zuordnungsprüfung.",
+      "local_cloud_unavailable": "Die Cloud-Systeminformationen konnten nicht gelesen werden. Prüfe den Cloud-Zugang und wiederhole die Zuordnungsprüfung.",
+      "local_auth_forbidden": "Der Anmeldedienst des Gateways hat die Anfrage abgelehnt. Prüfe, ob der lokale Zugriff am Gateway erlaubt ist, und versuche es dann erneut.",
+      "local_creation_uncertain": "Es ist unklar, ob das Gateway einen Token erstellt hat, weil seine Antwort unvollständig war. Setze den offenen Versuch fort; ein neuer Token wird nicht automatisch erstellt.",
+      "cloud_local_first_other_entry": "Diese Anlage ist bereits in einem anderen Eintrag dieser Integration über ihren lokalen Zugang eingerichtet. Füge den Cloud-Zugang stattdessen in jenem Eintrag hinzu.",
+      "cloud_local_first_unverified": "Die Anlage konnte nicht mit der Cloud abgeglichen werden. Es wurde nichts gespeichert. Versuche es erneut.",
+      "cloud_local_first_local_unavailable": "Der lokale Zugang dieser Anlage ist ausgeschaltet, läuft nicht, ist nicht erreichbar oder pausiert. Schalte ihn ein und sorge dafür, dass er erreichbar ist, oder richte ihn neu ein; versuche es dann erneut. Es wurde nichts gespeichert.",
+      "cloud_local_first_local_busy": "Der lokale Zugang dieser Anlage ist gerade mit seinen regelmäßigen Abfragen beschäftigt. Es wurde nichts gespeichert. Warte einen Moment und versuche es erneut.",
+      "cloud_rate_limited_until": "Die Cloud verlangt eine Abfragepause bis {until}. Es wurde nichts gespeichert. Bitte versuche es danach erneut.",
+      "cloud_local_first_conflict": "Die Cloud und der lokale Zugang beschreiben nicht dieselbe Anlage. Es wurde nichts gespeichert. Wähle diese Anlage ab, um sie weiter nur über ihren lokalen Zugang zu nutzen.",
+      "local_plant_known": "Dieses Gateway gehört bereits zu einer eingerichteten Anlage. Wähle diese Anlage statt einer neuen."
     },
     "abort": {
       "no_notification_gateways": "Es ist keine Anlage konfiguriert.",
@@ -271,7 +663,40 @@
       "holiday_create_adjusted": "Die Heizungsanlage meldet eine neue Urlaubszeit zurück, deren Einstellungen von deiner Eingabe abweichen. Gewünschter Zeitraum: {requested}. Zurückgemeldeter Zeitraum: {actual}. Öffne Urlaubszeiten verwalten, um diesen Eintrag zu prüfen und zu bearbeiten.",
       "holiday_update_adjusted": "Die Heizungsanlage meldet Einstellungen zurück, die von deiner gewünschten Änderung abweichen. Gewünschter Zeitraum: {requested}. Zurückgemeldeter Zeitraum: {actual}. Öffne Urlaubszeiten verwalten, um den aktuellen Eintrag zu prüfen und zu bearbeiten.",
       "no_rrc_schedules": "Es ist kein aktuelles, unterstütztes RRC-Wochenprogramm verfügbar.",
-      "controls_not_loaded": "Für die Bedienung muss eine PointT-Anlage geladen sein."
+      "controls_not_loaded": "Bedienung ist nur über den Cloud-Zugang möglich; der lokale Zugang liest nur. Verbinde einen Cloud-Zugang oder warte, bis er geladen ist.",
+      "controls_auth_required": "Bedienung nicht möglich: Der Cloud-Zugang braucht eine neue Anmeldung. Messwerte bleiben sichtbar.",
+      "controls_cloud_stopped": "Bedienung nicht möglich: Der Cloud-Zugang ist angehalten oder startet neu. Messwerte bleiben sichtbar.",
+      "controls_rate_limited": "Bedienung nach einem Rate-Limit der Cloud pausiert bis etwa {until}. Messwerte bleiben sichtbar.",
+      "controls_protection_pause": "Bedienung nach wiederholten Cloud-Fehlern pausiert bis etwa {until}. Messwerte bleiben sichtbar.",
+      "controls_cloud_unreachable": "Bedienung nicht möglich: Die Cloud ist gerade nicht erreichbar. Messwerte bleiben sichtbar.",
+      "controls_not_current": "Bedienung noch nicht möglich: Die Cloud hat noch keine aktuellen Werte geliefert. Versuche es gleich noch einmal.",
+      "controls_none": "Diese Anlage meldet derzeit keine Einstellungen, die hier geändert werden können.",
+      "configuration_changed": "Die Verbindungseinstellungen haben sich geändert, während dieser Dialog geöffnet war. Bitte schließe ihn und versuche es erneut.",
+      "no_connections": "Es ist kein Zugang eingerichtet. Vorhandene Anlagen und Entitäten bleiben erhalten.",
+      "connection_reauth_started": "Die Wiederanmeldung wurde angefordert. Öffne die Anmeldung für diesen Eintrag.",
+      "cloud_already_connected": "Es ist bereits ein Cloud-Zugang eingerichtet. Über dessen Einstellungen kannst du weitere Geräte auswählen oder dich erneut anmelden. Eine zweite parallele Cloud-Anmeldung wird vorerst nicht unterstützt.",
+      "cloud_setup_in_progress": "Eine andere Cloud-Einrichtung ist bereits geöffnet. Bitte beende oder schließe zuerst diesen Dialog.",
+      "cloud_target_owned": "Eine ausgewählte Anlage oder ein Gerät gehört bereits zu einem anderen Eintrag oder Cloud-Zugang. Verbinde es über den vorhandenen Eintrag erneut.",
+      "cloud_selection_expired": "Diese Geräteliste ist nicht mehr aktuell. Bitte öffne die Gerätesuche erneut, bevor du speicherst.",
+      "cloud_selection_changed": "Das ausgewählte Gerät ist nicht in der bestätigten Liste. Bitte suche erneut.",
+      "cloud_connection_disabled": "Aktiviere diesen Cloud-Zugang, bevor du nach Geräten suchst.",
+      "cloud_rate_limited": "Die Cloud verlangt eine Abfragepause. Bitte warte vor dem nächsten Versuch.",
+      "local_setup_unavailable": "Die lokale Einrichtung steht erst mit laufender lokaler Datenversorgung zur Verfügung.",
+      "local_session_changed": "Diese Einrichtungssitzung ist beendet oder ihre Auswahl wurde geändert. Öffne die lokale Einrichtung erneut.",
+      "local_discovery_invalid": "Diese Erkennungsmeldung beschreibt keinen unterstützten lokalen Gateway-Endpunkt.",
+      "local_existing_owner_required": "Eine Anlage ohne Cloud richtest du beim Hinzufügen der Integration mit „Nur lokaler Zugang“ ein. Ein gefundenes Gateway kann einer vorhandenen Einrichtung hinzugefügt werden.",
+      "local_target_required": "Diese Einrichtung hat keine geeignete vorhandene Anlage für einen lokalen Zugang.",
+      "local_setup_complete": "Der lokale Zugang wurde eingerichtet.",
+      "local_pending_saved": "Der offene Versuch bleibt gespeichert. Du kannst ihn über die lokale Einrichtung fortsetzen.",
+      "local_storage_failed": "Der private Einrichtungsstand konnte nicht gelesen oder gespeichert werden. Prüfe den Home-Assistant-Speicher, bevor du fortfährst.",
+      "cloud_local_first_other_entry": "Diese Anlage ist bereits in einem anderen Eintrag dieser Integration über ihren lokalen Zugang eingerichtet. Füge den Cloud-Zugang stattdessen in jenem Eintrag hinzu.",
+      "rescan_planned": "Die Suche wurde gestartet. Sie läuft mit der nächsten regulären Aktualisierung; neue Bauteile erscheinen, sobald sie gefunden sind.",
+      "rescan_paused": "Die Suche wurde nicht gestartet: Anfragen sind gerade pausiert (zum Beispiel, weil die Cloud um eine Pause gebeten hat). Bitte versuche es später erneut.",
+      "rescan_running": "Eine Suche läuft bereits oder ist geplant. Bitte warte, bis sie abgeschlossen ist.",
+      "rescan_unavailable": "Die Suche wurde nicht gestartet: Gerade ist kein Zugang zur Anlage bereit."
+    },
+    "progress": {
+      "local_work": "Die lokale Verbindung wird geprüft. Bitte warte einen Moment."
     }
   },
   "issues": {
@@ -302,6 +727,111 @@
           "entry_not_found": "Der betroffene Bosch/Buderus-Heating-Eintrag existiert nicht mehr."
         }
       }
+    },
+    "managed_rate_limit": {
+      "title": "Bosch/Buderus-Cloudzugriffe werden begrenzt",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Cloud-schonende Abfrage verwenden",
+            "description": "Stelle nur den betroffenen Cloud-Zugang auf schonendere Abfragen um. Aktuelle Betriebswerte werden alle zwei Minuten, Steuerungs- und Energiewerte alle zehn Minuten und langsame Zähler alle dreißig Minuten gelesen. Nur dieser Zugang wird neu verbunden; andere Zugänge bleiben aktiv."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Der betroffene Bosch/Buderus-Heating-Eintrag existiert nicht mehr.",
+          "configuration_changed": "Der Zugang oder die Anlage hat sich inzwischen geändert. Öffne die Reparatur erneut."
+        }
+      }
+    },
+    "managed_firmware": {
+      "title": "PointT-Fähigkeiten haben sich nach einem Firmwareupdate geändert",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "PointT-Fähigkeiten neu erkennen",
+            "description": "Bei dieser Anlage entsprechen {conflict_count} bekannte Funktionen nicht mehr dem unterstützten Datentyp oder der Einheit. Prüfe ihre Funktionen erneut. Nur diese Anlage wird neu abgefragt; andere Anlagen und Zugänge bleiben aktiv. Bestehende Entitäts-IDs und eigene Einstellungen bleiben erhalten."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Der betroffene Bosch/Buderus-Heating-Eintrag existiert nicht mehr.",
+          "configuration_changed": "Der Zugang oder die Anlage hat sich inzwischen geändert. Öffne die Reparatur erneut."
+        }
+      }
+    },
+    "local_certificate_changed": {
+      "title": "Zertifikat des lokalen Gateways geändert",
+      "description": "Das Gateway eines lokalen Zugangs zeigt ein anderes Zertifikat. Die Integration akzeptiert es nicht von selbst und liest lokal nicht weiter. Wenn du weißt, warum sich das Zertifikat geändert hat (zum Beispiel nach einem Gateway-Update oder Zurücksetzen), öffne die Optionen der Integration, wähle den lokalen Zugang und dann „Lokalen Zugang ändern“. Dort bestätigst du das neue Zertifikat und kannst den aktuellen Token behalten, solange die Adresse des Gateways gleich bleibt."
+    },
+    "gateway_exchange": {
+      "title": "Gateway ausgetauscht?",
+      "fix_flow": {
+        "step": {
+          "evidence_match": {
+            "title": "Gateway ausgetauscht?",
+            "description": "Das Gateway mit der Endung **{old}** ist im Cloud-Zugang nicht mehr zu sehen. Stattdessen ist ein neues Gateway mit der Endung **{new}** dazugekommen. Mindestens eines der Gerätemodule, die es meldet, hat deine Anlage auch bisher gemeldet (zum Beispiel Wärmeerzeuger oder Regler). Das spricht deutlich dafür, dass das Gateway ausgetauscht wurde.\n\nWie möchtest du weitermachen?",
+            "menu_options": {
+              "continue": "Als dieselbe Anlage weiterführen",
+              "separate": "Als eigene Anlage behalten",
+              "later": "Später entscheiden"
+            }
+          },
+          "evidence_no_match": {
+            "title": "Gateway ausgetauscht?",
+            "description": "Das Gateway mit der Endung **{old}** ist im Cloud-Zugang nicht mehr zu sehen. Stattdessen ist ein neues Gateway mit der Endung **{new}** dazugekommen. Die Gerätemodule, die es meldet, passen aber nicht zu denen, die deine Anlage bisher gemeldet hat. Es kann zu einer anderen Anlage gehören.\n\nWie möchtest du weitermachen?",
+            "menu_options": {
+              "continue": "Als dieselbe Anlage weiterführen",
+              "separate": "Als eigene Anlage behalten",
+              "later": "Später entscheiden"
+            }
+          },
+          "evidence_unknown": {
+            "title": "Gateway ausgetauscht?",
+            "description": "Das Gateway mit der Endung **{old}** ist im Cloud-Zugang nicht mehr zu sehen. Stattdessen ist ein neues Gateway mit der Endung **{new}** dazugekommen. Seine Gerätemodule ließen sich nicht vergleichen, weil keine früheren Moduldaten gespeichert sind oder das neue Gateway keine meldet. Ob es dieselbe Anlage ist, lässt sich daher nicht bestätigen.\n\nWie möchtest du weitermachen?",
+            "menu_options": {
+              "continue": "Als dieselbe Anlage weiterführen",
+              "separate": "Als eigene Anlage behalten",
+              "later": "Später entscheiden"
+            }
+          },
+          "continue_match": {
+            "title": "Als dieselbe Anlage weiterführen",
+            "description": "Deine Anlage läuft mit dem Gateway mit der Endung {new} weiter. Der Verlauf, die Entitäten mit ihren IDs, Namen und Bereichen sowie deine Automationen bleiben erhalten. Die Integration hält dafür kurz an und startet neu.\n\nFalls für diese Anlage ein lokaler Zugang eingerichtet ist, wird er entfernt, weil er zum alten Gateway gehört. Richte ihn danach für das neue Gateway neu ein.\n\nLege bitte vorher eine Sicherung von Home Assistant an.",
+            "data": {
+              "confirm": "Anlage mit dem neuen Gateway weiterführen"
+            }
+          },
+          "continue_unverified": {
+            "title": "Ohne Bestätigung weiterführen",
+            "description": "**Achtung:** Es lässt sich nicht bestätigen, dass das Gateway mit der Endung {new} zu deiner Anlage gehört. Gehört es zu einer anderen Anlage, landen deren Werte im Verlauf dieser Anlage, und deine Automationen wirken auf die falsche Anlage. Mach nur weiter, wenn du das Gateway selbst getauscht hast und dir sicher bist.\n\nDeine Anlage läuft mit dem Gateway mit der Endung {new} weiter. Der Verlauf, die Entitäten mit ihren IDs, Namen und Bereichen sowie deine Automationen bleiben erhalten. Die Integration hält dafür kurz an und startet neu.\n\nFalls für diese Anlage ein lokaler Zugang eingerichtet ist, wird er entfernt, weil er zum alten Gateway gehört. Richte ihn danach für das neue Gateway neu ein.\n\nLege bitte vorher eine Sicherung von Home Assistant an.",
+            "data": {
+              "confirm": "Anlage mit dem neuen Gateway weiterführen",
+              "confirm_unverified": "Ich bin sicher, dass das neue Gateway zu dieser Anlage gehört"
+            }
+          },
+          "separate": {
+            "title": "Als eigene Anlage behalten",
+            "description": "Für dieses Gateway fragt die Integration nicht mehr nach. Die Anlage mit dem alten Gateway bleibt, wie sie ist. Wenn du das neue Gateway als eigene Anlage hinzufügen möchtest, wähle es in den Optionen des Cloud-Zugangs aus."
+          }
+        },
+        "error": {
+          "confirmation_required": "Bitte bestätige, um weiterzumachen."
+        },
+        "abort": {
+          "entry_not_found": "Der betroffene Eintrag dieser Integration existiert nicht mehr.",
+          "configuration_changed": "Der Zugang oder die Anlage hat sich geändert. Öffne die Reparatur erneut.",
+          "later": "Es wurde nichts geändert. Der Hinweis bleibt unter Reparaturen, bis du dich entscheidest.",
+          "exchange_unavailable": "Die Integration läuft gerade nicht. Starte sie und öffne die Reparatur erneut.",
+          "cloud_unavailable": "Der Cloud-Zugang ist gerade nicht erreichbar. Versuch es später noch einmal.",
+          "exchange_changed": "Die Gateways im Cloud-Zugang haben sich geändert. Öffne die Reparatur erneut, sobald sie wieder angezeigt wird.",
+          "exchange_collision": "Es wurde nichts geändert: Für das neue Gateway gibt es schon Entitäten oder ein Gerät. Entferne sie zuerst oder behalte das neue Gateway als eigene Anlage.",
+          "exchange_failed": "Es wurde nichts geändert; die Anlage läuft mit dem alten Gateway weiter. Details stehen im Protokoll.",
+          "unload_failed": "Es wurde nichts geändert: Die Integration ließ sich nicht anhalten. Starte Home Assistant neu und öffne die Reparatur erneut."
+        }
+      }
+    },
+    "setup_unfinished": {
+      "title": "Einrichtung nicht abgeschlossen",
+      "description": "Der Eintrag „{title}“ hat noch keinen Zugang. Öffne seine Optionen und wähle „Lokalen Zugang einrichten“ (oder füge einen Cloud-Zugang hinzu), um die Einrichtung abzuschließen."
     }
   },
   "exceptions": {
@@ -361,6 +891,9 @@
     },
     "pointt_dhw_temperature_read_only": {
       "message": "Der aktuelle Warmwasser-Sollwert wird von der Anlage vorgegeben. Die Starttemperaturen für die einzelnen Betriebsarten kannst du unter Anlage bedienen einstellen."
+    },
+    "gateway_exchange_incomplete": {
+      "message": "Ein unterbrochener Gateway-Austausch ließ sich nicht abschließen, deshalb startet die Integration nicht. Details stehen im Protokoll; entferne, was den Austausch blockiert (zum Beispiel Entitäten des neuen Gateways), und starte Home Assistant neu."
     }
   },
   "selector": {
@@ -430,12 +963,29 @@
         "sa": "Samstag",
         "su": "Sonntag"
       }
+    },
+    "local_method": {
+      "options": {
+        "label": "Angaben vom Geräteaufkleber",
+        "token": "Vorhandener Token",
+        "keep": "Aktuellen Token behalten"
+      }
+    },
+    "local_pending_action": {
+      "options": {
+        "continue": "Mit gespeichertem Token fortfahren",
+        "discard": "Offenen Versuch verwerfen",
+        "later": "Später fortsetzen"
+      }
     }
   },
   "entity": {
     "number": {
       "manual_room_setpoint": {
         "name": "Manueller Sollwert"
+      },
+      "pool_setpoint_temperature": {
+        "name": "Pool-Solltemperatur"
       },
       "heating_temperature": {
         "name": "Heizen"
@@ -526,6 +1076,17 @@
           "auto": "Auto"
         }
       },
+      "ventilation_exhaust_fan_level": {
+        "name": "Abluft-Lüfterstufe",
+        "state": {
+          "off": "Aus",
+          "min": "Lüfterstufe 1",
+          "red": "Lüfterstufe 2",
+          "nom": "Lüfterstufe 3",
+          "max": "Lüfterstufe 4",
+          "dem": "Bedarf"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Manuell",
@@ -561,6 +1122,9 @@
       "wddw2_holiday_mode": {
         "name": "Urlaubsmodus"
       },
+      "pool_enabled": {
+        "name": "Pool"
+      },
       "bacon_purifier_child_lock": {
         "name": "Kindersicherung"
       },
@@ -578,6 +1142,9 @@
       },
       "bacon_dry_child_lock": {
         "name": "Kindersicherung"
+      },
+      "bacon_dry_display": {
+        "name": "Display"
       }
     },
     "sensor": {
@@ -833,6 +1400,35 @@
           "auto": "Auto"
         }
       },
+      "refrigerant_status": {
+        "name": "Kältekreis-Status",
+        "state": {
+          "idle": "Bereit",
+          "startup": "Anlauf",
+          "heating": "Heizen",
+          "cooling": "Kühlen",
+          "defrost": "Abtauen",
+          "passive_defrost": "Passives Abtauen",
+          "shutoff": "Abgeschaltet",
+          "alarm": "Alarm",
+          "test_mode": "Testbetrieb",
+          "off": "Aus",
+          "dhw": "Warmwasser",
+          "pool": "Pool",
+          "pool_heat": "Poolheizung"
+        }
+      },
+      "ventilation_fan_level": {
+        "name": "Abluft-Lüfterstufe",
+        "state": {
+          "off": "Aus",
+          "min": "Lüfterstufe 1",
+          "red": "Lüfterstufe 2",
+          "nom": "Lüfterstufe 3",
+          "max": "Lüfterstufe 4",
+          "dem": "Bedarf"
+        }
+      },
       "pv_contact_state": {
         "name": "PV-Kontaktstatus",
         "state": {
@@ -1069,11 +1665,71 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hardware-Stromgrenze"
+      },
+      "smart_grid_mode": {
+        "name": "Smart-Grid-Modus",
+        "state": {
+          "blocked": "Gesperrt",
+          "normal": "Normal",
+          "preferred": "Bevorzugt",
+          "forced": "Erzwungen",
+          "not_used": "Nicht verwendet"
+        }
+      },
+      "signal_season_mode": {
+        "name": "Saisonbetrieb",
+        "state": {
+          "heating": "Heizen",
+          "idle": "Ruhe",
+          "cooling": "Kühlen"
+        }
+      },
+      "signal_heat_cool": {
+        "name": "Heiz-/Kühlzustand",
+        "state": {
+          "idle": "Ruhe",
+          "heat": "Heizen",
+          "cool": "Kühlen"
+        }
+      },
+      "signal_holiday_slot": {
+        "name": "Urlaubszeit",
+        "state": {
+          "idle": "Nicht geplant",
+          "planned": "Geplant",
+          "active": "Aktiv"
+        }
+      },
+      "signal_true_false": {
+        "name": "Zustand",
+        "state": {
+          "true": "Ja",
+          "false": "Nein"
+        }
       }
     },
     "binary_sensor": {
       "holiday_active": {
         "name": "Urlaubsmodus aktiv"
+      },
+      "cloud_control": {
+        "name": "Cloud-Bedienung möglich",
+        "state_attributes": {
+          "reason": {
+            "name": "Grund",
+            "state": {
+              "auth_required": "Anmeldung erforderlich",
+              "cloud_stopped": "Cloud-Zugang angehalten",
+              "rate_limited": "Pause nach Rate-Limit",
+              "protection_pause": "Schutzpause nach wiederholten Fehlern",
+              "cloud_unreachable": "Cloud nicht erreichbar",
+              "not_current": "Werte noch nicht aktuell"
+            }
+          },
+          "until": {
+            "name": "Bis"
+          }
+        }
       },
       "system_fault": {
         "name": "Anlagenstörung"
@@ -1206,6 +1862,12 @@
             "state": {
               "off": "Aus",
               "on": "Ein"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Keine",
+              "eco": "Eco"
             }
           }
         }

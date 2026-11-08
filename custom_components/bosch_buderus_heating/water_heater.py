@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 from homeassistant.components.water_heater import (
     WaterHeaterEntity,
 )
-from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
+from homeassistant.const import ATTR_TEMPERATURE, Platform, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -15,10 +15,12 @@ from homeassistant.util.unit_conversion import TemperatureDeltaConverter
 
 from . import BoschBuderusConfigEntry
 from .bacon import dhw
+from .bacon.access import BaconAccess
 from .bacon.entity import BaconEntity
 from .bacon.models import BaconError, Device
-from .bacon.session import BaconAccount
 from .const import DOMAIN
+from .ha_compat import temperature_members, temperature_unit
+from .platform_scope import PlatformScope, setup_platform
 from .pointt_water_heater import track_pointt_water_heaters
 
 if TYPE_CHECKING:
@@ -32,9 +34,16 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    for coordinator in entry.runtime_data.coordinators:
+    setup_platform(entry, Platform.WATER_HEATER, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    for coordinator in entry.coordinators:
         track_pointt_water_heaters(entry, coordinator, async_add_entities)
-    if (account := entry.runtime_data.bacon) is None:
+    if (account := entry.bacon) is None:
         return
     seen: set[str] = set()
 
@@ -52,12 +61,13 @@ async def async_setup_entry(
     discover()
 
 
+@temperature_members
 class BaconWaterHeater(BaconEntity, WaterHeaterEntity):
     _attr_translation_key = "bacon_dhw"
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_precision = 1.0
 
-    def __init__(self, account: BaconAccount, serial: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str) -> None:
         super().__init__(account, serial, "water_heater")
 
     @property
@@ -73,7 +83,7 @@ class BaconWaterHeater(BaconEntity, WaterHeaterEntity):
         return dhw.operation(self.device) if self.state_current else None
 
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         if not self.sensor_current or not self.metadata_current:
             return None
         return dhw.temperature(
@@ -82,7 +92,7 @@ class BaconWaterHeater(BaconEntity, WaterHeaterEntity):
         )
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         return (
             dhw.target(self.device)
             if self.state_current and self.metadata_current
@@ -105,7 +115,7 @@ class BaconWaterHeater(BaconEntity, WaterHeaterEntity):
         result = WaterHeaterEntityFeature(0)
         if self.operation_list:
             result |= WaterHeaterEntityFeature.OPERATION_MODE
-        if self.target_temperature is not None and dhw.writable(
+        if self.native_target_temperature is not None and dhw.writable(
             dhw.metadata(self.device, "state", "tempSetpoint")
         ):
             result |= WaterHeaterEntityFeature.TARGET_TEMPERATURE
@@ -132,7 +142,7 @@ class BaconWaterHeater(BaconEntity, WaterHeaterEntity):
         # HA converts absolute temperatures, but passes this interval through.
         if (step := self.target_temperature_step) is not None:
             attributes["target_temp_step"] = TemperatureDeltaConverter.convert(
-                step, self.temperature_unit, self.hass.config.units.temperature_unit
+                step, temperature_unit(self), self.hass.config.units.temperature_unit
             )
         return attributes
 

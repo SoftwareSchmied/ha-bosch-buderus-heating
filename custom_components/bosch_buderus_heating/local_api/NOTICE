@@ -1,0 +1,6 @@
+The extracted facts in _data.py are adapted from the K 40 RF OpenAPI specification.
+Copyright Bosch Thermotechnik GmbH 2026.
+Source: https://github.com/bosch-home-comfort/api-docs/tree/78e36b3b57e11ac6266558acba96c13bee88ceff
+Licensed under Apache License 2.0; see LICENSE in this directory.
+The extraction removes descriptions and examples and retains schema constraints.
+The handwritten modules in this package use the integration's project license.

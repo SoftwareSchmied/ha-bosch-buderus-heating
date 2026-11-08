@@ -3,6 +3,7 @@
 from collections.abc import Mapping
 
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -12,6 +13,7 @@ from . import BoschBuderusConfigEntry
 from .control import async_set_control, track_control_entities
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
+from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .writes import SOFTENER_REGENERATION_POLICY, assess_control
 
@@ -21,8 +23,15 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
+    setup_platform(entry, Platform.BUTTON, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
     """Expose only the reviewed regeneration start command, initially disabled."""
-    for coordinator in entry.runtime_data.coordinators:
+    for coordinator in entry.coordinators:
         track_control_entities(
             entry,
             coordinator,

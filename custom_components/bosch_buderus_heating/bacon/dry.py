@@ -22,6 +22,8 @@ FLAGS = {
     "condensate_pump": "condensatePumpRunning",
     "idle": "idleState",
 }
+# Independent boolean settings, offered only when declared writable.
+SWITCHES = {"child_lock": "childLockEnabled", "display": "displayEnabled"}
 STATUSES = ("off", "running", "idle", "water_tank_full", "defrosting", "device_error")
 CELSIUS = ("C", "degC", "Celsius", "°C")
 FAHRENHEIT = ("degF", "Fahrenheit")
@@ -173,14 +175,14 @@ def operating_status(device: Device) -> str | None:
 
 
 def command_valid(device: Device, desired: dict[str, Any], expected_model: str) -> bool:
-    # The reviewed commands each change one field. No timer, pump, display,
+    # The reviewed commands each change one field. No timer, pump, fan,
     # schedule or generic state-writing escape is exposed by this family.
     if family(device) is None or device.model != expected_model or len(desired) != 1:
         return False
     field, value = next(iter(desired.items()))
     if not writable(metadata(device, "state", field)):
         return False
-    if field in ("powerEnabled", "childLockEnabled"):
+    if field in ("powerEnabled", *SWITCHES.values()):
         if not boolean_control(device, field) or type(value) is not bool:
             return False
         return (

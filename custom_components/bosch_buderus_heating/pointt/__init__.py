@@ -28,7 +28,9 @@ from .exceptions import (
     ResourceForbidden,
     ResourceNotAcceptable,
     ResourceNotFound,
+    ResourceOmitted,
     ServiceUnavailable,
+    TokenEndpointRejection,
     TransportError,
     UnexpectedHttpStatus,
     WriteError,
@@ -49,7 +51,12 @@ from .models import (
     WriteResult,
 )
 from .redaction import anonymize_identifier, redact_mapping, redact_text
-from .token_manager import StaticTokenProvider, TokenManager
+from .token_manager import (
+    RefreshAttempt,
+    RefreshObserver,
+    StaticTokenProvider,
+    TokenManager,
+)
 from .transport import RetryPolicy
 
 __all__ = [
@@ -74,6 +81,8 @@ __all__ = [
     "PointTError",
     "ProtocolError",
     "RateLimited",
+    "RefreshAttempt",
+    "RefreshObserver",
     "RefreshTokenRejected",
     "RequestMetrics",
     "RequestTimeout",
@@ -83,10 +92,12 @@ __all__ = [
     "ResourceMetadata",
     "ResourceNotAcceptable",
     "ResourceNotFound",
+    "ResourceOmitted",
     "ResourceReference",
     "RetryPolicy",
     "ServiceUnavailable",
     "StaticTokenProvider",
+    "TokenEndpointRejection",
     "TokenManager",
     "TransportError",
     "UnexpectedHttpStatus",

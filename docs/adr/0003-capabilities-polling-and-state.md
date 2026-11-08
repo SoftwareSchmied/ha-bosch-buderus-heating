@@ -41,8 +41,8 @@ Transport retries are counted separately from logical resource reads.
 For each advertised or successfully discovered heating-circuit directory, the
 core catalog requests `operationMode`, `manualRoomSetpoint`, `controlType`,
 `temperatureLevels`, `temperatureLevels/comfort2`, and `temperatureLevels/eco`.
-The vendor apps also address these resources independently of the circuit
-directory. An unreadable circuit or temperature-level directory therefore does
+These resources are addressed independently of the circuit directory. An
+unreadable circuit or temperature-level directory therefore does
 not prevent a child read. Circuit IDs come from the resource tree; discovery
 never guesses additional circuit numbers. Duplicate paths are read once, and
 an advertised reference takes priority over a previously scheduled catalog
@@ -73,7 +73,25 @@ opaque reference. It must not guess arbitrary paths for other containers.
 ## Consequences
 
 Discovery is bounded and runs once per integration load. A reload is required
-after the physical system gains or loses a circuit. `429` pauses all cloud
+after the physical system gains or loses a circuit. Parts that were discovered
+at an earlier start but are missing now are an exception: the integration keeps
+the discovered resources per gateway in local storage and searches the missing
+subtrees again with the same bounded discovery, 5, 15 and 60 minutes after the
+start and then every six hours until one day has passed. Without stored
+resources, a root that ended with a temporary error is searched again on the
+same schedule. A search waits for a working cycle; a rate limit postpones it
+without using an attempt; other errors never block the regular poll. A part
+still missing after the last search is no longer expected at the next start.
+Registry entries of missing parts are never removed.
+
+If the gateway list or the first discovery fails with a temporary error and a
+saved inventory of at most 30 days exists for every selected gateway, setup
+completes with that inventory instead of raising `ConfigEntryNotReady`. All
+entities exist and stay unavailable; no stored value is shown as current and
+writes are rejected. The regular poll reads the stored paths, and after the
+first working cycle one discovery compares the inventory with the system,
+repeated on the same schedule if it fails. A rejected sign-in still starts
+reauthentication; without a usable inventory setup is retried as before. `429` pauses all cloud
 polling according to `Retry-After`, bounded to one hour; if the server omits the
 header, the default pause is five minutes. A failed batch preserves last-good
 values, and a partial cycle keeps successful earlier batches. After one failed

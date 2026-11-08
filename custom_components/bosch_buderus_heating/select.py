@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -28,6 +29,7 @@ from .coordinator import (
 )
 from .device import device_info_for_resource
 from .enum_translation import writable_enum_options
+from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
 from .rrc_select import RrcProgramSelect
@@ -41,6 +43,8 @@ from .writes import (
     SEASON_SWITCHING_POLICY,
     SILENT_MODE_POLICY,
     STRING_SWITCH_POLICIES,
+    VENTILATION_FAN_LEVEL_POLICY,
+    VENTILATION_FAN_LEVELS,
     ZONE_OPERATION_MODE_POLICY,
     EnumWritePolicy,
     assess_control,
@@ -62,8 +66,15 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
+    setup_platform(entry, Platform.SELECT, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
     """Create controls only for verified enum capabilities."""
-    if (account := entry.runtime_data.bacon) is not None:
+    if (account := entry.bacon) is not None:
         track_purifier_entities(
             entry,
             account,
@@ -71,8 +82,7 @@ async def async_setup_entry(
             BaconPurifierColor,
             {"light_color": "lightMode"},
         )
-    del hass
-    for coordinator in entry.runtime_data.coordinators:
+    for coordinator in entry.coordinators:
         track_control_entities(
             entry,
             coordinator,
@@ -114,6 +124,8 @@ def build_select_descriptions(
             translation_key = "season_switching"
         elif policy is AUXILIARY_HEATER_OPERATION_MODE_POLICY:
             translation_key = "auxiliary_heater_operation_mode"
+        elif policy is VENTILATION_FAN_LEVEL_POLICY:
+            translation_key = "ventilation_exhaust_fan_level"
         else:
             translation_key = ""
         options = tuple(_option_map(resource, translation_key))
@@ -145,6 +157,7 @@ def _option_map(resource: Resource, translation_key: str) -> dict[str, str]:
         "silent_mode": ("off", "auto", "on"),
         "season_switching": ("off", "automatic", "forcedHeat", "forcedCool"),
         "auxiliary_heater_operation_mode": ("off", "manual", "auto"),
+        "ventilation_exhaust_fan_level": VENTILATION_FAN_LEVELS,
     }.get(translation_key, ())
     ordered = tuple(value for value in preferred if value in advertised)
     ordered += tuple(value for value in advertised if value not in ordered)

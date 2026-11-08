@@ -76,6 +76,12 @@ def test_request_metrics_aggregate_without_request_details() -> None:
         "average_duration_ms": 10.8,
         "maximum_duration_ms": 20.0,
         "last_duration_ms": 0.0,
+        "slot_wait": {
+            "waits_total": 0,
+            "waits_over_10_seconds": 0,
+            "maximum_ms": 0.0,
+            "last_ms": None,
+        },
     }
     assert rolling["requests_total"] == 3
     assert rolling["requests_successful"] == 1
@@ -265,3 +271,15 @@ def test_bulk_details_enrich_the_matching_request_only() -> None:
     assert event["bulk_server_statuses"] == {"200": 2, "503": 1}
     assert event["bulk_gateway_statuses"] == {"200": 1, "502": 1, "none": 1}
     assert snapshot["rolling_60_minutes"]["bulk_items_total"] == 3
+
+
+def test_slot_waits_are_bounded_aggregates() -> None:
+    metrics = RequestMetrics()
+    for seconds in (0.0, 2.5, 12.0, -1.0):
+        metrics.record_slot_wait(seconds)
+    assert metrics.snapshot()["slot_wait"] == {
+        "waits_total": 4,
+        "waits_over_10_seconds": 1,
+        "maximum_ms": 12000.0,
+        "last_ms": 0.0,
+    }

@@ -24,6 +24,7 @@ and other families need their own proven connection and contract.
 | Fan speed | State `fanSpeed` | `auto`, `quiet`, `low`, `medium`, `high`, `turbo` |
 | Vertical swing | State `vSwingEnabled` | Independent boolean; HA swing `on` or `off` |
 | Horizontal swing | State `hSwingEnabled` | Independent boolean; HA horizontal swing `on` or `off` |
+| Eco | State `ecoEnabled` | Independent boolean; HA preset `eco` or `none` on the climate entity |
 
 Only known options present in this device's metadata become writable choices.
 Optional functions require their own field declaration, valid current value
@@ -43,9 +44,13 @@ its physical effect still needs device confirmation.
 
 The chosen mode does not prove compressor activity. I do not publish
 `hvac_action`, a fabricated idle state, heating activity or cooling activity.
-Advanced modes such as Eco, sleep, turbo power, ionizer, setback and breeze
-away, timers, schedules and energy history are not implemented in this
-package. The fan speed named `turbo` is distinct from the advanced power mode.
+Eco appears as the HA preset `eco` (with `none` for normal operation) only
+when the device declares `ecoEnabled` with `ro=false` and reports a boolean.
+A preset change sends only `ecoEnabled` and needs the usual reported
+confirmation. Other comfort functions such as sleep, turbo power, ionizer,
+setback and breeze away, as well as timers, schedules and energy history, are
+not offered. The fan speed named `turbo` is distinct from the advanced power
+mode and is never changed by the Eco preset.
 
 ## Units, validity and command confirmation
 
@@ -77,9 +82,12 @@ The protocol has no verified compare-and-swap token: convergence is confirmed,
 but simultaneous external writes to the same field cannot be attributed
 exclusively to this client.
 
-Availability and freshness follow the connection foundation: live device
-information is required, state and sensor streams age independently after
-15 minutes, and all needed streams must arrive again after reconnection.
+Availability and freshness follow the connection foundation: the newest
+information message sets online status, a non-retained device message on any
+channel within the last hour keeps it usable, reported state fields age after
+15 minutes and sensor fields after one hour. After a reconnect of the
+integration, earlier readings stay visible within those limits; after a
+membership loss or a re-added device all needed streams must arrive again.
 Old, duplicate or retained sensor messages do not refresh readings. A changed
 model clears cached capabilities and values. The same HA entity identity is
 retained across reconnects and reloads.
@@ -124,7 +132,11 @@ In Automatik, Heizen und Kühlen ist der gültige Sollwert einstellbar, auch
 bei ausgeschaltetem Gerät mit einer dieser gespeicherten Betriebsarten.
 Bei Lüften und Entfeuchten blende ich diesen Regler als eigene Bedienregel
 aus. Für einen anschließenden Temperaturwechsel ist zuerst die Betriebsart
-umzustellen. Sondermodi, Timer, Programme und Verbrauchsverläufe bleiben offen.
+umzustellen. Meldet das Gerät `ecoEnabled` als beschreibbar und liefert einen
+Ein/Aus-Wert, kannst du Eco über die Voreinstellung `eco` oder `none` der
+Klimaentität schalten. Dabei sende ich nur dieses Feld; die Lüfterstufe Turbo
+bleibt unverändert. Weitere Sondermodi, Timer, Programme und Verbrauchsverläufe
+bietet die Integration nicht an.
 
 Jeder Schreibzugriff prüft die aktuellen Fähigkeiten erneut und ändert nur
 die angeforderten Felder. Die Rückmeldung muss den neuen Zustand bestätigen.

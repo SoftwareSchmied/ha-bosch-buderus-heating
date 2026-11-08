@@ -1,7 +1,7 @@
 """Reviewed water-softener capabilities, independent of Home Assistant UI.
 
-Paths and meanings come from MyBuderus 5.0.0 resource models. These are
-protocol evidence, not a claim of verification on physical equipment.
+The documented paths and meanings are not a claim of verification on
+physical equipment.
 """
 
 from __future__ import annotations
@@ -202,7 +202,7 @@ def softener_value(resource: Resource) -> float | str | bool | None:
     if capability.kind == "binary":
         return {"on": True, "off": False}.get(value) if isinstance(value, str) else None
     if capability.kind == "phase":
-        # The app compares phases case-insensitively. Keep HA's existing keys
+        # Phases are compared case-insensitively. Keep HA's existing keys
         # and accept only casing variants of the documented ASCII codes.
         if not isinstance(value, str) or not value.isascii():
             return None
@@ -225,7 +225,7 @@ def softener_value(resource: Resource) -> float | str | bool | None:
 def low_salt(level: Resource, threshold: Resource | None) -> bool | None:
     """Compare fresh caller-supplied values from the same circuit only.
 
-    Match the app's Float-to-integer comparison and absent-threshold default.
+    Use a Float-to-integer comparison and a default for an absent threshold.
     W006 and E7 are not substituted for a numeric threshold.
     """
     if (
@@ -237,7 +237,7 @@ def low_salt(level: Resource, threshold: Resource | None) -> bool | None:
     limit = 20.0 if threshold is None else softener_value(threshold)
     if type(actual) is not float or type(limit) is not float:
         return None
-    # The app stores these two values as IEEE-754 Float before truncation.
+    # Treat both values as IEEE-754 Float before truncation.
     return int(struct.unpack("f", struct.pack("f", actual))[0]) <= int(
         struct.unpack("f", struct.pack("f", limit))[0]
     )

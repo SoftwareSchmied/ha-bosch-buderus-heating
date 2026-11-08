@@ -1,14 +1,14 @@
 # P03: Discovery and read contracts
 
-I reconciled all 361 comparison models against the previous 359-entry
-inventory. The two added models are generic execution classes with a
+I reconciled all 361 resource models against the previous 359-entry
+inventory. The two added models are generic execution models with a
 caller-supplied path. The inventory preserves every model, 52 groups of
 duplicate paths and the reason for each of 137 path changes: 122 explicit
 arguments or fixed identifiers, six restored arguments, eight explicit query
 arguments and one corrected path composition. The RRC weekly DHW program path
 is `/dhwCircuits/dhw{circuitId}/programs/pg{programId}/week`.
 
-The [machine-readable inventory](app-resource-inventory.json) records each
+The [machine-readable inventory](resource-inventory.json) records each
 model's transport, path, shape, unit policy, scaling, options, bounds, write
 requirements, time basis, evidence and outstanding data. Its schema probes
 are intentionally separate from semantic examples and physical confirmation.

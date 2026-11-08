@@ -89,8 +89,10 @@ measurement statistics, never a cumulative counter or a predicted end date.
 Metadata, state and sensor messages use the shared connection. New metadata
 can add optional entities while running. Existing identities survive missing
 capabilities, reconnects and reloads, including user names and disabled flags.
-Live information is required. State and sensor streams expire independently
-after 15 minutes; old, duplicate and retained sensor messages do not refresh
+Online status comes from the newest information message and stays usable
+while a non-retained device message on any channel arrived within the last
+hour. Reported state fields expire after 15 minutes and sensor fields after
+one hour; old, duplicate and retained sensor messages do not refresh
 readings. Sensor envelopes contain timestamped items; the newest item extends
 non-null fields in the existing sample. Omitted fields retain their own age
 and expire independently. A model or connection change prevents reuse of

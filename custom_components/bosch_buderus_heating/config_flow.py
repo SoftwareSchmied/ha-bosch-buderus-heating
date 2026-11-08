@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import math
 import re
+from contextlib import suppress
 from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime
 from time import monotonic
@@ -17,9 +19,11 @@ from homeassistant.config_entries import (
     ConfigEntryState,
     ConfigFlow,
     ConfigFlowResult,
+    FlowType,
     OptionsFlow,
 )
 from homeassistant.core import callback
+from homeassistant.data_entry_flow import FlowResultType, UnknownFlow
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
@@ -41,6 +45,17 @@ from homeassistant.util import dt as dt_util
 from .auth_lifecycle import entry_auth
 from .bacon import flow as bacon_flow
 from .bacon.models import CONF_BACON_ACCOUNT, CONF_BACON_IDS, BaconError
+from .cloud_configuration import (
+    CLAIM,
+    CloudDiscovery,
+    check_new_cloud,
+    ensure_active_cloud_flow,
+    new_cloud_configuration,
+)
+from .cloud_options_flow import CloudOptionsFlow
+from .configuration import CLOUD_KIND, ConfigurationError, load_configuration
+from .configuration_access import CredentialContext, EntryConfiguration
+from .configuration_management import ConfigurationManagement, ConnectionEdit
 from .const import (
     CONF_BRAND,
     CONF_FAULT_NOTIFICATIONS,
@@ -51,11 +66,11 @@ from .const import (
     DOMAIN,
     RATE_LIMIT_ISSUE_PREFIX,
     PollingProfile,
-    polling_profile_from_options,
 )
 from .controls_flow import ControlsOptionsFlow
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
-from .data import tokens_from_data, tokens_to_data
+from .data import tokens_to_data
+from .entry_sources import notification_gateways, pointt_coordinators
 from .enum_translation import writable_enum_options
 from .ha_schema import validation as vol
 from .holiday_ui import (
@@ -88,6 +103,8 @@ from .holidays import (
     parse_holiday_write_configuration,
 )
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
+from .local_credentials import LOCAL_STORAGE_MINOR_VERSION
+from .local_flow import LocalSetupFlow
 from .notifications import (
     gateway_notification_key,
     installation_name,
@@ -113,6 +130,7 @@ from .pointt import (
     WriteNotConfirmed,
     WriteValidationError,
 )
+from .pointt.retry_after import bounded_cloud_pause
 from .rrc_flow import RrcScheduleOptionsFlow
 from .runtime import BoschBuderusRuntimeData
 from .writes import WDDW2_HOLIDAY_POLICY, assess_control
@@ -139,6 +157,8 @@ BRAND_SCHEMA = vol.Schema(
     }
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 REDIRECT_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_REDIRECT_URL): TextSelector(
@@ -148,11 +168,17 @@ REDIRECT_SCHEMA = vol.Schema(
 )
 
 
-class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
+# P49b step 7: the marker that opens an options flow at the local setup.
+LOCAL_FIRST_START = "local_first_start"
+
+
+class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
     """Configure a PointT account and its gateways."""
 
-    VERSION = 3
+    VERSION = 4
+    MINOR_VERSION = 2
 
+    _new_cloud_listing: CloudDiscovery | None = None
     _brand: Brand | None = None
     _oauth_flow: OAuthFlow | None = None
     _tokens: AuthTokens | None = None
@@ -166,6 +192,11 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
     _reconfigure_entry: ConfigEntry | None = None
     _pending_polling_profile: PollingProfile = DEFAULT_POLLING_PROFILE
     _auth_retry_at: float = 0.0
+    _discovery_retry_at: float = 0.0
+    _managed_edit: ConnectionEdit | None = None
+    _configuration_context: (
+        tuple[CredentialContext, dict[str, Any], PollingProfile] | None
+    ) = None
 
     @staticmethod
     @callback
@@ -174,20 +205,125 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
         """Return the actions exposed through the integration options dialog."""
         return BoschBuderusOptionsFlow(config_entry)
 
+    # P49b step 7: continue with the local setup of the new entry.
+    _then_local = False
+
     @override
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        """Choose the accesses: cloud, cloud and local, or local only."""
+        return self.async_show_menu(
+            step_id="user", menu_options=["cloud", "cloud_local", "local_only"]
+        )
+
+    async def async_step_cloud_local(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """The cloud first, then the local access of the same entry."""
+        self._then_local = True
+        return await self.async_step_cloud()
+
+    async def async_step_local_only(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """An entry without a cloud; its plant is set up locally next.
+
+        Not checked for local support here: the component is only set up once
+        the entry is added; the local setup itself checks it then.
+        """
+        data = {
+            "revision": 0,
+            "connections": {},
+            "targets": {},
+            "bindings": {},
+            "legacy_extra": {},
+        }
+        options: dict[str, Any] = {"connections": {}, "targets": {}, "bindings": {}}
+        try:
+            load_configuration(
+                self.flow_id,
+                data,
+                options,
+                minor_version=LOCAL_STORAGE_MINOR_VERSION,
+            )
+        except ConfigurationError:
+            return self.async_abort(reason="configuration_changed")
+        await self.async_set_unique_id("installation_" + self.flow_id)
+        self._then_local = True
+        german = self.hass.config.language.startswith("de")
+        return self.async_create_entry(
+            title="Home Comfort (lokal)" if german else "Home Comfort (local)",
+            data=data,
+            options=options,
+        )
+
+    @override
+    async def async_on_create_entry(self, result: ConfigFlowResult) -> ConfigFlowResult:
+        """Open the local setup of the new entry right away (P49b step 7)."""
+        entry = result.get("result")
+        if not self._then_local or not isinstance(entry, ConfigEntry):
+            return result
+        from .managed_entry import SETUP_ISSUE_PREFIX
+
+        try:
+            local = await self.hass.config_entries.options.async_init(
+                entry.entry_id,
+                # Marks the prepared flow for as long as it exists.
+                context=cast(Any, {LOCAL_FIRST_START: True}),
+                data={LOCAL_FIRST_START: True},
+            )
+            if local.get("type") in (FlowResultType.FORM, FlowResultType.MENU):
+                result["next_flow"] = (FlowType.OPTIONS_FLOW, local["flow_id"])
+                # The setup continues there: no repair note meanwhile.
+                ir.async_delete_issue(
+                    self.hass, DOMAIN, SETUP_ISSUE_PREFIX + entry.entry_id
+                )
+        except Exception:  # the entry exists; its options offer the setup
+            _LOGGER.debug("The local setup could not be opened", exc_info=True)
+        return result
+
+    async def async_step_cloud(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Select the application brand."""
+        if self.VERSION == 4:
+            try:
+                check_new_cloud(self.hass, self.flow_id)
+            except ConfigurationError as error:
+                return self.async_abort(
+                    reason=str(error)
+                    if str(error)
+                    in {"cloud_already_connected", "cloud_setup_in_progress"}
+                    else "configuration_changed"
+                )
+            cast(dict[str, Any], self.context)[CLAIM] = True
         if user_input is not None:
             self._brand = Brand(user_input[CONF_BRAND])
             return self._start_authorization()
-        return self.async_show_form(step_id="user", data_schema=BRAND_SCHEMA)
+        return self.async_show_form(step_id="cloud", data_schema=BRAND_SCHEMA)
 
     async def async_step_reauth(self, entry_data: dict[str, Any]) -> ConfigFlowResult:
         """Start reauthentication for an existing entry."""
         self._reauth_entry = self._get_reauth_entry()
-        self._brand = Brand(entry_data[CONF_BRAND])
+        connection_id = self.context.get("connection_id")
+        if self._reauth_entry.version == 4:
+            if not isinstance(connection_id, str):
+                return self.async_abort(reason="connection_required")
+            try:
+                management = ConfigurationManagement(self.hass, self._reauth_entry)
+                self._managed_edit = management.edit(connection_id)
+                if management.current().connections[connection_id].kind != CLOUD_KIND:
+                    return self.async_abort(reason="connection_settings_required")
+            except ConfigurationError:
+                return self.async_abort(reason="configuration_changed")
+        configuration = EntryConfiguration(
+            self._reauth_entry,
+            connection_id if isinstance(connection_id, str) else None,
+        )
+        if self._managed_edit is None:
+            self._configuration_context = configuration.dialog_context()
+        self._brand = Brand(configuration.cloud_data()[CONF_BRAND])
         return await self.async_step_reauth_confirm()
 
     async def async_step_reauth_confirm(
@@ -204,10 +340,12 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
         """Update gateway selection, brand, and safe polling cadence."""
         if self._reconfigure_entry is None:
             self._reconfigure_entry = self._get_reconfigure_entry()
-            self._brand = Brand(self._reconfigure_entry.data[CONF_BRAND])
-            self._pending_polling_profile = polling_profile_from_options(
-                self._reconfigure_entry.options
-            )
+            if self._reconfigure_entry.version == 4:
+                return self.async_abort(reason="connection_settings_required")
+            configuration = EntryConfiguration(self._reconfigure_entry)
+            self._configuration_context = configuration.dialog_context()
+            self._brand = Brand(configuration.cloud_data()[CONF_BRAND])
+            self._pending_polling_profile = configuration.polling_profile()
             return await self._async_prepare_reconfigure()
 
         if user_input is None:
@@ -324,6 +462,8 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
             elif self._brand is None or self._tokens is None:
                 return self.async_abort(reason="invalid_flow")
             else:
+                if self.VERSION == 4 and self._reconfigure_entry is None:
+                    return await self._create_managed_cloud(selected)
                 duplicate = self._find_duplicate_entry(set(selected))
                 if duplicate is not None:
                     return self.async_abort(reason="already_configured")
@@ -349,7 +489,6 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
                             **tokens_to_data(self._tokens),
                         },
                         options={
-                            **self._reconfigure_entry.options,
                             CONF_POLLING_PROFILE: self._pending_polling_profile.value,
                         },
                     )
@@ -380,11 +519,55 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
             ),
         )
 
+    async def _create_managed_cloud(self, selected: list[str]) -> ConfigFlowResult:
+        if (
+            self._new_cloud_listing is None
+            or self._tokens is None
+            or self._brand is None
+        ):
+            return self.async_abort(reason="invalid_flow")
+        await self.async_set_unique_id("installation_" + self.flow_id)
+        try:
+            proposed = new_cloud_configuration(
+                self.hass,
+                self.flow_id,
+                self.flow_id,
+                self._brand,
+                self._tokens,
+                self._new_cloud_listing,
+                set(selected),
+                set(self._selected_bacon or []),
+            )
+        except ConfigurationError as error:
+            return self.async_abort(
+                reason=str(error)
+                if str(error)
+                in {
+                    "cloud_already_connected",
+                    "cloud_setup_in_progress",
+                    "cloud_target_owned",
+                    "cloud_local_first_other_entry",
+                    "cloud_selection_expired",
+                }
+                else "configuration_changed"
+            )
+        except BaconError:
+            return self.async_abort(reason="configuration_changed")
+        return self.async_create_entry(
+            title=f"{self._brand.value.title()} Home Comfort",
+            data=proposed.to_data(),
+            options=proposed.to_options(),
+        )
+
     def _select_bacon_devices(self, user_input: dict[str, Any]) -> list[str]:
         if not self._bacon_unavailable:
             return bacon_flow.selected_devices(user_input, self._bacon_ids)
         previous = self._reconfigure_entry
-        selected = list(previous.data.get(CONF_BACON_IDS, [])) if previous else []
+        selected = (
+            list(EntryConfiguration(previous).cloud_data().get(CONF_BACON_IDS, []))
+            if previous
+            else []
+        )
         if CONF_BACON_IDS in user_input and user_input[CONF_BACON_IDS] != selected:
             raise ValueError("Cloud device selection is unavailable")
         return selected
@@ -412,26 +595,47 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
             previous = self._reconfigure_entry
             if not self._gateways:
                 raise
-            if self._reauth_entry and self._reauth_entry.data.get(CONF_BACON_IDS):
+            if self._reauth_entry and EntryConfiguration(
+                self._reauth_entry
+            ).cloud_data().get(CONF_BACON_IDS):
                 visible = {gateway.gateway_id for gateway in self._gateways}
                 if not visible.intersection(
-                    self._reauth_entry.data.get(CONF_GATEWAY_IDS, [])
+                    EntryConfiguration(self._reauth_entry)
+                    .cloud_data()
+                    .get(CONF_GATEWAY_IDS, [])
                 ):
                     raise
-            if previous and previous.data.get(CONF_BACON_IDS):
+            if previous and EntryConfiguration(previous).cloud_data().get(
+                CONF_BACON_IDS
+            ):
                 # Do not transfer hidden cloud selections to another account/brand.
                 visible = {gateway.gateway_id for gateway in self._gateways}
                 if (
                     self._brand is None
-                    or previous.data.get(CONF_BRAND) != self._brand.value
-                    or not visible.intersection(previous.data.get(CONF_GATEWAY_IDS, []))
+                    or EntryConfiguration(previous).cloud_data().get(CONF_BRAND)
+                    != self._brand.value
+                    or not visible.intersection(
+                        EntryConfiguration(previous)
+                        .cloud_data()
+                        .get(CONF_GATEWAY_IDS, [])
+                    )
                 ):
                     raise
-                self._bacon_account = previous.data.get(CONF_BACON_ACCOUNT, "")
+                self._bacon_account = (
+                    EntryConfiguration(previous)
+                    .cloud_data()
+                    .get(CONF_BACON_ACCOUNT, "")
+                )
 
     async def _async_discover_gateways(self) -> ConfigFlowResult:
         if self._tokens is None:
             return self.async_abort(reason="invalid_flow")
+        if self._managed_edit is not None and self._reauth_entry is not None:
+            return await self._async_finish_managed_reauth()
+        if self.VERSION == 4 and monotonic() < self._discovery_retry_at:
+            return self.async_show_form(
+                step_id="retry", errors={"base": "cloud_rate_limited"}
+            )
         if monotonic() < self._bacon_retry_at and not self._gateways:
             return self.async_show_form(
                 step_id="retry", errors={"base": "bacon_unavailable"}
@@ -450,6 +654,16 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
             )
         except AuthenticationError:
             return self._restart_authorization(error="invalid_auth")
+        except RateLimited as error:
+            if self.VERSION == 4:
+                delay = error.retry_after
+                if delay is None or not math.isfinite(delay):
+                    delay = 300.0
+                self._discovery_retry_at = monotonic() + bounded_cloud_pause(delay)
+                return self.async_show_form(
+                    step_id="retry", errors={"base": "cloud_rate_limited"}
+                )
+            return self.async_show_form(step_id="retry", errors={"base": "unknown"})
         except RequestTimeout, ServiceUnavailable:
             return self.async_show_form(
                 step_id="retry", errors={"base": "cannot_connect"}
@@ -460,12 +674,22 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
         if not self._gateways and not self._bacon_ids:
             return self.async_abort(reason="no_gateways")
         if self._reauth_entry is not None:
-            selected = set(self._reauth_entry.data.get(CONF_GATEWAY_IDS, []))
+            selected = set(
+                EntryConfiguration(self._reauth_entry)
+                .cloud_data()
+                .get(CONF_GATEWAY_IDS, [])
+            )
             visible = {gateway.gateway_id for gateway in self._gateways}
             bacon_matches = (
                 not self._bacon_unavailable
-                and bool(self._reauth_entry.data.get(CONF_BACON_IDS))
-                and self._reauth_entry.data.get(CONF_BACON_ACCOUNT)
+                and bool(
+                    EntryConfiguration(self._reauth_entry)
+                    .cloud_data()
+                    .get(CONF_BACON_IDS)
+                )
+                and EntryConfiguration(self._reauth_entry)
+                .cloud_data()
+                .get(CONF_BACON_ACCOUNT)
                 == self._bacon_account
             )
             if (not selected or selected.isdisjoint(visible)) and not bacon_matches:
@@ -475,7 +699,50 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
                 data_updates=tokens_to_data(self._tokens),
                 reason="reauth_successful",
             )
+        if self.VERSION == 4:
+            self._new_cloud_listing = CloudDiscovery(
+                self._gateways, self._bacon_ids, self._bacon_account
+            )
         return await self.async_step_gateways()
+
+    async def _async_finish_managed_reauth(self) -> ConfigFlowResult:
+        assert (
+            self._reauth_entry is not None
+            and self._managed_edit is not None
+            and self._tokens is not None
+        )
+        try:
+            await ConfigurationManagement(
+                self.hass, self._reauth_entry
+            ).async_reauthenticate(
+                self._managed_edit,
+                self._tokens,
+                request_guard=lambda: ensure_active_cloud_flow(self.hass, self.flow_id),
+            )
+        except ConfigurationError as error:
+            if str(error) in ("reauth_targets_missing", "unverifiable_targets"):
+                return self.async_show_form(
+                    step_id="retry", errors={"base": "reauth_targets_missing"}
+                )
+            return self.async_abort(reason="configuration_changed")
+        except AuthenticationError:
+            return self._restart_authorization(error="invalid_auth")
+        except BaconError as error:
+            if error.category in {"authentication", "account_changed"}:
+                return self._restart_authorization(error="invalid_auth")
+            return self.async_show_form(
+                step_id="retry", errors={"base": "cannot_connect"}
+            )
+        except PointTError:
+            return self.async_show_form(
+                step_id="retry", errors={"base": "cannot_connect"}
+            )
+        from .managed_entry import ManagedEntry
+
+        runtime = getattr(self._reauth_entry, "runtime_data", None)
+        if isinstance(runtime, ManagedEntry):
+            self.hass.loop.call_soon(runtime.schedule_reauthentication)
+        return self.async_abort(reason="reauth_successful")
 
     async def _async_prepare_reconfigure(self) -> ConfigFlowResult:
         """Discover the current account gateways before showing safe choices."""
@@ -487,7 +754,9 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
             )
         try:
             self._gateways = await self._reconfigure_client().get_gateways()
-            await self._discover_bacon(tokens_from_data(self._reconfigure_entry.data))
+            await self._discover_bacon(
+                EntryConfiguration(self._reconfigure_entry).tokens()
+            )
         except BaconError as err:
             if err.category in {"authentication", "account_changed"}:
                 return self.async_abort(reason="reauth_required")
@@ -513,20 +782,26 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
         if self._reconfigure_entry is None:
             raise RuntimeError("Reconfigure entry is missing")
         runtime = getattr(self._reconfigure_entry, "runtime_data", None)
-        if runtime is not None:
-            return cast(BoschBuderusRuntimeData, runtime).client
-
         session = async_get_clientsession(self.hass)
         manager, backoff = entry_auth(
             self.hass, self._reconfigure_entry, OAuthClient(session)
         )
+        if (
+            isinstance(runtime, BoschBuderusRuntimeData)
+            and runtime.token_manager is manager
+        ):
+            return runtime.client
         return PointTClient(session, manager, backoff=backoff)
 
     def _show_reconfigure_form(self, *, error: str | None = None) -> ConfigFlowResult:
         """Show current selections and explain that saving runs discovery."""
         if self._reconfigure_entry is None or self._brand is None:
             return self.async_abort(reason="invalid_flow")
-        selected = self._reconfigure_entry.data.get(CONF_GATEWAY_IDS, [])
+        selected = (
+            EntryConfiguration(self._reconfigure_entry)
+            .cloud_data()
+            .get(CONF_GATEWAY_IDS, [])
+        )
         errors = (
             {"base": error}
             if error
@@ -546,7 +821,11 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
                     self._pending_polling_profile,
                 ),
                 self._bacon_ids,
-                selected=list(self._reconfigure_entry.data.get(CONF_BACON_IDS, [])),
+                selected=list(
+                    EntryConfiguration(self._reconfigure_entry)
+                    .cloud_data()
+                    .get(CONF_BACON_IDS, [])
+                ),
                 has_gateways=bool(self._gateways),
             ),
             errors=errors,
@@ -571,7 +850,6 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
                 ),
             },
             options={
-                **self._reconfigure_entry.options,
                 CONF_POLLING_PROFILE: self._pending_polling_profile.value,
             },
         )
@@ -588,8 +866,18 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
         title: str | None = None,
     ) -> ConfigFlowResult:
         """Use the loaded entry's listener, or explicitly retry an unloaded entry."""
-        updated_data = {**entry.data, **data_updates}
-        updated_options = dict(entry.options) if options is None else options
+        if self.hass.config_entries.async_get_entry(entry.entry_id) is not entry:
+            return self.async_abort(reason="configuration_changed")
+        try:
+            configuration = EntryConfiguration(entry)
+            if self._configuration_context is not None and (
+                configuration.dialog_context() != self._configuration_context
+            ):
+                return self.async_abort(reason="configuration_changed")
+            updated_data = configuration.legacy_update(data_updates)
+        except ValueError:
+            return self.async_abort(reason="configuration_changed")
+        updated_options = {**entry.options, **(options or {})}
         changed = updated_data != entry.data or updated_options != entry.options
         arguments: dict[str, Any] = {"data": updated_data, "options": updated_options}
         if reason is not None:
@@ -651,14 +939,20 @@ class BoschBuderusConfigFlow(ConfigFlow, domain=DOMAIN):
         for entry in self._async_current_entries():
             if entry is self._reconfigure_entry:
                 continue
-            if entry.data.get(CONF_BRAND) != self._brand.value:
+            if (
+                EntryConfiguration(entry).cloud_data().get(CONF_BRAND)
+                != self._brand.value
+            ):
                 continue
             if (
                 self._bacon_account
-                and entry.data.get(CONF_BACON_ACCOUNT) == self._bacon_account
+                and EntryConfiguration(entry).cloud_data().get(CONF_BACON_ACCOUNT)
+                == self._bacon_account
             ):
                 return entry
-            configured = entry.data.get(CONF_GATEWAY_IDS, [])
+            configured = (
+                EntryConfiguration(entry).cloud_data().get(CONF_GATEWAY_IDS, [])
+            )
             if isinstance(configured, list) and selected.intersection(configured):
                 return entry
         return None
@@ -680,7 +974,9 @@ class _HolidayChoice:
     label: str
 
 
-class BoschBuderusOptionsFlow(ControlsOptionsFlow, RrcScheduleOptionsFlow):
+class BoschBuderusOptionsFlow(
+    LocalSetupFlow, ControlsOptionsFlow, RrcScheduleOptionsFlow, CloudOptionsFlow
+):
     """Manage holidays and installation-specific notification settings."""
 
     def __init__(self, config_entry: ConfigEntry) -> None:
@@ -691,14 +987,53 @@ class BoschBuderusOptionsFlow(ControlsOptionsFlow, RrcScheduleOptionsFlow):
         self._delete_choice: _HolidayChoice | None = None
         self._delete_return_input: dict[str, Any] | None = None
         self._notification_gateway_keys: tuple[str, ...] | None = None
+        self._holiday_mode_source: BoschBuderusDataUpdateCoordinator | None = None
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Keep local notification settings accessible even when offline."""
+        if (
+            user_input is not None
+            and user_input.get(LOCAL_FIRST_START) is True
+            and self._entry.version == 4
+        ):
+            # Continued from the setup of this entry (P49b step 7).
+            return await self.async_step_local_setup()
+        prepared = [
+            flow
+            for flow in self.hass.config_entries.options.async_progress_by_handler(
+                self._entry.entry_id
+            )
+            if flow["context"].get(LOCAL_FIRST_START) is True
+            and flow["flow_id"] != self.flow_id
+        ]
+        if user_input is None and prepared:
+            # The frontend of the tested Home Assistant releases does not
+            # continue the options flow named in `next_flow`: after the setup
+            # it starts a new one (a POST to the options flow endpoint rather
+            # than a GET of the prepared flow). This one takes over and the
+            # prepared one ends quietly: it is handed off, not abandoned.
+            for flow in prepared:
+                cast(dict[str, Any], flow["context"])["handed_off"] = True
+                with suppress(UnknownFlow):
+                    self.hass.config_entries.options.async_abort(flow["flow_id"])
+            return await self.async_step_local_setup()
         return self.async_show_menu(
             step_id="init",
             menu_options=[
+                *(["connections"] if self._entry.version == 4 else []),
+                *(
+                    ["local_setup"]
+                    if self._entry.version == 4 and self.local_available()
+                    else []
+                ),
+                *(
+                    ["connection_add_cloud"]
+                    if self._entry.version == 4 and self.cloud_add_available()
+                    else []
+                ),
+                *(["rescan"] if self._entry.version == 4 else []),
                 "controls",
                 "notifications",
                 "holidays",
@@ -706,20 +1041,29 @@ class BoschBuderusOptionsFlow(ControlsOptionsFlow, RrcScheduleOptionsFlow):
             ],
         )
 
+    async def async_step_rescan(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """A6: search the system again, through the cloud and the local access.
+
+        Only plans the search: it runs with the next regular update and within
+        the existing limits, and is refused while paused or already running.
+        """
+        from .managed_entry import ManagedEntry
+        from .rescan import request_rescan
+
+        owner = getattr(self._entry, "runtime_data", None)
+        if not isinstance(owner, ManagedEntry):
+            return self.async_abort(reason="rescan_unavailable")
+        if user_input is None:
+            return self.async_show_form(step_id="rescan", data_schema=vol.Schema({}))
+        return self.async_abort(reason=f"rescan_{request_rescan(owner)}")
+
     async def async_step_notifications(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Select notifications per installation without querying PointT."""
-        configured = self._entry.data.get(CONF_GATEWAY_IDS)
-        if not isinstance(configured, list):
-            configured = []
-        gateway_ids = tuple(
-            dict.fromkeys(
-                gateway_id
-                for gateway_id in configured
-                if isinstance(gateway_id, str) and gateway_id
-            )
-        )
+        gateway_ids = notification_gateways(self._entry)
         if not gateway_ids:
             return self.async_abort(reason="no_notification_gateways")
         current_keys = tuple(gateway_notification_key(item) for item in gateway_ids)
@@ -931,11 +1275,11 @@ class BoschBuderusOptionsFlow(ControlsOptionsFlow, RrcScheduleOptionsFlow):
 
     def _holiday_mode_choices(self) -> dict[str, BoschBuderusDataUpdateCoordinator]:
         """WDDW2 provides one mode and cannot supply calendar placeholders."""
-        runtime = getattr(self._entry, "runtime_data", None)
-        if not isinstance(runtime, BoschBuderusRuntimeData):
+        coordinators = pointt_coordinators(self._entry)
+        if coordinators is None:
             return {}
         choices = {}
-        for coordinator in runtime.coordinators:
+        for coordinator in coordinators:
             resource = holiday_resources_from_snapshots(coordinator.data or {}).get(
                 WDDW2_HOLIDAY_PATH
             )
@@ -956,6 +1300,9 @@ class BoschBuderusOptionsFlow(ControlsOptionsFlow, RrcScheduleOptionsFlow):
         coordinator = self._holiday_mode_choices().get(self._selected_key or "")
         if coordinator is None:
             return self.async_abort(reason="holiday_changed")
+        if user_input is not None and coordinator is not self._holiday_mode_source:
+            return self.async_abort(reason="holiday_changed")
+        self._holiday_mode_source = coordinator
         resource = holiday_resources_from_snapshots(coordinator.data or {})[
             WDDW2_HOLIDAY_PATH
         ]
@@ -1237,12 +1584,12 @@ class BoschBuderusOptionsFlow(ControlsOptionsFlow, RrcScheduleOptionsFlow):
         )
 
     def _holiday_choices(self) -> dict[str, _HolidayChoice] | None:
-        runtime = getattr(self._entry, "runtime_data", None)
-        if not isinstance(runtime, BoschBuderusRuntimeData):
+        coordinators = pointt_coordinators(self._entry)
+        if coordinators is None:
             return None
         choices: dict[str, _HolidayChoice] = {}
-        multiple_gateways = len(runtime.coordinators) > 1
-        for coordinator in runtime.coordinators:
+        multiple_gateways = len(coordinators) > 1
+        for coordinator in coordinators:
             snapshots = {
                 path: snapshot
                 for path, snapshot in (coordinator.data or {}).items()
@@ -1554,14 +1901,20 @@ def _holiday_circuit_label(value: str, language: str) -> str:
     return f"{names[match.group(1)]} {match.group(2)}"
 
 
-def _gateway_schema(gateways: tuple[Gateway, ...]) -> vol.Schema:
+def _gateway_schema(
+    gateways: tuple[Gateway, ...], *, selected: list[str] | None = None
+) -> vol.Schema:
     options = [
         SelectOptionDict(value=gateway.gateway_id, label=_gateway_label(gateway))
         for gateway in gateways
     ]
     return vol.Schema(
         {
-            vol.Required(CONF_GATEWAY_IDS): SelectSelector(
+            (
+                vol.Required(CONF_GATEWAY_IDS, default=selected)
+                if selected is not None
+                else vol.Required(CONF_GATEWAY_IDS)
+            ): SelectSelector(
                 SelectSelectorConfig(
                     options=options,
                     multiple=True,

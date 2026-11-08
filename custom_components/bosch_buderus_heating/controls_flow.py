@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, override
 
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult, OptionsFlow
@@ -12,11 +13,13 @@ from homeassistant.helpers.selector import (
     SelectSelectorConfig,
 )
 from homeassistant.helpers.translation import async_get_translations
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
 from .control_presentation import control_category, control_icon, control_label
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .entity_resources import fresh_resource
+from .entry_sources import pointt_coordinators
 from .enum_translation import enum_value_to_ha
 from .ha_schema import validation as vol
 from .notifications import gateway_notification_key, installation_name
@@ -29,7 +32,6 @@ from .pointt import (
     WriteValidationError,
 )
 from .resource_catalog import resource_name
-from .runtime import BoschBuderusRuntimeData
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
 from .writes import (
     EnumWritePolicy,
@@ -84,6 +86,53 @@ def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resour
     return result
 
 
+def _until_text(until: datetime | None) -> str:
+    """Local end of a pause; with the date when it is not today."""
+    if until is None:
+        return ""
+    local = dt_util.as_local(until)
+    if local.date() == dt_util.now().date():
+        return local.strftime("%H:%M")
+    return local.strftime("%Y-%m-%d %H:%M")
+
+
+def _missing_cloud_reason(entry: ConfigEntry) -> str:
+    """Why no cloud appliance is loaded: sign-in, unreachable, starting or none."""
+    from .configuration import CLOUD_KIND
+    from .connection_runtime import ConnectionPhase
+    from .managed_entry import ManagedEntry
+
+    runtime = getattr(entry, "runtime_data", None)
+    if not isinstance(runtime, ManagedEntry):
+        return "controls_not_loaded"
+    connections = runtime.connections
+    snapshot = connections.snapshot
+    clouds = {
+        key for key, item in snapshot.connections.items() if item.kind == CLOUD_KIND
+    }
+    # First the access itself, then its appliances: a ready access may still
+    # discover an appliance, or the appliance may not answer. A deliberately
+    # disabled appliance is not "loading".
+    for phases in (
+        {connections.connection_phase(key) for key in clouds},
+        {
+            connections.source_phase(key)
+            for key, binding in snapshot.bindings.items()
+            if binding.connection_id in clouds
+        },
+    ):
+        if ConnectionPhase.AUTH_REQUIRED in phases:
+            return "controls_auth_required"
+        if ConnectionPhase.UNAVAILABLE in phases:
+            return "controls_cloud_unreachable"
+        if ConnectionPhase.CONNECTING in phases:
+            return "controls_not_current"
+    if ConnectionPhase.READY in phases:
+        return "controls_not_current"
+    # No cloud access, a stopped one or only disabled appliances.
+    return "controls_not_loaded"
+
+
 def _translation_key(path: str) -> str:
     if path.endswith("/operationMode"):
         if path.startswith("/heatingCircuits/"):
@@ -104,14 +153,15 @@ class ControlsOptionsFlow(OptionsFlow):
     _entry: ConfigEntry
     _control_gateway: str | None = None
     _control_displayed: dict[str, Resource] | None = None
+    _control_source: BoschBuderusDataUpdateCoordinator | None = None
 
     def _control_gateways(self) -> dict[str, BoschBuderusDataUpdateCoordinator]:
-        runtime = getattr(self._entry, "runtime_data", None)
-        if not isinstance(runtime, BoschBuderusRuntimeData):
+        coordinators = pointt_coordinators(self._entry)
+        if coordinators is None:
             return {}
         return {
             gateway_notification_key(item.gateway.gateway_id): item
-            for item in runtime.coordinators
+            for item in coordinators
         }
 
     async def async_step_controls(
@@ -119,7 +169,7 @@ class ControlsOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         gateways = self._control_gateways()
         if not gateways:
-            return self.async_abort(reason="controls_not_loaded")
+            return self.async_abort(reason=_missing_cloud_reason(self._entry))
         if len(gateways) == 1:
             self._control_gateway = next(iter(gateways))
             self._control_displayed = None
@@ -154,8 +204,20 @@ class ControlsOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         coordinator = self._control_gateways().get(self._control_gateway or "")
         if coordinator is None:
-            return self.async_abort(reason="controls_not_loaded")
+            return self.async_abort(reason=_missing_cloud_reason(self._entry))
+        if user_input is not None and coordinator is not self._control_source:
+            # The appliance was reloaded while the dialog was open.
+            return self.async_abort(reason="controls_not_current")
+        self._control_source = coordinator
         current = controls(coordinator)
+        reason, until = coordinator.control_status()
+        if user_input is None and (reason is not None or not current):
+            # Say why nothing can be operated instead of an empty dialog or
+            # controls whose writes would be rejected right away.
+            return self.async_abort(
+                reason=f"controls_{reason or 'none'}",
+                description_placeholders={"until": _until_text(until)},
+            )
         if self._control_displayed is None:
             self._control_displayed = current
         errors: dict[str, str] = {}

@@ -6,7 +6,6 @@ from unittest.mock import patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import (
     CONF_POLLING_PROFILE,
@@ -21,6 +20,7 @@ from custom_components.bosch_buderus_heating.repairs import (
     RateLimitRepairFlow,
     async_create_fix_flow,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 
 async def test_rate_limit_repair_applies_cloud_friendly_profile(

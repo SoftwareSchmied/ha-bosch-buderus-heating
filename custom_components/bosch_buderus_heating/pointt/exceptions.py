@@ -2,9 +2,45 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True, slots=True)
+class TokenEndpointRejection:
+    """Sanitized reason returned by the OAuth token endpoint.
+
+    The fields never contain tokens, codes or raw response bodies. The OAuth
+    error code and its description are reduced to a short, allowlisted form.
+    """
+
+    http_status: int
+    oauth_error: str | None = None
+    oauth_error_description: str | None = None
+    body_format: str = "empty"
+    content_type: str | None = None
+
+    def summary(self) -> str:
+        """Return a compact, log-safe description."""
+        parts = [f"HTTP {self.http_status}"]
+        if self.oauth_error is not None:
+            detail = self.oauth_error
+            if self.oauth_error_description:
+                detail = f"{detail}: {self.oauth_error_description}"
+            parts.append(detail)
+        else:
+            parts.append(f"no OAuth error code, {self.body_format} body")
+        return ", ".join(parts)
+
 
 class PointTError(Exception):
     """Base class for client errors."""
+
+
+class SourceStopped(PointTError):
+    """The request belongs to a source that no longer accepts work."""
+
+    def __init__(self) -> None:
+        super().__init__("PointT source is no longer active")
 
 
 class AuthenticationError(PointTError):
@@ -17,6 +53,17 @@ class AccessTokenRejected(AuthenticationError):
 
 class RefreshTokenRejected(AuthenticationError):
     """The authorization server rejected the refresh token."""
+
+    def __init__(
+        self,
+        message: str = "Refresh token was rejected",
+        *,
+        rejection: TokenEndpointRejection | None = None,
+    ) -> None:
+        self.rejection = rejection
+        if rejection is not None:
+            message = f"{message} ({rejection.summary()})"
+        super().__init__(message)
 
 
 class OAuthStateMismatch(AuthenticationError):
@@ -97,6 +144,10 @@ class ProtocolError(PointTError):
 
 class InvalidPayload(ProtocolError):
     """A response body did not match its required envelope."""
+
+
+class ResourceOmitted(InvalidPayload):
+    """A bulk response did not contain a requested path: no answer for it."""
 
 
 class InvalidBatchEnvelope(ProtocolError):

@@ -31,16 +31,18 @@ def sensor_sample(payload: dict[str, Any]) -> dict[str, Any] | None:
     return latest
 
 
-def expire_values(device: Device, now: float, max_age: float) -> None:
+def expire_values(
+    device: Device, now: float, state_max_age: float, sensor_max_age: float
+) -> None:
     """Expire only fields whose own last observation has aged out."""
     for key, received in tuple(device.sensor_fields_received_at.items()):
-        if now - received > max_age:
+        if now - received > sensor_max_age:
             device.sensor.pop(key, None)
             device.sensor_fields_received_at.pop(key)
     if device.state is not None:
         reported = dict(device.state.reported)
         for key, received in tuple(device.state_fields_received_at.items()):
-            if now - received > max_age:
+            if now - received > state_max_age:
                 reported.pop(key, None)
                 device.state_fields_received_at.pop(key)
         device.state = replace(device.state, reported=reported)
@@ -48,22 +50,24 @@ def expire_values(device: Device, now: float, max_age: float) -> None:
 
 def ingest_sensor(
     device: Device, payload: dict[str, Any], generation: int, now: float
-) -> None:
+) -> bool:
+    """Return whether the envelope carried a new, previously unseen sample."""
     sample = sensor_sample(payload)
     if sample is None or sample["timestamp"] <= device.sensor_timestamp:
-        return
+        return False
     if device.sensor_generation != generation:
         device.sensor = {}
         device.sensor_fields_received_at.clear()
     device.sensor_timestamp = sample["timestamp"]
     fields = {key: value for key, value in sample.items() if key != "timestamp"}
     if not fields:
-        return
+        return True
     device.sensor.update(fields)
     device.sensor["timestamp"] = sample["timestamp"]
     device.sensor_fields_received_at.update(dict.fromkeys(fields, now))
     device.sensor_received_at = now
     device.sensor_generation = generation
+    return True
 
 
 def _merge(
@@ -156,4 +160,5 @@ def ingest_state(
         if fresh:
             device.state_generation = generation
             device.state_received_at = now
+            device.state_reports += 1
     return device.state if full and "reported" in payload["state"] else None

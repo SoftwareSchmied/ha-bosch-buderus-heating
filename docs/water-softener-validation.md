@@ -30,10 +30,10 @@ der korrigierten Salzwarnung nach einem erfolgreichen Update bleibt offen.
    Die JSON-Datei vor dem Teilen auf persönliche Angaben prüfen und zusammen
    mit der Version und den beobachteten Unterschieden an Issue #60 anhängen.
 
-Die abgeleitete Salzwarnung vergleicht wie die App die Ganzzahlanteile von
+Die abgeleitete Salzwarnung vergleicht die Ganzzahlanteile von
 Füllstand und Schwelle desselben Kreises. Bei 20,9 Prozent und einer Schwelle
 von 20 Prozent ist sie bereits aktiv. Ohne Schwellenressource gilt die
-App-Ersatzschwelle von 20 Prozent. Ungültige oder veraltete bekannte Quellen
+Ersatzschwelle von 20 Prozent. Ungültige oder veraltete bekannte Quellen
 bleiben unbekannt. Für diese Prüfung muss kein Salz entnommen und keine
 Schwelle geändert werden. W006 allein bestätigt diese Salzwarnung nicht.
 
@@ -107,7 +107,7 @@ Die Pfade beziehen sich auf den tatsächlich vorhandenen Kreis `/swCircuits/{sw}
 | `regeneration/enabled` | Regeneration aktiv / Regeneration active | Aktiver oder inaktiver Zustand / Active or inactive |
 | `regeneration/phase` | Regenerationsphase / Regeneration phase | Bekannte Phase, nicht mit aktiv/inaktiv gleichsetzen / Known phase, distinct from active/inactive |
 | `regeneration/totalProgressStatus` | Regenerationsfortschritt / Regeneration progress | Prozent / Percent |
-| `regeneration/totalRemainingTime` | Verbleibende Regenerationszeit / Regeneration remaining time | Dauer mit Einheit; App-Ersatz für fehlende Einheit: Sekunden / Duration and unit; app default without a unit: seconds |
+| `regeneration/totalRemainingTime` | Verbleibende Regenerationszeit / Regeneration remaining time | Dauer mit Einheit; ohne Einheit Sekunden / Duration and unit; seconds if omitted |
 | `regeneration/timeUntilNext` | Zeit bis zur nächsten Regeneration / Time until next regeneration | Dauer mit Einheit; ohne Einheit Tage / Duration and unit; days if omitted |
 | `regeneration/singleRegAppoint` | Geplante Regeneration / Scheduled regeneration | Zeitabstand, keine Uhrzeit; ohne Einheit Tage / Offset, not a time of day; days if omitted |
 | `holidayMode/enabled` | Urlaubsmodus / Holiday mode | Aktiv oder inaktiv / Active or inactive |
@@ -117,13 +117,13 @@ Die Pfade beziehen sich auf den tatsächlich vorhandenen Kreis `/swCircuits/{sw}
 
 `availableWater` liefert die noch verfügbare Weichwassermenge. `waterFlow`
 liefert den aktuellen Durchfluss. Daraus berechne ich in diesem Paket weder
-einen Tagesverbrauch noch einen Gesamtverbrauch. Die App nutzt für ihre
-Verbrauchsauswertung `/recordings`; diesen Ausbau habe ich mit P15 abgewählt.
+einen Tagesverbrauch noch einen Gesamtverbrauch. Verbrauchsauswertungen
+stammen aus `/recordings`; diesen Ausbau habe ich mit P15 abgewählt.
 Eine erfolgreiche Prüfung der Anzeigen oder der Phasenkorrektur löst daher
 nicht automatisch den gesamten Verbrauchswunsch aus Issue #60.
 
 `availableWater` reports the remaining soft-water volume; `waterFlow` reports
 the current flow. This package calculates neither daily nor total consumption
-from them. The app uses `/recordings` for consumption reporting; that work
-was cancelled with P15. Successful reading or phase checks do not automatically
+from them. Consumption reporting comes from `/recordings`; that work was
+cancelled with P15. Successful reading or phase checks do not automatically
 resolve the complete consumption request in issue #60.

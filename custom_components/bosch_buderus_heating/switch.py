@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
-from homeassistant.const import EntityCategory
+from homeassistant.const import EntityCategory, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -30,10 +30,12 @@ from .coordinator import (
     ResourceSnapshot,
 )
 from .device import device_info_for_resource
+from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
 from .sensor import _semantic_key
 from .writes import (
+    POOL_ENABLED_POLICY,
     SOFTENER_HOLIDAY_POLICY,
     STRING_SWITCH_POLICIES,
     EnumWritePolicy,
@@ -57,14 +59,20 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
+    setup_platform(entry, Platform.SWITCH, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
     """Create switches only from exact current capability metadata."""
-    if (account := entry.runtime_data.bacon) is not None:
+    if (account := entry.bacon) is not None:
         track_dry_entities(entry, account, async_add_entities, "switch")
         track_purifier_entities(
             entry, account, async_add_entities, BaconPurifierSwitch, purifier.SWITCHES
         )
-    del hass
-    for coordinator in entry.runtime_data.coordinators:
+    for coordinator in entry.coordinators:
         track_control_entities(
             entry,
             coordinator,
@@ -100,6 +108,8 @@ def build_switch_descriptions(
         }[tail]
         if policy is SOFTENER_HOLIDAY_POLICY:
             key, name = "softener_holiday_mode", "Urlaubsmodus"
+        elif policy is POOL_ENABLED_POLICY:
+            key, name = "pool_enabled", "Pool"
         descriptions.append(
             BoschBuderusSwitchEntityDescription(
                 key=_semantic_key(resource.path, None),

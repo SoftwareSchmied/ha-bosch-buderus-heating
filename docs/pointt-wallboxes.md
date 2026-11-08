@@ -32,8 +32,11 @@ is not offered as a lifetime energy meter for the Energy dashboard.
 I read three object endpoints under `rest/v1/cp0`: `telemetry`, `conf` and
 `info`. Telemetry follows the 60-second standard or 120-second cloud-friendly
 interval. Configuration is read every 5 or 10 minutes; information every 15
-or 30 minutes. Setup makes at most three logical reads per wallbox. The shared
-transport retains its bounded read retries, token refresh and account-wide
+or 30 minutes. Home Assistant can start a scheduled poll up to one second
+before the exact section deadline; that section is then still read, so a
+scheduled telemetry poll is not skipped. This tolerance never ends an error or
+rate-limit pause early. Setup makes at most three logical reads per wallbox.
+The shared transport retains its bounded read retries, token refresh and account-wide
 rate-limit brake. Diagnostics create no extra requests.
 
 A local 403, 404, 406 or malformed object withdraws only that section. It is
@@ -50,6 +53,22 @@ field counts. They omit readings, dates, gateway and device identifiers,
 account data, labels, serial numbers and unknown text. Product and software
 information are used only in the ordinary HA device information.
 
+### Managed connection preparation
+
+I connected the existing wallbox coordinator to the prepared version 4 connection
+owner. It shares authentication, account backoff, request accounting and
+concurrency with heating sources, while keeping its own section polling. A slow
+wallbox does not hold heating discovery or supplementary startup reads. Source
+shutdown immediately makes its readings unavailable, cancels pending polls and
+rejects late replies. Replacement logins must confirm every assigned gateway,
+including disabled wallboxes. Sensor identifiers and the read-only scope remain
+unchanged.
+
+This preparation has tests against a local HTTP server, including separate
+wallboxes and mixed heating accounts. Normal version 4 setup now uses this
+adapter with the managed entity platforms and dependent services. These tests
+do not constitute a comparison with a physical wallbox.
+
 ### Remaining work
 
 I have no wallbox in my account. The implementation has synthetic protocol,
@@ -57,15 +76,12 @@ HTTP and Home Assistant tests; it has not been compared with a physical
 wallbox. Model compatibility, displayed values, cloud response freshness and
 energy resets require that comparison.
 
-Start, pause, current changes, lock/authentication settings, RFID, charging
-strategies and forced overrides remain unavailable. Although command routes
-are identified, their full admission rules differ with firmware, external
-energy management, wallbox role and active limiters. Start may involve both
-authentication and an override. I have not turned these routes into generic
-buttons or a writable current number. Before adding a command, its complete
-preconditions, effect and read-back confirmation must be established. A
-hardware test alone does not replace that contract work. Charge logs and
-historical energy import are also outside this implementation.
+Wallboxes stay read-only on purpose. Start, pause, current changes,
+lock/authentication settings, RFID, charging strategies and forced overrides
+are not offered, and neither are charge logs or historical energy import.
+Their admission rules depend on firmware, external energy management, wallbox
+role and active limiters, so the integration provides no generic buttons or
+writable current number for them.
 
 ## Deutsch
 
@@ -101,8 +117,11 @@ Energie-Dashboard.
 Die drei Objektabfragen unter `rest/v1/cp0` betreffen `telemetry`, `conf` und
 `info`. Telemetrie wird je nach Abfrageprofil alle 60 oder 120 Sekunden
 gelesen, Konfiguration alle 5 oder 10 Minuten und Geräteinformation alle 15
-oder 30 Minuten. Beim Start gibt es höchstens drei logische Abfragen pro
-Wallbox. Begrenzte HTTP-Lesewiederholungen, Token-Erneuerung und die gemeinsame
+oder 30 Minuten. Startet Home Assistant einen geplanten Abruf bis zu einer
+Sekunde vor dem genauen Termin, wird der Abschnitt trotzdem gelesen; ein
+geplanter Telemetrieabruf fällt dadurch nicht aus. Fehler- und
+Anfragelimitpausen enden dadurch nicht früher. Beim Start gibt es höchstens drei
+logische Abfragen pro Wallbox. Begrenzte HTTP-Lesewiederholungen, Token-Erneuerung und die gemeinsame
 Kontosperre bei Anfragelimits bleiben erhalten. Die Diagnose fragt nichts
 zusätzlich ab.
 
@@ -128,13 +147,10 @@ HA-Einbindung werden mit synthetischen Antworten geprüft. Ein Geräteabgleich
 hat nicht stattgefunden. Modellkompatibilität, Anzeigen, Aktualität der
 Cloud-Antworten und Rücksetzungen der Energie benötigen Praxisbestätigung.
 
-Start, Pause, Stromänderungen, Sperren, Authentifizierung, RFID,
-Ladestrategien und erzwungene Übersteuerungen sind noch nicht verfügbar.
-Die Befehlsrouten sind identifiziert; die vollständigen Freigaberegeln hängen
+Wallboxen bleiben bewusst nur lesend eingebunden. Start, Pause,
+Stromänderungen, Sperren, Authentifizierung, RFID, Ladestrategien und
+erzwungene Übersteuerungen bietet die Integration nicht an, ebenso wenig
+Ladeprotokolle oder historische Energieimporte. Die Freigaberegeln hängen
 unter anderem von Firmware, Energiemanagement, Verbundrolle und aktiver
-Begrenzung ab. Ein Start kann zusätzlich authentifizieren und Grenzen
-übersteuern. Daraus habe ich keine allgemeinen Tasten oder Stromregler
-abgeleitet. Vor der Umsetzung müssen Vorbedingungen, Wirkung und
-Rücklesebestätigung vollständig geklärt sein. Ein einzelner Gerätetest ersetzt
-diese Vertragsprüfung nicht. Ladeprotokolle und historische Energieimporte
-sind ebenfalls noch nicht enthalten.
+Begrenzung ab; deshalb gibt es dafür keine allgemeinen Tasten oder
+Stromregler.

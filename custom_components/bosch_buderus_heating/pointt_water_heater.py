@@ -7,7 +7,6 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.water_heater import WaterHeaterEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import callback
 from homeassistant.exceptions import ServiceValidationError
@@ -20,6 +19,8 @@ from .control import async_set_control
 from .coordinator import BoschBuderusDataUpdateCoordinator, SnapshotSource
 from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource, temperature
+from .ha_compat import temperature_members
+from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
 from .writes import DHW_OPERATION_MODE_POLICY, assess_control
 
@@ -41,7 +42,7 @@ _OPERATIONS = {
 
 
 def track_pointt_water_heaters(
-    entry: ConfigEntry,
+    entry: DiscoveryLifecycle,
     coordinator: BoschBuderusDataUpdateCoordinator,
     add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
@@ -56,9 +57,16 @@ def track_pointt_water_heaters(
             if match is None or match[1] in seen:
                 continue
             entity = PointTWaterHeater(coordinator, match[1])
-            if entity.available:
-                seen.add(match[1])
-                additions.append(entity)
+            if not entity.available:
+                if path not in coordinator.stored_resources():
+                    continue
+                # Started with the stored inventory (P47): add it unavailable,
+                # but only if a normal start with these values would add it.
+                with coordinator.stored_as_fresh():
+                    if not entity.available:
+                        continue
+            seen.add(match[1])
+            additions.append(entity)
         if additions:
             add_entities(additions)
 
@@ -66,6 +74,7 @@ def track_pointt_water_heaters(
     discover()
 
 
+@temperature_members
 class PointTWaterHeater(
     CoordinatorEntity[BoschBuderusDataUpdateCoordinator], WaterHeaterEntity
 ):
@@ -73,7 +82,7 @@ class PointTWaterHeater(
 
     _attr_has_entity_name = True
     _attr_translation_key = "pointt_dhw"
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_precision = 0.1
     _attr_icon = "mdi:water-boiler"
 
@@ -130,11 +139,16 @@ class PointTWaterHeater(
         return _OPERATIONS[str(mode.value)] if mode is not None else None
 
     @property
-    def current_temperature(self) -> float | None:
-        return temperature(self._resource("actualTemp"))
+    def native_current_temperature(self) -> float | None:
+        # The same reading as the hot-water temperature sensor: local first
+        # (P13), with the usual checks. Mode, targets and writes stay cloud.
+        resource = fresh_resource(
+            self.coordinator, self.root + "/actualTemp", displayed=True
+        )
+        return temperature(resource if resource and not resource.references else None)
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         # This is the reported active setpoint. The writable temperatureLevels
         # are separate start thresholds, including during automatic operation.
         snapshots = self.coordinator.data or {}

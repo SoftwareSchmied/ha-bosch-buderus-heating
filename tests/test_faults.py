@@ -27,6 +27,22 @@ from custom_components.bosch_buderus_heating.pointt import (
 NOW = datetime(2026, 8, 19, 0, 2, tzinfo=UTC)
 
 
+@pytest.mark.parametrize("broken", [None, {"active": "invalid"}, OSError("unreadable")])
+async def test_closing_uninitialized_source_does_not_overwrite_fault_store(
+    hass, broken
+):
+    tracker = FaultTracker(hass, "entry", "gateway")
+    tracker._store.async_load = (
+        AsyncMock(side_effect=broken)
+        if isinstance(broken, Exception)
+        else AsyncMock(return_value=broken)
+    )
+    tracker._store.async_save = AsyncMock()
+    await tracker.async_load()
+    await tracker.async_close()
+    tracker._store.async_save.assert_not_awaited()
+
+
 def _notifications(*values: object) -> Resource:
     return Resource(path="/notifications", values=values, has_values=True)  # type: ignore[arg-type]
 
@@ -480,6 +496,33 @@ def test_all_supported_wire_shapes_and_component_paths_are_bounded() -> None:
     assert parse_fault_resource(Resource(path="/notifications")).faults == ()
     scalar = Resource(path="/heatSources/hs7/activefailure", value=6249, has_value=True)
     assert parse_fault_resource(scalar, observed_at=NOW).faults[0].code == "6249"
+
+
+def test_inactive_device_error_rows_are_no_faults() -> None:
+    """Device error rows marked inactive (documented shape) are not counted."""
+    rows = Resource(
+        path="/devices/device2/errors",
+        values=(
+            {"type": "eTRVBatteryLow", "occurrenceId": 1, "value": "inactive"},
+            {"type": "eTRVValveBlocked", "occurrenceId": 2, "value": " Inactive "},
+            {"type": "eTRVCommunication", "occurrenceId": 3, "value": "active"},
+        ),
+        has_values=True,
+    )
+    parsed = parse_fault_resource(rows, observed_at=NOW)
+
+    assert parsed.invalid_entries == 0
+    assert len(parsed.faults) == 1
+    assert parsed.faults[0].component_id == "device2"
+    # The error is named by its type, not by its state.
+    assert parsed.faults[0].code == "eTRVCommunication"
+    # The same marker outside a device error list keeps its existing meaning.
+    other = Resource(
+        path="/heatSources/hs7/activefailure",
+        value={"ccd": "HS", "value": "inactive"},
+        has_value=True,
+    )
+    assert len(parse_fault_resource(other, observed_at=NOW).faults) == 1
 
 
 def test_unknown_summaries_and_numeric_timestamps() -> None:

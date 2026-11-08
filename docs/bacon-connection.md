@@ -51,7 +51,8 @@ with the same account. No embedded application secrets are needed.
 Token rotation renews the connection. Each connection uses a fresh MQTT client
 without an outgoing command queue from an earlier session. Authentication
 errors request renewed sign-in. Connection failures back off. Quota errors wait
-at least 60 seconds; a longer numeric Retry-After is honored. Configuration
+at least 60 seconds; a longer Retry-After in seconds or as an HTTP date is
+honored up to 24 hours and also pauses the shared cloud access. Configuration
 retry dialogs enforce their wait too.
 
 Membership and state resynchronize every five minutes. Token checks and
@@ -67,15 +68,33 @@ or controls; P09 interprets the admitted water-heater families and P10 adds
 requested fields against current metadata.
 
 The information timestamp is used only for ordering. Its epoch unit is not
-established by P08. Connection status requires a non-retained information
-update and expires after 15 minutes without a newer one. Retained information,
-duplicate timestamps, sensor caches and cloud shadow reads do not establish
-physical connectivity. This conservative rule needs real-device validation.
+established by P08. The newest information message sets the online or
+offline status; an explicit offline message takes effect immediately. Devices
+may send information only on change, so any non-retained message from the
+device counts as a sign of life: information, a new sensor sample or a state
+update with newly reported fields. The status stays usable while the last sign
+of life is at most one hour old. Retained messages, duplicate timestamps,
+metadata, desired-only acknowledgements and the responses to the integration's
+own state reads never count as a sign of life. A reconnect, for example after
+a token renewal, is the integration's own connection event and not device
+silence: the device is unavailable while the connection is down, and the
+information redelivered on the new connection makes it available again as long
+as the last sign of life is at most one hour old. The last measurements and
+reported state stay visible across the reconnect and still expire by their
+own age (measurements after one hour, state after 15 minutes). After a longer
+silence the device stays unavailable until a new sign of life arrives. A
+membership loss or a re-added device starts without earlier readings. A re-added device, or one
+that returns to the account, takes its online status from the redelivered
+information even if its timestamp is unchanged; that alone is no sign of
+life. This rule needs real-device validation.
 
 Sensor envelopes contain an optional deviceType and an items array. Each
 item has its own integer timestamp. The newest unambiguous item extends
 non-null fields in the current sample. Empty, retained and old messages do
-not refresh readings. Each field retains its own observation time.
+not refresh readings. Each field retains its own observation time and
+expires one hour after it was last reported. Reported state fields expire
+after 15 minutes; the periodic state read every five minutes keeps them
+current.
 
 Shadows require integer version and timestamp fields and an object state.
 A full get response replaces the reported snapshot; update responses merge
@@ -121,6 +140,40 @@ against a local WebSocket broker, mixed and Bacon-only setup, token sharing,
 identity preservation, redaction, ordering, timeouts and write confirmation.
 All device examples in those tests are synthetic.
 
+## Managed connection preparation
+
+The prepared version 4 owner now uses the same MQTT and model contracts through
+separate device bindings. One `CloudConnection` owns shared authentication and
+account limits; `BaconPool` owns MQTT while any device binding is enabled.
+`BaconDeviceAccess` gives each consumer access to its exact current device.
+The existing entities accept the `BaconAccess` protocol for both this view and
+legacy version 3 accounts.
+
+Disabling one device retires its view, blocks further sends and cancels its
+waiting reads and writes. Peer devices keep the connection. Reenabling replaces
+the view and requests fresh metadata through a device subscription, even when
+disable and enable overlap. Known version and timestamp boundaries reject older
+messages. They do not establish causality for unversioned messages arriving on
+the shared connection. The existing reported-state confirmation remains the
+write contract.
+
+Closing the last device stops MQTT without stopping PointT. Service failures
+retry MQTT independently; authentication failures request sign-in for their
+shared cloud connection. Before a new login replaces the current one, all
+assigned gateways and devices must be verified, including disabled bindings.
+
+Automated tests use actual HTTP and MQTT 5 WebSocket transport against local
+servers for the existing warm-water, air-conditioner, purifier and dehumidifier
+families. They cover confirmed commands, cancellation, overlapping selection,
+membership loss, reconnection, token rotation, replacement login and shutdown.
+Native HA platform tests additionally replace the guarded device view and verify
+stable entity IDs, independent peers and confirmed commands through HA services
+for five synthetic family examples. They do not establish compatibility with
+untested appliances. Managed diagnostics now include each connection's
+additional-cloud diagnostics separately, without exporting account or device
+identities. Normal setup now uses entry version 4 after validated migration.
+Local product access remains separate and disabled.
+
 ## Deutsch
 
 Ich habe eine getrennte Bacon-Verbindung für weitere Cloud-Geräte ergänzt.
@@ -146,10 +199,19 @@ auch bei Fehlern. Geräteliste und Zustand werden alle fünf Minuten abgeglichen
 Die Grenzen von 128 Geräten, 128 KiB pro Nachricht, 16 JSON-Ebenen und
 256 eingehenden Nachrichten sind eigene Schutzgrenzen.
 
-Für die Geräteverbindung benötige ich eine nicht gespeicherte
-Informationsmeldung. Eine ausdrückliche Offline-Meldung zeigt getrennt.
-Nach 15 Minuten ohne neue Meldung, bei Geräteentfernung oder einem
-Verbindungsabbruch wird die Anzeige nicht verfügbar. Die Einheit des
+Den Online- oder Offline-Status liefert die neueste Informationsmeldung.
+Eine ausdrückliche Offline-Meldung wirkt sofort. Weil Geräte Informationen
+oft nur bei Änderungen senden, zählt jede nicht gespeicherte Meldung des
+Geräts als Lebenszeichen: Information, neue Messwerte oder ein neu gemeldeter
+Zustand. Antworten auf meine eigenen Zustandsabfragen zählen nicht. Nach
+einer Stunde ohne Lebenszeichen oder bei Geräteentfernung wird die Anzeige
+nicht verfügbar, ebenso während eines Verbindungsabbruchs. Nach dem
+Wiederverbinden, etwa bei einer Token-Erneuerung, genügt die erneut
+zugestellte Informationsmeldung, solange das letzte Lebenszeichen höchstens
+eine Stunde zurückliegt. Die letzten Messwerte und der gemeldete Zustand
+bleiben dabei sichtbar. Nach einer Geräteentfernung oder einem erneut
+hinzugefügten Gerät beginnt die Anzeige ohne frühere Werte. Messwerte verfallen
+einzeln nach einer Stunde, gemeldete Zustandswerte nach 15 Minuten. Die Einheit des
 Informationszeitstempels ist noch nicht belegt. Ich verwende ihn deshalb
 nur für die Reihenfolge. Gespeicherte Meldungen beweisen keinen aktuellen
 Gerätezustand. Diese vorsichtige Regel benötigt noch eine Geräteprüfung.

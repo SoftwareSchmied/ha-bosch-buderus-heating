@@ -10,17 +10,17 @@ from unittest.mock import AsyncMock, patch
 import aiohttp
 import pytest
 from aiohttp import web
-from homeassistant.config_entries import ConfigEntryState
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.translation import async_get_translations
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.data import tokens_to_data
 from custom_components.bosch_buderus_heating.diagnostics import (
     async_get_config_entry_diagnostics,
 )
+from custom_components.bosch_buderus_heating.entry_sources import pointt_coordinators
 from custom_components.bosch_buderus_heating.pointt import (
     AuthTokens,
     Gateway,
@@ -38,6 +38,7 @@ from custom_components.bosch_buderus_heating.pointt.exceptions import (
     ResourceNotFound,
     ServiceUnavailable,
 )
+from custom_components.bosch_buderus_heating.pointt.transport import RateLimitBackoff
 from custom_components.bosch_buderus_heating.wallbox import (
     SECTIONS,
     STATES,
@@ -49,9 +50,17 @@ from custom_components.bosch_buderus_heating.wallbox_sensor import (
     DESCRIPTIONS,
     WallboxSensor,
 )
+from tests.ha_test_helpers import MockConfigEntry
+from tests.helpers.managed_runtime import wait_for_sources, wallbox_coordinators
 from tests.test_pointt_transport_and_client import serve
 
 ROOT = "custom_components.bosch_buderus_heating"
+# Home Assistant 2026.9 renamed the reauthentication call of coordinators.
+REAUTH_METHOD = (
+    "async_start_reauth_if_available"
+    if hasattr(ConfigEntry, "async_start_reauth_if_available")
+    else "async_start_reauth"
+)
 FIXTURE = Path(__file__).parent / "fixtures/contracts/pointt-wallbox/cp0.json"
 
 
@@ -285,9 +294,7 @@ async def test_global_failure_stops_reads_and_clears_old_data(hass, failure, cat
         now.return_value = 1000
         client.get_wallbox_section.reset_mock(side_effect=True)
         client.get_wallbox_section.side_effect = failure
-        with patch.object(
-            coord.config_entry, "async_start_reauth_if_available"
-        ) as reauth:
+        with patch.object(coord.config_entry, REAUTH_METHOD) as reauth:
             await coord.async_refresh()
             assert reauth.call_count == int(category == "authentication")
         assert client.get_wallbox_section.await_count == 1
@@ -426,13 +433,11 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
         patch(ROOT + ".async_setup_notifications", AsyncMock(return_value=())),
     ):
         assert await hass.config_entries.async_setup(config.entry_id)
+        await wait_for_sources(hass, config, 1 + int(mixed))
         await hass.async_block_till_done()
         assert discovery.call_count == int(mixed)
-        assert len(config.runtime_data.coordinators) == int(mixed)
-        assert (
-            len(config.runtime_data.wallboxes) == 1
-            and config.runtime_data.bacon is None
-        )
+        assert len(pointt_coordinators(config)) == int(mixed)
+        assert len(wallbox_coordinators(config)) == 1
         registry = er.async_get(hass)
 
         def entity_id(key):
@@ -446,7 +451,7 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
         if offline:
             assert hass.states.get(state_id).state == "unavailable"
             offline = False
-            await config.runtime_data.wallboxes[0].async_refresh()
+            await wallbox_coordinators(config)[0].async_refresh()
             await hass.async_block_till_done()
         assert hass.states.get(state_id).state == "charging"
         assert hass.states.get(entity_id("energy")).state == "1.25"
@@ -480,7 +485,7 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
         )
         diagnostics = await async_get_config_entry_diagnostics(hass, config)
         assert (
-            diagnostics["diagnostics_schema"] == 27
+            diagnostics["diagnostics_schema"] == 41
             and len(diagnostics["wallboxes"]) == 1
         )
         serialized = json.dumps(diagnostics)
@@ -503,10 +508,11 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
             disabled, disabled_by=er.RegistryEntryDisabler.USER
         )
         await hass.async_block_till_done()
-        previous = config.runtime_data.wallboxes[0]
+        previous = wallbox_coordinators(config)[0]
         assert await hass.config_entries.async_unload(config.entry_id)
         assert not previous.async_update_listeners()
         assert await hass.config_entries.async_setup(config.entry_id)
+        await wait_for_sources(hass, config, 1 + int(mixed))
         await hass.async_block_till_done()
         assert registry.async_get(state_id).id == old.id
         assert registry.async_get(state_id).device_id == old.device_id
@@ -558,3 +564,90 @@ def test_wallbox_translation_keys_match():
                 == set(texts[2][key]["state"])
                 == set(description.options)
             )
+
+
+@pytest.mark.parametrize("friendly", [False, True])
+async def test_wallbox_poll_is_not_skipped_by_actual_ha_timer(hass, friendly):
+    """HA rounds the next refresh down; it can fire just before our deadline."""
+    coord, client, _ = coordinator(hass, friendly=friendly)
+    start = 1000.202
+    path = ROOT + ".wallbox.monotonic"
+    with patch(path, return_value=start):
+        await coord._async_update_data()
+    client.get_wallbox_section.reset_mock()
+    coord._microsecond = 0.2
+    finished = start + 0.35
+    reads = []
+    try:
+        for tick in range(4):
+            with (
+                patch.object(hass.loop, "time", return_value=finished),
+                patch.object(hass.loop, "call_at") as schedule,
+            ):
+                coord._schedule_refresh()
+            now = schedule.call_args.args[0] + (0.001, 0.004, 0.002, 0.005)[tick]
+            with patch(path, return_value=now):
+                await coord._async_update_data()
+            reads.append(
+                sum(
+                    call.args[1] == "telemetry"
+                    for call in client.get_wallbox_section.await_args_list
+                )
+            )
+            finished = now + 0.35
+    finally:
+        coord._async_unsub_refresh()
+    assert reads == [1, 2, 3, 4]
+
+
+async def test_due_tolerance_never_reads_a_section_much_too_early(hass):
+    coord, client, _ = coordinator(hass)
+    with patch(ROOT + ".wallbox.monotonic", return_value=100) as now:
+        await coord.async_refresh()
+        assert client.get_wallbox_section.await_count == 3
+        now.return_value = 100 + 60 - 1.5
+        await coord.async_refresh()
+        assert client.get_wallbox_section.await_count == 3
+        now.return_value = 100 + 60 - 0.9
+        await coord.async_refresh()
+        sections = [call.args[1] for call in client.get_wallbox_section.await_args_list]
+        assert sections[3:] == ["telemetry"]
+
+
+@pytest.mark.usefixtures("socket_enabled")
+async def test_due_tolerance_does_not_shorten_a_cloud_pause(hass):
+    calls = []
+
+    async def respond(request):
+        calls.append(request.match_info["section"])
+        if len(calls) == 1:
+            return web.Response(status=429, headers={"Retry-After": "7200"})
+        return web.json_response(fixture()[request.match_info["section"]])
+
+    clock = [5000.0]
+    backoff = RateLimitBackoff(clock=lambda: clock[0])
+    async with (
+        serve(
+            [("*", "/gateways/{gateway}/resource/rest/v1/cp0/{section}", respond)]
+        ) as url,
+        aiohttp.ClientSession() as session,
+    ):
+        client = PointTClient(session, "synthetic", base_url=url, backoff=backoff)
+        coord = WallboxCoordinator(
+            hass, client, Gateway("wallbox-A", device_type="commodule"), entry(hass)
+        )
+        with patch(ROOT + ".wallbox.monotonic", return_value=100) as now:
+            await coord.async_refresh()
+            assert calls == ["telemetry"]
+            for _ in range(4):
+                now.return_value += 60 - 0.9
+                clock[0] += 60 - 0.9
+                await coord.async_refresh()
+            assert calls == ["telemetry"]
+            assert 0 < backoff.remaining < 7200
+            clock[0] += backoff.remaining
+            now.return_value += 60
+            await coord.async_refresh()
+            # Freshness uses the same patched clock as the received snapshot.
+            assert coord.reading("telemetry", "power") == 7.2
+        assert calls == ["telemetry", "telemetry", "conf", "info"]

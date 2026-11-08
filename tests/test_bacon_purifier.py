@@ -409,9 +409,9 @@ def test_stream_freshness_ordering_and_snapshot_recovery():
     account, fan, data = configured()
     sensor = BaconPurifierSensor(account, "serial-A", "pm2_5")
     identity = sensor.unique_id
-    fan.device.sensor_received_at -= 901
+    fan.device.sensor_received_at -= 3601
     for key in fan.device.sensor_fields_received_at:
-        fan.device.sensor_fields_received_at[key] -= 901
+        fan.device.sensor_fields_received_at[key] -= 3601
     for timestamp, retained in [(1, False), (2, False), (3, True)]:
         emit(
             account,

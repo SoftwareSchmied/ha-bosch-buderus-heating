@@ -17,10 +17,12 @@ unter Konfiguration. Entitätskennungen und eigene Anpassungen bleiben erhalten.
 
 ## English
 
-I reviewed the option of splitting heating circuits, hot water and heat
-sources into additional Home Assistant devices. I chose to keep one shared
-device per PointT heating gateway. This is a presentation decision, not a
-discovery defect or a claim that a heating circuit is a separate appliance.
+I keep one shared device per PointT heating gateway. I will create additional
+device pages only for objects that PointT actually identifies as devices,
+with verified identity and resource ownership. Heating, hot-water and solar
+circuits remain functional groups unless separate device evidence exists.
+The [plant model](architecture.md#plant-model-and-device-evidence) now makes
+that distinction explicit and supplies the current central device binding.
 
 Related entities remain recognizable by their default name prefixes, such as
 Heating circuit 1, Hot water 1 and Heat generator 1. The integration uses
@@ -48,12 +50,13 @@ Independent appliances connected through the additional cloud adapter, and
 separate PointT wallboxes, keep their own device identities. The decision
 does not merge those appliances into the heating gateway.
 
-### If a split is considered later
+### If PointT identifies an additional device
 
-Additional devices would primarily offer separate device pages and device
-area assignments. They would not discover additional resources or add new
-measurements. Logical circuits must be labelled as logical parts, with stable
-identities based on the gateway and reported circuit key.
+A new device needs evidence from the PointT device model, a stable identifier
+and an explicit assignment of its resources. A circuit key, module name or
+resource path alone is insufficient. Additional circuits, solar functions and
+other supported resource groups can extend the inventory at the same gateway.
+The current model does not infer new devices or additional measurements.
 
 A future implementation needs an explicit, reversible assignment migration.
 Preserving entity IDs alone is insufficient: actions targeting a device can
@@ -66,11 +69,13 @@ No split or migration has been implemented as part of this decision.
 
 ## Deutsch
 
-Ich habe geprüft, ob Heizkreise, Warmwasser und Wärmeerzeuger als zusätzliche
-Home-Assistant-Geräte übersichtlicher wären. Ich behalte ein gemeinsames
-Gerät je PointT-Heizungs-Gateway bei. Das ist eine Darstellungsentscheidung
-und kein Discovery-Fehler. Ein Heizkreis wird dadurch nicht als eigenständiges
-physisches Heizgerät eingeordnet.
+Ich behalte ein gemeinsames Gerät je PointT-Heizungs-Gateway bei. Zusätzliche
+Geräteseiten lege ich nur für Objekte an, die PointT tatsächlich als Geräte
+führt und deren Identität und Ressourcenzuordnung belegt sind. Heiz-,
+Warmwasser- und Solarkreise bleiben ohne eigenen Gerätenachweis Funktionsgruppen.
+Das [Anlagenmodell](architecture.md#plant-model-and-device-evidence) bildet
+diesen Unterschied jetzt ausdrücklich ab und übernimmt die zentrale Zuordnung
+zum vorhandenen Gerät.
 
 Zusammengehörige Entitäten bleiben über ihre Standardnamen erkennbar, etwa
 Heizkreis 1, Warmwasser 1 und Wärmeerzeuger 1. Die Integration verwendet die
@@ -100,13 +105,14 @@ Eigenständige Geräte des zusätzlichen Cloud-Zugangs und separate
 PointT-Wallboxen behalten ihre eigenen Gerätekennungen. Die Entscheidung
 führt diese Geräte nicht mit dem Heizungs-Gateway zusammen.
 
-### Falls eine Aufteilung später gewünscht wird
+### Falls PointT ein zusätzliches Gerät ausweist
 
-Zusätzliche Geräte würden vor allem eigene Geräteseiten und getrennte
-Bereichszuordnungen auf Geräteebene ermöglichen. Sie würden keine weiteren
-Ressourcen finden und keine neuen Messwerte hinzufügen. Logische Kreise
-müssten als solche bezeichnet werden. Ihre stabilen Kennungen müssten aus
-Gateway und gemeldetem Kreisschlüssel entstehen.
+Ein neues Gerät benötigt einen Nachweis im PointT-Gerätemodell, eine stabile
+Kennung und eine ausdrückliche Ressourcenzuordnung. Ein Kreisschlüssel,
+Modulname oder Ressourcenpfad allein genügt nicht. Weitere Kreise,
+Solarfunktionen und andere unterstützte Ressourcengruppen können den Bestand
+am selben Gateway erweitern. Das aktuelle Modell leitet daraus keine weiteren
+Geräte oder Messwerte ab.
 
 Eine spätere Umsetzung benötigt eine ausdrückliche, umkehrbare Migration
 der Zuordnungen. Entitäts-IDs allein zu erhalten reicht nicht aus:

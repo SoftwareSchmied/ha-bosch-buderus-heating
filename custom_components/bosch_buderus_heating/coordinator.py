@@ -6,17 +6,21 @@ import asyncio
 import logging
 import math
 from collections import Counter
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Iterator, Mapping
+from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime, timedelta, tzinfo
 from enum import StrEnum
+from itertools import islice
 from time import monotonic
-from typing import Any, TypeIs
+from typing import TYPE_CHECKING, Any, TypeIs
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP
+from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -28,7 +32,14 @@ from .discovery import (
     DiscoveryPathSource,
     async_discover_resources,
 )
+from .discovery_inventory import (
+    RECOVERY_SCHEDULE,
+    DiscoveryInventory,
+    DiscoveryRecovery,
+    is_transient_result,
+)
 from .faults import FaultTracker, fault_resource_candidates, is_fault_resource_path
+from .firmware_watch import FirmwareWatch, firmware_values
 from .holiday_timezones import async_resolve_holiday_timezones
 from .holiday_writes import (
     HolidayAlreadyExists,
@@ -45,6 +56,7 @@ from .holidays import (
 )
 from .legacy_holiday_writes import IcomHolidayWriteService
 from .legacy_holidays import is_icom_slot
+from .plant_model import PlantModel
 from .pointt import (
     AuthenticationError,
     Gateway,
@@ -53,18 +65,39 @@ from .pointt import (
     RateLimited,
     Resource,
     ResourceError,
+    ResourceOmitted,
     WriteValidationError,
 )
 from .pointt.bulk import chunk_resource_paths
 from .pointt.const import MAX_BULK_PATHS
+from .pointt.exceptions import (
+    ProtocolError,
+    RequestTimeout,
+    ServiceUnavailable,
+    SourceStopped,
+    TransportError,
+    UnexpectedHttpStatus,
+)
 from .pointt.models import BatchItemResult
 from .pointt.redaction import resource_path_template
+from .pointt.retry_after import MAX_CLOUD_PAUSE_SECONDS
+from .repair_scope import repair_data, repair_id
 from .resource_catalog import PollGroup, poll_group
 from .rrc_programs import WEEK, RrcProgramService
 from .start_counters import is_start_counter_path
-from .startup_data import STARTUP_BUDGET_SECONDS, StartupSession
+from .startup_data import (
+    LICENSE_PATH,
+    STARTUP_BUDGET_SECONDS,
+    StartupSession,
+    is_startup_path,
+)
 from .startup_reader import StartupReader
+from .update_load import update_load
 from .writes import EnumWritePolicy, NumberWritePolicy, WriteService
+
+if TYPE_CHECKING:
+    from .counter_selection import CounterGuard
+    from .local_selection import LocalSelection
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -82,9 +115,64 @@ POLL_INTERVALS_CLOUD_FRIENDLY: dict[PollGroup, timedelta] = {
     PollGroup.ENERGY: timedelta(minutes=10),
     PollGroup.SLOW: timedelta(minutes=30),
 }
+# A cloud reading stays valid for three polling intervals of its group, the
+# same rule as for local readings. Static resources are read once and do not
+# expire while the connection exists.
+VALIDITY_INTERVALS = 3
+# A wall clock set back by more than this no longer confirms stored readings.
+CLOCK_SKEW_TOLERANCE = timedelta(seconds=60)
+VALIDITY_TIMER_MARGIN = timedelta(seconds=1)
+EXPIRED_CATEGORY = "expired"
+SOURCE_STOPPED_CATEGORY = "source_stopped"
+# A counter whose only valid source would count backwards is not shown.
+COUNTER_HELD_CATEGORY = "counter_held"
+NO_ANSWER_PREFIX = "no_answer_"
+# Categories of failures that are no answer for the reading itself: the last
+# good value stays displayed within its validity limit. Explicit answers for
+# the reading (403/404/406 and other client errors, invalid data, unconfirmed
+# writes, a stopped source) end it until the next successful read.
+_TRANSIENT_FAILURES = frozenset({"poll_deferred", "http_401", "http_429"})
+
+
+def _explicit_client_error(status: int | None) -> bool:
+    """A client error for the reading, except authorization and rate limits."""
+    return status is not None and 400 <= status < 500 and status not in (401, 429)
+
+
+def _no_answer(result: BatchItemResult, *, whole_request: bool) -> bool:
+    """Return whether a failed result says nothing about the reading itself."""
+    error = result.error
+    if _explicit_client_error(result.status):
+        return False
+    if whole_request or isinstance(
+        error, (ResourceOmitted, TransportError, AuthenticationError)
+    ):
+        return True
+    status = result.status
+    return status is not None and (status in (401, 429) or 500 <= status <= 599)
+
+
+def _transient_failure(category: str | None) -> bool:
+    return category is not None and (
+        category in _TRANSIENT_FAILURES
+        or category.startswith(("http_5", NO_ANSWER_PREFIX))
+    )
+
+
 DEFAULT_RATE_LIMIT_BACKOFF = timedelta(minutes=5)
-MAX_RATE_LIMIT_BACKOFF = timedelta(hours=1)
+MAX_RATE_LIMIT_BACKOFF = timedelta(seconds=MAX_CLOUD_PAUSE_SECONDS)
 NOT_FOUND_PAUSE = timedelta(hours=24)
+
+
+def _connection_problem(error: Exception) -> bool:
+    """No answer at all: a timeout or a network failure without HTTP status."""
+    return (
+        isinstance(error, RequestTimeout)
+        or type(error) is TransportError
+        or (isinstance(error, ServiceUnavailable) and error.status is None)
+    )
+
+
 FORBIDDEN_PAUSE = timedelta(hours=24)
 GATEWAY_TIMEOUT_PAUSE = timedelta(minutes=15)
 FORBIDDEN_PAUSE_THRESHOLD = 2
@@ -100,6 +188,9 @@ MANUAL_SETPOINT_RETRY_DELAYS = (3.0, 10.0, 20.0)
 # just before our exact deadline must not postpone a group by another minute.
 # This tolerance applies to group cadence only, never to error/backoff deadlines.
 POLL_DUE_TOLERANCE_SECONDS = 1.0
+# P41: one polling cycle stops starting new requests after this time; the
+# remaining readings keep their values (validity rules) and come first next.
+CYCLE_BUDGET_SECONDS = 50.0
 
 _FALLBACK_PRIORITY_PATHS = (
     "/heatSources/actualSupplyTemperature",
@@ -118,6 +209,7 @@ class SnapshotSource(StrEnum):
     FALLBACK = "fallback"
     WRITE = "write"
     STARTUP = "startup"
+    LOCAL = "local"
 
 
 class Freshness(StrEnum):
@@ -139,11 +231,19 @@ class ResourceSnapshot:
     freshness: Freshness = Freshness.FRESH
     last_error_category: str | None = None
     consecutive_failures: int = 0
+    # Set by an explicit answer for this reading (or an unconfirmed write) and
+    # kept until the next successful read: later whole-request failures must
+    # not bring the old value back.
+    ended: bool = False
 
     @property
     def updated_at(self) -> datetime:
         """Return the last-success timestamp for compatibility."""
         return self.last_success
+
+
+# P47: stored resources read successfully are confirmed at most daily.
+INVENTORY_CONFIRM_SECONDS = 86400
 
 
 def _snapshot_is_fresh(snapshot: ResourceSnapshot | None) -> bool:
@@ -152,6 +252,14 @@ def _snapshot_is_fresh(snapshot: ResourceSnapshot | None) -> bool:
         and snapshot.available
         and snapshot.freshness is Freshness.FRESH
     )
+
+
+def _pause_end(seconds: float) -> datetime:
+    """End of a pause on a full minute, stable between state writes."""
+    end = datetime.now(UTC) + timedelta(seconds=seconds)
+    if end.second or end.microsecond:
+        end = end.replace(second=0, microsecond=0) + timedelta(minutes=1)
+    return end
 
 
 def _manual_setpoint_mode_path(path: str) -> str | None:
@@ -216,6 +324,15 @@ class BoschBuderusDataUpdateCoordinator(
 ):
     """Discover and refresh safe PointT resources for one gateway."""
 
+    # P40: a stopped cloud source whose entities local readings keep showing.
+    local_retained: bool = False
+    # P49: age of the inventory a start used, for its announcement.
+    startup_age_seconds: int | None = None
+    # P49b: a view from local readings alone: never writes, never requests.
+    read_only_view: bool = False
+    # P49b step 7: the brand a local setup read, for a plant without a cloud.
+    brand_hint: str | None = None
+
     def __init__(
         self,
         hass: HomeAssistant,
@@ -225,6 +342,8 @@ class BoschBuderusDataUpdateCoordinator(
         polling_profile: PollingProfile = PollingProfile.STANDARD,
         *,
         startup_session: StartupSession | None = None,
+        connection_id: str | None = None,
+        target_id: str | None = None,
     ) -> None:
         poll_intervals = (
             POLL_INTERVALS_CLOUD_FRIENDLY
@@ -244,7 +363,11 @@ class BoschBuderusDataUpdateCoordinator(
             config_entry=config_entry,
         )
         self.client = client
+        self.connection_id = connection_id
         self.gateway = gateway
+        self.plant_model = PlantModel.from_pointt_gateway(
+            config_entry.entry_id, gateway, target_id=target_id
+        )
         self.startup_session = startup_session or StartupSession((gateway.gateway_id,))
         self.startup_data = self.startup_session.gateway(gateway.gateway_id)
         self._startup_reader = StartupReader(
@@ -275,11 +398,54 @@ class BoschBuderusDataUpdateCoordinator(
         self._poll_failures = 0
         self._last_poll_duration_ms: float | None = None
         self._total_poll_duration_ms = 0.0
+        self._maximum_poll_duration_ms = 0.0
+        self._polls_longer_than_interval = 0
+        self._cycles_over_budget = 0
+        # Paths of a due group already read in an earlier, budget-limited
+        # cycle: they are not read again until the group completes (P41).
+        self._budget_progress: dict[PollGroup, set[str]] = {}
+        # Readings kept after a firmware rediscovery; a 404 drops them.
+        self._kept_after_firmware: set[str] = set()
+        # Managed setups attach a per-target view; legacy setups keep None.
+        self.local_selection: LocalSelection | None = None
+        # Managed setups attach a guard: counters never count backwards when
+        # their source changes. Views are decided once per update, not per read.
+        self.counter_guard: CounterGuard | None = None
+        self._counter_views: dict[str, ResourceSnapshot | None] = {}
+        self._validity_unsub: CALLBACK_TYPE | None = None
+        self._validity_index: dict[str, PollGroup] = {}
+        # Holds the scheduled tuples themselves, so equal keys mean equal plans.
+        self._validity_index_key: tuple[tuple[PollGroup, tuple[str, ...]], ...] = ()
+        # Like HA's own refresh timer, the expiry timer ends when HA stops.
+        self._validity_stop_unsub: CALLBACK_TYPE | None = hass.bus.async_listen_once(
+            EVENT_HOMEASSISTANT_STOP, self._validity_stopped
+        )
         self._rate_limit_events = 0
         self._energy_counter_resets = 0
         self._capability_metrics: dict[str, CapabilityMetrics] = {}
         self._unknown_enum_value_counts: Counter[str] = Counter()
+        self._contract_changes: Counter[str] = Counter()
         self.discovery_diagnostics = DiscoveryDiagnostics()
+        # P46: resources discovered before, and the search for missing ones.
+        self.inventory: DiscoveryInventory | None = None
+        self.discovery_recovery = DiscoveryRecovery()
+        # P22: firmware versions seen and the discovery a change triggers.
+        self.firmware = FirmwareWatch()
+        self._discovery_cycle_failed = False
+        # P47: started with the stored inventory while the cloud did not answer.
+        self.startup_mode = "live"
+        self._startup_reason: str | None = None
+        self._inventory_age_seconds: int | None = None
+        self._stored_resources: dict[str, Resource] = {}
+        self._reconcile_due: float | None = None
+        # A6: a discovery the owner asked for in the options dialog.
+        self._rescan_due: float | None = None
+        self.rescan_result: str | None = None
+        self._reconcile_attempts = 0
+        self._reconcile_postponed = 0
+        self._reconcile_result: str | None = None
+        self._assume_stored = False
+        self._inventory_confirmed_at: float | None = None
         self._write_service = WriteService(client)
         self._rrc_program_service = RrcProgramService(client)
         self._holiday_write_service = HolidayWriteService(client)
@@ -289,6 +455,10 @@ class BoschBuderusDataUpdateCoordinator(
     async def async_load_fault_state(self) -> None:
         """Load the persisted active-fault baseline before the first refresh."""
         await self.faults.async_load()
+
+    def _request_reauthentication(self) -> None:
+        """Managed sources override this to repair only their owning access."""
+        self._config_entry.async_start_reauth(self.hass)
 
     async def async_request_refresh(self) -> None:
         """Force all dynamic groups due for an explicit Home Assistant refresh."""
@@ -384,7 +554,7 @@ class BoschBuderusDataUpdateCoordinator(
                         self._record_capability(
                             setpoint_path, "authentication_error", SnapshotSource.BATCH
                         )
-                        self._config_entry.async_start_reauth(self.hass)
+                        self._request_reauthentication()
                         return
                     except PointTError as err:
                         # Transport problems remain subject to normal polling.
@@ -417,7 +587,7 @@ class BoschBuderusDataUpdateCoordinator(
                         if result.status == 401 or isinstance(
                             result.error, AuthenticationError
                         ):
-                            self._config_entry.async_start_reauth(self.hass)
+                            self._request_reauthentication()
                             return
                     if (
                         successes
@@ -528,7 +698,7 @@ class BoschBuderusDataUpdateCoordinator(
                 if isinstance(err, RateLimited):
                     self._activate_rate_limit_backoff(err, monotonic())
                 if isinstance(err, AuthenticationError):
-                    self._config_entry.async_start_reauth(self.hass)
+                    self._request_reauthentication()
                 # A failed guard no longer confirms that dependency. A PUT
                 # may already have taken effect when its read-back fails.
                 # Preserve the last value only as stale until regular polling
@@ -542,6 +712,7 @@ class BoschBuderusDataUpdateCoordinator(
                         last_attempt=datetime.now(UTC),
                         source=SnapshotSource.WRITE,
                         last_error_category=category,
+                        ended=True,
                     )
                     self.async_set_updated_data(updated)
                 raise
@@ -559,6 +730,15 @@ class BoschBuderusDataUpdateCoordinator(
             self.resources[path] = confirmed
             self._negative_until.pop(path, None)
             self._record_capability(path, "success", SnapshotSource.WRITE)
+            if self.local_selection is not None:
+                # Local readings of this circuit from before the confirmation
+                # must not override it; read them again soon. The write is
+                # confirmed already: nothing here may turn it into a failure.
+                try:
+                    self.local_selection.note_confirmed_write(path, snapshots[path])
+                    self.local_selection.request_refresh(path)
+                except Exception:
+                    _LOGGER.debug("Local refresh after a confirmed write failed")
             self.async_set_updated_data(snapshots)
             if (mode_path := _manual_setpoint_mode_path(path)) is not None:
                 self._queue_manual_setpoint_recovery(mode_path, snapshots)
@@ -606,7 +786,7 @@ class BoschBuderusDataUpdateCoordinator(
                 if isinstance(err, RateLimited):
                     self._activate_rate_limit_backoff(err, monotonic())
                 if isinstance(err, AuthenticationError):
-                    self._config_entry.async_start_reauth(self.hass)
+                    self._request_reauthentication()
                 self._record_capability(
                     path,
                     "rrc_write_unconfirmed"
@@ -620,6 +800,7 @@ class BoschBuderusDataUpdateCoordinator(
                     available=False,
                     freshness=Freshness.STALE,
                     last_error_category="rrc_write_unconfirmed",
+                    ended=True,
                 )
                 self.async_set_updated_data(updated)
                 raise
@@ -751,7 +932,7 @@ class BoschBuderusDataUpdateCoordinator(
                     "authentication_error",
                     SnapshotSource.WRITE,
                 )
-                self._config_entry.async_start_reauth(self.hass)
+                self._request_reauthentication()
                 raise
             except (HolidayWriteNotConfirmed, HolidayAlreadyExists) as err:
                 if err.resource is not None:
@@ -798,7 +979,7 @@ class BoschBuderusDataUpdateCoordinator(
             self._record_capability(path, "rate_limited", SnapshotSource.WRITE)
             raise
         except AuthenticationError:
-            self._config_entry.async_start_reauth(self.hass)
+            self._request_reauthentication()
             self._record_capability(path, "authentication_error", SnapshotSource.WRITE)
             raise
         except PointTError as err:
@@ -814,6 +995,7 @@ class BoschBuderusDataUpdateCoordinator(
                         available=False,
                         freshness=Freshness.STALE,
                         last_error_category="holiday_write_unconfirmed",
+                        ended=True,
                     )
             for confirmed_path, resource in service.confirmed.items():
                 updated[confirmed_path] = ResourceSnapshot(
@@ -849,10 +1031,61 @@ class BoschBuderusDataUpdateCoordinator(
         try:
             async with self._update_lock:
                 self._main_cycle_failed = False
-                snapshots = await self._async_update_data_locked()
-                self.startup_data.record_main_cycle(
-                    successful=not self._main_cycle_failed
+                self._discovery_cycle_failed = False
+                if (
+                    self._reconcile_due is not None
+                    and self.last_update_success
+                    and monotonic() >= self._reconcile_due
+                    and monotonic() >= self._cloud_backoff_until
+                    and monotonic() >= self._circuit_open_until
+                ):
+                    # After a start with the inventory: this cycle discovers
+                    # instead of polling, so each reading is processed once.
+                    snapshots = await self._async_reconcile()
+                elif (
+                    self.firmware.due is not None
+                    and self.last_update_success
+                    and monotonic() >= self.firmware.due
+                    and monotonic() >= self._cloud_backoff_until
+                    and monotonic() >= self._circuit_open_until
+                ):
+                    snapshots = await self._async_firmware_discovery()
+                elif (
+                    self._rescan_due is not None
+                    and self.last_update_success
+                    and monotonic() >= self._rescan_due
+                    and monotonic() >= self._cloud_backoff_until
+                    and monotonic() >= self._circuit_open_until
+                ):
+                    snapshots = await self._async_rescan()
+                else:
+                    snapshots = await self._async_update_data_locked()
+                self.firmware.observe(
+                    firmware_values(
+                        {
+                            path: item.resource
+                            for path, item in snapshots.items()
+                            if item.available and item.freshness is Freshness.FRESH
+                        }
+                    ),
+                    monotonic(),
                 )
+                self.startup_data.record_main_cycle(
+                    successful=not (
+                        self._main_cycle_failed or self._discovery_cycle_failed
+                    )
+                )
+                if self._discovery_cycle_failed:
+                    # A discovery that failed or met the brake returned the
+                    # previous values: nothing is confirmed, searched or read
+                    # in addition in this cycle.
+                    return snapshots
+                self._confirm_inventory(snapshots)
+                # P46: search missing parts only after a cycle that returned
+                # data. During an outage the cycle fails first, so a search
+                # never uses up an attempt on it.
+                if self.discovery_recovery.due(monotonic()):
+                    await self._async_recover_missing(snapshots)
                 if self.startup_data.healthy and self.startup_session.claim(
                     self.gateway.gateway_id, monotonic()
                 ):
@@ -871,6 +1104,264 @@ class BoschBuderusDataUpdateCoordinator(
             duration = (monotonic() - started) * 1000
             self._last_poll_duration_ms = duration
             self._total_poll_duration_ms += duration
+            self._maximum_poll_duration_ms = max(
+                self._maximum_poll_duration_ms, duration
+            )
+            # A longer cycle is not overlapped; the next poll simply starts later.
+            if (
+                self.update_interval is not None
+                and duration > self.update_interval.total_seconds() * 1000
+            ):
+                self._polls_longer_than_interval += 1
+
+    def _validity_group(self, resource: Resource) -> PollGroup:
+        """Use the group the path is actually polled in, as scheduled."""
+        key = tuple(self._paths_by_group.items())
+        if key != self._validity_index_key:
+            self._validity_index = {
+                path: group
+                for group, paths in reversed(self._paths_by_group.items())
+                for path in paths
+            }
+            self._validity_index_key = key
+        return self._validity_index.get(resource.path) or poll_group(resource)
+
+    def scheduled_interval(self, path: str) -> tuple[bool, timedelta | None]:
+        """Return whether the answer is final and the polling interval to match.
+
+        ``None`` means no local cap: static readings (read once), readings that
+        can be adjusted through the cloud (never supplied locally) and paths
+        this cloud does not provide after its discovery. Before discovery the
+        answer is not final.
+        """
+        snapshot = (self.data or {}).get(path)
+        if snapshot is None:
+            return bool(self.data), None
+        if snapshot.resource.metadata.writable:
+            return True, None
+        return True, self._poll_intervals.get(self._validity_group(snapshot.resource))
+
+    def validity_limit(self, snapshot: ResourceSnapshot) -> timedelta | None:
+        """Return how long a cloud reading stays valid; ``None`` never expires.
+
+        The next poll starts one interval after the previous cycle finished, so
+        each interval is extended by the duration of the last cycle.
+        """
+        if snapshot.source is SnapshotSource.LOCAL:
+            return None
+        interval = self._poll_intervals.get(self._validity_group(snapshot.resource))
+        if interval is None:
+            return None
+        # A hanging cycle may extend each interval by at most one interval.
+        cycle = min(
+            timedelta(milliseconds=self._last_poll_duration_ms or 0.0), interval
+        )
+        return (interval + cycle) * VALIDITY_INTERVALS
+
+    def _expired(self, snapshot: ResourceSnapshot, now: datetime) -> bool:
+        limit = self.validity_limit(snapshot)
+        if limit is None:
+            return False
+        age = now - snapshot.last_success
+        return age > limit or age < -CLOCK_SKEW_TOLERANCE
+
+    def _cloud_auth_required(self) -> bool:
+        """Managed sources report a pending sign-in of their access."""
+        return False
+
+    def _cloud_source_stopped(self) -> bool:
+        """Managed sources report a stopped or replaced cloud source."""
+        return False
+
+    def control_status(self) -> tuple[str | None, datetime | None]:
+        """Why cloud operation is not possible now, and until when if known.
+
+        ``(None, None)`` means controls can be used. The reason never contains
+        values, paths or identifiers.
+        """
+        now = monotonic()
+        if self._cloud_auth_required():
+            return "auth_required", None
+        if self._cloud_source_stopped():
+            return "cloud_stopped", None
+        # The account-wide brake (siblings, token refresh, restored pauses)
+        # rejects writes as well as this gateway's own pause.
+        shared = getattr(getattr(self.client, "backoff", None), "remaining", 0.0)
+        shared = shared if isinstance(shared, int | float) else 0.0
+        paused = max(self._cloud_backoff_until - now, shared)
+        if paused > 0:
+            return "rate_limited", _pause_end(paused)
+        if now < self._circuit_open_until:
+            return "protection_pause", _pause_end(self._circuit_open_until - now)
+        if not self.last_update_success:
+            return "cloud_unreachable", None
+        from .entity_resources import fresh_resource
+
+        if not any(
+            (resource := fresh_resource(self, path)) is not None
+            and resource.metadata.writable
+            for path in self.data or {}
+        ):
+            return "not_current", None
+        return None, None
+
+    def source_snapshot(self, path: str, source: str) -> ResourceSnapshot | None:
+        """One source alone, for the optional per-source entities (P18).
+
+        ``cloud`` is the cloud reading within its validity limit, ``local``
+        the current local reading in the cloud entity's shape.
+        """
+        if source == "cloud":
+            return self.displayed_cloud_snapshot(path)
+        cloud = (self.data or {}).get(path)
+        if source != "local" or cloud is None or self.local_selection is None:
+            return None
+        return self.local_selection.local_only(path, cloud)
+
+    def displayed_cloud_snapshot(self, path: str) -> ResourceSnapshot | None:
+        """Return the cloud snapshot, marked unavailable once it has expired.
+
+        Only the displayed copy changes; stored data, writes and the polling
+        schedule keep the original snapshot.
+        """
+        snapshot = (self.data or {}).get(path)
+        if snapshot is None:
+            return None
+        if not snapshot.available:
+            if snapshot.ended or not _transient_failure(snapshot.last_error_category):
+                return snapshot
+            # Keep showing the last good value; the attempt failed as a whole.
+            shown = replace(snapshot, available=True, freshness=Freshness.FRESH)
+        else:
+            shown = snapshot
+        if not self._expired(shown, dt_util.utcnow()):
+            return shown
+        return replace(
+            shown,
+            available=False,
+            freshness=Freshness.STALE,
+            last_error_category=EXPIRED_CATEGORY,
+        )
+
+    def display_snapshot(self, path: str) -> ResourceSnapshot | None:
+        """Return the snapshot an existing sensor displays.
+
+        A current local reading of an enabled selection comes first, otherwise
+        the cloud reading within its validity limit. A failed or paused cloud
+        cycle therefore no longer hides readings that are still valid.
+        """
+        if self.counter_guard is not None and path in self._counter_views:
+            return self._counter_views[path]
+        snapshot = self.displayed_cloud_snapshot(path)
+        selection = self.local_selection
+        if (
+            selection is None
+            or snapshot is None
+            or (
+                snapshot.last_error_category == SOURCE_STOPPED_CATEGORY
+                and not self.local_retained
+            )
+        ):
+            return snapshot
+        return selection.select(path, snapshot)
+
+    def _refresh_counter_views(self) -> None:
+        """Decide each paired counter once: local first, never backwards."""
+        guard = self.counter_guard
+        if guard is None:
+            return
+        from .local_selection import counter_path
+
+        selection = self.local_selection
+        views: dict[str, ResourceSnapshot | None] = {}
+        for path in self.data or {}:
+            if not counter_path(path):
+                continue
+            cloud = self.displayed_cloud_snapshot(path)
+            if cloud is None or cloud.last_error_category == SOURCE_STOPPED_CATEGORY:
+                views[path] = cloud
+                continue
+            local = selection.counter_candidate(path, cloud) if selection else None
+            chosen = guard.decide(path, (("local", local), ("cloud", cloud)))
+            views[path] = (
+                chosen
+                if chosen is not None
+                else replace(
+                    cloud,
+                    available=False,
+                    freshness=Freshness.STALE,
+                    last_error_category=COUNTER_HELD_CATEGORY,
+                )
+            )
+        self._counter_views = views
+
+    @callback
+    def async_update_listeners(self) -> None:
+        selection = self.local_selection
+        load = update_load(self.hass)
+        with ExitStack() as stack:
+            if load is not None:
+                stack.enter_context(load.measure_pass(len(self._listeners)))
+            if selection is not None:
+                # Options and local readings cannot change during this
+                # synchronous pass: work them out once, not per entity.
+                stack.enter_context(selection.update_pass())
+                # New readings may answer an earlier confirmed write.
+                selection.check_writes(datetime.now(UTC))
+            self._refresh_counter_views()
+            super().async_update_listeners()
+        self._schedule_validity_refresh()
+
+    @callback
+    def _schedule_validity_refresh(self) -> None:
+        """Re-evaluate entities when the next reading expires, without a request."""
+        self._cancel_validity_timer()
+        if not self._listeners or self.hass.is_stopping:
+            return
+        now = dt_util.utcnow()
+        due = min(
+            (
+                snapshot.last_success + limit
+                for snapshot in (self.data or {}).values()
+                if (
+                    snapshot.available
+                    or (
+                        not snapshot.ended
+                        and _transient_failure(snapshot.last_error_category)
+                    )
+                )
+                and (limit := self.validity_limit(snapshot)) is not None
+                and snapshot.last_success + limit >= now
+            ),
+            default=None,
+        )
+        if due is not None:
+            self._validity_unsub = async_track_point_in_utc_time(
+                self.hass, self._validity_reached, due + VALIDITY_TIMER_MARGIN
+            )
+
+    @callback
+    def _validity_reached(self, _now: datetime) -> None:
+        self._validity_unsub = None
+        self.async_update_listeners()
+
+    @callback
+    def _cancel_validity_timer(self) -> None:
+        if self._validity_unsub is not None:
+            self._validity_unsub()
+            self._validity_unsub = None
+
+    @callback
+    def _validity_stopped(self, _event: Event) -> None:
+        self._validity_stop_unsub = None
+        self._cancel_validity_timer()
+
+    async def async_shutdown(self) -> None:
+        self._cancel_validity_timer()
+        if self._validity_stop_unsub is not None:
+            self._validity_stop_unsub()
+            self._validity_stop_unsub = None
+        await super().async_shutdown()
 
     def diagnostics_summary(self) -> dict[str, object]:
         """Return aggregate runtime state without identifiers or resource values."""
@@ -893,9 +1384,29 @@ class BoschBuderusDataUpdateCoordinator(
             "poll_failures": self._poll_failures,
             "average_poll_duration_ms": _rounded_duration(average_duration),
             "last_poll_duration_ms": _rounded_duration(self._last_poll_duration_ms),
+            "maximum_poll_duration_ms": _rounded_duration(
+                self._maximum_poll_duration_ms if self._polls_total else None
+            ),
+            "poll_interval_seconds": (
+                self.update_interval.total_seconds() if self.update_interval else None
+            ),
+            "polls_longer_than_interval": self._polls_longer_than_interval,
+            "cycles_over_budget": self._cycles_over_budget,
             "resources_total": len(snapshots),
             "resources_available": sum(item.available for item in snapshots),
             "resources_unavailable": sum(not item.available for item in snapshots),
+            "resources_expired": sum(
+                (
+                    item.available
+                    or (not item.ended and _transient_failure(item.last_error_category))
+                )
+                and self._expired(item, dt_util.utcnow())
+                for item in snapshots
+            ),
+            "validity_limits_seconds": {
+                group.value: interval.total_seconds() * VALIDITY_INTERVALS
+                for group, interval in self._poll_intervals.items()
+            },
             "resources_fresh": sum(
                 item.freshness is Freshness.FRESH for item in snapshots
             ),
@@ -911,6 +1422,7 @@ class BoschBuderusDataUpdateCoordinator(
             "unknown_enum_values_detected": sum(
                 self._unknown_enum_value_counts.values()
             ),
+            "changed_contracts_detected": len(self._contract_changes),
             "circuit_breaker_active": now < self._circuit_open_until,
             "consecutive_gateway_failures": self._gateway_failure_count,
             "polling_profile": self.polling_profile.value,
@@ -946,6 +1458,10 @@ class BoschBuderusDataUpdateCoordinator(
         """Record one distinct undeclared enum value without retaining it."""
         self._unknown_enum_value_counts[path] += 1
 
+    def record_contract_change(self, path: str) -> None:
+        """A known reading changed type or unit since discovery (P22)."""
+        self._contract_changes[path] += 1
+
     def unknown_enum_value_count(self, path: str) -> int:
         """Return the number of distinct undeclared enum values seen for a path."""
         return self._unknown_enum_value_counts[path]
@@ -978,7 +1494,10 @@ class BoschBuderusDataUpdateCoordinator(
             *pending_manual,
         )
         candidate_paths = [
-            path for group in due_groups for path in paths_by_group.get(group, ())
+            path
+            for group in due_groups
+            for path in paths_by_group.get(group, ())
+            if path not in self._budget_progress.get(group, ())
         ]
         paths = [
             path
@@ -1008,7 +1527,16 @@ class BoschBuderusDataUpdateCoordinator(
         cycle_results: list[BatchItemResult] = []
         attempted_paths: set[str] = set()
         interrupted_paths: set[str] = set()
+        over_budget = False
         for chunk in chunk_resource_paths(paths, size=MAX_BULK_PATHS):
+            if attempted_paths and monotonic() - now_monotonic >= CYCLE_BUDGET_SECONDS:
+                over_budget = True
+                self._cycles_over_budget += 1
+                _LOGGER.debug(
+                    "PointT cycle budget reached; %d readings move to the next cycle",
+                    len(paths) - len(attempted_paths),
+                )
+                break
             attempted_paths.update(chunk)
             attempted_at = datetime.now(UTC)
             result_source = SnapshotSource.BATCH
@@ -1036,6 +1564,7 @@ class BoschBuderusDataUpdateCoordinator(
                     attempted_at=attempted_at,
                     now_monotonic=now_monotonic,
                     source=SnapshotSource.BATCH,
+                    whole_request=True,
                 )
                 self._activate_rate_limit_backoff(err, now_monotonic)
                 failed_chunks += 1
@@ -1055,6 +1584,7 @@ class BoschBuderusDataUpdateCoordinator(
                     attempted_at=attempted_at,
                     now_monotonic=now_monotonic,
                     source=SnapshotSource.BATCH,
+                    whole_request=not isinstance(err, SourceStopped),
                 )
                 failed_chunks += 1
                 gateway_failure = True
@@ -1117,7 +1647,8 @@ class BoschBuderusDataUpdateCoordinator(
             not result.ok and result.status not in (403, 404, 406)
             for result in cycle_results
         )
-        for path in self._deferred_poll_paths:
+        for path in () if over_budget else self._deferred_poll_paths:
+            # Readings skipped only for the cycle budget keep their values.
             if (previous := snapshots.get(path)) is not None:
                 # No request was made: retain the attempt timestamp and counters.
                 snapshots[path] = replace(
@@ -1146,8 +1677,12 @@ class BoschBuderusDataUpdateCoordinator(
             self.data = snapshots
             if gateway_failure:
                 self._record_gateway_failure(now_monotonic)
+            if not self.last_update_success:
+                # HA skips listeners after consecutive failures; publish the
+                # readings that failed explicitly in this cycle.
+                self.async_update_listeners()
             raise UpdateFailed("PointT returned no usable resources")
-        if successful == 0:
+        if successful == 0 and not over_budget:
             self._advance_groups(due_groups, now_monotonic)
             return snapshots
         self._gateway_failure_count = 0
@@ -1165,11 +1700,23 @@ class BoschBuderusDataUpdateCoordinator(
             group
             for group in due_groups
             if all(
-                path not in path_set or path in completed_paths
+                path not in path_set
+                or path in completed_paths
+                or path in self._budget_progress.get(group, ())
                 for path in paths_by_group.get(group, ())
             )
         )
         self._advance_groups(completed_groups, now_monotonic)
+        for group in due_groups:
+            if group in completed_groups:
+                self._budget_progress.pop(group, None)
+            elif over_budget:
+                # Remember what this group already got; the rest comes next.
+                self._budget_progress.setdefault(group, set()).update(
+                    path
+                    for path in paths_by_group.get(group, ())
+                    if path in completed_paths
+                )
         return snapshots
 
     def restore_start_counter_path(self, path: str, *, scalar: bool = False) -> None:
@@ -1306,14 +1853,7 @@ class BoschBuderusDataUpdateCoordinator(
                     self._negative_until[result.path] = (
                         monotonic() + pause.total_seconds()
                     )
-        self._paths_by_group = {
-            group: tuple(
-                path
-                for path, resource in self.resources.items()
-                if poll_group(resource) is group
-            )
-            for group in self._poll_intervals
-        }
+        self._rebuild_poll_groups()
         now_monotonic = monotonic()
         self._next_update = {
             group: now_monotonic
@@ -1345,7 +1885,425 @@ class BoschBuderusDataUpdateCoordinator(
                 and snapshot.resource.value == "manual"
             ):
                 self._queue_manual_setpoint_recovery(path, snapshots)
+        self._plan_discovery_recovery(successful_resources)
         return snapshots
+
+    def start_from_inventory(
+        self,
+        resources: dict[str, Resource],
+        *,
+        reason: str,
+        age_seconds: int | None,
+        seen: Mapping[str, datetime],
+        rate_limit: RateLimited | None = None,
+    ) -> None:
+        """Start with the stored resources while the cloud does not answer.
+
+        Every entity exists at once but stays unavailable: no stored value is
+        shown as current. The normal poll reads the stored paths directly, and
+        after the first working cycle a discovery compares the inventory with
+        the plant (P46 handles parts that are missing then).
+        """
+        self.startup_mode = "inventory"
+        self._startup_reason = reason
+        self._inventory_age_seconds = age_seconds
+        self._stored_resources = dict(resources)
+        self.resources = dict(resources)
+        self._rebuild_poll_groups()
+        now_monotonic = monotonic()
+        self._next_update = dict.fromkeys(self._poll_intervals, now_monotonic)
+        self.data = {
+            path: ResourceSnapshot(
+                resource=resource,
+                available=False,
+                last_success=seen.get(path, datetime.now(UTC)),
+                freshness=Freshness.STALE,
+                last_error_category="startup_inventory",
+                # Never shown as a last good value (P12): only a real answer
+                # replaces it, also after a first poll without any answer.
+                ended=True,
+            )
+            for path, resource in resources.items()
+        }
+        self.last_update_success = False
+        self._reconcile_due = now_monotonic
+        if rate_limit is not None:
+            # The account was rate limited during start-up: keep the brake.
+            self._activate_rate_limit_backoff(rate_limit, now_monotonic)
+
+    def stored_resources(self) -> dict[str, Resource]:
+        """Resources to build entities from before the first fresh reading."""
+        return self._stored_resources
+
+    @contextmanager
+    def stored_as_fresh(self) -> Iterator[None]:
+        """Decide entity creation as a normal start would, from stored data."""
+        self._assume_stored = True
+        try:
+            yield
+        finally:
+            self._assume_stored = False
+
+    def assumed_fresh(self, path: str) -> Resource | None:
+        return self._stored_resources.get(path) if self._assume_stored else None
+
+    def _confirm_inventory(self, snapshots: dict[str, ResourceSnapshot]) -> None:
+        """Once a day, mark stored resources read successfully as current."""
+        if self.inventory is None:
+            return
+        now = monotonic()
+        if (
+            self._inventory_confirmed_at is not None
+            and now - self._inventory_confirmed_at < INVENTORY_CONFIRM_SECONDS
+        ):
+            return
+        fresh = [path for path, item in snapshots.items() if _snapshot_is_fresh(item)]
+        if not fresh:
+            return
+        self._inventory_confirmed_at = now
+        self.inventory.confirm(self.gateway.gateway_id, fresh)
+
+    async def _async_firmware_discovery(self) -> dict[str, ResourceSnapshot]:
+        """After a firmware change, discover the plant once more (P22)."""
+        watch = self.firmware
+        watch.attempts += 1
+        previous_resources = dict(self.resources)
+        previous_data = dict(self.data or {})
+        # New firmware: earlier "not found"/"forbidden" pauses no longer hold.
+        self._negative_until.clear()
+        try:
+            discovered = await self._async_discover_data()
+        except UpdateFailed:
+            self._discovery_cycle_failed = True
+            now = monotonic()
+            if now < self._cloud_backoff_until:
+                watch.attempts -= 1
+                watch.postponed += 1
+                watch.due = self._cloud_backoff_until
+                watch.result = "postponed"
+            else:
+                watch.failed(now, RECOVERY_SCHEDULE)
+            return dict(self.data or {})
+        watch.due = None
+        watch.result = "success"
+        self._keep_previous_resources(previous_resources, previous_data, discovered)
+        _LOGGER.info(
+            "PointT capabilities checked again after a firmware change: %d resources",
+            len(self.resources),
+        )
+        return discovered
+
+    def _keep_previous_resources(
+        self,
+        previous_resources: dict[str, Resource],
+        previous_data: dict[str, ResourceSnapshot],
+        discovered: dict[str, ResourceSnapshot],
+    ) -> None:
+        """After a further discovery, readings it did not report stay."""
+        # P41: a reading the gateway does not report right after its update is
+        # kept and polled as before; its own answers decide (404 ends it).
+        room = max(0, MAX_DISCOVERY_RESOURCES - len(self.resources))
+        kept = dict(
+            islice(
+                (
+                    (path, resource)
+                    for path, resource in previous_resources.items()
+                    if path not in self.resources
+                ),
+                room,
+            )
+        )
+        if kept:
+            self.resources.update(kept)
+            self._rebuild_poll_groups()
+            self._kept_after_firmware = set(kept)
+            for path in kept:
+                if path in previous_data and path not in discovered:
+                    discovered[path] = previous_data[path]
+                # Polled as before; not also searched as missing (P46).
+                self.discovery_recovery.missing.pop(path, None)
+            recovery = self.discovery_recovery
+            if recovery.state == "pending" and not recovery.missing:
+                recovery.state, recovery._next_due = "complete", None
+
+    def rescan_state(self) -> str:
+        """A6: whether a requested discovery can be planned now.
+
+        ``ready``, ``paused`` (a cloud or protection pause holds),
+        ``running`` (a discovery is already planned or running) or
+        ``unavailable`` (the cloud does not answer now).
+        """
+        now = monotonic()
+        if (
+            self._cloud_auth_required()
+            or self._cloud_source_stopped()
+            or not self.last_update_success
+        ):
+            return "unavailable"
+        shared = getattr(getattr(self.client, "backoff", None), "remaining", 0.0)
+        shared = shared if isinstance(shared, int | float) else 0.0
+        if (
+            max(self._cloud_backoff_until - now, shared) > 0
+            or now < self._circuit_open_until
+        ):
+            return "paused"
+        if (
+            self._rescan_due is not None
+            or self.rescan_result == "running"
+            or self.firmware.due is not None
+            or self._reconcile_due is not None
+        ):
+            return "running"
+        return "ready"
+
+    def request_rescan(self) -> str:
+        """A6: search the plant again with the next regular cycle.
+
+        Within the normal cloud limits: the discovery waits for a pause and
+        keeps every reading it does not report (no entity is removed).
+        Returns ``planned`` or the reason it is refused (``rescan_state``).
+        """
+        state = self.rescan_state()
+        if state != "ready":
+            return state
+        self._rescan_due = monotonic()
+        self.rescan_result = "planned"
+        return "planned"
+
+    async def _async_rescan(self) -> dict[str, ResourceSnapshot]:
+        """A6: the requested discovery, like the one after a firmware change."""
+        self._rescan_due = None
+        self.rescan_result = "running"
+        previous_resources = dict(self.resources)
+        previous_data = dict(self.data or {})
+        self._negative_until.clear()
+        try:
+            discovered = await self._async_discover_data()
+        except UpdateFailed:
+            self._discovery_cycle_failed = True
+            if monotonic() < self._cloud_backoff_until:
+                # A pause moves the discovery; it is not lost.
+                self._rescan_due = self._cloud_backoff_until
+                self.rescan_result = "postponed"
+            else:
+                self.rescan_result = "failed"
+            return dict(self.data or {})
+        self.rescan_result = "success"
+        self._keep_previous_resources(previous_resources, previous_data, discovered)
+        _LOGGER.info(
+            "PointT discovery completed on request: %d resources", len(self.resources)
+        )
+        return discovered
+
+    async def _async_reconcile(self) -> dict[str, ResourceSnapshot]:
+        """After a start with the inventory, discover the plant once."""
+        self._reconcile_attempts += 1
+        try:
+            discovered = await self._async_discover_data()
+        except UpdateFailed:
+            self._discovery_cycle_failed = True
+            now = monotonic()
+            if now < self._cloud_backoff_until:
+                # A rate limit moves the discovery; it does not use an attempt.
+                self._reconcile_attempts -= 1
+                self._reconcile_postponed += 1
+                self._reconcile_due = self._cloud_backoff_until
+                self._reconcile_result = "postponed"
+            else:
+                index = min(self._reconcile_attempts, len(RECOVERY_SCHEDULE)) - 1
+                self._reconcile_due = now + RECOVERY_SCHEDULE[index]
+                self._reconcile_result = "failed"
+            return dict(self.data or {})
+        self._reconcile_due = None
+        self._reconcile_result = "success"
+        self._stored_resources = {}
+        # This discovery also checked the capabilities of a changed firmware.
+        self.firmware.due = None
+        _LOGGER.info(
+            "PointT discovery completed after starting with the saved inventory"
+        )
+        return discovered
+
+    def startup_inventory_diagnostics(self, now: float) -> dict[str, object]:
+        """How this gateway started, without identifiers or values."""
+        return {
+            "mode": self.startup_mode,
+            "reason": self._startup_reason,
+            "inventory_age_hours": (
+                self._inventory_age_seconds // 3600
+                if self._inventory_age_seconds is not None
+                else None
+            ),
+            "discovery_attempts": self._reconcile_attempts,
+            "discovery_postponed": self._reconcile_postponed,
+            "discovery_result": self._reconcile_result,
+            "next_discovery_in_seconds": (
+                max(0, math.ceil(self._reconcile_due - now))
+                if self._reconcile_due is not None
+                else None
+            ),
+        }
+
+    def _drop_kept_resource(self, path: str) -> None:
+        """A reading kept after a firmware update that now answers 404."""
+        self._kept_after_firmware.discard(path)
+        if self.resources.pop(path, None) is not None:
+            self._rebuild_poll_groups()
+
+    def _rebuild_poll_groups(self) -> None:
+        self._paths_by_group = {
+            group: tuple(
+                path
+                for path, resource in self.resources.items()
+                if poll_group(resource) is group
+            )
+            for group in self._poll_intervals
+        }
+
+    def _missing_reason(self, path: str) -> str:
+        report = self.discovery_diagnostics.paths.get(path)
+        if report is None:
+            return "not_referenced"
+        return report.fallback_result or report.bulk_result
+
+    def _plan_discovery_recovery(self, discovered: dict[str, Resource]) -> None:
+        """Compare with the parts known before and plan a bounded search (P46)."""
+        reference = (
+            self.inventory.resources(self.gateway.gateway_id)
+            if self.inventory is not None
+            else {}
+        )
+        self.firmware.compare_with_last_start(
+            firmware_values(reference), firmware_values(discovered)
+        )
+        missing = {
+            path: self._missing_reason(path)
+            for path in reference
+            if path not in self.resources
+            and path != LICENSE_PATH
+            and not is_startup_path(path)
+        }
+        # Without a stored inventory (first start, upgrade), a root that ended
+        # with a temporary error is searched again as well. With an inventory,
+        # a root never seen before is not expected.
+        for root in () if reference else ROOT_RESOURCE_PATHS:
+            if root in self.resources or root in missing:
+                continue
+            reason = self._missing_reason(root)
+            if self.discovery_diagnostics.paths.get(root) is not None and (
+                is_transient_result(reason)
+            ):
+                missing[root] = reason
+        if self.inventory is not None:
+            self.inventory.record(self.gateway, discovered)
+        self.discovery_recovery.plan(missing, len(reference), monotonic())
+
+    async def _async_recover_missing(
+        self, snapshots: dict[str, ResourceSnapshot]
+    ) -> None:
+        """Search the missing subtrees once, after this cycle's poll."""
+        recovery = self.discovery_recovery
+        now_monotonic = monotonic()
+        budget = MAX_DISCOVERY_RESOURCES - len(self.resources)
+        if budget <= 0:
+            self._give_up_recovery("resource_limit")
+            return
+        report = DiscoveryDiagnostics()
+        try:
+            found = await async_discover_resources(
+                self.client,
+                self.gateway.gateway_id,
+                roots=recovery.roots(),
+                maximum_resources=budget,
+                diagnostics=report,
+                # Start-up values are queued, not read, within the shared budget.
+                startup_data=self.startup_data,
+                gateway=self.gateway,
+                rediscovery=True,
+            )
+        except AuthenticationError as err:
+            raise ConfigEntryAuthFailed from err
+        except RateLimited as err:
+            # The poll already succeeded; the brake applies from the next cycle.
+            self._activate_rate_limit_backoff(err, now_monotonic)
+            recovery.postpone()
+            return
+        except PointTError as err:
+            if _connection_problem(err) or isinstance(err, ServiceUnavailable):
+                # No answer is no result: the search is repeated later without
+                # using up an attempt (P41).
+                recovery.postpone(now_monotonic)
+                return
+            recovery.finish((), now_monotonic, result=_result_category(err, None))
+            if recovery.state == "given_up":
+                self._forget_given_up()
+            return
+        found = {
+            path: resource
+            for path, resource in found.items()
+            if not is_startup_path(path) and path != LICENSE_PATH
+        }
+        added = {
+            path: resource
+            for path, resource in found.items()
+            if path not in self.resources
+        }
+        if added:
+            self.resources.update(added)
+            self._rebuild_poll_groups()
+            updated_at = datetime.now(UTC)
+            for path in added:
+                self._record_capability(path, "success", SnapshotSource.DISCOVERY)
+            # The listeners of every platform add entities for fresh resources.
+            snapshots.update(
+                {
+                    path: ResourceSnapshot(
+                        resource=resource,
+                        available=True,
+                        last_success=updated_at,
+                        last_attempt=updated_at,
+                        source=SnapshotSource.DISCOVERY,
+                    )
+                    for path, resource in added.items()
+                }
+            )
+            faults = {
+                path: resource
+                for path, resource in added.items()
+                if is_fault_resource_path(path)
+            }
+            if faults:
+                self.faults.process_resources(faults, successful_paths=set(faults))
+            for path, resource in added.items():
+                if (
+                    path.startswith("/heatingCircuits/")
+                    and path.endswith("/operationMode")
+                    and resource.value == "manual"
+                ):
+                    self._queue_manual_setpoint_recovery(path, snapshots)
+        if self.inventory is not None and found:
+            self.inventory.record(self.gateway, found)
+        recovery.finish(
+            found, now_monotonic, result="success" if found else "nothing_found"
+        )
+        if recovery.state == "given_up":
+            self._forget_given_up()
+
+    def _give_up_recovery(self, result: str) -> None:
+        self.discovery_recovery.give_up(result)
+        self._forget_given_up()
+
+    def _forget_given_up(self) -> None:
+        """After a full day of searching, a part is no longer expected.
+
+        Its registry entries stay; a later discovery that finds it again simply
+        brings it back. This avoids a warning at every start for parts that
+        were removed or exist only in some operating modes.
+        """
+        if self.inventory is not None:
+            self.inventory.forget(
+                self.gateway.gateway_id, tuple(self.discovery_recovery.missing)
+            )
 
     def _merge_startup_resources(self, snapshots: dict[str, ResourceSnapshot]) -> None:
         """Keep the actual read timestamp, including across automatic setup retries."""
@@ -1468,9 +2426,28 @@ class BoschBuderusDataUpdateCoordinator(
                     )
                 )
             except PointTError as err:
+                status = err.status if isinstance(err, UnexpectedHttpStatus) else None
+                if (
+                    isinstance(err, ProtocolError)
+                    and not isinstance(err, ResourceOmitted)
+                ) or _explicit_client_error(status):
+                    # Invalid data or a client error for this very reading ends
+                    # it; _apply_results records the capability result.
+                    results.append(
+                        BatchItemResult(
+                            gateway_id=self.gateway.gateway_id,
+                            path=path,
+                            status=status,
+                            error=err,
+                        )
+                    )
+                    continue
                 self._record_capability(
                     path, _pointt_result(err), SnapshotSource.FALLBACK
                 )
+                if _connection_problem(err):
+                    # A clear connection problem: no further single reads.
+                    break
                 continue
             else:
                 results.append(
@@ -1510,6 +2487,7 @@ class BoschBuderusDataUpdateCoordinator(
         attempted_at: datetime,
         now_monotonic: float,
         source: SnapshotSource,
+        whole_request: bool = False,
     ) -> int:
         """Apply partial results without discarding last-good values."""
         successful = 0
@@ -1562,13 +2540,18 @@ class BoschBuderusDataUpdateCoordinator(
                 missing_manual_setpoints.add(result.path)
             previous = snapshots.get(result.path)
             if previous is not None:
+                category = _error_category(result.error, result.status)
+                no_answer = _no_answer(result, whole_request=whole_request)
+                if no_answer and not _transient_failure(category):
+                    category = f"{NO_ANSWER_PREFIX}{category}"
                 failed = replace(
                     previous,
                     available=False,
                     last_attempt=attempted_at,
                     freshness=Freshness.STALE,
-                    last_error_category=_error_category(result.error, result.status),
+                    last_error_category=category,
                     consecutive_failures=previous.consecutive_failures + 1,
+                    ended=previous.ended or not no_answer,
                 )
                 snapshots[result.path] = failed
                 self._pause_failed_resource(failed, result.status, now_monotonic)
@@ -1620,8 +2603,12 @@ class BoschBuderusDataUpdateCoordinator(
     ) -> None:
         pause: timedelta | None = None
         if status == 404:
+            if snapshot.resource.path in self._kept_after_firmware:
+                # Kept only through a firmware update: its own 404 ends it.
+                self._drop_kept_resource(snapshot.resource.path)
+                return
             # A last-good snapshot proves this resource exists. Retry it at its
-            # next group poll, as the app permits another read after an error.
+            # next group poll; another read after an error is permitted.
             self._negative_until.pop(snapshot.resource.path, None)
             return
         elif (
@@ -1685,11 +2672,15 @@ class BoschBuderusDataUpdateCoordinator(
             ir.async_create_issue(
                 self.hass,
                 DOMAIN,
-                f"{RATE_LIMIT_ISSUE_PREFIX}{self._config_entry.entry_id}",
-                data={"entry_id": self._config_entry.entry_id},
+                repair_id(
+                    RATE_LIMIT_ISSUE_PREFIX, self._config_entry, self.connection_id
+                ),
+                data=repair_data(self._config_entry, self.connection_id),
                 is_fixable=True,
                 severity=ir.IssueSeverity.WARNING,
-                translation_key="repeated_rate_limit",
+                translation_key="managed_rate_limit"
+                if self._config_entry.version == 4
+                else "repeated_rate_limit",
             )
         _LOGGER.warning(
             "PointT rate limit reached; cloud polling paused for %.0f seconds",

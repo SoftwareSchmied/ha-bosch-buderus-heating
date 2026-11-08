@@ -12,7 +12,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import (
     CONF_BRAND,
@@ -27,6 +26,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     Gateway,
     RateLimited,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 FLOW_MODULE = "custom_components.bosch_buderus_heating.config_flow"
 AUTH_MODULE = "custom_components.bosch_buderus_heating.pointt.auth"
@@ -45,6 +45,9 @@ def auth_clock():
 async def _start(hass: HomeAssistant, brand: Brand = Brand.BUDERUS):
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "cloud"}
     )
     return await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_BRAND: brand.value}
@@ -264,6 +267,7 @@ async def test_reauth_after_expiry_preserves_entry_devices_and_entities(
         CONF_BRAND: Brand.BUDERUS.value,
         CONF_GATEWAY_IDS: ["gateway-one"],
         **tokens_to_data(renewed),
+        "cloud_auth_epoch": 1,
     }
     assert entry.unique_id == "buderus:existing"
     assert entry.options == {"polling_profile": "cloud_friendly"}

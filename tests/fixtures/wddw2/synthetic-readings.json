@@ -2,9 +2,6 @@
   "provenance": {
     "kind": "synthetic",
     "physical_device_verified": false,
-    "app": "MyBuderus 5.0.0 (com.buderus.tt.dashtt)",
-    "safety_source": "com.bosch.tt.dashtt.wddw2provider.data.remote.resources.SafetyTemperature.updateResourceWith; Wddw2ModelMapperImpl.operationDetail uses onOffToBoolean and SafetyTemperatureEnabled",
-    "counter_source": "com.bosch.tt.dashtt.wddw2provider.data.remote.resources.NumberOfStarts.updateResourceWith uses LocalFloatValue",
     "scope": "Types and on/off mapping are supported by the compatibility mapping. Payloads, counts, IDs and absent units are synthetic regression examples, not captured device responses."
   },
   "safety": {

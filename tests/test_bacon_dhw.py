@@ -16,6 +16,7 @@ from custom_components.bosch_buderus_heating.bacon.dhw_status import (
     track_status,
 )
 from custom_components.bosch_buderus_heating.bacon.models import BaconError, Device
+from custom_components.bosch_buderus_heating.ha_compat import temperature_unit
 from custom_components.bosch_buderus_heating.water_heater import (
     BaconWaterHeater,
     async_setup_entry,
@@ -89,9 +90,9 @@ def responding(
 def test_complete_family_readings_and_features(name):
     account, heater, data = configured(name)
     assert heater.available
-    assert heater.current_temperature == 48
-    assert heater.target_temperature == 50
-    assert heater.temperature_unit == "°C"
+    assert heater.native_current_temperature == 48
+    assert heater.native_target_temperature == 50
+    assert temperature_unit(heater) == "°C"
     assert (
         heater.supported_features == Feature.TARGET_TEMPERATURE | Feature.OPERATION_MODE
     )
@@ -148,7 +149,7 @@ def test_invalid_current_temperature_is_never_zero(value):
     account, heater, data = configured()
     data["sensor"]["items"][0].update(timestamp=3, currentTemp=value)
     emit(account, "topics/sensor", data["sensor"])
-    assert heater.current_temperature is None
+    assert heater.native_current_temperature is None
 
 
 @pytest.mark.parametrize(
@@ -166,7 +167,7 @@ def test_incompatible_temperature_metadata(change):
     account, heater, data = configured()
     data["metadata"]["topics"]["sensor"]["currentTemp"].update(change)
     emit(account, "topics/meta", data["metadata"])
-    assert heater.current_temperature is None
+    assert heater.native_current_temperature is None
 
 
 @pytest.mark.parametrize(
@@ -187,7 +188,7 @@ async def test_invalid_target_limits_disable_writes(change):
     account, heater, data = configured()
     data["metadata"]["shadows"]["state"]["tempSetpoint"].update(change)
     emit(account, "topics/meta", data["metadata"])
-    assert heater.target_temperature is None
+    assert heater.native_target_temperature is None
     assert not heater.supported_features & Feature.TARGET_TEMPERATURE
     assert heater.min_temp == heater.max_temp == 0
     assert heater.target_temperature_step is None
@@ -218,7 +219,7 @@ async def test_target_write_confirmation_and_noop(name):
     writes = responding(account, data, "serial-B")
     await heater.async_set_temperature(temperature=55.0)
     assert writes == [{"tempSetpoint": 55}]
-    assert heater.target_temperature == 55
+    assert heater.native_target_temperature == 55
     await heater.async_set_temperature(temperature=55)
     assert len(writes) == 1
     assert account.devices["serial-A"].state is None
@@ -255,7 +256,7 @@ async def test_unconfirmed_changes_never_appear_successful(outcome):
     assert error.value.translation_key == "bacon_command_failed"
     assert writes == [{"tempSetpoint": 55}]
     assert not heater.available
-    assert heater.target_temperature is heater.current_operation is None
+    assert heater.native_target_temperature is heater.current_operation is None
     assert heater.device.uncertain
 
 
@@ -346,7 +347,7 @@ def test_readonly_defaults_and_optional_setpoint_step():
     meta["opMode"].pop("ro")
     emit(account, "topics/meta", data["metadata"])
     assert heater.target_temperature_step == 1
-    assert heater.target_temperature == 50
+    assert heater.native_target_temperature == 50
     assert heater.operation_list == ["off"]
     assert heater.supported_features == Feature.OPERATION_MODE
 
@@ -358,8 +359,8 @@ def test_nullable_optional_sensor_bounds_and_ceiling_are_not_error_values():
     data["shadow"]["state"]["reported"]["setTempMax"] = None
     data["shadow"]["version"] += 1
     emit(account, "shadows/state/get/accepted", data["shadow"])
-    assert heater.current_temperature == 48
-    assert heater.target_temperature == 50
+    assert heater.native_current_temperature == 48
+    assert heater.native_target_temperature == 50
     assert heater.max_temp == 65
 
 
@@ -379,29 +380,29 @@ def test_set_temp_max_can_only_narrow_target_range(ceiling, expected):
 def test_freshness_is_per_stream_and_retained_sensor_never_refreshes():
     account, heater, data = configured()
     status = BaconDhwStatus(account, heater.serial, "vacation")
-    heater.device.sensor_received_at -= 901
+    heater.device.sensor_received_at -= 3601
     for key in heater.device.sensor_fields_received_at:
-        heater.device.sensor_fields_received_at[key] -= 901
+        heater.device.sensor_fields_received_at[key] -= 3601
     emit(account, "shadows/state/get/accepted", data["shadow"])
-    assert heater.available and heater.current_temperature is None
+    assert heater.available and heater.native_current_temperature is None
     assert not status.available
     data["sensor"]["items"][0].update(timestamp=999, currentTemp=70)
     emit(account, "topics/sensor", data["sensor"], retained=True)
-    assert heater.current_temperature is None
+    assert heater.native_current_temperature is None
     assert heater.device.sensor_timestamp == 2
     data["sensor"]["items"][0]["timestamp"] = 3
     emit(account, "topics/sensor", data["sensor"])
-    assert heater.current_temperature == 70
+    assert heater.native_current_temperature == 70
     heater.device.state_received_at -= 901
     for key in heater.device.state_fields_received_at:
         heater.device.state_fields_received_at[key] -= 901
-    assert heater.target_temperature is None
+    assert heater.native_target_temperature is None
     assert heater.current_operation is None
     assert heater.supported_features == 0
-    assert heater.current_temperature == 70
+    assert heater.native_current_temperature == 70
     emit(account, "topics/info", {**data["info"], "timestamp": 3, "online": False})
     assert not heater.available
-    assert heater.current_temperature is None
+    assert heater.native_current_temperature is None
 
 
 @pytest.mark.parametrize("stamp", [None, True, -1, 1.0, "2"])
@@ -418,7 +419,7 @@ def test_duplicate_and_older_sensor_messages_cannot_change_values_or_freshness()
     for stamp in (1, 2):
         data["sensor"]["items"][0].update(timestamp=stamp, currentTemp=80)
         emit(account, "topics/sensor", data["sensor"])
-        assert heater.current_temperature == 48
+        assert heater.native_current_temperature == 48
         assert heater.device.sensor_received_at == received
 
 
@@ -432,17 +433,17 @@ def test_reconnection_requires_all_current_streams_and_keeps_identity():
     emit(account, "topics/info", {**data["info"], "timestamp": 3})
     assert not heater.available
     emit(account, "shadows/state/get/accepted", data["shadow"])
-    assert heater.available and heater.target_temperature is None
+    assert heater.available and heater.native_target_temperature is None
     assert heater.operation_list == []
     emit(account, "topics/meta", data["metadata"], retained=True)
-    assert heater.target_temperature == 50
-    assert heater.current_temperature is None
+    assert heater.native_target_temperature == 50
+    assert heater.native_current_temperature is None
     emit(
         account,
         "topics/sensor",
         {"items": [{**data["sensor"]["items"][0], "timestamp": 3}]},
     )
-    assert heater.current_temperature == 48
+    assert heater.native_current_temperature == 48
     assert heater.unique_id == identity and heater.device_info == device_info
     replacement = BaconWaterHeater(account, heater.serial)
     assert replacement.unique_id == identity
@@ -457,7 +458,7 @@ def test_partial_sensor_update_preserves_other_fields_and_respects_metadata():
         {"items": [{"timestamp": 3, "vacationModeEnabled": True}]},
     )
     assert indicator.is_on is True
-    assert heater.current_temperature == 48
+    assert heater.native_current_temperature == 48
     emit(
         account,
         "topics/sensor",

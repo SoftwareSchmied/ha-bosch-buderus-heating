@@ -9,7 +9,6 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, call, patch
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating import async_unload_entry
 from custom_components.bosch_buderus_heating.const import DOMAIN, PollingProfile
@@ -45,6 +44,7 @@ from custom_components.bosch_buderus_heating.sensor import (
 from custom_components.bosch_buderus_heating.sensor import (
     async_setup_entry as setup_sensors,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 MODE = "/heatingCircuits/hc2/operationMode"
 TARGET = "/heatingCircuits/hc2/manualRoomSetpoint"

@@ -76,7 +76,7 @@ async def _async_register_module(hass: HomeAssistant, key: str, name: str) -> No
         return
 
     from homeassistant.components.frontend import add_extra_js_url
-    from homeassistant.components.http import (  # type: ignore[attr-defined]
+    from homeassistant.components.http import (  # type: ignore[attr-defined,unused-ignore]
         StaticPathConfig,
     )
 

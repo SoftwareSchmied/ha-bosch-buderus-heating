@@ -2,8 +2,8 @@
 
 ## English
 
-I corrected all 29 German fallback names identified in finding B03 of the
-MyBuderus 5.0.0 comparison. Both languages now share one path-specific mapping
+I corrected all 29 German fallback names identified in finding B03. Both
+languages now share one path-specific mapping
 in `resource_catalog.py`. Matching keeps the parent path and replaces only one
 circuit or zone ID. Unknown paths retain their existing fallback.
 
@@ -31,8 +31,8 @@ a seconds input, and a delete button for an existing period.
 
 ## Deutsch
 
-Ich habe die 29 englischen Ersatznamen aus Befund B03 des MyBuderus-Abgleichs
-ergänzt. Die gemeinsame Zuordnung berücksichtigt den vollständigen Pfad.
+Ich habe die 29 englischen Ersatznamen aus Befund B03 ergänzt. Die gemeinsame
+Zuordnung berücksichtigt den vollständigen Pfad.
 Dadurch wird etwa `gas` im Energiepreis-Pfad als „Gaspreis“ bezeichnet,
 ohne andere Gaswerte umzubenennen.
 
@@ -93,42 +93,29 @@ aktuelle Systemsprache wie üblich auch die erstmalige Entitäts-ID prägen.
 
 ## Terminology references / Begriffszuordnung
 
-I compared the resource mapping and German and English terminology with
-MyBuderus 5.0.0.
-The names above describe the same resource in both languages; they are not
-presented as verbatim copies of every app label.
+The names above describe the same resource in both languages.
 
-- `ConnectKeyHeatSourcesResource$Hybrid`: the nested
-  resource classes supply the six hybrid paths.
-  `HybridOutdoorStatus` contains `connected` and `notConnected`.
+- The six hybrid paths belong to the hybrid heat-source resource.
+  `outdoorStatus` reports `connected` or `notConnected`.
   “Outdoor status” therefore describes the outdoor-unit connection.
-  The `hybrid_energy_prices_reminder_*` strings explicitly refer to
-  reminders to update energy prices.
-- `ConnectKeyHeatingCircuitResource$Cooling$TemperatureLevels$On` is a
-  numeric temperature resource. Its label must not imply an on/off control.
-  `ConnectKeyHsmMapperImpl.getLocalHeatingSystemSwitchModes` reads
-  `SuWiThreshold` and `SuWiCoolingThreshold`.
-  The `heating_system_modes_*` strings describe the outdoor-temperature
-  thresholds for stopping heating and starting cooling.
-- `ConnectKeyPoolResource$SetpointTemp`,
-  `ConnectKeySolarCircuitsResource$PumpModulation`,
-  `ConnectKeySystemResource$EnergyTariff`, `$LowNoise`, `$SeasonOptimizer`
-  and `ConnectKeyVentilationResource$SensorsSupplyTemp` provide their
-  respective path contexts.
-- RRC `AwayTemperature` identifies the away-mode
-  temperature. WDDW2 sensor resources and
-  `Wddw2ModelMapperImpl.monitoringDeviceData` distinguish casing-air,
-  exhaust-gas and heat-exchanger temperatures. The app's
-  `section_label_box_air_temperature` refers to the appliance casing.
-- WDDW2 `MonitorValues.updateResourceWith` distributes collected readings
-  through `updateMonitorValue`. The plural name deliberately identifies
-  a collection. A translated name does not prove that this resource is a
-  scalar sensor. Its response shape and extraction belong to P03.
-- I rechecked the 46 direct App/HA text pairs in T001 to T046. The mapping
+  The reminder resources refer to reminders to update energy prices.
+- `cooling/temperatureLevels/on` is a numeric temperature resource. Its label
+  must not imply an on/off control. `suWiThreshold` and
+  `suWiCoolingThreshold` are the outdoor-temperature thresholds for stopping
+  heating and starting cooling.
+- The pool, solar, energy-tariff, low-noise, season-optimizer and ventilation
+  names follow their respective path contexts.
+- The RRC away temperature identifies the away-mode temperature. WDDW2 sensor
+  resources distinguish casing-air, exhaust-gas and heat-exchanger
+  temperatures. The box air temperature refers to the appliance casing.
+- WDDW2 `monitorValues` contains collected readings. The plural name
+  deliberately identifies a collection. A translated name does not prove that
+  this resource is a scalar sensor. Its response shape and extraction belong
+  to P03.
+- I rechecked the 46 text pairs T001 to T046. The mapping
   `eco = Eco+`, `low = Eco`, `high = Comfort / Komfort` remains correct.
-  “Sole ansaugen” describes English “Brine draw”; I retain it despite the
-  app's German “Soleauslass”. Regeneration-code casing is handled by P04 in this beta.
-  T047 to T049 compare app-only help texts and remain unchanged.
+  “Sole ansaugen” describes English “Brine draw”. Regeneration-code casing is
+  handled by P04 in this beta. T047 to T049 remain unchanged.
 
 ## Validation / Prüfung
 

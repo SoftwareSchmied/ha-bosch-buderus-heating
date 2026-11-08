@@ -98,7 +98,7 @@ async def test_uncertain_put_never_leaves_old_target_fresh(
     assert coordinator.data[TARGET].freshness is Freshness.STALE
     assert not coordinator.data[TARGET].available
     assert coordinator.data[TARGET].last_success == before.last_success
-    assert entity.target_temperature is None
+    assert entity.native_target_temperature is None
     assert not entity.supported_features & ClimateEntityFeature.TARGET_TEMPERATURE
     assert TARGET not in controls(coordinator)
     with pytest.raises(ServiceValidationError):

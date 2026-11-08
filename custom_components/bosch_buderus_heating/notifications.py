@@ -17,12 +17,14 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
-from .const import CONF_FAULT_NOTIFICATIONS, CONF_GATEWAY_IDS, DOMAIN
+from .const import CONF_FAULT_NOTIFICATIONS, DOMAIN
+from .entry_sources import notification_gateways
 from .faults import (
     ActiveFault,
     FaultEventType,
     FaultLifecycleEvent,
     FaultSeverity,
+    FaultTracker,
     fault_severity_label,
     fault_summary,
 )
@@ -178,13 +180,31 @@ class FaultNotifications:
         self,
         hass: HomeAssistant,
         entry: ConfigEntry[Any],
-        coordinator: BoschBuderusDataUpdateCoordinator,
+        coordinator: BoschBuderusDataUpdateCoordinator | None,
+        *,
+        source_current: Callable[[], bool] = lambda: True,
+        gateway_id: str | None = None,
+        tracker: FaultTracker | None = None,
+        flush_tracker: bool = True,
     ) -> None:
         self.hass = hass
         self.entry = entry
-        self.coordinator = coordinator
-        self._tracker = coordinator.faults
-        self._gateway_id = coordinator.gateway.gateway_id
+        self.coordinator: BoschBuderusDataUpdateCoordinator | None = coordinator
+        self._source_current = source_current
+        if coordinator is None and (gateway_id is None or tracker is None):
+            raise ValueError(
+                "Offline notifications require a known gateway and baseline"
+            )
+        resolved_tracker = coordinator.faults if coordinator is not None else tracker
+        assert resolved_tracker is not None
+        self._tracker: FaultTracker = resolved_tracker
+        self._retained_faults = self._tracker.active_faults
+        resolved_gateway = (
+            coordinator.gateway.gateway_id if coordinator is not None else gateway_id
+        )
+        assert resolved_gateway is not None
+        self._gateway_id: str = resolved_gateway
+        self._flush_tracker = flush_tracker
         self._id = notification_id(entry.entry_id, self._gateway_id)
         self._store = notification_store(hass, entry.entry_id, self._gateway_id)
         self._dismissed: dict[str, int] = {}
@@ -192,9 +212,14 @@ class FaultNotifications:
         self._visible = False
         self._last_content: tuple[str, str] | None = None
         self._reported: dict[str, ActiveFault] = {}
+        if coordinator is None:
+            self._reported = {
+                _incident_key(fault): fault for fault in self._tracker.active_faults
+            }
         self._resolved: dict[str, FaultLifecycleEvent] = {}
         self._omitted_resolved = 0
         self._remove_callbacks: list[Callable[[], None]] = []
+        self._remove_tracker_callbacks: list[Callable[[], None]] = []
         self._closed = False
         self._dirty = False
         self._save_schedule_failed = False
@@ -228,10 +253,63 @@ class FaultNotifications:
                 }
         self._remove_callbacks = [
             pn.async_register_callback(self.hass, self._notification_changed),
+        ]
+        if self._source_current():
+            self._attach_tracker()
+        self.async_update()
+
+    def _attach_tracker(self) -> None:
+        self._remove_tracker_callbacks = [
             self._tracker.async_add_state_listener(self.async_update),
             self._tracker.async_add_event_observer(self._fault_changed),
         ]
+
+    @callback
+    def detach_source(self) -> None:
+        """Retain visible incidents as unconfirmed while their access is absent."""
+        for remove in self._remove_tracker_callbacks:
+            remove()
+        self._remove_tracker_callbacks.clear()
+        self.coordinator = None
+        self._source_current = lambda: False
         self.async_update()
+
+    @callback
+    def replace_source(
+        self,
+        coordinator: BoschBuderusDataUpdateCoordinator,
+        current: Callable[[], bool],
+    ) -> None:
+        if self._closed or coordinator.gateway.gateway_id != self._gateway_id:
+            raise ValueError("Notification source identity changed")
+        self.detach_source()
+        self.coordinator = coordinator
+        self._tracker = coordinator.faults
+        self._source_current = current
+        if self._remove_callbacks:
+            self._attach_tracker()
+        self.async_update()
+
+    @property
+    def _confirmed(self) -> bool:
+        return self._source_current() and self._tracker.current_state_confirmed
+
+    @property
+    def _active_faults(self) -> tuple[ActiveFault, ...]:
+        current = (
+            self._tracker.active_faults
+            if self._source_current()
+            else self._retained_faults
+        )
+        if self._confirmed:
+            return current
+        retained = {
+            key: fault
+            for key, fault in self._reported.items()
+            if fault.severity in _RANK
+        }
+        retained.update({_incident_key(fault): fault for fault in current})
+        return tuple(retained.values())
 
     @callback
     def async_update(self) -> None:
@@ -239,6 +317,8 @@ class FaultNotifications:
         if self._closed:
             return
         try:
+            if self._source_current():
+                self._retained_faults = self._tracker.active_faults
             self._update()
         except Exception:
             if not self._update_error_logged:
@@ -255,11 +335,11 @@ class FaultNotifications:
             self._reset = reset
             self._dismissed.clear()
             self._schedule_save()
-        active = self._tracker.active_faults
+        active = self._active_faults
         current = {_incident_key(fault): _RANK[fault.severity] for fault in active}
         # Only discard obsolete suppression after the tracker has confirmed absence.
         # A retained fault remains in "current" during partial/failed reads.
-        if active or self._tracker.current_state_confirmed:
+        if active or self._confirmed:
             retained = {
                 key: rank for key, rank in self._dismissed.items() if key in current
             }
@@ -271,7 +351,7 @@ class FaultNotifications:
             return
         # Keep the current classification of previously shown faults. A change
         # to warning or maintenance alone does not confirm their resolution.
-        for fault in self._tracker.active:
+        for fault in self._tracker.active if self._source_current() else ():
             key = _incident_key(fault)
             if key in self._reported:
                 self._reported[key] = fault
@@ -284,9 +364,7 @@ class FaultNotifications:
                 self._clear_details()
             self._reported.update({_incident_key(fault): fault for fault in active})
             self._show(*self._content(active))
-        elif self._visible and (
-            self._reported or self._tracker.current_state_confirmed
-        ):
+        elif self._visible and (self._reported or self._confirmed):
             self._show(*self._content(()))
 
     @callback
@@ -294,6 +372,7 @@ class FaultNotifications:
         """Retain only confirmed resolutions belonging to the visible notification."""
         if (
             self._closed
+            or not self._source_current()
             or not self._visible
             or event.event_type is not FaultEventType.RESOLVED
         ):
@@ -337,8 +416,10 @@ class FaultNotifications:
     def _content(self, active: tuple[ActiveFault, ...]) -> tuple[str, str]:
         language = "de" if self.hass.config.language.lower().startswith("de") else "en"
         texts = _TEXT[language]
-        configured = self.entry.data.get(CONF_GATEWAY_IDS, [])
-        gateways = configured if isinstance(configured, list) else []
+        try:
+            gateways = notification_gateways(self.entry)
+        except ValueError:
+            gateways = (self._gateway_id,)
         number = (
             gateways.index(self._gateway_id) + 1 if self._gateway_id in gateways else 1
         )
@@ -359,7 +440,7 @@ class FaultNotifications:
         if active:
             title = texts["title"].format(name=name)
             lines = [texts["active"].format(count=len(active))]
-            if not self._tracker.current_state_confirmed:
+            if not self._confirmed:
                 lines += ["", texts["unconfirmed"]]
             ordered = sorted(
                 active,
@@ -376,7 +457,7 @@ class FaultNotifications:
         elif changed:
             title = texts["changed_title"].format(name=name)
             lines = []
-            if not self._tracker.current_state_confirmed:
+            if not self._confirmed:
                 lines.append(texts["unconfirmed"])
         else:
             title = texts["resolved_title"].format(name=name)
@@ -440,7 +521,7 @@ class FaultNotifications:
         if self._visible:
             self._dismissed = {
                 _incident_key(fault): _RANK[fault.severity]
-                for fault in self._tracker.active_faults
+                for fault in self._active_faults
             }
             self._schedule_save()
         self._visible = False
@@ -477,7 +558,8 @@ class FaultNotifications:
         """Flush a just-dismissed notification before an integration reload."""
         self.stop()
         try:
-            await self._tracker.async_flush()
+            if self._flush_tracker:
+                await self._tracker.async_flush()
         except Exception:
             _LOGGER.warning("The fault baseline could not be saved during unload")
         if self._dirty:
@@ -490,9 +572,10 @@ class FaultNotifications:
     def stop(self) -> None:
         """Disconnect observers and remove the locally owned notification."""
         self._closed = True
-        for remove in self._remove_callbacks:
+        for remove in (*self._remove_callbacks, *self._remove_tracker_callbacks):
             remove()
         self._remove_callbacks.clear()
+        self._remove_tracker_callbacks.clear()
         try:
             self._remove_notification()
         except Exception:

@@ -21,6 +21,7 @@ async def test_native_hot_water_frontend(
     hass_client,
     hass_access_token,
     enable_custom_integrations,
+    legacy_platform_runtime,
     tmp_path,
 ):
     hass.config.language = "de"

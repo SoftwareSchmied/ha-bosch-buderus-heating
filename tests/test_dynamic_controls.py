@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 from homeassistant.exceptions import ServiceValidationError
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
@@ -41,6 +40,7 @@ from custom_components.bosch_buderus_heating.switch import (
     async_setup_entry as setup_switches,
 )
 from custom_components.bosch_buderus_heating.writes import WriteService, assess_control
+from tests.ha_test_helpers import MockConfigEntry
 
 MODE = "/heatingCircuits/hc2/operationMode"
 NUMBER = "/heatingCircuits/hc2/manualRoomSetpoint"

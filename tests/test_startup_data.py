@@ -12,7 +12,6 @@ import pytest
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating import (
     _async_load_startup_data,
@@ -31,6 +30,7 @@ from custom_components.bosch_buderus_heating.discovery import (
     DiscoveryDiagnostics,
     async_discover_resources,
 )
+from custom_components.bosch_buderus_heating.entry_sources import pointt_coordinators
 from custom_components.bosch_buderus_heating.inventory import (
     InventoryError,
     build_anonymized_inventory,
@@ -71,6 +71,8 @@ from custom_components.bosch_buderus_heating.startup_data import (
     safe_technical_value,
     startup_placeholder,
 )
+from tests.ha_test_helpers import MockConfigEntry
+from tests.helpers.managed_runtime import pointt_client, wait_for_sources
 
 PRODUCT = "/devices/synthetic-device/productName"
 FAST = "/heatSources/actualModulation"
@@ -648,7 +650,7 @@ async def test_diagnostics_are_local_and_inventory_drops_technical_values(enviro
     coordinator.startup_data.schedule(PRODUCT, 2, advertised=True)
     coordinator.startup_data.omit_license()
     diagnostics = await async_get_config_entry_diagnostics(coordinator.hass, entry)
-    assert diagnostics["diagnostics_schema"] == 27
+    assert diagnostics["diagnostics_schema"] == 41
     assert diagnostics["privacy"]["contains_raw_resource_values"] is True
     metadata = diagnostics["gateways"][0]["technical_metadata"]
     assert {item["path"] for item in metadata} == {
@@ -711,15 +713,18 @@ def test_live_or_structural_surprises_are_not_reused_as_static_cache():
 async def test_removing_an_entry_drops_only_its_own_account_pause(environment):
     from custom_components.bosch_buderus_heating import async_remove_entry
     from custom_components.bosch_buderus_heating.auth_lifecycle import ACCOUNT_BACKOFFS
+    from custom_components.bosch_buderus_heating.configuration_migration import (
+        legacy_cloud_connection_id,
+    )
 
     entry, client, coordinator = environment
     other = RateLimitBackoff()
     coordinator.hass.data[ACCOUNT_BACKOFFS] = {
-        entry.entry_id: client.backoff,
-        "other": other,
+        (entry.entry_id, legacy_cloud_connection_id(entry.entry_id)): client.backoff,
+        ("other", "cloud"): other,
     }
     await async_remove_entry(coordinator.hass, entry)
-    assert coordinator.hass.data[ACCOUNT_BACKOFFS] == {"other": other}
+    assert coordinator.hass.data[ACCOUNT_BACKOFFS] == {("other", "cloud"): other}
     await async_remove_entry(coordinator.hass, entry)
 
 
@@ -822,9 +827,7 @@ async def test_real_ha_registry_and_entities_recover_during_a_refresh(hass):
         return {FAST: scalar(FAST, 20)}
 
     with (
-        patch(
-            "custom_components.bosch_buderus_heating.PointTClient", return_value=client
-        ),
+        pointt_client(client),
         patch(
             "custom_components.bosch_buderus_heating.coordinator.async_discover_resources",
             side_effect=discover,
@@ -839,11 +842,12 @@ async def test_real_ha_registry_and_entities_recover_during_a_refresh(hass):
         ),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
+        await wait_for_sources(hass, entry, 1)
         await hass.async_block_till_done()
         assert hass.states.get(existing.entity_id).state == "unavailable"
         product_id = f"synthetic:{PRODUCT.strip('/').replace('/', ':')}"
         assert registry.async_get_entity_id("sensor", DOMAIN, product_id) is None
-        coordinator = entry.runtime_data.coordinators[0]
+        coordinator = pointt_coordinators(entry)[0]
         recovery_at = (
             max(read.next_attempt for read in coordinator.startup_data.reads.values())
             + 60

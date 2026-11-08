@@ -130,7 +130,7 @@ class HolidayWriteValues:
     source_path: str = HOLIDAY_CREATE_PATH
 
     def as_payload(self) -> dict[str, JsonValue]:
-        """Return the exact payload shape used by MyBuderus/HomeCom Easy."""
+        """Return the exact payload shape the cloud expects."""
         return {
             "startDate": self.start_date,
             "endDate": self.end_date,
@@ -363,7 +363,7 @@ def parse_holiday_write_configuration(
         )
     list_resource = resources.get(HOLIDAY_LIST_PATH)
     # PointT exposes the collection through the read-only ``/holidayMode/list``
-    # resource, while the apps create and mutate entries through the separate
+    # resource, while entries are created and mutated through the separate
     # ``/holidayMode[/<id>]`` endpoint.  The list therefore does not need to
     # advertise scalar writes; a current list and a complete configuration are
     # the capability contract for calendar mutations.
@@ -426,7 +426,7 @@ def parse_holiday_write_configuration(
     heating_modes = frozenset(heating_mode_values)
     ventilation_modes = frozenset(ventilation_mode_values)
     thermal_modes = frozenset(thermal_mode_values)
-    # These are the defaults used by both official apps. PointT expects OFF
+    # These are conservative defaults for a new period. PointT expects OFF
     # even when a circuit family is not installed and therefore has no list.
     heating_mode = "FIX_TEMPERATURE" if "FIX_TEMPERATURE" in heating_modes else "OFF"
     dhw_mode = "OFF"
@@ -728,14 +728,14 @@ def holiday_timezone(
 
 
 def encode_holiday_name(name: str, codec: HolidayNameCodec | None) -> str | None:
-    """Encode a holiday name exactly as supported by the official apps."""
+    """Encode a holiday name in the format PointT expects."""
     value = " ".join(name.split())
     if not value or len(value) > _MAX_NAME_LENGTH:
         return None
     if codec is None or len(value) > codec.maximum_length:
         return None
     if codec.coding_type == "ASCII":
-        # The apps keep ASCII names locally and submit null to PointT.
+        # ASCII-coded names are not stored in PointT; submit null instead.
         return None
     encoding = _python_encoding(codec.charset)
     if codec.coding_type != "BASE64" or encoding is None:

@@ -99,6 +99,66 @@ write errors, normal shutdown, repeated reloads, cancelled startup, and rapid
 notification option changes. These are process and filesystem tests; they do
 not simulate physical power loss or a failing storage controller.
 
+## Local error list
+
+With a local access, the gateway's local error list (`/notifications`) is a
+second source of the same faults. It is read every minute anyway and uses the
+same fields as the cloud, so one fault reported by both appears once and raises
+one event. A fault only the local list reports appears as well.
+
+A fault ends only when every source taking part confirms its absence in two new,
+complete readings. A late or repeated local reading is no new evidence and
+changes nothing, and a local access that is not ready confirms nothing until its
+next new reading. While one source still reports a fault, the display counts as confirmed.
+The local list never stands in for an unreadable cloud read: it covers only the
+system-wide error list, not the cloud's other fault sources.
+
+The local list takes part while it delivers new readings. After 15 minutes
+without one (or three local query intervals, if that is longer), for example
+during a lasting network problem, the cloud decides alone again, as without a
+local access, until the next local reading. This age is measured independently
+of clock changes. Switching off or
+removing the local access hands the decision back to the cloud at once, and a
+gateway that offers no local list leaves it to the cloud from the start. After a
+Home Assistant restart, faults only the local list reported stay until the local
+list confirms their absence or stays silent for those 15 minutes, so a restart
+neither ends nor repeats them.
+
+Without the cloud (a switched-off cloud access, also when it is switched off
+while Home Assistant runs, or a cloud that needs a new sign-in or does not
+answer once the stored inventory is older than 30 days, see
+[source selection](source-selection.md)), the local list decides alone and
+the fault entities show its state only while it is current.
+Its first complete reading sets the known faults without events; a fault ends
+only when it was reported by the local list and is then missing from it, so a
+fault only the cloud knew stays until the cloud answers. When the cloud
+returns, it continues with these faults. While the cloud starts, the plant
+keeps showing the faults it handed over unchanged, for at most 15 minutes, so
+a fault that changes in that short time is announced once, by the cloud.
+While a cloud that is still switched on needs a new sign-in or does not answer
+(and the stored inventory is recent), the cloud stays responsible: the local
+list never ends a fault it reported, and the fault entities are unavailable.
+
+The bell notification follows the local list in the same way when the plant
+is shown without the cloud, with the same notification setting per
+installation. A fault only the cloud knew stays in it as not confirmed, and a
+notification you dismissed is not shown again for the same faults when the
+cloud takes over.
+
+The room devices' own error lists (`/devices/…/errors`, read locally where a
+gateway offers them) are shown as extra information only: the active entries
+appear in the `device_errors` attribute of the active faults sensor, as the
+device number and the error type (for example `defectiveTempSensor`). They do
+not count as faults, raise no event and no notification, and an entry whose
+value is neither `active` nor `inactive` (such as a valve status) is not
+shown, because its meaning as an error is not documented. They have not been
+seen on a real device yet. Where the cloud offers a device error list, its
+active rows are read as faults as before; a row marked `inactive` is not a
+fault. No Wi-Fi lists, network data, serial numbers
+or update logs are read for faults. Diagnostics show the state of the local list
+under `local_error_list` (`not_attached`, `success`, `partial`, `no_answer`,
+`stale`, `restored`) and the number of faults it reports under `local_faults`.
+
 ## Timing and reliability
 
 PointT is checked every five minutes during normal operation and every minute

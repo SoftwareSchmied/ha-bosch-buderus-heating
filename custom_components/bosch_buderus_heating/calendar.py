@@ -16,6 +16,7 @@ from homeassistant.components.calendar.const import (
     EVENT_SUMMARY,
     CalendarEntityFeature,
 )
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -25,6 +26,7 @@ from homeassistant.util import dt as dt_util
 
 from . import BoschBuderusConfigEntry
 from .const import DOMAIN
+from .control import track_entity_once
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .device import device_info_for_resource
 from .holiday_writes import (
@@ -46,6 +48,7 @@ from .holidays import (
     parse_holiday_state,
     parse_holiday_write_configuration,
 )
+from .platform_scope import DiscoveryLifecycle, PlatformScope, setup_platform
 from .pointt import PointTError, Resource, WriteNotConfirmed
 
 
@@ -54,12 +57,33 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Create one holiday calendar for every supporting gateway."""
-    del hass
-    async_add_entities(
-        BoschBuderusHolidayCalendar(coordinator)
-        for coordinator in entry.runtime_data.coordinators
-        if any(is_holiday_period_path(path) for path in coordinator.resources)
+    setup_platform(entry, Platform.CALENDAR, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    """Create one holiday calendar for every supporting gateway.
+
+    A gateway whose holiday resources are found later, for example by the
+    search for parts missing at start, gets its calendar then, exactly once.
+    """
+    for coordinator in entry.coordinators:
+        _track_holiday_calendar(entry, coordinator, async_add_entities)
+
+
+def _track_holiday_calendar(
+    entry: DiscoveryLifecycle,
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    track_entity_once(
+        entry,
+        coordinator,
+        async_add_entities,
+        lambda: any(is_holiday_period_path(path) for path in coordinator.resources),
+        lambda: BoschBuderusHolidayCalendar(coordinator),
     )
 
 

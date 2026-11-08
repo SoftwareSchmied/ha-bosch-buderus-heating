@@ -6,7 +6,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import DOMAIN, PollingProfile
 from custom_components.bosch_buderus_heating.coordinator import (
@@ -21,6 +20,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     Resource,
 )
 from custom_components.bosch_buderus_heating.resource_catalog import PollGroup
+from tests.ha_test_helpers import MockConfigEntry
 
 
 def _ready_coordinator(hass, profile=PollingProfile.STANDARD, group=PollGroup.FAST):

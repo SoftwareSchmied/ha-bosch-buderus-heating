@@ -21,6 +21,7 @@ from homeassistant.helpers.selector import (
 )
 
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
+from .entry_sources import pointt_coordinators
 from .ha_schema import validation as vol
 from .pointt import (
     AuthenticationError,
@@ -31,7 +32,6 @@ from .pointt import (
     WriteValidationError,
 )
 from .rrc_programs import DAYS, WEEK, Schedule, SwitchPoint, edit_point, parse_schedule
-from .runtime import BoschBuderusRuntimeData
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,13 +55,14 @@ class RrcScheduleOptionsFlow(OptionsFlow):
     _rrc_choice: ScheduleChoice | None = None
     _rrc_point: int | None = None
     _rrc_day: str | None = None
+    _rrc_offered: dict[str, ScheduleChoice] | None = None
 
     def _rrc_choices(self) -> dict[str, ScheduleChoice]:
-        runtime = getattr(self._entry, "runtime_data", None)
-        if not isinstance(runtime, BoschBuderusRuntimeData):
+        coordinators = pointt_coordinators(self._entry)
+        if coordinators is None:
             return {}
         result: dict[str, ScheduleChoice] = {}
-        for number, coordinator in enumerate(runtime.coordinators, 1):
+        for number, coordinator in enumerate(coordinators, 1):
             for path, snapshot in (coordinator.data or {}).items():
                 match = WEEK.fullmatch(path)
                 if (
@@ -74,7 +75,7 @@ class RrcScheduleOptionsFlow(OptionsFlow):
                 if schedule is None:
                     continue
                 label = f"#{match[1]}"
-                if len(runtime.coordinators) > 1:
+                if len(coordinators) > 1:
                     label = (
                         f"{coordinator.gateway.model or self._entry.title} "
                         f"[{number}] / {label}"
@@ -91,11 +92,17 @@ class RrcScheduleOptionsFlow(OptionsFlow):
         if not choices:
             return self.async_abort(reason="no_rrc_schedules")
         if user_input is not None:
-            choice = choices.get(str(user_input.get("program", "")))
-            if choice is None:
+            offered = self._rrc_offered or choices
+            choice = offered.get(str(user_input.get("program", "")))
+            if choice is None or not any(
+                current.coordinator is choice.coordinator
+                and current.resource == choice.resource
+                for current in choices.values()
+            ):
                 return self.async_abort(reason="no_rrc_schedules")
             self._rrc_choice = choice
             return await self.async_step_rrc_schedule()
+        self._rrc_offered = choices
         return self.async_show_form(
             step_id="rrc_programs",
             data_schema=vol.Schema(
@@ -217,6 +224,8 @@ class RrcScheduleOptionsFlow(OptionsFlow):
         choice, index = self._rrc_choice, self._rrc_point
         if choice is None or index is None:
             return await self.async_step_rrc_programs()
+        if choice.coordinator not in (pointt_coordinators(self._entry) or ()):
+            return self.async_abort(reason="no_rrc_schedules")
         original = choice.schedule.points[index]
         errors: dict[str, str] = {}
         if user_input is not None:

@@ -460,7 +460,7 @@ def create_holiday_values(
     *,
     validate_defaults: bool = True,
 ) -> HolidayWriteValues:
-    """Build a new period using the same safe defaults as the official apps."""
+    """Build a new period using conservative safe defaults."""
     start_value, end_value = _format_timespan(
         start, end, configuration.date_time_mode, timezone
     )

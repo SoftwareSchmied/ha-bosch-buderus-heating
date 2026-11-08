@@ -6,15 +6,15 @@ from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.core import callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .. import BoschBuderusConfigEntry
+from ..platform_scope import DiscoveryLifecycle
 from . import dhw
+from .access import BaconAccess
 from .entity import BaconEntity
-from .session import BaconAccount
 
 
 def track_status(
-    entry: BoschBuderusConfigEntry,
-    account: BaconAccount,
+    entry: DiscoveryLifecycle,
+    account: BaconAccess,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     seen: set[tuple[str, str]] = set()
@@ -41,7 +41,7 @@ def track_status(
 
 
 class BaconDhwStatus(BaconEntity, BinarySensorEntity):
-    def __init__(self, account: BaconAccount, serial: str, key: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str, key: str) -> None:
         super().__init__(account, serial, "dhw_" + key)
         self.key = key
         self._attr_translation_key = "bacon_dhw_" + key

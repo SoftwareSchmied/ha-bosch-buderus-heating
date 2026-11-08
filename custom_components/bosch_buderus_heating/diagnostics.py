@@ -2,17 +2,25 @@
 
 from __future__ import annotations
 
+import logging
 import math
 import re
 from collections import Counter
-from time import monotonic
-from typing import Any
+from time import monotonic, time
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
 from . import BoschBuderusConfigEntry, rrc
+from .auth_diagnostics import loaded_auth_history
+from .auth_lifecycle import connection_token_manager
+from .cloud_pauses import cloud_pause_store
+from .configuration import CLOUD_KIND, LOCAL_KIND
+from .configuration_access import EntryConfiguration
+from .configuration_management import section
+from .configuration_migration import legacy_cloud_connection_id
 from .const import CONF_BRAND, CONF_GATEWAY_IDS
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
@@ -25,6 +33,14 @@ from .energy_contracts import energy_diagnostics, is_energy_collection
 from .holidays import (
     parse_holiday_state,
     parse_holiday_write_configuration,
+)
+from .observations import (
+    Observation,
+    from_cloud_snapshot,
+    from_local_observation,
+    pair_for_path,
+    pair_observations,
+    pair_summary,
 )
 from .pointt import Gateway, Resource
 from .pointt.redaction import diagnostic_resource_path, resource_path_template
@@ -40,6 +56,8 @@ from .rrc_programs import DAY, WEEK, parse_schedule
 from .runtime import BoschBuderusRuntimeData
 from .start_counters import assess_start_counter, is_start_counter_path
 from .startup_data import LICENSE_PATH, STARTUP_BUDGET_SECONDS, safe_technical_value
+from .update_load import update_load_diagnostics
+from .wallbox import WallboxCoordinator
 from .water_softener import (
     is_water_softener,
     softener_capability,
@@ -49,16 +67,26 @@ from .water_softener import (
 )
 from .writes import EnumWritePolicy, NumberWritePolicy, assess_control
 
-DIAGNOSTICS_SCHEMA_VERSION = 27
+DIAGNOSTICS_SCHEMA_VERSION = 41
+_LOGGER = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from .managed_entry import ManagedEntry
 
 
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: BoschBuderusConfigEntry
 ) -> dict[str, Any]:
     """Return schema, aggregates and reviewed metadata without private values."""
-    del hass
+    from .managed_entry import ManagedEntry
+
     runtime = getattr(entry, "runtime_data", None)
-    selected = entry.data.get(CONF_GATEWAY_IDS, [])
+    try:
+        cloud_data = EntryConfiguration(entry).cloud_data()
+    except ValueError:
+        # Diagnostics must remain available after a downgrade or broken setup.
+        cloud_data = {}
+    selected = cloud_data.get(CONF_GATEWAY_IDS, [])
     base: dict[str, Any] = {
         "diagnostics_schema": DIAGNOSTICS_SCHEMA_VERSION,
         "privacy": {
@@ -70,12 +98,19 @@ async def async_get_config_entry_diagnostics(
         "config": {
             "entry_version": entry.version,
             "entry_minor_version": entry.minor_version,
-            "brand": _safe_token(entry.data.get(CONF_BRAND)),
+            "brand": _safe_token(cloud_data.get(CONF_BRAND)),
             "configured_gateway_count": len(selected)
             if isinstance(selected, list)
             else 0,
         },
+        "update_load": update_load_diagnostics(hass),
     }
+    if isinstance(runtime, ManagedEntry):
+        return _managed_diagnostics(base, runtime)
+    base["authentication"] = [
+        {"connection": number, **_access_authentication(hass, entry.entry_id, key)}
+        for number, key in enumerate(_history_connections(hass, entry), 1)
+    ]
     if not isinstance(runtime, BoschBuderusRuntimeData):
         return {
             **base,
@@ -100,6 +135,399 @@ async def async_get_config_entry_diagnostics(
         if runtime.bacon
         else {"configured": False},
     }
+
+
+def _history_connections(
+    hass: HomeAssistant, entry: BoschBuderusConfigEntry
+) -> list[str]:
+    """Order loaded histories with the original cloud access first."""
+    legacy = legacy_cloud_connection_id(entry.entry_id)
+    keys = {legacy}
+    connections = entry.data.get("connections")
+    if isinstance(connections, dict):
+        keys.update(
+            key
+            for key, value in connections.items()
+            if isinstance(value, dict) and value.get("kind") == CLOUD_KIND
+        )
+    return sorted(
+        (key for key in keys if loaded_auth_history(hass, entry.entry_id, key)),
+        key=lambda key: (key != legacy, key),
+    ) or [legacy]
+
+
+def _access_authentication(
+    hass: HomeAssistant, owner_id: str, connection_id: str
+) -> dict[str, Any]:
+    """Describe one access's token history without credentials or fingerprints."""
+    manager = connection_token_manager(hass, owner_id, connection_id)
+    recorder = loaded_auth_history(hass, owner_id, connection_id)
+    if recorder is not None:
+        return recorder.diagnostics(manager)
+    report: dict[str, Any] = {"history_available": False}
+    if manager is not None:
+        report["current"] = {
+            "access_token_remaining_s": round(manager.tokens.expires_at - time()),
+            "has_refresh_token": bool(manager.tokens.refresh_token),
+            "refresh_rejected": manager.refresh_rejected,
+        }
+    return report
+
+
+def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[str, Any]:
+    """Use export-local numbers for relationships; never serialize configuration."""
+    from .managed_cloud import CloudConnection
+    from .managed_local import LocalConnection
+
+    state = runtime.connections
+    snapshot = state.snapshot
+    options = snapshot.to_options()
+    connections = {key: number for number, key in enumerate(snapshot.connections, 1)}
+    targets = {key: number for number, key in enumerate(snapshot.targets, 1)}
+    bindings = {key: number for number, key in enumerate(snapshot.bindings, 1)}
+    connection_reports = []
+    for key, number in connections.items():
+        record = snapshot.connections[key]
+        driver = state.connection_driver(key)
+        report: dict[str, Any] = {
+            "connection": number,
+            "kind": record.kind
+            if record.kind in (CLOUD_KIND, LOCAL_KIND)
+            else "unsupported",
+            "enabled": section(options, "connections")[key]["enabled"],
+            "phase": state.connection_phase(key).value,
+            "request_metrics": {},
+        }
+        if record.kind == CLOUD_KIND:
+            report["cloud_pause"] = cloud_pause_store(runtime.hass).diagnostics(
+                (runtime.entry.entry_id, key)
+            )
+            report["authentication"] = _access_authentication(
+                runtime.hass, runtime.entry.entry_id, key
+            )
+        if isinstance(driver, CloudConnection):
+            report["request_metrics"] = driver.resources.metrics.snapshot()
+            account = driver.additional.account
+            report["bacon"] = (
+                account.diagnostics() if account is not None else {"configured": False}
+            )
+        elif isinstance(driver, LocalConnection):
+            report["local"] = [
+                source.diagnostics() for source in driver.sources.values()
+            ]
+        connection_reports.append(report)
+    sources = []
+    gateways: list[dict[str, Any]] = []
+    wallboxes = []
+    for key, number in bindings.items():
+        binding = snapshot.bindings[key]
+        relationship = {
+            "binding": number,
+            "connection": connections[binding.connection_id],
+            "target": targets[binding.target_id],
+        }
+        sources.append(
+            {
+                **relationship,
+                "adapter": binding.adapter
+                if binding.adapter in ("pointt", "bacon", "k40_local")
+                else "unsupported",
+                "enabled": section(options, "bindings")[key]["enabled"],
+                "phase": state.source_phase(key).value,
+            }
+        )
+        value = state.source_data(key)
+        if isinstance(value, BoschBuderusDataUpdateCoordinator):
+            gateways.append(
+                {**_gateway_diagnostics(len(gateways) + 1, value), **relationship}
+            )
+        elif isinstance(value, WallboxCoordinator):
+            wallboxes.append({**value.diagnostics(), **relationship})
+    base["config"].pop("brand", None)
+    base["config"]["configured_gateway_count"] = sum(
+        target.kind == "pointt_object" for target in snapshot.targets.values()
+    )
+    if any(report["technical_metadata"] for report in gateways):
+        base["privacy"]["contains_raw_resource_values"] = True
+        base["privacy"]["raw_resource_values_scope"] = "allowlisted_technical_metadata"
+    return {
+        **base,
+        "setup": {"runtime_available": True},
+        "request_metrics": {},
+        "connections": connection_reports,
+        "targets": [
+            {
+                "target": number,
+                "kind": snapshot.targets[key].kind
+                if snapshot.targets[key].kind
+                in ("pointt_object", "standalone_device", "local_installation")
+                else "unsupported",
+                "binding_count": sum(
+                    item.target_id == key for item in snapshot.bindings.values()
+                ),
+            }
+            for key, number in targets.items()
+        ],
+        "sources": sources,
+        "observation_pairs": _observation_pairs(runtime, targets),
+        "local_plant_view": _local_plant_views(runtime, targets),
+        # P49b: systems shown from their local readings alone (count only).
+        "local_plant_targets": len(runtime.connections.target_views()),
+        "views_without_cloud": _views_without_cloud(runtime, targets),
+        "inventory": {
+            "healthy": runtime.inventory.healthy,
+            "retained_entity_count": len(runtime.inventory.entities),
+        },
+        "gateways": gateways,
+        "wallboxes": wallboxes,
+    }
+
+
+def _add_counters(
+    total: dict[str, dict[str, Any]], summary: dict[str, dict[str, Any]]
+) -> None:
+    """Add counter figures of several sources of the same target."""
+    for name, item in summary.items():
+        entry = total.setdefault(name, {"shown": {}, "switches": 0, "blocked": 0})
+        for source, count in item["shown"].items():
+            entry["shown"][source] = entry["shown"].get(source, 0) + count
+        entry["switches"] += item["switches"]
+        entry["blocked"] += item["blocked"]
+
+
+def _merged_names(selections: list[dict[str, Any]]) -> dict[str, list[str]]:
+    """Catalog measurement names per cloud reason; no values, paths or IDs."""
+    merged: dict[str, set[str]] = {}
+    for item in selections:
+        for reason, names in item.get("cloud_reason_measurements", {}).items():
+            merged.setdefault(reason, set()).update(names)
+    return {reason: sorted(names) for reason, names in sorted(merged.items())}
+
+
+def _merged_write_checks(
+    selections: list[dict[str, Any]],
+) -> dict[str, dict[str, int]]:
+    """Local read-backs after confirmed cloud writes, per catalog measurement."""
+    merged: dict[str, Counter[str]] = {}
+    for item in selections:
+        for name, counts in item.get("write_checks", {}).items():
+            merged.setdefault(name, Counter()).update(counts)
+    return {
+        name: dict(sorted(counts.items())) for name, counts in sorted(merged.items())
+    }
+
+
+def _observation_pairs(
+    runtime: ManagedEntry, targets: dict[str, int]
+) -> list[dict[str, Any]]:
+    """Compare catalog pairs per target without values, paths or identifiers."""
+    state = runtime.connections
+    snapshot = state.snapshot
+    reports = []
+    for target_key, number in targets.items():
+        cloud: list[Observation] = []
+        local: list[Observation] = []
+        selections: list[dict[str, Any]] = []
+        counters: dict[str, dict[str, Any]] = {}
+        for binding_key, binding in snapshot.bindings.items():
+            if binding.target_id != target_key:
+                continue
+            value = state.source_data(binding_key)
+            if isinstance(value, BoschBuderusDataUpdateCoordinator):
+                if value.local_selection is not None:
+                    selections.append(value.local_selection.summary(value.data or {}))
+                if value.counter_guard is not None:
+                    _add_counters(counters, value.counter_guard.summary())
+                cloud.extend(
+                    from_cloud_snapshot(
+                        item, connection_id=binding.connection_id, target_id=target_key
+                    )
+                    for path, item in (value.data or {}).items()
+                    if pair_for_path(path) is not None
+                )
+            elif binding.adapter == "k40_local":
+                local_state = state.local_state(binding_key)
+                if local_state is None:
+                    continue
+                local.extend(
+                    from_local_observation(
+                        item,
+                        connection_id=binding.connection_id,
+                        target_id=target_key,
+                        current=True,
+                    )
+                    for item in local_state.current_observations
+                    if pair_for_path(item.request.path) is not None
+                )
+        if cloud or local or selections:
+            reports.append(
+                {
+                    "target": number,
+                    "cloud_observations": len(cloud),
+                    "local_observations": len(local),
+                    **pair_summary(pair_observations(cloud, local)),
+                    "local_values": {
+                        "enabled": any(item["enabled"] for item in selections),
+                        "eligible": sum(
+                            item["eligible_entities_sources"] for item in selections
+                        ),
+                        "using_local": sum(item["using_local"] for item in selections),
+                        "using_cloud": sum(item["using_cloud"] for item in selections),
+                        "cloud_reasons": dict(
+                            sorted(
+                                sum(
+                                    (
+                                        Counter(item["cloud_reasons"])
+                                        for item in selections
+                                    ),
+                                    Counter(),
+                                ).items()
+                            )
+                        ),
+                        "cloud_reason_measurements": _merged_names(selections),
+                        "write_checks": _merged_write_checks(selections),
+                    },
+                    "counters": counters,
+                }
+            )
+    return reports
+
+
+def _views_without_cloud(
+    runtime: ManagedEntry, targets: dict[str, int]
+) -> list[dict[str, Any]]:
+    """A5: plants shown without a running cloud, per target.
+
+    The kind of view, whether its local error list is current, how many of
+    its entities are shown and available, and its active fault count. No
+    identifiers, paths or values.
+    """
+    state = runtime.connections
+    snapshot = state.snapshot
+    views: list[tuple[str, str, Any]] = [
+        (target_id, "target_view", view)
+        for target_id, view in state.target_views().items()
+    ]
+    for binding_key, binding in snapshot.bindings.items():
+        view = state.retained_data(binding_key)
+        if view is not None and state.source_data(binding_key) is None:
+            views.append((binding.target_id, _view_kind(view), view))
+    registry = er.async_get(runtime.hass)
+    entries = er.async_entries_for_config_entry(registry, runtime.entry.entry_id)
+    reports = []
+    for target_id, kind, view in views:
+        try:
+            gateway = view.gateway.gateway_id
+            shown = [
+                entry
+                for entry in entries
+                if entry.disabled_by is None
+                and entry.unique_id.startswith(f"{gateway}:")
+            ]
+            available = sum(
+                (item := runtime.hass.states.get(entry.entity_id)) is not None
+                and item.state != "unavailable"
+                for entry in shown
+            )
+            faults = view.faults
+            reports.append(
+                {
+                    "target": targets.get(target_id),
+                    "kind": kind,
+                    "local_list_decides": faults.local_authority is True,
+                    "local_list_current": faults.local_list_current,
+                    "entities": len(shown),
+                    "entities_available": available,
+                    "active_faults": len(faults.active_faults),
+                }
+            )
+        except Exception:  # the report must stay available
+            _LOGGER.debug("View without a cloud not reportable", exc_info=True)
+            reports.append({"target": targets.get(target_id), "error": "unavailable"})
+    return sorted(reports, key=lambda item: (item["target"] or 0, item.get("kind", "")))
+
+
+def _view_kind(view: Any) -> str:
+    """The kind of a view kept without a running cloud source."""
+    if getattr(view, "read_only_view", False) is True:
+        return "local_plant"
+    if view.faults.local_authority is not True:
+        # Kept for a cloud expected back (sign-in required, outage): the
+        # cloud still decides the faults (P42).
+        return "kept_for_cloud"
+    return "dormant" if getattr(view, "inventory_view", False) else "held"
+
+
+def _local_plant_views(
+    runtime: ManagedEntry, targets: dict[str, int]
+) -> list[dict[str, Any]]:
+    """Shadow comparison (P49b): the entities the local readings alone would
+    give, against the running cloud and the registry. Builds no entities and
+    sends no request; unique IDs after the gateway only, never values."""
+    state = runtime.connections
+    snapshot = state.snapshot
+    entries = er.async_entries_for_config_entry(
+        er.async_get(runtime.hass), runtime.entry.entry_id
+    )
+    reports = []
+    for target_key, number in targets.items():
+        coordinators: list[BoschBuderusDataUpdateCoordinator] = []
+        observations: list[Any] = []
+        local_access = False
+        for binding_key, binding in snapshot.bindings.items():
+            if binding.target_id != target_key:
+                continue
+            value = state.source_data(binding_key)
+            if isinstance(value, BoschBuderusDataUpdateCoordinator):
+                coordinators.append(value)
+            elif binding.adapter == "k40_local":
+                local_state = state.local_state(binding_key)
+                if local_state is not None:
+                    local_access = True
+                    observations.extend(local_state.current_observations)
+        if not local_access or not coordinators:
+            continue
+        for coordinator in coordinators:
+            try:
+                report = _local_plant_view(coordinator, observations, entries)
+            except Exception:  # the report must stay available
+                _LOGGER.debug("Local plant view not available", exc_info=True)
+                report = {"error": "unavailable"}
+            reports.append({"target": number, **report})
+    return reports
+
+
+def _local_plant_view(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    observations: list[Any],
+    entries: list[er.RegistryEntry],
+) -> dict[str, Any]:
+    from .local_plant_view import (
+        build_local_plant_view,
+        compatible_templates,
+        description_shapes,
+        registry_shapes,
+        shadow_comparison,
+    )
+
+    cloud_paths = frozenset(coordinator.resources)
+    # Built from the local readings and the cloud's path list alone, as from
+    # the saved inventory without the cloud: no cloud metadata as templates.
+    view = build_local_plant_view(observations, cloud_paths=cloud_paths)
+    templates = {
+        path: item.resource
+        for path, item in (coordinator.data or {}).items()
+        if item.available and item.freshness is Freshness.FRESH
+    }
+    registry, per_source = registry_shapes(entries, coordinator.gateway.gateway_id)
+    return shadow_comparison(
+        view,
+        cloud=description_shapes(coordinator.resources),
+        registry=registry,
+        cloud_paths=cloud_paths,
+        templates_compatible=compatible_templates(view, templates),
+        per_source_entities=per_source,
+    )
 
 
 def _gateway_diagnostics(
@@ -155,6 +583,9 @@ def _gateway_diagnostics(
         "softener_entities": _softener_entity_registration(coordinator),
         "runtime": coordinator.diagnostics_summary(),
         "discovery": _discovery_diagnostics(coordinator),
+        "discovery_recovery": coordinator.discovery_recovery.diagnostics(monotonic()),
+        "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),
+        "firmware_changes": coordinator.firmware.diagnostics(monotonic()),
         "startup_data": _startup_diagnostics(coordinator),
         "start_counter_recovery": coordinator.start_counter_recovery_diagnostics(),
         "technical_metadata": [
@@ -467,7 +898,7 @@ def _control_diagnostics(resource: Resource) -> dict[str, object]:
             unrecognized_option_count=sum(
                 value not in policy.known_values for value in metadata.allowed_values
             ),
-            requires_all_options=False,
+            requires_all_options=policy.options_rule == "exact",
             offered_option_count=len(assessment.options),
             switch_supported=assessment.supports_switch,
             select_supported=assessment.supports_select,

@@ -28,8 +28,10 @@ cause or prove that the corrections below explain either incident.
   connection or service failure remains eligible for a later refresh attempt.
 - An OAuth request limit activates the existing shared PointT account pause.
   The pause also applies during setup retries, with or without retained runtime
-  data. Its existing bounds are 60 to 3600 seconds, using the reported delay or
-  300 seconds when none is supplied.
+  data. The reported delay is honored in full, from seconds or an HTTP date,
+  with a minimum of 60 seconds and a safety bound of 24 hours. Without a usable
+  value, 300 seconds apply. The pause survives Home Assistant restarts for the
+  same saved cloud access; see [cloud pauses](cloud-pauses.md).
 - A delayed refresh from a previous sign-in cannot overwrite replacement
   credentials or update a removed config entry.
 - The config entry's update listener schedules reloads for replacement
@@ -56,6 +58,32 @@ periodic requests or extra discovery pass during ordinary rotation. OAuth
 request limits now suppress repeated setup attempts; an explicit configuration
 change still causes its intended discovery. No appliance writes are performed
 by these recovery tests or by connection recovery itself.
+
+### Connection state and test
+
+Settings → Connections lists every access with its state, for example
+"Cloud access (1): connected", "… sign-in required", "… paused until 14:20",
+"… not reachable" or "… disabled". Opening an access shows the last successful
+request and its polling profile, for the LAN access also the values available
+locally, the target interval and whether local values are used. All of this
+comes from what the running connections already know; opening the dialog never
+starts a request.
+
+These states, the description and the test result are built on the Home
+Assistant server and therefore use its server language (Settings → System →
+General), like entity names. If your user profile uses a different language,
+the rest of the dialog follows your profile while these texts stay in the
+server language.
+
+"Test connection now" reads once on explicit request: the cloud access reads
+the gateway list, the LAN access reads its system information and checks that
+the same gateway answers. During a pause, or when a sign-in or a new setup is
+already known to be needed, nothing is sent and the dialog names that cause.
+The result names the answer time or the cause (sign-in, not reachable,
+different gateway, certificate changed, pause). Settings stay unchanged; like
+any regular request, a rejected answer can start a pause or ask for a new
+sign-in, and the request is counted in the diagnostics. Source changes of paired readings are logged at debug level
+only, without values or identifiers.
 
 ### Remaining limits
 
@@ -101,8 +129,10 @@ Korrekturen diese konkreten Vorfälle erklären.
   möglich.
 - Ein Anfragelimit bei der Anmeldung aktiviert die bestehende gemeinsame
   PointT-Pause. Sie gilt auch bei Einrichtungswiederholungen und bleibt ohne
-  zwischengespeicherte Laufzeitdaten erhalten. Die Grenzen bleiben 60 bis 3600
-  Sekunden; ohne gemeldete Wartezeit gelten 300 Sekunden.
+  zwischengespeicherte Laufzeitdaten erhalten. Die gemeldete Wartezeit wird als
+  Sekundenzahl oder HTTP-Datum vollständig eingehalten, mindestens 60 Sekunden
+  und höchstens 24 Stunden. Ohne verwertbare Angabe gelten 300 Sekunden. Die
+  Pause bleibt für denselben gespeicherten Cloud-Zugang über Neustarts erhalten.
 - Eine verspätete Antwort einer früheren Anmeldung überschreibt keine neuen
   Anmeldedaten und aktualisiert keinen bereits entfernten Integrationseintrag.
 - Neue Anmeldedaten, geänderte Geräteauswahl, Marke oder Abfrageprofil lösen
@@ -130,6 +160,32 @@ beim normalen Tokenwechsel hinzu. Gleichzeitige Erneuerungen teilen eine
 OAuth-Anfrage. Bei einem Anfragelimit werden weitere Einrichtungsversuche
 gebremst. Eine ausdrücklich geänderte Konfiguration führt weiterhin zur
 vorgesehenen Discovery. Die Wiederherstellung führt keine Anlagenbefehle aus.
+
+### Zustand und Verbindungstest
+
+Einstellungen → Verbindungen zeigt jeden Zugang mit seinem Zustand, zum
+Beispiel „Cloud-Zugang (1): verbunden“, „… Anmeldung nötig“, „… pausiert bis
+14:20“, „… nicht erreichbar“ oder „… deaktiviert“. Beim Öffnen eines Zugangs
+stehen die letzte erfolgreiche Abfrage und das Abfrageprofil darüber, beim
+LAN-Zugang zusätzlich die lokal verfügbaren Werte, das Zielintervall und ob
+lokale Werte verwendet werden. Alles stammt aus dem, was die laufenden Zugänge
+bereits wissen; das Öffnen startet keine Abfrage.
+
+Zustände, Beschreibung und Testergebnis entstehen auf dem Home-Assistant-Server.
+Sie erscheinen deshalb wie Entitätsnamen in der Serversprache (Einstellungen →
+System → Allgemein). Nutzt dein Benutzerprofil eine andere Sprache, folgt der
+übrige Dialog deinem Profil, diese Texte bleiben in der Serversprache.
+
+„Verbindung jetzt testen“ liest nur auf ausdrücklichen Klick einmal: der
+Cloud-Zugang die Gateway-Liste, der LAN-Zugang seine Systeminformation mit
+Prüfung, dass dasselbe Gateway antwortet. Während einer Pause oder wenn eine
+Anmeldung beziehungsweise Neueinrichtung bereits bekannt nötig ist, wird nichts
+gesendet und der Dialog nennt diese Ursache. Das Ergebnis nennt die Antwortzeit
+oder die Ursache (Anmeldung, nicht erreichbar, anderes Gateway, geändertes
+Zertifikat, Pause). Einstellungen bleiben unverändert; wie bei jeder normalen
+Abfrage kann eine abgelehnte Antwort eine Pause oder eine Neuanmeldung
+auslösen, und die Anfrage wird in der Diagnose gezählt. Quellenwechsel gepaarter
+Messwerte erscheinen nur im Debug-Protokoll, ohne Werte und Kennungen.
 
 ### Verbleibende Grenzen
 

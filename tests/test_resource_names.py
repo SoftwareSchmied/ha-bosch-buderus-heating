@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import (
     CONF_BRAND,
@@ -20,6 +19,8 @@ from custom_components.bosch_buderus_heating.pointt import (
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from custom_components.bosch_buderus_heating.pointt.transport import RateLimitBackoff
 from custom_components.bosch_buderus_heating.resource_catalog import resource_name
+from tests.ha_test_helpers import MockConfigEntry
+from tests.helpers.managed_runtime import pointt_client, wait_for_sources
 
 
 @pytest.mark.parametrize("language", ["de", "DE-de", "en"])
@@ -118,9 +119,7 @@ async def test_system_language_reload_preserves_names_ids_and_disabled_entities(
 
     second_language = "en" if first_language == "de" else "de"
     with (
-        patch(
-            "custom_components.bosch_buderus_heating.PointTClient", return_value=client
-        ),
+        pointt_client(client),
         patch(
             "custom_components.bosch_buderus_heating.coordinator.async_discover_resources",
             side_effect=discover,
@@ -138,6 +137,7 @@ async def test_system_language_reload_preserves_names_ids_and_disabled_entities(
         for language in (first_language, second_language):
             hass.config.language = language
             assert await hass.config_entries.async_setup(entry.entry_id)
+            await wait_for_sources(hass, entry, 1)
             await hass.async_block_till_done()
             unnamed_id = registry.async_get_entity_id(
                 "sensor", DOMAIN, unique(paths[1])

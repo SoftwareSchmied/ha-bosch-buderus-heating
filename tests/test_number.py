@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 from homeassistant.core import HomeAssistant
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
@@ -26,6 +25,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     Resource,
     ResourceMetadata,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 PATH = "/heatingCircuits/hc1/manualRoomSetpoint"
 

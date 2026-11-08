@@ -9,7 +9,6 @@ from typing import Any
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import ClimateEntityFeature as Feature
 from homeassistant.components.climate.const import HVACMode
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import callback
 from homeassistant.exceptions import ServiceValidationError
@@ -27,6 +26,8 @@ from .control import async_set_control
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource, temperature
+from .ha_compat import temperature_members, temperature_unit
+from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
 from .unit_contracts import TEMPERATURE_UNITS
 from .writes import (
@@ -40,7 +41,7 @@ _MODES = {"off": HVACMode.OFF, "manual": HVACMode.HEAT, "auto": HVACMode.AUTO}
 
 
 def track_heating_climates(
-    entry: ConfigEntry,
+    entry: DiscoveryLifecycle,
     coordinator: BoschBuderusDataUpdateCoordinator,
     add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
@@ -54,9 +55,16 @@ def track_heating_climates(
             if match is None or match[1] in seen:
                 continue
             entity = HeatingCircuitClimate(coordinator, match[1])
-            if entity.available:
-                seen.add(match[1])
-                additions.append(entity)
+            if not entity.available:
+                if path not in coordinator.stored_resources():
+                    continue
+                # Started with the stored inventory (P47): add it unavailable,
+                # but only if a normal start with these values would add it.
+                with coordinator.stored_as_fresh():
+                    if not entity.available:
+                        continue
+            seen.add(match[1])
+            additions.append(entity)
         if additions:
             add_entities(additions)
 
@@ -64,13 +72,14 @@ def track_heating_climates(
     discover()
 
 
+@temperature_members
 class HeatingCircuitClimate(
     CoordinatorEntity[BoschBuderusDataUpdateCoordinator], ClimateEntity
 ):
     """Combine the circuit's own mode, target and optional room measurement."""
 
     _attr_has_entity_name = True
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_precision = 0.1
     _enable_turn_on_off_backwards_compatibility = False
 
@@ -155,11 +164,11 @@ class HeatingCircuitClimate(
         )
 
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         return temperature(self._resource("roomtemperature"))
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         if self.hvac_mode == HVACMode.HEAT:
             return temperature(self._resource("manualRoomSetpoint"))
         if self.hvac_mode == HVACMode.AUTO:
@@ -175,8 +184,8 @@ class HeatingCircuitClimate(
             # temperature command that this mode cannot safely implement.
             attributes[ATTR_TEMPERATURE] = display_temp(
                 self.hass,
-                self.target_temperature,
-                self.temperature_unit,
+                self.native_target_temperature,
+                temperature_unit(self),
                 self.precision,
             )
         return attributes
@@ -216,7 +225,7 @@ class HeatingCircuitClimate(
         return TemperatureConverter.convert(
             resource.metadata.minimum,
             TEMPERATURE_UNITS[resource.metadata.unit or ""],
-            self.temperature_unit,
+            temperature_unit(self),
         )
 
     @property
@@ -227,7 +236,7 @@ class HeatingCircuitClimate(
         return TemperatureConverter.convert(
             resource.metadata.maximum,
             TEMPERATURE_UNITS[resource.metadata.unit or ""],
-            self.temperature_unit,
+            temperature_unit(self),
         )
 
     @property
@@ -236,16 +245,15 @@ class HeatingCircuitClimate(
         step = assess_control(resource).ui_step if resource else None
         if resource is None or step is None:
             return None
-        return TemperatureDeltaConverter.convert(
-            step, TEMPERATURE_UNITS[resource.metadata.unit or ""], self.temperature_unit
-        )
+        source = TEMPERATURE_UNITS[resource.metadata.unit or ""]
+        return TemperatureDeltaConverter.convert(step, source, temperature_unit(self))
 
     @property
     def capability_attributes(self) -> dict[str, Any]:
         attributes = super().capability_attributes or {}
         if (step := self.target_temperature_step) is not None:
             attributes["target_temp_step"] = TemperatureDeltaConverter.convert(
-                step, self.temperature_unit, self.hass.config.units.temperature_unit
+                step, temperature_unit(self), self.hass.config.units.temperature_unit
             )
         return attributes
 
@@ -292,7 +300,7 @@ class HeatingCircuitClimate(
         policy = number_policy_for_resource(target)
         assert policy is not None
         raw = TemperatureConverter.convert(
-            value, self.temperature_unit, TEMPERATURE_UNITS[target.metadata.unit or ""]
+            value, temperature_unit(self), TEMPERATURE_UNITS[target.metadata.unit or ""]
         )
         await async_set_control(
             self.coordinator,

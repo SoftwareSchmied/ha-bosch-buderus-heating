@@ -18,6 +18,7 @@ from custom_components.bosch_buderus_heating.climate import (
     BaconClimate,
     async_setup_entry,
 )
+from custom_components.bosch_buderus_heating.ha_compat import temperature_unit
 from tests.test_bacon_dhw import responding
 from tests.test_bacon_session import emit, environment
 
@@ -47,9 +48,9 @@ def update(account, data, **patch):
 def test_family_profiles_have_individual_features_and_no_inferred_action(profile):
     account, entity, data = configured(profile)
     assert entity.available and entity.hvac_mode == HVACMode.COOL
-    assert entity.current_temperature == 22.5
-    assert entity.target_temperature == 22
-    assert entity.temperature_unit == "°C"
+    assert entity.native_current_temperature == 22.5
+    assert entity.native_target_temperature == 22
+    assert temperature_unit(entity) == "°C"
     assert entity.hvac_action is None
     assert entity.hvac_modes == (
         [HVACMode.OFF, *rac.MODES]
@@ -123,7 +124,7 @@ def test_sensor_units_are_explicit(unit, value, expected):
         "topics/sensor",
         {"items": [{"timestamp": 3, "roomTemperature": value}]},
     )
-    assert entity.current_temperature == expected
+    assert entity.native_current_temperature == expected
 
 
 @pytest.mark.parametrize(
@@ -133,7 +134,7 @@ def test_invalid_temperature_is_unknown(value):
     _, entity, _ = configured()
     # Direct contract check also covers values rejected by the JSON transport.
     entity.device.sensor["roomTemperature"] = value
-    assert entity.current_temperature is None
+    assert entity.native_current_temperature is None
 
 
 @pytest.mark.parametrize(
@@ -151,7 +152,7 @@ def test_invalid_sensor_bounds(patch):
     account, entity, data = configured()
     data["metadata"]["topics"]["sensor"]["roomTemperature"].update(patch)
     emit(account, "topics/meta", data["metadata"])
-    assert entity.current_temperature is None
+    assert entity.native_current_temperature is None
 
 
 @pytest.mark.parametrize(
@@ -173,7 +174,7 @@ async def test_invalid_target_metadata_removes_control_and_blocks_writes(patch):
     account, entity, data = configured()
     data["metadata"]["shadows"]["state"]["tempSetpoint"].update(patch)
     emit(account, "topics/meta", data["metadata"])
-    assert entity.target_temperature is None
+    assert entity.native_target_temperature is None
     assert not entity.supported_features & Feature.TARGET_TEMPERATURE
     with pytest.raises(ServiceValidationError):
         await entity.async_set_temperature(temperature=24)
@@ -243,7 +244,7 @@ async def test_narrow_commands_preserve_other_fields_and_other_device():
     ]
     for field in ("ecoEnabled", "onTimestamp", "customTitle"):
         assert entity.device.state.reported[field] == original[field]
-    assert other.hvac_mode == HVACMode.COOL and other.target_temperature == 22
+    assert other.hvac_mode == HVACMode.COOL and other.native_target_temperature == 22
 
 
 @pytest.mark.parametrize(
@@ -351,7 +352,7 @@ async def test_concurrent_app_change_is_preserved_and_commands_are_serialized():
     )
     assert writes == [{"tempSetpoint": 24}, {"fanSpeed": "low"}]
     assert entity.device.state.reported["ecoEnabled"] is False
-    assert entity.target_temperature == 24 and entity.fan_mode == "low"
+    assert entity.native_target_temperature == 24 and entity.fan_mode == "low"
 
 
 @pytest.mark.parametrize(
@@ -369,7 +370,7 @@ async def test_unconfirmed_command_becomes_unavailable_without_replay(outcome):
     if outcome != "disconnect":
         data["shadow"]["version"] += 2
         emit(account, "shadows/state/get/accepted", data["shadow"])
-        assert entity.available and entity.target_temperature == 22
+        assert entity.available and entity.native_target_temperature == 22
         assert writes == [{"tempSetpoint": 24}]
 
 
@@ -393,16 +394,16 @@ def test_unknown_modes_missing_fields_and_model_change():
         "topics/info",
         {"timestamp": 3, "online": True, "appliance": {"type": "Sharp"}},
     )
-    assert not entity.available and entity.current_temperature is None
+    assert not entity.available and entity.native_current_temperature is None
     assert entity.hvac_mode is None and entity.supported_features == 0
 
 
 def test_freshness_ordering_and_reconnection_are_independent():
     account, entity, data = configured()
     identity = entity.unique_id
-    entity.device.sensor_received_at -= 901
+    entity.device.sensor_received_at -= 3601
     for key in entity.device.sensor_fields_received_at:
-        entity.device.sensor_fields_received_at[key] -= 901
+        entity.device.sensor_fields_received_at[key] -= 3601
     for stamp in (1, 2, 3):
         emit(
             account,
@@ -410,12 +411,18 @@ def test_freshness_ordering_and_reconnection_are_independent():
             {"items": [{"timestamp": stamp, "roomTemperature": 25}]},
             retained=stamp == 3,
         )
-    assert entity.current_temperature is None and entity.target_temperature == 22
+    assert (
+        entity.native_current_temperature is None
+        and entity.native_target_temperature == 22
+    )
     emit(account, "topics/sensor", {"items": [{"timestamp": 3, "roomTemperature": 25}]})
     entity.device.state_received_at -= 901
     for key in entity.device.state_fields_received_at:
         entity.device.state_fields_received_at[key] -= 901
-    assert entity.current_temperature == 25 and entity.target_temperature is None
+    assert (
+        entity.native_current_temperature == 25
+        and entity.native_target_temperature is None
+    )
     assert entity.hvac_mode is None and entity.supported_features == 0
     assert entity.min_temp == entity.max_temp == 0
     assert entity.target_temperature_step is None
@@ -425,11 +432,14 @@ def test_freshness_ordering_and_reconnection_are_independent():
     account.generation += 1
     emit(account, "topics/info", {**data["info"], "timestamp": 3})
     emit(account, "shadows/state/get/accepted", data["shadow"])
-    assert entity.target_temperature is None
+    assert entity.native_target_temperature is None
     emit(account, "topics/meta", data["metadata"], retained=True)
-    assert entity.target_temperature == 22 and entity.current_temperature is None
+    assert (
+        entity.native_target_temperature == 22
+        and entity.native_current_temperature is None
+    )
     emit(account, "topics/sensor", {"items": [{"timestamp": 4, "roomTemperature": 26}]})
-    assert entity.current_temperature == 26
+    assert entity.native_current_temperature == 26
     assert BaconClimate(account, entity.serial).unique_id == identity
 
 
@@ -512,15 +522,100 @@ async def test_duplicate_or_desired_ack_does_not_complete_delayed_command():
     try:
         await published.wait()
         await asyncio.sleep(0)
-        assert not task.done() and entity.target_temperature == 22
+        assert not task.done() and entity.native_target_temperature == 22
         response = copy.deepcopy(data["shadow"])
         response["version"] = 3
         response["state"]["reported"]["tempSetpoint"] = 24
         emit(account, "shadows/state/update/accepted", response)
         await task
-        assert entity.target_temperature == 24
+        assert entity.native_target_temperature == 24
         assert writes == [{"tempSetpoint": 24}]
     finally:
         if not task.done():
             task.cancel()
             await asyncio.gather(task, return_exceptions=True)
+
+
+def with_eco(account, data, meta):
+    """Publish metadata with or without an Eco declaration."""
+    data["metadata"]["shadows"]["state"].pop("ecoEnabled", None)
+    if meta is not None:
+        data["metadata"]["shadows"]["state"]["ecoEnabled"] = meta
+    emit(account, "topics/meta", data["metadata"])
+
+
+@pytest.mark.parametrize("meta", [None, {}, {"ro": True}, {"ro": "false"}])
+async def test_eco_preset_absent_unless_declared_writable(meta):
+    account, entity, data = configured()
+    with_eco(account, data, meta)
+    assert entity.preset_modes is None and entity.preset_mode is None
+    assert not entity.supported_features & Feature.PRESET_MODE
+    assert not rac.command_valid(
+        entity.device, {"ecoEnabled": False}, entity.device.model
+    )
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_preset_mode("none")
+    account._mqtt.publish.assert_not_called()
+
+
+@pytest.mark.parametrize("value", [None, "on", 1])
+async def test_eco_preset_absent_without_boolean_report(value):
+    account, entity, data = configured()
+    with_eco(account, data, {"ro": False})
+    if value is None:
+        data["shadow"]["state"]["reported"].pop("ecoEnabled")
+        data["shadow"]["version"] += 1
+        emit(account, "shadows/state/get/accepted", data["shadow"])
+    else:
+        update(account, data, ecoEnabled=value)
+    assert entity.preset_modes is None and entity.preset_mode is None
+    assert not entity.supported_features & Feature.PRESET_MODE
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_preset_mode("eco")
+    account._mqtt.publish.assert_not_called()
+
+
+async def test_eco_preset_sends_only_eco_and_reads_back():
+    account, entity, data = configured()
+    with_eco(account, data, {"ro": False})
+    update(account, data, fanSpeed="turbo")
+    writes = responding(account, data)
+    assert entity.preset_modes == ["none", "eco"]
+    assert entity.supported_features & Feature.PRESET_MODE
+    assert entity.preset_mode == "eco" and entity.fan_mode == "turbo"
+    await entity.async_set_preset_mode("none")
+    assert entity.preset_mode == "none"
+    await entity.async_set_preset_mode("eco")
+    assert entity.preset_mode == "eco"
+    assert writes == [{"ecoEnabled": False}, {"ecoEnabled": True}]
+    # The fan speed named turbo is a separate setting and stays untouched.
+    assert entity.fan_mode == "turbo" and "turbo" in entity.fan_modes
+    with pytest.raises(ServiceValidationError):
+        await entity.async_set_preset_mode("boost")
+    assert len(writes) == 2
+
+
+@pytest.mark.parametrize(
+    "patch",
+    [
+        {"ecoEnabled": 1},
+        {"ecoEnabled": True, "fanSpeed": "turbo"},
+        {"ecoEnabled": True, "powerEnabled": True},
+    ],
+)
+def test_eco_command_is_a_single_boolean_field(patch):
+    account, entity, data = configured()
+    with_eco(account, data, {"ro": False})
+    assert rac.command_valid(entity.device, {"ecoEnabled": True}, entity.device.model)
+    assert not rac.command_valid(entity.device, patch, entity.device.model)
+
+
+async def test_unconfirmed_eco_change_keeps_reported_value():
+    account, entity, data = configured()
+    with_eco(account, data, {"ro": False})
+    writes = responding(account, data, outcome="desired")
+    with pytest.raises(HomeAssistantError):
+        await entity.async_set_preset_mode("none")
+    assert writes == [{"ecoEnabled": False}]
+    assert rac.reported(entity.device, "ecoEnabled") is True
+    assert not entity.available

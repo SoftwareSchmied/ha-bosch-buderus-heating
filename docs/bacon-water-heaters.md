@@ -56,13 +56,18 @@ every changed field. An omitted `ro` is read-only.
   claim about manufacturer limits or a list of all possible error sentinels.
 - Missing, null, malformed and incompatible fields stay unknown. Missing
   status flags are never treated as false.
-- A live device-information message is required. Current state and sensor
-  messages expire independently after 15 minutes. Sensor timestamps establish
+- Online status comes from the newest device-information message. It stays
+  usable while a non-retained device message on any channel arrived within
+  the last hour; an explicit offline message applies immediately. Reported
+  state fields expire after 15 minutes, sensor fields independently after one
+  hour. Sensor timestamps establish
   order only; their epoch unit is not assumed. Duplicate, older and retained
   sensor messages cannot refresh a measurement.
 - Retained metadata may describe the current subscription's capabilities.
-  It cannot establish connectivity or fresh measurements. After reconnecting,
-  all required streams must be received again. Changing the reported model
+  It cannot establish connectivity or fresh measurements. After a reconnect
+  of the integration, earlier state and sensor fields stay visible within
+  their own age limits; after a membership loss or a re-added device, all
+  required streams must be received again. Changing the reported model
   discards the former model's cached state, metadata and sensor data.
 
 The six optional read-only indicators are energy saving, standard mode,
@@ -133,7 +138,9 @@ Einstellungen. Temperatur und Betriebsart werden einzeln geändert; kombinierte
 Anfragen werden vor dem Schreiben verständlich abgewiesen. Erst der neuere gemeldete Gerätezustand bestätigt eine Änderung.
 Ein unklarer Ausgang führt zu keiner automatischen Wiederholung. Veraltete
 Messwerte, gespeicherte Sensormeldungen und fehlende Angaben werden nicht als
-frischer Zustand dargestellt. Beim Wiederverbinden müssen die benötigten
+frischer Zustand dargestellt. Nach einem Wiederverbinden der Integration
+bleiben die letzten Werte innerhalb ihrer Altersgrenzen sichtbar; nach einer
+Geräteentfernung oder einem erneut hinzugefügten Gerät müssen die benötigten
 Daten erneut eintreffen. Namen, IDs und deaktivierte Entitäten bleiben erhalten.
 
 Diagnose-Schema 22 ergänzt nur Familien- und Aktualitätszähler ohne

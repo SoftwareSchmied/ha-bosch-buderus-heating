@@ -297,7 +297,7 @@ def test_candidate_count_and_user_text_are_bounded() -> None:
     assert all(period.name is None for period in state.periods)
 
 
-def test_writable_app_configuration_and_period_are_strictly_parsed() -> None:
+def test_writable_configuration_and_period_are_strictly_parsed() -> None:
     resources = {
         HOLIDAY_LIST_PATH: Resource(
             path=HOLIDAY_LIST_PATH,

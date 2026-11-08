@@ -20,12 +20,14 @@
 > sign-in step by step.
 
 > [!NOTE]
-> **0.8.3 fixes startup on Home Assistant 2026.9.2 and includes read-only time programs.** The new
-> diagnostic sensors are disabled by default. They show the scheduled level
-> and weekly switch points; this feature does not change appliance settings.
-> **0.8.3 is Stable/Latest.** See the
-> [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.8.3)
-> for installation and the remaining display checks.
+> **0.9.0-alpha.1 is a pre-release for testing.** It adds an optional local
+> access to K40/K40RF gateways, keeps a system with a local access running
+> without the cloud and reviews the entities. It requires Home Assistant
+> 2026.5.0 or newer and moves the entry to a storage format that 0.8.x cannot
+> load, so make a full backup first. HACS shows it only with pre-releases
+> enabled. **0.8.3 remains the latest stable release.** See the
+> [alpha release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.1);
+> feedback is welcome.
 
 **Bosch/Buderus Home Comfort** is the new display name for **Bosch/Buderus Heating**.
 The new name is included in stable **0.8.2**, following its introduction in Beta.7.
@@ -135,10 +137,28 @@ initial setup, but also when the cloud is slow, a resource is unavailable, or
 the installation exposes a combination of capabilities that has not been seen
 before.
 
+## Cloud access and local access
+
+The integration can use the cloud access (sign-in of the manufacturer's app),
+the local access to a K40/K40RF gateway in your home network, or both:
+
+- the **cloud access** shows the readings and lets you operate the system;
+- the **local access** only reads, but updates many readings more often and
+  can add technical readings the cloud does not offer;
+- with **both**, each reading is shown once, from the local access while it is
+  current; changes always go through the cloud.
+
+Without the cloud, a system with a local access keeps showing its readings,
+read-only. When the cloud comes back, it takes over the same entities with
+their history. See [operation without the cloud](docs/operation-without-cloud.md).
+
 ## Features
 
 - Automatic discovery of supported PointT resources
 - Support for multiple gateways and dynamically discovered circuits
+- Optional read-only local access to K40/K40RF gateways (from 0.9.0-alpha.1),
+  also without the cloud; faults and bell notifications then follow the
+  gateway's local error list
 - Temperatures, system pressure, operating states, instantaneous heat-source
   power, brine temperatures, starts, and operating hours
 - Capability-gated read-only monitoring for optional hybrid, low-noise,
@@ -178,7 +198,9 @@ Normal measurements and everyday controls are enabled on a fresh installation.
 The installer-level maximum-supply-temperature control, identity data, detailed
 system information, raw software-update fields, and read-only copies of an
 existing control remain available only as opt-in diagnostics.
-Unknown or privacy-sensitive resources never become entities.
+Cloud resources the integration does not know yet appear as disabled
+diagnostic sensors, never as controls. Identifiers, network data and other
+privacy-sensitive values never become entities.
 
 ## Compatibility
 
@@ -186,18 +208,25 @@ The integration uses the cloud interface shared by the Bosch and Buderus
 heating apps. Compatibility depends on the resources exposed for the specific
 account, gateway, controller, and heating system.
 
+The integration requires **Home Assistant 2026.5.0 or newer**. HACS does not
+offer it to older installations. The automated checks run the full test suite
+on Home Assistant 2026.5.4, 2026.9.2 and the current release.
+
 | Status | Systems |
 |---|---|
-| Tested | Buderus heat-pump installation with an MX400 controller connected through a gateway reported by PointT as K40/K40RF |
-| Designed for | Compatible Bosch/Buderus systems using MX300 or MX400 controllers and K30/K30RF or K40/K40RF gateways |
-| Optional when reported by PointT | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
-| Included but experimental, field checks pending | Identified Midea/RWH water heaters, Midea Climate Series, seven connected Air purifier families, Dry 4000i/6000i/8000i, and read-only PointT wallboxes |
-| Not covered | Matter devices, arbitrary MQTT devices, gateway network administration, and local LAN access |
+| In use | Many installations with heat pumps and gas condensing boilers |
+| Brands | Cloud access: systems registered in the Bosch or Buderus app. Local access: gateways of Bosch, Buderus, IVT, Vulcano and Worcester |
+| Tested on my system | Buderus heat pump with an MX400 controller and a K40/K40RF gateway, cloud and local access |
+| Designed for | Systems with MX300 or MX400 controllers and K30/K30RF or K40/K40RF gateways |
+| Optional when reported | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
+| Additional device families | Midea/RWH water heaters, Midea Climate Series, seven air purifier families, Dry 4000i/6000i/8000i and read-only wallboxes |
+| Optional local access | K40/K40RF gateways with firmware 15.00.01 or newer, read-only over the local network next to the cloud access; only the heating system, not air conditioners, wallboxes or other devices of the account. See [compatibility](docs/compatibility.md) |
+| Not covered | Matter devices, arbitrary MQTT devices and gateway network administration |
 
 The additional device families included in 0.8.2 use their own adapters and supported
 Home Assistant entity types. Available functions depend on identification,
 reported metadata and explicit device selection. See the
-[current scope](docs/specification-status.md) for limits and pending checks.
+[device families](docs/device-support-plan.md) and the [current scope](docs/specification-status.md) for details.
 
 An unlisted model may still work because discovery is capability based. A
 listed gateway does not by itself guarantee that every entity or control is
@@ -318,8 +347,8 @@ description are not supported by PointT.
 
 When an existing period is edited, its heating, hot-water, ventilation,
 thermal-disinfection, constant-temperature, and circuit-assignment settings are
-preserved. A newly created period uses the defaults also used by MyBuderus and
-HomeCom Easy: all advertised circuits, 17 °C constant-temperature heating when
+preserved. A newly created period uses conservative defaults: all advertised
+circuits, 17 °C constant-temperature heating when
 supported, hot water off, ventilation off when supported, and thermal
 disinfection on when supported. These defaults are checked against the actual
 configuration. If a default is not offered, use **Configure → Manage holiday
@@ -498,12 +527,15 @@ gateway IDs, serial numbers, network identifiers, or unredacted API responses.
 | [Older holiday formats](docs/legacy-holidays.md) | ICOM date-only slots, WDDW2 on/off mode, write confirmation and device-check limits |
 | [Resource catalog](docs/resource-catalog.md) | Observed PointT resources and terminology |
 | [Water softener development](docs/water-softener.md) | Initial WE800i support, evidence and outstanding device verification |
-| [Device expansion plan](docs/device-support-plan.md) | Implementation checkpoints for the requested device and program expansion |
+| [Device families](docs/device-support-plan.md) | Supported device families, what they show and operate |
 | [Zone and DHW additions](docs/zone-and-dhw-fields.md) | Additional heating/cooling zone readings and DHW device types |
 | [Zone controls](docs/zone-controls.md) | Heating/cooling modes and manual temperatures, temporary-override limits and outstanding physical checks |
-| [App resource inventory](docs/app-resource-inventory.md) | Path model comparison, unresolved formats and adapter boundaries |
+| [Resource inventory](docs/resource-inventory.md) | Path models, unresolved formats and adapter boundaries |
 | [Reconfiguration](docs/reconfiguration.md) | Gateway selection, rediscovery, and polling profiles |
 | [Diagnostics](docs/diagnostics.md) | Redacted diagnostics and request metrics |
+| [Validity of readings](docs/reading-validity.md) | How long cloud and local readings are shown |
+| [Cloud and local access](docs/operation-without-cloud.md) | Short overview of both accesses and operation without the cloud |
+| [Source selection](docs/source-selection.md) | Which connection supplies paired readings |
 | [Anonymized inventory](docs/anonymized-inventory.md) | Value-free compatibility inventory for maintainers |
 | [Roadmap](docs/roadmap.md) | Remaining compatibility and release work |
 | [Project status](docs/specification-status.md) | Published versions, planned work and the scope of actual validation |

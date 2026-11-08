@@ -38,7 +38,20 @@ supported values become entities. Registry entries belonging to deliberately
 deselected gateways are removed.
 
 Changing between Bosch and Buderus requires a new SingleKey ID sign-in because
-the apps use different OAuth configurations.
+the two brands use different OAuth configurations.
+
+## Search the system again
+
+Entries with connections offer **Search the system again** in their options.
+It searches the system once more for parts and readings without a reload:
+every running cloud access plans one discovery with its next regular update,
+and every running local access searches its resources again in its usual
+search slots. The search keeps to the usual limits for requests. It never
+removes an entity: a reading it does not find again stays and keeps being
+read until its own answer says it is gone. While requests are paused (for
+example after the cloud asked for a pause, or while the local read budget
+pauses), while a search is already running, or when no access is ready, the
+dialog says so and starts nothing.
 
 ## Polling profiles
 

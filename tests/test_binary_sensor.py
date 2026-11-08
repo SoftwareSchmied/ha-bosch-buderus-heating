@@ -7,10 +7,10 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
 from homeassistant.core import HomeAssistant
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.binary_sensor import (
     BoschBuderusBinarySensor,
+    BoschBuderusCloudControlBinarySensor,
     BoschBuderusHolidayActiveBinarySensor,
     BoschBuderusSystemFaultBinarySensor,
     async_setup_entry,
@@ -30,6 +30,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     Resource,
     ResourceMetadata,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 
 def _binary_sensor(
@@ -142,10 +143,11 @@ async def test_platform_adds_safe_booleans_only(hass: HomeAssistant) -> None:
 
     await async_setup_entry(hass, entry, added.extend)
 
-    assert len(added) == 2
+    assert len(added) == 3
     assert isinstance(added[0], BoschBuderusSystemFaultBinarySensor)
-    assert isinstance(added[1], BoschBuderusBinarySensor)
-    assert added[1].entity_description.resource_path == safe.path
+    assert isinstance(added[1], BoschBuderusCloudControlBinarySensor)
+    assert isinstance(added[2], BoschBuderusBinarySensor)
+    assert added[2].entity_description.resource_path == safe.path
     await sensor.coordinator.async_shutdown()
 
 

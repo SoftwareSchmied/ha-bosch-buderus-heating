@@ -29,7 +29,11 @@ from .models import (
 )
 from .updates import expire_values, ingest_sensor, ingest_state
 
-STALE_AFTER = 900
+# Reported state is refreshed by our own periodic get requests.
+STATE_STALE_AFTER = 900
+# Devices may publish measurements and information only on change.
+SENSOR_STALE_AFTER = 3600
+ALIVE_AFTER = 3600
 RESYNC_INTERVAL = 300
 MAINTENANCE_INTERVAL = 60
 WriteValidator = Callable[[Device, dict[str, Any]], bool]
@@ -77,10 +81,29 @@ class BaconAccount:
             listener()
 
     def expire_values(self, device: Device) -> None:
-        expire_values(device, monotonic(), STALE_AFTER)
+        expire_values(device, monotonic(), STATE_STALE_AFTER, SENSOR_STALE_AFTER)
 
     def attach_task(self, task: asyncio.Task[None]) -> None:
         self._task = task
+
+    def check_connection(self) -> None:
+        """Allow a managed owner to reject obsolete connection work."""
+
+    def on_error(self, error: BaconError) -> None:
+        """Allow a managed owner to share authentication and quota failures."""
+
+    async def _selection_update(self, mqtt: Any, subject: str) -> None:
+        """Allow selected devices to change without reconnecting other consumers."""
+
+    async def _wait_for_maintenance(self, receiver: asyncio.Task[None]) -> None:
+        await asyncio.wait({receiver}, timeout=MAINTENANCE_INTERVAL)
+
+    async def _publish(self, serial: str, suffix: str, payload: str | bytes) -> None:
+        if self._mqtt is None or self.client.subject is None:
+            raise BaconError("connection")
+        await self._mqtt.publish(
+            topic(self.client.subject, serial, suffix), payload, qos=1, retain=False
+        )
 
     async def close(self) -> None:
         if self._task:
@@ -93,9 +116,10 @@ class BaconAccount:
         self.connected = False
         self._mqtt = None
         for device in self.devices.values():
+            # Readings keep their stream generations: a reconnect is our own
+            # connection event, see _start_generation. Availability needs a
+            # message on the new connection.
             device.generation = 0
-            device.state_generation = 0
-            device.sensor_generation = device.metadata_generation = 0
         for future in tuple(self._readers.values()):
             if not future.done():
                 future.set_exception(BaconError("connection"))
@@ -110,11 +134,13 @@ class BaconAccount:
                     delay = 5
                 except BaconError as err:
                     self.error = err.category
+                    self.on_error(err)
                     delay = max(delay, err.retry_after)
                     if err.category in {"authentication", "account_changed"}:
                         return
                 except aiomqtt.MqttError as err:
                     self.error = _mqtt_error(err)
+                    self.on_error(BaconError(self.error))
                     if self.error == "authentication":
                         return
                     if self.error == "rate_limited":
@@ -140,6 +166,7 @@ class BaconAccount:
         if subject != self.client.subject:
             raise BaconError("account_changed")
         tls = await asyncio.to_thread(ssl.create_default_context)
+        self.check_connection()
         # A fresh client has no queued messages from an earlier connection.
         async with self._factory(
             BROKER,
@@ -163,9 +190,11 @@ class BaconAccount:
             max_inflight_messages=1,
             max_concurrent_outgoing_calls=1,
         ) as mqtt:
+            self.check_connection()
             self._mqtt = mqtt
             await mqtt.subscribe(f"users/{subject}/#", qos=1)
-            self.generation += 1
+            self.check_connection()
+            self._start_generation()
             self.connected, self.error = True, None
             self._notify()
             receiver = asyncio.create_task(self._receive(mqtt, subject))
@@ -177,17 +206,11 @@ class BaconAccount:
                         if last_sync:
                             self._set_membership(await self.client.get_devices())
                         for serial in sorted(self._claimed):
-                            await mqtt.publish(
-                                topic(subject, serial, "shadows/state/get"),
-                                b"",
-                                qos=1,
-                                retain=False,
-                            )
+                            await self._publish(serial, "shadows/state/get", b"")
                         last_sync = now
-                    done, _ = await asyncio.wait(
-                        {receiver}, timeout=MAINTENANCE_INTERVAL
-                    )
-                    if done:
+                    await self._selection_update(mqtt, subject)
+                    await self._wait_for_maintenance(receiver)
+                    if receiver.done():
                         await receiver
                         raise BaconError("connection")
                     current = await self.client.access_token()
@@ -201,6 +224,26 @@ class BaconAccount:
                     asyncio.CancelledError, BaconError, aiomqtt.MqttError
                 ):
                     await receiver
+
+    def _start_generation(self) -> None:
+        """Begin a new connection and carry readings of the previous one over.
+
+        A reconnect, for example after a token renewal, is not device silence:
+        sensor and reported state fields stay visible until their own age limit
+        expires them. Membership loss or a re-added device clears the stream
+        generations instead, so nothing is carried over for those.
+        """
+        previous = self.generation
+        self.generation += 1
+        if not previous:
+            return
+        for device in self.devices.values():
+            if device.state_generation == previous:
+                device.state_generation = self.generation
+            if device.sensor_generation == previous:
+                device.sensor_generation = self.generation
+            if device.metadata_generation == previous:
+                device.metadata_generation = self.generation
 
     def _set_membership(self, offered: tuple[str, ...]) -> None:
         self._claimed = set(offered).intersection(self.selected)
@@ -261,7 +304,15 @@ class BaconAccount:
             stamp, online = data.get("timestamp"), data.get("online")
             if type(stamp) is not int or stamp < 0 or type(online) is not bool:
                 raise BaconError("invalid_information")
-            if stamp <= device.info_timestamp:
+            # A reconnect is our own connection event, not device silence: the
+            # redelivered information returns the device to this connection.
+            # Availability still depends on the last real sign of life.
+            device.generation = self.generation
+            # A re-added device or regained membership starts without an online
+            # state; the redelivered information with the same timestamp may set
+            # it once. It never counts as a sign of life.
+            repeated = stamp == device.info_timestamp and device.online is None
+            if stamp <= device.info_timestamp and not repeated:
                 return
             device.info_timestamp = stamp
             # The information timestamp's unit is not established. Use it only
@@ -278,9 +329,9 @@ class BaconAccount:
                 if isinstance(data["error"], dict)
                 else None
             )
-            if not retained:
+            if not retained and not repeated:
                 device.info_received_at = monotonic()
-                device.generation = self.generation
+                self._alive(device)
             appliance = data.get("appliance")
             model = appliance.get("type") if isinstance(appliance, dict) else None
             new_model = model if isinstance(model, str) and len(model) <= 80 else None
@@ -306,11 +357,13 @@ class BaconAccount:
             if retained:
                 return
             self.expire_values(device)
-            ingest_sensor(device, data, self.generation, monotonic())
+            if ingest_sensor(device, data, self.generation, monotonic()):
+                self._alive(device)
         else:
             if retained:
                 return
             self.expire_values(device)
+            reports = device.state_reports
             current = ingest_state(
                 device,
                 data,
@@ -318,6 +371,13 @@ class BaconAccount:
                 monotonic(),
                 full=suffix == "shadows/state/get/accepted",
             )
+            # Our own get response and desired-only acknowledgements come from
+            # the cloud; only newly reported fields show that the device is live.
+            if (
+                suffix == "shadows/state/update/accepted"
+                and device.state_reports != reports
+            ):
+                self._alive(device)
             reader = self._readers.get(serial)
             if current is not None:
                 device.uncertain = False
@@ -326,13 +386,25 @@ class BaconAccount:
         device.received_at = monotonic()
         self._notify()
 
+    def _alive(self, device: Device) -> None:
+        """Record a device-originated, non-retained message on any channel."""
+        device.alive_at = monotonic()
+        device.generation = self.generation
+
     def available(self, serial: str) -> bool:
+        """Online state comes from the newest information message.
+
+        Devices may send information only on change, so any sign of life within
+        the last hour keeps that state usable, also across our own reconnects
+        once the information was received on the current connection.
+        """
         device = self.devices[serial]
         return (
             self.connected
             and serial in self._claimed
             and device.generation == self.generation
-            and monotonic() - device.info_received_at <= STALE_AFTER
+            and device.alive_at is not None
+            and monotonic() - device.alive_at <= ALIVE_AFTER
             and device.online is not None
         )
 
@@ -345,12 +417,7 @@ class BaconAccount:
         future: asyncio.Future[Shadow] = asyncio.get_running_loop().create_future()
         self._readers[serial] = future
         try:
-            await self._mqtt.publish(
-                topic(self.client.subject, serial, "shadows/state/get"),
-                b"",
-                qos=1,
-                retain=False,
-            )
+            await self._publish(serial, "shadows/state/get", b"")
             async with asyncio.timeout(self._timeout):
                 return await future
         except (TimeoutError, aiomqtt.MqttError) as err:
@@ -402,12 +469,7 @@ class BaconAccount:
                 async with asyncio.timeout(self._timeout):
                     # A lost PUBACK is ambiguous. Never publish the command twice.
                     with contextlib.suppress(aiomqtt.MqttError):
-                        await mqtt.publish(
-                            topic(self.client.subject, serial, "shadows/state/update"),
-                            encoded,
-                            qos=1,
-                            retain=False,
-                        )
+                        await self._publish(serial, "shadows/state/update", encoded)
                     while True:
                         self._changed.clear()
                         if (
@@ -468,7 +530,7 @@ class BaconAccount:
                     "sensor_current": sum(
                         rac.supported(d)
                         and d.sensor_generation == self.generation
-                        and monotonic() - d.sensor_received_at <= STALE_AFTER
+                        and monotonic() - d.sensor_received_at <= SENSOR_STALE_AFTER
                         and self.available(s)
                         and d.online is True
                         for s, d in self.devices.items()
@@ -490,7 +552,7 @@ class BaconAccount:
                     "sensor_current": sum(
                         dry.family(d) == name
                         and d.sensor_generation == self.generation
-                        and monotonic() - d.sensor_received_at <= STALE_AFTER
+                        and monotonic() - d.sensor_received_at <= SENSOR_STALE_AFTER
                         and self.available(s)
                         and d.online is True
                         for s, d in self.devices.items()
@@ -513,7 +575,7 @@ class BaconAccount:
                     "sensor_current": sum(
                         purifier.family(d) == name
                         and d.sensor_generation == self.generation
-                        and monotonic() - d.sensor_received_at <= STALE_AFTER
+                        and monotonic() - d.sensor_received_at <= SENSOR_STALE_AFTER
                         and self.available(s)
                         and d.online is True
                         for s, d in self.devices.items()
@@ -536,7 +598,7 @@ class BaconAccount:
                     "sensor_current": sum(
                         dhw.family(d) == name
                         and d.sensor_generation == self.generation
-                        and monotonic() - d.sensor_received_at <= STALE_AFTER
+                        and monotonic() - d.sensor_received_at <= SENSOR_STALE_AFTER
                         and self.available(s)
                         and d.online is True
                         for s, d in self.devices.items()

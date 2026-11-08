@@ -75,7 +75,9 @@ Reloading is therefore not a way to bypass an active cloud rate limit.
    `budget_wait`, with no invented HTTP attempt or failed request.
 
 Core discovery and supplementary requests share the limit of **512 distinct
-requested paths per gateway and metadata session**. Reference depth is limited
+requested paths per gateway and metadata session**. The later search for
+parts missing at start (see below) is charged to the same limit. Reference
+depth is limited
 to eight, with roots at depth zero. The supplementary queue also holds at most
 512 paths. These bounds survive automatic setup retries. Retrying an already
 requested path does not consume another distinct-path slot. A `resource_limit`
@@ -138,7 +140,14 @@ unless the user enables them.
 
 This is not continuous rediscovery of the entire installation. A physically
 added circuit or a new path that was never reported or scheduled still needs
-[rediscovery](reconfiguration.md). Other static resources outside the reviewed
+[rediscovery](reconfiguration.md). The one exception is a part that an earlier
+start discovered and that is missing now: the integration searches that
+subtree again 5, 15 and 60 minutes after the start and then every six hours
+until one day has passed. A search waits for a working cycle, a rate limit
+postpones it, and it is charged to the same path limit. A part still missing
+after the last search is no longer expected at the next start; its entities
+stay in the registry. Without stored resources, a root that ended with a
+temporary error is searched again on the same schedule. Other static resources outside the reviewed
 list retain their previous behavior. Previously discovered dynamic values
 returning 404 already recover on the next regular group read, with their
 existing entities. Fault probes, other path pauses and the gateway circuit
@@ -184,6 +193,34 @@ add a dedicated initial batch. Failed supplementary reads also need later
 recovery requests. The test does not establish faster startup, a guaranteed
 percentage reduction, or real-world uptime on a physical heating system.
 
+## Capacity with several systems
+
+All PointT requests of one saved cloud access share three request slots:
+regular polling of every gateway, wallboxes, startup metadata, device checks,
+reconnection and confirmation reads. Each gateway sends its batches one after
+another and never overlaps its own cycles. If a cycle takes longer than its
+interval, the next one starts later instead of running in parallel.
+
+I measured the actual coordinator, client and slot limit against a local server
+with fixed response times of 20 and 50 ms. The table scales the measured cycle
+length at 50 ms, in multiples of one response time, to the average response
+time of 0.56 seconds observed on my installation and to a pessimistic 2 seconds:
+
+| Systems × operating values | Batches per minute | Cycle at 0.56 s | Cycle at 2 s |
+| --- | ---: | ---: | ---: |
+| 1 × 40 | 2 | about 1.5 s | about 6 s |
+| 3 × 120 | 12 | about 4 s | about 15 s |
+| 5 × 256 | 45 | about 13 s | about 48 s |
+| 10 × 512, the discovery maximum | 180 | about 55 s | about 200 s |
+
+No more than three requests ran at once, and all gateways progressed evenly.
+A device check issued during full load waited roughly the duration of one to
+ten responses. These are synthetic measurements, not a statement about Bosch
+cloud limits. Large accounts may therefore prefer the cloud-friendly profile.
+
+Diagnostics report the longest cycle per gateway, how often a cycle exceeded
+its interval and how long requests waited for a free slot.
+
 ## Manual heating-circuit setpoint recovery
 
 When a reported heating circuit is confirmed to be in Manual and its
@@ -214,13 +251,9 @@ A 404 for this provisional target does not install a 24-hour absence pause.
 403 pauses remain unchanged. Targeted results update only the affected resource;
 they do not declare a failed main cycle healthy or reset its polling timer.
 
-Static inspection of MyBuderus and HomeCom Easy **5.0.0 (26072914)** supports
-reading the matching setpoint again after a mode change and reconsidering
-failed cached reads. The APKs contain several provider paths, including an
-ICOM helper with five retries one second apart. The 3/10/20-second sequence and
-the episode limit above are integration policy, not timing copied from that
-helper. Static inspection does not establish how long a particular installation
-takes to expose its setpoint. No appliance write test is claimed for this change.
+The 3/10/20-second sequence and the episode limit above are integration
+policy. How long a particular installation takes to expose its setpoint has not
+been established. No appliance write test is claimed for this change.
 
 ## Diagnostics and privacy
 

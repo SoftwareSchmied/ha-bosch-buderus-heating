@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import device_registry as dr
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import (
     CONF_FAULT_NOTIFICATIONS,
@@ -17,6 +16,7 @@ from custom_components.bosch_buderus_heating.notifications import (
     gateway_notification_key,
     notification_policy,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 
 async def _start(hass, entry):

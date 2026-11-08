@@ -7,7 +7,6 @@ from unittest.mock import AsyncMock
 import pytest
 from homeassistant.components.climate.const import ClimateEntityFeature, HVACMode
 from homeassistant.exceptions import ServiceValidationError
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.config_flow import BoschBuderusOptionsFlow
 from custom_components.bosch_buderus_heating.const import DOMAIN
@@ -43,6 +42,7 @@ from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeD
 from custom_components.bosch_buderus_heating.writes import (
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 ROOT = "/heatingCircuits/hc2"
 MODE = ROOT + "/operationMode"
@@ -129,8 +129,8 @@ def test_climate_identity_and_measurement(hass):
     assert entity.device_info["identifiers"] == {(DOMAIN, "gateway")}
     assert entity.hvac_modes == [HVACMode.OFF, HVACMode.HEAT, HVACMode.AUTO]
     assert entity.hvac_mode == HVACMode.HEAT
-    assert entity.target_temperature == 19
-    assert entity.current_temperature == 20
+    assert entity.native_target_temperature == 19
+    assert entity.native_current_temperature == 20
     assert entity.min_temp == 5 and entity.max_temp == 30
     assert entity.target_temperature_step == 0.5
     assert entity.capability_attributes["target_temp_step"] == 0.5
@@ -139,7 +139,7 @@ def test_climate_identity_and_measurement(hass):
         ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_OFF
     )
     del coordinator.data[ROOT + "/roomtemperature"]
-    assert entity.current_temperature is None
+    assert entity.native_current_temperature is None
 
 
 async def test_manual_target_writes_correct_circuit_and_keeps_mode(hass):
@@ -150,14 +150,14 @@ async def test_manual_target_writes_correct_circuit_and_keeps_mode(hass):
     )
     assert coordinator._write_service.async_write_number.await_args.args[2] == 20.5
     coordinator._write_service.async_write_enum.assert_not_awaited()
-    assert entity.target_temperature == 20.5
+    assert entity.native_target_temperature == 20.5
     assert coordinator.client.get_resource.await_count == 2
 
 
 @pytest.mark.parametrize("mode,target", [("auto", 21), ("off", None)])
 async def test_nonmanual_modes_do_not_write_target(hass, mode, target):
     _, coordinator, entity = setup(hass, mode=mode)
-    assert entity.target_temperature == target
+    assert entity.native_target_temperature == target
     assert not entity.supported_features & ClimateEntityFeature.TARGET_TEMPERATURE
     with pytest.raises(ServiceValidationError):
         await entity.async_set_temperature(temperature=22)
@@ -269,7 +269,7 @@ def test_temperature_contract(hass, field, value):
             old.resource, metadata=replace(old.resource.metadata, **{field: value})
         ),
     )
-    assert entity.current_temperature is None
+    assert entity.native_current_temperature is None
 
 
 @pytest.mark.parametrize("value", [True, None, "20", float("nan"), float("inf")])
@@ -281,7 +281,7 @@ def test_fahrenheit_conversion(hass):
     _, coordinator, entity = setup(hass)
     resource = scalar(TARGET, 68, unit="F", minimum=41, maximum=86)
     coordinator.data[TARGET] = ResourceSnapshot(resource, True, datetime.now(UTC))
-    assert entity.target_temperature == 20
+    assert entity.native_target_temperature == 20
     assert entity.min_temp == 5 and entity.max_temp == 30
     assert entity.target_temperature_step == pytest.approx(0.5 / 1.8)
 
@@ -354,7 +354,7 @@ async def test_dialog_saves_and_stays_open(hass, enable_custom_integrations):
     result = await options.async_step_operate({"controls": {"changes": {TARGET: 20}}})
     assert result["step_id"] == "operate" and not result["errors"]
     assert selector(result).status == "saved"
-    assert entity.target_temperature == 20
+    assert entity.native_target_temperature == 20
     assert options._entry.options == {}
 
 

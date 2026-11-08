@@ -12,7 +12,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating import (
     _enable_new_default_entities,
@@ -40,6 +39,7 @@ from custom_components.bosch_buderus_heating.discovery import (
     DiscoveryPathDiagnostic,
     DiscoveryPathSource,
 )
+from custom_components.bosch_buderus_heating.entry_sources import pointt_coordinators
 from custom_components.bosch_buderus_heating.pointt import (
     AuthenticationError,
     AuthTokens,
@@ -71,6 +71,8 @@ from custom_components.bosch_buderus_heating.start_counters import (
     assess_start_counter,
     registered_start_counter_path,
 )
+from tests.ha_test_helpers import MockConfigEntry, add_without_device
+from tests.helpers.managed_runtime import pointt_client, wait_for_sources
 
 GLOBAL = "/heatSources/numberOfStarts"
 SOURCE = "/heatSources/hs1/numberOfStarts"
@@ -772,6 +774,7 @@ def test_failed_reads_keep_identity_and_recover(hass, status) -> None:
     _, coordinator = coordinator_for(hass, global_resource())
     sensor = sensors_for(coordinator)[GLOBAL, None]
     identity = sensor.unique_id
+    before = sensor.native_value
     now = datetime.now(UTC)
     for index in (1, 2):
         coordinator._apply_results(
@@ -785,8 +788,13 @@ def test_failed_reads_keep_identity_and_recover(hass, status) -> None:
             now_monotonic=index,
             source=SnapshotSource.BATCH,
         )
-        assert not sensor.available
-        assert sensor.native_value is None
+        if status == 504:
+            # A gateway timeout is no answer for the reading: the last count
+            # stays shown within its validity limit (reading validity).
+            assert sensor.available and sensor.native_value == before
+        else:
+            assert not sensor.available
+            assert sensor.native_value is None
     assert (GLOBAL in coordinator._negative_until) is (status in (403, 504))
     coordinator._apply_results(
         coordinator.data,
@@ -962,9 +970,7 @@ async def test_real_ha_setup_reload_and_two_gateways_keep_counter_entities(
         return {fast.path: fast}
 
     with (
-        patch(
-            "custom_components.bosch_buderus_heating.PointTClient", return_value=client
-        ),
+        pointt_client(client),
         patch(
             "custom_components.bosch_buderus_heating.coordinator.async_discover_resources",
             side_effect=discover,
@@ -980,10 +986,11 @@ async def test_real_ha_setup_reload_and_two_gateways_keep_counter_entities(
     ):
         for _ in range(2):
             assert await hass.config_entries.async_setup(entry.entry_id)
+            await wait_for_sources(hass, entry, 2)
             await hass.async_block_till_done()
             for entity in existing.values():
                 assert hass.states.get(entity.entity_id).state == "unavailable"
-            for coordinator in entry.runtime_data.coordinators:
+            for coordinator in pointt_coordinators(entry):
                 coordinator._next_update[PollGroup.SLOW] = 0
                 await coordinator.async_refresh()
             await hass.async_block_till_done()
@@ -1007,7 +1014,11 @@ async def test_real_ha_setup_reload_and_two_gateways_keep_counter_entities(
                 is er.RegistryEntryDisabler.USER
             )
             assert hass.states.get(disabled.entity_id) is None
-            first = entry.runtime_data.coordinators[0]
+            first = next(
+                coordinator
+                for coordinator in pointt_coordinators(entry)
+                if coordinator.gateway.gateway_id == "gateway-one"
+            )
             first._apply_results(
                 first.data,
                 (
@@ -1032,7 +1043,7 @@ async def test_real_ha_setup_reload_and_two_gateways_keep_counter_entities(
                 if "numberOfStarts" in item.unique_id
             }
             assert len(counters_before_unload) == (8 if source_scalar else 7)
-            unloaded_coordinators = entry.runtime_data.coordinators
+            unloaded_coordinators = pointt_coordinators(entry)
             assert await hass.config_entries.async_unload(entry.entry_id)
             await hass.async_block_till_done()
             for coordinator in unloaded_coordinators:
@@ -1059,9 +1070,9 @@ async def test_recorder_counts_only_valid_increments_and_device_reset(
     from homeassistant.components.recorder.statistics import (
         get_last_short_term_statistics,
     )
-    from homeassistant.components.sensor import DATA_COMPONENT
     from homeassistant.setup import async_setup_component
-    from pytest_homeassistant_custom_component.components.recorder.common import (
+
+    from tests.ha_recorder_helpers import (
         async_wait_recording_done,
         do_adhoc_statistics,
         get_start_time,
@@ -1075,7 +1086,7 @@ async def test_recorder_counts_only_valid_increments_and_device_reset(
     assert await async_setup_component(hass, "sensor", {})
     _, coordinator = coordinator_for(hass, counter_resource(100))
     sensor = sensors_for(coordinator)[counter_path, None]
-    await hass.data[DATA_COMPONENT].async_add_entities([sensor])
+    await add_without_device(hass, sensor)
     await async_wait_recording_done(hass)
     for minute, resource, available in (
         (1, counter_resource(105), True),

@@ -73,8 +73,6 @@ async def test_hour_of_polling_saves_metadata_paths_and_batch_boundary_requests(
     from datetime import UTC, datetime
     from unittest.mock import patch
 
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
-
     from custom_components.bosch_buderus_heating.const import DOMAIN, PollingProfile
     from custom_components.bosch_buderus_heating.coordinator import (
         BoschBuderusDataUpdateCoordinator,
@@ -90,6 +88,7 @@ async def test_hour_of_polling_saves_metadata_paths_and_batch_boundary_requests(
         poll_group,
     )
     from custom_components.bosch_buderus_heating.startup_data import CIRCUIT_COUNT_PATH
+    from tests.ha_test_helpers import MockConfigEntry
 
     fast_paths = tuple(
         f"/heatingCircuits/hc{number}/roomtemperature" for number in range(1, 31)
@@ -300,7 +299,7 @@ async def serve(routes: list[tuple[str, str, Handler]]) -> AsyncIterator[str]:
 
 @pytest.mark.parametrize(
     "delay, expected",
-    [(None, 300), (0, 60), (float("inf"), 300), (99999, 3600), (90, 90)],
+    [(None, 300), (0, 60), (float("inf"), 300), (7200, 7200), (99999, 86400), (90, 90)],
 )
 def test_account_backoff_is_bounded_and_expires(delay, expected) -> None:
     now = 10.0

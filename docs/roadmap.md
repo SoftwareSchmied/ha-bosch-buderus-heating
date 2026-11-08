@@ -15,8 +15,7 @@ supports Bosch and Buderus PointT systems and includes:
 
 - brand-aware SingleKey ID authorization, serialized token rotation, reauth,
   and selection of one or more gateways;
-- bounded dynamic discovery plus a small catalog of paths verified in both
-  MyBuderus and HomeCom Easy;
+- bounded dynamic discovery plus a small catalog of known optional paths;
 - grouped batch polling, partial-result handling, negative capability pauses,
   bounded rate-limit backoff, and a gateway circuit breaker;
 - dynamic heating-circuit, hot-water, heat-source, energy, diagnostic, and
@@ -121,7 +120,7 @@ gateway removal and user administration remain excluded.
 
 ## Optional local backend
 
-An eventual EMS-ESP or Modbus backend may implement the same semantic
+An eventual local bus or Modbus backend may implement the same semantic
 capability model. It would be a separate transport with separate fixtures and
 must not be described as local MX300/MX400 access.
 

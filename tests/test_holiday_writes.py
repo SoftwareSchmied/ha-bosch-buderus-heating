@@ -874,7 +874,7 @@ async def test_update_and_delete_reject_an_id_missing_from_current_list() -> Non
     client.delete_holiday_period.assert_not_awaited()
 
 
-def test_create_uses_app_defaults_base64_and_exact_midnight_end() -> None:
+def test_create_uses_safe_defaults_base64_and_exact_midnight_end() -> None:
     timezone = ZoneInfo("Europe/Berlin")
 
     values = create_holiday_values(

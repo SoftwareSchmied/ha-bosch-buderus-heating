@@ -1,0 +1,78 @@
+# Managed local access
+
+I connected local setup and the polling service to the existing Home Assistant
+configuration entry. A local connection owns its credentials, certificate trust,
+request budget, discovery progress and resource observations. Cloud connections
+have independent lifecycles and intervals.
+
+This change provides regular local data to the managed source. Existing normal
+entities use their cloud adapters unless **local values for existing entities**
+are enabled; then verified [observation pairs](observation-pairs.md) prefer the
+current local reading and fall back to the cloud. Local paths do not create additional Home Assistant devices.
+A first installation using only local access remains outside this step.
+
+## First link and subsequent starts
+
+The first link to a retained PointT target requires fresh evidence from both
+interfaces. Setup reads the local gateway brand, firmware and system information.
+The identity policy reads the selected PointT gateway metadata and its original
+system information through the existing cloud client and account request limits.
+
+The gateway identifiers must agree exactly. At least one module identified by
+its token and ID must have the same exact serial number and hardware identifier.
+Floating-point serials, empty or zero identifiers cannot establish a match.
+Duplicate module keys or conflicting comparable module identities reject the
+link. Additional cloud modules are permitted; firmware versions and current
+measurements do not establish identity. This strict policy can refuse a valid
+installation whose metadata does not provide enough evidence.
+
+The final save rechecks the selected target and both interfaces. The retained
+target records the local identifier, verified-setup evidence and the version of
+the comparison contract. It does not store the compared module inventory.
+Removing the last connection preserves this relationship and the target.
+
+Once this relationship exists, later local starts and local reconnection do not
+need PointT. Every start still reads the local base resources using the saved
+token and exact full resource certificate fingerprint. A different local
+gateway stops the source. Every certificate change needs explicit confirmation,
+including a renewed certificate with the same public key. A token rejection
+requires deliberate recovery through local connection settings.
+
+## Polling and recovery
+
+Local connection settings offer a live-value target of 60 to 900 seconds in
+60-second steps. Other resource classes keep their longer minimum intervals.
+The dialog displays the confirmed resource count and currently available count
+at the time it opens. It explains that local observations do not yet replace
+normal entity values.
+
+The [polling service](local-polling.md) supplies bounded discovery, fair reading,
+independent expiry and resumable progress. All local setup and read operations
+use the [shared gateway budget](local-budget.md). No local write capability is
+enabled, even when a response reports a writeable flag.
+
+Transient startup failures pause only this local source, using 60, 120, 300 and
+then 600 seconds without a server delay. A complete valid Retry-After takes
+precedence. Authentication, identity and certificate failures stop automatic
+attempts. Disabling, removing or replacing the connection cancels owned work;
+late results cannot update another generation. Retained observations do not
+become current again merely because a source restarts.
+
+## Diagnostics and validation
+
+Schema 29 reports local source condition, identity confirmation, fixed failure
+codes, request counts, discovery progress, remaining pauses and resource
+freshness. Each resource shows target and actual intervals, age and availability.
+Dynamic device and signal paths use catalog templates. Current values, tokens,
+endpoint addresses, gateway identifiers and module identities are omitted.
+Generating diagnostics makes no network requests.
+
+Tests cover the actual managed runtime and native setup, fresh PointT evidence,
+offline reuse, interval changes, independent cloud operation, invalid identity,
+certificate changes, token rejection, expiry and cancellation. Loopback HTTPS
+tests use the actual probe and read client. Browser checks use Home Assistant's
+frontend with synthetic services in German desktop and English mobile profiles.
+These checks do not replace installation and observation on a real gateway.
+
+See [setup dialogs](local-setup-dialogs.md) and
+[recoverable completion](local-completion.md).

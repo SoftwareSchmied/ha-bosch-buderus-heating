@@ -11,6 +11,9 @@ from .pointt.models import Resource, ResourceMetadata
 
 GLOBAL_START_COUNTER = "/heatSources/numberOfStarts"
 START_COUNTER_KEYS = ("total", "ch", "cooling", "dhw", "pool")
+# C4 (revised): always offered, but disabled by default; not every system
+# heats a pool.
+OPTIONAL_START_COUNTER_KEY = "pool"
 MAX_START_COUNT = 2**53 - 1  # Preserve exact integers in downstream numeric storage.
 _SOURCE_PATH = re.compile(r"^/heatSources/[^/:]+/numberOfStarts$")
 

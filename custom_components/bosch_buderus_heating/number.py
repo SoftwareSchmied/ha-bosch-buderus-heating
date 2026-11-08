@@ -11,7 +11,7 @@ from homeassistant.components.number import (
     NumberEntityDescription,
     NumberMode,
 )
-from homeassistant.const import PERCENTAGE
+from homeassistant.const import PERCENTAGE, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -33,6 +33,7 @@ from .coordinator import (
     ResourceSnapshot,
 )
 from .device import device_info_for_resource
+from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
 from .sensor import _semantic_key
@@ -62,13 +63,19 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
+    setup_platform(entry, Platform.NUMBER, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
     """Create numeric controls only from matching live metadata."""
-    if (account := entry.runtime_data.bacon) is not None:
+    if (account := entry.bacon) is not None:
         track_purifier_entities(
             entry, account, async_add_entities, BaconPurifierNumber, purifier.NUMBERS
         )
-    del hass
-    for coordinator in entry.runtime_data.coordinators:
+    for coordinator in entry.coordinators:
         track_control_entities(
             entry,
             coordinator,
@@ -249,4 +256,5 @@ def _number_identity(path: str) -> tuple[str, str]:
         ),
         "high": ("hot_water_comfort", "Komfort Starttemperatur"),
         "low": ("hot_water_eco", "Eco Starttemperatur"),
+        "setpointTemp": ("pool_setpoint_temperature", "Pool-Solltemperatur"),
     }[tail]

@@ -10,12 +10,12 @@ from aiohttp import web
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating import async_setup_entry
 from custom_components.bosch_buderus_heating.auth_lifecycle import (
     _TOKEN_MANAGERS,
     ACCOUNT_BACKOFFS,
+    entry_auth,
 )
 from custom_components.bosch_buderus_heating.config_flow import BoschBuderusConfigFlow
 from custom_components.bosch_buderus_heating.const import DOMAIN
@@ -43,6 +43,7 @@ from custom_components.bosch_buderus_heating.pointt.transport import RateLimitBa
 from custom_components.bosch_buderus_heating.repairs import RateLimitRepairFlow
 from custom_components.bosch_buderus_heating.resource_catalog import PollGroup
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
+from tests.ha_test_helpers import MockConfigEntry
 from tests.test_pointt_transport_and_client import serve
 
 ROOT = "custom_components.bosch_buderus_heating"
@@ -146,8 +147,8 @@ async def test_removing_entry_during_refresh_does_not_restore_credentials(hass):
             release.set()
             assert await waiter == "rotated"
     assert entry.data["refresh_token"] == "original-refresh"
-    assert entry.entry_id not in hass.data[_TOKEN_MANAGERS]
-    assert entry.entry_id not in hass.data[ACCOUNT_BACKOFFS]
+    assert not any(key[0] == entry.entry_id for key in hass.data[_TOKEN_MANAGERS])
+    assert not any(key[0] == entry.entry_id for key in hass.data[ACCOUNT_BACKOFFS])
 
 
 async def test_ordinary_rotation_keeps_the_loaded_integration_running(hass):
@@ -392,8 +393,8 @@ async def test_reconfigure_and_poll_share_one_refresh_rotation(hass):
 
     oauth = AsyncMock()
     oauth.refresh.side_effect = refresh
-    manager = TokenManager(oauth, original, lambda _: None)
-    client = PointTClient(async_get_clientsession(hass), manager)
+    manager, backoff = entry_auth(hass, entry, oauth)
+    client = PointTClient(async_get_clientsession(hass), manager, backoff=backoff)
     entry.runtime_data = BoschBuderusRuntimeData(client, manager, (), ())
     flow = BoschBuderusConfigFlow()
     flow.hass = hass

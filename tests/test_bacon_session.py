@@ -9,7 +9,11 @@ import aiomqtt
 import pytest
 
 from custom_components.bosch_buderus_heating.bacon.client import BaconClient
-from custom_components.bosch_buderus_heating.bacon.models import BaconError, topic
+from custom_components.bosch_buderus_heating.bacon.models import (
+    BaconError,
+    Device,
+    topic,
+)
 from custom_components.bosch_buderus_heating.bacon.session import BaconAccount
 from tests.test_bacon_contracts import provider, token
 
@@ -95,6 +99,8 @@ def test_information_contract(payload):
 
 def test_retained_information_does_not_prove_live_connection():
     account = environment()
+    # More than an hour of silence before our reconnect.
+    account.devices["serial-A"].alive_at -= 3601
     account._disconnected()
     account.connected = True
     account.generation = 2
@@ -106,8 +112,227 @@ def test_retained_information_does_not_prove_live_connection():
     assert not account._rejected
     emit(account, "topics/info", {"online": True, "timestamp": 3})
     assert account.available("serial-A")
-    account.devices["serial-A"].info_received_at -= 901
+    account.devices["serial-A"].alive_at -= 3601
     assert not account.available("serial-A")
+
+
+@pytest.mark.parametrize("stamp", [1, 2], ids=["unchanged", "newer"])
+def test_reconnect_within_the_hour_keeps_the_device(stamp):
+    account = environment()
+    device = account.devices["serial-A"]
+    alive = device.alive_at
+    account._disconnected()
+    assert not account.available("serial-A")
+    account.connected = True
+    account.generation = 2
+    # Not yet seen on the new connection.
+    assert not account.available("serial-A")
+    with patch(MODULE + ".monotonic", return_value=alive + 3000):
+        emit(
+            account, "topics/info", {"online": True, "timestamp": stamp}, retained=True
+        )
+        assert account.available("serial-A")
+        assert device.alive_at == alive
+    with patch(MODULE + ".monotonic", return_value=alive + 3601):
+        assert not account.available("serial-A")
+
+
+def test_reconnect_after_an_hour_of_silence_stays_unavailable():
+    account = environment()
+    alive = account.devices["serial-A"].alive_at
+    account._disconnected()
+    account.connected = True
+    account.generation = 2
+    with patch(MODULE + ".monotonic", return_value=alive + 3601):
+        emit(account, "topics/info", {"online": True, "timestamp": 1}, retained=True)
+        assert not account.available("serial-A")
+        emit(account, "topics/sensor", {"items": [{"timestamp": 5, "t": 1}]})
+        assert account.available("serial-A")
+
+
+def test_device_without_sign_of_life_is_unavailable_shortly_after_boot():
+    account = environment()
+    account.devices["serial-A"] = Device("serial-A")
+    with patch(MODULE + ".monotonic", return_value=100.0):
+        emit(account, "topics/info", {"online": True, "timestamp": 5}, retained=True)
+        assert account.devices["serial-A"].online is True
+        assert account.devices["serial-A"].alive_at is None
+        assert not account.available("serial-A")
+
+
+def test_regained_membership_takes_online_state_from_unchanged_information():
+    account = environment()
+    device = account.devices["serial-A"]
+    account._set_membership(("serial-B",))
+    assert device.online is None
+    account._set_membership(("serial-A", "serial-B"))
+    before = device.alive_at
+    with patch(MODULE + ".monotonic", return_value=before + 10):
+        emit(account, "topics/info", {"online": True, "timestamp": 1}, retained=True)
+    assert device.online is True and device.alive_at == before
+    # Once set, an equal timestamp is a duplicate again.
+    emit(account, "topics/info", {"online": False, "timestamp": 1}, retained=True)
+    assert device.online is True
+
+
+async def test_fake_broker_redelivery_restores_online_state():
+    account = environment()
+    device = account.devices["serial-A"]
+    account._set_membership(("serial-B",))
+    account._set_membership(("serial-A", "serial-B"))
+    mqtt = Mqtt()
+    for _ in range(2):
+        mqtt.queue.put_nowait(
+            SimpleNamespace(
+                topic=topic("account-A", "serial-A", "topics/info"),
+                payload=json.dumps({"online": True, "timestamp": 1}).encode(),
+                retain=True,
+            )
+        )
+    mqtt.queue.put_nowait(None)
+    with pytest.raises(BaconError, match="connection"):
+        await account._receive(mqtt, "account-A")
+    assert device.online is True and account.invalid_messages == 0
+    assert account.available("serial-A")
+
+
+def reconnected():
+    """A fresh connection after more than an hour of device silence."""
+    account = environment()
+    account.devices["serial-A"].alive_at -= 3601
+    account._disconnected()
+    account.connected = True
+    account.generation = 2
+    emit(account, "topics/info", {"online": True, "timestamp": 2}, retained=True)
+    assert not account.available("serial-A")
+    return account, account.devices["serial-A"]
+
+
+def test_sensor_only_device_stays_available():
+    account, device = reconnected()
+    start = device.alive_at
+    for step, stamp in enumerate((3, 4, 5), start=1):
+        with patch(MODULE + ".monotonic", return_value=start + step * 1200):
+            emit(account, "topics/sensor", {"items": [{"timestamp": stamp, "t": 1}]})
+            assert account.available("serial-A")
+            assert device.online is True
+    # Just inside and just outside: the start time is an arbitrary float, so an
+    # exact boundary would depend on floating-point rounding.
+    with patch(MODULE + ".monotonic", return_value=start + 3 * 1200 + 3599.5):
+        assert account.available("serial-A")
+    with patch(MODULE + ".monotonic", return_value=start + 3 * 1200 + 3601):
+        assert not account.available("serial-A")
+
+
+def test_information_only_on_change_stays_available_up_to_limit():
+    account = environment()
+    device = account.devices["serial-A"]
+    start = device.alive_at
+    for offset, expected in ((900, True), (901, True), (3599.5, True), (3601, False)):
+        with patch(MODULE + ".monotonic", return_value=start + offset):
+            assert account.available("serial-A") is expected
+
+
+def test_device_reported_state_update_is_sign_of_life():
+    account, device = reconnected()
+    with patch(MODULE + ".monotonic", return_value=device.alive_at + 1000):
+        emit(account, "shadows/state/update/accepted", state(5, "on"))
+        assert account.available("serial-A")
+        assert device.alive_at == pytest.approx(device.state_received_at)
+
+
+@pytest.mark.parametrize(
+    "suffix,payload",
+    [
+        ("shadows/state/get/accepted", state(5, "on")),
+        (
+            "shadows/state/update/accepted",
+            {"state": {"desired": {"mode": "on"}}, "version": 5, "timestamp": 1},
+        ),
+        ("topics/meta", {"ecoEnabled": {"ro": False}}),
+    ],
+    ids=["own-get-response", "desired-only-ack", "metadata"],
+)
+def test_cloud_responses_are_not_signs_of_life(suffix, payload):
+    account, device = reconnected()
+    before = device.alive_at
+    with patch(MODULE + ".monotonic", return_value=before + 10):
+        emit(account, suffix, payload)
+        assert device.alive_at == before
+    assert not account.available("serial-A")
+
+
+@pytest.mark.parametrize(
+    "suffix,payload",
+    [
+        ("topics/info", {"online": True, "timestamp": 9}),
+        ("topics/sensor", {"items": [{"timestamp": 9, "t": 1}]}),
+        ("shadows/state/update/accepted", state(9, "on")),
+    ],
+)
+def test_retained_messages_never_count_as_sign_of_life(suffix, payload):
+    account, device = reconnected()
+    before = device.alive_at
+    with patch(MODULE + ".monotonic", return_value=before + 10):
+        emit(account, suffix, payload, retained=True)
+        assert device.alive_at == before
+    assert not account.available("serial-A")
+
+
+def test_replayed_sensor_sample_is_not_a_sign_of_life():
+    account, device = reconnected()
+    emit(account, "topics/sensor", {"items": [{"timestamp": 3, "t": 1}]})
+    first = device.alive_at
+    with patch(MODULE + ".monotonic", return_value=first + 3000):
+        emit(account, "topics/sensor", {"items": [{"timestamp": 3, "t": 1}]})
+    assert device.alive_at == first
+
+
+def test_explicit_offline_information_takes_effect_immediately():
+    account, device = reconnected()
+    emit(account, "topics/sensor", {"items": [{"timestamp": 3, "t": 1}]})
+    assert account.available("serial-A") and device.online is True
+    emit(account, "topics/info", {"online": False, "timestamp": 3})
+    assert device.online is False
+    assert account.available("serial-A")  # connectivity reports "off"
+    # Later measurements cannot override the newest information message.
+    emit(account, "topics/sensor", {"items": [{"timestamp": 4, "t": 1}]})
+    assert device.online is False
+    # An older information message cannot bring the device back online.
+    emit(account, "topics/info", {"online": True, "timestamp": 2})
+    assert device.online is False
+    emit(account, "topics/info", {"online": True, "timestamp": 4})
+    assert device.online is True
+
+
+def test_sensor_fields_expire_individually_after_an_hour():
+    account = environment()
+    device = account.devices["serial-A"]
+    emit(account, "shadows/state/get/accepted", state())
+    emit(account, "topics/sensor", {"items": [{"timestamp": 1, "a": 1, "b": 2}]})
+    start = device.sensor_fields_received_at["a"]
+    with patch(MODULE + ".monotonic", return_value=start + 1800):
+        emit(account, "topics/sensor", {"items": [{"timestamp": 2, "b": 3}]})
+    with patch(MODULE + ".monotonic", return_value=start + 3599.5):
+        account.expire_values(device)
+        assert device.sensor["a"] == 1
+    with patch(MODULE + ".monotonic", return_value=start + 3601):
+        account.expire_values(device)
+        assert "a" not in device.sensor and device.sensor["b"] == 3
+        assert "mode" not in device.state.reported
+
+
+def test_state_fields_still_expire_after_fifteen_minutes():
+    account = environment()
+    device = account.devices["serial-A"]
+    emit(account, "shadows/state/get/accepted", state())
+    start = device.state_fields_received_at["mode"]
+    with patch(MODULE + ".monotonic", return_value=start + 899.5):
+        account.expire_values(device)
+        assert device.state.reported["mode"] == "off"
+    with patch(MODULE + ".monotonic", return_value=start + 901):
+        account.expire_values(device)
+        assert "mode" not in device.state.reported
 
 
 @pytest.mark.parametrize(

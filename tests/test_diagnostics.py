@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import (
     CONF_ACCESS_TOKEN,
@@ -43,6 +42,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     ResourceReference,
 )
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
+from tests.ha_test_helpers import MockConfigEntry
 
 
 async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
@@ -170,7 +170,7 @@ async def test_diagnostics_contains_schema_and_metrics_but_no_private_data(
     diagnostics = await async_get_config_entry_diagnostics(hass, entry)
     rendered = repr(diagnostics)
 
-    assert diagnostics["diagnostics_schema"] == 27
+    assert diagnostics["diagnostics_schema"] == 41
 
     for private in (
         gateway_id,

@@ -4,6 +4,180 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 41 adds `views_without_cloud`: one entry per plant that is shown
+without a running cloud source. `kind` is `dormant` (a switched-off cloud
+access shown from its stored inventory), `held` (the cloud access was switched
+off while running), `local_plant` (shown from the local readings alone),
+`target_view` (a system whose cloud access was removed) or `kept_for_cloud`
+(kept for local readings while a cloud that is expected back needs a new
+sign-in or does not answer). `local_list_decides` tells whether the local
+error list alone decides the faults, `local_list_current` whether it is
+current. `entities` and `entities_available` count the enabled entities of the
+plant and those with a state, `active_faults` the active faults. The section
+has no identifiers, paths or values. Every gateway's `faults` section also
+counts the room devices' own error lists under `device_errors` (`lists`,
+`active`, `inactive`, `other`), without device numbers or error types.
+
+Schema 40 adds `local_plant_view` per installation that has a local access
+next to a running cloud access. It is a preview of operation without the
+cloud: it works out which entities the current local readings alone would
+give and compares them with the cloud's entities and the entity registry. The
+section is only calculated for the report; it creates no entities, sends no
+requests and changes no availability.
+
+- `local_readings`, `cloud_form_resources` (readings of the pair catalog or of
+  a path this cloud offers that give the same entities, with the same IDs, as
+  the cloud), `local_sensors`
+  (all other readable readings, by the rules of the
+  [local-only readings](entities.md#readings-only-the-local-access-provides);
+  `local_sensors_reviewed` and
+  `local_sensors_enabled` count those with a reviewed meaning and those
+  enabled by default) and `templates_compatible` (cloud readings that match
+  type, unit and allowed values of the local reading);
+- `skipped`: counts per reason a local reading gives no entity, for example
+  `private` (identifiers, addresses, names, network or update data), `text`
+  (free text), `multipart` or `unsupported_shape`;
+- `counts`, `matching`, `only_local` (entities only the local access could
+  give), `needs_cloud` (entities that need the cloud, such as controls, with
+  `needs_cloud_domains`), `local_only_with_cloud_path` (readings of paths the
+  cloud offers that still become local-only sensors, because the cloud form
+  gives no entity) and `mismatches` (differences in unit, device
+  class, state class or allowed values; for entities only the registry knows,
+  the unit is not compared when the device class matches, because Home
+  Assistant may show it converted, for example in °F). Entities are listed as platform and
+  unique ID without the gateway ID, for example
+  `sensor:heatingCircuits:hc1:currentRoomSetpoint`; unrecognized installation
+  IDs are replaced by placeholders. Lists hold at most 150 entries
+  (`truncated`), the counts are complete. Optional per-source entities are
+  only counted (`per_source_entities`). If the preview cannot be calculated,
+  the installation shows only `error: unavailable`; the rest of the report is
+  unaffected.
+
+Schema 39 adds `discovery_recovery` to every gateway. It shows whether parts
+that were discovered before were missing after the start-up discovery and how
+the search for them went:
+
+- `state`: `none` (nothing known before and nothing missing), `complete`
+  (nothing missing), `pending`, `recovered` or `given_up`;
+- `reference_resources`, `missing_at_start`, `missing` and `recovered`: counts;
+- `missing_templates`: path templates without installation IDs, for example
+  `/system` or `/heatingCircuits/{hc}`, at most 20;
+- `missing_reasons`: counts per result category of the start-up discovery, for
+  example `http_404`, `timeout`, `malformed` or `not_referenced` when a
+  container answered without the reference;
+- `attempts`, `attempts_planned`, `postponed` (rate limits), `last_result` and
+  `next_attempt_in_seconds`.
+
+`startup_inventory` shows how the gateway started: `mode` is `live` or
+`inventory` (the cloud did not answer during start-up and the saved resources
+were used), with `reason` (for example `gateway_list_timeout` or
+`discovery_rate_limited`), `inventory_age_hours`, `discovery_attempts`,
+`discovery_result` and `next_discovery_in_seconds` for the discovery that
+follows the first working cycle.
+
+`firmware_changes` shows firmware updates: `changes_while_running`,
+`changed_since_last_start`, `last_change_age_seconds` and the discovery a change
+triggers (`discovery_attempts`, `discovery_postponed`, `discovery_result`,
+`next_discovery_in_seconds`). The gateway runtime adds
+`changed_contracts_detected`, the number of known readings that changed their
+value type (for example text instead of a number) since discovery. See [compatibility](compatibility.md).
+
+The discovered resources are kept per gateway in
+`.storage/bosch_buderus_heating.discovery_inventory.<entry>`, only on the Home
+Assistant host and deleted together with the integration entry. The file is
+not part of diagnostics.
+
+Schema 38 adds `update_load` with process-wide counts and whole milliseconds
+since Home Assistant started: garbage collections per generation, their total
+and longest duration, collections of at least 100 ms in total and during entity
+update passes, and the number, average and longest duration of update passes,
+how many took at least 400 ms (Home Assistant's threshold for a slow state
+update) and the largest number of entities in one pass. It helps to tell
+whether a slow state update came from Python's garbage collector or from the
+integration. It contains no paths, values or identifiers.
+
+Schema 37 adds `observation_pairs[].local_values.write_checks` (per catalog
+measurement: local read-backs after a confirmed cloud write that agree, differ,
+are incomparable or arrived too late) and the cloud reason `older_than_write`.
+See [source selection](source-selection.md#writes).
+
+Schema 36 adds `observation_pairs[].counters` (per counter measurement: shown
+source, source switches and prevented switches) and `counter_evidence` (equal
+or different, largest relative difference in percent, finest reported step per
+source and receive-time gap), without absolute counts. See
+[source selection](source-selection.md#counters).
+
+Schema 35 adds `cloud_reason_measurements`: for each reason in
+`cloud_reasons`, the names of the affected measurements from the pair catalog
+(for example `room_setpoint_current`), without values, paths or identifiers.
+
+Schema 34 adds `cloud_reasons` to `observation_pairs[].local_values`: how many
+eligible entity sources use the cloud because the option is off
+(`option_off`), the cloud source is stopped (`source_stopped`), the local
+reading is not current (`local_not_current`), invalid (`local_invalid`), of
+another type, unit or shape, or not convertible. A list with an entry that is
+not declared counts as `unknown_entry`; a local shape the entity cannot take
+counts as `shape_differs`, never as `local_invalid`. See [source selection](source-selection.md).
+
+Schema 33 adds the [validity of readings](reading-validity.md): each gateway
+`runtime` reports `validity_limits_seconds` per polling group and
+`resources_expired`, the number of readings currently past their limit.
+`observation_pairs` adds `incomparable_units`, the unit combinations of pairs
+that differ only by unit (for example `-|kWh`), without values or paths.
+
+Schema 32 adds `observation_pairs` per installation, comparing verified cloud
+and local reading pairs without values, paths or identifiers. Its `local_values`
+part shows whether local values supply existing entities and how many eligible
+entity sources use the local or the cloud value. See
+[observation pairs](observation-pairs.md).
+
+Schema 31 adds `authentication` for investigating repeated sign-in requests. It
+was introduced as schema 28 in 0.8.4-beta.1. Managed entries report it per
+cloud connection; legacy entries and entries without a running setup report a
+list of their saved cloud accesses. It is built from memory and local storage, without a cloud request,
+so it does not depend on a working sign-in. It contains:
+
+- `current`: remaining access-token lifetime in seconds, whether a refresh
+  token exists, its relation to the recorded history, the granted scope names
+  and whether renewal stopped after a rejection;
+- `events`: the last 60 sign-in events with UTC time and age. Starts record
+  whether the stored refresh token is the newest known one. Renewals record
+  their trigger (`expiry` or `access_token_rejected`), duration and outcome,
+  and on success the reported access and refresh lifetimes, whether a new
+  refresh token was issued and whether it was saved;
+- for a rejected renewal: HTTP status, OAuth error code, a sanitized
+  description of at most 120 characters, body format and content type;
+- `presented_refresh_token`: whether the rejected token was the newest known
+  one, how long ago it was first seen, how often it had been presented before
+  and whether the service had accepted it before;
+- `issued_refresh_tokens` and `counters`: anonymous rank, source, age and use
+  count of recently seen refresh tokens, plus totals per outcome.
+
+Refresh tokens are recognized through an HMAC fingerprint whose random key
+stays in Home Assistant's local `.storage` folder. Neither the key, the
+fingerprints nor any token are exported. Long opaque strings and anything
+resembling an e-mail address are removed from the service description. The
+original cloud access keeps `.storage/bosch_buderus_heating.auth_history.<entry>`
+from 0.8.4-beta.1, so its history continues; further accesses use
+`auth_history.<entry>.<connection>`. Removing an access or the entry deletes its
+history. It survives restarts, so the
+history starts with the first version that records it.
+
+A rejected renewal is also written to the Home Assistant log as a warning that
+starts with `SingleKey ID rejected the token refresh`. A start with stored
+sign-in data older than the newest received token and a refreshed token that
+could not be saved are logged as warnings as well.
+
+Schema 30 adds `cloud_pause` to each managed cloud connection: whether a
+server-requested pause is active, its remaining seconds, whether it was
+restored after a restart and whether pause storage is available. See
+[cloud pauses](cloud-pauses.md). Each gateway `runtime` adds
+`maximum_poll_duration_ms`, `poll_interval_seconds`,
+`polls_longer_than_interval` and `cycles_over_budget` (cycles that stopped
+starting requests after 50 seconds); `request_metrics.slot_wait` reports how long
+requests waited for one of the three shared request slots. See
+[capacity with several systems](request-behavior.md#capacity-with-several-systems).
+
 Schema 23 adds aggregate Midea Climate Series identification and stream
 freshness counts under `air_conditioners`. No climate settings, values or
 identifiers are included. See [air conditioners](bacon-air-conditioners.md).
@@ -44,6 +218,25 @@ Diagnostics remain downloadable while the first integration setup is still in
 `setup_retry`. Before runtime initialization they contain only redacted config
 metadata and no gateway data. Once the runtime exists, they also include
 request metrics and any partially initialized gateway coordinators.
+
+## Managed connections
+
+Schema 28 adds diagnostics for the prepared version 4 owner. Connections,
+targets and source bindings use export-local numbers, including disabled or
+removed access with retained targets. Request metrics and additional-cloud
+diagnostics stay separate per cloud connection. Gateway and wallbox reports
+reference their connection and target numbers. The export includes no stable
+identifiers, credentials, endpoint addresses or user-defined names and makes no
+additional API requests. Existing reviewed technical metadata remains governed
+by the same allowlist.
+
+Normal version 4 setup uses these diagnostics after migration. Schema 29 adds
+local source conditions, fixed failure codes, request counts, discovery progress,
+remaining pauses and per-resource age, target interval, actual interval and
+availability. Device and signal paths use catalog templates to hide dynamic IDs.
+It contains no local values, credentials or system module identities and performs
+no extra requests. See [managed local access](local-runtime.md).
+
 
 ## Download diagnostics
 
@@ -316,11 +509,9 @@ but an inner gateway reports a 5xx status.
 
 ### Optional diagnostic entities
 
-Three integration-wide diagnostic sensors are created disabled by default:
-
-- **PointT API requests total**;
-- **PointT API requests – last hour**;
-- **PointT API response time – last hour**.
+Three diagnostic sensors are created disabled by default. They expose the total
+PointT request count, the request count over the last hour and the response time
+over the last hour.
 
 Enable them under **Settings → Devices & services → Entities** when continuous
 monitoring is useful. The response-time sensor is the average of successful
@@ -388,6 +579,7 @@ and diagnostics.
 ## Excluded information
 
 - access or refresh tokens, OAuth codes, and redirect addresses;
+- token fingerprints, their key, account names and e-mail addresses;
 - gateway IDs, config-entry IDs, serial numbers, and UUIDs;
 - IP addresses, MAC addresses, SSIDs, and location data;
 - firmware identifiers and complete model names;

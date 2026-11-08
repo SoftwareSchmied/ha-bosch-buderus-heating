@@ -15,7 +15,6 @@ import pytest
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.config_flow import (
     CONF_HOLIDAY_ASSIGNED_TO,
@@ -25,6 +24,9 @@ from custom_components.bosch_buderus_heating.config_flow import (
     CONF_HOLIDAY_PERIOD,
     CONF_HOLIDAY_THERMAL_DISINFECTION,
     CONF_HOLIDAY_VENTILATION_MODE,
+)
+from custom_components.bosch_buderus_heating.configuration_access import (
+    EntryConfiguration,
 )
 from custom_components.bosch_buderus_heating.const import (
     CONF_ACCESS_TOKEN,
@@ -64,6 +66,20 @@ from custom_components.bosch_buderus_heating.pointt import (
     WriteValidationError,
 )
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
+from tests.ha_test_helpers import MockConfigEntry
+
+
+def _field_list(schema):
+    """Serialize a form like the installed HA release sends it to the frontend."""
+    from homeassistant.helpers import config_validation as cv
+
+    try:
+        from probatio import to_field_list
+    except ModuleNotFoundError:  # Home Assistant before Probatio
+        from voluptuous_serialize import convert
+
+        return convert(schema, custom_serializer=cv.custom_serializer)
+    return to_field_list(schema, custom_serializer=cv.custom_serializer)
 
 
 async def _configure_options(hass, flow_id, user_input, *, action="save_holiday"):
@@ -210,8 +226,15 @@ async def _start_auth_flow(
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    assert result["type"] is FlowResultType.FORM
+    # P49b step 7: the first step chooses the accesses.
+    assert result["type"] is FlowResultType.MENU
     assert result["step_id"] == "user"
+    assert result["menu_options"] == ["cloud", "cloud_local", "local_only"]
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "cloud"}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "cloud"
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_BRAND: brand.value}
@@ -495,9 +518,13 @@ async def test_user_flow_creates_entry_after_gateway_selection(
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "Buderus Home Comfort"
-    assert result["data"][CONF_BRAND] == Brand.BUDERUS.value
-    assert result["data"][CONF_GATEWAY_IDS] == ["gateway-one"]
-    assert result["data"][CONF_ACCESS_TOKEN] == "access"
+    entry = result["result"]
+    assert entry.version == 4
+    cloud = next(iter(entry.data["connections"]))
+    data = EntryConfiguration(entry, cloud).cloud_data()
+    assert data[CONF_BRAND] == Brand.BUDERUS.value
+    assert data[CONF_GATEWAY_IDS] == ["gateway-one"]
+    assert data[CONF_ACCESS_TOKEN] == "access"
     assert "gateway-one" not in result["result"].unique_id
 
 
@@ -623,12 +650,13 @@ async def test_gateway_selection_validates_input_and_existing_entries(
 ) -> None:
     existing = MockConfigEntry(
         domain=DOMAIN,
+        version=3,
         data={
             CONF_BRAND: Brand.BUDERUS.value,
             CONF_GATEWAY_IDS: ["gateway-one"],
+            **tokens_to_data(AuthTokens("existing", "refresh", 4000.0)),
         },
     )
-    existing.add_to_hass(hass)
     result = await _start_auth_flow(hass)
     redirect = _redirect_from_result(result, Brand.BUDERUS)
     with (
@@ -650,11 +678,13 @@ async def test_gateway_selection_validates_input_and_existing_entries(
         flow_id, {CONF_GATEWAY_IDS: []}
     )
     assert result["errors"] == {"base": "select_gateway"}
+    # Another entry can be registered while this authenticated dialog is open.
+    existing.add_to_hass(hass)
     result = await hass.config_entries.flow.async_configure(
         flow_id, {CONF_GATEWAY_IDS: ["gateway-one"]}
     )
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "already_configured"
+    assert result["reason"] == "cloud_already_connected"
 
 
 @pytest.mark.parametrize(
@@ -721,6 +751,7 @@ async def test_reauthentication_updates_tokens(
     redirect = _redirect_from_result(result, Brand.BUDERUS)
     renewed = AuthTokens("new-access", "new-refresh", expires_at=9000.0)
     with (
+        patch.object(hass.config_entries, "async_reload", AsyncMock()),
         patch(
             "custom_components.bosch_buderus_heating.config_flow.OAuthClient.exchange_code",
             AsyncMock(return_value=renewed),
@@ -1708,16 +1739,12 @@ async def test_new_holiday_time_error_can_be_corrected_without_losing_input(
 async def test_new_holiday_selector_uses_profile_translations(
     hass, enable_custom_integrations, system_language, profile_language, expected
 ):
-    from homeassistant.helpers import config_validation as cv
     from homeassistant.helpers.translation import async_get_translations
-    from probatio import to_field_list
 
     hass.config.language = system_language
     entry, _ = _entry_with_writable_holiday(hass)
     result = await _start_holiday_options(hass, entry)
-    selector = to_field_list(
-        result["data_schema"], custom_serializer=cv.custom_serializer
-    )[0]["selector"]["select"]
+    selector = _field_list(result["data_schema"])[0]["selector"]["select"]
     translations = await async_get_translations(
         hass, profile_language, "selector", {DOMAIN}
     )
@@ -1796,9 +1823,6 @@ async def test_new_holiday_routes_to_explicit_gateway(
 async def test_new_holiday_dates_start_empty_and_remain_required(
     hass, enable_custom_integrations, date_mode, language
 ):
-    from homeassistant.helpers import config_validation as cv
-    from probatio import to_field_list
-
     hass.config.language = language
     entry, coordinator = _entry_with_writable_holiday(hass)
     coordinator.async_create_holiday = AsyncMock()
@@ -1807,10 +1831,7 @@ async def test_new_holiday_dates_start_empty_and_remain_required(
     ] = [date_mode]
     result = await _open_new_holiday(hass, entry)
     schema = result["data_schema"]
-    serialized = {
-        field["name"]: field
-        for field in to_field_list(schema, custom_serializer=cv.custom_serializer)
-    }
+    serialized = {field["name"]: field for field in _field_list(schema)}
     for field in ("holiday_start", "holiday_end"):
         marker = next(key for key in schema.schema if key.schema == field)
         assert isinstance(marker, vol.Required)

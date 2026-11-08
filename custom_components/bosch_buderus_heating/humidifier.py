@@ -9,14 +9,16 @@ from homeassistant.components.humidifier.const import (
     HumidifierAction,
     HumidifierEntityFeature,
 )
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import BoschBuderusConfigEntry
 from .bacon import dry
+from .bacon.access import BaconAccess
 from .bacon.dry_entities import DryEntity
 from .bacon.metadata import metadata, writable
-from .bacon.session import BaconAccount
+from .platform_scope import PlatformScope, setup_platform
 
 if TYPE_CHECKING:
     from homeassistant.components.humidifier.const import HumidifierDeviceClass
@@ -29,7 +31,14 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    if (account := entry.runtime_data.bacon) is None:
+    setup_platform(entry, Platform.HUMIDIFIER, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    if (account := entry.bacon) is None:
         return
     seen: set[str] = set()
 
@@ -50,7 +59,7 @@ async def async_setup_entry(
 class BaconDehumidifier(DryEntity, HumidifierEntity):
     _attr_device_class = HumidifierDeviceClass.DEHUMIDIFIER
 
-    def __init__(self, account: BaconAccount, serial: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str) -> None:
         super().__init__(account, serial, "dehumidifier")
 
     @property

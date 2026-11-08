@@ -96,7 +96,7 @@ fit your installation.
 The integration sends the new period once and reads it back from PointT. Home
 Assistant reports success only after the heating system has confirmed it.
 
-A new period initially uses conservative defaults based on the official apps:
+A new period initially uses conservative defaults:
 all advertised circuits, constant-temperature heating at 17 °C when
 supported, hot water off, ventilation off when supported, and thermal
 disinfection on when supported. Review these settings as described below.

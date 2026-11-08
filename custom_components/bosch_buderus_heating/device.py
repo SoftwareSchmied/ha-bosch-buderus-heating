@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable, Mapping
 
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
 
+from .configuration import ConfigurationError
+from .configuration_access import EntryConfiguration
 from .const import CONF_BRAND, DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator
+from .ha_compat import device_by_identifier
 from .resource_catalog import configured_device_name, logical_device_for_path
 
 _UNKNOWN_HEAT_PUMP_TYPES = frozenset(
@@ -17,6 +23,8 @@ _GROUP_SEPARATOR = " \N{EN DASH} "
 _CONTROLLER_MODEL_PATTERN = re.compile(
     r"(?<![A-Z0-9])MX(?:300|400)(?![A-Z0-9])", re.IGNORECASE
 )
+# C8: device names never carry the brand (the manufacturer field does).
+_BRAND_WORDS = re.compile(r"\b(?:Bosch|Buderus)\b[\s/]*", re.IGNORECASE)
 _GATEWAY_MODEL_PATTERN = re.compile(
     r"(?<![A-Z0-9])K(?:30|40)(?:RF)?(?:[_ -]V\d+)?(?![A-Z0-9])",
     re.IGNORECASE,
@@ -27,29 +35,67 @@ def device_info_for_resource(
     coordinator: BoschBuderusDataUpdateCoordinator,
     resource_path: str,
 ) -> DeviceInfo:
-    """Build the shared brand-aware gateway device for a PointT resource."""
+    """Build metadata for the device selected by the plant's resource binding."""
     gateway = coordinator.gateway
+    binding = coordinator.plant_model.bind_resource(resource_path)
+    identifiers = {(DOMAIN, binding.device.identifier)}
+    entry = coordinator.config_entry
+    known = (
+        entry is not None
+        and device_by_identifier(
+            dr.async_get(coordinator.hass),
+            (DOMAIN, binding.device.identifier),
+            entry.entry_id,
+        )
+        is not None
+    )
+    if getattr(coordinator, "read_only_view", False) is True and known:
+        # P49b: the local readings lack the identity readings (model, serial
+        # number, versions); a known device keeps what the registry holds.
+        return DeviceInfo(identifiers=identifiers)
     manufacturer = _manufacturer(coordinator)
     system_info = _system_info_values(coordinator)
     model, model_id = _system_model(gateway.model, gateway.device_type, system_info)
-    return DeviceInfo(
-        identifiers={(DOMAIN, gateway.gateway_id)},
+    info = DeviceInfo(
+        identifiers=identifiers,
         manufacturer=manufacturer,
         model=model,
         model_id=model_id,
-        name=(
-            f"{manufacturer} Heating"
-            if model == "Heating system"
-            else f"{manufacturer} {model}"
-        ),
-        serial_number=_resource_string(coordinator, "/gateway/serialId")
-        or _first_value(system_info, "ProductSerialNumber", "ModuleSerialNumber"),
+        serial_number=_clean_serial(_resource_string(coordinator, "/gateway/serialId"))
+        or _first_serial(system_info, "ProductSerialNumber", "ModuleSerialNumber"),
         sw_version=_resource_string(coordinator, "/gateway/versionFirmware")
         or gateway.firmware_version
         or _first_value(system_info, "Ver", "SwIdenStr"),
         hw_version=_resource_string(coordinator, "/gateway/versionHardware")
         or _first_value(system_info, "HwVersion", "ModuleHwIdentStr"),
     )
+    if not known:
+        # C8: a new device gets a name without the brand (the manufacturer
+        # field still names it); an existing device keeps its name.
+        info["name"] = neutral_device_name(model)
+    return info
+
+
+def neutral_device_name(model: str) -> str:
+    """The name of a new heating device: its controller model, no brand."""
+    if model == "Heating system":
+        return "Heating"
+    return _BRAND_WORDS.sub("", model).strip(" /-") or "Heating"
+
+
+def registered_device(hass: HomeAssistant, identifier: str) -> bool:
+    """C8: a device of this integration with the identifier already exists.
+
+    Its name stays as it is; only a new device gets the neutral name.
+    """
+    wanted = (DOMAIN, identifier)
+    # A plain scan: identifiers are no longer unique across config entries,
+    # so the global single-device lookup is deprecated on current releases.
+    devices = dr.async_get(hass).devices
+    entries: Iterable[dr.DeviceEntry] = (
+        devices.values() if isinstance(devices, Mapping) else devices
+    )
+    return any(wanted in device.identifiers for device in entries)
 
 
 def grouped_entity_name(
@@ -59,7 +105,7 @@ def grouped_entity_name(
 ) -> str:
     """Prefix an entity name with its dynamic logical PointT group."""
     german = coordinator.hass.config.language.casefold().startswith("de")
-    logical = logical_device_for_path(resource_path)
+    logical = coordinator.plant_model.bind_resource(resource_path).group
     if logical is not None:
         group = _configured_logical_name(coordinator, resource_path, logical.logical_id)
         group = _localized_generic_name(group, logical.kind, german)
@@ -98,10 +144,22 @@ def _manufacturer(coordinator: BoschBuderusDataUpdateCoordinator) -> str:
         if manufacturer is not None:
             return manufacturer
 
+    if (hint := _known_brand(getattr(coordinator, "brand_hint", None))) is not None:
+        return hint  # read by the local setup of a plant without a cloud
     config_entry = coordinator.config_entry
-    configured_brand = (
-        config_entry.data.get(CONF_BRAND) if config_entry is not None else None
-    )
+    try:
+        configured_brand = (
+            EntryConfiguration(
+                config_entry, getattr(coordinator, "connection_id", None)
+            )
+            .cloud_data()
+            .get(CONF_BRAND)
+            if config_entry is not None
+            else None
+        )
+    except ConfigurationError:
+        # A view without a cloud access (P49b, R1): no configured brand.
+        configured_brand = None
     manufacturer = _known_brand(
         configured_brand if isinstance(configured_brand, str) else None
     )
@@ -296,6 +354,32 @@ def _system_info_values(
         for item in snapshot.resource.values
         if isinstance(item, dict)
     )
+
+
+# Padding some devices report instead of a serial number: 0xFF bytes and the
+# replacement character of undecodable bytes.
+_SERIAL_FILLER = frozenset({"\ufffd", "\xff"})
+
+
+def _clean_serial(value: object) -> str | None:
+    """A serial number without control or filler characters; None when
+    nothing printable remains."""
+    if not isinstance(value, str):
+        return None
+    cleaned = "".join(
+        character
+        for character in value
+        if character.isprintable() and character not in _SERIAL_FILLER
+    ).strip()
+    return cleaned or None
+
+
+def _first_serial(values: tuple[dict[str, str], ...], *keys: str) -> str | None:
+    for key in keys:
+        for item in values:
+            if (serial := _clean_serial(item.get(key))) is not None:
+                return serial
+    return None
 
 
 def _first_value(values: tuple[dict[str, str], ...], *keys: str) -> str | None:

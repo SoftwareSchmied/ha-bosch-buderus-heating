@@ -20,6 +20,7 @@ ROOT = "custom_components.bosch_buderus_heating"
 
 @pytest.mark.usefixtures("enable_custom_integrations")
 @pytest.mark.parametrize("language,fahrenheit", [("de", False), ("en", True)])
+@pytest.mark.usefixtures("legacy_platform_runtime")
 async def test_ha_platform_services_translations_and_registry(
     hass, language, fahrenheit
 ):

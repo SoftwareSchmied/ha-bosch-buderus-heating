@@ -199,7 +199,7 @@ class DiscoveryDiagnostics:
 
 # Some gateways omit stable public resources from their reference trees or
 # advertise an unreadable container around them. Keep these fallbacks narrow:
-# every listed path is used by the vendor apps and remains optional when a
+# every listed path is a known public resource and remains optional when a
 # particular installation does not provide it.
 OPAQUE_CONTAINER_CHILDREN: dict[str, tuple[str, ...]] = {
     "/gateway": ("/gateway/dataProcessing/status",),
@@ -318,8 +318,8 @@ _VENTILATION_ZONE_PATH = re.compile(r"^/ventilation/zone[^/]+$", re.IGNORECASE)
 _ZONE_PATH = re.compile(r"^/zones/zone[^/]+$", re.IGNORECASE)
 _DEVICE_PATH = re.compile(r"^/devices/(?!list$)[^/]+$", re.IGNORECASE)
 
-# The vendor apps request these known resources for each advertised circuit
-# independently of whether the circuit directory itself can be read.
+# Request these known resources for each advertised circuit independently of
+# whether the circuit directory itself can be read.
 _HEATING_CIRCUIT_CATALOG_SUFFIXES = (
     "/operationMode",
     "/manualRoomSetpoint",
@@ -464,8 +464,14 @@ async def async_discover_resources(
     diagnostics: DiscoveryDiagnostics | None = None,
     startup_data: StartupGatewayData | None = None,
     gateway: Gateway | None = None,
+    rediscovery: bool = False,
 ) -> dict[str, Resource]:
-    """Follow PointT references without escaping configured safety bounds."""
+    """Follow PointT references without escaping configured safety bounds.
+
+    ``rediscovery`` searches exactly the given subtrees again (P46): the device
+    profile keeps its probes but does not widen the roots, and start-up values
+    stay queued in the existing start-up state instead of resetting it.
+    """
     if maximum_depth < 0 or maximum_resources < 1:
         raise ValueError("Discovery bounds must be positive")
 
@@ -475,12 +481,13 @@ async def async_discover_resources(
     softener_profile = is_water_softener(gateway, discovered)
     # A known family changes probes, not the permission to follow advertised
     # references. Unknown gateways may advertise a softener circuit as well.
-    allowed_roots = (*roots, SOFTENER_ROOT)
+    allowed_roots = roots if rediscovery else (*roots, SOFTENER_ROOT)
     rrc_enabled = False
     if softener_profile:
-        roots = ("/notifications", "/gateway", "/system", SOFTENER_ROOT)
+        if not rediscovery:
+            roots = ("/notifications", "/gateway", "/system", SOFTENER_ROOT)
         report.device_profile = "water_softener"
-    if startup_data is not None:
+    if startup_data is not None and not rediscovery:
         startup_data.begin_discovery(
             maximum_resources=maximum_resources, maximum_depth=maximum_depth
         )
@@ -558,7 +565,7 @@ async def async_discover_resources(
     for root in roots:
         schedule(root, 0, DiscoveryPathSource.ROOT)
 
-    if softener_profile:
+    if softener_profile and not rediscovery:
         schedule_children(f"{SOFTENER_ROOT}/sw1", 1)
     while referenced_pending or catalog_pending or optional_pending:
         capacity = min(MAX_BULK_PATHS, maximum_resources - len(processed))
@@ -639,7 +646,11 @@ async def async_discover_resources(
                 for child in listed_paths(resource):
                     schedule(child, depth + 1, DiscoveryPathSource.REFERENCE)
                     schedule_children(child, depth + 1)
-            if not softener_profile and is_water_softener(gateway, discovered):
+            if (
+                not softener_profile
+                and not rediscovery
+                and is_water_softener(gateway, discovered)
+            ):
                 softener_profile = True
                 report.device_profile = "water_softener"
                 schedule(SOFTENER_ROOT, 0, DiscoveryPathSource.CATALOG)
@@ -777,3 +788,8 @@ def _error_category(error: PointTError) -> str:
     if isinstance(error, ResourceError):
         return f"http_{error.status}"
     return "request_failed"
+
+
+def error_category(error: PointTError) -> str:
+    """Describe a request error by category, without message or payload."""
+    return _error_category(error)

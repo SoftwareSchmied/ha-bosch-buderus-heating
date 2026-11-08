@@ -13,7 +13,9 @@ from typing import TYPE_CHECKING, Literal
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DOMAIN, PollingProfile, polling_profile_from_options
+from .configuration_access import EntryConfiguration
+from .const import DOMAIN, PollingProfile
+from .coordinator import POLL_DUE_TOLERANCE_SECONDS
 from .pointt import AuthenticationError, Gateway, PointTClient, PointTError
 from .pointt.exceptions import ProtocolError, RateLimited, ResourceError
 
@@ -133,9 +135,13 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
         client: PointTClient,
         gateway: Gateway,
         entry: BoschBuderusConfigEntry,
+        *,
+        connection_id: str | None = None,
     ) -> None:
+        self.connection_id = connection_id
         friendly = (
-            polling_profile_from_options(entry.options) is PollingProfile.CLOUD_FRIENDLY
+            EntryConfiguration(entry, connection_id).polling_profile()
+            is PollingProfile.CLOUD_FRIENDLY
         )
         self.fast_interval = 120 if friendly else 60
         self.intervals: dict[Section, int] = {
@@ -178,7 +184,10 @@ class WallboxCoordinator(DataUpdateCoordinator[dict[Section, SectionSnapshot]]):
     async def _read_due_sections(self) -> dict[Section, SectionSnapshot]:
         snapshots = dict(self.data)
         for section in SECTIONS:
-            if monotonic() < self._next.get(section, 0):
+            # HA may fire just before the exact section deadline; the shared
+            # tolerance keeps the cadence without touching error or rate-limit
+            # pauses, which the PointT transport enforces before every request.
+            if monotonic() + POLL_DUE_TOLERANCE_SECONDS < self._next.get(section, 0):
                 continue
             try:
                 payload = await self.client.get_wallbox_section(

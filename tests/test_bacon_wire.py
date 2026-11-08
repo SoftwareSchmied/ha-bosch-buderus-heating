@@ -230,7 +230,7 @@ async def test_real_websocket_mqtt5_auth_subscription_and_readback(family_name):
                 assert fan.device.state.reported["filterReset"] is False
             elif is_rac:
                 climate = BaconClimate(account, "serial-A")
-                assert climate.current_temperature == 22.5
+                assert climate.native_current_temperature == 22.5
                 await climate.async_turn_off()
                 await climate.async_set_hvac_mode("cool")
                 await climate.async_set_temperature(temperature=24)
@@ -243,12 +243,15 @@ async def test_real_websocket_mqtt5_auth_subscription_and_readback(family_name):
                     {"fanSpeed": "low"},
                     {"vSwingEnabled": True},
                 ]
-                assert climate.target_temperature == 24 and climate.hvac_mode == "cool"
+                assert (
+                    climate.native_target_temperature == 24
+                    and climate.hvac_mode == "cool"
+                )
                 assert climate.fan_mode == "low" and climate.swing_mode == "on"
                 assert climate.device.state.reported["ecoEnabled"] is True
             elif fixture:
                 heater = BaconWaterHeater(account, "serial-A")
-                assert heater.current_temperature == 48
+                assert heater.native_current_temperature == 48
                 mode = "hybrid" if family_name == "midea" else "dual"
                 await heater.async_set_operation_mode(mode)
                 await heater.async_set_temperature(temperature=55)
@@ -257,7 +260,7 @@ async def test_real_websocket_mqtt5_auth_subscription_and_readback(family_name):
                     {"tempSetpoint": 55},
                 ]
                 assert heater.current_operation == mode
-                assert heater.target_temperature == 55
+                assert heater.native_target_temperature == 55
         finally:
             await account.close()
     assert not account.connected

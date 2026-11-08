@@ -1,0 +1,4246 @@
+{
+ "provenance": {
+  "kind": "anonymized_capture",
+  "basis": "observed_structure",
+  "reference": "K40 heat pump gateway (K40RF_v1), cloud discovery inventory of my own system",
+  "firmware": "15.00.01",
+  "capture_date": "2026-11-05",
+  "created": "2026-11-05",
+  "redaction": "gateway ID, serial numbers, UUIDs, module identifiers, hex codes and network values replaced; user-definable names emptied; capture time fixed; measurements kept",
+  "physical_device_verified": true
+ },
+ "model": "k40",
+ "gateway_firmware": "15.00.01",
+ "hardware": "K40RF_v1",
+ "gateway": {
+  "gateway_id": "gateway-1",
+  "device_type": "k40",
+  "model": null,
+  "firmware_version": null
+ },
+ "resources": {
+  "/devices": {
+   "path": "/devices",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/devices/inclusionWhitelist",
+     "name": null
+    },
+    {
+     "path": "/devices/list",
+     "name": null
+    },
+    {
+     "path": "/devices/uhc",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/devices/inclusionWhitelist": {
+   "path": "/devices/inclusionWhitelist",
+   "value": [
+    {
+     "maxSupportedDevices": 16,
+     "actualDevices": 0,
+     "assignedHC": "unassigned",
+     "sgtinPattern": [
+      {
+       "type": "SMARTPLUG_REPEATER",
+       "pattern": "redacted"
+      },
+      {
+       "type": "SMARTPLUG_REPEATER",
+       "pattern": "redacted"
+      },
+      {
+       "type": "SMARTPLUG_REPEATER",
+       "pattern": "redacted"
+      }
+     ]
+    },
+    {
+     "maxSupportedDevices": 16,
+     "actualDevices": 0,
+     "assignedHC": "unassigned",
+     "sgtinPattern": [
+      {
+       "type": "IUFH_24V",
+       "pattern": "redacted"
+      },
+      {
+       "type": "IUFH_240V",
+       "pattern": "redacted"
+      }
+     ]
+    }
+   ],
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "inclusionWhitelist",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/devices/list": {
+   "path": "/devices/list",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "deviceArray",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits": {
+   "path": "/dhwCircuits",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/dhwCircuits/dhw1",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1": {
+   "path": "/dhwCircuits/dhw1",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/dhwCircuits/dhw1/actualTemp",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/charge",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/chargeDuration",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/chargeRemainingTime",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/circulationPump",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/currentSetpoint",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/currentTemperatureLevel",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/ecoChargingDelta",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/ecoStop",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/highChargingDelta",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/highStop",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/lowChargingDelta",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/lowStop",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/name",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/operationMode",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/overallStatus",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/reduceTempOnAlarm",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/singleChargeSetpoint",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/switchPrograms",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/tdMode",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/tdmaxDuration",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/tdrunningStatus",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/tdsetPoint",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/tdwarmKeepingTime",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/temperatureLevels",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/actualTemp": {
+   "path": "/dhwCircuits/dhw1/actualTemp",
+   "value": 51.4,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [
+     -32768.0,
+     32767.0
+    ],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/charge": {
+   "path": "/dhwCircuits/dhw1/charge",
+   "value": "stop",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "start",
+     "stop"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/chargeDuration": {
+   "path": "/dhwCircuits/dhw1/chargeDuration",
+   "value": 60.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "mins",
+    "allowed_values": [],
+    "minimum": 60.0,
+    "maximum": 2880.0,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/chargeRemainingTime": {
+   "path": "/dhwCircuits/dhw1/chargeRemainingTime",
+   "value": 0.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "mins",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/currentSetpoint": {
+   "path": "/dhwCircuits/dhw1/currentSetpoint",
+   "value": 15.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/currentTemperatureLevel": {
+   "path": "/dhwCircuits/dhw1/currentTemperatureLevel",
+   "value": "off",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "off",
+     "low",
+     "high",
+     "eco"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/name": {
+   "path": "/dhwCircuits/dhw1/name",
+   "value": "",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [
+    "valueConfig"
+   ],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/operationMode": {
+   "path": "/dhwCircuits/dhw1/operationMode",
+   "value": "ownprogram",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "Off",
+     "low",
+     "high",
+     "ownprogram",
+     "eco"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/overallStatus": {
+   "path": "/dhwCircuits/dhw1/overallStatus",
+   "value": "auto",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "dhw_disabled",
+     "floor_drying",
+     "td",
+     "extra",
+     "away",
+     "holiday",
+     "manual_on_high",
+     "manual_on_low",
+     "manual_on_eco",
+     "manual_off",
+     "auto"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/reduceTempOnAlarm": {
+   "path": "/dhwCircuits/dhw1/reduceTempOnAlarm",
+   "value": "off",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "off",
+     "on"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/singleChargeSetpoint": {
+   "path": "/dhwCircuits/dhw1/singleChargeSetpoint",
+   "value": 70.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": 50.0,
+    "maximum": 70.0,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/switchPrograms/A": {
+   "path": "/dhwCircuits/dhw1/switchPrograms/A",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "switchProgram",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {
+    "setpointProperty": {
+     "id": "/dhwCircuits/dhw1/temperatureLevels",
+     "uri": "/dhwCircuits/dhw1/temperatureLevels"
+    },
+    "maxNbOfSwitchPoints": 42,
+    "maxNbOfSwitchPointsPerDay": 6,
+    "switchPointTimeRaster": 15,
+    "switchPoints": [
+     {
+      "dayOfWeek": "Mo",
+      "time": 780,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "Mo",
+      "time": 1020,
+      "setpoint": "off"
+     },
+     {
+      "dayOfWeek": "Tu",
+      "time": 780,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "Tu",
+      "time": 1020,
+      "setpoint": "off"
+     },
+     {
+      "dayOfWeek": "We",
+      "time": 780,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "We",
+      "time": 1020,
+      "setpoint": "off"
+     },
+     {
+      "dayOfWeek": "Th",
+      "time": 780,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "Th",
+      "time": 1020,
+      "setpoint": "off"
+     },
+     {
+      "dayOfWeek": "Fr",
+      "time": 780,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "Fr",
+      "time": 1020,
+      "setpoint": "off"
+     },
+     {
+      "dayOfWeek": "Sa",
+      "time": 780,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "Sa",
+      "time": 1020,
+      "setpoint": "off"
+     },
+     {
+      "dayOfWeek": "Su",
+      "time": 780,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "Su",
+      "time": 1020,
+      "setpoint": "off"
+     }
+    ]
+   }
+  },
+  "/dhwCircuits/dhw1/tdMode": {
+   "path": "/dhwCircuits/dhw1/tdMode",
+   "value": "off",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "on",
+     "off"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/temperatureLevels": {
+   "path": "/dhwCircuits/dhw1/temperatureLevels",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/dhwCircuits/dhw1/temperatureLevels/eco",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/temperatureLevels/high",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/temperatureLevels/low",
+     "name": null
+    },
+    {
+     "path": "/dhwCircuits/dhw1/temperatureLevels/off",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/temperatureLevels/eco": {
+   "path": "/dhwCircuits/dhw1/temperatureLevels/eco",
+   "value": 40.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": 30.0,
+    "maximum": 45.0,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/temperatureLevels/high": {
+   "path": "/dhwCircuits/dhw1/temperatureLevels/high",
+   "value": 53.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": 40.0,
+    "maximum": 55.0,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/temperatureLevels/low": {
+   "path": "/dhwCircuits/dhw1/temperatureLevels/low",
+   "value": 51.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": 35.0,
+    "maximum": 51.0,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/dhwCircuits/dhw1/temperatureLevels/off": {
+   "path": "/dhwCircuits/dhw1/temperatureLevels/off",
+   "value": 0.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway": {
+   "path": "/gateway",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/gateway/brand",
+     "name": null
+    },
+    {
+     "path": "/gateway/dataProcessing",
+     "name": null
+    },
+    {
+     "path": "/gateway/dateTime",
+     "name": null
+    },
+    {
+     "path": "/gateway/eth",
+     "name": null
+    },
+    {
+     "path": "/gateway/logging",
+     "name": null
+    },
+    {
+     "path": "/gateway/query",
+     "name": null
+    },
+    {
+     "path": "/gateway/serialId",
+     "name": null
+    },
+    {
+     "path": "/gateway/swPrefix",
+     "name": null
+    },
+    {
+     "path": "/gateway/thirdPartyLicenseInformation",
+     "name": null
+    },
+    {
+     "path": "/gateway/tosAccepted",
+     "name": null
+    },
+    {
+     "path": "/gateway/tzInfo",
+     "name": null
+    },
+    {
+     "path": "/gateway/update",
+     "name": null
+    },
+    {
+     "path": "/gateway/uuid",
+     "name": null
+    },
+    {
+     "path": "/gateway/versionFirmware",
+     "name": null
+    },
+    {
+     "path": "/gateway/versionHardware",
+     "name": null
+    },
+    {
+     "path": "/gateway/wifi",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/brand": {
+   "path": "/gateway/brand",
+   "value": "Buderus",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/dataProcessing/status": {
+   "path": "/gateway/dataProcessing/status",
+   "value": "completed",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "in_progress",
+     "completed"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/dateTime": {
+   "path": "/gateway/dateTime",
+   "value": "2026-11-05T12:00:00+01:00",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/serialId": {
+   "path": "/gateway/serialId",
+   "value": "redacted",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/swPrefix": {
+   "path": "/gateway/swPrefix",
+   "value": "WG_ICOMLX_EMS2",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/tzInfo": {
+   "path": "/gateway/tzInfo",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/gateway/tzInfo/timeZone",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/tzInfo/timeZone": {
+   "path": "/gateway/tzInfo/timeZone",
+   "value": "Europe/Berlin",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/update": {
+   "path": "/gateway/update",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/gateway/update/report",
+     "name": null
+    },
+    {
+     "path": "/gateway/update/status",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/update/status": {
+   "path": "/gateway/update/status",
+   "value": {
+    "recipeId": "",
+    "progress": {
+     "cur_percent": 100,
+     "percent": 100,
+     "cur_step": 4,
+     "nsteps": 4
+    },
+    "status": {
+     "allowedValues": [
+      "idle",
+      "start",
+      "run",
+      "success",
+      "failure",
+      "download",
+      "done",
+      "in_progress"
+     ],
+     "value": "success"
+    },
+    "updateId": "32172"
+   },
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "updateStatus",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/uuid": {
+   "path": "/gateway/uuid",
+   "value": "redacted",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/versionFirmware": {
+   "path": "/gateway/versionFirmware",
+   "value": "15.00.01",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/versionHardware": {
+   "path": "/gateway/versionHardware",
+   "value": "K40RF_v1",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/wifi": {
+   "path": "/gateway/wifi",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/gateway/wifi/ip",
+     "name": null
+    },
+    {
+     "path": "/gateway/wifi/mac",
+     "name": null
+    },
+    {
+     "path": "/gateway/wifi/ssid",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/wifi/ip": {
+   "path": "/gateway/wifi/ip",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/gateway/wifi/ip/ipv4",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/wifi/ip/ipv4": {
+   "path": "/gateway/wifi/ip/ipv4",
+   "value": "",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/gateway/wifi/ssid": {
+   "path": "/gateway/wifi/ssid",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "apList",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources": {
+   "path": "/heatSources",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/heatSources/Source",
+     "name": null
+    },
+    {
+     "path": "/heatSources/actualHeatDemand",
+     "name": null
+    },
+    {
+     "path": "/heatSources/actualModulation",
+     "name": null
+    },
+    {
+     "path": "/heatSources/actualSupplyTemperature",
+     "name": null
+    },
+    {
+     "path": "/heatSources/additionalHeater",
+     "name": null
+    },
+    {
+     "path": "/heatSources/alternatingMode",
+     "name": null
+    },
+    {
+     "path": "/heatSources/circulationHeatingSetpointDelta",
+     "name": null
+    },
+    {
+     "path": "/heatSources/compressor",
+     "name": null
+    },
+    {
+     "path": "/heatSources/currentSupplySetpoint",
+     "name": null
+    },
+    {
+     "path": "/heatSources/dhw",
+     "name": null
+    },
+    {
+     "path": "/heatSources/eHeater",
+     "name": null
+    },
+    {
+     "path": "/heatSources/electricityConsumption",
+     "name": null
+    },
+    {
+     "path": "/heatSources/emStatus",
+     "name": null
+    },
+    {
+     "path": "/heatSources/emon",
+     "name": null
+    },
+    {
+     "path": "/heatSources/flameStatus",
+     "name": null
+    },
+    {
+     "path": "/heatSources/hs1",
+     "name": null
+    },
+    {
+     "path": "/heatSources/info",
+     "name": null
+    },
+    {
+     "path": "/heatSources/numberOfStarts",
+     "name": null
+    },
+    {
+     "path": "/heatSources/powerElecDesiredEnabled",
+     "name": null
+    },
+    {
+     "path": "/heatSources/returnTemperature",
+     "name": null
+    },
+    {
+     "path": "/heatSources/sensors",
+     "name": null
+    },
+    {
+     "path": "/heatSources/smartGridMode",
+     "name": null
+    },
+    {
+     "path": "/heatSources/systemPressure",
+     "name": null
+    },
+    {
+     "path": "/heatSources/systemPressureRange",
+     "name": null
+    },
+    {
+     "path": "/heatSources/workingTime",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/Source/eHeater/status": {
+   "path": "/heatSources/Source/eHeater/status",
+   "value": "off",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "off",
+     "heating",
+     "dhw",
+     "pool",
+     "pool_heat",
+     "defrost",
+     "alarm"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/actualHeatDemand": {
+   "path": "/heatSources/actualHeatDemand",
+   "value": null,
+   "has_value": false,
+   "values": [
+    "ch"
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "arrayData",
+    "unit": null,
+    "allowed_values": [
+     "",
+     "ch",
+     "dhw",
+     "frost"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/actualModulation": {
+   "path": "/heatSources/actualModulation",
+   "value": 14.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "%",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/actualSupplyTemperature": {
+   "path": "/heatSources/actualSupplyTemperature",
+   "value": 24.9,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [
+     -32768.0,
+     32767.0
+    ],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/additionalHeater/operationMode": {
+   "path": "/heatSources/additionalHeater/operationMode",
+   "value": "off",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "off",
+     "manual",
+     "auto"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/compressor/status": {
+   "path": "/heatSources/compressor/status",
+   "value": "heating",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "off",
+     "heating",
+     "cooling",
+     "dhw",
+     "pool",
+     "pool_heat",
+     "defrost",
+     "alarm"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/emStatus": {
+   "path": "/heatSources/emStatus",
+   "value": "notConnected",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "notConnected",
+     "inactive",
+     "activeCh",
+     "activeDhw"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/emon/chConsumption": {
+   "path": "/heatSources/emon/chConsumption",
+   "value": null,
+   "has_value": false,
+   "values": [
+    {
+     "outputProduced": 840.61
+    },
+    {
+     "eheater": 0.0
+    },
+    {
+     "compressor": 203.86
+    }
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "emonValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [
+    "unit"
+   ],
+   "program_fields": {}
+  },
+  "/heatSources/emon/coolingConsumption": {
+   "path": "/heatSources/emon/coolingConsumption",
+   "value": null,
+   "has_value": false,
+   "values": [
+    {
+     "outputProduced": 0.0
+    },
+    {
+     "compressor": 0.0
+    }
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "emonValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [
+    "unit"
+   ],
+   "program_fields": {}
+  },
+  "/heatSources/emon/dhwConsumption": {
+   "path": "/heatSources/emon/dhwConsumption",
+   "value": null,
+   "has_value": false,
+   "values": [
+    {
+     "outputProduced": 357.42
+    },
+    {
+     "eheater": 0.0
+    },
+    {
+     "compressor": 103.22
+    }
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "emonValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [
+    "unit"
+   ],
+   "program_fields": {}
+  },
+  "/heatSources/emon/totalConsumption": {
+   "path": "/heatSources/emon/totalConsumption",
+   "value": null,
+   "has_value": false,
+   "values": [
+    {
+     "outputProduced": 1198.03
+    },
+    {
+     "eheater": 0.0
+    },
+    {
+     "compressor": 307.08
+    }
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "emonValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [
+    "unit"
+   ],
+   "program_fields": {}
+  },
+  "/heatSources/flameStatus": {
+   "path": "/heatSources/flameStatus",
+   "value": "on",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "off",
+     "on"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/hs1": {
+   "path": "/heatSources/hs1",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/heatSources/hs1/heatPumpType",
+     "name": null
+    },
+    {
+     "path": "/heatSources/hs1/numberOfStarts",
+     "name": null
+    },
+    {
+     "path": "/heatSources/hs1/pumpVolumeFlow",
+     "name": null
+    },
+    {
+     "path": "/heatSources/hs1/refrigerant",
+     "name": null
+    },
+    {
+     "path": "/heatSources/hs1/supplyFlowCondenserTemp",
+     "name": null
+    },
+    {
+     "path": "/heatSources/hs1/type",
+     "name": null
+    },
+    {
+     "path": "/heatSources/hs1/workingTime",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/hs1/heatPumpType": {
+   "path": "/heatSources/hs1/heatPumpType",
+   "value": "air_water",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "air_water",
+     "liquid_water",
+     "exhaustAir_water"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/hs1/numberOfStarts": {
+   "path": "/heatSources/hs1/numberOfStarts",
+   "value": null,
+   "has_value": false,
+   "values": [
+    {
+     "ch": 62
+    },
+    {
+     "dhw": 37
+    },
+    {
+     "cooling": 0
+    },
+    {
+     "total": 99
+    }
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "emonValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/hs1/supplyFlowCondenserTemp": {
+   "path": "/heatSources/hs1/supplyFlowCondenserTemp",
+   "value": 25.3,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [
+     -32768.0,
+     32767.0
+    ],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/hs1/type": {
+   "path": "/heatSources/hs1/type",
+   "value": "Heatpump",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "No_Appliance",
+     "OilBoiler",
+     "GasBoiler",
+     "Heatpump",
+     "unknownBoiler",
+     "eBoiler"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/hs1/workingTime": {
+   "path": "/heatSources/hs1/workingTime",
+   "value": null,
+   "has_value": false,
+   "values": [
+    {
+     "ch": 1094978
+    },
+    {
+     "dhw": 112641
+    },
+    {
+     "cooling": 0
+    },
+    {
+     "total": 1207619
+    }
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "emonValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [
+    "unit"
+   ],
+   "program_fields": {}
+  },
+  "/heatSources/info": {
+   "path": "/heatSources/info",
+   "value": null,
+   "has_value": false,
+   "values": [
+    {
+     "Ver": "",
+     "Tok": "8",
+     "No": "",
+     "Id": ""
+    }
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "systeminfo",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/numberOfStarts": {
+   "path": "/heatSources/numberOfStarts",
+   "value": 99.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/returnTemperature": {
+   "path": "/heatSources/returnTemperature",
+   "value": 22.9,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [
+     -32768.0,
+     32767.0
+    ],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/systemPressure": {
+   "path": "/heatSources/systemPressure",
+   "value": 1.5,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "bar",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [
+     255.0
+    ],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/systemPressureRange": {
+   "path": "/heatSources/systemPressureRange",
+   "value": null,
+   "has_value": false,
+   "values": [
+    {
+     "highSystemPressure": 2.5,
+     "lowPressureThreshold": 0.6,
+     "absoluteHighPressure": 3.3,
+     "highPressureThreshold": 2.7,
+     "shutOfPressureThreshold": 0.6,
+     "lowSystemPressure": 0.0
+    }
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "systemPressureValues",
+    "unit": "bar",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatSources/workingTime/totalSystem": {
+   "path": "/heatSources/workingTime/totalSystem",
+   "value": 1207619.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "s",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits": {
+   "path": "/heatingCircuits",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/heatingCircuits/hc1",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1": {
+   "path": "/heatingCircuits/hc1",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/heatingCircuits/hc1/activeSwitchProgram",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/boostDuration",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/boostMode",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/controlType",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/currentRoomSetpoint",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/currentSuWiMode",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/heatCoolMode",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/heatCurve",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/heatingType",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/manualRoomSetpoint",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/maxFlowTemp",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/name",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/operationMode",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/overallStatus",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/pumpPressureSetpoint",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/roomTempOffset",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/switchProgramMode",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/switchPrograms",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/temperatureLevels",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/activeSwitchProgram": {
+   "path": "/heatingCircuits/hc1/activeSwitchProgram",
+   "value": "A",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "A"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/boostDuration": {
+   "path": "/heatingCircuits/hc1/boostDuration",
+   "value": 1.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "hours",
+    "allowed_values": [],
+    "minimum": 1.0,
+    "maximum": 8.0,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/boostMode": {
+   "path": "/heatingCircuits/hc1/boostMode",
+   "value": "off",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "on",
+     "off"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/controlType": {
+   "path": "/heatingCircuits/hc1/controlType",
+   "value": "wdcsimplified",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "wdcoptimized",
+     "wdcsimplified",
+     "ISRC",
+     "vbh"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/currentRoomSetpoint": {
+   "path": "/heatingCircuits/hc1/currentRoomSetpoint",
+   "value": 18.5,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/currentSuWiMode": {
+   "path": "/heatingCircuits/hc1/currentSuWiMode",
+   "value": "forced",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "forced",
+     "off",
+     "cooling"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/heatCoolMode": {
+   "path": "/heatingCircuits/hc1/heatCoolMode",
+   "value": "heat",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "heat",
+     "cool",
+     "heatCool"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/heatingType": {
+   "path": "/heatingCircuits/hc1/heatingType",
+   "value": "floor",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "radiator",
+     "floor",
+     "airHeating"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/manualRoomSetpoint": {
+   "path": "/heatingCircuits/hc1/manualRoomSetpoint",
+   "value": 18.5,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": 5.0,
+    "maximum": 30.0,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/maxFlowTemp": {
+   "path": "/heatingCircuits/hc1/maxFlowTemp",
+   "value": 38.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": 30.0,
+    "maximum": 60.0,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": 1.0,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/name": {
+   "path": "/heatingCircuits/hc1/name",
+   "value": "",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [
+    "valueConfig"
+   ],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/operationMode": {
+   "path": "/heatingCircuits/hc1/operationMode",
+   "value": "manual",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "off",
+     "manual",
+     "auto"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/overallStatus": {
+   "path": "/heatingCircuits/hc1/overallStatus",
+   "value": "heating_manual_on",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "ch_disabled",
+     "emergency_mode",
+     "floor_drying",
+     "summer_idle",
+     "boost",
+     "away",
+     "holiday",
+     "cooling_manual_on",
+     "cooling_manual_off",
+     "heating_manual_on",
+     "heating_manual_off",
+     "heating_auto"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/switchProgramMode": {
+   "path": "/heatingCircuits/hc1/switchProgramMode",
+   "value": "level",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "level"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/switchPrograms": {
+   "path": "/heatingCircuits/hc1/switchPrograms",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/heatingCircuits/hc1/switchPrograms/A",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/switchPrograms/nameA",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/switchPrograms/A": {
+   "path": "/heatingCircuits/hc1/switchPrograms/A",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "switchProgram",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {
+    "setpointProperty": {
+     "id": "/heatingCircuits/hc1/temperatureLevels",
+     "uri": "/heatingCircuits/hc1/temperatureLevels"
+    },
+    "maxNbOfSwitchPoints": 14,
+    "maxNbOfSwitchPointsPerDay": 2,
+    "switchPointTimeRaster": 15,
+    "switchPoints": [
+     {
+      "dayOfWeek": "Mo",
+      "time": 360,
+      "setpoint": "comfort2"
+     },
+     {
+      "dayOfWeek": "Mo",
+      "time": 1380,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "Tu",
+      "time": 360,
+      "setpoint": "comfort2"
+     },
+     {
+      "dayOfWeek": "Tu",
+      "time": 1380,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "We",
+      "time": 360,
+      "setpoint": "comfort2"
+     },
+     {
+      "dayOfWeek": "We",
+      "time": 1380,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "Th",
+      "time": 360,
+      "setpoint": "comfort2"
+     },
+     {
+      "dayOfWeek": "Th",
+      "time": 1380,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "Fr",
+      "time": 360,
+      "setpoint": "comfort2"
+     },
+     {
+      "dayOfWeek": "Fr",
+      "time": 1380,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "Sa",
+      "time": 480,
+      "setpoint": "comfort2"
+     },
+     {
+      "dayOfWeek": "Sa",
+      "time": 1380,
+      "setpoint": "eco"
+     },
+     {
+      "dayOfWeek": "Su",
+      "time": 480,
+      "setpoint": "comfort2"
+     },
+     {
+      "dayOfWeek": "Su",
+      "time": 1380,
+      "setpoint": "eco"
+     }
+    ]
+   }
+  },
+  "/heatingCircuits/hc1/switchPrograms/nameA": {
+   "path": "/heatingCircuits/hc1/switchPrograms/nameA",
+   "value": "",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [
+    "valueConfig"
+   ],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/temperatureLevels": {
+   "path": "/heatingCircuits/hc1/temperatureLevels",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/heatingCircuits/hc1/temperatureLevels/comfort2",
+     "name": null
+    },
+    {
+     "path": "/heatingCircuits/hc1/temperatureLevels/eco",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/temperatureLevels/comfort2": {
+   "path": "/heatingCircuits/hc1/temperatureLevels/comfort2",
+   "value": 21.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": 19.5,
+    "maximum": 30.0,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/heatingCircuits/hc1/temperatureLevels/eco": {
+   "path": "/heatingCircuits/hc1/temperatureLevels/eco",
+   "value": 19.0,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": 5.0,
+    "maximum": 20.5,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/holidayMode/activeModes": {
+   "path": "/holidayMode/activeModes",
+   "value": null,
+   "has_value": false,
+   "values": [
+    ""
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "arrayData",
+    "unit": null,
+    "allowed_values": [
+     "",
+     "hm1",
+     "hm2",
+     "hm3",
+     "hm4",
+     "hm5",
+     "hm6",
+     "hm7",
+     "hm8"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/holidayMode/configuration": {
+   "path": "/holidayMode/configuration",
+   "value": null,
+   "has_value": false,
+   "values": [
+    {
+     "dhwMode": {
+      "type": "arrayData",
+      "value": "OFF",
+      "allowedValues": [
+       "OFF",
+       "ECO",
+       "LOW",
+       "HIGH"
+      ]
+     },
+     "name": {
+      "type": "stringValue",
+      "value": "",
+      "stringConfig": {
+       "codingType": "base64",
+       "maxLength": 49,
+       "charset": "UTF16"
+      }
+     },
+     "date": {
+      "type": "date",
+      "value": "dateTime",
+      "allowedValues": [
+       "dateTime"
+      ]
+     },
+     "heatingMode": {
+      "type": "arrayData",
+      "value": "FIX_TEMPERATURE",
+      "allowedValues": [
+       "FIX_TEMPERATURE",
+       "OFF"
+      ]
+     },
+     "fixTemperature": {
+      "type": "floatValue",
+      "maxValue": 30.0,
+      "minValue": 5.0,
+      "value": 18.0
+     },
+     "assignedTo": {
+      "type": "arrayData",
+      "value": [
+       "hc1",
+       "dhw1"
+      ],
+      "allowedValues": [
+       "hc1",
+       "dhw1"
+      ]
+     }
+    }
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "configData",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/holidayMode/list": {
+   "path": "/holidayMode/list",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "holidayModeArray",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/notifications": {
+   "path": "/notifications",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "errorList",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/solarCircuits": {
+   "path": "/solarCircuits",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/solarCircuits/sc1": {
+   "path": "/solarCircuits/sc1",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system": {
+   "path": "/system",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/system/awayMode",
+     "name": null
+    },
+    {
+     "path": "/system/brand",
+     "name": null
+    },
+    {
+     "path": "/system/bus",
+     "name": null
+    },
+    {
+     "path": "/system/canUds",
+     "name": null
+    },
+    {
+     "path": "/system/components",
+     "name": null
+    },
+    {
+     "path": "/system/country",
+     "name": null
+    },
+    {
+     "path": "/system/dampedOutdoorTemp",
+     "name": null
+    },
+    {
+     "path": "/system/dateTime",
+     "name": null
+    },
+    {
+     "path": "/system/eebus",
+     "name": null
+    },
+    {
+     "path": "/system/globalSeasonOptimizer",
+     "name": null
+    },
+    {
+     "path": "/system/iSRC",
+     "name": null
+    },
+    {
+     "path": "/system/info",
+     "name": null
+    },
+    {
+     "path": "/system/minOutdoorTemp",
+     "name": null
+    },
+    {
+     "path": "/system/powerConstraints",
+     "name": null
+    },
+    {
+     "path": "/system/powerLimitation",
+     "name": null
+    },
+    {
+     "path": "/system/seasonOptimizer",
+     "name": null
+    },
+    {
+     "path": "/system/sensors",
+     "name": null
+    },
+    {
+     "path": "/system/silentMode",
+     "name": null
+    },
+    {
+     "path": "/system/switchPrograms",
+     "name": null
+    },
+    {
+     "path": "/system/type",
+     "name": null
+    },
+    {
+     "path": "/system/update",
+     "name": null
+    },
+    {
+     "path": "/system/variableTariff",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/awayMode": {
+   "path": "/system/awayMode",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/system/awayMode/enabled",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/awayMode/enabled": {
+   "path": "/system/awayMode/enabled",
+   "value": "off",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "on",
+     "off"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/brand": {
+   "path": "/system/brand",
+   "value": "Buderus",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/bus": {
+   "path": "/system/bus",
+   "value": "EMS2_0",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "EMS2_0",
+     "No_Bus",
+     "Detecting"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/country": {
+   "path": "/system/country",
+   "value": "DE",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/globalSeasonOptimizer/currentMode": {
+   "path": "/system/globalSeasonOptimizer/currentMode",
+   "value": "heating",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "off",
+     "heating",
+     "cooling"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/iSRC/installationStatus": {
+   "path": "/system/iSRC/installationStatus",
+   "value": "TIMEOUT",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "TIMEOUT",
+     "IN_PROGRESS",
+     "SUCCESS"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/iSRC/supportStatus": {
+   "path": "/system/iSRC/supportStatus",
+   "value": "SUPPORTED",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "NOT_SUPPORTED_INCOMPATIBLE_CONTROLLER",
+     "NOT_SUPPORTED_PAIRING_ENABLED",
+     "SUPPORTED",
+     "IN_EVALUATION"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/info": {
+   "path": "/system/info",
+   "value": null,
+   "has_value": false,
+   "values": [
+    {
+     "ModuleSerialNumber": "redacted",
+     "HwVersion": "1",
+     "SwIdenStr": "com.buderus.tt.rhp:hyd.5.aw.bt-ftl",
+     "Tok": "8",
+     "No": "redacted",
+     "SwUpdateType": "can_uds_cuhp_style",
+     "Id": "8",
+     "Ver": "12.11.1-2fc97779",
+     "ProductName": "Logatherm WLW176i-12 TP70",
+     "ProductSerialNumber": "redacted",
+     "ModuleHwIdentStr": "redacted",
+     "ProductTtn": "8738213489",
+     "ModuleTtn": "8750767801"
+    },
+    {
+     "Ver4": "V01.012.05",
+     "Ver2": "Static",
+     "ModuleSerialNumber": "redacted",
+     "HwVersion": "26.12",
+     "SwIdenStr": "HMI800.2_Application_FIELD",
+     "Tok": "16",
+     "Ver": "47.12-FIELD",
+     "SwIdenStr4": "HMI800.2_Touch_pv-00.07",
+     "ModuleTtn": "8755003291",
+     "Id": "253",
+     "SwUpdateType": "can_uds_cuhp_style",
+     "ModuleHwIdentStr": "redacted",
+     "Ver3": "Main",
+     "SwIdenStr2": "Static_Bootloader",
+     "SwIdenStr3": "Main_Bootloader",
+     "SwStatus": "final"
+    },
+    {
+     "Id": "17",
+     "ModuleSerialNumber": "redacted",
+     "ModuleHwIdentStr": "redacted",
+     "Ver": "15.00.01",
+     "Tok": "72",
+     "No": "redacted",
+     "ProductUuid": "redacted"
+    },
+    {
+     "Id": "17",
+     "ModuleSerialNumber": "redacted",
+     "ModuleHwIdentStr": "redacted",
+     "Tok": "75",
+     "Ver": "15.00",
+     "No": "redacted"
+    },
+    {
+     "ModuleSerialNumber": "redacted",
+     "HwVersion": "1",
+     "SwIdenStr": "com.uni.tt.rhp:ref.5.aw.10",
+     "Tok": "8",
+     "No": "redacted",
+     "SwUpdateType": "can_uds_cuhp_style",
+     "Id": "65281",
+     "Ver": "9.16.0-dab9f463",
+     "ProductName": "WLW-10 MB AR",
+     "ProductSerialNumber": "redacted",
+     "ModuleHwIdentStr": "redacted",
+     "ProductTtn": "8738213472",
+     "ModuleTtn": "8750767802"
+    }
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "systeminfo",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [
+    "gatewayId",
+    "status",
+    "timeStamp"
+   ],
+   "program_fields": {}
+  },
+  "/system/powerLimitation/active": {
+   "path": "/system/powerLimitation/active",
+   "value": "off",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "off",
+     "on"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/seasonOptimizer/mode": {
+   "path": "/system/seasonOptimizer/mode",
+   "value": "forcedHeat",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "off",
+     "automatic",
+     "forcedHeat"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/sensors": {
+   "path": "/system/sensors",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/system/sensors/temperatures",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/sensors/temperatures": {
+   "path": "/system/sensors/temperatures",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/system/sensors/temperatures/outdoorTemperatureSource",
+     "name": null
+    },
+    {
+     "path": "/system/sensors/temperatures/outdoor_t1",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/sensors/temperatures/outdoorTemperatureSource": {
+   "path": "/system/sensors/temperatures/outdoorTemperatureSource",
+   "value": "appliance",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "appliance",
+     "module",
+     "rf",
+     "internet"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/sensors/temperatures/outdoor_t1": {
+   "path": "/system/sensors/temperatures/outdoor_t1",
+   "value": 9.1,
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "floatValue",
+    "unit": "C",
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [
+     -32768.0,
+     32767.0
+    ],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/silentMode/enabled": {
+   "path": "/system/silentMode/enabled",
+   "value": "off",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "off",
+     "auto",
+     "on"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": true,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/type": {
+   "path": "/system/type",
+   "value": "heatpump_single",
+   "has_value": true,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "stringValue",
+    "unit": null,
+    "allowed_values": [
+     "unknown",
+     "heatpump_cascade",
+     "heatpump_single",
+     "eHybrid",
+     "hybman",
+     "hybridBoiler",
+     "boiler"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/variableTariff": {
+   "path": "/system/variableTariff",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/system/variableTariff/supportStatus",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/system/variableTariff/supportStatus": {
+   "path": "/system/variableTariff/supportStatus",
+   "value": null,
+   "has_value": false,
+   "values": [
+    "not_supported"
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "arrayData",
+    "unit": null,
+    "allowed_values": [
+     "not_supported",
+     "vta_gateway",
+     "in_evaluation",
+     "blocked"
+    ],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/ventilation": {
+   "path": "/ventilation",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/ventilation/zone1": {
+   "path": "/ventilation/zone1",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/ventilation/zone1/ventilationLevels": {
+   "path": "/ventilation/zone1/ventilationLevels",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/zones": {
+   "path": "/zones",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": false,
+   "metadata": {
+    "resource_type": "refEnum",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [
+    {
+     "path": "/zones/configuration",
+     "name": null
+    },
+    {
+     "path": "/zones/list",
+     "name": null
+    }
+   ],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/zones/configuration": {
+   "path": "/zones/configuration",
+   "value": null,
+   "has_value": false,
+   "values": [
+    {
+     "availableIcons": {
+      "type": "arrayData",
+      "allowedValues": [
+       "KITCHEN",
+       "LIVING_ROOM",
+       "DINING_ROOM",
+       "BEDROOM",
+       "MASTER_ROOM",
+       "CHILDRENS_ROOM",
+       "BATHROOM",
+       "OFFICE",
+       "HALLWAY",
+       "HOBBY_ROOM",
+       "LAUNDRY",
+       "LIBRARY"
+      ]
+     },
+     "maxSupportedZones": {
+      "type": "integerValue",
+      "value": 16
+     }
+    }
+   ],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "configData",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  },
+  "/zones/list": {
+   "path": "/zones/list",
+   "value": null,
+   "has_value": false,
+   "values": [],
+   "has_values": true,
+   "metadata": {
+    "resource_type": "zoneArray",
+    "unit": null,
+    "allowed_values": [],
+    "minimum": null,
+    "maximum": null,
+    "writable": false,
+    "numeric_error_values": [],
+    "numeric_error_states_valid": true,
+    "step_size": null,
+    "step_size_valid": true,
+    "used": null,
+    "available": null,
+    "availability_flags_valid": true
+   },
+   "references": [],
+   "unknown_fields": [],
+   "program_fields": {}
+  }
+ }
+}

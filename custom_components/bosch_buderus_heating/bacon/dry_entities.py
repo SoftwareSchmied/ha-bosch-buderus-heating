@@ -1,4 +1,4 @@
-"""Separate Dry-family observations and child-lock control."""
+"""Separate Dry-family observations, child-lock and display controls."""
 
 from __future__ import annotations
 
@@ -16,13 +16,13 @@ from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .. import BoschBuderusConfigEntry
 from ..const import DOMAIN
+from ..platform_scope import DiscoveryLifecycle
 from . import dry
+from .access import BaconAccess
 from .entity import BaconEntity
 from .metadata import metadata
 from .models import BaconError, Device
-from .session import BaconAccount
 
 
 def invalid_command() -> ServiceValidationError:
@@ -32,7 +32,7 @@ def invalid_command() -> ServiceValidationError:
 
 
 class DryEntity(BaconEntity):
-    def __init__(self, account: BaconAccount, serial: str, key: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str, key: str) -> None:
         super().__init__(account, serial, "dry_" + key)
         self.key = key
         self._attr_translation_key = "bacon_dry_" + key
@@ -80,8 +80,8 @@ class DryEntity(BaconEntity):
 
 
 def track_entities(
-    entry: BoschBuderusConfigEntry,
-    account: BaconAccount,
+    entry: DiscoveryLifecycle,
+    account: BaconAccess,
     async_add_entities: AddConfigEntryEntitiesCallback,
     platform: str,
 ) -> None:
@@ -110,9 +110,10 @@ def track_entities(
                         if metadata(device, "sensor", field) is not None:
                             candidates.append(BaconDryStatus(account, serial, key))
             elif platform == "switch":
-                switch = BaconDryChildLock(account, serial, "child_lock")
-                if switch.available:
-                    candidates.append(switch)
+                for key in dry.SWITCHES:
+                    switch = BaconDrySwitch(account, serial, key)
+                    if switch.available:
+                        candidates.append(switch)
             for entity in candidates:
                 identity = (serial, entity.key)
                 if identity not in seen:
@@ -125,24 +126,28 @@ def track_entities(
     discover()
 
 
-class BaconDryChildLock(DryEntity, SwitchEntity):
+class BaconDrySwitch(DryEntity, SwitchEntity):
+    """Child lock or display, each sent as its own single-field command."""
+
     _attr_entity_category = EntityCategory.CONFIG
 
     @property
+    def field(self) -> str:
+        return dry.SWITCHES[self.key]
+
+    @property
     def available(self) -> bool:
-        return self.controls_current and dry.boolean_control(
-            self.device, "childLockEnabled"
-        )
+        return self.controls_current and dry.boolean_control(self.device, self.field)
 
     @property
     def is_on(self) -> bool | None:
-        return dry.reported(self.device, "childLockEnabled") if self.available else None
+        return dry.reported(self.device, self.field) if self.available else None
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        await self.write({"childLockEnabled": True})
+        await self.write({self.field: True})
 
     async def async_turn_off(self, **kwargs: Any) -> None:
-        await self.write({"childLockEnabled": False})
+        await self.write({self.field: False})
 
 
 class BaconDryStatus(DryEntity, BinarySensorEntity):
@@ -168,7 +173,7 @@ class BaconDryStatus(DryEntity, BinarySensorEntity):
 
 
 class BaconDrySensor(DryEntity, SensorEntity):
-    def __init__(self, account: BaconAccount, serial: str, key: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str, key: str) -> None:
         super().__init__(account, serial, key)
         if key == "operating_status":
             self._attr_device_class = SensorDeviceClass.ENUM

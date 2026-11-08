@@ -13,7 +13,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import (
     DOMAIN,
@@ -67,6 +66,7 @@ from custom_components.bosch_buderus_heating.writes import (
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
     number_policy_for_resource,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 
 def _coordinator(
@@ -108,7 +108,7 @@ async def test_first_refresh_discovers_and_classifies_resources(
         values=({"total": 3600},),
         metadata=ResourceMetadata(resource_type="emonValue"),
     )
-    static = _resource("/gateway/versionFirmware", 1.0)
+    static = _resource("/gateway/versionHardware", 1.0)
     with patch(
         "custom_components.bosch_buderus_heating.coordinator.async_discover_resources",
         AsyncMock(return_value={item.path: item for item in (fast, slow, static)}),
@@ -1478,7 +1478,7 @@ async def test_fallback_maps_scoped_errors_and_stops_on_rate_limit(
     )
     client.get_resource.side_effect = (
         ResourceNotFound(paths[0], 404),
-        ServiceUnavailable(),
+        ServiceUnavailable(503),  # an HTTP answer; no status = no connection
         RateLimited(90),
     )
 

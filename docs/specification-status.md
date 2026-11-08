@@ -84,7 +84,7 @@ Issue #49 and the WE800i field checks in issue #60 retain their separate scope.
   separate device contracts.
 - I completed P16 with 132 conversion rules and 250 numeric candidates
   classified. The [conversion audit](conversion-audit.md) retains its original
-  test checkpoint; the [follow-up corrections](app-parity-corrections.md)
+  test checkpoint; the [follow-up corrections](corrected-values.md)
   document the final review fixes and validation.
 - I retained one device per existing PointT heating gateway. Separate cloud
   appliances and wallboxes keep their own identities. See
@@ -95,7 +95,7 @@ Physical checks of the new families, reconnection and real write effects are
 outstanding. Wallbox controls, additional device actions and new RRC schedule
 points are outside the implemented scope. WE800i controls remain disabled by
 default pending confirmation in issue #60. See the
-[device-support plan](device-support-plan.md) for remaining work.
+[device families](device-support-plan.md) for the supported families.
 
 ## Accepted deviations
 

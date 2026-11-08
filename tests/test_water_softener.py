@@ -6,7 +6,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.binary_sensor import (
     BoschBuderusBinarySensor,
@@ -58,6 +57,7 @@ from custom_components.bosch_buderus_heating.water_softener import (
     softener_value,
 )
 from custom_components.bosch_buderus_heating.writes import assess_control
+from tests.ha_test_helpers import MockConfigEntry
 
 
 def reading(suffix, value=None, unit=None, circuit="sw1"):
@@ -245,7 +245,7 @@ def test_bad_salt_is_never_zero_or_low(value):
         (100, False),
     ],
 )
-def test_low_salt_matches_app_integer_comparison(value, expected):
+def test_low_salt_uses_integer_comparison(value, expected):
     salt = reading("sensor/saltLevel", value)
     assert low_salt(salt, reading("sensor/saltLevelAlarm", 20)) is expected
     assert low_salt(salt, None) is expected
@@ -583,7 +583,7 @@ def test_registration_diagnostics_distinguish_disabled_and_unavailable(hass):
         (0.9, 0, True),
     ],
 )
-def test_app_salt_float_and_integer_boundaries(level, limit, expected):
+def test_salt_float_and_integer_boundaries(level, limit, expected):
     assert (
         low_salt(
             reading("sensor/saltLevel", level),
@@ -603,7 +603,7 @@ def test_present_invalid_threshold_does_not_use_default(value):
     )
 
 
-def test_missing_threshold_uses_app_default_but_failure_stays_unknown(hass):
+def test_missing_threshold_uses_default_but_failure_stays_unknown(hass):
     salt = reading("sensor/saltLevel", 20.9)
     coordinator = coordinator_for(hass, {salt.path: salt})
     low = BoschBuderusBinarySensor(

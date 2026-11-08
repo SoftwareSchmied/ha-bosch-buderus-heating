@@ -50,6 +50,9 @@ class EnumWritePolicy:
     known_only: bool = False
     action: bool = False
     enabled_by_default: bool = True
+    # "subset": every advertised option must be known; "exact": the advertised
+    # options must be exactly the known values. Anything else rejects the control.
+    options_rule: str = "any"
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,6 +63,8 @@ class NumberWritePolicy:
     unit: str
     step: float
     enabled_by_default: bool = True
+    # Use the advertised step (when valid) for the UI and the value grid.
+    live_step: bool = False
 
 
 ZONE_OPERATION_MODE_POLICY = EnumWritePolicy(
@@ -117,9 +122,27 @@ WDDW2_HOLIDAY_POLICY = EnumWritePolicy(
     frozenset({"on", "off"}),
     known_only=True,
 )
+# The exhaust fan levels documented for the local interface; any other
+# advertised level makes the whole control unavailable.
+VENTILATION_FAN_LEVELS = ("off", "min", "red", "nom", "max", "dem")
+VENTILATION_FAN_LEVEL_POLICY = EnumWritePolicy(
+    r"^/ventilation/zone[^/]+/exhaustFanLevel$",
+    frozenset({"stringValue"}),
+    frozenset(VENTILATION_FAN_LEVELS),
+    known_only=True,
+    options_rule="subset",
+)
+POOL_ENABLED_POLICY = EnumWritePolicy(
+    r"^/pool/enabled$",
+    frozenset({"stringValue"}),
+    frozenset({"on", "off"}),
+    known_only=True,
+    options_rule="exact",
+)
 STRING_SWITCH_POLICIES = (
     WDDW2_HOLIDAY_POLICY,
     SOFTENER_HOLIDAY_POLICY,
+    POOL_ENABLED_POLICY,
     EnumWritePolicy(
         r"^/dhwCircuits/[^/]+/charge$",
         frozenset({"stringValue"}),
@@ -135,6 +158,10 @@ STRING_SWITCH_POLICIES = (
         frozenset({"stringValue"}),
         frozenset({"on", "off"}),
     ),
+)
+# The pool target follows the advertised limits and step of each gateway.
+POOL_SETPOINT_POLICY = NumberWritePolicy(
+    r"^/pool/setpointTemp$", "C", 1.0, live_step=True
 )
 NUMBER_WRITE_POLICIES = (
     NumberWritePolicy(rrc.MANUAL_PATTERN, "C", 0.5),
@@ -166,6 +193,7 @@ NUMBER_WRITE_POLICIES = (
         "C",
         1.0,
     ),
+    POOL_SETPOINT_POLICY,
 )
 
 
@@ -381,6 +409,16 @@ def _validate_number(
         replace(resource, value=request.value, has_value=True)
     ):
         raise WriteValidationError("Requested value is not a valid zone temperature")
+    step = _live_step(resource) if policy.live_step else None
+    minimum = resource.metadata.minimum
+    if (
+        step is not None
+        and minimum is not None
+        and isinstance(request.value, int | float)
+    ):
+        ticks = (request.value - minimum) / step
+        if not math.isclose(ticks, round(ticks), abs_tol=1e-7):
+            raise WriteValidationError("Requested value is outside the step size")
     if rrc.is_control(resource.path):
         if rrc.control_issue(replace(resource, value=request.value, has_value=True)):
             raise WriteValidationError("Requested value is not a valid RRC temperature")
@@ -434,11 +472,29 @@ def _number_rejection_reason(
         return "non_finite_bounds"
     if minimum > maximum:
         return "inverted_bounds"
+    if policy.live_step and (
+        not metadata.step_size_valid
+        or (metadata.step_size is not None and _live_step(resource) is None)
+    ):
+        return "invalid_step"
     if softener_capability(resource.path) is not None and (
         minimum < 0 or (policy.unit == "%" and maximum > 100)
     ):
         return "invalid_softener_bounds"
     return None
+
+
+def _live_step(resource: Resource) -> float | None:
+    """The advertised step if it is a usable positive finite number."""
+    step = resource.metadata.step_size
+    if (
+        isinstance(step, bool)
+        or not isinstance(step, int | float)
+        or not math.isfinite(step)
+        or step <= 0
+    ):
+        return None
+    return float(step)
 
 
 def _number_value_rejection_reason(resource: Resource, value: object) -> str | None:
@@ -475,6 +531,11 @@ def _enum_rejection_reason(resource: Resource, policy: EnumWritePolicy) -> str |
         return "invalid_options"
     if policy.known_only and not policy.known_values.intersection(
         metadata.allowed_values
+    ):
+        return "unsupported_options"
+    advertised = set(metadata.allowed_values)
+    if (policy.options_rule == "subset" and not advertised <= policy.known_values) or (
+        policy.options_rule == "exact" and advertised != policy.known_values
     ):
         return "unsupported_options"
     return None
@@ -522,6 +583,7 @@ def assess_control(resource: Resource) -> ControlAssessment:
         SILENT_MODE_POLICY,
         SEASON_SWITCHING_POLICY,
         AUXILIARY_HEATER_OPERATION_MODE_POLICY,
+        VENTILATION_FAN_LEVEL_POLICY,
         SOFTENER_REGENERATION_POLICY,
         *STRING_SWITCH_POLICIES,
     )
@@ -565,6 +627,8 @@ def assess_control(resource: Resource) -> ControlAssessment:
                     if (is_zone_control(resource.path) or rrc.is_control(resource.path))
                     and schema_issue is None
                     and resource.metadata.step_size is not None
+                    else _live_step(resource)
+                    if number_policy.live_step and _live_step(resource) is not None
                     else number_policy.step
                 ),
                 current_value_issue=_number_value_rejection_reason(

@@ -4,15 +4,15 @@
 
 Ich ergänze mit v0.8.2-beta.5 die Unterstützung für den Buderus
 Logawater Soft WE800i aus [Issue #60](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/60).
-Grundlage sind v0.8.2-beta.4, der dort bereitgestellte Diagnoseexport und die
-Ressourcenmodelle von MyBuderus 5.0.0. Die Diagnose bestätigt die erfolgreiche
+Grundlage sind v0.8.2-beta.4 und der dort bereitgestellte Diagnoseexport. Die
+Diagnose bestätigt die erfolgreiche
 Anmeldung und das erkannte Modell `watersoftener`, enthält aber noch keine
 Enthärter-Messwerte. Die unten beschriebenen Funktionen sind deshalb noch
 nicht an einem echten WE800i bestätigt.
 
 ### Erkennung und Anzeigen
 
-Ein ausdrücklich erkanntes Enthärtermodell erhält die in der App belegten
+Ein ausdrücklich erkanntes Enthärtermodell erhält die dokumentierten
 Abfragen unter `/swCircuits/sw1`. Die Hardwarekennung WX100 allein reicht
 dafür nicht aus. Weitere Kreise kommen ausschließlich aus gemeldeten
 Referenzen. Deren Pfade haben Vorrang vor ergänzenden Abfragen. Die bekannten
@@ -34,26 +34,26 @@ Kennungen werden nicht umbenannt.
 | `regeneration/enabled` | Regeneration aktiv | Nur `on` und `off` werden zu einem Binärzustand |
 | `regeneration/phase` | Regenerationsphase | Sieben bekannte Phasen, deutsch und englisch übersetzt |
 | `regeneration/totalProgressStatus` | Regenerationsfortschritt | Prozent, nur 0 bis 100 |
-| `regeneration/totalRemainingTime` | Verbleibende Regenerationszeit | Gemeldete Zeiteinheit; ohne Einheit Sekunden gemäß App-Umrechnung |
-| `regeneration/timeUntilNext` | Zeit bis zur nächsten Regeneration | Gemeldete Zeiteinheit; ohne Einheit Tage gemäß App-Modell `nextInDays` |
-| `regeneration/singleRegAppoint` | Geplante Regeneration | Gemeldete Zeiteinheit; ohne Einheit Tage gemäß App-Modell `scheduleDays` |
+| `regeneration/totalRemainingTime` | Verbleibende Regenerationszeit | Gemeldete Zeiteinheit; ohne Einheit Sekunden |
+| `regeneration/timeUntilNext` | Zeit bis zur nächsten Regeneration | Gemeldete Zeiteinheit; ohne Einheit Tage |
+| `regeneration/singleRegAppoint` | Geplante Regeneration | Gemeldete Zeiteinheit; ohne Einheit Tage |
 | `holidayMode/enabled` | Urlaubsmodus | Eigener Zustand des Enthärters |
 
 Fehlt bei Salzfüllstand, Schwelle, Fortschritt, Wasservorrat oder Durchfluss
-die Einheit, verwende ich die jeweilige oben genannte App-Zuordnung. Eine
+die Einheit, verwende ich die jeweilige oben genannte Zuordnung. Eine
 widersprüchliche ausdrücklich gemeldete Einheit wird abgewiesen.
 Fehlende, ungültige und nicht endliche Werte ergeben keinen erfundenen
 Nullwert. Eine ausgefallene Quelle wird nicht durch eine andere ersetzt.
 
-Die Salzwarnung verwendet wie die App die Ganzzahlanteile von Füllstand und
+Die Salzwarnung verwendet die Ganzzahlanteile von Füllstand und
 Schwelle desselben Kreises nach deren Float-Interpretation. Bei 20,9 Prozent
 Füllstand und 20 Prozent Schwelle ist sie deshalb bereits aktiv. Fehlt die
-Schwellenressource, verwende ich den App-Ersatzwert von 20 Prozent. Eine
+Schwellenressource, verwende ich den Ersatzwert von 20 Prozent. Eine
 bekannte, aber ungültige, ausgefallene oder veraltete Quelle bleibt unbekannt.
 Der gemessene Füllstand behält seine Nachkommastellen. W006 bleibt ohne
 zusätzliche Bedeutungszuordnung.
-Der separat in der App gefundene Code E7 ist kein Beleg für die Bedeutung von
-W006 und ersetzt nicht die numerische Salzwarnung.
+Der separate Code E7 ist kein Beleg für die Bedeutung von W006 und ersetzt
+nicht die numerische Salzwarnung.
 
 ### Regenerationsphasen in P04
 
@@ -61,9 +61,7 @@ Ich vereinheitliche die Groß-/Kleinschreibung der sieben bekannten Codes
 `normal`, `refill`, `brine_preparation`, `brine_draw`, `backwash`, `rinse`
 und `end`. Beispielsweise werden `BACKWASH` und `Backwash` als `backwash`
 erkannt und weiterhin als „Rückspülen“ angezeigt. Die vorhandenen Enum-Schlüssel,
-Übersetzungen und Entitäts-IDs bleiben erhalten. Die App führt in
-`WaterSoftenerModelMapperImpl.operationDetail` vor `RegenerationPhase.valueOf`
-eine Umwandlung mit `toUpperCase(Locale.ROOT)` durch.
+Übersetzungen und Entitäts-IDs bleiben erhalten.
 
 Die Toleranz gilt ausschließlich für die Schreibweise dieser ASCII-Codes und
 erst nach der Prüfung der skalaren Datenform. Zusätzliche Leerzeichen, andere
@@ -122,7 +120,7 @@ Einstellung, Ergebnis in MyBuderus und gegebenenfalls wiederhergestelltem
 Ausgangswert. Eine manuell gestartete Regeneration ist ein realer Geräteablauf.
 
 Der in Issue #60 gewünschte Weichwasserverbrauch ist damit noch nicht
-vollständig abgedeckt: Die App bezieht Verbrauchswerte aus `/recordings`.
+vollständig abgedeckt: Verbrauchswerte stammen aus `/recordings`.
 Ich berechne keinen vermeintlichen Gesamtverbrauch aus einzelnen
 Durchflussmessungen. Das gesonderte optionale Verbrauchspaket und historische
 Messreihen sind nicht Teil dieser Umsetzung. Issue #60 bleibt bis zur
@@ -130,10 +128,10 @@ Rückmeldung und Klärung dieses Umfangs offen.
 
 ## English
 
-I am adding an initial WE800i implementation based on v0.8.2-beta.4, the
-diagnostics in issue #60 and MyBuderus 5.0.0 resource models. The supplied
-diagnostics confirm gateway discovery, but do not contain softener readings.
-The compatibility review and synthetic tests do not establish physical-device compatibility.
+I am adding an initial WE800i implementation based on v0.8.2-beta.4 and the
+diagnostics in issue #60. The supplied diagnostics confirm gateway discovery,
+but do not contain softener readings. Synthetic tests do not establish
+physical-device compatibility.
 
 Explicit softener models receive the documented `/swCircuits/sw1` probes.
 Additional circuit IDs must be advertised. References retain priority; an
@@ -144,16 +142,14 @@ Current capabilities cover salt level and threshold, derived low salt,
 available soft-water volume, flow, regeneration state/phase/progress/time,
 scheduled regeneration and holiday state. Unknown values remain unknown.
 Available water is a volume-storage measurement, not cumulative consumption.
-Unitless next/scheduled regeneration values use the app's explicit days
-semantics. Unitless remaining regeneration time uses seconds, matching the app conversion to minutes.
+Unitless next/scheduled regeneration values are interpreted as days.
+Unitless remaining regeneration time uses seconds.
 The 20% alarm fallback is not assumed. W006 is not mapped to E7 or low salt.
 
 In P04, I accept lower-, upper- and mixed-case spellings of the seven known
 ASCII phase codes: `normal`, `refill`, `brine_preparation`, `brine_draw`,
 `backwash`, `rinse` and `end`. For example, `BACKWASH` becomes the existing
-`backwash` enum key. Translations and entity IDs stay unchanged. The app uses
-`toUpperCase(Locale.ROOT)` before `RegenerationPhase.valueOf` in
-`WaterSoftenerModelMapperImpl.operationDetail`.
+`backwash` enum key. Translations and entity IDs stay unchanged.
 
 Scalar-schema validation runs first. Missing values, objects, arrays and
 references remain invalid. Extra whitespace, different separators, unknown
@@ -193,31 +189,23 @@ The 40 additional cases cover all seven phases in three casing variants,
 invalid values and schemas, entity recovery, and unchanged binary-state rules.
 The full suite also passed the existing softener-write, packaging and isolated
 ZIP-import checks. Ruff, formatting and strict Mypy passed. I rechecked the
-13 softener cases in the comparison, including the unchanged units. These are
+13 softener reference cases, including the unchanged units. These are
 synthetic tests; physical WE800i verification remains outstanding.
 
 Ich habe 1.767 automatisierte Testfälle mit 96,70 % kombinierter Code- und
 Verzweigungsabdeckung ausgeführt. 40 zusätzliche Fälle prüfen Schreibweisen,
 ungültige Daten, die Erholung derselben Entität und unveränderte Binärzustände.
 Die bisherigen Schreib- und Paketprüfungen, Ruff, Formatprüfung und striktes
-Mypy bestanden ebenfalls. Die 13 Enthärterfälle des Vergleichs sind erneut
+Mypy bestanden ebenfalls. Die 13 Enthärter-Referenzfälle sind erneut
 geprüft. Eine Bestätigung am realen WE800i steht weiterhin aus.
 
-### Compatibility references / Kompatibilitätsabgleich
+### Implementation notes / Umsetzungshinweise
 
-The resource mapping was compared with MyBuderus 5.0.0. Physical checks remain
-separate from these implementation references.
+Physical checks remain separate from these implementation notes.
 
-- `watersoftenerprovider.data.remote.resources`: `WaterSoftenerSensorResource`,
-  `WaterSoftenerRegenerationResource`, `WaterSoftenerHolidayResource`.
-- `WaterSoftenerModelMapperImpl`: model families, numeric low-salt comparison,
-  separate E7 handling and conversion to the public regeneration models.
-- `NextRegeneration`: `nextInDays` and `scheduleDays` distinguish day offsets
-  from clock times. `RegenerationPhase` defines seven named phases.
-- `HppDemoDevice` confirms app-side scalar shapes and selected units. Demo
-  values and limits are not used as appliance defaults or copied into Git.
-- [App resource implementation inventory](app-resource-inventory.md).
-
-- The operation screen divides remaining regeneration time by 60 before passing
-  it to TimerUtils, which constructs a duration in minutes. This establishes
-  seconds as the app-side default for an omitted unit.
+- The sensor, regeneration and holiday resources under `/swCircuits/{sw}/`
+  are handled as separate resource groups.
+- Next and scheduled regeneration values are day offsets, not clock times.
+  Seven named regeneration phases are known.
+- Remaining regeneration time without a unit is interpreted as seconds.
+- [Resource implementation inventory](resource-inventory.md).

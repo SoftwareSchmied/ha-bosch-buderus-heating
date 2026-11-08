@@ -42,8 +42,8 @@ class CapabilityMaturity(StrEnum):
 
 
 @dataclass(frozen=True, slots=True)
-class LogicalDevice:
-    """Stable logical-device identity derived from a PointT path."""
+class FunctionGroup:
+    """A resource group, never evidence of a separate PointT device."""
 
     kind: str
     logical_id: str
@@ -52,7 +52,7 @@ class LogicalDevice:
 
 @dataclass(frozen=True, slots=True)
 class _EntitySchemaRule:
-    """Expected live schema for an optional vendor-app resource."""
+    """Expected live schema for an optional catalog resource."""
 
     pattern: re.Pattern[str]
     resource_types: frozenset[str]
@@ -982,6 +982,160 @@ def is_read_only_control_mirror(path: str) -> bool:
     )
 
 
+# The words of a reading name that denote an identifier, address, location or
+# secret, in any spelling (ID, Id, Ssid, Mac ...). Shared by the local and the
+# cloud readings. Words that only count as the last word of a name:
+_PRIVATE_LAST_WORDS = frozenset(
+    {
+        "id",
+        "ski",
+        "ssid",
+        "mac",
+        "uuid",
+        "fingerprint",
+        "address",
+        "key",
+        "token",
+        "pin",
+        "user",
+        "username",
+        "owner",
+        "location",
+        "coordinates",
+        "lat",
+        "lon",
+        "lng",
+    }
+)
+# Words that mark a name wherever they appear.
+_PRIVATE_WORDS = frozenset(
+    {
+        "ip",
+        "zip",
+        "postal",
+        "postcode",
+        "gtin",
+        "sgtin",
+        "ean",
+        "imei",
+        "iban",
+        "phone",
+        "email",
+        "password",
+        "secret",
+        "latitude",
+        "longitude",
+    }
+)
+_PRIVATE_WORD_PREFIXES = (
+    "mac",
+    "ipv",
+    "serial",
+    "passw",
+    "cert",
+    "uuid",
+    "ssid",
+    "latitud",
+    "longitud",
+    "coordinat",
+    "postal",
+    "imei",
+    "iban",
+    "secret",
+)
+# A code is private when it opens something.
+_PRIVATE_CODE_WORDS = frozenset({"installer", "pairing", "access", "pin", "pass"})
+_IP_VERSION = re.compile(r"ip(?:v?[46])(?![a-z])", re.IGNORECASE)
+_WORD = re.compile(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|[0-9]+", re.ASCII)
+# Types of a single readable value; everything else is a structure, a list
+# or configuration that feeds other features.
+_UNKNOWN_VALUE_TYPES = frozenset({"floatValue", "integerValue", "stringValue"})
+UNKNOWN_NUMBER = "number"
+UNKNOWN_ENUM = "enum"
+UNKNOWN_FLAG = "flag"
+
+
+def identifier_name(name: str) -> bool:
+    """A reading name that denotes an identifier, address, location or secret."""
+    # "IPv4", "ipv6", "Ip4" as one word, whatever their spelling.
+    last = _IP_VERSION.sub("_Ip_", name.rsplit(".", 1)[-1])
+    words = [word.casefold() for word in _WORD.findall(last)]
+    return bool(words) and (
+        words[-1] in _PRIVATE_LAST_WORDS
+        or any(
+            word in _PRIVATE_WORDS or word.startswith(_PRIVATE_WORD_PREFIXES)
+            for word in words
+        )
+        or ("code" in words and not _PRIVATE_CODE_WORDS.isdisjoint(words))
+    )
+
+
+def unknown_never_entity(resource: Resource) -> bool:
+    """An unknown resource that can never become an entity, whatever its
+    current value: private, an identifier, a name, a structure or
+    configuration. Only these lose a registered entity (create-all)."""
+    path = resource.path
+    return bool(
+        is_private_resource(path)
+        or is_opt_in_diagnostic_resource(path)
+        or path in _NO_ENTITY_PATHS
+        or any(pattern.fullmatch(path) for pattern in _NO_ENTITY_PATTERNS)
+        or any(identifier_name(part) for part in path.strip("/").split("/"))
+        or path.endswith("/name")
+        or resource.references
+        or isinstance(resource.value, dict | list)
+        or is_monitor_collection(path)
+        or (
+            resource.metadata.resource_type is not None
+            and resource.metadata.resource_type not in _UNKNOWN_VALUE_TYPES
+        )
+    )
+
+
+def unknown_entity_kind(resource: Resource) -> str | None:
+    """Create-all (owner decision): the form of a cloud resource the
+    integration does not know.
+
+    A single number, a text with declared values or a true/false value
+    becomes a read-only, disabled diagnostic sensor; never a control.
+    Identifiers, network and privacy data, free text, names, lists,
+    structures and configuration stay out. A known resource in a shape its
+    rules reject stays without an entity (its schema guard): an entity under
+    its ID would replace the known entity's unit and statistics, and the
+    known entity returns once the shape fits again.
+    """
+    path = resource.path
+    if capability_maturity(path) is not CapabilityMaturity.OBSERVED:
+        return None  # known: its own rules and guards decide
+    if (
+        is_private_resource(path)
+        or is_opt_in_diagnostic_resource(path)
+        or path in _NO_ENTITY_PATHS
+        or any(pattern.fullmatch(path) for pattern in _NO_ENTITY_PATTERNS)
+        or any(identifier_name(part) for part in path.strip("/").split("/"))
+        or path.endswith("/name")
+        or resource.references
+        or is_monitor_collection(path)
+        or resource.values
+        or resource.has_values
+        or not resource.has_value
+        or resource.metadata.resource_type not in _UNKNOWN_VALUE_TYPES
+    ):
+        return None
+    value = resource.value
+    if isinstance(value, bool):
+        return UNKNOWN_FLAG
+    if isinstance(value, int | float):
+        return UNKNOWN_NUMBER if math.isfinite(value) else None
+    if not isinstance(value, str):
+        return None
+    if any(isinstance(item, str) for item in resource.metadata.allowed_values):
+        return UNKNOWN_ENUM
+    if value.strip().casefold() in ("true", "false"):
+        return UNKNOWN_FLAG
+    return None  # free text could carry an identifier
+
+
 def supports_entity(resource: Resource) -> bool:
     """Return whether the resource can yield at least one safe HA state."""
     return (
@@ -1065,8 +1219,14 @@ def entity_enabled_by_default(path: str) -> bool:
     )
 
 
+# Read with the slow group so a firmware update while running is noticed (P22).
+FIRMWARE_PATHS = ("/gateway/versionFirmware", "/system/appliance/versionFirmware")
+
+
 def poll_group(resource: Resource) -> PollGroup:
     """Classify a discovered resource into a cloud-friendly cadence."""
+    if resource.path in FIRMWARE_PATHS:
+        return PollGroup.SLOW
     if rrc.scalar_field(resource.path):
         return PollGroup.CONTROL if resource.metadata.writable else PollGroup.FAST
     if rrc.PROGRAM.match(resource.path) or resource.path == rrc.PROGRAM_LIST:
@@ -1160,8 +1320,8 @@ def poll_group(resource: Resource) -> PollGroup:
     return PollGroup.SLOW
 
 
-def logical_device_for_path(path: str) -> LogicalDevice | None:
-    """Map dynamic PointT object IDs to stable Home Assistant devices."""
+def function_group_for_path(path: str) -> FunctionGroup | None:
+    """Classify a PointT path without creating devices or proving presence."""
     for root, kind, label in (
         ("heatingCircuits", "heating_circuit", "Heizkreis"),
         ("dhwCircuits", "hot_water_circuit", "Warmwasser"),
@@ -1177,7 +1337,7 @@ def logical_device_for_path(path: str) -> LogicalDevice | None:
             logical_id = match.group(1)
             number = re.search(r"(\d+)$", logical_id)
             suffix = number.group(1) if number else logical_id
-            return LogicalDevice(kind, logical_id, f"{label} {suffix}")
+            return FunctionGroup(kind, logical_id, f"{label} {suffix}")
     for pattern, kind, label in (
         (rf"^/zones/(zn{rrc.RRC_ID})(?:/|$)", "rrc_zone", "RRC zone"),
         (r"^/swCircuits/([^/]+)(?:/|$)", "water_softener", "Water softener"),
@@ -1191,8 +1351,13 @@ def logical_device_for_path(path: str) -> LogicalDevice | None:
             logical_id = match.group(1)
             number = re.search(r"(\d+)$", logical_id)
             suffix = number.group(1) if number else logical_id
-            return LogicalDevice(kind, logical_id, f"{label} {suffix}")
+            return FunctionGroup(kind, logical_id, f"{label} {suffix}")
     return None
+
+
+# Preserve existing imports while distinguishing groups from real devices.
+LogicalDevice = FunctionGroup
+logical_device_for_path = function_group_for_path
 
 
 def resource_name(path: str, subkey: str | None = None, *, language: str = "de") -> str:

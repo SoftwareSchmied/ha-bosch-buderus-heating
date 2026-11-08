@@ -2,26 +2,30 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from functools import partial
 from typing import TYPE_CHECKING
 
 from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
-from homeassistant.const import EntityCategory
+from homeassistant.const import EntityCategory, Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from . import BoschBuderusConfigEntry
+from .bacon.access import BaconAccess
 from .bacon.dhw_status import track_status
 from .bacon.dry_entities import track_entities as track_dry_entities
 from .bacon.entity import BaconConnectivity
+from .control import track_entity_once
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness, ResourceSnapshot
 from .device import device_info_for_resource, grouped_entity_name
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
@@ -37,6 +41,7 @@ from .holidays import (
     is_holiday_resource_path,
     parse_holiday_state,
 )
+from .platform_scope import DiscoveryLifecycle, PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import (
     CapabilityMaturity,
@@ -76,26 +81,72 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
+    setup_platform(entry, Platform.BINARY_SENSOR, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
     """Create entities from every safe boolean found during discovery."""
     entities: list[BinarySensorEntity] = []
-    if (account := entry.runtime_data.bacon) is not None:
+    if (account := entry.bacon) is not None:
         track_dry_entities(entry, account, async_add_entities, "binary_sensor")
-        entities.extend(
-            BaconConnectivity(account, serial) for serial in account.selected
-        )
-    for coordinator in entry.runtime_data.coordinators:
+        _track_connectivity(entry, account, async_add_entities)
+    for coordinator in entry.coordinators:
         entities.append(BoschBuderusSystemFaultBinarySensor(coordinator))
-        if any(is_holiday_resource_path(path) for path in coordinator.resources):
-            entities.append(BoschBuderusHolidayActiveBinarySensor(coordinator))
+        entities.append(BoschBuderusCloudControlBinarySensor(coordinator))
+        track_entity_once(
+            entry,
+            coordinator,
+            async_add_entities,
+            partial(_has_holiday_resources, coordinator),
+            partial(BoschBuderusHolidayActiveBinarySensor, coordinator),
+        )
     async_add_entities(entities)
     if account is not None:
         track_status(entry, account, async_add_entities)
-    for coordinator in entry.runtime_data.coordinators:
+    for coordinator in entry.coordinators:
         _track_binary_sensors(entry, coordinator, async_add_entities)
 
 
+def _track_connectivity(
+    entry: PlatformScope,
+    account: BaconAccess,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    """Connectivity per device, once the account is known (P47).
+
+    The identity derives from the signed-in account. Managed accounts are
+    published only after sign-in; a legacy entry that started during an
+    outage learns it with the first sign-in in the background.
+    """
+    added = False
+
+    @callback
+    def discover() -> None:
+        nonlocal added
+        if added or account.client.subject is None:
+            return
+        # A stopped scope (source or entry unloading) adds nothing.
+        if not entry.current():
+            return
+        added = True
+        async_add_entities(
+            [BaconConnectivity(account, serial) for serial in account.selected]
+        )
+
+    discover()
+    if not added:
+        entry.async_on_unload(account.add_listener(discover))
+
+
+def _has_holiday_resources(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
+    return any(is_holiday_resource_path(path) for path in coordinator.resources)
+
+
 def _track_binary_sensors(
-    entry: BoschBuderusConfigEntry,
+    entry: DiscoveryLifecycle,
     coordinator: BoschBuderusDataUpdateCoordinator,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
@@ -176,6 +227,88 @@ class BoschBuderusHolidayActiveBinarySensor(
         )
 
 
+class BoschBuderusCloudControlBinarySensor(
+    CoordinatorEntity[BoschBuderusDataUpdateCoordinator], BinarySensorEntity
+):
+    """Whether settings can be changed through the cloud now, and why not.
+
+    Always available: it reports the state of the write path itself. Readings
+    may still be shown through sensors while it is off.
+    """
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "cloud_control"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+    _attr_icon = "mdi:remote"
+
+    def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{coordinator.gateway.gateway_id}:cloud_control"
+        self._status: tuple[str | None, datetime | None] | None = None
+        self._cancel_end: Callable[[], None] | None = None
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return device_info_for_resource(self.coordinator, "/gateway")
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    @property
+    def _current(self) -> tuple[str | None, datetime | None]:
+        # One status per state write: state and attributes never disagree.
+        return self._status or self.coordinator.control_status()
+
+    @property
+    def is_on(self) -> bool:
+        return self._current[0] is None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        reason, until = self._current
+        return {
+            "reason": reason,
+            "until": until.isoformat(timespec="seconds") if until else None,
+        }
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        self._refresh_status()
+
+    async def async_will_remove_from_hass(self) -> None:
+        self._cancel_pause_end()
+        await super().async_will_remove_from_hass()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        self._refresh_status()
+        super()._handle_coordinator_update()
+
+    @callback
+    def _refresh_status(self) -> None:
+        self._status = self.coordinator.control_status()
+        self._cancel_pause_end()
+        until = self._status[1]
+        if until is not None and self.hass is not None:
+            # A pause ends without a coordinator update: re-evaluate then.
+            delay = max(1.0, (until - dt_util.utcnow()).total_seconds() + 1)
+            self._cancel_end = async_call_later(self.hass, delay, self._pause_ended)
+
+    @callback
+    def _pause_ended(self, _now: datetime) -> None:
+        self._cancel_end = None
+        self._refresh_status()
+        self.async_write_ha_state()
+
+    @callback
+    def _cancel_pause_end(self) -> None:
+        if self._cancel_end is not None:
+            self._cancel_end()
+            self._cancel_end = None
+
+
 class BoschBuderusSystemFaultBinarySensor(
     CoordinatorEntity[BoschBuderusDataUpdateCoordinator], BinarySensorEntity
 ):
@@ -192,7 +325,11 @@ class BoschBuderusSystemFaultBinarySensor(
 
     @property
     def available(self) -> bool:
-        return super().available and self.coordinator.faults.has_known_state
+        faults = self.coordinator.faults
+        if faults.local_authority is True:
+            # Without a cloud (P49b) only a current local list gives a state.
+            return faults.local_list_current
+        return super().available and faults.has_known_state
 
     @property
     def is_on(self) -> bool:
@@ -304,7 +441,12 @@ class BoschBuderusBinarySensor(
     @property
     def available(self) -> bool:
         snapshot = self._snapshot
-        if not (super().available and snapshot is not None and snapshot.available):
+        # The displayed reading decides, not the last cloud cycle: a current
+        # local reading or a cloud reading within its validity limit stays
+        # available while the cloud fails or pauses.
+        if snapshot is None or not snapshot.available:
+            return False
+        if self.entity_description.value_key == "low_salt" and not super().available:
             return False
         if (
             softener_capability(snapshot.resource.path) is not None
@@ -363,7 +505,11 @@ class BoschBuderusBinarySensor(
 
     @property
     def _snapshot(self) -> ResourceSnapshot | None:
-        return (self.coordinator.data or {}).get(self.entity_description.resource_path)
+        path = self.entity_description.resource_path
+        if self.entity_description.value_key == "low_salt":
+            # Combined with the alarm threshold: stored readings, strict rule.
+            return (self.coordinator.data or {}).get(path)
+        return self.coordinator.display_snapshot(path)
 
     @property
     def _threshold_snapshot(self) -> ResourceSnapshot | None:

@@ -110,6 +110,10 @@ class RequestMetrics:
     total_duration_ms: float = 0.0
     maximum_duration_ms: float = 0.0
     last_duration_ms: float | None = None
+    slot_waits_total: int = 0
+    slot_waits_over_10s: int = 0
+    slot_wait_maximum_ms: float = 0.0
+    slot_wait_last_ms: float | None = None
     requests_by_category: Counter[str] = field(default_factory=Counter)
     requests_by_type: Counter[str] = field(default_factory=Counter)
     requests_by_method: Counter[str] = field(default_factory=Counter)
@@ -317,9 +321,24 @@ class RequestMetrics:
             "average_duration_ms": _rounded(average),
             "maximum_duration_ms": _rounded(self.maximum_duration_ms),
             "last_duration_ms": _rounded(self.last_duration_ms),
+            "slot_wait": {
+                "waits_total": self.slot_waits_total,
+                "waits_over_10_seconds": self.slot_waits_over_10s,
+                "maximum_ms": _rounded(self.slot_wait_maximum_ms),
+                "last_ms": _rounded(self.slot_wait_last_ms),
+            },
             "rolling_60_minutes": self._rolling_snapshot(now),
             "recent_requests": [event.as_dict(now) for event in self._recent_requests],
         }
+
+    def record_slot_wait(self, seconds: float) -> None:
+        """Record how long one attempt waited for a shared request slot."""
+        waited_ms = max(0.0, seconds * 1000)
+        self.slot_waits_total += 1
+        if waited_ms > 10000:
+            self.slot_waits_over_10s += 1
+        self.slot_wait_maximum_ms = max(self.slot_wait_maximum_ms, waited_ms)
+        self.slot_wait_last_ms = waited_ms
 
     def _prune(self, now: float) -> None:
         oldest_timestamp = now - ROLLING_MINUTES * 60

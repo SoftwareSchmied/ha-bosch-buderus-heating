@@ -12,7 +12,6 @@ from homeassistant.components import persistent_notification as pn
 from homeassistant.const import EVENT_HOMEASSISTANT_FINAL_WRITE
 from homeassistant.core import callback
 from homeassistant.helpers import device_registry as dr
-from pytest_homeassistant_custom_component.common import MockConfigEntry, flush_store
 
 from custom_components.bosch_buderus_heating.const import (
     CONF_FAULT_NOTIFICATIONS,
@@ -34,6 +33,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     Gateway,
     Resource,
 )
+from tests.ha_test_helpers import MockConfigEntry, flush_store
 
 NOW = datetime(2026, 10, 3, 12, tzinfo=UTC)
 A = {"ccd": "6249", "fc": "12", "occurrenceId": "a"}

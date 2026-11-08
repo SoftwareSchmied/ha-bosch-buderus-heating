@@ -4,6 +4,53 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.0-alpha.1 verification
+
+I am preparing **0.9.0-alpha.1 as a pre-release** for testing from commit
+`<final commit>`. **0.8.3 remains Stable/Latest.** The alpha adds the optional
+local access to K40/K40RF gateways, operation without the cloud, more robust
+cloud operation and the entity review. It requires Home Assistant 2026.5.0 or
+newer and moves the configuration entry to storage format 4, which 0.8.x
+cannot load.
+
+Automated checks on the release state (08.11.2026, run locally; the GitHub checks follow on the PR):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite, minimum version | Home Assistant 2026.5.4 | 7,043 passed, 2 skipped |
+| Full suite | Home Assistant 2026.9.2 | GitHub compatibility check only |
+| Full suite | Home Assistant 2026.10.4 | 7,045 passed |
+| Full suite with coverage, current version | Home Assistant 2026.11.0, official test package | 7,045 passed, 95.5 % coverage, no deprecation warnings from the integration |
+| Strict Mypy | Home Assistant 2026.11.0 and 2026.10.4 | no issues in 162 files |
+| Ruff lint and formatting | | no findings |
+| Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
+
+Checks I performed on my own system (heat pump with MX400 controller and
+K40RF gateway, Home Assistant 2026.10.4, cloud and local access) with
+development builds of this state:
+
+- I installed the last two development builds, each after a full Home
+  Assistant backup.
+- I switched the cloud access off and on again while Home Assistant was
+  running. Without the cloud, the fault display came from the gateway's local
+  error list; after switching it on again, no fault was announced twice.
+- I started **Search the system again**: the search was planned, and a second
+  request while it was pending was refused.
+- An overnight run with all entities enabled passed without a pause of the
+  local access.
+- I reviewed every entity of my system (names, duplicates, signals and default
+  activation); the resulting changes are part of this release.
+
+Not tested in practice: bell notifications without the cloud, because no fault
+was active on my system during these checks; automated tests cover them. I
+have not installed the published alpha archive yet. Hybrid HM200 signals and
+other device families remain unverified on a real system.
+
+Publication requires all GitHub checks on the final PR revision, including the
+browser tests, followed by the tag-triggered release workflow. I compare the
+published archive and checksum with the local Linux build and the release
+notes with this version's CHANGELOG section.
+
 ## 0.8.3 verification
 
 I prepared **0.8.3 as Stable/Latest** on 2026-11-02 from **0.8.3-beta.1**,
@@ -365,9 +412,9 @@ The tag-triggered workflow repeats verification, including the dependency
 audit, Hassfest and HACS, before publication. Published notes, archive and
 checksum must match the verified local artifacts.
 
-I performed no physical appliance writes for this beta. The static APK
-comparison does not establish the recovery delay on a real installation.
-Field confirmation remains open. Select the beta explicitly in HACS and
+I performed no physical appliance writes for this beta. The recovery delay on
+a real installation has not been established yet; field confirmation remains
+open. Select the beta explicitly in HACS and
 restart Home Assistant after updating.
 
 ## 0.8.1 verification

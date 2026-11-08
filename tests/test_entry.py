@@ -10,7 +10,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating import (
     _consolidate_logical_devices,
@@ -27,10 +26,14 @@ from custom_components.bosch_buderus_heating.const import (
     CONF_GATEWAY_IDS,
     DOMAIN,
 )
+from custom_components.bosch_buderus_heating.coordinator import (
+    BoschBuderusDataUpdateCoordinator,
+)
 from custom_components.bosch_buderus_heating.data import (
     tokens_from_data,
     tokens_to_data,
 )
+from custom_components.bosch_buderus_heating.ha_compat import device_by_identifier
 from custom_components.bosch_buderus_heating.pointt import (
     AuthTokens,
     Brand,
@@ -41,6 +44,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     ServiceUnavailable,
 )
 from custom_components.bosch_buderus_heating.startup_data import StartupSession
+from tests.ha_test_helpers import MockConfigEntry
 
 
 def _entry(hass: HomeAssistant) -> MockConfigEntry:
@@ -359,7 +363,7 @@ async def test_entry_migration_merges_preview_logical_devices(
 
     assert await async_migrate_entry(hass, entry)
 
-    assert entry.version == 3
+    assert entry.version == 4
     assert entity_registry.async_get(entity.entity_id).device_id == replacement.id
     assert device_registry.async_get(legacy.id) is None
 
@@ -385,7 +389,7 @@ async def test_entry_migration_updates_legacy_device_in_place(
 async def test_entry_migration_rejects_unknown_future_version(
     hass: HomeAssistant,
 ) -> None:
-    entry = MockConfigEntry(domain=DOMAIN, version=4)
+    entry = MockConfigEntry(domain=DOMAIN, version=5)
     entry.add_to_hass(hass)
 
     assert not await async_migrate_entry(hass, entry)
@@ -409,17 +413,17 @@ def test_logical_devices_are_consolidated_without_changing_entities(
         config_entry=entry,
         device_id=logical.id,
     )
-    coordinator = SimpleNamespace(
-        gateway=Gateway("gateway-one", device_type="k40"),
-        config_entry=entry,
-        resources={},
-        data={},
+    coordinator = BoschBuderusDataUpdateCoordinator(
+        hass,
+        AsyncMock(),
+        Gateway("gateway-one", device_type="k40"),
+        entry,
     )
 
     _consolidate_logical_devices(hass, entry, (coordinator,))
 
-    gateway = device_registry.async_get_device_by_identifier(
-        (DOMAIN, "gateway-one"), entry.entry_id
+    gateway = device_by_identifier(
+        device_registry, (DOMAIN, "gateway-one"), entry.entry_id
     )
     assert gateway is not None
     assert entity_registry.async_get(entity.entity_id).device_id == gateway.id
@@ -627,9 +631,18 @@ async def test_device_migration_never_merges_into_another_config_entry(hass):
         identifiers={(DOMAIN, "gateway-one", "heating_circuit", "hc1")},
     )
     assert await async_migrate_entry(hass, entry)
-    migrated = registry.async_get_device_by_identifier(identifier, entry.entry_id)
-    assert migrated is not None and migrated.id == legacy.id
-    assert registry.async_get(foreign.id).config_entry_id == other_entry.entry_id
+    if hasattr(registry, "async_get_device_by_identifier"):
+        migrated = registry.async_get_device_by_identifier(identifier, entry.entry_id)
+        assert migrated is not None and migrated.id == legacy.id
+    else:
+        # Older releases keep identifiers globally unique: the legacy device
+        # keeps its identifier instead of colliding with the other entry.
+        assert registry.async_get(legacy.id).identifiers == legacy.identifiers
+    owner = registry.async_get(foreign.id)
+    if hasattr(owner, "config_entry_id"):
+        assert owner.config_entry_id == other_entry.entry_id
+    else:
+        assert owner.config_entries == {other_entry.entry_id}
 
 
 @pytest.mark.parametrize("per_source", [False, True])

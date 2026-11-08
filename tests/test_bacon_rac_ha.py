@@ -19,6 +19,7 @@ ROOT = "custom_components.bosch_buderus_heating"
 
 @pytest.mark.usefixtures("enable_custom_integrations")
 @pytest.mark.parametrize("language,fahrenheit", [("de", False), ("en", True)])
+@pytest.mark.usefixtures("legacy_platform_runtime")
 async def test_climate_services_units_translations_and_registry(
     hass, language, fahrenheit
 ):
@@ -133,3 +134,53 @@ async def test_climate_services_units_translations_and_registry(
         assert await hass.config_entries.async_unload(config.entry_id)
         await hass.async_block_till_done()
         assert not account._listeners
+
+
+@pytest.mark.usefixtures("enable_custom_integrations")
+@pytest.mark.usefixtures("legacy_platform_runtime")
+@pytest.mark.parametrize("declared", [True, False])
+async def test_eco_preset_service_and_translations(hass, declared):
+    config = entry(hass)
+    account, climate, data = configured()
+    if declared:
+        data["metadata"]["shadows"]["state"]["ecoEnabled"] = {"ro": False}
+        emit(account, "topics/meta", data["metadata"])
+    writes = responding(account, data)
+
+    async def wait():
+        await asyncio.Event().wait()
+
+    with (
+        patch(ROOT + ".BaconAccount", return_value=account),
+        patch.object(account, "run", side_effect=wait),
+    ):
+        assert await hass.config_entries.async_setup(config.entry_id)
+        await hass.async_block_till_done()
+        entity_id = er.async_get(hass).async_get_entity_id(
+            "climate", DOMAIN, climate.unique_id
+        )
+        state = hass.states.get(entity_id)
+        if not declared:
+            assert "preset_modes" not in state.attributes
+            assert "preset_mode" not in state.attributes
+        else:
+            assert state.attributes["preset_modes"] == ["none", "eco"]
+            assert state.attributes["preset_mode"] == "eco"
+            await hass.services.async_call(
+                "climate",
+                "set_preset_mode",
+                {"entity_id": entity_id, "preset_mode": "none"},
+                blocking=True,
+            )
+            assert writes == [{"ecoEnabled": False}]
+            state = hass.states.get(entity_id)
+            assert state.attributes["preset_mode"] == "none"
+            assert state.attributes["fan_mode"] == "auto"
+        for locale in ("de", "en"):
+            texts = await async_get_translations(hass, locale, "entity", {DOMAIN})
+            prefix = "component." + DOMAIN + ".entity.climate.bacon_rac"
+            preset = prefix + ".state_attributes.preset_mode.state."
+            assert texts[preset + "eco"] == "Eco"
+            assert texts[preset + "none"] == ("Keine" if locale == "de" else "None")
+        assert await hass.config_entries.async_unload(config.entry_id)
+        await hass.async_block_till_done()

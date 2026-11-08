@@ -9,7 +9,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating import _remove_retired_entities
 from custom_components.bosch_buderus_heating.binary_sensor import (
@@ -26,6 +25,7 @@ from custom_components.bosch_buderus_heating.diagnostics import (
     _capability_diagnostics,
     _discovery_diagnostics,
 )
+from custom_components.bosch_buderus_heating.entry_sources import pointt_coordinators
 from custom_components.bosch_buderus_heating.pointt import (
     AuthTokens,
     BatchItemResult,
@@ -40,6 +40,8 @@ from custom_components.bosch_buderus_heating.sensor import (
     BoschBuderusSensor,
     build_sensor_descriptions,
 )
+from tests.ha_test_helpers import MockConfigEntry
+from tests.helpers.managed_runtime import wait_for_sources
 
 _BASE = "custom_components.bosch_buderus_heating"
 _SOLAR_FIELDS = (
@@ -327,13 +329,14 @@ async def test_solar_entities_survive_discovery_polling_and_reload(
         patch(f"{_BASE}._remove_retired_entities", side_effect=cleanup),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
+        await wait_for_sources(hass, entry, gateway_count)
         await hass.async_block_till_done()
-        assert cleanup_counts == [(expected_count, expected_count)]
+        assert cleanup_counts == []
         identities = {
             item.unique_id: (item.id, item.entity_id) for item in solar_entries()
         }
         assert len(identities) == expected_count
-        for coordinator in entry.runtime_data.coordinators:
+        for coordinator in pointt_coordinators(entry):
             discovery = _discovery_diagnostics(coordinator)
             assert discovery["completed"] and discovery["stop_reason"] == "complete"
             for circuit in circuits:
@@ -372,8 +375,9 @@ async def test_solar_entities_survive_discovery_polling_and_reload(
             == gateway_count
         )
         assert await hass.config_entries.async_reload(entry.entry_id)
+        await wait_for_sources(hass, entry, gateway_count)
         await hass.async_block_till_done()
-        assert cleanup_counts[-1] == (expected_count, expected_count)
+        assert cleanup_counts == []
         assert {
             item.unique_id: (item.id, item.entity_id) for item in solar_entries()
         } == identities

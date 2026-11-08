@@ -1,0 +1,108 @@
+# Local HTTPS read client
+
+I added an asynchronous client for individual requests from the complete
+[local resource catalog](local-api-resources.md). It returns a validated local
+observation or a structured failure. It does not start polling, discover an
+installation, assign devices or update Home Assistant entities. The
+[managed local runtime](local-runtime.md) owns setup and scheduled reads.
+
+## Request and trust boundary
+
+`LocalReadClient` receives one captured source context, a validated token, the
+previously confirmed full certificate fingerprint for the resource port, a
+gateway budget handle and a guard for the current configuration generation.
+The client cannot approve a certificate, create a token or send a write request.
+
+Before every GET, anonymous TLS inspection checks the entire leaf certificate
+and selects a numerical peer. The credentialed connection checks that same
+SHA-256 fingerprint again before sending its headers. Even a renewed certificate
+with the same public key stops the client. The caller must complete the explicit
+trust workflow before constructing a replacement client.
+
+The client owns its HTTP session. Connections close after each request so a
+pooled connection cannot bypass a later certificate check. Redirects, ambient
+proxy settings, cookies, automatic decompression and automatic HTTP retries
+are disabled. Only a validated catalog target is appended to the selected
+resource origin. Queries and Unicode signal IDs retain their validated encoding.
+
+## Bounded reads and shared pauses
+
+`LocalReadBudget` is obtained from the HA-wide `LocalBudgetManager`. Handles for
+the same connection, retained target, endpoint, resolved address or verified
+local gateway share admission and pauses. Each handle still checks its caller's
+owner and connection. Independent gateways and cloud access have separate gates.
+See [shared local budgets](local-budget.md) for alias and persistence limits.
+
+The gate permits two in-flight reads with at least 250 ms between admissions
+and separately between actual HTTP header starts. This allows at most four
+starts per second. A call made while busy or paused returns `deferred`
+immediately, without DNS, TLS, HTTP or an internal queue. The admission guard
+also bounds attempts that fail before HTTP. Setup, certificate inspection and
+token enrollment use exclusive slots in the same budget. Setup waits boundedly
+for running reads and prevents further regular admission while waiting.
+
+The default request deadline is five seconds across inspection, HTTP and
+decoding. Successful bodies must be uncompressed UTF-8 JSON. The default limits
+are 256 KiB, depth 32 and 8,192 JSON nodes. Declared and streamed body sizes are
+checked; oversized, malformed, truncated or mismatched responses never produce
+an observation. Header parsing is bounded separately. Socket cleanup may need
+its own bounded closing time after a cancelled inspection.
+
+These are implementation limits, not manufacturer-tested load limits. The
+[polling service](local-polling.md) applies fair scheduling and a total cycle
+budget to the 60-second live target. Loading the complete catalog does not
+request all of it. History windows and discovery have separate limits.
+
+## Results and failure scope
+
+| Condition | Result and effect |
+| --- | --- |
+| Valid HTTP 200 response | Immutable observation with its original source context and observation times |
+| Busy gate or active pause | Deferred, without a network request |
+| HTTP 400, 403, 404 or 406 | Path error; no permanent unsupported-device decision |
+| Redirect or other non-success status below 500 | Path error; no redirect is followed |
+| Invalid body, wrong resource or timeout after request headers start | Path error; earlier successful observations remain intact |
+| HTTP 401 | Access error; this client stops until credentials are deliberately replaced |
+| Any certificate change | Access error; this client stops until trust is explicitly confirmed |
+| HTTP 429 or 503 | Access error and the complete valid `Retry-After` pause, otherwise 60 seconds |
+| Other HTTP 5xx, DNS, connection or TLS failure, or timeout before headers | Access error and a 60-second pause |
+
+No error response body is included in a result. Problems use fixed codes.
+Results do not refresh or clear a previously successful value. The polling
+service applies expiry and availability rules and distinguishes a newly missing
+path from a known resource that temporarily disappeared.
+
+Pauses use monotonic time and are extended, never shortened by later failures.
+HTTP-date `Retry-After` values are converted once to a duration. A long pause
+is not capped at one hour. A zero delay still respects minimum request spacing.
+A pause already received is retained even if the generation changes before the
+result can be returned. Managed pauses are atomically saved and read back before
+admission reopens. A restart restores the full saved remaining duration; wall
+clock changes cannot shorten it. Setup and enrollment use this same state.
+The [polling service](local-polling.md) adds regular scheduling, discovery and
+explicit reads through the managed local source.
+
+## Lifecycle and verification
+
+Stale contexts and cancellation raise without returning a usable result. The
+generation guard is checked before HTTP headers, during body processing and
+before returning a decoded observation. The deadline is checked again after
+decoding, including when synchronous processing ran past it.
+
+Each read uses a task owned by the client. Closing cancels those tasks and closes
+the session without waiting for unrelated work in a caller. Cancelling a close
+waiter does not cancel cleanup. The token reference is cleared after cleanup.
+The owner must still await closing as part of unloading the connection.
+
+Metrics distinguish calls, inspection operations, HTTP header-send attempts,
+received HTTP statuses, successes and deferrals. An inspection can involve
+multiple candidate peers. A header-send attempt is not proof that the gateway
+received or processed it. There is no internal HTTP retry hidden behind a
+logical read.
+
+I tested the client with synthetic credentials and loopback HTTPS gateways,
+including renewed certificates, a certificate swap between connections,
+concurrent clients, long pauses, truncated and oversized bodies, disconnects,
+timeouts, stale generations and cancellation. The existing setup and enrollment
+tests also exercise the shared transport helpers. No real appliance or PointT
+request was made for this step, and no installation was changed.

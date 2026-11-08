@@ -13,6 +13,7 @@ from .exceptions import (
     ResourceForbidden,
     ResourceNotAcceptable,
     ResourceNotFound,
+    ResourceOmitted,
 )
 from .models import (
     BatchItemResult,
@@ -361,7 +362,7 @@ def parse_batch_response(
                     gateway_id=gateway_id,
                     path=path,
                     status=None,
-                    error=InvalidPayload("Bulk response omitted a requested path"),
+                    error=ResourceOmitted("Bulk response omitted a requested path"),
                 )
             )
             continue

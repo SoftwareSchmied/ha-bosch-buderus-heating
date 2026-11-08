@@ -1,7 +1,7 @@
 {
   "domain": "bosch_buderus_heating",
   "name": "Bosch/Buderus Home Comfort",
-  "after_dependencies": ["frontend", "http"],
+  "after_dependencies": ["frontend", "http", "zeroconf"],
   "codeowners": ["@SoftwareSchmied"],
   "config_flow": true,
   "dependencies": ["persistent_notification"],
@@ -10,5 +10,6 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues",
   "requirements": ["aiomqtt==2.5.1"],
-  "version": "0.8.3"
+  "version": "0.9.0-alpha.1",
+  "zeroconf": ["_hvac-open-api._tcp.local."]
 }

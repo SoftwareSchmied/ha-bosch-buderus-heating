@@ -27,11 +27,14 @@ async def run(directory: Path, stage: str) -> None:
     """Exercise real Store files without any cloud connection or HA server."""
     hass = HomeAssistant(str(directory))
     await hass.config.async_set_time_zone("UTC")
-    dr.async_setup(hass)
+    if hasattr(dr, "async_setup"):  # Home Assistant 2026.9 and newer
+        dr.async_setup(hass)
     await dr.async_load(hass)
     await ir.async_load(hass)
     entry = SimpleNamespace(
         entry_id="storage-test",
+        version=3,
+        minor_version=1,
         data={CONF_GATEWAY_IDS: ["fixture-gateway"]},
         options={},
     )

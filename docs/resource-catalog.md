@@ -17,24 +17,15 @@ not assume the presence of `hc1`, `dhw1`, or `hs1`.
 Names and semantics are based on:
 
 1. the PointT resource tree read from physical equipment;
-2. the energy semantics verified against MyBuderus, a CSV export, and two
-   physical systems;
-3. observed MyBuderus user-facing names;
-4. a static comparison of HomeCom Easy 5.0.0 and MyBuderus 5.0.0.
+2. the energy semantics verified against a CSV export and two physical
+   systems;
+3. observed user-facing names.
 
-Both app variants contain the same technical resource model and the same
-explicit PointT paths. Their differences are limited to brand and product
-wording. The integration therefore uses one shared dynamic device and entity
-model and applies the detected brand only for display.
+The integration uses one shared dynamic device and entity model and applies
+the detected brand only for display.
 
-The German Android resources were resolved separately and compared with the
-English base strings: 5,582 strings per app, including 2,392 related to
-heating. The generated working files, APK files, and extracted program code are
-not included in this repository.
-
-Path constants found in the apps are only indications of possible features.
-They do not prove that a particular heating system exposes a resource. The
-dynamically returned resource tree and write metadata of the connected gateway
+Known path names are only indications of possible features. They do not prove
+that a particular heating system exposes a resource. The dynamically returned resource tree and write metadata of the connected gateway
 remain authoritative.
 
 ## Legend
@@ -108,9 +99,8 @@ separate Home Assistant devices.
 
 ## Holiday mode
 
-MyBuderus and HomeCom Easy contain matching user flows for several named
-holiday periods and separate holiday behavior for heating, hot water, and
-ventilation. The integration probes only the three known optional resources:
+PointT supports several named holiday periods and separate holiday behavior
+for heating, hot water, and ventilation. The integration probes only the three known optional resources:
 
 | PointT path | Access | HA mapping / note |
 |---|---:|---|
@@ -151,7 +141,7 @@ of `/holidayMode/list`; a timeout does not cause the mutation to be repeated.
 | `.../name` | Heating-circuit name | R/W | Decoded sensor only when configured; renaming not offered initially |
 | `.../operationMode` | Operation mode | R/W | Select: Off, Manual, Auto |
 | `.../overallStatus` | Operating status | R | Status sensor |
-| `.../switchProgramMode` | Schedule type | R/W | Read-only diagnostic; supports the app-defined `level`, `levels`, and `absolute` modes |
+| `.../switchProgramMode` | Schedule type | R/W | Read-only diagnostic; supports the `level`, `levels`, and `absolute` modes |
 | `.../switchPrograms` | Available schedules | R | Internal: dynamic discovery |
 | `.../switchPrograms/{program}` | Schedule | R/W | No separate entity without scalar content; a future editor requires a verified schema |
 | `.../switchPrograms/name{program}` | Schedule name | R/W | Readable decoded configuration value |
@@ -184,7 +174,7 @@ Observed `overallStatus` values:
 | `heating_manual_off` | Manual heating off |
 | `heating_auto` | Automatic heating |
 
-APK-confirmed `overallStatus` values for hot-water circuits are
+The `overallStatus` values for hot-water circuits are
 `dhw_enabled`, `dhw_disabled`, `auto`, `manual_off`, `manual_on_low`,
 `manual_on_eco`, `manual_on_high`, `extra`, `away`, `holiday`,
 `floor_drying`, and `td`.
@@ -285,8 +275,8 @@ boundary. In particular, `gas_boiler` is displayed as **Boiler** without using
 the type of one heat source to infer that the complete installation is or is
 not a hybrid system.
 
-The optional paths listed above are present in both official app variants but
-may be omitted from a gateway's reference tree. Discovery probes this bounded
+The optional paths listed above may be omitted from a gateway's reference
+tree. Discovery probes this bounded
 catalog once. Per-source paths are generated only for heat-source IDs returned
 by PointT; the integration never assumes that `hs1` or `hs2` exists. A path is
 polled only after a successful response with the expected type and unit.
@@ -352,11 +342,10 @@ Derived total values:
 | `/system/variableTariff` | Variable electricity tariff | R | Internal: discovery |
 | `/system/variableTariff/supportStatus` | Variable-tariff support | R | Diagnostic |
 
-## Optional app path catalog
+## Optional path catalog
 
-Static analysis of both official app variants found the same optional PointT
-families. The integration now combines these known paths with dynamic
-references returned by the gateway. Concrete circuit, heat-source, solar,
+The integration combines a bounded set of known optional PointT paths with
+dynamic references returned by the gateway. Concrete circuit, heat-source, solar,
 ventilation-zone, room-zone, and room-device IDs are derived from discovered
 containers; they are never generated as an assumed numeric sequence.
 
@@ -379,8 +368,8 @@ discovery determines polling; HTTP 403/404 and schema mismatches are retained
 only as value-free diagnostics and do not consume the recurring request
 budget.
 
-The apps also contain historical `/recordings/...` paths and a separate Bosch
-shared-energy tariff service. Historical series are not normal current-state
+Historical `/recordings/...` paths and a separate shared-energy tariff service
+also exist. Historical series are not normal current-state
 entities and therefore remain outside this catalog until an opt-in statistics
 import can enforce time ranges, deduplication, and a strict request budget.
 The separate tariff service likewise remains disabled until its response and

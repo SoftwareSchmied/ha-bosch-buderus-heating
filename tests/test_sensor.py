@@ -21,7 +21,6 @@ from homeassistant.const import (
     UnitOfVolumeFlowRate,
 )
 from homeassistant.core import HomeAssistant
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
@@ -47,6 +46,7 @@ from custom_components.bosch_buderus_heating.sensor import (
     async_setup_entry,
     build_sensor_descriptions,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 
 def _sensor(
@@ -463,7 +463,7 @@ def test_optional_string_boolean_uses_translated_on_off_enum(
     assert sensor.native_value == "on"
 
 
-def test_optional_auxiliary_heater_mode_uses_app_translation(
+def test_optional_auxiliary_heater_mode_uses_translation(
     hass: HomeAssistant,
 ) -> None:
     resource = Resource(
@@ -521,7 +521,7 @@ def test_dynamic_circuit_uses_configured_name_and_stable_device(
     assert sensor.entity_description.device_class is SensorDeviceClass.ENUM
     assert sensor.entity_description.translation_key == "heating_circuit_operation_mode"
     assert sensor.entity_description.options == ["off", "manual", "auto"]
-    assert sensor.device_info["name"] == "Bosch Thermotechnology MX300"
+    assert sensor.device_info["name"] == "MX300"  # C8: no brand
     assert sensor.device_info["identifiers"] == {(DOMAIN, "gateway-one")}
     assert sensor.name == "Obergeschoss \N{EN DASH} Operation mode"
 
@@ -567,7 +567,7 @@ def test_enum_includes_pointt_advertised_and_current_unknown_values(
     ]
 
 
-def test_absolute_switch_program_mode_is_a_known_app_value(
+def test_absolute_switch_program_mode_is_a_known_value(
     hass: HomeAssistant,
 ) -> None:
     resource = Resource(
@@ -586,7 +586,7 @@ def test_absolute_switch_program_mode_is_a_known_app_value(
     assert sensor.entity_description.options == ["level", "levels", "absolute"]
 
 
-def test_temperature_levels_switch_program_mode_is_a_known_app_value(
+def test_temperature_levels_switch_program_mode_is_a_known_value(
     hass: HomeAssistant,
 ) -> None:
     resource = Resource(
@@ -654,7 +654,7 @@ def test_temperature_levels_switch_program_mode_is_a_known_app_value(
         ),
     ],
 )
-def test_app_confirmed_pointt_enum_values_are_normalized(
+def test_known_pointt_enum_values_are_normalized(
     hass: HomeAssistant,
     path: str,
     raw_value: str,
@@ -963,7 +963,7 @@ def test_hidden_status_pointt_camel_case_is_normalized(
         ),
     ],
 )
-def test_apk_confirmed_overall_status_values_are_complete(
+def test_overall_status_values_are_complete(
     hass: HomeAssistant,
     path: str,
     value: str,
@@ -1009,7 +1009,8 @@ def test_pool_start_sensor_survives_partial_startup(
     assert sensor.state_class == SensorStateClass.TOTAL_INCREASING
     assert sensor.native_unit_of_measurement is None
     assert sensor.entity_category == EntityCategory.DIAGNOSTIC
-    assert sensor.entity_description.entity_registry_enabled_default
+    # C4 (revised): always created, but disabled by default.
+    assert not sensor.entity_description.entity_registry_enabled_default
 
     updated = Resource(
         path=path,
@@ -1138,6 +1139,50 @@ def test_environmental_energy_uses_net_total_without_false_meter_reset(
         _sensor(hass, resource, value_key="compressor").state_class
         is SensorStateClass.TOTAL_INCREASING
     )
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/heatSources/emon/totalConsumption",
+        "/heatSources/emon/chConsumption",
+        "/heatSources/emon/dhwConsumption",
+        "/heatSources/emon/coolingConsumption",
+        "/heatSources/hs1/emon/totalConsumption",
+    ],
+)
+def test_produced_heat_is_a_net_total_that_may_fall_while_defrosting(
+    hass: HomeAssistant, path: str
+) -> None:
+    """Defrosting takes heat back from the heating water: the device's produced
+    heat falls briefly (observed: 788.51 -> 787.47 kWh within 11 minutes).
+    Electricity counters keep strictly increasing."""
+    resource = Resource(
+        path=path,
+        values=({"compressor": 195.06, "eheater": 0, "outputProduced": 788.51},),
+        metadata=ResourceMetadata(resource_type="emonValue"),
+    )
+    by_key = {
+        item.value_key: item for item in build_sensor_descriptions({path: resource})
+    }
+
+    assert by_key["outputProduced"].state_class is SensorStateClass.TOTAL
+    assert by_key["outputProduced"].device_class is SensorDeviceClass.ENERGY
+    assert by_key["compressor"].state_class is SensorStateClass.TOTAL_INCREASING
+    assert by_key["eheater"].state_class is SensorStateClass.TOTAL_INCREASING
+    assert by_key["total_electricity"].state_class is (
+        SensorStateClass.TOTAL_INCREASING
+    )
+    sensor = _sensor(hass, resource, value_key="outputProduced")
+    assert sensor.state_class is SensorStateClass.TOTAL
+    assert sensor.native_value == 788.51
+    defrosted = Resource(
+        path=path,
+        values=({"compressor": 195.06, "eheater": 0, "outputProduced": 787.47},),
+        metadata=resource.metadata,
+    )
+    sensor.coordinator.data[path] = ResourceSnapshot(defrosted, True, datetime.now(UTC))
+    assert sensor.native_value == 787.47
 
 
 def test_environmental_energy_requires_complete_non_negative_balance(
@@ -1904,3 +1949,41 @@ def test_global_start_counter_retained_for_non_emon_per_source_starts() -> None:
         for item in descriptions
     )
     assert len({item.unique_key for item in descriptions}) == 2
+
+
+def test_a_partial_energy_collection_shows_only_its_parts(
+    hass: HomeAssistant,
+) -> None:
+    """Registered from a complete collection, read later without the
+    consumption parts: derived values show nothing, without an error."""
+    complete = Resource(
+        path="/heatSources/emon/totalConsumption",
+        values=({"compressor": 12.0}, {"eheater": 1.0}, {"outputProduced": 40.0}),
+        metadata=ResourceMetadata(resource_type="emonValue"),
+    )
+    partial = Resource(
+        path="/heatSources/emon/totalConsumption",
+        values=({"outputProduced": 41.0},),
+        metadata=ResourceMetadata(resource_type="emonValue"),
+    )
+    assert {
+        item.value_key for item in build_sensor_descriptions({partial.path: partial})
+    } == {"outputProduced"}
+    values = {}
+    for key in (
+        "outputProduced",
+        "compressor",
+        "total_electricity",
+        "environmental_energy",
+    ):
+        sensor = _sensor(hass, complete, value_key=key)
+        sensor.coordinator.data = {
+            partial.path: ResourceSnapshot(partial, True, datetime.now(UTC))
+        }
+        values[key] = sensor.native_value
+    assert values == {
+        "outputProduced": 41.0,
+        "compressor": None,
+        "total_electricity": None,
+        "environmental_energy": None,
+    }

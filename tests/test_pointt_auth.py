@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from base64 import urlsafe_b64encode
 from urllib.parse import parse_qs, urlparse
 
@@ -306,3 +307,150 @@ async def test_oauth_rate_limit_preserves_retry_after(refresh, header, expected)
             assert calls == 1
     finally:
         await runner.cleanup()
+
+
+async def _rejected_refresh(handler) -> RefreshTokenRejected:
+    runner, url = await _serve(handler)
+    try:
+        async with aiohttp.ClientSession() as session:
+            client = OAuthClient(session, token_url=url)
+            with pytest.raises(RefreshTokenRejected) as caught:
+                await client.refresh("secret-refresh-token-value")
+    finally:
+        await runner.cleanup()
+    return caught.value
+
+
+async def test_rejected_refresh_reports_sanitized_oauth_reason() -> None:
+    async def handler(_request: web.Request) -> web.Response:
+        return web.json_response(
+            {"error": "invalid_grant", "error_description": "Token is not active"},
+            status=400,
+        )
+
+    error = await _rejected_refresh(handler)
+    assert error.rejection is not None
+    assert error.rejection.http_status == 400
+    assert error.rejection.oauth_error == "invalid_grant"
+    assert error.rejection.oauth_error_description == "Token is not active"
+    assert error.rejection.body_format == "json"
+    assert error.rejection.content_type == "application/json"
+    assert str(error) == (
+        "Refresh token was rejected (HTTP 400, invalid_grant: Token is not active)"
+    )
+    assert "secret-refresh-token-value" not in str(error)
+
+
+async def test_rejected_refresh_description_drops_secrets_and_accounts() -> None:
+    opaque = "eyJhbGciOiJSUzI1NiJ9abcdefghijklmnop"
+
+    async def handler(_request: web.Request) -> web.Response:
+        return web.json_response(
+            {
+                "error": "invalid grant <script>",
+                "error_description": (
+                    f"Session of user person@example.com ended; token {opaque} "
+                    "<b>revoked</b>" + " padding" * 40
+                ),
+            },
+            status=401,
+        )
+
+    error = await _rejected_refresh(handler)
+    assert error.rejection is not None
+    description = error.rejection.oauth_error_description
+    assert error.rejection.oauth_error == "other"
+    assert description is not None
+    assert len(description) <= 120
+    assert "person" not in description
+    assert "example.com" not in description
+    assert opaque not in description
+    assert "<" not in description
+    assert "[redacted]" in description
+
+
+@pytest.mark.parametrize(
+    ("body", "content_type", "body_format"),
+    [
+        ("<html>Access denied by firewall</html>", "text/html", "non_json"),
+        ("", None, "empty"),
+        ('["unexpected"]', "application/json", "json_non_object"),
+    ],
+)
+async def test_rejected_refresh_classifies_non_oauth_bodies(
+    body: str, content_type: str | None, body_format: str
+) -> None:
+    async def handler(_request: web.Request) -> web.Response:
+        if content_type is None:
+            return web.Response(status=403)
+        return web.Response(status=403, text=body, content_type=content_type)
+
+    error = await _rejected_refresh(handler)
+    assert error.rejection is not None
+    assert error.rejection.http_status == 403
+    assert error.rejection.oauth_error is None
+    assert error.rejection.body_format == body_format
+    if content_type is not None:
+        assert error.rejection.content_type == content_type
+    assert "firewall" not in str(error)
+    assert f"no OAuth error code, {body_format} body" in str(error)
+
+
+async def test_refresh_records_response_metadata_without_changing_equality() -> None:
+    async def handler(_request: web.Request) -> web.Response:
+        return web.json_response(
+            {
+                "access_token": "new-access",
+                "expires_in": 300,
+                "refresh_expires_in": 2592000,
+            }
+        )
+
+    runner, url = await _serve(handler)
+    try:
+        async with aiohttp.ClientSession() as session:
+            client = OAuthClient(session, token_url=url, clock=lambda: 1000.0)
+            refreshed = await client.refresh("kept-refresh")
+    finally:
+        await runner.cleanup()
+
+    assert refreshed.issued_at == 1000.0
+    assert refreshed.refresh_expires_in == 2592000.0
+    assert refreshed.refresh_token_returned is False
+    assert refreshed.refresh_token == "kept-refresh"
+    assert refreshed == AuthTokens("new-access", "kept-refresh", 1300.0)
+
+
+async def test_rejected_refresh_ignores_unusual_content_and_descriptions() -> None:
+    async def handler(_request: web.Request) -> web.Response:
+        return web.Response(
+            status=400,
+            body=b'{"error": "invalid_grant", "error_description": 7}',
+            headers={"Content-Type": "Application/JSON Weird; charset=utf-8"},
+        )
+
+    error = await _rejected_refresh(handler)
+    assert error.rejection is not None
+    assert error.rejection.content_type == "other"
+    assert error.rejection.oauth_error == "invalid_grant"
+    assert error.rejection.oauth_error_description is None
+    assert str(error) == "Refresh token was rejected (HTTP 400, invalid_grant)"
+
+
+@pytest.mark.parametrize("value", [-1, True, "3600", float("nan")])
+async def test_invalid_refresh_lifetime_is_ignored(value: object) -> None:
+    async def handler(_request: web.Request) -> web.Response:
+        return web.Response(
+            text=json.dumps(
+                {"access_token": "a", "expires_in": 60, "refresh_expires_in": value}
+            ),
+            content_type="application/json",
+        )
+
+    runner, url = await _serve(handler)
+    try:
+        async with aiohttp.ClientSession() as session:
+            refreshed = await OAuthClient(session, token_url=url).refresh("r")
+    finally:
+        await runner.cleanup()
+    assert refreshed.refresh_expires_in is None
