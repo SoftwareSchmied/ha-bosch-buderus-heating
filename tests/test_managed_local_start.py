@@ -337,3 +337,12 @@ def test_each_retry_note_is_translated() -> None:
             assert set(flow["abort"]) == {"entry_not_found", "configuration_changed"}
     for problem, key in module._START_ISSUE_KEYS.items():
         assert key in KEYS, problem
+
+
+async def test_the_wait_between_two_checks_ends_on_time_or_on_request() -> None:
+    holder = SimpleNamespace(_retry=asyncio.Event())
+    async with asyncio.timeout(1):
+        await module.LocalSource._wait(holder, 0.01)
+    holder._retry.set()
+    async with asyncio.timeout(1):
+        await module.LocalSource._wait(holder, 3600)
