@@ -601,7 +601,9 @@ access is treated the same way when its reading declares the low-flow state:
 The two setpoints the controller keeps for an energy manager
 (`SRC.CUHP.EM.UsedLowerFlowTempSetp` and `SRC.CUHP.EM.UsedUpperFlowTempSetp`)
 show "unknown" while the energy management status reports "not connected":
-the controller then reports 0 °C as a placeholder, not a setpoint. The
+the controller then reports 0 °C as a placeholder, not a setpoint. The status
+counts as its own entity shows it (the local reading first, else a still valid
+cloud reading); without a current status the setpoints are shown as reported. The
 entities stay; with a connected energy manager they show the reported
 setpoints. The hot water "off" value is not affected.
 

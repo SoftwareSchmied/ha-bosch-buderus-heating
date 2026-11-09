@@ -70,6 +70,8 @@ class EntityUse:
         # Gateway ID -> paths any noted entity reads (A3); replaced likewise.
         self._noted: dict[str, frozenset[str]] = {}
         self._listeners: list[Callable[[], None]] = []
+        # Listeners whose failure was already reported as a warning.
+        self._failed: list[Callable[[], None]] = []
         self._pending: CALLBACK_TYPE | None = None
         self._closed = False
         self._job = HassJob(self._refresh_later, cancel_on_shutdown=True)
@@ -109,6 +111,8 @@ class EntityUse:
         def remove() -> None:
             if listener in self._listeners:
                 self._listeners.remove(listener)
+            if listener in self._failed:
+                self._failed.remove(listener)
 
         return remove
 
@@ -120,6 +124,7 @@ class EntityUse:
             self._pending()
             self._pending = None
         self._listeners.clear()
+        self._failed.clear()
 
     @callback
     def _registry_updated(
@@ -172,7 +177,20 @@ class EntityUse:
         for listener in tuple(self._listeners):
             try:
                 listener()
-            except Exception:
+            except Exception as err:
+                if listener in self._failed:
+                    _LOGGER.debug(
+                        "A listener of disabled entities failed", exc_info=True
+                    )
+                    continue
+                # Once per listener, with the error kind only: a lasting fault
+                # in the reading pace must not stay invisible.
+                self._failed.append(listener)
+                _LOGGER.warning(
+                    "Adjusting the reading pace to enabled or disabled entities "
+                    "failed (%s); further failures are logged at debug level",
+                    type(err).__name__,
+                )
                 _LOGGER.debug("A listener of disabled entities failed", exc_info=True)
 
 

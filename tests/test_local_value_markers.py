@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -27,6 +28,7 @@ from tests.test_local_only import (
     by_path,
     coordinator_with,
     number,
+    text,
     track,
 )
 from tests.test_managed_local_plant import plant, reading
@@ -203,6 +205,46 @@ async def test_energy_manager_setpoints_show_otherwise(
     entities = by_path(track(coordinator))
     assert entities[EM_LOWER].native_value == 0
     assert entities[EM_UPPER].native_value == 0
+    await coordinator.async_shutdown()
+
+
+EM_STATES = ["notConnected", "inactive", "activeCh", "activeDhw"]
+
+
+@pytest.mark.parametrize(
+    ("cloud", "local", "placeholder"),
+    [
+        # The shown (local) status decides, not the slower cloud copy (O45).
+        ("activeCh", "notConnected", True),
+        ("notConnected", "activeCh", False),
+    ],
+)
+async def test_the_shown_energy_manager_status_decides(
+    hass: HomeAssistant, cloud, local, placeholder
+) -> None:
+    coordinator = coordinator_with(
+        hass,
+        [*em_readings(), text(EM_STATUS, local, EM_STATES)],
+        em_status(cloud),
+        local_values=True,
+    )
+    assert coordinator.display_snapshot(EM_STATUS).resource.value == local
+    entities = by_path(track(coordinator))
+    assert entities[EM_LOWER].available
+    assert entities[EM_LOWER].native_value == (None if placeholder else 0)
+    await coordinator.async_shutdown()
+
+
+async def test_a_status_no_longer_current_shows_the_setpoints(
+    hass: HomeAssistant,
+) -> None:
+    coordinator = coordinator_with(hass, em_readings(), em_status("notConnected"))
+    snapshot = coordinator.data[EM_STATUS]
+    coordinator.data[EM_STATUS] = replace(
+        snapshot, available=False, ended=True, last_error_category="http_404"
+    )
+    entities = by_path(track(coordinator))
+    assert entities[EM_LOWER].native_value == 0
     await coordinator.async_shutdown()
 
 
