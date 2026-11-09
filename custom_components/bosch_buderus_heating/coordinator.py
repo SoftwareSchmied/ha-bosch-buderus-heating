@@ -83,7 +83,7 @@ from .pointt.redaction import resource_path_template
 from .pointt.retry_after import MAX_CLOUD_PAUSE_SECONDS
 from .refresh_outage import RefreshOutageLog
 from .repair_scope import repair_data, repair_id
-from .resource_catalog import PollGroup, poll_group
+from .resource_catalog import PollGroup, poll_group, slows_when_unused
 from .rrc_programs import WEEK, RrcProgramService
 from .start_counters import is_start_counter_path
 from .startup_data import (
@@ -478,6 +478,31 @@ class BoschBuderusDataUpdateCoordinator(
         self._holiday_write_service = HolidayWriteService(client)
         self._icom_holiday_write_service = IcomHolidayWriteService(client)
         self.faults = FaultTracker(hass, config_entry.entry_id, gateway.gateway_id)
+        # O51: control paths whose entities are all disabled poll slowly.
+        from .entity_use import entity_use
+
+        self.entity_use = entity_use(hass, config_entry)
+        self._remove_use_listener: CALLBACK_TYPE | None = self.entity_use.add_listener(
+            self._entity_use_changed
+        )
+
+    def _poll_group(self, resource: Resource) -> PollGroup:
+        """The group a resource is polled in (O51: a control path whose
+        entities are all disabled uses the slow group)."""
+        group = poll_group(resource)
+        if (
+            group is PollGroup.CONTROL
+            and resource.path in self.entity_use.disabled_paths(self.gateway.gateway_id)
+            and slows_when_unused(resource.path)
+        ):
+            return PollGroup.SLOW
+        return group
+
+    @callback
+    def _entity_use_changed(self) -> None:
+        """An entity was enabled or disabled: poll its paths at their pace."""
+        if self.resources:
+            self._rebuild_poll_groups()
 
     async def async_load_fault_state(self) -> None:
         """Load the persisted active-fault baseline before the first refresh."""
@@ -1159,7 +1184,7 @@ class BoschBuderusDataUpdateCoordinator(
                 for path in paths
             }
             self._validity_index_key = key
-        return self._validity_index.get(resource.path) or poll_group(resource)
+        return self._validity_index.get(resource.path) or self._poll_group(resource)
 
     def scheduled_interval(self, path: str) -> tuple[bool, timedelta | None]:
         """Return whether the answer is final and the polling interval to match.
@@ -1175,6 +1200,16 @@ class BoschBuderusDataUpdateCoordinator(
         if snapshot.resource.metadata.writable:
             return True, None
         return True, self._poll_intervals.get(self._validity_group(snapshot.resource))
+
+    def schedule_token(self) -> tuple[object, ...]:
+        """O13: objects replaced whenever ``scheduled_interval`` may answer
+        differently (keep both in step); compared by identity only."""
+        return (
+            self.data,
+            self._poll_intervals,
+            self.entity_use.disabled_paths(self.gateway.gateway_id),
+            *self._paths_by_group.values(),
+        )
 
     def validity_limit(self, snapshot: ResourceSnapshot) -> timedelta | None:
         """Return how long a cloud reading stays valid; ``None`` never expires.
@@ -1481,6 +1516,9 @@ class BoschBuderusDataUpdateCoordinator(
         self._cancel_validity_timer()
 
     async def async_shutdown(self) -> None:
+        if self._remove_use_listener is not None:
+            self._remove_use_listener()
+            self._remove_use_listener = None
         self._cancel_validity_timer()
         if self._validity_stop_unsub is not None:
             self._validity_stop_unsub()
@@ -2297,7 +2335,7 @@ class BoschBuderusDataUpdateCoordinator(
             group: tuple(
                 path
                 for path, resource in self.resources.items()
-                if poll_group(resource) is group
+                if self._poll_group(resource) is group
             )
             for group in self._poll_intervals
         }
@@ -2467,7 +2505,7 @@ class BoschBuderusDataUpdateCoordinator(
             group: tuple(
                 path
                 for path, resource in self.resources.items()
-                if poll_group(resource) is group
+                if self._poll_group(resource) is group
             )
             for group in self._poll_intervals
         }
@@ -2659,7 +2697,7 @@ class BoschBuderusDataUpdateCoordinator(
                 ):
                     # Both a targeted read and a later regular read can discover
                     # the value for the first time. Register normal polling once.
-                    group = poll_group(result.resource)
+                    group = self._poll_group(result.resource)
                     if (
                         group in self._poll_intervals
                         and result.path not in self._paths_by_group.get(group, ())

@@ -22,6 +22,7 @@ from .connection_inventory import RetainedEntity
 from .connection_runtime import SourceContext
 from .const import DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator
+from .entity_use import entity_use
 from .managed_bacon import BaconDeviceAccess
 from .platform_scope import EntityBuilder, Listener, PlatformScope
 from .wallbox import WallboxCoordinator
@@ -325,12 +326,15 @@ class _Platform:
                         )
                     if not attached.active or not attached.source.scope.current():
                         return
+                    use = entity_use(self.owner.hass, self.owner.entry)
                     for entity in new_entities:
                         identity = entity.unique_id
                         if not identity or not identity.startswith(
                             attached.source.prefix
                         ):
                             raise ConfigurationError("entity_source_identity_conflict")
+                        # G3/O51: also an entity the registry keeps disabled.
+                        use.note(self.name, entity)
                         if identity not in attached.seen:
                             attached.seen.add(identity)
                             attached.pending.append(entity)

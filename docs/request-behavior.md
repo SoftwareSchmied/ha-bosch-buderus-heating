@@ -168,6 +168,11 @@ poll healthy. Stored values and unavailable states are not fabricated.
 | Slow values, such as operating hours | 900 seconds | 1800 seconds |
 | Successfully read supplementary metadata | No periodic requests | No periodic requests |
 
+A control whose entities are all disabled in Home Assistant is polled with the
+slow values instead (900 or 1800 seconds). Controls that the climate, hot water,
+holiday and calendar entities read keep the control group. Enabling an entity
+moves its control back to the control group within seconds, without a restart.
+
 Due functional groups share batches of up to 30 paths. Group scheduling permits
 one second of timer-rounding tolerance; retry deadlines and rate-limit pauses
 are not shortened by that tolerance. Normal writes retain metadata validation

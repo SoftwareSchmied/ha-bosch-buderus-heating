@@ -27,6 +27,8 @@ from .policy import (
 
 NOT_FOUND_STATUSES = frozenset({403, 404, 406})
 NOT_FOUND_RETRY = 7 * 86400
+# O13: a view is worked out again this long before its freshness changes.
+RENEW_MARGIN = 0.001
 
 
 class Freshness(StrEnum):
@@ -101,10 +103,12 @@ class ResourceInventory:
         context: IdentityContext,
         interval: int = 60,
         cap: Callable[[ReadRequest], int | None] | None = None,
+        floor: Callable[[ReadRequest], int | None] | None = None,
     ) -> None:
         self.context = context
         self.interval = validate_interval(interval)
         self._cap = cap
+        self._floor = floor
         self.records: dict[str, ResourceRecord] = {}
         self.signal_ids: frozenset[str] = frozenset()
         self.signal_problem: str | None = None
@@ -132,8 +136,41 @@ class ResourceInventory:
         return record
 
     def period(self, request: ReadRequest) -> int | None:
-        """Effective period, including the cap of a paired cloud reading."""
-        return period(request, self.interval, self._cap(request) if self._cap else None)
+        """Effective period, including the cap of a paired cloud reading.
+
+        ``floor`` slows a reading nobody shows (G3): never below it, and it
+        never makes a reading more frequent.
+        """
+        value = period(
+            request, self.interval, self._cap(request) if self._cap else None
+        )
+        if value is None or self._floor is None:
+            return value
+        slowest = self._floor(request)
+        return value if slowest is None else max(value, slowest)
+
+    def periods_changed(self, now: float) -> bool:
+        """A shorter period applies at once, not only after the longer wait.
+
+        A reading scheduled with a longer period (for example while its
+        entities were disabled) is due when its new period has passed since
+        the last attempt. Returns whether a due time moved.
+        """
+        moved = False
+        for record in self.records.values():
+            if (
+                not record.confirmed
+                or record.last_attempt is None
+                or record.scheduled_period is None
+            ):
+                continue
+            interval = self.period(record.request)
+            if interval is None or interval >= record.scheduled_period:
+                continue
+            due = max(now, record.last_attempt + interval)
+            if due < record.due:
+                record.due, moved = due, True
+        return moved
 
     def freshness_period(self, record: ResourceRecord) -> int | None:
         """Period for ageing: never shorter than the one scheduled at the read."""
@@ -275,12 +312,30 @@ class ResourceInventory:
     def view(
         self, record: ResourceRecord, now: float, *, source_ready: bool
     ) -> ResourceView:
+        return self.timed_view(
+            record,
+            now,
+            source_ready=source_ready,
+            interval=self.freshness_period(record),
+        )[0]
+
+    def timed_view(
+        self,
+        record: ResourceRecord,
+        now: float,
+        *,
+        source_ready: bool,
+        interval: int | None,
+    ) -> tuple[ResourceView, float]:
+        """The view with ``interval`` as its freshness period, and the time
+        its freshness changes next while nothing else changes (O13)."""
         observation = record.observation
-        interval = self.freshness_period(record)
         age = max(0.0, now - observation.observed_monotonic) if observation else None
         freshness = Freshness.UNCONFIRMED
+        renew = math.inf
         if (
             age is not None
+            and observation is not None
             and interval is not None
             and category(record.request) is not PollClass.DISCOVERY
         ):
@@ -291,6 +346,11 @@ class ResourceInventory:
                 if age >= interval
                 else Freshness.FRESH
             )
+            # A little early: rounding never keeps an outdated freshness.
+            if freshness is Freshness.FRESH:
+                renew = observation.observed_monotonic + interval - RENEW_MARGIN
+            elif freshness is Freshness.LATE:
+                renew = observation.observed_monotonic + 3 * interval - RENEW_MARGIN
         available = (
             source_ready
             and record.active
@@ -306,7 +366,7 @@ class ResourceInventory:
             record.actual_interval,
             record.problem,
             observation,
-        )
+        ), renew
 
     def next_expiry(self, now: float) -> float | None:
         deadlines = []

@@ -522,9 +522,19 @@ class BoschBuderusBinarySensor(
         return self.coordinator.display_snapshot(path)
 
     @property
-    def _threshold_snapshot(self) -> ResourceSnapshot | None:
-        path = (
+    def _threshold_path(self) -> str:
+        return (
             self.entity_description.resource_path.removesuffix("saltLevel")
             + "saltLevelAlarm"
         )
-        return (self.coordinator.data or {}).get(path)
+
+    @property
+    def extra_resource_paths(self) -> tuple[str, ...]:
+        """The alarm threshold a low-salt state also reads (O51)."""
+        if self.entity_description.value_key == "low_salt":
+            return (self._threshold_path,)
+        return ()
+
+    @property
+    def _threshold_snapshot(self) -> ResourceSnapshot | None:
+        return (self.coordinator.data or {}).get(self._threshold_path)

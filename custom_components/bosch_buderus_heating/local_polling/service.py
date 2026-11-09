@@ -11,12 +11,13 @@ from typing import Protocol
 
 from ..gateway_identity import GatewayNamespace, IdentityContext
 from ..local_api.catalog import ReadRequest
+from ..local_api.models import LocalObservation
 from ..local_budget import LocalBudgetError, LocalReadBudget
 from ..local_probe import ProbeContext, TransportFailure
 from ..local_read import ReadProblem, ReadResult, ReadState
 from ..local_state import LocalCondition
 from ..local_transport import StaleLocalRequest
-from .inventory import ResourceInventory, ResourceView
+from .inventory import ResourceInventory, ResourceRecord, ResourceView
 from .planner import ExplicitOperation, PollPlanner, Work
 from .policy import start_offset
 from .storage import (
@@ -77,6 +78,44 @@ class PollSnapshot:
     problem: str | None
 
 
+@dataclass(slots=True, eq=False)
+class _Shown:
+    """O13: one resource as last published, and what its view came from."""
+
+    record: ResourceRecord
+    observation: LocalObservation | None
+    invalid: bool
+    active: bool
+    problem: str | None
+    actual: float | None
+    scheduled: int | None
+    interval: int | None
+    # When the freshness changes next while nothing else changes.
+    renew: float
+    view: ResourceView
+    part: tuple[object, ...]
+
+    def current(self, record: ResourceRecord, interval: int | None) -> bool:
+        return (
+            self.record is record
+            and self.observation is record.observation
+            and self.invalid == record.invalid
+            and self.active == record.active
+            and self.problem == record.problem
+            and self.actual == record.actual_interval
+            and self.scheduled == record.scheduled_period
+            and self.interval == interval
+        )
+
+
+def _same(first: tuple[object, ...] | None, second: tuple[object, ...]) -> bool:
+    return (
+        first is not None
+        and len(first) == len(second)
+        and all(a is b for a, b in zip(first, second, strict=True))
+    )
+
+
 class LocalPollingService:
     """Requires an explicit current identity confirmation before sending reads."""
 
@@ -93,7 +132,12 @@ class LocalPollingService:
         cap: Callable[[ReadRequest], int | None] | None = None,
         clock: Callable[[], float] = monotonic,
         access_key: str | None = None,
+        floor: Callable[[ReadRequest], int | None] | None = None,
+        period_token: Callable[[], tuple[object, ...]] | None = None,
     ) -> None:
+        """``floor`` slows readings nobody shows (G3). ``period_token``
+        returns objects that are replaced whenever ``cap`` or ``floor`` may
+        answer differently; without it every publication asks them again."""
         budget.check_scope(context)
         if context.identity.namespace is not GatewayNamespace.K40_LOCAL:
             raise ValueError("local_source_required")
@@ -104,7 +148,7 @@ class LocalPollingService:
             store,
         )
         self._current, self._publish_callback, self._clock = is_current, publish, clock
-        self.inventory = ResourceInventory(context.identity, interval, cap)
+        self.inventory = ResourceInventory(context.identity, interval, cap, floor)
         self.planner = PollPlanner(
             self.inventory,
             clock(),
@@ -136,7 +180,13 @@ class LocalPollingService:
         self._age: asyncio.Task[None] | None = None
         self._workers: dict[str, asyncio.Task[None]] = {}
         self._close_task: asyncio.Task[None] | None = None
-        self._signature: object = None
+        # O13: the published state, carried forward per resource.
+        self._period_token = period_token
+        self._head: tuple[object, ...] | None = None
+        self._shown: dict[str, _Shown] = {}
+        self._shown_records: dict[str, ResourceRecord] | None = None
+        self._shown_ready: bool | None = None
+        self._shown_token: tuple[object, ...] | None = None
 
     @property
     def condition(self) -> LocalCondition:
@@ -175,24 +225,110 @@ class LocalPollingService:
             or self.inventory.signal_problem,
         )
 
-    def _publish(self) -> None:
-        snapshot = self.snapshot()
-        signature = (
-            snapshot.condition,
-            snapshot.identity_confirmed,
-            snapshot.problem,
-            snapshot.discovery_cursor,
-            snapshot.discovery_exhausted,
-            snapshot.pending_explicit,
-            bool(snapshot.discovery_pause_seconds),
-            tuple(
-                (v.request.target, v.freshness, v.available, v.problem, v.observation)
-                for v in snapshot.resources
-            ),
+    def _carry_forward(self, now: float, ready: bool) -> bool:
+        """O13: work out again only the views that can have changed.
+
+        A view is kept while its record, its freshness period and the
+        readiness of the source are the same and its freshness cannot have
+        changed with time. Returns whether a published part (resource,
+        freshness, availability, problem, observation) or the order changed.
+        """
+        inventory = self.inventory
+        records = inventory.records
+        token = self._period_token() if self._period_token is not None else None
+        same_periods = token is not None and _same(self._shown_token, token)
+        self._shown_token = token
+        everything = (
+            records is not self._shown_records or ready is not self._shown_ready
         )
-        if signature == self._signature:
+        previous = self._shown
+        shown: dict[str, _Shown] = {}
+        changed = len(previous) != len(records)
+        replaced = False
+        for target, record in records.items():
+            item = previous.get(target)
+            if item is None or item.record is not record:
+                replaced = True
+            interval = (
+                item.interval
+                if same_periods
+                and item is not None
+                and item.record is record
+                and item.scheduled == record.scheduled_period
+                else inventory.freshness_period(record)
+            )
+            if (
+                not everything
+                and item is not None
+                and now < item.renew
+                and item.current(record, interval)
+            ):
+                shown[target] = item
+                continue
+            view, renew = inventory.timed_view(
+                record, now, source_ready=ready, interval=interval
+            )
+            part = (
+                target,
+                view.freshness,
+                view.available,
+                view.problem,
+                view.observation,
+            )
+            if item is None or item.part != part:
+                changed = True
+            shown[target] = _Shown(
+                record,
+                record.observation,
+                record.invalid,
+                record.active,
+                record.problem,
+                record.actual_interval,
+                record.scheduled_period,
+                interval,
+                renew,
+                view,
+                part,
+            )
+        if not changed and replaced and list(previous) != list(shown):
+            changed = True
+        self._shown, self._shown_records, self._shown_ready = shown, records, ready
+        return changed
+
+    def _publish(self) -> None:
+        now = self._clock()
+        condition = self.condition
+        changed = self._carry_forward(now, condition is LocalCondition.READY)
+        pause = max(0.0, self.planner.discovery_pause_until - now)
+        problem = (
+            self._blocked
+            or self._fault
+            or self.planner.discovery_problem
+            or self.inventory.signal_problem
+        )
+        head = (
+            condition,
+            self._identity_confirmed,
+            problem,
+            self.planner.cursor,
+            self.planner.exhausted,
+            len(self.planner.operations),
+            bool(pause),
+        )
+        if not changed and head == self._head:
             return
-        self._signature = signature
+        self._head = head
+        snapshot = PollSnapshot(
+            condition,
+            self._identity_confirmed,
+            tuple(item.view for item in self._shown.values()),
+            self.planner.cursor,
+            self.planner.exhausted,
+            pause,
+            self.budget.pause_seconds,
+            len(self.planner.operations),
+            problem,
+        )
         try:
             self._publish_callback(snapshot)
         except Exception:
@@ -224,6 +360,13 @@ class LocalPollingService:
     def wake(self) -> None:
         self._wake.set()
         self._age_wake.set()
+
+    def periods_changed(self) -> None:
+        """G3: the floor or cap may answer differently now (for example an
+        entity was enabled): a shorter period applies from now on."""
+        self.inventory.periods_changed(self._clock())
+        self._shown_token = None
+        self.wake()
 
     def confirm_identity(self, context: IdentityContext) -> None:
         if (
@@ -456,7 +599,7 @@ class LocalPollingService:
         now = self._clock()
         if self._fault is not None and now >= self._fault_until:
             # Start again with a clean state: nothing in flight, publish anew.
-            self._fault, self._signature = None, None
+            self._fault, self._head = None, None
         if not self._loaded and self._fault is None:
             await self._load()
             now = self._clock()

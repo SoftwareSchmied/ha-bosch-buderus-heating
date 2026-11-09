@@ -82,6 +82,11 @@ class BoschBuderusRegenerationButton(
         )
 
     @property
+    def resource_path(self) -> str:
+        """The command path the button reads and writes (O51)."""
+        return self.entity_description.key
+
+    @property
     def available(self) -> bool:
         snapshot = (self.coordinator.data or {}).get(self.entity_description.key)
         return (

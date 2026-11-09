@@ -26,6 +26,13 @@ interval, cloud interval), never below 60 seconds. The cloud interval follows
 its polling profile and actual plan; until a running cloud has discovered its
 readings, its shortest interval applies. See
 [source selection](source-selection.md).
+A controller signal whose entities are all disabled in Home Assistant is read
+at most once an hour; its entities are still created. Signals with a cloud
+counterpart, counters, faults and the parts of the installation date keep
+their usual interval. Enabling one of the entities restores the usual interval
+within seconds, without a restart: a reading already older than the usual
+interval is then due at once. A signal without a registered entity (for
+example before its first reading) keeps the usual interval as well.
 A value becomes late after one target interval and expires after three. Actual
 request intervals and age are separately available. An overloaded queue never
 extends validity. A source pause or missing identity can make a value unavailable
