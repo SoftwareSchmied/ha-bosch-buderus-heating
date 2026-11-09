@@ -24,8 +24,13 @@ lists, configuration objects and notifications are not paired. Readings that
 only one interface provides stay single-source.
 
 At runtime, a pair is only compared if both readings are valid and have the
-same type, unit and shape. The result is `agree`, `differ` or `incomparable`;
-both readings are always kept. Values are never averaged or added, and no source
+same type, unit and shape. The result is `agree`, `differ`,
+`changed_between_reads` or `incomparable`; both readings are always kept.
+Readings received more than 60 seconds apart that differ count as
+`changed_between_reads`: the value most likely changed between the two reads.
+For counters this needs the later reading to be higher in at least one part
+and lower in none; a counter that went backwards still counts as `differ`.
+Within 60 seconds every difference counts as `differ`. Values are never averaged or added, and no source
 is selected here.
 
 ## Diagnostics
@@ -42,7 +47,7 @@ only every 15 minutes (see
 Both readings stay current, so the pair is still compared, but the cloud
 reading can be up to 15 minutes older than the local one: the receive-time gap
 of live values grows to that size, and a live value that changed in between
-is counted as differing.
+is counted as `changed_between_reads`, not as differing.
 
 ## Local values for existing entities
 

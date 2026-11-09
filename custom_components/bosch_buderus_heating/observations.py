@@ -56,8 +56,9 @@ class PairResult(StrEnum):
     AGREE = "agree"
     DIFFER = "differ"
     INCOMPARABLE = "incomparable"
-    # O91: a counter whose later reading is higher, read at least one poll
-    # period apart: it most likely counted on between the two reads.
+    # O91: read more than one poll period apart, a counter whose later reading
+    # is higher, or any other reading that differs: it most likely changed
+    # between the two reads.
     CHANGED_BETWEEN_READS = "changed_between_reads"
 
 
@@ -407,7 +408,8 @@ def compare(cloud: Observation, local: Observation) -> PairComparison | None:
         same = cloud.value == local.value
     if same:
         return result(PairResult.AGREE, "compared")
-    if pair.counter and gap > CHANGE_GAP_SECONDS and _counted_on(cloud, local):
+    if gap > CHANGE_GAP_SECONDS and (not pair.counter or _counted_on(cloud, local)):
+        # A1: a counter only counts on; any other reading may change freely.
         return result(PairResult.CHANGED_BETWEEN_READS, "compared")
     return result(PairResult.DIFFER, "compared")
 

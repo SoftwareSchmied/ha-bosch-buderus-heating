@@ -72,11 +72,11 @@ def cloud(path, values, allowed, *, available=True):
     )
 
 
-def local(path, values, allowed, *, monotonic=10.0, kind="arrayData"):
+def local(path, values, allowed, *, monotonic=10.0, kind="arrayData", at=NOW):
     raw = {"id": path, "type": kind, "writeable": 0, "values": list(values)}
     if allowed is not None:
         raw["allowedValues"] = list(allowed)
-    return read(raw, observed_at=NOW, observed_monotonic=monotonic)
+    return read(raw, observed_at=at, observed_monotonic=monotonic)
 
 
 def demand(values, allowed=LOCAL_DEMAND_ALLOWED, **kwargs):
@@ -96,8 +96,12 @@ def test_lists_are_observed_and_compared_by_their_entries() -> None:
     assert cloud_item.items == ("ch", "dhw") and local_item.items == ("dhw", "ch")
     # The heat demand state does not depend on the order.
     assert compare(cloud_item, local_item).result is PairResult.AGREE
+    # A1: read in the same poll period as the cloud list, a real difference.
     other = from_local_observation(
-        demand(("ch",)), connection_id="local", target_id=TARGET, current=True
+        demand(("ch",), at=NOW - timedelta(minutes=2)),
+        connection_id="local",
+        target_id=TARGET,
+        current=True,
     )
     assert compare(cloud_item, other).result is PairResult.DIFFER
     # The support status uses the first entry: there the order counts.
@@ -107,7 +111,12 @@ def test_lists_are_observed_and_compared_by_their_entries() -> None:
         target_id=TARGET,
     )
     support_local = from_local_observation(
-        local(SUPPORT, ("blocked", "vta_gateway"), SUPPORT_ALLOWED),
+        local(
+            SUPPORT,
+            ("blocked", "vta_gateway"),
+            SUPPORT_ALLOWED,
+            at=NOW - timedelta(minutes=2),
+        ),
         connection_id="local",
         target_id=TARGET,
         current=True,

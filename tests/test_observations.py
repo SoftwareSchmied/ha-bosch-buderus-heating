@@ -494,17 +494,32 @@ def test_a_counter_read_later_and_higher_changed_between_reads(
     assert swapped.result is result
 
 
-def test_a_setting_that_differs_is_never_a_change_between_reads():
-    later = NOW + timedelta(minutes=10)
-    comparison = compare(
-        cloud("/heatSources/returnTemperature", 30.0, writable=False),
-        local(scalar("/heatSources/returnTemperature", value=31.0), at=later),
-    )
-    assert comparison.result is PairResult.DIFFER
+@pytest.mark.parametrize(
+    ("gap", "result"),
+    [
+        (600, PairResult.CHANGED_BETWEEN_READS),
+        (61, PairResult.CHANGED_BETWEEN_READS),
+        (60, PairResult.DIFFER),
+        (0, PairResult.DIFFER),
+    ],
+)
+def test_a_live_value_that_differs_after_a_poll_period_changed_between_reads(
+    gap, result
+):
+    # A1: not only counters; a lower later value counts the same way.
+    later = NOW + timedelta(seconds=gap)
+    for first, second in ((30.0, 31.0), (31.0, 30.0)):
+        comparison = compare(
+            cloud("/heatSources/returnTemperature", first, writable=False),
+            local(scalar("/heatSources/returnTemperature", value=second), at=later),
+        )
+        assert comparison.result is result
+        assert comparison.receive_gap_seconds == gap
 
 
 def test_the_summary_names_differing_pairs_and_gaps_per_class():
     later = NOW + timedelta(seconds=457)
+    close = NOW + timedelta(seconds=30)
     comparisons = pair_observations(
         [
             cloud_working_time(1434959),
@@ -513,7 +528,8 @@ def test_the_summary_names_differing_pairs_and_gaps_per_class():
         ],
         [
             local(working_time(1435379), at=later),
-            local(scalar("/heatSources/returnTemperature", value=31.0), at=later),
+            # A1: read within one poll period, so a real difference.
+            local(scalar("/heatSources/returnTemperature", value=31.0), at=close),
             local(
                 {
                     "id": "/gateway/brand",
@@ -538,7 +554,7 @@ def test_the_summary_names_differing_pairs_and_gaps_per_class():
     assert summary["maximum_receive_gap_seconds"] == 32400.0
     assert summary["maximum_receive_gap_seconds_by_class"] == {
         "counters": 457.0,
-        "live": 457.0,
+        "live": 30.0,
         "static": 32400.0,
     }
     rendered = repr(summary)

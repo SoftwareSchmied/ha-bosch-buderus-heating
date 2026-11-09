@@ -60,6 +60,13 @@ without paths, values or identifiers:
   group a path is actually polled in, so a control read with the slow values
   counts as `slow`.
 
+In `observation_pairs`, schema 43 also counts any other pair that differs
+after more than 60 seconds as `changed_between_reads`, not only counters that
+counted on: such a value most likely changed between the two reads, which
+happens often now that the cloud copy of a locally shown value is read every
+15 minutes. `differ` and `differing_measurements` therefore report readings
+that disagree within one poll period, and counters that went backwards.
+
 Schema 42 extends existing sections, again without values, addresses or
 identifiers:
 
