@@ -28,6 +28,7 @@ from .pointt import (
     ResourceError,
     ServiceUnavailable,
     TransportError,
+    UnexpectedHttpStatus,
 )
 from .pointt.const import MAX_BULK_PATHS
 from .pointt.redaction import resource_path_template
@@ -67,6 +68,10 @@ ROOT_RESOURCE_PATHS: tuple[str, ...] = (
 
 MAX_DISCOVERY_DEPTH = 8
 MAX_DISCOVERY_RESOURCES = 512
+# An HTTP 5xx answer to one individual fallback read concerns that path only.
+# This many in a row, without any working answer in between, are treated as an
+# outage of the cloud itself and end the discovery like a request-wide error.
+MAX_CONSECUTIVE_FALLBACK_5XX = 3
 
 
 class DiscoveryPathSource(StrEnum):
@@ -495,6 +500,7 @@ async def async_discover_resources(
     catalog_pending: dict[str, int] = {}
     optional_pending: dict[str, int] = {}
     queues = (referenced_pending, catalog_pending, optional_pending)
+    consecutive_5xx = 0
     processed: set[str] = set()
     depth_limited: set[str] = set()
 
@@ -614,11 +620,15 @@ async def async_discover_resources(
         if any(result.status == 429 for result in results):
             report.stop_reason = "rate_limited"
             raise RateLimited(retry_after=None)
-        results = await _recover_invalid_bulk_results(
+        if any(result.resource is not None for result in results):
+            # A bulk answer with resources shows that the cloud is answering.
+            consecutive_5xx = 0
+        results, consecutive_5xx = await _recover_invalid_bulk_results(
             client,
             gateway_id,
             results,
             diagnostics=report,
+            consecutive_5xx=consecutive_5xx,
         )
         for result in results:
             depth = frontier_entries[result.path]
@@ -674,8 +684,15 @@ async def _recover_invalid_bulk_results(
     results: tuple[BatchItemResult, ...],
     *,
     diagnostics: DiscoveryDiagnostics,
-) -> tuple[BatchItemResult, ...]:
-    """Retry every recoverable discovery item once with an individual read."""
+    consecutive_5xx: int = 0,
+) -> tuple[tuple[BatchItemResult, ...], int]:
+    """Retry every recoverable discovery item once with an individual read.
+
+    Like the regular poll, an HTTP status answer to one read stays local to that
+    path. Only no answer at all, authentication, a rate limit, or
+    ``MAX_CONSECUTIVE_FALLBACK_5XX`` 5xx answers in a row end the discovery.
+    Returns the results and the updated count of consecutive 5xx answers.
+    """
     recovered: list[BatchItemResult] = []
     for result in results:
         fallback_reason = result.fallback_reason
@@ -698,10 +715,31 @@ async def _recover_invalid_bulk_results(
                 gateway_id, result.path, fallback_reason=fallback_reason
             )
         except (AuthenticationError, TransportError) as err:
-            category = _error_category(err)
-            diagnostics.fallback_finished(result.path, category, discovered=False)
-            diagnostics.stop_reason = category
-            raise
+            status = _path_local_status(err)
+            if status is None:
+                category = _error_category(err)
+                diagnostics.fallback_finished(result.path, category, discovered=False)
+                diagnostics.stop_reason = category
+                raise
+            diagnostics.fallback_finished(
+                result.path, f"http_{status}", discovered=False
+            )
+            if status >= 500:
+                consecutive_5xx += 1
+                if consecutive_5xx >= MAX_CONSECUTIVE_FALLBACK_5XX:
+                    _LOGGER.debug(
+                        "Ending PointT discovery after %d individual reads in a "
+                        "row answered HTTP 5xx",
+                        consecutive_5xx,
+                    )
+                    diagnostics.stop_reason = _error_category(err)
+                    raise
+            else:
+                consecutive_5xx = 0
+            recovered.append(
+                BatchItemResult(gateway_id, result.path, status, error=err)
+            )
+            continue
         except ResourceError as err:
             diagnostics.fallback_finished(
                 result.path, f"http_{err.status}", discovered=False
@@ -719,7 +757,22 @@ async def _recover_invalid_bulk_results(
             recovered.append(
                 BatchItemResult(gateway_id, result.path, 200, resource=resource)
             )
-    return tuple(recovered)
+        # Any other answer ends a series of 5xx answers.
+        consecutive_5xx = 0
+    return tuple(recovered), consecutive_5xx
+
+
+def _path_local_status(error: PointTError) -> int | None:
+    """The HTTP status of an answer that concerns only the requested path.
+
+    ``None`` means the request as a whole failed: no answer (timeout, network,
+    5xx without status), authentication, or a rate limit.
+    """
+    if isinstance(error, UnexpectedHttpStatus):
+        return error.status
+    if isinstance(error, ServiceUnavailable):
+        return error.status
+    return None
 
 
 def _optional_children(path: str) -> tuple[str, ...]:

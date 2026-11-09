@@ -191,8 +191,10 @@ the search for them went:
 - `missing_reasons`: counts per result category of the start-up discovery, for
   example `http_404`, `timeout`, `malformed` or `not_referenced` when a
   container answered without the reference;
-- `attempts`, `attempts_planned`, `postponed` (rate limits), `last_result` and
-  `next_attempt_in_seconds`.
+- `attempts`, `attempts_planned`, `postponed` (rate limits, and searches that
+  got no answer or ended with a 5xx failure of the whole cloud), `last_result`
+  and `next_attempt_in_seconds`. A search in which a missing path answers
+  HTTP 5xx got an answer and uses an attempt.
 
 `startup_inventory` shows how the gateway started: `mode` is `live` or
 `inventory` (the cloud did not answer during start-up and the saved resources
@@ -600,6 +602,16 @@ authentication failure, rate limit, or request-wide transport error.
 `stop_reason` names the cause, including `resource_limit`, `depth_limit`,
 `authentication_error`, `rate_limited`, `timeout`, and `service_unavailable`.
 Individual resource failures remain visible without stopping later circuits.
+
+A request-wide transport error is a timeout or network failure without any
+answer, or an HTTP 5xx answer to a whole bulk call. An HTTP status answer to
+one individual fallback read, for example 504 or 409, concerns only that path,
+as in the regular poll: its `fallback_result` shows `http_504` or `http_409`,
+and discovery goes on with the other paths. Only three individual fallback
+reads in a row that answer HTTP 5xx, without any working answer in between,
+end the discovery with `service_unavailable`; this bounds the extra reads when
+the cloud itself fails. A bulk answer that contains resources ends such a
+series as well.
 
 Canonical circuit identifiers such as `hc2`, `dhw1`, and `hs1` remain visible
 because they are necessary to distinguish missing resources on multi-circuit

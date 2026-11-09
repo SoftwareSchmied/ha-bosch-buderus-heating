@@ -128,6 +128,13 @@ batch can have two actual PointT HTTP attempts. Normal discovery and normal
 polling retain their existing bounded retry and fallback rules; disabling
 those retries is specific to supplementary reads.
 
+In discovery, as in normal polling, an HTTP 5xx or other status answer to one
+individual fallback read stays local to that path, and discovery continues
+with the remaining paths. A timeout or network failure without any answer, a
+sign-in failure or a rate limit still ends the discovery at once. Three
+fallback reads in a row that answer HTTP 5xx end it as well, so a failing
+cloud does not receive up to 30 individual reads per batch.
+
 ## Entity continuity and limits
 
 An already registered product-name or refrigerant-count sensor is created with
@@ -144,10 +151,12 @@ added circuit or a new path that was never reported or scheduled still needs
 start discovered and that is missing now: the integration searches that
 subtree again 5, 15 and 60 minutes after the start and then every six hours
 until one day has passed. A search waits for a working cycle, a rate limit
-postpones it, and it is charged to the same path limit. A part still missing
-after the last search is no longer expected at the next start; its entities
-stay in the registry. Without stored resources, a root that ended with a
-temporary error is searched again on the same schedule. Other static resources outside the reviewed
+postpones it, and it is charged to the same path limit. A missing path that
+answers HTTP 5xx during the search uses up that search. Only a search without
+any answer, or one that the cloud ends with three 5xx answers in a row, is
+postponed. A part still missing after the last search is no longer expected at
+the next start; its entities stay in the registry. Without stored resources, a
+root that ended with a temporary error is searched again on the same schedule. Other static resources outside the reviewed
 list retain their previous behavior. Previously discovered dynamic values
 returning 404 already recover on the next regular group read, with their
 existing entities. Fault probes, other path pauses and the gateway circuit

@@ -23,6 +23,20 @@ Versioning after its first tagged preview.
 - The names follow the Info menu of my own controller (MX400, firmware
   15.00.01) in German and English.
 
+### Cloud connection and robustness
+
+- **One faulty value no longer stops the discovery:** if the cloud answers a
+  single value with a server error such as HTTP 504, also when it is read
+  again on its own, the discovery now skips only that value and finds all the
+  others. Before, this one value stopped the whole discovery, so a new setup
+  never started and a later discovery never found new parts. Timeouts,
+  sign-in problems and rate limits still stop the discovery at once, and so
+  do three server errors in a row, so a failing cloud is not flooded with
+  single reads.
+- The search for parts that are missing after a start now keeps to its plan
+  when such a value answers with a server error: it ends after one day instead
+  of repeating every five minutes.
+
 ## [0.9.0-alpha.3] - 2026-11-09
 
 > [!IMPORTANT]

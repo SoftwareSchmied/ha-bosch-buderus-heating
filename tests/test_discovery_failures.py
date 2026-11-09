@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, call, patch
 import pytest
 
 from custom_components.bosch_buderus_heating.discovery import (
+    MAX_CONSECUTIVE_FALLBACK_5XX,
     DiscoveryDiagnostics,
     DiscoveryPathSource,
     async_discover_resources,
@@ -22,6 +23,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     ResourceReference,
     ServiceUnavailable,
     TransportError,
+    UnexpectedHttpStatus,
 )
 
 
@@ -75,15 +77,25 @@ async def test_discovery_recovers_only_the_failed_physical_batch() -> None:
     assert report.snapshot()["fallback_attempts"] == 30
 
 
-@pytest.mark.parametrize("stage", ["bulk", "fallback"])
 @pytest.mark.parametrize(
-    ("error", "category"),
+    ("stage", "error", "category"),
     [
-        (AuthenticationError(), "authentication_error"),
-        (RateLimited(60), "rate_limited"),
-        (RequestTimeout(), "timeout"),
-        (ServiceUnavailable(503), "service_unavailable"),
-        (TransportError(), "transport_error"),
+        *(
+            (stage, error, category)
+            for stage in ("bulk", "fallback")
+            for error, category in (
+                (AuthenticationError(), "authentication_error"),
+                (RateLimited(60), "rate_limited"),
+                (RequestTimeout(), "timeout"),
+                # Without a status, the request got no answer at all.
+                (ServiceUnavailable(), "service_unavailable"),
+                (TransportError(), "transport_error"),
+            )
+        ),
+        # An HTTP 503 still ends the discovery when the bulk request itself
+        # answers it. For one individual fallback read it stays local to that
+        # path; see test_discovery_keeps_fallback_http_answers_local.
+        ("bulk", ServiceUnavailable(503), "service_unavailable"),
     ],
 )
 async def test_discovery_records_request_wide_abort_without_more_reads(
@@ -135,6 +147,138 @@ async def test_discovery_records_other_bulk_errors(error: PointTError) -> None:
     assert report.stop_reason in ("request_failed", "http_403")
     assert report.paths["/root"].bulk_result == report.stop_reason
     client.get_resource.assert_not_awaited()
+
+
+async def test_discovery_keeps_fallback_http_answers_local() -> None:
+    """An HTTP 5xx or unmapped status answer to one fallback read ends only it."""
+    client = AsyncMock()
+    paths = tuple(f"/root{index}" for index in range(35))
+    broken = {
+        paths[1]: ServiceUnavailable(504),
+        paths[2]: UnexpectedHttpStatus(409),
+        paths[3]: ServiceUnavailable(503),
+    }
+
+    def bulk(gateway, chunk):
+        return tuple(
+            BatchItemResult(gateway, path, 504, error=ResourceError(path, 504))
+            if path in broken
+            else BatchItemResult(gateway, path, 200, Resource(path))
+            for path in chunk
+        )
+
+    async def single(gateway, path, **_kwargs):
+        raise broken[path]
+
+    client.get_resources_bulk.side_effect = bulk
+    client.get_resource.side_effect = single
+    report = DiscoveryDiagnostics()
+
+    discovered = await async_discover_resources(
+        client, "gateway", roots=paths, diagnostics=report
+    )
+
+    # The other paths, including the second batch, are still discovered.
+    assert tuple(discovered) == tuple(path for path in paths if path not in broken)
+    assert client.get_resources_bulk.await_count == 2
+    assert client.get_resource.await_count == 3
+    assert report.completed and report.stop_reason == "complete"
+    assert report.paths[paths[1]].fallback_reason == "item_5xx"
+    assert report.paths[paths[1]].fallback_result == "http_504"
+    assert report.paths[paths[2]].fallback_result == "http_409"
+    assert report.paths[paths[3]].fallback_result == "http_503"
+    snapshot = report.snapshot()
+    assert snapshot["paths_failed"] == 3
+    assert snapshot["fallback_failures"] == 3
+
+
+async def test_discovery_ends_after_consecutive_fallback_5xx() -> None:
+    """A cloud answering 5xx to every individual read bounds the extra reads."""
+    client = AsyncMock()
+    paths = tuple(f"/root{index}" for index in range(35))
+    client.get_resources_bulk.side_effect = lambda gateway, chunk: tuple(
+        BatchItemResult(gateway, path, 503, error=ResourceError(path, 503))
+        for path in chunk
+    )
+    client.get_resource.side_effect = ServiceUnavailable(503)
+    report = DiscoveryDiagnostics()
+
+    with pytest.raises(ServiceUnavailable):
+        await async_discover_resources(
+            client, "gateway", roots=paths, diagnostics=report
+        )
+
+    assert client.get_resources_bulk.await_count == 1
+    assert client.get_resource.await_count == MAX_CONSECUTIVE_FALLBACK_5XX == 3
+    assert not report.completed
+    assert report.stop_reason == "service_unavailable"
+    last = paths[MAX_CONSECUTIVE_FALLBACK_5XX - 1]
+    assert report.paths[last].fallback_result == "http_503"
+    assert report.paths[paths[MAX_CONSECUTIVE_FALLBACK_5XX]].fallback_result is None
+    assert report.paths[paths[30]].bulk_result == "not_attempted"
+
+
+@pytest.mark.parametrize(
+    "between",
+    [Resource("/between"), ResourceError("/between", 404), UnexpectedHttpStatus(409)],
+)
+async def test_any_other_fallback_answer_ends_a_5xx_series(between) -> None:
+    client = AsyncMock()
+    paths = tuple(f"/root{index}" for index in range(5))
+    client.get_resources_bulk.side_effect = lambda gateway, chunk: tuple(
+        BatchItemResult(gateway, path, 502, error=ResourceError(path, 502))
+        for path in chunk
+    )
+    client.get_resource.side_effect = [
+        ServiceUnavailable(502),
+        ServiceUnavailable(502),
+        between,
+        ServiceUnavailable(502),
+        ServiceUnavailable(502),
+    ]
+    report = DiscoveryDiagnostics()
+
+    await async_discover_resources(client, "gateway", roots=paths, diagnostics=report)
+
+    assert client.get_resource.await_count == 5
+    assert report.completed
+
+
+@pytest.mark.parametrize("answered", [True, False])
+async def test_5xx_series_spans_batches_until_a_bulk_answers(answered: bool) -> None:
+    """Resources in a later bulk answer show that the cloud is answering."""
+    client = AsyncMock()
+    paths = tuple(f"/root{index}" for index in range(35))
+    # Two failing reads at the end of the first batch, one in the second.
+    failing = {paths[28], paths[29], paths[31]}
+    if not answered:
+        failing.update(paths[30:])
+
+    client.get_resources_bulk.side_effect = lambda gateway, chunk: tuple(
+        BatchItemResult(gateway, path, 500, error=ResourceError(path, 500))
+        if path in failing
+        else BatchItemResult(gateway, path, 200, Resource(path))
+        for path in chunk
+    )
+    client.get_resource.side_effect = ServiceUnavailable(500)
+    report = DiscoveryDiagnostics()
+
+    if answered:
+        discovered = await async_discover_resources(
+            client, "gateway", roots=paths, diagnostics=report
+        )
+        assert len(discovered) == len(paths) - len(failing)
+        assert client.get_resource.await_count == 3
+        assert report.completed
+    else:
+        with pytest.raises(ServiceUnavailable):
+            await async_discover_resources(
+                client, "gateway", roots=paths, diagnostics=report
+            )
+        # The third read in a row, the first of the second batch, ends it.
+        assert client.get_resource.await_count == 3
+        assert report.paths[paths[30]].fallback_result == "http_500"
+        assert report.stop_reason == "service_unavailable"
 
 
 async def test_discovery_keeps_local_failures_local() -> None:
