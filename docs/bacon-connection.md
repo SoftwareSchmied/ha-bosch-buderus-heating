@@ -23,9 +23,11 @@ Entity identities combine a separate namespace with a hash of account subject
 and device identifier. PointT identities and settings remain unchanged.
 New devices require Reconfigure and explicit selection.
 
-Each selected device receives **Device connection**. An explicit live offline
-message shows disconnected. Missing current observations, removed membership
-or a connection loss make this entity unavailable.
+Each selected device receives **Device connection**. An offline status
+received on the current connection shows disconnected, also when it is the
+retained status redelivered after a restart, and it does not expire. Missing
+current observations, removed membership or a connection loss make this entity
+unavailable.
 
 ## Transport contract
 
@@ -36,7 +38,7 @@ or a connection loss make this entity unavailable.
 | Broker | broker.euc1.bacon.bosch-tt-cw.com:443, TLS certificate validation, WebSocket /mqtt, MQTT 5 |
 | MQTT credentials | Token subject as username, access token as password |
 | Client identifier | 64 hexadecimal characters from SHA-256 over a random UUID's bytes |
-| Subscription | users/{subject}/#, QoS 1 |
+| Subscription | users/{subject}/#, QoS 1; a reason code of 0x80 or higher is a failure |
 | Device information | users/{subject}/devices/{device}/topics/info |
 | Opaque metadata and sensor messages | Same device prefix with topics/meta and topics/sensor |
 | Read state | Empty payload to shadows/state/get; response on shadows/state/get/accepted |
@@ -48,16 +50,28 @@ The client identifier format was checked with the real service. An arbitrary
 text identifier was rejected with reason 135. The documented format connected
 with the same account. No embedded application secrets are needed.
 
-Token rotation renews the connection. Each connection uses a fresh MQTT client
-without an outgoing command queue from an earlier session. Authentication
-errors request renewed sign-in. Connection failures back off. Quota errors wait
-at least 60 seconds; a longer Retry-After in seconds or as an HTTP date is
-honored up to 24 hours and also pauses the shared cloud access. Configuration
-retry dialogs enforce their wait too.
+Token rotation renews the connection at once, without a pause and with the
+device list of the last five minutes; diagnostics count these planned renewals
+separately from reconnects. If renewals follow each other within five minutes,
+the normal backoff applies. Each connection uses a fresh MQTT client without an
+outgoing command queue from an earlier session. A refused MQTT sign-in (reason
+134 or 135) is retried once with a refreshed token, as an HTTP 401 of the
+device list is. Only a second refusal or another authentication error requests
+renewed sign-in. A refused subscription counts as the connection failure
+`subscription_rejected`. Connection failures back off, and so do unexpected
+errors, which are logged once by their type. Quota errors wait at least 60
+seconds; a longer Retry-After in seconds or as an HTTP date is honored up to
+24 hours and also pauses the shared cloud access. A request blocked locally by
+that shared pause reports `paused` and waits for the end of the pause without
+extending it. Configuration retry dialogs enforce their wait too.
 
-Membership and state resynchronize every five minutes. Token checks and
-availability updates run every minute. These are integration policies, not
-vendor limit claims. Bounds are 128 devices, 128 KiB per message, 16 JSON nesting
+Membership and state resynchronize every five minutes. A failed periodic
+device list keeps the connection and the last confirmed membership; only an
+authentication failure or a changed account still ends it. During a shared
+pause the state reads of that round are skipped. A newly enabled device whose
+device list request fails is retried after at least one minute without
+reconnecting its peers. Token checks and availability updates run every minute.
+These are integration policies, not vendor limit claims. Bounds are 128 devices, 128 KiB per message, 16 JSON nesting
 levels and an incoming queue of 256 messages.
 
 ## State and write rules for family adapters
@@ -69,7 +83,12 @@ requested fields against current metadata.
 
 The information timestamp is used only for ordering. Its epoch unit is not
 established by P08. The newest information message sets the online or
-offline status; an explicit offline message takes effect immediately. Devices
+offline status; an explicit offline message takes effect immediately. An
+offline status cannot come with a sign of life of the device, so it stays
+shown once received on the current connection, also from a retained message.
+Information without a device type keeps the known model. A changed type clears
+state, measurements and metadata of the previous model and requests the
+device's metadata and state again without reconnecting. Devices
 may send information only on change, so any non-retained message from the
 device counts as a sign of life: information, a new sensor sample or a state
 update with newly reported fields. The status stays usable while the last sign
@@ -107,14 +126,17 @@ Old and retained responses cannot confirm commands. New connections cannot
 combine partial reports with cached fields from the previous connection.
 
 Each internal write acquires a device lock, reads state and checks current
-connectivity. Pending desired changes block another write. A mandatory family
+connectivity. Pending desired changes block another write. Numbers compare by
+value, so 22 and 22.0 are equal; a boolean never equals a number. A mandatory family
 validator checks permitted options and limits. An already reported requested
 value causes no further command.
 
 A PUBACK or accepted desired value is insufficient. A newer reported state
 must match the request on the same connection. Rejection, removal, offline
 status, cancellation or timeout leaves the outcome unconfirmed. No blind
-retransmission follows. A regular read can clear uncertainty. Family adapters
+retransmission follows. Except after a cancellation, a plain state read follows
+at once while the connection still holds the device; its full response clears
+the uncertainty, as any regular read does. Family adapters
 must check state generation and the uncertainty flag before displaying
 confirmed values.
 
@@ -126,7 +148,8 @@ Assistant write service is exposed.
 ## Diagnostics and validation
 
 Schema 21 adds aggregate connection, availability, received-state and metadata
-counts, error categories and unconfirmed-command counts. It exports no token,
+counts, error categories and unconfirmed-command counts. Planned token renewals
+are counted as `renewals`, apart from `reconnects`. It exports no token,
 subject, identifier, model, sensor contents, network information or device name.
 Diagnostics cause no cloud requests.
 
@@ -196,11 +219,25 @@ SHA-256 über zufällige UUID-Bytes. Nach einem Abbruch wird ein neuer Client
 angelegt. Alte ausgehende Befehle werden nicht übernommen. Bei Anmeldefehlern
 wird eine neue Anmeldung angefordert. Anfragelimits und Wartezeiten gelten
 auch bei Fehlern. Geräteliste und Zustand werden alle fünf Minuten abgeglichen.
+Scheitert dieser Abgleich der Geräteliste vorübergehend, bleibt die Verbindung
+mit den zuletzt bestätigten Geräten bestehen; nur ein Anmeldefehler oder ein
+anderes Konto beendet sie. Lehnt der Broker die Anmeldung ab (Code 134 oder
+135), versuche ich es zuerst einmal mit einem frisch erneuerten Token. Ein
+abgelehntes Abonnement gilt als Verbindungsfehler und wird mit wachsender
+Wartezeit wiederholt, ebenso ein unerwarteter Fehler, dessen Typ einmal im
+Protokoll erscheint. Eine lokale Sperre während einer geteilten Cloud-Pause
+verlängert diese Pause nicht mehr. Die stündliche Token-Erneuerung verbindet
+sofort neu, ohne Pause und mit der Geräteliste der letzten fünf Minuten.
 Die Grenzen von 128 Geräten, 128 KiB pro Nachricht, 16 JSON-Ebenen und
 256 eingehenden Nachrichten sind eigene Schutzgrenzen.
 
 Den Online- oder Offline-Status liefert die neueste Informationsmeldung.
-Eine ausdrückliche Offline-Meldung wirkt sofort. Weil Geräte Informationen
+Eine ausdrückliche Offline-Meldung wirkt sofort. Eine auf der aktuellen
+Verbindung empfangene Offline-Meldung zeigt das Gerät als getrennt, auch nach
+einem Neustart und ohne Ablauf nach einer Stunde. Eine Informationsmeldung ohne
+Gerätetyp lässt das bekannte Modell unverändert; nach einem echten
+Modellwechsel fordere ich Metadaten und Zustand ohne Neuverbindung erneut an.
+Weil Geräte Informationen
 oft nur bei Änderungen senden, zählt jede nicht gespeicherte Meldung des
 Geräts als Lebenszeichen: Information, neue Messwerte oder ein neu gemeldeter
 Zustand. Antworten auf meine eigenen Zustandsabfragen zählen nicht. Nach
@@ -220,7 +257,9 @@ Die interne Schreibgrundlage prüft Zustand, offene Änderungen und eine
 verpflichtende Prüfung durch den jeweiligen Geräteadapter. Erst ein neuerer
 gemeldeter Zustand mit den gewünschten Werten bestätigt das Ergebnis.
 Eine reine Empfangsbestätigung genügt nicht. Bei unklarem Ausgang erfolgt
-kein zweiter Befehl. Ohne belegte serverseitige Konfliktsperre können
+kein zweiter Befehl, sondern sofort eine reine Zustandsabfrage, deren Antwort
+die Unsicherheit auflöst. Zahlen vergleiche ich dabei nach ihrem Wert, 22 und
+22.0 sind also gleich. Ohne belegte serverseitige Konfliktsperre können
 gleichzeitige Änderungen durch andere Bedienungen nicht vollständig
 ausgeschlossen werden. Es gibt keinen allgemeinen Schreibdienst.
 Die Adapter müssen Verbindungsstand und unbestätigte Ergebnisse beachten.

@@ -61,7 +61,9 @@ class BaconClient:
             try:
                 self.backoff.raise_if_active()
             except RateLimited as err:
-                raise BaconError("rate_limited", err.retry_after or 60) from err
+                # C49: a local block is no new server signal. Its own category
+                # keeps it from extending the shared pause.
+                raise BaconError("paused", err.retry_after or 60) from err
 
     async def access_token(self, *, rejected: str | None = None) -> str:
         """Share the existing serialized refresh and classify errors locally."""
@@ -102,13 +104,13 @@ class BaconClient:
 
     async def _get_devices(self) -> tuple[str, ...]:
         if self.clock() < self.retry_at:
-            raise BaconError("rate_limited", self.retry_at - self.clock())
+            raise BaconError("paused", self.retry_at - self.clock())
         token = await self.access_token()
         for attempt in range(2):
             async with self._semaphore:
                 self.check_request()
                 if self.clock() < self.retry_at:
-                    raise BaconError("rate_limited", self.retry_at - self.clock())
+                    raise BaconError("paused", self.retry_at - self.clock())
                 result = await self._request_devices(token, retry=attempt == 0)
             if result is not None:
                 return result

@@ -365,6 +365,11 @@ async def test_unconfirmed_command_becomes_unavailable_without_replay(outcome):
         await entity.async_set_temperature(temperature=24)
     assert error.value.translation_key == "bacon_command_failed"
     assert writes == [{"tempSetpoint": 24}]
+    if outcome not in ("desired", "disconnect"):
+        # C50: the immediate state read shows the actual, unchanged set point.
+        assert entity.available and entity.native_target_temperature == 22
+        assert writes == [{"tempSetpoint": 24}]
+        return
     assert not entity.available and entity.hvac_mode is None
     assert entity.supported_features == 0
     if outcome != "disconnect":

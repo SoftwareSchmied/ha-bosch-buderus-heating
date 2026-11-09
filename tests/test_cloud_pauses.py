@@ -159,7 +159,8 @@ async def test_additional_cloud_devices_honor_http_date_pauses() -> None:
         with pytest.raises(BaconError, match="rate_limited") as error:
             await client.get_devices()
         assert 5395 <= error.value.retry_after <= 5400
-        with pytest.raises(BaconError, match="rate_limited"):
+        # The shared pause blocks locally and is not a new server limit.
+        with pytest.raises(BaconError, match="paused"):
             await client.get_devices()
     assert calls == [1]
     assert 5395 <= shared.remaining <= 5400

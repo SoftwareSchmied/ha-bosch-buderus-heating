@@ -75,6 +75,55 @@ Versioning after its first tagged preview.
   when such a value answers with a server error: it ends after one day instead
   of repeating every five minutes.
 
+### Additional cloud devices
+
+These fixes concern air conditioners, air purifiers, dehumidifiers and water
+heaters connected through the cloud. I tested them with synthetic devices and
+a local test broker; checks with real devices are still open.
+
+- **A refused sign-in no longer stops the heat pump:** when the broker of these
+  devices refused the sign-in once, the whole cloud connection asked for a new
+  sign-in and the heat pump entities stopped too. The connection now first
+  tries once more with a freshly renewed token, as the device list already did.
+  Only a second refusal asks for a new sign-in.
+- **A short outage of the device list no longer drops the devices:** the
+  device list is checked every five minutes. A timeout or server error there
+  ended the working connection and made all these devices unavailable for at
+  least a minute. The connection now keeps running with the last known devices.
+  A newly enabled device is tried again a minute later without disturbing the
+  others.
+- **No more gap at the hourly token renewal:** the renewal reconnected only
+  after a pause of five seconds and a new device list request, so all devices
+  were unavailable for a few seconds every hour. It now reconnects at once.
+  Diagnostics count these planned renewals separately as `renewals`.
+- **The shared cloud pause is no longer extended:** while the cloud access was
+  paused after a rate limit, a connection attempt of these devices counted as
+  a new rate limit and extended the pause by up to a minute. It now waits for
+  the end of the pause; the diagnostics show `paused`.
+- **Commands with a late confirmation:** when a device did not confirm a
+  command within 20 seconds, its entities stayed unavailable for up to five
+  minutes. A plain state read now follows at once, and its answer shows the
+  actual state again. The command itself is still never sent twice.
+- **No more "busy" because of 22 and 22.0:** a pending value of 22.0 and a
+  reported value of 22 counted as different, so every further command failed.
+  Numbers are now compared by their value.
+- **Offline devices show as disconnected:** a device reported as offline now
+  shows "Disconnected" on its connection entity, also after a restart and after
+  more than an hour, instead of becoming unavailable.
+- **Capabilities are kept:** an information message without a device type
+  cleared the model, the capabilities and the state until the next reconnect.
+  It now keeps them. After a real model change, I request capabilities and
+  state again without reconnecting.
+- **Refused subscriptions are visible:** a subscription refused by the broker
+  no longer counts as a working connection. It shows as
+  `subscription_rejected` in the diagnostics and is retried with a growing
+  wait.
+- **No silent stop after an unexpected error:** an unexpected error, for
+  example while updating an entity, stopped these devices until the next
+  reload, without a log entry. The connection now logs the error type once and
+  reconnects with a growing wait. Unloading the integration no longer reports
+  "A connection resource could not be closed" because of it.
+
 ### Dialogs
 
 - **Cloud setup no longer stays blocked:** a cloud sign-in dialog left behind

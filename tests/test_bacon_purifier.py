@@ -396,6 +396,11 @@ async def test_unconfirmed_commands_are_not_replayed(outcome):
     with pytest.raises(HomeAssistantError) as error:
         await fan.async_set_preset_mode("manual")
     assert error.value.translation_key == "bacon_command_failed"
+    if outcome not in ("desired", "disconnect"):
+        # C50: the immediate state read shows the actual, unchanged mode.
+        assert fan.available and fan.preset_mode == "auto"
+        assert writes == [{"opMode": "manual"}]
+        return
     assert writes == [{"opMode": "manual"}] and not fan.available
     assert fan.is_on is None and not fan.preset_modes and fan.supported_features == 0
     if outcome != "disconnect":

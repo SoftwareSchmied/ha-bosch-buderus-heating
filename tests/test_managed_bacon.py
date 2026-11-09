@@ -85,6 +85,9 @@ class Broker(Backend):
         self.claim_gate = None
         self.claim_entered = asyncio.Event()
         self.connack = 0
+        # Reasons for the next connections before falling back to connack.
+        self.connacks = []
+        self.suback = 1
 
     @property
     def routes(self):
@@ -151,7 +154,8 @@ class Broker(Backend):
                     if kind == 1:
                         assert body.startswith(b"\0\4MQTT\5")
                         assert string("account-A") in body
-                        await ws.send_bytes(packet(0x20, bytes([0, self.connack, 0])))
+                        code = self.connacks.pop(0) if self.connacks else self.connack
+                        await ws.send_bytes(packet(0x20, bytes([0, code, 0])))
                     elif kind in (8, 10):
                         size = int.from_bytes(body[3:5], "big")
                         subscription = body[5 : 5 + size].decode()
@@ -159,10 +163,12 @@ class Broker(Backend):
                         await ws.send_bytes(
                             packet(
                                 0x90 if kind == 8 else 0xB0,
-                                body[:2] + b"\0\1" if kind == 8 else body[:2] + b"\0\0",
+                                body[:2] + b"\0" + bytes([self.suback])
+                                if kind == 8
+                                else body[:2] + b"\0\0",
                             )
                         )
-                        if kind == 8:
+                        if kind == 8 and self.suback < 0x80:
                             selected = (
                                 self.offered
                                 if subscription == "users/account-A/#"
@@ -505,8 +511,11 @@ async def test_account_limits_are_shared_by_all_cloud_backends(hass, origin):
         with pytest.raises(RateLimited):
             access.client.backoff.raise_if_active()
         before = len(broker.claims), len(broker.sent), len(broker.calls)
-        with pytest.raises(BaconError, match="rate_limited"):
+        remaining = access.client.backoff.remaining
+        # C49: the local block of the shared pause neither calls nor extends it.
+        with pytest.raises(BaconError, match="paused"):
             await access.client.get_devices()
+        assert access.client.backoff.remaining <= remaining
         if origin == "pointt":
             with pytest.raises(BaconError):
                 await access.read_state(A)
@@ -621,6 +630,8 @@ async def test_mqtt_reconnect_keeps_pointt_and_device_access(hass, reason):
         await eventually(lambda: ready(owner) and source_for(owner, HEAT))
         previous, heating = view(owner), source_for(owner, HEAT)
         account, generation = previous.account, previous.generation
+        seen = []
+        previous.add_listener(lambda: seen.append(previous.available(A)))
         if reason == "token_rotation":
             renewed = AuthTokens(
                 token(signature="rotation"), "refresh-2", 10**12, scope=("bacon",)
@@ -635,7 +646,7 @@ async def test_mqtt_reconnect_keeps_pointt_and_device_access(hass, reason):
         else:
             for socket in tuple(broker.sockets):
                 await socket.close()
-        await eventually(lambda: not previous.available(A))
+        await eventually(lambda: False in seen)
         assert source_for(owner, HEAT) is heating
         await eventually(
             lambda: ready(owner) and previous.generation > generation, timeout=15
@@ -645,6 +656,12 @@ async def test_mqtt_reconnect_keeps_pointt_and_device_access(hass, reason):
         assert len(broker.connections) == 2 and not broker.writes
         if reason == "token_rotation":
             assert broker.connections[-1] == "Bearer " + renewed.access_token
+            # C52: a planned renewal reconnects at once with the recent list.
+            assert len(broker.claims) == 1
+            assert (account.renewals, account.reconnects) == (1, 0)
+        else:
+            assert len(broker.claims) == 2
+            assert (account.renewals, account.reconnects) == (0, 1)
 
 
 async def test_membership_loss_and_fresh_recovery_keep_peer_and_identity(hass):
@@ -808,3 +825,88 @@ async def test_claim_service_failure_retries_without_stopping_pointt(hass):
             await eventually(lambda: ready(owner))
             assert source_for(owner, HEAT) is heating
             assert len(broker.connections) == 1
+
+
+async def test_refused_mqtt_sign_in_once_keeps_the_heat_pump(hass):
+    """C45: one refused broker sign-in is retried with a fresh token."""
+    broker = Broker()
+    broker.connacks = [135]
+    fresh = AuthTokens(token(signature="fresh"), "refresh-2", 10**12, scope=("bacon",))
+    with patch(
+        ROOT + ".pointt.auth.OAuthClient.refresh", AsyncMock(return_value=fresh)
+    ) as refresh:
+        async with connected(hass, broker) as (entry, cloud, owner, _):
+            await eventually(lambda: ready(owner) and source_for(owner, HEAT))
+            assert owner.connections.connection_phase(cloud) is ConnectionPhase.READY
+            assert len(broker.connections) == 2
+            assert broker.connections[-1] == "Bearer " + fresh.access_token
+            refresh.assert_awaited_once()
+            assert not list(entry.async_get_active_flows(hass, {SOURCE_REAUTH}))
+
+
+async def test_rejected_subscription_is_visible_and_keeps_the_heat_pump(hass):
+    """C46: a refused SUBACK is a connection failure, not a silent session."""
+    broker = Broker()
+    broker.suback = 0x87
+    async with connected(hass, broker) as (_, cloud, owner, _):
+        await eventually(
+            lambda: (
+                view(owner)
+                and view(owner).account.error == "subscription_rejected"
+                and source_for(owner, HEAT)
+            )
+        )
+        account = view(owner).account
+        assert not account.connected and not view(owner).available(A)
+        assert owner.connections.connection_phase(cloud) is ConnectionPhase.READY
+
+
+async def test_periodic_claim_failure_keeps_the_mqtt_session(hass):
+    """C48: a failed five-minute device list keeps devices and connection."""
+    broker = Broker()
+    async with connected(hass, broker) as (_, _, owner, _):
+        await eventually(lambda: ready(owner, A) and ready(owner, B))
+        account = view(owner).account
+        claims = len(broker.claims)
+        broker.claim_status = 503
+
+        def woken(condition):
+            # Wake the maintenance loop until the next resynchronization ran.
+            account.selection_changed.set()
+            return condition()
+
+        with patch(ROOT + ".bacon.session.RESYNC_INTERVAL", 0):
+            await eventually(
+                lambda: woken(lambda: account.error == "service_unavailable")
+            )
+            assert ready(owner, A) and ready(owner, B) and account.connected
+            assert len(broker.claims) > claims
+            broker.claim_status = 200
+            await eventually(lambda: woken(lambda: account.error is None))
+        assert len(broker.connections) == 1
+        assert ready(owner, A) and ready(owner, B)
+
+
+async def test_added_device_waits_for_the_claim_service_without_reconnecting(hass):
+    """C48: a newly enabled device retries later; its peer keeps the socket."""
+    broker = Broker()
+    with patch(ROOT + ".managed_bacon.MAINTENANCE_INTERVAL", 0.05):
+        async with connected(hass, broker) as (_, cloud, owner, _):
+            await eventually(lambda: ready(owner, A) and ready(owner, B))
+            peer = view(owner, B)
+            account = peer.account
+            manager = owner.connections.management
+            manager.set_binding_enabled(manager.edit(cloud), binding(owner, A), False)
+            await settle(hass)
+            broker.claim_status = 503
+            manager.set_binding_enabled(manager.edit(cloud), binding(owner, A), True)
+            await eventually(lambda: account._selection_retry_at is not None)
+            assert account.error == "service_unavailable"
+            assert not ready(owner, A) and peer.available(B)
+            broker.claim_status = 200
+            # The retry time has come.
+            account._selection_retry_at = 0.0
+            await eventually(lambda: ready(owner, A))
+            assert account._selection_retry_at is None
+            assert len(broker.connections) == 1 and view(owner, B) is peer
+            assert (8, topic("account-A", A, "#")) in broker.filters
