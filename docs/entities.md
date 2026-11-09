@@ -101,7 +101,8 @@ this as a new meter cycle, not negative consumption. For the `total` entities,
 such a reset appears as one large negative amount in the long-term statistics
 and has to be corrected there. The integration does not alter the measurement, but
 records detected drops anonymously as `energy_counter_resets_detected` in
-diagnostics.
+diagnostics; decreases of the produced heat during defrosting appear apart as
+`produced_heat_decreases_detected`.
 
 ## Meaning of writeability columns
 

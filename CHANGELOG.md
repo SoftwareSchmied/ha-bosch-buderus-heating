@@ -74,6 +74,52 @@ Versioning after its first tagged preview.
 - The search for parts that are missing after a start now keeps to its plan
   when such a value answers with a server error: it ends after one day instead
   of repeating every five minutes.
+- A search that gets no answer at all is still repeated without using up its
+  plan, but now at most 24 times; then it waits for the next start, which
+  still looks for the missing parts.
+- **A failing request no longer makes the cloud read everything every
+  minute:** when one request of a cycle keeps failing as a whole, for example
+  because one value makes the cloud answer with a server error, the values
+  of the other requests were read again every minute instead of every 15 or
+  60 minutes, and a warning appeared every minute. Now only the failing
+  request is repeated, on its own so that it does not take other values down
+  with it; the other values keep their interval, and the warning appears once.
+- **Refreshing an entity reads everything at most once a minute:** the
+  "Update entity" action read the whole system from the cloud every time. An
+  automation calling it every few seconds multiplied the cloud requests and
+  could trigger the cloud's rate limit. A further refresh within one minute
+  (two with the cloud-friendly profile) now reads only the controls.
+  Diagnostics count both kinds.
+- **Fewer pointless "cloud requests are limited" repairs:** the repair now
+  needs three rate limits that the cloud really reported within 24 hours.
+  Requests that the integration held back itself during a running pause, for
+  example for a second gateway of the same cloud access, no longer count, and
+  the pause now starts when the cloud answered. With the cloud-friendly
+  profile already in use the repair is not offered, because it would change
+  nothing.
+- **A gateway missing from the cloud's list still shows its values:** if the
+  cloud answers its gateway list without this gateway, also with an empty
+  list, the system now starts with its saved inventory as during a cloud
+  outage, or shows the local readings when there is no usable inventory. The
+  question about an exchanged gateway works as before.
+- **No new sign-in for a single refused value:** if the cloud refused just the
+  manual room setpoint inside an answered request (HTTP 401), the integration
+  asked for a new sign-in although the sign-in was working. This value is now
+  read again with the regular poll, as all other values already were.
+- **"Search the system again" no longer warns about parts it keeps:** a part
+  the gateway did not report during a requested search or the search after a
+  firmware update stays and is read as before; the warning now names only the
+  parts that are really missing.
+
+### Diagnostics
+
+- `energy_counter_resets_detected` no longer counts the produced heat falling
+  during a defrost, and a change of the energy unit is no reset any more; the
+  values are compared in kWh. Decreases of the produced heat are counted in
+  the new `produced_heat_decreases_detected`.
+- New fields in each gateway's `runtime`: `rate_limit_events_last_24h`,
+  `explicit_refreshes_full`, `explicit_refreshes_control_only` and
+  `explicit_refresh_gap_seconds`.
 
 ### Dialogs
 

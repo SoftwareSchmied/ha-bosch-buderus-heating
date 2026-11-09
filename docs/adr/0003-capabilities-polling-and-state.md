@@ -81,8 +81,10 @@ start and then every six hours until one day has passed. Without stored
 resources, a root that ended with a temporary error is searched again on the
 same schedule. A search waits for a working cycle; a rate limit, no answer or
 a 5xx failure of the whole cloud postpones it without using an attempt; an
-HTTP 5xx answer for a missing path uses one; other errors never block the regular poll. A part
-still missing after the last search is no longer expected at the next start.
+HTTP 5xx answer for a missing path uses one; other errors never block the regular poll. After
+24 postponements the series ends until the next start, which still expects the
+parts. A part still missing after the last search is no longer expected at the
+next start.
 Registry entries of missing parts are never removed.
 
 If the gateway list or the first discovery fails with a temporary error and a
@@ -91,7 +93,11 @@ completes with that inventory instead of raising `ConfigEntryNotReady`. All
 entities exist and stay unavailable; no stored value is shown as current and
 writes are rejected. The regular poll reads the stored paths, and after the
 first working cycle one discovery compares the inventory with the system,
-repeated on the same schedule if it fails. A rejected sign-in still starts
+repeated on the same schedule if it fails. In a managed setup, an answered
+gateway list without the gateway (also an empty one) is treated the same way
+for the display, with the reason `gateway_not_listed`; without a usable
+inventory the local readings are shown, and the gateway-exchange question is
+decided from the list as before. A rejected sign-in still starts
 reauthentication; without a usable inventory setup is retried as before. `429` pauses all cloud
 polling according to `Retry-After`, bounded to one hour; if the server omits the
 header, the default pause is five minutes. A failed batch preserves last-good
