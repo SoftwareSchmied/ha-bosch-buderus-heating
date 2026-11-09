@@ -85,6 +85,18 @@ class BoschBuderusHolidayDelete extends HTMLElement {
       <p role="alert"></p>`;
     this._button = this.shadowRoot.querySelector("button");
     this._button.addEventListener("click", () => this._openConfirmation());
+    // HA submits its outer form on every Enter keydown, which would save the
+    // holiday instead of deleting it. The key opens the confirmation here and
+    // never reaches the form; the native activation is suppressed so it
+    // cannot ask a second time.
+    for (const type of ["keydown", "keyup"]) {
+      this._button.addEventListener(type, (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (type === "keydown" && !event.repeat) this._openConfirmation();
+      });
+    }
   }
 
   set label(value) {
@@ -118,8 +130,11 @@ class BoschBuderusHolidayDelete extends HTMLElement {
       message.textContent = error;
       return;
     }
+    // HA manages both disabled states itself: the request only blocks the
+    // button and afterwards keeps what HA set, before or meanwhile.
+    const formWasDisabled = form.disabled;
     this._busy = true;
-    this.disabled = true;
+    this._button.disabled = true;
     form.disabled = true;
     message.textContent = "";
     const fire = (name, detail) => this.dispatchEvent(new CustomEvent(name, {
@@ -136,8 +151,8 @@ class BoschBuderusHolidayDelete extends HTMLElement {
       message.textContent = error;
     } finally {
       this._busy = false;
-      this.disabled = false;
-      form.disabled = false;
+      this.disabled = this._disabled;
+      form.disabled = formWasDisabled;
       if (this.isConnected) fire("flow-step-footer-state-changed", { loading: false });
     }
   }

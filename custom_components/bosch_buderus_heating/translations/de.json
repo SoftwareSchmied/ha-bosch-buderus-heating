@@ -674,6 +674,7 @@
       "notification_gateways_changed": "Die Anlagenauswahl wurde geändert. Öffne die Einstellungen erneut.",
       "holiday_changed": "Der ausgewählte Urlaub wurde inzwischen geändert oder kann nicht mehr bearbeitet werden. Öffne ihn erneut, um die aktuellen Angaben zu prüfen.",
       "holiday_updated": "Die Urlaubseinstellungen wurden gespeichert und von der Heizungsanlage bestätigt.",
+      "holiday_unchanged": "Es wurde nichts geändert, daher wurde nichts an die Heizungsanlage gesendet.",
       "no_writable_holidays": "Die Urlaubsverwaltung ist gerade nicht verfügbar. Warte bitte, bis die Anlage ihre Urlaubseinstellungen bereitgestellt hat.",
       "holiday_deleted": "Die Urlaubszeit wurde gelöscht. Die Heizungsanlage hat das Entfernen bestätigt.",
       "not_loaded": "Bosch/Buderus Home Comfort muss geladen sein, bevor ein Urlaub konfiguriert werden kann.",

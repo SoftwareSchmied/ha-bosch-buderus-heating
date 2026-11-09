@@ -1564,6 +1564,10 @@ class BoschBuderusOptionsFlow(
                     raise WriteValidationError("Holiday ID is not writable")
                 if creating:
                     await choice.coordinator.async_create_holiday(values)
+                elif values == current:
+                    # Saving the values as shown sends nothing: such a write
+                    # could only undo a change made meanwhile in the app.
+                    return self.async_abort(reason="holiday_unchanged")
                 else:
                     await choice.coordinator.async_update_holiday(
                         holiday_id, values, expected=current

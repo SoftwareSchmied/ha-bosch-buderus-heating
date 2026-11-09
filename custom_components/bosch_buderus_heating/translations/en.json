@@ -674,6 +674,7 @@
       "notification_gateways_changed": "The installation selection changed. Open the settings again.",
       "holiday_changed": "The selected holiday has changed or is no longer available for editing. Open the holiday again to review its current details.",
       "holiday_updated": "The holiday settings were saved and confirmed by the heating system.",
+      "holiday_unchanged": "Nothing was changed, so nothing was sent to the heating system.",
       "no_writable_holidays": "Holiday management is currently unavailable. Wait until the installation has provided its holiday settings.",
       "holiday_deleted": "The holiday was deleted and its removal was confirmed by the heating system.",
       "not_loaded": "Bosch/Buderus Home Comfort must be loaded before a holiday can be configured.",
