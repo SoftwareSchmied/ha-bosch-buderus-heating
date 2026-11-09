@@ -50,8 +50,12 @@ MAX_STORE_BYTES = 1024 * 1024
 MAX_LOCAL_PAUSE_SECONDS = 86400.0
 # A failed save of the pauses is tried again after this long.
 SAVE_RETRY_SECONDS = 60.0
+# A pause is saved again only when it gets longer by more than this; the
+# same failure noted twice (by the read and by the polling) writes once.
+PAUSE_SAVE_MARGIN = 1.0
 BUDGET_KEY = f"{DOMAIN}.local_budget"
 _SEQUENCE = count()
+_ALIAS = re.compile(r"[0-9a-f]{64}")
 _REASONS = frozenset(
     {"rate_limited", "service_unavailable", "connection", "legacy", "failure"}
 )
@@ -252,11 +256,16 @@ class LocalReadBudget:
         if reason not in _REASONS:
             raise LocalBudgetError("invalid_local_pause_reason")
         state = self._state.root()
-        deadline = self._clock() + seconds
-        if deadline > state.pause_until:
-            state.pause_until = deadline
-            state.reason = reason
-        if self._manager is not None:
+        now = self._clock()
+        deadline = now + seconds
+        if deadline <= max(state.pause_until, now):
+            # No pause, or the running one already holds it and is saved (or
+            # saving is tried again): nothing to write.
+            return
+        extends = deadline - max(state.pause_until, now)
+        state.pause_until = deadline
+        state.reason = reason
+        if self._manager is not None and extends > PAUSE_SAVE_MARGIN:
             await self._manager.persist()
 
     async def bind_peers(self, peers: tuple[str, ...]) -> None:
@@ -373,42 +382,77 @@ def _load(path: Path) -> list[dict[str, object]]:
     return [] if body is None else _parse(body)
 
 
+def _restore(path: Path) -> tuple[list[dict[str, object]], bool]:
+    """The saved pauses, and whether an unreadable file was set aside.
+
+    An unreadable file (broken bytes, another form or version) is kept as
+    the only backup next to it and the access starts without saved pauses,
+    instead of staying closed until someone removes the file. A failure to
+    read or move the file is a storage failure that is tried again.
+    """
+    try:
+        return _load(path), False
+    except LocalBudgetError:
+        path.replace(path.with_name(path.name + ".corrupt"))
+        return [], True
+
+
 def _parse(body: bytes) -> list[dict[str, object]]:
+    """The usable pauses of a saved file.
+
+    Tolerant of what a later release may add to the same version: further
+    fields are ignored, an unknown reason counts as ``failure``, and rows or
+    aliases that cannot be used are left out (within the limits). Only
+    unreadable bytes and another form or version raise.
+    """
     if len(body) > MAX_STORE_BYTES:
         raise LocalBudgetError("invalid_local_budget_store")
-    data = json.loads(body.decode("utf-8"), object_pairs_hook=unique_object)
+    try:
+        data = json.loads(body.decode("utf-8"), object_pairs_hook=unique_object)
+    except ValueError, RecursionError:
+        raise LocalBudgetError("invalid_local_budget_store") from None
     if (
         not isinstance(data, dict)
-        or set(data) != {"version", "pauses"}
-        or type(data["version"]) is not int
+        or type(data.get("version")) is not int
         or data["version"] != 1
-        or not isinstance(data["pauses"], list)
-        or len(data["pauses"]) > MAX_GROUPS
+        or not isinstance(data.get("pauses"), list)
     ):
         raise LocalBudgetError("invalid_local_budget_store")
+    rows: list[dict[str, object]] = []
     seen: set[str] = set()
     for row in data["pauses"]:
-        if (
-            not isinstance(row, dict)
-            or set(row) != {"aliases", "remaining", "reason"}
-            or not isinstance(row["aliases"], list)
-            or not row["aliases"]
-            or not isinstance(row["reason"], str)
-            or row["reason"] not in _REASONS
-        ):
-            raise LocalBudgetError("invalid_local_budget_store")
+        if len(rows) >= MAX_GROUPS:
+            break
+        if not isinstance(row, dict) or not isinstance(row.get("aliases"), list):
+            continue
+        remaining = row.get("remaining")
+        try:
+            _seconds(remaining)
+        except LocalBudgetError:
+            continue
+        aliases: list[str] = []
         for alias in row["aliases"]:
             if (
-                not isinstance(alias, str)
-                or re.fullmatch(r"[0-9a-f]{64}", alias) is None
-                or alias in seen
+                isinstance(alias, str)
+                and _ALIAS.fullmatch(alias) is not None
+                and alias not in seen
+                and len(seen) < MAX_ALIASES
             ):
-                raise LocalBudgetError("invalid_local_budget_store")
-            seen.add(alias)
-        _seconds(row["remaining"])
-    if len(seen) > MAX_ALIASES:
-        raise LocalBudgetError("invalid_local_budget_store")
-    return cast(list[dict[str, object]], data["pauses"])
+                seen.add(alias)
+                aliases.append(alias)
+        if not aliases:
+            continue
+        reason = row.get("reason")
+        rows.append(
+            {
+                "aliases": aliases,
+                "remaining": remaining,
+                "reason": reason
+                if isinstance(reason, str) and reason in _REASONS
+                else "failure",
+            }
+        )
+    return rows
 
 
 def _save(path: Path, rows: list[dict[str, object]]) -> None:
@@ -484,7 +528,13 @@ class LocalBudgetManager:
         async with self._lock:
             if self._loaded:
                 return
-            rows = await self._io(lambda: _load(self._path))
+            rows, set_aside = await self._io(lambda: _restore(self._path))
+            if set_aside:
+                _LOGGER.warning(
+                    "The saved pauses of the local access could not be read; "
+                    "they were kept as a backup and the local access starts "
+                    "without them"
+                )
             for row in rows:
                 aliases = set(cast(list[str], row["aliases"]))
                 state = _State(

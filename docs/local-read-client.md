@@ -35,8 +35,8 @@ encoding.
 
 When kept connections misbehave, the client falls back automatically to a new
 connection per read, the behaviour before keep-alive. Three failures on kept
-connections (closed or reset before an answer, no answer in time, or a broken
-answer) within 15 minutes start the fallback for 6 hours; a repeated fallback
+connections (closed or reset before an answer, no response headers in time,
+or a broken answer) within 15 minutes start the fallback for 6 hours; a repeated fallback
 lasts 12 and then 24 hours. Keep-alive is then tried again. The first fallback
 is logged once as a warning. The fallback only changes how connections are
 opened, so reads continue during it. The
@@ -80,7 +80,8 @@ request all of it. History windows and discovery have separate limits.
 | Kept connection closed or reset before any answer | Deferred (`reused_connection_closed`) without a pause; the next read opens a new connection |
 | HTTP 400, 403, 404 or 406 | Path error; no permanent unsupported-device decision |
 | Redirect or other non-success status below 500 | Path error; no redirect is followed |
-| Invalid body, wrong resource or timeout after request headers start | Path error; earlier successful observations remain intact |
+| Invalid body, wrong resource or timeout after request headers start | Path error; earlier successful observations remain intact. A timeout after the response headers arrived (a slow body, or a complete answer just after the deadline on a busy host) does not count against kept connections |
+| An answer the schema accepts but the decoder cannot handle | Path error `local_decode_failed` of that path only; logged once per path template and error type as a warning |
 | HTTP 401 | Access error; this client stops until credentials are deliberately replaced |
 | Any certificate change | Access error; this client stops until trust is explicitly confirmed |
 | HTTP 429 or 503 | Access error and the complete valid `Retry-After` pause, otherwise 60 seconds |
@@ -93,7 +94,8 @@ path from a known resource that temporarily disappeared.
 
 Pauses use monotonic time and are extended, never shortened by later failures.
 HTTP-date `Retry-After` values are converted once to a duration. A long pause
-is not capped at one hour. A zero delay still respects minimum request spacing.
+is not capped at one hour. A zero delay still respects minimum request spacing;
+the polling service then still pauses with its growing access backoff.
 A pause already received is retained even if the generation changes before the
 result can be returned. Managed pauses are atomically saved and read back before
 admission reopens. A restart restores the full saved remaining duration; wall

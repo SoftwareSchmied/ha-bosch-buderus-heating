@@ -274,6 +274,37 @@ async def test_waits_respect_retry_after_and_the_gateway_pause(hass, start):
     assert p.runtime.local_state("local").condition is LocalCondition.PAUSED
 
 
+@pytest.mark.parametrize(
+    ("retry_after", "expected"),
+    [
+        (0.0, [60.0, 120.0, 300.0, 600.0, 600.0]),
+        (1.0, [60.0, 120.0, 300.0, 600.0, 600.0]),
+        (None, [60.0, 120.0, 300.0, 600.0, 600.0]),
+        # A longer Retry-After is kept in full.
+        (5000.0, [5000.0] * 5),
+    ],
+)
+async def test_a_short_retry_after_still_lets_the_start_pause_grow(
+    hass, start, monkeypatch, retry_after, expected
+):
+    """TLS-2: an overloaded gateway answering 503 with Retry-After 0 or 1 is
+    not probed again every second; the pause grows as without the header."""
+    from custom_components.bosch_buderus_heating import local_budget
+
+    p = start
+    pauses: list[tuple[float, str]] = []
+
+    async def pause(self, seconds, reason="failure"):
+        pauses.append((seconds, reason))  # recorded; the next check runs at once
+
+    monkeypatch.setattr(local_budget.LocalReadBudget, "pause", pause)
+    p.plan, p.retry_after = ["busy"] * 5, retry_after
+    p.runtime.start()
+    await running(hass, p)
+    assert [seconds for seconds, _ in pauses] == expected
+    assert len(p.probes) == 6
+
+
 async def test_removing_the_access_removes_its_retry_note(hass, start):
     p = start
     p.plan = ["html"] * module.START_ISSUE_ATTEMPTS

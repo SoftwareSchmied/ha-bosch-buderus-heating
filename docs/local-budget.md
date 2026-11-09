@@ -45,12 +45,23 @@ passwords, resource values or raw gateway identifiers. Hashes are correlation
 keys, not a claim of anonymization. The file is limited to 1 MiB and is not part
 of public diagnostics.
 
-Every received pause is applied immediately, saved atomically and read back.
-Admission remains closed while the save is pending. Cancellation of the caller
-does not cancel the write, including while it waits behind another write.
-Malformed storage or a failed save stops further local admission; the existing
-file is retained. This does not stop cloud polling. These guarantees rely on the
-filesystem and do not claim protection against every hardware failure.
+Every received pause is applied immediately. A pause that gets longer by more
+than a second is saved atomically and read back; one the running pause already
+holds writes nothing. Admission remains closed while the save is pending.
+Cancellation of the caller does not cancel the write, including while it waits
+behind another write. A failed save keeps the pauses in effect in memory and is
+tried again a minute later. A file that cannot be read stops further local
+admission and is read again with the next start attempt.
+
+Reading the file is tolerant of what a later release may add: further fields
+are ignored, an unknown reason counts as a general failure, and rows or
+aliases that cannot be used are left out. An unreadable file (broken bytes,
+another form or version) is kept as the only backup,
+`.storage/bosch_buderus_heating.local_budget.corrupt`, and the local access
+starts without saved pauses, with a warning in the log, instead of staying
+closed until the file is removed by hand. This does not stop cloud polling.
+These guarantees rely on the filesystem and do not claim protection against
+every hardware failure.
 
 Deadlines use monotonic time. HTTP-date Retry-After is converted once to a
 duration, and later shorter delays never shorten an existing pause. Long delays
@@ -71,8 +82,10 @@ health. States distinguish initialization, ready access, a pause, unavailability
 authentication and certificate confirmation. The runtime can accept recovery
 updates for the current configuration even while its source is unavailable.
 
-Only ready access with a confirmed identity supplies normal source data. Other
-states may retain immutable historical observations with their original times.
+Only a ready or merely paused access with a confirmed identity supplies normal
+source data. A pause only slows the requests: values read before stay current
+until their own expiry. Other states withdraw them at once and may retain
+immutable historical observations with their original times.
 Changing health does not make those observations fresh. Removed bindings and
 obsolete generations cannot publish data. Cloud source behavior is unchanged.
 The scheduler applies per-resource expiry and recovery rules.

@@ -335,15 +335,17 @@ async def test_stored_pause_longer_than_one_day_is_shortened(hass, tmp_path):
 
 
 async def test_unreadable_store_is_read_again_on_the_next_start(hass, tmp_path):
+    """A file that cannot be read at all (here a directory in its place) is
+    a storage failure: tried again, never replaced."""
     path = tmp_path / "budget.json"
-    path.write_bytes(b"{}")
+    path.mkdir()
     loaded = LocalBudgetManager(hass, clock=Clock())
     loaded._path = path
     try:
         with pytest.raises(LocalBudgetError):
             await loaded.budget(CONTEXT)
-        assert path.read_bytes() == b"{}"  # never overwritten
-        path.unlink()
+        assert path.is_dir() and not path.with_name("budget.json.corrupt").exists()
+        path.rmdir()
         budget = await loaded.budget(CONTEXT)
         assert budget.claim() is not None
     finally:
@@ -378,25 +380,125 @@ async def test_pause_extension_cannot_shorten_existing_wait(manager):
 @pytest.mark.parametrize(
     "body",
     [
+        b"",
+        b"{",
+        b"\xff\xfe",
+        b"[]",
         b"{}",
         b'{"version":2,"pauses":[]}',
         b'{"version":1,"version":1,"pauses":[]}',
-        b'{"version":1,"pauses":[{}]}',
         b'{"version":true,"pauses":[]}',
-        b'{"version":1,"pauses":[{"aliases":["bad"],"remaining":1,"reason":"failure"}]}',
+        b'{"version":1,"pauses":{}}',
+        b"[" * 100000 + b"]" * 100000,
     ],
 )
-async def test_invalid_storage_is_preserved_and_fails_closed(hass, tmp_path, body):
-    manager = LocalBudgetManager(hass)
+async def test_unreadable_storage_is_set_aside_and_the_access_starts(
+    hass, tmp_path, body, caplog
+):
+    """STORE-2: an unreadable file never keeps the local access closed: it
+    is kept as the only backup and the access starts without saved pauses."""
+    manager = LocalBudgetManager(hass, clock=Clock())
     manager._path = tmp_path / "invalid-budget.json"
-    manager._path.parent.mkdir(parents=True, exist_ok=True)
     manager._path.write_bytes(body)
+    try:
+        budget = await manager.budget(CONTEXT)
+        assert budget.claim() is not None and budget.pause_seconds == 0
+        backup = tmp_path / "invalid-budget.json.corrupt"
+        assert backup.read_bytes() == body and not manager._path.exists()
+        assert "kept as a backup" in caplog.text
+        # The next pause writes a new, readable file.
+        await budget.pause(60)
+        assert json.loads(manager._path.read_bytes())["pauses"][0]["remaining"] == 60
+    finally:
+        await manager.close()
+
+
+async def test_a_later_format_of_the_same_version_keeps_its_usable_pauses(
+    hass, tmp_path
+):
+    """STORE-2: a downgrade after a new reason or field, or a damaged row,
+    keeps every pause that can still be used."""
+    good, other, damaged = "a" * 64, "b" * 64, "c" * 64
+    path = tmp_path / "budget.json"
+    path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "pauses": [
+                    # A reason and a field of a later release.
+                    {
+                        "aliases": [good],
+                        "remaining": 600,
+                        "reason": "brake",
+                        "since": 1,
+                    },
+                    # A bad alias and a duplicate are left out, the rest kept.
+                    {
+                        "aliases": ["bad", good, other],
+                        "remaining": 300.5,
+                        "reason": "rate_limited",
+                    },
+                    {"aliases": [damaged], "remaining": -1, "reason": "failure"},
+                    {"aliases": [damaged], "remaining": "1", "reason": "failure"},
+                    {"aliases": "x", "remaining": 1, "reason": "failure"},
+                    {"aliases": ["bad"], "remaining": 1, "reason": "failure"},
+                    {"aliases": [damaged], "remaining": 9, "reason": ["x"]},
+                    [],
+                ],
+                "written_by": "a later release",
+            }
+        )
+    )
+    loaded = LocalBudgetManager(hass, clock=Clock())
+    loaded._path = path
+    try:
+        await loaded.initialize()
+        now = loaded._clock()
+        assert loaded._aliases[good].pause_until - now == 600
+        assert loaded._aliases[good].reason == "failure"
+        assert loaded._aliases[other].pause_until - now == 300.5
+        assert loaded._aliases[other].reason == "rate_limited"
+        assert loaded._aliases[damaged].pause_until - now == 9
+        assert loaded._aliases[damaged].reason == "failure"
+        assert not path.with_name("budget.json.corrupt").exists()
+    finally:
+        await loaded.close()
+
+
+async def test_tolerant_reading_keeps_the_limits(monkeypatch):
+    monkeypatch.setattr(module, "MAX_GROUPS", 2)
+    monkeypatch.setattr(module, "MAX_ALIASES", 3)
+    rows = [
+        {"aliases": [f"{index:064x}", f"{index + 100:064x}"], "remaining": 1}
+        for index in range(4)
+    ]
+    parsed = module._parse(json.dumps({"version": 1, "pauses": rows}).encode())
+    assert [row["aliases"] for row in parsed] == [
+        [f"{0:064x}", f"{100:064x}"],
+        [f"{1:064x}"],
+    ]
+    assert all(row["reason"] == "failure" for row in parsed)
     with pytest.raises(LocalBudgetError):
-        await manager.initialize()
-    with pytest.raises(LocalBudgetError):
-        manager.check_ready()
-    await manager.close()
-    assert manager._path.read_bytes() == body
+        module._parse(b" " * (module.MAX_STORE_BYTES + 1))
+
+
+async def test_a_pause_the_running_one_already_holds_writes_nothing(manager):
+    """TLS-2: the same failure noted by the read and by the polling, or a
+    zero Retry-After, does not write the file again."""
+    budget = await manager.budget(CONTEXT)
+    with patch.object(manager, "persist", wraps=manager.persist) as persist:
+        await budget.pause(0)
+        assert persist.call_count == 0 and budget.pause_seconds == 0
+        await budget.pause(60)
+        assert persist.call_count == 1
+        manager._clock.advance(0.2)
+        await budget.pause(60, "connection")  # 0.2 s longer
+        await budget.pause(30)
+        assert persist.call_count == 1
+        assert budget.pause_seconds == pytest.approx(60)
+        manager._clock.advance(10)
+        await budget.pause(120)
+        assert persist.call_count == 2
 
 
 async def test_group_limit_rejects_new_scope_without_resetting_existing_pause(

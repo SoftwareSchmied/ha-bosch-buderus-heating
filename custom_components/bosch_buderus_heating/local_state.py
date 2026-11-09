@@ -41,7 +41,8 @@ class LocalSourceState:
 
     @property
     def current_observations(self) -> tuple[LocalObservation, ...]:
-        """Only explicitly current resource views can supply measurement data."""
+        """Only explicitly current resource views can supply measurement data,
+        from a ready or merely paused access with a confirmed identity."""
         return self._current
 
     def __post_init__(self) -> None:
@@ -73,7 +74,13 @@ class LocalSourceState:
             or len({v.request.target for v in self.resources}) != len(self.resources)
         ):
             raise ValueError("invalid_local_resource_views")
-        if self.condition is LocalCondition.READY and self.identity_confirmed:
+        # A pause of a confirmed access only slows the requests: values read
+        # before stay current until their own expiry (three intervals). Every
+        # other condition withdraws them at once.
+        if self.identity_confirmed and self.condition in {
+            LocalCondition.READY,
+            LocalCondition.PAUSED,
+        }:
             object.__setattr__(
                 self,
                 "_current",

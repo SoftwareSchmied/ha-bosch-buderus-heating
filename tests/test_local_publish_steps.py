@@ -217,8 +217,9 @@ async def test_unchanged_readings_are_not_worked_out_again(monkeypatch):
     service.inventory.accept(success(OTHER, clock(), value=5), clock())
     service._publish()
     assert built == [OTHER.path] and len(published) == 2
-    # Its freshness changes with time: worked out again at that moment.
-    clock.advance(50)
+    # Its freshness changes with time: worked out again at that moment
+    # (late after the interval and its grace of 10 s).
+    clock.advance(60)
     service._publish()
     assert REQUEST.path in built and PAIRED.path in built
     assert published[-1].resources[0].freshness is Freshness.LATE
@@ -256,8 +257,9 @@ async def test_display_without_cloud_follows_the_local_period_at_once():
 
 
 async def test_source_switch_local_to_cloud_and_back():
-    """A paused local access hands the display to the cloud; when it is ready
-    again the same current reading is shown locally again."""
+    """A paused local access keeps its current readings (SEL-1); a stopped
+    one hands the display to the cloud, and when it is ready again the same
+    current reading is shown locally again."""
     clock, published = Clock(), []
     world = World()
     service = make_service(world, clock, published)
@@ -270,9 +272,17 @@ async def test_source_switch_local_to_cloud_and_back():
     service._publish()
     paused = state(published[-1])
     assert paused.condition is LocalCondition.PAUSED
-    assert not paused.current_observations  # the cloud value is shown
-    assert not any(v.available for v in published[-1].resources)
+    assert paused.current_observations == local.current_observations
+    assert [v.request for v in published[-1].resources if v.available] == [REQUEST]
     clock.advance(30)
+    service._fault = "local_poll_failed"
+    service._fault_until = clock() + 60
+    service._publish()
+    stopped = state(published[-1])
+    assert stopped.condition is LocalCondition.UNAVAILABLE
+    assert not stopped.current_observations  # the cloud value is shown
+    assert not any(v.available for v in published[-1].resources)
+    service._fault = None
     service._publish()
     again = state(published[-1])
     assert again.condition is LocalCondition.READY

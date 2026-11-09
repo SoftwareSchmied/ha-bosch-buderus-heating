@@ -31,6 +31,9 @@ The rules below describe the selection whenever local values are used.
   scheduled at its last read.
 - **Switching away** happens when the local reading expires (three missed
   intervals) or an explicit local answer ends it. No additional error counter.
+  A pause of the local access (for example after one failed request) keeps
+  the local readings until they expire; a refused token, a changed
+  certificate or an unavailable access ends them at once.
 - **Return** happens with the first valid local reading. The three-interval
   limit keeps switching to at most one change and back per three intervals.
 - **Lists** (heat demand, variable tariff support status) are shown locally
@@ -51,8 +54,8 @@ the local value of a paired reading, the cloud reads that reading only every
 minutes, seven of its two-minute intervals). Readings of groups that the
 cloud reads every 15 minutes or less often anyway keep their interval.
 
-- **Switching to the cloud value** (the local access is not ready, paused or
-  failed, the local reading expired or does not fit, or the option is
+- **Switching to the cloud value** (the local access is not ready or failed,
+  the local reading expired or does not fit, or the option is
   switched off) reads the cloud value at once, if it is older than its normal
   interval, and from then on at its normal rate. Until that read arrives,
   usually within seconds, the entity shows the last cloud value (see

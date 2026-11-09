@@ -360,7 +360,10 @@ def test_failed_read_is_not_repeated_at_once(result):
     confirmed(planner, REQUEST, 0, due=0)
     work = planner.pick(100)
     planner.finish(work, result, 105)
-    assert planner.inventory.records[REQUEST.target].due == 160
+    # A path error withdraws the value: asked again after 30 s (PLAN-1); an
+    # access error keeps the value and its period.
+    expected = 135 if result.state is ReadState.PATH_ERROR else 160
+    assert planner.inventory.records[REQUEST.target].due == expected
     assert planner.pick(106) is None
 
 

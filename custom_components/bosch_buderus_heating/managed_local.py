@@ -74,8 +74,8 @@ _STOP = frozenset(
     {ProbeProblem.AUTH_REJECTED, ProbeProblem.TLS_CHANGED, ProbeProblem.OLD_FIRMWARE}
 )
 # The gateway cannot be reached or asks for a pause: the stored pause of the
-# gateway holds every reader, growing up to the last of these without
-# Retry-After.
+# gateway holds every reader, growing up to the last of these; a longer
+# Retry-After is kept.
 _UNREACHABLE = frozenset(
     {
         ProbeProblem.CONNECT,
@@ -654,9 +654,14 @@ class LocalSource:
                 return self._stop(LocalCondition.UNAVAILABLE, problem.value)
             delay = exchange.retry_after_seconds
             if problem in _UNREACHABLE:
-                if delay is None:
-                    delay = UNREACHABLE_RETRY[min(failures, len(UNREACHABLE_RETRY) - 1)]
-                    failures += 1
+                # Growing with every failed check, also with a Retry-After: a
+                # longer one is kept in full, a short or zero one (or a date
+                # in the past) never makes the checks repeat at once.
+                delay = max(
+                    delay or 0.0,
+                    UNREACHABLE_RETRY[min(failures, len(UNREACHABLE_RETRY) - 1)],
+                )
+                failures += 1
                 await budget.pause(
                     delay,
                     "rate_limited"

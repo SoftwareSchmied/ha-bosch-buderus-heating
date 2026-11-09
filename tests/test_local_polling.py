@@ -159,9 +159,12 @@ def test_class_intervals_and_expiry_remain_configured_not_backlog_based(interval
     inventory.accept(success(now=100), 100)
     assert period(REQUEST, interval) == interval
     assert period(request_for_path("/gateway/brand"), interval) == 86400
+    late = inventory_module.late_after(interval)
     for elapsed, freshness, available in [
         (0, Freshness.FRESH, True),
-        (interval, Freshness.LATE, True),
+        # A grace of a tenth of the interval, at least 10 s (PLAN-3).
+        (interval, Freshness.FRESH, True),
+        (late, Freshness.LATE, True),
         (3 * interval, Freshness.EXPIRED, False),
     ]:
         view = inventory.view(record, 100 + elapsed, source_ready=True)
@@ -170,8 +173,8 @@ def test_class_intervals_and_expiry_remain_configured_not_backlog_based(interval
             available,
             elapsed,
         )
-    assert inventory.next_expiry(100) == 100 + interval
-    assert inventory.next_expiry(100 + interval) == 100 + 3 * interval
+    assert inventory.next_expiry(100) == 100 + late
+    assert inventory.next_expiry(100 + late) == 100 + 3 * interval
     assert inventory.next_expiry(100 + 3 * interval) is None
     assert record.observation.observed_monotonic == 100
 
@@ -189,11 +192,12 @@ def test_known_path_error_immediate_unavailable_then_same_record_recovers(status
     inventory.accept(success(), 0)
     inventory.accept(missing(REQUEST, status=status, problem="invalid_response"), 30)
     assert not inventory.view(record, 30, source_ready=True).available
-    assert record.observation.observed_monotonic == 0 and record.due == 90
-    inventory.accept(success(now=90, value=22), 90)
+    # Withdrawn: asked again soon (PLAN-1), never later than its period.
+    assert record.observation.observed_monotonic == 0 and record.due == 60
+    inventory.accept(success(now=60, value=22), 60)
     assert inventory.records[REQUEST.target] is record
-    assert inventory.view(record, 90, source_ready=True).available
-    assert record.actual_interval == 90
+    assert inventory.view(record, 60, source_ready=True).available
+    assert record.actual_interval == 60 and record.retries == 0
 
 
 def test_timeout_does_not_refresh_or_prematurely_invalidate_known_value():

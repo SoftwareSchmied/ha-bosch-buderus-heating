@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import math
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from time import monotonic
@@ -17,7 +18,7 @@ from ..local_probe import ProbeContext, TransportFailure
 from ..local_read import BUDGET_CLOSED, ReadProblem, ReadResult, ReadState
 from ..local_state import LocalCondition
 from ..local_transport import StaleLocalRequest
-from .inventory import ResourceInventory, ResourceRecord, ResourceView
+from .inventory import RENEW_MARGIN, ResourceInventory, ResourceRecord, ResourceView
 from .planner import ExplicitOperation, PollPlanner, Work
 from .policy import start_offset
 from .storage import (
@@ -34,6 +35,21 @@ _LOGGER = logging.getLogger(__name__)
 # A recoverable problem (an unexpected error, a failed store or listener)
 # pauses the reads for a bounded, growing time; they then start again.
 FAULT_BACKOFF = (60.0, 120.0, 240.0, 480.0, 900.0)
+# The same problem is reported as a warning at most this often; repeated
+# pauses in between are logged at debug level.
+FAULT_WARNING_GAP = 3600.0
+# A failed access (connection, timeout before an answer, 5xx, 429) pauses all
+# reads of the gateway for these times, growing with every failure in a row.
+# A longer Retry-After of the gateway is kept; a shorter one never ends the
+# growth.
+ACCESS_BACKOFF = (60.0, 120.0, 300.0, 600.0)
+# Search records of signals the gateway stopped listing are removed at most
+# this often (they are kept a day).
+PRUNE_GAP = 60.0
+# The local values stay current while the access only pauses: a pause slows
+# the requests and says nothing about values already read. Their own expiry
+# (three intervals) still applies.
+_SUPPLYING = frozenset({LocalCondition.READY, LocalCondition.PAUSED})
 # A changed schedule (search progress, confirmed or failed records) is saved
 # at most this often; only its timing changed: at most every 30 minutes.
 SAVE_GAP = 60.0
@@ -168,12 +184,18 @@ class LocalPollingService:
         self._fault: str | None = None
         self._fault_until = 0.0
         self._faults = 0
+        # When each problem was last reported as a warning.
+        self._warned: dict[str, float] = {}
         self._closed = False
         # T8: Home Assistant stops; reads end without a warning.
         self._stopping = False
         self._started = False
         self._loaded = False
         self._failures = 0
+        # When this service last paused the access after a failed read: a
+        # read that started before it belongs to the same failure.
+        self._paused_at: float | None = None
+        self._next_prune = 0.0
         # What the schedule file holds, without the time that passes.
         self._saved_state: tuple[object, object] | None = None
         self._last_save = clock()
@@ -192,6 +214,10 @@ class LocalPollingService:
         self._shown_records: dict[str, ResourceRecord] | None = None
         self._shown_ready: bool | None = None
         self._shown_token: tuple[object, ...] | None = None
+        # When a published freshness changes next, and when the expiry timer
+        # wakes up next (it is woken earlier only for an earlier change).
+        self._next_change = math.inf
+        self._expiry_at = math.inf
 
     @property
     def condition(self) -> LocalCondition:
@@ -214,9 +240,7 @@ class LocalPollingService:
             condition,
             self._identity_confirmed,
             tuple(
-                self.inventory.view(
-                    r, now, source_ready=condition is LocalCondition.READY
-                )
+                self.inventory.view(r, now, source_ready=condition in _SUPPLYING)
                 for r in self.inventory.records.values()
             ),
             self.planner.cursor,
@@ -250,6 +274,7 @@ class LocalPollingService:
         shown: dict[str, _Shown] = {}
         changed = len(previous) != len(records)
         replaced = False
+        soonest = math.inf
         for target, record in records.items():
             item = previous.get(target)
             if item is None or item.record is not record:
@@ -269,6 +294,7 @@ class LocalPollingService:
                 and item.current(record, interval)
             ):
                 shown[target] = item
+                soonest = min(soonest, item.renew)
                 continue
             view, renew = inventory.timed_view(
                 record, now, source_ready=ready, interval=interval
@@ -282,6 +308,7 @@ class LocalPollingService:
             )
             if item is None or item.part != part:
                 changed = True
+            soonest = min(soonest, renew)
             shown[target] = _Shown(
                 record,
                 record.observation,
@@ -298,12 +325,16 @@ class LocalPollingService:
         if not changed and replaced and list(previous) != list(shown):
             changed = True
         self._shown, self._shown_records, self._shown_ready = shown, records, ready
+        self._next_change = soonest
         return changed
 
     def _publish(self) -> None:
         now = self._clock()
         condition = self.condition
-        changed = self._carry_forward(now, condition is LocalCondition.READY)
+        changed = self._carry_forward(now, condition in _SUPPLYING)
+        if self._next_change < self._expiry_at:
+            # A new reading ages earlier than the expiry timer looks next.
+            self._age_wake.set()
         pause = max(0.0, self.planner.discovery_pause_until - now)
         problem = (
             self._blocked
@@ -349,7 +380,10 @@ class LocalPollingService:
         if self._closed or self._blocked or self._fault is not None:
             return
         delay = FAULT_BACKOFF[min(self._faults, len(FAULT_BACKOFF) - 1)]
-        if not self._faults:
+        now = self._clock()
+        last = self._warned.get(problem)
+        if not self._faults and (last is None or now - last >= FAULT_WARNING_GAP):
+            self._warned[problem] = now
             _LOGGER.warning(
                 "Local readings paused after an unexpected problem (%s); "
                 "trying again in %d s",
@@ -359,7 +393,7 @@ class LocalPollingService:
         else:
             _LOGGER.debug("Local readings paused again (%s) for %d s", problem, delay)
         self._faults += 1
-        self._fault, self._fault_until = problem, self._clock() + delay
+        self._fault, self._fault_until = problem, now + delay
         self.wake()
 
     def wake(self) -> None:
@@ -471,7 +505,9 @@ class LocalPollingService:
         except TimeoutError:
             pass
 
-    async def _access_error(self, result: ReadResult) -> None:
+    async def _access_error(
+        self, result: ReadResult, started: float | None = None
+    ) -> None:
         if result.problem in {
             ReadProblem.AUTH_REQUIRED,
             TransportFailure.TLS_CHANGED,
@@ -486,21 +522,29 @@ class LocalPollingService:
         if result.problem == "local_budget_storage_failed":
             self._recover(result.problem)
             return
+        if (
+            started is not None
+            and self._paused_at is not None
+            and started < self._paused_at
+        ):
+            # Both reads of an unreachable gateway fail together: one that
+            # started before the running pause is the same failure and does
+            # not let the pause grow a second time.
+            return
+        delay = ACCESS_BACKOFF[min(self._failures, len(ACCESS_BACKOFF) - 1)]
+        self._failures = min(len(ACCESS_BACKOFF), self._failures + 1)
         if result.problem == ReadProblem.RATE_LIMITED:
-            delay = (
-                result.retry_after_seconds
-                if result.retry_after_seconds is not None
-                else 60
-            )
+            # A longer Retry-After is kept in full; a short or zero one does
+            # not stop the growing pause.
+            delay = max(delay, result.retry_after_seconds or 0.0)
             reason = "rate_limited"
         else:
-            delay = (60, 120, 300, 600)[min(self._failures, 3)]
-            self._failures = min(4, self._failures + 1)
             reason = (
                 "service_unavailable"
                 if result.problem == ReadProblem.SERVICE_UNAVAILABLE
                 else "connection"
             )
+        self._paused_at = self._clock()
         await self.budget.pause(delay, reason)
 
     async def _read(self, work: Work) -> None:
@@ -509,7 +553,7 @@ class LocalPollingService:
             if self._closed or not self._current() or self._blocked or self._fault:
                 return
             if result.state is ReadState.ACCESS_ERROR:
-                await self._access_error(result)
+                await self._access_error(result, work.started)
             previous = self.inventory.records.get(work.request.target)
             firmware_changed = (
                 work.request.path == "/gateway/versionFirmware"
@@ -562,7 +606,9 @@ class LocalPollingService:
         finally:
             self.planner.abandon(work)
             self._workers.pop(work.request.target, None)
-            self.wake()
+            # The scheduler only; the expiry timer is woken by the
+            # publication when a reading ages earlier than it looks next.
+            self._wake.set()
 
     def _save_due(self, now: float) -> tuple[object, object] | None:
         """The schedule to save now, or None when the file is still current.
@@ -616,7 +662,9 @@ class LocalPollingService:
             now = self._clock()
         if (state := self._save_due(now)) is not None:
             await self._save(state)
-        self.inventory.prune(now)
+        if now >= self._next_prune:
+            self.inventory.prune(now)
+            self._next_prune = now + PRUNE_GAP
         if (
             self.condition is LocalCondition.READY
             and not self.budget.busy
@@ -692,23 +740,36 @@ class LocalPollingService:
             self._age_wake.set()
 
     async def _expiry(self) -> None:
+        """Publish the ageing of the readings, and end expired operations.
+
+        Wakes the scheduler only when an explicit operation expired: the
+        scheduler does not depend on the freshness of the readings.
+        """
         while not self._closed and self._current():
-            self._age_wake.clear()
             now = self._clock()
+            expired = False
             try:
+                pending = len(self.planner.operations)
                 self.planner.expire_operations(now)
+                expired = len(self.planner.operations) != pending
                 self._publish()
                 deadlines = [op.deadline for op in self.planner.operations]
-                expiry = self.inventory.next_expiry(now)
-                if expiry is not None:
-                    deadlines.append(expiry)
+                if math.isfinite(self._next_change):
+                    # The exact time; the view is worked out a little early.
+                    deadlines.append(self._next_change + RENEW_MARGIN)
                 delay = min((d - now for d in deadlines), default=60.0)
             except Exception:
                 _LOGGER.debug("Local value expiry failed unexpectedly", exc_info=True)
                 self._recover("local_poll_failed")
                 delay = 60.0
+            if expired:
+                self._wake.set()
+            # Nothing awaited since the readings were looked at: a later
+            # publication wakes the timer if a reading ages earlier.
+            self._age_wake.clear()
+            self._expiry_at = now + max(0.01, delay)
             await self._wait(self._age_wake, delay)
-            self._wake.set()
+            self._expiry_at = math.inf
 
     async def _close(self) -> None:
         self._closed = True

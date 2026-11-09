@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import math
 from collections import Counter, deque
 from collections.abc import Callable
@@ -47,6 +48,12 @@ RESPONSE_SAMPLES = 256
 RESPONSE_PHASES = ("connection_setup", "gateway_wait", "body_and_decode")
 # T8: the budget manager closed, because Home Assistant stops.
 BUDGET_CLOSED = "local_budget_closed"
+# An answer the decoder could not handle; a path error of that path. Each
+# path template and error type is reported as a warning once, for at most
+# this many combinations.
+DECODE_FAILED = "local_decode_failed"
+DECODE_WARNINGS = 64
+_LOGGER = logging.getLogger(__name__)
 
 
 def _budget_problem(error: LocalBudgetError) -> str:
@@ -226,6 +233,8 @@ class LocalReadClient:
         }
         self._failure_classes: Counter[str] = Counter()
         self._deferred_reasons: Counter[str] = Counter()
+        # Path templates and error types already reported as a warning.
+        self._decode_warned: set[tuple[str, str]] = set()
 
     @property
     def metrics(self) -> ReadMetrics:
@@ -294,6 +303,24 @@ class LocalReadClient:
             self._budget.brake("server_error")
         elif gateway is not None:
             self._budget.observe(gateway)
+
+    def _decode_failed(self, request: ReadRequest, error: Exception) -> None:
+        """Report an undecodable answer once per path template and error
+        type: the template and the type only, never a value."""
+        key = (request.definition.template, type(error).__name__)
+        if key not in self._decode_warned and len(self._decode_warned) < (
+            DECODE_WARNINGS
+        ):
+            self._decode_warned.add(key)
+            _LOGGER.warning(
+                "A local answer of %s could not be decoded (%s); the value "
+                "stays unavailable until a readable answer",
+                *key,
+            )
+        # The details only at debug level: an error text can quote the value.
+        _LOGGER.debug(
+            "A local answer of %s could not be decoded (%s)", *key, exc_info=error
+        )
 
     def _count(self, **increments: int) -> None:
         self._metrics = replace(
@@ -532,14 +559,30 @@ class LocalReadClient:
                 lambda: not self._closed and self._is_current(),
             )
         self._current()
-        observation = decode_resource(
-            request,
-            body,
-            context=self._context.identity,
-            observed_at=datetime.now(UTC),
-            observed_monotonic=monotonic(),
-            limits=self._limits.json,
-        )
+        try:
+            observation = decode_resource(
+                request,
+                body,
+                context=self._context.identity,
+                observed_at=datetime.now(UTC),
+                observed_monotonic=monotonic(),
+                limits=self._limits.json,
+            )
+        except LocalResourceError:
+            raise
+        except (ValueError, KeyError, TypeError) as error:
+            # An answer the schema accepts but the decoder cannot handle (for
+            # example a new firmware): a problem of this path only, never a
+            # pause of every local read.
+            attempt.done = monotonic()
+            self._decode_failed(request, error)
+            return ReadResult(
+                request,
+                ReadState.PATH_ERROR,
+                attempt.status,
+                DECODE_FAILED,
+                http_requests=attempt.headers,
+            )
         attempt.done = monotonic()
         await asyncio.sleep(0)  # Deliver cancellation/expiry before publishing.
         self._current()
@@ -675,7 +718,11 @@ class LocalReadClient:
             return await self._access_error(request, attempt, TransportFailure.TLS)
         except TimeoutError, aiohttp.ServerTimeoutError:
             self._current()
-            self._reuse_failed(attempt, ReuseFailure.TIMEOUT)
+            if attempt.status is None:
+                # Only no answer in time says something about a kept
+                # connection; a slow body or an answer complete just after
+                # the deadline (a busy Home Assistant) does not.
+                self._reuse_failed(attempt, ReuseFailure.TIMEOUT)
             if attempt.headers:
                 return ReadResult(
                     request,
