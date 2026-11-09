@@ -783,6 +783,66 @@
       "title": "Zertifikat des lokalen Gateways geändert",
       "description": "Das Gateway eines lokalen Zugangs zeigt ein anderes Zertifikat. Die Integration akzeptiert es nicht von selbst und liest lokal nicht weiter. Wenn du weißt, warum sich das Zertifikat geändert hat (zum Beispiel nach einem Gateway-Update oder Zurücksetzen), öffne die Optionen der Integration, wähle den lokalen Zugang und dann „Lokalen Zugang ändern“. Dort bestätigst du das neue Zertifikat. Empfohlen ist eine neue Anmeldung mit den Angaben vom Geräteaufkleber; behalte den aktuellen Token nur, wenn du sicher bist, dass das neue Zertifikat zu deinem eigenen Gateway gehört."
     },
+    "local_start_certificate": {
+      "title": "Lokaler Zugang kann keine sichere Verbindung aufbauen",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Lokalen Zugang erneut versuchen",
+            "description": "Der lokale Zugang ist mehrmals hintereinander nicht gestartet, weil keine sichere Verbindung zum Gateway zustande kam (Code: {code}). Das kann passieren, während das Gateway neu startet. Die Integration versucht es von selbst weiter, spätestens jede Stunde, und entfernt diesen Hinweis, sobald der lokale Zugang startet. Andere Zugänge sind nicht betroffen. Wähle **Senden**, um es jetzt erneut zu versuchen. Bleibt das Problem, prüfe, ob die gespeicherte Adresse noch zu deinem Gateway gehört."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Der betroffene Eintrag existiert nicht mehr.",
+          "configuration_changed": "Der Zugang oder die Anlage hat sich inzwischen geändert. Öffne die Reparatur erneut."
+        }
+      }
+    },
+    "local_start_incomplete": {
+      "title": "Lokales Gateway ist noch nicht bereit",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Lokalen Zugang erneut versuchen",
+            "description": "Der lokale Zugang ist mehrmals hintereinander nicht gestartet, weil das Gateway meldet, dass seine Systemangaben noch nicht vollständig sind (Code: {code}). Das ist eine Weile nach dem Start des Gateways üblich. Die Integration versucht es von selbst weiter, spätestens jede Stunde, und entfernt diesen Hinweis, sobald der lokale Zugang startet. Andere Zugänge sind nicht betroffen. Wähle **Senden**, um es jetzt erneut zu versuchen. Bleibt der Hinweis über Stunden, starte das Gateway neu."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Der betroffene Eintrag existiert nicht mehr.",
+          "configuration_changed": "Der Zugang oder die Anlage hat sich inzwischen geändert. Öffne die Reparatur erneut."
+        }
+      }
+    },
+    "local_start_unrecognized": {
+      "title": "Antwort des lokalen Gateways nicht erkannt",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Lokalen Zugang erneut versuchen",
+            "description": "Der lokale Zugang ist mehrmals hintereinander nicht gestartet, weil die Angaben des Gateways zu Marke, Firmware oder Kennung nicht erkannt wurden (Code: {code}). Die Integration versucht es von selbst weiter, spätestens jede Stunde, und entfernt diesen Hinweis, sobald der lokale Zugang startet. Andere Zugänge sind nicht betroffen. Wähle **Senden**, um es jetzt erneut zu versuchen. Bleibt der Hinweis nach einem Gateway-Update, melde bitte den Code."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Der betroffene Eintrag existiert nicht mehr.",
+          "configuration_changed": "Der Zugang oder die Anlage hat sich inzwischen geändert. Öffne die Reparatur erneut."
+        }
+      }
+    },
+    "local_start_response": {
+      "title": "Lokales Gateway antwortet unerwartet",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Lokalen Zugang erneut versuchen",
+            "description": "Der lokale Zugang ist mehrmals hintereinander nicht gestartet, weil das Gateway zwar antwortet, aber nicht wie erwartet, zum Beispiel mit einem Fehler oder einer unlesbaren Antwort (Code: {code}). Die Integration versucht es von selbst weiter, spätestens jede Stunde, und entfernt diesen Hinweis, sobald der lokale Zugang startet. Andere Zugänge sind nicht betroffen. Wähle **Senden**, um es jetzt erneut zu versuchen. Bleibt das Problem, prüfe, ob die gespeicherte Adresse noch zu deinem Gateway gehört."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Der betroffene Eintrag existiert nicht mehr.",
+          "configuration_changed": "Der Zugang oder die Anlage hat sich inzwischen geändert. Öffne die Reparatur erneut."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Anlagen im Cloud-Konto nicht gefunden",
       "description": "Die letzte Anmeldung des Cloud-Zugangs in „{title}“ hat {count} eingeschaltete Anlagen oder Geräte nicht gefunden (endend auf {systems}). Sie bleiben eingerichtet und nicht verfügbar, bis sie wieder im Konto erscheinen; dieser Hinweis verschwindet dann.\n\nWurden sie aus dem Konto entfernt, öffne Konfigurieren → Verbindungen → den Cloud-Zugang, schalte sie unter **Verwendung für Anlagen und Geräte** aus und vergiss sie mit **Abgewählte Anlagen vergessen**. Ihre Geräte und Entitäten bleiben in Home Assistant, bis du sie löschst. Wurde ein Gateway getauscht, lass es eingeschaltet: Ein eigener Reparaturhinweis bietet dann an, die Anlage mit ihrem Verlauf weiterzuführen."

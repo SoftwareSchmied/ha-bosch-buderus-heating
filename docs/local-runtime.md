@@ -51,10 +51,24 @@ independent expiry and resumable progress. All local setup and read operations
 use the [shared gateway budget](local-budget.md). No local write capability is
 enabled, even when a response reports a writeable flag.
 
-Transient startup failures pause only this local source, using 60, 120, 300 and
-then 600 seconds without a server delay. A complete valid Retry-After takes
-precedence. Authentication, identity and certificate failures stop automatic
-attempts. Disabling, removing or replacing the connection cancels owned work;
+When the gateway cannot be reached at startup (connection, name resolution,
+timeout, 429 or 5xx), the shared gateway pause holds 60, 120, 300 and then 600
+seconds without a server delay. A complete valid Retry-After takes precedence.
+
+Only a rejected token, a changed certificate, a different gateway and firmware
+older than the supported minimum stop automatic attempts. Every other startup
+problem is tried again: the gateway answers, but not usably. Examples are an
+untrusted TLS handshake, an unreadable answer, an HTTP error, a missing setup
+resource, system information that is not complete yet, or an unrecognized
+brand or firmware. The waits are 60, 120, 300, 600, 1200 and 2400 seconds,
+then hourly; a longer Retry-After is kept. Each attempt still goes through the
+shared gateway budget and waits for its pauses. From the fifth failed attempt of
+one start, about 18 minutes in, a repair note names the cause and its fixed
+code. It offers an attempt at once; a running gateway pause is still kept. A
+successful start, a stop for one of the reasons above or removing the access
+deletes the note.
+
+Disabling, removing or replacing the connection cancels owned work;
 late results cannot update another generation. Retained observations do not
 become current again merely because a source restarts.
 
