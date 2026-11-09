@@ -107,6 +107,31 @@ async def test_source_starts_with_the_inventory_during_a_cloud_failure(
         assert not fresh.stored_resources()
 
 
+@pytest.mark.parametrize("listed", [[], ["gateway-b"]])
+async def test_an_answered_list_without_the_gateway_starts_with_the_inventory(
+    hass, listed
+):
+    """START-4: like a list that did not answer, also when it is empty."""
+    backend = Backend()
+    async with running(hass, backend) as (_, cloud, owner, _):
+        await eventually(lambda: source_for(owner, GATEWAY))
+        first = source_for(owner, GATEWAY)
+        backend.gateways = listed
+        fresh = await _restart(hass, owner, cloud, first)
+        assert isinstance(fresh, ManagedPointTCoordinator)
+        report = fresh.startup_inventory_diagnostics(0)
+        assert fresh.startup_mode == "inventory"
+        assert report["reason"] == "gateway_not_listed"
+        assert owner.connections.source_data(binding_for(owner, GATEWAY)) is fresh
+        assert fresh.stored_resources()
+        assert not fresh.data[TEMP].available
+        # The gateway itself still answers: values with the first cycle.
+        fresh._next_update = dict.fromkeys(fresh._poll_intervals, 0)
+        await fresh.async_refresh()
+        assert fresh.last_update_success
+        assert fresh.data[TEMP].available
+
+
 async def test_permanent_gateway_list_answer_does_not_use_the_inventory(hass):
     backend = Backend()
     async with running(hass, backend) as (_, cloud, owner, _):

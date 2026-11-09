@@ -488,7 +488,7 @@ async def test_the_returning_cloud_continues_the_local_fault_baseline(
             assert native(owner, "sensor", SENSOR).entity_id == entity_id
 
 
-@pytest.mark.parametrize("failure", ["sign_in", "outage"])
+@pytest.mark.parametrize("failure", ["sign_in", "outage", "not_listed"])
 async def test_a_failing_cloud_after_30_days_starts_the_local_plant_view(
     hass, failure
 ) -> None:
@@ -509,7 +509,11 @@ async def test_a_failing_cloud_after_30_days_starts_the_local_plant_view(
     await first_run(hass, backend)
     entity_id = er.async_get(hass).async_get_entity_id("sensor", DOMAIN, SENSOR)
     calls = len(backend.calls)
-    backend.status["gateways"] = 401 if failure == "sign_in" else 503
+    if failure == "not_listed":
+        # START-4: the list answers, but without this gateway.
+        backend.gateways = ["gateway-b"]
+    else:
+        backend.status["gateways"] = 401 if failure == "sign_in" else 503
     refresh = AsyncMock(side_effect=RefreshTokenRejected())
     with (
         patch.object(INVENTORY, "MAX_AGE", timedelta(0)),
@@ -539,7 +543,8 @@ async def test_a_failing_cloud_after_30_days_starts_the_local_plant_view(
             # A retry that fails again keeps the same view.
             await eventually(lambda: not harness.sleeps.empty())
             # The cloud answers again: its first publication takes over.
-            backend.status.pop("gateways")
+            backend.status.pop("gateways", None)
+            backend.gateways = [GATEWAY, "gateway-b"]
             # The failed list is kept for a minute: the next one is asked now.
             runtime.connection_driver(cloud)._gateways = None
             harness.retry.set()
