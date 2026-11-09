@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -498,9 +499,11 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
             "Synthetic wallbox",
             "unreviewed",
             "2026-10-24",
-            "7.2",
         ):
             assert private not in serialized
+        # The power reading must not leak; other numbers (for example token
+        # lifetimes) may contain the digits "7.2" by chance.
+        assert not re.search(r"(?<![\d.])7\.2(?!\d)", serialized)
         old = registry.async_get(state_id)
         registry.async_update_entity(state_id, name="Meine Wallbox")
         disabled = entity_id("hardware_current_limit")
