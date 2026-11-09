@@ -22,6 +22,7 @@ from custom_components.bosch_buderus_heating.local_api.catalog import (
 )
 from custom_components.bosch_buderus_heating.local_api.errors import LocalResourceError
 from custom_components.bosch_buderus_heating.local_api.json import JsonLimits
+from custom_components.bosch_buderus_heating.local_budget import MINIMUM_START_GAP
 from custom_components.bosch_buderus_heating.local_probe import (
     LocalEndpoint,
     TransportFailure,
@@ -48,6 +49,8 @@ from tests.test_local_transport import gateways as gateways
 pytestmark = pytest.mark.usefixtures("socket_enabled")
 PATH = "/heatingCircuits/hc2/currentRoomSetpoint"
 REQUEST = request_for_path(PATH)
+# T1: the spacing after a start, measured with the synthetic clock.
+SPACING = pytest.approx(MINIMUM_START_GAP)
 
 
 class Clock:
@@ -160,7 +163,7 @@ async def test_pacing_has_no_waiting_queue_and_counts_actual_header_time(
         assert len(seen) == 1 and transport_client.metrics.tls_inspections == 1
         clock.advance(0.0625)
         assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
-        assert len(seen) == 2 and budget.remaining_seconds == 0.25
+        assert len(seen) == 2 and budget.remaining_seconds == SPACING
 
 
 async def test_real_clock_enforces_quarter_second_between_http_starts(gateways):
@@ -265,7 +268,7 @@ async def test_status_categories_do_not_return_error_bodies_or_follow_redirects(
         elif status == 500:
             assert budget.remaining_seconds == 60
         elif state is ReadState.PATH_ERROR:
-            assert budget.remaining_seconds == 0.25 and not result.stop_access
+            assert budget.remaining_seconds == SPACING and not result.stop_access
         assert (await transport_client.read(REQUEST)).http_requests == 0
         assert len(seen) == 1
 
@@ -515,7 +518,7 @@ async def test_slow_resource_does_not_discard_previous_success_or_block_other_pa
             result.state is ReadState.PATH_ERROR
             and result.problem == TransportFailure.TIMEOUT
         )
-        assert result.http_requests == 1 and budget.remaining_seconds == 0.25
+        assert result.http_requests == 1 and budget.remaining_seconds == SPACING
         clock.advance()
         assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
     assert len(seen) == 3
@@ -566,7 +569,7 @@ async def test_body_metadata_errors_are_isolated_to_the_path(
     async with transport_client:
         result = await transport_client.read(REQUEST)
         assert result.problem == problem and result.state is ReadState.PATH_ERROR
-        assert result.observation is None and budget.remaining_seconds == 0.25
+        assert result.observation is None and budget.remaining_seconds == SPACING
         assert result.http_requests == len(seen) == 1
 
 
@@ -949,7 +952,8 @@ async def test_zero_retry_after_keeps_minimum_spacing(gateways, clock):
     async with transport_client:
         result = await transport_client.read(REQUEST)
         assert result.problem == ReadProblem.RATE_LIMITED
-        assert budget.remaining_seconds == 0.25 and result.retry_after_seconds == 0.25
+        assert budget.remaining_seconds == SPACING
+        assert result.retry_after_seconds == SPACING
         assert (await transport_client.read(REQUEST)).state is ReadState.DEFERRED
         assert len(seen) == 1
 

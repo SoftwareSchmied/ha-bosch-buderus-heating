@@ -7,9 +7,14 @@ It does not enable public local setup or regular local polling.
 
 One `LocalBudgetManager` belongs to Home Assistant. Clients obtain scoped handles
 and never reset the shared state when replacing a client or configuration
-generation. A gateway permits two concurrent reads, with at least 250 ms between
-admissions and separately between HTTP header starts. DNS, TLS inspection and
-cleanup belong to the admitted operation. There are no automatic HTTP retries.
+generation. A gateway permits two concurrent reads, with at least 200 ms between
+admissions and separately between HTTP header starts. The scheduler waits only
+for the admission spacing; the header spacing is kept while a read runs. A
+latency brake widens both to twice the median of the last 32 response times
+(at most one second) and doubles them for five minutes after a timeout or a
+server error (at most two seconds); see [local polling](local-polling.md).
+DNS, TLS inspection and cleanup belong to the admitted operation. There are no
+automatic HTTP retries.
 
 Certificate inspection, token enrollment and each of the three setup reads take
 exclusive slots. Up to eight waiting setup operations prevent additional regular

@@ -22,6 +22,9 @@ SLICE_ATTEMPTS = 64
 SLICE_SECONDS = 600.0
 SLICE_PAUSE = 300.0
 RESCAN_SECONDS = 86400.0
+# T2: the final seconds of each 60-second section start no read; reads
+# already started finish there.
+SECTION_RESERVE = 3.0
 POLICY_VERSION = 1
 REVISION = hashlib.sha256(
     repr(

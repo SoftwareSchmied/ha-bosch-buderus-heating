@@ -52,12 +52,28 @@ requests follow oldest due time. Each canonical request can be in flight only
 once, including when explicit callers are waiting for a regular request.
 Missed intervals do not create additional queued copies.
 
-The shared gateway budget permits two concurrent operations and at least 250 ms
-between starts. The scheduler also leaves the final five seconds of each
-60-second section for already started work. Under ideal response times this
-allows at most 220 starts per section. Setup uses the same gateway budget and
-can reduce available capacity. Independent gateways use stable initial offsets
-between zero and five seconds. Cloud intervals are unchanged.
+The shared gateway budget permits two concurrent operations and at least
+200 ms between starts, measured from the start of a read. The scheduler waits
+exactly until both the due work and this spacing allow the next start; work
+that is already due starts as soon as the spacing has passed. It also leaves
+the final three seconds of each 60-second section for already started work.
+Under ideal response times this allows at most 285 starts per section. Setup
+uses the same gateway budget and can reduce available capacity. Independent
+gateways use stable initial offsets between zero and five seconds. Cloud
+intervals are unchanged.
+
+A latency brake protects slower gateways: the spacing is at least twice the
+median of the last 32 response times, at most one second. After a timeout or a
+server error (5xx) it doubles for five minutes, at most two seconds. A gateway
+that asks for a pause (429 or 503 with Retry-After), a connection failure and
+the fallback from kept connections keep their own pauses and take precedence;
+the brake only widens the spacing between starts. The diagnostics report the
+current spacing and the brake under `start_spacing`.
+
+The next read of a resource is due one interval after the previous read
+started, so the time a read takes does not lengthen every interval. A deferred
+read stays due and starts again after the spacing; a failed read waits for its
+next interval and is never repeated at once.
 
 The service owns its read tasks and a separate expiry timer. Waiting for a
 response, a gateway pause or a checkpoint does not keep old observations fresh.

@@ -185,14 +185,24 @@ class ResourceInventory:
         record.retained_bytes = record.retained_nodes = 0
         record.observation = None
 
-    def accept(self, result: ReadResult, now: float) -> bool:
+    def accept(
+        self, result: ReadResult, now: float, *, started: float | None = None
+    ) -> bool:
+        """Record a read that ended at ``now``.
+
+        T3: the next read is due one period after the read *started*, so the
+        time a read takes does not add to every interval. A deferred read
+        changes nothing (it is due again at once); never earlier than ``now``,
+        so one read is never repeated at once.
+        """
         record = self.records[result.request.target]
         interval = self.period(record.request)
         assert interval is not None
         if result.state is ReadState.DEFERRED:
             return False
-        record.last_attempt = now
-        record.due = now + interval
+        began = now if started is None else min(started, now)
+        record.last_attempt = began
+        record.due = max(now, began + interval)
         record.scheduled_period = interval
         if result.state is ReadState.ACCESS_ERROR:
             return False  # Source health and the shared pause have their own owner.

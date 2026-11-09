@@ -40,6 +40,9 @@ SAVE_GAP = 60.0
 SAVE_INTERVAL = 1800.0
 # A failed save is tried again after these delays; the reads go on meanwhile.
 SAVE_RETRY = (60.0, 120.0, 300.0, 600.0, 1800.0)
+# While the budget is busy (two reads or a setup operation), look again at
+# most this often; a finished read wakes the loop at once.
+BUSY_WAIT = 0.25
 
 
 def _firmware_string(observation: object) -> str | None:
@@ -609,8 +612,9 @@ class LocalPollingService:
         if (
             self.condition is LocalCondition.READY
             and not self.budget.busy
-            and self.budget.remaining_seconds <= 0
+            and self.budget.start_wait(now) <= 0
         ):
+            self.planner.start_gap = self.budget.start_gap(now)
             work = self.planner.pick(now)
             if work is not None:
                 self._workers[work.request.target] = asyncio.create_task(
@@ -626,9 +630,19 @@ class LocalPollingService:
         if self._fault is not None:
             delay = min(delay, max(0.01, self._fault_until - self._clock()))
         if self.condition is LocalCondition.READY:
-            delay = min(delay, max(0.01, self.planner.next_wake(now) - now))
-            if self.budget.busy or self.budget.remaining_seconds > 0:
-                delay = min(delay, max(0.25, self.budget.remaining_seconds))
+            # T1: one clock reading for both gates. The next start needs the
+            # planner (due work, its own spacing) and the shared budget (the
+            # spacing from the previous start, a pause); wait exactly for the
+            # later of the two. Busy (two reads or a setup operation): nothing
+            # can start; look again shortly, a finished read wakes at once.
+            current = self._clock()
+            wait = max(
+                self.planner.next_wake(current) - current,
+                self.budget.start_wait(current),
+            )
+            if self.budget.busy:
+                wait = BUSY_WAIT
+            delay = min(delay, max(0.01, wait))
         elif self.condition is LocalCondition.PAUSED:
             delay = min(delay, self.budget.pause_seconds)
         return delay

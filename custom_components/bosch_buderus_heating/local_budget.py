@@ -8,6 +8,8 @@ import json
 import logging
 import math
 import re
+import statistics
+from collections import deque
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager, suppress
 from dataclasses import dataclass, field
@@ -27,7 +29,15 @@ if TYPE_CHECKING:
 
     from .local_probe import ProbeContext
 
-MINIMUM_START_GAP = 0.25
+# T1: the base spacing between two starts, measured from the start of a
+# read; the latency brake widens it for a slow or failing gateway.
+MINIMUM_START_GAP = 0.2
+# The brake: twice the median of the recent response times, at most 1 s;
+# after a timeout or a server error twice that for 5 minutes (at most 2 s).
+MAXIMUM_START_GAP = 1.0
+BRAKE_SECONDS = 300.0
+RESPONSE_WINDOW = 32
+BRAKE_REASONS = frozenset({"timeout", "server_error"})
 MAXIMUM_PARALLEL = 2
 SETUP_WAIT_LIMIT = 120.0
 MAX_GROUPS = 256
@@ -83,6 +93,12 @@ class _State:
     pause_until: float = 0.0
     reason: str = "failure"
     exclusive_waiters: int = 0
+    # T1: recent response times (seconds) and the latency brake.
+    responses: deque[float] = field(
+        default_factory=lambda: deque(maxlen=RESPONSE_WINDOW)
+    )
+    brake_until: float = 0.0
+    brake_reason: str | None = None
 
     def root(self) -> _State:
         state = self
@@ -148,6 +164,67 @@ class LocalReadBudget:
             max(state.pause_until, state.admission_at, state.http_at) - self._clock(),
         )
 
+    def start_wait(self, now: float | None = None) -> float:
+        """How long until the next read may start (T1).
+
+        Only the start of the previous read and a pause count, measured with
+        the given clock reading; the spacing of the request headers is kept
+        separately while the read runs.
+        """
+        state = self._state.root()
+        if now is None:
+            now = self._clock()
+        return max(0.0, max(state.pause_until, state.admission_at) - now)
+
+    def start_gap(self, now: float | None = None) -> float:
+        """The current spacing between two starts, in seconds (T1).
+
+        The base spacing, at least twice the median of the recent response
+        times but at most ``MAXIMUM_START_GAP``; while the brake is active
+        twice that.
+        """
+        state = self._state.root()
+        if now is None:
+            now = self._clock()
+        gap = MINIMUM_START_GAP
+        if state.responses:
+            median = statistics.median(state.responses)
+            gap = min(MAXIMUM_START_GAP, max(gap, 2 * median))
+        if now < state.brake_until:
+            gap *= 2
+        return gap
+
+    def observe(self, seconds: float) -> None:
+        """Note how long the gateway took to answer a read (T1)."""
+        if math.isfinite(seconds) and seconds >= 0:
+            self._state.root().responses.append(seconds)
+
+    def brake(self, reason: str) -> None:
+        """Double the spacing for ``BRAKE_SECONDS`` after a timeout or a server
+        error (T1); pauses of the access stay separate and take precedence."""
+        if reason not in BRAKE_REASONS:
+            raise LocalBudgetError("invalid_local_brake_reason")
+        state = self._state.root()
+        state.brake_until = self._clock() + BRAKE_SECONDS
+        state.brake_reason = reason
+
+    def start_spacing(self) -> dict[str, object]:
+        """The spacing and the brake for the diagnostics, fixed codes only."""
+        state = self._state.root()
+        now = self._clock()
+        active = now < state.brake_until
+        return {
+            "base_ms": round(MINIMUM_START_GAP * 1000),
+            "current_ms": round(self.start_gap(now) * 1000),
+            "median_response_ms": round(statistics.median(state.responses) * 1000, 1)
+            if state.responses
+            else None,
+            "response_samples": len(state.responses),
+            "brake_active": active,
+            "brake_reason": state.brake_reason if active else None,
+            "brake_remaining_seconds": round(state.brake_until - now) if active else 0,
+        }
+
     @property
     def pause_seconds(self) -> float:
         return max(0.0, self._state.root().pause_until - self._clock())
@@ -197,7 +274,8 @@ class LocalReadBudget:
             return None
         lease = BudgetLease(state, exclusive)
         state.leases.add(lease)
-        state.admission_at = self._clock() + MINIMUM_START_GAP
+        now = self._clock()
+        state.admission_at = now + self.start_gap(now)
         return lease
 
     def release(self, lease: BudgetLease) -> None:
@@ -231,9 +309,10 @@ class LocalReadBudget:
                 raise StaleLocalRequest()
             self.check_lease(lease)
             state = self._state.root()
-            wait = state.http_at - self._clock()
+            now = self._clock()
+            wait = state.http_at - now
             if wait <= 0:
-                state.http_at = self._clock() + MINIMUM_START_GAP
+                state.http_at = now + self.start_gap(now)
                 return
             await asyncio.sleep(wait)
 
@@ -453,6 +532,13 @@ class LocalBudgetManager:
             other.leases.clear()
             state.admission_at = max(state.admission_at, other.admission_at)
             state.http_at = max(state.http_at, other.http_at)
+            if not state.responses:
+                state.responses.extend(other.responses)
+            if other.brake_until > state.brake_until:
+                state.brake_until, state.brake_reason = (
+                    other.brake_until,
+                    other.brake_reason,
+                )
             if other.pause_until > state.pause_until:
                 state.pause_until, state.reason = other.pause_until, other.reason
             state.exclusive_waiters += other.exclusive_waiters
