@@ -54,7 +54,8 @@ TAKEN_OVER = CLAIM + "_taken_over"
 # Its sign-in link has long expired by then: Home Assistant never removes a
 # dialog that was reloaded or left open, so such a claim counts as orphaned.
 CLAIM_ORPHANED_SECONDS = (
-    next(f.default for f in fields(OAuthFlow) if f.name == "max_age") + 300.0
+    cast(float, next(f.default for f in fields(OAuthFlow) if f.name == "max_age"))
+    + 300.0
 )
 CLAIM_ABORTS = frozenset(
     {"cloud_already_connected", "cloud_setup_in_progress", "cloud_setup_taken_over"}
@@ -334,8 +335,8 @@ def claim_cloud_setup(
         raise ConfigurationError("cloud_setup_taken_over")
     _require_no_cloud(hass)
     now = monotonic()
-    for manager, other_id, other in _claims(hass, flow_id):
-        _release(manager, other_id, other, remove=_orphaned(other, now))
+    for flows, other_id, other in _claims(hass, flow_id):
+        _release(flows, other_id, other, remove=_orphaned(other, now))
     context[CLAIM] = True
     context[CLAIMED_AT] = now
 
@@ -350,10 +351,10 @@ def check_new_cloud(hass: HomeAssistant, flow_id: str) -> None:
                 raise ConfigurationError("cloud_setup_taken_over")
     _require_no_cloud(hass)
     now = monotonic()
-    for manager, other_id, other in _claims(hass, flow_id):
+    for flows, other_id, other in _claims(hass, flow_id):
         if not _orphaned(other, now):
             raise ConfigurationError("cloud_setup_in_progress")
-        _release(manager, other_id, other, remove=True)
+        _release(flows, other_id, other, remove=True)
 
 
 @dataclass(frozen=True, slots=True)
