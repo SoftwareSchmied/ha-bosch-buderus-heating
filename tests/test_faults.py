@@ -474,7 +474,7 @@ def test_all_supported_wire_shapes_and_component_paths_are_bounded() -> None:
     )
     device_errors = Resource(
         path="/devices/device2/errors",
-        value=[{"value": "D1", "errorType": "GENERIC_ERROR"}],
+        value=[{"value": "active", "errorType": "GENERIC_ERROR"}],
         has_value=True,
     )
 
