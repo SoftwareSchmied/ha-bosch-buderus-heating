@@ -41,6 +41,17 @@ CLOSE_TIMEOUT = 5.0
 # target view is built again. NUL cannot occur in a target identifier.
 _TARGET_KEY = "\0target:"
 TARGET_RETRY_SECONDS = 300.0
+# B04: failed attempts in a row of the same source or connection wait longer
+# each time, from one minute up to 30 minutes; a successful start resets it.
+RETRY_BASE_SECONDS = 60.0
+RETRY_MAX_SECONDS = 1800.0
+# B08: wording of the log lines, without identifiers.
+_SOURCE_KINDS = {"pointt": "cloud", "bacon": "additional devices", LOCAL_KIND: "local"}
+_CONNECTION_KINDS = {CLOUD_KIND: "cloud", LOCAL_KIND: "local"}
+
+
+def _source_subject(adapter: str) -> str:
+    return _SOURCE_KINDS.get(adapter, "unsupported") + " source"
 
 
 class ConnectionPhase(StrEnum):
@@ -135,6 +146,63 @@ class SourceFailure(Exception):
             else DEFAULT_CLOUD_PAUSE_SECONDS
         )
         super().__init__(phase.value)
+
+
+# B08: failures an adapter reports or the runtime maps itself; any other
+# exception is unexpected and logged once per series as a warning.
+_EXPECTED_FAILURES = (SourceFailure, AuthenticationError, RateLimited)
+
+
+@dataclass(slots=True)
+class FailureSeries:
+    """B04/B08: failed attempts of one source or connection.
+
+    Only counts, the exception class and fixed codes: never a message, value
+    or identifier.
+    """
+
+    total: int = 0
+    consecutive: int = 0
+    last_error: str | None = None
+    last_stage: str | None = None
+    last_phase: ConnectionPhase | None = None
+    retry_seconds: float | None = None
+    # The current attempt started (published or connected).
+    started: bool = False
+    # This series was logged as a warning; its end is logged as info.
+    warned: bool = False
+
+    def failed(self, error: Exception, failure: SourceFailure, stage: str) -> float:
+        """Count a failure; return the pause before the next attempt."""
+        self.total += 1
+        self.consecutive += 1
+        self.last_error = type(error).__name__
+        self.last_stage = stage
+        self.last_phase = failure.phase
+        growing = RETRY_BASE_SECONDS * (1 << min(self.consecutive - 1, 10))
+        delay = max(failure.retry_after, min(RETRY_MAX_SECONDS, growing))
+        self.retry_seconds = (
+            delay if failure.phase is ConnectionPhase.UNAVAILABLE else None
+        )
+        return delay
+
+    def succeeded(self) -> int:
+        """A successful start ends the series; returns its failures."""
+        self.started = True
+        ended, self.consecutive, self.retry_seconds = self.consecutive, 0, None
+        return ended
+
+    def diagnostics(self) -> dict[str, object]:
+        return {
+            "failures": self.total,
+            "consecutive_failures": self.consecutive,
+            "last_failure": self.last_error,
+            "last_failure_stage": self.last_stage,
+            "last_failure_phase": None
+            if self.last_phase is None
+            else self.last_phase.value,
+            "retry_seconds": self.retry_seconds,
+        }
 
 
 class SourceDriver(Protocol):
@@ -267,6 +335,9 @@ class ConnectionRuntime:
         self._connection_locks: dict[str, asyncio.Lock] = {}
         self._source_locks: dict[str, asyncio.Lock] = {}
         self._contexts: dict[str, SourceContext] = {}
+        # B04/B08: failed attempts per binding and per connection.
+        self._source_failures: dict[str, FailureSeries] = {}
+        self._connection_failures: dict[str, FailureSeries] = {}
         self._closed = False
         self._started = False
         self._unsubscribe: list[Callable[[], None]] = []
@@ -355,6 +426,13 @@ class ConnectionRuntime:
         for key in tuple(self._connection_phases):
             if key not in snapshot.connections:
                 self._connection_phases.pop(key)
+        for failures, current in (
+            (self._source_failures, snapshot.bindings),
+            (self._connection_failures, snapshot.connections),
+        ):
+            for key in tuple(failures):
+                if key not in current:
+                    del failures[key]
         options = section(snapshot.to_options(), "connections")
         for key, connection in snapshot.connections.items():
             enabled = options[key]["enabled"]
@@ -687,10 +765,80 @@ class ConnectionRuntime:
         async with self._connection_locks.setdefault(run.identifier, asyncio.Lock()):
             await self._connection_loop(run)
 
+    def _failed(
+        self,
+        series: FailureSeries,
+        error: Exception,
+        failure: SourceFailure,
+        *,
+        subject: str,
+        stage: str,
+    ) -> float:
+        """B04/B08: count and log a failed attempt; return the next pause.
+
+        The first unexpected failure of a series is a warning with the error
+        class only, its traceback and all further failures are debug messages.
+        """
+        delay = series.failed(error, failure, stage)
+        retry = (
+            f"the next attempt follows in {delay:.0f} seconds"
+            if failure.phase is ConnectionPhase.UNAVAILABLE
+            else "no automatic attempt follows"
+        )
+        expected = isinstance(error, _EXPECTED_FAILURES)
+        if expected or series.warned:
+            _LOGGER.debug(
+                "A %s failed while %s (%s, %s); %s",
+                subject,
+                stage,
+                type(error).__name__,
+                failure.phase.value,
+                retry,
+                exc_info=None if expected else error,
+            )
+            return delay
+        series.warned = True
+        _LOGGER.warning(
+            "A %s failed while %s (%s, %s); %s. Further failures in a row are "
+            "logged at debug level",
+            subject,
+            stage,
+            type(error).__name__,
+            failure.phase.value,
+            retry,
+        )
+        _LOGGER.debug("Details of the %s failure", subject, exc_info=error)
+        return delay
+
+    @staticmethod
+    def _started_again(series: FailureSeries | None, subject: str) -> None:
+        """B04/B08: a successful start ends a series of failed attempts."""
+        if series is None:
+            return
+        warned, series.warned = series.warned, False
+        if (ended := series.succeeded()) and warned:
+            _LOGGER.info("A %s works again after %d failed attempts", subject, ended)
+        elif ended:
+            _LOGGER.debug("A %s works again after %d failed attempts", subject, ended)
+
+    def source_failures(self, binding_id: str) -> dict[str, object]:
+        """Failed attempts of a source, for diagnostics."""
+        return self._source_failures.get(binding_id, FailureSeries()).diagnostics()
+
+    def connection_failures(self, connection_id: str) -> dict[str, object]:
+        """Failed attempts of a connection, for diagnostics."""
+        series = self._connection_failures.get(connection_id, FailureSeries())
+        return series.diagnostics()
+
     async def _connection_loop(self, run: _ConnectionRun) -> None:
+        subject = _CONNECTION_KINDS.get(run.record.kind, "unsupported") + " access"
         while self._active(run):
             driver: ConnectionDriver | None = None
-            delay = 60.0
+            delay = RETRY_BASE_SECONDS
+            series = self._connection_failures.setdefault(
+                run.identifier, FailureSeries()
+            )
+            series.started = False
             try:
                 driver = self._factories[run.record.kind](run.identifier, run.record)
                 run.driver = driver
@@ -698,6 +846,7 @@ class ConnectionRuntime:
                 if not self._active(run):
                     return
                 run.connected = True
+                self._started_again(series, subject)
                 self._connection_phases[run.identifier] = ConnectionPhase.READY
                 self._synchronize_sources(run)
                 self._notify()
@@ -708,6 +857,13 @@ class ConnectionRuntime:
                 if not self._active(run):
                     return
                 failure = self._failure(error)
+                delay = self._failed(
+                    series,
+                    error,
+                    failure,
+                    subject=subject,
+                    stage="running" if series.started else "connecting",
+                )
                 self._connection_phases[run.identifier] = failure.phase
                 self._notify()
                 if failure.phase in (
@@ -715,7 +871,6 @@ class ConnectionRuntime:
                     ConnectionPhase.UNSUPPORTED,
                 ):
                     return
-                delay = failure.retry_after
             finally:
                 run.connected = False
                 tasks = [
@@ -758,7 +913,9 @@ class ConnectionRuntime:
             context = SourceContext(self, source.generation)
             self._contexts[binding_id] = context
             driver: SourceDriver | None = None
-            delay = 60.0
+            delay = RETRY_BASE_SECONDS
+            series = self._source_failures.setdefault(binding_id, FailureSeries())
+            series.started = False
             try:
                 assert run.driver is not None
                 driver = run.driver.source(binding_id, binding)
@@ -773,6 +930,13 @@ class ConnectionRuntime:
                 if not self._active(run) or not context.current:
                     return
                 failure = self._failure(error)
+                delay = self._failed(
+                    series,
+                    error,
+                    failure,
+                    subject=_source_subject(binding.adapter),
+                    stage="running" if series.started else "starting",
+                )
                 if binding.adapter != LOCAL_KIND:
                     self._retain(binding_id, context)
                 self._data.pop(binding_id, None)
@@ -804,7 +968,6 @@ class ConnectionRuntime:
                 self._notify()
                 if failure.phase is ConnectionPhase.UNSUPPORTED:
                     return
-                delay = failure.retry_after
             finally:
                 if self._contexts.get(binding_id) is context:
                     self._contexts.pop(binding_id)
@@ -862,6 +1025,9 @@ class ConnectionRuntime:
         # It does not become ordinary fresh source data.
         if phase is ConnectionPhase.READY:
             self._data[binding_id] = state
+            self._started_again(
+                self._source_failures.get(binding_id), _source_subject(LOCAL_KIND)
+            )
         else:
             self._data.pop(binding_id, None)
         self._notify()
@@ -905,6 +1071,11 @@ class ConnectionRuntime:
             self._release(binding_id)
         self._data[binding_id] = data
         self._source_phases[binding_id] = ConnectionPhase.READY
+        binding = self.snapshot.bindings.get(binding_id)
+        self._started_again(
+            self._source_failures.get(binding_id),
+            _source_subject(binding.adapter if binding else ""),
+        )
         self._notify()
         return True
 

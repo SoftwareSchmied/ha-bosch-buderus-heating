@@ -68,7 +68,7 @@ from .water_softener import (
 )
 from .writes import EnumWritePolicy, NumberWritePolicy, assess_control
 
-DIAGNOSTICS_SCHEMA_VERSION = 43
+DIAGNOSTICS_SCHEMA_VERSION = 44
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -197,6 +197,8 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
             else "unsupported",
             "enabled": section(options, "connections")[key]["enabled"],
             "phase": state.connection_phase(key).value,
+            # Schema 44 (B08): failed connection attempts, without messages.
+            "failures": state.connection_failures(key),
             "request_metrics": {},
         }
         if record.kind == CLOUD_KIND:
@@ -235,6 +237,8 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
                 else "unsupported",
                 "enabled": section(options, "bindings")[key]["enabled"],
                 "phase": state.source_phase(key).value,
+                # Schema 44 (B08): failed source attempts, without messages.
+                "failures": state.source_failures(key),
             }
         )
         value = state.source_data(key)

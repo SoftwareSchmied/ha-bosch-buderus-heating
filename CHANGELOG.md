@@ -23,6 +23,31 @@ Versioning after its first tagged preview.
 - The names follow the Info menu of my own controller (MX400, firmware
   15.00.01) in German and English.
 
+### Outages and recovery
+
+- **Short gateway outages no longer hide values for 15 minutes:** when the
+  gateway does not answer at all, the cloud reports a timeout for every
+  reading. Each of these readings was then paused for 15 minutes, so the most
+  important values stayed unavailable long after the gateway was back. Now
+  only the protection pause for the whole gateway applies, no reading is
+  paused on its own, and no single reads are sent to the silent gateway. A
+  single slow reading next to answered ones is still paused as before.
+- **No false "recovered" after a failed cycle:** a cycle that had nothing to
+  request right after a failed one reported the cloud as reachable again. The
+  connection status, the preference for local values without the cloud and
+  the switch of paired counters then flipped back and forth. Such a cycle now
+  keeps the failure until the cloud really answers.
+- **Failed starts wait longer and no longer pile up in memory:** a system
+  whose start keeps failing was tried again every minute without end, and
+  each attempt stayed in memory until the integration was reloaded. Attempts
+  in a row now wait 1, 2, 4, 8, 16 and then 30 minutes; a successful start
+  resets this. Discarded attempts are released.
+- **Unexpected start errors are visible:** an unexpected error while starting
+  or running a source or an access was not logged at all. The first one of a
+  series is now logged as a warning with its error type, the details at debug
+  level, and the recovery as info. Diagnostics (schema 44) count the failed
+  attempts of each access and source with the last error type.
+
 ## [0.9.0-alpha.3] - 2026-11-09
 
 > [!IMPORTANT]
