@@ -51,6 +51,20 @@ class ReadRequest:
     definition: ResourceDefinition
     path: str = field(repr=False)
     query: tuple[tuple[str, str | bool], ...] = field(repr=False)
+    # Worked out once: the polling inventory and every publication ask for
+    # it per resource. Not part of equality or the hash.
+    _target: str = field(init=False, repr=False, compare=False)
+
+    def __post_init__(self) -> None:
+        query = urlencode(
+            [
+                (key, str(value).lower() if type(value) is bool else value)
+                for key, value in self.query
+            ]
+        )
+        object.__setattr__(
+            self, "_target", quote(self.path, safe="/") + ("?" + query if query else "")
+        )
 
     @property
     def method(self) -> Literal["GET"]:
@@ -58,13 +72,7 @@ class ReadRequest:
 
     @property
     def target(self) -> str:
-        query = urlencode(
-            [
-                (key, str(value).lower() if type(value) is bool else value)
-                for key, value in self.query
-            ]
-        )
-        return quote(self.path, safe="/") + ("?" + query if query else "")
+        return self._target
 
 
 def _parameter(data: dict[str, Any]) -> Parameter:
