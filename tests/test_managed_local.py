@@ -568,3 +568,8 @@ def test_diagnostics_show_the_read_signal_list_and_bounded_health() -> None:
     assert report["condition_changes"] == []
     assert report["failures_by_class"] == {} and report["deferred_reasons"] == {}
     assert report["response_times"] == {"samples": 0}
+    assert report["response_phases"] == {
+        "connection_setup": {"samples": 0},
+        "gateway_wait": {"samples": 0},
+        "body_and_decode": {"samples": 0},
+    }

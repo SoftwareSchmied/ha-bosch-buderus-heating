@@ -32,8 +32,11 @@ if TYPE_CHECKING:
 # T1: the base spacing between two starts, measured from the start of a
 # read; the latency brake widens it for a slow or failing gateway.
 MINIMUM_START_GAP = 0.2
-# The brake: twice the median of the recent response times, at most 1 s;
-# after a timeout or a server error twice that for 5 minutes (at most 2 s).
+# The brake (T6/T7): 1.5 times the median gateway time of the recent reads
+# (from sending the request headers to receiving the response headers), at
+# most 1 s; after a timeout or a server error twice that for 5 minutes, still
+# at most 1 s.
+BRAKE_FACTOR = 1.5
 MAXIMUM_START_GAP = 1.0
 BRAKE_SECONDS = 300.0
 RESPONSE_WINDOW = 32
@@ -179,23 +182,25 @@ class LocalReadBudget:
     def start_gap(self, now: float | None = None) -> float:
         """The current spacing between two starts, in seconds (T1).
 
-        The base spacing, at least twice the median of the recent response
-        times but at most ``MAXIMUM_START_GAP``; while the brake is active
-        twice that.
+        The base spacing, at least ``BRAKE_FACTOR`` times the median gateway
+        time of the recent reads; while the brake is active twice that.
+        Never more than ``MAXIMUM_START_GAP``.
         """
         state = self._state.root()
         if now is None:
             now = self._clock()
         gap = MINIMUM_START_GAP
         if state.responses:
-            median = statistics.median(state.responses)
-            gap = min(MAXIMUM_START_GAP, max(gap, 2 * median))
+            gap = max(gap, BRAKE_FACTOR * statistics.median(state.responses))
         if now < state.brake_until:
             gap *= 2
-        return gap
+        return min(MAXIMUM_START_GAP, gap)
 
     def observe(self, seconds: float) -> None:
-        """Note how long the gateway took to answer a read (T1)."""
+        """Note the gateway time of a read (T6): from sending the request
+        headers to receiving the response headers. Connection set-up, the
+        transfer and decoding of the body and other work of Home Assistant
+        do not belong to it."""
         if math.isfinite(seconds) and seconds >= 0:
             self._state.root().responses.append(seconds)
 
@@ -446,7 +451,11 @@ class LocalBudgetManager:
         )
 
     def check_ready(self, *, allow_saving: bool = False) -> None:
-        if not self._loaded or self._closed:
+        if self._closed:
+            # T8: Home Assistant stops (or the integration unloads); not a
+            # storage problem.
+            raise LocalBudgetError("local_budget_closed")
+        if not self._loaded:
             raise LocalBudgetError("local_budget_storage_failed")
         if self._saving and not allow_saving:
             raise BudgetDeferred()

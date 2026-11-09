@@ -1119,6 +1119,12 @@ async def test_health_counts_failure_classes_times_and_deferrals(gateways, clock
         assert transport_client.health() == {
             "failures_by_class": {},
             "response_times": {"samples": 0},
+            # T6: the phases of the reads, empty before the first answer.
+            "response_phases": {
+                "connection_setup": {"samples": 0},
+                "gateway_wait": {"samples": 0},
+                "body_and_decode": {"samples": 0},
+            },
             "deferred_reasons": {},
         }
         for _ in range(4):

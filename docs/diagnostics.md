@@ -37,15 +37,38 @@ and contains only counts, durations and fixed codes:
   running, to judge whether two parallel reads are still needed;
 - `response_times_by_connection`: for answered reads over a `new` and a
   `reused` connection the number of samples and the median, 95th percentile
-  and maximum in milliseconds of the last 256 reads.
+  and maximum in milliseconds of the last 256 reads. These are response times
+  as defined below.
 
 Each local access under `connections[].local[]` also reports `start_spacing`,
 the spacing between the starts of two local reads (see
 [local polling](local-polling.md)): `base_ms` (200), `current_ms` (the
-spacing in effect now), `median_response_ms` and `response_samples` (the last
-32 answer times the latency brake follows; `null` before the first answer),
-`brake_active`, `brake_reason` (`timeout` or `server_error`) and
-`brake_remaining_seconds`. It is `null` while the local access is not running.
+spacing in effect now), `median_response_ms` and `response_samples` (the median
+**gateway time** of the last 32 answered reads and their number, which the
+latency brake follows; `null` before the first answer), `brake_active`,
+`brake_reason` (`timeout` or `server_error`) and `brake_remaining_seconds`. It
+is `null` while the local access is not running.
+
+The local access uses two kinds of times, always in milliseconds:
+
+- the **response time** of a read (`response_times`,
+  `response_times_by_connection`) runs from the start of the read until it is
+  complete: the body is read and decoded, or an error answer is closed. It
+  includes setting up the connection but not the wait for the spacing between
+  two requests and not saving a pause afterwards. A read that timed out counts
+  with the time until the timeout;
+- the **gateway time** (`start_spacing.median_response_ms`,
+  `response_phases.gateway_wait`) runs from sending the request headers until
+  the response headers arrive.
+
+`response_phases` splits the answered reads of the last 256 into
+`connection_setup` (from the start of the read until the request headers are
+sent: address check, a certificate inspection when needed, a new TCP and TLS
+connection), `gateway_wait` (the gateway time) and `body_and_decode` (reading
+and decoding the body, or closing an error answer), each with the number of
+samples and the median, 95th percentile and maximum. The three phases of a
+read add up to its response time. Time in which Home Assistant was busy with
+other work counts in the phase it falls into.
 
 Schema 43 also reports how often readings are requested now, again as counts
 without paths, values or identifiers:

@@ -83,6 +83,7 @@ def local_error(error: object) -> str:
         "local_budget_deferred": "local_busy",
         "local_budget_capacity": "local_storage_failed",
         "local_budget_storage_failed": "local_storage_failed",
+        "local_budget_closed": "local_storage_failed",
         "service_unavailable": "local_service_unavailable",
         "request_timeout": "local_timeout",
         "timeout": "local_timeout",

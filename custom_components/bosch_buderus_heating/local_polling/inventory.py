@@ -60,6 +60,8 @@ class ResourceRecord:
     # Period scheduled at the last read: a later, shorter cap must not expire a
     # reading before its next read is even due.
     scheduled_period: int | None = None
+    # T7: a timed-out read of a known resource was already repeated early.
+    timeout_retried: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -204,6 +206,16 @@ class ResourceInventory:
         record.last_attempt = began
         record.due = max(now, began + interval)
         record.scheduled_period = interval
+        # T7: a single timeout must not let a value expire. A known resource
+        # is read once more as soon as the start spacing allows (after a
+        # pause of the access, if there is one); a second timeout in a row
+        # waits for its period again.
+        if result.problem == TransportFailure.TIMEOUT and record.confirmed:
+            if not record.timeout_retried:
+                record.due = now
+            record.timeout_retried = not record.timeout_retried
+        else:
+            record.timeout_retried = False
         if result.state is ReadState.ACCESS_ERROR:
             return False  # Source health and the shared pause have their own owner.
         if result.state is ReadState.SUCCESS:

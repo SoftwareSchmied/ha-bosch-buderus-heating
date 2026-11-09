@@ -93,14 +93,15 @@ def test_start_wait_uses_the_given_clock_reading_and_includes_a_pause():
     assert budget.start_wait() == pytest.approx(30)
 
 
-def test_brake_follows_twice_the_median_and_stays_bounded():
+def test_brake_follows_the_median_gateway_time_and_stays_bounded():
+    # T6: 1.5 times the median gateway time.
     clock = Clock()
     budget = LocalReadBudget(CONTEXT, clock=clock)
     for _ in range(32):
-        budget.observe(0.05)
-    assert budget.start_gap() == 0.2  # 100 ms: the base still applies
+        budget.observe(0.1)
+    assert budget.start_gap() == 0.2  # 150 ms: the base still applies
     for _ in range(17):
-        budget.observe(0.15)
+        budget.observe(0.2)
     assert budget.start_gap() == pytest.approx(0.3)
     for _ in range(32):
         budget.observe(3.0)
@@ -128,14 +129,15 @@ def test_timeout_or_server_error_doubles_the_spacing_for_five_minutes(reason):
     lease = budget.claim()
     assert lease is not None and budget.start_wait() == pytest.approx(0.4)
     for _ in range(32):
-        budget.observe(0.9)
-    assert budget.start_gap() == 2.0  # twice the 1 s limit at most
-    clock.advance(BRAKE_SECONDS)
+        budget.observe(0.4)
+    # T7: doubled, but never more than 1 s.
     assert budget.start_gap() == 1.0
+    clock.advance(BRAKE_SECONDS)
+    assert budget.start_gap() == pytest.approx(0.6)
     spacing = budget.start_spacing()
     assert spacing["brake_active"] is False and spacing["brake_reason"] is None
     assert spacing["brake_remaining_seconds"] == 0
-    assert spacing["median_response_ms"] == 900.0
+    assert spacing["median_response_ms"] == 400.0
 
 
 def test_brake_reason_is_a_fixed_code():
@@ -172,7 +174,7 @@ async def test_merged_gateway_keeps_the_brake_and_the_response_times(hass, tmp_p
     spacing = shared.start_spacing()
     assert spacing["brake_reason"] == "timeout"
     assert spacing["response_samples"] == 3
-    assert shared.start_gap() == pytest.approx(1.2)
+    assert shared.start_gap() == pytest.approx(0.9)
     # Known answer times of the gateway are kept, not replaced.
     later = LocalReadBudget(CONTEXT, clock=clock, manager=manager)
     later.observe(0.01)
@@ -264,6 +266,8 @@ async def test_response_time_excludes_the_header_spacing(gateways, clock):
         assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS
         await mover
     assert budget.start_spacing()["median_response_ms"] < 400
+    # T8: the response time excludes our own wait for the header spacing too.
+    assert transport_client.health()["response_times"]["maximum_ms"] < 400
 
 
 # T1: the planner reports due work (regression: it waited for the next
@@ -347,7 +351,6 @@ def test_due_time_counts_from_the_read_start():
     "result",
     [
         ReadResult(REQUEST, ReadState.ACCESS_ERROR, problem=TransportFailure.CONNECT),
-        ReadResult(REQUEST, ReadState.PATH_ERROR, problem=TransportFailure.TIMEOUT),
         missing(REQUEST),
     ],
 )

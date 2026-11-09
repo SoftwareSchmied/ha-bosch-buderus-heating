@@ -14,7 +14,7 @@ from ..local_api.catalog import ReadRequest
 from ..local_api.models import LocalObservation
 from ..local_budget import LocalBudgetError, LocalReadBudget
 from ..local_probe import ProbeContext, TransportFailure
-from ..local_read import ReadProblem, ReadResult, ReadState
+from ..local_read import BUDGET_CLOSED, ReadProblem, ReadResult, ReadState
 from ..local_state import LocalCondition
 from ..local_transport import StaleLocalRequest
 from .inventory import ResourceInventory, ResourceRecord, ResourceView
@@ -169,6 +169,8 @@ class LocalPollingService:
         self._fault_until = 0.0
         self._faults = 0
         self._closed = False
+        # T8: Home Assistant stops; reads end without a warning.
+        self._stopping = False
         self._started = False
         self._loaded = False
         self._failures = 0
@@ -478,6 +480,9 @@ class LocalPollingService:
             self._blocked = result.problem
             self._identity_confirmed = False
             return
+        if result.problem == BUDGET_CLOSED:
+            self._stop_quietly()
+            return
         if result.problem == "local_budget_storage_failed":
             self._recover(result.problem)
             return
@@ -544,8 +549,11 @@ class LocalPollingService:
         except StaleLocalRequest:
             self._identity_confirmed = False
             self._blocked = "local_configuration_changed"
-        except LocalBudgetError:
-            self._recover("local_budget_storage_failed")
+        except LocalBudgetError as error:
+            if str(error) == BUDGET_CLOSED:
+                self._stop_quietly()
+            else:
+                self._recover("local_budget_storage_failed")
         except asyncio.CancelledError:
             raise
         except Exception:
@@ -647,9 +655,20 @@ class LocalPollingService:
             delay = min(delay, self.budget.pause_seconds)
         return delay
 
+    def _stop_quietly(self) -> None:
+        """T8: the shared budget closed because Home Assistant stops.
+
+        No further reads start and nothing above DEBUG is logged; the values
+        keep their state until the integration is unloaded.
+        """
+        if not self._stopping:
+            _LOGGER.debug("Local readings stop with Home Assistant")
+        self._stopping = True
+        self.wake()
+
     async def _run(self) -> None:
         try:
-            while not self._closed and self._current():
+            while not self._closed and not self._stopping and self._current():
                 self._wake.clear()
                 try:
                     delay = await self._step()

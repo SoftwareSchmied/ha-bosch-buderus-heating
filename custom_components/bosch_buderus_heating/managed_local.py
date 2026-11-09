@@ -45,7 +45,7 @@ from .local_probe import (
     TransportFailure,
     assess_local_probe,
 )
-from .local_read import LocalReadClient, ReadResult, ReadState
+from .local_read import RESPONSE_PHASES, LocalReadClient, ReadResult, ReadState
 from .local_selection import (
     UNUSED_SIGNAL_PERIOD,
     paired_cloud_interval,
@@ -329,6 +329,7 @@ class LocalSource:
             else {
                 "failures_by_class": {},
                 "response_times": {"samples": 0},
+                "response_phases": {phase: {"samples": 0} for phase in RESPONSE_PHASES},
                 "deferred_reasons": {},
             }
         )

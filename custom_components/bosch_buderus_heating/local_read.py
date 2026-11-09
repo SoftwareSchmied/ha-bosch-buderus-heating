@@ -40,6 +40,33 @@ DEFAULT_FAILURE_PAUSE = 60.0
 RESOLVE_REUSE_SECONDS = 60.0
 # Response times of the most recent reads kept for the diagnostics (O93).
 RESPONSE_SAMPLES = 256
+# T6: the phases of a read in the diagnostics: the connection set-up (address
+# check, certificate inspection, a new TCP/TLS connection) until the request
+# headers are sent, the wait for the response headers, and reading and
+# decoding the body.
+RESPONSE_PHASES = ("connection_setup", "gateway_wait", "body_and_decode")
+# T8: the budget manager closed, because Home Assistant stops.
+BUDGET_CLOSED = "local_budget_closed"
+
+
+def _budget_problem(error: LocalBudgetError) -> str:
+    """The fixed code a budget problem is reported with (T8)."""
+    if str(error) == BUDGET_CLOSED:
+        return BUDGET_CLOSED
+    return "local_budget_storage_failed"
+
+
+def _phase_times(samples: deque[float]) -> dict[str, object]:
+    """Number, median, 95th percentile and maximum in milliseconds."""
+    ordered = sorted(samples)
+    result: dict[str, object] = {"samples": len(ordered)}
+    if ordered:
+        result |= {
+            "median_ms": round(ordered[(len(ordered) - 1) // 2], 1),
+            "p95_ms": round(ordered[math.ceil(0.95 * len(ordered)) - 1], 1),
+            "maximum_ms": round(ordered[-1], 1),
+        }
+    return result
 
 
 class ReadState(StrEnum):
@@ -141,8 +168,14 @@ class _Attempt:
     # Whether the request went over a new or a kept connection (G4).
     connection: ConnectionKind | None = None
     # How long the request waited for the spacing between request headers;
-    # not part of the gateway's response time (T1).
+    # our own wait, never part of a response time (T1).
     paced: float = 0.0
+    # T6: when the request headers were sent, the response headers received
+    # and the read was complete (body read and decoded, or the error answer
+    # closed), all monotonic.
+    sent: float | None = None
+    answered: float | None = None
+    done: float | None = None
 
 
 class LocalReadClient:
@@ -187,6 +220,10 @@ class LocalReadClient:
         self._resolved: tuple[tuple[str, ...], float] | None = None
         self._metrics = ReadMetrics()
         self._durations: deque[float] = deque(maxlen=RESPONSE_SAMPLES)
+        # T6: the same reads split into their phases (milliseconds).
+        self._phases: dict[str, deque[float]] = {
+            phase: deque(maxlen=RESPONSE_SAMPLES) for phase in RESPONSE_PHASES
+        }
         self._failure_classes: Counter[str] = Counter()
         self._deferred_reasons: Counter[str] = Counter()
 
@@ -210,6 +247,9 @@ class LocalReadClient:
         return {
             "failures_by_class": dict(sorted(self._failure_classes.items())),
             "response_times": times,
+            "response_phases": {
+                phase: _phase_times(samples) for phase, samples in self._phases.items()
+            },
             "deferred_reasons": dict(sorted(self._deferred_reasons.items())),
         }
 
@@ -221,22 +261,39 @@ class LocalReadClient:
         if result.state is ReadState.DEFERRED:
             self._deferred_reasons[str(result.problem or "unknown")] += 1
             return
-        elapsed = monotonic() - started
+        # T8: one definition of the response time everywhere: from the start
+        # of the read until it is complete, without our own wait for the
+        # header spacing and without saving a pause afterwards.
+        end = attempt.done if attempt.done is not None else monotonic()
+        total = max(0.0, end - started - attempt.paced)
         if result.http_requests:
-            duration = elapsed * 1000
+            duration = total * 1000
             self._durations.append(duration)
             if attempt.connection is not None and attempt.status is not None:
                 self._reuse.timed(attempt.connection, duration)
+        gateway = None
+        if attempt.sent is not None and attempt.answered is not None:
+            gateway = max(0.0, attempt.answered - attempt.sent)
+            setup = max(0.0, attempt.sent - started - attempt.paced)
+            self._phases["connection_setup"].append(setup * 1000)
+            self._phases["gateway_wait"].append(gateway * 1000)
+            if attempt.done is not None:
+                body = max(0.0, attempt.done - attempt.answered)
+                self._phases["body_and_decode"].append(body * 1000)
         if (failure := _failure_class(result)) is not None:
             self._failure_classes[failure] += 1
-        # T1: the latency brake. A timeout or a server error slows the reads
-        # for a while; an answer adds its time, without the header spacing.
+        # The latency brake (T1, T6, T7). A timeout on a kept connection is
+        # most likely a connection the gateway dropped: it only counts for the
+        # keep-alive fallback. Answers add their gateway time only, so the
+        # connection set-up (also a TLS handshake in the fallback), the body,
+        # decoding and other work of Home Assistant never slow the reads.
         if result.problem == TransportFailure.TIMEOUT:
-            self._budget.brake("timeout")
+            if attempt.connection is not ConnectionKind.REUSED:
+                self._budget.brake("timeout")
         elif attempt.status is not None and attempt.status >= 500:
             self._budget.brake("server_error")
-        elif attempt.status is not None:
-            self._budget.observe(max(0.0, elapsed - attempt.paced))
+        elif gateway is not None:
+            self._budget.observe(gateway)
 
     def _count(self, **increments: int) -> None:
         self._metrics = replace(
@@ -267,7 +324,8 @@ class LocalReadClient:
         await self._budget.start_http(
             attempt.lease, lambda: not self._closed and self._is_current()
         )
-        attempt.paced += monotonic() - waiting
+        attempt.sent = monotonic()
+        attempt.paced += attempt.sent - waiting
         attempt.headers += 1
         self._count(http_requests=1)
 
@@ -446,6 +504,7 @@ class LocalReadClient:
             ),
             trace_request_ctx=attempt,
         ) as response:
+            attempt.answered = monotonic()
             attempt.status = response.status
             self._count(http_responses=1)
             if keep_alive:
@@ -461,6 +520,7 @@ class LocalReadClient:
                 # Without reading the error body. aiohttp has already kept the
                 # connection when the answer was complete; any other is closed.
                 response.close()
+                attempt.done = monotonic()
                 result = await self._http_error(request, attempt, delay)
                 # Preserve an already observed gateway pause even after a change.
                 self._current()
@@ -480,6 +540,7 @@ class LocalReadClient:
             observed_monotonic=monotonic(),
             limits=self._limits.json,
         )
+        attempt.done = monotonic()
         await asyncio.sleep(0)  # Deliver cancellation/expiry before publishing.
         self._current()
         return ReadResult(
@@ -503,9 +564,9 @@ class LocalReadClient:
             lease = self._budget.claim()
         except BudgetDeferred:
             lease = None
-        except LocalBudgetError:
+        except LocalBudgetError as error:
             return ReadResult(
-                request, ReadState.ACCESS_ERROR, problem="local_budget_storage_failed"
+                request, ReadState.ACCESS_ERROR, problem=_budget_problem(error)
             )
         if lease is None:
             self._count(deferred=1)
@@ -559,12 +620,12 @@ class LocalReadClient:
                 http_requests=attempt.headers,
                 retry_after_seconds=error.seconds,
             )
-        except LocalBudgetError:
+        except LocalBudgetError as error:
             return ReadResult(
                 request,
                 ReadState.ACCESS_ERROR,
                 attempt.status,
-                problem="local_budget_storage_failed",
+                problem=_budget_problem(error),
                 http_requests=attempt.headers,
             )
 
