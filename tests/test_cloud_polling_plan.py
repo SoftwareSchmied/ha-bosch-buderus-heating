@@ -797,6 +797,8 @@ async def test_managed_switch_reads_the_cloud_value_at_once(hass) -> None:
         )
         await eventually(lambda: state(hass, owner) == "20.0")
         assert CURRENT not in coordinator._local_served
-        assert coordinator.data[CURRENT].last_success > dt_util.utcnow() - timedelta(
-            minutes=1
+        # The request is recorded before its answer is applied: wait for it.
+        await eventually(
+            lambda: coordinator.data[CURRENT].last_success
+            > dt_util.utcnow() - timedelta(minutes=1)
         )
