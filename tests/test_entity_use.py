@@ -1,5 +1,6 @@
 """G3/O51: readings nobody shows are read less often, never left out."""
 
+from dataclasses import replace
 from datetime import timedelta
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -26,6 +27,7 @@ from custom_components.bosch_buderus_heating.local_only_sensor import (
 from custom_components.bosch_buderus_heating.local_polling.inventory import (
     ResourceInventory,
 )
+from custom_components.bosch_buderus_heating.local_read import ReadResult, ReadState
 from custom_components.bosch_buderus_heating.local_selection import (
     UNUSED_SIGNAL_PERIOD,
     signal_slows_when_unused,
@@ -392,6 +394,82 @@ async def test_diagnostics_count_signals_read_hourly(hass, prepared):
     assert source.diagnostics()["signals_read_hourly_unused"] == 0
     await source.close()
     assert source.diagnostics()["signals_read_hourly_unused"] == 0
+
+
+async def test_signals_without_any_entity_are_read_hourly(hass, prepared):
+    """A3: identifiers, private signals and answers no entity can show are
+    read hourly; readings the integration uses itself and anything an entity
+    shows keep their pace."""
+    from tests.test_local_api import read
+
+    p = prepared
+    await ready(hass, p)
+    source = p.runtime.connection_driver("local").sources["local"]
+    service, inventory = source.service, source.service.inventory
+    use = entity_use(hass, p.entry)
+    now = p.clock()
+
+    def answer(name, raw, *, at=None):
+        observation = replace(
+            read(
+                {"id": f"/signals/{name}", "writeable": 0, **raw},
+                observed_monotonic=now if at is None else at,
+            ),
+            context=service.context.identity,
+        )
+        inventory.signal_ids = inventory.signal_ids | {name}
+        record = inventory.add(observation.request, now)
+        inventory.accept(
+            ReadResult(
+                observation.request,
+                ReadState.SUCCESS,
+                200,
+                observation=observation,
+                http_requests=1,
+                response_bytes=10,
+            ),
+            observation.observed_monotonic,
+        )
+        return observation.request, record
+
+    text = {"type": "stringValue", "value": "A1B2"}
+    number = {"type": "floatValue", "value": 1.5, "unitOfMeasure": "C"}
+    free, _ = answer("SRC.Some.Text", text)
+    measured, _ = answer("SRC.Some.Number", number)
+    declared, _ = answer(
+        "SRC.Some.Choice", {**text, "value": "eco", "allowedValues": ["eco", "comfort"]}
+    )
+    fault, _ = answer("SRC.Some.ErrorText", text)
+    counter, _ = answer("SRC.Some.StartsText", text)
+    serial = signal("SRC.Device.SerialNumber")
+    assert inventory.period(serial) == UNUSED_SIGNAL_PERIOD  # an identifier
+    assert inventory.period(free) == UNUSED_SIGNAL_PERIOD
+    for request in (measured, declared, fault, counter):
+        assert inventory.period(request) == 60, request.path
+    assert source.hourly_counts() == {"disabled": 0, "without_entity": 1}
+    diagnostics = source.diagnostics()
+    assert diagnostics["signals_read_hourly_without_entity"] == 1
+    assert diagnostics["signals_read_hourly_unused"] == 0
+    # A later answer that an entity can show: the usual pace again.
+    _, record = answer("SRC.Some.Text", {**text, "value": "true"}, at=now + 1)
+    assert record.observation.observed_monotonic == now + 1
+    assert inventory.period(free) == 60
+    # A noted entity (here enabled) keeps the pace whatever the answer.
+    answer("SRC.Some.Text", text, at=now + 2)
+    assert inventory.period(free) == UNUSED_SIGNAL_PERIOD
+    unique_id = local_only_unique_id(GATEWAY, free.path)
+    token = service._period_token()
+    use.note("sensor", entity(unique_id, free.path))
+    register(hass, p.entry, "sensor", unique_id, disabled=False)
+    await later(hass)
+    assert inventory.period(free) == 60
+    # O13 learns of it: the noted paths are part of the period token.
+    noted = use.noted_paths(GATEWAY)
+    assert free.path in noted
+    assert any(part is noted for part in service._period_token())
+    assert not any(part is noted for part in token)
+    assert source.hourly_counts() == {"disabled": 0, "without_entity": 0}
+    await source.close()
 
 
 async def test_period_token_follows_options_entities_and_cloud_plans(hass, prepared):

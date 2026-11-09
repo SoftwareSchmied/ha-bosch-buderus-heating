@@ -155,6 +155,10 @@ class LocalSource:
         self.context: SourceContext | None = None
         self.service: LocalPollingService | None = None
         self.client: LocalReadClient | None = None
+        # The gateway of the verified access, once the reads start.
+        self._gateway_id: str | None = None
+        # A3: per reading, the answer last judged and whether it has no entity.
+        self._without_entity: dict[str, tuple[float | None, bool]] = {}
         self._closed = False
         # O93: the most recent condition changes, with time and fixed reason.
         self._changes: deque[dict[str, object]] = deque(maxlen=CONDITION_CHANGES)
@@ -329,8 +333,9 @@ class LocalSource:
             }
         )
         reuse = getattr(self.client, "connection_reuse", None)
-        inventory = getattr(self.service, "inventory", None)
-        slowed = getattr(inventory, "slowed_unused", None)
+        hourly = (
+            self.hourly_counts() if snapshot else {"disabled": 0, "without_entity": 0}
+        )
         return {
             "condition": state.condition.value if state else "unavailable",
             "identity_confirmed": state.identity_confirmed if state else False,
@@ -349,10 +354,10 @@ class LocalSource:
             if snapshot
             else 0,
             "gateway_pause_seconds": snapshot.gateway_pause_seconds if snapshot else 0,
-            # G3: signals read hourly because all their entities are disabled.
-            "signals_read_hourly_unused": (
-                slowed() if snapshot and callable(slowed) else 0
-            ),
+            # G3: signals read hourly because all their entities are disabled;
+            # A3: and those no entity shows at all.
+            "signals_read_hourly_unused": hourly["disabled"],
+            "signals_read_hourly_without_entity": hourly["without_entity"],
             "resources": [
                 {
                     "path": v.request.definition.template
@@ -579,25 +584,69 @@ class LocalSource:
 
     @staticmethod
     def _unused_floor(
-        use: EntityUse, gateway_id: str
+        use: EntityUse,
+        gateway_id: str,
+        without_entity: Callable[[ReadRequest], bool] | None = None,
     ) -> Callable[[ReadRequest], int | None]:
         """G3: a signal whose entities are all disabled is read hourly.
 
+        A3: so is a signal that gets no entity at all (``without_entity``).
         Never for observation pairs, counters, faults and the installation
         date; enabling one of its entities restores the usual pace.
         """
 
         def floor(request: ReadRequest) -> int | None:
-            if (
-                request.path not in use.disabled_paths(gateway_id)
-                or request.definition.template != "/signals/{signalId}"
-                or not signal_slows_when_unused(request.path)
-                or category(request) in (PollClass.COUNTERS, PollClass.STATIC)
-            ):
-                return None
-            return UNUSED_SIGNAL_PERIOD
+            return (
+                UNUSED_SIGNAL_PERIOD
+                if _hourly_reason(use, gateway_id, request, without_entity)
+                else None
+            )
 
         return floor
+
+    def _hourly(self, request: ReadRequest) -> bool:
+        """A3: a signal no entity will show: an identifier or private
+        signal, or a reading whose last answer gives no entity (free text,
+        a structure). Undecided two-form signals keep their pace."""
+        from .local_plant_view import local_sensor, private_path
+
+        service = self.service
+        record = (
+            service.inventory.records.get(request.target)
+            if service is not None
+            else None
+        )
+        observation = record.observation if record is not None else None
+        # Asked for every period: worked out once per answer (by its receive
+        # time, so no answer is kept here beyond the inventory's bounds).
+        received = observation.observed_monotonic if observation is not None else None
+        cached = self._without_entity.get(request.target)
+        if cached is not None and cached[0] == received:
+            return cached[1]
+        if private_path(request.path):
+            result = True
+        elif observation is None:
+            result = False
+        else:
+            sensor, reason = local_sensor(observation)
+            result = sensor is None and reason in _WITHOUT_ENTITY
+        self._without_entity[request.target] = (received, result)
+        return result
+
+    def hourly_counts(self) -> dict[str, int]:
+        """How many local readings are read hourly, and why (A3/G3)."""
+        counts = {"disabled": 0, "without_entity": 0}
+        inventory = getattr(self.service, "inventory", None)
+        records = getattr(inventory, "records", None)
+        if not isinstance(records, dict) or self._gateway_id is None:
+            return counts
+        factory = self.connection.factory
+        use = entity_use(factory.hass, factory.entry)
+        for record in records.values():
+            reason = _hourly_reason(use, self._gateway_id, record.request, self._hourly)
+            if reason is not None:
+                counts[reason] += 1
+        return counts
 
     def _period_token(
         self, context: SourceContext, use: EntityUse, gateway_id: str
@@ -612,7 +661,11 @@ class LocalSource:
 
         def token() -> tuple[object, ...]:
             snapshot = runtime.snapshot
-            parts: list[object] = [snapshot, use.disabled_paths(gateway_id)]
+            parts: list[object] = [
+                snapshot,
+                use.disabled_paths(gateway_id),
+                use.noted_paths(gateway_id),
+            ]
             for key, binding in snapshot.bindings.items():
                 connection = snapshot.connections.get(binding.connection_id)
                 if (
@@ -703,6 +756,7 @@ class LocalSource:
                 interval = validate_interval(settings.get("local_interval", 60))
                 factory = self.connection.factory
                 use = entity_use(factory.hass, factory.entry)
+                self._gateway_id = access.gateway_id
                 self.client = LocalReadClient(
                     probe,
                     access.credentials.token,
@@ -727,7 +781,7 @@ class LocalSource:
                     interval=interval,
                     cap=self._paired_cap(context),
                     access_key=_access_key(context, self.binding.connection_id),
-                    floor=self._unused_floor(use, access.gateway_id),
+                    floor=self._unused_floor(use, access.gateway_id, self._hourly),
                     period_token=self._period_token(context, use, access.gateway_id),
                 )
                 self._stop_use_listener()
@@ -755,6 +809,41 @@ class LocalSource:
             await self.service.close()
         elif self.client is not None:
             await self.client.close()
+
+
+# A3: reasons of the local plant view for a reading that never gets an entity.
+_WITHOUT_ENTITY = frozenset({"private", "multipart", "unsupported_shape", "text"})
+
+
+def _hourly_reason(
+    use: EntityUse,
+    gateway_id: str,
+    request: ReadRequest,
+    without_entity: Callable[[ReadRequest], bool] | None,
+) -> str | None:
+    """Why a local signal is read only hourly, or None for its usual pace.
+
+    ``disabled`` (G3): every entity that shows it is disabled.
+    ``without_entity`` (A3): no entity shows it and none will. Never for
+    readings the integration uses itself: observation pairs, counters,
+    faults and the installation date keep their pace, as does a signal
+    with any enabled entity.
+    """
+    if (
+        request.definition.template != "/signals/{signalId}"
+        or not signal_slows_when_unused(request.path)
+        or category(request) in (PollClass.COUNTERS, PollClass.STATIC)
+    ):
+        return None
+    if request.path in use.disabled_paths(gateway_id):
+        return "disabled"
+    if (
+        without_entity is not None
+        and request.path not in use.noted_paths(gateway_id)
+        and without_entity(request)
+    ):
+        return "without_entity"
+    return None
 
 
 def _access_key(context: SourceContext, connection_id: str) -> str | None:

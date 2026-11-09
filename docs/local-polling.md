@@ -33,6 +33,13 @@ their usual interval. Enabling one of the entities restores the usual interval
 within seconds, without a restart: a reading already older than the usual
 interval is then due at once. A signal without a registered entity (for
 example before its first reading) keeps the usual interval as well.
+A signal that never gets an entity is also read at most once an hour: an
+identifier or other private signal, and a signal whose latest answer is free
+text without declared values or a structure. The same exceptions apply, and a
+signal whose two possible forms are still undecided, or that any entity
+shows, keeps its usual interval. When a later answer gives it an entity, the
+usual interval applies again. The diagnostics count both kinds
+(`signals_read_hourly_unused` and `signals_read_hourly_without_entity`).
 A value becomes late after one target interval and expires after three. Actual
 request intervals and age are separately available. An overloaded queue never
 extends validity. A source pause or missing identity can make a value unavailable

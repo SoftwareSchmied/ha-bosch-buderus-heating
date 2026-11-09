@@ -44,7 +44,9 @@ without paths, values or identifiers:
 
 - each local access under `connections[].local[]` adds
   `signals_read_hourly_unused`: local signals read only hourly because every
-  entity that shows them is disabled (see
+  entity that shows them is disabled, and
+  `signals_read_hourly_without_entity`: local signals read only hourly
+  because no entity shows them at all, such as identifiers (see
   [local polling](local-polling.md));
 - each gateway `runtime` adds `early_read_paths` (paths read a few minutes
   before their group's deadline to fill batches that are sent anyway),

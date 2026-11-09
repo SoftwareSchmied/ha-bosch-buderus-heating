@@ -67,6 +67,8 @@ class EntityUse:
         # Gateway ID -> paths only disabled entities read; replaced, never
         # changed, so its identity tells a change.
         self._disabled: dict[str, frozenset[str]] = {}
+        # Gateway ID -> paths any noted entity reads (A3); replaced likewise.
+        self._noted: dict[str, frozenset[str]] = {}
         self._listeners: list[Callable[[], None]] = []
         self._pending: CALLBACK_TYPE | None = None
         self._closed = False
@@ -93,9 +95,14 @@ class EntityUse:
         until the answer changes)."""
         return self._disabled.get(gateway_id, _NONE)
 
+    def noted_paths(self, gateway_id: str) -> frozenset[str]:
+        """Paths of this gateway any noted entity reads, enabled or not, as
+        of the last refresh (same object until the answer changes)."""
+        return self._noted.get(gateway_id, _NONE)
+
     @callback
     def add_listener(self, listener: Callable[[], None]) -> Callable[[], None]:
-        """Call ``listener`` whenever the disabled paths change."""
+        """Call ``listener`` whenever the disabled or noted paths change."""
         self._listeners.append(listener)
 
         @callback
@@ -152,9 +159,16 @@ class EntityUse:
             for gateway, paths in disabled.items()
         }
         result = {gateway: paths for gateway, paths in result.items() if paths}
-        if result == self._disabled:
+        noted = {
+            gateway: frozenset(used.get(gateway, set()) | disabled.get(gateway, set()))
+            for gateway in used.keys() | disabled.keys()
+        }
+        if result == self._disabled and noted == self._noted:
             return
-        self._disabled = result
+        if result != self._disabled:
+            self._disabled = result
+        if noted != self._noted:
+            self._noted = noted
         for listener in tuple(self._listeners):
             try:
                 listener()
