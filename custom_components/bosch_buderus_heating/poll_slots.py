@@ -17,7 +17,7 @@ locally), so the plan stays valid whatever the local access does.
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 
 # A larger common period only makes the model coarser, never wrong.
 MAX_PLAN_TICKS = 1440
@@ -29,11 +29,14 @@ def plan_poll_slots[G](
     *,
     capacity: int,
     previous: Mapping[str, tuple[G, int]] | None = None,
+    atomic: Collection[G] = (),
 ) -> dict[str, tuple[G, int]]:
     """Return ``path -> (group, slot)`` for every path of a planned group.
 
     ``periods`` gives each group's period in ticks. Groups read every tick
-    keep slot 0. Every other path takes the earliest slot whose wake-ups all
+    keep slot 0, and so do the ``atomic`` groups: their paths are judged
+    together, so every read of the group must contain all of them (the fault
+    sources). Every other path takes the earliest slot whose wake-ups all
     have room left in an already needed batch, otherwise the slot that adds
     the fewest batches (slot 0 on a tie, as without spreading). A path keeps
     its earlier slot while its group and period stay the same, so a running
@@ -61,7 +64,7 @@ def plan_poll_slots[G](
                 continue
             seen.add(path)
             kept = earlier.get(path)
-            if period == 1:
+            if period == 1 or group in atomic:
                 slots[path] = (group, 0)
                 _add(load, period, 0)
             elif kept is not None and kept[0] == group and 0 <= kept[1] < period:

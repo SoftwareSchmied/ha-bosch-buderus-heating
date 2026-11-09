@@ -1973,6 +1973,10 @@ class BoschBuderusDataUpdateCoordinator(
                 )
             )
         )
+        # FAULT-1: the fault sources go first, into the first batch, so the
+        # cycle budget never splits them over two cycles.
+        fault_sources = set(paths_by_group.get(PollGroup.NOTIFICATIONS, ()))
+        paths.sort(key=lambda path: path not in fault_sources)
         if not paths:
             self._main_cycle_failed = not self.last_update_success
             self._cycle_idle = True
@@ -3175,6 +3179,8 @@ class BoschBuderusDataUpdateCoordinator(
                 },
                 capacity=MAX_BULK_PATHS,
                 previous=self._poll_slots,
+                # FAULT-1: the fault sources only count when read together.
+                atomic=(PollGroup.NOTIFICATIONS,),
             )
             self._poll_slots_key = key
         return self._poll_slots
