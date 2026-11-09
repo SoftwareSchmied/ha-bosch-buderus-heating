@@ -10,13 +10,15 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .bacon import flow as bacon_flow
 from .bacon.models import BaconError
 from .cloud_configuration import (
-    CLAIM,
+    CLAIM_ABORTS,
     CloudDiscovery,
     check_cloud_selection,
     check_new_cloud,
+    claim_cloud_setup,
     discover_connection,
     ensure_active_cloud_flow,
     new_cloud_configuration,
+    renew_cloud_claim,
     selection_client,
     update_cloud_selection,
 )
@@ -82,15 +84,12 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
         from .config_flow import BRAND_SCHEMA
 
         try:
-            check_new_cloud(self.hass, self.flow_id)
+            claim_cloud_setup(
+                self.hass, self.flow_id, cast(dict[str, Any], self.context)
+            )
             self._cloud_before = self._management().current()
         except ConfigurationError as error:
-            return self.async_abort(
-                reason=str(error)
-                if str(error) in {"cloud_already_connected", "cloud_setup_in_progress"}
-                else "configuration_changed"
-            )
-        cast(dict[str, Any], self.context)[CLAIM] = True
+            return self._claim_abort(error)
         if user_input is None:
             return self.async_show_form(
                 step_id="connection_add_cloud", data_schema=BRAND_SCHEMA
@@ -114,9 +113,21 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
             errors={"base": error} if error else {},
         )
 
+    def _claim_abort(self, error: ConfigurationError) -> ConfigFlowResult:
+        return self.async_abort(
+            reason=str(error) if str(error) in CLAIM_ABORTS else "configuration_changed"
+        )
+
+    def _cloud_taken_over(self) -> ConfigFlowResult | None:
+        if renew_cloud_claim(cast(dict[str, Any], self.context)):
+            return None
+        return self.async_abort(reason="cloud_setup_taken_over")
+
     async def async_step_cloud_auth(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        if taken_over := self._cloud_taken_over():
+            return taken_over
         if (
             self._cloud_oauth is None
             or self._cloud_brand is None
@@ -134,8 +145,8 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
             ).exchange_code(self._cloud_brand, grant)
             if not self._cloud_tokens.refresh_token:
                 return self._cloud_auth_form("invalid_auth")
-        except ConfigurationError:
-            return self.async_abort(reason="configuration_changed")
+        except ConfigurationError as error:
+            return self._claim_abort(error)
         except OAuthRedirectError, ValueError:
             return self._cloud_auth_form("invalid_redirect")
         except AuthenticationError:
@@ -156,6 +167,8 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
     async def async_step_cloud_retry(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        if taken_over := self._cloud_taken_over():
+            return taken_over
         if self._cloud_backoff is None or self._cloud_brand is None:
             return self.async_abort(reason="configuration_changed")
         try:
@@ -179,8 +192,8 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
             ).get_gateways()
             devices, account = await bacon_flow.discover(session, self._cloud_tokens)
             self._cloud_discovery = CloudDiscovery(gateways, devices, account)
-        except ConfigurationError:
-            return self.async_abort(reason="configuration_changed")
+        except ConfigurationError as error:
+            return self._claim_abort(error)
         except AuthenticationError:
             self._cloud_tokens = None
             return self._cloud_auth_form("invalid_auth")
@@ -208,6 +221,8 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
     ) -> ConfigFlowResult:
         from .config_flow import _gateway_schema
 
+        if taken_over := self._cloud_taken_over():
+            return taken_over
         if (
             self._cloud_discovery is None
             or self._cloud_tokens is None
@@ -272,7 +287,7 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
                     "cannot_connect",
                     *LOCAL_FIRST_ERRORS,
                 }:
-                    return self.async_abort(reason="configuration_changed")
+                    return self._claim_abort(error)
                 errors = {"base": str(error)}
             except BaconError:
                 errors = {"base": "invalid_auth"}

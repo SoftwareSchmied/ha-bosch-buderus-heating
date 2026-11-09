@@ -5,14 +5,16 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from collections.abc import Callable, Collection, Mapping
-from dataclasses import dataclass, field
+from collections.abc import Callable, Collection, Iterator, Mapping, MutableMapping
+from contextlib import suppress
+from dataclasses import dataclass, field, fields
 from time import monotonic
 from typing import Any, cast
 from uuid import uuid4
 
 from homeassistant.config_entries import SOURCE_IGNORE, ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import FlowManager, UnknownFlow
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .auth_lifecycle import connection_resources, entry_auth
@@ -43,9 +45,20 @@ from .configuration_migration import (
 from .const import DOMAIN, PollingProfile
 from .data import tokens_to_data
 from .local_identity import CONTRACT
-from .pointt import AuthTokens, Brand, Gateway, OAuthClient, PointTClient
+from .pointt import AuthTokens, Brand, Gateway, OAuthClient, OAuthFlow, PointTClient
 
 CLAIM = DOMAIN + "_cloud_setup"
+# When the claiming dialog last acted, and whether a newer one replaced it.
+CLAIMED_AT = CLAIM + "_at"
+TAKEN_OVER = CLAIM + "_taken_over"
+# Its sign-in link has long expired by then: Home Assistant never removes a
+# dialog that was reloaded or left open, so such a claim counts as orphaned.
+CLAIM_ORPHANED_SECONDS = (
+    next(f.default for f in fields(OAuthFlow) if f.name == "max_age") + 300.0
+)
+CLAIM_ABORTS = frozenset(
+    {"cloud_already_connected", "cloud_setup_in_progress", "cloud_setup_taken_over"}
+)
 DISCOVERY_VALID_SECONDS = 300
 _LOGGER = logging.getLogger(__name__)
 
@@ -253,18 +266,94 @@ def unreadable_gateway_ids(data: Mapping[str, Any]) -> set[str]:
     return found
 
 
-def check_new_cloud(hass: HomeAssistant, flow_id: str) -> None:
-    """Temporarily forbid parallel cloud registration without an account contract."""
+def _claims(
+    hass: HomeAssistant, flow_id: str
+) -> Iterator[tuple[FlowManager[Any, Any, Any], str, MutableMapping[str, Any]]]:
+    """Cloud setup claims of all other dialogs, live contexts included."""
+    for manager in (hass.config_entries.flow, hass.config_entries.options):
+        for flow in list(manager.async_progress(include_uninitialized=True)):
+            context = cast(MutableMapping[str, Any], flow.get("context", {}))
+            if flow["flow_id"] != flow_id and context.get(CLAIM):
+                yield (
+                    cast(FlowManager[Any, Any, Any], manager),
+                    flow["flow_id"],
+                    context,
+                )
+
+
+def _orphaned(context: Mapping[str, Any], now: float) -> bool:
+    claimed_at = context.get(CLAIMED_AT)
+    return (
+        isinstance(claimed_at, int | float)
+        and now - claimed_at > CLAIM_ORPHANED_SECONDS
+    )
+
+
+def _release(
+    manager: FlowManager[Any, Any, Any],
+    flow_id: str,
+    context: MutableMapping[str, Any],
+    *,
+    remove: bool,
+) -> None:
+    """End another dialog's claim; it aborts on its next step or request."""
+    context.pop(CLAIM, None)
+    context[TAKEN_OVER] = True
+    if remove:
+        with suppress(UnknownFlow):
+            manager.async_abort(flow_id)
+
+
+def _require_no_cloud(hass: HomeAssistant) -> None:
     if any(
         c.kind == CLOUD_KIND
         for s in cloud_snapshots(hass)
         for c in s.connections.values()
     ):
         raise ConfigurationError("cloud_already_connected")
+
+
+def renew_cloud_claim(context: MutableMapping[str, Any]) -> bool:
+    """Return False once a newer dialog took over; otherwise renew the claim."""
+    if context.get(TAKEN_OVER):
+        return False
+    if context.get(CLAIM):
+        context[CLAIMED_AT] = monotonic()
+    return True
+
+
+def claim_cloud_setup(
+    hass: HomeAssistant, flow_id: str, context: MutableMapping[str, Any]
+) -> None:
+    """Claim the only cloud setup; a newly opened dialog replaces older ones.
+
+    The older dialogs abort on their next step, those orphaned are removed at
+    once. Registration still checks with `check_new_cloud`.
+    """
+    if not renew_cloud_claim(context):
+        raise ConfigurationError("cloud_setup_taken_over")
+    _require_no_cloud(hass)
+    now = monotonic()
+    for manager, other_id, other in _claims(hass, flow_id):
+        _release(manager, other_id, other, remove=_orphaned(other, now))
+    context[CLAIM] = True
+    context[CLAIMED_AT] = now
+
+
+def check_new_cloud(hass: HomeAssistant, flow_id: str) -> None:
+    """Temporarily forbid parallel cloud registration without an account contract."""
     for manager in (hass.config_entries.flow, hass.config_entries.options):
         for flow in manager.async_progress(include_uninitialized=True):
-            if flow["flow_id"] != flow_id and flow.get("context", {}).get(CLAIM):
-                raise ConfigurationError("cloud_setup_in_progress")
+            if flow["flow_id"] == flow_id and not renew_cloud_claim(
+                cast(MutableMapping[str, Any], flow.get("context", {}))
+            ):
+                raise ConfigurationError("cloud_setup_taken_over")
+    _require_no_cloud(hass)
+    now = monotonic()
+    for manager, other_id, other in _claims(hass, flow_id):
+        if not _orphaned(other, now):
+            raise ConfigurationError("cloud_setup_in_progress")
+        _release(manager, other_id, other, remove=True)
 
 
 @dataclass(frozen=True, slots=True)
@@ -343,7 +432,7 @@ async def discover_connection(
 def ensure_active_cloud_flow(hass: HomeAssistant, flow_id: str) -> None:
     """A closed dialog must not send queued requests or accept new credentials."""
     if not any(
-        flow["flow_id"] == flow_id
+        flow["flow_id"] == flow_id and not flow.get("context", {}).get(TAKEN_OVER)
         for manager in (hass.config_entries.flow, hass.config_entries.options)
         for flow in manager.async_progress(include_uninitialized=True)
     ):

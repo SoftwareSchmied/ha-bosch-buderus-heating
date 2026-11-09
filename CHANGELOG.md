@@ -23,6 +23,16 @@ Versioning after its first tagged preview.
 - The names follow the Info menu of my own controller (MX400, firmware
   15.00.01) in German and English.
 
+### Dialogs
+
+- **Cloud setup no longer stays blocked:** a cloud sign-in dialog left behind
+  by a reloaded page or a restarted companion app blocked every new cloud
+  setup until Home Assistant was restarted ("Another cloud setup is already
+  open"). A newly opened cloud setup now replaces the older one; the older
+  dialog ends with a note at its next step and saves nothing. A dialog left
+  idle for more than 15 minutes counts as closed. Saving still checks that
+  only one cloud setup registers.
+
 ## [0.9.0-alpha.3] - 2026-11-09
 
 > [!IMPORTANT]

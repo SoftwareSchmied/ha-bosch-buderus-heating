@@ -9,8 +9,17 @@ import pytest
 from homeassistant.config_entries import SOURCE_USER, ConfigEntryDisabler
 from homeassistant.data_entry_flow import FlowResultType
 
+from custom_components.bosch_buderus_heating.cloud_configuration import (
+    CLAIM,
+    CLAIM_ORPHANED_SECONDS,
+    CLAIMED_AT,
+    TAKEN_OVER,
+    check_new_cloud,
+    ensure_active_cloud_flow,
+)
 from custom_components.bosch_buderus_heating.config_flow import BoschBuderusConfigFlow
 from custom_components.bosch_buderus_heating.configuration import (
+    ConfigurationError,
     load_configuration,
 )
 from custom_components.bosch_buderus_heating.configuration_access import (
@@ -199,23 +208,158 @@ async def test_additional_cloud_blocked_before_oauth_even_if_disabled(
     backend.gateways.assert_not_awaited()
 
 
+def flow_context(hass, flow_id):
+    """The live context of a dialog, as the claim checks see it."""
+    for manager in (hass.config_entries.flow, hass.config_entries.options):
+        for flow in manager.async_progress(include_uninitialized=True):
+            if flow["flow_id"] == flow_id:
+                return flow["context"]
+    return None
+
+
+async def open_cloud_dialog(hass):
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    return await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "cloud"}
+    )
+
+
+async def test_new_dialog_takes_over_abandoned_cloud_setup(hass, backend):
+    """FLOW-1: a reloaded app leaves its dialog behind; a new one must win."""
+    entry = empty_entry(hass)
+    first = await connect_dialog(hass, entry, authenticate=False)
+    assert flow_context(hass, first["flow_id"])[CLAIM] is True
+    second = await open_cloud_dialog(hass)
+    assert second["type"] is FlowResultType.FORM and second["step_id"] == "cloud"
+    # The older dialog stays for a tab that is really open, but without its
+    # claim; it ends at its next step without a cloud request.
+    old = flow_context(hass, first["flow_id"])
+    assert CLAIM not in old and old[TAKEN_OVER] is True
+    ended = await hass.config_entries.options.async_configure(
+        first["flow_id"],
+        {"redirect_url": _redirect_from_result(first, Brand.BUDERUS)},
+    )
+    assert ended["type"] is FlowResultType.ABORT
+    assert ended["reason"] == "cloud_setup_taken_over"
+    backend.oauth.assert_not_awaited()
+    assert flow_context(hass, first["flow_id"]) is None
+    result = await hass.config_entries.flow.async_configure(
+        second["flow_id"], {"brand": "buderus"}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {"redirect_url": _redirect_from_result(result, Brand.BUDERUS)},
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"gateway_ids": ["000123"]}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert ConfigurationManagement(hass, entry).current().connections == {}
+
+
+async def test_taken_over_dialog_cannot_register_its_signed_in_cloud(hass, backend):
+    """The commit of a replaced dialog is refused even after its sign-in."""
+    signed_in = await new_setup(hass)
+    entry = empty_entry(hass)
+    newer = await connect_dialog(hass, entry, authenticate=False)
+    assert newer["step_id"] == "cloud_auth"
+    with patch(
+        ROOT + ".config_flow.new_cloud_configuration",
+        side_effect=AssertionError("must not register"),
+    ):
+        ended = await hass.config_entries.flow.async_configure(
+            signed_in["flow_id"], {"gateway_ids": ["000123"]}
+        )
+    assert ended["type"] is FlowResultType.ABORT
+    assert ended["reason"] == "cloud_setup_taken_over"
+    assert len(hass.config_entries.async_entries(DOMAIN)) == 1
+    result = await hass.config_entries.options.async_configure(
+        newer["flow_id"],
+        {"redirect_url": _redirect_from_result(newer, Brand.BUDERUS)},
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"gateway_ids": ["000123"]}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert len(ConfigurationManagement(hass, entry).current().connections) == 1
+
+
+@pytest.mark.parametrize(
+    "step", ["auth", "auth_wait", "retry", "selection_expired", "gateways"]
+)
+async def test_every_cloud_step_of_a_replaced_dialog_aborts(hass, backend, step):
+    result = await open_cloud_dialog(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"brand": "buderus"}
+    )
+    flow = hass.config_entries.flow._progress[result["flow_id"]]
+    await open_cloud_dialog(hass)
+    ended = await getattr(flow, "async_step_" + step)({})
+    assert ended["type"] is FlowResultType.ABORT
+    assert ended["reason"] == "cloud_setup_taken_over"
+    backend.oauth.assert_not_awaited()
+    backend.gateways.assert_not_awaited()
+
+
+@pytest.mark.parametrize("step", ["cloud_auth", "cloud_retry", "cloud_select"])
+async def test_every_step_of_a_replaced_options_dialog_aborts(hass, backend, step):
+    entry = empty_entry(hass)
+    first = await connect_dialog(hass, entry, authenticate=False)
+    flow = hass.config_entries.options._progress[first["flow_id"]]
+    await open_cloud_dialog(hass)
+    ended = await getattr(flow, "async_step_" + step)({})
+    assert ended["type"] is FlowResultType.ABORT
+    assert ended["reason"] == "cloud_setup_taken_over"
+    with pytest.raises(ConfigurationError, match="configuration_changed"):
+        ensure_active_cloud_flow(hass, first["flow_id"])
+    # The replaced dialog itself can no longer claim the setup back.
+    with pytest.raises(ConfigurationError, match="cloud_setup_taken_over"):
+        check_new_cloud(hass, first["flow_id"])
+    ended = await flow.async_step_connection_add_cloud()
+    assert ended["reason"] == "cloud_setup_taken_over"
+
+
+async def test_orphaned_claim_is_removed_and_a_live_one_blocks_registration(hass):
+    """A claim idle beyond the sign-in lifetime counts as orphaned."""
+    empty_entry(hass)
+    first = await open_cloud_dialog(hass)
+    second = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    # Registration still refuses any other live claim.
+    claim = flow_context(hass, first["flow_id"])
+    with pytest.raises(ConfigurationError, match="cloud_setup_in_progress"):
+        check_new_cloud(hass, second["flow_id"])
+    assert flow_context(hass, first["flow_id"]) is claim
+    claim[CLAIMED_AT] -= CLAIM_ORPHANED_SECONDS + 1
+    check_new_cloud(hass, second["flow_id"])
+    assert flow_context(hass, first["flow_id"]) is None
+    # An orphan is removed when a new dialog takes over, not left behind.
+    third = await open_cloud_dialog(hass)
+    flow_context(hass, third["flow_id"])[CLAIMED_AT] -= CLAIM_ORPHANED_SECONDS + 1
+    fourth = await open_cloud_dialog(hass)
+    assert fourth["step_id"] == "cloud"
+    assert flow_context(hass, third["flow_id"]) is None
+    # Activity of the claiming dialog renews its claim.
+    flow_context(hass, fourth["flow_id"])[CLAIMED_AT] -= CLAIM_ORPHANED_SECONDS + 1
+    check_new_cloud(hass, fourth["flow_id"])
+    fifth = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+    with pytest.raises(ConfigurationError, match="cloud_setup_in_progress"):
+        check_new_cloud(hass, fifth["flow_id"])
+    for flow_id in (second["flow_id"], fourth["flow_id"], fifth["flow_id"]):
+        hass.config_entries.flow.async_abort(flow_id)
+
+
 async def test_live_dialog_claim_released_on_cancel(hass, backend):
     entry = empty_entry(hass)
     first = await connect_dialog(hass, entry, authenticate=False)
-    blocked = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": SOURCE_USER}
-    )
-    blocked = await hass.config_entries.flow.async_configure(
-        blocked["flow_id"], {"next_step_id": "cloud"}
-    )
-    assert blocked["reason"] == "cloud_setup_in_progress"
     hass.config_entries.options.async_abort(first["flow_id"])
-    allowed = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": SOURCE_USER}
-    )
-    allowed = await hass.config_entries.flow.async_configure(
-        allowed["flow_id"], {"next_step_id": "cloud"}
-    )
+    assert flow_context(hass, first["flow_id"]) is None
+    allowed = await open_cloud_dialog(hass)
     assert allowed["step_id"] == "cloud"
     hass.config_entries.flow.async_abort(allowed["flow_id"])
 
