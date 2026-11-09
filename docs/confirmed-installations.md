@@ -20,17 +20,17 @@ Last updated: 2026-11-09.
 
 ## Tested heaters
 
-| Heater | Type | Controller | Gateway / internet module | Confirmed features |
-|---|---|---|---|---|
-| Buderus Logatherm WLW176i-12 TP70 with outdoor unit WLW-10 MB AR (my own reference installation) | air-to-water heat pump (monobloc) | – | MX400, K40RF (firmware 15.00.01) | readings, heating setpoint, hot water mode, holidays, time programs (read-only), faults and notifications, energy counters, local access, operation without cloud |
-| Buderus Logatherm WLW186i-12 TP70 | air-to-water heat pump (monobloc) | Logamatic BC400 | MX400, K40RF (firmware 15.00.01) | readings, time programs (read-only) |
-| Buderus Logatherm WLW186i-12 E | air-to-water heat pump (monobloc) | – | MX400 | readings (two heating circuits), heating controls |
-| Buderus Logatherm WLW196i AR | air-to-water heat pump (split) | – | MX300, K30 | readings, holidays (read-only) |
-| Buderus Logamax plus GB172 | gas condensing boiler, wall-hung | Logamatic RC310 | Logamatic web KM200 (V2), iCom_Low_NSC_V1 | readings |
-| Buderus Logano plus GB212-22 H | gas condensing boiler, floor-standing | Logamatic TC100.2 (rrc2, firmware 05.04.00) | built-in Wi-Fi | readings, faults and notifications, RRC zones (only with a local patch) |
-| Buderus Logano G125 BE ECO-21 | oil boiler with burner (low-temperature, cast iron) | – | – | start counter (with the reporter's own fix) |
+| Manufacturer | Model | Variants | Type | Controller | Gateway / internet module | Confirmed features |
+|---|---|---|---|---|---|---|
+| Buderus | Logatherm WLW176i | WLW176i-12 TP70, WLW-10 MB AR | air-to-water heat pump (monobloc) | – | MX400, K40RF | readings, heating setpoint, hot water mode, holidays, time programs (read-only), faults and notifications, energy counters, local access, operation without cloud |
+| Buderus | Logatherm WLW186i | WLW186i-12 TP70, WLW186i-12 E | air-to-water heat pump (monobloc) | Logamatic BC400 | MX400, K40RF | readings, heating controls, time programs (read-only) |
+| Buderus | Logatherm WLW196i | WLW196i AR | air-to-water heat pump (split) | – | MX300, K30 | readings, holidays (read-only) |
+| Buderus | Logamax plus GB172 | – | gas condensing boiler, wall-hung | Logamatic RC310 | Logamatic web KM200 | readings |
+| Buderus | Logano plus GB212 | GB212-22 H | gas condensing boiler, floor-standing | Logamatic TC100.2 | built-in Wi-Fi | readings, faults and notifications, RRC zones (only with a local patch) |
+| Buderus | Logano G125 BE | G125 BE ECO-21 | oil boiler with burner | – | – | start counter (with the reporter's own fix) |
 
-"–" means not stated in the report.
+The Logatherm WLW176i is my own reference installation. "–" means not stated
+in the report.
 
 ## Open confirmations
 
