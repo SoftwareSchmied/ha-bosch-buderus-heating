@@ -86,8 +86,15 @@ from .holidays import (
     is_holiday_resource_path,
     parse_holiday_state,
 )
-from .local_only import MAX_STATES, flag_state, state_key
+from .local_only import (
+    BELOW_MEASURING_RANGE,
+    MAX_STATES,
+    MEASURING_RANGE,
+    flag_state,
+    state_key,
+)
 from .local_only_sensor import (
+    FLOW_TRANSLATION_KEY,
     clean_registered_local_only,
     hand_over_open,
     hand_over_while_running,
@@ -195,6 +202,9 @@ _HEATING_CIRCUIT_ROOM_TEMPERATURE = re.compile(
     r"^/heatingCircuits/(?P<circuit>[^/]+)/roomtemperature$"
 )
 _ENERGY_BALANCE_EPSILON = 1e-9
+# A4: volume flows (pump, brine circuit, hot water) carry the translations of
+# their measuring range attribute.
+_VOLUME_FLOW = re.compile(r"volumeflow$", re.IGNORECASE)
 _CAMEL_BOUNDARY = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
 # O107: the enums whose device spellings are matched to their options.
 _NORMALIZED_ENUM_KEYS = frozenset(
@@ -1569,6 +1579,11 @@ class BoschBuderusSensor(
         self._attr_unique_id = (
             f"{coordinator.gateway.gateway_id}:{sensor_unique_suffix(description)}"
         )
+        if description.translation_key is None and _VOLUME_FLOW.search(
+            description.resource_path
+        ):
+            # A4: translates the measuring range attribute; the name stays.
+            self._attr_translation_key = FLOW_TRANSLATION_KEY
 
     @property
     def options(self) -> list[str] | None:
@@ -1899,10 +1914,28 @@ class BoschBuderusSensor(
     @property
     def extra_state_attributes(self) -> Mapping[str, object] | None:
         attributes = self._base_attributes()
+        if self._below_measuring_range():
+            attributes = {
+                **(attributes or {}),
+                MEASURING_RANGE: BELOW_MEASURING_RANGE,
+            }
         source = shown_source(self.coordinator, self.entity_description, self._snapshot)
         if source is None:
             return attributes
         return {**(attributes or {}), "source": source}
+
+    def _below_measuring_range(self) -> bool:
+        """A4/#73: the cloud reports the declared low-flow value; the reading
+        is unknown, and the attribute tells it apart from a missing one."""
+        snapshot = self._snapshot
+        if snapshot is None or not snapshot.available:
+            return False
+        value = snapshot.resource.value
+        return (
+            isinstance(value, int | float)
+            and not isinstance(value, bool)
+            and value in snapshot.resource.metadata.below_range_values
+        )
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()

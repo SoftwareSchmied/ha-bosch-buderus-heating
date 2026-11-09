@@ -594,7 +594,9 @@ its declared low-flow state (for example `lowflow` with the value 65535). The
 heat pump volume flow and the heating circuit 1 volume flow then show
 "unknown" with the attribute `measuring_range: below` (shown as "Below
 measuring range"), so such a flow can be told apart from a missing reading;
-a measured flow has no such attribute.
+a measured flow has no such attribute. A volume flow read through the cloud
+access is treated the same way when its reading declares the low-flow state:
+"unknown" instead of 65535, with the same attribute.
 
 The two setpoints the controller keeps for an energy manager
 (`SRC.CUHP.EM.UsedLowerFlowTempSetp` and `SRC.CUHP.EM.UsedUpperFlowTempSetp`)

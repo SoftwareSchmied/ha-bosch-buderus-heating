@@ -78,6 +78,7 @@ def resource_to_data(resource: Resource) -> dict[str, Any]:
             "writable": metadata.writable,
             "numeric_error_values": list(metadata.numeric_error_values),
             "numeric_error_states_valid": metadata.numeric_error_states_valid,
+            "below_range_values": list(metadata.below_range_values),
             "step_size": metadata.step_size,
             "step_size_valid": metadata.step_size_valid,
             "used": metadata.used,
@@ -158,8 +159,11 @@ def resource_from_data(data: object) -> Resource:
     if not isinstance(metadata, Mapping):
         raise _Invalid
     errors = _scalars(metadata.get("numeric_error_values"))
+    # A4: stored before alpha.3 without it.
+    below = _scalars(metadata.get("below_range_values", []))
     if any(
-        isinstance(item, bool) or not isinstance(item, int | float) for item in errors
+        isinstance(item, bool) or not isinstance(item, int | float)
+        for item in (*errors, *below)
     ):
         raise _Invalid
     references = data.get("references")
@@ -200,6 +204,7 @@ def resource_from_data(data: object) -> Resource:
             numeric_error_states_valid=_flag(
                 metadata.get("numeric_error_states_valid")
             ),
+            below_range_values=below,
             step_size=_number(metadata.get("step_size")),
             step_size_valid=_flag(metadata.get("step_size_valid")),
             used=_optional(metadata.get("used"), bool),

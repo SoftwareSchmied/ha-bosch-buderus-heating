@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Mapping, Sequence
 
 from .bulk import normalize_resource_path
@@ -191,6 +192,31 @@ def _parse_numeric_error_states(value: object) -> tuple[tuple[int | float, ...],
     return tuple(sorted(markers)), True
 
 
+# A4/#73: the state a flow reports below its sensor's measuring range, as the
+# local access declares it ("lowflow", "LOW_FLOW").
+_LOW_FLOW_STATE = re.compile(r"(?:^|[^a-z0-9])low[_ -]?flow(?:[^a-z0-9]|$)")
+
+
+def _parse_below_range_states(value: object) -> tuple[int | float, ...]:
+    """The numeric values declared as below the measuring range."""
+    if not isinstance(value, list) or len(value) > 32:
+        return ()
+    markers: set[int | float] = set()
+    for item in value:
+        if not isinstance(item, Mapping):
+            return ()
+        for key, marker in item.items():
+            if (
+                isinstance(key, str)
+                and _LOW_FLOW_STATE.search(key.casefold()) is not None
+                and isinstance(marker, (int, float))
+                and not isinstance(marker, bool)
+                and math.isfinite(marker)
+            ):
+                markers.add(marker)
+    return tuple(sorted(markers))
+
+
 SWITCH_PROGRAM_FIELDS = (
     "setpointProperty",
     "maxNbOfSwitchPoints",
@@ -245,6 +271,12 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
     numeric_error_values, numeric_error_states_valid = _parse_numeric_error_states(
         data.get("state")
     )
+    below_range_values = _parse_below_range_states(data.get("state"))
+    if below_range_values:
+        # Not a reading either: shown as unknown, like the local access.
+        numeric_error_values = tuple(
+            sorted({*numeric_error_values, *below_range_values})
+        )
     try:
         step_size = _optional_number(data.get("stepSize"))
     except InvalidPayload:
@@ -271,6 +303,7 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
             writable=bool(writable_raw),
             numeric_error_values=numeric_error_values,
             numeric_error_states_valid=numeric_error_states_valid,
+            below_range_values=below_range_values,
             step_size=step_size,
             step_size_valid=step_size_valid,
             used=used_raw if isinstance(used_raw, bool) else None,

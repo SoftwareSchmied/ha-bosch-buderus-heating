@@ -84,6 +84,9 @@ class ResourceMetadata:
     writable: bool = False
     numeric_error_values: tuple[int | float, ...] = ()
     numeric_error_states_valid: bool = True
+    # A4/#73: values a flow reports below its sensor's measuring range
+    # ("lowflow"); they are in ``numeric_error_values`` as well.
+    below_range_values: tuple[int | float, ...] = ()
     step_size: float | None = None
     step_size_valid: bool = True
     used: bool | None = None
