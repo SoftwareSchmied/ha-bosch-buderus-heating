@@ -30,7 +30,11 @@ from custom_components.bosch_buderus_heating.configuration_migration import (
 )
 from custom_components.bosch_buderus_heating.const import DOMAIN, PollingProfile
 from custom_components.bosch_buderus_heating.data import tokens_to_data
-from custom_components.bosch_buderus_heating.pointt import AuthTokens, RateLimited
+from custom_components.bosch_buderus_heating.pointt import (
+    AuthTokens,
+    RateLimited,
+    RefreshTokenRejected,
+)
 from tests.ha_test_helpers import MockConfigEntry
 from tests.test_configuration import OWNER, add_local, legacy
 
@@ -271,7 +275,7 @@ async def test_conversion_preserves_epoch_and_storage_identity(hass):
 
 
 @pytest.mark.parametrize(
-    "change", ["epoch", "brand", "account", "tokens", "version", "minor", "broken"]
+    "change", ["epoch", "brand", "tokens", "version", "minor", "broken"]
 )
 async def test_late_token_patch_rejects_changed_or_invalid_context(hass, change):
     entry, configuration = configured(hass)
@@ -282,8 +286,6 @@ async def test_late_token_patch_rejects_changed_or_invalid_context(hass, change)
         connection["auth_epoch"] += 1
     elif change == "brand":
         connection["brand"] = "bosch"
-    elif change == "account":
-        connection["account_evidence"] = {"opaque": "new-account"}
     elif change == "tokens":
         connection["credentials"] = tokens_to_data(NEW)
     elif change == "broken":
@@ -295,6 +297,76 @@ async def test_late_token_patch_rejects_changed_or_invalid_context(hass, change)
         minor_version=2 if change == "minor" else 1,
     )
     assert configuration.rotated_data(context, tokens, NEW) is None
+
+
+@pytest.mark.parametrize("field", ["legacy_bacon_account", "account_evidence"])
+async def test_account_metadata_change_during_refresh_keeps_rotated_token(hass, field):
+    """C16/AUTH-3: only a new sign-in (epoch) invalidates a pending rotation."""
+    entry, configuration = configured(hass)
+    oauth = AsyncMock()
+    entered, release = asyncio.Event(), asyncio.Event()
+
+    async def refresh(_):
+        entered.set()
+        await release.wait()
+        return NEW
+
+    oauth.refresh.side_effect = refresh
+    manager, _backoff = entry_auth(
+        hass, entry, oauth, connection_id=configuration.connection_id
+    )
+    waiter = asyncio.create_task(manager.get_access_token(force_refresh=True))
+    await entered.wait()
+    # For example the first separate cloud device chosen while a refresh runs.
+    data = deepcopy(dict(entry.data))
+    connection = data["connections"][configuration.connection_id]
+    connection[field] = (
+        "new-account-key" if field == "legacy_bacon_account" else {"opaque": "x"}
+    )
+    hass.config_entries.async_update_entry(entry, data=data)
+    # A restarted connection during the refresh keeps the same manager.
+    same, _ = entry_auth(hass, entry, oauth, connection_id=configuration.connection_id)
+    assert same is manager
+    release.set()
+    assert await waiter == NEW.access_token
+    assert configuration.tokens() == NEW
+    assert (
+        entry.data["connections"][configuration.connection_id][field]
+        == (connection[field])
+    )
+    # And afterwards as well: the stored tokens are the manager's tokens.
+    again, _ = entry_auth(hass, entry, oauth, connection_id=configuration.connection_id)
+    assert again is manager
+    oauth.refresh.assert_awaited_once()
+
+
+async def test_rejected_manager_is_replaced_on_the_next_start(hass):
+    """C17/AUTH-4: a reload or a check may try the stored token once more."""
+    entry, configuration = configured(hass)
+    oauth = AsyncMock()
+    oauth.refresh.side_effect = RefreshTokenRejected()
+    manager, _ = entry_auth(
+        hass, entry, oauth, connection_id=configuration.connection_id
+    )
+    with pytest.raises(RefreshTokenRejected):
+        await manager.get_access_token(force_refresh=True)
+    # The rejected manager itself never asks again.
+    with pytest.raises(RefreshTokenRejected):
+        await manager.get_access_token(force_refresh=True)
+    assert oauth.refresh.await_count == 1
+    retry, _ = entry_auth(hass, entry, oauth, connection_id=configuration.connection_id)
+    assert retry is not manager and not retry.refresh_rejected
+    # The temporary refusal is over: the same stored token works again.
+    oauth.refresh.side_effect = None
+    oauth.refresh.return_value = NEW
+    assert await retry.get_access_token(force_refresh=True) == NEW.access_token
+    assert configuration.tokens() == NEW
+    assert oauth.refresh.await_count == 2
+    # A healthy manager is still reused.
+    reused, _ = entry_auth(
+        hass, entry, oauth, connection_id=configuration.connection_id
+    )
+    assert reused is retry
 
 
 @pytest.mark.parametrize(

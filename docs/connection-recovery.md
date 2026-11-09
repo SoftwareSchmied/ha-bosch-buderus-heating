@@ -44,6 +44,40 @@ I replaced the deprecated reload helper behind the Home Assistant 2026.12
 warning. Tests verify the absence of that warning on the current test version;
 this is not a claim of complete compatibility with an unreleased HA version.
 
+### Sign-in renewal since 0.9
+
+- Only a definite answer of the sign-in service ends a sign-in: the OAuth
+  errors `invalid_grant`, `invalid_client`, `unauthorized_client` and
+  `unsupported_grant_type`. A refusal without such a code, for example an HTML
+  page of a firewall or an empty body, counts as a temporary failure.
+- After a temporary failure of a renewal (no answer, server error, unreadable
+  answer, such a refusal), the next renewal waits 30 seconds, doubling with
+  every further failure up to 10 minutes. Requests in between fail at once
+  without contacting the sign-in service. They count as "no connection", not
+  as a failure of the gateway or of single readings, so no single-reading
+  fallback starts and the remaining batches of the cycle are skipped.
+- A sign-in that was rejected is not submitted again by the same token
+  manager. A reload of the entry, a new start of the access or a check in its
+  dialog tries the stored token once more.
+- A change of account details while a renewal runs, for example choosing the
+  first separate cloud device, no longer discards the new token. Choosing
+  devices also waits for a running renewal to be saved.
+- The token request follows no redirects, so the refresh token and the code
+  verifier are only ever sent to the sign-in service itself. Its answer is read
+  with a size limit, a refusal across several chunks keeps its OAuth error
+  code.
+- A new sign-in first asks only for the permissions the integration uses:
+  `openid`, `offline_access`, `pointt.gateway.list`,
+  `pointt.gateway.resource.dashapp` and `bacon`. If the sign-in service
+  rejects this set (`invalid_scope`), the dialog shows a new link with the full
+  set of the official app, and later sign-ins of the running Home Assistant
+  use it at once. Existing sign-ins keep their permissions until the next
+  sign-in. I have not yet confirmed the reduced set with a real sign-in; this
+  must be tested manually before the release.
+- One unreadable entry of the gateway list, for example a new device without
+  an ID, is left out and counted (`gateway_list_entries_skipped` in the request
+  metrics) instead of making the whole list unusable.
+
 ### Recovery and request cost
 
 I retained the existing polling intervals, bounded read retries, per-resource
@@ -144,6 +178,43 @@ Korrekturen diese konkreten Vorfälle erklären.
 Die bisherige Warnung für Home Assistant 2026.12 ist im Test behoben. Das ist
 keine vollständige Kompatibilitätsbestätigung für eine noch unveröffentlichte
 Home-Assistant-Version.
+
+### Token-Erneuerung ab 0.9
+
+- Nur eine eindeutige Antwort des Anmeldedienstes beendet eine Anmeldung: die
+  OAuth-Fehler `invalid_grant`, `invalid_client`, `unauthorized_client` und
+  `unsupported_grant_type`. Eine Ablehnung ohne solchen Code, etwa eine
+  HTML-Seite einer Firewall oder ein leerer Inhalt, gilt als vorübergehend.
+- Nach einem vorübergehenden Fehler einer Erneuerung (keine Antwort,
+  Serverfehler, unlesbare Antwort, eine solche Ablehnung) wartet die nächste
+  Erneuerung 30 Sekunden, nach jedem weiteren Fehler doppelt so lange, höchstens
+  10 Minuten. Anfragen in dieser Zeit scheitern sofort, ohne den Anmeldedienst
+  zu kontaktieren. Sie zählen als „keine Verbindung“, nicht als Fehler des
+  Gateways oder einzelner Werte: Es starten keine Einzelabfragen, und die
+  übrigen Abfragen des Zyklus entfallen.
+- Eine abgewiesene Anmeldung sendet dieselbe Tokenverwaltung nicht erneut. Ein
+  Neuladen des Eintrags, ein Neustart des Zugangs oder ein Test im Dialog
+  versucht den gespeicherten Token noch einmal.
+- Ändern sich Kontoangaben, während eine Erneuerung läuft, etwa bei der Wahl
+  des ersten weiteren Cloud-Geräts, geht der neue Token nicht mehr verloren.
+  Die Geräteauswahl wartet außerdem, bis eine laufende Erneuerung gespeichert
+  ist.
+- Die Token-Anfrage folgt keinen Weiterleitungen. Refresh-Token und
+  Code-Verifier gehen so nur an den Anmeldedienst selbst. Seine Antwort wird
+  begrenzt gelesen; eine in mehreren Teilen gesendete Ablehnung behält ihren
+  OAuth-Fehlercode.
+- Eine neue Anmeldung fragt zuerst nur die Berechtigungen an, die die
+  Integration nutzt: `openid`, `offline_access`, `pointt.gateway.list`,
+  `pointt.gateway.resource.dashapp` und `bacon`. Lehnt der Anmeldedienst diese
+  Auswahl ab (`invalid_scope`), zeigt der Dialog einen neuen Link mit dem
+  vollen Umfang der offiziellen App, und spätere Anmeldungen des laufenden Home
+  Assistant verwenden ihn sofort. Bestehende Anmeldungen behalten ihre
+  Berechtigungen bis zur nächsten Anmeldung. Mit einer echten Anmeldung habe
+  ich den reduzierten Umfang noch nicht bestätigt; das muss vor dem Release
+  manuell geprüft werden.
+- Ein unlesbarer Eintrag der Gateway-Liste, etwa ein neues Gerät ohne Kennung,
+  wird ausgelassen und gezählt (`gateway_list_entries_skipped` in den
+  Anfrage-Metriken), statt die ganze Liste unbrauchbar zu machen.
 
 ### Wiederherstellung und Abfragelast
 

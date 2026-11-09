@@ -34,8 +34,10 @@ from custom_components.bosch_buderus_heating.diagnostics import (
 )
 from custom_components.bosch_buderus_heating.pointt import (
     AuthTokens,
+    RefreshRefused,
     RefreshTokenRejected,
     RequestTimeout,
+    SignInUnavailable,
     TokenEndpointRejection,
 )
 from tests.ha_test_helpers import MockConfigEntry, flush_store
@@ -295,7 +297,7 @@ async def test_transient_failure_is_recorded_without_counting_a_rejection(
     entry.add_to_hass(hass)
     recorder = await _load(hass, entry, clock)
     manager, _backoff = entry_auth(hass, entry, TimingOut())
-    with pytest.raises(RequestTimeout):
+    with pytest.raises(SignInUnavailable):
         await manager.get_access_token()
 
     report = recorder.diagnostics(manager)
@@ -304,6 +306,39 @@ async def test_transient_failure_is_recorded_without_counting_a_rejection(
     assert report["counters"]["refresh_failed"] == 1
     assert "refresh_rejected" not in report["counters"]
     assert report["current"]["refresh_token"]["presented_before"] == 1
+
+
+async def test_refusal_without_oauth_code_is_recorded_as_temporary(hass) -> None:
+    """C17/AUTH-4: the refusal details are kept, no rejection is counted."""
+    rejection = TokenEndpointRejection(
+        403, body_format="non_json", content_type="text/html"
+    )
+
+    class Refusing:
+        async def refresh(self, refresh_token: str) -> AuthTokens:
+            raise RefreshRefused(403, rejection=rejection)
+
+    clock = Clock()
+    entry = MockConfigEntry(
+        domain=DOMAIN, data=tokens_to_data(AuthTokens("access-0", "refresh-0", 0))
+    )
+    entry.add_to_hass(hass)
+    recorder = await _load(hass, entry, clock)
+    manager, _backoff = entry_auth(hass, entry, Refusing())
+    with pytest.raises(SignInUnavailable):
+        await manager.get_access_token()
+
+    report = recorder.diagnostics(manager)
+    event = report["events"][-1]
+    assert event["outcome"] == "failed"
+    assert event["error_type"] == "RefreshRefused"
+    assert event["http_status"] == 403
+    assert event["body_format"] == "non_json"
+    assert event["content_type"] == "text/html"
+    assert event["oauth_error"] is None
+    assert report["counters"]["refresh_failed"] == 1
+    assert "refresh_rejected" not in report["counters"]
+    assert report["current"]["refresh_rejected"] is False
 
 
 @pytest.mark.parametrize(

@@ -466,19 +466,27 @@ def test_pending_queue_is_bounded_even_when_a_gateway_advertises_too_many_paths(
     assert len(state.due(0)) == 30
 
 
-@pytest.mark.parametrize("bulk_item", [False, True])
-async def test_real_authentication_failure_requests_reauth(environment, bulk_item):
+async def test_real_authentication_failure_requests_reauth(environment):
     _, client, coordinator = environment
     coordinator.startup_data.schedule(PRODUCT, 2)
-    if bulk_item:
-        client.get_resources_bulk.return_value = (
-            BatchItemResult("synthetic", PRODUCT, 401),
-        )
-    else:
-        client.get_resources_bulk.side_effect = AuthenticationError()
+    client.get_resources_bulk.side_effect = AuthenticationError()
     with pytest.raises(ConfigEntryAuthFailed):
         await coordinator._async_update_data()
     assert coordinator.startup_session.closed
+    assert not coordinator.startup_session.busy
+
+
+async def test_item_401_keeps_the_sign_in_and_retries_the_path(environment):
+    """C14/START-3: the request was accepted, so only this path failed."""
+    _, client, coordinator = environment
+    coordinator.startup_data.schedule(PRODUCT, 2)
+    client.get_resources_bulk.return_value = (
+        BatchItemResult("synthetic", PRODUCT, 401),
+    )
+    await coordinator._async_update_data()
+    read = coordinator.startup_data.reads[PRODUCT]
+    assert read.pending and read.result == "http_401" and read.attempts == 1
+    assert not coordinator.startup_session.closed
     assert not coordinator.startup_session.busy
 
 

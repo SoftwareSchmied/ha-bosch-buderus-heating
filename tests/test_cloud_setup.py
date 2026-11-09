@@ -34,6 +34,7 @@ from custom_components.bosch_buderus_heating.data import (
     tokens_to_data,
 )
 from custom_components.bosch_buderus_heating.pointt import (
+    AuthTokens,
     Brand,
     Gateway,
     RateLimited,
@@ -832,6 +833,67 @@ async def test_first_bacon_selection_adds_account_without_touching_pointt_identi
         EntryConfiguration(entry, cloud).cloud_data()["bacon_account"]
         == legacy()["bacon_account"]
     )
+
+
+async def test_selection_waits_for_a_running_rotation_and_keeps_it(hass, backend):
+    """C16/AUTH-3: the first device selection during a refresh keeps the token."""
+    import asyncio
+
+    from custom_components.bosch_buderus_heating.auth_lifecycle import entry_auth
+    from custom_components.bosch_buderus_heating.configuration_migration import (
+        convert_legacy_configuration,
+    )
+
+    snapshot = convert_legacy_configuration("pointt-only", legacy(["000123"], []), {})
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        entry_id="pointt-only",
+        version=4,
+        data=snapshot.to_data(),
+        options=snapshot.to_options(),
+    )
+    entry.add_to_hass(hass)
+    cloud = next(iter(snapshot.connections))
+    # As after a migration from storage format 3 without a cloud device.
+    data = deepcopy(dict(entry.data))
+    data["connections"][cloud]["legacy_bacon_account"] = ""
+    hass.config_entries.async_update_entry(entry, data=data)
+    rotated = AuthTokens("rotated-access", "rotated-refresh", 10**12)
+    entered, release = asyncio.Event(), asyncio.Event()
+
+    async def refresh(_token):
+        entered.set()
+        await release.wait()
+        return rotated
+
+    oauth = AsyncMock()
+    oauth.refresh.side_effect = refresh
+    manager, _ = entry_auth(hass, entry, oauth, connection_id=cloud)
+    result = await choose_connection(hass, entry, cloud)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "connection_discover"}
+    )
+    refreshing = asyncio.create_task(manager.get_access_token(force_refresh=True))
+    await entered.wait()
+    saving = asyncio.create_task(
+        hass.config_entries.options.async_configure(
+            result["flow_id"],
+            # Without a device the account is still recorded for later ones.
+            {"gateway_ids": ["000123"], "bacon_device_ids": []},
+        )
+    )
+    await asyncio.sleep(0.05)
+    # The selection waits for the rotation instead of saving next to it.
+    assert not saving.done()
+    assert EntryConfiguration(entry, cloud).cloud_data()["bacon_account"] == ""
+    release.set()
+    assert await refreshing == "rotated-access"
+    result = await saving
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    configuration = EntryConfiguration(entry, cloud)
+    assert configuration.tokens() == rotated
+    assert configuration.cloud_data()["bacon_account"] == legacy()["bacon_account"]
+    oauth.refresh.assert_awaited_once()
 
 
 @pytest.mark.parametrize("native", [False, True])

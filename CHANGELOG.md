@@ -75,6 +75,38 @@ Versioning after its first tagged preview.
   when such a value answers with a server error: it ends after one day instead
   of repeating every five minutes.
 
+- **Sign-in problems that are not a sign-in problem:** a 401 for a single
+  value during the start no longer asks for a new sign-in; the value is read
+  again later, as in the regular poll. A refusal of the sign-in service
+  without a definite reason, for example an HTML page of a firewall, no longer
+  ends the sign-in either; only a clear answer such as `invalid_grant` does.
+  After a rejected sign-in, reloading the entry tries the stored token once
+  more.
+- **Less load when the sign-in service is down:** after a failed token
+  renewal the next one waits 30 seconds, doubling up to 10 minutes. Before,
+  every single request started another renewal, and the failure was counted
+  as an outage of the gateway.
+- **Rotated token kept:** choosing the first separate cloud device exactly
+  while a token renewal ran could discard the new token, so the next renewal
+  asked for a new sign-in. The renewal is now saved in this case, and the
+  selection waits for it.
+- **Fewer permissions:** a new sign-in now asks only for the permissions the
+  integration uses. Removing gateways from the account, claiming gateways and
+  managing other users are no longer part of it. If the sign-in service does
+  not accept this, the dialog shows a new link with the previous full set.
+  Existing sign-ins keep their permissions until you sign in again. I have
+  not yet confirmed this with a real sign-in; I will test it manually before
+  the release.
+- The token request no longer follows redirects, so the refresh token is only
+  sent to the sign-in service itself, and its answer is read with a size
+  limit. A rejection sent in several parts keeps its OAuth error code in the
+  diagnostics.
+- A pasted app address with a stray `[` or `]` now shows the usual hint for
+  an unusable address instead of "Unknown error".
+- One unreadable entry in the account's gateway list, for example a new device
+  without an ID, no longer blocks adding or changing systems; it is left out
+  and counted in the diagnostics.
+
 ### Dialogs
 
 - **Cloud setup no longer stays blocked:** a cloud sign-in dialog left behind

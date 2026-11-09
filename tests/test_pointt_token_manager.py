@@ -9,6 +9,8 @@ from custom_components.bosch_buderus_heating.pointt import (
     RateLimited,
     RefreshTokenRejected,
     RequestTimeout,
+    ServiceUnavailable,
+    SignInUnavailable,
     TokenEndpointRejection,
     TokenManager,
 )
@@ -193,7 +195,9 @@ async def test_observer_receives_transient_failures(
         clock=lambda: 1000.0,
         observer=attempts.append,
     )
-    with pytest.raises(type(error)):
+    # A temporary failure is reported as such, not as a PointT answer.
+    raised = RateLimited if isinstance(error, RateLimited) else SignInUnavailable
+    with pytest.raises(raised):
         await manager.get_access_token()
     assert [item.outcome for item in attempts] == [outcome]
     assert attempts[0].error is error
@@ -269,3 +273,142 @@ async def test_access_token_is_renewed_with_two_minutes_left(
     token = await manager.get_access_token()
     assert token == ("fresh" if refreshed else "current")
     assert oauth.calls == (["refresh"] if refreshed else [])
+
+
+# --- C15/AUTH-2: a pause after a temporary refresh failure ---
+
+
+class _FlakyClient:
+    """Fails the given number of times, then issues fresh tokens."""
+
+    def __init__(self, failures: int, error: Exception | None = None) -> None:
+        self.failures = failures
+        self.error = error or ServiceUnavailable(503)
+        self.calls = 0
+
+    async def refresh(self, refresh_token: str) -> AuthTokens:
+        self.calls += 1
+        if self.calls <= self.failures:
+            raise self.error
+        return AuthTokens(f"fresh-{self.calls}", "rotated", expires_at=5000.0)
+
+
+def _paused_manager(client, clock: list[float]) -> TokenManager:
+    return TokenManager(
+        client,
+        AuthTokens("old", "refresh", expires_at=0.0),
+        lambda tokens: None,
+        clock=lambda: 1000.0,
+        retry_clock=lambda: clock[0],
+    )
+
+
+async def test_temporary_refresh_failure_pauses_further_token_requests() -> None:
+    client = _FlakyClient(failures=10)
+    clock = [0.0]
+    manager = _paused_manager(client, clock)
+    with pytest.raises(SignInUnavailable) as caught:
+        await manager.get_access_token()
+    first = caught.value
+    assert isinstance(first.__cause__, ServiceUnavailable)
+    assert first.reason == "http_503" and first.retry_after == 30.0
+    # No HTTP status: callers treat it as no answer, not as a PointT 503.
+    assert first.status is None
+    assert client.calls == 1
+    # Every request inside the pause fails at once, without a token request,
+    # also a forced refresh after a 401 of the API.
+    for moment in (1.0, 10.0, 29.9):
+        clock[0] = moment
+        with pytest.raises(SignInUnavailable) as caught:
+            await manager.get_access_token(force_refresh=True, rejected_token="old")
+        assert caught.value.reason == "http_503"
+        assert caught.value.retry_after == pytest.approx(30.0 - moment)
+    assert client.calls == 1
+    # The wait doubles after each further failure, up to ten minutes.
+    clock[0] = 30.0
+    waits = []
+    for _ in range(6):
+        with pytest.raises(SignInUnavailable) as caught:
+            await manager.get_access_token()
+        waits.append(caught.value.retry_after)
+        clock[0] += caught.value.retry_after
+    assert waits == [60.0, 120.0, 240.0, 480.0, 600.0, 600.0]
+    assert client.calls == 7
+    assert manager.refresh_rejected is False
+
+
+async def test_successful_refresh_ends_the_pause_and_resets_the_wait() -> None:
+    client = _FlakyClient(failures=2, error=RequestTimeout())
+    clock = [0.0]
+    manager = _paused_manager(client, clock)
+    with pytest.raises(SignInUnavailable) as caught:
+        await manager.get_access_token()
+    assert caught.value.reason == "timeout"
+    clock[0] = 30.0
+    with pytest.raises(SignInUnavailable) as caught:
+        await manager.get_access_token()
+    assert caught.value.retry_after == 60.0
+    clock[0] = 90.0
+    assert await manager.get_access_token() == "fresh-3"
+    assert client.calls == 3
+    # A later failure starts again with the shortest wait.
+    client.failures, client.calls = 4, 3
+    manager._tokens = AuthTokens("fresh-3", "rotated", expires_at=0.0)
+    with pytest.raises(SignInUnavailable) as caught:
+        await manager.get_access_token()
+    assert caught.value.retry_after == 30.0
+
+
+async def test_valid_token_is_served_during_a_pause() -> None:
+    client = _FlakyClient(failures=1)
+    clock = [0.0]
+    manager = _paused_manager(client, clock)
+    with pytest.raises(SignInUnavailable):
+        await manager.get_access_token(force_refresh=True)
+    manager._tokens = AuthTokens("still-valid", "refresh", expires_at=5000.0)
+    assert await manager.get_access_token() == "still-valid"
+    assert client.calls == 1
+
+
+async def test_rate_limit_and_rejection_keep_their_own_handling() -> None:
+    limited = _FlakyClient(failures=1, error=RateLimited(120))
+    manager = _paused_manager(limited, [0.0])
+    with pytest.raises(RateLimited):
+        await manager.get_access_token()
+    assert manager._last_failure is None
+
+    rejected = _FlakyClient(failures=1, error=RefreshTokenRejected())
+    manager = _paused_manager(rejected, [0.0])
+    with pytest.raises(RefreshTokenRejected):
+        await manager.get_access_token()
+    assert manager.refresh_rejected and manager._last_failure is None
+
+
+async def test_unexpected_error_is_kept_but_still_paused() -> None:
+    client = _FlakyClient(failures=1, error=RuntimeError("bug"))
+    clock = [0.0]
+    manager = _paused_manager(client, clock)
+    with pytest.raises(RuntimeError):
+        await manager.get_access_token()
+    with pytest.raises(SignInUnavailable) as caught:
+        await manager.get_access_token()
+    assert caught.value.reason == "unexpected_error"
+    assert client.calls == 1
+
+
+async def test_failed_saving_after_a_refresh_starts_no_pause() -> None:
+    def failing_persist(tokens: AuthTokens) -> None:
+        raise OSError("disk full")
+
+    client = _FlakyClient(failures=0)
+    manager = TokenManager(
+        client,
+        AuthTokens("old", "refresh", expires_at=0.0),
+        failing_persist,
+        clock=lambda: 1000.0,
+    )
+    with pytest.raises(OSError):
+        await manager.get_access_token()
+    assert manager.tokens.access_token == "fresh-1"
+    assert manager._last_failure is None
+    assert await manager.get_access_token() == "fresh-1"

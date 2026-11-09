@@ -102,6 +102,11 @@ def _response_resource_path(path: str) -> str:
         raise InvalidPayload("Response contained an invalid resource path") from err
 
 
+def _lenient_string(value: object) -> str | None:
+    """Optional descriptive gateway fields: an unexpected type is just absent."""
+    return value if isinstance(value, str) else None
+
+
 def parse_gateway(payload: object) -> Gateway:
     """Parse one gateway while tolerating unknown fields."""
     data = _mapping(payload, message="Gateway response must be an object")
@@ -114,16 +119,21 @@ def parse_gateway(payload: object) -> Gateway:
     )
     return Gateway(
         gateway_id=gateway_id,
-        device_type=_optional_string(data.get("deviceType", data.get("device_type"))),
-        model=_optional_string(data.get("model")),
-        firmware_version=_optional_string(
+        device_type=_lenient_string(data.get("deviceType", data.get("device_type"))),
+        model=_lenient_string(data.get("model")),
+        firmware_version=_lenient_string(
             data.get("firmwareVersion", data.get("firmware_version"))
         ),
     )
 
 
-def parse_gateways(payload: object) -> tuple[Gateway, ...]:
-    """Parse common gateway list response variants."""
+def parse_gateway_list(payload: object) -> tuple[tuple[Gateway, ...], int]:
+    """Parse a gateway list and count entries that cannot be read.
+
+    One unreadable entry, for example a new device of the account without an
+    ID, does not block the others. Only a list without any readable entry is
+    an invalid answer.
+    """
     items: Sequence[object]
     if isinstance(payload, Mapping) and "gateways" in payload:
         items = _sequence(
@@ -133,7 +143,21 @@ def parse_gateways(payload: object) -> tuple[Gateway, ...]:
         items = (payload,)
     else:
         items = _sequence(payload, message="Gateway list response must be an array")
-    return tuple(parse_gateway(item) for item in items)
+    gateways: list[Gateway] = []
+    skipped = 0
+    for item in items:
+        try:
+            gateways.append(parse_gateway(item))
+        except InvalidPayload:
+            skipped += 1
+    if skipped and not gateways:
+        raise InvalidPayload("Gateway list did not contain a readable gateway")
+    return tuple(gateways), skipped
+
+
+def parse_gateways(payload: object) -> tuple[Gateway, ...]:
+    """Parse common gateway list response variants, skipping unreadable entries."""
+    return parse_gateway_list(payload)[0]
 
 
 def parse_part_number(payload: object) -> str:

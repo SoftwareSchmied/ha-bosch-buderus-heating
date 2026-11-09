@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Callable, Sequence
 from typing import Literal, Protocol
 from urllib.parse import quote
@@ -17,12 +18,14 @@ from .models import BatchItemResult, Gateway, JsonValue, Resource
 from .parsers import (
     parse_batch_response,
     parse_gateway,
-    parse_gateways,
+    parse_gateway_list,
     parse_part_number,
     parse_resource,
 )
 from .token_manager import StaticTokenProvider
 from .transport import PointTTransport, RateLimitBackoff, RetryPolicy
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class AccessTokenProvider(Protocol):
@@ -87,7 +90,11 @@ class PointTClient:
         if self._gateway_id is not None:
             raise ValueError("A gateway source cannot enumerate an account")
         payload = await self._request("GET", "gateways/", retryable=True)
-        return parse_gateways(payload)
+        gateways, skipped = parse_gateway_list(payload)
+        if skipped:
+            self.metrics.record_skipped_gateway_entries(skipped)
+            _LOGGER.debug("Ignored %d unreadable gateway list entries", skipped)
+        return gateways
 
     async def get_gateway(self, gateway_id: str) -> Gateway:
         """Return normalized metadata for one gateway."""

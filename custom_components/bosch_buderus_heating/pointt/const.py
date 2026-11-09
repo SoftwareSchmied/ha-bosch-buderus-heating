@@ -8,6 +8,19 @@ POINTT_BASE_URL: Final = (
 OAUTH_AUTHORIZE_URL: Final = "https://singlekey-id.com/auth/connect/authorize"
 OAUTH_TOKEN_URL: Final = "https://singlekey-id.com/auth/connect/token"
 OAUTH_CLIENT_ID: Final = "762162C0-FA2D-4540-AE66-6489F189FADC"
+# The scopes the integration actually uses: sign-in, offline refresh, the
+# gateway list and resources, and the separate cloud devices. A sign-in asks
+# for this set first; a long-lived refresh token then cannot remove gateways,
+# claim them or manage other users of the account.
+OAUTH_SCOPES_REDUCED: Final = (
+    "openid",
+    "offline_access",
+    "pointt.gateway.list",
+    "pointt.gateway.resource.dashapp",
+    "bacon",
+)
+# The full set of the official app. It is requested only once the sign-in
+# service rejects the reduced set (``invalid_scope``) in this process.
 OAUTH_SCOPES: Final = (
     "openid",
     "email",
