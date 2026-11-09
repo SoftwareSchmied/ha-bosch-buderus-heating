@@ -21,7 +21,7 @@ from datetime import UTC, datetime, timedelta, tzinfo
 from enum import StrEnum
 from itertools import islice
 from time import monotonic
-from typing import TYPE_CHECKING, Any, TypeIs
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
@@ -46,6 +46,7 @@ from .discovery_inventory import (
     DiscoveryRecovery,
     is_transient_result,
 )
+from .energy_contracts import assess_energy, is_energy_collection
 from .faults import FaultTracker, fault_resource_candidates, is_fault_resource_path
 from .firmware_watch import FirmwareWatch, firmware_values
 from .holiday_timezones import async_resolve_holiday_timezones
@@ -243,6 +244,9 @@ CIRCUIT_FAILURE_THRESHOLD = 3
 CIRCUIT_OPEN_INTERVAL = timedelta(minutes=5)
 MAX_FALLBACK_PATHS = 5
 RATE_LIMIT_REPAIR_THRESHOLD = 3
+# COORD-5/CHAOS-5: the repair counts only rate limits the cloud itself
+# answered within this window, not requests the shared pause held back.
+RATE_LIMIT_REPAIR_WINDOW = timedelta(hours=24)
 ACTIVE_NOTIFICATION_INTERVAL = timedelta(seconds=60)
 # Short, bounded recovery of controls temporarily absent in automatic mode.
 # Delays are incremental: at most three targeted reads per unavailability episode.
@@ -523,6 +527,17 @@ class BoschBuderusDataUpdateCoordinator(
             min(poll_intervals.values()), ACTIVE_NOTIFICATION_INTERVAL
         ).total_seconds()
         self._spread_progress: dict[PollGroup, dict[str, float]] = {}
+        # COORD-3: paths of a group that a failed batch kept from completing,
+        # read in that cycle -> monotonic read time. Each waits one interval
+        # of its group, so a failing batch does not read the others each tick.
+        self._interrupted_progress: dict[PollGroup, dict[str, float]] = {}
+        # The paths of that failed batch, read again alone in later cycles.
+        self._failing_batch_paths: frozenset[str] = frozenset()
+        # SEC-2: the last explicit refresh that read every group, and how
+        # many explicit refreshes read everything or only the controls.
+        self._last_full_refresh: float | None = None
+        self._explicit_refreshes_full = 0
+        self._explicit_refreshes_control_only = 0
         self._poll_slots: dict[str, tuple[PollGroup, int]] = {}
         self._poll_slots_key: tuple[object, ...] = ()
         # O45: paired readings shown from the local access -> monotonic time
@@ -550,7 +565,12 @@ class BoschBuderusDataUpdateCoordinator(
             EVENT_HOMEASSISTANT_STOP, self._validity_stopped
         )
         self._rate_limit_events = 0
+        # Monotonic times of the rate limits within the repair window.
+        self._rate_limit_times: deque[float] = deque()
         self._energy_counter_resets = 0
+        # NRG-3: the produced heat falls while the heat pump defrosts; such a
+        # decrease is counted apart from the counter resets.
+        self._produced_heat_decreases = 0
         self._capability_metrics: dict[str, CapabilityMetrics] = {}
         self._unknown_enum_value_counts: Counter[str] = Counter()
         self._contract_changes: Counter[str] = Counter()
@@ -646,18 +666,40 @@ class BoschBuderusDataUpdateCoordinator(
         self._config_entry.async_start_reauth(self.hass)
 
     async def async_request_refresh(self) -> None:
-        """Force all dynamic groups due for an explicit Home Assistant refresh."""
+        """Force all dynamic groups due for an explicit Home Assistant refresh.
+
+        SEC-2: a further explicit refresh within the shortest group interval
+        of the profile reads only the controls, so an automation that asks
+        every few seconds does not read the whole plant each time.
+        """
         now_monotonic = monotonic()
-        for group in self._poll_intervals:
+        full = (
+            self._last_full_refresh is None
+            or now_monotonic - self._last_full_refresh >= self._explicit_refresh_gap()
+        )
+        groups = tuple(self._poll_intervals) if full else (PollGroup.CONTROL,)
+        for group in groups:
             self._next_update[group] = min(
                 self._next_update.get(group, now_monotonic), now_monotonic
             )
-        # Everything is read again, also paths read early or at the slower
-        # rate of locally shown readings.
-        self._spread_progress.clear()
-        for path in self._local_served:
-            self._local_served[path] = 0.0
+        if full:
+            self._last_full_refresh = now_monotonic
+            self._explicit_refreshes_full += 1
+            # Everything is read again, also paths read early or at the
+            # slower rate of locally shown readings.
+            self._spread_progress.clear()
+            self._interrupted_progress.clear()
+            for path in self._local_served:
+                self._local_served[path] = 0.0
+        else:
+            self._explicit_refreshes_control_only += 1
+            self._spread_progress.pop(PollGroup.CONTROL, None)
+            self._interrupted_progress.pop(PollGroup.CONTROL, None)
         await super().async_request_refresh()
+
+    def _explicit_refresh_gap(self) -> float:
+        """SEC-2: the minimum time between two full explicit refreshes."""
+        return min(self._poll_intervals.values()).total_seconds()
 
     async def _async_request_switch_refresh(self) -> None:
         """O45: read switched readings now, without forcing any group."""
@@ -729,6 +771,7 @@ class BoschBuderusDataUpdateCoordinator(
                     if (
                         now < self._cloud_backoff_until
                         or now < self._circuit_open_until
+                        or self._shared_pause_remaining() > 0
                         or self._resource_is_paused(setpoint_path, now)
                     ):
                         return
@@ -778,11 +821,11 @@ class BoschBuderusDataUpdateCoordinator(
                             )
                             self._activate_rate_limit_backoff(error, monotonic())
                             return
-                        if result.status == 401 or isinstance(
-                            result.error, AuthenticationError
-                        ):
-                            self._request_reauthentication()
-                            return
+                    # AUTH-1: a 401 for this one item of an answered request
+                    # says nothing about the sign-in. As in the regular poll it
+                    # is a temporary failure of the reading, and the regular
+                    # poll reads it again; only a whole request decides about
+                    # a new sign-in (the AuthenticationError above).
                     if (
                         successes
                         or not results
@@ -1944,7 +1987,12 @@ class BoschBuderusDataUpdateCoordinator(
             ),
             "rate_limit_backoff_active": now < self._cloud_backoff_until,
             "rate_limit_events": self._rate_limit_events,
+            "rate_limit_events_last_24h": sum(
+                now - seen < RATE_LIMIT_REPAIR_WINDOW.total_seconds()
+                for seen in self._rate_limit_times
+            ),
             "energy_counter_resets_detected": self._energy_counter_resets,
+            "produced_heat_decreases_detected": self._produced_heat_decreases,
             "unknown_enum_values_detected": sum(
                 self._unknown_enum_value_counts.values()
             ),
@@ -1977,6 +2025,11 @@ class BoschBuderusDataUpdateCoordinator(
             "local_served_paths": len(self._local_served),
             "local_served_interval_seconds": LOCAL_SERVED_INTERVAL.total_seconds(),
             "switch_reads_pending": len(self._urgent_reads),
+            # SEC-2: explicit refreshes that read everything, those within the
+            # minimum gap that read only the controls, and that gap.
+            "explicit_refreshes_full": self._explicit_refreshes_full,
+            "explicit_refreshes_control_only": self._explicit_refreshes_control_only,
+            "explicit_refresh_gap_seconds": self._explicit_refresh_gap(),
             "controls_slowed_unused": sum(
                 1
                 for path in self._paths_by_group.get(PollGroup.SLOW, ())
@@ -2020,6 +2073,12 @@ class BoschBuderusDataUpdateCoordinator(
             return await self._async_discover_data()
 
         now_monotonic = monotonic()
+        if (shared := self._shared_pause_remaining()) > 0:
+            # CHAOS-5: the pause of the cloud access (another gateway met the
+            # limit) holds this cycle back before any request; no new event.
+            self._cloud_backoff_until = max(
+                self._cloud_backoff_until, now_monotonic + shared
+            )
         if now_monotonic < self._cloud_backoff_until:
             raise UpdateFailed("PointT rate-limit backoff is active")
         if now_monotonic < self._circuit_open_until:
@@ -2093,7 +2152,16 @@ class BoschBuderusDataUpdateCoordinator(
         attempted_paths: set[str] = set()
         interrupted_paths: set[str] = set()
         over_budget = False
-        for chunk in chunk_resource_paths(paths, size=MAX_BULK_PATHS):
+        # COORD-3: the paths of a batch that failed beside answered ones form
+        # their own batches, read last, so they fail no other reading with them.
+        failing = [path for path in paths if path in self._failing_batch_paths]
+        others = [path for path in paths if path not in self._failing_batch_paths]
+        paths = [*others, *failing]
+        chunks = (
+            *chunk_resource_paths(others, size=MAX_BULK_PATHS),
+            *chunk_resource_paths(failing, size=MAX_BULK_PATHS),
+        )
+        for chunk in chunks:
             if attempted_paths and monotonic() - now_monotonic >= CYCLE_BUDGET_SECONDS:
                 over_budget = True
                 self._cycles_over_budget += 1
@@ -2105,6 +2173,9 @@ class BoschBuderusDataUpdateCoordinator(
             attempted_paths.update(chunk)
             attempted_at = datetime.now(UTC)
             result_source = SnapshotSource.BATCH
+            # CHAOS-5: a request the pause of the cloud access holds back is
+            # no rate limit of the cloud.
+            held_back = self._shared_pause_remaining() > 0
             try:
                 results = await self.client.get_resources_bulk(
                     self.gateway.gateway_id, chunk
@@ -2132,7 +2203,11 @@ class BoschBuderusDataUpdateCoordinator(
                     source=SnapshotSource.BATCH,
                     whole_request=True,
                 )
-                self._activate_rate_limit_backoff(err, now_monotonic)
+                # COORD-5: the pause starts when the cloud answered, which
+                # may be a later chunk than the first of this cycle.
+                self._activate_rate_limit_backoff(
+                    err, monotonic(), counted=not held_back
+                )
                 failed_chunks += 1
                 break
             except PointTError as err:
@@ -2163,9 +2238,6 @@ class BoschBuderusDataUpdateCoordinator(
                 if not results:
                     break
                 result_source = SnapshotSource.FALLBACK
-            else:
-                # O81: a batch request answered; a later failure is a new outage.
-                self._batch_failure_logged = False
 
             bulk_item_fallback: tuple[BatchItemResult, ...] = ()
             # B02: decided before any result is applied or read again.
@@ -2198,7 +2270,7 @@ class BoschBuderusDataUpdateCoordinator(
             if any(result.status == 429 for result in results):
                 interrupted_paths.update(chunk)
                 self._activate_rate_limit_backoff(
-                    RateLimited(retry_after=None), now_monotonic
+                    RateLimited(retry_after=None), monotonic()
                 )
                 failed_chunks += 1
                 break
@@ -2220,6 +2292,11 @@ class BoschBuderusDataUpdateCoordinator(
             not result.ok and result.status not in (403, 404, 406)
             for result in cycle_results
         )
+        if not failed_chunks:
+            # O81, COORD-3: only a cycle in which every batch answered ends
+            # the outage; a later failure then warns again. A batch that keeps
+            # failing beside working ones stays one outage.
+            self._batch_failure_logged = False
         for path in () if over_budget else self._deferred_poll_paths:
             # Readings skipped only for the cycle budget keep their values.
             if (previous := snapshots.get(path)) is not None:
@@ -2244,7 +2321,18 @@ class BoschBuderusDataUpdateCoordinator(
             },
         )
 
-        if successful == 0 and failed_chunks:
+        # COORD-3: this cycle read only the batch that already failed beside
+        # answered ones, which wait for their interval. As when it was read
+        # with them, its failure alone is no failure of the gateway.
+        retry_only = (
+            successful == 0
+            and bool(failed_chunks)
+            and bool(attempted_paths)
+            and attempted_paths <= self._failing_batch_paths
+            and monotonic() >= self._cloud_backoff_until
+        )
+        if successful == 0 and failed_chunks and not retry_only:
+            self._failing_batch_paths = frozenset()
             # Retain failures without declaring the coordinator healthy. A later
             # cycle with only paused paths must not resurrect old fresh snapshots.
             self.data = snapshots
@@ -2270,10 +2358,13 @@ class BoschBuderusDataUpdateCoordinator(
             # O41: read before its group's deadline; not again until then.
             if path in completed_paths:
                 self._spread_progress.setdefault(group, {})[path] = now_monotonic
-        if successful == 0 and not over_budget:
+        if successful == 0 and not over_budget and not retry_only:
             self._advance_groups(due_groups, now_monotonic)
             return snapshots
-        self._record_gateway_recovery(monotonic())
+        if not retry_only:
+            self._record_gateway_recovery(monotonic())
+        # Paths of a failed batch beside answered ones (COORD-3).
+        self._failing_batch_paths = frozenset(interrupted_paths - completed_paths)
         # Advance complete groups even if a different group was interrupted.
         completed_groups = tuple(
             group
@@ -2292,6 +2383,14 @@ class BoschBuderusDataUpdateCoordinator(
             elif over_budget:
                 # Remember what this group already got; the rest comes next.
                 self._budget_progress.setdefault(group, {}).update(
+                    (path, now_monotonic)
+                    for path in paths_by_group.get(group, ())
+                    if path in completed_paths
+                )
+            else:
+                # COORD-3: a failed batch keeps this group due; the paths it
+                # got are not read again before their own interval passed.
+                self._interrupted_progress.setdefault(group, {}).update(
                     (path, now_monotonic)
                     for path in paths_by_group.get(group, ())
                     if path in completed_paths
@@ -2345,8 +2444,15 @@ class BoschBuderusDataUpdateCoordinator(
             "resource_limit_reached": self._start_counter_recovery_limited,
         }
 
-    async def _async_discover_data(self) -> dict[str, ResourceSnapshot]:
-        """Discover the bounded tree and use its values as the first snapshot."""
+    async def _async_discover_data(
+        self, *, announce: bool = True
+    ) -> dict[str, ResourceSnapshot]:
+        """Discover the bounded tree and use its values as the first snapshot.
+
+        ``announce`` false: the caller reports missing parts itself once it
+        kept the earlier ones (START-5).
+        """
+        held_back = self._shared_pause_remaining() > 0
         try:
             resources = await async_discover_resources(
                 self.client,
@@ -2362,7 +2468,7 @@ class BoschBuderusDataUpdateCoordinator(
         except AuthenticationError as err:
             raise ConfigEntryAuthFailed from err
         except RateLimited as err:
-            self._activate_rate_limit_backoff(err, monotonic())
+            self._activate_rate_limit_backoff(err, monotonic(), counted=not held_back)
             raise UpdateFailed("PointT rate limit reached during discovery") from err
         except PointTError as err:
             raise UpdateFailed("PointT resources could not be discovered") from err
@@ -2445,6 +2551,8 @@ class BoschBuderusDataUpdateCoordinator(
         }
         # Everything was just read: a new period for every path.
         self._spread_progress.clear()
+        self._interrupted_progress.clear()
+        self._failing_batch_paths = frozenset()
         for path in successful_resources:
             self._urgent_reads.discard(path)
             self._note_cloud_read(path, now_monotonic)
@@ -2469,7 +2577,7 @@ class BoschBuderusDataUpdateCoordinator(
                 and snapshot.resource.value == "manual"
             ):
                 self._queue_manual_setpoint_recovery(path, snapshots)
-        self._plan_discovery_recovery(successful_resources)
+        self._plan_discovery_recovery(successful_resources, announce=announce)
         return snapshots
 
     def start_from_inventory(
@@ -2497,6 +2605,8 @@ class BoschBuderusDataUpdateCoordinator(
         now_monotonic = monotonic()
         self._next_update = dict.fromkeys(self._poll_intervals, now_monotonic)
         self._spread_progress.clear()
+        self._interrupted_progress.clear()
+        self._failing_batch_paths = frozenset()
         self.data = {
             path: ResourceSnapshot(
                 resource=resource,
@@ -2557,7 +2667,7 @@ class BoschBuderusDataUpdateCoordinator(
         # New firmware: earlier "not found"/"forbidden" pauses no longer hold.
         self._negative_until.clear()
         try:
-            discovered = await self._async_discover_data()
+            discovered = await self._async_discover_data(announce=False)
         except UpdateFailed:
             self._discovery_cycle_failed = True
             now = monotonic()
@@ -2572,6 +2682,7 @@ class BoschBuderusDataUpdateCoordinator(
         watch.due = None
         watch.result = "success"
         self._keep_previous_resources(previous_resources, previous_data, discovered)
+        self.discovery_recovery.announce()
         _LOGGER.info(
             "PointT capabilities checked again after a firmware change: %d resources",
             len(self.resources),
@@ -2608,6 +2719,8 @@ class BoschBuderusDataUpdateCoordinator(
                 # Polled as before; not also searched as missing (P46).
                 self.discovery_recovery.missing.pop(path, None)
             recovery = self.discovery_recovery
+            # START-5: only the parts not kept are missing.
+            recovery.initially_missing = len(recovery.missing)
             if recovery.state == "pending" and not recovery.missing:
                 recovery.state, recovery._next_due = "complete", None
 
@@ -2663,7 +2776,7 @@ class BoschBuderusDataUpdateCoordinator(
         previous_data = dict(self.data or {})
         self._negative_until.clear()
         try:
-            discovered = await self._async_discover_data()
+            discovered = await self._async_discover_data(announce=False)
         except UpdateFailed:
             self._discovery_cycle_failed = True
             if monotonic() < self._cloud_backoff_until:
@@ -2675,6 +2788,7 @@ class BoschBuderusDataUpdateCoordinator(
             return dict(self.data or {})
         self.rescan_result = "success"
         self._keep_previous_resources(previous_resources, previous_data, discovered)
+        self.discovery_recovery.announce()
         _LOGGER.info(
             "PointT discovery completed on request: %d resources", len(self.resources)
         )
@@ -2751,7 +2865,9 @@ class BoschBuderusDataUpdateCoordinator(
             return "not_referenced"
         return report.fallback_result or report.bulk_result
 
-    def _plan_discovery_recovery(self, discovered: dict[str, Resource]) -> None:
+    def _plan_discovery_recovery(
+        self, discovered: dict[str, Resource], *, announce: bool = True
+    ) -> None:
         """Compare with the parts known before and plan a bounded search (P46)."""
         reference = (
             self.inventory.resources(self.gateway.gateway_id)
@@ -2781,7 +2897,9 @@ class BoschBuderusDataUpdateCoordinator(
                 missing[root] = reason
         if self.inventory is not None:
             self.inventory.record(self.gateway, discovered)
-        self.discovery_recovery.plan(missing, len(reference), monotonic())
+        self.discovery_recovery.plan(
+            missing, len(reference), monotonic(), announce=announce
+        )
 
     async def _async_recover_missing(
         self, snapshots: dict[str, ResourceSnapshot]
@@ -2794,6 +2912,7 @@ class BoschBuderusDataUpdateCoordinator(
             self._give_up_recovery("resource_limit")
             return
         report = DiscoveryDiagnostics()
+        held_back = self._shared_pause_remaining() > 0
         try:
             found = await async_discover_resources(
                 self.client,
@@ -2810,7 +2929,7 @@ class BoschBuderusDataUpdateCoordinator(
             raise ConfigEntryAuthFailed from err
         except RateLimited as err:
             # The poll already succeeded; the brake applies from the next cycle.
-            self._activate_rate_limit_backoff(err, now_monotonic)
+            self._activate_rate_limit_backoff(err, monotonic(), counted=not held_back)
             recovery.postpone()
             return
         except PointTError as err:
@@ -2922,6 +3041,7 @@ class BoschBuderusDataUpdateCoordinator(
         budget: float = STARTUP_BUDGET_SECONDS,
     ) -> bool:
         """Apply supplementary results to HA without changing main-poll health."""
+        held_back = self._shared_pause_remaining() > 0
         try:
             batch = await self._startup_reader.async_read_batch(
                 self.resources.keys(), budget=budget
@@ -2932,7 +3052,9 @@ class BoschBuderusDataUpdateCoordinator(
         for path, category in batch.outcomes:
             self._record_capability(path, category, SnapshotSource.STARTUP)
         if batch.rate_limit is not None:
-            self._activate_rate_limit_backoff(batch.rate_limit, monotonic())
+            self._activate_rate_limit_backoff(
+                batch.rate_limit, monotonic(), counted=not held_back
+            )
         if batch.attempted:
             self._merge_startup_resources(snapshots)
             await self._async_prepare_holiday_timezones()
@@ -2986,6 +3108,7 @@ class BoschBuderusDataUpdateCoordinator(
             fallback_reason = (
                 reasons.get(path, "batch_failure") if reasons else "batch_failure"
             )
+            held_back = self._shared_pause_remaining() > 0
             try:
                 resource = await self.client.get_resource(
                     self.gateway.gateway_id,
@@ -2999,7 +3122,9 @@ class BoschBuderusDataUpdateCoordinator(
                 raise ConfigEntryAuthFailed from err
             except RateLimited as err:
                 self._record_capability(path, "rate_limited", SnapshotSource.FALLBACK)
-                self._activate_rate_limit_backoff(err, monotonic())
+                self._activate_rate_limit_backoff(
+                    err, monotonic(), counted=not held_back
+                )
                 break
             except ResourceError as err:
                 results.append(
@@ -3088,9 +3213,11 @@ class BoschBuderusDataUpdateCoordinator(
             if result.resource is not None:
                 previous = snapshots.get(result.path)
                 if previous is not None:
-                    self._energy_counter_resets += _energy_reset_count(
+                    resets, decreases = _energy_decreases(
                         previous.resource, result.resource
                     )
+                    self._energy_counter_resets += resets
+                    self._produced_heat_decreases += decreases
                 self._record_capability(result.path, "success", source)
                 self._note_cloud_read(result.path, now_monotonic)
                 snapshots[result.path] = ResourceSnapshot(
@@ -3232,6 +3359,7 @@ class BoschBuderusDataUpdateCoordinator(
             )
             # A new period: paths read before this deadline are due again.
             self._spread_progress.pop(group, None)
+            self._interrupted_progress.pop(group, None)
 
     def _progress(self, group: PollGroup, now_monotonic: float) -> set[str]:
         """Paths of a group already read for its current period (O41 slots,
@@ -3245,15 +3373,25 @@ class BoschBuderusDataUpdateCoordinator(
         several budget-limited cycles still reads each path once. One wake-up
         of slack, because a slot read and the group's own read each fall on
         the first wake-up after their time.
+
+        COORD-3: a path read in a cycle that a failed batch interrupted waits
+        only for its own interval: read again from then on, it keeps its pace
+        while the failing batch keeps the group due.
         """
+        interval = self._group_interval(group).total_seconds()
+        interrupted = {
+            path
+            for path, read_at in self._interrupted_progress.get(group, {}).items()
+            if now_monotonic + POLL_DUE_TOLERANCE_SECONDS < read_at + interval
+        }
         read = {
             **self._budget_progress.get(group, {}),
             **self._spread_progress.get(group, {}),
         }
-        limit = self._group_interval(group).total_seconds() + self._tick_seconds
+        limit = interval + self._tick_seconds
         if not read or now_monotonic - max(read.values()) >= limit:
-            return set()
-        return set(read)
+            return interrupted
+        return set(read) | interrupted
 
     def _group_interval(self, group: PollGroup) -> timedelta:
         return (
@@ -3393,8 +3531,8 @@ class BoschBuderusDataUpdateCoordinator(
         """Close the breaker after a usable cycle; report a recovered outage once."""
         self._gateway_failure_count = 0
         self._circuit_open_until = 0.0
-        # O81: a usable cycle ends the outage; the next one warns again.
-        self._batch_failure_logged = False
+        # The batch warning (O81) ends only with a cycle without a failed
+        # batch (COORD-3), not with every usable one.
         since, self._circuit_outage_since = self._circuit_outage_since, None
         if since is not None:
             _LOGGER.info(
@@ -3403,10 +3541,22 @@ class BoschBuderusDataUpdateCoordinator(
                 max(0.0, now_monotonic - since),
             )
 
+    def _shared_pause_remaining(self) -> float:
+        """Seconds the pause of the whole cloud access still holds requests."""
+        shared = getattr(getattr(self.client, "backoff", None), "remaining", 0.0)
+        if isinstance(shared, bool) or not isinstance(shared, int | float):
+            return 0.0
+        return max(0.0, float(shared))
+
     def _activate_rate_limit_backoff(
-        self, error: RateLimited, now_monotonic: float
+        self, error: RateLimited, now_monotonic: float, *, counted: bool = True
     ) -> None:
-        self._rate_limit_events += 1
+        """Pause cloud polling after a rate limit.
+
+        ``counted`` false: the pause of the cloud access held the request back
+        before it was sent (CHAOS-5). It pauses this gateway as well, but is
+        no event of its own: no count, no warning and no repair.
+        """
         requested = (
             DEFAULT_RATE_LIMIT_BACKOFF.total_seconds()
             if error.retry_after is None
@@ -3417,8 +3567,24 @@ class BoschBuderusDataUpdateCoordinator(
             max(requested, update_interval.total_seconds()),
             MAX_RATE_LIMIT_BACKOFF.total_seconds(),
         )
+        if not counted:
+            self._cloud_backoff_until = max(
+                self._cloud_backoff_until, now_monotonic + delay
+            )
+            return
         self._cloud_backoff_until = now_monotonic + delay
-        if self._rate_limit_events >= RATE_LIMIT_REPAIR_THRESHOLD:
+        self._rate_limit_events += 1
+        # CHAOS-5: repeated means within the window; older limits expire.
+        self._rate_limit_times.append(now_monotonic)
+        window = RATE_LIMIT_REPAIR_WINDOW.total_seconds()
+        while now_monotonic - self._rate_limit_times[0] >= window:
+            self._rate_limit_times.popleft()
+        if (
+            len(self._rate_limit_times) >= RATE_LIMIT_REPAIR_THRESHOLD
+            # The repair offers the cloud-friendly profile; with it in use
+            # already, it would change nothing and only come back.
+            and self.polling_profile is not PollingProfile.CLOUD_FRIENDLY
+        ):
             ir.async_create_issue(
                 self.hass,
                 DOMAIN,
@@ -3506,43 +3672,43 @@ def _percentage(successful: int, total: int) -> float | None:
     return round(successful / total * 100, 1) if total else None
 
 
-def _energy_reset_count(previous: Resource, current: Resource) -> int:
-    """Count confirmed non-negative energy counters that moved backwards."""
-    if "/emon/" not in current.path or previous.path != current.path:
-        return 0
-    before = _energy_counter_values(previous)
-    after = _energy_counter_values(current)
-    return sum(
-        value < before[key] and not math.isclose(value, before[key], abs_tol=1e-9)
-        for key, value in after.items()
-        if key in before
-    )
+# NRG-3: the produced heat of an energy collection is a net total that falls
+# while the heat pump defrosts; its entity is a ``total``, not a
+# ``total_increasing`` counter. Its decreases are counted on their own.
+_PRODUCED_HEAT_PART = "outputProduced"
 
 
-def _energy_counter_values(resource: Resource) -> dict[str, float]:
-    """Extract only finite non-negative PointT energy counter components."""
-    values: dict[str, float] = {}
-    candidates: tuple[object, ...] = resource.values
-    if isinstance(resource.value, dict):
-        candidates = (resource.value, *candidates)
-    for item in candidates:
-        if not isinstance(item, dict):
+def _energy_decreases(previous: Resource, current: Resource) -> tuple[int, int]:
+    """Counter resets and produced-heat decreases between two readings.
+
+    Compared in kWh as the entities show them (``assess_energy``), so a unit
+    change is no reset; a part without a valid reading in both is skipped.
+    """
+    if previous.path != current.path or not (
+        is_energy_collection(previous) and is_energy_collection(current)
+    ):
+        return 0, 0
+    before = _energy_kwh(previous)
+    resets = decreases = 0
+    for key, value in _energy_kwh(current).items():
+        earlier = before.get(key)
+        if (
+            earlier is None
+            or value >= earlier
+            or math.isclose(value, earlier, rel_tol=1e-9, abs_tol=1e-9)
+        ):
             continue
-        typed_key = item.get("type")
-        typed_value = item.get("value")
-        if isinstance(typed_key, str) and _valid_counter_number(typed_value):
-            values[typed_key] = float(typed_value)
-            continue
-        for key, raw_value in item.items():
-            if isinstance(key, str) and _valid_counter_number(raw_value):
-                values[key] = float(raw_value)
-    return values
+        if key == _PRODUCED_HEAT_PART:
+            decreases += 1
+        else:
+            resets += 1
+    return resets, decreases
 
 
-def _valid_counter_number(value: object) -> TypeIs[int | float]:
-    return (
-        not isinstance(value, bool)
-        and isinstance(value, int | float)
-        and math.isfinite(value)
-        and value >= 0
-    )
+def _energy_kwh(resource: Resource) -> dict[str, float]:
+    """The valid parts of an energy collection, in kWh."""
+    return {
+        key: reading.value
+        for key, reading in assess_energy(resource).readings
+        if reading.value is not None
+    }

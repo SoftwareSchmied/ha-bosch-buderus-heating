@@ -30,7 +30,7 @@ from custom_components.bosch_buderus_heating.coordinator import (
     Freshness,
     ResourceSnapshot,
     SnapshotSource,
-    _energy_reset_count,
+    _energy_decreases,
     _error_category,
 )
 from custom_components.bosch_buderus_heating.holiday_writes import (
@@ -336,24 +336,25 @@ def _snapshot(resource: Resource) -> ResourceSnapshot:
 
 def test_energy_reset_detection_uses_only_valid_counter_components() -> None:
     path = "/heatSources/emon/totalConsumption"
+    metadata = ResourceMetadata(resource_type="emonValue")
     previous = Resource(
         path=path,
         values=({"compressor": 120.0, "eheater": 4.0, "outputProduced": 350.0},),
+        metadata=metadata,
     )
     reset = Resource(
         path=path,
         values=({"compressor": 2.0, "eheater": 4.5, "outputProduced": 3.0},),
+        metadata=metadata,
     )
 
-    assert _energy_reset_count(previous, reset) == 2
-    assert _energy_reset_count(reset, reset) == 0
-    assert (
-        _energy_reset_count(
-            previous,
-            Resource(path="/other", values=reset.values),
-        )
-        == 0
-    )
+    # The compressor counter was reset; the produced heat is counted apart.
+    assert _energy_decreases(previous, reset) == (1, 1)
+    assert _energy_decreases(reset, reset) == (0, 0)
+    assert _energy_decreases(
+        previous,
+        Resource(path="/other", values=reset.values, metadata=metadata),
+    ) == (0, 0)
 
 
 async def test_poll_records_energy_resets_without_changing_values(
@@ -384,7 +385,9 @@ async def test_poll_records_energy_resets_without_changing_values(
     result = await coordinator._async_update_data()
 
     assert result[path].resource is current
-    assert coordinator.diagnostics_summary()["energy_counter_resets_detected"] == 2
+    summary = coordinator.diagnostics_summary()
+    assert summary["energy_counter_resets_detected"] == 1
+    assert summary["produced_heat_decreases_detected"] == 1
 
 
 async def test_confirmed_write_updates_coordinator_without_batch_refresh(

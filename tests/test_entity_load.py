@@ -653,9 +653,12 @@ async def test_batch_failure_names_its_category_and_warns_once(
     assert [r.levelno for r in batch] == [logging.DEBUG]
 
 
-async def test_each_outage_warns_once_while_the_fallback_answers_between(
+async def test_one_outage_warns_once_while_the_fallback_answers_between(
     hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
+    """COORD-3: the batch endpoint fails throughout, so it stays one outage
+    although the fallback answers in between; only a cycle in which the batch
+    answers again ends it."""
     client = AsyncMock()
     coordinator = cloud_coordinator(hass, client)
     path = "/heatSources/actualModulation"
@@ -678,8 +681,19 @@ async def test_each_outage_warns_once_while_the_fallback_answers_between(
     assert [r.levelno for r in batch] == [
         logging.WARNING,
         logging.DEBUG,
-        logging.WARNING,
+        logging.DEBUG,
     ]
+    client.get_resources_bulk.side_effect = None
+    client.get_resources_bulk.return_value = (_success(path, 4.0),)
+    coordinator._next_update = {PollGroup.FAST: 0.0}
+    await coordinator._async_update_data()
+    client.get_resources_bulk.side_effect = ServiceUnavailable(503)
+    client.get_resource.side_effect = ServiceUnavailable(503)
+    coordinator._next_update = {PollGroup.FAST: 0.0}
+    with pytest.raises(UpdateFailed):
+        await coordinator._async_update_data()
+    batch = [r for r in caplog.records if "batch refresh failed" in r.getMessage()]
+    assert batch[-1].levelno == logging.WARNING
 
 
 def test_failed_cycle_category_is_the_most_frequent_error() -> None:

@@ -150,11 +150,30 @@ class PointTSource:
             gateway = next(
                 (item for item in gateways if item.gateway_id == gateway_id), None
             )
+            if gateway is None and inventory_reason is None:
+                # P50: perhaps the gateway was exchanged; decided from this
+                # list alone, without another request.
+                await self._sync_exchange_issue(gateways, inventory)
+                # START-4: an answered list without this gateway (also an
+                # empty one) is shown like a list that did not answer: with
+                # the stored inventory, or else with the local readings. The
+                # age limit of the inventory and the exchange question cover
+                # a gateway that is really gone.
+                stored = inventory.startup_gateways((gateway_id,))
+                if stored is None:
+                    if LOCAL_PLANT_VIEW:
+                        await self._retain_local_plant(
+                            context, gateway_id, inventory, startup=True
+                        )
+                    raise SourceFailure()
+                self.ensure_current()
+                gateways = stored
+                inventory_reason = "gateway_not_listed"
+                gateway = next(
+                    (item for item in gateways if item.gateway_id == gateway_id),
+                    None,
+                )
             if gateway is None:
-                if inventory_reason is None:
-                    # P50: perhaps the gateway was exchanged; decided from
-                    # this list alone, without another request.
-                    await self._sync_exchange_issue(gateways, inventory)
                 raise SourceFailure()
             if inventory_reason is None:
                 inventory.remember_gateways((gateway,))
@@ -205,9 +224,11 @@ class PointTSource:
                 if not _start_from_inventory(
                     coordinator, inventory, inventory_reason, rate_limit=rate_limit
                 ):
+                    if gateway_error is None:
+                        # START-4: not listed and no stored resources to show.
+                        raise SourceFailure()
                     # Keep the runtime's handling of the original error, for
                     # example its Retry-After pause.
-                    assert gateway_error is not None
                     raise gateway_error
             else:
                 # Sources can start after the owner is already LOADED. The HA

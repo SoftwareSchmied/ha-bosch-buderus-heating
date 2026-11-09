@@ -155,7 +155,8 @@ until one day has passed. A search waits for a working cycle, a rate limit
 postpones it, and it is charged to the same path limit. A missing path that
 answers HTTP 5xx during the search uses up that search. Only a search without
 any answer, or one that the cloud ends with three 5xx answers in a row, is
-postponed. A part still missing after the last search is no longer expected at
+postponed, at most 24 times; then the search waits for the next start, which
+still expects the part. A part still missing after the last search is no longer expected at
 the next start; its entities stay in the registry. Without stored resources, a
 root that ended with a temporary error is searched again on the same schedule. Other static resources outside the reviewed
 list retain their previous behavior. Previously discovered dynamic values
@@ -203,8 +204,22 @@ simulated hour needs 60 batches instead of 76, with the same 1,657 path reads.
 If a group cannot complete because a batch with another of its paths keeps
 failing, a path read early (or in an earlier, budget-limited cycle) waits at
 most one interval of its group and one minute; then it is read again, so its
-value does not expire. The first reads after a start or a requested discovery stay immediate, and an
-explicit refresh still reads everything.
+value does not expire. The first reads after a start or a requested discovery stay immediate.
+
+A batch that fails as a whole beside answered ones keeps its group due. The
+paths answered in that cycle are then not read again before their own group
+interval has passed; only the failing batch is repeated each minute, as a
+batch of its own read after the others, so its failure does not take other
+readings with it. A cycle in which only that batch was read and failed is no
+gateway failure, as when it failed beside the others; a cycle in which other
+readings fail too is. The batch warning appears once and ends only after a
+cycle in which every batch answered.
+
+An explicit refresh, for example the "Update entity" action, reads every
+group. A further explicit refresh within the shortest group interval of the
+profile (60 seconds, or 120 seconds with the cloud-friendly profile) reads
+only the control group, so an automation that asks every few seconds does not
+read the whole plant each time.
 
 While an entity shows the local value of a paired reading, its cloud path is
 read every 15 minutes only and at once again at its normal rate when the cloud

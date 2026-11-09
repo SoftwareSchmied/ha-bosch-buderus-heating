@@ -22,6 +22,8 @@ from custom_components.bosch_buderus_heating.coordinator import (
 )
 from custom_components.bosch_buderus_heating.discovery_inventory import (
     MAX_AGE,
+    MAX_RECOVERY_POSTPONEMENTS,
+    MIN_RECOVERY_GAP_SECONDS,
     RECOVERY_SCHEDULE,
     DiscoveryInventory,
     DiscoveryRecovery,
@@ -454,6 +456,89 @@ async def test_search_meeting_a_path_5xx_uses_its_attempts(
     assert recovery.attempts == len(RECOVERY_SCHEDULE)
     assert recovery.postponed == 0
     assert "still missing after 7 searches" in caplog.text
+
+
+async def test_a_search_that_never_gets_an_answer_ends_after_its_limit(
+    hass: HomeAssistant, clock: Clock, caplog
+) -> None:
+    """START-2: no answer moves the search, but not forever."""
+    inventory = _inventory(hass)
+    await _known_before(hass, inventory)
+    cloud = Cloud(tree())
+    cloud.tree["/system/sensors/temperatures"] = container(
+        "/system/sensors/temperatures"
+    )
+    coordinator = _coordinator(hass, cloud, inventory)
+    await coordinator.async_refresh()
+    recovery = coordinator.discovery_recovery
+    assert recovery.missing == {OUTDOOR: "not_referenced"}
+    # The direct search of the part never gets an answer.
+    cloud.request_errors[OUTDOOR] = RequestTimeout()
+    cloud.get_errors[OUTDOOR] = RequestTimeout()
+    clock.now += RECOVERY_SCHEDULE[0]
+    searches = 0
+    for _ in range(MAX_RECOVERY_POSTPONEMENTS + 5):
+        before = cloud.requested(OUTDOOR)
+        await coordinator.async_refresh()
+        assert coordinator.last_update_success  # the poll goes on
+        searches += cloud.requested(OUTDOOR) > before
+        clock.now += MIN_RECOVERY_GAP_SECONDS
+    assert searches == MAX_RECOVERY_POSTPONEMENTS
+    assert recovery.state == "given_up" and recovery.last_result == "unanswered"
+    assert recovery.attempts == 0
+    assert recovery.postponed == MAX_RECOVERY_POSTPONEMENTS
+    assert recovery.diagnostics(clock.now)["next_attempt_in_seconds"] is None
+    assert "searches got no answer" in caplog.text
+    # No answer is no evidence that the part is gone: the next start still
+    # expects it and searches again.
+    assert OUTDOOR in inventory.resources(GATEWAY)
+
+
+@pytest.mark.parametrize("kind", ["rescan", "firmware"])
+async def test_a_further_discovery_warns_only_about_parts_it_does_not_keep(
+    hass: HomeAssistant, clock: Clock, caplog, kind
+) -> None:
+    """START-5: a part the gateway does not report right now is kept and
+    polled as before; only parts that stay missing are announced."""
+    inventory = _inventory(hass)
+    await _known_before(hass, inventory)
+    cloud = Cloud(tree())
+    coordinator = _coordinator(hass, cloud, inventory)
+    await coordinator.async_refresh()
+    assert OUTDOOR in coordinator.resources
+
+    def discover() -> None:
+        if kind == "rescan":
+            assert coordinator.request_rescan() == "planned"
+        else:
+            coordinator.firmware.due = clock.now
+
+    cloud.down[OUTDOOR] = 404  # omitted by this discovery only
+    discover()
+    caplog.clear()
+    clock.now += 60
+    with caplog.at_level(logging.INFO):
+        await coordinator.async_refresh()
+    recovery = coordinator.discovery_recovery
+    assert OUTDOOR in coordinator.resources
+    assert recovery.state == "complete" and not recovery.missing
+    assert "missing after discovery" not in caplog.text
+
+    # A part known before but not polled now (missing since the start) is
+    # not kept and is still announced.
+    del cloud.down[OUTDOOR]
+    coordinator._drop_kept_resource(OUTDOOR)
+    coordinator.resources.pop(OUTDOOR, None)
+    cloud.tree["/system/sensors/temperatures"] = container(
+        "/system/sensors/temperatures"
+    )
+    discover()
+    caplog.clear()
+    clock.now += 60
+    await coordinator.async_refresh()
+    assert recovery.state == "pending" and OUTDOOR in recovery.missing
+    assert recovery.initially_missing == 1
+    assert "1 previously known PointT resources are missing" in caplog.text
 
 
 async def test_full_resource_budget_ends_the_search_at_once(

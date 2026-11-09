@@ -40,6 +40,10 @@ MAX_RESOURCES_PER_GATEWAY = 1024
 # hours until one day has passed. Afterwards only the next load searches again.
 RECOVERY_SCHEDULE = (300, 900, 3600, 21600, 43200, 64800, 86400)
 MIN_RECOVERY_GAP_SECONDS = 300
+# START-2: a search without an answer moves without using an attempt. After
+# this many such postponements (two hours at the minimum gap) the series ends
+# until the next start, which still expects the parts.
+MAX_RECOVERY_POSTPONEMENTS = 24
 _TEMPLATE_LIMIT = 20
 
 _INVENTORIES: HassKey[dict[str, DiscoveryInventory]] = HassKey(
@@ -622,8 +626,20 @@ class DiscoveryRecovery:
         self._started = 0.0
         self._next_due: float | None = None
 
-    def plan(self, missing: Mapping[str, str], reference: int, now: float) -> None:
-        """Start a new series after the start-up discovery."""
+    def plan(
+        self,
+        missing: Mapping[str, str],
+        reference: int,
+        now: float,
+        *,
+        announce: bool = True,
+    ) -> None:
+        """Start a new series after the start-up discovery.
+
+        ``announce`` false: the caller keeps some of the parts first and then
+        reports only the remaining ones (``announce``), as a requested or a
+        firmware discovery does (START-5).
+        """
         self.missing = dict(missing)
         self.reference_resources = reference
         self.initially_missing = len(missing)
@@ -638,7 +654,14 @@ class DiscoveryRecovery:
             return
         self.state = "pending"
         self._next_due = now + RECOVERY_SCHEDULE[0]
-        if reference:
+        if announce:
+            self.announce()
+
+    def announce(self) -> None:
+        """Warn about the parts the planned search looks for, if any."""
+        if self.state != "pending" or not self.missing:
+            return
+        if self.reference_resources:
             message = (
                 "%d previously known PointT resources are missing after discovery "
                 "(%s); searching again in %d minutes"
@@ -650,7 +673,7 @@ class DiscoveryRecovery:
             )
         _LOGGER.warning(
             message,
-            len(missing),
+            len(self.missing),
             ", ".join(self.templates()),
             RECOVERY_SCHEDULE[0] // 60,
         )
@@ -679,8 +702,22 @@ class DiscoveryRecovery:
 
         Without an own pause (rate limit: the coordinator's brake applies), the
         search is due again at once; after no answer it waits the minimum gap.
+        After MAX_RECOVERY_POSTPONEMENTS the series ends (START-2): the parts
+        stay expected, so the next start searches for them again.
         """
         self.postponed += 1
+        if self.postponed >= MAX_RECOVERY_POSTPONEMENTS:
+            self.last_result = "unanswered"
+            self.state = "given_up"
+            self._next_due = None
+            _LOGGER.warning(
+                "%d PointT resources are still missing and %d searches got no "
+                "answer; searching again after the next start (%s)",
+                len(self.missing),
+                self.postponed,
+                ", ".join(self.templates()),
+            )
+            return
         if now is not None and self._next_due is not None:
             self._next_due = max(self._next_due, now + MIN_RECOVERY_GAP_SECONDS)
 

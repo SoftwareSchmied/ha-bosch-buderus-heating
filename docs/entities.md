@@ -103,8 +103,10 @@ and has to be corrected there. For paired counters shown from either access, a
 drop of more than 10 % within one source is shown only when the next reading
 of that source confirms it, so a single low or zero reading never counts as a
 new meter cycle (see [source selection](source-selection.md#counters)). The
-integration does not alter the measurement otherwise, but records detected drops anonymously as `energy_counter_resets_detected` in
-diagnostics.
+integration does not alter the measurement otherwise, but records detected
+drops anonymously as `energy_counter_resets_detected` in diagnostics;
+decreases of the produced heat during defrosting appear apart as
+`produced_heat_decreases_detected`.
 
 ## Meaning of writeability columns
 

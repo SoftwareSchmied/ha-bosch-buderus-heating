@@ -104,9 +104,9 @@ async def test_the_dialog_plans_one_search_within_the_limits(hass) -> None:
         backend.changed = True
         discover = coordinator._async_discover_data
 
-        async def without_temp():
+        async def without_temp(**kwargs):
             # The search does not report a reading that was there before.
-            discovered = await discover()
+            discovered = await discover(**kwargs)
             coordinator.resources.pop(TEMP, None)
             discovered.pop(TEMP, None)
             return discovered

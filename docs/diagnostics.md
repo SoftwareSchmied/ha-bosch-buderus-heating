@@ -110,8 +110,12 @@ without paths, values or identifiers:
   cloud copy is read at the slower rate), `local_served_interval_seconds`
   (that rate, 900), `switch_reads_pending` (cloud copies still to be read at
   once after their entity switched back to the cloud value or became enabled
-  again) and `controls_slowed_unused` (controls read with the slow values
-  because all their entities are disabled); see
+  again), `controls_slowed_unused` (controls read with the slow values
+  because all their entities are disabled), `explicit_refreshes_full` and
+  `explicit_refreshes_control_only` (explicit refreshes, such as the "Update
+  entity" action, that read every group, and those within
+  `explicit_refresh_gap_seconds` of the last full one that read only the
+  controls); see
   [request behavior](request-behavior.md) and
   [source selection](source-selection.md#cloud-reads-while-local-values-are-shown);
 - `inventory.polling_groups` and each capability's `poll_group` give the
@@ -219,12 +223,16 @@ the search for them went:
 - `attempts`, `attempts_planned`, `postponed` (rate limits, and searches that
   got no answer or ended with a 5xx failure of the whole cloud), `last_result`
   and `next_attempt_in_seconds`. A search in which a missing path answers
-  HTTP 5xx got an answer and uses an attempt.
+  HTTP 5xx got an answer and uses an attempt. After 24 postponements the
+  series ends with `state` `given_up` and `last_result` `unanswered`; unlike
+  a series that used up its attempts, the parts stay expected at the next
+  start.
 
 `startup_inventory` shows how the gateway started: `mode` is `live` or
 `inventory` (the cloud did not answer during start-up and the saved resources
-were used), with `reason` (for example `gateway_list_timeout` or
-`discovery_rate_limited`), `inventory_age_hours`, `discovery_attempts`,
+were used), with `reason` (for example `gateway_list_timeout`,
+`gateway_not_listed` when the answered gateway list did not contain the
+gateway, or `discovery_rate_limited`), `inventory_age_hours`, `discovery_attempts`,
 `discovery_result` and `next_discovery_in_seconds` for the discovery that
 follows the first working cycle.
 
@@ -740,10 +748,19 @@ The counters are derived from normal polling. Opening diagnostics does not
 make another cloud request. All counters restart at zero after Home Assistant
 restarts.
 
-`energy_counter_resets_detected` increases when an individual non-negative
-PointT energy counter becomes smaller than its previously confirmed value. It
-contains neither the old nor the new measurement and exists only to make
-resets after firmware updates, device replacement, or manual resets visible.
+`energy_counter_resets_detected` increases when an individual part of a
+PointT energy collection becomes smaller than its previously confirmed value,
+compared in kWh, so a change of the reported unit is no reset. It contains
+neither the old nor the new measurement and exists only to make resets after
+firmware updates, device replacement, or manual resets visible. The produced
+heat (`outputProduced`) is a net total that falls while the heat pump
+defrosts; its decreases are counted apart in
+`produced_heat_decreases_detected`.
+
+`rate_limit_events` counts the rate limits the cloud reported to this gateway
+since the start, `rate_limit_events_last_24h` those within the last 24 hours,
+which decide the repair. A request that the running pause of the cloud access
+held back before it was sent is no event.
 
 `supported_without_value_count` identifies capabilities that returned a valid,
 supported scalar schema but no current value. Each affected capability also

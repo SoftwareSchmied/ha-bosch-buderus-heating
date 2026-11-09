@@ -251,12 +251,15 @@ async def test_forbidden_pause_is_retained(recovery, known, expected_reads):
     assert TARGET not in client.get_resources_bulk.await_args.args[1]
 
 
-@pytest.mark.parametrize("pause", ["cloud", "circuit", "resource"])
+@pytest.mark.parametrize("pause", ["cloud", "shared", "circuit", "resource"])
 async def test_existing_pauses_prevent_targeted_reads(recovery, pause):
     coordinator, client, _, _ = recovery
     until = monotonic() + 600
     if pause == "cloud":
         coordinator._cloud_backoff_until = until
+    elif pause == "shared":
+        # The pause of the whole cloud access, met by another gateway.
+        client.backoff = SimpleNamespace(remaining=600.0)
     elif pause == "circuit":
         coordinator._circuit_open_until = until
     else:
@@ -275,9 +278,37 @@ async def test_batch_item_errors_end_the_series(recovery, status):
     with patch.object(entry, "async_start_reauth") as reauth:
         with patch(SLEEP, new_callable=AsyncMock):
             await run_series(coordinator)
-        assert reauth.call_count == (1 if status == 401 else 0)
+        # AUTH-1: a 401 for this one item of an answered request is no
+        # failed sign-in; as in the regular poll it is a temporary failure.
+        reauth.assert_not_called()
     assert client.get_resources_bulk.await_count == 1
     assert bool(coordinator._cloud_backoff_until) == (status == 429)
+    if status == 401:
+        assert TARGET not in coordinator.data or (
+            coordinator.data[TARGET].last_error_category == "http_401"
+        )
+
+
+async def test_an_item_401_keeps_the_sign_in_and_the_known_target(recovery):
+    """AUTH-1: the answered request proves the sign-in; the regular poll reads
+    the target again as after any other temporary failure."""
+    coordinator, client, entry, _ = recovery
+    add_known_target(coordinator)
+    client.get_resources_bulk.return_value = (
+        BatchItemResult("gateway-one", TARGET, 401),
+    )
+    with (
+        patch.object(entry, "async_start_reauth") as reauth,
+        patch(SLEEP, new_callable=AsyncMock),
+    ):
+        await run_series(coordinator)
+    reauth.assert_not_called()
+    failed = coordinator.data[TARGET]
+    assert failed.last_error_category == "http_401" and not failed.ended
+    coordinator._next_update[PollGroup.CONTROL] = 0
+    client.get_resources_bulk.return_value = (success(setpoint()),)
+    snapshots = await coordinator._async_update_data_locked()
+    assert snapshots[TARGET].available
 
 
 @pytest.mark.parametrize(

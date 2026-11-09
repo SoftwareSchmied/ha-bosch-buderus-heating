@@ -75,10 +75,13 @@ installations where the PointT cloud repeatedly reports rate limits.
 
 ## Repair notifications
 
-After three rate-limit events during one running Home Assistant session, the
+After three rate limits that the cloud reported within 24 hours, the
 integration creates a notification under **Settings → System → Repairs**. The
 offered repair flow can switch the affected account to cloud-friendly polling
-and then reload the integration.
+and then reload the integration. Requests that a running pause held back
+before they were sent do not count. With the cloud-friendly profile already in
+use, the notification is not created, because the repair would change
+nothing; the pauses themselves still apply.
 
 Invalid credentials are not treated as a rate limit. Home Assistant uses the
 separate **Reauthenticate** flow for that condition.
