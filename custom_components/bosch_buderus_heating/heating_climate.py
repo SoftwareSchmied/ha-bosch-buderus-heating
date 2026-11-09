@@ -12,6 +12,7 @@ from homeassistant.components.climate.const import HVACMode
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import callback
 from homeassistant.exceptions import ServiceValidationError
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.temperature import display_temp
@@ -55,7 +56,7 @@ def track_heating_climates(
             if match is None or match[1] in seen:
                 continue
             entity = HeatingCircuitClimate(coordinator, match[1])
-            if not entity.available:
+            if not entity.available and not _registered(coordinator, entity):
                 if path not in coordinator.stored_resources():
                     continue
                 # Started with the stored inventory (P47): add it unavailable,
@@ -70,6 +71,26 @@ def track_heating_climates(
 
     entry.async_on_unload(coordinator.async_add_listener(discover))
     discover()
+
+
+def _registered(
+    coordinator: BoschBuderusDataUpdateCoordinator, entity: HeatingCircuitClimate
+) -> bool:
+    """C70: whether this climate already has a registry entry of this entry.
+
+    In a cooling context the climate is unavailable. A registered one is
+    still added, unavailable, so that it does not appear as no longer
+    provided after a restart in summer. A new installation is unchanged.
+    """
+    registry = er.async_get(coordinator.hass)
+    entity_id = registry.async_get_entity_id("climate", DOMAIN, entity.unique_id or "")
+    registered = registry.async_get(entity_id) if entity_id is not None else None
+    config_entry = getattr(coordinator, "config_entry", None)
+    return (
+        registered is not None
+        and config_entry is not None
+        and registered.config_entry_id == config_entry.entry_id
+    )
 
 
 @temperature_members
@@ -328,9 +349,15 @@ class HeatingCircuitClimate(
             raise _invalid()
         policy = number_policy_for_resource(target)
         assert policy is not None
-        raw = TemperatureConverter.convert(
-            value, temperature_unit(self), TEMPERATURE_UNITS[target.metadata.unit or ""]
-        )
+        native_unit = TEMPERATURE_UNITS[target.metadata.unit or ""]
+        raw = TemperatureConverter.convert(value, temperature_unit(self), native_unit)
+        if policy.write_grid and {
+            temperature_unit(self),
+            self.hass.config.units.temperature_unit,
+        } != {native_unit}:
+            # C31: a converted value, such as 70 °F, never lies exactly on the
+            # gateway's grid. Use the nearest grid value instead of rejecting.
+            raw = round(raw / policy.step) * policy.step
         await async_set_control(
             self.coordinator,
             target.path,

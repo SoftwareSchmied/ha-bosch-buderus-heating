@@ -8,7 +8,10 @@ from collections.abc import Awaitable, Callable, Mapping
 from contextlib import suppress
 from dataclasses import dataclass, fields, replace
 from datetime import UTC, date, datetime, time, timedelta, tzinfo
+from time import monotonic
 from typing import Literal
+
+import aiohttp
 
 from .holiday_timezones import async_resolve_holiday_timezones
 from .holidays import (
@@ -32,12 +35,16 @@ from .pointt import (
     Resource,
     ResourceError,
     ServiceUnavailable,
+    UnexpectedHttpStatus,
     WriteNotConfirmed,
     WriteValidationError,
 )
 
 DEFAULT_HOLIDAY_READ_BACK_DELAY = 0.5
 DEFAULT_HOLIDAY_READ_BACK_ATTEMPTS = 3
+# C36: an unresolved creation blocks further ones only this long. After it, a
+# complete list without such an entry shows that the request created none.
+PENDING_CREATION_EXPIRY = timedelta(minutes=10)
 _DATE_TIME_STEP_MINUTES = 15
 
 
@@ -77,6 +84,7 @@ class HolidayWriteNotConfirmed(WriteNotConfirmed):
 class _PendingCreation:
     values: HolidayWriteValues
     previous_ids: frozenset[int]
+    sent_at: float
 
 
 class HolidayTimeError(WriteValidationError):
@@ -118,6 +126,7 @@ class HolidayWriteService:
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
         read_back_delay: float = DEFAULT_HOLIDAY_READ_BACK_DELAY,
         read_back_attempts: int = DEFAULT_HOLIDAY_READ_BACK_ATTEMPTS,
+        clock: Callable[[], float] = monotonic,
     ) -> None:
         if read_back_delay < 0:
             raise ValueError("Read-back delay must not be negative")
@@ -126,6 +135,7 @@ class HolidayWriteService:
         self._client = client
         self._timezones: dict[str, tzinfo | None] = {}
         self._sleep = sleep
+        self._clock = clock
         self._read_back_delay = read_back_delay
         self._read_back_attempts = read_back_attempts
         self._pending_creations: dict[str, _PendingCreation] = {}
@@ -143,6 +153,14 @@ class HolidayWriteService:
         if configuration := parse_holiday_write_configuration(resources):
             validate_holiday_values(values, configuration)
         pending = self._pending_creations.get(gateway_id)
+        if pending is not None and await self._async_creation_expired(
+            gateway_id, resources, pending, fallback_timezone=fallback_timezone
+        ):
+            # C36: long after the request, a complete list still shows no
+            # entry it could have created. Release the block; this attempt
+            # checks the list again and creates the holiday normally.
+            del self._pending_creations[gateway_id]
+            pending = None
         if pending is None:
             current = await self._client.get_resource(gateway_id, HOLIDAY_LIST_PATH)
             current_resources = {**resources, HOLIDAY_LIST_PATH: current}
@@ -168,15 +186,26 @@ class HolidayWriteService:
                     for period in periods
                     if (identifier := holiday_period_id(period)) is not None
                 ),
+                self._clock(),
             )
             # Record before POST: cancellation or a lost response must not cause
             # a second non-idempotent write from another form or the calendar.
             self._pending_creations[gateway_id] = pending
             try:
-                with suppress(RequestTimeout, ServiceUnavailable):
-                    await self._client.create_holiday_period(
-                        gateway_id, values.as_payload()
-                    )
+                await self._client.create_holiday_period(
+                    gateway_id, values.as_payload()
+                )
+            except (RequestTimeout, ServiceUnavailable) as err:
+                # C36: without a connection nothing was sent. Otherwise the
+                # outcome is unknown and is resolved by reading, below.
+                if _never_sent(err):
+                    self._pending_creations.pop(gateway_id)
+                    raise
+            except UnexpectedHttpStatus as err:
+                # C36: a 4xx answer is the server's final refusal.
+                if 400 <= err.status < 500:
+                    self._pending_creations.pop(gateway_id)
+                raise
             except AuthenticationError, RateLimited, ResourceError:
                 self._pending_creations.pop(gateway_id)
                 raise
@@ -221,6 +250,26 @@ class HolidayWriteService:
             # This call checked an earlier request, not the newly entered data.
             raise HolidayAlreadyExists(result, previous_request=True)
         return result
+
+    async def _async_creation_expired(
+        self,
+        gateway_id: str,
+        resources: Mapping[str, Resource],
+        pending: _PendingCreation,
+        *,
+        fallback_timezone: tzinfo,
+    ) -> bool:
+        """C36: whether an old unresolved creation evidently created nothing."""
+        if self._clock() - pending.sent_at < PENDING_CREATION_EXPIRY.total_seconds():
+            return False
+        periods = await self._async_current_periods(
+            gateway_id, resources, fallback_timezone=fallback_timezone
+        )
+        return not any(
+            holiday_period_id(period) not in pending.previous_ids
+            and _same_creation(period, pending.values)
+            for period in periods
+        )
 
     async def async_update(
         self,
@@ -428,6 +477,13 @@ class HolidayWriteService:
         raise HolidayWriteNotConfirmed(
             latest, actual=actual, requested=expected_period
         ) from last_temporary_error
+
+
+def _never_sent(err: RequestTimeout | ServiceUnavailable) -> bool:
+    """C36: whether the connection failed before any request was sent."""
+    return isinstance(
+        err.__cause__, aiohttp.ClientConnectorError | aiohttp.ConnectionTimeoutError
+    )
 
 
 def _merge_holiday_changes(

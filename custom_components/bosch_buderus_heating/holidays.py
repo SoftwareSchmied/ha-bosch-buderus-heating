@@ -696,11 +696,13 @@ def _parse_period(
     identifier = _identifier_text(_find_value(normalized, frozenset(_ID_KEYS)))
     raw_name = _safe_text(_find_value(normalized, frozenset(_NAME_KEYS)), 512)
     period_name_codec = _name_codec(normalized.get("nameconfig")) or name_codec
+    # C39: an exclusive end at midnight (T00:00:00), as written for an all-day
+    # calendar event, is as much a whole day as the legacy T24:00:00 form.
     full_day_timespan = (
         isinstance(start_raw, str)
         and isinstance(end_raw, str)
         and start_raw.endswith("T00:00:00")
-        and end_raw.endswith("T24:00:00")
+        and end_raw.endswith(("T24:00:00", "T00:00:00"))
     )
     return HolidayPeriod(
         start=start,

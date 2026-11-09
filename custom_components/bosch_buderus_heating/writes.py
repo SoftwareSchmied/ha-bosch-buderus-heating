@@ -14,11 +14,13 @@ from .legacy_holidays import WDDW2_HOLIDAY_PATH
 from .pointt import (
     InvalidPayload,
     PointTClient,
+    PointTError,
     RateLimited,
     RequestTimeout,
     Resource,
     ServiceUnavailable,
     TransportError,
+    WriteError,
     WriteNotConfirmed,
     WriteRejected,
     WriteRequest,
@@ -39,6 +41,15 @@ from .zone_controls import (
 
 DEFAULT_READ_BACK_DELAY = 0.5
 DEFAULT_READ_BACK_ATTEMPTS = 3
+# C34: broad plausibility limits that only reject corrupt metadata, such as a
+# placeholder maximum of 6553.5 °C. They prescribe no reference-device range.
+PLAUSIBLE_TEMPERATURE_RANGE_C = (-30.0, 100.0)
+PLAUSIBLE_DURATION_RANGE_MIN = (0.0, 2880.0)
+_CELSIUS_UNITS = frozenset({"C", "degC", "°C", "ºC"})
+
+
+class WriteBusy(WriteError):
+    """C58: a poll or another write held the gateway too long; nothing was sent."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,6 +77,9 @@ class NumberWritePolicy:
     enabled_by_default: bool = True
     # Use the advertised step (when valid) for the UI and the value grid.
     live_step: bool = False
+    # C31: the gateway rounds these Celsius setpoints to ``step``; a value off
+    # that grid would be stored differently and never confirmed. Reject it.
+    write_grid: bool = False
 
 
 ZONE_OPERATION_MODE_POLICY = EnumWritePolicy(
@@ -176,7 +190,9 @@ NUMBER_WRITE_POLICIES = (
         1.0,
         enabled_by_default=False,
     ),
-    NumberWritePolicy(r"^/heatingCircuits/[^/]+/manualRoomSetpoint$", "C", 0.5),
+    NumberWritePolicy(
+        r"^/heatingCircuits/[^/]+/manualRoomSetpoint$", "C", 0.5, write_grid=True
+    ),
     NumberWritePolicy(
         r"^/heatingCircuits/[^/]+/maxFlowTemp$",
         "C",
@@ -187,12 +203,14 @@ NUMBER_WRITE_POLICIES = (
         r"^/heatingCircuits/[^/]+/temperatureLevels/(?:comfort2|eco)$",
         "C",
         0.5,
+        write_grid=True,
     ),
     NumberWritePolicy(r"^/dhwCircuits/[^/]+/chargeDuration$", "mins", 15),
     NumberWritePolicy(
         r"^/dhwCircuits/[^/]+/(?:singleChargeSetpoint|temperatureLevels/(?:eco|high|low))$",
         "C",
         1.0,
+        write_grid=True,
     ),
     POOL_SETPOINT_POLICY,
 )
@@ -280,15 +298,25 @@ class WriteService:
         resource: Resource,
         value: str,
         policy: EnumWritePolicy,
+        *,
+        current: Resource | None = None,
     ) -> WriteResult:
-        """Write an allowlisted enum and return only a confirmed result."""
+        """Write an allowlisted enum and return only a confirmed result.
+
+        ``current`` is a reading of this resource that the caller has just
+        received from the gateway (C35); it replaces a reading of our own.
+        """
         request = WriteRequest(gateway_id, resource.path, value)
-        if rrc.is_control(resource.path):
+        live = current is not None and current.path == resource.path
+        if live and current is not None:
+            resource = current
+        elif rrc.is_control(resource.path):
             resource = await self._client.get_resource(gateway_id, resource.path)
         _validate_enum(resource, request, policy)
         if _values_equal(resource.value, value):
-            resource = await self._client.get_resource(gateway_id, resource.path)
-            _validate_enum(resource, request, policy)
+            if not live:
+                resource = await self._client.get_resource(gateway_id, resource.path)
+                _validate_enum(resource, request, policy)
             if _values_equal(resource.value, value):
                 return WriteResult(request, resource)
         return await self._async_write(request, resource)
@@ -299,15 +327,25 @@ class WriteService:
         resource: Resource,
         value: float,
         policy: NumberWritePolicy,
+        *,
+        current: Resource | None = None,
     ) -> WriteResult:
-        """Write a bounded finite number and return only a confirmed result."""
+        """Write a bounded finite number and return only a confirmed result.
+
+        ``current`` is a reading of this resource that the caller has just
+        received from the gateway (C35); it replaces a reading of our own.
+        """
         request = WriteRequest(gateway_id, resource.path, value)
-        if rrc.is_control(resource.path):
+        live = current is not None and current.path == resource.path
+        if live and current is not None:
+            resource = current
+        elif rrc.is_control(resource.path):
             resource = await self._client.get_resource(gateway_id, resource.path)
         _validate_number(resource, request, policy)
         if _values_equal(resource.value, value):
-            resource = await self._client.get_resource(gateway_id, resource.path)
-            _validate_number(resource, request, policy)
+            if not live:
+                resource = await self._client.get_resource(gateway_id, resource.path)
+                _validate_number(resource, request, policy)
             if _values_equal(resource.value, value):
                 return WriteResult(request, resource)
         return await self._async_write(request, resource)
@@ -342,6 +380,13 @@ class WriteService:
             except (RequestTimeout, ServiceUnavailable) as err:
                 last_temporary_error = err
                 continue
+            except PointTError as err:
+                # C32: the PUT was sent and may have taken effect. A failed
+                # read-back (429, sign-in, payload, path) leaves it unconfirmed;
+                # it is never reported as a refusal. The cause stays attached.
+                raise WriteNotConfirmed(
+                    "PointT read-back failed after the write was sent"
+                ) from err
             if (
                 confirmed.path == request.path
                 and confirmed.has_value
@@ -410,6 +455,14 @@ def _validate_number(
         replace(resource, value=request.value, has_value=True)
     ):
         raise WriteValidationError("Requested value is not a valid zone temperature")
+    if (
+        policy.write_grid
+        and resource.metadata.unit in _CELSIUS_UNITS
+        and isinstance(request.value, int | float)
+    ):
+        grid = request.value / policy.step
+        if not math.isclose(grid, round(grid), abs_tol=1e-7):
+            raise WriteValidationError("Requested value is outside the step size")
     step = _live_step(resource) if policy.live_step else None
     minimum = resource.metadata.minimum
     if (
@@ -473,6 +526,8 @@ def _number_rejection_reason(
         return "non_finite_bounds"
     if minimum > maximum:
         return "inverted_bounds"
+    if not _plausible_bounds(minimum, maximum, metadata.unit, policy.unit):
+        return "implausible_bounds"
     if policy.live_step and (
         not metadata.step_size_valid
         or (metadata.step_size is not None and _live_step(resource) is None)
@@ -483,6 +538,28 @@ def _number_rejection_reason(
     ):
         return "invalid_softener_bounds"
     return None
+
+
+def _plausible_bounds(
+    minimum: float, maximum: float, unit: str | None, policy_unit: str
+) -> bool:
+    """C34: whether both limits lie in a broad physical range for the unit."""
+    if policy_unit == "C":
+        native = TEMPERATURE_UNITS.get(unit or "")
+        offset, scale = {"°F": (32.0, 5 / 9), "K": (273.15, 1.0)}.get(
+            native or "", (0.0, 1.0)
+        )
+        low, high = PLAUSIBLE_TEMPERATURE_RANGE_C
+    elif policy_unit == "mins":
+        offset = 0.0
+        scale = {"s": 1 / 60, "h": 60.0}.get(DURATION_UNITS.get(unit or "", ""), 1.0)
+        low, high = PLAUSIBLE_DURATION_RANGE_MIN
+    else:
+        return True
+    tolerance = 1e-9
+    return (minimum - offset) * scale >= low - tolerance and (
+        maximum - offset
+    ) * scale <= high + tolerance
 
 
 def _live_step(resource: Resource) -> float | None:
@@ -499,7 +576,11 @@ def _live_step(resource: Resource) -> float | None:
 
 
 def _number_value_rejection_reason(resource: Resource, value: object) -> str | None:
-    """Validate a target against gateway bounds; UI steps are not API rules."""
+    """Validate a target against gateway bounds.
+
+    UI steps are not API rules; only ``write_grid`` policies enforce one, in
+    ``_validate_number``.
+    """
     if value is None:
         return "missing_value"
     if isinstance(value, bool) or not isinstance(value, int | float):

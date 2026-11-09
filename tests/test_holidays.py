@@ -549,3 +549,70 @@ def test_malformed_holiday_contract_cannot_be_treated_as_an_omitted_field(field,
         ),
     }
     assert parse_holiday_write_configuration(resources) is None
+
+
+@pytest.mark.parametrize(
+    ("start", "end", "all_day"),
+    [
+        # C39: the form written for an all-day calendar event.
+        ("2030-09-01T00:00:00", "2030-09-08T00:00:00", True),
+        ("2030-09-01T00:00:00", "2030-09-08T24:00:00", True),
+        ("2030-09-01T00:00:00", "2030-09-08T12:00:00", False),
+        ("2030-09-01T08:00:00", "2030-09-08T00:00:00", False),
+    ],
+)
+def test_midnight_to_midnight_periods_are_all_day(start, end, all_day) -> None:
+    zone = ZoneInfo("Europe/Berlin")
+    resource = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value=[{"id": 3, "startDate": start, "endDate": end}],
+        has_value=True,
+    )
+    (period,) = parse_holiday_state(
+        {HOLIDAY_LIST_PATH: resource}, fallback_timezone=zone
+    ).periods
+    assert period.all_day is all_day
+    assert period.start == datetime.fromisoformat(start).replace(tzinfo=zone)
+
+
+def test_all_day_calendar_holiday_reads_back_as_all_day() -> None:
+    from custom_components.bosch_buderus_heating.holiday_writes import (
+        create_holiday_values,
+    )
+    from custom_components.bosch_buderus_heating.holidays import (
+        HolidayWriteConfiguration,
+    )
+
+    configuration = HolidayWriteConfiguration(
+        date_time_mode="dateTime",
+        assigned_to=("hc1", "dhw1"),
+        heating_mode="FIX_TEMPERATURE",
+        dhw_mode="OFF",
+        ventilation_mode=None,
+        thermal_disinfection=None,
+        fix_temperature=17.0,
+        name_codec=HolidayNameCodec("BASE64", "UTF16", 49),
+        heating_modes=("FIX_TEMPERATURE", "OFF"),
+        dhw_modes=("OFF", "ECO"),
+        ventilation_modes=(),
+        thermal_disinfection_modes=(),
+        fix_temperature_min=5.0,
+        fix_temperature_max=30.0,
+    )
+    zone = ZoneInfo("Europe/Berlin")
+    created = create_holiday_values(
+        date(2030, 9, 1), date(2030, 9, 8), "Urlaub", configuration, zone
+    )
+    resource = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value=[{"id": 3, **created.as_payload()}],
+        has_value=True,
+    )
+    (period,) = parse_holiday_state(
+        {HOLIDAY_LIST_PATH: resource}, fallback_timezone=zone
+    ).periods
+    assert period.all_day
+    assert (period.start.date(), period.end.date()) == (
+        date(2030, 9, 1),
+        date(2030, 9, 8),
+    )

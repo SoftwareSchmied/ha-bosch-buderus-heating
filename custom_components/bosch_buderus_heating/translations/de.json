@@ -681,7 +681,7 @@
       "holiday_created": "Die Urlaubszeit wurde angelegt und durch Rücklesen bestätigt.",
       "holiday_previous_request_found": "Der zuvor ungeklärte Auftrag ist jetzt bestätigt. Deine neuen Eingaben wurden nicht gesendet. Prüfe zuerst die vorhandene Urlaubszeit unter Urlaubszeiten verwalten.",
       "holiday_already_exists": "Eine Urlaubszeit mit diesem Beginn und dieser Kreisauswahl ist bereits vorhanden. Es wurde keine weitere angelegt. Öffne Urlaubszeiten verwalten und bearbeite den vorhandenen Eintrag.",
-      "holiday_create_unconfirmed": "Das Anlegen konnte nicht bestätigt werden. Die Urlaubszeit kann bereits vorhanden sein. Prüfe Urlaubszeiten verwalten oder die Hersteller-App. Solange dieser Auftrag ungeklärt ist, prüft ein weiterer Versuch dessen Ergebnis, ohne eine zweite Urlaubszeit anzulegen.",
+      "holiday_create_unconfirmed": "Das Anlegen konnte nicht bestätigt werden. Die Urlaubszeit kann bereits vorhanden sein. Prüfe Urlaubszeiten verwalten oder die Hersteller-App. In den nächsten 10 Minuten prüft ein weiterer Versuch das Ergebnis dieses Auftrags, ohne eine zweite Urlaubszeit anzulegen.",
       "holiday_create_adjusted": "Die Heizungsanlage meldet eine neue Urlaubszeit zurück, deren Einstellungen von deiner Eingabe abweichen. Gewünschter Zeitraum: {requested}. Zurückgemeldeter Zeitraum: {actual}. Öffne Urlaubszeiten verwalten, um diesen Eintrag zu prüfen und zu bearbeiten.",
       "holiday_update_adjusted": "Die Heizungsanlage meldet Einstellungen zurück, die von deiner gewünschten Änderung abweichen. Gewünschter Zeitraum: {requested}. Zurückgemeldeter Zeitraum: {actual}. Öffne Urlaubszeiten verwalten, um den aktuellen Eintrag zu prüfen und zu bearbeiten.",
       "no_rrc_schedules": "Es ist kein aktuelles, unterstütztes RRC-Wochenprogramm verfügbar.",
@@ -933,7 +933,7 @@
       "message": "Eine Urlaubszeit mit diesem Beginn und dieser Kreisauswahl ist bereits vorhanden. Bearbeite diesen Eintrag unter Konfigurieren → Urlaubszeiten verwalten."
     },
     "holiday_create_unconfirmed": {
-      "message": "Das Anlegen konnte nicht bestätigt werden. Die Urlaubszeit kann bereits vorhanden sein. Prüfe Urlaubszeiten verwalten oder die Hersteller-App. Ein weiterer Versuch prüft den ungeklärten Auftrag, ohne eine zweite Urlaubszeit anzulegen."
+      "message": "Das Anlegen konnte nicht bestätigt werden. Die Urlaubszeit kann bereits vorhanden sein. Prüfe Urlaubszeiten verwalten oder die Hersteller-App. In den nächsten 10 Minuten prüft ein weiterer Versuch den ungeklärten Auftrag, ohne eine zweite Urlaubszeit anzulegen."
     },
     "holiday_update_unconfirmed": {
       "message": "Die Änderung konnte nicht vollständig bestätigt werden. Einzelne Einstellungen können bereits gespeichert sein. Prüfe die aktuelle Urlaubszeit unter Konfigurieren → Urlaubszeiten verwalten."
@@ -954,7 +954,7 @@
       "message": "Diese Einstellung kann derzeit nicht sicher geändert werden. Aktualisiere oder konfiguriere die Integration neu und versuche es erneut."
     },
     "write_not_confirmed": {
-      "message": "Die Heizungsanlage hat die neue Betriebsart nicht bestätigt. Der zuvor angezeigte Zustand bleibt erhalten."
+      "message": "Die Änderung wurde gesendet, aber von der Heizungsanlage nicht bestätigt. Sie kann bereits übernommen sein. Der Wert wird beim nächsten Lesen aktualisiert."
     },
     "write_authentication_failed": {
       "message": "Die Cloud-Anmeldung ist nicht mehr gültig. Authentifiziere Bosch/Buderus Home Comfort erneut und versuche es danach noch einmal."
@@ -963,7 +963,10 @@
       "message": "Die PointT-Cloud begrenzt derzeit die Anfragen. Warte, bevor du die Änderung erneut versuchst."
     },
     "write_failed": {
-      "message": "Die Betriebsart konnte nicht geändert werden. Es wird kein Erfolg gemeldet, weil die Heizungsanlage den Wert nicht bestätigt hat."
+      "message": "Die Änderung konnte nicht abgeschlossen werden und wurde von der Heizungsanlage nicht bestätigt. Der angezeigte Wert wird beim nächsten Lesen aktualisiert."
+    },
+    "write_busy": {
+      "message": "Die Heizungsanlage wird gerade abgefragt oder eine andere Änderung läuft noch. Es wurde nichts gesendet. Versuche es gleich noch einmal."
     },
     "holiday_end_not_after_start": {
       "message": "Das Ende muss nach dem Beginn liegen. Bitte wähle ein späteres Ende."

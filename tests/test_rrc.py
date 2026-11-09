@@ -405,7 +405,8 @@ async def test_app_change_before_write_is_not_overwritten(environment, changed_p
     with pytest.raises(WriteValidationError):
         await coordinator.async_edit_rrc_program(RESOURCES[WEEK], 1, 430, 22)
     client.put_resource_value.assert_not_awaited()
-    assert not coordinator.data[WEEK].available
+    # C33: a refused preflight sends nothing; the next poll reads the change.
+    assert coordinator.data[WEEK].available
 
 
 async def test_numeric_program_selection_uses_current_list_and_never_guesses(

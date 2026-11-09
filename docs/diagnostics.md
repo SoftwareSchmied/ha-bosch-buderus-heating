@@ -491,6 +491,7 @@ never include the current setpoint.
 | `missing_bounds` | A numeric minimum or maximum is absent. |
 | `non_finite_bounds` | A bound is NaN or infinite. |
 | `inverted_bounds` | The minimum exceeds the maximum. |
+| `implausible_bounds` | A bound lies outside −30 to 100 °C or 0 to 2,880 minutes, after unit conversion. |
 
 State issues such as `missing_value`, `invalid_value_type`,
 `current_option_not_advertised`, `non_finite_value`, or `value_out_of_bounds`

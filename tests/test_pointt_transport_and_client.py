@@ -20,6 +20,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     RetryPolicy,
     ServiceUnavailable,
     UnexpectedHttpStatus,
+    WriteNotConfirmed,
 )
 from custom_components.bosch_buderus_heating.pointt.const import (
     DEFAULT_USER_AGENT,
@@ -1036,8 +1037,10 @@ async def test_another_circuit_cannot_confirm_a_write_over_http():
     )
     async with serve(routes) as url, aiohttp.ClientSession() as session:
         client = PointTClient(session, "token", base_url=url)
-        with pytest.raises(InvalidPayload):
+        # C32: after a sent PUT, a failed read-back means "not confirmed".
+        with pytest.raises(WriteNotConfirmed) as error:
             await WriteService(client, sleep=AsyncMock()).async_write_enum(
                 "gateway", resource, "auto", HEATING_CIRCUIT_OPERATION_MODE_POLICY
             )
+    assert isinstance(error.value.__cause__, InvalidPayload)
     assert calls == ["PUT", "GET"]

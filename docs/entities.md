@@ -467,16 +467,23 @@ reported.
 | Time program A | Diagnostic enum sensor | `/dhwCircuits/{dhw}/switchPrograms/A` | Yes | No | 15/30 min; scheduled level recalculated locally each minute |
 
 Number controls use the minimum and maximum reported by the gateway. They are
-created only when both limits are complete and fall within additional safe
-temperature or duration ranges. Heating-circuit setpoints use the 0.5 °C step
+created only when both limits are complete and lie within a broad plausibility
+range: −30 to 100 °C (converted for °F and K) for temperatures and 0 to 2,880
+minutes for durations. The range only rejects corrupt metadata, such as a
+placeholder maximum of 6,553.5 °C; it prescribes no reference-device limits.
+Heating-circuit setpoints use the 0.5 °C step
 confirmed on the reference system. PointT reports no step for hot-water
 temperatures; a physical test with 0.5 °C was not confirmed initially and later
 appeared rounded to the next whole degree. All hot-water temperature controls
-therefore use a 1 °C step.
+therefore use a 1 °C step. Because the gateway rounds these Celsius setpoints,
+a value off this grid (for example 52.5 °C for hot water or 20.3 °C for a
+heating circuit) is rejected before anything is sent. A thermostat command in
+°F is set to the nearest grid value. Other controls keep accepting every value
+within the gateway's limits.
 
 The maximum-supply-temperature control adopts the minimum and maximum reported
 by each individual gateway instead of assuming the 30–60 °C range observed on
-the reference system. A broad 0–100 °C plausibility envelope only rejects
+the reference system. The broad plausibility range above only rejects
 obviously corrupt metadata. The control uses whole-degree steps and is disabled
 by default because it is an installer-level limit rather than an everyday
 setpoint.
@@ -750,7 +757,7 @@ Three optional resources are released as controls after their live contracts
 were confirmed on the K40 reference system. Silent Mode requires the complete
 `off`, `auto`, `on` value set. Auxiliary-heater operation mode requires
 `off`, `manual`, `auto`. Maximum supply temperature requires complete numeric
-PointT limits within a broad 0–100 °C plausibility envelope. Matching read-only sensors remain available as disabled
+PointT limits within the broad plausibility range of number controls. Matching read-only sensors remain available as disabled
 diagnostic entities; the maximum-supply-temperature number is also disabled by
 default because it changes an installer-level limit.
 

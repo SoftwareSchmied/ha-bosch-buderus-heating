@@ -22,7 +22,7 @@ from .pointt import (
     WriteNotConfirmed,
     WriteValidationError,
 )
-from .writes import EnumWritePolicy, NumberWritePolicy
+from .writes import EnumWritePolicy, NumberWritePolicy, WriteBusy
 
 
 class HeldCapabilities(Entity):
@@ -171,6 +171,10 @@ async def async_set_control(
     except WriteNotConfirmed as err:
         raise HomeAssistantError(
             translation_domain=DOMAIN, translation_key="write_not_confirmed"
+        ) from err
+    except WriteBusy as err:
+        raise HomeAssistantError(
+            translation_domain=DOMAIN, translation_key="write_busy"
         ) from err
     except AuthenticationError as err:
         raise HomeAssistantError(

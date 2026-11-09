@@ -50,6 +50,7 @@ from .holidays import (
 )
 from .platform_scope import DiscoveryLifecycle, PlatformScope, setup_platform
 from .pointt import PointTError, Resource, WriteNotConfirmed
+from .writes import WriteBusy
 
 
 async def async_setup_entry(
@@ -191,6 +192,8 @@ class BoschBuderusHolidayCalendar(
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key=err.translation_key
             ) from err
+        except WriteBusy as err:
+            raise _busy() from err
         except (KeyError, PointTError, TypeError, ValueError) as err:
             raise HomeAssistantError(
                 "The holiday could not be created or confirmed"
@@ -242,6 +245,8 @@ class BoschBuderusHolidayCalendar(
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key=err.translation_key
             ) from err
+        except WriteBusy as err:
+            raise _busy() from err
         except (KeyError, PointTError, TypeError, ValueError) as err:
             raise HomeAssistantError(
                 "The holiday could not be changed or confirmed"
@@ -272,12 +277,14 @@ class BoschBuderusHolidayCalendar(
         if holiday_id is None:
             raise HomeAssistantError("This holiday has no writable PointT ID")
         try:
-            if period is not None and period.source_path != "/holidayMode":
-                await self.coordinator.async_delete_holiday(
-                    holiday_id, expected=period.write_values
-                )
-            else:
-                await self.coordinator.async_delete_holiday(holiday_id)
+            # C40: like the options dialog, delete only the holiday this
+            # event showed; the gateway's current entry is compared first.
+            await self.coordinator.async_delete_holiday(
+                holiday_id,
+                expected=period.write_values if period is not None else None,
+            )
+        except WriteBusy as err:
+            raise _busy() from err
         except PointTError as err:
             raise HomeAssistantError(
                 "The holiday could not be deleted or confirmed"
@@ -357,7 +364,11 @@ class BoschBuderusHolidayCalendar(
         if (holiday_id := holiday_period_id(period)) is not None:
             if period.source_path != "/holidayMode":
                 return f"icom-hm{holiday_id}"
-            return f"pointt-{holiday_id}"
+            # C40: the numeric ID may be reused for another holiday. A short
+            # digest of the timespan keeps an outdated UID from matching it.
+            timespan = f"{period.start.isoformat()}|{period.end.isoformat()}"
+            digest = hashlib.sha256(timespan.encode()).hexdigest()[:8]
+            return f"pointt-{holiday_id}-{digest}"
         fingerprint = "|".join(
             (
                 period.start.isoformat(),
@@ -367,6 +378,10 @@ class BoschBuderusHolidayCalendar(
             )
         )
         return f"read-only-{hashlib.sha256(fingerprint.encode()).hexdigest()[:24]}"
+
+
+def _busy() -> HomeAssistantError:
+    return HomeAssistantError(translation_domain=DOMAIN, translation_key="write_busy")
 
 
 def _as_utc(value: datetime) -> datetime:
