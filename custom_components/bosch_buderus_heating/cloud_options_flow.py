@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any, ClassVar, cast, override
 
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .bacon import flow as bacon_flow
 from .bacon.models import BaconError
+from .cloud_auth_flow import CloudAuthorizationFlow
 from .cloud_configuration import (
     CLAIM_ABORTS,
     CloudDiscovery,
@@ -36,9 +37,6 @@ from .pointt import (
     AuthTokens,
     Brand,
     Gateway,
-    OAuthClient,
-    OAuthFlow,
-    OAuthRedirectError,
     PointTClient,
     PointTError,
     RateLimited,
@@ -58,11 +56,12 @@ LOCAL_FIRST_ERRORS = frozenset(
 )
 
 
-class CloudOptionsFlow(ConnectionOptionsFlow):
+class CloudOptionsFlow(CloudAuthorizationFlow, ConnectionOptionsFlow):
     """Use one bounded sign-in flow and retain the entry throughout it."""
 
+    _AUTH_STEP_ID: ClassVar[str] = "cloud_auth"
+    _AUTH_MISSING_REASON: ClassVar[str] = "configuration_changed"
     _cloud_brand: Brand | None = None
-    _cloud_oauth: OAuthFlow | None = None
     _cloud_tokens: AuthTokens | None = None
     _cloud_before: ConfigurationSnapshot | None = None
     _cloud_discovery: CloudDiscovery | None = None
@@ -96,22 +95,7 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
             )
         self._cloud_brand = Brand(user_input["brand"])
         self._cloud_backoff = RateLimitBackoff()
-        return self._cloud_auth_form()
-
-    def _cloud_auth_form(self, error: str | None = None) -> ConfigFlowResult:
-        from .config_flow import REDIRECT_SCHEMA
-
-        assert self._cloud_brand is not None
-        if self._cloud_oauth is None or error is not None:
-            self._cloud_oauth = OAuthFlow.create(self._cloud_brand)
-        return self.async_show_form(
-            step_id="cloud_auth",
-            data_schema=REDIRECT_SCHEMA,
-            description_placeholders={
-                "authorization_url": self._cloud_oauth.authorization_url
-            },
-            errors={"base": error} if error else {},
-        )
+        return self._start_authorization()
 
     def _claim_abort(self, error: ConfigurationError) -> ConfigFlowResult:
         return self.async_abort(
@@ -126,42 +110,49 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
     async def async_step_cloud_auth(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        if taken_over := self._cloud_taken_over():
-            return taken_over
-        if (
-            self._cloud_oauth is None
-            or self._cloud_brand is None
-            or self._cloud_backoff is None
-        ):
-            return self.async_abort(reason="configuration_changed")
+        """The shared sign-in step under the name of this dialog."""
+        return await self.async_step_auth(user_input)
+
+    @override
+    def _auth_brand(self) -> Brand | None:
+        return self._cloud_brand
+
+    @override
+    async def _auth_blocked(
+        self, user_input: dict[str, Any] | None
+    ) -> ConfigFlowResult | None:
+        if self._cloud_backoff is None:
+            return self.async_abort(reason=self._AUTH_MISSING_REASON)
         if user_input is None:
-            return self._cloud_auth_form()
+            return None
         try:
             check_new_cloud(self.hass, self.flow_id)
             self._cloud_backoff.raise_if_active()
-            grant = self._cloud_oauth.consume_redirect(user_input["redirect_url"])
-            self._cloud_tokens = await OAuthClient(
-                async_get_clientsession(self.hass)
-            ).exchange_code(self._cloud_brand, grant)
-            if not self._cloud_tokens.refresh_token:
-                return self._cloud_auth_form("invalid_auth")
         except ConfigurationError as error:
             return self._claim_abort(error)
-        except OAuthRedirectError, ValueError:
-            return self._cloud_auth_form("invalid_redirect")
-        except AuthenticationError:
-            return self._cloud_auth_form("invalid_auth")
-        except RateLimited as error:
-            self._cloud_backoff.activate(error.retry_after or 300)
-            self._cloud_oauth = None
+        except RateLimited:
             return self.async_show_form(
                 step_id="cloud_retry", errors={"base": "cloud_rate_limited"}
             )
-        except PointTError:
-            self._cloud_oauth = None
+        return None
+
+    @override
+    def _auth_service_failed(self, error: PointTError) -> ConfigFlowResult:
+        assert self._cloud_backoff is not None
+        # The code is spent: the retry step issues a new link.
+        self._oauth_flow = None
+        if isinstance(error, RateLimited):
+            self._cloud_backoff.activate(error.retry_after or 300)
             return self.async_show_form(
-                step_id="cloud_retry", errors={"base": "cannot_connect"}
+                step_id="cloud_retry", errors={"base": "cloud_rate_limited"}
             )
+        return self.async_show_form(
+            step_id="cloud_retry", errors={"base": "cannot_connect"}
+        )
+
+    @override
+    async def _auth_succeeded(self, tokens: AuthTokens) -> ConfigFlowResult:
+        self._cloud_tokens = tokens
         return await self._discover_new_cloud()
 
     async def async_step_cloud_retry(
@@ -178,7 +169,7 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
                 step_id="cloud_retry", errors={"base": "cloud_rate_limited"}
             )
         if self._cloud_tokens is None:
-            return self._cloud_auth_form()
+            return self._show_or_start_authorization()
         return await self._discover_new_cloud()
 
     async def _discover_new_cloud(self) -> ConfigFlowResult:
@@ -196,11 +187,11 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
             return self._claim_abort(error)
         except AuthenticationError:
             self._cloud_tokens = None
-            return self._cloud_auth_form("invalid_auth")
+            return self._restart_authorization(error="invalid_auth")
         except BaconError as error:
             if error.category in {"authentication", "account_changed"}:
                 self._cloud_tokens = None
-                return self._cloud_auth_form("invalid_auth")
+                return self._restart_authorization(error="invalid_auth")
             if error.category == "rate_limited":
                 self._cloud_backoff.activate(error.retry_after)
             return self.async_show_form(
@@ -293,7 +284,7 @@ class CloudOptionsFlow(ConnectionOptionsFlow):
                 errors = {"base": "invalid_auth"}
             except AuthenticationError:
                 self._cloud_tokens = None
-                return self._cloud_auth_form("invalid_auth")
+                return self._restart_authorization(error="invalid_auth")
             except RateLimited:
                 errors = {"base": "cloud_rate_limited"}
             except PointTError:

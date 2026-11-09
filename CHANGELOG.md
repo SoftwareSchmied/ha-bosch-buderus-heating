@@ -84,6 +84,12 @@ Versioning after its first tagged preview.
   dialog ends with a note at its next step and saves nothing. A dialog left
   idle for more than 15 minutes counts as closed. Saving still checks that
   only one cloud setup registers.
+- **Adding the cloud access later:** in the options dialog "Add cloud
+  access", a mistyped redirect address no longer voids a sign-in that was
+  already completed in the browser; the same link stays usable. An expired or
+  already used sign-in attempt now says so and shows a new link. The step now
+  shows the same step-by-step guide as the setup, because both dialogs share
+  one sign-in step.
 - **Deleting a holiday by keyboard:** pressing Enter on "Delete holiday period
   completely" saved the holiday instead of opening the deletion confirmation.
   Enter and Space now open the confirmation. Saving a holiday without any

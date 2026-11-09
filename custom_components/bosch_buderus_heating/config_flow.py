@@ -11,7 +11,6 @@ from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime
 from time import monotonic
 from typing import Any, cast, override
-from urllib.parse import urlparse
 
 from homeassistant.components import persistent_notification
 from homeassistant.config_entries import (
@@ -37,14 +36,13 @@ from homeassistant.helpers.selector import (
     SelectSelectorConfig,
     SelectSelectorMode,
     TextSelector,
-    TextSelectorConfig,
-    TextSelectorType,
 )
 from homeassistant.util import dt as dt_util
 
 from .auth_lifecycle import entry_auth
 from .bacon import flow as bacon_flow
 from .bacon.models import CONF_BACON_ACCOUNT, CONF_BACON_IDS, BaconError
+from .cloud_auth_flow import CloudAuthorizationFlow
 from .cloud_configuration import (
     CLAIM_ABORTS,
     CloudDiscovery,
@@ -66,7 +64,6 @@ from .const import (
     CONF_FAULT_NOTIFICATIONS,
     CONF_GATEWAY_IDS,
     CONF_POLLING_PROFILE,
-    CONF_REDIRECT_URL,
     DEFAULT_POLLING_PROFILE,
     DOMAIN,
     RATE_LIMIT_ISSUE_PREFIX,
@@ -118,15 +115,10 @@ from .notifications import (
 )
 from .pointt import (
     AuthenticationError,
-    AuthorizationCodeConsumed,
     AuthTokens,
     Brand,
     Gateway,
     OAuthClient,
-    OAuthFlow,
-    OAuthFlowExpired,
-    OAuthRedirectError,
-    OAuthStateMismatch,
     PointTClient,
     PointTError,
     RateLimited,
@@ -164,20 +156,13 @@ BRAND_SCHEMA = vol.Schema(
 
 _LOGGER = logging.getLogger(__name__)
 
-REDIRECT_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_REDIRECT_URL): TextSelector(
-            TextSelectorConfig(type=TextSelectorType.PASSWORD)
-        )
-    }
-)
-
-
 # P49b step 7: the marker that opens an options flow at the local setup.
 LOCAL_FIRST_START = "local_first_start"
 
 
-class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
+class BoschBuderusConfigFlow(
+    LocalSetupFlow, CloudAuthorizationFlow, ConfigFlow, domain=DOMAIN
+):
     """Configure a PointT account and its gateways."""
 
     VERSION = 4
@@ -185,7 +170,6 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
 
     _new_cloud_listing: CloudDiscovery | None = None
     _brand: Brand | None = None
-    _oauth_flow: OAuthFlow | None = None
     _tokens: AuthTokens | None = None
     _gateways: tuple[Gateway, ...] = ()
     _bacon_ids: tuple[str, ...] = ()
@@ -385,46 +369,33 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
             return await self._async_prepare_reconfigure()
         return self.async_show_form(step_id="reconfigure_retry")
 
-    async def async_step_auth(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Accept and exchange the application redirect URL."""
-        if not renew_cloud_claim(cast(dict[str, Any], self.context)):
-            return self.async_abort(reason="cloud_setup_taken_over")
+    @override
+    def _auth_brand(self) -> Brand | None:
+        return self._brand
+
+    @override
+    async def _auth_blocked(
+        self, user_input: dict[str, Any] | None
+    ) -> ConfigFlowResult | None:
         if self._auth_retry_at > monotonic():
             return self._show_auth_wait()
-        if user_input is None:
-            return self._show_auth_form()
-        if self._brand is None or self._oauth_flow is None:
-            return self.async_abort(reason="invalid_flow")
+        return None
 
-        try:
-            grant = self._oauth_flow.consume_redirect(user_input[CONF_REDIRECT_URL])
-        except OAuthFlowExpired:
-            return self._restart_authorization(error="auth_expired")
-        except AuthorizationCodeConsumed:
-            return self._restart_authorization(error="auth_restart")
-        except OAuthRedirectError, OAuthStateMismatch:
-            return self._show_auth_form(error="invalid_redirect")
-
-        session = async_get_clientsession(self.hass)
-        try:
-            self._tokens = await OAuthClient(session).exchange_code(self._brand, grant)
-        except AuthenticationError, ValueError:
-            return self._restart_authorization(error="invalid_auth")
-        except RateLimited as err:
-            delay = err.retry_after
+    @override
+    def _auth_service_failed(self, error: PointTError) -> ConfigFlowResult:
+        if isinstance(error, RateLimited):
+            delay = error.retry_after
             if delay is None or not math.isfinite(delay):
                 delay = 300.0
             self._auth_retry_at = monotonic() + max(60.0, delay)
             return self._show_auth_wait()
-        except RequestTimeout, ServiceUnavailable:
+        if isinstance(error, RequestTimeout | ServiceUnavailable):
             return self._restart_authorization(error="cannot_connect")
-        except PointTError:
-            return self._restart_authorization(error="unknown")
+        return self._restart_authorization(error="unknown")
 
-        if not self._tokens.refresh_token:
-            return self._restart_authorization(error="invalid_auth")
+    @override
+    async def _auth_succeeded(self, tokens: AuthTokens) -> ConfigFlowResult:
+        self._tokens = tokens
         return await self._async_discover_gateways()
 
     async def async_step_auth_wait(
@@ -931,34 +902,6 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
             # waiting for setup/reauthentication do not have a live listener.
             self.hass.config_entries.async_schedule_reload(entry.entry_id)
         return result
-
-    def _start_authorization(self) -> ConfigFlowResult:
-        if self._brand is None:
-            return self.async_abort(reason="invalid_flow")
-        self._oauth_flow = OAuthFlow.create(self._brand)
-        return self._show_auth_form()
-
-    def _restart_authorization(self, *, error: str) -> ConfigFlowResult:
-        if self._brand is None:
-            return self.async_abort(reason="invalid_flow")
-        self._oauth_flow = OAuthFlow.create(self._brand)
-        return self._show_auth_form(error=error)
-
-    def _show_auth_form(self, *, error: str | None = None) -> ConfigFlowResult:
-        if self._oauth_flow is None:
-            return self.async_abort(reason="invalid_flow")
-        if self._oauth_flow.is_expired():
-            return self._restart_authorization(error="auth_expired")
-        errors = {"base": error} if error else None
-        return self.async_show_form(
-            step_id="auth",
-            data_schema=REDIRECT_SCHEMA,
-            description_placeholders={
-                "authorization_url": self._oauth_flow.authorization_url,
-                "redirect_scheme": urlparse(self._oauth_flow.brand.redirect_uri).scheme,
-            },
-            errors=errors,
-        )
 
     def _show_auth_wait(self) -> ConfigFlowResult:
         """Display the remaining wait without starting another cloud request."""

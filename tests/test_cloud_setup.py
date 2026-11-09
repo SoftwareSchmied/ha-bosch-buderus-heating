@@ -4,6 +4,7 @@ from contextlib import ExitStack
 from copy import deepcopy
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
+from urllib.parse import urlparse
 
 import pytest
 from homeassistant.config_entries import SOURCE_USER, ConfigEntryDisabler
@@ -941,3 +942,117 @@ async def test_changed_access_stops_discovery_before_second_backend(
     )
     assert result["reason"] == "configuration_changed"
     backend.devices.assert_not_awaited()
+
+
+def _link(result):
+    return result["description_placeholders"]["authorization_url"]
+
+
+async def test_options_sign_in_keeps_its_link_after_a_paste_mistake(hass, backend):
+    """FLOW-2: a mistyped address must not void the completed browser sign-in."""
+    entry = empty_entry(hass)
+    first = await connect_dialog(hass, entry, authenticate=False)
+    assert first["description_placeholders"]["redirect_scheme"] == (
+        urlparse(Brand.BUDERUS.redirect_uri).scheme
+    )
+    good = _redirect_from_result(first, Brand.BUDERUS)
+    manager = hass.config_entries.options
+    for wrong in (
+        "x",
+        "http://[broken",
+        f"{Brand.BUDERUS.redirect_uri}?code=one-time-code&state=other-attempt",
+    ):
+        result = await manager.async_configure(
+            first["flow_id"], {"redirect_url": wrong}
+        )
+        assert result["step_id"] == "cloud_auth"
+        assert result["errors"] == {"base": "invalid_redirect"}
+        assert _link(result) == _link(first)
+    backend.oauth.assert_not_awaited()
+    result = await manager.async_configure(first["flow_id"], {"redirect_url": good})
+    assert result["step_id"] == "cloud_select"
+    backend.oauth.assert_awaited_once()
+
+
+@pytest.mark.parametrize("submit", [False, True])
+async def test_options_sign_in_reports_an_expired_attempt(hass, backend, submit):
+    entry = empty_entry(hass)
+    first = await connect_dialog(hass, entry, authenticate=False)
+    good = _redirect_from_result(first, Brand.BUDERUS)
+    manager = hass.config_entries.options
+    with patch(ROOT + ".pointt.auth.monotonic", return_value=10**12):
+        result = await manager.async_configure(
+            first["flow_id"], {"redirect_url": good} if submit else None
+        )
+        assert result["step_id"] == "cloud_auth"
+        assert result["errors"] == {"base": "auth_expired"}
+        assert _link(result) != _link(first)
+        backend.oauth.assert_not_awaited()
+        result = await manager.async_configure(
+            result["flow_id"],
+            {"redirect_url": _redirect_from_result(result, Brand.BUDERUS)},
+        )
+    assert result["step_id"] == "cloud_select"
+
+
+async def test_options_sign_in_restarts_a_consumed_attempt(hass, backend):
+    entry = empty_entry(hass)
+    first = await connect_dialog(hass, entry, authenticate=False)
+    good = _redirect_from_result(first, Brand.BUDERUS)
+    flow = hass.config_entries.options._progress[first["flow_id"]]
+    flow._oauth_flow.consume_redirect(good)
+    result = await hass.config_entries.options.async_configure(
+        first["flow_id"], {"redirect_url": good}
+    )
+    assert result["errors"] == {"base": "auth_restart"}
+    assert _link(result) != _link(first)
+    backend.oauth.assert_not_awaited()
+
+
+@pytest.mark.parametrize("error", [ValueError("bad"), ServiceUnavailable()])
+async def test_options_sign_in_failed_exchange_issues_a_new_link(hass, backend, error):
+    entry = empty_entry(hass)
+    first = await connect_dialog(hass, entry, authenticate=False)
+    backend.oauth.side_effect = error
+    result = await hass.config_entries.options.async_configure(
+        first["flow_id"], {"redirect_url": _redirect_from_result(first, Brand.BUDERUS)}
+    )
+    if isinstance(error, ServiceUnavailable):
+        assert result["step_id"] == "cloud_retry"
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {}
+        )
+    else:
+        assert result["errors"] == {"base": "invalid_auth"}
+    assert result["step_id"] == "cloud_auth"
+    assert _link(result) != _link(first)
+
+
+def test_both_sign_in_steps_share_the_guide():
+    import json
+    from pathlib import Path
+
+    from custom_components.bosch_buderus_heating.cloud_options_flow import (
+        CloudOptionsFlow,
+    )
+    from custom_components.bosch_buderus_heating.config_flow import (
+        BoschBuderusOptionsFlow,
+    )
+
+    assert BoschBuderusConfigFlow._show_auth_form is CloudOptionsFlow._show_auth_form
+    assert BoschBuderusOptionsFlow.async_step_auth is (
+        BoschBuderusConfigFlow.async_step_auth
+    )
+    folder = Path(__file__).parents[1] / "custom_components/bosch_buderus_heating"
+    for name in ("strings.json", "translations/en.json", "translations/de.json"):
+        strings = json.loads((folder / name).read_text(encoding="utf-8"))
+        assert (
+            strings["options"]["step"]["cloud_auth"]
+            == (strings["config"]["step"]["auth"])
+        )
+        assert (
+            "{redirect_scheme}"
+            in strings["options"]["step"]["cloud_auth"]["description"]
+        )
+        for key in ("auth_expired", "auth_restart", "invalid_redirect"):
+            assert strings["options"]["error"][key] == strings["config"]["error"][key]

@@ -463,10 +463,10 @@
         }
       },
       "cloud_auth": {
-        "title": "Bei SingleKey ID anmelden",
-        "description": "[Anmeldung öffnen]({authorization_url}). Kopiere nach der Anmeldung die vollständige abschließende Weiterleitungsadresse in dieses Feld.",
+        "title": "Mit SingleKey ID anmelden",
+        "description": "SingleKey ID ist dieselbe Anmeldung, die auch deine Bosch- beziehungsweise Buderus-App verwendet. Nutze dieselbe E-Mail-Adresse oder Mobilnummer und dasselbe Passwort. Du benötigst kein neues Konto; dein Passwort wird **nicht** in Home Assistant eingegeben.\n\n1. Lasse diesen Dialog geöffnet und öffne [SingleKey ID]({authorization_url}) in einem neuen Chrome-Tab. Verwende immer diesen neu erzeugten Link.\n2. Drücke dort `F12` und öffne in den Entwicklertools **Console** beziehungsweise **Konsole**.\n3. Melde dich mit den SingleKey-ID-Zugangsdaten deiner Heizungs-App an.\n4. Nach der Anmeldung kann die Meldung „Haben Sie Netzwerkprobleme?“ erscheinen. Das bedeutet hier normalerweise nur, dass Chrome die `{redirect_scheme}://`-App-Adresse nicht öffnen konnte.\n5. Suche in der Konsole die rote Meldung **Failed to launch** beziehungsweise **Connecting to**. Klicke mit der rechten Maustaste auf die darin blau dargestellte `{redirect_scheme}://`-Adresse und wähle **Linkadresse kopieren** beziehungsweise **Copy link address**.\n6. Kehre zu diesem Dialog zurück, füge die vollständige Adresse unten ein und wähle **OK**. Das Eingabefeld zeigt aus Sicherheitsgründen möglicherweise nur Punkte an.\n\nVerwende die Adresse aus genau diesem Anmeldeversuch und kopiere nicht nur den Parameter `code`. Die vollständige Adresse enthält einen kurzlebigen Einmalcode und darf niemals in einem Issue, Chat, Screenshot oder Protokoll veröffentlicht werden.",
         "data": {
-          "redirect_url": "Weiterleitungsadresse"
+          "redirect_url": "Vollständige Weiterleitungsadresse"
         }
       },
       "cloud_retry": {
@@ -667,7 +667,9 @@
       "cloud_local_first_local_busy": "Der lokale Zugang dieser Anlage ist gerade mit seinen regelmäßigen Abfragen beschäftigt. Es wurde nichts gespeichert. Warte einen Moment und versuche es erneut.",
       "cloud_rate_limited_until": "Die Cloud verlangt eine Abfragepause bis {until}. Es wurde nichts gespeichert. Bitte versuche es danach erneut.",
       "cloud_local_first_conflict": "Die Cloud und der lokale Zugang beschreiben nicht dieselbe Anlage. Es wurde nichts gespeichert. Wähle diese Anlage ab, um sie weiter nur über ihren lokalen Zugang zu nutzen.",
-      "local_plant_known": "Dieses Gateway gehört bereits zu einer eingerichteten Anlage. Wähle diese Anlage statt einer neuen."
+      "local_plant_known": "Dieses Gateway gehört bereits zu einer eingerichteten Anlage. Wähle diese Anlage statt einer neuen.",
+      "auth_expired": "Dieser Anmeldeversuch ist abgelaufen. Öffne den oben neu angezeigten SingleKey-ID-Link und melde dich erneut an.",
+      "auth_restart": "Dieser Anmeldeversuch kann nicht mehr verwendet werden. Öffne den oben neu angezeigten SingleKey-ID-Link und melde dich erneut an."
     },
     "abort": {
       "no_notification_gateways": "Es ist keine Anlage konfiguriert.",

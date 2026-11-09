@@ -463,10 +463,10 @@
         }
       },
       "cloud_auth": {
-        "title": "Sign in to SingleKey ID",
-        "description": "[Open sign-in]({authorization_url}). After signing in, copy the complete final redirect address into this field.",
+        "title": "Sign in with SingleKey ID",
+        "description": "SingleKey ID is the same sign-in used by your Bosch or Buderus app. Use the same email address or mobile number and password. You do not need a new account, and you do **not** enter your password in Home Assistant.\n\n1. Keep this dialog open and open [SingleKey ID]({authorization_url}) in a new Chrome tab. Always use this newly generated link.\n2. Press `F12` there and open **Console** in the developer tools.\n3. Sign in with the SingleKey ID credentials used by your heating app.\n4. A network-problem message may appear after sign-in. In this case it normally only means that Chrome could not open the `{redirect_scheme}://` app address.\n5. Find the red **Failed to launch** or **Connecting to** message in the console. Right-click the blue `{redirect_scheme}://` address in that message and choose **Copy link address**.\n6. Return to this dialog, paste the complete address below, and select **OK**. The field may display dots for security.\n\nUse the address from this exact sign-in attempt and do not copy only the `code` parameter. The complete address contains a short-lived one-time code. Never share it in an issue, chat, screenshot, or log.",
         "data": {
-          "redirect_url": "Redirect address"
+          "redirect_url": "Complete redirect address"
         }
       },
       "cloud_retry": {
@@ -667,7 +667,9 @@
       "cloud_local_first_local_busy": "The local access of this system is busy with its regular readings. Nothing was saved. Wait a moment and try again.",
       "cloud_rate_limited_until": "The cloud has requested a pause until {until}. Nothing was saved. Please try again after that.",
       "cloud_local_first_conflict": "The cloud and the local access do not describe the same system. Nothing was saved. Deselect this system to keep using it through its local access only.",
-      "local_plant_known": "This gateway already belongs to a configured system. Choose that system instead of a new one."
+      "local_plant_known": "This gateway already belongs to a configured system. Choose that system instead of a new one.",
+      "auth_expired": "This sign-in attempt has expired. Open the new SingleKey ID link shown above and sign in again.",
+      "auth_restart": "This sign-in attempt can no longer be used. Open the new SingleKey ID link shown above and sign in again."
     },
     "abort": {
       "no_notification_gateways": "No heating system is configured.",
