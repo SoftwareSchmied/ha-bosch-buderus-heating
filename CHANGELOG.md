@@ -8,10 +8,8 @@ Versioning after its first tagged preview.
 ## [0.9.0-alpha.3] - 2026-11-09
 
 > [!IMPORTANT]
-> **This is an alpha pre-release for testing. 0.8.3 remains the latest stable
-> release.** HACS offers it only when pre-releases are shown for this
-> repository. Make a full Home Assistant backup before installing it. Updating
-> from alpha.1 or alpha.2 needs no new setup; coming from 0.8.x, the notes of
+> **Alpha pre-release for testing.** Make a full Home Assistant backup first.
+> From alpha.1 or alpha.2 no new setup is needed; from 0.8.x, the notes of
 > alpha.1 below apply as well.
 
 ### What changed since alpha.2

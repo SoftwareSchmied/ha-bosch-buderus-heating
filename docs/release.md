@@ -4,6 +4,43 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.0-alpha.3 verification
+
+I am publishing **0.9.0-alpha.3 as a pre-release** for testing from the commit
+tagged `v0.9.0-alpha.3`. Updating from alpha.1 or alpha.2 needs no new
+setup; the storage format stays 4.
+
+Automated checks on the release state (2026-11-09, run locally):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite, minimum version | Home Assistant 2026.5.4, local | 7952 passed, 2 skipped (version-dependent); coverage 95.60 % |
+| Full suite | Home Assistant 2026.9.2 | GitHub compatibility check only |
+| Full suite | Home Assistant 2026.10.4, local | 7954 passed; coverage 95.63 % |
+| Full suite with coverage, current version | Home Assistant 2026.11.0, official test package, local | 7954 passed; coverage 95.62 %; no deprecation warnings from the integration |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 167 files (2026.10.4 and 2026.11.0); Ruff clean; 368 files formatted |
+| All GitHub checks, including the browser tests | PR and release workflow | required; the release workflow publishes only after its checks pass |
+| Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
+
+Checks on my own system (heat pump with MX400 controller and K40RF gateway,
+firmware 15.00.01, Home Assistant 2026.10.4, cloud and local access). On
+2026-11-09 I installed a build of this state after a full Home Assistant
+backup; apart from the version number, its files are identical to this
+release.
+
+| Check | Result after about 2.5 hours |
+|---|---|
+| Live interval of the one-minute group | median 60.0 s, at most 60.1 s for 151 resources |
+| Kept connections | 20,765 reads on kept connections, 298 new connections, none closed by the gateway, no fallback |
+| Start spacing and brake | 200 ms base; the brake followed the gateway's answer time (up to about 360 ms) without delaying live values |
+| Cloud requests and items per hour, compared with alpha.2 | 76 → 60 requests, about 1,660 → 930 items |
+| CPU load of Home Assistant, compared with alpha.2 | about 17 % → 7 % of one core |
+| Warnings and errors from the integration | none |
+| Signals the gateway stops listing | 16 signals disappeared from my gateway's signal list; their entities became unavailable and the reads stopped after two list checks, as intended |
+
+A longer run and any check on other gateways, firmware versions and device
+families are still pending.
+
 ## 0.9.0-alpha.2 verification
 
 I am publishing **0.9.0-alpha.2 as a pre-release** for testing from the commit

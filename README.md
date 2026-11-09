@@ -36,54 +36,12 @@
 > **How to test:** make a backup, show pre-releases for this repository in HACS and install the latest alpha from the [releases](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases). Please report what works and what doesn't in the [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues).
 
 > [!NOTE]
-> **0.9.0-alpha.3 is the current pre-release for testing.** The 0.9.0 alphas
-> add an optional local access to K40/K40RF gateways, keep a system with a
-> local access running without the cloud and review the entities. Alpha.3
-> reads live values locally every minute again, keeps connections to the
-> gateway open and reads values the local access delivers less often from the
-> cloud. It requires Home Assistant 2026.5.0 or newer and moves the entry to a
-> storage format that 0.8.x cannot load, so make a full backup first. HACS
-> shows it only with pre-releases enabled. **0.8.3 remains the latest stable
-> release.** See the
-> [alpha.3 release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.3);
-> feedback is welcome.
+> **0.9.0-alpha.3 is the current pre-release.** It needs Home Assistant
+> 2026.5.0 or newer, and 0.8.x cannot load its storage format, so make a full
+> backup first. See the
+> [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.3).
 
-**Bosch/Buderus Home Comfort** is the new display name for **Bosch/Buderus Heating**.
-The new name is included in stable **0.8.2**, following its introduction in Beta.7.
-The repository, integration domain and existing installation stay the same.
-Update the existing integration rather than adding
-a second one. Existing saved entry names and custom device/entity names are retained.
-
-**0.8.3 is the current stable version.** It includes the compatibility correction,
-time-program sensors and compatible dependency updates, alongside the changes from the
-0.8.2 betas: a tabbed appliance dialog, native PointT heating and hot-water
-entities, more reliable discovery and token renewal, additional appliance
-families, corrected readings and the Home Comfort display name. This release
-also includes the updated sign-in guide and compatible maintenance updates.
-
-Update through HACS, restart Home Assistant and reload the browser. See the
-[release notes](CHANGELOG.md#083---2026-11-02),
-[holiday guide](docs/holiday-periods.md),
-[request and recovery rules](docs/request-behavior.md) and
-[season-switching guide](docs/season-switching.md) for details and the remaining
-field checks.
-
-> [!WARNING]
-> **Upgrading from 0.8.1 includes substantial changes.** I added device families
-> and entity types and reworked connections, discovery, state handling and
-> conversions during the 0.8.2 betas. Make a full Home Assistant backup before
-> updating and check the readings and controls used by your automations.
-> Physical-device confirmation is still limited to the operations described below.
-
-The additional water-heater, climate, air-purifier and dehumidifier families,
-read-only wallboxes, zone controls and program editing remain included.
-Those new families still need broader physical-device confirmation.
-WE800i controls remain disabled by default. See the
-[0.8.2 release notes](CHANGELOG.md#082---2026-10-27),
-[current scope](docs/specification-status.md) and
-[WE800i validation guide](docs/water-softener-validation.md).
-
-Bosch/Buderus Home Comfort is an unofficial Home Assistant custom integration.
+Bosch/Buderus Home Comfort (formerly Bosch/Buderus Heating) is an unofficial Home Assistant custom integration.
 It discovers PointT heating-system resources and uses separate cloud adapters
 for identified additional appliances. Entities follow each system's reported
 capabilities; the [compatibility section](#compatibility) documents the supported
@@ -93,13 +51,11 @@ families and the limits of their validation.
 
 <a id="new-pointt-controls-in-beta7"></a>
 
-## PointT controls in 0.8.2
+## PointT controls
 
-I have added a tabbed **Operate appliance** dialog, clearer device-page controls,
-PointT heating-circuit climates and a native PointT hot-water entity. I also
-improved token rotation and connection recovery. These changes are included
-in stable **0.8.2** and were introduced in Beta.7. They are not present in
-0.8.2-beta.6 or 0.8.1.
+The integration offers a tabbed **Operate appliance** dialog, clearer
+device-page controls, PointT heating-circuit climates and a native PointT
+hot-water entity.
 
 The dialog opens under **Settings > Devices & services > Bosch/Buderus Home Comfort >
 Configure > Operate appliance**. It keeps edits as a draft until **Apply**.
@@ -115,8 +71,7 @@ to Auto through the hot-water entity. I checked both directions in MyBuderus
 and restored all changed settings. This confirms those paths on my appliance;
 other devices and failure scenarios still need their own field checks.
 The [project status](docs/specification-status.md) records the release checks
-and remaining field validation. The initial sign-in procedure is unchanged;
-an automatic sign-in helper is being investigated for a later beta.
+and remaining field validation.
 
 ## Built for real heating systems
 
@@ -178,7 +133,7 @@ back, it takes over the same entities with their history. See [operation without
 
 - Automatic discovery of supported PointT resources
 - Support for multiple gateways and dynamically discovered circuits
-- Optional read-only local access to K40/K40RF gateways (from 0.9.0-alpha.1),
+- Optional read-only local access to K40/K40RF gateways,
   also without the cloud; faults and bell notifications then follow the
   gateway's local error list
 - Temperatures, system pressure, operating states, instantaneous heat-source
@@ -245,7 +200,7 @@ on Home Assistant 2026.5.4, 2026.9.2 and the current release.
 | Optional local access | K40/K40RF gateways with firmware 15.00.01 or newer, read-only over the local network next to the cloud access; only the heating system, not air conditioners, wallboxes or other devices of the account. See [compatibility](docs/compatibility.md) |
 | Not covered | Matter devices, arbitrary MQTT devices and gateway network administration |
 
-The additional device families included in 0.8.2 use their own adapters and supported
+The additional device families use their own adapters and supported
 Home Assistant entity types. Available functions depend on identification,
 reported metadata and explicit device selection. See the
 [device families](docs/device-support-plan.md) and the [current scope](docs/specification-status.md) for details.
@@ -279,8 +234,7 @@ restart Home Assistant, and complete the HACS setup under
 The integration is available directly in the default HACS catalog.
 
 1. Open **HACS** in Home Assistant.
-2. Search for **Bosch/Buderus**. From Beta.7, the display name is
-   **Bosch/Buderus Home Comfort**; older packages use **Bosch/Buderus Heating**.
+2. Search for **Bosch/Buderus Home Comfort**.
 3. Open the matching repository and select **Download**.
 4. Restart Home Assistant when prompted.
 
@@ -534,21 +488,23 @@ gateway IDs, serial numbers, network identifiers, or unredacted API responses.
 | [Setup guide](docs/setup.md) | Illustrated installation and SingleKey ID walkthrough |
 | [Entities and polling](docs/entities.md) | Entity names, API resources, write access, and intervals |
 | [Request behavior and recovery](docs/request-behavior.md) | Exact startup order, successful-once reads, retries, limits and cloud-load savings |
-| [Additional cloud air conditioners](docs/bacon-air-conditioners.md) | Beta.6 Midea Climate Series controls; physical-device checks open |
-| [Additional cloud air purifiers](docs/bacon-air-purifiers.md) | Beta.6 Air-family fans, readings and offered settings; physical-device checks open |
-| [Additional cloud dehumidifiers](docs/bacon-dehumidifiers.md) | Beta.6 Dry-family controls and humidity readings; physical-device checks open |
-| [PointT wallboxes](docs/pointt-wallboxes.md) | Beta.6 cp0 readings for commodule/commodule2; physical checks and command contracts open |
+| [Additional cloud air conditioners](docs/bacon-air-conditioners.md) | Midea Climate Series controls; physical-device checks open |
+| [Additional cloud air purifiers](docs/bacon-air-purifiers.md) | Air-family fans, readings and offered settings; physical-device checks open |
+| [Additional cloud dehumidifiers](docs/bacon-dehumidifiers.md) | Dry-family controls and humidity readings; physical-device checks open |
+| [PointT wallboxes](docs/pointt-wallboxes.md) | cp0 readings for commodule/commodule2; physical checks and command contracts open |
 | [Home Assistant device presentation](docs/device-presentation.md) | One device per heating gateway, logical name groups and preserved user assignments |
-| [Heating controls](docs/heating-controls.md) | Tabbed dialog and PointT climates from Beta.7, everyday use and confirmed appliance test |
-| [PointT hot water](docs/pointt-hot-water.md) | Native PointT hot-water display from Beta.7, mode control, dashboard example and confirmed appliance test |
-| [Connection recovery](docs/connection-recovery.md) | Token-lifecycle corrections from Beta.7, request behavior and remaining field checks |
-| [Additional cloud water heaters](docs/bacon-water-heaters.md) | Beta.6 Midea/RWH readings and controls; physical-device tests open |
-| [Additional cloud device connection](docs/bacon-connection.md) | Beta.6 connection foundation and outstanding family/device tests |
+| [Heating controls](docs/heating-controls.md) | Tabbed dialog and PointT climates, everyday use and confirmed appliance test |
+| [PointT hot water](docs/pointt-hot-water.md) | Native PointT hot-water display, mode control, dashboard example and confirmed appliance test |
+| [Connection recovery](docs/connection-recovery.md) | Token lifecycle, request behavior and remaining field checks |
+| [Additional cloud water heaters](docs/bacon-water-heaters.md) | Midea/RWH readings and controls; physical-device tests open |
+| [Additional cloud device connection](docs/bacon-connection.md) | Connection foundation and outstanding family/device tests |
 | [Faults and notifications](docs/faults.md) | Fault entities, lifecycle behavior, and automation examples |
 | [Holiday periods](docs/holiday-periods.md) | Creating, editing, and deleting holidays with their heating settings |
+| [Season switching](docs/season-switching.md) | The central season setting of a gateway and its options |
 | [Older holiday formats](docs/legacy-holidays.md) | ICOM date-only slots, WDDW2 on/off mode, write confirmation and device-check limits |
 | [Resource catalog](docs/resource-catalog.md) | Observed PointT resources and terminology |
 | [Water softener development](docs/water-softener.md) | Initial WE800i support, evidence and outstanding device verification |
+| [WE800i validation](docs/water-softener-validation.md) | Field checks for the WE800i; its controls stay disabled by default |
 | [Device families](docs/device-support-plan.md) | Supported device families, what they show and operate |
 | [Zone and DHW additions](docs/zone-and-dhw-fields.md) | Additional heating/cooling zone readings and DHW device types |
 | [Zone controls](docs/zone-controls.md) | Heating/cooling modes and manual temperatures, temporary-override limits and outstanding physical checks |
