@@ -115,12 +115,15 @@ async def test_cancelled_put_invalidates_only_affected_setting(hass):
     assert MODE in controls(coordinator)
 
 
-async def test_failed_guard_read_marks_the_dependency_stale(hass):
+async def test_failed_guard_read_keeps_the_dependency_like_a_failed_poll(hass):
+    # C33: nothing was written, so a failed preflight read changes nothing.
     _, coordinator, entity = setup(hass)
     coordinator.client.get_resource.side_effect = RequestTimeout()
     with pytest.raises(HomeAssistantError):
         await entity.async_set_temperature(temperature=22)
     coordinator._write_service.async_write_number.assert_not_awaited()
-    assert not entity.available
-    assert coordinator.data[MODE].freshness is Freshness.STALE
+    coordinator.client.put_resource_value.assert_not_awaited()
+    assert entity.available
+    assert coordinator.data[MODE].freshness is Freshness.FRESH
+    assert not coordinator.data[MODE].ended
     assert coordinator.data[TARGET].freshness is Freshness.FRESH

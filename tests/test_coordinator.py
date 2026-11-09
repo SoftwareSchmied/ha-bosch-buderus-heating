@@ -455,7 +455,7 @@ async def test_confirmed_number_write_updates_coordinator(
 
     assert result is confirmed
     coordinator._write_service.async_write_number.assert_awaited_once_with(
-        "gateway-one", current, 20.5, policy
+        "gateway-one", current, 20.5, policy, current=None
     )
 
 

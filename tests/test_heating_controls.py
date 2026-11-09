@@ -89,7 +89,7 @@ def setup(hass, *, mode="manual", options=("off", "manual", "auto")):
         coordinator.data[path].resource
     )
 
-    async def write(_gateway, resource, value, _policy):
+    async def write(_gateway, resource, value, _policy, **_kwargs):
         desired = replace(resource, value=value)
         return WriteResult(None, desired)
 

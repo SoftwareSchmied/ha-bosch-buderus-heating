@@ -75,6 +75,63 @@ Versioning after its first tagged preview.
   when such a value answers with a server error: it ends after one day instead
   of repeating every five minutes.
 
+### Changes to the heating system
+
+- **Half degrees for hot water are refused up front:** the heating system
+  rounds hot-water temperatures to whole degrees and heating-circuit setpoints
+  to half degrees. A value off this grid, for example 52.5 °C for hot water,
+  was sent, stored differently and then reported as not confirmed. Such a
+  value is now refused before anything is sent. A thermostat command in °F
+  is set to the nearest half degree Celsius. Other settings keep accepting
+  every value within the system's limits.
+- **Corrupt limits create no control:** a control is only offered when its
+  limits lie between −30 and 100 °C or 0 and 2,880 minutes. A placeholder
+  maximum such as 6,553.5 °C no longer allows a mistyped 650 °C.
+- **Honest message after a sent change:** if the confirming read after a
+  change fails, for example because the cloud limits requests, the message
+  now says that the change was sent and may already have taken effect. The
+  texts no longer speak of an "operating mode" for every setting, and the
+  cloud brake and a sign-in request still apply.
+- **Nothing becomes unavailable without a sent change:** a failed check
+  before the change, a change refused while the cloud brake is active, or a
+  time program that is no longer offered left the control or the thermostat
+  unavailable until the next reading. These cases change nothing on the
+  system and now keep the shown values.
+- **Fewer requests per thermostat command:** the checks before a thermostat
+  change now read all their values in one request instead of up to seven.
+  Repeating an unchanged temperature costs one request instead of seven.
+- **No change is sent minutes later:** while a long query of the system was
+  running, a change waited without limit and was sent much later. After one
+  minute of waiting it is now refused with "Try again in a moment", and
+  nothing is sent. A change that has started is never interrupted.
+- **Thermostat after a restart in cooling mode:** a heating-circuit thermostat
+  that already existed is now provided again, unavailable, when Home Assistant
+  starts while the system cools. It no longer appears as "no longer provided"
+  for the whole summer.
+
+### Holidays
+
+- **Creating holidays no longer stays blocked:** when the cloud finally
+  refused a new holiday (for example with HTTP 400) or the connection failed
+  before anything was sent, every further attempt only checked the old
+  request until Home Assistant was restarted. Such a request now ends the
+  block at once. A request with an unknown outcome blocks a second holiday for
+  10 minutes; if the holiday list then still shows no such entry, the next
+  attempt creates it normally.
+- **All-day holidays stay all-day:** a whole-day holiday created in the Home
+  Assistant calendar showed up as an appointment from 00:00 to 00:00 on
+  systems that store times. It is now shown as an all-day event again.
+- **Calendar actions hit only the shown holiday:** a calendar entry now
+  carries its dates in its ID, and deleting from the calendar first compares
+  the holiday with the system, as the options dialog already did. If the app
+  replaced the holiday in the meantime, nothing is deleted or changed.
+- **Older systems with holiday slots:** the order in which circuits are
+  ticked no longer matters; the circuits are compared as a set and sent in
+  the order the slot reports. Each step now reads the slot once instead of
+  twice and waits briefly for a slow confirmation. A lost response is
+  resolved by reading instead of ending the change. I tested this with
+  synthetic data only; a test on a real device is still open.
+
 ### Dialogs
 
 - **Cloud setup no longer stays blocked:** a cloud sign-in dialog left behind

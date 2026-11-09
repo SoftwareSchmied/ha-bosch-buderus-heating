@@ -7,8 +7,15 @@ import logging
 import math
 import re
 from collections import Counter, deque
-from collections.abc import Awaitable, Callable, Iterable, Iterator, Mapping
-from contextlib import ExitStack, contextmanager
+from collections.abc import (
+    AsyncIterator,
+    Awaitable,
+    Callable,
+    Iterable,
+    Iterator,
+    Mapping,
+)
+from contextlib import ExitStack, asynccontextmanager, contextmanager
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta, tzinfo
 from enum import StrEnum
@@ -67,6 +74,8 @@ from .pointt import (
     Resource,
     ResourceError,
     ResourceOmitted,
+    WriteNotConfirmed,
+    WriteRejected,
     WriteValidationError,
 )
 from .pointt.bulk import chunk_resource_paths
@@ -96,7 +105,7 @@ from .startup_data import (
 )
 from .startup_reader import StartupReader
 from .update_load import update_load
-from .writes import EnumWritePolicy, NumberWritePolicy, WriteService
+from .writes import EnumWritePolicy, NumberWritePolicy, WriteBusy, WriteService
 
 if TYPE_CHECKING:
     from .counter_selection import CounterGuard
@@ -238,6 +247,10 @@ ACTIVE_NOTIFICATION_INTERVAL = timedelta(seconds=60)
 # Short, bounded recovery of controls temporarily absent in automatic mode.
 # Delays are incremental: at most three targeted reads per unavailability episode.
 MANUAL_SETPOINT_RETRY_DELAYS = (3.0, 10.0, 20.0)
+# C58: how long a write waits for a running poll or write of its gateway.
+# Longer than a normal cycle with its 50 s budget, far shorter than a slow
+# discovery or rescan; a write that cannot start sends nothing.
+WRITE_LOCK_TIMEOUT = timedelta(seconds=60)
 # HA rounds scheduled callbacks to whole seconds plus a fixed offset. A callback
 # just before our exact deadline must not postpone a group by another minute.
 # This tolerance applies to group cadence only, never to error/backoff deadlines.
@@ -791,6 +804,82 @@ class BoschBuderusDataUpdateCoordinator(
         self._manual_setpoint_attempted.clear()
         self._manual_setpoint_candidates.clear()
 
+    @asynccontextmanager
+    async def _write_transaction(self) -> AsyncIterator[None]:
+        """C58: hold the polling/write lock, but wait for it only so long.
+
+        Only acquiring the lock is limited. Once a write holds it, nothing
+        interrupts its PUT or read-back. A write that cannot start sends
+        nothing and is reported at once instead of being sent much later.
+        """
+        try:
+            async with asyncio.timeout(WRITE_LOCK_TIMEOUT.total_seconds()):
+                await self._update_lock.acquire()
+        except TimeoutError as err:
+            raise WriteBusy(
+                "Another request held the gateway; the change was not sent"
+            ) from err
+        try:
+            yield
+        finally:
+            self._update_lock.release()
+
+    async def _async_read_write_guards(
+        self, expected: tuple[Resource, ...]
+    ) -> dict[str, Resource]:
+        """C35: read every resource a write depends on in one bulk request.
+
+        Paths the bulk response does not answer are read individually, as
+        before. Nothing here writes.
+        """
+        gateway_id = self.gateway.gateway_id
+        paths = tuple(dict.fromkeys(before.path for before in expected))
+        read: dict[str, Resource] = {}
+        try:
+            results: Iterable[BatchItemResult] = await self.client.get_resources_bulk(
+                gateway_id, paths
+            )
+        except AuthenticationError, RateLimited, SourceStopped:
+            raise
+        except PointTError:
+            results = ()
+        for item in results:
+            if item.status == 429 or isinstance(item.error, RateLimited):
+                raise (
+                    item.error
+                    if isinstance(item.error, RateLimited)
+                    else RateLimited(retry_after=None)
+                )
+            resource = item.resource
+            if (
+                item.ok
+                and resource is not None
+                and item.path in paths
+                and resource.path == item.path
+            ):
+                read[item.path] = resource
+        for path in paths:
+            if path not in read:
+                read[path] = await self.client.get_resource(gateway_id, path)
+        return read
+
+    def _write_failed(self, path: str, err: BaseException) -> str:
+        """Record a failed write step and apply its brake or sign-in request."""
+        # C32: a read-back failure after a sent PUT arrives as WriteNotConfirmed;
+        # its cause still decides about the cloud brake and the sign-in.
+        cause = err.__cause__ if isinstance(err, WriteNotConfirmed) else err
+        category = (
+            "control_write_unconfirmed"
+            if isinstance(err, asyncio.CancelledError)
+            else _pointt_result(err if isinstance(err, PointTError) else None)
+        )
+        self._record_capability(path, category, SnapshotSource.WRITE)
+        if isinstance(cause, RateLimited):
+            self._activate_rate_limit_backoff(cause, monotonic())
+        if isinstance(cause, AuthenticationError):
+            self._request_reauthentication()
+        return category
+
     async def async_write_control(
         self,
         path: str,
@@ -800,7 +889,7 @@ class BoschBuderusDataUpdateCoordinator(
         expected: tuple[Resource, ...] = (),
     ) -> Resource:
         """Write one allowlisted control and publish its confirmed read-back."""
-        async with self._update_lock:
+        async with self._write_transaction():
             now_monotonic = monotonic()
             if now_monotonic < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now_monotonic)
@@ -817,49 +906,64 @@ class BoschBuderusDataUpdateCoordinator(
                 raise WriteValidationError(
                     "Resource is unavailable or has no current metadata"
                 )
-            pending_path: str | None = None
-            try:
-                # A dialog draft and a climate setpoint may depend on other
-                # resources. Recheck them under the polling/write lock and on
-                # the gateway before writing, never silently change a mode.
+            # A dialog draft and a climate setpoint may depend on other
+            # resources. Recheck them under the polling/write lock and on
+            # the gateway before writing, never silently change a mode.
+            for before in expected:
+                current = (self.data or {}).get(before.path)
+                if (
+                    not _snapshot_is_fresh(current)
+                    or current is None
+                    or current.resource != before
+                ):
+                    raise WriteValidationError("Control changed since it was shown")
+            live: dict[str, Resource] = {}
+            if expected:
+                try:
+                    live = await self._async_read_write_guards(expected)
+                except PointTError as err:
+                    # C33: nothing was written. Like any failed read, this
+                    # leaves the readings as they are until the next poll.
+                    for before in expected:
+                        self._record_capability(
+                            before.path, _pointt_result(err), SnapshotSource.BATCH
+                        )
+                    if isinstance(err, RateLimited):
+                        self._activate_rate_limit_backoff(err, monotonic())
+                    if isinstance(err, AuthenticationError):
+                        self._request_reauthentication()
+                    raise
+                changed = dict(self.data or {})
                 for before in expected:
-                    current = (self.data or {}).get(before.path)
-                    if (
-                        not _snapshot_is_fresh(current)
-                        or current is None
-                        or current.resource != before
-                    ):
-                        raise WriteValidationError("Control changed since it was shown")
-                    pending_path = before.path
-                    refreshed = await self.client.get_resource(
-                        self.gateway.gateway_id, before.path
-                    )
-                    pending_path = None
-                    if refreshed != before:
-                        if refreshed.path == before.path:
-                            updated = dict(self.data or {})
-                            updated[before.path] = ResourceSnapshot(
-                                refreshed, True, datetime.now(UTC)
-                            )
-                            self.resources[before.path] = refreshed
-                            self.async_set_updated_data(updated)
-                        raise WriteValidationError("Control changed on the gateway")
+                    refreshed = live[before.path]
+                    if refreshed != before and refreshed.path == before.path:
+                        changed[before.path] = ResourceSnapshot(
+                            refreshed, True, datetime.now(UTC)
+                        )
+                        self.resources[before.path] = refreshed
+                if any(live[before.path] != before for before in expected):
+                    self.async_set_updated_data(changed)
+                    raise WriteValidationError("Control changed on the gateway")
+            try:
                 if isinstance(policy, EnumWritePolicy) and isinstance(value, str):
-                    pending_path = path
                     result = await self._write_service.async_write_enum(
-                        self.gateway.gateway_id, snapshot.resource, value, policy
+                        self.gateway.gateway_id,
+                        snapshot.resource,
+                        value,
+                        policy,
+                        current=live.get(path),
                     )
                 elif (
                     isinstance(policy, NumberWritePolicy)
                     and isinstance(value, int | float)
                     and not isinstance(value, bool)
                 ):
-                    pending_path = path
                     result = await self._write_service.async_write_number(
                         self.gateway.gateway_id,
                         snapshot.resource,
                         float(value),
                         policy,
+                        current=live.get(path),
                     )
                 else:
                     raise WriteValidationError(
@@ -868,26 +972,18 @@ class BoschBuderusDataUpdateCoordinator(
             except WriteValidationError:
                 raise
             except (PointTError, asyncio.CancelledError) as err:
-                category = (
-                    "control_write_unconfirmed"
-                    if isinstance(err, asyncio.CancelledError)
-                    else _pointt_result(err)
-                )
-                self._record_capability(
-                    pending_path or path, category, SnapshotSource.WRITE
-                )
-                if isinstance(err, RateLimited):
-                    self._activate_rate_limit_backoff(err, monotonic())
-                if isinstance(err, AuthenticationError):
-                    self._request_reauthentication()
-                # A failed guard no longer confirms that dependency. A PUT
-                # may already have taken effect when its read-back fails.
-                # Preserve the last value only as stale until regular polling
-                # succeeds; never let reload or another write reuse it as fresh.
-                if pending_path is not None:
+                category = self._write_failed(path, err)
+                # C33: only a PUT that was sent may have taken effect. Keep
+                # its last value only as stale until regular polling succeeds;
+                # never let reload or another write reuse it as fresh. A
+                # brake, a refusal or a failed read before the PUT changes
+                # nothing on the gateway and leaves the reading as it is.
+                if isinstance(
+                    err, (WriteNotConfirmed, WriteRejected, asyncio.CancelledError)
+                ):
                     updated = dict(self.data or {})
-                    updated[pending_path] = replace(
-                        updated[pending_path],
+                    updated[path] = replace(
+                        updated[path],
                         available=False,
                         freshness=Freshness.STALE,
                         last_attempt=datetime.now(UTC),
@@ -950,7 +1046,7 @@ class BoschBuderusDataUpdateCoordinator(
         self, path: str, operation: Callable[[], Awaitable[tuple[Resource, ...]]]
     ) -> None:
         """Serialize RRC writes with polling and preserve the cloud backoff."""
-        async with self._update_lock:
+        async with self._write_transaction():
             now = monotonic()
             if now < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now)
@@ -964,6 +1060,10 @@ class BoschBuderusDataUpdateCoordinator(
                 raise WriteValidationError("RRC resource is unavailable")
             try:
                 confirmed = await operation()
+            except WriteValidationError:
+                # C33: a refused preflight, such as a program no longer
+                # offered, sends nothing and leaves the reading as it is.
+                raise
             except (PointTError, asyncio.CancelledError) as err:
                 if isinstance(err, RateLimited):
                     self._activate_rate_limit_backoff(err, monotonic())
@@ -1034,7 +1134,7 @@ class BoschBuderusDataUpdateCoordinator(
         expected: HolidayWriteValues | None = None,
     ) -> Resource:
         """Run one capability-gated holiday mutation and confirm it."""
-        async with self._update_lock:
+        async with self._write_transaction():
             now_monotonic = monotonic()
             if now_monotonic < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now_monotonic)

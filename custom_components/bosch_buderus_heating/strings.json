@@ -681,7 +681,7 @@
       "holiday_created": "The holiday was created and confirmed by reading it back.",
       "holiday_previous_request_found": "The earlier unresolved request is now confirmed. Your new inputs were not sent. Check the existing holiday under Manage holiday periods first.",
       "holiday_already_exists": "A holiday with this start and circuit selection already exists. No additional holiday was created. Open Manage holiday periods and edit the existing entry.",
-      "holiday_create_unconfirmed": "The creation request could not be confirmed. The holiday may already exist. Check Manage holiday periods or the manufacturer app. While this request remains unresolved, another attempt checks its result without creating a second holiday.",
+      "holiday_create_unconfirmed": "The creation request could not be confirmed. The holiday may already exist. Check Manage holiday periods or the manufacturer app. For the next 10 minutes, another attempt checks the result of this request without creating a second holiday.",
       "holiday_create_adjusted": "The heating system returned a new holiday, but its settings differ from your request. Requested period: {requested}. Returned period: {actual}. Open Manage holiday periods to check and edit this entry.",
       "holiday_update_adjusted": "The heating system returned settings that differ from your requested change. Requested period: {requested}. Returned period: {actual}. Open Manage holiday periods to check and edit the current entry.",
       "no_rrc_schedules": "No current, supported RRC weekly schedule is available.",
@@ -933,7 +933,7 @@
       "message": "A holiday with this start and circuit selection already exists. Edit that entry under Configure → Manage holiday periods."
     },
     "holiday_create_unconfirmed": {
-      "message": "Creation could not be confirmed. The holiday may already exist. Check Manage holiday periods or the manufacturer app. Another attempt checks the unresolved request without creating a second holiday."
+      "message": "Creation could not be confirmed. The holiday may already exist. Check Manage holiday periods or the manufacturer app. For the next 10 minutes, another attempt checks the unresolved request without creating a second holiday."
     },
     "holiday_update_unconfirmed": {
       "message": "The change could not be fully confirmed. Some settings may already have been saved. Check the current holiday under Configure → Manage holiday periods."
@@ -954,7 +954,7 @@
       "message": "This setting is not currently safe to change. Refresh or reconfigure the integration and try again."
     },
     "write_not_confirmed": {
-      "message": "The heating system did not confirm the new operating mode. Its previous displayed state has been retained."
+      "message": "The change was sent, but the heating system did not confirm it. It may already have taken effect. The value is updated with the next reading."
     },
     "write_authentication_failed": {
       "message": "The cloud sign-in is no longer valid. Reauthenticate Bosch/Buderus Home Comfort before trying again."
@@ -963,7 +963,10 @@
       "message": "The PointT cloud is currently limiting requests. Wait before trying the change again."
     },
     "write_failed": {
-      "message": "The operating mode could not be changed. No success was reported because the heating system did not confirm the value."
+      "message": "The change could not be completed and was not confirmed by the heating system. The value shown is updated with the next reading."
+    },
+    "write_busy": {
+      "message": "The heating system is being read or another change is still running. Nothing was sent. Try again in a moment."
     },
     "holiday_end_not_after_start": {
       "message": "The end must be after the start. Please choose a later end."
