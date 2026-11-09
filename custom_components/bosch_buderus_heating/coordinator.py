@@ -39,7 +39,12 @@ from .discovery_inventory import (
     DiscoveryRecovery,
     is_transient_result,
 )
-from .faults import FaultTracker, fault_resource_candidates, is_fault_resource_path
+from .faults import (
+    FaultTracker,
+    discovery_fully_answered,
+    fault_resource_candidates,
+    is_fault_resource_path,
+)
 from .firmware_watch import FirmwareWatch, firmware_values
 from .holiday_timezones import async_resolve_holiday_timezones
 from .holiday_writes import (
@@ -2312,6 +2317,9 @@ class BoschBuderusDataUpdateCoordinator(
             },
         }
         self._merge_start_counter_candidates()
+        if discovery_fully_answered(self.discovery_diagnostics):
+            # FAULT-2: a required fault source this tree no longer has is gone.
+            self.faults.reconcile_discovery(successful_resources)
         self.faults.process_resources(
             {
                 path: resource
