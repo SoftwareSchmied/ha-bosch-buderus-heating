@@ -512,7 +512,7 @@ def _setup_entities(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create entities from every safe resource found during discovery."""
-    from . import remove_never_entities
+    from . import enable_promoted_defaults, remove_never_entities
 
     # 8C-c (P49b): hand over or remove local-only entries before any entity
     # is added; Home Assistant may register added entities at once.
@@ -521,6 +521,9 @@ def _setup_entities(
         # Managed entries: the entry setup's cleanup of entries that can
         # never be entities, per cloud view (legacy entries run it there).
         remove_never_entities(coordinator)
+        # LOE-1: entries disabled by an earlier default, now enabled by
+        # default (the user's choice stays); before the entities are added.
+        enable_promoted_defaults(coordinator)
     if (account := entry.bacon) is not None:
         track_dry_entities(entry, account, async_add_entities, "sensor")
         track_purifier_entities(
@@ -1830,7 +1833,7 @@ class BoschBuderusSensor(
         if not self._unknown_enum_warning_logged:
             self._unknown_enum_warning_logged = True
             _LOGGER.warning(
-                "PointT resource %s returned an undeclared enum value; "
+                "Reading %s reported an undeclared enum value; "
                 "reporting the entity as unknown. The value is omitted from logs "
                 "and counted in diagnostics",
                 resource_path_template(self.entity_description.resource_path),
@@ -2337,8 +2340,12 @@ def _measurement_attributes(
     if (temperature_unit := TEMPERATURE_UNITS.get(unit or "")) is not None:
         return (
             temperature_unit,
+            # HAQ-4: a kelvin value is a difference (a hysteresis or spread),
+            # as on the local side; as a temperature Home Assistant would
+            # convert 5 K to -268.15 °C.
             SensorDeviceClass.TEMPERATURE_DELTA
-            if re.fullmatch(
+            if temperature_unit == "K"
+            or re.fullmatch(
                 r"/system/variableTariff/(?:ch|dhw)/(?:highPriceDelta|lowPriceDelta)",
                 path,
             )

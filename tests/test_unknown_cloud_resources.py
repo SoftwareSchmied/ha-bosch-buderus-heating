@@ -200,6 +200,19 @@ async def test_retirement_keeps_unknown_entities_while_they_exist(hass) -> None:
 # ------------------------------------------------------------- review fixes
 
 
+def test_a_kelvin_value_is_a_temperature_difference(hass) -> None:
+    """HAQ-4: 5 K is a spread, never -268.15 °C."""
+    from homeassistant.components.sensor import SensorDeviceClass
+
+    item = resource(value=5.0, unit="K")
+    description = only(item)
+    assert description.native_unit_of_measurement == "K"
+    assert description.device_class is SensorDeviceClass.TEMPERATURE_DELTA
+    assert _sensor(hass, item).native_value == 5.0
+    celsius = only(resource(value=41.5, unit="C"))
+    assert celsius.device_class is SensorDeviceClass.TEMPERATURE
+
+
 def test_a_converted_unit_keeps_its_scale(hass) -> None:
     item = resource(value=10.0, unit="kBtu")
     description = only(item)

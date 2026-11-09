@@ -714,7 +714,7 @@ def test_enum_changed_after_setup_becomes_unknown_without_log_spam(
 
     assert sensor.native_value is None
     assert sensor.coordinator.unknown_enum_value_count(resource.path) == 2
-    assert caplog.text.count("returned an undeclared enum value") == 1
+    assert caplog.text.count("reported an undeclared enum value") == 1
     assert "/heatingCircuits/{hc}/overallStatus" in caplog.text
     assert "private_vendor_state" not in caplog.text
     assert "gateway-one" not in caplog.text

@@ -258,6 +258,56 @@ def test_numeric_and_string_readings_keep_their_native_types() -> None:
     assert _native("x", "floatValue") is None
 
 
+def test_a_text_the_cloud_does_not_declare_keeps_the_cloud_state() -> None:
+    """SEL-3: like a list entry, a scalar text must be one the cloud declares."""
+    path = "/heatingCircuits/hc1/overallStatus"
+    snapshot = cloud(path, "heating_auto", resource_type="stringValue", unit=None)
+    snapshot = replace(
+        snapshot,
+        resource=replace(
+            snapshot.resource,
+            metadata=replace(
+                snapshot.resource.metadata,
+                allowed_values=("heating_auto", "summer_idle"),
+            ),
+        ),
+    )
+
+    def text(value: str):
+        return read(
+            {
+                "id": path,
+                "type": "stringValue",
+                "writeable": 0,
+                "value": value,
+                "allowedValues": ["ch_enabled", "heating_auto", "summer_idle"],
+            },
+            observed_at=NOW,
+        )
+
+    unknown = LocalSelection(FakeRuntime([text("ch_enabled")]), TARGET)
+    assert unknown.select(path, snapshot) is snapshot
+    assert unknown.summary({path: snapshot})["cloud_reasons"] == {"unknown_entry": 1}
+    declared = LocalSelection(FakeRuntime([text("summer_idle")]), TARGET)
+    shown = declared.select(path, snapshot)
+    assert shown.resource.value == "summer_idle"
+    assert shown.source is SnapshotSource.LOCAL
+    # Without cloud declarations the local text is shown as before.
+    free = replace(
+        snapshot,
+        resource=replace(
+            snapshot.resource,
+            metadata=replace(snapshot.resource.metadata, allowed_values=()),
+        ),
+    )
+    assert (
+        LocalSelection(FakeRuntime([text("ch_enabled")]), TARGET)
+        .select(path, free)
+        .resource.value
+        == "ch_enabled"
+    )
+
+
 def test_change_detection_reports_only_changed_local_readings() -> None:
     runtime = FakeRuntime([local(RETURN, 31.5, monotonic=10.0)])
     selection = LocalSelection(runtime, TARGET)

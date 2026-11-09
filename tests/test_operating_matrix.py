@@ -53,7 +53,7 @@ from custom_components.bosch_buderus_heating.local_probe import LocalEndpoint, P
 from custom_components.bosch_buderus_heating.managed_entry import ManagedEntry
 from tests.ha_test_helpers import MockConfigEntry
 from tests.test_configuration import OWNER
-from tests.test_connection_runtime import settle
+from tests.test_connection_runtime import entry_for, settle
 from tests.test_entry_dispatch import legacy_entry, loopback
 from tests.test_gateway_exchange import (
     NEW,
@@ -949,3 +949,59 @@ async def test_a_forward_clock_jump_makes_no_counter_jump(hass) -> None:
             assert numbers == sorted(numbers) and all(n >= 1240 for n in numbers)
         finally:
             remove()
+
+
+# -------------- 10: defaults an update enables on an existing installation
+
+VR0 = "/signals/SRC.CUHP.HP1.ReceiverValveActual"  # promoted after alpha.3
+VR1 = "/signals/SRC.CUHP.HP1.ExpansionValveActual"
+UNREVIEWED = "/signals/SRC.CUHP.HP1.UnreviewedValue"  # catch-all: disabled
+
+
+async def test_an_update_enables_promoted_defaults_but_never_a_users_choice(
+    hass,
+) -> None:
+    """LOE-1/HAQ-5: the real format-4 setup with entries of an earlier version.
+
+    Entries the integration registered disabled and that are now enabled by
+    default become enabled (local-only VR0, a cloud sensor); an entry the
+    user disabled and an unreviewed signal stay disabled.
+    """
+    entry, _, _ = entry_for(hass)
+    assert entry.version == 4
+    data, options = deepcopy(dict(entry.data)), deepcopy(dict(entry.options))
+    for connection in data["connections"].values():
+        if connection["kind"] == "singlekey_cloud":
+            connection["credentials"]["expires_at"] = 10**12
+    for key, binding in data["bindings"].items():
+        if binding["adapter"] == "bacon":
+            options["bindings"][key]["enabled"] = False
+    # The local access of this system is configured but switched off: its
+    # local-only entries stay, and no local request is sent.
+    paired_target(data, options)
+    options["bindings"]["local"]["enabled"] = False
+    hass.config_entries.async_update_entry(entry, data=data, options=options)
+    registry = er.async_get(hass)
+    integration = er.RegistryEntryDisabler.INTEGRATION
+
+    def existing(unique_id, disabled_by):
+        return registry.async_get_or_create(
+            "sensor", DOMAIN, unique_id, config_entry=entry, disabled_by=disabled_by
+        ).entity_id
+
+    vr0 = existing(local_only_unique_id(HEAT, VR0), integration)
+    vr1 = existing(local_only_unique_id(HEAT, VR1), er.RegistryEntryDisabler.USER)
+    unreviewed = existing(local_only_unique_id(HEAT, UNREVIEWED), integration)
+    cloud_sensor = existing(SENSOR, integration)
+    async with loopback(ReadingBackend()):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        assert entry.state is ConfigEntryState.LOADED
+        owner = entry.runtime_data
+        assert isinstance(owner, ManagedEntry)
+        await eventually(lambda: available(owner, "sensor", SENSOR))
+        await settle(hass)
+        assert registry.async_get(cloud_sensor).disabled_by is None
+        assert registry.async_get(vr0).disabled_by is None
+        assert registry.async_get(vr1).disabled_by is er.RegistryEntryDisabler.USER
+        assert registry.async_get(unreviewed).disabled_by is integration
+        assert await hass.config_entries.async_unload(entry.entry_id)

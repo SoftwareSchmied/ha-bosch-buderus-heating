@@ -196,9 +196,11 @@ def test_the_smart_grid_mode_prefers_the_declared_states() -> None:
         assert set(state_options(sensor.definition, reading)) == set(
             sensor.definition.options
         )
-    # Without a state map: SG-Ready modes 0..3.
-    for raw, mode in enumerate(("blocked", "normal", "preferred", "forced")):
+    # LOE-3: without a state map the same numbers as the declaration: 0 is
+    # not used, 1..4 the SG-Ready modes (not verified without a map).
+    for raw, mode in expected.items():
         assert shown(signal("SmartGridMode", raw))[1] == mode
+    assert shown(signal("SmartGridMode", 5))[1] is None
     assert shown(signal("SmartGridMode", 7))[1] is None
 
 
