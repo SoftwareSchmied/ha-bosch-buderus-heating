@@ -285,7 +285,9 @@ fresh data, including after the last connection is removed. Cached write feature
 are cleared. Disabled registry entries remain disabled, and inventory restoration
 never invents devices or writable entities. Corrupt inventory does not prevent
 the registry fallback and is not overwritten with an empty cache merely because
-loading failed. Fresh, validated source records can rebuild it. Saving and
+loading failed. This includes a file that cannot be read, one written by a newer
+version and one without its storage envelope; the entry starts and logs the
+cause. Fresh, validated source records can rebuild it. Saving and
 whole-owner removal are serialized to prevent a pending save from resurrecting
 deleted inventory.
 
@@ -449,6 +451,15 @@ a transport or making a request. Only fresh source state can confirm resolution.
 The managed notification consumer never saves an old fault baseline over a new
 source's data; source drivers own those writes. Removing the complete HA entry
 remains distinct from removing its last connection.
+
+Removing the complete entry deletes its private files, also when it was never
+loaded in this process: fault baselines, notification dismissals, token-refresh
+histories, learned local schedules and the estimated energy totals of gateways
+no other entry uses. All its repair notes are removed as well. Removing a local
+access deletes its learned schedule. A gateway exchange deletes the old
+gateway's fault and notification files once they are copied. At every start,
+files of entry IDs that no longer exist are removed; backups set aside as
+`.corrupt` stay.
 
 Repeated-rate-limit repairs now belong to a cloud connection. Their confirmation
 changes only that connection's polling profile. Firmware capability repairs

@@ -199,7 +199,13 @@ async def test_corrupt_pending_storage_does_not_block_cloud_setup_or_removal(
         assert await async_setup(management.hass, {})
     await async_remove_entry(management.hass, entry)
     assert "could not be reconciled" in caplog.text
-    assert "could not be cleared" in caplog.text
+    # FLOW-3: the removal sets the unreadable record aside instead of failing.
+    assert "could not be cleared" not in caplog.text
+    assert "set aside" in caplog.text
+    assert not journal._path.exists()
+    aside = journal._path.with_name(journal._path.name + ".corrupt")
+    assert aside.read_text() == "invalid synthetic-private-token"
+    assert await journal.records() == ()
     assert "synthetic-private-token" not in caplog.text
 
 

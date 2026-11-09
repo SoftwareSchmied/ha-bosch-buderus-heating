@@ -1,6 +1,7 @@
 """Exercise active v4 dispatch through HA setup, reload and unload."""
 
 import asyncio
+import re
 from contextlib import asynccontextmanager
 from unittest.mock import AsyncMock, patch
 
@@ -328,6 +329,36 @@ async def test_an_unreadable_current_entry_is_a_setup_error(
         assert entry.error_reason_translation_key == "invalid_stored_configuration"
     else:
         assert entry.state is ConfigEntryState.MIGRATION_ERROR
+
+
+@pytest.mark.parametrize("failure", ["code", "foreign"])
+async def test_failed_migration_names_its_cause_without_text(
+    hass, active_version, caplog, failure
+):
+    """ERR-6: the static code of the integration, otherwise the error type."""
+    entry = legacy_entry(hass)
+    if failure == "code":
+        hass.config_entries.async_update_entry(
+            entry, data={**entry.data, "gateway_ids": None}
+        )
+        broken = patch(ROOT + ".async_setup_managed_entry")
+    else:
+        broken = patch(
+            ROOT + ".migrate_entry_storage",
+            side_effect=RuntimeError("synthetic-private-text"),
+        )
+    with broken, patch(ROOT + ".async_setup_managed_entry"):
+        assert not await hass.config_entries.async_setup(entry.entry_id)
+    assert entry.state is ConfigEntryState.MIGRATION_ERROR
+    record = next(
+        r for r in caplog.records if "migration could not be completed" in r.message
+    )
+    if failure == "code":
+        # A static code such as "invalid_gateway_ids", not an error type.
+        assert re.search(r"\([a-z0-9_]+\)$", record.message), record.message
+    else:
+        assert record.message.endswith("(RuntimeError)")
+    assert "synthetic-private-text" not in record.message
 
 
 @pytest.mark.parametrize("initial_version", [1, 2, 3, 4])

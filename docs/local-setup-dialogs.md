@@ -65,9 +65,14 @@ Confirmation of the result triggers fresh reads and the guarded native handover.
 
 ## Recovery and cancellation
 
-Pending attempts appear before another token is created. Received tokens can be
-rechecked; unknown creation outcomes allow only deliberate discard or continuing
-later. Discard requires its own confirmation and removes only the local pending
+Pending attempts appear before another token is created. A rejected sign-in
+(wrong label data, button not pressed, rate limit, full token list) or a request
+that was not sent returns to the label form with its reason; the confirmed
+certificate stays and nothing has to be discarded. Within one dialog, a
+certificate confirmed for an address and port is accepted again for that address
+and port when its fingerprint is identical, for example after Continue. Received
+tokens can be rechecked; unknown creation outcomes allow only deliberate discard
+or continuing later. Discard requires its own confirmation and removes only the local pending
 copy. Gateway tokens are never automatically revoked.
 
 Resource and authentication `Retry-After` share the persistent

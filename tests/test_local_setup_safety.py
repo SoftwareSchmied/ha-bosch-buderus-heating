@@ -17,6 +17,9 @@ from custom_components.bosch_buderus_heating.config_flow import (
 )
 from custom_components.bosch_buderus_heating.configuration import LOCAL_KIND
 from custom_components.bosch_buderus_heating.const import DOMAIN
+from custom_components.bosch_buderus_heating.local_enrollment import (
+    LocalEnrollmentError,
+)
 from custom_components.bosch_buderus_heating.local_state import LocalCondition
 
 INTEGRATION = Path(__file__).parents[1] / "custom_components" / "bosch_buderus_heating"
@@ -156,7 +159,9 @@ async def test_a_failing_keep_is_shown_on_the_form(hass) -> None:
         credentials=SimpleNamespace(token="stored-token"), endpoint="gateway-a"
     )
     journal = SimpleNamespace(
-        import_token=AsyncMock(side_effect=ValueError("enrollment_retry_later"))
+        import_token=AsyncMock(
+            side_effect=LocalEnrollmentError("enrollment_retry_later")
+        )
     )
     with (
         patch.object(flow, "load_local_access", return_value=access),
@@ -207,3 +212,29 @@ async def test_a_changed_certificate_creates_a_repair_note(hass: HomeAssistant) 
     assert registry.async_get_issue(DOMAIN, issue_id)
     LocalSource._certificate_issue(source, LocalCondition.READY)
     assert registry.async_get_issue(DOMAIN, issue_id) is None
+
+
+def test_only_own_errors_carry_a_code(caplog) -> None:
+    """ERR-8: the text of a foreign error is never read as a code."""
+    from custom_components.bosch_buderus_heating.configuration import (
+        ConfigurationError,
+    )
+
+    assert flow.local_error(ValueError("timeout")) == "local_unexpected"
+    assert flow.local_error(KeyError("timeout")) == "local_unexpected"
+    assert flow.local_error(ConfigurationError("timeout")) == "local_timeout"
+    assert (
+        flow.local_error(LocalEnrollmentError("local_enrollment_storage_failed"))
+        == "local_storage_failed"
+    )
+    caplog.set_level("DEBUG")
+    assert (
+        flow.reported_local_error(ValueError("synthetic-private-text"))
+        == "local_unexpected"
+    )
+    warning = next(r for r in caplog.records if r.levelname == "WARNING")
+    assert warning.message == "A local setup step failed unexpectedly (ValueError)"
+    assert any(r.exc_info for r in caplog.records if r.levelname == "DEBUG")
+    caplog.clear()
+    assert flow.reported_local_error(ConfigurationError("timeout")) == "local_timeout"
+    assert not caplog.records

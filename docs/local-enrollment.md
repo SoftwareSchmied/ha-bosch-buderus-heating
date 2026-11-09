@@ -65,11 +65,18 @@ its issuer-reported scope. No token ID is inferred from a name or timestamp.
 One lock covers reads, writes and enrollment. Executor writes finish before the
 lock is released, even after repeated cancellation. A new instance reloads the
 file; malformed or unsupported data blocks creation instead of appearing empty.
+Removing a local access or an entry does not fail on such a file: it is moved
+aside as `bosch_buderus_heating.local_enrollment.corrupt`, and the next setup
+starts with an empty journal. A file that cannot be read at all still stops the
+removal with a storage message.
 Failures before the initial write send no request. Failures during a later save
 leave the previous durable record authoritative, potentially still uncertain.
 
-Another attempt for the same owner/target or canonical endpoint is blocked until
-the pending attempt is explicitly acknowledged. This is not a claim that different
+A `rejected` or `not_sent` result certainly created no token. Its record is
+resolved at once, so the next attempt needs no acknowledgement; its
+`Retry-After` pause stays in the shared budget. Another attempt for the same
+owner/target or canonical endpoint is blocked until an `uncertain` or
+`received` attempt is explicitly acknowledged. This is not a claim that different
 host aliases identify different physical gateways. The selected target and later
 full identity comparison remain authoritative. Setup for separate targets is
 serialized; these limits do not affect regular cloud polling.

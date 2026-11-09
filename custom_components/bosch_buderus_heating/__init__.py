@@ -18,6 +18,7 @@ from homeassistant.exceptions import (
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.util import dt as dt_util
 
@@ -115,6 +116,10 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
 
     install_local_support(hass)
     install_update_load(hass)
+    from .store_cleanup import async_sweep_orphaned_stores
+
+    # STORE-5: files left by entries removed earlier, before any entry starts.
+    await async_sweep_orphaned_stores(hass)
     return True
 
 
@@ -437,6 +442,7 @@ async def async_remove_entry(
     from .configuration_management import clear_not_found_issues
 
     clear_not_found_issues(hass, entry.entry_id)
+    _clear_entry_issues(hass, entry.entry_id)
     runtime = getattr(entry, "runtime_data", None)
     if isinstance(runtime, ManagedEntry):
         await runtime.remove()
@@ -453,6 +459,23 @@ async def async_remove_entry(
     await async_remove_module_fingerprints(hass, entry.entry_id)
     await async_remove_exchange_journal(hass, entry.entry_id)
     clear_entry_exchange_issues(hass, entry.entry_id)
+    from .store_cleanup import async_remove_entry_stores
+
+    await async_remove_entry_stores(hass, entry)
+
+
+def _clear_entry_issues(hass: HomeAssistant, entry_id: str) -> None:
+    """Every repair note of a removed entry, loaded or not (STORE-4).
+
+    HA unloads an entry and drops its runtime before removing it, so the
+    runtime's own cleanup never runs here. Firmware, rate-limit and
+    certificate notes name their entry in their data.
+    """
+    registry = ir.async_get(hass)
+    for domain, issue_id in tuple(registry.issues):
+        issue = registry.issues[(domain, issue_id)]
+        if domain == DOMAIN and (issue.data or {}).get("entry_id") == entry_id:
+            ir.async_delete_issue(hass, DOMAIN, issue_id)
 
 
 def _restore_registered_startup_paths(
@@ -590,10 +613,13 @@ async def async_migrate_entry(
             migrate_entry_storage(
                 hass, entry, minor_version=BoschBuderusConfigFlow.MINOR_VERSION
             )
-        except Exception:
+        except Exception as error:
             # Not a migration failure: the setup reports the stored
             # configuration with a clear message and retries at every start.
-            _LOGGER.warning("The stored configuration could not be checked")
+            _LOGGER.warning(
+                "The stored configuration could not be checked (%s)",
+                _migration_reason(error),
+            )
         return True
     if BoschBuderusConfigFlow.VERSION == 4:
         try:
@@ -612,14 +638,28 @@ async def async_migrate_entry(
             migrate_entry_storage(
                 hass, entry, minor_version=BoschBuderusConfigFlow.MINOR_VERSION
             )
-        except Exception:
+        except Exception as error:
             # Neither credentials nor arbitrary transport exception text belongs
-            # in logs. HA reports MIGRATION_ERROR and requires a restart.
-            _LOGGER.error("Configuration migration could not be completed")
+            # in logs, not even in a debug traceback: only a static code or the
+            # error type (ERR-6). HA reports MIGRATION_ERROR and requires a
+            # restart.
+            _LOGGER.error(
+                "Configuration migration could not be completed (%s)",
+                _migration_reason(error),
+            )
             return False
     else:
         _migrate_preview_devices(hass, entry)
     return True
+
+
+def _migration_reason(error: Exception) -> str:
+    """A static configuration code, otherwise only the type of the error."""
+    from .configuration import ConfigurationError
+
+    if isinstance(error, ConfigurationError):
+        return str(error)
+    return type(error).__name__
 
 
 @callback

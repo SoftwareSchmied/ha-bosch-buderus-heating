@@ -563,18 +563,105 @@ async def test_label_dialog_posts_once_and_preserves_outcome(
         assert result["step_id"] == "local_result"
         result = await submit(hass, manager, result, {"confirm": True})
         assert result["reason"] == "local_setup_complete"
-    else:
+    elif status == 503:
         assert result["step_id"] == "local_pending"
         assert result["errors"]["base"] == expected
         record = (await journal.records())[0]
-        if status == 429:
-            assert await journal.remaining_pause(record) > 0
-        if status == 503:
-            assert record.state == AuthState.UNCERTAIN
+        assert record.state == AuthState.UNCERTAIN and not record.resolved
         # No usable token means no misleading Continue option.
         selector = next(iter(result["data_schema"].schema.values()))
         assert "continue" not in selector.config["options"]
+    else:
+        # FLOW-5: certainly rejected, so the label form returns at once with
+        # the reason; nothing has to be discarded first.
+        assert result["step_id"] == "local_auth"
+        assert result["errors"] == {"base": expected}
+        record = (await journal.records())[0]
+        assert record.state == AuthState.REJECTED and record.resolved
+        if status == 429:
+            assert await journal.remaining_pause(record) > 0
     assert len(calls) == 1
+
+
+async def test_rejected_label_sign_in_retries_without_new_confirmations(
+    hass, supported, journal, auth_gateway, monkeypatch
+):
+    """FLOW-5: a typo costs one more submission, not a restart of the dialog."""
+    entry, management, _, target = registered(hass)
+    statuses = [401, 200]
+
+    async def reply(head, body, writer):
+        payload = {
+            "access_token": TOKEN,
+            "token_type": "Bearer",
+            "scope": "open_api.read",
+        }
+        status = statuses.pop(0)
+        writer.write(wire_reply(json.dumps(payload).encode(), status=status))
+        await writer.drain()
+
+    calls, _, pin = await auth_gateway(reply)
+    inspections = []
+
+    async def inspect(context, role, *, is_current, budget):
+        inspections.append(role)
+        return CertificateObservation(context, role, pin.sha256, "127.0.0.1", "TLSv1.3")
+
+    monkeypatch.setattr(flow, "inspect_local_certificate", inspect)
+    manager = hass.config_entries.options
+    result = await start(hass, entry, target)
+    result = await submit(hass, manager, result, {"address": "gateway.example.invalid"})
+    result = await submit(hass, manager, result, {"method": "label"})
+    result = await submit(hass, manager, result, {"confirm": True})
+    values = {"login": LABEL.login, "password": LABEL.password, "unlocked": True}
+    result = await submit(hass, manager, result, values)
+    assert result["step_id"] == "local_auth"
+    assert result["errors"] == {"base": "local_invalid_credentials"}
+    result = await submit(hass, manager, result, values)
+    assert len(calls) == 2 and not statuses
+    assert result["step_id"] == "local_certificate"
+    assert inspections == [PortRole.AUTHENTICATION, PortRole.RESOURCES]
+    result = await submit(hass, manager, result, {"confirm": True})
+    assert result["step_id"] == "local_result"
+    assert management.current().minor_version == 1
+
+
+@pytest.mark.parametrize("certificate", ["same", "changed"])
+async def test_continue_after_a_temporary_error_keeps_the_confirmed_certificate(
+    hass, supported, journal, monkeypatch, certificate
+):
+    """FLOW-5: Continue asks again only for a different certificate."""
+    entry, management, _, target = registered(hass)
+    fingerprints = [b"a" * 32, b"a" * 32 if certificate == "same" else b"b" * 32]
+    inspections = []
+
+    async def inspect(context, role, *, is_current, budget):
+        inspections.append(role)
+        return CertificateObservation(
+            context, role, fingerprints.pop(0), "192.0.2.1", "TLSv1.3"
+        )
+
+    read = setup.read_local_probe
+    failures = [ValueError("timeout")]
+
+    async def flaky(*args, **kwargs):
+        if failures:
+            raise failures.pop()
+        return await read(*args, **kwargs)
+
+    monkeypatch.setattr(flow, "inspect_local_certificate", inspect)
+    monkeypatch.setattr(setup, "read_local_probe", flaky)
+    manager = hass.config_entries.options
+    result = await imported(hass, entry, target)
+    assert result["step_id"] == "local_certificate"
+    result = await submit(hass, manager, result, {"confirm": True})
+    assert result["step_id"] == "local_pending"
+    result = await submit(hass, manager, result, {"action": "continue"})
+    assert inspections == [PortRole.RESOURCES, PortRole.RESOURCES]
+    assert result["step_id"] == (
+        "local_result" if certificate == "same" else "local_certificate"
+    )
+    assert management.current().minor_version == 1
 
 
 async def test_runtime_gate_removed_during_request_prevents_next_form(

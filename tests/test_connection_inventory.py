@@ -6,6 +6,7 @@ from dataclasses import replace
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from homeassistant.exceptions import HomeAssistantError, UnsupportedStorageVersionError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.storage import Store
 
@@ -240,3 +241,72 @@ async def test_inventory_store_is_private_and_atomic(hass):
     assert len(calls) == 1
     assert calls[0].arguments["private"] is True
     assert calls[0].arguments["atomic_writes"] is True
+
+
+async def test_newer_inventory_file_does_not_stop_the_entry(hass, hass_storage):
+    """STORE-3/TEST-2: a real future-version envelope through HA's Store."""
+    entry, _, _ = entry_for(hass)
+    key = f"{DOMAIN}.inventory.{entry.entry_id}"
+    hass_storage[key] = {
+        "version": 2,
+        "minor_version": 1,
+        "key": key,
+        "data": {"owner_id": entry.entry_id, "entities": []},
+    }
+    inventory = ConnectionInventory(hass, entry)
+    await inventory.load()
+    assert not inventory.healthy and not inventory.entities
+    await inventory.save()
+    assert hass_storage[key]["version"] == 2  # the newer file stays untouched
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        HomeAssistantError("Error while loading: [Errno 5] I/O error"),
+        UnsupportedStorageVersionError("inventory", 2, 1),
+        KeyError("version"),
+        TypeError("list indices must be integers"),
+    ],
+    ids=lambda error: type(error).__name__,
+)
+async def test_store_errors_leave_the_entry_running_on_the_registry(
+    hass, enable_custom_integrations, error, caplog
+):
+    """STORE-3: the errors HA's Store really raises end in the fallback."""
+    from homeassistant.config_entries import ConfigEntryState
+
+    from custom_components.bosch_buderus_heating.managed_entry import (
+        async_setup_managed_entry,
+    )
+    from tests.test_connection_runtime import Harness
+
+    entry, _, _ = entry_for(hass)
+    harness = Harness()
+    original = Store.async_load
+
+    async def load(self):
+        if self.key.startswith(f"{DOMAIN}.inventory."):
+            raise error
+        return await original(self)
+
+    async def setup(hass, entry):
+        return await async_setup_managed_entry(
+            hass,
+            entry,
+            {"singlekey_cloud": harness.factory, "k40_local": harness.factory},
+        )
+
+    with (
+        patch.object(Store, "async_load", load),
+        patch(
+            "custom_components.bosch_buderus_heating.async_setup_managed_entry",
+            side_effect=setup,
+        ),
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await settle(hass)
+        assert entry.state is ConfigEntryState.LOADED
+        assert not entry.runtime_data.inventory.healthy
+        assert "entity inventory could not be loaded" in caplog.text
+        assert await hass.config_entries.async_unload(entry.entry_id)
