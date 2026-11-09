@@ -33,7 +33,7 @@
 >
 > **Looking for:** more testers and feedback, especially with other gateways, firmware versions and device families, so that a stable 0.9 is checked on as many installations as possible.
 >
-> **How to test:** make a backup, show pre-releases for this repository in HACS and install the latest alpha from the [releases](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases). Please report what works and what doesn't in the [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues).
+> **How to test:** make a backup, show pre-releases for this repository in HACS and install the latest alpha from the [releases](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases). Please share your experience in the [0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) and report bugs as [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new?template=bug.yml).
 
 > [!NOTE]
 > **0.9.0-alpha.3 is the current pre-release.** It needs Home Assistant
