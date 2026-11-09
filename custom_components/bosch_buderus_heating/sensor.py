@@ -1793,7 +1793,8 @@ class BoschBuderusSensor(
                 resource, description.value_key
             )
             if description.native_unit_of_measurement is not None and (
-                unit is None or device_class != description.device_class
+                unit is None
+                or _quantity(device_class) != _quantity(description.device_class)
             ):
                 return None
             return scalar * scale if scale != 1.0 else scalar
@@ -2303,6 +2304,18 @@ def _energy_values(resource: Resource) -> dict[str, float]:
         for key, reading in assess_energy(resource).readings
         if reading.value is not None
     }
+
+
+def _quantity(device_class: SensorDeviceClass | None) -> SensorDeviceClass | None:
+    """The quantity a later reading must keep; both temperature classes are one.
+
+    A temperature or a temperature difference is decided when the entity is
+    created (HAQ-4: kelvin means a difference); a later reading in another
+    temperature unit keeps that meaning and is shown in its reported unit.
+    """
+    if device_class is SensorDeviceClass.TEMPERATURE_DELTA:
+        return SensorDeviceClass.TEMPERATURE
+    return device_class
 
 
 def _measurement_attributes(
