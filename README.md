@@ -187,7 +187,7 @@ controller, and remains visible in diagnostics and the gateway hardware data.
 
 Users' reports and my own reference installation confirm the integration on
 these heaters. A feature that is not listed was not reported, which does not
-mean it does not work. Open confirmations are listed in
+mean it does not work. The same list is also available as
 [Confirmed installations](docs/confirmed-installations.md).
 
 | Manufacturer | Model | Variants | Type | Controller | Gateway / internet module | Confirmed features |

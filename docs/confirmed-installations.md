@@ -31,35 +31,3 @@ Last updated: 2026-11-09.
 
 The Logatherm WLW176i is my own reference installation. "–" means not stated
 in the report.
-
-## Open confirmations
-
-These features and device families have no confirmation from a real
-installation yet:
-
-- the 0.9 alphas on any installation other than mine, with other gateways,
-  firmware versions or device families, and a longer run on mine;
-- for the local access: further heating circuits, solar, ventilation and room
-  zones, radio devices and their zones, signing in with the details printed on
-  the device, a real certificate change, removing and adding the local access
-  again, real network failures, long-term stability, and gateways or firmware
-  other than K40RF 15.00.01;
-- the same fault reported by the cloud and the local error list, and bell
-  notifications without the cloud;
-- warnings, maintenance messages, critical and historical faults;
-- RRC zone controls and RRC weekly-program editing without a patch; so far the
-  only zone report needs a local patch;
-- heating mode changes and other heating circuits on my system, and hot-water
-  modes other than Auto and Off;
-- clock changes for the time programs, which are covered by automated tests
-  only;
-- the estimated energy from the current power on a heat source with a gas
-  burner (#107);
-- hybrid HM200 signals;
-- the controls of the WE800i water softener (start regeneration, holiday mode,
-  salt threshold);
-- the other device families: water heaters, air
-  conditioners, air purifiers, dehumidifiers and read-only wallboxes;
-- token renewal over long periods and endurance runs;
-- installations of the second supported brand: all reports so far come from
-  systems of one brand.
