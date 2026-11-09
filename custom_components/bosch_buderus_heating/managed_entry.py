@@ -95,7 +95,10 @@ class ManagedEntry:
                 raise result
         self.inventory.restore_unavailable()
         self._keep_templates()
-        self._unsubscribe.append(self.connections.subscribe(self._state_changed))
+        # C68: follows phases and the configuration, not local readings.
+        self._unsubscribe.append(
+            self.connections.subscribe(self._state_changed, local_values=False)
+        )
         self.connections.start()
         if not self.entry.data.get("connections") and any(
             flow["context"].get("source") == "user"
@@ -202,9 +205,17 @@ class ManagedEntry:
     async def unload(self) -> bool:
         """Report platform unload failure without discarding the live owner."""
         if self._platforms_started:
-            if not await self.hass.config_entries.async_unload_platforms(
-                self.entry, PLATFORMS
-            ):
+            # C57: no source adds an entity while the platforms are unloaded.
+            await self.platforms.suspend()
+            try:
+                unloaded = await self.hass.config_entries.async_unload_platforms(
+                    self.entry, PLATFORMS
+                )
+            except BaseException:
+                self.platforms.resume()
+                raise
+            if not unloaded:
+                self.platforms.resume()
                 return False
             self._platforms_started = False
         await self.close()

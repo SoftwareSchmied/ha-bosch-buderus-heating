@@ -333,7 +333,10 @@ def _released(owner, coordinator) -> bool:
     return (
         not coordinator.local_retained
         and coordinator._remove_local_listener is None
-        and coordinator._local_updated not in owner.connections._listeners
+        and all(
+            listener != coordinator._local_updated
+            for listener, _ in owner.connections._listeners
+        )
     )
 
 

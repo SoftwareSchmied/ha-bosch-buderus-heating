@@ -35,6 +35,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.util import dt as dt_util
 
+from .connection_runtime import RepeatedFailure
 from .const import PollingProfile
 from .coordinator import (
     COUNTER_HELD_CATEGORY,
@@ -292,6 +293,13 @@ class LocalPlantCoordinator(ManagedPointTCoordinator):
         self.update_interval = None
         self.startup_mode = LOCAL_PLANT_MODE
         self.faults.local_authority = True
+        # C61 (PRIV-2): a failure on every reading is logged once.
+        self._view_failure = RepeatedFailure(
+            _LOGGER, "The local plant view could not be updated"
+        )
+        self._fault_list_failure = RepeatedFailure(
+            _LOGGER, "The local error list could not be applied"
+        )
         self._cloud_paths = frozenset(cloud_paths)
         self._local_only_paths = frozenset(local_only_paths)
         # D1: cloud resources of the stored inventory (within its age rules)
@@ -474,14 +482,19 @@ class LocalPlantCoordinator(ManagedPointTCoordinator):
         changed = False
         try:
             changed = self.refresh_view()
-        except Exception:
+        except Exception as error:
             # A broken reading must not stop the fault list or later readings.
-            _LOGGER.exception("The local plant view could not be updated")
+            # Logged once with the error class; details at debug level.
+            self._view_failure.failed(error)
+        else:
+            self._view_failure.succeeded()
         faults_changed = False
         try:
             faults_changed = self._local_faults_updated(selection)
-        except Exception:
-            _LOGGER.exception("The local error list could not be applied")
+        except Exception as error:
+            self._fault_list_failure.failed(error)
+        else:
+            self._fault_list_failure.succeeded()
         if changed or faults_changed:
             self.async_update_listeners()
 

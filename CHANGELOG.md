@@ -63,6 +63,26 @@ Versioning after its first tagged preview.
 
 ### Cloud connection and robustness
 
+- **One entity no longer blocks all others:** if a single entity could not
+  be set up, for example because another entry already owns its ID or the
+  stored entity list was full, no entity of that kind came for the whole
+  system, and the same error came back with every reading. Now only the
+  affected entity is skipped (or, for the full list, added anyway), and the
+  cause is logged once.
+- **Reloading the integration is cleaner:** while Home Assistant unloads the
+  entities, no new entity is added any more. If the unload fails, the
+  entities that are still loaded are set up again.
+- **Less work per local reading:** a new local reading no longer makes the
+  integration check its repairs, notifications and entity lists again; only
+  the entities that show the reading are updated. Changes of a connection
+  still do all checks.
+- **Clearer error messages:** internal errors that repeat with every reading
+  are logged once with their type, the details only in the debug log. They
+  no longer contain values.
+- **Local readings without the cloud are tried again:** if the view of a
+  system with the cloud switched off (or unavailable) could not be built,
+  this was only visible in the debug log and was not tried again until a
+  restart. Now a warning names it and it is tried again after five minutes.
 - **One faulty value no longer stops the discovery:** if the cloud answers a
   single value with a server error such as HTTP 504, also when it is read
   again on its own, the discovery now skips only that value and finds all the

@@ -681,3 +681,59 @@ async def test_a_lower_partial_energy_collection_is_held(hass: HomeAssistant) ->
     view = coordinator.display_snapshot(TOTAL)
     assert not view.available and view.last_error_category == COUNTER_HELD_CATEGORY
     await coordinator.async_release_retention()
+
+
+async def test_a_failing_update_is_logged_once_without_its_message(
+    hass: HomeAssistant, caplog
+) -> None:
+    """C61 (PRIV-2): a view that fails on every reading logs the error class
+    once, never its message; the traceback and repetitions at debug level.
+    Values and the fault list keep updating."""
+    import logging
+
+    from custom_components.bosch_buderus_heating import managed_local_plant
+
+    logger = managed_local_plant._LOGGER.name
+    caplog.set_level(logging.DEBUG, logger=logger)
+    coordinator, runtime = await plant(hass)
+    view, faults = coordinator.refresh_view, coordinator._local_faults_updated
+    failing = {"view": True, "faults": True}
+
+    def refresh_view():
+        if failing["view"]:
+            raise ValueError("could not convert 21.5")
+        return view()
+
+    def local_faults_updated(selection):
+        if failing["faults"]:
+            raise KeyError("/private/path")
+        return faults(selection)
+
+    coordinator.refresh_view = refresh_view
+    coordinator._local_faults_updated = local_faults_updated
+
+    def warnings():
+        return [
+            record.getMessage()
+            for record in caplog.records
+            if record.name == logger and record.levelno >= logging.WARNING
+        ]
+
+    for _ in range(3):
+        runtime.publish(everyday())
+    assert warnings() == [
+        "The local plant view could not be updated (ValueError); further "
+        "failures are logged at debug level",
+        "The local error list could not be applied (KeyError); further "
+        "failures are logged at debug level",
+    ]
+    assert "21.5" not in " ".join(warnings())
+    assert "private" not in " ".join(warnings())
+    assert any(record.exc_info for record in caplog.records)
+    failing["view"] = False
+    runtime.publish(everyday(room=22.0))  # works again: the series ends
+    assert coordinator.data
+    failing["view"] = True
+    runtime.publish(everyday(room=22.5))
+    assert len(warnings()) == 3
+    await coordinator.async_release_retention()
