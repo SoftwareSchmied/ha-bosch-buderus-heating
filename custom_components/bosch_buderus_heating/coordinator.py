@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import math
+import re
 from collections import Counter, deque
 from collections.abc import Awaitable, Callable, Iterable, Iterator, Mapping
 from contextlib import ExitStack, contextmanager
@@ -81,6 +82,7 @@ from .pointt.exceptions import (
 from .pointt.models import BatchItemResult
 from .pointt.redaction import resource_path_template
 from .pointt.retry_after import MAX_CLOUD_PAUSE_SECONDS
+from .poll_slots import plan_poll_slots
 from .repair_scope import repair_data, repair_id
 from .resource_catalog import PollGroup, poll_group
 from .rrc_programs import WEEK, RrcProgramService
@@ -198,6 +200,19 @@ POLL_DUE_TOLERANCE_SECONDS = 1.0
 # P41: one polling cycle stops starting new requests after this time; the
 # remaining readings keep their values (validity rules) and come first next.
 CYCLE_BUDGET_SECONDS = 50.0
+# O45: while a paired reading is shown from the local access, its cloud copy
+# is read at this rate at most (a whole number of its group's intervals), and
+# at once again at its normal rate when the cloud value is shown instead.
+LOCAL_SERVED_INTERVAL = timedelta(minutes=15)
+# Paired readings whose cloud copy also feeds a control or a calculated entity
+# keep their normal cloud rate: the hot-water target and the summer/winter
+# check before a heating change read the cloud copy, and so does the
+# calculated pressure status.
+_CLOUD_COPY_IN_USE = re.compile(
+    r"^(?:/dhwCircuits/[^/]+/currentSetpoint"
+    r"|/heatingCircuits/[^/]+/currentSuWiMode"
+    r"|/heatSources/systemPressure)$"
+)
 
 _FALLBACK_PRIORITY_PATHS = (
     "/heatSources/actualSupplyTemperature",
@@ -267,6 +282,13 @@ def _pause_end(seconds: float) -> datetime:
     if end.second or end.microsecond:
         end = end.replace(second=0, microsecond=0) + timedelta(minutes=1)
     return end
+
+
+def _slower_rate(interval: timedelta) -> timedelta:
+    """O45: the cloud rate of a locally shown reading of this group: the most
+    whole intervals within ``LOCAL_SERVED_INTERVAL``, so reads stay in step
+    with the group's own wake-ups."""
+    return interval * max(1, LOCAL_SERVED_INTERVAL // interval)
 
 
 def _manual_setpoint_mode_path(path: str) -> str | None:
@@ -426,6 +448,20 @@ class BoschBuderusDataUpdateCoordinator(
         # Paths of a due group already read in an earlier, budget-limited
         # cycle: they are not read again until the group completes (P41).
         self._budget_progress: dict[PollGroup, set[str]] = {}
+        # O41: one wake-up per tick; paths of longer groups read a few ticks
+        # before their group's deadline (their slot) wait here until it.
+        self._tick_seconds = min(
+            min(poll_intervals.values()), ACTIVE_NOTIFICATION_INTERVAL
+        ).total_seconds()
+        self._spread_progress: dict[PollGroup, set[str]] = {}
+        self._poll_slots: dict[str, tuple[PollGroup, int]] = {}
+        self._poll_slots_key: tuple[object, ...] = ()
+        # O45: paired readings shown from the local access -> monotonic time
+        # their cloud copy is read next; when they left that state (UTC) and
+        # cloud copies to read in the next cycle after such a switch.
+        self._local_served: dict[str, float] = {}
+        self._served_left: dict[str, datetime] = {}
+        self._urgent_reads: set[str] = set()
         # Readings kept after a firmware rediscovery; a 404 drops them.
         self._kept_after_firmware: set[str] = set()
         # Managed setups attach a per-target view; legacy setups keep None.
@@ -491,7 +527,16 @@ class BoschBuderusDataUpdateCoordinator(
             self._next_update[group] = min(
                 self._next_update.get(group, now_monotonic), now_monotonic
             )
+        # Everything is read again, also paths read early or at the slower
+        # rate of locally shown readings.
+        self._spread_progress.clear()
+        for path in self._local_served:
+            self._local_served[path] = 0.0
         await super().async_request_refresh()
+
+    async def _async_request_switch_refresh(self) -> None:
+        """O45: read switched readings now, without forcing any group."""
+        await DataUpdateCoordinator.async_request_refresh(self)
 
     def _queue_manual_setpoint_recovery(
         self, mode_path: str, snapshots: dict[str, ResourceSnapshot]
@@ -754,6 +799,7 @@ class BoschBuderusDataUpdateCoordinator(
             self.resources[path] = confirmed
             self._negative_until.pop(path, None)
             self._record_capability(path, "success", SnapshotSource.WRITE)
+            self._read_circuit_soon(path)
             if self.local_selection is not None:
                 # Local readings of this circuit from before the confirmation
                 # must not override it; read them again soon. The write is
@@ -1157,7 +1203,9 @@ class BoschBuderusDataUpdateCoordinator(
         ``None`` means no local cap: static readings (read once), readings that
         can be adjusted through the cloud (never supplied locally) and paths
         this cloud does not provide after its discovery. Before discovery the
-        answer is not final.
+        answer is not final. It is always the group's normal interval, also
+        while a locally shown reading is read from the cloud at the slower
+        rate (O45): the local access keeps its pace and stays the fresher one.
         """
         snapshot = (self.data or {}).get(path)
         if snapshot is None:
@@ -1181,7 +1229,22 @@ class BoschBuderusDataUpdateCoordinator(
         cycle = min(
             timedelta(milliseconds=self._last_poll_duration_ms or 0.0), interval
         )
-        return (interval + cycle) * VALIDITY_INTERVALS
+        limit = (interval + cycle) * VALIDITY_INTERVALS
+        path = snapshot.resource.path
+        if path in self._local_served:
+            # O45: read at the slower rate while the local reading is shown;
+            # never expires only because of that rate.
+            return _slower_rate(interval) + limit
+        left = self._served_left.get(path)
+        if left is not None and snapshot.last_success < left:
+            # Read at the slower rate before the cloud value was shown again:
+            # its normal limit counts from the switch, until the copy is read
+            # again, but never beyond the limit of that slower rate.
+            return min(
+                _slower_rate(interval) + limit,
+                (left - snapshot.last_success) + limit,
+            )
+        return limit
 
     def _expired(self, snapshot: ResourceSnapshot, now: datetime) -> bool:
         limit = self.validity_limit(snapshot)
@@ -1414,7 +1477,104 @@ class BoschBuderusDataUpdateCoordinator(
                 selection.check_writes(datetime.now(UTC))
             self._refresh_counter_views()
             super().async_update_listeners()
+            # O45: the shown sources of this pass decide the cloud rates.
+            if self._update_local_served():
+                self._request_switch_read()
         self._schedule_validity_refresh()
+
+    def _served_period(self, path: str) -> timedelta | None:
+        """The slower cloud rate this reading may use while shown locally.
+
+        Only paired readings that are no counter, cannot be adjusted through
+        the cloud, are not read by a control or calculated entity, and whose
+        group is read more often than ``LOCAL_SERVED_INTERVAL``.
+        """
+        from .local_selection import eligible
+
+        snapshot = (self.data or {}).get(path)
+        if (
+            snapshot is None
+            or _CLOUD_COPY_IN_USE.match(path)
+            or not eligible(path, snapshot)
+        ):
+            return None
+        interval = self._poll_intervals.get(self._validity_group(snapshot.resource))
+        if interval is None or interval * 2 > LOCAL_SERVED_INTERVAL:
+            return None
+        return _slower_rate(interval)
+
+    def _update_local_served(self) -> bool:
+        """Follow which cloud copies the shown local readings make optional.
+
+        A reading counts while ``Use local values for existing entities`` is
+        on and its entity shows the local reading. Returns whether a reading
+        just switched back to its cloud value and needs a cloud read now.
+        """
+        selection = self.local_selection
+        served: set[str] = set()
+        if (
+            selection is not None
+            and self.update_interval is not None
+            and not self.read_only_view
+        ):
+            # Within one pass: the published readings are worked out once.
+            with selection.update_pass():
+                if selection.enabled:
+                    for path in self.data or {}:
+                        if self._served_period(path) is None:
+                            continue
+                        shown = self.display_snapshot(path)
+                        if shown is not None and shown.source is SnapshotSource.LOCAL:
+                            served.add(path)
+        now = dt_util.utcnow()
+        now_monotonic = monotonic()
+        urgent = False
+        for path in tuple(self._local_served):
+            if path in served:
+                continue
+            del self._local_served[path]
+            snapshot = (self.data or {}).get(path)
+            if snapshot is None:
+                continue
+            self._served_left[path] = now
+            interval = self._poll_intervals.get(self._validity_group(snapshot.resource))
+            if interval is not None and now - snapshot.last_success >= interval:
+                # Older than its normal rate allows: read it at once.
+                self._urgent_reads.add(path)
+                urgent = True
+        for path in served - self._local_served.keys():
+            snapshot = (self.data or {}).get(path)
+            period = self._served_period(path)
+            if snapshot is None or period is None:  # pragma: no cover - checked
+                continue
+            age = max(0.0, (now - snapshot.last_success).total_seconds())
+            self._local_served[path] = now_monotonic + max(
+                0.0, period.total_seconds() - age
+            )
+            self._served_left.pop(path, None)
+            self._urgent_reads.discard(path)
+        return urgent
+
+    @callback
+    def _request_switch_read(self) -> None:
+        """Start a cycle now for readings that switched back to the cloud."""
+        if self._cloud_down()[0] is not None or self.config_entry is None:
+            return  # the next working cycle reads them first
+        self.config_entry.async_create_background_task(
+            self.hass,
+            self._async_request_switch_refresh(),
+            "bosch_buderus_heating_cloud_switch_read",
+        )
+
+    def _read_circuit_soon(self, path: str) -> None:
+        """After a confirmed write, slower cloud copies of the same circuit are
+        read with the next regular read of their group, as before O45."""
+        from .local_selection import write_scope
+
+        scope = write_scope(path)
+        for item in self._local_served:
+            if item == scope or item.startswith(scope + "/"):
+                self._local_served[item] = 0.0
 
     @callback
     def _schedule_validity_refresh(self) -> None:
@@ -1563,6 +1723,17 @@ class BoschBuderusDataUpdateCoordinator(
             },
         }
 
+    def cloud_rate_summary(self) -> dict[str, object]:
+        """O41/O45 figures without paths or values, for the diagnostics."""
+        return {
+            "early_read_paths": sum(
+                1 for _, slot in self._slot_plan().values() if slot
+            ),
+            "local_served_paths": len(self._local_served),
+            "local_served_interval_seconds": LOCAL_SERVED_INTERVAL.total_seconds(),
+            "switch_reads_pending": len(self._urgent_reads),
+        }
+
     def capability_metrics(self, path: str) -> dict[str, object]:
         """Return counters for one resource path."""
         metrics = self._capability_metrics.get(path)
@@ -1615,12 +1786,21 @@ class BoschBuderusDataUpdateCoordinator(
             *paths_by_group.get(PollGroup.CONTROL, ()),
             *pending_manual,
         )
+        # O45: a reading that switched back to its cloud value is read now.
+        self._update_local_served()
         candidate_paths = [
             path
             for group in due_groups
             for path in paths_by_group.get(group, ())
             if path not in self._budget_progress.get(group, ())
+            and path not in self._spread_progress.get(group, ())
+            and not self._served_skip(path, now_monotonic)
         ]
+        early = self._early_reads(paths_by_group, due_groups, now_monotonic)
+        urgent = tuple(path for path in self._urgent_reads if path in self.resources)
+        candidate_paths = list(
+            dict.fromkeys((*candidate_paths, *(path for _, path in early), *urgent))
+        )
         paths = [
             path
             for path in candidate_paths
@@ -1773,6 +1953,8 @@ class BoschBuderusDataUpdateCoordinator(
         self._deferred_poll_paths = tuple(
             path for path in paths if path not in attempted_paths
         )
+        # A switched reading was requested once; afterwards its normal rate.
+        self._urgent_reads -= attempted_paths
         self._main_cycle_failed = bool(failed_chunks) or any(
             not result.ok and result.status not in (403, 404, 406)
             for result in cycle_results
@@ -1815,11 +1997,6 @@ class BoschBuderusDataUpdateCoordinator(
                 "PointT returned no usable resources ("
                 f"{failure_category or _cycle_failure_category(cycle_results)})"
             )
-        if successful == 0 and not over_budget:
-            self._advance_groups(due_groups, now_monotonic)
-            return snapshots
-        self._record_gateway_recovery(monotonic())
-        # Advance complete groups even if a different group was interrupted.
         confirmed_paths = {
             path
             for path in attempted_paths
@@ -1828,6 +2005,15 @@ class BoschBuderusDataUpdateCoordinator(
         # Local path errors keep their normal cadence. Only an interrupted
         # batch or deferred work should prevent a group from advancing.
         completed_paths = (attempted_paths - interrupted_paths) | confirmed_paths
+        for group, path in early:
+            # O41: read before its group's deadline; not again until then.
+            if path in completed_paths:
+                self._spread_progress.setdefault(group, set()).add(path)
+        if successful == 0 and not over_budget:
+            self._advance_groups(due_groups, now_monotonic)
+            return snapshots
+        self._record_gateway_recovery(monotonic())
+        # Advance complete groups even if a different group was interrupted.
         completed_groups = tuple(
             group
             for group in due_groups
@@ -1835,6 +2021,7 @@ class BoschBuderusDataUpdateCoordinator(
                 path not in path_set
                 or path in completed_paths
                 or path in self._budget_progress.get(group, ())
+                or path in self._spread_progress.get(group, ())
                 for path in paths_by_group.get(group, ())
             )
         )
@@ -1996,6 +2183,11 @@ class BoschBuderusDataUpdateCoordinator(
             ).total_seconds()
             for group, interval in self._poll_intervals.items()
         }
+        # Everything was just read: a new period for every path.
+        self._spread_progress.clear()
+        for path in successful_resources:
+            self._urgent_reads.discard(path)
+            self._note_cloud_read(path, now_monotonic)
         updated_at = datetime.now(UTC)
         snapshots = {
             path: ResourceSnapshot(
@@ -2044,6 +2236,7 @@ class BoschBuderusDataUpdateCoordinator(
         self._rebuild_poll_groups()
         now_monotonic = monotonic()
         self._next_update = dict.fromkeys(self._poll_intervals, now_monotonic)
+        self._spread_progress.clear()
         self.data = {
             path: ResourceSnapshot(
                 resource=resource,
@@ -2635,6 +2828,7 @@ class BoschBuderusDataUpdateCoordinator(
                         previous.resource, result.resource
                     )
                 self._record_capability(result.path, "success", source)
+                self._note_cloud_read(result.path, now_monotonic)
                 snapshots[result.path] = ResourceSnapshot(
                     resource=result.resource,
                     available=True,
@@ -2768,12 +2962,101 @@ class BoschBuderusDataUpdateCoordinator(
         self, groups: tuple[PollGroup, ...], now_monotonic: float
     ) -> None:
         for group in groups:
-            interval = (
-                ACTIVE_NOTIFICATION_INTERVAL
-                if group is PollGroup.NOTIFICATIONS and self.faults.active
-                else self._poll_intervals[group]
+            self._next_update[group] = (
+                now_monotonic + self._group_interval(group).total_seconds()
             )
-            self._next_update[group] = now_monotonic + interval.total_seconds()
+            # A new period: paths read before this deadline are due again.
+            self._spread_progress.pop(group, None)
+
+    def _group_interval(self, group: PollGroup) -> timedelta:
+        return (
+            ACTIVE_NOTIFICATION_INTERVAL
+            if group is PollGroup.NOTIFICATIONS and self.faults.active
+            else self._poll_intervals[group]
+        )
+
+    def _slot_plan(self) -> dict[str, tuple[PollGroup, int]]:
+        """O41: the slot of each path, planned again when the groups change."""
+        key = tuple(self._paths_by_group.items())
+        if key != self._poll_slots_key:
+            tick = self._tick_seconds
+            self._poll_slots = plan_poll_slots(
+                self._paths_by_group,
+                {
+                    group: max(1, round(interval.total_seconds() / tick))
+                    for group, interval in self._poll_intervals.items()
+                },
+                capacity=MAX_BULK_PATHS,
+                previous=self._poll_slots,
+            )
+            self._poll_slots_key = key
+        return self._poll_slots
+
+    def _early_reads(
+        self,
+        paths_by_group: Mapping[PollGroup, tuple[str, ...]],
+        due_groups: tuple[PollGroup, ...],
+        now_monotonic: float,
+    ) -> tuple[tuple[PollGroup, str], ...]:
+        """O41: paths of groups not due yet whose slot is due in this cycle.
+
+        Slot ``s`` is read ``s`` ticks before the group's deadline, once per
+        period of the group; the group itself then reads only the rest.
+        """
+        slots = self._slot_plan()
+        tick = self._tick_seconds
+        early: list[tuple[PollGroup, str]] = []
+        for group, paths in paths_by_group.items():
+            deadline = self._next_update.get(group)
+            if group in due_groups or deadline is None:
+                continue
+            period = round(self._group_interval(group).total_seconds() / tick)
+            done = self._spread_progress.get(group, set()) | self._budget_progress.get(
+                group, set()
+            )
+            for path in paths:
+                planned = slots.get(path)
+                if (
+                    planned is None
+                    or planned[0] is not group
+                    or not 0 < planned[1] < period
+                    or path in done
+                    or now_monotonic + POLL_DUE_TOLERANCE_SECONDS
+                    < deadline - planned[1] * tick
+                    or self._served_skip(path, now_monotonic)
+                ):
+                    continue
+                early.append((group, path))
+        return tuple(early)
+
+    def _served_skip(self, path: str, now_monotonic: float) -> bool:
+        """O45: a locally shown reading whose slower cloud read is not due.
+
+        Its group's read nearest to the due time counts (half an interval
+        early at most), so the reads stay in step with the group.
+        """
+        due = self._local_served.get(path)
+        if due is None:
+            return False
+        resource = self.resources.get(path)
+        interval = (
+            self._poll_intervals.get(self._validity_group(resource))
+            if resource is not None
+            else None
+        )
+        if interval is None:
+            return False
+        return now_monotonic + interval.total_seconds() / 2 < due
+
+    def _note_cloud_read(self, path: str, now_monotonic: float) -> None:
+        """A successful cloud read: the slower rate counts from here."""
+        self._served_left.pop(path, None)
+        if path in self._local_served:
+            period = self._served_period(path)
+            if period is None:
+                del self._local_served[path]
+            else:
+                self._local_served[path] = now_monotonic + period.total_seconds()
 
     def _record_gateway_failure(self, now_monotonic: float) -> None:
         self._gateway_failure_count += 1
