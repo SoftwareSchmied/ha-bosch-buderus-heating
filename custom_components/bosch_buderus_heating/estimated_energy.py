@@ -109,6 +109,18 @@ class EstimatedEnergyStore:
             self._pending = True
             self._store.async_delay_save(self._data, SAVE_DELAY_SECONDS)
 
+    async def async_forget_gateways(self, gateway_ids: Collection[str]) -> None:
+        """Drop the totals of gateways no entry uses any more (PRIV-1)."""
+        await self.async_total("")
+        prefixes = tuple(f"{gateway_id}:" for gateway_id in gateway_ids)
+        forgotten = [key for key in self._totals if key.startswith(prefixes)]
+        if not prefixes or not forgotten:
+            return
+        for key in forgotten:
+            del self._totals[key]
+        self._pending = False
+        await self._store.async_save(self._data())
+
     def _data(self) -> dict[str, Any]:
         self._pending = False
         return {"totals": dict(self._totals)}
