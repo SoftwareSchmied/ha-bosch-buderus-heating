@@ -1385,6 +1385,20 @@
           "start": "Ein"
         }
       },
+      "four_way_valve_position": {
+        "name": "4-Wege-Ventil",
+        "state": {
+          "off": "Heizen",
+          "on": "Kühlen/Abtauen"
+        }
+      },
+      "dhw_valve_position": {
+        "name": "3-Wege-Ventil Warmwasser",
+        "state": {
+          "off": "Heizen",
+          "on": "Warmwasser"
+        }
+      },
       "heat_demand": {
         "name": "Aktuelle Wärmeanforderung",
         "state": {

@@ -1385,6 +1385,20 @@
           "start": "On"
         }
       },
+      "four_way_valve_position": {
+        "name": "4-way valve",
+        "state": {
+          "off": "Heating",
+          "on": "Cooling/defrost"
+        }
+      },
+      "dhw_valve_position": {
+        "name": "Hot water 3-way valve",
+        "state": {
+          "off": "Heating",
+          "on": "Hot water"
+        }
+      },
       "heat_demand": {
         "name": "Current heat demand",
         "state": {

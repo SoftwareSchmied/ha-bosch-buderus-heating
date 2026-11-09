@@ -5,6 +5,24 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Entities
+
+- **Names as on the controller:** readings that only the local access
+  provides now use the wording and sensor codes of the controller's Info menu,
+  so both can be compared line by line. Examples: "Primary supply temperature
+  (TC1)" instead of "Additional heater flow temperature", "Air intake
+  temperature (TL2)" instead of "Evaporator temperature", "Condenser
+  temperature heating (TR3)", "Expansion valve VR0/VR1", "Drain pan
+  temperature (TA4)". Entity IDs, history and your own names stay.
+- The 4-way valve (VR4) shows Heating or Cooling/defrost, the hot water 3-way
+  valve (VW1) Heating or Hot water. The states stay `off` and `on`, so
+  automations keep working.
+- The second expansion valve VR0 is now a reviewed reading (enabled); the
+  compressor start delay gets its name and stays disabled. Signals that repeat another entity's
+  reading are named after it with "(signal)" and stay disabled by default.
+- The names follow the Info menu of my own controller (MX400, firmware
+  15.00.01) in German and English.
+
 ## [0.9.0-alpha.3] - 2026-11-09
 
 > [!IMPORTANT]

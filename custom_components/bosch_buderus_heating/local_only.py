@@ -205,7 +205,7 @@ def _signal(
 ) -> LocalOnlyDefinition:
     """C7: one controller signal with a reviewed meaning."""
     if kind == FLAG:
-        translation_key, options = "on_off_state", _FLAG_OPTIONS
+        translation_key, options = translation_key or "on_off_state", _FLAG_OPTIONS
     if kind == MODE:
         translation_key, options = "smart_grid_mode", _SMART_GRID_OPTIONS
     return LocalOnlyDefinition(
@@ -241,15 +241,17 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         _HP1 + "DHWValve",
         "dhw_valve",
         FLAG,
-        ("Warmwasserventil", "Hot water valve"),
+        ("3-Wege-Ventil Warmwasser (VW1)", "Hot water 3-way valve (VW1)"),
         enabled=True,
+        translation_key="dhw_valve_position",
     ),
     _signal(
         _HP1 + "FourwayValve",
         "four_way_valve",
         FLAG,
-        ("Vierwegeventil", "Four-way valve"),
+        ("4-Wege-Ventil (VR4)", "4-way valve (VR4)"),
         enabled=True,
+        translation_key="four_way_valve_position",
     ),
     *(
         _signal(
@@ -279,14 +281,14 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         _HP1 + "CHPumpRelay",
         "heating_pump_relay",
         FLAG,
-        ("Heizungspumpe", "Heating pump"),
+        ("Primäre Heizungspumpe (PC0)", "Primary heating pump (PC0)"),
         enabled=True,
     ),
     _signal(
         "SRC.CUHP.CH.HC1PumpRelay",
         "circuit_1_pump_relay",
         FLAG,
-        ("Pumpe Heizkreis 1", "Heating circuit 1 pump"),
+        ("Heizkreispumpe HK1 (PC1)", "Heating circuit 1 pump (PC1)"),
     ),
     _signal(
         "SRC.CUHP.Cooling.Active",
@@ -354,7 +356,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         _HP1 + "DripPanTemp",
         "drip_pan_temperature",
         TEMPERATURE,
-        ("Kondensatwannentemperatur", "Drip pan temperature"),
+        ("Kondensatwannentemperatur (TA4)", "Drain pan temperature (TA4)"),
         enabled=True,
     ),
     # O100: despite its name the heat output, not the electric power (it
@@ -370,8 +372,23 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         _HP1 + "ExpansionValveActual",
         "expansion_valve",
         PERCENT,
-        ("Öffnung Expansionsventil", "Expansion valve opening"),
+        ("Expansionsventil VR1", "Expansion valve VR1"),
         enabled=True,
+    ),
+    _signal(
+        _HP1 + "ReceiverValveActual",
+        "expansion_valve_vr0",
+        PERCENT,
+        ("Expansionsventil VR0", "Expansion valve VR0"),
+        enabled=True,
+    ),
+    _signal(
+        _HP1 + "Timer.CompressorRestart",
+        # A waiting time, not a counter: generic, so it is read hourly while
+        # disabled, as before (G3).
+        "compressor_start_delay_signal",
+        GENERIC,
+        ("Verzögerung Kompressorstart", "Compressor start delay"),
     ),
     *(
         _signal(
@@ -407,8 +424,81 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "SRC.HC1.FlowCtrl.PumpVolumeFlow",
         "circuit_1_volume_flow",
         FLOW,
-        ("Volumenstrom Heizkreis 1", "Heating circuit 1 volume flow"),
+        ("Volumenstrom Heizkreis 1 (PC1)", "Heating circuit 1 flow rate (PC1)"),
         enabled=True,
+    ),
+    # Second sources of readings other entities already show: named after the
+    # controller, but generic and disabled like any other signal (C3).
+    *(
+        _signal(signal, key, GENERIC, names)
+        for signal, key, names in (
+            (
+                _HP1 + "CompressorSpeedActual",
+                "compressor_speed_signal",
+                ("Verdichterdrehzahl (Signal)", "Compressor speed (signal)"),
+            ),
+            (
+                _HP1 + "CHPumpSpeed",
+                "heating_pump_speed_signal",
+                (
+                    "Drehzahl primäre Heizungspumpe (PC0, Signal)",
+                    "Primary heating pump speed (PC0, signal)",
+                ),
+            ),
+            (
+                "SRC.IntFlowTemp",
+                "primary_supply_signal",
+                (
+                    "Vorlauftemperatur primär (TC1, Signal)",
+                    "Primary supply temperature (TC1, signal)",
+                ),
+            ),
+            (
+                _HP1 + "ReturnTemp",
+                "return_temperature_signal",
+                (
+                    "Rücklauftemperatur (TC0, Signal)",
+                    "Return temperature (TC0, signal)",
+                ),
+            ),
+            (
+                "SRC.SystemPumpVolumeFlow",
+                "primary_flow_signal",
+                (
+                    "Volumenstrom primär (PC0, Signal)",
+                    "Primary flow rate (PC0, signal)",
+                ),
+            ),
+            (
+                "SC.HC1.FlowTempSetp",
+                "circuit_1_supply_setpoint_signal",
+                ("Vorlauf-Sollwert HK1 (Signal)", "Supply setpoint HC1 (signal)"),
+            ),
+            (
+                "SRC.HC1.FlowCtrl.ReqFlowTemp",
+                "circuit_1_requested_supply_signal",
+                (
+                    "Angeforderte Vorlauftemperatur HK1 (Signal)",
+                    "Requested supply temperature HC1 (signal)",
+                ),
+            ),
+            (
+                "SRC.RelayStatus.3WayValve",
+                "dhw_valve_relay_signal",
+                (
+                    "Relais 3-Wege-Ventil Warmwasser (Signal)",
+                    "Hot water 3-way valve relay (signal)",
+                ),
+            ),
+            (
+                "SRC.RelayStatus.CHPump",
+                "heating_pump_relay_signal",
+                (
+                    "Relais primäre Heizungspumpe (Signal)",
+                    "Primary heating pump relay (signal)",
+                ),
+            ),
+        )
     ),
     # C7-3: the parts of the installation date (the date itself is derived).
     *(
@@ -734,32 +824,38 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
             (
                 "highPressureTemp",
                 "high_pressure_temperature",
-                ("Hochdrucktemperatur", "High-pressure temperature"),
+                ("Hochdrucktemperatur (JR1)", "High-pressure temperature (JR1)"),
             ),
             (
                 "hotGasTemp",
                 "hot_gas_temperature",
-                ("Heißgastemperatur", "Hot gas temperature"),
+                ("Heißgastemperatur (TR6)", "Hot gas temperature (TR6)"),
             ),
             (
                 "liquidPipeCoolingTemp",
                 "liquid_line_cooling",
-                ("Flüssigkeitsleitung Kühlen", "Liquid line cooling"),
+                (
+                    "Verflüssigertemperatur Kühlen (TR4)",
+                    "Condenser temperature cooling (TR4)",
+                ),
             ),
             (
                 "liquidPipeHeatingTemp",
                 "liquid_line_heating",
-                ("Flüssigkeitsleitung Heizen", "Liquid line heating"),
+                (
+                    "Verflüssigertemperatur Heizen (TR3)",
+                    "Condenser temperature heating (TR3)",
+                ),
             ),
             (
                 "lowPressureTemp",
                 "low_pressure_temperature",
-                ("Niederdrucktemperatur", "Low-pressure temperature"),
+                ("Niederdrucktemperatur (JR0)", "Low-pressure temperature (JR0)"),
             ),
             (
                 "suctionGasTemp",
                 "suction_gas_temperature",
-                ("Sauggastemperatur", "Suction gas temperature"),
+                ("Temperatur Saugleitung (TR5)", "Suction line temperature (TR5)"),
             ),
         )
     ),
@@ -767,19 +863,19 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         "/heatSources/sensors/evaporatorTemp_tl2",
         "evaporator_temperature",
         TEMPERATURE,
-        ("Verdampfertemperatur", "Evaporator temperature"),
+        ("Luftansaugtemperatur (TL2)", "Air intake temperature (TL2)"),
     ),
     _define(
         HS + "/oduFanSpeed",
         "outdoor_fan_speed",
         PERCENT,
-        ("Lüfterdrehzahl Außeneinheit", "Outdoor unit fan speed"),
+        ("Lüfterdrehzahl Außeneinheit (PL3)", "Outdoor unit fan speed (PL3)"),
     ),
     _define(
         REFRIGERANT + "/heatCarrierPumpSpeed",
         "heat_carrier_pump_speed",
         PERCENT,
-        ("Drehzahl Heizungspumpe", "Heat carrier pump speed"),
+        ("Drehzahl primäre Heizungspumpe (PC0)", "Primary heating pump speed (PC0)"),
     ),
     _define(
         REFRIGERANT + "/compressorActualSpeed",
@@ -791,7 +887,7 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         "/heatSources/additionalHeater/flowTemp",
         "additional_heater_flow",
         TEMPERATURE,
-        ("Vorlauftemperatur Zusatzheizer", "Additional heater flow temperature"),
+        ("Vorlauftemperatur primär (TC1)", "Primary supply temperature (TC1)"),
     ),
     # Second sources of readings above: offered, but disabled.
     _define(
@@ -978,10 +1074,20 @@ _MARKER_STATE = re.compile(
 )
 
 
+# Generic controller signals: the catch-all and the named ones.
+_SIGNAL_KEYS = frozenset(
+    {"signal"}
+    | {
+        definition.key
+        for definition in CONTROLLER_SIGNALS
+        if definition.kind == GENERIC and definition.key.endswith("_signal")
+    }
+)
+
 # Definitions without a reviewed meaning of their own (C7): their entities
 # are diagnostic, whatever form the answer gives them.
-_UNREVIEWED_KEYS = frozenset(
-    {"signal", "spec", "external_input", "room_controller_assignment"}
+_UNREVIEWED_KEYS = (
+    frozenset({"spec", "external_input", "room_controller_assignment"}) | _SIGNAL_KEYS
 )
 
 
@@ -1241,7 +1347,7 @@ def state_class(
         return SensorStateClass.MEASUREMENT
     if (
         definition.kind == GENERIC
-        and definition.key == "signal"
+        and definition.key in _SIGNAL_KEYS
         and unit in _MEASUREMENT_UNITS
     ):
         return SensorStateClass.MEASUREMENT

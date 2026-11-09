@@ -210,12 +210,12 @@ def test_signals_follow_the_local_only_rules() -> None:
     assert kinds == {
         # text true/false (C7-1) and the two TRUE/FALSE state maps (O107)
         "flag": 53,
-        "generic": 27,
+        "generic": 26,  # named second sources stay generic
         "state": 17,  # state maps of real names, no unit (C7-2)
         "duration": 3,
         "temperature": 2,
         "power": 1,
-        "percent": 1,
+        "percent": 2,  # both expansion valves VR0/VR1
         "mode": 1,  # the smart grid mode
         "flow": 1,
     }
@@ -224,7 +224,7 @@ def test_signals_follow_the_local_only_rules() -> None:
         for item, sensor in zip(signals(), sensors, strict=True)
         if sensor is not None and sensor.enabled
     )
-    assert len(enabled) == 24  # 13 on/off, 3 states, 8 measurements
+    assert len(enabled) == 25  # 13 on/off, 3 states, 9 measurements
     # #80: generic signals with a measurement unit get statistics; states,
     # on/off signals, times and numbers without a unit never do.
     classes = Counter(
@@ -262,9 +262,10 @@ def test_the_local_plant_view_builds_from_the_capture() -> None:
     }
     shapes = view.entity_shapes()
     # C4 (revised): the pool start counter again (disabled); C3: the
-    # cylinder temperature disabled; C7: 24 signals enabled.
+    # cylinder temperature disabled; C7: 25 signals enabled
+    # (with the second expansion valve VR0).
     assert Counter(platform for platform, _ in shapes) == {"sensor": 191}
-    assert sum(bool(shape.enabled) for shape in shapes.values()) == 77
+    assert sum(bool(shape.enabled) for shape in shapes.values()) == 78
 
 
 async def test_with_the_cloud_the_same_signals_become_entities(hass) -> None:
