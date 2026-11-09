@@ -1433,13 +1433,28 @@ async def test_options_flow_reports_holiday_write_errors(
             CONF_HOLIDAY_DHW_MODE: "off",
             CONF_HOLIDAY_VENTILATION_MODE: "nom",
             CONF_HOLIDAY_THERMAL_DISINFECTION: "on",
-            CONF_HOLIDAY_FIX_TEMPERATURE: 17.0,
+            CONF_HOLIDAY_FIX_TEMPERATURE: 18.0,
         },
     )
 
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "holiday"
     assert result["errors"] == {"base": expected}
+
+
+async def test_saving_the_holiday_as_shown_sends_nothing(
+    hass: HomeAssistant, enable_custom_integrations: None
+) -> None:
+    """UI-1 option 3: an unchanged save, e.g. by Enter, writes nothing."""
+    entry, coordinator = _entry_with_writable_holiday(hass)
+    result = await _open_existing_holiday(hass, entry)
+    result = await _configure_options(
+        hass, result["flow_id"], _holiday_form_input(result)
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "holiday_unchanged"
+    coordinator.async_update_holiday.assert_not_awaited()
+    coordinator.async_delete_holiday.assert_not_awaited()
 
 
 async def _start_reconfigure(

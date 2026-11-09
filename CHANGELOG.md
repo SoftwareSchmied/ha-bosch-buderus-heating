@@ -75,6 +75,20 @@ Versioning after its first tagged preview.
   when such a value answers with a server error: it ends after one day instead
   of repeating every five minutes.
 
+### Dialogs
+
+- **Cloud setup no longer stays blocked:** a cloud sign-in dialog left behind
+  by a reloaded page or a restarted companion app blocked every new cloud
+  setup until Home Assistant was restarted ("Another cloud setup is already
+  open"). A newly opened cloud setup now replaces the older one; the older
+  dialog ends with a note at its next step and saves nothing. A dialog left
+  idle for more than 15 minutes counts as closed. Saving still checks that
+  only one cloud setup registers.
+- **Deleting a holiday by keyboard:** pressing Enter on "Delete holiday period
+  completely" saved the holiday instead of opening the deletion confirmation.
+  Enter and Space now open the confirmation. Saving a holiday without any
+  change no longer sends anything to the heating system.
+
 ## [0.9.0-alpha.3] - 2026-11-09
 
 > [!IMPORTANT]

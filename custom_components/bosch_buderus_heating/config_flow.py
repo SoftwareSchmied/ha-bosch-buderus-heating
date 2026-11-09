@@ -46,11 +46,12 @@ from .auth_lifecycle import entry_auth
 from .bacon import flow as bacon_flow
 from .bacon.models import CONF_BACON_ACCOUNT, CONF_BACON_IDS, BaconError
 from .cloud_configuration import (
-    CLAIM,
+    CLAIM_ABORTS,
     CloudDiscovery,
-    check_new_cloud,
+    claim_cloud_setup,
     ensure_active_cloud_flow,
     new_cloud_configuration,
+    renew_cloud_claim,
 )
 from .cloud_options_flow import CloudOptionsFlow
 from .configuration import CLOUD_KIND, ConfigurationError, load_configuration
@@ -293,15 +294,15 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
         """Select the application brand."""
         if self.VERSION == 4:
             try:
-                check_new_cloud(self.hass, self.flow_id)
+                claim_cloud_setup(
+                    self.hass, self.flow_id, cast(dict[str, Any], self.context)
+                )
             except ConfigurationError as error:
                 return self.async_abort(
                     reason=str(error)
-                    if str(error)
-                    in {"cloud_already_connected", "cloud_setup_in_progress"}
+                    if str(error) in CLAIM_ABORTS
                     else "configuration_changed"
                 )
-            cast(dict[str, Any], self.context)[CLAIM] = True
         if user_input is not None:
             self._brand = Brand(user_input[CONF_BRAND])
             return self._start_authorization()
@@ -388,6 +389,8 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Accept and exchange the application redirect URL."""
+        if not renew_cloud_claim(cast(dict[str, Any], self.context)):
+            return self.async_abort(reason="cloud_setup_taken_over")
         if self._auth_retry_at > monotonic():
             return self._show_auth_wait()
         if user_input is None:
@@ -428,6 +431,8 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Wait out the server limit before issuing a fresh sign-in link."""
+        if not renew_cloud_claim(cast(dict[str, Any], self.context)):
+            return self.async_abort(reason="cloud_setup_taken_over")
         if self._auth_retry_at > monotonic():
             return self._show_auth_wait()
         self._auth_retry_at = 0.0
@@ -437,6 +442,8 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Retry gateway discovery without repeating login."""
+        if not renew_cloud_claim(cast(dict[str, Any], self.context)):
+            return self.async_abort(reason="cloud_setup_taken_over")
         if user_input is not None:
             return await self._async_discover_gateways()
         return self.async_show_form(step_id="retry")
@@ -445,6 +452,8 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """List the devices again after an expired selection, keeping the sign-in."""
+        if not renew_cloud_claim(cast(dict[str, Any], self.context)):
+            return self.async_abort(reason="cloud_setup_taken_over")
         if user_input is not None:
             return await self._async_discover_gateways()
         return self.async_show_form(step_id="selection_expired")
@@ -453,6 +462,8 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Select one or more gateways for this entry."""
+        if not renew_cloud_claim(cast(dict[str, Any], self.context)):
+            return self.async_abort(reason="cloud_setup_taken_over")
         errors: dict[str, str] = {}
         if user_input is not None:
             selected = user_input.get(CONF_GATEWAY_IDS, [])
@@ -559,8 +570,7 @@ class BoschBuderusConfigFlow(LocalSetupFlow, ConfigFlow, domain=DOMAIN):
                 reason=str(error)
                 if str(error)
                 in {
-                    "cloud_already_connected",
-                    "cloud_setup_in_progress",
+                    *CLAIM_ABORTS,
                     "cloud_target_owned",
                     "cloud_local_first_other_entry",
                 }
@@ -1554,6 +1564,10 @@ class BoschBuderusOptionsFlow(
                     raise WriteValidationError("Holiday ID is not writable")
                 if creating:
                     await choice.coordinator.async_create_holiday(values)
+                elif values == current:
+                    # Saving the values as shown sends nothing: such a write
+                    # could only undo a change made meanwhile in the app.
+                    return self.async_abort(reason="holiday_unchanged")
                 else:
                     await choice.coordinator.async_update_holiday(
                         holiday_id, values, expected=current
