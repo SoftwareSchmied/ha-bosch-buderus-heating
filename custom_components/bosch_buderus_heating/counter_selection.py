@@ -5,14 +5,18 @@ shown from the local connection. A counter only changes its source when every
 number the entities show from it (each part and the derived energy values) is
 at least the last number shown. Otherwise the previous source stays while its
 reading is valid, and the counter becomes unavailable after that: a gap, never
-an artificial consumption. Within one source nothing is corrected, so a real
-device reset stays visible. The last shown numbers and source are stored, so
-the rule also holds after a restart.
+an artificial consumption. Within one source a small decrease (a net heat
+counter during a defrost) is shown as reported. A drop of more than
+``DROP_FRACTION`` is held until the next reading of that source confirms it,
+so a single outlier never counts as a meter reset, while a real device reset
+stays visible one reading later. The last shown numbers and source are stored,
+so the rule also holds after a restart.
 
 When the source shown last is gone for good (its access removed or switched
 off), the other source may take over once it is not lower for the parts both
-report. A stored part that no source has reported for ``STALE_PART_SECONDS``
-since the last switch no longer binds anything and is dropped; a part that is
+report. A part the shown source no longer reports becomes unconfirmed. A
+stored part that no source has reported for ``STALE_PART_SECONDS`` since it
+became unconfirmed no longer binds anything and is dropped; a part that is
 reported stays bound until it reaches its stored number.
 """
 
@@ -24,6 +28,7 @@ import re
 import time
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
+from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.core import HomeAssistant
@@ -54,6 +59,9 @@ _ID = re.compile(r"[^|\x00-\x1f\x7f]{1,256}")
 BASELINE_SOURCE = "cloud"
 # A part no source reports any more stops binding after this time.
 STALE_PART_SECONDS = 7 * 24 * 3600.0
+# SEL-4: a decrease of more than this share within one source is what Home
+# Assistant takes as a meter reset; it is held until a second reading shows it.
+DROP_FRACTION = 0.1
 
 
 def _now() -> float:
@@ -154,6 +162,7 @@ class CounterSourceStore:
         )
         self._rows: dict[str, ShownCounter] = {}
         self._loaded = False
+        self._pending = False
 
     @property
     def store(self) -> Store[dict[str, Any]]:
@@ -182,7 +191,7 @@ class CounterSourceStore:
         if key not in self._rows and len(self._rows) >= MAX_ROWS:
             return  # without a row the counter keeps its cloud baseline
         self._rows[key] = shown
-        self._store.async_delay_save(self._data, 0 if immediate else SAVE_DELAY_SECONDS)
+        self._schedule_save(immediate=immediate)
 
     def discard_owner(self, owner_id: str) -> None:
         prefix = owner_id + "|"
@@ -190,6 +199,20 @@ class CounterSourceStore:
         for key in removed:
             del self._rows[key]
         if removed:
+            self._schedule_save()
+
+    def _schedule_save(self, *, immediate: bool = False) -> None:
+        """Save at once, or at most ``SAVE_DELAY_SECONDS`` after the first change.
+
+        PERF-4: Home Assistant moves a delayed save to the last call plus the
+        delay, so frequent changes would keep postponing it; a pending save is
+        therefore not scheduled again. An immediate save still goes first.
+        """
+        if immediate:
+            self._pending = True
+            self._store.async_delay_save(self._data, 0)
+        elif not self._pending:
+            self._pending = True
             self._store.async_delay_save(self._data, SAVE_DELAY_SECONDS)
 
     async def async_discard_target(self, owner_id: str, target_id: str) -> None:
@@ -207,6 +230,7 @@ class CounterSourceStore:
             await self._store.async_save(self._data())
 
     def _data(self) -> dict[str, Any]:
+        self._pending = False
         return {"counters": {key: _row_data(row) for key, row in self._rows.items()}}
 
 
@@ -288,6 +312,8 @@ class CounterGuard:
         self.blocked: dict[str, int] = {}
         self.shown: dict[str, str] = {}
         self._decided: set[str] = set()
+        # SEL-4: per counter, the source and reading time of a held drop.
+        self._drops: dict[str, tuple[str, datetime]] = {}
 
     def decide(
         self,
@@ -301,7 +327,12 @@ class CounterGuard:
 
         Without history only the cloud sets the first count. After a restart the
         source shown last goes first. Parts missing in a new reading keep their
-        last shown number, so they still bind a later source change.
+        last shown number, so they still bind a later source change, but they
+        become unconfirmed and stop binding after ``STALE_PART_SECONDS``.
+
+        Within one source, a part more than ``DROP_FRACTION`` below its shown
+        number is held until a later reading of that source shows the drop
+        again; a reading in between that does not drop ends the hold.
 
         With ``partial`` (only the local plant view, its local access being
         the sole source), a reading lacking some parts may take over. The
@@ -358,6 +389,13 @@ class CounterGuard:
                 # shown before: held back until it reaches it.
                 blocked = True
                 continue
+            if (
+                not switch
+                and last is not None
+                and self._held_drop(path, source, snapshot, vector, last)
+            ):
+                blocked = True
+                continue
             if switch:
                 self.switches[path] = self.switches.get(path, 0) + 1
                 from .observations import pair_for_path
@@ -370,19 +408,24 @@ class CounterGuard:
                 )
             values = {**last.values, **vector} if last is not None else vector
             confirmed: frozenset[str] | None = None
-            if last is not None and (switch or last.confirmed is not None):
-                previous = frozenset() if switch else last.confirmed or frozenset()
-                confirmed = previous | frozenset(vector)
+            since: float | None = None
+            if last is not None:
+                # NRG-1: confirmed are the parts this source reports now; a
+                # part it no longer reports waits like one never shown, so a
+                # part that is gone for good cannot block a switch forever.
+                confirmed = frozenset(vector)
                 if confirmed >= frozenset(values):
                     confirmed = None  # every part shown by this source
-            since: float | None = None
             if confirmed is not None and last is not None:
-                # The parts this source has not shown wait from the switch on.
-                since = _now() if switch else last.since
+                # The parts this source has not shown wait from the switch on,
+                # or from the reading that first lacked them.
+                newly = frozenset(values) - confirmed - last.unconfirmed()
+                since = _now() if switch or newly else last.since
             self._store.set(
                 key, ShownCounter(source, values, confirmed, since), immediate=switch
             )
             self._decided.add(path)
+            self._drops.pop(path, None)  # a held drop must be seen twice in a row
             self.shown[path] = source
             self._note_blocked(path, blocked)
             return snapshot
@@ -433,11 +476,48 @@ class CounterGuard:
         self._store.set(key, row, immediate=True)
         return row
 
+    def _held_drop(
+        self,
+        path: str,
+        source: str,
+        snapshot: ResourceSnapshot,
+        vector: Mapping[str, float],
+        last: ShownCounter,
+    ) -> bool:
+        """SEL-4: whether a large drop within the shown source is held.
+
+        The first reading with a drop is held; a later reading of the same
+        source that still drops shows it (a real reset). Small decreases and
+        readings that do not drop pass and end a hold.
+        """
+        # Reported parts only: a derived difference (the environmental energy)
+        # moves by a larger share in a defrost, and an outlier always shows in
+        # a reported part.
+        dropped = any(
+            not name.startswith("=")
+            and name in vector
+            and last.values[name] > 0
+            and vector[name] < last.values[name] * (1 - DROP_FRACTION)
+            for name in last.values
+        )
+        if not dropped:
+            self._drops.pop(path, None)
+            return False
+        held = self._drops.get(path)
+        if held is not None and held[0] == source and snapshot.last_success > held[1]:
+            del self._drops[path]
+            _LOGGER.debug("Counter reading dropped twice in a row; shown as a reset")
+            return False
+        if held is None or held[0] != source:
+            self._drops[path] = (source, snapshot.last_success)
+        return True
+
     def forget_shown(self) -> None:
         """A stopped source shows nothing; keep the stored history."""
         self.shown.clear()
         self._blocked_now.clear()
         self._decided.clear()
+        self._drops.clear()
 
     def summary(self) -> dict[str, dict[str, Any]]:
         """Per catalog measurement: shown source, switches and blocked switches."""
