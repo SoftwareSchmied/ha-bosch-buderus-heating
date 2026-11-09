@@ -783,6 +783,66 @@
       "title": "Local gateway certificate changed",
       "description": "The gateway of a local access presents a different certificate. The integration does not accept it on its own and stops reading locally. If you know why the certificate changed (for example after a gateway update or reset), open the integration options, choose the local access and select \"Change local access\". You confirm the new certificate there. A new sign-in with the device label is recommended; keep the current token only if you are sure the new certificate belongs to your own gateway."
     },
+    "local_start_certificate": {
+      "title": "Local access cannot connect securely",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Try the local access again",
+            "description": "The local access has failed to start several times in a row because the secure connection to the gateway could not be established (code: {code}). This can happen while the gateway restarts. The integration keeps trying on its own, at the latest every hour, and removes this note once the local access starts. Other accesses are not affected. Select **Submit** to try again now. If it persists, check that the stored address still belongs to your gateway."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected entry no longer exists.",
+          "configuration_changed": "The access or heating system has changed. Open the repair again."
+        }
+      }
+    },
+    "local_start_incomplete": {
+      "title": "Local gateway is not ready yet",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Try the local access again",
+            "description": "The local access has failed to start several times in a row because the gateway reports that its system information is not complete yet (code: {code}). This is usual for a while after the gateway starts. The integration keeps trying on its own, at the latest every hour, and removes this note once the local access starts. Other accesses are not affected. Select **Submit** to try again now. If the note stays for hours, restart the gateway."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected entry no longer exists.",
+          "configuration_changed": "The access or heating system has changed. Open the repair again."
+        }
+      }
+    },
+    "local_start_unrecognized": {
+      "title": "Local gateway answer not recognized",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Try the local access again",
+            "description": "The local access has failed to start several times in a row because the gateway's answer about its brand, firmware or identity could not be recognized (code: {code}). The integration keeps trying on its own, at the latest every hour, and removes this note once the local access starts. Other accesses are not affected. Select **Submit** to try again now. If the note stays after a gateway update, please report the code."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected entry no longer exists.",
+          "configuration_changed": "The access or heating system has changed. Open the repair again."
+        }
+      }
+    },
+    "local_start_response": {
+      "title": "Local gateway answers unexpectedly",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Try the local access again",
+            "description": "The local access has failed to start several times in a row because the gateway answers, but not as expected, for example with an error or an unreadable answer (code: {code}). The integration keeps trying on its own, at the latest every hour, and removes this note once the local access starts. Other accesses are not affected. Select **Submit** to try again now. If it persists, check that the stored address still belongs to your gateway."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected entry no longer exists.",
+          "configuration_changed": "The access or heating system has changed. Open the repair again."
+        }
+      }
+    },
     "cloud_targets_not_found": {
       "title": "Systems not found in the cloud account",
       "description": "The last sign-in of the cloud access in \"{title}\" did not find {count} switched-on systems or devices (ending in {systems}). They stay configured and unavailable until they appear in the account again; this note then disappears.\n\nIf they were removed from the account, open Configure → Connections → the cloud access, switch them off under **Use for systems and devices** and remove them with **Forget deselected systems**. Their devices and entities stay in Home Assistant until you delete them. If a gateway was exchanged, keep it switched on: a separate repair note offers to continue the system with its history."

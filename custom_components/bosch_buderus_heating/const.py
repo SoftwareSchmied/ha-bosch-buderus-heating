@@ -33,6 +33,8 @@ DEFAULT_POLLING_PROFILE: Final = PollingProfile.STANDARD
 RATE_LIMIT_ISSUE_PREFIX: Final = "repeated_rate_limit_"
 FIRMWARE_ISSUE_PREFIX: Final = "incompatible_firmware_"
 GATEWAY_EXCHANGE_ISSUE_PREFIX: Final = "gateway_exchange_"
+# B01: the local start check keeps failing on an unusable answer.
+LOCAL_START_ISSUE_PREFIX: Final = "local_start_failed_"
 
 
 def polling_profile_from_options(options: Mapping[str, Any]) -> PollingProfile:

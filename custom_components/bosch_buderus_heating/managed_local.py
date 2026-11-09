@@ -67,6 +67,39 @@ SYSTEM_READ_WAIT_SECONDS = 4.0
 SYSTEM_READ_SECONDS = 20.0
 # A start that failed on the stored local pauses is tried again after these.
 START_RETRY = (60.0, 120.0, 240.0, 480.0, 900.0)
+# B01: the start check stops for good only on these problems (and on another
+# gateway): a refused token, a changed certificate (P39) and too old firmware
+# need the user. Every other problem is tried again.
+_STOP = frozenset(
+    {ProbeProblem.AUTH_REJECTED, ProbeProblem.TLS_CHANGED, ProbeProblem.OLD_FIRMWARE}
+)
+# The gateway cannot be reached or asks for a pause: the stored pause of the
+# gateway holds every reader, growing up to the last of these without
+# Retry-After.
+_UNREACHABLE = frozenset(
+    {
+        ProbeProblem.CONNECT,
+        ProbeProblem.DNS,
+        ProbeProblem.TIMEOUT,
+        ProbeProblem.RATE_LIMITED,
+        ProbeProblem.SERVICE_UNAVAILABLE,
+    }
+)
+UNREACHABLE_RETRY = (60.0, 120.0, 300.0, 600.0)
+# B01: the gateway answers, but not usably (for example still starting):
+# tried again after these, then hourly; a longer Retry-After is kept.
+START_PROBLEM_RETRY = (60.0, 120.0, 300.0, 600.0, 1200.0, 2400.0, 3600.0)
+# From this failed check of one start (after about 18 minutes) a repair note
+# names the cause and offers a new attempt; a successful check removes it.
+START_ISSUE_ATTEMPTS = 5
+# The note's text per cause; every other problem is an unexpected answer.
+_START_ISSUE_KEYS = {
+    ProbeProblem.TLS: "local_start_certificate",
+    ProbeProblem.INCOMPLETE_SYSTEM: "local_start_incomplete",
+    ProbeProblem.UNKNOWN_BRAND: "local_start_unrecognized",
+    ProbeProblem.UNKNOWN_FIRMWARE: "local_start_unrecognized",
+    ProbeProblem.INVALID_IDENTITY: "local_start_unrecognized",
+}
 # Condition changes kept for the diagnostics.
 CONDITION_CHANGES = 20
 _DOWN = frozenset(
@@ -167,6 +200,8 @@ class LocalSource:
         self._down_since: float | None = None
         # G3: stops the running service hearing of enabled or disabled entities.
         self._remove_use_listener: Callable[[], None] | None = None
+        # B01: set by the repair note to end the wait before the next check.
+        self._retry = asyncio.Event()
 
     def refresh(self, paths: tuple[str, ...]) -> int:
         """Read these paths again soon, within the existing explicit-read limits.
@@ -495,6 +530,72 @@ class LocalSource:
             )
         )
 
+    def retry_start(self) -> bool:
+        """B01: try the start check again now, on request of its repair note.
+
+        Only ends the waiting between two attempts; a stored pause of the
+        gateway (rate limit, Retry-After) is still kept. False when the
+        source no longer runs.
+        """
+        if not self.current():
+            return False
+        self._retry.set()
+        return True
+
+    async def _wait(self, seconds: float) -> None:
+        """Wait between two start checks, at most until a retry is requested."""
+        try:
+            async with asyncio.timeout(seconds):
+                await self._retry.wait()
+        except TimeoutError:
+            pass
+
+    def _start_issue(self, problem: ProbeProblem | None) -> None:
+        """B01: a start that keeps failing is named in a repair note that
+        offers a new attempt; None removes the note."""
+        from homeassistant.helpers import issue_registry as ir
+
+        from .const import DOMAIN
+        from .repair_scope import repair_data
+
+        factory = self.connection.factory
+        issue_id = self._start_issue_id()
+        if problem is None:
+            ir.async_delete_issue(factory.hass, DOMAIN, issue_id)
+            return
+        ir.async_create_issue(
+            factory.hass,
+            DOMAIN,
+            issue_id,
+            is_fixable=True,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key=_START_ISSUE_KEYS.get(problem, "local_start_response"),
+            translation_placeholders={"code": problem.value},
+            data={
+                **repair_data(
+                    factory.entry, self.connection.identifier, self.binding_id
+                ),
+                "problem": problem.value,
+            },
+        )
+
+    def _start_issue_id(self) -> str:
+        from .const import LOCAL_START_ISSUE_PREFIX
+        from .repair_scope import repair_id
+
+        return repair_id(
+            LOCAL_START_ISSUE_PREFIX,
+            self.connection.factory.entry,
+            self.connection.identifier,
+            self.binding_id,
+        )
+
+    def _stop(self, condition: LocalCondition, problem: str) -> bool:
+        """The start check stops for good: its own note gives way."""
+        self._start_issue(None)
+        self._state(condition, problem)
+        return False
+
     async def _verify(
         self,
         access: StoredLocalAccess,
@@ -502,14 +603,18 @@ class LocalSource:
         pin: CertificateBinding,
         budget: LocalReadBudget,
     ) -> bool:
-        failures = 0
+        # Failed checks with an unreachable gateway, and with an answer that
+        # was not usable (B01); each has its own growing wait.
+        failures = problems = 0
         while self.current():
             if budget.pause_seconds:
                 self._state(
                     LocalCondition.PAUSED, reason=getattr(budget, "pause_reason", None)
                 )
+                # Kept even on a requested retry: the gateway asked for it.
                 await asyncio.sleep(budget.pause_seconds)
                 continue
+            self._retry.clear()
             self._state(LocalCondition.INITIALIZING)
             exchange = await read_local_probe(
                 context,
@@ -526,36 +631,48 @@ class LocalSource:
                     assessment.identity is None
                     or assessment.identity.value != access.gateway_id
                 ):
-                    self._state(LocalCondition.UNAVAILABLE, "local_identity_conflict")
-                    return False
+                    return self._stop(
+                        LocalCondition.UNAVAILABLE, "local_identity_conflict"
+                    )
                 await budget.bind_gateway(access.gateway_id)
+                self._start_issue(None)
                 return True
-            problem = assessment.issues[0].problem
-            if problem is ProbeProblem.AUTH_REJECTED:
-                self._state(LocalCondition.AUTH_REQUIRED, "auth_required")
-                return False
-            if problem is ProbeProblem.TLS_CHANGED:
-                self._state(LocalCondition.CERTIFICATE_CHANGED, "certificate_changed")
-                return False
-            if problem not in {
-                ProbeProblem.CONNECT,
-                ProbeProblem.DNS,
-                ProbeProblem.TIMEOUT,
-                ProbeProblem.RATE_LIMITED,
-                ProbeProblem.SERVICE_UNAVAILABLE,
-            }:
-                self._state(LocalCondition.UNAVAILABLE, problem.value)
-                return False
-            delay = exchange.retry_after_seconds
-            if delay is None:
-                delay = (60, 120, 300, 600)[min(failures, 3)]
-                failures += 1
-            await budget.pause(
-                delay,
-                "rate_limited"
-                if problem is ProbeProblem.RATE_LIMITED
-                else "connection",
+            found = [issue.problem for issue in assessment.issues]
+            # A refused token, a changed certificate or too old firmware
+            # decide over any other problem of the same check.
+            problem = next(
+                (p for p in found if p in _STOP),
+                next((p for p in found if p in _UNREACHABLE), found[0]),
             )
+            if problem is ProbeProblem.AUTH_REJECTED:
+                return self._stop(LocalCondition.AUTH_REQUIRED, "auth_required")
+            if problem is ProbeProblem.TLS_CHANGED:
+                return self._stop(
+                    LocalCondition.CERTIFICATE_CHANGED, "certificate_changed"
+                )
+            if problem is ProbeProblem.OLD_FIRMWARE:
+                return self._stop(LocalCondition.UNAVAILABLE, problem.value)
+            delay = exchange.retry_after_seconds
+            if problem in _UNREACHABLE:
+                if delay is None:
+                    delay = UNREACHABLE_RETRY[min(failures, len(UNREACHABLE_RETRY) - 1)]
+                    failures += 1
+                await budget.pause(
+                    delay,
+                    "rate_limited"
+                    if problem is ProbeProblem.RATE_LIMITED
+                    else "connection",
+                )
+                continue
+            # B01: the gateway answers, but not usably (still starting, an
+            # error page, an unreadable answer): try again, slower each time.
+            # Each check still goes through the gateway's limits and pauses.
+            wait = START_PROBLEM_RETRY[min(problems, len(START_PROBLEM_RETRY) - 1)]
+            problems += 1
+            self._state(LocalCondition.UNAVAILABLE, problem.value)
+            if problems >= START_ISSUE_ATTEMPTS:
+                self._start_issue(problem)
+            await self._wait(max(wait, delay or 0.0))
         return False
 
     def _paired_cap(
@@ -805,7 +922,8 @@ class LocalSource:
         self._closed = True
         self._stop_use_listener()
         if self.binding_id not in self.connection.factory.runtime().snapshot.bindings:
-            # The access is gone: its certificate note goes with it (P39).
+            # The access is gone: its certificate note goes with it (P39),
+            # as does the note of a failing start (B01).
             from homeassistant.helpers import issue_registry as ir
 
             from .const import DOMAIN
@@ -813,6 +931,7 @@ class LocalSource:
             ir.async_delete_issue(
                 self.connection.factory.hass, DOMAIN, self._certificate_issue_id()
             )
+            self._start_issue(None)
         if self.service is not None:
             await self.service.close()
         elif self.client is not None:

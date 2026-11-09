@@ -23,6 +23,19 @@ Versioning after its first tagged preview.
 - The names follow the Info menu of my own controller (MX400, firmware
   15.00.01) in German and English.
 
+### Local access
+
+- **The local access no longer gives up at startup:** if the gateway answers
+  at startup but not usably, for example because it is still starting, the
+  local access tries again on its own instead of staying unavailable until a
+  reload. Typical answers are incomplete system information, an error page, an
+  unreadable answer or a TLS handshake that fails. The waits grow from one
+  minute to one hour. Only a rejected token, a changed certificate, a different
+  gateway or too old firmware still stop it.
+- After five failed attempts, about 18 minutes in, a repair note names the
+  cause and offers to try again at once. It disappears as soon as the local
+  access starts.
+
 ## [0.9.0-alpha.3] - 2026-11-09
 
 > [!IMPORTANT]

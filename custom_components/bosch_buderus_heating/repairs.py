@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from homeassistant.components.repairs import RepairsFlow
 from homeassistant.config_entries import ConfigEntryState
@@ -23,6 +23,7 @@ from .const import (
     DOMAIN,
     FIRMWARE_ISSUE_PREFIX,
     GATEWAY_EXCHANGE_ISSUE_PREFIX,
+    LOCAL_START_ISSUE_PREFIX,
     RATE_LIMIT_ISSUE_PREFIX,
     PollingProfile,
 )
@@ -67,6 +68,17 @@ async def async_create_fix_flow(
             return GatewayExchangeRepairFlow(
                 entry_id, issue_id, connection, binding, new
             )
+        if issue_id.startswith(LOCAL_START_ISSUE_PREFIX):
+            problem = data.get("problem") if data else None
+            if (
+                not isinstance(connection, str)
+                or not isinstance(binding, str)
+                or not isinstance(problem, str)
+                or issue_id
+                != repair_id(LOCAL_START_ISSUE_PREFIX, entry, connection, binding)
+            ):
+                return InvalidRepairFlow()
+            return LocalStartRepairFlow(entry_id, binding, problem)
         firmware = issue_id.startswith(FIRMWARE_ISSUE_PREFIX)
         prefix = FIRMWARE_ISSUE_PREFIX if firmware else RATE_LIMIT_ISSUE_PREFIX
         if (
@@ -156,6 +168,53 @@ class ManagedRepairFlow(RepairsFlow):
             else:
                 raise ConfigurationError("binding_unavailable")
         except ConfigurationError:
+            return self.async_abort(reason="configuration_changed")
+        return self.async_create_entry(data={})
+
+
+class _RetryableStart(Protocol):
+    def retry_start(self) -> bool: ...
+
+
+class LocalStartRepairFlow(RepairsFlow):
+    """B01: try the failing start check of a local access again now.
+
+    Home Assistant removes the note when the flow ends; it comes back with
+    the next failed check, and a successful one keeps it away.
+    """
+
+    def __init__(self, entry_id: str, binding_id: str, problem: str) -> None:
+        self._entry_id, self._binding_id = entry_id, binding_id
+        self._problem = problem
+
+    def _source(self) -> _RetryableStart | None:
+        """The running local source of the note, if it still runs."""
+        entry = self.hass.config_entries.async_get_entry(self._entry_id)
+        runtime = getattr(getattr(entry, "runtime_data", None), "connections", None)
+        lookup = getattr(runtime, "source_driver", None)
+        driver = lookup(self._binding_id) if callable(lookup) else None
+        if not callable(getattr(driver, "retry_start", None)):
+            return None
+        return cast(_RetryableStart, driver)
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> RepairsFlowResult:
+        return await self.async_step_confirm(user_input)
+
+    async def async_step_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> RepairsFlowResult:
+        if self.hass.config_entries.async_get_entry(self._entry_id) is None:
+            return self.async_abort(reason="entry_not_found")
+        source = self._source()
+        if source is None:
+            return self.async_abort(reason="configuration_changed")
+        if user_input is None:
+            return self.async_show_form(
+                step_id="confirm", description_placeholders={"code": self._problem}
+            )
+        if not source.retry_start():
             return self.async_abort(reason="configuration_changed")
         return self.async_create_entry(data={})
 
