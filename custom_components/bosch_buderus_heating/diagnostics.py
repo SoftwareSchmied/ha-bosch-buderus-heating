@@ -46,6 +46,7 @@ from .pointt import Gateway, Resource
 from .pointt.redaction import diagnostic_resource_path, resource_path_template
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
 from .resource_catalog import (
+    PollGroup,
     capability_maturity,
     entity_enabled_by_default,
     poll_group,
@@ -537,7 +538,10 @@ def _gateway_diagnostics(
     resource_types = Counter(
         _safe_token(item.metadata.resource_type) for item in resources
     )
-    polling_groups = Counter(poll_group(item).value for item in resources)
+    # The group each path is actually polled in (O51 included).
+    polling_groups = Counter(
+        coordinator.polling_group(item).value for item in resources
+    )
     maturity_levels = Counter(
         capability_maturity(item.path).value for item in resources
     )
@@ -581,7 +585,11 @@ def _gateway_diagnostics(
         if is_water_softener(coordinator.gateway, coordinator.resources)
         else "generic",
         "softener_entities": _softener_entity_registration(coordinator),
-        "runtime": coordinator.diagnostics_summary(),
+        "runtime": {
+            **coordinator.diagnostics_summary(),
+            # O41/O45/O51: counts and a fixed interval only.
+            **coordinator.cloud_rate_summary(),
+        },
         "discovery": _discovery_diagnostics(coordinator),
         "discovery_recovery": coordinator.discovery_recovery.diagnostics(monotonic()),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),
@@ -655,6 +663,7 @@ def _gateway_diagnostics(
                 coordinator.capability_metrics(resource.path),
                 coordinator.unknown_enum_value_count(resource.path),
                 coordinator.resource_pause_remaining_seconds(resource.path),
+                group=coordinator.polling_group(resource),
             )
             for resource in sorted(
                 resources, key=lambda item: _path_template(item.path)
@@ -710,7 +719,10 @@ def _capability_diagnostics(
     metrics: dict[str, object],
     unknown_enum_values_detected: int,
     polling_pause_remaining_seconds: int = 0,
+    *,
+    group: PollGroup | None = None,
 ) -> dict[str, object]:
+    """``group`` is the group the path is actually polled in, if known."""
     available: bool | None = None
     freshness: str | None = None
     source: str | None = None
@@ -728,7 +740,7 @@ def _capability_diagnostics(
         "name": resource_name(diagnostic_resource_path(resource.path)),
         "resource_type": _safe_token(resource.metadata.resource_type),
         "unit": _safe_unit(resource.metadata.unit),
-        "poll_group": poll_group(resource).value,
+        "poll_group": (group or poll_group(resource)).value,
         "polling_paused": polling_pause_remaining_seconds > 0,
         "polling_pause_remaining_seconds": polling_pause_remaining_seconds,
         "entity_supported": supports_entity(resource),

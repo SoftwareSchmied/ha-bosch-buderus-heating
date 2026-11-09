@@ -39,6 +39,27 @@ and contains only counts, durations and fixed codes:
   `reused` connection the number of samples and the median, 95th percentile
   and maximum in milliseconds of the last 256 reads.
 
+Schema 43 also reports how often readings are requested now, again as counts
+without paths, values or identifiers:
+
+- each local access under `connections[].local[]` adds
+  `signals_read_hourly_unused`: local signals read only hourly because every
+  entity that shows them is disabled (see
+  [local polling](local-polling.md));
+- each gateway `runtime` adds `early_read_paths` (paths read a few minutes
+  before their group's deadline to fill batches that are sent anyway),
+  `local_served_paths` (paths whose entities show the local value, so their
+  cloud copy is read at the slower rate), `local_served_interval_seconds`
+  (that rate, 900), `switch_reads_pending` (cloud copies still to be read at
+  once after their entity switched back to the cloud value or became enabled
+  again) and `controls_slowed_unused` (controls read with the slow values
+  because all their entities are disabled); see
+  [request behavior](request-behavior.md) and
+  [source selection](source-selection.md#cloud-reads-while-local-values-are-shown);
+- `inventory.polling_groups` and each capability's `poll_group` give the
+  group a path is actually polled in, so a control read with the slow values
+  counts as `slow`.
+
 Schema 42 extends existing sections, again without values, addresses or
 identifiers:
 

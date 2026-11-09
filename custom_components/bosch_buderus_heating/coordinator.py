@@ -292,6 +292,12 @@ def _slower_rate(interval: timedelta) -> timedelta:
     return interval * max(1, LOCAL_SERVED_INTERVAL // interval)
 
 
+def _slower_rate_applies(interval: timedelta) -> bool:
+    """O45: only groups read more often than ``LOCAL_SERVED_INTERVAL`` (in
+    whole intervals) get the slower rate; slower groups keep their own."""
+    return interval * 2 <= LOCAL_SERVED_INTERVAL
+
+
 def _manual_setpoint_mode_path(path: str) -> str | None:
     """Match only direct leaves of an actual heating circuit, not cooling paths."""
     parts = path.split("/")
@@ -410,6 +416,8 @@ class BoschBuderusDataUpdateCoordinator(
             client, gateway.gateway_id, self.startup_data, roots=ROOT_RESOURCE_PATHS
         )
         self._main_cycle_failed = False
+        # #60: this cycle sent no cloud request (nothing was due).
+        self._cycle_idle = False
         self._config_entry = config_entry
         self.polling_profile = polling_profile
         self._poll_intervals = poll_intervals
@@ -536,9 +544,40 @@ class BoschBuderusDataUpdateCoordinator(
 
     @callback
     def _entity_use_changed(self) -> None:
-        """An entity was enabled or disabled: poll its paths at their pace."""
-        if self.resources:
-            self._rebuild_poll_groups()
+        """An entity was enabled or disabled: poll its paths at their pace.
+
+        A path that moves to a group read more often (an entity was enabled
+        again) and whose cloud copy is older than that group's interval is
+        read at once, like a reading that switched back to its cloud value
+        (O45), instead of waiting for the group's next deadline.
+        """
+        if not self.resources:
+            return
+        before = {
+            path: group
+            for group, paths in self._paths_by_group.items()
+            for path in paths
+        }
+        self._rebuild_poll_groups()
+        now = dt_util.utcnow()
+        faster = False
+        for group, paths in self._paths_by_group.items():
+            interval = self._poll_intervals[group]
+            for path in paths:
+                previous = before.get(path)
+                snapshot = (self.data or {}).get(path)
+                if (
+                    previous is None
+                    or previous is group
+                    or self._poll_intervals[previous] <= interval
+                    or snapshot is None
+                    or now - snapshot.last_success < interval
+                ):
+                    continue
+                self._urgent_reads.add(path)
+                faster = True
+        if faster:
+            self._request_switch_read()
 
     async def async_load_fault_state(self) -> None:
         """Load the persisted active-fault baseline before the first refresh."""
@@ -1130,6 +1169,7 @@ class BoschBuderusDataUpdateCoordinator(
             async with self._update_lock:
                 self._main_cycle_failed = False
                 self._discovery_cycle_failed = False
+                self._cycle_idle = False
                 if (
                     self._reconcile_due is not None
                     and self.last_update_success
@@ -1173,7 +1213,10 @@ class BoschBuderusDataUpdateCoordinator(
                         self._main_cycle_failed or self._discovery_cycle_failed
                     )
                 )
-                self._refresh_outage.recovered()
+                if not self._cycle_idle:
+                    # #60: only an answered request ends an outage; a cycle
+                    # with nothing due (O41/O45 leave more of them) does not.
+                    self._refresh_outage.recovered()
                 if self._discovery_cycle_failed:
                     # A discovery that failed or met the brake returned the
                     # previous values: nothing is confirmed, searched or read
@@ -1544,7 +1587,7 @@ class BoschBuderusDataUpdateCoordinator(
         ):
             return None
         interval = self._poll_intervals.get(self._validity_group(snapshot.resource))
-        if interval is None or interval * 2 > LOCAL_SERVED_INTERVAL:
+        if interval is None or not _slower_rate_applies(interval):
             return None
         return _slower_rate(interval)
 
@@ -1581,8 +1624,13 @@ class BoschBuderusDataUpdateCoordinator(
             snapshot = (self.data or {}).get(path)
             if snapshot is None:
                 continue
-            self._served_left[path] = now
             interval = self._poll_intervals.get(self._validity_group(snapshot.resource))
+            if interval is not None and not _slower_rate_applies(interval):
+                # Its own group is read this slowly now (O51: its entities
+                # were all disabled): no switch to the cloud value, that
+                # group's rate and validity simply apply.
+                continue
+            self._served_left[path] = now
             if interval is not None and now - snapshot.last_success >= interval:
                 # Older than its normal rate allows: read it at once.
                 self._urgent_reads.add(path)
@@ -1772,7 +1820,7 @@ class BoschBuderusDataUpdateCoordinator(
         }
 
     def cloud_rate_summary(self) -> dict[str, object]:
-        """O41/O45 figures without paths or values, for the diagnostics."""
+        """O41/O45/O51 figures without paths or values, for the diagnostics."""
         return {
             "early_read_paths": sum(
                 1 for _, slot in self._slot_plan().values() if slot
@@ -1780,7 +1828,17 @@ class BoschBuderusDataUpdateCoordinator(
             "local_served_paths": len(self._local_served),
             "local_served_interval_seconds": LOCAL_SERVED_INTERVAL.total_seconds(),
             "switch_reads_pending": len(self._urgent_reads),
+            "controls_slowed_unused": sum(
+                1
+                for path in self._paths_by_group.get(PollGroup.SLOW, ())
+                if (resource := self.resources.get(path)) is not None
+                and poll_group(resource) is PollGroup.CONTROL
+            ),
         }
+
+    def polling_group(self, resource: Resource) -> PollGroup:
+        """The group a resource is actually polled in (O51 included)."""
+        return self._validity_group(resource)
 
     def capability_metrics(self, path: str) -> dict[str, object]:
         """Return counters for one resource path."""
@@ -1867,6 +1925,7 @@ class BoschBuderusDataUpdateCoordinator(
         )
         if not paths:
             self._main_cycle_failed = not self.last_update_success
+            self._cycle_idle = True
             self._advance_groups(due_groups, now_monotonic)
             return dict(self.data or {})
 

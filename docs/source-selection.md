@@ -246,7 +246,10 @@ five minutes and at least three cycles in a row have failed, one error names
 the failure (for example `no usable resources (timeout)`), how long it has
 lasted and how many cycles failed; the rest of that outage stays at debug
 level. The warning when the protective pause starts and the info line when
-the cloud answers again stay as before.
+the cloud answers again stay as before. Only a cycle that actually asked the
+cloud ends an outage: a minute in which nothing was due, for example because
+the shown readings come from the local access, neither counts as a failure nor
+starts the grace period again.
 
 ### A system set up with local access only
 

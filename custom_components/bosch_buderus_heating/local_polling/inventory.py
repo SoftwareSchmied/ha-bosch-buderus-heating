@@ -149,6 +149,14 @@ class ResourceInventory:
         slowest = self._floor(request)
         return value if slowest is None else max(value, slowest)
 
+    def slowed_unused(self) -> int:
+        """G3: the readings the floor slows now (no entity shows them)."""
+        if self._floor is None:
+            return 0
+        return sum(
+            self._floor(record.request) is not None for record in self.records.values()
+        )
+
     def periods_changed(self, now: float) -> bool:
         """A shorter period applies at once, not only after the longer wait.
 

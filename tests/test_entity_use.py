@@ -372,6 +372,28 @@ async def test_local_source_reads_disabled_signals_hourly_until_enabled(hass, pr
     assert source._remove_use_listener is None
 
 
+async def test_diagnostics_count_signals_read_hourly(hass, prepared):
+    p = prepared
+    await ready(hass, p)
+    source = p.runtime.connection_driver("local").sources["local"]
+    inventory = source.service.inventory
+    use = entity_use(hass, p.entry)
+    request = signal("SRC.Some.Flag")
+    unique_id = local_only_unique_id(GATEWAY, request.path)
+    use.note("sensor", entity(unique_id, request.path))
+    entity_id = register(hass, p.entry, "sensor", unique_id)
+    inventory.signal_ids = frozenset({"SRC.Some.Flag"})
+    inventory.add(request, p.clock())
+    assert source.diagnostics()["signals_read_hourly_unused"] == 0
+    await later(hass)
+    assert source.diagnostics()["signals_read_hourly_unused"] == 1
+    er.async_get(hass).async_update_entity(entity_id, disabled_by=None)
+    await later(hass)
+    assert source.diagnostics()["signals_read_hourly_unused"] == 0
+    await source.close()
+    assert source.diagnostics()["signals_read_hourly_unused"] == 0
+
+
 async def test_period_token_follows_options_entities_and_cloud_plans(hass, prepared):
     p = prepared
     await ready(hass, p)

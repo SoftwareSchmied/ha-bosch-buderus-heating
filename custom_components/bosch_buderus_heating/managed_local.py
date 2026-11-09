@@ -329,6 +329,8 @@ class LocalSource:
             }
         )
         reuse = getattr(self.client, "connection_reuse", None)
+        inventory = getattr(self.service, "inventory", None)
+        slowed = getattr(inventory, "slowed_unused", None)
         return {
             "condition": state.condition.value if state else "unavailable",
             "identity_confirmed": state.identity_confirmed if state else False,
@@ -347,6 +349,10 @@ class LocalSource:
             if snapshot
             else 0,
             "gateway_pause_seconds": snapshot.gateway_pause_seconds if snapshot else 0,
+            # G3: signals read hourly because all their entities are disabled.
+            "signals_read_hourly_unused": (
+                slowed() if snapshot and callable(slowed) else 0
+            ),
             "resources": [
                 {
                     "path": v.request.definition.template

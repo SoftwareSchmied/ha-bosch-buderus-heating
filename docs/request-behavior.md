@@ -171,7 +171,9 @@ poll healthy. Stored values and unavailable states are not fabricated.
 A control whose entities are all disabled in Home Assistant is polled with the
 slow values instead (900 or 1800 seconds). Controls that the climate, hot water,
 holiday and calendar entities read keep the control group. Enabling an entity
-moves its control back to the control group within seconds, without a restart.
+moves its control back to the control group within seconds, without a restart;
+a cloud value older than the control interval is then read at once. A reading
+that is also shown from the local access keeps the slower of the two rates.
 
 Due functional groups share batches of up to 30 paths. Group scheduling permits
 one second of timer-rounding tolerance; retry deadlines and rate-limit pauses
