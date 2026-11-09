@@ -12,7 +12,10 @@ remain authoritative.
   exposes bounded details in its `faults` attribute.
 - **Active notifications** counts every current warning, maintenance message,
   fault, critical fault, and unknown notification.
-- **System notifications** emits `appeared` and `resolved` events.
+- **System notifications** emits `appeared` and `resolved` events. It stays
+  available during a cloud outage, because an event has no value that could
+  be outdated, and without the cloud it reports the events of the local error
+  list.
 
 Details can include the code, subcode, normalized severity, component class,
 summary, and first Home Assistant observation. At most 25 entries are attached
@@ -207,6 +210,34 @@ unavailable instead of reporting that the system is healthy.
 Baselines saved by older versions have no source evidence. Their existing
 faults remain conservatively retained until reobserved, after which normal
 resolution checks apply. Restarting again does not bypass this protection.
+Such a fault that no source reports again for a whole day of complete reads
+(at least 12), for example one that was fixed while Home Assistant was off,
+then takes part in the normal two-read resolution and ends with a `resolved`
+event.
+
+### Fault sources that no longer exist
+
+A source that was read once stays required, so a source that only fails for
+a while never ends a fault. A source that is gone for good, for example the
+error list of a radio room device that was removed or replaced, would then
+keep every fault from ending. It is no longer required when:
+
+- it answers HTTP 404 on every read for at least 24 hours (and at least two
+  reads; also across restarts), or
+- a discovery in which every path got a final answer (the resource or a
+  client error such as 404) no longer finds it, neither as a resource nor as
+  a fault source of the discovered components.
+
+A 5xx answer, a timeout, a lost permission (403) or a discovery that ended
+early or with such an answer never counts. Any successful read of the source
+ends a run of 404 answers. When a source is no longer required, Home
+Assistant shows a repair notice and the log has a warning. Faults that only
+this source reported then end after the next two complete reads with a
+normal `resolved` event. If the device is still installed, its error list
+counts again as soon as the system reports it again. The notice can be
+ignored and disappears after the next restart. Diagnostics show the counts
+under `fault_sources` (`required`, `not_found`, `removed`,
+`unverified_faults`).
 
 PointT did not provide an appliance timestamp in the verified K40 fault case.
 In that situation `first_seen` and `observed_at` mean when Home Assistant first
@@ -244,6 +275,11 @@ automation:
     triggers:
       - trigger: state
         entity_id: event.heating_system_notifications
+        # Not when the entity returns from unavailable or unknown, for example
+        # after a restart: that shows the last event again, not a new one.
+        not_from:
+          - unavailable
+          - unknown
     conditions:
       - condition: template
         value_template: >-
@@ -266,7 +302,8 @@ current-notification resource. Other heating entities continue to work.
 Optional resources that have never been read successfully and return HTTP 403
 or 404 are skipped and retried only after their 24-hour capability pause or a
 rediscovery. Previously discovered current-notification resources that return
-404 remain eligible for their next regular poll and recover on a valid read.
+404 remain eligible for their next regular poll and recover on a valid read;
+see [fault sources that no longer exist](#fault-sources-that-no-longer-exist).
 Historical failure lists are capability-probed at startup but are not polled
 repeatedly because no history entity currently consumes them.
 
