@@ -79,8 +79,9 @@ the discovered resources per gateway in local storage and searches the missing
 subtrees again with the same bounded discovery, 5, 15 and 60 minutes after the
 start and then every six hours until one day has passed. Without stored
 resources, a root that ended with a temporary error is searched again on the
-same schedule. A search waits for a working cycle; a rate limit postpones it
-without using an attempt; other errors never block the regular poll. A part
+same schedule. A search waits for a working cycle; a rate limit, no answer or
+a 5xx failure of the whole cloud postpones it without using an attempt; an
+HTTP 5xx answer for a missing path uses one; other errors never block the regular poll. A part
 still missing after the last search is no longer expected at the next start.
 Registry entries of missing parts are never removed.
 

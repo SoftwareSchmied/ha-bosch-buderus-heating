@@ -45,6 +45,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     ResourceError,
     ResourceMetadata,
     ResourceReference,
+    ServiceUnavailable,
 )
 from tests.ha_test_helpers import MockConfigEntry
 
@@ -95,6 +96,9 @@ class Cloud:
         self.request_errors: dict[str, PointTError] = {}
         # Every request for one of these gateways fails with this error.
         self.gateway_errors: dict[str, PointTError] = {}
+        # A single read of one of these paths fails with this error, such as
+        # ServiceUnavailable(504) as the transport raises it for HTTP 504.
+        self.get_errors: dict[str, PointTError] = {}
         self.requests: list[tuple[str, ...]] = []
 
     def requested(self, path: str) -> int:
@@ -138,6 +142,8 @@ class Cloud:
             raise self.bulk_error
         if gateway_id in self.gateway_errors:
             raise self.gateway_errors[gateway_id]
+        if path in self.get_errors:
+            raise self.get_errors[path]
         failure = self.down.get(path)
         if isinstance(failure, int):
             raise ResourceError(path, failure)
@@ -397,6 +403,57 @@ async def test_outage_does_not_use_up_attempts(
     await coordinator.async_refresh()  # working again: poll, then search
     assert coordinator.last_update_success
     assert recovery.state == "recovered" and recovery.attempts == 1
+
+
+async def test_one_path_answering_5xx_does_not_stop_the_discovery(
+    hass: HomeAssistant, clock: Clock
+) -> None:
+    """B07: HTTP 504 in the bulk item and in its single read stays local."""
+    cloud = Cloud(tree())
+    cloud.down[OUTDOOR] = 504
+    cloud.get_errors[OUTDOOR] = ServiceUnavailable(504)
+    coordinator = _coordinator(hass, cloud)
+
+    await coordinator.async_refresh()
+
+    assert coordinator.last_update_success
+    assert MODULATION in coordinator.resources
+    assert coordinator.data[MODULATION].available
+    assert OUTDOOR not in coordinator.resources
+    report = coordinator.discovery_diagnostics
+    assert report.completed and report.stop_reason == "complete"
+    assert report.paths[OUTDOOR].fallback_result == "http_504"
+
+
+async def test_search_meeting_a_path_5xx_uses_its_attempts(
+    hass: HomeAssistant, clock: Clock, caplog
+) -> None:
+    """A path answering 5xx is an answer: the search keeps to its schedule."""
+    inventory = _inventory(hass)
+    await _known_before(hass, inventory)
+    cloud = Cloud(tree())
+    cloud.down[OUTDOOR] = 504
+    cloud.get_errors[OUTDOOR] = ServiceUnavailable(504)
+    coordinator = _coordinator(hass, cloud, inventory)
+    await coordinator.async_refresh()
+    assert coordinator.last_update_success
+    recovery = coordinator.discovery_recovery
+    assert recovery.missing == {OUTDOOR: "http_504"}
+
+    start = clock.now
+    searches = []
+    for delay in (*RECOVERY_SCHEDULE, RECOVERY_SCHEDULE[-1] + 3600):
+        clock.now = start + delay
+        before = cloud.requested(OUTDOOR)
+        await coordinator.async_refresh()
+        assert coordinator.last_update_success
+        searches.append(cloud.requested(OUTDOOR) - before)
+
+    assert searches == [1] * len(RECOVERY_SCHEDULE) + [0]
+    assert recovery.state == "given_up"
+    assert recovery.attempts == len(RECOVERY_SCHEDULE)
+    assert recovery.postponed == 0
+    assert "still missing after 7 searches" in caplog.text
 
 
 async def test_full_resource_budget_ends_the_search_at_once(
