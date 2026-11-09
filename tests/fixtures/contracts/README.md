@@ -10,7 +10,7 @@ mapping. `physical_device_verified: false`, `firmware: null` and
 |---|---|
 | connectkey | Temperature, global and structured duration, structured energy, independent heating/cooling zone commands, read-only heating and hot-water switch programs (anonymized structure, constructed times) |
 | icom | Heating and DHW temperatures |
-| rrc | DHW and away-mode temperature, independent zn zones, program selection and existing weekly switch points |
+| rrc | DHW and away-mode temperature, independent zn zones, program selection and existing weekly switch points; string `used` flags and a mode without advertised options (anonymized TC100.2 structure, constructed values) |
 | wddw2 | Unitless hours, explicit minutes, starts, DHW temperature and collection |
 | water_softener | Remaining volume, flow, durations and regeneration phase |
 | bacon-purifier | Two synthetic Air profiles with different offered capabilities; all seven family/filter mappings are exercised by tests |
