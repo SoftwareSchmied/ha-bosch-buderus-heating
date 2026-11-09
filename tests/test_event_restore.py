@@ -14,7 +14,7 @@ from homeassistant.helpers.restore_state import RestoredExtraData
 from homeassistant.util import dt as dt_util
 
 from custom_components.bosch_buderus_heating.event import BoschBuderusNotificationEvent
-from custom_components.bosch_buderus_heating.pointt import Resource
+from custom_components.bosch_buderus_heating.faults import FaultTracker
 from tests.ha_test_helpers import mock_restore_cache
 from tests.test_event import _coordinator
 
@@ -57,9 +57,15 @@ async def test_serialized_event_restoration_keeps_timestamp_without_trigger(
         },
     )
     coordinator = _coordinator(hass)
-    empty = Resource(path="/notifications", values=())
-    coordinator.faults.process_resources({empty.path: empty})
-    coordinator.last_update_success = initially_available
+    # FAULT-4: the entity is available while a fault source is supported,
+    # independently of the cloud's last poll.
+    supported = patch.object(
+        FaultTracker,
+        "has_supported_source",
+        new_callable=PropertyMock,
+        return_value=initially_available,
+    )
+    source = supported.start()
     component = EntityComponent(logging.getLogger(__name__), "event", hass)
     entity = BoschBuderusNotificationEvent(coordinator)
     entity.entity_id = ENTITY_ID
@@ -79,7 +85,11 @@ async def test_serialized_event_restoration_keeps_timestamp_without_trigger(
             trigger.assert_not_called()
         current = hass.states.get(ENTITY_ID)
         assert current.state == (TIMESTAMP if initially_available else "unavailable")
+        # A cloud outage alone does not make the event unavailable.
         coordinator.last_update_success = False
+        entity.async_write_ha_state()
+        assert hass.states.get(ENTITY_ID).state == current.state
+        source.return_value = False
         entity.async_write_ha_state()
         assert hass.states.get(ENTITY_ID).state == "unavailable"
         # The stored payload remains usable after an offline restart as well.
@@ -88,7 +98,7 @@ async def test_serialized_event_restoration_keeps_timestamp_without_trigger(
             "last_event_attributes": ATTRIBUTES,
             "last_event_timestamp": TIMESTAMP,
         }
-        coordinator.last_update_success = True
+        source.return_value = True
         entity.async_write_ha_state()
         current = hass.states.get(ENTITY_ID)
         assert current.state == TIMESTAMP
@@ -106,6 +116,7 @@ async def test_serialized_event_restoration_keeps_timestamp_without_trigger(
     finally:
         await entity.async_remove()
         await coordinator.async_shutdown()
+        supported.stop()
 
 
 @pytest.mark.parametrize("last_state", ["unavailable", "unknown", TIMESTAMP])

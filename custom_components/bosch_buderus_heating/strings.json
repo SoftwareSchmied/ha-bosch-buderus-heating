@@ -726,6 +726,10 @@
     }
   },
   "issues": {
+    "fault_source_removed": {
+      "title": "A fault source no longer exists",
+      "description": "The integration no longer waits for {count} fault source(s) of a heating system that no longer exist, for example the error list of a radio room device that was removed or replaced. Until now such a source kept every fault from ending. Faults that only it reported now end after the next two complete reads with a normal \"resolved\" event. If the device is still installed, check its connection to the system; its error list counts again as soon as the system reports it again. You can ignore this notice; it disappears after the next restart."
+    },
     "repeated_rate_limit": {
       "title": "Cloud requests are being limited",
       "fix_flow": {

@@ -107,7 +107,12 @@ class BoschBuderusNotificationEvent(
 
     @property
     def available(self) -> bool:
-        return super().available and self.coordinator.faults.has_supported_source
+        # FAULT-4: an event has no value that could be outdated, so a cloud
+        # outage does not make it unavailable (its return would show the last
+        # event again as a new state). Without a cloud (P49b) the local error
+        # list is the source of the events.
+        faults = self.coordinator.faults
+        return faults.has_supported_source or faults.local_authority is True
 
     @property
     def device_info(self) -> DeviceInfo:

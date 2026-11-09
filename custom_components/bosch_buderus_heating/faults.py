@@ -11,14 +11,18 @@ from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
 
 from .const import DOMAIN
 from .pointt import Resource
 from .pointt.models import BatchItemResult, JsonValue
+
+if TYPE_CHECKING:
+    from .discovery import DiscoveryDiagnostics
 
 FAULT_STORAGE_VERSION = 1
 FAULT_STORAGE_SAVE_DELAY = 1.0
@@ -32,6 +36,19 @@ LOCAL_FAULT_MISSED_READINGS = 3
 # unchanged at most.
 HAND_OVER_HOLD = LOCAL_FAULT_MAX_AGE
 MAX_FAULT_ATTRIBUTES = 25
+# FAULT-2: a required fault source that is gone for good stops blocking every
+# resolution. Only two kinds of evidence count: it answers HTTP 404 on every
+# read for this long (and at least this many reads, also across restarts), or
+# a fully answered discovery no longer finds it.
+# A 5xx answer, a timeout or a lost permission never counts.
+FAULT_SOURCE_GONE_AFTER = timedelta(hours=24)
+FAULT_SOURCE_GONE_READS = 2
+# FAULT-2: a fault restored from a baseline without source evidence takes
+# part in the normal resolution again once complete reads of every required
+# source have not reported it for this long (and this many reads).
+FAULT_UNVERIFIED_AFTER = timedelta(hours=24)
+FAULT_UNVERIFIED_READS = 12
+FAULT_SOURCE_ISSUE_PREFIX = "fault_source_removed_"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,6 +68,9 @@ _DEVICE_ERROR_TYPE = re.compile(r"[A-Za-z][A-Za-z0-9_.-]{0,63}")
 _DEVICE_ERROR_STATES = frozenset({"active", "inactive"})
 MAX_DEVICE_ERRORS = 16
 MAX_DEVICE_ERROR_LISTS = 32
+# FAULT-2: discovery answers that a retry does not change.
+_FINAL_ANSWER = re.compile(r"http_4\d\d")
+_RETRYABLE_ANSWERS = frozenset({"http_401", "http_408", "http_429"})
 
 _KNOWN_SUMMARIES: dict[tuple[str, str | None], dict[str, str]] = {
     ("6249", None): {
@@ -219,6 +239,25 @@ def fault_resource_candidates(resources: Mapping[str, Resource]) -> tuple[str, .
                     break
     candidates.update(f"/devices/{identifier}/errors" for identifier in device_ids)
     return tuple(sorted(candidates))
+
+
+def discovery_fully_answered(diagnostics: DiscoveryDiagnostics) -> bool:
+    """A finished discovery in which every read path got a final answer.
+
+    Final means the resource, or a client error that a retry does not change
+    (such as HTTP 404). A 5xx answer, a timeout, a malformed or missing item,
+    a rate limit or a stop at a bound means the tree may be incomplete, so
+    its fault candidates must not retire a required source (FAULT-2).
+    """
+    if not diagnostics.completed:
+        return False
+    for item in diagnostics.paths.values():
+        if item.discovered or item.read_policy != "normal":
+            continue  # start-up leaves and the license are read elsewhere
+        result = item.fallback_result or item.bulk_result
+        if not _FINAL_ANSWER.fullmatch(result) or result in _RETRYABLE_ANSWERS:
+            return False
+    return True
 
 
 def parse_fault_resource(
@@ -436,6 +475,19 @@ class FaultTracker:
         self._supported_paths: set[str] = set()
         self._required_source_keys: set[str] = set()
         self._unverified_restored: set[str] = set()
+        # FAULT-2: source key -> (first of an unbroken run of 404 answers,
+        # their number), and unverified fingerprint -> (first complete read
+        # without it, number of such reads). Both are stored.
+        self._sources_not_found: dict[str, tuple[datetime, int]] = {}
+        self._unverified_unseen: dict[str, tuple[datetime, int]] = {}
+        self._removed_sources = 0
+        self._hass = hass
+        self._issue_id = (
+            FAULT_SOURCE_ISSUE_PREFIX
+            + entry_id
+            + "_"
+            + fault_store_key(entry_id, gateway_id).rsplit(".", 1)[-1]
+        )
         self._has_valid_state = False
         self._resource_results: dict[str, str] = {}
         self._last_successful_update: datetime | None = None
@@ -644,6 +696,12 @@ class FaultTracker:
             # Older stores lack source evidence. Reobserve those incidents before
             # permitting absence-based resolution; never invent an all-clear.
             self._unverified_restored = set(restored)
+        self._sources_not_found = _restore_aging(
+            data.get("sources_not_found"), self._required_source_keys
+        )
+        self._unverified_unseen = _restore_aging(
+            data.get("unverified_unseen"), self._unverified_restored
+        )
         local = data.get("local_faults")
         if isinstance(local, list) and all(isinstance(key, str) for key in local):
             # P42: the local list was attached before the restart. Its faults
@@ -734,12 +792,21 @@ class FaultTracker:
         self._event_observers.add(observer)
         return lambda: self._event_observers.discard(observer)
 
-    def record_results(self, results: Iterable[BatchItemResult]) -> None:
+    def record_results(
+        self,
+        results: Iterable[BatchItemResult],
+        *,
+        observed_at: datetime | None = None,
+    ) -> None:
         """Record bounded capability outcomes without response bodies."""
+        now = observed_at or datetime.now(UTC)
+        changed = False
+        gone: set[str] = set()
         for result in results:
             if not is_fault_resource_path(result.path):
                 continue
-            if result.resource is None and is_active_fault_resource_path(result.path):
+            active_source = is_active_fault_resource_path(result.path)
+            if result.resource is None and active_source:
                 self._absence_counts.clear()
                 self._has_valid_state = False
             if result.resource is not None:
@@ -753,6 +820,82 @@ class FaultTracker:
                 self._resource_results[result.path] = str(result.status)
             else:
                 self._resource_results[result.path] = "error"
+            if not active_source:
+                continue
+            key = _source_key(result.path)
+            if result.resource is not None or result.status != 404:
+                # FAULT-2: an answer, or any other error (5xx, timeout, 403),
+                # ends a run of 404 answers; only an unbroken run counts.
+                changed |= self._end_not_found_run(result.path)
+            elif key in self._required_source_keys:
+                # Saved when the run starts; later reads only count.
+                changed |= key not in self._sources_not_found
+                if _advance_aging(
+                    self._sources_not_found,
+                    key,
+                    now,
+                    after=FAULT_SOURCE_GONE_AFTER,
+                    reads=FAULT_SOURCE_GONE_READS,
+                ):
+                    gone.add(key)
+        if gone:
+            self._retire_sources(gone, "not_found")
+        elif changed:
+            self._schedule_save()
+
+    def reconcile_discovery(self, resources: Mapping[str, Resource]) -> None:
+        """Retire required sources a fully answered discovery no longer finds.
+
+        Call only when :func:`discovery_fully_answered` holds: then a source
+        that is neither discovered nor a fault candidate of the discovered
+        tree (for example the error list of a removed radio room device) is
+        gone, not just unreadable (FAULT-2).
+        """
+        current = {
+            _source_key(path)
+            for path in (*resources, *fault_resource_candidates(resources))
+            if is_active_fault_resource_path(path)
+        }
+        gone = self._required_source_keys - current
+        if gone:
+            self._retire_sources(gone, "not_discovered")
+
+    def _end_not_found_run(self, path: str) -> bool:
+        """The run of 404 answers of a source ends. True if it had one."""
+        return self._sources_not_found.pop(_source_key(path), None) is not None
+
+    def _retire_sources(self, keys: set[str], reason: str) -> None:
+        """Stop requiring sources that are gone, and say so (FAULT-2).
+
+        Faults only these sources reported then end like any other fault,
+        after two complete reads of the remaining sources. The repair notice
+        makes sure this never happens silently.
+        """
+        self._required_source_keys -= keys
+        for key in keys:
+            self._sources_not_found.pop(key, None)
+        self._removed_sources += len(keys)
+        _LOGGER.warning(
+            "%d fault source(s) of this system no longer exist (%s); faults "
+            "that only they reported end after the next complete reads",
+            len(keys),
+            reason,
+        )
+        try:
+            ir.async_create_issue(
+                self._hass,
+                DOMAIN,
+                self._issue_id,
+                is_fixable=False,
+                is_persistent=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key="fault_source_removed",
+                translation_placeholders={"count": str(self._removed_sources)},
+            )
+        except Exception:
+            _LOGGER.warning("The notice about a removed fault source failed")
+        self._schedule_save()
+        self._notify_state_listeners()
 
     def record_deferred_paths(self, paths: Iterable[str]) -> None:
         """Do not retain an all-clear when active sources could not be polled."""
@@ -774,11 +917,15 @@ class FaultTracker:
         self._expire_local()
         previous_sources = set(self._required_source_keys)
         previous_unverified = set(self._unverified_restored)
+        # Saved when a run starts or ends, not for every counted read.
+        previous_aging = self._aging_marks()
         successful = set(resources) if successful_paths is None else successful_paths
         for path in successful:
             if is_fault_resource_path(path):
                 self._supported_paths.add(path)
                 self._resource_results[path] = "success"
+                if is_active_fault_resource_path(path):
+                    self._end_not_found_run(path)
 
         parsed_faults: dict[str, ActiveFault] = {}
         invalid_entries = 0
@@ -819,7 +966,7 @@ class FaultTracker:
             )
             self._last_successful_update = now
 
-        complete = (
+        sources_complete = (
             bool(self._required_source_keys)
             and self._required_source_keys.issubset(
                 _source_key(path)
@@ -827,8 +974,15 @@ class FaultTracker:
                 if path in successful and is_active_fault_resource_path(path)
             )
             and not invalid_entries
-            and not self._unverified_restored
         )
+        if sources_complete:
+            self._age_unverified(now)
+        self._unverified_unseen = {
+            fingerprint: aging
+            for fingerprint, aging in self._unverified_unseen.items()
+            if fingerprint in self._unverified_restored
+        }
+        complete = sources_complete and not self._unverified_restored
         if parsed_resources:
             self._has_valid_state = complete
             if not complete:
@@ -845,6 +999,7 @@ class FaultTracker:
         changed = (
             previous_sources != self._required_source_keys
             or previous_unverified != self._unverified_restored
+            or previous_aging != self._aging_marks()
             or self._save_schedule_failed
             or new_aliases  # store the corrected name of a migrated incident
         )
@@ -892,6 +1047,34 @@ class FaultTracker:
             self._emit(event)
         self._notify_state_listeners()
         return tuple(events)
+
+    def _age_unverified(self, now: datetime) -> None:
+        """Count a complete read that did not report a restored fault (FAULT-2).
+
+        A fault restored without source evidence is held until a source
+        reports it again. One that no required source reports for a day of
+        complete reads (for example one fixed while Home Assistant was off)
+        takes part in the normal two-read resolution again.
+        """
+        for fingerprint in sorted(self._unverified_restored):
+            if _advance_aging(
+                self._unverified_unseen,
+                fingerprint,
+                now,
+                after=FAULT_UNVERIFIED_AFTER,
+                reads=FAULT_UNVERIFIED_READS,
+            ):
+                self._unverified_restored.discard(fingerprint)
+                _LOGGER.info(
+                    "A restored fault was not reported by any fault source for "
+                    "a day; it ends after the next complete reads"
+                )
+
+    def _aging_marks(self) -> tuple[dict[str, datetime], dict[str, datetime]]:
+        return (
+            {key: since for key, (since, _) in self._sources_not_found.items()},
+            {key: since for key, (since, _) in self._unverified_unseen.items()},
+        )
 
     def _apply_aliases(
         self, seen: Iterable[tuple[ActiveFault, str | None]]
@@ -1156,6 +1339,13 @@ class FaultTracker:
             "parser_errors": self._parser_errors,
             "local_error_list": self._local_result,
             "local_faults": len(self._local_faults),
+            # FAULT-2: counts only, never the hashed source keys.
+            "fault_sources": {
+                "required": len(self._required_source_keys),
+                "not_found": len(self._sources_not_found),
+                "removed": self._removed_sources,
+                "unverified_faults": len(self._unverified_restored),
+            },
             # B3: counts only, never device slots or error types.
             "device_errors": {
                 "lists": len(self._device_errors),
@@ -1216,6 +1406,8 @@ class FaultTracker:
             "active": [_serialize_fault(item) for item in self.active],
             "required_source_keys": sorted(self._required_source_keys),
             "unverified_faults": sorted(self._unverified_restored),
+            "sources_not_found": _serialize_aging(self._sources_not_found),
+            "unverified_unseen": _serialize_aging(self._unverified_unseen),
         }
         if self._local_current:
             # Which faults the local list reported (P42), for a restart.
@@ -1226,6 +1418,59 @@ class FaultTracker:
 def _source_key(path: str) -> str:
     """Persist source identity without storing device identifiers or raw paths."""
     return hashlib.sha256(path.encode()).hexdigest()
+
+
+def _advance_aging(
+    table: dict[str, tuple[datetime, int]],
+    key: str,
+    now: datetime,
+    *,
+    after: timedelta,
+    reads: int,
+) -> bool:
+    """Count one more piece of evidence; True once it lasted long enough.
+
+    A clock that went back starts the run again, so a run begun at a wrong
+    time far ahead cannot hold until that time comes round.
+    """
+    since, count = table.get(key, (now, 0))
+    if now < since:
+        since, count = now, 0
+    count = min(count + 1, reads)
+    table[key] = (since, count)
+    return count >= reads and now - since >= after
+
+
+def _serialize_aging(table: Mapping[str, tuple[datetime, int]]) -> dict[str, Any]:
+    return {
+        key: [since.isoformat(), count] for key, (since, count) in sorted(table.items())
+    }
+
+
+def _restore_aging(value: object, allowed: set[str]) -> dict[str, tuple[datetime, int]]:
+    """Restore a stored run for known keys only; anything else starts anew."""
+    if not isinstance(value, dict):
+        return {}
+    restored: dict[str, tuple[datetime, int]] = {}
+    for key, item in value.items():
+        if (
+            key not in allowed
+            or not isinstance(item, list)
+            or len(item) != 2
+            or not isinstance(item[0], str)
+            or not isinstance(item[1], int)
+            or isinstance(item[1], bool)
+            or item[1] < 1
+        ):
+            continue
+        try:
+            since = datetime.fromisoformat(item[0])
+        except ValueError:
+            continue
+        if since.tzinfo is None:
+            continue
+        restored[key] = (since, item[1])
+    return restored
 
 
 def _parse_fault_item(

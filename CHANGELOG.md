@@ -369,6 +369,26 @@ Versioning after its first tagged preview.
   A stored valve status ends once with a normal "resolved" event.
 - The rules follow the gateway's documented error list. I have not yet seen a
   cloud answer from a system with radio room devices.
+- **System fault no longer stays unavailable on larger systems:** with several
+  cloud fault sources, the spreading of cloud reads could read them in
+  different cycles. The fault state was then never confirmed, and System
+  fault, Active faults and Active notifications stayed unavailable while
+  everything was fine. The fault sources are now always read together, in the
+  first batch of a cycle.
+- **A removed room device no longer blocks every fault:** a fault source that
+  is gone for good (it answers "not found" on every read for 24 hours, or a
+  complete discovery no longer finds it) no longer keeps every fault from
+  ending. Faults only it reported end normally, and a repair notice says so.
+  A temporary error such as a timeout never counts. A fault restored from an
+  older version's baseline that no source reports for a whole day of complete
+  reads now ends as well instead of staying forever.
+- **System notifications (event) without the cloud:** the event entity now
+  also reports the events of the local error list when the plant runs without
+  the cloud, and it no longer turns unavailable during a cloud outage, which
+  used to show the last event again afterwards. The automation example in the
+  fault documentation now ignores the return from `unavailable` and `unknown`;
+  I recommend adding the same `not_from` to your own automations on this
+  entity.
 
 ### Release checks
 

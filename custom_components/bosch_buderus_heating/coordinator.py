@@ -47,7 +47,12 @@ from .discovery_inventory import (
     is_transient_result,
 )
 from .energy_contracts import assess_energy, is_energy_collection
-from .faults import FaultTracker, fault_resource_candidates, is_fault_resource_path
+from .faults import (
+    FaultTracker,
+    discovery_fully_answered,
+    fault_resource_candidates,
+    is_fault_resource_path,
+)
 from .firmware_watch import FirmwareWatch, firmware_values
 from .holiday_timezones import async_resolve_holiday_timezones
 from .holiday_writes import (
@@ -2132,6 +2137,10 @@ class BoschBuderusDataUpdateCoordinator(
                 )
             )
         )
+        # FAULT-1: the fault sources go first, into the first batch, so the
+        # cycle budget never splits them over two cycles.
+        fault_sources = set(paths_by_group.get(PollGroup.NOTIFICATIONS, ()))
+        paths.sort(key=lambda path: path not in fault_sources)
         if not paths:
             self._main_cycle_failed = not self.last_update_success
             self._cycle_idle = True
@@ -2514,6 +2523,9 @@ class BoschBuderusDataUpdateCoordinator(
             },
         }
         self._merge_start_counter_candidates()
+        if discovery_fully_answered(self.discovery_diagnostics):
+            # FAULT-2: a required fault source this tree no longer has is gone.
+            self.faults.reconcile_discovery(successful_resources)
         self.faults.process_resources(
             {
                 path: resource
@@ -3413,6 +3425,8 @@ class BoschBuderusDataUpdateCoordinator(
                 },
                 capacity=MAX_BULK_PATHS,
                 previous=self._poll_slots,
+                # FAULT-1: the fault sources only count when read together.
+                atomic=(PollGroup.NOTIFICATIONS,),
             )
             self._poll_slots_key = key
         return self._poll_slots
