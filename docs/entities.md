@@ -99,8 +99,11 @@ the produced heat during defrosting. If a `total_increasing` counter drops to a 
 non-negative value after a reset or device replacement, Home Assistant treats
 this as a new meter cycle, not negative consumption. For the `total` entities,
 such a reset appears as one large negative amount in the long-term statistics
-and has to be corrected there. The integration does not alter the measurement, but
-records detected drops anonymously as `energy_counter_resets_detected` in
+and has to be corrected there. For paired counters shown from either access, a
+drop of more than 10 % within one source is shown only when the next reading
+of that source confirms it, so a single low or zero reading never counts as a
+new meter cycle (see [source selection](source-selection.md#counters)). The
+integration does not alter the measurement otherwise, but records detected drops anonymously as `energy_counter_resets_detected` in
 diagnostics.
 
 ## Meaning of writeability columns
@@ -620,9 +623,10 @@ yourself stays as well.
 Hybrid systems with an HM200 hybrid manager report additional readings of the
 outdoor unit and the hybrid manager through the local access: temperatures of
 the outdoor unit, heat pump supply and return, compressor and pump speeds,
-valve position, compressor timers and run times, the smart grid mode (blocked,
-normal, preferred, forced) and on/off states such as defrosting or the
-four-way valve. They are disabled by default and have not been verified on a
+valve position, compressor timers and run times, the smart grid mode (not
+used, blocked, normal, preferred, forced; without a state list the numbers 0
+to 4 in this order, as the controller declares them, not verified) and on/off
+states such as defrosting or the four-way valve. They are disabled by default and have not been verified on a
 real system. The unit and states the gateway reports take precedence; a
 reading that is either a temperature or an on/off state becomes one entity,
 decided by its answer. The run times have no long-term statistics, like the

@@ -22,6 +22,49 @@ Versioning after its first tagged preview.
   reading are named after it with "(signal)" and stay disabled by default.
 - The names follow the Info menu of my own controller (MX400, firmware
   15.00.01) in German and English.
+- **Newly enabled entities also on existing installations:** an entity that
+  an earlier version created disabled by default, and that is now enabled by
+  default, is enabled at the next start. This brings VR0 to installations
+  that already had it as a disabled signal, and applies to readings from the
+  cloud as well. An entity you disabled yourself stays disabled. Home
+  Assistant reloads the integration once, about 30 seconds after the start.
+- **No stale unit after a change of form:** a local-only reading that turns
+  from a number into a state no longer keeps the unit of the number, which
+  made Home Assistant refuse the state. A current number without a known unit
+  now shows no unit instead of the previous one; the last unit only stands in
+  while there is no reading.
+- **Smart grid mode without a state list:** the numbers now count as the
+  controller declares them: 0 not used, 1 blocked, 2 normal, 3 preferred, 4
+  forced. Before, 0 showed as blocked and 4 as unknown. I could not check an
+  answer without a state list yet.
+- **Kelvin values are differences:** a cloud reading in K, for example a
+  hysteresis or spread, is now a temperature difference. As a temperature,
+  Home Assistant showed 5 K as -268.15 °C.
+- **Temperatures in °C spelled differently:** a cloud reading that reports
+  its unit as "°C" instead of "C" now gets its entity like any other
+  temperature.
+
+### Local values and counters
+
+- **No false states from local texts:** a local text that the cloud does not
+  declare for this reading now keeps the cloud state instead of showing
+  "unknown". Diagnostics count it as `unknown_entry`, as for lists. The log
+  line for an undeclared state no longer names the cloud as its source.
+- **A single low counter reading no longer counts the whole meter again:**
+  if a paired energy, start or runtime counter drops by more than 10 %
+  within one source, the drop is shown only when the next reading confirms
+  it. A single zero or low outlier therefore no longer appears as a meter
+  reset with the whole count added again in the energy dashboard. A real
+  reset still shows, one reading later. Small decreases such as the produced
+  heat during a defrost are shown as before.
+- **A counter part that is gone for good no longer blocks the counter:** if
+  a part of a counter, for example the auxiliary heater, disappears for good
+  after a firmware update, it stops binding the counter seven days after the
+  shown source stopped reporting it. Before, it kept the counter on the cloud
+  forever and made it unavailable during a cloud outage.
+- **Shown counters are saved within a minute:** frequent counter changes
+  kept postponing the save of the last shown counts. The save now happens at
+  most about a minute after the first change.
 
 ### Outages and recovery
 
