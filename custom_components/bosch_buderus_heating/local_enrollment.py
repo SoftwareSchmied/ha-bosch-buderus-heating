@@ -798,9 +798,19 @@ class LocalEnrollmentJournal:
             raise ConfigurationError("configuration_changed")
         try:
             await self.remove_connection(edit.owner_id, edit.connection_id)
-            return management.remove(edit)
+            scopes = {
+                f"{edit.owner_id}:{binding.target_id}:{binding_id}"
+                for binding_id, binding in management.current().bindings.items()
+                if binding.connection_id == edit.connection_id
+            }
+            result = management.remove(edit)
         finally:
             self._removed_connections.discard((edit.owner_id, edit.connection_id))
+        from .store_cleanup import async_remove_local_schedules
+
+        # STORE-5: its learned read schedule is of no use to a new access.
+        await async_remove_local_schedules(self._hass, scopes)
+        return result
 
     async def _removable_records(self) -> tuple[PendingEnrollment, ...]:
         """A removal never fails on an unreadable journal (FLOW-3).

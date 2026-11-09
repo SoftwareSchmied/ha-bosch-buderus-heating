@@ -402,6 +402,15 @@ def fault_store_key(entry_id: str, gateway_id: str) -> str:
     return f"{DOMAIN}.faults.{entry_id}.{gateway_digest}"
 
 
+async def async_remove_fault_store(
+    hass: HomeAssistant, entry_id: str, gateway_id: str
+) -> None:
+    """Delete the fault baseline of one gateway of a removed entry (STORE-5)."""
+    await Store[dict[str, Any]](
+        hass, FAULT_STORAGE_VERSION, fault_store_key(entry_id, gateway_id), private=True
+    ).async_remove()
+
+
 class FaultTracker:
     """Track active notifications without retaining raw cloud payloads."""
 

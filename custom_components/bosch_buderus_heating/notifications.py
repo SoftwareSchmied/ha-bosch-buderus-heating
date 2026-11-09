@@ -133,6 +133,13 @@ def notification_store(
     return Store(hass, 1, notification_id(entry_id, gateway_id), private=True)
 
 
+async def async_remove_notification_store(
+    hass: HomeAssistant, entry_id: str, gateway_id: str
+) -> None:
+    """Delete the dismissals of one gateway of a removed entry (STORE-5)."""
+    await notification_store(hass, entry_id, gateway_id).async_remove()
+
+
 def installation_device(
     hass: HomeAssistant, entry_id: str, gateway_id: str
 ) -> dr.DeviceEntry | None:

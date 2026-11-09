@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import sys
 from dataclasses import dataclass, field
 from typing import Any, cast
@@ -23,6 +24,7 @@ from .configuration_management import ConfigurationManagement
 from .connection_runtime import SourceContext
 from .const import DOMAIN, PLATFORMS
 
+_LOGGER = logging.getLogger(__name__)
 MAX_ENTITY_RECORDS = 4096
 _FIELDS = frozenset(
     {
@@ -130,7 +132,18 @@ class ConnectionInventory:
             if len(entities) != len(items):
                 raise ConfigurationError("duplicate_inventory_entity")
             self._entities = entities
-        except ValueError, OSError:
+        except Exception as error:
+            # STORE-3: HA's Store raises HomeAssistantError (read failure),
+            # UnsupportedStorageVersionError (newer file), KeyError or
+            # TypeError (no envelope). The registry fallback works without it.
+            _LOGGER.warning(
+                "The entity inventory could not be loaded (%s); the registry "
+                "entries are used instead",
+                str(error)
+                if isinstance(error, ConfigurationError)
+                else type(error).__name__,
+            )
+            _LOGGER.debug("Inventory load failure", exc_info=True)
             self.healthy = False
             self._writable = False
 

@@ -1081,15 +1081,19 @@ async def _async_remove_local_access(
 async def _async_copy_store(
     hass: HomeAssistant, version: int, old_key: str, new_key: str
 ) -> None:
-    """Continue a per-gateway store under the new gateway's key."""
-    data = await Store[dict[str, Any]](
-        hass, version, old_key, private=True
-    ).async_load()
+    """Continue a per-gateway store under the new gateway's key.
+
+    The old gateway's file is deleted once the new one holds the data
+    (FAULT-5); a repeated run then finds nothing to copy.
+    """
+    source = Store[dict[str, Any]](hass, version, old_key, private=True)
+    data = await source.async_load()
     if data is None:
         return
     target = Store[dict[str, Any]](hass, version, new_key, private=True)
     if await target.async_load() is None:
         await target.async_save(data)
+    await source.async_remove()
 
 
 async def _async_finish(

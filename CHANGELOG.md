@@ -90,10 +90,48 @@ Versioning after its first tagged preview.
   already used sign-in attempt now says so and shows a new link. The step now
   shows the same step-by-step guide as the setup, because both dialogs share
   one sign-in step.
+- **A rejected sign-in with the device label no longer restarts the local
+  setup:** if the gateway rejects the label data (wrong login or password,
+  button not pressed, too many attempts) or the request was not sent, the
+  sign-in form returns with the reason. The certificate stays confirmed and
+  nothing has to be discarded first. "Continue" after a temporary error no
+  longer asks again for a certificate that was already confirmed in the same
+  dialog for this address and port, as long as it is unchanged.
+- **Removing a local access with a damaged setup record:** an unreadable
+  record of pending local sign-ins, for example after going back to an older
+  version, blocked removing the local access with the misleading message
+  "configuration changed". Removing the access or the whole entry now moves
+  the record aside as a `.corrupt` file and continues. A record that cannot be
+  read at all now says so.
+- **Holiday mode on systems with a single holiday switch:** confirming the
+  dialog without a change no longer sends anything, and a change made in the
+  app meanwhile is no longer overwritten; the dialog then shows the current
+  mode.
+- Unexpected errors in the local setup are logged as a warning with their
+  error type. The text of an error from outside the integration is no longer
+  shown as a misleading reason such as "timeout".
 - **Deleting a holiday by keyboard:** pressing Enter on "Delete holiday period
   completely" saved the holiday instead of opening the deletion confirmation.
   Enter and Space now open the confirmation. Saving a holiday without any
   change no longer sends anything to the heating system.
+
+### Storage and removal
+
+- **A damaged or newer entity inventory no longer stops the integration:**
+  if the stored entity inventory could not be read, came from a newer version
+  or lacked its storage envelope, the entry ended in a setup error without a
+  retry. It now starts with the entities known to Home Assistant and logs the
+  cause.
+- **Deleting an entry cleans up completely:** its repair notes about
+  firmware, rate limits or a changed certificate stayed until the next
+  restart. Its fault baselines, notification dismissals, sign-in histories,
+  learned local read schedules and estimated energy totals stayed in
+  `.storage` and in every backup. They are now deleted with the entry, also
+  when it was never loaded. Removing a local access deletes its read schedule,
+  and a gateway exchange deletes the old gateway's copies. At every start,
+  files of entries deleted earlier are removed; `.corrupt` backups stay.
+- A failed configuration migration now names its cause in the log, as a
+  static code or the error type.
 
 ### Faults
 
