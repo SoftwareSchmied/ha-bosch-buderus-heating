@@ -6,6 +6,9 @@ class BoschBuderusControls extends HTMLElement {
     this._changes = {};
     this._rows = [];
     this._active = "";
+    this._invalid = new Set();
+    // A click into the form is a deliberate focus choice; never override it.
+    this.addEventListener("pointerdown", () => (this._focusPending = false));
     // HA submits its outer form on Enter. Local navigation and
     // discard/refresh buttons must not submit an appliance draft.
     this.shadowRoot.addEventListener("keydown", (event) => {
@@ -32,7 +35,9 @@ class BoschBuderusControls extends HTMLElement {
         h3{font:inherit;font-weight:600;margin:16px 0 0;padding:14px 0 2px;border-top:1px solid var(--divider-color)}
         .actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;margin-top:16px}
         .status{color:var(--secondary-text-color);margin:12px 0;line-height:1.5}
-        .error{color:var(--error-color)}
+        .error,.hint{color:var(--error-color)}
+        .hint{grid-column:1/-1;margin:-6px 0 0}
+        input[aria-invalid="true"],select[aria-invalid="true"]{border-bottom:2px solid var(--error-color)}
         [hidden]{display:none}
         @media(max-width:360px){.field{grid-template-columns:minmax(0,1fr) minmax(96px,.65fr);gap:8px}}
       </style>
@@ -43,6 +48,7 @@ class BoschBuderusControls extends HTMLElement {
       <div class="actions"><button type="button" class="discard"></button><button type="button" class="refresh"></button></div>`;
     this.shadowRoot.querySelector(".discard").addEventListener("click", () => {
       this._changes = {};
+      this._invalid.clear();
       this._emit();
       this._render();
     });
@@ -80,18 +86,25 @@ class BoschBuderusControls extends HTMLElement {
       close.click();
     };
     this._dialog?.addEventListener("keydown", this._escape, true);
+    this._focusPending = true;
     this._restoreFocus();
   }
   _restoreFocus() {
     // HA replaces the form after Apply and can leave focus on the page body.
-    // Restore keyboard navigation only if no other element has gained focus.
+    // Restore keyboard navigation once per new form, and only if no other
+    // element has gained focus. Later state updates never move the focus.
     queueMicrotask(() => {
       if (
-        this.isConnected &&
-        this.ownerDocument.activeElement === this.ownerDocument.body &&
-        this._dialog?.shadowRoot?.querySelector("ha-dialog")?.open
+        !this._focusPending ||
+        !this.isConnected ||
+        !this._dialog?.shadowRoot?.querySelector("ha-dialog")?.open
       )
+        return;
+      if (this.ownerDocument.activeElement === this.ownerDocument.body)
         this.focus();
+      // Retry later only while the form's buttons are still disabled.
+      this._focusPending =
+        this.ownerDocument.activeElement === this.ownerDocument.body;
     });
   }
   disconnectedCallback() {
@@ -127,6 +140,10 @@ class BoschBuderusControls extends HTMLElement {
     if (JSON.stringify(config) === JSON.stringify(this._config)) return;
     this._config = config;
     this._rows = config.rows || [];
+    // HA creates a new selector for every step. The server names the tab to
+    // keep open and the values it rejected.
+    if (config.active) this._active = config.active;
+    this._invalid = new Set(config.invalid || []);
     this._render();
   }
   set value(value) {
@@ -136,9 +153,13 @@ class BoschBuderusControls extends HTMLElement {
     this._render();
   }
   get value() {
-    return { changes: { ...this._changes } };
+    // The open tab only tells the server where to continue after Apply.
+    return { changes: { ...this._changes }, active: this._active };
   }
   set disabled(value) {
+    // HA sets every property again on each state update; only react to a
+    // real change.
+    if (Boolean(value) === this._disabled) return;
     this._disabled = Boolean(value);
     this._setDisabled();
   }
@@ -149,6 +170,8 @@ class BoschBuderusControls extends HTMLElement {
   }
   reportValidity() {
     for (const input of this.shadowRoot.querySelectorAll("input,select")) {
+      // An unchanged value is the appliance's own, even if off the step grid.
+      if (!Object.hasOwn(this._changes, input.dataset.key)) continue;
       if (!input.disabled && !input.checkValidity()) {
         const panel = input.closest('[role="tabpanel"]');
         this._selectTab(panel.dataset.group);
@@ -208,7 +231,10 @@ class BoschBuderusControls extends HTMLElement {
       tab.dataset.group = group;
       tab.textContent = this._group(group);
       tab.setAttribute("aria-controls", "panel-" + index);
-      tab.addEventListener("click", () => this._selectTab(group));
+      tab.addEventListener("click", () => {
+        this._selectTab(group);
+        this._emit();
+      });
       tab.addEventListener("keydown", (event) => {
         let target;
         if (event.key === "ArrowRight") target = (index + 1) % groups.length;
@@ -219,6 +245,7 @@ class BoschBuderusControls extends HTMLElement {
         if (target !== undefined) {
           event.preventDefault();
           this._selectTab(groups[target], true);
+          this._emit();
         }
       });
       tabs.append(tab);
@@ -260,8 +287,9 @@ class BoschBuderusControls extends HTMLElement {
             input.type = "number";
             input.min = row.minimum;
             input.max = row.maximum;
-            // Step is an editing aid. The gateway's bounds are the write contract.
-            input.step = "any";
+            // Arrow keys and the spinner follow the control's step; without
+            // a known step any value within the bounds can be entered.
+            input.step = row.step > 0 ? String(row.step) : "any";
             input.inputMode = "decimal";
             input.required = true;
             input.value = value;
@@ -284,7 +312,24 @@ class BoschBuderusControls extends HTMLElement {
             input.value = value;
             box.append(input);
           }
+          let hint;
+          if (this._invalid.has(row.key)) {
+            hint = document.createElement("p");
+            hint.className = "hint";
+            hint.id = id + "-hint";
+            hint.textContent = this._text(
+              "Bitte prüfe diesen Wert.",
+              "Please check this value.",
+            );
+            input.setAttribute("aria-invalid", "true");
+            input.setAttribute("aria-describedby", hint.id);
+          }
           input.addEventListener("input", () => {
+            if (this._invalid.delete(row.key)) {
+              input.removeAttribute("aria-invalid");
+              input.removeAttribute("aria-describedby");
+              hint?.remove();
+            }
             const selected =
               row.kind === "switch"
                 ? input.checked
@@ -304,6 +349,7 @@ class BoschBuderusControls extends HTMLElement {
             this._emit();
           });
           field.append(label, box);
+          if (hint) field.append(hint);
           (row.advanced ? advanced : panel).append(field);
         });
       if (advanced.children.length > 1) panel.append(advanced);
@@ -374,7 +420,7 @@ class BoschBuderusControls extends HTMLElement {
       const step = await flow.flowConfig.handleFlowStep(
         flow.hass,
         flow.step.flow_id,
-        { controls: { action: "refresh" } },
+        { controls: { action: "refresh", active: this._active } },
       );
       if (this.isConnected) {
         this._changes = {};
