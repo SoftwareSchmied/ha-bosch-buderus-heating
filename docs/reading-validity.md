@@ -17,6 +17,15 @@ previous cycle finished.
 The group is the one the reading is actually polled in. Local readings follow
 their own polling classes in the same way; see [local polling](local-polling.md).
 
+While an entity shows the local value of a paired reading, the cloud reads
+that reading only every 15 minutes (see
+[source selection](source-selection.md#cloud-reads-while-local-values-are-shown)).
+Its cloud value then stays valid for those 15 minutes plus the limit of its
+group, for example 18 minutes for a live value, so the slower rate alone
+never makes it expire. When the entity shows the cloud value again, the limit
+of its group counts from that moment, until the next cloud read, but never
+beyond those 15 minutes plus the limit.
+
 ## Failed requests
 
 - If there is no answer for the reading itself, the last good value stays

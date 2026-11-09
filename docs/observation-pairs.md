@@ -36,6 +36,14 @@ incomparable pairs, counter pairs, pairs with both readings current and the
 largest receive-time gap. It contains no values, paths or identifiers and makes
 no requests.
 
+While an entity shows the local value of a paired reading, the cloud reads it
+only every 15 minutes (see
+[source selection](source-selection.md#cloud-reads-while-local-values-are-shown)).
+Both readings stay current, so the pair is still compared, but the cloud
+reading can be up to 15 minutes older than the local one: the receive-time gap
+of live values grows to that size, and a live value that changed in between
+is counted as differing.
+
 ## Local values for existing entities
 
 The local connection settings offer **Use local values for existing entities**.

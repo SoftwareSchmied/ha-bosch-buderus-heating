@@ -178,6 +178,24 @@ one second of timer-rounding tolerance; retry deadlines and rate-limit pauses
 are not shortened by that tolerance. Normal writes retain metadata validation
 and read-back confirmation and are never blindly retried.
 
+Since 0.9.0-alpha.3, paths of the groups read every 5, 15 or 60 minutes are
+spread over the minutes before their group's deadline where the batch of that
+minute has room left, instead of all falling due together and needing extra
+batches. Each path keeps its group's interval; only the minute within it
+moves, and a path read early is not read again before its group's deadline.
+A wake-up without a batch never gets one this way, and when no minute has room
+the deadline itself is used, as before. Small plants therefore keep their
+previous timing. With the anonymized cloud inventory of my heat pump (20 live
+values, 32 paths every 5 minutes, 16 every 15 minutes and 9 hourly paths) a
+simulated hour needs 60 batches instead of 76, with the same 1,657 path reads.
+The first reads after a start or a requested discovery stay immediate, and an
+explicit refresh still reads everything.
+
+While an entity shows the local value of a paired reading, its cloud path is
+read every 15 minutes only and at once again at its normal rate when the cloud
+value is shown again; see
+[source selection](source-selection.md#cloud-reads-while-local-values-are-shown).
+
 For **each** eligible product-name or installed-circuit-count path, stopping
 slow polling avoids 96 scheduled path reads per day in the standard profile or
 48 in the cloud-friendly profile after success. These are **path reads**, not

@@ -43,6 +43,37 @@ The rules below describe the selection whenever local values are used.
 - Selecting a source starts no request, never enables a disabled connection
   and never changes where writes go: writes always use the cloud.
 
+## Cloud reads while local values are shown
+
+While **Use local values for existing entities** is on and an entity shows
+the local value of a paired reading, the cloud reads that reading only every
+15 minutes instead of every minute (in the cloud-friendly profile every 14
+minutes, seven of its two-minute intervals). Readings of groups that the
+cloud reads every 15 minutes or less often anyway keep their interval.
+
+- **Switching to the cloud value** (the local access is not ready, paused or
+  failed, the local reading expired or does not fit, or the option is
+  switched off) reads the cloud value at once, if it is older than its normal
+  interval, and from then on at its normal rate. Until that read arrives,
+  usually within seconds, the entity shows the last cloud value (see
+  [validity](reading-validity.md)). Without a working cloud the next working
+  cloud cycle reads it first.
+- **The local access keeps its pace.** The local interval of a paired reading
+  still follows the normal cloud interval, so the local value stays the more
+  recent one.
+- **Unchanged:** counters (their cloud counts decide source changes), every
+  setting that can be adjusted through the cloud, and readings whose cloud
+  value a control or a calculated entity uses: the current hot-water setpoint
+  (the water heater's target), the current summer/winter mode of a heating
+  circuit (checked before a heating change) and the system pressure (the
+  calculated pressure status).
+- **After a confirmed write** the slower readings of the same circuit are read
+  with the next regular cloud cycle, as before.
+- An explicit refresh in Home Assistant reads every reading at once.
+- The optional "(cloud)" entities and the diagnostics comparison of cloud and
+  local readings show cloud values up to 15 minutes old for these readings;
+  the receive-time gap of a pair grows accordingly.
+
 ## Counters
 
 Paired energy, start and runtime counters follow the same local-first rule,
