@@ -235,23 +235,59 @@ def test_device_error_lists_are_not_used_yet() -> None:
     assert local_fault_resource(observation) is None
 
 
-def test_the_fault_hook_never_blocks_local_value_updates() -> None:
+def test_the_fault_hook_never_blocks_local_value_updates(caplog) -> None:
+    import logging
+
+    from custom_components.bosch_buderus_heating.connection_runtime import (
+        RepeatedFailure,
+    )
     from custom_components.bosch_buderus_heating.managed_pointt import (
+        _LOGGER,
         ManagedPointTCoordinator,
     )
 
+    caplog.set_level(logging.DEBUG, logger=_LOGGER.name)
+    failing = [True]
+
     def broken(selection):
-        raise RuntimeError("unexpected")
+        if failing:
+            raise RuntimeError("unexpected value 21.5")
+        return False
 
     fake = SimpleNamespace(
         source=SimpleNamespace(current=lambda: True),
         local_retained=False,
         local_selection=SimpleNamespace(changed=lambda: True),
         _local_faults_updated=broken,
+        _local_fault_failure=RepeatedFailure(
+            _LOGGER, "The local error list could not be applied"
+        ),
         async_update_listeners=MagicMock(),
     )
+    for _ in range(3):
+        ManagedPointTCoordinator._local_updated(fake)
+    assert fake.async_update_listeners.call_count == 3
+
+    # C61 (PRIV-2): once with the error class only, never its message; the
+    # traceback and the repetitions at debug level.
+    def warnings():
+        return [
+            record
+            for record in caplog.records
+            if record.levelno >= logging.WARNING and record.name == _LOGGER.name
+        ]
+
+    assert [record.getMessage() for record in warnings()] == [
+        "The local error list could not be applied (RuntimeError); further "
+        "failures are logged at debug level"
+    ]
+    assert warnings()[0].exc_info is None
+    assert any(record.exc_info for record in caplog.records)
+    failing.clear()
+    ManagedPointTCoordinator._local_updated(fake)  # a success ends the series
+    failing.append(True)
     ManagedPointTCoordinator._local_updated(fake)
-    fake.async_update_listeners.assert_called_once()
+    assert len(warnings()) == 2
 
 
 def test_the_fault_reading_takes_only_a_fresh_error_list() -> None:
@@ -496,6 +532,7 @@ def test_a_local_fault_event_refreshes_the_entities(monkeypatch) -> None:
         local_retained=False,
         local_selection=SimpleNamespace(changed=lambda: False),
         _local_faults_updated=lambda selection: True,
+        _local_fault_failure=MagicMock(),
         async_update_listeners=MagicMock(),
     )
     managed_pointt.ManagedPointTCoordinator._local_updated(hook)

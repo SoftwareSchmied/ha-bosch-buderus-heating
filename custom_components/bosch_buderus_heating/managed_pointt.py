@@ -18,6 +18,7 @@ from homeassistant.util import dt as dt_util
 from .configuration import ConfigurationError, JsonObject, StoredBinding
 from .connection_runtime import (
     ConnectionPhase,
+    RepeatedFailure,
     SourceContext,
     SourceFailure,
 )
@@ -560,6 +561,9 @@ class ManagedPointTCoordinator(
             connection.runtime.snapshot.owner_id,
             source.binding.target_id,
         )
+        self._local_fault_failure = RepeatedFailure(
+            _LOGGER, "The local error list could not be applied"
+        )
         self._remove_local_listener: Callable[[], None] | None = (
             connection.runtime.subscribe(self._local_updated)
         )
@@ -619,9 +623,12 @@ class ManagedPointTCoordinator(
         faults_changed = False
         try:
             faults_changed = self._local_faults_updated(selection)
-        except Exception:
+        except Exception as error:
             # Fault tracking must never stop local values from updating.
-            _LOGGER.exception("The local error list could not be applied")
+            # C61 (PRIV-2): logged once with the error class only.
+            self._local_fault_failure.failed(error)
+        else:
+            self._local_fault_failure.succeeded()
         if selection.changed() or faults_changed:
             self.local_refreshing = True
             try:
