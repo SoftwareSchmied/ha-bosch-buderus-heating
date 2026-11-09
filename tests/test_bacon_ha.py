@@ -276,7 +276,7 @@ async def test_entity_registry_identity_and_redacted_diagnostics(hass):
         await entity.async_will_remove_from_hass()
     assert entity.is_on is False
     data = await async_get_config_entry_diagnostics(hass, configured)
-    assert data["diagnostics_schema"] == 43
+    assert data["diagnostics_schema"] == 44
     assert data["bacon"]["selected_devices"] == 2
     serialized = json.dumps(data)
     for private in ("account-A", "serial-A", "My device", token()):

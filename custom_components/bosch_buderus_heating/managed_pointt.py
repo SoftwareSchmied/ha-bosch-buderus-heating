@@ -26,6 +26,7 @@ from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
     Freshness,
     ResourceSnapshot,
+    SourceOwnedCoordinator,
 )
 from .counter_selection import CounterGuard, counter_source_store
 from .discovery import error_category
@@ -525,8 +526,14 @@ class PointTSource:
             await coordinator.async_stop_source()
 
 
-class ManagedPointTCoordinator(BoschBuderusDataUpdateCoordinator):
-    """Scope publications and reauth without changing the legacy coordinator path."""
+class ManagedPointTCoordinator(
+    BoschBuderusDataUpdateCoordinator,
+    SourceOwnedCoordinator[dict[str, ResourceSnapshot]],
+):
+    """Scope publications and reauth without changing the legacy coordinator path.
+
+    B04: the source stops it (``async_stop_source``), not the entry's unload.
+    """
 
     def __init__(
         self, source: PointTSource, client: PointTClient, gateway: Gateway

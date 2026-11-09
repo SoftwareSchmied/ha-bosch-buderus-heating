@@ -4,6 +4,31 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 44 adds `failures` to each entry under `connections[]` and `sources[]`.
+It counts the failed attempts to connect an access or to start and run a
+source since the integration started (after a restart or reload it starts
+again at zero), with fixed codes only and never an error message, value or
+identifier:
+
+- `failures`: all failed attempts;
+- `consecutive_failures`: failed attempts in a row since the last successful
+  start (0 while it works);
+- `last_failure`: the error class of the last failed attempt, for example
+  `SourceFailure` for a failure the source reported itself, or the class of
+  an unexpected error such as `KeyError`; `null` before the first failure;
+- `last_failure_stage`: `connecting` or `running` for an access, `starting`
+  or `running` for a source;
+- `last_failure_phase`: the phase it went into, `unavailable`,
+  `auth_required` or `unsupported`;
+- `retry_seconds`: the pause before the next attempt while it is
+  `unavailable`, otherwise `null`. Failed attempts in a row wait longer each
+  time: 1, 2, 4, 8, 16 and then 30 minutes, at least as long as a pause the
+  cloud asked for. A successful start resets the pause to one minute.
+
+The first unexpected error of a series is logged once as a warning with its
+error class; its details and all further failures are logged at debug level,
+and the next successful start is logged as info.
+
 Schema 43 adds `connection_reuse` to each local access under
 `connections[].local[]`. Local reads keep an answered connection to the
 gateway open and use it again within 4 seconds, so a new TLS handshake is

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from homeassistant.core import callback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
+from .coordinator import SourceOwnedCoordinator
 from .managed_updates import SourceUpdates
 from .pointt import Gateway, PointTClient
 from .wallbox import SECTIONS, Section, SectionSnapshot, WallboxCoordinator
@@ -15,8 +16,13 @@ if TYPE_CHECKING:
     from .managed_pointt import PointTSource
 
 
-class ManagedWallboxCoordinator(WallboxCoordinator):
-    """Keep wallbox parsing and polling separate from source ownership."""
+class ManagedWallboxCoordinator(
+    WallboxCoordinator, SourceOwnedCoordinator[dict[Section, SectionSnapshot]]
+):
+    """Keep wallbox parsing and polling separate from source ownership.
+
+    B04: the source stops it (``async_stop_source``), not the entry's unload.
+    """
 
     def __init__(
         self, source: PointTSource, client: PointTClient, gateway: Gateway

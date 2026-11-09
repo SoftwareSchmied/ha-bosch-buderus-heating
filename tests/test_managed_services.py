@@ -116,7 +116,7 @@ async def test_diagnostics_keep_scoped_relationships_without_requests_or_ids(
         calls = list(backend.calls)
         result = await async_get_config_entry_diagnostics(hass, entry)
         assert backend.calls == calls
-        assert result["diagnostics_schema"] == 43
+        assert result["diagnostics_schema"] == 44
         assert result["setup"]["runtime_available"]
         assert len(result["connections"]) == (2 if state == "removed" else 3)
         assert len(result["targets"]) == len(manager.current().targets)
