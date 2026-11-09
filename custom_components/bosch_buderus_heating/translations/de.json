@@ -724,6 +724,10 @@
     }
   },
   "issues": {
+    "fault_source_removed": {
+      "title": "Eine Störungsquelle gibt es nicht mehr",
+      "description": "Die Integration wartet nicht mehr auf {count} Störungsquelle(n) einer Heizungsanlage, die es nicht mehr gibt, zum Beispiel die Fehlerliste eines entfernten oder ersetzten Funk-Raumgeräts. Bisher hat eine solche Quelle verhindert, dass überhaupt eine Störung endet. Störungen, die nur sie gemeldet hat, enden jetzt nach den nächsten zwei vollständigen Abfragen mit einem normalen Ereignis „Behoben“ (`resolved`). Ist das Gerät noch eingebaut, prüfe seine Verbindung zur Anlage; seine Fehlerliste zählt wieder, sobald die Anlage sie wieder meldet. Du kannst diesen Hinweis ignorieren; nach dem nächsten Neustart verschwindet er."
+    },
     "repeated_rate_limit": {
       "title": "Cloud-Zugriffe werden begrenzt",
       "fix_flow": {
