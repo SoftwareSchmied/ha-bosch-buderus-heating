@@ -67,7 +67,7 @@ from .water_softener import (
 )
 from .writes import EnumWritePolicy, NumberWritePolicy, assess_control
 
-DIAGNOSTICS_SCHEMA_VERSION = 42
+DIAGNOSTICS_SCHEMA_VERSION = 43
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:

@@ -320,6 +320,7 @@ class LocalSource:
                 "deferred_reasons": {},
             }
         )
+        reuse = getattr(self.client, "connection_reuse", None)
         return {
             "condition": state.condition.value if state else "unavailable",
             "identity_confirmed": state.identity_confirmed if state else False,
@@ -330,6 +331,8 @@ class LocalSource:
             # O93: bounded history and counts, fixed codes only.
             "condition_changes": list(self._changes),
             **health,
+            # G4/O56: kept connections, handshakes, fallback and overlap.
+            "connection_reuse": reuse() if callable(reuse) else None,
             "discovery_cursor": snapshot.discovery_cursor if snapshot else 0,
             "discovery_complete": snapshot.discovery_exhausted if snapshot else False,
             "discovery_pause_seconds": snapshot.discovery_pause_seconds

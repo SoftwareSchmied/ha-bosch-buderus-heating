@@ -4,6 +4,41 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 43 adds `connection_reuse` to each local access under
+`connections[].local[]`. Local reads keep an answered connection to the
+gateway open and use it again within 4 seconds, so a new TLS handshake is
+only needed after a pause, a failure or an address change. The certificate
+pin is checked on every new connection before anything is sent, and a kept
+connection is only used again with the same pin. The section counts since
+the local access started (after a restart or reload it starts again at zero)
+and contains only counts, durations and fixed codes:
+
+- `mode`: `keep_alive`, or `new_connection_per_read` while the automatic
+  fallback is active;
+- `measured_seconds`: how long the counts have run;
+- `tls_handshakes` and `tls_handshakes_per_hour`: certificate inspections
+  plus new connections for requests (`null` during the first minute);
+- `new_connections` and `reused_connections`: requests that opened a
+  connection and requests that used a kept one;
+- `closed_by_gateway`: answers with which the gateway announced that it
+  closes the connection;
+- `reuse_failures`: failures on kept connections by kind, `closed` (closed or
+  reset before an answer), `timeout` or `invalid_response`. A read whose kept
+  connection was closed before an answer is not paused or counted as a
+  connection failure; it is reported under `deferred_reasons` as
+  `reused_connection_closed` and read again with a new connection;
+- `fallback_active`, `fallback_reason` (the kind of failure that started the
+  last fallback), `fallback_remaining_seconds` and `fallbacks`: three
+  failures on kept connections within 15 minutes switch to a new connection
+  per read, the behaviour before keep-alive, for 6 hours, a repeated
+  fallback for 12 and then 24 hours. The first fallback is logged once as a
+  warning;
+- `overlapping_reads`: reads that started while another read was still
+  running, to judge whether two parallel reads are still needed;
+- `response_times_by_connection`: for answered reads over a `new` and a
+  `reused` connection the number of samples and the median, 95th percentile
+  and maximum in milliseconds of the last 256 reads.
+
 Schema 42 extends existing sections, again without values, addresses or
 identifiers:
 
