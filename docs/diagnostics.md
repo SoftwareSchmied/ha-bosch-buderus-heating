@@ -294,13 +294,18 @@ so it does not depend on a working sign-in. It contains:
 - `current`: remaining access-token lifetime in seconds, whether a refresh
   token exists, its relation to the recorded history, the granted scope names
   and whether renewal stopped after a rejection;
+- a start after a rejection is recorded as `credentials_loaded` with reason
+  `retry_after_rejection`;
 - `events`: the last 60 sign-in events with UTC time and age. Starts record
   whether the stored refresh token is the newest known one. Renewals record
   their trigger (`expiry` or `access_token_rejected`), duration and outcome,
   and on success the reported access and refresh lifetimes, whether a new
   refresh token was issued and whether it was saved;
 - for a rejected renewal: HTTP status, OAuth error code, a sanitized
-  description of at most 120 characters, body format and content type;
+  description of at most 120 characters, body format and content type. The
+  same fields appear for a renewal that was refused without a definite OAuth
+  error (outcome `failed`, `error_type` `RefreshRefused`); such a refusal is
+  retried later and does not ask for a new sign-in;
 - `presented_refresh_token`: whether the rejected token was the newest known
   one, how long ago it was first seen, how often it had been presented before
   and whether the service had accepted it before;

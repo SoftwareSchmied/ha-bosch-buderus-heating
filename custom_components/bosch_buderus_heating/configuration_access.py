@@ -55,6 +55,29 @@ class CredentialContext:
     brand: object = field(repr=False)
     account: object = field(repr=False)
 
+    def same_login(self, other: CredentialContext | None) -> bool:
+        """Whether both describe the same sign-in, ignoring account metadata.
+
+        A new sign-in raises the epoch, so the account fields add nothing for
+        tokens. They can change on their own, for example when the first
+        separate cloud device is chosen; that must not drop a rotated token.
+        """
+        return other is not None and (
+            self.owner_id,
+            self.connection_id,
+            self.version,
+            self.minor_version,
+            self.auth_epoch,
+            self.brand,
+        ) == (
+            other.owner_id,
+            other.connection_id,
+            other.version,
+            other.minor_version,
+            other.auth_epoch,
+            other.brand,
+        )
+
 
 class EntryConfiguration:
     """Always read the entry's latest state, without retaining a stale full copy."""
@@ -218,11 +241,12 @@ class EntryConfiguration:
     ) -> dict[str, Any] | None:
         """Compare and prepare a narrow token patch; caller saves without awaiting.
 
-        Disabling a connection does not invalidate a pending rotation. Removal,
-        a replacement login, or a newer saved token set does invalidate it.
+        Disabling a connection or changing its account metadata does not
+        invalidate a pending rotation. Removal, a replacement login, or a newer
+        saved token set does invalidate it.
         """
         try:
-            if self.context() != expected or self.tokens() != previous:
+            if not self.context().same_login(expected) or self.tokens() != previous:
                 return None
             credentials = tokens_to_data(updated)
             validate_cloud_credentials(json_object(credentials))

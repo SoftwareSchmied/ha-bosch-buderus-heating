@@ -92,7 +92,11 @@ def entry_auth(
     if (
         previous is not None
         and previous.tokens == tokens
-        and contexts.get(key) == context
+        and context.same_login(contexts.get(key))
+        # A rejected manager never asks again. A new start or check of this
+        # access may try the stored token once more, for example after a
+        # temporary refusal; a genuinely invalid token is rejected again.
+        and not previous.refresh_rejected
     ):
         if recorder is not None:
             previous.set_observer(recorder.refresh_finished)
@@ -134,9 +138,13 @@ def entry_auth(
     managers[key] = manager
     contexts[key] = context
     if recorder is not None:
-        recorder.credentials_loaded(
-            tokens, reason="start" if previous is None else "credentials_changed"
-        )
+        if previous is None:
+            reason = "start"
+        elif previous.refresh_rejected and previous.tokens == tokens:
+            reason = "retry_after_rejection"
+        else:
+            reason = "credentials_changed"
+        recorder.credentials_loaded(tokens, reason=reason)
     return manager, backoff
 
 

@@ -117,6 +117,8 @@ class RequestMetrics:
     slot_waits_over_10s: int = 0
     slot_wait_maximum_ms: float = 0.0
     slot_wait_last_ms: float | None = None
+    # Gateway list entries that could not be read and were left out (no IDs).
+    gateway_list_entries_skipped: int = 0
     requests_by_category: Counter[str] = field(default_factory=Counter)
     requests_by_type: Counter[str] = field(default_factory=Counter)
     requests_by_method: Counter[str] = field(default_factory=Counter)
@@ -321,6 +323,7 @@ class RequestMetrics:
                 sorted(self.bulk_items_by_gateway_status_class.items())
             ),
             "maximum_bulk_size": self.maximum_bulk_size,
+            "gateway_list_entries_skipped": self.gateway_list_entries_skipped,
             "average_duration_ms": _rounded(average),
             "maximum_duration_ms": _rounded(self.maximum_duration_ms),
             "last_duration_ms": _rounded(self.last_duration_ms),
@@ -360,6 +363,10 @@ class RequestMetrics:
             "outcomes": dict(sorted(self.outcomes.items())),
             "rolling_60_minutes": self._rolling_snapshot(now),
         }
+
+    def record_skipped_gateway_entries(self, count: int) -> None:
+        """Count unreadable gateway list entries without keeping their content."""
+        self.gateway_list_entries_skipped += max(0, count)
 
     def record_slot_wait(self, seconds: float) -> None:
         """Record how long one attempt waited for a shared request slot."""

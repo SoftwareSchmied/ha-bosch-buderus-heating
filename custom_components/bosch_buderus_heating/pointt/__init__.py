@@ -18,10 +18,12 @@ from .exceptions import (
     InvalidPayload,
     OAuthFlowExpired,
     OAuthRedirectError,
+    OAuthScopeRejected,
     OAuthStateMismatch,
     PointTError,
     ProtocolError,
     RateLimited,
+    RefreshRefused,
     RefreshTokenRejected,
     RequestTimeout,
     ResourceError,
@@ -30,6 +32,7 @@ from .exceptions import (
     ResourceNotFound,
     ResourceOmitted,
     ServiceUnavailable,
+    SignInUnavailable,
     TokenEndpointRejection,
     TransportError,
     UnexpectedHttpStatus,
@@ -50,7 +53,7 @@ from .models import (
     WriteRequest,
     WriteResult,
 )
-from .redaction import anonymize_identifier, redact_mapping, redact_text
+from .redaction import anonymize_identifier
 from .token_manager import (
     RefreshAttempt,
     RefreshObserver,
@@ -75,6 +78,7 @@ __all__ = [
     "OAuthFlow",
     "OAuthFlowExpired",
     "OAuthRedirectError",
+    "OAuthScopeRejected",
     "OAuthStateMismatch",
     "PKCEContext",
     "PointTClient",
@@ -83,6 +87,7 @@ __all__ = [
     "RateLimited",
     "RefreshAttempt",
     "RefreshObserver",
+    "RefreshRefused",
     "RefreshTokenRejected",
     "RequestMetrics",
     "RequestTimeout",
@@ -96,6 +101,7 @@ __all__ = [
     "ResourceReference",
     "RetryPolicy",
     "ServiceUnavailable",
+    "SignInUnavailable",
     "StaticTokenProvider",
     "TokenEndpointRejection",
     "TokenManager",
@@ -111,6 +117,4 @@ __all__ = [
     "build_authorization_url",
     "create_pkce_context",
     "parse_redirect_url",
-    "redact_mapping",
-    "redact_text",
 ]

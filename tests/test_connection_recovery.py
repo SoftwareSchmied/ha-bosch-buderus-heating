@@ -29,6 +29,7 @@ from custom_components.bosch_buderus_heating.data import tokens_to_data
 from custom_components.bosch_buderus_heating.pointt import (
     AuthTokens,
     Gateway,
+    InvalidPayload,
     PointTClient,
     RateLimited,
     RefreshTokenRejected,
@@ -37,6 +38,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     ResourceMetadata,
     RetryPolicy,
     ServiceUnavailable,
+    SignInUnavailable,
     TokenManager,
 )
 from custom_components.bosch_buderus_heating.pointt.transport import RateLimitBackoff
@@ -377,6 +379,103 @@ async def test_gateway_returns_after_breaker_without_reload_or_reauthentication(
         await coordinator.async_shutdown()
 
 
+@pytest.mark.parametrize(
+    "error", [InvalidPayload("maintenance page"), ServiceUnavailable(503)]
+)
+@pytest.mark.usefixtures("socket_enabled")
+async def test_sign_in_outage_sends_no_gateway_requests_and_keeps_values(hass, error):
+    """C15/AUTH-2: a failed renewal is no gateway answer and no invalid value."""
+    now = 1000.0
+    calls = []
+    # Essential paths, so a failed batch would normally start single reads.
+    paths = [
+        "/heatSources/actualSupplyTemperature",
+        "/heatSources/returnTemperature",
+        "/heatSources/actualModulation",
+        "/system/sensors/temperatures/outdoor_t1",
+    ]
+
+    async def response(request):
+        calls.append(request.method)
+        return web.Response(status=500)
+
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    oauth = AsyncMock()
+    oauth.refresh.side_effect = error
+    retry_now = [0.0]
+    manager = TokenManager(
+        oauth,
+        AuthTokens("expired", "refresh", 0),
+        lambda _: None,
+        retry_clock=lambda: retry_now[0],
+    )
+    async with (
+        serve([("POST", "/bulk", response), ("GET", "/{tail:.*}", response)]) as url,
+        aiohttp.ClientSession() as session,
+    ):
+        client = PointTClient(
+            session,
+            manager,
+            base_url=url,
+            retry_policy=RetryPolicy(base_delay=0, maximum_delay=0),
+        )
+        coordinator = BoschBuderusDataUpdateCoordinator(
+            hass, client, Gateway("gateway"), entry
+        )
+        resources = {
+            path: Resource(
+                path,
+                value=20,
+                has_value=True,
+                metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
+            )
+            for path in paths
+        }
+        coordinator.resources = resources
+        coordinator.data = {
+            path: ResourceSnapshot(resource, True, datetime.now(UTC))
+            for path, resource in resources.items()
+        }
+        # Two readings per request: two batches in one cycle.
+        coordinator._paths_by_group = {PollGroup.FAST: tuple(paths)}
+        coordinator._next_update = {PollGroup.FAST: 0}
+        with (
+            patch(ROOT + ".coordinator.MAX_BULK_PATHS", 2),
+            patch.object(
+                client,
+                "get_resources_bulk",
+                wraps=client.get_resources_bulk,
+            ) as bulk,
+            patch(ROOT + ".coordinator.monotonic", side_effect=lambda: now),
+            patch.object(entry, "async_start_reauth") as reauth,
+        ):
+            await coordinator.async_refresh()
+            # One token request; no single reads and no further batches.
+            assert oauth.refresh.await_count == 1
+            assert calls == []
+            assert bulk.await_count == 1
+            assert not coordinator.last_update_success
+            for path in paths:
+                # No answer for the reading: its value stays, nothing ends it.
+                snapshot = coordinator.data[path]
+                assert snapshot.resource.value == 20
+                assert not snapshot.ended
+                # The second batch is not sent at all, only postponed.
+                category = snapshot.last_error_category
+                assert category.startswith("no_answer_") or category == "poll_deferred"
+            assert {
+                coordinator.data[path].last_error_category for path in paths[2:]
+            } == {"poll_deferred"}
+            now += 10
+            retry_now[0] = 10.0
+            await coordinator.async_refresh()
+            assert oauth.refresh.await_count == 1
+            assert calls == []
+            reauth.assert_not_called()
+        await coordinator.async_shutdown()
+
+
 async def test_reconfigure_and_poll_share_one_refresh_rotation(hass):
     original = AuthTokens("old", "single-use", 0)
     updated = AuthTokens("new", "rotated", 10**12)
@@ -437,14 +536,26 @@ async def test_concurrent_transient_refresh_failure_recovers_next_cycle(error):
     oauth = AsyncMock()
     oauth.refresh.side_effect = refresh
     saved = []
-    manager = TokenManager(oauth, AuthTokens("old", "refresh", 0), saved.append)
+    retry_now = [0.0]
+    manager = TokenManager(
+        oauth,
+        AuthTokens("old", "refresh", 0),
+        saved.append,
+        retry_clock=lambda: retry_now[0],
+    )
     waiters = [asyncio.create_task(manager.get_access_token()) for _ in range(8)]
     await entered.wait()
     release.set()
     results = await asyncio.gather(*waiters, return_exceptions=True)
-    assert all(isinstance(result, type(error)) for result in results)
+    assert all(isinstance(result, SignInUnavailable) for result in results)
+    assert all(isinstance(result.__cause__, type(error)) for result in results)
     assert calls == ["refresh"]
     assert not saved
+    # Within the short pause no further token request is sent (AUTH-2).
+    with pytest.raises(SignInUnavailable):
+        await manager.get_access_token()
+    assert calls == ["refresh"]
+    retry_now[0] = 30.0
     assert await manager.get_access_token() == "new"
     assert calls == ["refresh", "refresh"]
     assert saved == [updated]

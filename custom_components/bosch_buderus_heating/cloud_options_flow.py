@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
 from typing import Any, ClassVar, cast, override
 
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .auth_lifecycle import async_wait_for_entry_refresh
 from .bacon import flow as bacon_flow
 from .bacon.models import BaconError
 from .cloud_auth_flow import CloudAuthorizationFlow
@@ -346,6 +348,12 @@ class CloudOptionsFlow(CloudAuthorizationFlow, ConnectionOptionsFlow):
                         ),
                         edit.connection_id,
                     )
+                    # A token rotation running right now is saved first; the
+                    # selection is then built on the saved tokens (AUTH-3).
+                    with suppress(TimeoutError):
+                        await async_wait_for_entry_refresh(
+                            self.hass, self._entry.entry_id
+                        )
                     update_cloud_selection(
                         self._management(),
                         edit,

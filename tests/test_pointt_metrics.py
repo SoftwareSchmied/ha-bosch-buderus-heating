@@ -73,6 +73,7 @@ def test_request_metrics_aggregate_without_request_details() -> None:
         "bulk_items_by_server_status_class": {},
         "bulk_items_by_gateway_status_class": {},
         "maximum_bulk_size": 3,
+        "gateway_list_entries_skipped": 0,
         "average_duration_ms": 10.8,
         "maximum_duration_ms": 20.0,
         "last_duration_ms": 0.0,

@@ -11,7 +11,7 @@ import secrets
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from time import monotonic, time
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import ParseResult, parse_qs, urlencode, urlparse
 
 import aiohttp
 
@@ -22,6 +22,7 @@ from .const import (
     OAUTH_AUTHORIZE_URL,
     OAUTH_CLIENT_ID,
     OAUTH_SCOPES,
+    OAUTH_SCOPES_REDUCED,
     OAUTH_TOKEN_URL,
 )
 from .exceptions import (
@@ -30,8 +31,10 @@ from .exceptions import (
     InvalidPayload,
     OAuthFlowExpired,
     OAuthRedirectError,
+    OAuthScopeRejected,
     OAuthStateMismatch,
     RateLimited,
+    RefreshRefused,
     RefreshTokenRejected,
     RequestTimeout,
     ServiceUnavailable,
@@ -78,14 +81,19 @@ def create_pkce_context(*, now: float | None = None) -> PKCEContext:
     )
 
 
-def build_authorization_url(brand: Brand, context: PKCEContext) -> str:
+def build_authorization_url(
+    brand: Brand,
+    context: PKCEContext,
+    *,
+    scopes: tuple[str, ...] = OAUTH_SCOPES_REDUCED,
+) -> str:
     """Build a brand-specific SingleKey ID authorization URL."""
     query = urlencode(
         {
             "client_id": OAUTH_CLIENT_ID,
             "redirect_uri": brand.redirect_uri,
             "response_type": "code",
-            "scope": " ".join(OAUTH_SCOPES),
+            "scope": " ".join(scopes),
             "state": context.state,
             "nonce": context.nonce,
             "code_challenge": context.code_challenge,
@@ -97,9 +105,16 @@ def build_authorization_url(brand: Brand, context: PKCEContext) -> str:
     return f"{OAUTH_AUTHORIZE_URL}?{query}"
 
 
-def parse_redirect_url(brand: Brand, redirect_url: str, *, expected_state: str) -> str:
-    """Validate a full application redirect URL and return its code."""
-    parsed = urlparse(redirect_url.strip())
+def _split_redirect(redirect_url: str) -> ParseResult:
+    try:
+        return urlparse(redirect_url.strip())
+    except ValueError as err:
+        # For example an unpaired "[" in the host part ("Invalid IPv6 URL").
+        raise OAuthRedirectError("OAuth redirect URI could not be parsed") from err
+
+
+def _redirect_parameters(brand: Brand, redirect_url: str) -> dict[str, list[str]]:
+    parsed = _split_redirect(redirect_url)
     expected = urlparse(brand.redirect_uri)
     if (
         parsed.scheme != expected.scheme
@@ -107,8 +122,12 @@ def parse_redirect_url(brand: Brand, redirect_url: str, *, expected_state: str) 
         or parsed.path != expected.path
     ):
         raise OAuthRedirectError("OAuth redirect URI did not match the selected brand")
+    return parse_qs(parsed.query or parsed.fragment, keep_blank_values=True)
 
-    parameters = parse_qs(parsed.query or parsed.fragment, keep_blank_values=True)
+
+def parse_redirect_url(brand: Brand, redirect_url: str, *, expected_state: str) -> str:
+    """Validate a full application redirect URL and return its code."""
+    parameters = _redirect_parameters(brand, redirect_url)
     if "error" in parameters:
         raise OAuthRedirectError("Authorization server returned an OAuth error")
     received_state = parameters.get("state", [None])[0]
@@ -120,6 +139,21 @@ def parse_redirect_url(brand: Brand, redirect_url: str, *, expected_state: str) 
     return code
 
 
+class _ScopeFallback:
+    """Process-wide memory that the sign-in service rejected the reduced set.
+
+    The reduced set is tried first. After one ``invalid_scope`` answer every
+    later attempt of this process asks for the full set at once.
+    """
+
+    active = False
+
+
+def initial_scopes() -> tuple[str, ...]:
+    """Return the scope set a new authorization attempt requests."""
+    return OAUTH_SCOPES if _ScopeFallback.active else OAUTH_SCOPES_REDUCED
+
+
 @dataclass(slots=True)
 class OAuthFlow:
     """One short-lived authorization flow whose redirect is consumed once."""
@@ -127,6 +161,7 @@ class OAuthFlow:
     brand: Brand
     context: PKCEContext
     max_age: float = 600.0
+    scopes: tuple[str, ...] = field(default_factory=initial_scopes)
     _consumed: bool = field(default=False, init=False, repr=False)
 
     @classmethod
@@ -137,7 +172,7 @@ class OAuthFlow:
     @property
     def authorization_url(self) -> str:
         """Return the URL the user should open."""
-        return build_authorization_url(self.brand, self.context)
+        return build_authorization_url(self.brand, self.context, scopes=self.scopes)
 
     def consume_redirect(
         self, redirect_url: str, *, now: float | None = None
@@ -147,11 +182,34 @@ class OAuthFlow:
             raise AuthorizationCodeConsumed("OAuth redirect was already consumed")
         if self.is_expired(now=now):
             raise OAuthFlowExpired("OAuth flow expired")
+        self._fall_back_on_scope_rejection(redirect_url, now=now)
         code = parse_redirect_url(
             self.brand, redirect_url, expected_state=self.context.state
         )
         self._consumed = True
         return AuthorizationGrant(code=code, code_verifier=self.context.code_verifier)
+
+    def _fall_back_on_scope_rejection(
+        self, redirect_url: str, *, now: float | None
+    ) -> None:
+        """Retry once with the full set when the reduced set was rejected.
+
+        Only an ``invalid_scope`` answer of this very attempt (matching state)
+        switches. The flow then shows a fresh link with the full set; later
+        attempts of this process start with it.
+        """
+        if self.scopes == OAUTH_SCOPES:
+            return
+        parameters = _redirect_parameters(self.brand, redirect_url)
+        state = parameters.get("state", [None])[0]
+        if parameters.get("error", [None])[0] != "invalid_scope" or (
+            not secrets.compare_digest(state or "", self.context.state)
+        ):
+            return
+        _ScopeFallback.active = True
+        self.scopes = OAUTH_SCOPES
+        self.context = create_pkce_context(now=now)
+        raise OAuthScopeRejected("Sign-in service rejected the reduced scope set")
 
     def is_expired(self, *, now: float | None = None) -> bool:
         """Return whether this attempt needs a new authorization link."""
@@ -223,12 +281,16 @@ class OAuthClient:
                 data=data,
                 headers=headers,
                 timeout=self._timeout,
+                # A redirect would resend the refresh token or the code
+                # verifier to the redirect target, possibly another host.
+                allow_redirects=False,
             ) as response:
                 if response.status in {400, 401, 403}:
                     if refresh_request:
-                        raise RefreshTokenRejected(
-                            rejection=await _read_rejection(response)
-                        )
+                        rejection = await _read_rejection(response)
+                        if rejection.oauth_error in _DEFINITE_REFRESH_REJECTIONS:
+                            raise RefreshTokenRejected(rejection=rejection)
+                        raise RefreshRefused(response.status, rejection=rejection)
                     raise AuthenticationError("Authorization code was rejected")
                 if response.status == 429:
                     raise RateLimited(
@@ -238,15 +300,19 @@ class OAuthClient:
                     )
                 if response.status >= 500:
                     raise ServiceUnavailable(response.status)
-                if response.status >= 400:
+                if not 200 <= response.status < 300:
                     raise UnexpectedHttpStatus(response.status)
-                payload = await response.json(content_type=None)
+                raw = await _read_bounded(response, _MAX_TOKEN_RESPONSE)
         except TimeoutError as err:
             raise RequestTimeout("OAuth token request timed out") from err
-        except (json.JSONDecodeError, UnicodeDecodeError) as err:
-            raise InvalidPayload("OAuth token response was not valid JSON") from err
         except aiohttp.ClientError as err:
             raise ServiceUnavailable() from err
+        if raw is None:
+            raise InvalidPayload("OAuth token response exceeded the size limit")
+        try:
+            payload = json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, ValueError, RecursionError) as err:
+            raise InvalidPayload("OAuth token response was not valid JSON") from err
 
         if not isinstance(payload, Mapping):
             raise InvalidPayload("OAuth token response must be an object")
@@ -289,6 +355,12 @@ class OAuthClient:
 
 
 _MAX_REJECTION_BODY = 4096
+_MAX_TOKEN_RESPONSE = 64 * 1024
+# Only these OAuth answers say that the refresh token itself is unusable. Any
+# other refusal (an HTML page, an empty body, another code) is retried later.
+_DEFINITE_REFRESH_REJECTIONS = frozenset(
+    {"invalid_grant", "invalid_client", "unauthorized_client", "unsupported_grant_type"}
+)
 _OAUTH_ERROR = re.compile(r"[A-Za-z0-9_.-]{1,64}")
 _CONTENT_TYPE = re.compile(r"[a-z0-9.+-]{1,32}/[a-z0-9.+-]{1,64}")
 # Long opaque runs could be tokens, codes or identifiers; never keep them.
@@ -304,12 +376,12 @@ async def _read_rejection(response: aiohttp.ClientResponse) -> TokenEndpointReje
     if content_type and safe_type is None:
         safe_type = "other"
     try:
-        raw = await response.content.read(_MAX_REJECTION_BODY)
+        raw = await _read_bounded(response, _MAX_REJECTION_BODY, truncate=True)
     except aiohttp.ClientError, TimeoutError:
         return TokenEndpointRejection(
             response.status, body_format="unreadable", content_type=safe_type
         )
-    if not raw.strip():
+    if raw is None or not raw.strip():
         return TokenEndpointRejection(
             response.status, body_format="empty", content_type=safe_type
         )
@@ -334,6 +406,23 @@ async def _read_rejection(response: aiohttp.ClientResponse) -> TokenEndpointReje
         body_format="json",
         content_type=safe_type,
     )
+
+
+async def _read_bounded(
+    response: aiohttp.ClientResponse, limit: int, *, truncate: bool = False
+) -> bytes | None:
+    """Read until the end of the body, also across chunks, up to ``limit``.
+
+    A single ``read(n)`` only returns what is buffered, so a body sent in
+    several chunks would be cut short. Returns None when the body is longer
+    than ``limit``, unless ``truncate`` keeps its first ``limit`` bytes.
+    """
+    body = bytearray()
+    while chunk := await response.content.read(limit + 1 - len(body)):
+        body.extend(chunk)
+        if len(body) > limit:
+            return bytes(body[:limit]) if truncate else None
+    return bytes(body)
 
 
 def _safe_description(value: object) -> str | None:

@@ -575,6 +575,25 @@ async def test_client_retries_once_with_forced_token_refresh() -> None:
     assert metrics["recent_requests"][1]["retry"] is True
 
 
+async def test_client_counts_unreadable_gateway_entries_without_ids() -> None:
+    async def handler(_request: web.Request) -> web.Response:
+        return web.json_response(
+            [{"deviceId": "gw-1"}, {"model": "private-unreadable-entry"}]
+        )
+
+    async with (
+        serve([("GET", "/gateways/", handler)]) as url,
+        aiohttp.ClientSession() as session,
+    ):
+        client = PointTClient(session, "token", base_url=url)
+        gateways = await client.get_gateways()
+
+    assert [gateway.gateway_id for gateway in gateways] == ["gw-1"]
+    snapshot = client.metrics.snapshot()
+    assert snapshot["gateway_list_entries_skipped"] == 1
+    assert "private-unreadable-entry" not in repr(snapshot)
+
+
 async def test_client_marks_individual_bulk_fallback_without_exposing_path() -> None:
     async def handler(_request: web.Request) -> web.Response:
         return web.json_response({"value": 20.5})

@@ -16,6 +16,7 @@ from custom_components.bosch_buderus_heating.pointt.bulk import (
 from custom_components.bosch_buderus_heating.pointt.parsers import (
     parse_batch_response,
     parse_gateway,
+    parse_gateway_list,
     parse_gateways,
     parse_part_number,
     parse_resource,
@@ -367,3 +368,44 @@ def test_bulk_mismatched_inner_id_is_local_to_its_requested_path():
     )
     assert not result[0].ok and isinstance(result[0].error, InvalidPayload)
     assert result[1].ok and result[1].resource.path == two
+
+
+# --- C20/AUTH-7: one unexpected gateway entry does not void the list ---
+
+
+def test_unreadable_gateway_entries_are_skipped_and_counted() -> None:
+    payload = [
+        {"deviceId": "gw-1", "deviceType": "heatpump"},
+        {"deviceType": "new-device-without-id"},
+        {"deviceId": 12345},
+        "not-an-object",
+        {"deviceId": "gw-2", "firmwareVersion": 15, "model": ["x"]},
+    ]
+    gateways, skipped = parse_gateway_list(payload)
+    assert [gateway.gateway_id for gateway in gateways] == ["gw-1", "gw-2"]
+    assert skipped == 3
+    # Unexpected types of descriptive fields are treated as absent.
+    assert gateways[1].firmware_version is None and gateways[1].model is None
+    assert gateways[0].device_type == "heatpump"
+    assert parse_gateways(payload) == gateways
+    assert parse_gateways({"gateways": payload}) == gateways
+
+
+def test_single_gateway_tolerates_unexpected_descriptive_fields() -> None:
+    gateway = parse_gateway({"id": "gw", "deviceType": 7, "firmware_version": 1.5})
+    assert gateway.gateway_id == "gw"
+    assert gateway.device_type is None and gateway.firmware_version is None
+    with pytest.raises(InvalidPayload):
+        parse_gateway({"deviceType": "no-id"})
+
+
+@pytest.mark.parametrize(
+    "payload", [[{"model": "x"}], {"gateways": [{"id": 3}]}, "text", {"gateways": 3}]
+)
+def test_gateway_list_without_any_readable_entry_is_invalid(payload) -> None:
+    with pytest.raises(InvalidPayload):
+        parse_gateway_list(payload)
+
+
+def test_empty_gateway_list_is_a_valid_answer() -> None:
+    assert parse_gateway_list([]) == ((), 0)

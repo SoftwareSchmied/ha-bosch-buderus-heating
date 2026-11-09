@@ -32,7 +32,9 @@ from .pointt import (
     AuthTokens,
     RateLimited,
     RefreshAttempt,
+    RefreshRefused,
     RefreshTokenRejected,
+    TokenEndpointRejection,
     TokenManager,
 )
 
@@ -233,15 +235,7 @@ class AuthDiagnostics:
         elif isinstance(attempt.error, RefreshTokenRejected):
             rejection = attempt.error.rejection
             if rejection is not None:
-                event.update(
-                    {
-                        "http_status": rejection.http_status,
-                        "oauth_error": rejection.oauth_error,
-                        "oauth_error_description": rejection.oauth_error_description,
-                        "body_format": rejection.body_format,
-                        "content_type": rejection.content_type,
-                    }
-                )
+                event.update(_rejection_fields(rejection))
                 reason = rejection.summary()
             else:
                 event["reason"] = "no_refresh_token"
@@ -270,6 +264,14 @@ class AuthDiagnostics:
                     event["http_status"] = status
             if isinstance(error, RateLimited) and error.retry_after is not None:
                 event["retry_after_s"] = _seconds(error.retry_after)
+            if isinstance(error, RefreshRefused):
+                # Refused without a definite OAuth error: retried later.
+                event.update(_rejection_fields(error.rejection))
+                _LOGGER.debug(
+                    "SingleKey ID refused the token refresh (%s); it is "
+                    "retried later and no new sign-in is requested yet",
+                    error.rejection.summary(),
+                )
             self._count(f"refresh_{_safe(attempt.outcome)}")
         self._append(now, event)
 
@@ -465,6 +467,16 @@ def _finite(value: object) -> bool:
         and not isinstance(value, bool)
         and math.isfinite(value)
     )
+
+
+def _rejection_fields(rejection: TokenEndpointRejection) -> dict[str, Any]:
+    return {
+        "http_status": rejection.http_status,
+        "oauth_error": rejection.oauth_error,
+        "oauth_error_description": rejection.oauth_error_description,
+        "body_format": rejection.body_format,
+        "content_type": rejection.content_type,
+    }
 
 
 def _seconds(value: float | None) -> int | None:

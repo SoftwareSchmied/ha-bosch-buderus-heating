@@ -93,22 +93,41 @@ async def test_reader_never_caches_a_reply_for_a_different_resource(
 
 
 @pytest.mark.parametrize("auth_position", [0, 1])
-async def test_batch_auth_failure_finishes_every_claimed_read_before_reauth(
-    reader, auth_position
-):
+async def test_item_401_is_a_temporary_failure_of_that_path_only(reader, auth_position):
+    """C14/START-3: an item 401 in an accepted request asks for no sign-in."""
     client, state, service = reader
     paths = (PRODUCT, CIRCUIT_COUNT_PATH)
     client.get_resources_bulk.return_value = tuple(
         BatchItemResult("one", path, 401 if index == auth_position else 503)
         for index, path in enumerate(paths)
     )
+    with patch(
+        "custom_components.bosch_buderus_heating.startup_reader.monotonic"
+    ) as now:
+        now.return_value = 1000.0
+        result = await service.async_read_batch(())
+    assert dict(result.outcomes) == {
+        paths[auth_position]: "http_401",
+        paths[1 - auth_position]: "service_unavailable",
+    }
+    assert result.rate_limit is None
+    unauthorized = state.reads[paths[auth_position]]
+    # Retried with the normal delay, like any temporary failure.
+    assert unauthorized.pending and unauthorized.result == "http_401"
+    assert unauthorized.attempts == unauthorized.failures == 1
+    assert unauthorized.next_attempt == 1060.0
+    assert not state.cached_reads()
+
+
+async def test_refused_request_still_asks_for_sign_in(reader):
+    client, state, service = reader
+    client.get_resources_bulk.side_effect = AuthenticationError()
     with pytest.raises(AuthenticationError):
         await service.async_read_batch(())
     assert all(
         read.result == "authentication_error" and read.attempts == read.failures == 1
         for read in state.reads.values()
     )
-    assert not state.cached_reads()
 
 
 @pytest.mark.parametrize(
