@@ -19,7 +19,7 @@ Automated checks on the release state (2026-11-09, run locally):
 | Full suite | Home Assistant 2026.10.4, local | 7954 passed; coverage 95.63 % |
 | Full suite with coverage, current version | Home Assistant 2026.11.0, official test package, local | 7954 passed; coverage 95.62 %; no deprecation warnings from the integration |
 | Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 167 files (2026.10.4 and 2026.11.0); Ruff clean; 368 files formatted |
-| All GitHub checks, including the browser tests | PR and release workflow | required; the release workflow publishes only after its checks pass |
+| GitHub checks | PR and release workflow | the release workflow published only after its Python checks, both older Home Assistant versions, hassfest and HACS passed; the browser tests ran only on the PR and were not a required check at the time |
 | Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
 
 Checks on my own system (heat pump with MX400 controller and K40RF gateway,
@@ -61,7 +61,7 @@ Automated checks on the release state (2026-11-08, run locally):
 | Full suite | Home Assistant 2026.10.4, local | 7770 passed; coverage 95.50 % |
 | Full suite with coverage, current version | Home Assistant 2026.11.0, official test package, local | 7770 passed; coverage 95.50 %; no deprecation warnings from the integration |
 | Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 163 files (2026.10.4 and 2026.11.0); Ruff clean; 354 files formatted |
-| All GitHub checks, including the browser tests | PR and release workflow | required; the release workflow publishes only after its checks pass |
+| GitHub checks | PR and release workflow | the release workflow published only after its Python checks, both older Home Assistant versions, hassfest and HACS passed; the browser tests ran only on the PR and were not a required check at the time |
 | Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
 
 Checks of the performance and load changes:
@@ -729,9 +729,12 @@ archive root.
 3. Push the verified state to GitHub only after explicit release approval.
 4. Create and push the signed or annotated version tag.
 
-The tag starts the release workflow. It repeats tests, type checks, formatting,
-linting, dependency auditing, hassfest, and HACS validation. Only then does it
-create the GitHub release with the ZIP and checksum.
+The tag starts the release workflow. It repeats the browser tests of the
+dialogs, the full suite on both older Home Assistant versions, tests, type
+checks, formatting, linting, dependency auditing, hassfest, and HACS
+validation. Only then does it create the GitHub release with the ZIP and
+checksum. A tag therefore cannot publish dialogs whose browser tests fail, even
+if a required check is missing from the branch protection.
 
 ## Field validation before 0.8.1
 

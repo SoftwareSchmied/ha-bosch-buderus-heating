@@ -88,6 +88,19 @@ Versioning after its first tagged preview.
   completely" saved the holiday instead of opening the deletion confirmation.
   Enter and Space now open the confirmation. Saving a holiday without any
   change no longer sends anything to the heating system.
+- **Operate appliance keeps your tab:** after Apply or Reload values, the
+  dialog jumped back to the first tab. It now stays on the open tab, shows the
+  tab of the last confirmed change, and opens the tab of a rejected value,
+  whose field is now marked. The tabs are ordered heating circuits (HC2 before
+  HC10), hot water, system; before, hot water came first.
+- **No more focus jumps:** a click on an empty area of the dialog followed by
+  any state change in Home Assistant moved the focus to the first tab and
+  scrolled to the top. The focus is now restored only once, when a new form
+  appears.
+- Number fields in the dialog step by the setting's step, for example 0.5 °C
+  instead of 1.
+- A missing or blocked dialog file no longer stops the whole integration from
+  starting; only the affected form is missing, with a warning in the log.
 
 ### Faults
 
@@ -102,6 +115,15 @@ Versioning after its first tagged preview.
   A stored valve status ends once with a normal "resolved" event.
 - The rules follow the gateway's documented error list. I have not yet seen a
   cloud answer from a system with radio room devices.
+
+### Release checks
+
+- The release workflow now also runs the browser tests of the dialogs before
+  it publishes anything. Before, only the pull request ran them, and my
+  release documentation for alpha.2 and alpha.3 wrongly listed them as a
+  release gate; I corrected that.
+- The browser tests for the local-only menu and "Search the system again"
+  now also run in CI.
 
 ## [0.9.0-alpha.3] - 2026-11-09
 

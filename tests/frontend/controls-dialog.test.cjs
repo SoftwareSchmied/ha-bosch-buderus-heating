@@ -46,6 +46,7 @@ const assert = require("node:assert/strict");
         value: 19,
         minimum: 5,
         maximum: 30,
+        step: 0.5,
         unit: "°C",
         available: true,
       },
@@ -80,6 +81,7 @@ const assert = require("node:assert/strict");
         available: true,
       },
     ];
+    window.rows = rows;
     selector.hass = { language: "de" };
     selector.selector = { "bosch-buderus-controls": { rows } };
     selector.value = { changes: {} };
@@ -108,6 +110,7 @@ const assert = require("node:assert/strict");
   await ui.getByLabel("Manueller Sollwert", { exact: true }).fill("20.5");
   assert.deepEqual(await page.evaluate(() => window.draft), {
     changes: { target: 20.5 },
+    active: "heatingCircuits/hc1",
   });
   await ui
     .getByRole("tab", { name: "Warmwasser 1", exact: true })
@@ -115,8 +118,10 @@ const assert = require("node:assert/strict");
   assert.equal(await page.evaluate(() => window.outerSubmits), 0);
   await ui.getByRole("tab", { name: "Warmwasser 1", exact: true }).click();
   await ui.getByLabel("Extra-Warmwasser", { exact: true }).check();
+  // The draft names the open tab, so the server can keep it after Apply.
   assert.deepEqual(await page.evaluate(() => window.draft), {
     changes: { target: 20.5, water: "start" },
+    active: "dhwCircuits/dhw1",
   });
   assert.equal(await page.evaluate(() => window.calls.length), 0);
   await ui.getByRole("tab", { name: "Heizkreis 1", exact: true }).click();
@@ -128,9 +133,15 @@ const assert = require("node:assert/strict");
     .getByRole("button", { name: "Verwerfen", exact: true })
     .press("Enter");
   assert.equal(await page.evaluate(() => window.outerSubmits), 0);
+  const target = ui.getByLabel("Manueller Sollwert", { exact: true });
+  assert.equal(await target.inputValue(), "19");
+  // Arrow keys follow the control's step; without one any value is allowed.
+  assert.equal(await target.getAttribute("step"), "0.5");
+  await target.press("ArrowUp");
+  assert.equal(await target.inputValue(), "19.5");
   assert.equal(
-    await ui.getByLabel("Manueller Sollwert", { exact: true }).inputValue(),
-    "19",
+    await ui.getByLabel("Vorlaufgrenze", { exact: true }).getAttribute("step"),
+    "any",
   );
   assert.equal(
     await ui
@@ -159,7 +170,7 @@ const assert = require("node:assert/strict");
     .getByRole("button", { name: "Werte neu laden", exact: true })
     .click();
   assert.deepEqual(await page.evaluate(() => window.calls), [
-    { controls: { action: "refresh" } },
+    { controls: { action: "refresh", active: "heatingCircuits/hc1" } },
   ]);
   await ui.evaluate((el) => {
     el.hass = { language: "en" };
@@ -192,6 +203,74 @@ const assert = require("node:assert/strict");
     await ui.getByLabel("Extra hot water", { exact: true }).isDisabled(),
     true,
   );
+
+  // A new step from the server opens the tab of a rejected value and marks
+  // the field until it is edited.
+  await ui.evaluate((el) => {
+    el.disabled = false;
+  });
+  // A tab change alone also reports the open tab.
+  await ui.getByRole("tab", { name: "Heating circuit 1", exact: true }).click();
+  assert.equal(
+    await page.evaluate(() => window.draft.active),
+    "heatingCircuits/hc1",
+  );
+  await ui.evaluate((el) => {
+    el.selector = {
+      "bosch-buderus-controls": {
+        rows: window.rows,
+        active: "dhwCircuits/dhw1",
+        invalid: ["water"],
+      },
+    };
+  });
+  assert.equal(
+    await ui
+      .getByRole("tab", { name: "Hot water 1", exact: true })
+      .getAttribute("aria-selected"),
+    "true",
+  );
+  const water = ui.getByLabel("Extra hot water", { exact: true });
+  assert.equal(await water.getAttribute("aria-invalid"), "true");
+  const hint = ui.getByText("Please check this value.", { exact: true });
+  assert.equal(await hint.isVisible(), true);
+  assert.equal(
+    await water.getAttribute("aria-describedby"),
+    await hint.getAttribute("id"),
+  );
+  assert.equal(
+    await ui.getByLabel("Manual setpoint", { exact: true }).getAttribute(
+      "aria-invalid",
+    ),
+    null,
+  );
+  await water.check();
+  assert.equal(await water.getAttribute("aria-invalid"), null);
+  assert.equal(await hint.count(), 0);
+  // Without a tab from the server, the open tab stays as it is.
+  await ui.evaluate((el) => {
+    el.selector = {
+      "bosch-buderus-controls": { rows: window.rows, status: "saved" },
+    };
+  });
+  assert.equal(
+    await ui
+      .getByRole("tab", { name: "Hot water 1", exact: true })
+      .getAttribute("aria-selected"),
+    "true",
+  );
+  // An unchanged appliance value off the step grid is not an input error.
+  await ui.evaluate((el) => {
+    el.value = { changes: {} };
+    el.selector = {
+      "bosch-buderus-controls": {
+        rows: window.rows.map((row) =>
+          row.key === "target" ? { ...row, value: 19.3 } : row,
+        ),
+      },
+    };
+  });
+  assert.equal(await ui.evaluate((el) => el.reportValidity()), true);
   assert.deepEqual(errors, []);
   console.log(
     "Actual controls module: drafts, tabs, discard, validation, refresh, DE/EN, keyboard, disabled controls and 320/390/736px layout passed.",

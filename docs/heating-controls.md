@@ -48,6 +48,13 @@ another controller can still act between a read and a write. Multiple
 settings are separate transactions. On failure, confirmed earlier changes
 remain applied and the last attempted change may have an uncertain outcome.
 The dialog explains this and retains the remaining draft.
+
+The tabs show the heating circuits in numerical order first, then hot water,
+then the system. After **Apply** or **Reload values**, the dialog stays on the
+open tab; after a successful write it shows the tab of the last confirmed
+change. If a value is rejected, the dialog opens its tab and marks the field
+until it is edited. If writing stops, it opens the tab of the affected change.
+The arrow keys and spinner of a number field use the step of that setting.
 An unconfirmed write or failed preflight read makes the affected resource
 unavailable until regular polling confirms it again. Reloading the dialog
 does not turn its previous cached value into a current reading.
@@ -171,6 +178,15 @@ Rücklesen und Schreiben eingreifen. Mehrere Einstellungen werden einzeln
 geschrieben. Bei einem Fehler bleiben bereits bestätigte Änderungen wirksam;
 die zuletzt versuchte Änderung kann bereits übernommen worden sein.
 Der Dialog erklärt das und erhält die verbleibenden Eingaben.
+
+Die Reiter zeigen zuerst die Heizkreise in numerischer Reihenfolge, dann
+Warmwasser und zuletzt die Anlage. Nach **Übernehmen** oder **Werte neu laden**
+bleibt der geöffnete Reiter erhalten; nach erfolgreichem Schreiben zeigt der
+Dialog den Reiter der zuletzt bestätigten Änderung. Wird ein Wert abgelehnt,
+öffnet der Dialog dessen Reiter und markiert das Feld, bis du es änderst.
+Bricht das Schreiben ab, öffnet er den Reiter der betroffenen Änderung.
+Pfeiltasten und Drehfeld eines Zahlenfelds verwenden die Schrittweite der
+jeweiligen Einstellung.
 Nach einem unbestätigten Schreibversuch oder einer fehlgeschlagenen
 Vorabprüfung ist die betroffene Ressource bis zur nächsten erfolgreichen
 regulären Abfrage nicht verfügbar. Das Neuladen des Dialogs macht einen

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Any, override
 
@@ -46,16 +47,58 @@ class ControlsSelector(ObjectSelector):
 
     selector_type = "bosch-buderus-controls"
 
-    def __init__(self, rows: list[dict[str, Any]], status: str = "") -> None:
+    def __init__(
+        self,
+        rows: list[dict[str, Any]],
+        status: str = "",
+        *,
+        active: str = "",
+        invalid: list[str] | None = None,
+    ) -> None:
         super().__init__()
         self.rows = rows
         self.status = status
+        # HA recreates the selector after every step, so the open tab and the
+        # rejected fields must come with the step itself.
+        self.active = active
+        self.invalid = invalid or []
 
     @override
     def serialize(self) -> dict[str, Any]:
         return {
-            "selector": {self.selector_type: {"rows": self.rows, "status": self.status}}
+            "selector": {
+                self.selector_type: {
+                    "rows": self.rows,
+                    "status": self.status,
+                    "active": self.active,
+                    "invalid": self.invalid,
+                }
+            }
         }
+
+
+# Tabs: heating circuits, then hot water, then the remaining system settings.
+_GROUP_RANK = {"heatingCircuits": 0, "dhwCircuits": 1}
+
+
+def control_group(path: str) -> str:
+    """The dialog tab of a control path."""
+    parts = path.strip("/").split("/")
+    if parts[0] in _GROUP_RANK and len(parts) > 1:
+        return "/".join(parts[:2])
+    return "system"
+
+
+def _row_order(path: str) -> tuple[int, int, str, str]:
+    """Order circuits naturally, so hc2 precedes hc10."""
+    family, _, circuit = control_group(path).partition("/")
+    number = re.search(r"\d+$", circuit)
+    return (
+        _GROUP_RANK.get(family, len(_GROUP_RANK)),
+        int(number.group()) if number else 0,
+        circuit,
+        path,
+    )
 
 
 def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resource]:
@@ -223,9 +266,22 @@ class ControlsOptionsFlow(OptionsFlow):
         errors: dict[str, str] = {}
         draft: dict[str, Any] = {}
         status = ""
+        # Rejected values, the path a write stopped at and the last written
+        # path select the tab shown with the next step.
+        invalid: list[str] = []
+        stopped: str | None = None
+        written: str | None = None
+        shown = ""
         if user_input is not None:
             payload = user_input.get("controls")
-            if not isinstance(payload, dict) or set(payload) - {"changes", "action"}:
+            if isinstance(payload, dict) and isinstance(payload.get("active"), str):
+                # The tab open in the browser; only a tab name, never written.
+                shown = payload["active"]
+            if not isinstance(payload, dict) or set(payload) - {
+                "changes",
+                "action",
+                "active",
+            }:
                 errors["base"] = "controls_invalid"
             elif payload.get("action") == "refresh":
                 self._control_displayed = current
@@ -235,15 +291,19 @@ class ControlsOptionsFlow(OptionsFlow):
                 errors["base"] = "controls_invalid"
             else:
                 draft = dict(payload.get("changes", {}))
-                try:
-                    for path, value in draft.items():
-                        before = self._control_displayed.get(path)
-                        if before is None or current.get(path) != before:
-                            raise WriteValidationError("Displayed control changed")
+                for path, value in draft.items():
+                    before = self._control_displayed.get(path)
+                    if before is None or current.get(path) != before:
+                        # The displayed control changed, not the entered value.
+                        errors["base"] = "controls_invalid"
+                        stopped = stopped or path
+                        continue
+                    try:
                         validate_control_value(before, value)
-                except WriteValidationError:
-                    errors["base"] = "controls_invalid"
-                else:
+                    except WriteValidationError:
+                        errors["base"] = "controls_invalid"
+                        invalid.append(path)
+                if not errors:
                     # Settings precede activation. Each write is individually
                     # confirmed; the appliance API has no multi-setting commit.
                     for path in sorted(
@@ -277,7 +337,9 @@ class ControlsOptionsFlow(OptionsFlow):
                         else:
                             self._control_displayed[path] = confirmed
                             draft.pop(path)
+                            written = path
                         if errors:
+                            stopped = path
                             break
                     if not errors:
                         self._control_displayed = controls(coordinator)
@@ -288,13 +350,26 @@ class ControlsOptionsFlow(OptionsFlow):
         )
         if not rows:
             status = "empty"
+        invalid.sort(key=_row_order)
+        if errors:
+            # The first rejected value, else where writing stopped, else the
+            # first change still pending.
+            preferred = [*invalid, *([stopped] if stopped else []), *draft]
+        else:
+            # After writing, show the last confirmed change.
+            preferred = [written] if written else []
+        candidates = [
+            control_group(path) for path in preferred if isinstance(path, str)
+        ]
+        groups = {row["group"] for row in rows}
+        active = next((group for group in [*candidates, shown] if group in groups), "")
         return self.async_show_form(
             step_id="operate",
             data_schema=vol.Schema(
                 {
                     vol.Required(
                         "controls", default={"changes": draft}
-                    ): ControlsSelector(rows, status)
+                    ): ControlsSelector(rows, status, active=active, invalid=invalid)
                 }
             ),
             errors=errors,
@@ -311,14 +386,10 @@ class ControlsOptionsFlow(OptionsFlow):
             for language in ("de", "en")
         }
         rows = []
-        for path, resource in sorted(displayed.items()):
+        for path in sorted(displayed, key=_row_order):
+            resource = displayed[path]
             assessment = assess_control(resource)
-            parts = path.strip("/").split("/")
-            group = (
-                "/".join(parts[:2])
-                if parts[0] in {"heatingCircuits", "dhwCircuits"}
-                else "system"
-            )
+            group = control_group(path)
             key = _translation_key(path)
             labels = {
                 lang: control_label(path, resource_name(path, language=lang), lang)
