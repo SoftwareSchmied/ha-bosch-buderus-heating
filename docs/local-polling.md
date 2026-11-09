@@ -40,10 +40,15 @@ signal whose two possible forms are still undecided, or that any entity
 shows, keeps its usual interval. When a later answer gives it an entity, the
 usual interval applies again. The diagnostics count both kinds
 (`signals_read_hourly_unused` and `signals_read_hourly_without_entity`).
-A value becomes late after one target interval and expires after three. Actual
-request intervals and age are separately available. An overloaded queue never
-extends validity. A source pause or missing identity can make a value unavailable
-earlier; freshness continues to advance independently.
+A value becomes late after one target interval plus a grace of a tenth of the
+interval, at least 10 seconds, and expires after three intervals. The grace
+covers a slightly later start or a slower answer of the next read, so a value
+read on time never shows as late. Actual request intervals and age are
+separately available. An overloaded queue never extends validity. A missing
+identity, a refused token, a changed certificate or an unavailable access make
+a value unavailable earlier. A pause of the access does not: it only slows the
+requests, and values read before stay available until they expire. Freshness
+continues to advance independently.
 
 One persistent scheduling wheel assigns four regular slots, one discovery slot,
 four regular slots and one explicit slot. With all lanes continuously eligible,
@@ -83,8 +88,12 @@ started, so the time a read takes does not lengthen every interval. A deferred
 read stays due and starts again after the spacing. A failed read waits for its
 next interval and is never repeated at once, except after a timeout: a known
 resource is then read once more as soon as the spacing (and a pause of the
-access, if any) allows, so a single timeout does not let its value expire. A
-second timeout in a row waits for the next interval.
+access, if any) allows, so a single timeout does not let its value expire.
+Every further timeout in a row waits for the next interval. A known resource
+without a usable value, after a restart or after an invalid answer, is asked
+again after 30, 60, 120 and 300 seconds, never later than its interval, before
+its interval applies again. One failed first read after a restart therefore
+never keeps the signals away for 15 minutes or a static value for a day.
 
 The service owns its read tasks and a separate expiry timer. Waiting for a
 response, a gateway pause or a checkpoint does not keep old observations fresh.
@@ -137,8 +146,13 @@ New forbidden or missing paths retry after one, six and then 168 hours (a
 week); a changed answer schema keeps that pause. Invalid
 responses use 15 minutes, one hour and 24 hours. Timeouts use five, 15, 60 minutes
 and then a day. These retries still need a discovery slot. Access failures use
-60, 120, 300 and then 600 seconds through the shared persistent budget. A received
-Retry-After is retained in full. A deliberate identity confirmation or the next
+60, 120, 300 and then 600 seconds through the shared persistent budget, also
+after a 429. A longer Retry-After is retained in full; a short or zero one does
+not stop the growing pause. When both running reads fail together (an
+unreachable gateway), the read that started before the pause counts as the
+same failure. An unexpected problem of the local reads pauses them for 60 to
+900 seconds; the same problem is logged as a warning at most once an hour.
+A deliberate identity confirmation or the next
 successful read resets the access failure counter without clearing a gateway
 pause.
 

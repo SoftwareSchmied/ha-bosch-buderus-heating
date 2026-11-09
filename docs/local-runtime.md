@@ -53,7 +53,9 @@ enabled, even when a response reports a writeable flag.
 
 When the gateway cannot be reached at startup (connection, name resolution,
 timeout, 429 or 5xx), the shared gateway pause holds 60, 120, 300 and then 600
-seconds without a server delay. A complete valid Retry-After takes precedence.
+seconds, growing with every failed check. A longer valid Retry-After is kept
+in full; a short or zero one (or a date in the past) never makes the checks
+repeat sooner.
 
 Only a rejected token, a changed certificate, a different gateway and firmware
 older than the supported minimum stop automatic attempts. Every other startup

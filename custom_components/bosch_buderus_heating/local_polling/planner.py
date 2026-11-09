@@ -147,19 +147,13 @@ class PollPlanner:
                 self.operations.remove(operation)
 
     def _regular(self, now: float) -> ReadRequest | None:
+        # The inventory's keys are the targets: worked out once per record.
         due = [
-            r
-            for r in self.inventory.records.values()
-            if r.confirmed
-            and r.active
-            and r.due <= now
-            and r.request.target not in self.inflight
+            (r.due, r.created, target, r)
+            for target, r in self.inventory.records.items()
+            if r.confirmed and r.active and r.due <= now and target not in self.inflight
         ]
-        return (
-            min(due, key=lambda r: (r.due, r.created, r.request.target)).request
-            if due
-            else None
-        )
+        return min(due, key=lambda item: item[:3])[3].request if due else None
 
     def _explicit(self, now: float) -> ReadRequest | None:
         for operation in self.operations:
@@ -207,15 +201,15 @@ class PollPlanner:
         ):
             return None
         due = [
-            r
-            for r in self.inventory.records.values()
+            (r.due, r.created, target, r)
+            for target, r in self.inventory.records.items()
             if not r.confirmed
             and r.active
             and r.due <= now
-            and r.request.target not in self.inflight
+            and target not in self.inflight
         ]
         if due:
-            return min(due, key=lambda r: (r.due, r.created, r.request.target)).request
+            return min(due, key=lambda item: item[:3])[3].request
         if self.exhausted:
             return None
         if len(self.inventory.records) >= MAX_RECORDS:
@@ -325,8 +319,8 @@ class PollPlanner:
         # Unexamined candidates and skipped known candidates need bounded progress.
         searching = not self.exhausted and now >= self.discovery_pause_until
         due: list[float] = []
-        for r in self.inventory.records.values():
-            if not r.active or r.request.target in self.inflight:
+        for target, r in self.inventory.records.items():
+            if not r.active or target in self.inflight:
                 continue
             if r.confirmed:
                 if room and r.due <= now:

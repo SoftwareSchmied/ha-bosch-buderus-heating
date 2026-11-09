@@ -275,7 +275,7 @@ def test_timed_out_read_is_repeated_once_early(state):
     assert record.due == pytest.approx(165.2)  # a second timeout: its period
     third = planner.pick(165.2)
     planner.finish(third, success(REQUEST, 166), 166)
-    assert record.due == pytest.approx(225.2) and not record.timeout_retried
+    assert record.due == pytest.approx(225.2) and not record.timeouts
     # After a timeout and a successful early retry, the next timeout is
     # repeated early again.
     fourth = planner.pick(225.2)

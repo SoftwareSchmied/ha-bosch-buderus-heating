@@ -60,6 +60,39 @@ Versioning after its first tagged preview.
 - After five failed attempts, about 18 minutes in, a repair note names the
   cause and offers to try again at once. It disappears as soon as the local
   access starts.
+- **A short pause no longer hides the local values:** one failed request
+  pauses the local access for a minute or more. Until now every local value
+  disappeared at once, paired sensors jumped to an older cloud value and
+  local counters became unavailable. Now values already read stay until their
+  normal expiry of three intervals. A rejected token, a changed certificate
+  or an unavailable access still end them at once.
+- **Faster recovery after a restart:** if the first read of a value fails
+  after Home Assistant starts, for example the list of signals, it is asked
+  again after 30 seconds and then a little later each time, instead of only
+  after its full interval. Before, one failure could keep all signals away
+  for 15 minutes and static values such as the hardware version for a day.
+- **Pauses grow as intended:** a gateway asking for a pause with a very short
+  or zero Retry-After no longer gets asked again every second; the pause
+  grows from one minute to ten as for every other failed request. When both
+  running reads fail together, that counts as one failure, so a short
+  gateway restart no longer leads to a ten-minute pause. A failed read that
+  was repeated at once after a timeout is now repeated at once only for the
+  first timeout in a row.
+- **Fewer false "late" values:** a value read on time no longer shows as late
+  for a moment just before its next read. It now becomes late only 10 seconds
+  (or a tenth of the interval) after its interval.
+- **An unreadable answer stays a problem of its own path:** an answer the
+  integration cannot decode no longer pauses all local reads; only that value
+  is unavailable, and the log names the kind of path once. Repeated
+  unexpected problems are logged as a warning at most once an hour.
+- **No false keep-alive warning on a busy start:** a slow answer on a kept
+  connection no longer counts as a connection the gateway dropped.
+- **A damaged pause file no longer blocks the local access:** if the file
+  with the stored pauses of the local access cannot be read, it is kept as a
+  backup (`.corrupt`) and the local access starts without it. A file from a
+  later release keeps the pauses it can still use.
+- The local access needs less processing time per read, which matters most
+  on small boards such as a Raspberry Pi.
 
 ### Cloud connection and robustness
 

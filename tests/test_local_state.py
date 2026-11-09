@@ -136,7 +136,21 @@ def test_current_observations_are_worked_out_once_and_only_when_ready():
     )
     assert state.current_observations == (observation,)
     assert state.current_observations is state.current_observations
-    for condition in (LocalCondition.PAUSED, LocalCondition.UNAVAILABLE):
+    # A pause keeps the current readings (SEL-1); other conditions do not.
+    assert replace(state, condition=LocalCondition.PAUSED).current_observations == (
+        observation,
+    )
+    assert (
+        replace(
+            state, condition=LocalCondition.PAUSED, identity_confirmed=False
+        ).current_observations
+        == ()
+    )
+    for condition in (
+        LocalCondition.UNAVAILABLE,
+        LocalCondition.AUTH_REQUIRED,
+        LocalCondition.CERTIFICATE_CHANGED,
+    ):
         assert replace(state, condition=condition).current_observations == ()
     assert (
         replace(state, condition=LocalCondition.INITIALIZING).current_observations == ()

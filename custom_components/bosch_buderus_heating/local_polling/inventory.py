@@ -29,6 +29,17 @@ NOT_FOUND_STATUSES = frozenset({403, 404, 406})
 NOT_FOUND_RETRY = 7 * 86400
 # O13: a view is worked out again this long before its freshness changes.
 RENEW_MARGIN = 0.001
+# A reading becomes late only this long after its interval: at least 10 s,
+# at least a tenth of the interval. The next read is due one interval after
+# the previous one *started*, so a slightly later start or a slower answer
+# never shows a punctually read value as late. Expiry stays at three
+# intervals.
+LATE_GRACE_SECONDS = 10.0
+LATE_GRACE_SHARE = 0.1
+# A known resource without a usable value in this process (after a restart,
+# or after an invalid answer) is asked again after these delays, never later
+# than its period; a working answer starts them again.
+QUICK_RETRY = (30.0, 60.0, 120.0, 300.0)
 
 
 class Freshness(StrEnum):
@@ -60,8 +71,11 @@ class ResourceRecord:
     # Period scheduled at the last read: a later, shorter cap must not expire a
     # reading before its next read is even due.
     scheduled_period: int | None = None
-    # T7: a timed-out read of a known resource was already repeated early.
-    timeout_retried: bool = False
+    # T7: timeouts in a row of a known resource; only the first is repeated
+    # early.
+    timeouts: int = 0
+    # Quick retries used since the last working answer (see QUICK_RETRY).
+    retries: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,6 +88,11 @@ class ResourceView:
     actual_interval_seconds: float | None
     problem: str | None
     observation: LocalObservation | None = field(repr=False)
+
+
+def late_after(interval: float) -> float:
+    """The age from which a reading with this interval is late."""
+    return interval + max(LATE_GRACE_SECONDS, LATE_GRACE_SHARE * interval)
 
 
 def represented_size(value: JsonValue) -> tuple[int, int]:
@@ -208,16 +227,18 @@ class ResourceInventory:
         record.scheduled_period = interval
         # T7: a single timeout must not let a value expire. A known resource
         # is read once more as soon as the start spacing allows (after a
-        # pause of the access, if there is one); a second timeout in a row
-        # waits for its period again.
+        # pause of the access, if there is one); every further timeout in a
+        # row waits for its period again.
         if result.problem == TransportFailure.TIMEOUT and record.confirmed:
-            if not record.timeout_retried:
+            if not record.timeouts:
                 record.due = now
-            record.timeout_retried = not record.timeout_retried
+            record.timeouts = min(record.timeouts + 1, 2)
         else:
-            record.timeout_retried = False
+            record.timeouts = 0
         if result.state is ReadState.ACCESS_ERROR:
-            return False  # Source health and the shared pause have their own owner.
+            # Source health and the shared pause have their own owner.
+            self._retry_soon(record, now, interval)
+            return False
         if result.state is ReadState.SUCCESS:
             observation = result.observation
             if (
@@ -241,11 +262,13 @@ class ResourceInventory:
                 > MAX_RETAINED_NODES
             ):
                 record.invalid, record.problem = True, "local_memory_limit"
+                self._retry_soon(record, now, interval)
                 return False
             if observation.request.path == "/signals" and not self._signals(
                 observation, now
             ):
                 record.invalid, record.problem = True, self.signal_problem
+                self._retry_soon(record, now, interval)
                 return False
             prior = record.previous_success
             record.actual_interval = (
@@ -258,12 +281,13 @@ class ResourceInventory:
             record.retained_bytes, record.retained_nodes = size, nodes
             record.observation = observation
             record.confirmed, record.invalid, record.failures = True, False, 0
-            record.problem = None
+            record.problem, record.retries = None, 0
             return True
         record.problem = result.problem
         timed_out = result.problem == TransportFailure.TIMEOUT
         if record.confirmed:
             record.invalid = not timed_out
+            self._retry_soon(record, now, interval)
         else:
             schedule = (
                 (300, 900, 3600, 86400)
@@ -279,6 +303,27 @@ class ResourceInventory:
             record.due = now + schedule[min(record.failures, len(schedule) - 1)]
             record.failures = min(record.failures + 1, 4)
         return False
+
+    @staticmethod
+    def _retry_soon(record: ResourceRecord, now: float, interval: int) -> None:
+        """A failed read of a known resource that has no usable value now.
+
+        After a restart a known resource has no value in this process yet (a
+        restored signal stays inactive until a valid signal list), and an
+        invalid answer withdraws the value. One failure must not keep it
+        missing for a whole period (up to a day): it is asked again after a
+        short, growing delay (``QUICK_RETRY``), never later than its period.
+        A value that is still usable (for example after a timeout) keeps its
+        due time.
+        """
+        if not record.confirmed or (
+            record.observation is not None and not record.invalid
+        ):
+            return
+        if record.retries < len(QUICK_RETRY):
+            delay = min(QUICK_RETRY[record.retries], interval)
+            record.due = min(record.due, now + delay)
+            record.retries += 1
 
     def _signals(self, observation: LocalObservation, now: float) -> bool:
         data = observation.data
@@ -361,16 +406,17 @@ class ResourceInventory:
             and interval is not None
             and category(record.request) is not PollClass.DISCOVERY
         ):
+            late = late_after(interval)
             freshness = (
                 Freshness.EXPIRED
                 if age >= 3 * interval
                 else Freshness.LATE
-                if age >= interval
+                if age >= late
                 else Freshness.FRESH
             )
             # A little early: rounding never keeps an outdated freshness.
             if freshness is Freshness.FRESH:
-                renew = observation.observed_monotonic + interval - RENEW_MARGIN
+                renew = observation.observed_monotonic + late - RENEW_MARGIN
             elif freshness is Freshness.LATE:
                 renew = observation.observed_monotonic + 3 * interval - RENEW_MARGIN
         available = (
@@ -391,17 +437,18 @@ class ResourceInventory:
         ), renew
 
     def next_expiry(self, now: float) -> float | None:
+        """When the freshness of a reading changes next (late, expired)."""
         deadlines = []
         for record in self.records.values():
-            interval = self.freshness_period(record)
-            if (
-                record.observation is None
-                or interval is None
-                or category(record.request) is PollClass.DISCOVERY
-            ):
+            # Records without a reading first: most never had one, and the
+            # period asks the cap and the floor.
+            if record.observation is None:
                 continue
-            for multiplier in (1, 3):
-                deadline = record.observation.observed_monotonic + multiplier * interval
+            interval = self.freshness_period(record)
+            if interval is None or category(record.request) is PollClass.DISCOVERY:
+                continue
+            for limit in (late_after(interval), 3 * interval):
+                deadline = record.observation.observed_monotonic + limit
                 if deadline > now:
                     deadlines.append(deadline)
         return min(deadlines, default=None)

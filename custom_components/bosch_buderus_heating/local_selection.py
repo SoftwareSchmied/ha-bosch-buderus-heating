@@ -1007,12 +1007,12 @@ def paired_cloud_interval(
     shortest interval of its profile applies. ``None`` without a paired reading
     or an enabled cloud binding.
     """
+    if not _paired_reading(path):
+        return None  # most readings: before the imports, asked every period
     from .const import PollingProfile
     from .coordinator import POLL_INTERVALS, POLL_INTERVALS_CLOUD_FRIENDLY
     from .resource_catalog import PollGroup
 
-    if not _paired_reading(path):
-        return None
     options = options if options is not None else snapshot.to_options()
     target = section(options, "targets").get(target_id, {})
     if target.get("local_values", False) is not True:

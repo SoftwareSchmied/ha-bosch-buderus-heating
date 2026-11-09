@@ -114,10 +114,13 @@ async def test_identity_gate_then_actual_age_changes_without_refreshing_observat
     observation = service.snapshot().resources[0].observation
     assert service.snapshot().resources[0].available
     await service.budget.pause(7200)
-    await advance(service, clock, 60)
+    await advance(service, clock, 70)
     assert service.snapshot().resources[0].freshness is Freshness.LATE
-    await advance(service, clock, 120)
+    # Paused: the reading stays available until it expires (SEL-1).
+    assert service.snapshot().resources[0].available
+    await advance(service, clock, 110)
     assert service.snapshot().resources[0].freshness is Freshness.EXPIRED
+    assert not service.snapshot().resources[0].available
     assert service.snapshot().resources[0].observation is observation
     assert len(client.calls) == 1 and published[-1].condition is LocalCondition.PAUSED
 
