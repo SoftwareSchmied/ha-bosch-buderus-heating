@@ -589,6 +589,20 @@ long-term statistics) and the heating circuit 1 volume flow are enabled. An
 signals (year counted from 2000); the parts stay available, disabled. External
 inputs and the room controller assignment are disabled states.
 
+A volume flow too low for its sensor to measure is reported by the device as
+its declared low-flow state (for example `lowflow` with the value 65535). The
+heat pump volume flow and the heating circuit 1 volume flow then show
+"unknown" with the attribute `measuring_range: below` (shown as "Below
+measuring range"), so such a flow can be told apart from a missing reading;
+a measured flow has no such attribute.
+
+The two setpoints the controller keeps for an energy manager
+(`SRC.CUHP.EM.UsedLowerFlowTempSetp` and `SRC.CUHP.EM.UsedUpperFlowTempSetp`)
+show "unknown" while the energy management status reports "not connected":
+the controller then reports 0 °C as a placeholder, not a setpoint. The
+entities stay; with a connected energy manager they show the reported
+setpoints. The hot water "off" value is not affected.
+
 When an existing entity of a signal gets its reviewed form, it keeps its
 unique ID and entity ID; its device class, unit or state class may change. A
 run time that was shown in seconds keeps that unit (choose hours in the entity

@@ -81,6 +81,7 @@ from .pointt.exceptions import (
 from .pointt.models import BatchItemResult
 from .pointt.redaction import resource_path_template
 from .pointt.retry_after import MAX_CLOUD_PAUSE_SECONDS
+from .refresh_outage import RefreshOutageLog
 from .repair_scope import repair_data, repair_id
 from .resource_catalog import PollGroup, poll_group
 from .rrc_programs import WEEK, RrcProgramService
@@ -407,6 +408,8 @@ class BoschBuderusDataUpdateCoordinator(
         self._circuit_outage_since: float | None = None
         # O81: the failed batch request was reported once in this outage.
         self._batch_failure_logged = False
+        # #60: failed refreshes are an error only once the outage lasts.
+        self._refresh_outage = RefreshOutageLog(_LOGGER, self.name)
         self._update_lock = asyncio.Lock()
         self._manual_setpoint_tasks: dict[str, asyncio.Task[None]] = {}
         self._manual_setpoint_attempted: set[str] = set()
@@ -1099,6 +1102,7 @@ class BoschBuderusDataUpdateCoordinator(
                         self._main_cycle_failed or self._discovery_cycle_failed
                     )
                 )
+                self._refresh_outage.recovered()
                 if self._discovery_cycle_failed:
                     # A discovery that failed or met the brake returned the
                     # previous values: nothing is confirmed, searched or read
@@ -1119,10 +1123,16 @@ class BoschBuderusDataUpdateCoordinator(
                         self.startup_session.release()
                 await self._async_prepare_holiday_timezones()
                 return snapshots
-        except Exception:
+        except Exception as err:
             self.startup_data.record_main_cycle(successful=False)
             self._poll_failures += 1
             self.faults.mark_unavailable()
+            if isinstance(err, UpdateFailed):
+                self._refresh_outage.failed(err)
+                # #60: Home Assistant logs a failed refresh as an error only
+                # while the coordinator still counts as successful; marked
+                # here, the outage log decides when the error is due.
+                self.last_update_success = False
             raise
         finally:
             duration = (monotonic() - started) * 1000

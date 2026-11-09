@@ -1743,6 +1743,16 @@
           "true": "Ja",
           "false": "Nein"
         }
+      },
+      "volume_flow": {
+        "state_attributes": {
+          "measuring_range": {
+            "name": "Messbereich",
+            "state": {
+              "below": "Unter Messbereich"
+            }
+          }
+        }
       }
     },
     "binary_sensor": {

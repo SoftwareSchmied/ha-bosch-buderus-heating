@@ -209,6 +209,14 @@ local access, its entities stay in place:
 
 For a temporary pause, switch the cloud access off rather than removing it.
 
+A cloud that does not answer for a cycle or two leaves no error in the log:
+the failed cycles of an outage are debug messages. Once the outage has lasted
+five minutes and at least three cycles in a row have failed, one error names
+the failure (for example `no usable resources (timeout)`), how long it has
+lasted and how many cycles failed; the rest of that outage stays at debug
+level. The warning when the protective pause starts and the info line when
+the cloud answers again stay as before.
+
 ### A system set up with local access only
 
 A system added with **Local access only** has no cloud access from the start.

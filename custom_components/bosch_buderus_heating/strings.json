@@ -1743,6 +1743,16 @@
           "true": "Yes",
           "false": "No"
         }
+      },
+      "volume_flow": {
+        "state_attributes": {
+          "measuring_range": {
+            "name": "Measuring range",
+            "state": {
+              "below": "Below measuring range"
+            }
+          }
+        }
       }
     },
     "binary_sensor": {
