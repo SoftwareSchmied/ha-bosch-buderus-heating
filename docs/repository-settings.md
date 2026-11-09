@@ -21,8 +21,13 @@ URLs, domain and archive name remain unchanged. See
 ## Main branch
 
 - Changes go through pull requests.
-- Required checks: `quality`, `dependency-audit`, `hassfest`, `hacs`, and
-  `analyze`.
+- Required checks: `frontend`, `quality`, `compatibility`, `minimum-version`,
+  `dependency-audit`, `hassfest`, `hacs`, and `analyze`. These are all CI and
+  CodeQL jobs, including the browser tests and both older Home Assistant
+  versions.
+- Independently of these settings, the tag-triggered release workflow runs
+  the browser tests, both older Home Assistant versions and the source checks
+  again, and publishes only when all of them pass.
 - Branches must be current before merging.
 - Review conversations must be resolved.
 - Force pushes and branch deletion are disabled.

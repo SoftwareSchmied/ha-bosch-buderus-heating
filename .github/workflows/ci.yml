@@ -15,7 +15,7 @@ concurrency:
 jobs:
   frontend:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -53,8 +53,14 @@ jobs:
               requirements.update(json.loads(manifest.read_text()).get("requirements", []))
           subprocess.check_call([sys.executable, "-m", "pip", "install", *sorted(requirements)])
           PY
-      - name: Test the complete Home Assistant dialog
-        run: pytest --no-cov tests/frontend/ha_dialog.py tests/frontend/ha_water_heater.py tests/frontend/ha_local_setup.py
+      - name: Test the dialogs in the Home Assistant frontend
+        run: >-
+          pytest --no-cov
+          tests/frontend/ha_dialog.py
+          tests/frontend/ha_water_heater.py
+          tests/frontend/ha_local_setup.py
+          tests/frontend/ha_local_first.py
+          tests/frontend/ha_rescan.py
 
   quality:
     # Python 3.14.2 is available on 24.04, not the rolling latest image.
