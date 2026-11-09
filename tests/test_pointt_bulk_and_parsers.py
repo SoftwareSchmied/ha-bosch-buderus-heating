@@ -196,6 +196,38 @@ def test_resource_parser_rejects_additional_invalid_shapes(payload: object) -> N
         parse_resource(payload)
 
 
+@pytest.mark.parametrize("field", ["used", "available"])
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [(True, True), (False, False), ("true", True), ("false", False)],
+)
+def test_resource_parser_reads_boolean_and_observed_string_flags(
+    field: str, raw: object, expected: bool
+) -> None:
+    # The TC100.2 RRC controller sends used as the JSON strings "true"/"false".
+    metadata = parse_resource({"id": "/x", field: raw}).metadata
+    assert getattr(metadata, field) is expected
+    assert metadata.availability_flags_valid
+
+
+@pytest.mark.parametrize("field", ["used", "available"])
+@pytest.mark.parametrize(
+    "raw", [1, 0, "True", "FALSE", " true", "yes", "1", "", None, [], {}]
+)
+def test_resource_parser_keeps_other_flag_forms_malformed(
+    field: str, raw: object
+) -> None:
+    metadata = parse_resource({"id": "/x", field: raw}).metadata
+    assert getattr(metadata, field) is None
+    assert not metadata.availability_flags_valid
+
+
+def test_resource_parser_accepts_missing_availability_flags() -> None:
+    metadata = parse_resource({"id": "/x"}).metadata
+    assert metadata.used is None and metadata.available is None
+    assert metadata.availability_flags_valid
+
+
 def test_bulk_response_keeps_partial_success_in_request_order() -> None:
     payload = [
         {

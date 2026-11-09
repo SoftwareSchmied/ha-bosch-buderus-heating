@@ -465,6 +465,18 @@ a local test broker; checks with real devices are still open.
   I recommend adding the same `not_from` to your own automations on this
   entity.
 
+### RRC zones
+
+- RRC zones of the Buderus TC100.2 room controller were rejected because it
+  sends the `used` flag as the JSON string `"true"` or `"false"`. These two
+  exact strings are now read like JSON booleans; numbers and other spellings
+  remain malformed. On this controller, room temperature, active target,
+  operating-mode reading, selected-program reading and the **Select heating
+  schedule** control become available. The manual target, which reports no
+  `used` flag, was already available. The operating-mode select still
+  requires advertised options and is unchanged. Program selection writes have
+  not yet been confirmed on a TC100.2.
+
 ### Release checks
 
 - The release workflow now also runs the browser tests of the dialogs before

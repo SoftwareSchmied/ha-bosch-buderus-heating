@@ -42,6 +42,7 @@ from custom_components.bosch_buderus_heating.rrc_programs import (
     RrcProgramService,
     edit_point,
     parse_schedule,
+    selection_options,
 )
 from custom_components.bosch_buderus_heating.rrc_select import (
     RrcProgramSelect,
@@ -66,6 +67,13 @@ PAYLOADS = json.loads(
     (Path(__file__).parent / "fixtures/contracts/rrc/zones-programs.json").read_text()
 )["resources"]
 RESOURCES = {item.path: item for item in map(parse_resource, PAYLOADS)}
+TC100_PAYLOADS = json.loads(
+    (
+        Path(__file__).parent / "fixtures/contracts/rrc/tc100-string-flags.json"
+    ).read_text()
+)["resources"]
+TC100_PAYLOADS_BY_ID = {item["id"]: item for item in TC100_PAYLOADS}
+TC100_RESOURCES = {item.path: item for item in map(parse_resource, TC100_PAYLOADS)}
 MANUAL = "/zones/zn2/manualTemperatureHeating"
 MODE = "/zones/zn2/userMode"
 SELECTION = "/zones/zn2/clockProgram"
@@ -229,12 +237,86 @@ async def test_separate_rrc_readings_and_stable_identity(environment, path):
 
 @pytest.mark.parametrize(
     "field,value",
-    [("available", False), ("used", False), ("used", 1), ("available", "true")],
+    [
+        ("available", False),
+        ("used", False),
+        ("used", 1),
+        ("used", "True"),
+        ("available", "yes"),
+    ],
 )
 def test_device_availability_is_not_boolean_coerced(field, value):
     payload = next(item for item in PAYLOADS if item["id"] == MANUAL)
     resource = parse_resource({**payload, field: value})
     assert not supports_entity(resource)
+    assert not assess_control(resource).eligible
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/zones/zn1/temperatureActual",
+        "/zones/zn1/temperatureHeatingSetpoint",
+        "/zones/zn1/userMode",
+        "/zones/zn1/clockProgram",
+    ],
+)
+def test_observed_string_used_flag_yields_tc100_readings(path):
+    resource = TC100_RESOURCES[path]
+    assert TC100_PAYLOADS_BY_ID[path]["used"] == "true"
+    assert resource.metadata.used is True
+    assert supports_entity(resource)
+    assert rrc.scalar_value(resource) == TC100_PAYLOADS_BY_ID[path]["value"]
+
+
+async def test_observed_tc100_zone_creates_reading_and_program_select(environment):
+    coordinator, _, _ = environment
+    coordinator.resources = dict(TC100_RESOURCES)
+    coordinator.data = snapshots(*TC100_RESOURCES.values())
+    reading = TC100_RESOURCES["/zones/zn1/temperatureActual"]
+    sensor = BoschBuderusSensor(
+        coordinator, build_sensor_descriptions({reading.path: reading})[0]
+    )
+    assert sensor.available
+    assert sensor.native_value == TC100_PAYLOADS_BY_ID[reading.path]["value"]
+    selects = [
+        RrcProgramSelect(coordinator, description)
+        for description in descriptions(TC100_RESOURCES)
+    ]
+    assert [select.entity_description.resource_path for select in selects] == [
+        "/zones/zn1/clockProgram"
+    ]
+    assert selects[0].available
+    assert selects[0].options == ["1", "2", "3", "4"]
+    assert selects[0].current_option == "2"
+
+
+@pytest.mark.parametrize(
+    ("path", "used"),
+    [("/zones/zn1/temperatureActual", True), ("/zones/zn4/clockProgram", False)],
+)
+def test_diagnostics_report_observed_string_flags_as_valid(path, used):
+    contract = _capability_diagnostics(TC100_RESOURCES[path], None, {}, 0)[
+        "rrc_contract"
+    ]
+    assert contract["used"] is used
+    assert contract["available"] is None
+    assert contract["availability_flags_valid"]
+    assert contract["reading_valid"] is used
+
+
+def test_observed_unused_program_selection_stays_unavailable():
+    resource = TC100_RESOURCES["/zones/zn4/clockProgram"]
+    assert resource.metadata.used is False
+    assert rrc.scalar_value(resource) is None
+    assert not selection_options(resource, TC100_RESOURCES[rrc.PROGRAM_LIST])
+
+
+@pytest.mark.parametrize("path", ["/zones/zn1/userMode", "/zones/zn4/userMode"])
+def test_observed_mode_without_advertised_options_is_not_writable(path):
+    resource = TC100_RESOURCES[path]
+    assert rrc.scalar_value(resource) == TC100_PAYLOADS_BY_ID[path]["value"]
+    assert rrc.control_issue(resource) == "current_option_not_advertised"
     assert not assess_control(resource).eligible
 
 

@@ -54,7 +54,8 @@ field and user-review policy.
 RRC schema 20 adds availability and schedule-shape decisions. It excludes
 switch times, temperatures, program contents and unknown field names.
 Canonical RRC IDs such as `zn2` and `pg3` remain visible; other dynamic
-identifiers are redacted. The contract fixtures and browser data are synthetic.
+identifiers are redacted. The contract fixtures and browser data are synthetic,
+except an anonymized TC100.2 read structure with constructed values.
 See [RRC zones and schedules](rrc-zones-and-schedules.md) for their scope.
 
 Maintainers can reduce a downloaded diagnostics report further with the
