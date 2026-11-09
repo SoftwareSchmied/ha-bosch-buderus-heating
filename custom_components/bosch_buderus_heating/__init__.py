@@ -119,9 +119,16 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
 
 
 async def _async_load_local_access_storage(hass: HomeAssistant) -> None:
-    """The enrollment journal reads pauses from the budget: one after the other."""
+    """The enrollment journal reads pauses from the budget: one after the other.
+
+    Each on its own: unreadable pauses never skip the journal's reconciliation
+    (the local sources try the pauses again themselves).
+    """
     try:
         await local_budget_manager(hass).initialize()
+    except LocalBudgetError:
+        _LOGGER.warning("The pauses of the local access could not be read")
+    try:
         await enrollment_journal(hass).records()
         await enrollment_journal(hass).initialize()
     except LocalEnrollmentError, LocalBudgetError:

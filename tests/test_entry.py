@@ -686,23 +686,28 @@ def test_global_start_counter_registry_is_independent(
 def _setup_stores(started, done, *, budget_error=None, pause_error=None):
     """Stand-ins for the stores async_setup loads; all must start together."""
     together = asyncio.Event()
+    settled: list[str] = []
 
     def load(name, error=None):
         async def run(*_args):
             started.append(name)
             if len(started) == 3:
                 together.set()
-            await asyncio.wait_for(together.wait(), 5)
-            if error is not None:
-                raise error
-            done.append(name)
+            try:
+                await asyncio.wait_for(together.wait(), 5)
+                if error is not None:
+                    raise error
+                done.append(name)
+            finally:
+                settled.append(name)
 
         return run
 
     budget = SimpleNamespace(initialize=load("budget", budget_error))
 
     async def journal_step(*_args):
-        assert "budget" in done  # the journal reads pauses from the budget
+        # The journal reads pauses from the budget: after it, also failed.
+        assert "budget" in settled
         done.append("journal")
 
     journal = SimpleNamespace(records=journal_step, initialize=journal_step)
@@ -751,15 +756,17 @@ async def test_integration_setup_keeps_error_handling_per_store(
     from custom_components.bosch_buderus_heating import async_setup
     from custom_components.bosch_buderus_heating.local_budget import LocalBudgetError
 
-    # Damaged local access storage: a warning, the other stores still load.
+    # Unreadable local pauses: a warning, the other stores and the journal
+    # still load.
     started: list[str] = []
     done: list[str] = []
     with ExitStack() as stack:
         for item in _setup_stores(started, done, budget_error=LocalBudgetError("x")):
             stack.enter_context(item)
         assert await async_setup(hass, {})
-    assert sorted(done) == ["counters", "pauses"]
-    assert "Local access storage could not be reconciled" in caplog.text
+    assert sorted(done) == ["counters", "journal", "journal", "pauses"]
+    assert "The pauses of the local access could not be read" in caplog.text
+    assert "could not be reconciled" not in caplog.text
     # An unexpected error still fails the set-up, after the others loaded.
     started.clear()
     done.clear()
