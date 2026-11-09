@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Awaitable, Callable, Mapping
 from contextvars import ContextVar
+from time import monotonic
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, cast
 
@@ -12,7 +13,13 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .bacon.client import BaconClient
 from .bacon.models import BaconError, Device, Shadow, topic
-from .bacon.session import MAINTENANCE_INTERVAL, BaconAccount, WriteValidator
+from .bacon.session import (
+    FATAL_SYNC_ERRORS,
+    MAINTENANCE_INTERVAL,
+    BaconAccount,
+    WriteValidator,
+    check_subscription,
+)
 from .configuration import JsonObject, StoredBinding
 from .connection_runtime import ConnectionPhase, SourceContext, SourceFailure
 from .pointt.exceptions import SourceStopped
@@ -120,6 +127,8 @@ class ManagedBaconAccount(BaconAccount):
         self.selection_changed = asyncio.Event()
         self._publish_lock = asyncio.Lock()
         self._subscribed: dict[str, BaconSource] = {}
+        # Added devices wait here after a failed device list (C48).
+        self._selection_retry_at: float | None = None
         super().__init__(client, (), notify=pool.updated)
 
     def check_connection(self) -> None:
@@ -133,7 +142,14 @@ class ManagedBaconAccount(BaconAccount):
             self.pool.auth_failed.set()
 
     async def run_connection(self) -> None:
+        if (
+            self._selection_retry_at is not None
+            or self._subscribed != self.pool.sources
+        ):
+            # A changed selection needs the device list, also for a renewal.
+            self._renewing = False
         self.selection_changed.clear()
+        self._selection_retry_at = None
         self._subscribed = dict(self.pool.sources)
         await super().run_connection()
 
@@ -181,9 +197,13 @@ class ManagedBaconAccount(BaconAccount):
                 source.ensure_current()
 
     async def _selection_update(self, mqtt: Any, subject: str) -> None:
-        if not self.selection_changed.is_set():
+        retry = self._selection_retry_at
+        if not self.selection_changed.is_set() and (
+            retry is None or monotonic() < retry
+        ):
             return
         self.selection_changed.clear()
+        self._selection_retry_at = None
         selected = {
             serial: source
             for serial, source in self.pool.sources.items()
@@ -195,7 +215,19 @@ class ManagedBaconAccount(BaconAccount):
             if self._subscribed.get(serial) is not source
         }
         if added:
-            self._set_membership(await self.client.get_devices())
+            try:
+                self._set_membership(await self.client.get_devices())
+            except BaconError as error:
+                if error.category in FATAL_SYNC_ERRORS:
+                    raise
+                # C48: peers keep the connection; the added devices follow
+                # with a later attempt instead of a reconnect.
+                self._failed(error.category)
+                self.on_error(error)
+                self._selection_retry_at = monotonic() + max(
+                    MAINTENANCE_INTERVAL, error.retry_after
+                )
+                added = {}
         for serial in sorted(self._subscribed.keys() - selected.keys()):
             self.check_connection()
             await mqtt.unsubscribe(topic(subject, serial, "#"))
@@ -205,7 +237,7 @@ class ManagedBaconAccount(BaconAccount):
             if not source.current():
                 continue
             # Redeliver this device's retained metadata without reconnecting peers.
-            await mqtt.subscribe(topic(subject, serial, "#"), qos=1)
+            check_subscription(await mqtt.subscribe(topic(subject, serial, "#"), qos=1))
             self._subscribed[serial] = source
             if not source.current():
                 continue

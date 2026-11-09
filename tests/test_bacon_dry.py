@@ -440,6 +440,11 @@ async def test_unconfirmed_commands_are_unavailable_without_replay(outcome):
     writes = responding(account, data, outcome=outcome)
     with pytest.raises(HomeAssistantError):
         await unit.async_set_humidity(60)
+    if outcome not in ("desired", "disconnect"):
+        # C50: the immediate state read shows the actual, unchanged set point.
+        assert unit.available and unit.target_humidity == 50
+        assert writes == [{"humiditySetpoint": 60}]
+        return
     assert writes == [{"humiditySetpoint": 60}] and not unit.available
     assert (
         unit.target_humidity is None

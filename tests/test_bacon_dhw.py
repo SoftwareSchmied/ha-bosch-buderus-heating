@@ -255,9 +255,16 @@ async def test_unconfirmed_changes_never_appear_successful(outcome):
         await heater.async_set_temperature(temperature=55)
     assert error.value.translation_key == "bacon_command_failed"
     assert writes == [{"tempSetpoint": 55}]
-    assert not heater.available
-    assert heater.native_target_temperature is heater.current_operation is None
-    assert heater.device.uncertain
+    if outcome in ("desired", "disconnect"):
+        # No newer full state arrives: the outcome stays unconfirmed.
+        assert not heater.available
+        assert heater.native_target_temperature is heater.current_operation is None
+        assert heater.device.uncertain
+    else:
+        # C50: the immediate state read shows the actual, unchanged value.
+        assert heater.available and not heater.device.uncertain
+        assert heater.native_target_temperature == 50
+    assert writes == [{"tempSetpoint": 55}]
 
 
 @pytest.mark.parametrize(
