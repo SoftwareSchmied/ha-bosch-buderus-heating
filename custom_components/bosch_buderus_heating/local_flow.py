@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import logging
 import math
 from collections.abc import Awaitable, Callable
 from typing import Any, cast
@@ -44,7 +45,7 @@ from .local_discovery import (
 )
 from .local_enrollment import PendingEnrollment, enrollment_journal
 from .local_handover import complete_local_setup
-from .local_probe import LocalEndpoint, LocalProbeError
+from .local_probe import LocalEndpoint, LocalProbeError, ProbeContext
 from .local_setup import (
     LocalSetupEdit,
     LocalSetupProbeError,
@@ -62,6 +63,8 @@ from .local_transport import (
     inspect_local_certificate,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 # P49b step 7: the choice of a new plant set up from its local access alone.
 NEW_PLANT = "new_plant"
 # The unique ID of a discovery notice (never of an entry that holds an access).
@@ -69,7 +72,15 @@ DISCOVERY_UNIQUE_ID_PREFIX = "local_discovery_"
 
 
 def local_error(error: object) -> str:
-    """Render known categories only; exception text never reaches the frontend."""
+    """Render known categories only; exception text never reaches the frontend.
+
+    Only this integration's own errors carry a code (ERR-8): the text of any
+    other error, e.g. a ValueError("timeout") from a library, is no code.
+    """
+    if isinstance(error, BaseException) and not type(error).__module__.startswith(
+        __package__ or __name__
+    ):
+        return "local_unexpected"
     return {
         "invalid_address": "local_invalid_address",
         "interface_required": "local_interface_required",
@@ -135,6 +146,17 @@ def local_error(error: object) -> str:
     }.get(str(error), "local_unexpected")
 
 
+def reported_local_error(error: BaseException) -> str:
+    """The code of a failed step; an unexpected error is logged, without text."""
+    code = local_error(error)
+    if code == "local_unexpected":
+        _LOGGER.warning(
+            "A local setup step failed unexpectedly (%s)", type(error).__name__
+        )
+        _LOGGER.debug("Local setup step failure", exc_info=error)
+    return code
+
+
 def discovery_unique_id(info: ZeroconfServiceInfo) -> str:
     """A stable flow ID of one announced gateway service, without identifiers.
 
@@ -172,6 +194,8 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
     _local_address = ""
     _local_choices: tuple[LocalEndpoint, ...] = ()
     _local_gateway = ""
+    # FLOW-5: fingerprints confirmed in this dialog, by entry, address and port.
+    _local_confirmed: dict[tuple[str, LocalEndpoint, PortRole], bytes] | None = None
 
     def local_available(self) -> bool:
         return setup_support(self.hass) is not None
@@ -427,7 +451,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                 )
                 self._local_address = endpoint.host
             except ValueError as error:
-                errors["address"] = local_error(error)
+                errors["address"] = reported_local_error(error)
             else:
                 self._local_phase = "local_method"
                 return await self.async_step_local_method()
@@ -482,7 +506,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                         is_active=self._local_active,
                     )
                 except (LocalCredentialError, ValueError) as error:
-                    errors["base"] = local_error(error)
+                    errors["base"] = reported_local_error(error)
                 else:
                     return await self._local_start(
                         lambda: self._local_inspect(PortRole.RESOURCES)
@@ -547,7 +571,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             except asyncio.CancelledError:
                 raise
             except Exception as error:
-                self._local_error = local_error(error)
+                self._local_error = reported_local_error(error)
                 self._local_phase = "local_retry"
 
         self._local_task = self.hass.async_create_task(run(), "local setup stage")
@@ -590,6 +614,21 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             else access.resource_sha256
         )
 
+    def _local_pin_key(
+        self, context: ProbeContext, role: PortRole
+    ) -> tuple[str, LocalEndpoint, PortRole]:
+        # Each new attempt gets a new generation and possibly a new access
+        # ID; the trust decision of the user is about this address and port.
+        return context.identity.owner_id, context.endpoint, role
+
+    def _local_session_pin(self, role: PortRole) -> bytes | None:
+        """The fingerprint confirmed in this dialog for this address and port."""
+        if self._local_edit is None or self._local_confirmed is None:
+            return None
+        return self._local_confirmed.get(
+            self._local_pin_key(self._local_edit.context, role)
+        )
+
     async def _local_pause(self) -> None:
         if self._local_record is not None:
             records = await enrollment_journal(self.hass).records()
@@ -623,7 +662,9 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             budget=await self._local_budget(),
         )
         self._local_observation = observation
-        if observation.sha256.hex() == self._local_previous_pin(role):
+        if observation.sha256.hex() == self._local_previous_pin(
+            role
+        ) or observation.sha256 == self._local_session_pin(role):
             await self._local_accept_certificate()
         else:
             self._local_phase = "local_certificate"
@@ -657,6 +698,11 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         binding = CertificateBinding(
             observation.context, observation.role, observation.sha256
         )
+        if self._local_confirmed is None:
+            self._local_confirmed = {}
+        self._local_confirmed[
+            self._local_pin_key(observation.context, observation.role)
+        ] = observation.sha256
         if observation.role == PortRole.AUTHENTICATION:
             self._local_auth_pin = binding
             self._local_phase = "local_auth"
@@ -670,6 +716,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         if denied := self._local_guard("local_auth"):
             return denied
         errors = {}
+        if user_input is None and self._local_error:
+            # The reason of the rejected attempt before (FLOW-5).
+            errors["base"] = self._local_error
+            self._local_error = None
         if user_input is not None:
             if user_input.get("unlocked") is not True:
                 errors["unlocked"] = "local_unlock_required"
@@ -710,6 +760,12 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         )
         if self._local_record.state != AuthState.RECEIVED:
             self._local_error = local_error(self._local_record.problem)
+            if self._local_record.resolved:
+                # FLOW-5: certainly no token; sign in again right away with
+                # the certificate already confirmed.
+                self._local_record = None
+                self._local_phase = "local_auth"
+                return
             self._local_phase = "local_pending"
             return
         await self._local_inspect(PortRole.RESOURCES)
@@ -732,7 +788,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             except LocalCredentialError:
                 errors["token"] = "local_invalid_token"
             except ValueError as error:
-                errors["base"] = local_error(error)
+                errors["base"] = reported_local_error(error)
             else:
                 return await self._local_start(
                     lambda: self._local_inspect(PortRole.RESOURCES)
@@ -981,5 +1037,6 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         self._local_record = self._local_observation = None
         self._local_edit = None
         self._local_auth_pin = self._local_resource_pin = None
+        self._local_confirmed = None
         self._local_retry = None
         super().async_remove()

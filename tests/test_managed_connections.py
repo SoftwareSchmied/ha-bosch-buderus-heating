@@ -781,3 +781,41 @@ async def test_a_failing_inventory_load_still_loads_the_other(
     ):
         await async_setup_managed_entry(hass, entry, {})
     assert discovery_inventory(hass, entry.entry_id).loaded
+
+
+@pytest.mark.parametrize("damage", ["content", "unreadable"])
+async def test_local_access_removal_with_a_damaged_setup_record(
+    hass, enable_custom_integrations, tmp_path, damage
+):
+    """FLOW-3: unreadable content never blocks the removal; I/O errors say so."""
+    from custom_components.bosch_buderus_heating.local_enrollment import (
+        JOURNAL_KEY,
+        enrollment_journal,
+    )
+
+    entry, _, _ = entry_for(hass)
+    journal = enrollment_journal(hass)
+    journal._path = tmp_path / JOURNAL_KEY
+    if damage == "content":
+        # Written by a newer format, or damaged.
+        journal._path.write_text('{"version": 4, "attempts": []}')
+    else:
+        journal._path.mkdir()  # reading fails with an OS error
+    result = await choose_connection(hass, entry, "local")
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "connection_remove"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"confirm": True}
+    )
+    if damage == "unreadable":
+        assert result["type"] is FlowResultType.ABORT
+        assert result["reason"] == "local_storage_failed"
+        assert "local" in entry.data["connections"]
+        return
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert "local" not in entry.data["connections"]
+    assert not journal._path.exists()
+    aside = tmp_path / (JOURNAL_KEY + ".corrupt")
+    assert aside.read_text() == '{"version": 4, "attempts": []}'
+    assert await journal.records() == ()

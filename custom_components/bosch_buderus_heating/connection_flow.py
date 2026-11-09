@@ -429,7 +429,11 @@ class ConnectionOptionsFlow(OptionsFlow):
                     await enrollment_journal(self.hass).remove_access(management, edit)
                 else:
                     management.remove(edit)
-            except ConfigurationError, LocalEnrollmentError:
+            except LocalEnrollmentError:
+                # The setup record could not be read or saved; nothing was
+                # removed (FLOW-3).
+                return self.async_abort(reason="local_storage_failed")
+            except ConfigurationError:
                 return self.async_abort(reason="configuration_changed")
             return self.async_create_entry(title="", data=dict(self._entry.options))
         stored = self._management().current().connections.get(edit.connection_id)

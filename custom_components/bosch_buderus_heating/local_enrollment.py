@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import math
 import re
 from collections.abc import Callable
@@ -68,6 +69,7 @@ MAX_JOURNAL_BYTES = 1024 * 1024
 MAX_PENDING_ENROLLMENTS = 64
 JOURNAL_KEY = f"{DOMAIN}.local_enrollment"
 PROCESS_ID = uuid4().hex
+_LOGGER = logging.getLogger(__name__)
 
 
 class LocalEnrollmentError(ValueError):
@@ -242,6 +244,22 @@ def _parse(body: bytes) -> tuple[PendingEnrollment, ...]:
     if len({v.attempt_id for v in entries}) != len(entries):
         raise LocalEnrollmentError("invalid_enrollment_journal")
     return entries
+
+
+def _set_aside(path: Path) -> bool:
+    """Move a journal with unreadable content aside (FLOW-3).
+
+    False when its content is valid or the file cannot be read at all: then
+    the original error stands.
+    """
+    try:
+        _load(path)
+    except OSError:
+        return False
+    except ValueError, KeyError, TypeError, RecursionError:
+        path.replace(path.with_name(path.name + ".corrupt"))
+        return True
+    return False
 
 
 def _save(path: Path, entries: tuple[PendingEnrollment, ...]) -> None:
@@ -502,6 +520,10 @@ class LocalEnrollmentJournal:
                     + min(outcome.retry_after_seconds, MAX_LOCAL_PAUSE_SECONDS)
                     if outcome.retry_after_seconds is not None
                     else 0,
+                    # FLOW-5: a rejected or unsent request certainly created no
+                    # token, so it never blocks the next attempt. Its pause
+                    # stays in the budget; an uncertain outcome still blocks.
+                    resolved=outcome.state in (AuthState.REJECTED, AuthState.NOT_SENT),
                 )
                 await self._io(lambda: _save(self._path, (*entries, received)))
                 if (
@@ -780,10 +802,27 @@ class LocalEnrollmentJournal:
         finally:
             self._removed_connections.discard((edit.owner_id, edit.connection_id))
 
+    async def _removable_records(self) -> tuple[PendingEnrollment, ...]:
+        """A removal never fails on an unreadable journal (FLOW-3).
+
+        Its pending attempts cannot be used any more anyway; the file is kept
+        beside it for inspection, and the next setup starts with an empty one.
+        """
+        try:
+            return await self._load_records()
+        except LocalEnrollmentError:
+            if not await self._io(lambda: _set_aside(self._path)):
+                raise
+        _LOGGER.warning(
+            "The unreadable local setup record was set aside as %s.corrupt",
+            JOURNAL_KEY,
+        )
+        return ()
+
     async def _purge(self, matches: Callable[[PendingEnrollment], bool]) -> None:
         async def finish() -> None:
             async with self._lock:
-                entries = await self._load_records()
+                entries = await self._removable_records()
                 retained = tuple(r for r in entries if not matches(r))
                 if retained != entries:
                     await self._io(lambda: _save(self._path, retained))
