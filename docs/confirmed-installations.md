@@ -20,15 +20,15 @@ Last updated: 2026-11-09.
 
 ## Tested heaters
 
-| Heater | Controller | Gateway / internet module | Confirmed features |
-|---|---|---|---|
-| Buderus Logatherm WLW176i-12 TP70 with WLW-10 MB AR (my own reference installation) | – | MX400, K40RF (firmware 15.00.01) | readings, heating setpoint, hot water mode, holidays, time programs (read-only), faults and notifications, energy counters, local access, operation without cloud |
-| Buderus Logatherm WLW186i-12 TP70 | BC400 | MX400, K40RF (firmware 15.00.01) | readings, time programs (read-only) |
-| Buderus Logatherm WLW186i-12 E | – | MX400 | readings (two heating circuits), heating controls |
-| Buderus Logatherm WLW196i AR | MX300 | K30 | readings, holidays (read-only) |
-| Buderus GB172 | RC310 | iCom_Low_NSC_V1, KM200 V2 | readings |
-| Buderus GB212-22 H | TC100.2 (rrc2, firmware 05.04.00) | built-in Wi-Fi | readings, faults and notifications, RRC zones (only with a local patch) |
-| G125 BE ECO-21 (brand not stated) | – | – | start counter (with the reporter's own fix) |
+| Heater | Type | Controller | Gateway / internet module | Confirmed features |
+|---|---|---|---|---|
+| Buderus Logatherm WLW176i-12 TP70 with outdoor unit WLW-10 MB AR (my own reference installation) | air-to-water heat pump (monobloc) | – | MX400, K40RF (firmware 15.00.01) | readings, heating setpoint, hot water mode, holidays, time programs (read-only), faults and notifications, energy counters, local access, operation without cloud |
+| Buderus Logatherm WLW186i-12 TP70 | air-to-water heat pump (monobloc) | Logamatic BC400 | MX400, K40RF (firmware 15.00.01) | readings, time programs (read-only) |
+| Buderus Logatherm WLW186i-12 E | air-to-water heat pump (monobloc) | – | MX400 | readings (two heating circuits), heating controls |
+| Buderus Logatherm WLW196i AR | air-to-water heat pump (split) | – | MX300, K30 | readings, holidays (read-only) |
+| Buderus Logamax plus GB172 | gas condensing boiler, wall-hung | Logamatic RC310 | Logamatic web KM200 (V2), iCom_Low_NSC_V1 | readings |
+| Buderus Logano plus GB212-22 H | gas condensing boiler, floor-standing | Logamatic TC100.2 (rrc2, firmware 05.04.00) | built-in Wi-Fi | readings, faults and notifications, RRC zones (only with a local patch) |
+| Buderus Logano G125 BE ECO-21 | oil boiler with burner (low-temperature, cast iron) | – | – | start counter (with the reporter's own fix) |
 
 "–" means not stated in the report.
 
@@ -38,18 +38,15 @@ These features and device families have no confirmation from a real
 installation yet:
 
 - the 0.9 alphas on any installation other than mine, with other gateways,
-  firmware versions or device families, and a longer run on mine
- ;
+  firmware versions or device families, and a longer run on mine;
 - for the local access: further heating circuits, solar, ventilation and room
   zones, radio devices and their zones, signing in with the details printed on
   the device, a real certificate change, removing and adding the local access
   again, real network failures, long-term stability, and gateways or firmware
-  other than K40RF 15.00.01
- ;
+  other than K40RF 15.00.01;
 - the same fault reported by the cloud and the local error list, and bell
   notifications without the cloud;
-- warnings, maintenance messages, critical and historical faults
- ;
+- warnings, maintenance messages, critical and historical faults;
 - RRC zone controls and RRC weekly-program editing without a patch; so far the
   only zone report needs a local patch;
 - heating mode changes and other heating circuits on my system, and hot-water
