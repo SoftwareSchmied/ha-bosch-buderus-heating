@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 
 from ..local_api.catalog import ReadRequest, response_schema
+from ..local_budget import MINIMUM_START_GAP
 from ..local_read import ReadResult, ReadState
 from .inventory import ResourceInventory
 from .policy import (
@@ -14,6 +15,7 @@ from .policy import (
     EXPLICIT_TIMEOUT,
     MAX_RECORDS,
     RESCAN_SECONDS,
+    SECTION_RESERVE,
     SLICE_ATTEMPTS,
     SLICE_PAUSE,
     SLICE_SECONDS,
@@ -48,6 +50,8 @@ class Work:
     request: ReadRequest = field(repr=False)
     lane: Lane
     sequence: int
+    # T3: when the read was started; its next due time counts from here.
+    started: float | None = None
 
 
 class PollPlanner:
@@ -57,6 +61,9 @@ class PollPlanner:
         self.inventory = inventory
         self.epoch = now + offset
         self.next_start = self.epoch
+        # T1: the spacing between two starts; the service sets the budget's
+        # current spacing before each pick.
+        self.start_gap = MINIMUM_START_GAP
         self.wheel = 0
         self.sequence = 0
         self.cursor = 0
@@ -234,7 +241,7 @@ class PollPlanner:
         self.expire_operations(now)
         if now < self.next_start or now < self.epoch or len(self.inflight) >= 2:
             return None
-        if (now - self.epoch) % 60 >= 55:
+        if (now - self.epoch) % 60 >= 60 - SECTION_RESERVE:
             return None
         lane = WHEEL[self.wheel]
         order = {
@@ -250,10 +257,10 @@ class PollPlanner:
             }[selected](now)
             if request is not None:
                 self.sequence += 1
-                work = Work(request, selected, self.sequence)
+                work = Work(request, selected, self.sequence, now)
                 self.inflight[request.target] = work
                 self.wheel = (self.wheel + 1) % len(WHEEL)
-                self.next_start = now + 0.25
+                self.next_start = now + self.start_gap
                 if selected is Lane.DISCOVERY and self.slice_started is None:
                     self.slice_started = now
                 return work
@@ -267,14 +274,14 @@ class PollPlanner:
             raise ValueError("local_poll_result_mismatch")
         if result.state is ReadState.DEFERRED:
             self.next_start = max(
-                self.next_start, now + (result.retry_after_seconds or 0.25)
+                self.next_start, now + (result.retry_after_seconds or self.start_gap)
             )
             return
         self.attempts[work.lane] += 1
         if work.lane is Lane.DISCOVERY:
             self.slice_attempts += 1
         if work.request.target in self.inventory.records:
-            self.inventory.accept(result, now)
+            self.inventory.accept(result, now, started=work.started)
         self.expire_operations(now)
         for operation in tuple(self.operations):
             if (
@@ -306,20 +313,29 @@ class PollPlanner:
         if now < self.epoch:
             return self.epoch
         phase = (now - self.epoch) % 60
-        if phase >= 55:
+        if phase >= 60 - SECTION_RESERVE:
             return now + 60 - phase
         if now < self.next_start:
             return self.next_start
+        # T1: regular or explicit work that is already due starts as soon as
+        # the shared budget admits it, not only at the next future due time.
+        room = len(self.inflight) < 2
+        if room and self._explicit(now) is not None:
+            return now
         # Unexamined candidates and skipped known candidates need bounded progress.
-        if not self.exhausted and now >= self.discovery_pause_until:
-            return now + 0.25
-        due = [
-            r.due
-            for r in self.inventory.records.values()
-            if r.active
-            and r.request.target not in self.inflight
-            and (r.confirmed or now >= self.discovery_pause_until)
-        ]
+        searching = not self.exhausted and now >= self.discovery_pause_until
+        due: list[float] = []
+        for r in self.inventory.records.values():
+            if not r.active or r.request.target in self.inflight:
+                continue
+            if r.confirmed:
+                if room and r.due <= now:
+                    return now
+                due.append(r.due)
+            elif now >= self.discovery_pause_until:
+                due.append(r.due)
+        if searching:
+            return now + self.start_gap
         due += [self.discovery_pause_until, self.rescan_at]
         due += [op.deadline for op in self.operations]
         return min((value for value in due if value > now), default=now + 60)

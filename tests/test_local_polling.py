@@ -312,16 +312,17 @@ def test_invalid_observations_never_replace_current_values(kind):
 
 def test_planner_caps_parallelism_preserves_spacing_and_minute_reserve():
     planner = PollPlanner(ResourceInventory(CONTEXT.identity), 0)
+    # T1/T2: 200 ms between starts, the final 3 s of each section reserved.
     a = planner.pick(0)
-    assert a is not None and planner.pick(0.249) is None
-    b = planner.pick(0.25)
+    assert a is not None and planner.pick(0.199) is None
+    b = planner.pick(0.2)
     assert b is not None and planner.pick(0.5) is None
     planner.finish(a, missing(a.request), 0.5)
     c = planner.pick(0.5)
     assert c is not None
     planner.finish(b, missing(b.request), 1)
     planner.finish(c, missing(c.request), 1)
-    assert planner.pick(55) is None and planner.next_wake(55) == 60
+    assert planner.pick(57) is None and planner.next_wake(57) == 60
     assert planner.pick(60) is not None
 
 

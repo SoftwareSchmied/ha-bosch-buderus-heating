@@ -50,9 +50,10 @@ local gateway share admission and pauses. Each handle still checks its caller's
 owner and connection. Independent gateways and cloud access have separate gates.
 See [shared local budgets](local-budget.md) for alias and persistence limits.
 
-The gate permits two in-flight reads with at least 250 ms between admissions
-and separately between actual HTTP header starts. This allows at most four
-starts per second. A call made while busy or paused returns `deferred`
+The gate permits two in-flight reads with at least 200 ms between admissions
+and separately between actual HTTP header starts. This allows at most five
+starts per second; the latency brake of the shared budget can widen the
+spacing (see [shared local budgets](local-budget.md)). A call made while busy or paused returns `deferred`
 immediately, without DNS, TLS, HTTP or an internal queue. The admission guard
 also bounds attempts that fail before HTTP. Setup, certificate inspection and
 token enrollment use exclusive slots in the same budget. Setup waits boundedly

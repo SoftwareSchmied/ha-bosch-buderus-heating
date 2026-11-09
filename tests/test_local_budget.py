@@ -10,6 +10,7 @@ import pytest
 
 from custom_components.bosch_buderus_heating import local_budget as module
 from custom_components.bosch_buderus_heating.local_budget import (
+    MINIMUM_START_GAP,
     BudgetDeferred,
     LocalBudgetError,
     LocalBudgetManager,
@@ -149,7 +150,7 @@ async def test_actual_headers_are_spaced_even_when_admission_was_long_ago():
     await budget.start_http(first, lambda: True)
     began = asyncio.get_running_loop().time()
     await budget.start_http(second, lambda: True)
-    assert asyncio.get_running_loop().time() - began >= 0.24
+    assert asyncio.get_running_loop().time() - began >= MINIMUM_START_GAP - 0.01
     budget.release(first)
     budget.release(second)
 

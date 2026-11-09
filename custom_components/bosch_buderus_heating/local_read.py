@@ -140,6 +140,9 @@ class _Attempt:
     status: int | None = None
     # Whether the request went over a new or a kept connection (G4).
     connection: ConnectionKind | None = None
+    # How long the request waited for the spacing between request headers;
+    # not part of the gateway's response time (T1).
+    paced: float = 0.0
 
 
 class LocalReadClient:
@@ -218,13 +221,22 @@ class LocalReadClient:
         if result.state is ReadState.DEFERRED:
             self._deferred_reasons[str(result.problem or "unknown")] += 1
             return
+        elapsed = monotonic() - started
         if result.http_requests:
-            duration = (monotonic() - started) * 1000
+            duration = elapsed * 1000
             self._durations.append(duration)
             if attempt.connection is not None and attempt.status is not None:
                 self._reuse.timed(attempt.connection, duration)
         if (failure := _failure_class(result)) is not None:
             self._failure_classes[failure] += 1
+        # T1: the latency brake. A timeout or a server error slows the reads
+        # for a while; an answer adds its time, without the header spacing.
+        if result.problem == TransportFailure.TIMEOUT:
+            self._budget.brake("timeout")
+        elif attempt.status is not None and attempt.status >= 500:
+            self._budget.brake("server_error")
+        elif attempt.status is not None:
+            self._budget.observe(max(0.0, elapsed - attempt.paced))
 
     def _count(self, **increments: int) -> None:
         self._metrics = replace(
@@ -251,9 +263,11 @@ class LocalReadClient:
         assert isinstance(attempt, _Attempt)
         if attempt.headers:
             raise transport._RepeatBlocked()
+        waiting = monotonic()
         await self._budget.start_http(
             attempt.lease, lambda: not self._closed and self._is_current()
         )
+        attempt.paced += monotonic() - waiting
         attempt.headers += 1
         self._count(http_requests=1)
 

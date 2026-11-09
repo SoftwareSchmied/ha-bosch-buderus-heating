@@ -454,6 +454,20 @@ async def test_diagnostics_count_signals_read_hourly(hass, prepared):
     assert source.diagnostics()["signals_read_hourly_unused"] == 0
 
 
+async def test_diagnostics_report_the_start_spacing(hass, prepared):
+    """T1: the spacing between starts and the brake, fixed codes only."""
+    p = prepared
+    await ready(hass, p)
+    source = p.runtime.connection_driver("local").sources["local"]
+    spacing = source.diagnostics()["start_spacing"]
+    assert spacing["base_ms"] == 200 and spacing["brake_active"] is False
+    source.service.budget.brake("timeout")
+    spacing = source.diagnostics()["start_spacing"]
+    assert spacing["brake_reason"] == "timeout" and spacing["current_ms"] >= 400
+    await source.close()
+    assert source.diagnostics()["start_spacing"] is None
+
+
 async def test_signals_without_any_entity_are_read_hourly(hass, prepared):
     """A3: identifiers, private signals and answers no entity can show are
     read hourly; readings the integration uses itself and anything an entity

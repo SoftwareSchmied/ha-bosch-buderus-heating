@@ -15,6 +15,7 @@ from custom_components.bosch_buderus_heating.local_auth import (
     request_local_token,
 )
 from custom_components.bosch_buderus_heating.local_budget import (
+    MINIMUM_START_GAP,
     BudgetDeferred,
     LocalBudgetManager,
 )
@@ -87,7 +88,7 @@ async def test_setup_probe_waits_for_reads_and_paces_each_actual_request(
         == ProbeStatus.READY_FOR_IDENTITY_COMPARISON
     )
     assert len(requests) == len(starts) == inspect.await_count == 3
-    assert all(b - a >= 0.23 for a, b in pairwise(starts))
+    assert all(b - a >= MINIMUM_START_GAP - 0.02 for a, b in pairwise(starts))
     assert not budget.busy
 
 

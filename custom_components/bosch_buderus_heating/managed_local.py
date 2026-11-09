@@ -333,6 +333,11 @@ class LocalSource:
             }
         )
         reuse = getattr(self.client, "connection_reuse", None)
+        spacing = (
+            getattr(getattr(self.service, "budget", None), "start_spacing", None)
+            if self.current()
+            else None
+        )
         hourly = (
             self.hourly_counts() if snapshot else {"disabled": 0, "without_entity": 0}
         )
@@ -348,6 +353,8 @@ class LocalSource:
             **health,
             # G4/O56: kept connections, handshakes, fallback and overlap.
             "connection_reuse": reuse() if callable(reuse) else None,
+            # T1: the spacing between starts and the latency brake.
+            "start_spacing": spacing() if callable(spacing) else None,
             "discovery_cursor": snapshot.discovery_cursor if snapshot else 0,
             "discovery_complete": snapshot.discovery_exhausted if snapshot else False,
             "discovery_pause_seconds": snapshot.discovery_pause_seconds

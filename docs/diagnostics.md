@@ -39,6 +39,14 @@ and contains only counts, durations and fixed codes:
   `reused` connection the number of samples and the median, 95th percentile
   and maximum in milliseconds of the last 256 reads.
 
+Each local access under `connections[].local[]` also reports `start_spacing`,
+the spacing between the starts of two local reads (see
+[local polling](local-polling.md)): `base_ms` (200), `current_ms` (the
+spacing in effect now), `median_response_ms` and `response_samples` (the last
+32 answer times the latency brake follows; `null` before the first answer),
+`brake_active`, `brake_reason` (`timeout` or `server_error`) and
+`brake_remaining_seconds`. It is `null` while the local access is not running.
+
 Schema 43 also reports how often readings are requested now, again as counts
 without paths, values or identifiers:
 
