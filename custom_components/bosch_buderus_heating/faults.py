@@ -46,6 +46,9 @@ _LOCAL_DEVICE_ERRORS_PATH = re.compile(
     r"/devices/device([1-9]|[12][0-9]|3[0-2])/errors"
 )
 _DEVICE_ERROR_TYPE = re.compile(r"[A-Za-z][A-Za-z0-9_.-]{0,63}")
+# B06: the only documented states of a device error that is an error at all;
+# other ``allowedValues`` (such as a valve status) describe no error.
+_DEVICE_ERROR_STATES = frozenset({"active", "inactive"})
 MAX_DEVICE_ERRORS = 16
 MAX_DEVICE_ERROR_LISTS = 32
 
@@ -142,6 +145,11 @@ class FaultParseResult:
 
     faults: tuple[ActiveFault, ...]
     invalid_entries: int = 0
+    # B06: device error rows as fingerprinted up to 0.9.0-alpha.3, so a
+    # stored incident keeps its identity: (current, earlier) per active row,
+    # and the earlier fingerprints of rows that are no fault any more.
+    legacy_fingerprints: tuple[tuple[str, str], ...] = ()
+    retired_fingerprints: tuple[str, ...] = ()
 
 
 def is_fault_resource_path(path: str) -> bool:
@@ -237,21 +245,35 @@ def parse_fault_resource(
 
     faults: list[ActiveFault] = []
     invalid = 0
+    legacy: list[tuple[str, str]] = []
+    retired: list[str] = []
     device_errors = _DEVICE_ERRORS_PATH.fullmatch(resource.path) is not None
     for raw in raw_items:
         if not isinstance(raw, dict):
             invalid += 1
             continue
-        if _is_explicitly_inactive(raw):
+        if device_errors:
+            earlier = _legacy_device_fingerprint(resource.path, raw)
+            if _is_explicitly_inactive(raw) or not _is_active_device_error(raw):
+                if earlier is not None:
+                    retired.append(earlier)
+                continue
+            fault = _parse_device_error(resource.path, raw, now)
+            if fault is None:
+                invalid += 1
+                continue
+            faults.append(fault)
+            if earlier is not None and earlier != fault.fingerprint:
+                legacy.append((fault.fingerprint, earlier))
             continue
-        if device_errors and _is_inactive_device_error(raw):
+        if _is_explicitly_inactive(raw):
             continue
         parsed = _parse_fault_item(resource.path, raw, now)
         if parsed is None:
             invalid += 1
             continue
         faults.append(parsed)
-    return FaultParseResult(tuple(faults), invalid)
+    return FaultParseResult(tuple(faults), invalid, tuple(legacy), tuple(retired))
 
 
 def local_fault_resource(observation: object) -> Resource | None:
@@ -298,8 +320,8 @@ class DeviceError:
     """One entry of a room device's own error list (B3), extra information.
 
     ``state`` is ``active`` or ``inactive`` when the entry reports one of
-    these documented values, otherwise ``other`` (for example a valve status
-    whose meaning as an error is not documented).
+    these documented values and allows only these two, otherwise ``other``
+    (for example a valve status whose meaning as an error is not documented).
     """
 
     device: int
@@ -332,7 +354,12 @@ def local_device_errors(
         if not _DEVICE_ERROR_TYPE.fullmatch(error_type):
             continue
         value = item.value.strip().casefold() if isinstance(item.value, str) else ""
-        state = value if value in ("active", "inactive") else "other"
+        state = (
+            value
+            if value in _DEVICE_ERROR_STATES
+            and _binary_device_error(list(item.allowed_values))
+            else "other"
+        )
         entries.append(DeviceError(int(match[1]), error_type, state))
     return path, tuple(entries)
 
@@ -440,6 +467,10 @@ class FaultTracker:
         # B3: the current local device error lists by path; extra
         # information only, never stored and never part of the lifecycle.
         self._device_errors: dict[str, tuple[DeviceError, ...]] = {}
+        # B06: current fingerprint -> stored earlier fingerprint of a device
+        # error incident stored by 0.9.0-alpha.3 or earlier. It keeps its
+        # stored identity until it ends, so it is never announced again.
+        self._aliases: dict[str, str] = {}
 
     @property
     def device_errors(self) -> tuple[DeviceError, ...]:
@@ -743,6 +774,8 @@ class FaultTracker:
         parsed_faults: dict[str, ActiveFault] = {}
         invalid_entries = 0
         parsed_resources = 0
+        seen: list[tuple[ActiveFault, str | None]] = []
+        retired: set[str] = set()
         for path, resource in resources.items():
             if path not in successful or not is_active_fault_resource_path(path):
                 continue
@@ -750,12 +783,24 @@ class FaultTracker:
             self._required_source_keys.add(_source_key(path))
             parsed = parse_fault_resource(resource, observed_at=now)
             invalid_entries += parsed.invalid_entries
-            for fault in parsed.faults:
-                self._unverified_restored.discard(fault.fingerprint)
-                existing = parsed_faults.get(fault.fingerprint)
-                parsed_faults[fault.fingerprint] = (
-                    fault if existing is None else _merge_faults(existing, fault)
-                )
+            earlier = dict(parsed.legacy_fingerprints)
+            seen.extend(
+                (fault, earlier.get(fault.fingerprint)) for fault in parsed.faults
+            )
+            retired.update(parsed.retired_fingerprints)
+        migrated, new_aliases = self._apply_aliases(seen)
+        for fault in migrated:
+            self._unverified_restored.discard(fault.fingerprint)
+            existing = parsed_faults.get(fault.fingerprint)
+            parsed_faults[fault.fingerprint] = (
+                fault if existing is None else _merge_faults(existing, fault)
+            )
+        for fingerprint in retired - set(parsed_faults):
+            # B06: a stored device error row that is no fault any more was
+            # seen; its absence is real, so it may end like any other fault.
+            stored = self._active.get(fingerprint)
+            if stored is not None and stored.component_type == "device":
+                self._unverified_restored.discard(fingerprint)
 
         self._parser_errors += invalid_entries
         if parsed_resources:
@@ -792,6 +837,7 @@ class FaultTracker:
             previous_sources != self._required_source_keys
             or previous_unverified != self._unverified_restored
             or self._save_schedule_failed
+            or new_aliases  # store the corrected name of a migrated incident
         )
         for fingerprint, fault in parsed_faults.items():
             previous = self._active.get(fingerprint)
@@ -837,6 +883,45 @@ class FaultTracker:
             self._emit(event)
         self._notify_state_listeners()
         return tuple(events)
+
+    def _apply_aliases(
+        self, seen: Iterable[tuple[ActiveFault, str | None]]
+    ) -> tuple[list[ActiveFault], bool]:
+        """Give device errors of stored incidents their stored identity (B06).
+
+        Up to 0.9.0-alpha.3 a device error row was fingerprinted by its
+        occurrence ID alone. A stored incident that is still reported keeps
+        that fingerprint until it ends, so neither its event nor its
+        notification repeats. Each stored incident is taken by one row only;
+        a second device that shared it before is a fault of its own.
+        """
+        self._aliases = {
+            current: stored
+            for current, stored in self._aliases.items()
+            if stored in self._active
+        }
+        items = sorted(
+            seen, key=lambda item: (item[0].source_resources, item[0].fingerprint)
+        )
+        claimed = {fault.fingerprint for fault, _ in items}
+        claimed.update(self._aliases.values())
+        added = False
+        result: list[ActiveFault] = []
+        for fault, earlier in items:
+            alias = self._aliases.get(fault.fingerprint)
+            if (
+                alias is None
+                and earlier is not None
+                and fault.fingerprint not in self._active
+                and earlier not in claimed
+                and (stored := self._active.get(earlier)) is not None
+                and stored.component_type == "device"
+            ):
+                alias = self._aliases[fault.fingerprint] = earlier
+                claimed.add(earlier)
+                added = True
+            result.append(fault if alias is None else replace(fault, fingerprint=alias))
+        return result, added
 
     # ------------------------------------------------- P42: local error list
 
@@ -1138,14 +1223,6 @@ def _parse_fault_item(
     path: str, data: Mapping[str, JsonValue], now: datetime
 ) -> ActiveFault | None:
     code = _token(data.get("ccd", data.get("code", data.get("value"))))
-    if (
-        code is not None
-        and code.casefold() == "active"
-        and _DEVICE_ERRORS_PATH.fullmatch(path)
-    ):
-        # A documented device error row: ``value`` is only its state, the
-        # error itself is named by ``type``.
-        code = _token(data.get("type")) or code
     subcode = _token(data.get("dcd", data.get("subcode")))
     occurrence_id = _token(data.get("occurrenceId", data.get("occurrence_id")))
     class_raw = _token(data.get("fc", data.get("errorType", data.get("cat"))))
@@ -1161,27 +1238,18 @@ def _parse_fault_item(
     )
     if not any((code, subcode, occurrence_id, class_raw)):
         return None
-    # A vendor occurrence ID is the strongest available identity and remains
-    # stable when the same incident is reported by more than one resource.
-    # Without it, retain the component fields to avoid collapsing two real,
-    # simultaneous faults that happen to share a manufacturer code.
-    identity = (
-        f"occurrence|{occurrence_id}"
-        if occurrence_id is not None
-        else "|".join(
-            (
-                code or "",
-                subcode or "",
-                component_type or "",
-                component_id or "",
-                origin or "",
-                class_raw or "",
-            )
-        )
-    )
-    fingerprint = hashlib.sha256(identity.encode()).hexdigest()[:24]
     return ActiveFault(
-        fingerprint=fingerprint,
+        fingerprint=_fingerprint(
+            _identity(
+                code,
+                subcode,
+                occurrence_id,
+                component_type,
+                component_id,
+                origin,
+                class_raw,
+            )
+        ),
         code=code,
         subcode=subcode,
         severity=severity,
@@ -1200,14 +1268,144 @@ def _parse_fault_item(
     )
 
 
-def _is_inactive_device_error(data: Mapping[str, JsonValue]) -> bool:
-    """A device error row whose documented ``value`` says it is inactive.
+def _identity(
+    code: str | None,
+    subcode: str | None,
+    occurrence_id: str | None,
+    component_type: str | None,
+    component_id: str | None,
+    origin: str | None,
+    class_raw: str | None,
+) -> str:
+    # A vendor occurrence ID is the strongest available identity and remains
+    # stable when the same incident is reported by more than one resource.
+    # Without it, retain the component fields to avoid collapsing two real,
+    # simultaneous faults that happen to share a manufacturer code.
+    if occurrence_id is not None:
+        return f"occurrence|{occurrence_id}"
+    return "|".join(
+        (
+            code or "",
+            subcode or "",
+            component_type or "",
+            component_id or "",
+            origin or "",
+            class_raw or "",
+        )
+    )
 
-    Device error lists report each error type with ``value`` ``active`` or
-    ``inactive``; an inactive row is no fault.
+
+def _fingerprint(identity: str) -> str:
+    return hashlib.sha256(identity.encode()).hexdigest()[:24]
+
+
+def _binary_device_error(allowed: object) -> bool:
+    """Whether a device error row allows only ``active`` and ``inactive``.
+
+    Rows without ``allowedValues`` (an older shape) are not restricted.
+    """
+    if allowed is None:
+        return True
+    return (
+        isinstance(allowed, list)
+        and all(isinstance(item, str) for item in allowed)
+        and {item.strip().casefold() for item in allowed} == _DEVICE_ERROR_STATES
+    )
+
+
+def _is_active_device_error(data: Mapping[str, JsonValue]) -> bool:
+    """A device error row that reports an active error (B06).
+
+    The documented rows (``errorType``, ``occurrenceId``, ``value``,
+    ``allowedValues``) report each error type as ``active`` or ``inactive``;
+    only an active row of such a two-state error is a fault. Other states,
+    such as a valve status, describe no error.
     """
     value = data.get("value")
-    return isinstance(value, str) and value.strip().casefold() == "inactive"
+    return (
+        isinstance(value, str)
+        and value.strip().casefold() == "active"
+        and _binary_device_error(data.get("allowedValues"))
+    )
+
+
+def _parse_device_error(
+    path: str, data: Mapping[str, JsonValue], now: datetime
+) -> ActiveFault | None:
+    """One active device error row as a fault (B06), or None when unnamed.
+
+    The error is named by ``errorType`` (``type`` in an older shape). Its
+    identity is the device, the error type and the occurrence ID, because the
+    occurrence ID alone is the same for one error type on every device.
+    """
+    code = _token(data.get("errorType")) or _token(data.get("type"))
+    if code is None:
+        return None
+    raw_occurrence = data.get("occurrenceId", data.get("occurrence_id"))
+    if isinstance(raw_occurrence, float) and raw_occurrence.is_integer():
+        raw_occurrence = int(raw_occurrence)
+    occurrence_id = _token(raw_occurrence)
+    class_raw = _token(data.get("fc", data.get("cat")))
+    pointt_class, severity = _classify(class_raw)
+    component_type, component_id = _component_from_path(path)
+    occurred_at = _parse_timestamp(data.get("t"), now)
+    identity = "|".join(("device-error", component_id or "", code, occurrence_id or ""))
+    return ActiveFault(
+        fingerprint=_fingerprint(identity),
+        code=code,
+        subcode=None,
+        severity=severity,
+        pointt_class=pointt_class,
+        pointt_class_raw=class_raw,
+        component_type=component_type,
+        component_id=component_id,
+        origin_raw=None,
+        display_level_raw=None,
+        occurrence_id=occurrence_id,
+        occurred_at=occurred_at,
+        first_seen_at=now,
+        last_seen_at=now,
+        time_source=(
+            FaultTimeSource.CLOUD
+            if occurred_at is not None
+            else FaultTimeSource.HOME_ASSISTANT_OBSERVED
+        ),
+        source_resources=(path,),
+    )
+
+
+def _legacy_device_fingerprint(path: str, data: Mapping[str, JsonValue]) -> str | None:
+    """The fingerprint a device error row had up to 0.9.0-alpha.3 (B06).
+
+    None when that version did not count the row as a fault either. Only used
+    to keep the identity of incidents that are already stored.
+    """
+    value = data.get("value")
+    if _is_explicitly_inactive(data) or (
+        isinstance(value, str) and value.strip().casefold() == "inactive"
+    ):
+        return None
+    code = _token(data.get("ccd", data.get("code", value)))
+    if code is not None and code.casefold() == "active":
+        code = _token(data.get("type")) or code
+    subcode = _token(data.get("dcd", data.get("subcode")))
+    occurrence_id = _token(data.get("occurrenceId", data.get("occurrence_id")))
+    class_raw = _token(data.get("fc", data.get("errorType", data.get("cat"))))
+    if not any((code, subcode, occurrence_id, class_raw)):
+        return None
+    component_type, component_id = _component_from_path(path)
+    origin = _token(data.get("orig", data.get("origin")))
+    return _fingerprint(
+        _identity(
+            code,
+            subcode,
+            occurrence_id,
+            component_type,
+            component_id,
+            origin,
+            class_raw,
+        )
+    )
 
 
 def _is_explicitly_inactive(data: Mapping[str, JsonValue]) -> bool:

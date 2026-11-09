@@ -89,6 +89,20 @@ Versioning after its first tagged preview.
   Enter and Space now open the confirmation. Saving a holiday without any
   change no longer sends anything to the heating system.
 
+### Faults
+
+- **Room device errors from the cloud:** a device error list now counts only
+  rows that report an active error as faults. A valve status such as
+  `valveTight` no longer shows up as an "Unknown fault" and no longer keeps
+  the system fault on. An active error is named by its error type (for example
+  `defectiveTempSensor`) instead of "active", and the same error on two room
+  devices is now two faults instead of one.
+- A device error that was already active before the update keeps its incident:
+  it is not announced again, and a notification you dismissed stays dismissed.
+  A stored valve status ends once with a normal "resolved" event.
+- The rules follow the gateway's documented error list. I have not yet seen a
+  cloud answer from a system with radio room devices.
+
 ## [0.9.0-alpha.3] - 2026-11-09
 
 > [!IMPORTANT]

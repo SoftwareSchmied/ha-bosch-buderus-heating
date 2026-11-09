@@ -149,12 +149,34 @@ The room devices' own error lists (`/devices/…/errors`, read locally where a
 gateway offers them) are shown as extra information only: the active entries
 appear in the `device_errors` attribute of the active faults sensor, as the
 device number and the error type (for example `defectiveTempSensor`). They do
-not count as faults, raise no event and no notification, and an entry whose
-value is neither `active` nor `inactive` (such as a valve status) is not
-shown, because its meaning as an error is not documented. They have not been
-seen on a real device yet. Where the cloud offers a device error list, its
-active rows are read as faults as before; a row marked `inactive` is not a
-fault. No Wi-Fi lists, network data, serial numbers
+not count as faults, raise no event and no notification. Only an entry whose
+value is `active` and whose allowed values are just `active` and `inactive` is
+shown; any other entry (such as a valve status like `valveTight`) is not,
+because its meaning as an error is not documented. They have not been seen on
+a real device yet.
+
+Where the cloud offers a device error list, the same rule decides which rows
+are faults: only a row whose value is `active`, and whose allowed values (if
+given) are just `active` and `inactive`, is a fault. Every other row, for
+example a valve status, is no fault. The fault is named by the row's error
+type (`errorType`, or `type` in an older shape), and it belongs to its device:
+the same error type on two room devices is two faults. A row that is active
+but names no error type counts as malformed, so it never confirms that the
+other faults have ended. These rules follow the gateway's documented error
+list; a cloud answer from a system with radio room devices has not been
+captured yet, so the tests (`tests/test_cloud_device_errors.py`) use the
+documented example rows, and a real capture is added there once one exists.
+
+Up to 0.9.0-alpha.3 such rows were identified by their occurrence ID alone,
+and any row not marked `inactive` was read as a fault. A device error stored
+by that version that is still active keeps its stored identity and first-seen
+time until it ends, so it is not announced again and a dismissed notification
+stays dismissed; only its name is corrected. A stored valve status or other
+row that is no fault any more ends with a normal `resolved` event after two
+complete reads. Where two devices shared one stored incident, it stays with
+one of them and the other device's error is announced once as a new fault.
+
+No Wi-Fi lists, network data, serial numbers
 or update logs are read for faults. Diagnostics show the state of the local list
 under `local_error_list` (`not_attached`, `success`, `partial`, `no_answer`,
 `stale`, `restored`) and the number of faults it reports under `local_faults`.
