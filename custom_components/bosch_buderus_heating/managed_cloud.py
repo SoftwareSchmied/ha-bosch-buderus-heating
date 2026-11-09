@@ -195,7 +195,10 @@ class CloudConnection:
     async def connect(self) -> None:
         # Backend discovery belongs to source work; it cannot block other adapters.
         self.ensure_current()
-        self._remove_listener = self.runtime.subscribe(self._update_startup)
+        # C68: follows the configuration, not local readings.
+        self._remove_listener = self.runtime.subscribe(
+            self._update_startup, local_values=False
+        )
 
     def source(self, binding_id: str, binding: StoredBinding) -> SourceDriver:
         if binding.adapter == "pointt":

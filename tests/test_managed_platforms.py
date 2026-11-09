@@ -4,6 +4,7 @@ import asyncio
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import Platform
 from homeassistant.core import Event
@@ -13,6 +14,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import EntityPlatform
 from homeassistant.helpers.trigger import TriggerConfig
 
+from custom_components.bosch_buderus_heating import managed_platforms
 from custom_components.bosch_buderus_heating.bacon.models import device_key
 from tests.ha_test_helpers import MockConfigEntry
 
@@ -650,16 +652,78 @@ async def test_registry_owned_by_another_entry_is_never_claimed(hass, caplog):
     other.add_to_hass(hass)
     registry = er.async_get(hass)
     item = registry.async_get_or_create("number", DOMAIN, NUMBER, config_entry=other)
+    foreign = HEAT + ":active_faults"
+    registry.async_get_or_create("sensor", DOMAIN, foreign, config_entry=other)
+
+    def skipped():
+        return [
+            record
+            for record in caplog.records
+            if "registered for another entry is skipped" in record.getMessage()
+        ]
+
     async with running(hass, Backend()) as (_, _, owner, _):
         await owner.start_platforms()
-        await eventually(lambda: "native entities could not be attached" in caplog.text)
+        # C60: only the foreign entities are skipped, never the whole batch.
+        await eventually(
+            lambda: native(owner, "sensor", HEAT + ":active_notifications")
+        )
         peer_id = "gateway-b:heatingCircuits:hc2:manualRoomSetpoint:control"
         await eventually(lambda: available(owner, "number", peer_id))
+        await eventually(lambda: len(skipped()) == 2)
         assert native(owner, "number", NUMBER) is None
+        assert native(owner, "sensor", foreign) is None
         assert registry.async_get(item.entity_id).config_entry_id == other.entry_id
         assert not any(
-            record.unique_id == NUMBER for record in owner.inventory.entities
+            record.unique_id in {NUMBER, foreign} for record in owner.inventory.entities
         )
+        # Once per platform with its code, without a failed attachment.
+        assert sorted(record.levelname for record in skipped()) == ["WARNING"] * 2
+        assert all(
+            "entity_registry_owner_conflict" in record.getMessage()
+            for record in skipped()
+        )
+        assert "could not be attached" not in caplog.text
+        # Later publications neither rebuild the source nor log again.
+        source = source_for(owner, HEAT)
+        context = owner.connections.source_context(binding_for(owner, HEAT))
+        attached = owner.platforms._platforms[Platform.NUMBER]._active
+        before = dict(attached)
+        for _ in range(3):
+            assert context.publish(source)
+            await settle(hass)
+        assert attached == before
+        assert len(skipped()) == 2
+        assert native(owner, "number", NUMBER) is None
+
+
+async def test_a_full_entity_inventory_never_blocks_entities(hass, caplog):
+    def limited():
+        return [
+            record
+            for record in caplog.records
+            if "inventory_limit" in record.getMessage()
+            and record.levelname == "WARNING"
+        ]
+
+    with patch(f"{ROOT}.connection_inventory.MAX_ENTITY_RECORDS", 3):
+        async with running(hass, Backend()) as (_, _, owner, _):
+            await owner.start_platforms()
+            peer_id = "gateway-b:heatingCircuits:hc2:manualRoomSetpoint:control"
+            await eventually(lambda: available(owner, "number", NUMBER))
+            await eventually(lambda: available(owner, "number", peer_id))
+            for gateway in (HEAT, "gateway-b"):
+                await eventually(
+                    lambda gateway=gateway: native(
+                        owner, "sensor", gateway + ":active_notifications"
+                    )
+                )
+            assert len(owner.inventory.entities) == 3
+            await eventually(lambda: limited())
+            # Logged once per platform, never as a failed attachment.
+            platforms = [record.args[2] for record in limited()]
+            assert len(platforms) == len(set(platforms))
+            assert "could not be attached" not in caplog.text
 
 
 @pytest.mark.parametrize("error", [RuntimeError, asyncio.CancelledError])
@@ -691,3 +755,132 @@ async def test_platform_setup_failure_closes_started_connections(hass, error):
         not controller.platform.entities and not controller._jobs
         for controller in owner.platforms._platforms.values()
     )
+
+
+# ------------------------------------------- C57: unloading the platforms
+
+
+class _LateSensor(SensorEntity):
+    _attr_should_poll = False
+    _attr_native_value = 1
+
+    def __init__(self, unique_id):
+        self._attr_unique_id = unique_id
+
+
+def capture_adds():
+    """The add callbacks the managed platforms hand to the entity builders."""
+    captured = []
+    original = managed_platforms._Platform.__init__
+
+    def init(self, owner, name, platform, build):
+        def wrapped(scope, add):
+            captured.append((name, scope, add))
+            return build(scope, add)
+
+        original(self, owner, name, platform, wrapped)
+
+    return captured, patch.object(managed_platforms._Platform, "__init__", init)
+
+
+def heat_add(captured, name):
+    return next(
+        add
+        for platform, scope, add in reversed(captured)
+        if platform is name
+        and scope.coordinators
+        and scope.coordinators[0].gateway.gateway_id == HEAT
+    )
+
+
+async def test_nothing_is_added_while_the_platforms_unload(hass):
+    late = HEAT + ":late_probe"
+    captured, capturing = capture_adds()
+    async with running(hass, Backend()) as (_, _, owner, _):
+        with capturing:
+            await owner.start_platforms()
+        await eventually(lambda: available(owner, "number", NUMBER))
+        await settle(hass)
+        add = heat_add(captured, Platform.SENSOR)
+        original = hass.config_entries.async_unload_platforms
+        seen = []
+
+        async def unload(entry, platforms):
+            # A source finishes a new entity exactly while unloading.
+            add([_LateSensor(late)])
+            seen.append(dict(owner.platforms._platforms[Platform.SENSOR]._jobs))
+            await asyncio.sleep(0)
+            return await original(entry, platforms)
+
+        with patch.object(hass.config_entries, "async_unload_platforms", unload):
+            assert await owner.unload()
+        await settle(hass)
+        assert seen == [{}]  # no attachment job was started
+        assert registered(hass, "sensor", late) is None
+        assert not [
+            state
+            for state in hass.states.async_all()
+            if state.entity_id.startswith(("sensor.", "number."))
+            and state.state != "unavailable"
+        ]
+
+
+async def test_a_failed_unload_attaches_the_sources_again(hass):
+    late = HEAT + ":late_probe"
+    captured, capturing = capture_adds()
+    async with running(hass, Backend()) as (_, _, owner, _):
+        with capturing:
+            await owner.start_platforms()
+        await eventually(lambda: available(owner, "number", NUMBER))
+        await eventually(lambda: native(owner, "sensor", HEAT + ":active_faults"))
+        await settle(hass)
+        number = native(owner, "number", NUMBER)
+        add = heat_add(captured, Platform.SENSOR)
+        original = hass.config_entries.async_unload_platforms
+
+        async def partly(entry, platforms):
+            # Only the sensor platform unloads; the others report a failure.
+            add([_LateSensor(late)])
+            await original(entry, [Platform.SENSOR])
+            return False
+
+        with patch.object(hass.config_entries, "async_unload_platforms", partly):
+            assert not await owner.unload()
+        controllers = owner.platforms._platforms
+        # The unloaded platform stays stopped: nothing is added to it.
+        assert controllers[Platform.SENSOR]._closed
+        assert not any(
+            attached.active
+            for attached in controllers[Platform.SENSOR]._active.values()
+        )
+        assert not controllers[Platform.SENSOR]._jobs
+        await settle(hass)
+        assert native(owner, "sensor", HEAT + ":active_faults") is None
+        assert registered(hass, "sensor", late) is None
+        # The loaded ones attach their sources again with new entities.
+        assert not controllers[Platform.NUMBER]._suspended
+        await eventually(lambda: available(owner, "number", NUMBER))
+        assert native(owner, "number", NUMBER) is not number
+        source = source_for(owner, HEAT)
+        context = owner.connections.source_context(binding_for(owner, HEAT))
+        assert context.publish(source)
+        await settle(hass)
+        assert available(owner, "number", NUMBER)
+        assert not owner._closed
+
+
+async def test_an_unload_error_attaches_the_sources_again(hass):
+    async with running(hass, Backend()) as (_, _, owner, _):
+        await owner.start_platforms()
+        await eventually(lambda: available(owner, "number", NUMBER))
+
+        async def broken(entry, platforms):
+            raise RuntimeError("unload failed")
+
+        with (
+            patch.object(hass.config_entries, "async_unload_platforms", broken),
+            pytest.raises(RuntimeError),
+        ):
+            await owner.unload()
+        assert not owner.platforms._platforms[Platform.NUMBER]._suspended
+        await eventually(lambda: available(owner, "number", NUMBER))

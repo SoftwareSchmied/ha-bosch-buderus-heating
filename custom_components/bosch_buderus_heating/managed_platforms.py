@@ -19,7 +19,7 @@ from .bacon.models import device_key
 from .configuration import ConfigurationError
 from .configuration_migration import legacy_cloud_connection_id
 from .connection_inventory import RetainedEntity
-from .connection_runtime import SourceContext
+from .connection_runtime import RepeatedFailure, SourceContext
 from .const import DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .entity_use import entity_use
@@ -35,6 +35,8 @@ _LOGGER = logging.getLogger(__name__)
 # P49b: a read-only view (local readings alone) offers no controls.
 # R1: the longest wait for a replaced source's entities to be removed.
 _PREFIX_WAIT_SECONDS = 30.0
+# C57: the longest wait for running attachments before the platforms unload.
+_SUSPEND_WAIT_SECONDS = 5.0
 _READ_ONLY_PLATFORMS = frozenset(
     {Platform.SENSOR, Platform.BINARY_SENSOR, Platform.EVENT}
 )
@@ -82,6 +84,33 @@ class ManagedPlatforms:
         self.owner.entry.async_on_unload(controller.stop)
         controller.changed()
 
+    async def suspend(self) -> None:
+        """C57: before Home Assistant unloads the platforms, no source adds an
+        entity any more; running attachments end first (bounded).
+
+        The entities stay: unloading the platforms removes them.
+        """
+        for controller in self._platforms.values():
+            controller.suspend()
+        jobs = [
+            job
+            for controller in self._platforms.values()
+            for job in controller.jobs
+            if not job.done()
+        ]
+        if jobs:
+            await asyncio.wait(jobs, timeout=_SUSPEND_WAIT_SECONDS)
+
+    def resume(self) -> None:
+        """The platforms were not unloaded: attach the sources again where
+        the platform is still set up; one already unloaded stays stopped."""
+        loaded = entity_platform.async_get_platforms(self.owner.hass, DOMAIN)
+        for controller in self._platforms.values():
+            if any(platform is controller.platform for platform in loaded):
+                controller.resume()
+            else:
+                controller.stop()
+
     async def close(self) -> None:
         self._closed = True
         for controller in self._platforms.values():
@@ -103,7 +132,24 @@ class _Platform:
         self._active: dict[str, _Attachment] = {}
         self._jobs: dict[str, asyncio.Task[None]] = {}
         self._closed = False
-        self._unsubscribe = owner.connections.subscribe(self.changed)
+        # C57: while Home Assistant unloads the platform, nothing is added.
+        self._suspended = False
+        # C60: the inventory and registry problems already logged.
+        self._record_logged: set[str] = set()
+        self._attach_failure = RepeatedFailure(
+            _LOGGER,
+            f"A source's native entities could not be attached to the {name} platform",
+            level=logging.ERROR,
+        )
+        # C68: the attached sources follow phases and the configuration;
+        # local readings reach the entities through their coordinators.
+        self._unsubscribe = owner.connections.subscribe(
+            self.changed, local_values=False
+        )
+
+    @property
+    def jobs(self) -> tuple[asyncio.Task[None], ...]:
+        return tuple(self._jobs.values())
 
     def _sources(self) -> dict[str, _Source]:
         if self._closed:
@@ -240,6 +286,8 @@ class _Platform:
         )
 
     def changed(self) -> None:
+        if self._suspended:
+            return
         sources = self._sources()
         for key in self._active.keys() | sources.keys():
             attached, desired = self._active.get(key), sources.get(key)
@@ -250,12 +298,29 @@ class _Platform:
             if (
                 attached is None
                 or desired is None
+                or not attached.active
                 or attached.source.value is not desired.value
                 or attached.pending
             ):
                 self._wake(key)
 
+    def suspend(self) -> None:
+        """C57: no attachment adds entities any more; they stay attached
+        until the platform removes them."""
+        self._suspended = True
+        for attached in self._active.values():
+            attached.invalidate()
+
+    def resume(self) -> None:
+        """The platform stays loaded: replace the suspended attachments."""
+        if self._closed or not self._suspended:
+            return
+        self._suspended = False
+        self.changed()
+
     def _wake(self, key: str) -> None:
+        if self._suspended:
+            return
         old = self._jobs.get(key)
         if old is not None and not old.done():
             return
@@ -267,8 +332,13 @@ class _Platform:
         def done(finished: asyncio.Task[None]) -> None:
             if self._jobs.get(key) is finished:
                 self._jobs.pop(key)
-            if not finished.cancelled() and finished.exception() is not None:
-                _LOGGER.error("A source's native entities could not be attached")
+            if finished.cancelled():
+                return
+            if (error := finished.exception()) is not None:
+                # C61: once per series with the error class, details at debug.
+                self._attach_failure.failed(error, key)
+            else:
+                self._attach_failure.succeeded(key)
 
         task.add_done_callback(done)
 
@@ -295,6 +365,8 @@ class _Platform:
 
     async def _reconcile(self, key: str) -> None:
         while True:
+            if self._suspended:
+                return  # the platform unloads; it removes the entities
             desired = self._sources().get(key)
             attached = self._active.get(key)
             if attached is not None and (
@@ -355,13 +427,24 @@ class _Platform:
             entities, attached.pending = attached.pending, []
             if not attached.active or not attached.source.scope.current():
                 continue
-            for entity in entities:
-                self._record(entity, attached.source)
+            # C60: a problem of one entity never blocks the others.
+            entities = [
+                entity for entity in entities if self._record(entity, attached.source)
+            ]
+            if not entities:
+                continue
             attached.entities.extend(entities)
             await self.platform.async_add_entities(entities)
             await self.owner.inventory.save()
 
-    def _record(self, entity: Entity, source: _Source) -> None:
+    def _record(self, entity: Entity, source: _Source) -> bool:
+        """Record an entity before it is added; False: it is not added.
+
+        An entity whose registry entry belongs to another entry is skipped,
+        never claimed. The inventory is optional: an entity it cannot record
+        (for example at its limit) is added anyway. Each problem is logged
+        once per platform with its code, then at debug level.
+        """
         assert entity.unique_id is not None
         registry = er.async_get(self.owner.hass)
         if identity := registry.async_get_entity_id(
@@ -370,27 +453,51 @@ class _Platform:
             existing = registry.async_get(identity)
             assert existing is not None
             if existing.config_entry_id != self.owner.entry.entry_id:
-                raise ConfigurationError("entity_registry_owner_conflict")
+                self._record_problem(
+                    "entity_registry_owner_conflict",
+                    "An entity registered for another entry is skipped",
+                )
+                return False
         context = source.context
         if context is None:
             # Account statistics belong to a connection, never to an appliance target.
-            return
+            return True
         binding_id = context.generation.binding_id
         assert binding_id is not None
         binding = context.runtime.snapshot.bindings[binding_id]
         description = getattr(entity, "entity_description", None)
         path = getattr(description, "resource_path", None)
-        self.owner.inventory.record(
-            RetainedEntity(
-                self.name,
-                entity.unique_id,
-                binding.target_id,
-                binding_id,
-                binding.adapter,
-                entity.unique_id,
-                path,
-            ),
-            context,
+        try:
+            self.owner.inventory.record(
+                RetainedEntity(
+                    self.name,
+                    entity.unique_id,
+                    binding.target_id,
+                    binding_id,
+                    binding.adapter,
+                    entity.unique_id,
+                    path,
+                ),
+                context,
+            )
+        except ConfigurationError as error:
+            self._record_problem(
+                str(error),  # a static code
+                "An entity could not be recorded in the entity inventory; it is "
+                "added anyway",
+            )
+        return True
+
+    def _record_problem(self, code: str, message: str) -> None:
+        if code in self._record_logged:
+            _LOGGER.debug("%s (%s, %s)", message, code, self.name)
+            return
+        self._record_logged.add(code)
+        _LOGGER.warning(
+            "%s (%s, %s); further cases are logged at debug level",
+            message,
+            code,
+            self.name,
         )
 
     def stop(self) -> None:

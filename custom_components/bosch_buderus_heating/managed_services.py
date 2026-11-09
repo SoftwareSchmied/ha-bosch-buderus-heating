@@ -38,7 +38,11 @@ class ManagedServices:
             tuple[object, object, int, tuple[str, ...] | None] | None
         ) = None
         self._closed = False
-        self._unsubscribe = owner.connections.subscribe(self.changed)
+        # C68: the sources and repairs follow phases and the configuration;
+        # local faults reach the notifications through their fault tracker.
+        self._unsubscribe = owner.connections.subscribe(
+            self.changed, local_values=False
+        )
 
     def _sources(self) -> dict[str, BoschBuderusDataUpdateCoordinator]:
         if self._closed:
@@ -148,8 +152,12 @@ class ManagedServices:
 
     def _finished(self, gateway: str, task: asyncio.Task[None]) -> None:
         self._jobs.pop(gateway, None)
-        if not task.cancelled() and task.exception() is not None:
-            _LOGGER.error("Heating fault notification setup failed")
+        if not task.cancelled() and (error := task.exception()) is not None:
+            # C61: the error class, the details at debug level.
+            _LOGGER.error(
+                "Heating fault notification setup failed (%s)", type(error).__name__
+            )
+            _LOGGER.debug("Details of the notification setup failure", exc_info=error)
         manager = self.notifications.get(gateway)
         if (
             not self._closed

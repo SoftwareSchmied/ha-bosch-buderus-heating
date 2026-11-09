@@ -54,6 +54,55 @@ def _source_subject(adapter: str) -> str:
     return _SOURCE_KINDS.get(adapter, "unsupported") + " source"
 
 
+class RuntimeChange(StrEnum):
+    """C68: what a runtime notification carries.
+
+    ``LOCAL_VALUES``: only new readings of a running local source; its phase,
+    its condition and whether it is published stay the same. ``STATE``:
+    anything else (phases, configuration, published or kept sources and
+    views). Listeners that follow only phases or the configuration skip
+    ``LOCAL_VALUES``.
+    """
+
+    LOCAL_VALUES = "local_values"
+    STATE = "state"
+
+
+class RepeatedFailure:
+    """C61: the first failure of a series as one line with the error class
+    only; its traceback and all repetitions at debug level.
+
+    Never the error message: it may contain a value or a path. A series is
+    kept per ``key`` (for example per source); ``succeeded`` ends it, so a
+    later failure is logged again.
+    """
+
+    def __init__(
+        self, logger: logging.Logger, message: str, *, level: int = logging.WARNING
+    ) -> None:
+        self._logger, self._message, self._level = logger, message, level
+        self._failing: dict[str, set[str]] = {}
+
+    def failed(self, error: BaseException, key: str = "") -> None:
+        name = type(error).__name__
+        logged = self._failing.setdefault(key, set())
+        if name in logged:
+            self._logger.debug("%s again (%s)", self._message, name, exc_info=error)
+            return
+        logged.add(name)
+        self._logger.log(
+            self._level,
+            "%s (%s); further failures are logged at debug level",
+            self._message,
+            name,
+        )
+        self._logger.debug("Details: %s", self._message, exc_info=error)
+
+    def succeeded(self, key: str = "") -> None:
+        if self._failing:
+            self._failing.pop(key, None)
+
+
 class ConnectionPhase(StrEnum):
     CONNECTING = "connecting"
     READY = "ready"
@@ -328,7 +377,15 @@ class ConnectionRuntime:
         self._target_waits: dict[str, set[str]] = {}
         self._target_retry: asyncio.Task[None] | None = None
         self._local_states: dict[str, LocalSourceState] = {}
-        self._listeners: list[RuntimeListener] = []
+        # C68: each listener with whether it wants local readings alone.
+        self._listeners: list[tuple[RuntimeListener, bool]] = []
+        # C61: listeners whose last call failed, with the error classes
+        # already logged.
+        self._failing_listeners: dict[RuntimeListener, set[str]] = {}
+        # C64: bindings whose view without a cloud failed to build (warned
+        # once), and the pending retries of these builds.
+        self._dormant_warned: set[str] = set()
+        self._dormant_retries: dict[str, asyncio.Task[None]] = {}
         self._tasks: set[asyncio.Task[None]] = set()
         # Dormant and target view builds, cancelled when the runtime closes.
         self._builds: set[asyncio.Task[None]] = set()
@@ -363,16 +420,55 @@ class ConnectionRuntime:
         self.synchronize(snapshot)
 
     @callback
-    def subscribe(self, listener: RuntimeListener) -> Callable[[], None]:
-        self._listeners.append(listener)
-        return lambda: self._listeners.remove(listener)
+    def subscribe(
+        self, listener: RuntimeListener, *, local_values: bool = True
+    ) -> Callable[[], None]:
+        """Call ``listener`` on every notification; with ``local_values``
+        false not on those that carry only new local readings (C68)."""
+        item = (listener, local_values)
+        self._listeners.append(item)
 
-    def _notify(self) -> None:
-        for listener in tuple(self._listeners):
+        def unsubscribe() -> None:
+            self._listeners.remove(item)
+            self._failing_listeners.pop(listener, None)
+
+        return unsubscribe
+
+    def _notify(self, change: RuntimeChange = RuntimeChange.STATE) -> None:
+        values_only = change is RuntimeChange.LOCAL_VALUES
+        for listener, local_values in tuple(self._listeners):
+            if values_only and not local_values:
+                continue
             try:
                 listener()
-            except Exception:
-                _LOGGER.error("A connection state listener failed")
+            except Exception as error:
+                self._listener_failed(listener, error)
+            else:
+                if self._failing_listeners:
+                    self._failing_listeners.pop(listener, None)
+
+    def _listener_failed(self, listener: RuntimeListener, error: Exception) -> None:
+        """C61: once per listener and error class an error naming both; the
+        traceback and repetitions at debug level. A success ends it."""
+        name = type(error).__name__
+        where = getattr(listener, "__qualname__", type(listener).__qualname__)
+        logged = self._failing_listeners.setdefault(listener, set())
+        if name in logged:
+            _LOGGER.debug(
+                "A connection state listener failed again (%s in %s)",
+                name,
+                where,
+                exc_info=error,
+            )
+            return
+        logged.add(name)
+        _LOGGER.error(
+            "A connection state listener failed (%s in %s); further failures of "
+            "it are logged at debug level",
+            name,
+            where,
+        )
+        _LOGGER.debug("Details of the listener failure", exc_info=error)
 
     def _task(self, work: Coroutine[Any, Any, None]) -> asyncio.Task[None]:
         task: asyncio.Task[None] = self.hass.async_create_background_task(
@@ -1011,6 +1107,7 @@ class ConnectionRuntime:
             )
         ):
             return False
+        previous = self._local_states.get(binding_id)
         self._local_states[binding_id] = state
         phase = {
             LocalCondition.INITIALIZING: ConnectionPhase.CONNECTING,
@@ -1020,6 +1117,14 @@ class ConnectionRuntime:
             LocalCondition.AUTH_REQUIRED: ConnectionPhase.AUTH_REQUIRED,
             LocalCondition.CERTIFICATE_CHANGED: ConnectionPhase.AUTH_REQUIRED,
         }[state.condition]
+        # C68: only new readings when neither the phase, the condition nor
+        # whether the binding's data is published changes.
+        values_only = (
+            previous is not None
+            and previous.condition is state.condition
+            and self._source_phases.get(binding_id) is phase
+            and (binding_id in self._data) is (phase is ConnectionPhase.READY)
+        )
         self._source_phases[binding_id] = phase
         # A non-ready snapshot is available to recovery/diagnostics only.
         # It does not become ordinary fresh source data.
@@ -1030,7 +1135,7 @@ class ConnectionRuntime:
             )
         else:
             self._data.pop(binding_id, None)
-        self._notify()
+        self._notify(RuntimeChange.LOCAL_VALUES if values_only else RuntimeChange.STATE)
         return True
 
     def local_state(self, binding_id: str) -> LocalSourceState | None:
@@ -1186,6 +1291,8 @@ class ConnectionRuntime:
         binding_id: str,
         binding: StoredBinding,
         context: SourceContext,
+        *,
+        local_plant: bool = False,
     ) -> None:
         try:
             if (releasing := self._releasing.get(binding_id)) is not None:
@@ -1194,8 +1301,27 @@ class ConnectionRuntime:
             await build(binding_id, binding, context)
         except asyncio.CancelledError:
             raise
-        except Exception:
-            _LOGGER.debug("A dormant view could not be built", exc_info=True)
+        except Exception as error:
+            # C64: like a target view, a warning and a retry after a pause.
+            if binding_id in self._dormant_warned:
+                _LOGGER.debug(
+                    "A view without the cloud could not be built again (%s)",
+                    type(error).__name__,
+                    exc_info=error,
+                )
+            else:
+                self._dormant_warned.add(binding_id)
+                _LOGGER.warning(
+                    "A system's local readings could not be shown without the "
+                    "cloud (%s); retrying in %.0f seconds. Further failures are "
+                    "logged at debug level",
+                    type(error).__name__,
+                    TARGET_RETRY_SECONDS,
+                )
+                _LOGGER.debug("View build without the cloud failed", exc_info=error)
+            self._retry_dormant(build, binding_id, binding, context, local_plant)
+        else:
+            self._dormant_warned.discard(binding_id)
         finally:
             self._dormant.discard(binding_id)
         generation = context.generation
@@ -1272,8 +1398,74 @@ class ConnectionRuntime:
         self._release(binding_id)
         self._notify()
         self._dormant.add(binding_id)
-        self._build(self._build_dormant(build, binding_id, binding, context))
+        self._build(
+            self._build_dormant(build, binding_id, binding, context, local_plant=True)
+        )
         return True
+
+    def _retry_dormant(
+        self,
+        build: Callable[..., Awaitable[None]],
+        binding_id: str,
+        binding: StoredBinding,
+        context: SourceContext,
+        local_plant: bool,
+    ) -> None:
+        """C64: one pending retry per binding after a failed build."""
+        pending = self._dormant_retries.get(binding_id)
+        if self._closed or (pending is not None and not pending.done()):
+            return
+        task = self._build(
+            self._retry_dormant_after(build, binding_id, binding, context, local_plant)
+        )
+        self._dormant_retries[binding_id] = task
+
+        def done(finished: asyncio.Task[None]) -> None:
+            if self._dormant_retries.get(binding_id) is finished:
+                del self._dormant_retries[binding_id]
+
+        task.add_done_callback(done)
+
+    async def _retry_dormant_after(
+        self,
+        build: Callable[..., Awaitable[None]],
+        binding_id: str,
+        binding: StoredBinding,
+        context: SourceContext,
+        local_plant: bool,
+    ) -> None:
+        """Build the view again after a pause, if it is still wanted.
+
+        The current state decides, never the one before the pause: a
+        switched-off access builds its dormant view anew (as after every
+        change); a cloud still not available (2A) builds its local plant view
+        again with the same provenance while that is still current.
+        """
+        await self._sleep(TARGET_RETRY_SECONDS)
+        generation = context.generation
+        connection = self.snapshot.connections.get(generation.connection_id)
+        if (
+            self._closed
+            or connection is None
+            or self.snapshot.bindings.get(binding_id) != binding
+            or binding_id in self._retained
+            or binding_id in self._dormant
+        ):
+            return
+        if self.connection_phase(generation.connection_id) is ConnectionPhase.DISABLED:
+            self._start_dormant(generation.connection_id, connection)
+        elif (
+            local_plant
+            and self._generations.accepts(generation)
+            and self.source_phase(binding_id)
+            in (ConnectionPhase.AUTH_REQUIRED, ConnectionPhase.UNAVAILABLE)
+        ):
+            self._dormant.add(binding_id)
+            self._build(
+                self._build_dormant(
+                    build, binding_id, binding, context, local_plant=True
+                )
+            )
 
     def _dormant_acceptable(self, context: SourceContext, data: object) -> bool:
         generation = context.generation

@@ -587,6 +587,7 @@ def test_new_local_readings_refresh_entities_once_and_only_for_current_sources()
         async_update_listeners=MagicMock(),
         local_retained=False,
         _local_faults_updated=lambda selection: None,
+        _local_fault_failure=MagicMock(),
     )
     refresh = ManagedPointTCoordinator._local_updated
     refresh(fake)
