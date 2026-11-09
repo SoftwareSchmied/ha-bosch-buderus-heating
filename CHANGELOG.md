@@ -23,7 +23,8 @@ Versioning after its first tagged preview.
   instead of every 60. The scheduler now starts reads 200 ms apart, at most two
   at a time, and computes the next due time from the start of a read. It slows
   down on its own when a gateway answers slowly (up to one second between
-  reads) and for five minutes after a timeout or server error.
+  reads, up to two seconds for five minutes after a timeout or server error).
+  The pause at the end of each minute is 3 instead of 5 seconds.
 - **Connections are kept open:** reads reuse an answered TLS connection for up
   to 4 seconds instead of opening a new one every time. The certificate is
   still checked on every new connection before anything is sent. If a gateway
