@@ -438,11 +438,17 @@ class LocalSelection:
                         current=True,
                     ),
                 )
-                result = (
-                    comparison.result.value
+                kind = (
+                    comparison.result
                     if comparison is not None
-                    else PairResult.INCOMPARABLE.value
+                    else PairResult.INCOMPARABLE
                 )
+                if kind is PairResult.CHANGED_BETWEEN_READS:
+                    # A written setting does not change by itself: a readback
+                    # that does not confirm it differs, however late it came
+                    # (A1 applies to the pair diagnostics only).
+                    kind = PairResult.DIFFER
+                result = kind.value
             elif late or (now - at).total_seconds() >= WRITE_CHECK_SECONDS:
                 result = "unchecked"
             else:

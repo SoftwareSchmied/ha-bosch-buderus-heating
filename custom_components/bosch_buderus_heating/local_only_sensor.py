@@ -202,12 +202,20 @@ class BoschBuderusLocalOnlySensor(
 
     def _energy_manager_placeholder(self) -> bool:
         """#76: a setpoint of an energy manager the system reports as not
-        connected; its 0 °C is a placeholder, not a setpoint."""
+        connected; its 0 °C is a placeholder, not a setpoint.
+
+        The status as its own entity shows it: the local reading first, else
+        the cloud reading within its validity limit. The stored cloud copy
+        alone would lag: it is read only every 15 minutes while the local
+        reading is shown (O45).
+        """
         if not energy_manager_setpoint(self._path):
             return False
-        status = (self.coordinator.data or {}).get(ENERGY_MANAGER_STATUS_PATH)
-        return status is not None and energy_manager_not_connected(
-            status.resource.value
+        status = self.coordinator.display_snapshot(ENERGY_MANAGER_STATUS_PATH)
+        return (
+            status is not None
+            and status.available
+            and energy_manager_not_connected(status.resource.value)
         )
 
     @property

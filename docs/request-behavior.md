@@ -190,7 +190,10 @@ the deadline itself is used, as before. Small plants therefore keep their
 previous timing. With the anonymized cloud inventory of my heat pump (20 live
 values, 32 paths every 5 minutes, 16 every 15 minutes and 9 hourly paths) a
 simulated hour needs 60 batches instead of 76, with the same 1,657 path reads.
-The first reads after a start or a requested discovery stay immediate, and an
+If a group cannot complete because a batch with another of its paths keeps
+failing, a path read early (or in an earlier, budget-limited cycle) waits at
+most one interval of its group and one minute; then it is read again, so its
+value does not expire. The first reads after a start or a requested discovery stay immediate, and an
 explicit refresh still reads everything.
 
 While an entity shows the local value of a paired reading, its cloud path is

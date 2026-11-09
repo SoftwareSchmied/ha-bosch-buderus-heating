@@ -32,6 +32,7 @@ from custom_components.bosch_buderus_heating.local_selection import (
     UNUSED_SIGNAL_PERIOD,
     signal_slows_when_unused,
 )
+from custom_components.bosch_buderus_heating.managed_local import _hourly_reason
 from custom_components.bosch_buderus_heating.platform_scope import setup_platform
 from custom_components.bosch_buderus_heating.pointt import (
     Gateway,
@@ -157,6 +158,33 @@ async def test_listener_failure_and_unload_end_cleanly(hass, entry):
     use.refresh()
     use.note("sensor", entity(f"{GATEWAY}:c", "/c"))
     assert entity_use(hass, entry) is not use
+
+
+async def test_a_failing_listener_is_reported_once_without_identifiers(
+    hass, entry, caplog
+):
+    use = entity_use(hass, entry)
+
+    def broken():
+        raise RuntimeError(f"synthetic {GATEWAY} /signals/SRC.Some.Flag")
+
+    use.add_listener(broken)
+    for name in ("a", "b", "c"):
+        use.note("sensor", entity(f"{GATEWAY}:{name}", f"/{name}"))
+        register(hass, entry, "sensor", f"{GATEWAY}:{name}")
+        caplog.clear()
+        with caplog.at_level("DEBUG", logger=module.__name__):
+            await later(hass)
+        warnings = [r for r in caplog.records if r.levelname == "WARNING"]
+        debug = [r for r in caplog.records if r.levelname == "DEBUG"]
+        # The first failure is a warning, the later ones are debug only.
+        assert len(warnings) == (1 if name == "a" else 0), name
+        assert debug, name
+        for record in warnings:
+            text = record.getMessage()
+            assert "RuntimeError" in text
+            assert GATEWAY not in text and "/signals" not in text
+            assert record.exc_info is None
 
 
 async def test_legacy_platform_notes_every_entity_before_adding(hass, entry):
@@ -299,6 +327,36 @@ def test_signal_exemptions_keep_pairs_counters_faults_and_installation_date():
         "/heatSources/returnTemperature",  # an observation pair, no signal
     ):
         assert not signal_slows_when_unused(path), path
+
+
+@pytest.mark.parametrize("kind", ["counters", "static"])
+def test_counter_and_static_signal_classes_keep_their_pace(monkeypatch, kind):
+    """G3/A3: a signal the catalog classes as counter or static keeps its pace
+    even when its name matches none of the counter or fault patterns."""
+    from custom_components.bosch_buderus_heating.local_polling import policy
+
+    # Names that match none of the counter or fault patterns.
+    name = f"SRC.Review.Plain{'A' if kind == 'counters' else 'B'}Meter"
+    plain = "SRC.Review.PlainFlag"
+    monkeypatch.setitem(policy.SIGNAL_CLASSES, name, kind)
+    request, other = signal(name), signal(plain)
+    assert signal_slows_when_unused(request.path)
+    assert signal_slows_when_unused(other.path)
+    use = SimpleNamespace(
+        disabled_paths=lambda gateway: frozenset({request.path, other.path}),
+        noted_paths=lambda gateway: frozenset(),
+    )
+    assert _hourly_reason(use, GATEWAY, other, None) == "disabled"
+    assert _hourly_reason(use, GATEWAY, request, None) is None
+    # Neither without any entity.
+    nobody = SimpleNamespace(
+        disabled_paths=lambda gateway: frozenset(),
+        noted_paths=lambda gateway: frozenset(),
+    )
+    assert _hourly_reason(nobody, GATEWAY, other, lambda item: True) == (
+        "without_entity"
+    )
+    assert _hourly_reason(nobody, GATEWAY, request, lambda item: True) is None
 
 
 def test_floor_slows_but_never_speeds_up_a_reading():

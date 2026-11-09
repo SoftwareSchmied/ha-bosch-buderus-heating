@@ -409,6 +409,67 @@ async def test_a_failed_early_read_comes_again_and_a_refresh_reads_all(
     assert set(cloud.reads(clock.now - 1, clock.now + 1)) == polled
 
 
+async def test_an_early_read_comes_again_while_its_group_stays_incomplete(
+    hass: HomeAssistant,
+) -> None:
+    """A path of the same group keeps failing with its whole batch while the
+    cycles go on: a path read in its slot is read again within one period
+    of its group (and two wake-ups), and its value never expires."""
+    clock = Clock()
+    coordinator, cloud = _plant(hass, clock)
+    slots = coordinator._slot_plan()
+    group = PollGroup.CONTROL
+    poison = next(p for p, (g, s) in slots.items() if g is group and s == 0)
+    early = next(p for p, (g, s) in slots.items() if g is group and s >= 1)
+    original = cloud.bulk
+
+    async def bulk(gateway, paths):
+        if poison in paths:
+            raise RequestTimeout
+        return await original(gateway, paths)
+
+    async def single(gateway, path, **kwargs):
+        return cloud.resources[path]
+
+    coordinator.client.get_resources_bulk.side_effect = bulk
+    coordinator.client.get_resource.side_effect = single
+    with _patched(clock)[0], _patched(clock)[1], _patched(clock)[2]:
+        for _ in range(40):
+            clock.now += TICK + CYCLE
+            await _cycle(coordinator)  # the cycles themselves never fail
+            shown = coordinator.displayed_cloud_snapshot(early)
+            assert shown is not None and shown.available, clock.now
+    reads = cloud.reads(0, clock.now + 1)[early]
+    assert reads, "never read"
+    # Its period, the wake-up of slack and the wake-up it then falls on.
+    limit = coordinator._poll_intervals[group].total_seconds() + 2 * (TICK + CYCLE)
+    assert all(later - first <= limit for first, later in pairwise(reads))
+    assert clock.now - reads[-1] <= limit
+    # The group itself is still waiting for the failing path.
+    assert coordinator._next_update[group] < clock.now
+
+
+async def test_budget_progress_counts_for_one_period_only(
+    hass: HomeAssistant,
+) -> None:
+    clock = Clock()
+    coordinator, cloud = _plant(hass, clock)
+    interval = coordinator._poll_intervals[PollGroup.FAST].total_seconds()
+    with _patched(clock)[0], _patched(clock)[1], _patched(clock)[2]:
+        # Read in an earlier cycle of this period: not read again yet.
+        coordinator._budget_progress = {PollGroup.FAST: {SUPPLY: clock.now}}
+        clock.now += TICK + CYCLE
+        await _cycle(coordinator)
+        assert SUPPLY not in cloud.reads(clock.now - 1, clock.now + 1)
+        # Read longer ago than one period and one wake-up: read again.
+        coordinator._budget_progress = {
+            PollGroup.FAST: {SUPPLY: clock.now - interval - TICK}
+        }
+        clock.now += TICK + CYCLE
+        await _cycle(coordinator)
+        assert SUPPLY in cloud.reads(clock.now - 1, clock.now + 1)
+
+
 async def test_an_active_notification_is_read_every_minute(hass) -> None:
     clock = Clock()
     coordinator, cloud = _plant(hass, clock)
@@ -733,7 +794,7 @@ async def test_a_refresh_reads_locally_shown_readings_too(hass) -> None:
 async def test_a_new_discovery_starts_new_periods(hass) -> None:
     clock = Clock()
     coordinator, cloud = _plant(hass, clock)
-    coordinator._spread_progress = {PollGroup.CONTROL: {"/heatSources/x"}}
+    coordinator._spread_progress = {PollGroup.CONTROL: {"/heatSources/x": 0.0}}
     coordinator._urgent_reads = {SUPPLY}
     coordinator._local_served = {SUPPLY: 1e12}
     with (
@@ -749,7 +810,7 @@ async def test_a_new_discovery_starts_new_periods(hass) -> None:
     assert not coordinator._spread_progress
     assert not coordinator._urgent_reads
     assert coordinator._local_served[SUPPLY] == clock.now + 900
-    coordinator._spread_progress = {PollGroup.CONTROL: {"/heatSources/x"}}
+    coordinator._spread_progress = {PollGroup.CONTROL: {"/heatSources/x": 0.0}}
     coordinator.start_from_inventory(
         dict(cloud.resources), reason="test", age_seconds=0, seen={}
     )

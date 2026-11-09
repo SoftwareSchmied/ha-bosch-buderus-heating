@@ -381,6 +381,44 @@ def test_change_detection_after_a_confirmed_write() -> None:
     assert selection.changed() is False
 
 
+@pytest.mark.parametrize("seconds", [90, 590])
+def test_a_late_readback_that_does_not_confirm_a_write_differs(seconds) -> None:
+    """A1 is for the pair diagnostics only: a written value the local
+    read-back does not confirm differs, however long after the write."""
+    flow = "/heatingCircuits/hc1/maxFlowTemp"
+    runtime = FakeRuntime([local(flow, 55.0, monotonic=10.0)])
+    selection = LocalSelection(runtime, TARGET)
+    selection.changed()
+    written = NOW + timedelta(seconds=30)
+    confirmed = replace(cloud(flow, 50.0, writable=True), last_success=written)
+    selection.note_confirmed_write(flow, confirmed)
+    # The controller did not take the value: the local reading still says 55.
+    at = written + timedelta(seconds=seconds)
+    runtime.observations = [
+        read(scalar(flow, value=55.0), observed_at=at, observed_monotonic=200.0)
+    ]
+    selection.changed()
+    selection.check_writes(at)
+    assert selection.write_check_summary() == {"max_flow_temperature": {"differ": 1}}
+
+
+def test_a_late_readback_that_confirms_a_write_agrees() -> None:
+    flow = "/heatingCircuits/hc1/maxFlowTemp"
+    runtime = FakeRuntime([local(flow, 55.0, monotonic=10.0)])
+    selection = LocalSelection(runtime, TARGET)
+    selection.changed()
+    written = NOW + timedelta(seconds=30)
+    confirmed = replace(cloud(flow, 50.0, writable=True), last_success=written)
+    selection.note_confirmed_write(flow, confirmed)
+    at = written + timedelta(seconds=90)
+    runtime.observations = [
+        read(scalar(flow, value=50.0), observed_at=at, observed_monotonic=200.0)
+    ]
+    selection.changed()
+    selection.check_writes(at)
+    assert selection.write_check_summary() == {"max_flow_temperature": {"agree": 1}}
+
+
 def test_summary_counts_without_values() -> None:
     data = {
         RETURN: cloud(RETURN, 30.0),

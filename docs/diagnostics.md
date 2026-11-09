@@ -67,7 +67,9 @@ after more than 60 seconds as `changed_between_reads`, not only counters that
 counted on: such a value most likely changed between the two reads, which
 happens often now that the cloud copy of a locally shown value is read every
 15 minutes. `differ` and `differing_measurements` therefore report readings
-that disagree within one poll period, and counters that went backwards.
+that disagree within one poll period, and counters that went backwards. The
+`write_checks` keep their meaning: a local read-back that does not confirm a
+written value counts as `differ` however long after the write it arrived.
 
 Schema 42 extends existing sections, again without values, addresses or
 identifiers:

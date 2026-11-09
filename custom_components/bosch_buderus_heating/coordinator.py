@@ -457,14 +457,15 @@ class BoschBuderusDataUpdateCoordinator(
             maxlen=RECENT_POLL_DURATIONS
         )
         # Paths of a due group already read in an earlier, budget-limited
-        # cycle: they are not read again until the group completes (P41).
-        self._budget_progress: dict[PollGroup, set[str]] = {}
+        # cycle -> monotonic read time: they are not read again until the
+        # group completes (P41), while it keeps making progress (``_progress``).
+        self._budget_progress: dict[PollGroup, dict[str, float]] = {}
         # O41: one wake-up per tick; paths of longer groups read a few ticks
         # before their group's deadline (their slot) wait here until it.
         self._tick_seconds = min(
             min(poll_intervals.values()), ACTIVE_NOTIFICATION_INTERVAL
         ).total_seconds()
-        self._spread_progress: dict[PollGroup, set[str]] = {}
+        self._spread_progress: dict[PollGroup, dict[str, float]] = {}
         self._poll_slots: dict[str, tuple[PollGroup, int]] = {}
         self._poll_slots_key: tuple[object, ...] = ()
         # O45: paired readings shown from the local access -> monotonic time
@@ -1894,12 +1895,13 @@ class BoschBuderusDataUpdateCoordinator(
         )
         # O45: a reading that switched back to its cloud value is read now.
         self._update_local_served()
+        # Paths of each due group already read in its current period.
+        progress = {group: self._progress(group, now_monotonic) for group in due_groups}
         candidate_paths = [
             path
             for group in due_groups
             for path in paths_by_group.get(group, ())
-            if path not in self._budget_progress.get(group, ())
-            and path not in self._spread_progress.get(group, ())
+            if path not in progress[group]
             and not self._served_skip(path, now_monotonic)
         ]
         early = self._early_reads(paths_by_group, due_groups, now_monotonic)
@@ -2115,7 +2117,7 @@ class BoschBuderusDataUpdateCoordinator(
         for group, path in early:
             # O41: read before its group's deadline; not again until then.
             if path in completed_paths:
-                self._spread_progress.setdefault(group, set()).add(path)
+                self._spread_progress.setdefault(group, {})[path] = now_monotonic
         if successful == 0 and not over_budget:
             self._advance_groups(due_groups, now_monotonic)
             return snapshots
@@ -2127,8 +2129,7 @@ class BoschBuderusDataUpdateCoordinator(
             if all(
                 path not in path_set
                 or path in completed_paths
-                or path in self._budget_progress.get(group, ())
-                or path in self._spread_progress.get(group, ())
+                or path in progress[group]
                 for path in paths_by_group.get(group, ())
             )
         )
@@ -2138,8 +2139,8 @@ class BoschBuderusDataUpdateCoordinator(
                 self._budget_progress.pop(group, None)
             elif over_budget:
                 # Remember what this group already got; the rest comes next.
-                self._budget_progress.setdefault(group, set()).update(
-                    path
+                self._budget_progress.setdefault(group, {}).update(
+                    (path, now_monotonic)
                     for path in paths_by_group.get(group, ())
                     if path in completed_paths
                 )
@@ -3075,6 +3076,28 @@ class BoschBuderusDataUpdateCoordinator(
             # A new period: paths read before this deadline are due again.
             self._spread_progress.pop(group, None)
 
+    def _progress(self, group: PollGroup, now_monotonic: float) -> set[str]:
+        """Paths of a group already read for its current period (O41 slots,
+        P41 budget); they wait for the group to complete.
+
+        This holds only while the group keeps making progress: once none of
+        its paths was read for one period of the group and one wake-up, the
+        group starts over and every path is read again. A group that stays
+        incomplete (another of its paths keeps failing) therefore never keeps
+        a path unread until its value expires, while a group split over
+        several budget-limited cycles still reads each path once. One wake-up
+        of slack, because a slot read and the group's own read each fall on
+        the first wake-up after their time.
+        """
+        read = {
+            **self._budget_progress.get(group, {}),
+            **self._spread_progress.get(group, {}),
+        }
+        limit = self._group_interval(group).total_seconds() + self._tick_seconds
+        if not read or now_monotonic - max(read.values()) >= limit:
+            return set()
+        return set(read)
+
     def _group_interval(self, group: PollGroup) -> timedelta:
         return (
             ACTIVE_NOTIFICATION_INTERVAL
@@ -3118,9 +3141,7 @@ class BoschBuderusDataUpdateCoordinator(
             if group in due_groups or deadline is None:
                 continue
             period = round(self._group_interval(group).total_seconds() / tick)
-            done = self._spread_progress.get(group, set()) | self._budget_progress.get(
-                group, set()
-            )
+            done = self._progress(group, now_monotonic)
             for path in paths:
                 planned = slots.get(path)
                 if (
