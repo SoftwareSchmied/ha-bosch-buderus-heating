@@ -20,6 +20,7 @@ from custom_components.bosch_buderus_heating import (
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
     BoschBuderusDataUpdateCoordinator,
+    IdleAfterFailure,
     ResourceSnapshot,
     SnapshotSource,
 )
@@ -496,7 +497,9 @@ async def test_main_failure_has_priority_and_cannot_be_healed_by_metadata(enviro
     client.get_resources_bulk.assert_not_awaited()
     assert not coordinator.startup_data.healthy
     coordinator.last_update_success = False
-    await coordinator._async_update_data()
+    # B03: a cycle with nothing to request keeps the failure.
+    with pytest.raises(IdleAfterFailure):
+        await coordinator._async_update_data()
     client.get_resources_bulk.assert_not_awaited()
 
 

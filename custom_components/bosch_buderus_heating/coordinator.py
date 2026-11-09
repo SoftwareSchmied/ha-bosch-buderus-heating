@@ -169,6 +169,50 @@ def _transient_failure(category: str | None) -> bool:
     )
 
 
+def _no_usable_item(results: tuple[BatchItemResult, ...]) -> bool:
+    """Every item of an answered request failed with a server error."""
+    return bool(results) and all(
+        result.resource is None and result.status is not None and result.status >= 500
+        for result in results
+    )
+
+
+def _gateway_unanswered(results: tuple[BatchItemResult, ...]) -> bool:
+    """B02: the gateway itself did not answer, not one slow reading.
+
+    Several items of one request, each with a server error: this says nothing
+    about a single reading, so no reading is paused for it; the circuit
+    breaker handles the outage. A request with a single item cannot tell the
+    two apart and keeps the pause of that reading.
+    """
+    return len(results) > 1 and _no_usable_item(results)
+
+
+class SourceOwnedCoordinator[DataT](DataUpdateCoordinator[DataT]):
+    """B04: a coordinator that its managed source shuts down.
+
+    Home Assistant keeps the shutdown of every coordinator built with a config
+    entry until that entry unloads, so each discarded source attempt or view
+    would stay in memory. Managed sources stop their coordinators themselves
+    (``async_stop_source``); the entry is still available as ``config_entry``.
+    """
+
+    def __init__(
+        self, *args: Any, config_entry: ConfigEntry[Any] | None = None, **kwargs: Any
+    ) -> None:
+        super().__init__(*args, config_entry=None, **kwargs)
+        self.config_entry = config_entry
+
+
+class IdleAfterFailure(UpdateFailed):
+    """B03: a cycle after a failed one that requested nothing.
+
+    No answer confirmed the cloud, so the failure goes on: Home Assistant keeps
+    the coordinator unsuccessful, and neither the failure counters nor the
+    outage log count this cycle.
+    """
+
+
 DEFAULT_RATE_LIMIT_BACKOFF = timedelta(minutes=5)
 MAX_RATE_LIMIT_BACKOFF = timedelta(seconds=MAX_CLOUD_PAUSE_SECONDS)
 NOT_FOUND_PAUSE = timedelta(hours=24)
@@ -1240,6 +1284,10 @@ class BoschBuderusDataUpdateCoordinator(
                 return snapshots
         except Exception as err:
             self.startup_data.record_main_cycle(successful=False)
+            if isinstance(err, IdleAfterFailure):
+                # B03: the earlier failure goes on; this cycle sent nothing,
+                # so it is no further failure and no answer either.
+                raise
             self._poll_failures += 1
             self.faults.mark_unavailable()
             if isinstance(err, UpdateFailed):
@@ -1929,6 +1977,10 @@ class BoschBuderusDataUpdateCoordinator(
             self._main_cycle_failed = not self.last_update_success
             self._cycle_idle = True
             self._advance_groups(due_groups, now_monotonic)
+            if not self.last_update_success:
+                # B03: nothing confirmed the cloud since the failed cycle; a
+                # normal return would report it recovered to Home Assistant.
+                raise IdleAfterFailure("PointT cycle after a failure requested nothing")
             return dict(self.data or {})
 
         snapshots = dict(self.data or {})
@@ -2016,9 +2068,13 @@ class BoschBuderusDataUpdateCoordinator(
                 self._batch_failure_logged = False
 
             bulk_item_fallback: tuple[BatchItemResult, ...] = ()
+            # B02: decided before any result is applied or read again.
+            gateway_unanswered = _gateway_unanswered(results)
             if result_source is SnapshotSource.BATCH:
                 self._log_unusable_bulk_results(results)
-                if not any(result.status == 429 for result in results):
+                if not gateway_unanswered and not any(
+                    result.status == 429 for result in results
+                ):
                     bulk_item_fallback = await self._async_bulk_item_fallback(results)
 
             cycle_results.extend(results)
@@ -2028,6 +2084,7 @@ class BoschBuderusDataUpdateCoordinator(
                 attempted_at=attempted_at,
                 now_monotonic=now_monotonic,
                 source=result_source,
+                pause_readings=not gateway_unanswered,
             )
             if bulk_item_fallback:
                 cycle_results.extend(bulk_item_fallback)
@@ -2048,12 +2105,7 @@ class BoschBuderusDataUpdateCoordinator(
             if now_monotonic < self._cloud_backoff_until:
                 failed_chunks += 1
                 break
-            if results and all(
-                result.resource is None
-                and result.status is not None
-                and result.status >= 500
-                for result in results
-            ):
+            if _no_usable_item(results):
                 interrupted_paths.update(chunk)
                 failed_chunks += 1
                 gateway_failure = True
@@ -2921,8 +2973,12 @@ class BoschBuderusDataUpdateCoordinator(
         now_monotonic: float,
         source: SnapshotSource,
         whole_request: bool = False,
+        pause_readings: bool = True,
     ) -> int:
-        """Apply partial results without discarding last-good values."""
+        """Apply partial results without discarding last-good values.
+
+        ``pause_readings`` false: a failure pauses no reading of its own (B02).
+        """
         successful = 0
         affected_modes: set[str] = set()
         missing_manual_setpoints: set[str] = set()
@@ -2988,7 +3044,8 @@ class BoschBuderusDataUpdateCoordinator(
                     ended=previous.ended or not no_answer,
                 )
                 snapshots[result.path] = failed
-                self._pause_failed_resource(failed, result.status, now_monotonic)
+                if pause_readings:
+                    self._pause_failed_resource(failed, result.status, now_monotonic)
             elif result.status in (403, 404):
                 if result.status == 404 and (
                     result.path in self._manual_setpoint_candidates
