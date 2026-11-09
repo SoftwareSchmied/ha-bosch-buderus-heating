@@ -49,9 +49,14 @@ advertises allowed values, they must include the documented `TRUE` command.
 Before editing, I reread the known resources of the selected slot. Changed
 settings are written in this order: hot-water mode, heating mode, fixed
 temperature, assignments, and dates last. Unchanged fields are skipped.
-Each change has a complete read immediately before and after it. An app
-change, missing permission, rejected value or unmatched read-back stops the
-transaction. No write is retried automatically and no rollback is attempted.
+Each change starts right after a complete read of the slot: the initial
+one or the read-back of the previous step. After each change I read the slot
+again after 0.5 s, and if the value is not yet there, after 1 and 2 s more.
+A lost response to a change is resolved by this read-back, never by sending
+it again. An app change of another field, missing permission, rejected value
+or unmatched read-back stops the transaction. No write is retried
+automatically and no rollback is attempted. Circuit assignments are compared
+as a set and sent in the order the slot advertises them.
 
 A network, authentication or service failure may leave earlier steps applied.
 The integration invalidates uncertain readings and ordinary polling restores
@@ -99,9 +104,14 @@ Es gibt kein zusätzliches Aktionsmenü. WDDW2 erhält einen Ein-/Aus-Schalter
 und einen Dialog für diesen Modus, weil das Gerät dort keine Zeiträume
 speichert.
 
-Vor und nach jedem geänderten ICOM-Feld lese ich den gesamten bekannten
-Speicherplatz. Die Reihenfolge ist Warmwasser, Heizung, konstante Temperatur,
-Kreiszuordnung und zuletzt der Zeitraum. Bei Konflikten oder Fehlern bricht
+Jedes geänderte ICOM-Feld schreibe ich direkt nach einem vollständigen
+Lesen des Speicherplatzes: dem ersten oder dem Zurücklesen des vorigen
+Schritts. Danach lese ich den Platz nach 0,5 s erneut, falls der Wert noch
+fehlt, nach weiteren 1 und 2 s. Eine verlorene Antwort klärt dieses
+Zurücklesen, gesendet wird nie ein zweites Mal. Kreiszuordnungen vergleiche
+ich als Menge und sende sie in der gemeldeten Reihenfolge des Platzes. Die
+Reihenfolge ist Warmwasser, Heizung, konstante Temperatur, Kreiszuordnung und
+zuletzt der Zeitraum. Bei Konflikten oder Fehlern bricht
 der Ablauf ab. Bereits ausgeführte Schritte können dabei bestehen bleiben.
 Es gibt weder automatische Schreibwiederholungen noch ein eigenmächtiges
 Zurücksetzen. Unsichere Anzeigen werden bis zur nächsten erfolgreichen
