@@ -20,33 +20,32 @@
 > sign-in step by step.
 
 > [!TIP]
-> **Testers wanted: local access in the 0.9 alpha pre-releases.** The 0.9
-> alpha versions can read K40/K40RF gateways (for example with an MX400
-> controller) directly in the home network. The local access only reads –
-> changes still go through the cloud – but it updates many readings more
-> often, adds readings the cloud does not offer (for example refrigerant
-> circuit, compressor and pump values) and keeps your readings available when
-> the cloud is not. It runs without problems on my own heat pump (K40RF
-> gateway, firmware 15.00.01, MX400 controller). I would be glad about more
-> testers and feedback – especially other gateways, firmware versions and
-> device families – so that I can publish a stable 0.9 that has been checked
-> on as many installations as possible. The alpha is a pre-release: install it
-> via HACS with pre-releases shown, make a backup first, and report what works
-> and what doesn't in the
-> [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues).
-> 0.8.3 remains the latest stable release.
+> ### Testers wanted for the 0.9 alpha pre-releases
+>
+> **What's new**
+> - **Local access:** reads K40/K40RF gateways (for example with an MX400 controller) directly in your home network. It only reads; changes still go through the cloud.
+> - **More and fresher readings:** many values update more often, and some are only available locally (for example refrigerant circuit, compressor and pump values).
+> - **Works without the cloud:** your readings stay available when the cloud is not.
+> - **Fewer cloud requests:** since 0.9.0-alpha.3, readings the local access delivers are read from the cloud less often.
+> - **Less load on Home Assistant, without losing any functionality:** on my system, CPU load dropped by about three quarters, memory use by about 80 MB, and the database writes about 75 % fewer rows.
+>
+> **Tested on:** my own heat pump (K40RF gateway, firmware 15.00.01, MX400 controller), where it runs without problems.
+>
+> **Looking for:** more testers and feedback, especially with other gateways, firmware versions and device families, so that a stable 0.9 is checked on as many installations as possible.
+>
+> **How to test:** make a backup, show pre-releases for this repository in HACS and install the latest alpha from the [releases](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases). Please report what works and what doesn't in the [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues).
 
 > [!NOTE]
-> **0.9.0-alpha.2 is the current pre-release for testing.** The 0.9.0 alphas
+> **0.9.0-alpha.3 is the current pre-release for testing.** The 0.9.0 alphas
 > add an optional local access to K40/K40RF gateways, keep a system with a
-> local access running without the cloud and review the entities. Alpha.2
-> always shows local readings while the cloud cannot be used, accepts a new
-> sign-in when a system was removed from the account and makes the local
-> access more robust. It requires Home Assistant 2026.5.0 or newer and moves
-> the entry to a storage format that 0.8.x cannot load, so make a full backup
-> first. HACS shows it only with pre-releases enabled. **0.8.3 remains the
-> latest stable release.** See the
-> [alpha.2 release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.2);
+> local access running without the cloud and review the entities. Alpha.3
+> reads live values locally every minute again, keeps connections to the
+> gateway open and reads values the local access delivers less often from the
+> cloud. It requires Home Assistant 2026.5.0 or newer and moves the entry to a
+> storage format that 0.8.x cannot load, so make a full backup first. HACS
+> shows it only with pre-releases enabled. **0.8.3 remains the latest stable
+> release.** See the
+> [alpha.3 release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.3);
 > feedback is welcome.
 
 **Bosch/Buderus Home Comfort** is the new display name for **Bosch/Buderus Heating**.

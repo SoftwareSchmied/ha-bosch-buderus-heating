@@ -5,6 +5,75 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.0-alpha.3] - 2026-11-09
+
+> [!IMPORTANT]
+> **This is an alpha pre-release for testing. 0.8.3 remains the latest stable
+> release.** HACS offers it only when pre-releases are shown for this
+> repository. Make a full Home Assistant backup before installing it. Updating
+> from alpha.1 or alpha.2 needs no new setup; coming from 0.8.x, the notes of
+> alpha.1 below apply as well.
+
+### What changed since alpha.2
+
+#### Local access
+
+- **Live values every minute again:** two scheduling errors limited the local
+  reads to about two per second, so live values arrived about every 76 seconds
+  instead of every 60. The scheduler now starts reads 200 ms apart, at most two
+  at a time, and computes the next due time from the start of a read. It slows
+  down on its own when a gateway answers slowly (up to one second between
+  reads) and for five minutes after a timeout or server error.
+- **Connections are kept open:** reads reuse an answered TLS connection for up
+  to 4 seconds instead of opening a new one every time. The certificate is
+  still checked on every new connection before anything is sent. If a gateway
+  closes or drops kept connections repeatedly (3 times within 15 minutes), the
+  integration returns to one connection per read for 6 hours, then 12 and
+  24 hours, and logs this once.
+- Signals whose entities are all disabled, and signals that never become an
+  entity, are read hourly. Pairs with the cloud, counters, faults, the
+  installation date and signals the integration uses internally keep their
+  period. Enabling an entity restores its period within about a second.
+- The state shown from the local access is updated per reading instead of
+  being rebuilt every time.
+
+#### Cloud
+
+- **Fewer cloud requests:** reads of the 5, 15 and 60-minute groups are spread
+  over the regular requests instead of causing extra ones. No value is read
+  less often than its period allows.
+- While an entity shows the local value, the cloud reads its copy only every
+  15 minutes. When the entity switches to the cloud, the copy is read at once
+  and then every minute again. Counters, values that can be changed through the
+  cloud, the hot-water setpoint, the summer/winter mode and the system pressure
+  keep their normal period.
+- Control readings whose entities are all disabled are read every 15 minutes;
+  holidays, climate, hot water and the holiday calendar keep their period.
+- **Log:** an ERROR for a cloud outage now appears only after 5 minutes and at
+  least 3 failed cycles, once per outage with its category, duration and number
+  of failures.
+
+#### Entities
+
+- **Changed states:** a flow rate below the measuring range (raw value 65535,
+  marked `lowflow`) shows unknown with the attribute `measuring_range: below`,
+  from the local access and from the cloud. The used lower and upper flow
+  setpoints of the energy manager show unknown instead of 0 °C while the
+  energy manager is not connected.
+
+#### Diagnostics
+
+- **Diagnostics schema 43** adds the connection reuse of the local access
+  (handshakes, reused connections, errors, fallback state, response times by
+  connection type), the effective start spacing, readings slowed down because
+  their entities are disabled or missing, the effective polling groups and the
+  cloud reads of locally shown values. See
+  [diagnostics](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.3/docs/diagnostics.md).
+- In the comparison of local and cloud readings, a difference with more than
+  60 seconds between the two readings now counts as `changed_between_reads`
+  instead of `differ`. Write checks still report an unconfirmed write as
+  `differ`.
+
 ## [0.9.0-alpha.2] - 2026-11-08
 
 > [!IMPORTANT]
