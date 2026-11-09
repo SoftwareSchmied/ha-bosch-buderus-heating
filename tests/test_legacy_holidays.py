@@ -426,6 +426,72 @@ async def test_wddw2_options_dialog_has_only_mode(hass, enable_custom_integratio
 
 
 @pytest.mark.parametrize(
+    "app,submitted,expected",
+    [
+        (None, "on", "holiday_updated"),
+        ("on", "off", "holiday_unchanged"),
+        ("on", "on", "holiday_changed"),
+    ],
+)
+async def test_wddw2_dialog_writes_only_against_the_mode_shown(
+    hass, environment, app, submitted, expected
+):
+    """FLOW-4: a change in the app meanwhile is never overwritten."""
+    from custom_components.bosch_buderus_heating.runtime import (
+        BoschBuderusRuntimeData,
+    )
+    from tests.test_config_flow import _reconfigure_entry
+
+    coordinator, client, _ = environment
+    shown = replace(RESOURCES[WDDW2_HOLIDAY_PATH], value="off")
+    gateway = {shown.path: shown}
+    coordinator.resources = dict(gateway)
+    coordinator.data = snapshots(shown)
+
+    async def get(gateway_id, path):
+        return gateway[path]
+
+    async def put(gateway_id, path, value):
+        gateway[path] = replace(gateway[path], value=value)
+
+    client.get_resource.side_effect = get
+    client.put_resource_value.side_effect = put
+    entry = _reconfigure_entry(hass)
+    entry.runtime_data = BoschBuderusRuntimeData(
+        client=AsyncMock(),
+        token_manager=AsyncMock(),
+        gateways=(coordinator.gateway,),
+        coordinators=(coordinator,),
+    )
+    result = await _start_holiday_options(hass, entry)
+    assert result["step_id"] == "holiday_mode"
+    if app is not None:
+        gateway[shown.path] = replace(shown, value=app)  # switched in the app
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"holiday_mode": submitted}
+    )
+    if expected == "holiday_changed":
+        assert result["errors"] == {"base": "holiday_changed"}
+        # The form now shows the current mode; nothing was written.
+        default = next(iter(result["data_schema"].schema)).default()
+        assert default == "on"
+        client.put_resource_value.assert_not_awaited()
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {"holiday_mode": "on"}
+        )
+        assert result["reason"] == "holiday_unchanged"
+    else:
+        assert result["reason"] == expected
+    if expected == "holiday_updated":
+        client.put_resource_value.assert_awaited_once_with(
+            coordinator.gateway.gateway_id, shown.path, "on"
+        )
+    else:
+        client.put_resource_value.assert_not_awaited()
+        assert gateway[shown.path].value == app
+
+
+@pytest.mark.parametrize(
     "changes",
     [
         {"heating_mode": "unknown"},

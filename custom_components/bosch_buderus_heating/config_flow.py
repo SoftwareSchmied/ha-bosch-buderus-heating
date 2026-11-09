@@ -123,6 +123,7 @@ from .pointt import (
     PointTError,
     RateLimited,
     RequestTimeout,
+    Resource,
     ServiceUnavailable,
     WriteNotConfirmed,
     WriteValidationError,
@@ -966,6 +967,7 @@ class BoschBuderusOptionsFlow(
         self._delete_return_input: dict[str, Any] | None = None
         self._notification_gateway_keys: tuple[str, ...] | None = None
         self._holiday_mode_source: BoschBuderusDataUpdateCoordinator | None = None
+        self._holiday_mode_displayed: Resource | None = None
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -1286,9 +1288,19 @@ class BoschBuderusOptionsFlow(
         ]
         errors = None
         if user_input is not None:
+            displayed = self._holiday_mode_displayed
+            if displayed is None:
+                return self.async_abort(reason="holiday_changed")
+            if user_input["holiday_mode"] == displayed.value:
+                # FLOW-4: an unchanged OK sends nothing, even if the system
+                # changed meanwhile; a change is written against the value shown.
+                return self.async_abort(reason="holiday_unchanged")
             try:
                 await coordinator.async_write_control(
-                    WDDW2_HOLIDAY_PATH, user_input["holiday_mode"], WDDW2_HOLIDAY_POLICY
+                    WDDW2_HOLIDAY_PATH,
+                    user_input["holiday_mode"],
+                    WDDW2_HOLIDAY_POLICY,
+                    expected=(displayed,),
                 )
             except RateLimited:
                 errors = {"base": "write_rate_limited"}
@@ -1302,6 +1314,10 @@ class BoschBuderusOptionsFlow(
                 errors = {"base": "write_failed"}
             else:
                 return self.async_abort(reason="holiday_updated")
+            resource = holiday_resources_from_snapshots(coordinator.data or {}).get(
+                WDDW2_HOLIDAY_PATH, resource
+            )
+        self._holiday_mode_displayed = resource
         return self.async_show_form(
             step_id="holiday_mode",
             data_schema=vol.Schema(
