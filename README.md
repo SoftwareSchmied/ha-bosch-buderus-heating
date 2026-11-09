@@ -174,6 +174,9 @@ listed gateway does not by itself guarantee that every entity or control is
 available. Missing capabilities are simply omitted without affecting the rest
 of the integration.
 
+The installations and features that users have confirmed are listed in
+[Confirmed installations](docs/confirmed-installations.md).
+
 Home Assistant shows a uniquely identified MX300/MX400 controller as the
 system model. K30/K40 describes the PointT communication gateway, not the
 controller, and remains visible in diagnostics and the gateway hardware data.
