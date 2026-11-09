@@ -479,3 +479,56 @@ async def test_with_the_cloud_a_named_setpoint_state_is_no_temperature(hass) -> 
     assert entity(hass, path, [off]).native_value is None
     value = signal("SC.HC1.FlowTempSetp", 23, unit="C", state=setpoint)
     assert entity(hass, path, [value]).native_value == 23
+
+
+async def test_a_state_never_shows_a_unit_stored_by_an_earlier_number(hass) -> None:
+    """LOE-2: the same ID was a number in °C; now a state map without a unit."""
+    from homeassistant.helpers import entity_registry as er
+    from homeassistant.setup import async_setup_component
+
+    from custom_components.bosch_buderus_heating.const import DOMAIN
+    from custom_components.bosch_buderus_heating.local_only import STATE
+    from tests.ha_test_helpers import add_without_device
+    from tests.test_local_only import coordinator_with
+
+    name = "SRC.CUHP.HP1.SomeMode"
+    observation = signal(name, 1, kind="integerValue", state={"OFF": 0, "ON_LOW": 1})
+    assert await async_setup_component(hass, "sensor", {})
+    sensor = entity(hass, f"/signals/{name}", [observation])
+    assert sensor._definition.kind == STATE
+    registry = er.async_get(hass)
+    old = registry.async_get_or_create("sensor", "sensor", sensor.unique_id)
+    registry.async_update_entity_options(old.entity_id, DOMAIN, {"native_unit": "°C"})
+    sensor.coordinator.async_update_listeners()
+    await add_without_device(hass, sensor)  # no ValueError for a unit
+    await hass.async_block_till_done()
+    state = hass.states.get(old.entity_id)
+    assert state is not None and state.state == "on_low"
+    assert "unit_of_measurement" not in state.attributes
+    assert sensor.native_unit_of_measurement is None
+    # The stored unit of the earlier number is cleared, not stored again.
+    assert registry.async_get(old.entity_id).options[DOMAIN] == {"native_unit": None}
+    await sensor.coordinator.async_shutdown()
+    # Also without a current reading a state has no unit, whatever is stored.
+    registry.async_update_entity_options(old.entity_id, DOMAIN, {"native_unit": "°C"})
+    later = entity(hass, f"/signals/{name}", [observation])
+    later.registry_entry = registry.async_get(old.entity_id)
+    later.coordinator = coordinator_with(hass, [])
+    assert later.native_unit_of_measurement is None
+
+
+async def test_a_current_number_without_a_unit_shows_none(hass) -> None:
+    """LOE-2: the held unit stands in only while there is no reading."""
+    from tests.test_local_only import coordinator_with
+
+    name = "SRC.CUHP.HP1.UnreviewedNumber"
+    sensor = entity(hass, f"/signals/{name}", [signal(name, 21.5, unit="C")])
+    assert sensor.native_unit_of_measurement == "°C"
+    sensor.coordinator = coordinator_with(
+        hass, [signal(name, 22.5, unit="unknown_unit")]
+    )
+    assert sensor.native_value == 22.5
+    assert sensor.native_unit_of_measurement is None
+    assert sensor.state_class is None  # no statistics under the old unit
+    sensor.coordinator = coordinator_with(hass, [])
+    assert sensor.native_unit_of_measurement == "°C"  # held while there is none

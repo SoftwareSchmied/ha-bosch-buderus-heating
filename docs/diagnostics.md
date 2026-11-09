@@ -269,7 +269,8 @@ eligible entity sources use the cloud because the option is off
 (`option_off`), the cloud source is stopped (`source_stopped`), the local
 reading is not current (`local_not_current`), invalid (`local_invalid`), of
 another type, unit or shape, or not convertible. A list with an entry that is
-not declared counts as `unknown_entry`; a local shape the entity cannot take
+not declared, or a text the cloud does not declare, counts as
+`unknown_entry`; a local shape the entity cannot take
 counts as `shape_differs`, never as `local_invalid`. See [source selection](source-selection.md).
 
 Schema 33 adds the [validity of readings](reading-validity.md): each gateway

@@ -999,29 +999,37 @@ def _enable_new_default_entities(
 ) -> None:
     """Enable newly promoted defaults without overriding user choices."""
     from .binary_sensor import build_binary_sensor_descriptions
-    from .sensor import build_sensor_descriptions
+    from .sensor import build_sensor_descriptions, sensor_unique_suffix
 
     entity_registry = er.async_get(hass)
     for coordinator in coordinators:
         gateway_id = coordinator.gateway.gateway_id
-        candidates = (
+        candidates: tuple[tuple[str, list[tuple[Any, str]]], ...] = (
             (
                 "sensor",
-                build_sensor_descriptions(coordinator.resources),
+                [
+                    (description, sensor_unique_suffix(description))
+                    for description in build_sensor_descriptions(coordinator.resources)
+                ],
             ),
             (
                 "binary_sensor",
-                build_binary_sensor_descriptions(coordinator.resources),
+                [
+                    (description, description.key)
+                    for description in build_binary_sensor_descriptions(
+                        coordinator.resources
+                    )
+                ],
             ),
         )
         for platform, descriptions in candidates:
-            for description in descriptions:
+            for description, suffix in descriptions:
                 if is_start_counter_path(description.resource_path):
                     # Existing counter activation choices survive this update.
                     continue
                 if not description.entity_registry_enabled_default:
                     continue
-                unique_id = f"{gateway_id}:{description.key}"
+                unique_id = f"{gateway_id}:{suffix}"
                 entity_id = entity_registry.async_get_entity_id(
                     platform, DOMAIN, unique_id
                 )
@@ -1034,3 +1042,67 @@ def _enable_new_default_entities(
                     and registered.disabled_by is er.RegistryEntryDisabler.INTEGRATION
                 ):
                     entity_registry.async_update_entity(entity_id, disabled_by=None)
+
+
+def enable_promoted_defaults(coordinator: BoschBuderusDataUpdateCoordinator) -> None:
+    """At sensor setup: enable one view's newly promoted defaults (LOE-1, HAQ-5).
+
+    Home Assistant applies an entity's enabled default only when it first
+    registers the entity. An entry the integration registered disabled is
+    therefore enabled here once its reading is enabled by default: on a
+    managed entry the cloud sensors and binary sensors of a cloud view (a
+    legacy entry does this in its own setup), on every entry the local-only
+    sensors. An entity the user disabled stays disabled. Runs before the
+    view's entities are added and never keeps them from being added.
+    """
+    entry = getattr(coordinator, "config_entry", None)
+    if entry is None:
+        return
+    hass = coordinator.hass
+    try:
+        if (
+            entry.version == 4
+            and getattr(coordinator, "read_only_view", False) is not True
+        ):
+            _enable_new_default_entities(
+                hass, cast("BoschBuderusConfigEntry", entry), (coordinator,)
+            )
+        _enable_promoted_local_only(hass, entry.entry_id, coordinator)
+    except Exception:
+        _LOGGER.exception("Newly enabled default entities could not be enabled")
+
+
+def _enable_promoted_local_only(
+    hass: HomeAssistant,
+    entry_id: str,
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> None:
+    """Enable local-only sensors whose reviewed definition is now enabled.
+
+    The definition follows from the path alone: a generic form keeps the
+    enabled default of its definition, and a two-form signal is enabled only
+    when both forms are.
+    """
+    from .local_only import definition_for
+    from .local_only_sensor import UNIQUE_ID_PART
+    from .local_plant_view import private_path
+
+    prefix = f"{coordinator.gateway.gateway_id}{UNIQUE_ID_PART}"
+    registry = er.async_get(hass)
+    for entity in er.async_entries_for_config_entry(registry, entry_id):
+        if (
+            entity.domain != "sensor"
+            or not entity.unique_id.startswith(prefix)
+            or entity.disabled_by is not er.RegistryEntryDisabler.INTEGRATION
+        ):
+            continue
+        path = "/" + entity.unique_id.removeprefix(prefix).replace(":", "/")
+        definition = definition_for(path)
+        if (
+            definition is None
+            or private_path(path)
+            or not definition.enabled
+            or (definition.alternate is not None and not definition.alternate.enabled)
+        ):
+            continue
+        registry.async_update_entity(entity.entity_id, disabled_by=None)

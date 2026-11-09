@@ -132,6 +132,11 @@ def _define(
 _FLAG_OPTIONS = ("on", "off")
 SMART_GRID_MODES = ("blocked", "normal", "preferred", "forced")
 _SMART_GRID_OPTIONS = (*SMART_GRID_MODES, "not_used")
+# LOE-3: the numbers of a smart grid mode without a state map, as the
+# controller declares them with one (Not_used 0, EVU_block_active 1,
+# Normal_operation 2, Smart_grid 3, Force_smart_grid 4). Not verified: no
+# answer without a state map has been seen, on a controller or on an HM200.
+_SMART_GRID_NUMBERS = ("not_used", *SMART_GRID_MODES)
 # Declared state names of the smart grid mode and their SG-Ready meaning.
 _SMART_GRID_NAMES = {
     "evu_block_active": "blocked",
@@ -1414,7 +1419,11 @@ def _flag(value: object) -> str | None:
 
 
 def _smart_grid(observation: Observation) -> str | None:
-    """C10-b: the gateway's declared state if it has a state map, else 0..3."""
+    """C10-b: the gateway's declared state if it has a state map, else 0..4.
+
+    Without a state map 0 means not used and 1..4 the SG-Ready modes, like
+    the controller's own declaration (LOE-3, not verified without a map).
+    """
     if observation.state_names:
         if not observation.matched:
             return None
@@ -1429,9 +1438,9 @@ def _smart_grid(observation: Observation) -> str | None:
         and isinstance(value, int | Decimal)
         and not isinstance(value, bool)
         and value == int(value)
-        and 0 <= int(value) < len(SMART_GRID_MODES)
+        and 0 <= int(value) < len(_SMART_GRID_NUMBERS)
     ):
-        return SMART_GRID_MODES[int(value)]
+        return _SMART_GRID_NUMBERS[int(value)]
     return None
 
 

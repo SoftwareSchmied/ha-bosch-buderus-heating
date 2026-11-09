@@ -230,13 +230,85 @@ async def test_defrost_dip_passes_within_a_source_and_only_ever_holds_a_switch(
     assert guard.switches == {TOTAL: 3} and guard.blocked == {TOTAL: 1}
 
 
+def cloud_reading(coordinator, resource: Resource) -> None:
+    """A new cloud reading of the counter, received after the previous one."""
+    snapshot = coordinator.data[TOTAL]
+    coordinator.data[TOTAL] = replace(
+        snapshot,
+        resource=resource,
+        last_success=max(
+            datetime.now(UTC), snapshot.last_success + timedelta(microseconds=1)
+        ),
+    )
+
+
 async def test_a_real_reset_within_one_source_stays_visible(hass) -> None:
+    """SEL-4: a large drop is shown once the next reading confirms it."""
+    coordinator, _, store = _setup(hass, cloud_energy(10.0, 2.0, 40.0))
+    guard = coordinator.counter_guard
+    shown(coordinator)
+    cloud_reading(coordinator, cloud_energy(0.0, 0.0, 0.0))
+    assert shown(coordinator) is None  # held: one reading could be an outlier
+    assert shown(coordinator) is None  # the same reading again confirms nothing
+    assert store.get(f"owner|{TARGET}|{TOTAL}").values["outputProduced"] == 40.0
+    assert coordinator.display_snapshot(TOTAL).last_error_category == (
+        COUNTER_HELD_CATEGORY
+    )
+    cloud_reading(coordinator, cloud_energy(0.1, 0.0, 0.3))
+    assert parts(shown(coordinator))["outputProduced"] == 0.3
+    assert store.get(f"owner|{TARGET}|{TOTAL}").values["outputProduced"] == 0.3
+    assert guard.blocked == {TOTAL: 1} and guard.switches == {}
+
+
+async def test_a_single_low_reading_within_one_source_is_never_shown(hass) -> None:
+    """SEL-4: 1323, 0, 1323 must not count the whole meter again."""
+    coordinator, _, store = _setup(hass, cloud_energy(1323.0, 2.0, 4000.0))
+    shown(coordinator)
+    cloud_reading(coordinator, cloud_energy(0.0, 0.0, 0.0))
+    assert shown(coordinator) is None
+    cloud_reading(coordinator, cloud_energy(1323.1, 2.0, 4000.5))
+    assert parts(shown(coordinator))["compressor"] == 1323.1
+    # The hold ended with the normal reading: a later single outlier is held
+    # again instead of counting as the second reading of the first one.
+    cloud_reading(coordinator, cloud_energy(1323.1, 2.0, 100.0))
+    assert shown(coordinator) is None
+    row = store.get(f"owner|{TARGET}|{TOTAL}")
+    assert row.values["compressor"] == 1323.1 and row.values["outputProduced"] == 4000.5
+
+
+async def test_a_local_outlier_falls_back_to_the_cloud_only_if_not_lower(
+    hass,
+) -> None:
+    """SEL-4: a held local drop leaves a gap or a cloud value never lower."""
+    coordinator, runtime, store = _setup(hass, cloud_energy(10.0, 2.0, 40.0))
+    runtime.observations = [local_energy(10.5, 2.0, 41.0, monotonic=10.0)]
+    assert shown(coordinator).source.value == "local"
+    runtime.observations = [
+        replace(
+            local_energy(0.0, 0.0, 0.0, monotonic=20.0),
+            observed_at=NOW + timedelta(seconds=60),
+        )
+    ]
+    assert shown(coordinator) is None  # the cloud (40.0) is below 41.0
+    runtime.observations = [
+        replace(
+            local_energy(10.6, 2.0, 41.2, monotonic=30.0),
+            observed_at=NOW + timedelta(seconds=120),
+        )
+    ]
+    snapshot = shown(coordinator)
+    assert snapshot.source.value == "local"
+    assert parts(snapshot)["compressor"] == 10.6
+    assert store.get(f"owner|{TARGET}|{TOTAL}").values["compressor"] == 10.6
+
+
+async def test_a_small_drop_within_one_source_is_shown_at_once(hass) -> None:
+    """SEL-4: a defrost decrease stays far below the drop limit."""
     coordinator, _, _ = _setup(hass, cloud_energy(10.0, 2.0, 40.0))
     shown(coordinator)
-    coordinator.data[TOTAL] = replace(
-        coordinator.data[TOTAL], resource=cloud_energy(0.0, 0.0, 0.0)
-    )
-    assert parts(shown(coordinator))["outputProduced"] == 0.0
+    cloud_reading(coordinator, cloud_energy(10.0, 2.0, 36.5))  # 8.75 % less
+    assert parts(shown(coordinator))["outputProduced"] == 36.5
+    assert coordinator.counter_guard.blocked == {}
 
 
 async def test_rule_survives_a_restart_through_the_store(hass) -> None:
@@ -644,10 +716,10 @@ def energy(**parts: float) -> Resource:
     )
 
 
-def snap(resource: Resource):
+def snap(resource: Resource, at: datetime = NOW):
     from custom_components.bosch_buderus_heating.coordinator import ResourceSnapshot
 
-    return ResourceSnapshot(resource, True, NOW)
+    return ResourceSnapshot(resource, True, at)
 
 
 ROW = f"owner|{TARGET}|{TOTAL}"
@@ -660,9 +732,11 @@ def cloud_baseline(hass):
     return store, CounterGuard(store, "owner", TARGET)
 
 
-def view_decide(guard, resource, source="local"):
+def view_decide(guard, resource, source="local", at: datetime = NOW):
     """As the local plant view decides: its local access is the sole source."""
-    return guard.decide(TOTAL, ((source, snap(resource)),), partial=source == "local")
+    return guard.decide(
+        TOTAL, ((source, snap(resource, at)),), partial=source == "local"
+    )
 
 
 async def test_a_part_taken_over_from_the_cloud_never_goes_backwards(hass) -> None:
@@ -687,9 +761,12 @@ async def test_a_part_that_comes_back_higher_is_confirmed(hass) -> None:
     row = store.get(ROW)
     assert row.confirmed is None  # every part shown by this source
     assert row.values["=environmental_energy"] == 3020.0 - 1001.0 - 20.0
-    # Confirmed: a later lower reading of the same source is a real reset.
+    # Confirmed: a later lower reading of the same source is a real reset,
+    # shown once a second reading confirms the drop (SEL-4).
     reset = energy(compressor=5.0, eheater=1.0, outputProduced=10.0)
-    assert view_decide(guard, reset) is not None
+    assert view_decide(guard, reset) is None
+    later = NOW + timedelta(minutes=1)
+    assert view_decide(guard, reset, at=later) is not None
 
 
 async def test_derived_values_never_mix_parts_of_two_sources(hass) -> None:
@@ -905,6 +982,63 @@ async def test_parts_nobody_reports_are_dropped_after_the_waiting_time(
     assert view_decide(guard, behind, "cloud") is None
 
 
+async def test_a_part_the_shown_source_no_longer_reports_stops_binding(
+    hass, monkeypatch
+) -> None:
+    """NRG-1: a confirmed part gone for good must not block a switch forever."""
+    from custom_components.bosch_buderus_heating import counter_selection
+
+    clock = {"now": 1_000_000.0}
+    monkeypatch.setattr(counter_selection, "_now", lambda: clock["now"])
+    store = CounterSourceStore(hass)
+    full = energy(compressor=10.0, eheater=1.0, outputProduced=30.0)
+    store.set(ROW, ShownCounter("cloud", counter_vector(full)))  # all confirmed
+    guard = CounterGuard(store, "owner", TARGET)
+    without = energy(compressor=10.5, outputProduced=30.5)  # eheater is gone
+    assert guard.decide(TOTAL, (("cloud", snap(without)),)) is not None
+    row = store.get(ROW)
+    assert row.source == "cloud" and row.since == 1_000_000.0
+    assert row.unconfirmed() == {
+        "eheater",
+        "=total_electricity",
+        "=environmental_energy",
+    }
+    # The local access reports the same parts: within the waiting time the
+    # stored parts keep binding the switch.
+    local = energy(compressor=10.6, outputProduced=30.6)
+    clock["now"] += counter_selection.STALE_PART_SECONDS - 1
+    later = NOW + timedelta(minutes=1)
+    assert guard.decide(TOTAL, (("local", snap(local, later)),)) is None
+    assert store.get(ROW).since == 1_000_000.0  # the wait is not restarted
+    # After the waiting time the parts nobody reports are dropped and the
+    # local access takes over for the parts both report.
+    clock["now"] += 2
+    shown = guard.decide(TOTAL, (("local", snap(local, later)),))
+    assert shown is not None
+    row = store.get(ROW)
+    assert row.source == "local" and set(row.values) == {"compressor", "outputProduced"}
+    assert row.confirmed is None
+
+
+async def test_a_part_that_returns_is_confirmed_again(hass, monkeypatch) -> None:
+    """NRG-1: a part missing for one reading binds again when it is back."""
+    from custom_components.bosch_buderus_heating import counter_selection
+
+    monkeypatch.setattr(counter_selection, "_now", lambda: 42.0)
+    store = CounterSourceStore(hass)
+    full = energy(compressor=10.0, eheater=1.0, outputProduced=30.0)
+    store.set(ROW, ShownCounter("cloud", counter_vector(full)))
+    guard = CounterGuard(store, "owner", TARGET)
+    guard.decide(
+        TOTAL, (("cloud", snap(energy(compressor=10.1, outputProduced=30.1))),)
+    )
+    assert store.get(ROW).unconfirmed()
+    back = energy(compressor=10.2, eheater=1.0, outputProduced=30.2)
+    assert guard.decide(TOTAL, (("cloud", snap(back)),)) is not None
+    row = store.get(ROW)
+    assert row.confirmed is None and row.since is None
+
+
 async def test_a_row_without_a_waiting_time_starts_it(hass, monkeypatch) -> None:
     from custom_components.bosch_buderus_heating import counter_selection
 
@@ -990,3 +1124,44 @@ async def test_shown_counters_save_within_a_minute_and_at_shutdown(
     hass.bus.async_fire(EVENT_HOMEASSISTANT_FINAL_WRITE)
     await hass.async_block_till_done()
     assert hass_storage[key]["data"]["counters"]["o|t|/a"]["values"] == {"v": 3.0}
+
+
+async def test_frequent_counter_changes_never_postpone_the_save(
+    hass, hass_storage, freezer
+) -> None:
+    """PERF-4: the first change starts the minute; later ones do not move it."""
+    from custom_components.bosch_buderus_heating import counter_selection
+    from tests.ha_test_helpers import async_fire_time_changed
+
+    key = counter_selection.STORAGE_KEY
+    store = CounterSourceStore(hass)
+    await store.async_initialize()
+
+    async def tick(seconds: float) -> None:
+        freezer.tick(timedelta(seconds=seconds))
+        async_fire_time_changed(hass)
+        await hass.async_block_till_done()
+
+    def saved(path: str):
+        return hass_storage[key]["data"]["counters"][path]["values"]
+
+    store.set("o|t|/a", ShownCounter("cloud", {"v": 0.0}))
+    for second in range(10, 60, 10):
+        await tick(10)
+        store.set("o|t|/a", ShownCounter("cloud", {"v": float(second)}))
+    assert key not in hass_storage
+    await tick(11)  # 61 s after the first change, 11 s after the last one
+    assert saved("o|t|/a") == {"v": 50.0}
+    # After the save the next change starts a new minute.
+    store.set("o|t|/a", ShownCounter("cloud", {"v": 70.0}))
+    await tick(59)
+    assert saved("o|t|/a") == {"v": 50.0}
+    await tick(2)
+    assert saved("o|t|/a") == {"v": 70.0}
+    # A discard saved at once leaves no stale pending save behind.
+    store.set("o|t|/b", ShownCounter("cloud", {"v": 1.0}))
+    await store.async_discard_target("o", "t")
+    assert hass_storage[key]["data"]["counters"] == {}
+    store.set("o|t|/c", ShownCounter("cloud", {"v": 2.0}))
+    await tick(61)
+    assert saved("o|t|/c") == {"v": 2.0}

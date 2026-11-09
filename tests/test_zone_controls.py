@@ -153,10 +153,20 @@ async def test_late_metadata_permission_loss_and_recovery_keep_identity(
     client.put_resource_value.assert_not_awaited()
 
 
-@pytest.mark.parametrize("unit", ["F", "K", "°C", None, "unknown"])
+@pytest.mark.parametrize("unit", ["F", "K", None, "unknown"])
 def test_zone_temperature_does_not_borrow_other_families_units(unit):
     invalid = replace(NUMBER, metadata=replace(NUMBER.metadata, unit=unit))
     assert not build_number_descriptions({invalid.path: invalid})
+
+
+@pytest.mark.parametrize("unit", ["°C", "ºC", "degC"])
+def test_zone_temperature_accepts_other_spellings_of_celsius(unit):
+    """SEL-2: the same unit spelled differently keeps the zone setpoint."""
+    spelled = replace(NUMBER, metadata=replace(NUMBER.metadata, unit=unit))
+    (description,) = build_number_descriptions({spelled.path: spelled})
+    (reference,) = build_number_descriptions({NUMBER.path: NUMBER})
+    assert description.native_unit_of_measurement == "°C"
+    assert description.key == reference.key
 
 
 @pytest.mark.parametrize(

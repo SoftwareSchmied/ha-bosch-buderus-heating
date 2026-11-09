@@ -930,6 +930,14 @@ def _local_value(
     value = _native(item.value, metadata.resource_type)
     if value is None:
         return None, "not_convertible"
+    if (
+        isinstance(value, str)
+        and metadata.allowed_values
+        and value not in {str(entry) for entry in metadata.allowed_values}
+    ):
+        # Like a list entry: a text the cloud does not declare would turn the
+        # entity's valid cloud state into an unknown one.
+        return None, "unknown_entry"
     if any(value == marker for marker in metadata.numeric_error_values):
         # The cloud declares this number an error marker: never show it.
         return None, "local_invalid"

@@ -41,6 +41,47 @@ def test_only_spellings_are_equivalent(left, right, same) -> None:
     assert (canonical_unit(left) == canonical_unit(right)) is same
 
 
+@pytest.mark.parametrize("unit", ["C", "degC", "°C", "ºC"])
+def test_contract_spellings_include_the_temperature_aliases(unit) -> None:
+    """SEL-2: one normalization for every caller; a "°C" schema is a "C" one."""
+    from custom_components.bosch_buderus_heating.pointt import (
+        Resource,
+        ResourceMetadata,
+    )
+    from custom_components.bosch_buderus_heating.resource_catalog import (
+        _matches_optional_app_schema,
+    )
+    from custom_components.bosch_buderus_heating.rrc import scalar_value
+    from custom_components.bosch_buderus_heating.unit_contracts import (
+        canonical_unit as contract_unit,
+    )
+
+    assert contract_unit(unit) == contract_unit("C") == canonical_unit(unit)
+    for path, writable in (
+        ("/heatingCircuits/hc1/roomtemperature", False),
+        ("/zones/zone1/heating/manualRoomSetpoint", True),
+    ):
+        resource = Resource(
+            path,
+            value=21.5,
+            has_value=True,
+            metadata=ResourceMetadata(
+                resource_type="floatValue", unit=unit, writable=writable
+            ),
+        )
+        assert _matches_optional_app_schema(resource), (path, unit)
+    assert contract_unit("K") != contract_unit("C")
+    assert contract_unit("") == ""
+    assert contract_unit(None) is None
+    rrc = Resource(
+        "/zones/zn1/temperatureActual",
+        value=19.0,
+        has_value=True,
+        metadata=ResourceMetadata(resource_type="floatValue", unit=unit),
+    )
+    assert scalar_value(rrc) == 19.0
+
+
 def test_equivalent_spelling_is_comparable_and_supplies_the_entity() -> None:
     result = compare(
         cloud_observation(RETURN, 30.0, unit="C"),

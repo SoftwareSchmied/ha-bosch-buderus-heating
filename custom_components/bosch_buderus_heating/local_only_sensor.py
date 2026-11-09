@@ -244,12 +244,18 @@ class BoschBuderusLocalOnlySensor(
 
     @property
     def native_unit_of_measurement(self) -> str | None:
+        if self._definition.kind in ENUM_KINDS:
+            return None  # LOE-2: a state never has a unit
         shape = self._shape()
         if shape is not None and shape[1] is not None:
             self._held_unit = shape[1]
             return shape[1]
         if (unit := static_unit(self._definition)[0]) is not None:
             return unit
+        if shape is not None:
+            # LOE-2: a current reading without a (known) unit shows none; the
+            # last unit is kept only while there is no reading (O30).
+            return None
         if self._held_unit is None and (entry := self.registry_entry) is not None:
             # The unit stored with the last reading before a restart (8C-c).
             stored = entry.options.get(OPTIONS_KEY)
@@ -292,7 +298,13 @@ class BoschBuderusLocalOnlySensor(
         entry = self.registry_entry
         if entry is None or self.hass is None or self._shape() is None:
             return
-        unit = _text(self.native_unit_of_measurement)
+        # LOE-2: a state stores no unit, also over one stored by an earlier
+        # numeric form of the same reading.
+        unit = (
+            None
+            if self._definition.kind in ENUM_KINDS
+            else _text(self.native_unit_of_measurement)
+        )
         if unit is None and self._definition.kind not in ENUM_KINDS:
             return  # another quantity or no unit now: keep the last real one
         stored = dict(entry.options.get(OPTIONS_KEY) or {})

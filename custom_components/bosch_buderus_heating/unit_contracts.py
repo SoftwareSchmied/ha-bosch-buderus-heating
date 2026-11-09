@@ -21,15 +21,21 @@ ENERGY_UNITS = {
 }
 
 
+_SPELLINGS = {
+    **TEMPERATURE_UNITS,
+    **DURATION_UNITS,
+    "KWh": "kWh",
+    "wh": "Wh",
+}
+
+
 def canonical_unit(unit: str | None) -> str | None:
-    """Match equivalent spellings, without treating different scales as aliases."""
-    return {
-        "degC": "C",
-        "degF": "F",
-        **DURATION_UNITS,
-        "KWh": "kWh",
-        "wh": "Wh",
-    }.get(unit or "", unit)
+    """Match equivalent spellings, without treating different scales as aliases.
+
+    Temperatures use the reviewed aliases: "C", "degC", "°C" and "ºC" are one
+    unit, so a schema that names "C" also accepts a reading reported in "°C".
+    """
+    return _SPELLINGS.get(unit or "", unit)
 
 
 def energy_kwh_scale(unit: str | None) -> float | None:

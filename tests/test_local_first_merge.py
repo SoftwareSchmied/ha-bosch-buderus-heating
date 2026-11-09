@@ -973,6 +973,7 @@ async def test_the_sensor_keeps_the_native_unit_of_its_last_reading(hass) -> Non
     entity.hass = hass
     entity.entity_id = entity_id
     entity.registry_entry = registry.async_get(entity_id)
+    entity._definition = SimpleNamespace(kind="temperature")
     with (
         patch.object(BoschBuderusLocalOnlySensor, "_shape", return_value=None),
     ):

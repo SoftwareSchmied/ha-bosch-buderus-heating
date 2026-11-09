@@ -41,6 +41,9 @@ The rules below describe the selection whenever local values are used.
   local answer); an empty list shows the same state as an empty cloud list.
   Otherwise the cloud list stays, and diagnostics name the reason
   (`unknown_entry`, or `shape_differs` for another shape).
+- **Texts** follow the same rule: when the cloud declares the values of a
+  text reading, a local text it does not declare keeps the cloud state
+  (`unknown_entry`), so a valid state never turns into an unknown one.
 - **Contradictory valid readings** show the local value. Diagnostics count
   differing pairs; there is no automatic reaction.
 - Selecting a source starts no request, never enables a disabled connection
@@ -92,8 +95,12 @@ that adds the whole count again to the statistics.
   last count. A gap in the history, never an artificial consumption.
 - Falling back to the cloud, for example when local values are switched off or
   the local reading expires, follows the same rule.
-- Within one source nothing is corrected: a real reset of the device counter
-  stays visible as before.
+- Within one source a small decrease is shown as reported, for example the
+  produced heat during a defrost. A drop of more than 10 % of a part is held
+  until the next reading of the same source shows it again: a single low or
+  zero reading never counts the whole meter again, and a real reset of the
+  device counter stays visible one reading later. While a drop is held the
+  counter shows the other source if it is not lower, else nothing.
 - Parts must match exactly. Units must be the same spelling, or the established
   unitless kWh of cloud energy counters against local kWh. Since
   0.9.0-alpha.2 the same applies to the working time of a heat source
@@ -104,7 +111,10 @@ that adds the whole count again to the statistics.
   unreadable store, the cloud sets the first count; a local count is only used
   after that.
 - A part missing in one reading keeps its last shown number, so it still binds a
-  later source change.
+  later source change. If the shown source stops reporting it, the part waits
+  like one taken over from the other source: it binds again when it is back.
+  Seven days after the shown source stopped reporting it, it is dropped once
+  no current reading reports it.
 - When the source a counter was shown from last is gone for good (its access
   removed or switched off), the other source may take over as soon as its
   numbers are not lower for the parts both report. A stored part that no
@@ -113,9 +123,10 @@ that adds the whole count again to the statistics.
   never goes backwards.
 - The last shown numbers and source are stored in Home Assistant and a source
   change is written immediately. After a restart the source shown last goes
-  first. Only an abrupt stop within seconds after a count changed can leave an
-  older count in the store. Removing the integration entry removes the stored
-  counts.
+  first. Other changes are written at most about a minute after the first
+  one, and later changes never postpone that save; only an abrupt stop within
+  that minute can leave an older count in the store. Removing the integration
+  entry removes the stored counts.
 - Diagnostics show per counter measurement the shown source, the number of
   source switches and of prevented switches, and evidence for comparable
   counter pairs: equal or different, largest relative difference in percent,
