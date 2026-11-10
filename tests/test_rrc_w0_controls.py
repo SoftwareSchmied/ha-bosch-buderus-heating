@@ -107,7 +107,14 @@ def legacy_setup_path():
 @contextmanager
 def installed(*contracts: RrcContract) -> Iterator[None]:
     original = rrc_contracts._registry
-    rrc_contracts._registry = Registry((*rrc_contracts.CONTRACTS, *contracts))
+    # The probes stand in for the package contracts with write policies
+    # (W3 ships the hot water policies on the probed paths).
+    shipped = tuple(
+        contract
+        for contract in rrc_contracts.CONTRACTS
+        if not (contract.enum_policies or contract.number_policies)
+    )
+    rrc_contracts._registry = Registry((*shipped, *contracts))
     try:
         yield
     finally:

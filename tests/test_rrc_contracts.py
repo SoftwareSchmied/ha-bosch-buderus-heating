@@ -112,10 +112,23 @@ def away(value: str = "false", **fields: object) -> Resource:
     return wire(AWAY, type="stringValue", value=value, **fields)
 
 
+def _without_package_policies() -> tuple[RrcContract, ...]:
+    return tuple(
+        contract
+        for contract in rrc_contracts.CONTRACTS
+        if not (contract.enum_policies or contract.number_policies)
+    )
+
+
 @contextmanager
 def installed(*contracts: RrcContract) -> Iterator[Registry]:
-    """Swap the installed contracts for the duration of a test."""
-    registry = Registry((*rrc_contracts.CONTRACTS, *contracts))
+    """Swap the installed contracts for the duration of a test.
+
+    The probes stand in for the package contracts with write policies (W3
+    ships the hot water policies on the paths the probes use); the others
+    stay.
+    """
+    registry = Registry((*_without_package_policies(), *contracts))
     original = rrc_contracts._registry
     rrc_contracts._registry = registry
     try:
@@ -179,8 +192,8 @@ def test_shipped_contracts_are_empty_except_the_moved_override_block() -> None:
         "system",
         "devices",
     ]
-    for contract in registry.contracts:
-        assert not contract.enum_policies and not contract.number_policies
+    # The packages fill their own contracts (W3: hot water policies); the
+    # other lookups below stay empty until their package ships them.
     assert rrc_contracts.zone_fields() == ()
     assert rrc_contracts.extra_roots() == ()
     assert rrc_contracts.device_leaves("thermostat_valve") == ()

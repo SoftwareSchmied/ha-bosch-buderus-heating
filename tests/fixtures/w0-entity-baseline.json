@@ -519,7 +519,7 @@
      "capabilities": {
       "options": [
        "high",
-       "pointt:off"
+       "off"
       ]
      },
      "device_class": null,
@@ -2696,6 +2696,7 @@
     {
      "capabilities": {
       "operation_list": [
+       "off",
        "high"
       ]
      },
