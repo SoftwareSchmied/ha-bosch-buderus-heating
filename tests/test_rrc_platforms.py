@@ -24,7 +24,8 @@ def test_every_entity_module_declares_empty_trackers() -> None:
     rrc_platforms.trackers.cache_clear()
     loaded = rrc_platforms.trackers()
     assert [name for name, _ in loaded] == list(rrc_platforms.ENTITY_MODULES)
-    assert all(not table for _, table in loaded)
+    # W1 fills the zone module; the others are still empty stubs.
+    assert all(not table for name, table in loaded if name != "rrc_zone_entities")
     assert Platform.TIME in rrc_platforms.PLATFORMS
 
 

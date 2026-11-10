@@ -312,6 +312,349 @@
      "unit": null
     },
     {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:timer-off-outline",
+     "original_name": "Raum 10 \u2013 Clear temporary setpoint",
+     "translation_key": "rrc_override_clear",
+     "unique_id": "gateway-one:zones:zn10:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:timer-off-outline",
+     "original_name": "Raum 11 \u2013 Clear temporary setpoint",
+     "translation_key": "rrc_override_clear",
+     "unique_id": "gateway-one:zones:zn11:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:timer-off-outline",
+     "original_name": "Raum 1 \u2013 Clear temporary setpoint",
+     "translation_key": "rrc_override_clear",
+     "unique_id": "gateway-one:zones:zn1:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:timer-off-outline",
+     "original_name": "Raum 2 \u2013 Clear temporary setpoint",
+     "translation_key": "rrc_override_clear",
+     "unique_id": "gateway-one:zones:zn2:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:timer-off-outline",
+     "original_name": "Raum 3 \u2013 Clear temporary setpoint",
+     "translation_key": "rrc_override_clear",
+     "unique_id": "gateway-one:zones:zn3:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:timer-off-outline",
+     "original_name": "Raum 4 \u2013 Clear temporary setpoint",
+     "translation_key": "rrc_override_clear",
+     "unique_id": "gateway-one:zones:zn4:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:timer-off-outline",
+     "original_name": "Raum 5 \u2013 Clear temporary setpoint",
+     "translation_key": "rrc_override_clear",
+     "unique_id": "gateway-one:zones:zn5:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:timer-off-outline",
+     "original_name": "Raum 6 \u2013 Clear temporary setpoint",
+     "translation_key": "rrc_override_clear",
+     "unique_id": "gateway-one:zones:zn6:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:timer-off-outline",
+     "original_name": "Raum 7 \u2013 Clear temporary setpoint",
+     "translation_key": "rrc_override_clear",
+     "unique_id": "gateway-one:zones:zn7:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:timer-off-outline",
+     "original_name": "Raum 8 \u2013 Clear temporary setpoint",
+     "translation_key": "rrc_override_clear",
+     "unique_id": "gateway-one:zones:zn8:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:timer-off-outline",
+     "original_name": "Raum 9 \u2013 Clear temporary setpoint",
+     "translation_key": "rrc_override_clear",
+     "unique_id": "gateway-one:zones:zn9:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
+      "max_temp": 30.0,
+      "min_temp": 5.0,
+      "target_temp_step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 10",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn10:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
+      "max_temp": 30.0,
+      "min_temp": 5.0,
+      "target_temp_step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 11",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn11:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
+      "max_temp": 30.0,
+      "min_temp": 5.0,
+      "target_temp_step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 1",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn1:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
+      "max_temp": 30.0,
+      "min_temp": 5.0,
+      "target_temp_step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 2",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn2:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [],
+      "max_temp": 30.0,
+      "min_temp": 5.0,
+      "target_temp_step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 3",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn3:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
+      "max_temp": 30.0,
+      "min_temp": 5.0,
+      "target_temp_step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 4",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn4:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
+      "max_temp": 30.0,
+      "min_temp": 5.0,
+      "target_temp_step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 5",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn5:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [],
+      "max_temp": 30.0,
+      "min_temp": 5.0,
+      "target_temp_step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 6",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn6:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
+      "max_temp": 30.0,
+      "min_temp": 5.0,
+      "target_temp_step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 7",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn7:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
+      "max_temp": 30.0,
+      "min_temp": 5.0,
+      "target_temp_step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 8",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn8:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [],
+      "max_temp": 30.0,
+      "min_temp": 5.0,
+      "target_temp_step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Raum 9",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn9:climate",
+     "unit": null
+    },
+    {
      "capabilities": {
       "event_types": [
        "appeared",
@@ -1689,16 +2032,39 @@
      "unit": "\u00b0C"
     },
     {
-     "capabilities": null,
+     "capabilities": {
+      "state_class": "measurement"
+     },
      "device_class": "temperature",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
-     "entity_category": "diagnostic",
+     "entity_category": null,
      "original_icon": null,
-     "original_name": "Raum 10 \u2013 Next Setpoint",
-     "translation_key": null,
+     "original_name": "Raum 10 \u2013 Next setpoint",
+     "translation_key": "rrc_next_setpoint",
      "unique_id": "gateway-one:zones:zn10:nextSetpoint",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "idle",
+       "heat_request",
+       "zone_error",
+       "comm_error",
+       "comm_warning",
+       "low_battery"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "Raum 10 \u2013 Zone status",
+     "translation_key": "rrc_zone_status",
+     "unique_id": "gateway-one:zones:zn10:status",
+     "unit": null
     },
     {
      "capabilities": {
@@ -1788,16 +2154,39 @@
      "unit": "\u00b0C"
     },
     {
-     "capabilities": null,
+     "capabilities": {
+      "state_class": "measurement"
+     },
      "device_class": "temperature",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
-     "entity_category": "diagnostic",
+     "entity_category": null,
      "original_icon": null,
-     "original_name": "Raum 11 \u2013 Next Setpoint",
-     "translation_key": null,
+     "original_name": "Raum 11 \u2013 Next setpoint",
+     "translation_key": "rrc_next_setpoint",
      "unique_id": "gateway-one:zones:zn11:nextSetpoint",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "idle",
+       "heat_request",
+       "zone_error",
+       "comm_error",
+       "comm_warning",
+       "low_battery"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "Raum 11 \u2013 Zone status",
+     "translation_key": "rrc_zone_status",
+     "unique_id": "gateway-one:zones:zn11:status",
+     "unit": null
     },
     {
      "capabilities": {
@@ -1887,16 +2276,39 @@
      "unit": "\u00b0C"
     },
     {
-     "capabilities": null,
+     "capabilities": {
+      "state_class": "measurement"
+     },
      "device_class": "temperature",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
-     "entity_category": "diagnostic",
+     "entity_category": null,
      "original_icon": null,
-     "original_name": "Raum 1 \u2013 Next Setpoint",
-     "translation_key": null,
+     "original_name": "Raum 1 \u2013 Next setpoint",
+     "translation_key": "rrc_next_setpoint",
      "unique_id": "gateway-one:zones:zn1:nextSetpoint",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "idle",
+       "heat_request",
+       "zone_error",
+       "comm_error",
+       "comm_warning",
+       "low_battery"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "Raum 1 \u2013 Zone status",
+     "translation_key": "rrc_zone_status",
+     "unique_id": "gateway-one:zones:zn1:status",
+     "unit": null
     },
     {
      "capabilities": {
@@ -1986,16 +2398,39 @@
      "unit": "\u00b0C"
     },
     {
-     "capabilities": null,
+     "capabilities": {
+      "state_class": "measurement"
+     },
      "device_class": "temperature",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
-     "entity_category": "diagnostic",
+     "entity_category": null,
      "original_icon": null,
-     "original_name": "Raum 2 \u2013 Next Setpoint",
-     "translation_key": null,
+     "original_name": "Raum 2 \u2013 Next setpoint",
+     "translation_key": "rrc_next_setpoint",
      "unique_id": "gateway-one:zones:zn2:nextSetpoint",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "idle",
+       "heat_request",
+       "zone_error",
+       "comm_error",
+       "comm_warning",
+       "low_battery"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "Raum 2 \u2013 Zone status",
+     "translation_key": "rrc_zone_status",
+     "unique_id": "gateway-one:zones:zn2:status",
+     "unit": null
     },
     {
      "capabilities": {
@@ -2085,16 +2520,39 @@
      "unit": "\u00b0C"
     },
     {
-     "capabilities": null,
+     "capabilities": {
+      "state_class": "measurement"
+     },
      "device_class": "temperature",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
-     "entity_category": "diagnostic",
+     "entity_category": null,
      "original_icon": null,
-     "original_name": "Raum 3 \u2013 Next Setpoint",
-     "translation_key": null,
+     "original_name": "Raum 3 \u2013 Next setpoint",
+     "translation_key": "rrc_next_setpoint",
      "unique_id": "gateway-one:zones:zn3:nextSetpoint",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "idle",
+       "heat_request",
+       "zone_error",
+       "comm_error",
+       "comm_warning",
+       "low_battery"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "Raum 3 \u2013 Zone status",
+     "translation_key": "rrc_zone_status",
+     "unique_id": "gateway-one:zones:zn3:status",
+     "unit": null
     },
     {
      "capabilities": {
@@ -2170,16 +2628,39 @@
      "unit": "\u00b0C"
     },
     {
-     "capabilities": null,
+     "capabilities": {
+      "state_class": "measurement"
+     },
      "device_class": "temperature",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
-     "entity_category": "diagnostic",
+     "entity_category": null,
      "original_icon": null,
-     "original_name": "Raum 4 \u2013 Next Setpoint",
-     "translation_key": null,
+     "original_name": "Raum 4 \u2013 Next setpoint",
+     "translation_key": "rrc_next_setpoint",
      "unique_id": "gateway-one:zones:zn4:nextSetpoint",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "idle",
+       "heat_request",
+       "zone_error",
+       "comm_error",
+       "comm_warning",
+       "low_battery"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "Raum 4 \u2013 Zone status",
+     "translation_key": "rrc_zone_status",
+     "unique_id": "gateway-one:zones:zn4:status",
+     "unit": null
     },
     {
      "capabilities": {
@@ -2269,16 +2750,39 @@
      "unit": "\u00b0C"
     },
     {
-     "capabilities": null,
+     "capabilities": {
+      "state_class": "measurement"
+     },
      "device_class": "temperature",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
-     "entity_category": "diagnostic",
+     "entity_category": null,
      "original_icon": null,
-     "original_name": "Raum 5 \u2013 Next Setpoint",
-     "translation_key": null,
+     "original_name": "Raum 5 \u2013 Next setpoint",
+     "translation_key": "rrc_next_setpoint",
      "unique_id": "gateway-one:zones:zn5:nextSetpoint",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "idle",
+       "heat_request",
+       "zone_error",
+       "comm_error",
+       "comm_warning",
+       "low_battery"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "Raum 5 \u2013 Zone status",
+     "translation_key": "rrc_zone_status",
+     "unique_id": "gateway-one:zones:zn5:status",
+     "unit": null
     },
     {
      "capabilities": {
@@ -2368,16 +2872,39 @@
      "unit": "\u00b0C"
     },
     {
-     "capabilities": null,
+     "capabilities": {
+      "state_class": "measurement"
+     },
      "device_class": "temperature",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
-     "entity_category": "diagnostic",
+     "entity_category": null,
      "original_icon": null,
-     "original_name": "Raum 6 \u2013 Next Setpoint",
-     "translation_key": null,
+     "original_name": "Raum 6 \u2013 Next setpoint",
+     "translation_key": "rrc_next_setpoint",
      "unique_id": "gateway-one:zones:zn6:nextSetpoint",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "idle",
+       "heat_request",
+       "zone_error",
+       "comm_error",
+       "comm_warning",
+       "low_battery"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "Raum 6 \u2013 Zone status",
+     "translation_key": "rrc_zone_status",
+     "unique_id": "gateway-one:zones:zn6:status",
+     "unit": null
     },
     {
      "capabilities": {
@@ -2453,16 +2980,39 @@
      "unit": "\u00b0C"
     },
     {
-     "capabilities": null,
+     "capabilities": {
+      "state_class": "measurement"
+     },
      "device_class": "temperature",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
-     "entity_category": "diagnostic",
+     "entity_category": null,
      "original_icon": null,
-     "original_name": "Raum 7 \u2013 Next Setpoint",
-     "translation_key": null,
+     "original_name": "Raum 7 \u2013 Next setpoint",
+     "translation_key": "rrc_next_setpoint",
      "unique_id": "gateway-one:zones:zn7:nextSetpoint",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "idle",
+       "heat_request",
+       "zone_error",
+       "comm_error",
+       "comm_warning",
+       "low_battery"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "Raum 7 \u2013 Zone status",
+     "translation_key": "rrc_zone_status",
+     "unique_id": "gateway-one:zones:zn7:status",
+     "unit": null
     },
     {
      "capabilities": {
@@ -2552,16 +3102,39 @@
      "unit": "\u00b0C"
     },
     {
-     "capabilities": null,
+     "capabilities": {
+      "state_class": "measurement"
+     },
      "device_class": "temperature",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
-     "entity_category": "diagnostic",
+     "entity_category": null,
      "original_icon": null,
-     "original_name": "Raum 8 \u2013 Next Setpoint",
-     "translation_key": null,
+     "original_name": "Raum 8 \u2013 Next setpoint",
+     "translation_key": "rrc_next_setpoint",
      "unique_id": "gateway-one:zones:zn8:nextSetpoint",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "idle",
+       "heat_request",
+       "zone_error",
+       "comm_error",
+       "comm_warning",
+       "low_battery"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "Raum 8 \u2013 Zone status",
+     "translation_key": "rrc_zone_status",
+     "unique_id": "gateway-one:zones:zn8:status",
+     "unit": null
     },
     {
      "capabilities": {
@@ -2651,16 +3224,39 @@
      "unit": "\u00b0C"
     },
     {
-     "capabilities": null,
+     "capabilities": {
+      "state_class": "measurement"
+     },
      "device_class": "temperature",
-     "disabled_by": "integration",
+     "disabled_by": null,
      "domain": "sensor",
-     "entity_category": "diagnostic",
+     "entity_category": null,
      "original_icon": null,
-     "original_name": "Raum 9 \u2013 Next Setpoint",
-     "translation_key": null,
+     "original_name": "Raum 9 \u2013 Next setpoint",
+     "translation_key": "rrc_next_setpoint",
      "unique_id": "gateway-one:zones:zn9:nextSetpoint",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "idle",
+       "heat_request",
+       "zone_error",
+       "comm_error",
+       "comm_warning",
+       "low_battery"
+      ]
+     },
+     "device_class": "enum",
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "Raum 9 \u2013 Zone status",
+     "translation_key": "rrc_zone_status",
+     "unique_id": "gateway-one:zones:zn9:status",
+     "unit": null
     },
     {
      "capabilities": {
@@ -2694,6 +3290,138 @@
      "unit": null
     },
     {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Raum 10 \u2013 Open window detection",
+     "translation_key": "rrc_window_detection",
+     "unique_id": "gateway-one:zones:zn10:openWindowDetection:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Raum 11 \u2013 Open window detection",
+     "translation_key": "rrc_window_detection",
+     "unique_id": "gateway-one:zones:zn11:openWindowDetection:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Raum 1 \u2013 Open window detection",
+     "translation_key": "rrc_window_detection",
+     "unique_id": "gateway-one:zones:zn1:openWindowDetection:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Raum 2 \u2013 Open window detection",
+     "translation_key": "rrc_window_detection",
+     "unique_id": "gateway-one:zones:zn2:openWindowDetection:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Raum 3 \u2013 Open window detection",
+     "translation_key": "rrc_window_detection",
+     "unique_id": "gateway-one:zones:zn3:openWindowDetection:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Raum 4 \u2013 Open window detection",
+     "translation_key": "rrc_window_detection",
+     "unique_id": "gateway-one:zones:zn4:openWindowDetection:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Raum 5 \u2013 Open window detection",
+     "translation_key": "rrc_window_detection",
+     "unique_id": "gateway-one:zones:zn5:openWindowDetection:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Raum 6 \u2013 Open window detection",
+     "translation_key": "rrc_window_detection",
+     "unique_id": "gateway-one:zones:zn6:openWindowDetection:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Raum 7 \u2013 Open window detection",
+     "translation_key": "rrc_window_detection",
+     "unique_id": "gateway-one:zones:zn7:openWindowDetection:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Raum 8 \u2013 Open window detection",
+     "translation_key": "rrc_window_detection",
+     "unique_id": "gateway-one:zones:zn8:openWindowDetection:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Raum 9 \u2013 Open window detection",
+     "translation_key": "rrc_window_detection",
+     "unique_id": "gateway-one:zones:zn9:openWindowDetection:enabled:control",
+     "unit": null
+    },
+    {
      "capabilities": {
       "operation_list": [
        "high"
@@ -2711,8 +3439,8 @@
     }
    ],
    "setup_calls": {
-    "bulk": 16,
-    "single": 113
+    "bulk": 18,
+    "single": 168
    },
    "setup_requests": [
     "/devices",
@@ -2960,6 +3688,7 @@
     "/zones/deviceTypeAllowed",
     "/zones/list",
     "/zones/zn1",
+    "/zones/zn1/actualValvePosition",
     "/zones/zn1/clockOverride",
     "/zones/zn1/clockOverride/temperatureHeating",
     "/zones/zn1/clockProgram",
@@ -2969,11 +3698,16 @@
     "/zones/zn1/nextSetpoint",
     "/zones/zn1/openWindowDetection",
     "/zones/zn1/openWindowDetection/enabled",
+    "/zones/zn1/openWindowDetection/status",
+    "/zones/zn1/optimumStartHeatupRate",
+    "/zones/zn1/optimumStartState",
     "/zones/zn1/status",
     "/zones/zn1/temperatureActual",
     "/zones/zn1/temperatureHeatingSetpoint",
+    "/zones/zn1/timeToNextSetpoint",
     "/zones/zn1/userMode",
     "/zones/zn10",
+    "/zones/zn10/actualValvePosition",
     "/zones/zn10/clockOverride",
     "/zones/zn10/clockOverride/temperatureHeating",
     "/zones/zn10/clockProgram",
@@ -2983,11 +3717,16 @@
     "/zones/zn10/nextSetpoint",
     "/zones/zn10/openWindowDetection",
     "/zones/zn10/openWindowDetection/enabled",
+    "/zones/zn10/openWindowDetection/status",
+    "/zones/zn10/optimumStartHeatupRate",
+    "/zones/zn10/optimumStartState",
     "/zones/zn10/status",
     "/zones/zn10/temperatureActual",
     "/zones/zn10/temperatureHeatingSetpoint",
+    "/zones/zn10/timeToNextSetpoint",
     "/zones/zn10/userMode",
     "/zones/zn11",
+    "/zones/zn11/actualValvePosition",
     "/zones/zn11/clockOverride",
     "/zones/zn11/clockOverride/temperatureHeating",
     "/zones/zn11/clockProgram",
@@ -2997,11 +3736,16 @@
     "/zones/zn11/nextSetpoint",
     "/zones/zn11/openWindowDetection",
     "/zones/zn11/openWindowDetection/enabled",
+    "/zones/zn11/openWindowDetection/status",
+    "/zones/zn11/optimumStartHeatupRate",
+    "/zones/zn11/optimumStartState",
     "/zones/zn11/status",
     "/zones/zn11/temperatureActual",
     "/zones/zn11/temperatureHeatingSetpoint",
+    "/zones/zn11/timeToNextSetpoint",
     "/zones/zn11/userMode",
     "/zones/zn2",
+    "/zones/zn2/actualValvePosition",
     "/zones/zn2/clockOverride",
     "/zones/zn2/clockOverride/temperatureHeating",
     "/zones/zn2/clockProgram",
@@ -3011,11 +3755,16 @@
     "/zones/zn2/nextSetpoint",
     "/zones/zn2/openWindowDetection",
     "/zones/zn2/openWindowDetection/enabled",
+    "/zones/zn2/openWindowDetection/status",
+    "/zones/zn2/optimumStartHeatupRate",
+    "/zones/zn2/optimumStartState",
     "/zones/zn2/status",
     "/zones/zn2/temperatureActual",
     "/zones/zn2/temperatureHeatingSetpoint",
+    "/zones/zn2/timeToNextSetpoint",
     "/zones/zn2/userMode",
     "/zones/zn3",
+    "/zones/zn3/actualValvePosition",
     "/zones/zn3/clockOverride",
     "/zones/zn3/clockOverride/temperatureHeating",
     "/zones/zn3/clockProgram",
@@ -3025,11 +3774,16 @@
     "/zones/zn3/nextSetpoint",
     "/zones/zn3/openWindowDetection",
     "/zones/zn3/openWindowDetection/enabled",
+    "/zones/zn3/openWindowDetection/status",
+    "/zones/zn3/optimumStartHeatupRate",
+    "/zones/zn3/optimumStartState",
     "/zones/zn3/status",
     "/zones/zn3/temperatureActual",
     "/zones/zn3/temperatureHeatingSetpoint",
+    "/zones/zn3/timeToNextSetpoint",
     "/zones/zn3/userMode",
     "/zones/zn4",
+    "/zones/zn4/actualValvePosition",
     "/zones/zn4/clockOverride",
     "/zones/zn4/clockOverride/temperatureHeating",
     "/zones/zn4/clockProgram",
@@ -3039,11 +3793,16 @@
     "/zones/zn4/nextSetpoint",
     "/zones/zn4/openWindowDetection",
     "/zones/zn4/openWindowDetection/enabled",
+    "/zones/zn4/openWindowDetection/status",
+    "/zones/zn4/optimumStartHeatupRate",
+    "/zones/zn4/optimumStartState",
     "/zones/zn4/status",
     "/zones/zn4/temperatureActual",
     "/zones/zn4/temperatureHeatingSetpoint",
+    "/zones/zn4/timeToNextSetpoint",
     "/zones/zn4/userMode",
     "/zones/zn5",
+    "/zones/zn5/actualValvePosition",
     "/zones/zn5/clockOverride",
     "/zones/zn5/clockOverride/temperatureHeating",
     "/zones/zn5/clockProgram",
@@ -3053,11 +3812,16 @@
     "/zones/zn5/nextSetpoint",
     "/zones/zn5/openWindowDetection",
     "/zones/zn5/openWindowDetection/enabled",
+    "/zones/zn5/openWindowDetection/status",
+    "/zones/zn5/optimumStartHeatupRate",
+    "/zones/zn5/optimumStartState",
     "/zones/zn5/status",
     "/zones/zn5/temperatureActual",
     "/zones/zn5/temperatureHeatingSetpoint",
+    "/zones/zn5/timeToNextSetpoint",
     "/zones/zn5/userMode",
     "/zones/zn6",
+    "/zones/zn6/actualValvePosition",
     "/zones/zn6/clockOverride",
     "/zones/zn6/clockOverride/temperatureHeating",
     "/zones/zn6/clockProgram",
@@ -3067,11 +3831,16 @@
     "/zones/zn6/nextSetpoint",
     "/zones/zn6/openWindowDetection",
     "/zones/zn6/openWindowDetection/enabled",
+    "/zones/zn6/openWindowDetection/status",
+    "/zones/zn6/optimumStartHeatupRate",
+    "/zones/zn6/optimumStartState",
     "/zones/zn6/status",
     "/zones/zn6/temperatureActual",
     "/zones/zn6/temperatureHeatingSetpoint",
+    "/zones/zn6/timeToNextSetpoint",
     "/zones/zn6/userMode",
     "/zones/zn7",
+    "/zones/zn7/actualValvePosition",
     "/zones/zn7/clockOverride",
     "/zones/zn7/clockOverride/temperatureHeating",
     "/zones/zn7/clockProgram",
@@ -3081,11 +3850,16 @@
     "/zones/zn7/nextSetpoint",
     "/zones/zn7/openWindowDetection",
     "/zones/zn7/openWindowDetection/enabled",
+    "/zones/zn7/openWindowDetection/status",
+    "/zones/zn7/optimumStartHeatupRate",
+    "/zones/zn7/optimumStartState",
     "/zones/zn7/status",
     "/zones/zn7/temperatureActual",
     "/zones/zn7/temperatureHeatingSetpoint",
+    "/zones/zn7/timeToNextSetpoint",
     "/zones/zn7/userMode",
     "/zones/zn8",
+    "/zones/zn8/actualValvePosition",
     "/zones/zn8/clockOverride",
     "/zones/zn8/clockOverride/temperatureHeating",
     "/zones/zn8/clockProgram",
@@ -3095,11 +3869,16 @@
     "/zones/zn8/nextSetpoint",
     "/zones/zn8/openWindowDetection",
     "/zones/zn8/openWindowDetection/enabled",
+    "/zones/zn8/openWindowDetection/status",
+    "/zones/zn8/optimumStartHeatupRate",
+    "/zones/zn8/optimumStartState",
     "/zones/zn8/status",
     "/zones/zn8/temperatureActual",
     "/zones/zn8/temperatureHeatingSetpoint",
+    "/zones/zn8/timeToNextSetpoint",
     "/zones/zn8/userMode",
     "/zones/zn9",
+    "/zones/zn9/actualValvePosition",
     "/zones/zn9/clockOverride",
     "/zones/zn9/clockOverride/temperatureHeating",
     "/zones/zn9/clockProgram",
@@ -3109,9 +3888,13 @@
     "/zones/zn9/nextSetpoint",
     "/zones/zn9/openWindowDetection",
     "/zones/zn9/openWindowDetection/enabled",
+    "/zones/zn9/openWindowDetection/status",
+    "/zones/zn9/optimumStartHeatupRate",
+    "/zones/zn9/optimumStartState",
     "/zones/zn9/status",
     "/zones/zn9/temperatureActual",
     "/zones/zn9/temperatureHeatingSetpoint",
+    "/zones/zn9/timeToNextSetpoint",
     "/zones/zn9/userMode"
    ],
    "writes": 0
@@ -5748,6 +6531,44 @@
     },
     {
      "capabilities": {
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
+      "max_temp": 35,
+      "min_temp": 7
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Wohnzimmer",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn1:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
+      "max_temp": 35,
+      "min_temp": 7
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "climate",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Flur",
+     "translation_key": "rrc_zone",
+     "unique_id": "gateway-one:zones:zn4:climate",
+     "unit": null
+    },
+    {
+     "capabilities": {
       "event_types": [
        "appeared",
        "resolved"
@@ -6073,20 +6894,36 @@
     "/zones/configuration",
     "/zones/list",
     "/zones/zn1",
+    "/zones/zn1/actualValvePosition",
     "/zones/zn1/clockOverride/temperatureHeating",
     "/zones/zn1/clockProgram",
     "/zones/zn1/manualTemperatureHeating",
     "/zones/zn1/name",
+    "/zones/zn1/nextSetpoint",
+    "/zones/zn1/openWindowDetection/enabled",
+    "/zones/zn1/openWindowDetection/status",
+    "/zones/zn1/optimumStartHeatupRate",
+    "/zones/zn1/optimumStartState",
+    "/zones/zn1/status",
     "/zones/zn1/temperatureActual",
     "/zones/zn1/temperatureHeatingSetpoint",
+    "/zones/zn1/timeToNextSetpoint",
     "/zones/zn1/userMode",
     "/zones/zn4",
+    "/zones/zn4/actualValvePosition",
     "/zones/zn4/clockOverride/temperatureHeating",
     "/zones/zn4/clockProgram",
     "/zones/zn4/manualTemperatureHeating",
     "/zones/zn4/name",
+    "/zones/zn4/nextSetpoint",
+    "/zones/zn4/openWindowDetection/enabled",
+    "/zones/zn4/openWindowDetection/status",
+    "/zones/zn4/optimumStartHeatupRate",
+    "/zones/zn4/optimumStartState",
+    "/zones/zn4/status",
     "/zones/zn4/temperatureActual",
     "/zones/zn4/temperatureHeatingSetpoint",
+    "/zones/zn4/timeToNextSetpoint",
     "/zones/zn4/userMode"
    ],
    "writes": 0

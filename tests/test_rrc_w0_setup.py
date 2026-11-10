@@ -175,12 +175,12 @@ async def test_rrc_write_waits_longer_and_counts_a_late_confirmation(
             "awaiting_late_confirmation": 0,
             "rejection_reasons": {},
         }
-        assert features["contracts"]["zone"] == {
-            "confirmation": "unconfirmed",
-            "writes": {
-                **dict.fromkeys(writes, 0),
-                "rejection_reasons": {},
-            },
+        # W1 adds value-free counts of its zones next to the counters.
+        zone = features["contracts"]["zone"]
+        assert zone["confirmation"] == "unconfirmed"
+        assert zone["writes"] == {
+            **dict.fromkeys(writes, 0),
+            "rejection_reasons": {},
         }
     finally:
         await _teardown(hass, entry, stack)

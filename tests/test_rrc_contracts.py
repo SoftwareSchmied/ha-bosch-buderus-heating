@@ -169,7 +169,7 @@ def _service(client: FakeClient, sleeps: list[float]) -> WriteService:
 # ------------------------------------------------------------- registry
 
 
-def test_shipped_contracts_are_empty_except_the_moved_override_block() -> None:
+def test_shipped_contracts_are_empty_except_the_zone_contract() -> None:
     registry = rrc_contracts.registry()
     assert [contract.name for contract in registry.contracts] == [
         "zone",
@@ -179,30 +179,33 @@ def test_shipped_contracts_are_empty_except_the_moved_override_block() -> None:
         "system",
         "devices",
     ]
-    for contract in registry.contracts:
+    # W1 fills the zone contract; the others are still empty stubs.
+    for contract in registry.contracts[1:]:
         assert not contract.enum_policies and not contract.number_policies
-    assert rrc_contracts.zone_fields() == ()
+    assert rrc_contracts.zone_fields() == rrc_contract_zone.DETAIL_FIELDS
     assert rrc_contracts.extra_roots() == ()
     assert rrc_contracts.device_leaves("thermostat_valve") == ()
     assert rrc_contracts.optional_children("/system/appliance") == ()
-    assert rrc_contract_zone.CONTRACT.blocked
-    # The block moved unchanged: every RRC zone, nothing else.
+    # W1 lifted the block: the temporary setpoint follows its contract policy,
+    # only on an RRC controller (S11).
+    assert not rrc_contract_zone.CONTRACT.blocked
     for path in (OVERRIDE, "/zones/zn0/clockOverride/temperatureHeating"):
-        assert rrc_contracts.blocked_reason(path) == "rrc_override_lifecycle_unverified"
-        assert rrc.scalar_field(path) == "clockOverride/temperatureHeating"
-    for path in (
-        "/zones/zn01/clockOverride/temperatureHeating",
-        "/zones/zone1/clockOverride/temperatureHeating",
-        "/zones/zn1/clockOverride",
-    ):
         assert rrc_contracts.blocked_reason(path) is None
+        assert rrc.scalar_field(path) == "clockOverride/temperatureHeating"
     resource = wire(
-        OVERRIDE, type="floatValue", unitOfMeasure="C", minValue=0, maxValue=30
+        OVERRIDE,
+        type="floatValue",
+        unitOfMeasure="C",
+        minValue=0,
+        maxValue=30,
+        value=0.0,
     )
-    for context in (None, GENERIC_CONTEXT, RRC_CONTEXT):
-        assert assess_control(resource, context).rejection_reason == (
-            "rrc_override_lifecycle_unverified"
-        )
+    for context in (None, GENERIC_CONTEXT):
+        assert assess_control(resource, context).policy is None
+    assert (
+        assess_control(resource, RRC_CONTEXT).policy
+        is rrc_contract_zone.OVERRIDE_POLICY
+    )
 
 
 def test_equal_patterns_in_two_contracts_fail_at_import() -> None:
@@ -285,7 +288,7 @@ def test_lookups_answer_per_path() -> None:
         categories=MappingProxyType({r"^/system/fireplace/enabled$": "config"}),
         icons=MappingProxyType({rf"^{AWAY}$": "mdi:home-export-outline"}),
         dialog_paths=(rf"^{AWAY}$",),
-        zone_fields=("status",),
+        zone_fields=("w0probe",),
         extra_roots=("/events",),
         device_leaves=MappingProxyType({"thermostat_valve": ("etrv/status",)}),
         optional_children=MappingProxyType({r"^/system/appliance$": ("displayCode",)}),
@@ -309,7 +312,10 @@ def test_lookups_answer_per_path() -> None:
         assert rrc_contracts.category("/system/fireplace/enabled") == "config"
         assert rrc_contracts.icon(AWAY) == "mdi:home-export-outline"
         assert rrc_contracts.in_dialog(AWAY)
-        assert rrc_contracts.zone_fields() == ("status",)
+        assert rrc_contracts.zone_fields() == (
+            *rrc_contract_zone.DETAIL_FIELDS,
+            "w0probe",
+        )
         assert rrc_contracts.extra_roots() == ("/events",)
         assert rrc_contracts.device_leaves("thermostat_valve") == ("etrv/status",)
         assert rrc_contracts.optional_children("/system/appliance") == (
@@ -319,7 +325,7 @@ def test_lookups_answer_per_path() -> None:
         assert ("Abwesend", "Away") in rrc_contracts.texts()
         report = rrc_contracts.diagnostics({AWAY: away()})
         assert report["lookups"] == {"confirmation": "unconfirmed", "lists": 1}
-        assert report["zone"] == {"confirmation": "unconfirmed"}
+        assert report["zone"]["confirmation"] == "unconfirmed"
         assert registry.contract_for(OVERRIDE) == "zone"
 
 
