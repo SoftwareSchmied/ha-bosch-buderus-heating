@@ -4,6 +4,27 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.0-alpha.4 verification
+
+I am publishing **0.9.0-alpha.4 as a pre-release** for testing from the commit
+tagged `v0.9.0-alpha.4`. Updating from alpha.1, alpha.2 or alpha.3 needs no
+new setup; the storage format stays 4.
+
+Automated checks on the release state (2026-11-10, run locally):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite | Home Assistant 2026.10.4, local | 8600 passed; coverage 95.82 % |
+| Full suites, minimum version and 2026.9.2 | Home Assistant 2026.5.4 and 2026.9.2 | GitHub checks only |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 170 files (2026.10.4 and 2026.11.0); Ruff clean; 463 files formatted |
+| Browser tests of the dialogs | Chromium, local | `npm test` passed; the Home Assistant frontend tests passed in six runs in a row and once more on the release state |
+| Release archive, SHA-256 and release notes | local build | built for version 0.9.0-alpha.4; the release notes come from this version's CHANGELOG section |
+| GitHub checks | release workflow | the release workflow publishes only after the browser tests, both older Home Assistant versions, its Python checks, hassfest and HACS pass |
+
+Many fixes in this release were tested with simulated data only; the
+CHANGELOG names them. The reduced sign-in permissions are not yet confirmed
+with a real sign-in.
+
 ## 0.9.0-alpha.3 verification
 
 I am publishing **0.9.0-alpha.3 as a pre-release** for testing from the commit
