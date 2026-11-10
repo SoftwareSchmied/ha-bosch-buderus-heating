@@ -192,17 +192,37 @@ const assert = require("node:assert/strict");
     await ui.getByLabel("Flow limit", { exact: true }).isVisible(),
     true,
   );
-  // The dialog texts follow the profile language ("no" is Norwegian
-  // Bokmål); a row without a label in that language shows the English one.
-  for (const [language, tab, heading] of [
-    ["sv-SE", "Värmekrets 1", "Fler inställningar"],
-    ["no", "Varmekrets 1", "Flere innstillinger"],
-    ["fi", "Lämmityspiiri 1", "Lisää asetuksia"],
-    ["da", "Varmekreds 1", "Flere indstillinger"],
-    ["nn", "Varmekrets 1", "Flere innstillinger"],
-    ["pt-BR", "Circuito de aquecimento 1", "Mais definições"],
-    ["eo", "Heating circuit 1", "More settings"],
+  // The dialog texts follow the profile language ("no" and "nn" read
+  // Norwegian Bokmål, regional tags their base language); a row without a
+  // label in that language shows the English one. The expected texts come
+  // from the data files.
+  const controlsTexts = dialogConfig("controls").texts;
+  // Spot checks that the data files hold the expected words.
+  assert.equal(controlsTexts.sv.heatingCircuit, "Värmekrets");
+  assert.equal(controlsTexts.nb.moreSettings, "Flere innstillinger");
+  assert.equal(controlsTexts.pt.moreSettings, "Mais definições");
+  // Every language with a data file (German rows carry their own label),
+  // then regional tags and aliases.
+  for (const [language, code] of [
+    ...Object.keys(controlsTexts)
+      .filter((code) => code !== "de")
+      .map((code) => [code, code]),
+    ["sv-SE", "sv"],
+    ["no", "nb"],
+    ["nb-NO", "nb"],
+    ["nn", "nb"],
+    ["fi", "fi"],
+    ["da", "da"],
+    ["fr", "fr"],
+    ["fr-CA", "fr"],
+    ["pt-BR", "pt"],
+    ["el", "el"],
+    ["el-GR", "el"],
+    ["ga", "ga"],
+    ["eo", "en"],
   ]) {
+    const tab = `${controlsTexts[code].heatingCircuit} 1`;
+    const heading = controlsTexts[code].moreSettings;
     await ui.evaluate((el, value) => {
       el.hass = { language: value };
     }, language);

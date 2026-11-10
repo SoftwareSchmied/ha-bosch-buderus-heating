@@ -1,7 +1,9 @@
 """Integration tests for heating climates, dialog drafts and guarded writes."""
 
+import json
 from dataclasses import replace
 from datetime import UTC, datetime
+from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -45,6 +47,17 @@ from custom_components.bosch_buderus_heating.writes import (
     WriteBusy,
 )
 from tests.ha_test_helpers import MockConfigEntry
+
+PACKAGE = Path(__file__).parents[1] / "custom_components" / "bosch_buderus_heating"
+
+
+def _codes(directory: str) -> set[str]:
+    return {path.stem for path in (PACKAGE / directory).glob("*.json")}
+
+
+def _data(directory: str, code: str) -> dict:
+    return json.loads((PACKAGE / directory / f"{code}.json").read_text("utf-8"))
+
 
 ROOT = "/heatingCircuits/hc2"
 MODE = ROOT + "/operationMode"
@@ -309,31 +322,26 @@ async def test_dialog_shows_real_metadata_and_localized_options(
     assert isinstance(ui, ControlsSelector)
     rows = ui.serialize()["selector"]["bosch-buderus-controls"]["rows"]
     mode = next(row for row in rows if row["key"] == MODE)
-    # Every supported language, so the dialog follows the profile language.
-    assert mode["label"] == {
-        "de": "Betriebsart",
-        "en": "Operating mode",
-        "sv": "Driftläge",
-        "nb": "Driftsmodus",
-        "fi": "Käyttötila",
-        "da": "Driftsform",
-        "fr": "Mode de fonctionnement",
-        "es": "Modo de funcionamiento",
-        "it": "Modalità di funzionamento",
-        "pt": "Modo de funcionamento",
+    # Every language with a data file, so the dialog follows the profile
+    # language. The expected texts come from the data files, so a new
+    # language needs no change here.
+    texts = {code: _data("i18n", code).get("texts", {}) for code in _codes("i18n")}
+    assert set(texts) == set(LANGUAGES) == set(_codes("translations"))
+    expected = {
+        code: catalog.get("Operating mode", "Operating mode")
+        for code, catalog in texts.items()
     }
-    assert mode["options"][1]["label"] == {
-        "de": "Manuell",
-        "en": "Manual",
-        "sv": "Manuell",
-        "nb": "Manuell",
-        "fi": "Manuaalinen",
-        "da": "Manuel",
-        "fr": "Manuel",
-        "es": "Manual",
-        "it": "Manuale",
-        "pt": "Manual",
+    expected.update(de="Betriebsart", en="Operating mode")
+    assert mode["label"] == expected
+    manual = {
+        code: _data("translations", code)["entity"]["select"][
+            "heating_circuit_operation_mode"
+        ]["state"]["manual"]
+        for code in _codes("translations")
     }
+    assert manual["de"] == "Manuell" and manual["en"] == "Manual"
+    assert mode["options"][1]["label"] == manual
+    assert all(label.strip() for label in (*expected.values(), *manual.values()))
     assert set(controls(coordinator)) == {MODE, TARGET}
     assert options._entry.options == {}
     coordinator.client.get_resource.assert_not_awaited()

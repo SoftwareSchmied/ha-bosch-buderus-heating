@@ -198,9 +198,17 @@ def test_code_has_no_branch_for_a_single_language() -> None:
 
 
 def test_a_new_language_needs_only_its_data_file(tmp_path: Path) -> None:
+    existing = sorted(
+        path.stem
+        for path in (PACKAGE / "i18n").glob("*.json")
+        if path.stem not in i18n.SOURCE_LANGUAGES
+    )
     for path in (PACKAGE / "i18n").glob("*.json"):
         (tmp_path / path.name).write_text(path.read_text("utf-8"), "utf-8")
-    (tmp_path / "nl.json").write_text(
+    # A code no data file uses yet; "zz" is not assigned to any language.
+    new = "zz"
+    assert new not in i18n.LANGUAGES
+    (tmp_path / f"{new}.json").write_text(
         json.dumps(
             {
                 "dialogs": {"holiday": {"date": "Datum"}},
@@ -210,10 +218,14 @@ def test_a_new_language_needs_only_its_data_file(tmp_path: Path) -> None:
         "utf-8",
     )
     catalogs = i18n.load_catalogs(tmp_path)
-    assert catalogs.languages == ("en", "de", *sorted({*i18n.LANGUAGES[2:], "nl"}))
-    assert catalogs.texts["nl"]["Heat pump"] == "Warmtepomp"
-    assert catalogs.dialogs["nl"]["holiday"]["date"] == "Datum"
-    assert i18n.resolve_language("nl-BE", catalogs.languages) == "nl"
+    assert catalogs.languages == (*i18n.SOURCE_LANGUAGES, *sorted({*existing, new}))
+    assert set(catalogs.languages) == {*i18n.LANGUAGES, new}
+    assert catalogs.texts[new]["Heat pump"] == "Warmtepomp"
+    assert catalogs.dialogs[new]["holiday"]["date"] == "Datum"
+    assert i18n.resolve_language(f"{new}-BE", catalogs.languages) == new
+    # The installed languages are untouched by the new file.
+    for code in existing:
+        assert catalogs.texts[code] == i18n.CATALOGS[code], code
 
 
 @pytest.mark.parametrize(

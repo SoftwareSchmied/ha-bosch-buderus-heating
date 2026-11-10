@@ -179,8 +179,37 @@ const assert = require("node:assert/strict");
   await button.press("Tab");
   assert.equal((await state()).calls.length, 7);
 
-  // The date and time fields name themselves in the profile language.
-  const labels = await page.evaluate(() => {
+  // The date and time fields name themselves in the profile language:
+  // each tag with the data file whose texts it should show.
+  const holidayTexts = dialogConfig("holiday").texts;
+  const expected = Object.fromEntries(
+    [
+      ["de", "de"],
+      ["en", "en"],
+      ["sv", "sv"],
+      ["nb-NO", "nb"],
+      ["no", "nb"],
+      ["nn", "nb"],
+      ["fi", "fi"],
+      ["da", "da"],
+      ["fr", "fr"],
+      ["pt-BR", "pt"],
+      ["el", "el"],
+      ["ga", "ga"],
+      ["eo", "en"],
+    ].map(([language, code]) => [
+      language,
+      [
+        `Start: ${holidayTexts[code].date}`,
+        `Start: ${holidayTexts[code].time}`,
+      ],
+    ]),
+  );
+  // Spot checks that the data files hold the expected words.
+  assert.deepEqual(expected.de, ["Start: Datum", "Start: Uhrzeit"]);
+  assert.deepEqual(expected.en, ["Start: Date", "Start: Time"]);
+  assert.deepEqual(expected.fr, ["Start: Date", "Start: Heure"]);
+  const labels = await page.evaluate((expected) => {
     const field = document.createElement(
       "ha-selector-bosch-buderus-holiday-datetime",
     );
@@ -190,7 +219,7 @@ const assert = require("node:assert/strict");
       "bosch-buderus-holiday-datetime": { default_time: "", ...window.dialog },
     };
     const result = {};
-    for (const language of ["de", "en", "sv", "nb-NO", "nn", "fi", "da", "fr", "eo"]) {
+    for (const language of Object.keys(expected)) {
       field.hass = { language };
       result[language] = [...field.shadowRoot.querySelectorAll("input")].map(
         (input) => input.getAttribute("aria-label"),
@@ -198,18 +227,8 @@ const assert = require("node:assert/strict");
     }
     field.remove();
     return result;
-  });
-  assert.deepEqual(labels, {
-    de: ["Start: Datum", "Start: Uhrzeit"],
-    en: ["Start: Date", "Start: Time"],
-    sv: ["Start: Datum", "Start: Tid"],
-    "nb-NO": ["Start: Dato", "Start: Tidspunkt"],
-    nn: ["Start: Dato", "Start: Tidspunkt"],
-    fi: ["Start: Päivämäärä", "Start: Aika"],
-    da: ["Start: Dato", "Start: Tid"],
-    fr: ["Start: Date", "Start: Heure"],
-    eo: ["Start: Date", "Start: Time"],
-  });
+  }, expected);
+  assert.deepEqual(labels, expected);
   assert.deepEqual(errors, []);
   console.log(
     "Actual holiday module: Enter, Space and pointer open the deletion confirmation once without submitting the form; failure message and restored states passed.",
