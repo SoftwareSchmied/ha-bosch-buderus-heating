@@ -519,6 +519,23 @@ def _validate_enum(
     _run_value_check(policy, resource, request.value, related)
 
 
+def _contract_availability_issue(
+    resource: Resource, policy: EnumWritePolicy | NumberWritePolicy
+) -> str | None:
+    """S8/P41: a contract setting the controller marks as unavailable, and
+    not as used, gets no control at all (for example extra hot water on an
+    instantaneous water heater); malformed flags get none either. A used but
+    unavailable one stays and is locked (``_locked``)."""
+    if not rrc_contracts.owns(policy):
+        return None
+    metadata = resource.metadata
+    if not metadata.availability_flags_valid:
+        return "invalid_availability_flags"
+    if metadata.available is False and metadata.used is not True:
+        return "not_available"
+    return None
+
+
 def _locked(resource: Resource, policy: EnumWritePolicy | NumberWritePolicy) -> bool:
     """S8: a used but unavailable contract setting is shown and locked."""
     metadata = resource.metadata
@@ -812,6 +829,8 @@ def assess_control(
         )
     except ContractConflict:
         return ControlAssessment(None, "rrc_contract_conflict")
+    if policy is not None:
+        schema_issue = schema_issue or _contract_availability_issue(resource, policy)
     if isinstance(policy, EnumWritePolicy):
         return ControlAssessment(
             policy,
