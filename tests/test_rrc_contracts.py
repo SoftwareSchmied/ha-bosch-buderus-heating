@@ -51,6 +51,8 @@ from custom_components.bosch_buderus_heating.writes import (
     assess_control,
 )
 
+# The contracts a work package has filled since W0 (tested there).
+FILLED_CONTRACTS = frozenset({"circuit"})
 AWAY = "/system/awayMode/enabled"
 OVERRIDE = "/zones/zn1/clockOverride/temperatureHeating"
 AWAY_POLICY = EnumWritePolicy(
@@ -114,8 +116,13 @@ def away(value: str = "false", **fields: object) -> Resource:
 
 @contextmanager
 def installed(*contracts: RrcContract) -> Iterator[Registry]:
-    """Swap the installed contracts for the duration of a test."""
-    registry = Registry((*rrc_contracts.CONTRACTS, *contracts))
+    """Swap the installed contracts for the duration of a test.
+
+    The probes below use heating circuit paths of the shipped circuit
+    contract (W4), which they replace here.
+    """
+    shipped = (item for item in rrc_contracts.CONTRACTS if item.name != "circuit")
+    registry = Registry((*shipped, *contracts))
     original = rrc_contracts._registry
     rrc_contracts._registry = registry
     try:
@@ -180,6 +187,8 @@ def test_shipped_contracts_are_empty_except_the_moved_override_block() -> None:
         "devices",
     ]
     for contract in registry.contracts:
+        if contract.name in FILLED_CONTRACTS:
+            continue
         assert not contract.enum_policies and not contract.number_policies
     assert rrc_contracts.zone_fields() == ()
     assert rrc_contracts.extra_roots() == ()
