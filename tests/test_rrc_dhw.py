@@ -226,6 +226,12 @@ def test_disinfection_time_needs_a_float_value_in_minutes() -> None:
         assess_control(float_type, RRC_CONTEXT).rejection_reason
         == "unsupported_resource_type"
     )
+    # Seconds or hours would change the meaning of the value.
+    for unit in ("s", "h"):
+        other = replace(good, metadata=replace(good.metadata, unit=unit))
+        assert assess_control(other, RRC_CONTEXT).rejection_reason == (
+            "unsupported_unit"
+        )
     # Limits up to the next midnight still allow no 24:00.
     wide = replace(good, metadata=replace(good.metadata, maximum=1440.0))
     with pytest.raises(ContractRejected) as refused:
