@@ -476,9 +476,9 @@ a local test broker; checks with real devices are still open.
   or complete discoveries no longer find it for that long) no longer keeps
   every fault from ending. Faults only it reported end normally, and a repair
   notice says so. A temporary error such as a timeout, or a refused access
-  (403), never counts. A fault restored from an
-  older version's baseline that no source reports for a whole day of complete
-  reads now ends as well instead of staying forever.
+  (403), never counts. A fault restored from an older version's baseline that
+  no source reports for a whole day of complete reads now ends as well instead
+  of staying forever.
 - **System notifications (event) without the cloud:** the event entity now
   also reports the events of the local error list when the plant runs without
   the cloud, and it no longer turns unavailable during a cloud outage, which
