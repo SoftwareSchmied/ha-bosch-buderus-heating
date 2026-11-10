@@ -467,15 +467,31 @@ a local test broker; checks with real devices are still open.
 
 ### RRC zones
 
-- RRC zones of the TC100.2 room controller were rejected because it
-  sends the `used` flag as the JSON string `"true"` or `"false"`. These two
-  exact strings are now read like JSON booleans; numbers and other spellings
-  remain malformed. On this controller, room temperature, active target,
-  operating-mode reading, selected-program reading and the **Select heating
-  schedule** control become available. The manual target, which reports no
-  `used` flag, was already available. The operating-mode select still
-  requires advertised options and is unchanged. Program selection writes have
-  not yet been confirmed on a TC100.2.
+- **Zones of the TC100.2 are read
+  ([#113](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/113)):**
+  the TC100.2 room controller sends the `used` flag as the text `"true"` or
+  `"false"`. Exactly these two texts now count as true and false; numbers and
+  other spellings stay invalid. Room temperature, active target, the heating
+  mode reading, the selected program and **Select heating schedule** become
+  available on this controller. Thank you, @obvius1, for the analysis, the
+  fix and the tests.
+- **Heating mode without a list of options:** if the controller sends no
+  `allowedValues` for the heating mode at all, as the TC100.2 does, the mode
+  select offers Manual and Schedule (`manual`, `clock`), as the controller's
+  app does. Only these two can be set. Another current mode keeps the select
+  unavailable, and an empty or different list keeps the strict rules.
+- **Locked heating mode:** if the controller reports the mode as used but not
+  available, for example while the system cools, the select keeps showing the
+  current mode. A change is refused with a message that the controller locks
+  the mode, and nothing is sent. Other zone values are not affected.
+- **Zone names:** a zone name that the controller sends in Base64 now appears
+  decoded in the entity names, for example "Living room – Room temperature".
+  Any other name is shown as it is. Existing entity IDs, unique IDs and your
+  own names stay.
+- @obvius1 confirmed with a local patch on a TC100.2 that mode and manual
+  temperature changes from Home Assistant reach the app and the thermostat. I
+  have not tested this version on a TC100.2 myself; program selection and the
+  zone names still need a check on the device.
 
 ### Release checks
 
