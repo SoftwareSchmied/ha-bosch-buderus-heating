@@ -23,6 +23,21 @@ const path = require("node:path");
     }
   });
   try {
+    // The "Add integration" dialog of Home Assistant lists the integrations in
+    // a lit-virtualizer. When the dialog closes to start the flow, the
+    // virtualizer rejects a pending layout promise with the plain string
+    // "disconnected", which the frontend's list never handles. Whether a
+    // layout is still pending depends only on timing, so this one upstream
+    // rejection is counted apart; every other page error still fails the test.
+    await page.addInitScript(() => {
+      window.__virtualizerDisconnects = 0;
+      window.addEventListener("unhandledrejection", event => {
+        if (event.reason === "disconnected") {
+          event.preventDefault();
+          window.__virtualizerDisconnects += 1;
+        }
+      });
+    });
     await page.addInitScript(({url, token, language}) => {
       localStorage.setItem("hassTokens", JSON.stringify({
         hassUrl: new URL(url).origin, access_token: token, token_type: "Bearer",
@@ -58,6 +73,8 @@ const path = require("node:path");
       // The cloud keeps its brand form.
       await page.getByText("Connect a heating account", {exact: true}).first().waitFor();
     }
+    const disconnects = await page.evaluate(() => window.__virtualizerDisconnects);
+    if (disconnects) console.log(`Ignored virtualizer disconnects: ${disconnects}`);
     if (errors.length) console.log(`Page errors: ${JSON.stringify(errors)}`);
     assert.deepEqual(errors, []);
     console.log(`Setup menu (${choice}) in ${de ? "German desktop" : "English mobile"}`);

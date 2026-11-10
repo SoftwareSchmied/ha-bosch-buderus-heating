@@ -74,6 +74,7 @@ async def test_local_first_browser(
             process.kill()
             await process.wait()
     assert process.returncode == 0, output.decode()
+    print(output.decode())
     entries = hass.config_entries.async_entries(DOMAIN)
     if choice == "local_only":
         (entry,) = entries
