@@ -126,5 +126,13 @@ async def test_real_frontend(
     ] == [("gateway", TARGET, value) for value in (20.5, 22, 23, 24)] + [
         ("gateway", HOT_WATER, 55)
     ]
-    assert coordinator.client.get_resource.await_count == 10
-    coordinator.client.get_resources_bulk.assert_awaited_once()
+    # C35: each write reads its target in one bulk preflight and confirms it
+    # with a single GET; the simulated poll is the only other bulk read.
+    reads = [call.args for call in coordinator.client.get_resource.await_args_list]
+    assert reads == [("gateway", TARGET)] * 4 + [("gateway", HOT_WATER)]
+    bulk = [call.args for call in coordinator.client.get_resources_bulk.await_args_list]
+    assert bulk == [("gateway", (TARGET,))] * 3 + [
+        ("gateway", (MODE, TARGET)),
+        ("gateway", (TARGET,)),
+        ("gateway", (HOT_WATER,)),
+    ]
