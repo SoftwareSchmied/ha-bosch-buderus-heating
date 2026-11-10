@@ -121,7 +121,8 @@ def test_fixture_is_synthetic() -> None:
         )
     )
     assert data["provenance"]["physical_device_verified"] is False
-    assert data["provenance"]["basis"] == "synthetic_from_app_demo_shapes"
+    assert data["provenance"]["basis"] == "compatibility_mapping"
+    assert "demo shapes" in data["provenance"]["redaction"]
 
 
 @pytest.mark.parametrize(

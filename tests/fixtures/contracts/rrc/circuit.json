@@ -1,12 +1,12 @@
 {
  "provenance": {
   "kind": "synthetic",
-  "basis": "synthetic_from_app_demo_shapes",
+  "basis": "compatibility_mapping",
   "reference": "RRC 2.0 heating circuit settings (W4): hc1 in the demo shapes of the vendor app, hc2 in the leaf, type and flag shapes of the TC100.2 diagnostics of issue 122",
   "firmware": null,
   "capture_date": null,
   "created": "2026-11-10",
-  "redaction": "Constructed values only. Leaf names, JSON types, units and flags follow the expected shapes; no value was observed on a device.",
+  "redaction": "Constructed values only (synthetic from the demo shapes of the vendor app). Leaf names, JSON types, units and flags follow the expected shapes; no value was observed on a device.",
   "physical_device_verified": false,
   "contract": "Combine with ct200-shapes.json for a whole controller; this file replaces its /heatingCircuits containers."
  },
