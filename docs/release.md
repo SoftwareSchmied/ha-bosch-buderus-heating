@@ -43,7 +43,7 @@ Automated checks on the release state (2026-11-09, run locally):
 | GitHub checks | PR and release workflow | the release workflow published only after its Python checks, both older Home Assistant versions, hassfest and HACS passed; the browser tests ran only on the PR and were not a required check at the time |
 | Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
 
-Checks on my own system (heat pump with MX400 controller and K40RF gateway,
+Checks on my own system (heat pump with BC400 controller and MX400 internet module, K40RF gateway,
 firmware 15.00.01, Home Assistant 2026.10.4, cloud and local access). On
 2026-11-09 I installed a build of this state after a full Home Assistant
 backup; apart from the version number, its files are identical to this
@@ -100,7 +100,7 @@ Checks of the performance and load changes:
 | Working time of a heat source from the local access; "Heat output (compressor)"; statistics of signal measurements; translated and on/off states | full suites above; my own system | automated: passed; my own system: pending |
 
 On 2026-11-08 I installed a development build of this state on my own system
-(heat pump with MX400 controller and K40RF gateway, Home Assistant 2026.10.4,
+(heat pump with BC400 controller and MX400 internet module, K40RF gateway, Home Assistant 2026.10.4,
 cloud and local access) after a full Home Assistant backup. Apart from the
 version number, its files are identical to this release. It started without
 warnings or errors from the integration, and the climate and water heater
@@ -130,7 +130,7 @@ Automated checks on the release state (2026-11-08, run locally; all GitHub check
 | Browser test of **Search the system again** in the options | Chromium, English and German | passed |
 | Reproducible archive and SHA-256 | Linux build | checked by the release workflow |
 
-Checks I performed on my own system (heat pump with MX400 controller and
+Checks I performed on my own system (heat pump with BC400 controller, MX400 internet module and
 K40RF gateway, Home Assistant 2026.10.4, cloud and local access) with
 development builds of this state:
 
