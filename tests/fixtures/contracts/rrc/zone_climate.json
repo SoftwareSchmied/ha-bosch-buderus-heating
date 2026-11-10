@@ -1,0 +1,619 @@
+{
+ "provenance": {
+  "kind": "synthetic",
+  "basis": "compatibility_mapping",
+  "reference": "RRC 2.0 room controller with six zones for the zone climate (W1): manual, schedule with and without a temporary setpoint, a locked mode, a zone without temporary setpoint and one without room temperature",
+  "firmware": null,
+  "capture_date": null,
+  "created": "2026-11-10",
+  "redaction": "Constructed values only. Field names and JSON types follow the expected RRC 2.0 zone shapes and the leaf names and types of the anonymized TC100.2 tree of issue 122. Names are Base64 placeholders.",
+  "physical_device_verified": false,
+  "contract": "Read with with_containers(); missing catalog and optional paths answer HTTP 500, missing roots 404. Unknown status and window values are deliberate (zone 3)."
+ },
+ "resources": [
+  {
+   "id": "/gateway/productType",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "RRC 2.0"
+  },
+  {
+   "id": "/gateway/versionFirmware",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "05.04.00"
+  },
+  {
+   "id": "/zones/list",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "zoneArray",
+   "value": [
+    {
+     "id": 1,
+     "name": "Wm9uZSBB",
+     "program": 1
+    },
+    {
+     "id": 2,
+     "name": "Wm9uZSBC",
+     "program": 2
+    },
+    {
+     "id": 3,
+     "name": "Wm9uZSBD",
+     "program": 3
+    },
+    {
+     "id": 4,
+     "name": "Wm9uZSBE",
+     "program": 4
+    },
+    {
+     "id": 5,
+     "name": "Wm9uZSBF",
+     "program": 5
+    },
+    {
+     "id": 6,
+     "name": "Wm9uZSBG",
+     "program": 6
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn1/temperatureActual",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn1/temperatureHeatingSetpoint",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn1/name",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "Wm9uZSBB"
+  },
+  {
+   "id": "/zones/zn1/manualTemperatureHeating",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn1/clockOverride/temperatureHeating",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn1/userMode",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "manual",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn1/nextSetpoint",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn1/status",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "heat request"
+  },
+  {
+   "id": "/zones/zn1/openWindowDetection/enabled",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "on",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn1/openWindowDetection/status",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "closed"
+  },
+  {
+   "id": "/zones/zn1/actualValvePosition",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "value": 35.0
+  },
+  {
+   "id": "/zones/zn1/optimumStartState",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn1/optimumStartHeatupRate",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "s/K",
+   "value": 600.0
+  },
+  {
+   "id": "/zones/zn2/temperatureActual",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn2/temperatureHeatingSetpoint",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 23.5,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn2/name",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "Wm9uZSBC"
+  },
+  {
+   "id": "/zones/zn2/manualTemperatureHeating",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn2/clockOverride/temperatureHeating",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 23.5
+  },
+  {
+   "id": "/zones/zn2/userMode",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn2/nextSetpoint",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 18.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn2/timeToNextSetpoint",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "mins",
+   "minValue": 0.0,
+   "maxValue": 1440.0,
+   "value": 45.0
+  },
+  {
+   "id": "/zones/zn2/status",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn2/openWindowDetection/enabled",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "off",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn2/openWindowDetection/status",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "open"
+  },
+  {
+   "id": "/zones/zn2/actualValvePosition",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn3/temperatureActual",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn3/temperatureHeatingSetpoint",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 19.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn3/name",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "Wm9uZSBD"
+  },
+  {
+   "id": "/zones/zn3/manualTemperatureHeating",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.0
+  },
+  {
+   "id": "/zones/zn3/clockOverride/temperatureHeating",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn3/userMode",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn3/nextSetpoint",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn3/timeToNextSetpoint",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "mins",
+   "minValue": 0.0,
+   "maxValue": 1440.0,
+   "value": 120.0
+  },
+  {
+   "id": "/zones/zn3/status",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "defrosting"
+  },
+  {
+   "id": "/zones/zn3/openWindowDetection/enabled",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "on",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn3/openWindowDetection/status",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "tilted"
+  },
+  {
+   "id": "/zones/zn4/temperatureActual",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn4/temperatureHeatingSetpoint",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn4/name",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "Wm9uZSBE"
+  },
+  {
+   "id": "/zones/zn4/manualTemperatureHeating",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn4/clockOverride/temperatureHeating",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn4/userMode",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "clock",
+   "used": "true",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn4/status",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "comm warning"
+  },
+  {
+   "id": "/zones/zn5/temperatureActual",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn5/temperatureHeatingSetpoint",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn5/name",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "Wm9uZSBF"
+  },
+  {
+   "id": "/zones/zn5/manualTemperatureHeating",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn5/userMode",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn5/status",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "low battery"
+  },
+  {
+   "id": "/zones/zn6/temperatureHeatingSetpoint",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn6/name",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "Wm9uZSBG"
+  },
+  {
+   "id": "/zones/zn6/manualTemperatureHeating",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn6/clockOverride/temperatureHeating",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn6/userMode",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "manual",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn6/status",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "zone error"
+  },
+  {
+   "id": "/system/openWindowDetection/enabled",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "stringValue",
+   "value": "on"
+  },
+  {
+   "id": "/system/openWindowDetection/duration",
+   "writeable": 1,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "mins",
+   "minValue": 5.0,
+   "maxValue": 60.0,
+   "stepSize": 5.0,
+   "value": 15.0
+  },
+  {
+   "id": "/system/openWindowDetection/temperature",
+   "writeable": 0,
+   "recordable": 0,
+   "type": "floatValue",
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 12.0
+  }
+ ]
+}

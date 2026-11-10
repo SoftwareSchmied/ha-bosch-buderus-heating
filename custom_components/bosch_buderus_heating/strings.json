@@ -1002,6 +1002,21 @@
     },
     "gateway_exchange_incomplete": {
       "message": "An interrupted gateway exchange could not be finished, so the integration does not start. Details are in the log; remove what blocks the exchange (for example entities of the new gateway) and restart Home Assistant."
+    },
+    "rrc_override_ended": {
+      "message": "The room controller ended the temporary setpoint at once, for example because the next switch point of the schedule was reached. The schedule's setpoint applies."
+    },
+    "rrc_override_needs_clock_mode": {
+      "message": "A temporary setpoint can only be set or cleared while the zone follows its schedule. Select the schedule mode first."
+    },
+    "rrc_override_below_minimum": {
+      "message": "The temporary setpoint must lie at or above the lowest manual setpoint of the zone. Choose a higher temperature."
+    },
+    "rrc_override_not_active": {
+      "message": "This zone has no temporary setpoint to clear at the moment."
+    },
+    "rrc_zone_climate_command": {
+      "message": "This zone command is not available at the moment. Check that the zone reports current values and that the temperature lies within the offered range; a temporary setpoint needs the schedule mode."
     }
   },
   "selector": {
@@ -1130,6 +1145,12 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Ambient light brightness"
+      },
+      "rrc_window_duration": {
+        "name": "Open window duration"
+      },
+      "rrc_window_temperature": {
+        "name": "Open window temperature"
       }
     },
     "select": {
@@ -1253,6 +1274,12 @@
       },
       "bacon_dry_display": {
         "name": "Display"
+      },
+      "rrc_window_detection": {
+        "name": "Open window detection"
+      },
+      "rrc_system_window_detection": {
+        "name": "Open window detection"
       }
     },
     "sensor": {
@@ -1847,6 +1874,32 @@
             }
           }
         }
+      },
+      "rrc_next_setpoint": {
+        "name": "Next setpoint"
+      },
+      "rrc_minutes_to_next_setpoint": {
+        "name": "Minutes to the next setpoint"
+      },
+      "rrc_zone_status": {
+        "name": "Zone status",
+        "state": {
+          "idle": "Idle",
+          "heat_request": "Heat request",
+          "zone_error": "Zone error",
+          "comm_error": "Communication error",
+          "comm_warning": "Communication warning",
+          "low_battery": "Low battery"
+        }
+      },
+      "rrc_zone_valve_position": {
+        "name": "Valve opening"
+      },
+      "rrc_optimum_start_state": {
+        "name": "Optimum start"
+      },
+      "rrc_optimum_start_heatup_rate": {
+        "name": "Optimum start heat-up rate"
       }
     },
     "binary_sensor": {
@@ -1910,6 +1963,9 @@
       },
       "bacon_dry_device_error": {
         "name": "Reported device error"
+      },
+      "rrc_window_open": {
+        "name": "Window open"
       }
     },
     "calendar": {
@@ -1925,6 +1981,9 @@
     "button": {
       "softener_start_regeneration": {
         "name": "Start regeneration"
+      },
+      "rrc_override_clear": {
+        "name": "Clear temporary setpoint"
       }
     },
     "water_heater": {
@@ -2009,6 +2068,21 @@
             "state": {
               "none": "None",
               "eco": "Eco"
+            }
+          }
+        }
+      },
+      "rrc_zone": {
+        "name": "Zone",
+        "state_attributes": {
+          "zone_status": {
+            "state": {
+              "idle": "Idle",
+              "heat_request": "Heat request",
+              "zone_error": "Zone error",
+              "comm_error": "Communication error",
+              "comm_warning": "Communication warning",
+              "low_battery": "Low battery"
             }
           }
         }

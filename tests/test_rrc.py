@@ -43,6 +43,7 @@ from custom_components.bosch_buderus_heating.resource_catalog import (
     poll_group,
     supports_entity,
 )
+from custom_components.bosch_buderus_heating.rrc_contract_zone import OVERRIDE_POLICY
 from custom_components.bosch_buderus_heating.rrc_programs import (
     RrcProgramService,
     edit_point,
@@ -65,6 +66,7 @@ from custom_components.bosch_buderus_heating.sensor import (
     build_sensor_descriptions,
 )
 from custom_components.bosch_buderus_heating.writes import (
+    RRC_CONTEXT,
     ControlLocked,
     assess_control,
     validate_control_value,
@@ -526,10 +528,12 @@ async def test_fresh_permissions_and_steps_block_invalid_writes(environment):
 def test_override_and_program_arrays_are_not_scalar_controls():
     override = RESOURCES["/zones/zn2/clockOverride/temperatureHeating"]
     assert rrc.scalar_value(override) == 22
-    assert (
-        assess_control(override).rejection_reason == "rrc_override_lifecycle_unverified"
-    )
+    # W1: written only through the zone contract on an RRC controller (S11),
+    # by the zone's climate entity, never as a number of its own.
+    assert assess_control(override).policy is None
+    assert assess_control(override, RRC_CONTEXT).policy is OVERRIDE_POLICY
     assert not build_number_descriptions({override.path: override})
+    assert not build_number_descriptions({override.path: override}, RRC_CONTEXT)
     assert not build_sensor_descriptions({WEEK: RESOURCES[WEEK]})
 
 
