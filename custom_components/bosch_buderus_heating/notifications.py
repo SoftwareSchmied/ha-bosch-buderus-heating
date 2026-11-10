@@ -28,7 +28,7 @@ from .faults import (
     fault_severity_label,
     fault_summary,
 )
-from .i18n import language_code, localize_all
+from .i18n import language_code, localize, localize_all
 from .log_helpers import log_failure
 
 if TYPE_CHECKING:
@@ -93,15 +93,6 @@ _TEXT = {
         ),
         "system": "Anlage {number}",
     },
-}
-
-
-# Day.month.year where that is the usual order, else the ISO order.
-_DATE_FORMATS = {
-    "de": "%d.%m.%Y",
-    "da": "%d.%m.%Y",
-    "fi": "%d.%m.%Y",
-    "nb": "%d.%m.%Y",
 }
 
 
@@ -423,7 +414,8 @@ class FaultNotifications:
     def _time(self, value: datetime, language: str) -> str:
         """Show HA observation times with the configured zone's actual UTC offset."""
         local = dt_util.as_local(value)
-        date_format = _DATE_FORMATS.get(language_code(language), "%Y-%m-%d")
+        # The usual date order of the language; a data file can set its own.
+        date_format = localize(language, "%d.%m.%Y", "%Y-%m-%d")
         return local.strftime(f"{date_format} %H:%M:%S %z")
 
     def _detail(

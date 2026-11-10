@@ -1,11 +1,29 @@
-"""Norwegian Bokmål texts built by the integration, keyed by the English text.
-
-Draft awaiting review by a native speaker; see docs/translations.md.
-"""
-
-from typing import Final
-
-TEXTS: Final[dict[str, str]] = {
+{
+  "dialogs": {
+    "controls": {
+      "system": "Anlegg",
+      "heatingCircuit": "Varmekrets",
+      "hotWater": "Varmtvann",
+      "sections": "Seksjoner for apparatet",
+      "moreSettings": "Flere innstillinger",
+      "checkValue": "Sjekk denne verdien.",
+      "discard": "Forkast",
+      "reload": "Last verdier på nytt",
+      "unsaved": "{count} ulagrede endringer",
+      "saved": "Endringene er bekreftet.",
+      "empty": "Ingen kontroller er tilgjengelige akkurat nå.",
+      "pending": "Endringer skrives først når du velger Bruk.",
+      "reopen": "Lukk og åpne dialogen på nytt.",
+      "reloadFailed": "Verdiene kunne ikke lastes på nytt."
+    },
+    "holiday": {
+      "date": "Dato",
+      "time": "Tidspunkt",
+      "deleteFailed": "Slettebekreftelsen kunne ikke åpnes. Last siden på nytt og prøv igjen."
+    }
+  },
+  "texts": {
+    "%Y-%m-%d": "%d.%m.%Y",
     "4-way valve (VR4)": "4-veisventil (VR4)",
     "A different gateway answers at this address. Set up the local access again.": "En annen gateway svarer på denne adressen. Sett opp den lokale tilgangen på nytt.",
     "Absolute maximum pressure": "Absolutt maksimaltrykk",
@@ -450,5 +468,6 @@ TEXTS: Final[dict[str, str]] = {
     "{count} older resolved faults are no longer listed.": "{count} eldre løste feil vises ikke lenger.",
     "{name}: faults resolved": "{name}: feil løst",
     "{name}: heating system fault": "{name}: feil i varmeanlegget",
-    "{name}: heating system notifications": "{name}: meldinger fra varmeanlegget",
+    "{name}: heating system notifications": "{name}: meldinger fra varmeanlegget"
+  }
 }

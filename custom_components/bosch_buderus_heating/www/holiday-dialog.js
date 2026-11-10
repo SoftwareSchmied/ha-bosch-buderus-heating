@@ -1,49 +1,25 @@
 // Only holiday selectors are registered. No existing element is patched.
-// Texts in every supported language; keep the keys equal in all of them.
-const HOLIDAY_TEXTS = {
-  "en": {
-    "date": "Date",
-    "time": "Time",
-    "deleteFailed": "The deletion confirmation could not be opened. Please reload the page and try again."
-  },
-  "de": {
-    "date": "Datum",
-    "time": "Uhrzeit",
-    "deleteFailed": "Die Löschbestätigung konnte nicht geöffnet werden. Bitte lade die Seite neu und versuche es erneut."
-  },
-  "sv": {
-    "date": "Datum",
-    "time": "Tid",
-    "deleteFailed": "Bekräftelsen av borttagningen kunde inte öppnas. Läs in sidan igen och försök på nytt."
-  },
-  "nb": {
-    "date": "Dato",
-    "time": "Tidspunkt",
-    "deleteFailed": "Slettebekreftelsen kunne ikke åpnes. Last siden på nytt og prøv igjen."
-  },
-  "fi": {
-    "date": "Päivämäärä",
-    "time": "Aika",
-    "deleteFailed": "Poiston vahvistusta ei voitu avata. Lataa sivu uudelleen ja yritä uudelleen."
-  },
-  "da": {
-    "date": "Dato",
-    "time": "Tid",
-    "deleteFailed": "Bekræftelsen af sletning kunne ikke åbnes. Genindlæs siden, og prøv igen."
-  }
-};
-// Base language of a tag such as "sv-FI"; English when there is no entry.
-const holidayLanguage = (language) => {
-  const base = String(language || "")
+// The server sends the texts of every language that has a data file
+// (i18n/<code>.json); the profile language picks one, else English.
+const holidayLanguage = (language, texts, aliases) => {
+  const tag = String(language || "")
     .trim()
     .toLowerCase()
-    .replace("_", "-")
-    .split("-")[0];
-  const code = base === "no" ? "nb" : base;
-  return Object.hasOwn(HOLIDAY_TEXTS, code) ? code : "en";
+    .replace("_", "-");
+  const base = tag.split("-")[0];
+  const known = new Map(
+    Object.keys(texts || {}).map((code) => [code.toLowerCase(), code]),
+  );
+  for (const candidate of [tag, aliases?.[tag], base, aliases?.[base]]) {
+    if (candidate && known.has(candidate)) return known.get(candidate);
+  }
+  return "en";
 };
-const holidayText = (hass, key) => HOLIDAY_TEXTS[holidayLanguage(hass?.language)][key];
-// end of texts
+const holidayText = (hass, config, key) => {
+  const texts = config?.texts || {};
+  const code = holidayLanguage(hass?.language, texts, config?.aliases);
+  return texts[code]?.[key] ?? texts.en?.[key] ?? "";
+};
 
 class BoschBuderusHolidayDateTime extends HTMLElement {
   constructor() {
@@ -87,8 +63,10 @@ class BoschBuderusHolidayDateTime extends HTMLElement {
   }
   get value() { return this._value; }
   set selector(value) {
-    this._defaultTime = value?.["bosch-buderus-holiday-datetime"]?.default_time || "";
+    this._config = value?.["bosch-buderus-holiday-datetime"];
+    this._defaultTime = this._config?.default_time || "";
     if (!this._value && !this._time.value) this._time.value = this._defaultTime;
+    this._labels();
   }
   set hass(value) { this._hass = value; this._labels(); }
   set label(value) { this._label = value || ""; this._labels(); }
@@ -96,8 +74,8 @@ class BoschBuderusHolidayDateTime extends HTMLElement {
   set disabled(value) { this._date.disabled = this._time.disabled = Boolean(value); }
   _labels() {
     this.shadowRoot.querySelector(".label").textContent = this._label || "";
-    this._date.setAttribute("aria-label", `${this._label || ""}: ${holidayText(this._hass, "date")}`);
-    this._time.setAttribute("aria-label", `${this._label || ""}: ${holidayText(this._hass, "time")}`);
+    this._date.setAttribute("aria-label", `${this._label || ""}: ${holidayText(this._hass, this._config, "date")}`);
+    this._time.setAttribute("aria-label", `${this._label || ""}: ${holidayText(this._hass, this._config, "time")}`);
   }
   focus() { this._date.focus(); }
   reportValidity() { return this._date.reportValidity() && this._time.reportValidity(); }
@@ -148,6 +126,10 @@ class BoschBuderusHolidayDelete extends HTMLElement {
     this.shadowRoot.querySelector("span").textContent = value || "";
   }
 
+  set selector(value) {
+    this._config = value?.["bosch-buderus-holiday-delete"];
+  }
+
   set disabled(value) {
     this._disabled = Boolean(value);
     this._button.disabled = this._disabled || this._busy;
@@ -167,7 +149,7 @@ class BoschBuderusHolidayDelete extends HTMLElement {
       if (node.localName === "step-flow-form") { flow = node; break; }
     }
     const message = this.shadowRoot.querySelector("p");
-    const error = holidayText(this.hass, "deleteFailed");
+    const error = holidayText(this.hass, this._config, "deleteFailed");
     if (!form || flow?.domain !== "bosch_buderus_heating" ||
         !["holiday", "legacy_holiday"].includes(flow.step?.step_id) || !flow.flowConfig?.handleFlowStep) {
       message.textContent = error;

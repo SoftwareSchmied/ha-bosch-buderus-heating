@@ -1,5 +1,6 @@
 const { chromium } = require("playwright");
 const path = require("node:path");
+const { dialogConfig } = require("./dialog-texts.cjs");
 const assert = require("node:assert/strict");
 (async () => {
   const browser = await chromium.launch({
@@ -21,6 +22,10 @@ const assert = require("node:assert/strict");
       "../../custom_components/bosch_buderus_heating/www/holiday-dialog.js",
     ),
   });
+  // The texts the server sends with every dialog step.
+  await page.evaluate((dialog) => {
+    window.dialog = dialog;
+  }, dialogConfig("holiday"));
   await page.evaluate(() => {
     const flow = document.querySelector("step-flow-form");
     const form = document.querySelector("ha-form");
@@ -28,6 +33,7 @@ const assert = require("node:assert/strict");
       "ha-selector-bosch-buderus-holiday-delete",
     );
     selector.hass = { language: "de" };
+    selector.selector = { "bosch-buderus-holiday-delete": window.dialog };
     selector.label = "Urlaubszeit vollständig löschen";
     form.disabled = false;
     form.data = {
@@ -180,8 +186,11 @@ const assert = require("node:assert/strict");
     );
     document.body.append(field);
     field.label = "Start";
+    field.selector = {
+      "bosch-buderus-holiday-datetime": { default_time: "", ...window.dialog },
+    };
     const result = {};
-    for (const language of ["de", "en", "sv", "nb-NO", "fi", "da", "fr"]) {
+    for (const language of ["de", "en", "sv", "nb-NO", "nn", "fi", "da", "fr"]) {
       field.hass = { language };
       result[language] = [...field.shadowRoot.querySelectorAll("input")].map(
         (input) => input.getAttribute("aria-label"),
@@ -195,6 +204,7 @@ const assert = require("node:assert/strict");
     en: ["Start: Date", "Start: Time"],
     sv: ["Start: Datum", "Start: Tid"],
     "nb-NO": ["Start: Dato", "Start: Tidspunkt"],
+    nn: ["Start: Dato", "Start: Tidspunkt"],
     fi: ["Start: Päivämäärä", "Start: Aika"],
     da: ["Start: Dato", "Start: Tid"],
     fr: ["Start: Date", "Start: Time"],

@@ -19,6 +19,8 @@ Versioning after its first tagged preview.
   shows English. German and English texts are unchanged, so existing entity
   names stay the same. After switching the system language, reload the
   integration so generated names are rebuilt.
+- A further language needs only two data files, `translations/<code>.json`
+  and `i18n/<code>.json`; `docs/translations.md` describes them.
 - The few names of the TC100.2 room controller zones are still German or
   English only.
 

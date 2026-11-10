@@ -20,35 +20,53 @@ Any other language shows the English texts.
 
 ## Where the texts live
 
-There are three places, and each one falls back to English:
+Every language has two data files in
+`custom_components/bosch_buderus_heating/`, and both fall back to English:
 
-1. **Home Assistant translation files.** `strings.json` is the English
-   source; `translations/<code>.json` holds one file per language with
-   exactly the same keys and placeholders. Home Assistant uses them for the
-   setup and options dialogs, repairs, error messages, entity names with a
+1. **`translations/<code>.json`: Home Assistant translations.**
+   `strings.json` is the English source; each language file has exactly the
+   same keys and placeholders. Home Assistant uses them for the setup and
+   options dialogs, repairs, error messages, entity names with a
    translation key and state names. They follow the language of the user
    profile.
-2. **Texts built by the integration.** Entity and device names that the
-   integration composes at runtime (for example "Heating circuit 1 – Supply
-   temperature"), notification texts, connection status lines and a few
-   dialog choices cannot come from the translation files. German and English
-   stay next to the code that uses them; the other languages are in
-   `custom_components/bosch_buderus_heating/i18n/<code>.py`, keyed by the
-   English text. These texts follow the Home Assistant system language
-   (Settings → System → General). After changing it, reload the integration
-   so generated names are rebuilt.
-3. **The controls and holiday dialogs** in `www/controls-dialog.js` and
-   `www/holiday-dialog.js` have a small dictionary with one entry per
-   language. They follow the language of the user profile.
+2. **`i18n/<code>.json`: texts the integration builds itself.**
+   - `texts`: entity and device names composed at runtime (for example
+     "Heating circuit 1 – Supply temperature"), notification texts,
+     connection status lines and a few dialog choices, keyed by the English
+     text. The entry `"%Y-%m-%d"` is the date format of notifications.
+     German and English of these texts stay next to the code, so `en.json`
+     and `de.json` have no `texts`. These texts follow the Home Assistant
+     system language (Settings → System → General); after changing it,
+     reload the integration so generated names are rebuilt.
+   - `dialogs`: the texts of the controls and holiday dialogs, for every
+     language including English and German. The server sends them with
+     each dialog step, and the dialog picks the language of the user
+     profile.
 
-Language tags are reduced to their base language: `sv-FI` uses Swedish and
-`no` uses Norwegian Bokmål. Nynorsk (`nn`) has no translation yet and shows
-English, like the Home Assistant translation files do.
+The integration finds the languages by these files; no Python module and no
+dialog script names a language. Language tags are matched from the full tag
+to the base language: `pt-BR` uses `pt-BR.json` if there is one, else
+`pt.json`; `sv-FI` uses Swedish. `no` and Nynorsk (`nn`) use Norwegian
+Bokmål. Anything else shows English.
 
-The test `tests/test_translations.py` checks that every language has exactly
-the keys of the English source, the same placeholders (`{name}`, `{}` …) and
-the same Markdown links, and that the dialog dictionaries have the same keys
-in every language.
+## Adding a language
+
+Add two files, named with the Home Assistant language code (for example
+`nl`), and nothing else:
+
+1. `custom_components/bosch_buderus_heating/translations/nl.json`: a copy of
+   `strings.json` with every value translated.
+2. `custom_components/bosch_buderus_heating/i18n/nl.json`: a copy of
+   `i18n/sv.json` with every value of `texts` and `dialogs` translated.
+   Keep the keys (the English texts under `texts`) unchanged.
+
+Without the second file the language still works, but built names,
+notifications and the two dialogs stay English.
+
+`tests/test_translations.py` picks up a new file automatically. It checks
+that each file has exactly the keys of the English source, the same
+placeholders (`{name}`, `{}` …), Markdown links and HTML tags, and that the
+dialog texts have the same keys in every language.
 
 ## Known gaps
 
@@ -147,14 +165,14 @@ Brand names of manufacturers do not appear in labels.
 
 1. Edit `custom_components/bosch_buderus_heating/translations/<code>.json`
    for dialog, repair and entity texts, or
-   `custom_components/bosch_buderus_heating/i18n/<code>.py` for generated
-   names and notification texts, or the dictionary at the top of the two
-   dialog files in `www/`.
+   `custom_components/bosch_buderus_heating/i18n/<code>.json` for generated
+   names, notification texts and the controls and holiday dialogs.
 2. Keep the keys, placeholders in braces, Markdown links and line breaks
    exactly as they are; only translate the text.
 3. If a glossary term is wrong, please say so in the pull request, so it can
    be changed everywhere at once.
 4. Run `pytest tests/test_translations.py` (and `npm test` for the dialogs).
+   No other file needs to change.
 
 A short pull request or an issue with the corrected wording is equally
 welcome. Please mention whether you are a native speaker.

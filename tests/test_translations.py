@@ -24,7 +24,7 @@ from custom_components.bosch_buderus_heating import (
 
 PACKAGE = Path(__file__).parents[1] / "custom_components" / "bosch_buderus_heating"
 TRANSLATIONS = PACKAGE / "translations"
-DIALOGS = ("controls-dialog.js", "holiday-dialog.js")
+DIALOGS = ("controls", "holiday")
 _PLACEHOLDER = re.compile(r"\{[^{}]*\}")
 _LINK = re.compile(r"\]\(([^)]*)\)")
 _HTML = re.compile(r"</?[a-zA-Z][^>]*>")
@@ -115,7 +115,9 @@ def code_texts() -> dict[str, str]:
 def test_translation_files_have_the_source_keys_and_markup() -> None:
     source = dict(_flat(json.loads((PACKAGE / "strings.json").read_text("utf-8"))))
     files = {path.stem: path for path in TRANSLATIONS.glob("*.json")}
-    assert set(files) == set(i18n.LANGUAGES)
+    # Every language with built texts also has Home Assistant translations;
+    # a language may have only the latter and then builds English texts.
+    assert {"en", "de"} <= set(i18n.LANGUAGES) <= set(files)
     english = json.loads(files["en"].read_text("utf-8"))
     assert english == json.loads((PACKAGE / "strings.json").read_text("utf-8"))
     for language, path in files.items():
@@ -126,11 +128,27 @@ def test_translation_files_have_the_source_keys_and_markup() -> None:
             assert _markup(text) == _markup(source[key]), (language, key)
 
 
-def test_code_catalogs_translate_every_built_text() -> None:
+def _data_files() -> dict[str, dict[str, object]]:
+    return {
+        path.stem: json.loads(path.read_text("utf-8"))
+        for path in sorted((PACKAGE / "i18n").glob("*.json"))
+    }
+
+
+def test_data_files_translate_every_built_text() -> None:
     source = code_texts()
     assert len(source) > 400
-    assert set(i18n.CATALOGS) == set(i18n.LANGUAGES) - {"de", "en"}
-    for language, catalog in i18n.CATALOGS.items():
+    data = _data_files()
+    assert set(data) == set(i18n.LANGUAGES)
+    assert set(i18n.CATALOGS) == set(data) - set(i18n.SOURCE_LANGUAGES)
+    for language, content in data.items():
+        if language in i18n.SOURCE_LANGUAGES:
+            # Built German and English texts stay next to the code.
+            assert set(content) == {"dialogs"}, language
+            continue
+        assert set(content) == {"dialogs", "texts"}, language
+        catalog = content["texts"]
+        assert isinstance(catalog, dict)
         assert set(catalog) == set(source), language
         for english, text in catalog.items():
             assert text.strip(), (language, english)
@@ -140,24 +158,74 @@ def test_code_catalogs_translate_every_built_text() -> None:
         assert _markup(german) == _markup(english), english
 
 
-def _dialog_texts(name: str) -> dict[str, dict[str, str]]:
-    script = (PACKAGE / "www" / name).read_text("utf-8")
-    match = re.search(
-        r"^const [A-Z]+_TEXTS = (\{.*?\n\});$", script, re.MULTILINE | re.DOTALL
-    )
-    assert match is not None, name
-    return json.loads(match.group(1))
-
-
 @pytest.mark.parametrize("name", DIALOGS)
-def test_dialog_dictionaries_have_the_same_keys(name: str) -> None:
-    texts = _dialog_texts(name)
-    assert list(texts) == list(i18n.LANGUAGES)
+def test_dialog_texts_have_the_same_keys_in_every_language(name: str) -> None:
+    texts = i18n.dialog_config(name)["texts"]
+    assert isinstance(texts, dict)
+    assert list(texts) == sorted(i18n.LANGUAGES)
     for language, entries in texts.items():
         assert list(entries) == list(texts["en"]), language
         for key, text in entries.items():
             assert text.strip(), (language, key)
             assert _markup(text) == _markup(texts["en"][key]), (language, key)
+    # Every key the dialog script uses has a text.
+    script = (PACKAGE / "www" / f"{name}-dialog.js").read_text("utf-8")
+    used = set(re.findall(r'(?:_text|holidayText)\([^"]*"(\w+)"', script))
+    assert used == set(texts["en"])
+
+
+def test_code_has_no_branch_for_a_single_language() -> None:
+    """A new language needs data files only, no code change."""
+    others = {code.casefold() for code in i18n.LANGUAGES} - {"en", "de"}
+    assert others
+    for path in PACKAGE.rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        literals = {
+            node.value.casefold()
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Constant) and isinstance(node.value, str)
+        }
+        if path == PACKAGE / "i18n" / "__init__.py":
+            literals -= {"no", "nn", "nb"}  # the documented aliases
+        assert not literals & others, path
+    for name in DIALOGS:
+        script = (PACKAGE / "www" / f"{name}-dialog.js").read_text("utf-8")
+        assert not {code for code in others if f'"{code}"' in script}, name
+
+
+def test_a_new_language_needs_only_its_data_file(tmp_path: Path) -> None:
+    for path in (PACKAGE / "i18n").glob("*.json"):
+        (tmp_path / path.name).write_text(path.read_text("utf-8"), "utf-8")
+    (tmp_path / "nl.json").write_text(
+        json.dumps(
+            {
+                "dialogs": {"holiday": {"date": "Datum"}},
+                "texts": {"Heat pump": "Warmtepomp"},
+            }
+        ),
+        "utf-8",
+    )
+    catalogs = i18n.load_catalogs(tmp_path)
+    assert catalogs.languages == ("en", "de", "da", "fi", "nb", "nl", "sv")
+    assert catalogs.texts["nl"]["Heat pump"] == "Warmtepomp"
+    assert catalogs.dialogs["nl"]["holiday"]["date"] == "Datum"
+    assert i18n.resolve_language("nl-BE", catalogs.languages) == "nl"
+
+
+@pytest.mark.parametrize(
+    ("tag", "languages", "code"),
+    [
+        ("pt-BR", ("en", "de", "pt-BR"), "pt-BR"),
+        ("pt_br", ("en", "de", "pt-BR"), "pt-BR"),
+        ("pt-BR", ("en", "de", "pt"), "pt"),
+        ("pt-PT", ("en", "de", "pt-BR"), "en"),
+        ("zh-hans", ("en", "de", "zh-Hans"), "zh-Hans"),
+    ],
+)
+def test_regional_tags_find_the_closest_language(
+    tag: str, languages: tuple[str, ...], code: str
+) -> None:
+    assert i18n.resolve_language(tag, languages) == code
 
 
 @pytest.mark.parametrize(
@@ -172,7 +240,7 @@ def test_dialog_dictionaries_have_the_same_keys(name: str) -> None:
         ("nb", "nb"),
         ("no", "nb"),
         ("nb-NO", "nb"),
-        ("nn", "en"),
+        ("nn", "nb"),
         ("fi", "fi"),
         ("da", "da"),
         ("pt-BR", "en"),

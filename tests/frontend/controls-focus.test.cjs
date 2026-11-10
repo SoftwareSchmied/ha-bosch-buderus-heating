@@ -2,6 +2,7 @@
 // later state updates.
 const { chromium } = require("playwright");
 const path = require("node:path");
+const { dialogConfig } = require("./dialog-texts.cjs");
 const assert = require("node:assert/strict");
 (async () => {
   const browser = await chromium.launch({
@@ -18,6 +19,10 @@ const assert = require("node:assert/strict");
       "../../custom_components/bosch_buderus_heating/www/controls-dialog.js",
     ),
   });
+  // The texts the server sends with every dialog step.
+  await page.evaluate((dialog) => {
+    window.dialog = dialog;
+  }, dialogConfig("controls"));
   // The structure HA uses: the form inside the open dialog's shadow root.
   const mount = (open, disabled = false) =>
     page.evaluate(({ open, disabled }) => {
@@ -46,7 +51,7 @@ const assert = require("node:assert/strict");
           available: true,
         });
       element.hass = { language: "de" };
-      element.selector = { "bosch-buderus-controls": { rows } };
+      element.selector = { "bosch-buderus-controls": { ...window.dialog, rows } };
       element.value = { changes: {} };
       element.disabled = disabled;
       document.activeElement?.blur();

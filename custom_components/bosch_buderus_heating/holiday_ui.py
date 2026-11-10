@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.selector import BooleanSelector, TextSelector
 
 from .ha_schema import validation as vol
+from .i18n import dialog_config
 from .log_helpers import log_failure
 
 DELETE_FIELD = "holiday_delete"
@@ -22,6 +23,10 @@ class HolidayDeleteSelector(BooleanSelector):
     """Render a button while keeping the action a server-validated boolean."""
 
     selector_type = "bosch-buderus-holiday-delete"
+
+    @override
+    def serialize(self) -> dict[str, Any]:
+        return {"selector": {self.selector_type: dialog_config("holiday")}}
 
 
 class HolidayDateTimeSelector(TextSelector):
@@ -37,7 +42,10 @@ class HolidayDateTimeSelector(TextSelector):
     def serialize(self) -> dict[str, Any]:
         return {
             "selector": {
-                self.selector_type: {"default_time": "08:00" if self._creating else ""}
+                self.selector_type: {
+                    "default_time": "08:00" if self._creating else "",
+                    **dialog_config("holiday"),
+                }
             }
         }
 

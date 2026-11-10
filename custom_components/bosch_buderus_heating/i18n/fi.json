@@ -1,11 +1,29 @@
-"""Finnish texts built by the integration, keyed by the English text.
-
-Draft awaiting review by a native speaker; see docs/translations.md.
-"""
-
-from typing import Final
-
-TEXTS: Final[dict[str, str]] = {
+{
+  "dialogs": {
+    "controls": {
+      "system": "Järjestelmä",
+      "heatingCircuit": "Lämmityspiiri",
+      "hotWater": "Lämmin käyttövesi",
+      "sections": "Laitteen osiot",
+      "moreSettings": "Lisää asetuksia",
+      "checkValue": "Tarkista tämä arvo.",
+      "discard": "Hylkää",
+      "reload": "Lataa arvot uudelleen",
+      "unsaved": "Tallentamattomia muutoksia: {count}",
+      "saved": "Muutokset vahvistettu.",
+      "empty": "Ohjauksia ei ole tällä hetkellä saatavilla.",
+      "pending": "Muutokset kirjoitetaan vasta, kun valitset Käytä.",
+      "reopen": "Sulje ikkuna ja avaa se uudelleen.",
+      "reloadFailed": "Arvoja ei voitu ladata uudelleen."
+    },
+    "holiday": {
+      "date": "Päivämäärä",
+      "time": "Aika",
+      "deleteFailed": "Poiston vahvistusta ei voitu avata. Lataa sivu uudelleen ja yritä uudelleen."
+    }
+  },
+  "texts": {
+    "%Y-%m-%d": "%d.%m.%Y",
     "4-way valve (VR4)": "4-tieventtiili (VR4)",
     "A different gateway answers at this address. Set up the local access again.": "Tässä osoitteessa vastaa eri yhdyskäytävä. Määritä paikallinen yhteys uudelleen.",
     "Absolute maximum pressure": "Ehdoton enimmäispaine",
@@ -450,5 +468,6 @@ TEXTS: Final[dict[str, str]] = {
     "{count} older resolved faults are no longer listed.": "Vanhempia ratkaistuja vikoja, joita ei enää luetella: {count}.",
     "{name}: faults resolved": "{name}: viat ratkaistu",
     "{name}: heating system fault": "{name}: lämmitysjärjestelmän vika",
-    "{name}: heating system notifications": "{name}: lämmitysjärjestelmän ilmoitukset",
+    "{name}: heating system notifications": "{name}: lämmitysjärjestelmän ilmoitukset"
+  }
 }

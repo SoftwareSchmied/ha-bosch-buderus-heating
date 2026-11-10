@@ -6,116 +6,22 @@ const onStepGrid = (minimum, step) => {
   return Math.abs(ticks - Math.round(ticks)) < 1e-7;
 };
 
-// Texts in every supported language; keep the keys equal in all of them.
-const CONTROLS_TEXTS = {
-  "en": {
-    "system": "System",
-    "heatingCircuit": "Heating circuit",
-    "hotWater": "Hot water",
-    "sections": "Appliance sections",
-    "moreSettings": "More settings",
-    "checkValue": "Please check this value.",
-    "discard": "Discard",
-    "reload": "Reload values",
-    "unsaved": "{count} unsaved changes",
-    "saved": "Changes confirmed.",
-    "empty": "No controls are currently available.",
-    "pending": "Changes are written only when you select Apply.",
-    "reopen": "Please close and reopen the dialog.",
-    "reloadFailed": "The values could not be reloaded."
-  },
-  "de": {
-    "system": "Anlage",
-    "heatingCircuit": "Heizkreis",
-    "hotWater": "Warmwasser",
-    "sections": "Anlagenbereiche",
-    "moreSettings": "Weitere Einstellungen",
-    "checkValue": "Bitte prüfe diesen Wert.",
-    "discard": "Verwerfen",
-    "reload": "Werte neu laden",
-    "unsaved": "{count} ungespeicherte Änderungen",
-    "saved": "Änderungen bestätigt.",
-    "empty": "Zurzeit sind keine bedienbaren Einstellungen verfügbar.",
-    "pending": "Änderungen werden erst mit Übernehmen geschrieben.",
-    "reopen": "Bitte schließe den Dialog und öffne ihn erneut.",
-    "reloadFailed": "Die Werte konnten nicht neu geladen werden."
-  },
-  "sv": {
-    "system": "Anläggning",
-    "heatingCircuit": "Värmekrets",
-    "hotWater": "Varmvatten",
-    "sections": "Apparatens avsnitt",
-    "moreSettings": "Fler inställningar",
-    "checkValue": "Kontrollera det här värdet.",
-    "discard": "Förkasta",
-    "reload": "Läs in värdena igen",
-    "unsaved": "{count} osparade ändringar",
-    "saved": "Ändringarna bekräftades.",
-    "empty": "Ingen styrning är tillgänglig just nu.",
-    "pending": "Ändringar skrivs först när du väljer Tillämpa.",
-    "reopen": "Stäng och öppna dialogrutan igen.",
-    "reloadFailed": "Värdena kunde inte läsas in igen."
-  },
-  "nb": {
-    "system": "Anlegg",
-    "heatingCircuit": "Varmekrets",
-    "hotWater": "Varmtvann",
-    "sections": "Seksjoner for apparatet",
-    "moreSettings": "Flere innstillinger",
-    "checkValue": "Sjekk denne verdien.",
-    "discard": "Forkast",
-    "reload": "Last verdier på nytt",
-    "unsaved": "{count} ulagrede endringer",
-    "saved": "Endringene er bekreftet.",
-    "empty": "Ingen kontroller er tilgjengelige akkurat nå.",
-    "pending": "Endringer skrives først når du velger Bruk.",
-    "reopen": "Lukk og åpne dialogen på nytt.",
-    "reloadFailed": "Verdiene kunne ikke lastes på nytt."
-  },
-  "fi": {
-    "system": "Järjestelmä",
-    "heatingCircuit": "Lämmityspiiri",
-    "hotWater": "Lämmin käyttövesi",
-    "sections": "Laitteen osiot",
-    "moreSettings": "Lisää asetuksia",
-    "checkValue": "Tarkista tämä arvo.",
-    "discard": "Hylkää",
-    "reload": "Lataa arvot uudelleen",
-    "unsaved": "Tallentamattomia muutoksia: {count}",
-    "saved": "Muutokset vahvistettu.",
-    "empty": "Ohjauksia ei ole tällä hetkellä saatavilla.",
-    "pending": "Muutokset kirjoitetaan vasta, kun valitset Käytä.",
-    "reopen": "Sulje ikkuna ja avaa se uudelleen.",
-    "reloadFailed": "Arvoja ei voitu ladata uudelleen."
-  },
-  "da": {
-    "system": "Anlæg",
-    "heatingCircuit": "Varmekreds",
-    "hotWater": "Varmt brugsvand",
-    "sections": "Apparatets afsnit",
-    "moreSettings": "Flere indstillinger",
-    "checkValue": "Kontrollér denne værdi.",
-    "discard": "Kassér",
-    "reload": "Indlæs værdier igen",
-    "unsaved": "{count} ikke gemte ændringer",
-    "saved": "Ændringerne er bekræftet.",
-    "empty": "Der er ingen tilgængelig styring lige nu.",
-    "pending": "Ændringer skrives først, når du vælger Anvend.",
-    "reopen": "Luk dialogen, og åbn den igen.",
-    "reloadFailed": "Værdierne kunne ikke indlæses igen."
-  }
-};
-// Base language of a tag such as "sv-FI"; English when there is no entry.
-const controlsLanguage = (language) => {
-  const base = String(language || "")
+// The server sends the texts of every language that has a data file
+// (i18n/<code>.json); the profile language picks one, else English.
+const controlsLanguage = (language, texts, aliases) => {
+  const tag = String(language || "")
     .trim()
     .toLowerCase()
-    .replace("_", "-")
-    .split("-")[0];
-  const code = base === "no" ? "nb" : base;
-  return Object.hasOwn(CONTROLS_TEXTS, code) ? code : "en";
+    .replace("_", "-");
+  const base = tag.split("-")[0];
+  const known = new Map(
+    Object.keys(texts || {}).map((code) => [code.toLowerCase(), code]),
+  );
+  for (const candidate of [tag, aliases?.[tag], base, aliases?.[base]]) {
+    if (candidate && known.has(candidate)) return known.get(candidate);
+  }
+  return "en";
 };
-// end of texts
 
 class BoschBuderusControls extends HTMLElement {
   constructor() {
@@ -240,12 +146,16 @@ class BoschBuderusControls extends HTMLElement {
     return undefined;
   }
   get _language() {
-    return controlsLanguage(this._hass?.language);
+    return controlsLanguage(
+      this._hass?.language,
+      this._config?.texts,
+      this._config?.aliases,
+    );
   }
   _text(key, values = {}) {
-    return CONTROLS_TEXTS[this._language][key].replace(/\{(\w+)\}/g, (_, name) =>
-      String(values[name]),
-    );
+    const texts = this._config?.texts || {};
+    const text = texts[this._language]?.[key] ?? texts.en?.[key] ?? "";
+    return text.replace(/\{(\w+)\}/g, (_, name) => String(values[name]));
   }
   _label(labels) {
     return labels?.[this._language] || labels?.en || "";
