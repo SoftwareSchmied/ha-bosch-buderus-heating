@@ -139,6 +139,24 @@ _PRIVATE_PATTERNS = (
     re.compile(r"^/pv/commissioning(?:/.*)?$", re.IGNORECASE),
 )
 
+# C8 (CT-E07, CT-F05): resources of RRC controllers that hold device keys,
+# passwords, personal or location data. They are never requested, stored,
+# polled or exported: ``/devices/devN`` lists the radio key (``dlk``) and the
+# radio identifier (``sgtin``) of a device, the product lookup takes an
+# identifier as its query, and the user and installer resources hold names,
+# addresses, phone numbers and e-mail addresses.
+_NEVER_READ_PATHS = frozenset({"/gateway/userPassword", "/system/autoAway/users/list"})
+_NEVER_READ_PATTERNS = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"^/devices/dev[0-9]+(?:/.*)?$",
+        r"^/devices/productLookup.*$",
+        r"^/devices/[^/]+/homematicip(?:/.*)?$",
+        r"^/gateway/(?:user|installer)(?:/.*)?$",
+        r"^/system/location(?:/.*)?$",
+    )
+)
+
 _OPT_IN_DIAGNOSTIC_PATHS = frozenset(
     {
         "/gateway/serialId",
@@ -966,10 +984,18 @@ _ENGLISH_SUBKEY_NAMES = {
 }
 
 
+def is_never_read(path: str) -> bool:
+    """C8: a resource with keys or personal data that is never requested."""
+    return path in _NEVER_READ_PATHS or any(
+        pattern.fullmatch(path) for pattern in _NEVER_READ_PATTERNS
+    )
+
+
 def is_private_resource(path: str) -> bool:
     """Return whether a resource must never become an entity or diagnostic."""
     return (
-        path in _PRIVATE_PATHS
+        is_never_read(path)
+        or path in _PRIVATE_PATHS
         or path.startswith(_PRIVATE_PREFIXES)
         or any(pattern.fullmatch(path) for pattern in _PRIVATE_PATTERNS)
     )
@@ -1047,6 +1073,8 @@ _ADDED_WORDS = frozenset(
         "host",
         "hostname",
         "netmask",
+        # C8: the key of a radio device (device link key).
+        "dlk",
     }
 )
 _PRIVATE_WORD_PREFIXES = (
@@ -1433,6 +1461,7 @@ def _poll_group(resource: Resource) -> PollGroup:
         "/system/appliance/model",
         "/system/appliance/versionFirmware",
         "/system/iSRC/supportStatus",
+        rrc.PRODUCT_TYPE_PATH,
     }:
         return PollGroup.STATIC
     if resource.path in _STATIC_SETTLED_PATHS:

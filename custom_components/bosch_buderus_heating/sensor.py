@@ -124,6 +124,7 @@ from .resource_catalog import (
     supports_entity,
     unknown_entity_kind,
 )
+from .rrc_device_entities import RadioSignalSensor, track_radio_devices
 from .start_counters import (
     OPTIONAL_START_COUNTER_KEY,
     START_COUNTER_KEYS,
@@ -569,6 +570,7 @@ def _setup_entities(
         _track_source_sensors(entry, coordinator, async_add_entities)
         track_estimated_energy_sensors(entry, coordinator, async_add_entities)
         track_local_only_sensors(entry, coordinator, async_add_entities)
+        track_radio_devices(entry, coordinator, async_add_entities, RadioSignalSensor)
     async_add_entities(entities)
 
 

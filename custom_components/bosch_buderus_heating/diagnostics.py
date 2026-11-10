@@ -13,7 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
-from . import BoschBuderusConfigEntry, rrc
+from . import BoschBuderusConfigEntry, rrc, rrc_devices
 from .auth_diagnostics import loaded_auth_history
 from .auth_lifecycle import connection_token_manager
 from .cloud_pauses import cloud_pause_store
@@ -587,7 +587,10 @@ def _gateway_diagnostics(
         "device_class": _gateway_class(coordinator.gateway),
         "device_profile": "water_softener"
         if is_water_softener(coordinator.gateway, coordinator.resources)
+        else "rrc2"
+        if rrc.profile_evidence(coordinator.gateway.device_type, coordinator.resources)
         else "generic",
+        "rrc_profile": _rrc_profile_diagnostics(coordinator),
         "softener_entities": _softener_entity_registration(coordinator),
         "runtime": {
             **coordinator.diagnostics_summary(),
@@ -728,6 +731,76 @@ def _rrc_program_diagnostics(
         "program_count": len(identifiers) if identifiers is not None else 0,
         "program_names_readable": len(program_names(programs)),
         "zones": zones,
+    }
+
+
+def _rrc_profile_diagnostics(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, object]:
+    """C8 (CT-A02 to CT-A04, E02, E04): an RRC 2.0 room controller.
+
+    Counts, stable tokens and the firmware version only; no names, no device
+    identifiers and no radio keys. ``confirmation`` stays ``unconfirmed``
+    until a controller of the kind has been tested with this integration.
+    """
+    snapshots = coordinator.data or {}
+    resources = dict(coordinator.resources)
+    resources.update(
+        (path, snapshot.resource)
+        for path, snapshot in snapshots.items()
+        if snapshot.available
+    )
+    evidence = rrc.profile_evidence(coordinator.gateway.device_type, resources)
+    discovery = coordinator.discovery_diagnostics.snapshot()
+    access = {
+        "forbidden_paths": discovery["forbidden_paths"],
+        "access_reason": discovery["access_reason"],
+    }
+    if not evidence:
+        return {"profile": None, **access}
+    zones = {match.group(1) for path in resources if (match := rrc.ZONE.match(path))}
+    if (zone_list := resources.get(rrc.ZONE_LIST)) is not None:
+        zones.update(str(item) for item in rrc.listed_ids(zone_list) or ())
+    programs = resources.get(rrc.PROGRAM_LIST)
+    device_list = resources.get(rrc.DEVICE_LIST)
+    devices = rrc_devices.parse_devices(device_list) or ()
+    snapshot = snapshots.get(rrc.DEVICE_LIST)
+    product = resources.get(rrc.PRODUCT_TYPE_PATH)
+    firmware = resources.get("/gateway/versionFirmware")
+    return {
+        "profile": "rrc2",
+        "evidence": list(evidence),
+        "confirmation": "unconfirmed",
+        "physical_device_verified": False,
+        "local_access": "not_available",
+        "product_type": None
+        if product is None
+        else rrc.PRODUCT_TYPE
+        if rrc.is_product_type(product.value)
+        else "other",
+        "firmware": _safe_token(firmware.value)
+        if firmware is not None and isinstance(firmware.value, str)
+        else None,
+        "zone_count": len(zones),
+        "program_count": len(rrc.listed_ids(programs) or ()) if programs else 0,
+        "device_list": "missing"
+        if rrc.DEVICE_LIST not in coordinator.resources
+        else "current"
+        if snapshot is not None
+        and snapshot.available
+        and snapshot.freshness is Freshness.FRESH
+        else "not_current",
+        "device_list_issue": rrc.list_issue(device_list) if device_list else None,
+        "device_count": len(devices),
+        "device_types": dict(
+            sorted(Counter(_safe_token(item.kind) for item in devices).items())
+        ),
+        "devices_with_low_battery": sum(item.battery == "low" for item in devices),
+        "device_fields_missing": rrc_devices.field_issues(devices),
+        "device_firmware_read": sum(
+            rrc.RADIO_FIRMWARE.fullmatch(path) is not None for path in resources
+        ),
+        **access,
     }
 
 

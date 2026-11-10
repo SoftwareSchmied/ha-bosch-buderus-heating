@@ -19,6 +19,8 @@ from custom_components.bosch_buderus_heating import (
     notifications,
     resource_catalog,
     rrc,
+    rrc_device_entities,
+    rrc_devices,
     sensor,
     water_softener,
 )
@@ -99,6 +101,15 @@ def code_texts() -> dict[str, str]:
     pairs.extend(control_presentation._LABELS.values())
     pairs.extend(rrc._LABELS.values())
     pairs.extend(rrc._CONTROL_LABELS.values())
+    pairs.extend(rrc_devices.TYPE_LABELS.values())
+    pairs.append(rrc_devices.UNKNOWN_TYPE_LABEL)
+    pairs.extend(
+        entity.names
+        for entity in (
+            rrc_device_entities.RadioBatteryLowBinarySensor,
+            rrc_device_entities.RadioSignalSensor,
+        )
+    )
     pairs.extend(
         (texts["de"], texts["en"])
         for table in (faults._KNOWN_SUMMARIES, faults._SEVERITY_LABELS)

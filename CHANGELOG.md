@@ -45,6 +45,58 @@ Versioning after its first tagged preview.
 - I have tested these changes only with simulated data in the shapes of the
   observed TC100.2 answers and of the app's demo answers.
 
+#### Room controllers of the RRC 2.0 platform (CT200 and TC100.2)
+
+- **Recognised by their resources:** a gateway the cloud reports as device
+  type `rrc2`, with the product type `RRC 2.0` or with RRC zones is handled as
+  a room controller. A new controller device is named "Room controller" and
+  shows the product type the cloud reports as its model; the setup offers a
+  controller the cloud lists without a name as "Room controller" as well.
+  Nothing depends on a model name. The CT200 is listed as expected but untested in the
+  [compatibility](docs/compatibility.md) page; the TC100.2 zones remain
+  confirmed by the report in #113.
+- **Discovery no longer starves on large systems
+  ([#122](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/122)):**
+  on a TC100.2 with nine radio devices the device tree used 206 of the 512
+  discovery reads and the program list was never requested. On a room
+  controller the zone, program and device lists are now read first, and of
+  the device tree only the device list and one firmware reading per device
+  (at most 64). Probes meant for other device families are no longer sent
+  there. Thank you, @obvius1, for the diagnostics that showed this.
+- **HTTP 500 for missing paths:** these controllers answer HTTP 500 for a
+  path they do not have. Such an answer to a catalog or optional probe now
+  counts as "missing" and no longer ends the discovery; roots, advertised
+  references and failing requests keep the outage rule.
+- **Radio devices, read only:** every radio device in the controller's device
+  list becomes its own device below the controller, named after its type
+  (for example "Radiator thermostat 2") with its zone as the suggested area.
+  It has a "Battery low" binary sensor (enabled) and a "Radio signal" sensor
+  (disabled by default), both diagnostic, and shows its firmware version.
+  Nothing is written to radio devices.
+- **Privacy:** the device arrays that carry the radio key (`dlk`) and radio
+  identifier (`sgtin`) of each device, the product lookup, the user,
+  installer, password, location and phone resources are never requested,
+  stored or exported, on any gateway. A discovery inventory stored by an
+  earlier release drops them when it is loaded. `dlk` now counts as an
+  identifier.
+- **Diagnostics:** a new section `rrc_profile` reports the profile, its
+  evidence, the firmware, the numbers of zones, programs and radio devices,
+  `confirmation: unconfirmed` and `local_access: not_available`. Discovery
+  diagnostics separate single refused paths (`some_paths_forbidden`) from a
+  sign-in without the rights for the controller
+  (`scope_or_permission_denied`), and count the paths deliberately not read.
+  The diagnostics schema stays 44.
+- **No devices found:** the setup message now explains that a room controller
+  with older firmware only appears once its firmware has been updated and it
+  has been set up in the current app with the SingleKey ID.
+- **No local access:** these room controllers have no local interface; the
+  [room controller documentation](docs/rrc-zones-and-schedules.md#room-controllers-of-the-rrc-20-platform)
+  explains this.
+- I have tested this only with simulated data: a synthetic controller with 11
+  zones, 12 radio devices and 24 programs built from the app's demo answers,
+  and the shape of the TC100.2 device tree from #122. A test on a real CT200
+  and of the radio devices on a real controller is still pending.
+
 #### Translations
 
 - **Swedish, Norwegian Bokmål, Finnish and Danish:** the integration now

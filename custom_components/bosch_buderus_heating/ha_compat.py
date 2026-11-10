@@ -88,3 +88,18 @@ def local_header_limits() -> dict[str, Any]:
     if "max_headers" in parameters:
         return {"max_headers": MAX_LOCAL_HEADERS}
     return {}
+
+
+def via_device(
+    registry: dr.DeviceRegistry, identifier: tuple[str, str], config_entry_id: str
+) -> dict[str, Any]:
+    """The device info fields that place a device below another one.
+
+    Home Assistant 2026.9 takes the parent's device ID (``via_device_id``);
+    the identifier form ``via_device`` is deprecated there. Older releases
+    know only the identifier. Without a registered parent nothing is set.
+    """
+    if "via_device_id" not in dr.DeviceInfo.__optional_keys__:
+        return {"via_device": identifier}
+    parent = device_by_identifier(registry, identifier, config_entry_id)
+    return {"via_device_id": parent.id} if parent is not None else {}

@@ -1,0 +1,8440 @@
+{
+ "provenance": {
+  "kind": "synthetic",
+  "basis": "compatibility_mapping",
+  "reference": "RRC 2.0 room controller (CT200 class) with 11 zones, 12 radio devices and 24 programs",
+  "firmware": null,
+  "capture_date": null,
+  "created": "2026-11-10",
+  "redaction": "Constructed values only. Field names and JSON types follow the vendor app's demo answers and the anonymized TC100.2 device tree of issue 122 (leaf names and types, no values). Names are Base64 placeholders; radio keys, identifiers and personal data are obvious markers for leak tests.",
+  "physical_device_verified": false,
+  "contract": "Missing catalog and optional paths answer HTTP 500, as reported for these controllers; missing roots answer 404. /devices/devN, homematicip and the user, installer, password, location and phone resources must never be requested."
+ },
+ "resources": [
+  {
+   "id": "/gateway",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/productType"
+    },
+    {
+     "id": "/gateway/versionFirmware"
+    },
+    {
+     "id": "/gateway/versionFirmwareBuild"
+    },
+    {
+     "id": "/gateway/versionHardware"
+    },
+    {
+     "id": "/gateway/userPassword"
+    },
+    {
+     "id": "/gateway/user"
+    },
+    {
+     "id": "/gateway/installer"
+    },
+    {
+     "id": "/gateway/update"
+    },
+    {
+     "id": "/gateway/hmip"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/productType",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "RRC 2.0"
+  },
+  {
+   "id": "/gateway/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "05.04.00"
+  },
+  {
+   "id": "/gateway/versionFirmwareBuild",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "0000AA"
+  },
+  {
+   "id": "/gateway/versionHardware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "10"
+  },
+  {
+   "id": "/gateway/userPassword",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "PRIVATE-MARKER-PASSWORD"
+  },
+  {
+   "id": "/gateway/user",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/user/email"
+    },
+    {
+     "id": "/gateway/user/name"
+    },
+    {
+     "id": "/gateway/user/phone"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/user/email",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "private-marker@example.invalid"
+  },
+  {
+   "id": "/gateway/user/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "PRIVATE-MARKER-NAME"
+  },
+  {
+   "id": "/gateway/user/phone",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "PRIVATE-MARKER-PHONE"
+  },
+  {
+   "id": "/gateway/installer",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/installer/companyName"
+    },
+    {
+     "id": "/gateway/installer/phone"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/installer/companyName",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "PRIVATE-MARKER-COMPANY"
+  },
+  {
+   "id": "/gateway/installer/phone",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "PRIVATE-MARKER-PHONE"
+  },
+  {
+   "id": "/gateway/update",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/update/state"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/update/state",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/gateway/hmip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/gateway/hmip/versionApplication"
+    }
+   ]
+  },
+  {
+   "id": "/gateway/hmip/versionApplication",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.2"
+  },
+  {
+   "id": "/system",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/sensors"
+    },
+    {
+     "id": "/system/awayMode"
+    },
+    {
+     "id": "/system/location"
+    },
+    {
+     "id": "/system/autoAway"
+    },
+    {
+     "id": "/system/appliance"
+    }
+   ]
+  },
+  {
+   "id": "/system/sensors",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/sensors/temperatures"
+    }
+   ]
+  },
+  {
+   "id": "/system/sensors/temperatures",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/sensors/temperatures/outdoor_t1"
+    }
+   ]
+  },
+  {
+   "id": "/system/sensors/temperatures/outdoor_t1",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -25.0,
+   "maxValue": 50.0,
+   "stepSize": 1.0,
+   "value": 7.0
+  },
+  {
+   "id": "/system/awayMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/awayMode/enabled"
+    },
+    {
+     "id": "/system/awayMode/temperature"
+    }
+   ]
+  },
+  {
+   "id": "/system/awayMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false",
+   "used": "true"
+  },
+  {
+   "id": "/system/awayMode/temperature",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 15.5
+  },
+  {
+   "id": "/system/location",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/location/coordinates"
+    }
+   ]
+  },
+  {
+   "id": "/system/location/coordinates",
+   "type": "stringArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    "PRIVATE-MARKER-LAT",
+    "PRIVATE-MARKER-LON"
+   ]
+  },
+  {
+   "id": "/system/autoAway",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/autoAway/enabled"
+    },
+    {
+     "id": "/system/autoAway/users"
+    }
+   ]
+  },
+  {
+   "id": "/system/autoAway/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false",
+   "used": "true"
+  },
+  {
+   "id": "/system/autoAway/users",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/autoAway/users/list"
+    }
+   ]
+  },
+  {
+   "id": "/system/autoAway/users/list",
+   "type": "autoAwayArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    {
+     "away": "false",
+     "id": 1,
+     "name": "PRIVATE-MARKER-PHONE"
+    }
+   ]
+  },
+  {
+   "id": "/system/appliance",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/system/appliance/systemPressure"
+    }
+   ]
+  },
+  {
+   "id": "/system/appliance/systemPressure",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 25.0,
+   "stepSize": 0.1,
+   "value": 1.6
+  },
+  {
+   "id": "/heatingCircuits",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatingCircuits/hc1"
+    }
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatingCircuits/hc1/supplyTemperatureSetpoint"
+    }
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc1/supplyTemperatureSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 90.0,
+   "stepSize": 1.0,
+   "value": 35.0
+  },
+  {
+   "id": "/dhwCircuits",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw1"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw1/operationMode"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw1/operationMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "high",
+   "allowedValues": [
+    "high",
+    "off"
+   ]
+  },
+  {
+   "id": "/heatSources",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatSources/actualModulation"
+    }
+   ]
+  },
+  {
+   "id": "/heatSources/actualModulation",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 20.0
+  },
+  {
+   "id": "/notifications",
+   "type": "errorList",
+   "writeable": 0,
+   "recordable": 0,
+   "value": []
+  },
+  {
+   "id": "/zones",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/list"
+    },
+    {
+     "id": "/zones/deviceTypeAllowed"
+    },
+    {
+     "id": "/zones/zn1"
+    },
+    {
+     "id": "/zones/zn2"
+    },
+    {
+     "id": "/zones/zn3"
+    },
+    {
+     "id": "/zones/zn4"
+    },
+    {
+     "id": "/zones/zn5"
+    },
+    {
+     "id": "/zones/zn6"
+    },
+    {
+     "id": "/zones/zn7"
+    },
+    {
+     "id": "/zones/zn8"
+    },
+    {
+     "id": "/zones/zn9"
+    },
+    {
+     "id": "/zones/zn10"
+    },
+    {
+     "id": "/zones/zn11"
+    }
+   ]
+  },
+  {
+   "id": "/zones/list",
+   "type": "zoneArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    {
+     "id": 1,
+     "name": "UmF1bSAx",
+     "program": 2
+    },
+    {
+     "id": 2,
+     "name": "UmF1bSAy",
+     "program": 3
+    },
+    {
+     "id": 3,
+     "name": "UmF1bSAz",
+     "program": 4
+    },
+    {
+     "id": 4,
+     "name": "UmF1bSA0",
+     "program": 5
+    },
+    {
+     "id": 5,
+     "name": "UmF1bSA1",
+     "program": 6
+    },
+    {
+     "id": 6,
+     "name": "UmF1bSA2",
+     "program": 7
+    },
+    {
+     "id": 7,
+     "name": "UmF1bSA3",
+     "program": 8
+    },
+    {
+     "id": 8,
+     "name": "UmF1bSA4",
+     "program": 9
+    },
+    {
+     "id": 9,
+     "name": "UmF1bSA5",
+     "program": 10
+    },
+    {
+     "id": 10,
+     "name": "UmF1bSAxMA==",
+     "program": 11
+    },
+    {
+     "id": 11,
+     "name": "UmF1bSAxMQ==",
+     "program": 12
+    }
+   ]
+  },
+  {
+   "id": "/zones/deviceTypeAllowed",
+   "type": "zoneConfigArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    {
+     "id": 1,
+     "allowDev": "etrv"
+    },
+    {
+     "id": 2,
+     "allowDev": "etrv"
+    },
+    {
+     "id": 3,
+     "allowDev": "etrv"
+    },
+    {
+     "id": 4,
+     "allowDev": "etrv"
+    },
+    {
+     "id": 5,
+     "allowDev": "etrv"
+    },
+    {
+     "id": 6,
+     "allowDev": "etrv"
+    },
+    {
+     "id": 7,
+     "allowDev": "etrv"
+    },
+    {
+     "id": 8,
+     "allowDev": "etrv"
+    },
+    {
+     "id": 9,
+     "allowDev": "etrv"
+    },
+    {
+     "id": 10,
+     "allowDev": "etrv"
+    },
+    {
+     "id": 11,
+     "allowDev": "etrv"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn1/name"
+    },
+    {
+     "id": "/zones/zn1/icon"
+    },
+    {
+     "id": "/zones/zn1/status"
+    },
+    {
+     "id": "/zones/zn1/temperatureActual"
+    },
+    {
+     "id": "/zones/zn1/temperatureHeatingSetpoint"
+    },
+    {
+     "id": "/zones/zn1/manualTemperatureHeating"
+    },
+    {
+     "id": "/zones/zn1/clockOverride"
+    },
+    {
+     "id": "/zones/zn1/userMode"
+    },
+    {
+     "id": "/zones/zn1/clockProgram"
+    },
+    {
+     "id": "/zones/zn1/nextSetpoint"
+    },
+    {
+     "id": "/zones/zn1/openWindowDetection"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn1/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UmF1bSAx"
+  },
+  {
+   "id": "/zones/zn1/icon",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "living room"
+  },
+  {
+   "id": "/zones/zn1/status",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn1/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.1,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn1/temperatureHeatingSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn1/manualTemperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn1/clockOverride",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn1/clockOverride/temperatureHeating"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn1/clockOverride/temperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn1/userMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn1/clockProgram",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 2.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn1/nextSetpoint",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn1/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn1/openWindowDetection/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn1/openWindowDetection/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn2",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn2/name"
+    },
+    {
+     "id": "/zones/zn2/icon"
+    },
+    {
+     "id": "/zones/zn2/status"
+    },
+    {
+     "id": "/zones/zn2/temperatureActual"
+    },
+    {
+     "id": "/zones/zn2/temperatureHeatingSetpoint"
+    },
+    {
+     "id": "/zones/zn2/manualTemperatureHeating"
+    },
+    {
+     "id": "/zones/zn2/clockOverride"
+    },
+    {
+     "id": "/zones/zn2/userMode"
+    },
+    {
+     "id": "/zones/zn2/clockProgram"
+    },
+    {
+     "id": "/zones/zn2/nextSetpoint"
+    },
+    {
+     "id": "/zones/zn2/openWindowDetection"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn2/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UmF1bSAy"
+  },
+  {
+   "id": "/zones/zn2/icon",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "living room"
+  },
+  {
+   "id": "/zones/zn2/status",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn2/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.2,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn2/temperatureHeatingSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn2/manualTemperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn2/clockOverride",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn2/clockOverride/temperatureHeating"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn2/clockOverride/temperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn2/userMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn2/clockProgram",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 3.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn2/nextSetpoint",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn2/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn2/openWindowDetection/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn2/openWindowDetection/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn3",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn3/name"
+    },
+    {
+     "id": "/zones/zn3/icon"
+    },
+    {
+     "id": "/zones/zn3/status"
+    },
+    {
+     "id": "/zones/zn3/temperatureActual"
+    },
+    {
+     "id": "/zones/zn3/temperatureHeatingSetpoint"
+    },
+    {
+     "id": "/zones/zn3/manualTemperatureHeating"
+    },
+    {
+     "id": "/zones/zn3/clockOverride"
+    },
+    {
+     "id": "/zones/zn3/userMode"
+    },
+    {
+     "id": "/zones/zn3/clockProgram"
+    },
+    {
+     "id": "/zones/zn3/nextSetpoint"
+    },
+    {
+     "id": "/zones/zn3/openWindowDetection"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn3/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UmF1bSAz"
+  },
+  {
+   "id": "/zones/zn3/icon",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "living room"
+  },
+  {
+   "id": "/zones/zn3/status",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn3/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.3,
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn3/temperatureHeatingSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn3/manualTemperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn3/clockOverride",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn3/clockOverride/temperatureHeating"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn3/clockOverride/temperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn3/userMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn3/clockProgram",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 4.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn3/nextSetpoint",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn3/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn3/openWindowDetection/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn3/openWindowDetection/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn4",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn4/name"
+    },
+    {
+     "id": "/zones/zn4/icon"
+    },
+    {
+     "id": "/zones/zn4/status"
+    },
+    {
+     "id": "/zones/zn4/temperatureActual"
+    },
+    {
+     "id": "/zones/zn4/temperatureHeatingSetpoint"
+    },
+    {
+     "id": "/zones/zn4/manualTemperatureHeating"
+    },
+    {
+     "id": "/zones/zn4/clockOverride"
+    },
+    {
+     "id": "/zones/zn4/userMode"
+    },
+    {
+     "id": "/zones/zn4/clockProgram"
+    },
+    {
+     "id": "/zones/zn4/nextSetpoint"
+    },
+    {
+     "id": "/zones/zn4/openWindowDetection"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn4/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UmF1bSA0"
+  },
+  {
+   "id": "/zones/zn4/icon",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "living room"
+  },
+  {
+   "id": "/zones/zn4/status",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn4/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.4,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn4/temperatureHeatingSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn4/manualTemperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn4/clockOverride",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn4/clockOverride/temperatureHeating"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn4/clockOverride/temperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn4/userMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "manual",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn4/clockProgram",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 5.0,
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn4/nextSetpoint",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn4/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn4/openWindowDetection/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn4/openWindowDetection/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn5",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn5/name"
+    },
+    {
+     "id": "/zones/zn5/icon"
+    },
+    {
+     "id": "/zones/zn5/status"
+    },
+    {
+     "id": "/zones/zn5/temperatureActual"
+    },
+    {
+     "id": "/zones/zn5/temperatureHeatingSetpoint"
+    },
+    {
+     "id": "/zones/zn5/manualTemperatureHeating"
+    },
+    {
+     "id": "/zones/zn5/clockOverride"
+    },
+    {
+     "id": "/zones/zn5/userMode"
+    },
+    {
+     "id": "/zones/zn5/clockProgram"
+    },
+    {
+     "id": "/zones/zn5/nextSetpoint"
+    },
+    {
+     "id": "/zones/zn5/openWindowDetection"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn5/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UmF1bSA1"
+  },
+  {
+   "id": "/zones/zn5/icon",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "living room"
+  },
+  {
+   "id": "/zones/zn5/status",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn5/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn5/temperatureHeatingSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn5/manualTemperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn5/clockOverride",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn5/clockOverride/temperatureHeating"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn5/clockOverride/temperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn5/userMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn5/clockProgram",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 6.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn5/nextSetpoint",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn5/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn5/openWindowDetection/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn5/openWindowDetection/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn6",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn6/name"
+    },
+    {
+     "id": "/zones/zn6/icon"
+    },
+    {
+     "id": "/zones/zn6/status"
+    },
+    {
+     "id": "/zones/zn6/temperatureActual"
+    },
+    {
+     "id": "/zones/zn6/temperatureHeatingSetpoint"
+    },
+    {
+     "id": "/zones/zn6/manualTemperatureHeating"
+    },
+    {
+     "id": "/zones/zn6/clockOverride"
+    },
+    {
+     "id": "/zones/zn6/userMode"
+    },
+    {
+     "id": "/zones/zn6/clockProgram"
+    },
+    {
+     "id": "/zones/zn6/nextSetpoint"
+    },
+    {
+     "id": "/zones/zn6/openWindowDetection"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn6/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UmF1bSA2"
+  },
+  {
+   "id": "/zones/zn6/icon",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "living room"
+  },
+  {
+   "id": "/zones/zn6/status",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn6/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.6,
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn6/temperatureHeatingSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn6/manualTemperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn6/clockOverride",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn6/clockOverride/temperatureHeating"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn6/clockOverride/temperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn6/userMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn6/clockProgram",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 7.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn6/nextSetpoint",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn6/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn6/openWindowDetection/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn6/openWindowDetection/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn7",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn7/name"
+    },
+    {
+     "id": "/zones/zn7/icon"
+    },
+    {
+     "id": "/zones/zn7/status"
+    },
+    {
+     "id": "/zones/zn7/temperatureActual"
+    },
+    {
+     "id": "/zones/zn7/temperatureHeatingSetpoint"
+    },
+    {
+     "id": "/zones/zn7/manualTemperatureHeating"
+    },
+    {
+     "id": "/zones/zn7/clockOverride"
+    },
+    {
+     "id": "/zones/zn7/userMode"
+    },
+    {
+     "id": "/zones/zn7/clockProgram"
+    },
+    {
+     "id": "/zones/zn7/nextSetpoint"
+    },
+    {
+     "id": "/zones/zn7/openWindowDetection"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn7/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UmF1bSA3"
+  },
+  {
+   "id": "/zones/zn7/icon",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "living room"
+  },
+  {
+   "id": "/zones/zn7/status",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn7/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.7,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn7/temperatureHeatingSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn7/manualTemperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn7/clockOverride",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn7/clockOverride/temperatureHeating"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn7/clockOverride/temperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn7/userMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn7/clockProgram",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 8.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn7/nextSetpoint",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn7/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn7/openWindowDetection/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn7/openWindowDetection/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn8",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn8/name"
+    },
+    {
+     "id": "/zones/zn8/icon"
+    },
+    {
+     "id": "/zones/zn8/status"
+    },
+    {
+     "id": "/zones/zn8/temperatureActual"
+    },
+    {
+     "id": "/zones/zn8/temperatureHeatingSetpoint"
+    },
+    {
+     "id": "/zones/zn8/manualTemperatureHeating"
+    },
+    {
+     "id": "/zones/zn8/clockOverride"
+    },
+    {
+     "id": "/zones/zn8/userMode"
+    },
+    {
+     "id": "/zones/zn8/clockProgram"
+    },
+    {
+     "id": "/zones/zn8/nextSetpoint"
+    },
+    {
+     "id": "/zones/zn8/openWindowDetection"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn8/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UmF1bSA4"
+  },
+  {
+   "id": "/zones/zn8/icon",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "living room"
+  },
+  {
+   "id": "/zones/zn8/status",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn8/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.8,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn8/temperatureHeatingSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn8/manualTemperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn8/clockOverride",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn8/clockOverride/temperatureHeating"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn8/clockOverride/temperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn8/userMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn8/clockProgram",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 9.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn8/nextSetpoint",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn8/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn8/openWindowDetection/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn8/openWindowDetection/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn9",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn9/name"
+    },
+    {
+     "id": "/zones/zn9/icon"
+    },
+    {
+     "id": "/zones/zn9/status"
+    },
+    {
+     "id": "/zones/zn9/temperatureActual"
+    },
+    {
+     "id": "/zones/zn9/temperatureHeatingSetpoint"
+    },
+    {
+     "id": "/zones/zn9/manualTemperatureHeating"
+    },
+    {
+     "id": "/zones/zn9/clockOverride"
+    },
+    {
+     "id": "/zones/zn9/userMode"
+    },
+    {
+     "id": "/zones/zn9/clockProgram"
+    },
+    {
+     "id": "/zones/zn9/nextSetpoint"
+    },
+    {
+     "id": "/zones/zn9/openWindowDetection"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn9/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UmF1bSA5"
+  },
+  {
+   "id": "/zones/zn9/icon",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "living room"
+  },
+  {
+   "id": "/zones/zn9/status",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn9/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.9,
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn9/temperatureHeatingSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn9/manualTemperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn9/clockOverride",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn9/clockOverride/temperatureHeating"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn9/clockOverride/temperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn9/userMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn9/clockProgram",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 10.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn9/nextSetpoint",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn9/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn9/openWindowDetection/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn9/openWindowDetection/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn10",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn10/name"
+    },
+    {
+     "id": "/zones/zn10/icon"
+    },
+    {
+     "id": "/zones/zn10/status"
+    },
+    {
+     "id": "/zones/zn10/temperatureActual"
+    },
+    {
+     "id": "/zones/zn10/temperatureHeatingSetpoint"
+    },
+    {
+     "id": "/zones/zn10/manualTemperatureHeating"
+    },
+    {
+     "id": "/zones/zn10/clockOverride"
+    },
+    {
+     "id": "/zones/zn10/userMode"
+    },
+    {
+     "id": "/zones/zn10/clockProgram"
+    },
+    {
+     "id": "/zones/zn10/nextSetpoint"
+    },
+    {
+     "id": "/zones/zn10/openWindowDetection"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn10/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UmF1bSAxMA=="
+  },
+  {
+   "id": "/zones/zn10/icon",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "living room"
+  },
+  {
+   "id": "/zones/zn10/status",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn10/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn10/temperatureHeatingSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn10/manualTemperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn10/clockOverride",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn10/clockOverride/temperatureHeating"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn10/clockOverride/temperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn10/userMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn10/clockProgram",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 11.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn10/nextSetpoint",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn10/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn10/openWindowDetection/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn10/openWindowDetection/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "false"
+  },
+  {
+   "id": "/zones/zn11",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn11/name"
+    },
+    {
+     "id": "/zones/zn11/icon"
+    },
+    {
+     "id": "/zones/zn11/status"
+    },
+    {
+     "id": "/zones/zn11/temperatureActual"
+    },
+    {
+     "id": "/zones/zn11/temperatureHeatingSetpoint"
+    },
+    {
+     "id": "/zones/zn11/manualTemperatureHeating"
+    },
+    {
+     "id": "/zones/zn11/clockOverride"
+    },
+    {
+     "id": "/zones/zn11/userMode"
+    },
+    {
+     "id": "/zones/zn11/clockProgram"
+    },
+    {
+     "id": "/zones/zn11/nextSetpoint"
+    },
+    {
+     "id": "/zones/zn11/openWindowDetection"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn11/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UmF1bSAxMQ=="
+  },
+  {
+   "id": "/zones/zn11/icon",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "living room"
+  },
+  {
+   "id": "/zones/zn11/status",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  },
+  {
+   "id": "/zones/zn11/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.1,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn11/temperatureHeatingSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn11/manualTemperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 21.0
+  },
+  {
+   "id": "/zones/zn11/clockOverride",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn11/clockOverride/temperatureHeating"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn11/clockOverride/temperatureHeating",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/zones/zn11/userMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "clock",
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn11/clockProgram",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 12.0,
+   "used": "true"
+  },
+  {
+   "id": "/zones/zn11/nextSetpoint",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 999.0,
+   "used": "false",
+   "available": "false"
+  },
+  {
+   "id": "/zones/zn11/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/zones/zn11/openWindowDetection/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/zones/zn11/openWindowDetection/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "false"
+  },
+  {
+   "id": "/programs",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/list"
+    },
+    {
+     "id": "/programs/pg1"
+    },
+    {
+     "id": "/programs/pg2"
+    },
+    {
+     "id": "/programs/pg3"
+    },
+    {
+     "id": "/programs/pg4"
+    },
+    {
+     "id": "/programs/pg5"
+    },
+    {
+     "id": "/programs/pg6"
+    },
+    {
+     "id": "/programs/pg7"
+    },
+    {
+     "id": "/programs/pg8"
+    },
+    {
+     "id": "/programs/pg9"
+    },
+    {
+     "id": "/programs/pg10"
+    },
+    {
+     "id": "/programs/pg11"
+    },
+    {
+     "id": "/programs/pg12"
+    },
+    {
+     "id": "/programs/pg13"
+    },
+    {
+     "id": "/programs/pg14"
+    },
+    {
+     "id": "/programs/pg15"
+    },
+    {
+     "id": "/programs/pg16"
+    },
+    {
+     "id": "/programs/pg17"
+    },
+    {
+     "id": "/programs/pg18"
+    },
+    {
+     "id": "/programs/pg19"
+    },
+    {
+     "id": "/programs/pg20"
+    },
+    {
+     "id": "/programs/pg21"
+    },
+    {
+     "id": "/programs/pg22"
+    },
+    {
+     "id": "/programs/pg23"
+    },
+    {
+     "id": "/programs/pg24"
+    }
+   ]
+  },
+  {
+   "id": "/programs/list",
+   "type": "programArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    {
+     "id": 1,
+     "name": "UHJvZ3JhbW0gMQ=="
+    },
+    {
+     "id": 2,
+     "name": "UHJvZ3JhbW0gMg=="
+    },
+    {
+     "id": 3,
+     "name": "UHJvZ3JhbW0gMw=="
+    },
+    {
+     "id": 4,
+     "name": "UHJvZ3JhbW0gNA=="
+    },
+    {
+     "id": 5,
+     "name": "UHJvZ3JhbW0gNQ=="
+    },
+    {
+     "id": 6,
+     "name": "UHJvZ3JhbW0gNg=="
+    },
+    {
+     "id": 7,
+     "name": "UHJvZ3JhbW0gNw=="
+    },
+    {
+     "id": 8,
+     "name": "UHJvZ3JhbW0gOA=="
+    },
+    {
+     "id": 9,
+     "name": "UHJvZ3JhbW0gOQ=="
+    },
+    {
+     "id": 10,
+     "name": "UHJvZ3JhbW0gMTA="
+    },
+    {
+     "id": 11,
+     "name": "UHJvZ3JhbW0gMTE="
+    },
+    {
+     "id": 12,
+     "name": "UHJvZ3JhbW0gMTI="
+    },
+    {
+     "id": 13,
+     "name": "UHJvZ3JhbW0gMTM="
+    },
+    {
+     "id": 14,
+     "name": "UHJvZ3JhbW0gMTQ="
+    },
+    {
+     "id": 15,
+     "name": "UHJvZ3JhbW0gMTU="
+    },
+    {
+     "id": 16,
+     "name": "UHJvZ3JhbW0gMTY="
+    },
+    {
+     "id": 17,
+     "name": "UHJvZ3JhbW0gMTc="
+    },
+    {
+     "id": 18,
+     "name": "UHJvZ3JhbW0gMTg="
+    },
+    {
+     "id": 19,
+     "name": "UHJvZ3JhbW0gMTk="
+    },
+    {
+     "id": 20,
+     "name": "UHJvZ3JhbW0gMjA="
+    },
+    {
+     "id": 21,
+     "name": "UHJvZ3JhbW0gMjE="
+    },
+    {
+     "id": 22,
+     "name": "UHJvZ3JhbW0gMjI="
+    },
+    {
+     "id": 23,
+     "name": "UHJvZ3JhbW0gMjM="
+    },
+    {
+     "id": 24,
+     "name": "UHJvZ3JhbW0gMjQ="
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg1/name"
+    },
+    {
+     "id": "/programs/pg1/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg1/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMQ=="
+  },
+  {
+   "id": "/programs/pg1/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg2",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg2/name"
+    },
+    {
+     "id": "/programs/pg2/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg2/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMg=="
+  },
+  {
+   "id": "/programs/pg2/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg3",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg3/name"
+    },
+    {
+     "id": "/programs/pg3/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg3/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMw=="
+  },
+  {
+   "id": "/programs/pg3/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg4",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg4/name"
+    },
+    {
+     "id": "/programs/pg4/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg4/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gNA=="
+  },
+  {
+   "id": "/programs/pg4/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg5",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg5/name"
+    },
+    {
+     "id": "/programs/pg5/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg5/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gNQ=="
+  },
+  {
+   "id": "/programs/pg5/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg6",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg6/name"
+    },
+    {
+     "id": "/programs/pg6/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg6/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gNg=="
+  },
+  {
+   "id": "/programs/pg6/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg7",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg7/name"
+    },
+    {
+     "id": "/programs/pg7/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg7/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gNw=="
+  },
+  {
+   "id": "/programs/pg7/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg8",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg8/name"
+    },
+    {
+     "id": "/programs/pg8/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg8/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gOA=="
+  },
+  {
+   "id": "/programs/pg8/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg9",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg9/name"
+    },
+    {
+     "id": "/programs/pg9/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg9/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gOQ=="
+  },
+  {
+   "id": "/programs/pg9/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg10",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg10/name"
+    },
+    {
+     "id": "/programs/pg10/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg10/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMTA="
+  },
+  {
+   "id": "/programs/pg10/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg11",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg11/name"
+    },
+    {
+     "id": "/programs/pg11/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg11/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMTE="
+  },
+  {
+   "id": "/programs/pg11/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg12",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg12/name"
+    },
+    {
+     "id": "/programs/pg12/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg12/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMTI="
+  },
+  {
+   "id": "/programs/pg12/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg13",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg13/name"
+    },
+    {
+     "id": "/programs/pg13/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg13/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMTM="
+  },
+  {
+   "id": "/programs/pg13/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg14",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg14/name"
+    },
+    {
+     "id": "/programs/pg14/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg14/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMTQ="
+  },
+  {
+   "id": "/programs/pg14/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg15",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg15/name"
+    },
+    {
+     "id": "/programs/pg15/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg15/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMTU="
+  },
+  {
+   "id": "/programs/pg15/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg16",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg16/name"
+    },
+    {
+     "id": "/programs/pg16/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg16/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMTY="
+  },
+  {
+   "id": "/programs/pg16/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg17",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg17/name"
+    },
+    {
+     "id": "/programs/pg17/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg17/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMTc="
+  },
+  {
+   "id": "/programs/pg17/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg18",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg18/name"
+    },
+    {
+     "id": "/programs/pg18/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg18/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMTg="
+  },
+  {
+   "id": "/programs/pg18/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg19",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg19/name"
+    },
+    {
+     "id": "/programs/pg19/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg19/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMTk="
+  },
+  {
+   "id": "/programs/pg19/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg20",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg20/name"
+    },
+    {
+     "id": "/programs/pg20/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg20/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMjA="
+  },
+  {
+   "id": "/programs/pg20/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg21",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg21/name"
+    },
+    {
+     "id": "/programs/pg21/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg21/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMjE="
+  },
+  {
+   "id": "/programs/pg21/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg22",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg22/name"
+    },
+    {
+     "id": "/programs/pg22/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg22/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMjI="
+  },
+  {
+   "id": "/programs/pg22/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg23",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg23/name"
+    },
+    {
+     "id": "/programs/pg23/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg23/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMjM="
+  },
+  {
+   "id": "/programs/pg23/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg24",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/programs/pg24/name"
+    },
+    {
+     "id": "/programs/pg24/week"
+    }
+   ]
+  },
+  {
+   "id": "/programs/pg24/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "UHJvZ3JhbW0gMjQ="
+  },
+  {
+   "id": "/programs/pg24/week",
+   "type": "weekProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "d": "Mo",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Mo",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Tu",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Tu",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "We",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "We",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Th",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Th",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Fr",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Fr",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Sa",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Sa",
+     "t": 1320,
+     "Th": 16
+    },
+    {
+     "d": "Su",
+     "t": 420,
+     "Th": 20
+    },
+    {
+     "d": "Su",
+     "t": 1320,
+     "Th": 16
+    }
+   ]
+  },
+  {
+   "id": "/devices",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/list"
+    },
+    {
+     "id": "/devices/inclusionWhitelist"
+    },
+    {
+     "id": "/devices/dev1"
+    },
+    {
+     "id": "/devices/dev2"
+    },
+    {
+     "id": "/devices/dev3"
+    },
+    {
+     "id": "/devices/dev4"
+    },
+    {
+     "id": "/devices/dev5"
+    },
+    {
+     "id": "/devices/dev6"
+    },
+    {
+     "id": "/devices/dev7"
+    },
+    {
+     "id": "/devices/dev8"
+    },
+    {
+     "id": "/devices/dev9"
+    },
+    {
+     "id": "/devices/dev10"
+    },
+    {
+     "id": "/devices/dev11"
+    },
+    {
+     "id": "/devices/dev12"
+    },
+    {
+     "id": "/devices/device1"
+    },
+    {
+     "id": "/devices/device2"
+    },
+    {
+     "id": "/devices/device3"
+    },
+    {
+     "id": "/devices/device4"
+    },
+    {
+     "id": "/devices/device5"
+    },
+    {
+     "id": "/devices/device6"
+    },
+    {
+     "id": "/devices/device7"
+    },
+    {
+     "id": "/devices/device8"
+    },
+    {
+     "id": "/devices/device9"
+    },
+    {
+     "id": "/devices/device10"
+    },
+    {
+     "id": "/devices/device11"
+    },
+    {
+     "id": "/devices/device12"
+    }
+   ]
+  },
+  {
+   "id": "/devices/list",
+   "type": "deviceArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    {
+     "id": 1,
+     "name": "R2VyYWV0IDE=",
+     "type": "thermostat",
+     "zone": 1,
+     "battery": "ok",
+     "protocol": "no_protocol",
+     "positioningMode": "fixed",
+     "signal": 0
+    },
+    {
+     "id": 2,
+     "name": "R2VyYWV0IDI=",
+     "type": "thermostat_valve",
+     "zone": 1,
+     "battery": "ok",
+     "protocol": "homematicip",
+     "positioningMode": "configurable",
+     "signal": 84
+    },
+    {
+     "id": 3,
+     "name": "R2VyYWV0IDM=",
+     "type": "thermostat_valve",
+     "zone": 2,
+     "battery": "low",
+     "protocol": "homematicip",
+     "positioningMode": "configurable",
+     "signal": 24
+    },
+    {
+     "id": 4,
+     "name": "R2VyYWV0IDQ=",
+     "type": "thermostat_valve",
+     "zone": 3,
+     "battery": "ok",
+     "protocol": "homematicip",
+     "positioningMode": "configurable",
+     "signal": 50
+    },
+    {
+     "id": 5,
+     "name": "R2VyYWV0IDU=",
+     "type": "thermostat_valve",
+     "zone": 4,
+     "battery": "unknown",
+     "protocol": "homematicip",
+     "positioningMode": "configurable",
+     "signal": 60
+    },
+    {
+     "id": 6,
+     "name": "R2VyYWV0IDY=",
+     "type": "thermostat_valve",
+     "zone": 5,
+     "battery": "ok",
+     "protocol": "homematicip",
+     "positioningMode": "configurable",
+     "signal": 100
+    },
+    {
+     "id": 7,
+     "name": "R2VyYWV0IDc=",
+     "type": "thermostat_valve",
+     "zone": 6,
+     "battery": "ok",
+     "protocol": "homematicip",
+     "positioningMode": "configurable",
+     "signal": 10
+    },
+    {
+     "id": 8,
+     "name": "R2VyYWV0IDg=",
+     "type": "thermostat_valve",
+     "zone": 7,
+     "battery": "low",
+     "protocol": "homematicip",
+     "positioningMode": "configurable"
+    },
+    {
+     "id": 9,
+     "name": "R2VyYWV0IDk=",
+     "type": "device_underfloor_heating",
+     "zone": 8,
+     "battery": "ok",
+     "protocol": "homematicip",
+     "positioningMode": "configurable",
+     "signal": 80
+    },
+    {
+     "id": 10,
+     "name": "R2VyYWV0IDEw",
+     "type": "room_thermostat",
+     "zone": 9,
+     "battery": "ok",
+     "protocol": "homematicip",
+     "positioningMode": "configurable",
+     "signal": 75
+    },
+    {
+     "id": 11,
+     "name": "R2VyYWV0IDEx",
+     "type": "repeater",
+     "zone": 10,
+     "battery": "ok",
+     "protocol": "homematicip",
+     "positioningMode": "configurable",
+     "signal": 70
+    },
+    {
+     "id": 12,
+     "name": "R2VyYWV0IDEy",
+     "type": "appliance_link",
+     "zone": 0,
+     "battery": "ok",
+     "protocol": "homematicip",
+     "positioningMode": "configurable",
+     "signal": 0
+    }
+   ]
+  },
+  {
+   "id": "/devices/dev1",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "ok",
+     "dlk": "DLK-MARKER-0001",
+     "sgtin": "SGTIN-MARKER-0001",
+     "zone": 1,
+     "type": "thermostat"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device1/battery"
+    },
+    {
+     "id": "/devices/device1/name"
+    },
+    {
+     "id": "/devices/device1/protocol"
+    },
+    {
+     "id": "/devices/device1/signal"
+    },
+    {
+     "id": "/devices/device1/type"
+    },
+    {
+     "id": "/devices/device1/versionFirmware"
+    },
+    {
+     "id": "/devices/device1/zone"
+    },
+    {
+     "id": "/devices/device1/thermostat"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device1/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/devices/device1/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDE="
+  },
+  {
+   "id": "/devices/device1/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device1/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device1/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "thermostat"
+  },
+  {
+   "id": "/devices/device1/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "5.4.0"
+  },
+  {
+   "id": "/devices/device1/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device1/thermostat",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device1/thermostat/childLock"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device1/thermostat/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device1/thermostat/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device1/thermostat/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/dev2",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "ok",
+     "dlk": "DLK-MARKER-0002",
+     "sgtin": "SGTIN-MARKER-0002",
+     "zone": 1,
+     "type": "thermostat_valve"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device2",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device2/battery"
+    },
+    {
+     "id": "/devices/device2/name"
+    },
+    {
+     "id": "/devices/device2/protocol"
+    },
+    {
+     "id": "/devices/device2/signal"
+    },
+    {
+     "id": "/devices/device2/type"
+    },
+    {
+     "id": "/devices/device2/versionFirmware"
+    },
+    {
+     "id": "/devices/device2/zone"
+    },
+    {
+     "id": "/devices/device2/etrv"
+    },
+    {
+     "id": "/devices/device2/homematicip"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device2/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/devices/device2/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDI="
+  },
+  {
+   "id": "/devices/device2/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device2/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 84.0
+  },
+  {
+   "id": "/devices/device2/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "thermostat_valve"
+  },
+  {
+   "id": "/devices/device2/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.6.0"
+  },
+  {
+   "id": "/devices/device2/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device2/etrv",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device2/etrv/childLock"
+    },
+    {
+     "id": "/devices/device2/etrv/maxValvePosition"
+    },
+    {
+     "id": "/devices/device2/etrv/offset"
+    },
+    {
+     "id": "/devices/device2/etrv/openWindowDetection"
+    },
+    {
+     "id": "/devices/device2/etrv/status"
+    },
+    {
+     "id": "/devices/device2/etrv/temperatureActual"
+    },
+    {
+     "id": "/devices/device2/etrv/temperatureGradient"
+    },
+    {
+     "id": "/devices/device2/etrv/valvePosition"
+    },
+    {
+     "id": "/devices/device2/etrv/valveState"
+    },
+    {
+     "id": "/devices/device2/etrv/whisperMode"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device2/etrv/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device2/etrv/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device2/etrv/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device2/etrv/maxValvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device2/etrv/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -2.0,
+   "maxValue": 2.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device2/etrv/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device2/etrv/openWindowDetection/sensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device2/etrv/openWindowDetection/sensitivity",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 0.5,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device2/etrv/status",
+   "type": "stringArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    "ok"
+   ]
+  },
+  {
+   "id": "/devices/device2/etrv/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5
+  },
+  {
+   "id": "/devices/device2/etrv/temperatureGradient",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "K/s",
+   "minValue": -1.0,
+   "maxValue": 1.0,
+   "stepSize": 0.01,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device2/etrv/valvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/devices/device2/etrv/valveState",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "adapted"
+  },
+  {
+   "id": "/devices/device2/etrv/whisperMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device2/etrv/whisperMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device2/etrv/whisperMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device2/homematicip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device2/homematicip/dlk"
+    },
+    {
+     "id": "/devices/device2/homematicip/sgtin"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device2/homematicip/dlk",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "DLK-MARKER-0002"
+  },
+  {
+   "id": "/devices/device2/homematicip/sgtin",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "SGTIN-MARKER-0002"
+  },
+  {
+   "id": "/devices/dev3",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "low",
+     "dlk": "DLK-MARKER-0003",
+     "sgtin": "SGTIN-MARKER-0003",
+     "zone": 2,
+     "type": "thermostat_valve"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device3",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device3/battery"
+    },
+    {
+     "id": "/devices/device3/name"
+    },
+    {
+     "id": "/devices/device3/protocol"
+    },
+    {
+     "id": "/devices/device3/signal"
+    },
+    {
+     "id": "/devices/device3/type"
+    },
+    {
+     "id": "/devices/device3/versionFirmware"
+    },
+    {
+     "id": "/devices/device3/zone"
+    },
+    {
+     "id": "/devices/device3/etrv"
+    },
+    {
+     "id": "/devices/device3/homematicip"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device3/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "low"
+  },
+  {
+   "id": "/devices/device3/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDM="
+  },
+  {
+   "id": "/devices/device3/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device3/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 24.0
+  },
+  {
+   "id": "/devices/device3/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "thermostat_valve"
+  },
+  {
+   "id": "/devices/device3/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.6.0"
+  },
+  {
+   "id": "/devices/device3/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 2.0
+  },
+  {
+   "id": "/devices/device3/etrv",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device3/etrv/childLock"
+    },
+    {
+     "id": "/devices/device3/etrv/maxValvePosition"
+    },
+    {
+     "id": "/devices/device3/etrv/offset"
+    },
+    {
+     "id": "/devices/device3/etrv/openWindowDetection"
+    },
+    {
+     "id": "/devices/device3/etrv/status"
+    },
+    {
+     "id": "/devices/device3/etrv/temperatureActual"
+    },
+    {
+     "id": "/devices/device3/etrv/temperatureGradient"
+    },
+    {
+     "id": "/devices/device3/etrv/valvePosition"
+    },
+    {
+     "id": "/devices/device3/etrv/valveState"
+    },
+    {
+     "id": "/devices/device3/etrv/whisperMode"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device3/etrv/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device3/etrv/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device3/etrv/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device3/etrv/maxValvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device3/etrv/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -2.0,
+   "maxValue": 2.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device3/etrv/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device3/etrv/openWindowDetection/sensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device3/etrv/openWindowDetection/sensitivity",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 0.5,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device3/etrv/status",
+   "type": "stringArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    "ok"
+   ]
+  },
+  {
+   "id": "/devices/device3/etrv/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5
+  },
+  {
+   "id": "/devices/device3/etrv/temperatureGradient",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "K/s",
+   "minValue": -1.0,
+   "maxValue": 1.0,
+   "stepSize": 0.01,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device3/etrv/valvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/devices/device3/etrv/valveState",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "adapted"
+  },
+  {
+   "id": "/devices/device3/etrv/whisperMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device3/etrv/whisperMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device3/etrv/whisperMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device3/homematicip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device3/homematicip/dlk"
+    },
+    {
+     "id": "/devices/device3/homematicip/sgtin"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device3/homematicip/dlk",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "DLK-MARKER-0003"
+  },
+  {
+   "id": "/devices/device3/homematicip/sgtin",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "SGTIN-MARKER-0003"
+  },
+  {
+   "id": "/devices/dev4",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "ok",
+     "dlk": "DLK-MARKER-0004",
+     "sgtin": "SGTIN-MARKER-0004",
+     "zone": 3,
+     "type": "thermostat_valve"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device4",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device4/battery"
+    },
+    {
+     "id": "/devices/device4/name"
+    },
+    {
+     "id": "/devices/device4/protocol"
+    },
+    {
+     "id": "/devices/device4/signal"
+    },
+    {
+     "id": "/devices/device4/type"
+    },
+    {
+     "id": "/devices/device4/versionFirmware"
+    },
+    {
+     "id": "/devices/device4/zone"
+    },
+    {
+     "id": "/devices/device4/etrv"
+    },
+    {
+     "id": "/devices/device4/homematicip"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device4/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/devices/device4/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDQ="
+  },
+  {
+   "id": "/devices/device4/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device4/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 50.0
+  },
+  {
+   "id": "/devices/device4/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "thermostat_valve"
+  },
+  {
+   "id": "/devices/device4/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.6.0"
+  },
+  {
+   "id": "/devices/device4/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 3.0
+  },
+  {
+   "id": "/devices/device4/etrv",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device4/etrv/childLock"
+    },
+    {
+     "id": "/devices/device4/etrv/maxValvePosition"
+    },
+    {
+     "id": "/devices/device4/etrv/offset"
+    },
+    {
+     "id": "/devices/device4/etrv/openWindowDetection"
+    },
+    {
+     "id": "/devices/device4/etrv/status"
+    },
+    {
+     "id": "/devices/device4/etrv/temperatureActual"
+    },
+    {
+     "id": "/devices/device4/etrv/temperatureGradient"
+    },
+    {
+     "id": "/devices/device4/etrv/valvePosition"
+    },
+    {
+     "id": "/devices/device4/etrv/valveState"
+    },
+    {
+     "id": "/devices/device4/etrv/whisperMode"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device4/etrv/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device4/etrv/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device4/etrv/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device4/etrv/maxValvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device4/etrv/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -2.0,
+   "maxValue": 2.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device4/etrv/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device4/etrv/openWindowDetection/sensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device4/etrv/openWindowDetection/sensitivity",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 0.5,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device4/etrv/status",
+   "type": "stringArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    "ok"
+   ]
+  },
+  {
+   "id": "/devices/device4/etrv/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5
+  },
+  {
+   "id": "/devices/device4/etrv/temperatureGradient",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "K/s",
+   "minValue": -1.0,
+   "maxValue": 1.0,
+   "stepSize": 0.01,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device4/etrv/valvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/devices/device4/etrv/valveState",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "adapted"
+  },
+  {
+   "id": "/devices/device4/etrv/whisperMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device4/etrv/whisperMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device4/etrv/whisperMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device4/homematicip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device4/homematicip/dlk"
+    },
+    {
+     "id": "/devices/device4/homematicip/sgtin"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device4/homematicip/dlk",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "DLK-MARKER-0004"
+  },
+  {
+   "id": "/devices/device4/homematicip/sgtin",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "SGTIN-MARKER-0004"
+  },
+  {
+   "id": "/devices/dev5",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "unknown",
+     "dlk": "DLK-MARKER-0005",
+     "sgtin": "SGTIN-MARKER-0005",
+     "zone": 4,
+     "type": "thermostat_valve"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device5",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device5/battery"
+    },
+    {
+     "id": "/devices/device5/name"
+    },
+    {
+     "id": "/devices/device5/protocol"
+    },
+    {
+     "id": "/devices/device5/signal"
+    },
+    {
+     "id": "/devices/device5/type"
+    },
+    {
+     "id": "/devices/device5/versionFirmware"
+    },
+    {
+     "id": "/devices/device5/zone"
+    },
+    {
+     "id": "/devices/device5/etrv"
+    },
+    {
+     "id": "/devices/device5/homematicip"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device5/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "unknown"
+  },
+  {
+   "id": "/devices/device5/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDU="
+  },
+  {
+   "id": "/devices/device5/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device5/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 60.0
+  },
+  {
+   "id": "/devices/device5/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "thermostat_valve"
+  },
+  {
+   "id": "/devices/device5/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.6.0"
+  },
+  {
+   "id": "/devices/device5/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 4.0
+  },
+  {
+   "id": "/devices/device5/etrv",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device5/etrv/childLock"
+    },
+    {
+     "id": "/devices/device5/etrv/maxValvePosition"
+    },
+    {
+     "id": "/devices/device5/etrv/offset"
+    },
+    {
+     "id": "/devices/device5/etrv/openWindowDetection"
+    },
+    {
+     "id": "/devices/device5/etrv/status"
+    },
+    {
+     "id": "/devices/device5/etrv/temperatureActual"
+    },
+    {
+     "id": "/devices/device5/etrv/temperatureGradient"
+    },
+    {
+     "id": "/devices/device5/etrv/valvePosition"
+    },
+    {
+     "id": "/devices/device5/etrv/valveState"
+    },
+    {
+     "id": "/devices/device5/etrv/whisperMode"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device5/etrv/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device5/etrv/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device5/etrv/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device5/etrv/maxValvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device5/etrv/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -2.0,
+   "maxValue": 2.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device5/etrv/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device5/etrv/openWindowDetection/sensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device5/etrv/openWindowDetection/sensitivity",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 0.5,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device5/etrv/status",
+   "type": "stringArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    "ok"
+   ]
+  },
+  {
+   "id": "/devices/device5/etrv/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5
+  },
+  {
+   "id": "/devices/device5/etrv/temperatureGradient",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "K/s",
+   "minValue": -1.0,
+   "maxValue": 1.0,
+   "stepSize": 0.01,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device5/etrv/valvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/devices/device5/etrv/valveState",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "adapted"
+  },
+  {
+   "id": "/devices/device5/etrv/whisperMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device5/etrv/whisperMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device5/etrv/whisperMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device5/homematicip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device5/homematicip/dlk"
+    },
+    {
+     "id": "/devices/device5/homematicip/sgtin"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device5/homematicip/dlk",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "DLK-MARKER-0005"
+  },
+  {
+   "id": "/devices/device5/homematicip/sgtin",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "SGTIN-MARKER-0005"
+  },
+  {
+   "id": "/devices/dev6",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "ok",
+     "dlk": "DLK-MARKER-0006",
+     "sgtin": "SGTIN-MARKER-0006",
+     "zone": 5,
+     "type": "thermostat_valve"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device6",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device6/battery"
+    },
+    {
+     "id": "/devices/device6/name"
+    },
+    {
+     "id": "/devices/device6/protocol"
+    },
+    {
+     "id": "/devices/device6/signal"
+    },
+    {
+     "id": "/devices/device6/type"
+    },
+    {
+     "id": "/devices/device6/versionFirmware"
+    },
+    {
+     "id": "/devices/device6/zone"
+    },
+    {
+     "id": "/devices/device6/etrv"
+    },
+    {
+     "id": "/devices/device6/homematicip"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device6/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/devices/device6/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDY="
+  },
+  {
+   "id": "/devices/device6/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device6/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device6/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "thermostat_valve"
+  },
+  {
+   "id": "/devices/device6/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.6.0"
+  },
+  {
+   "id": "/devices/device6/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 5.0
+  },
+  {
+   "id": "/devices/device6/etrv",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device6/etrv/childLock"
+    },
+    {
+     "id": "/devices/device6/etrv/maxValvePosition"
+    },
+    {
+     "id": "/devices/device6/etrv/offset"
+    },
+    {
+     "id": "/devices/device6/etrv/openWindowDetection"
+    },
+    {
+     "id": "/devices/device6/etrv/status"
+    },
+    {
+     "id": "/devices/device6/etrv/temperatureActual"
+    },
+    {
+     "id": "/devices/device6/etrv/temperatureGradient"
+    },
+    {
+     "id": "/devices/device6/etrv/valvePosition"
+    },
+    {
+     "id": "/devices/device6/etrv/valveState"
+    },
+    {
+     "id": "/devices/device6/etrv/whisperMode"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device6/etrv/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device6/etrv/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device6/etrv/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device6/etrv/maxValvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device6/etrv/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -2.0,
+   "maxValue": 2.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device6/etrv/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device6/etrv/openWindowDetection/sensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device6/etrv/openWindowDetection/sensitivity",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 0.5,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device6/etrv/status",
+   "type": "stringArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    "ok"
+   ]
+  },
+  {
+   "id": "/devices/device6/etrv/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5
+  },
+  {
+   "id": "/devices/device6/etrv/temperatureGradient",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "K/s",
+   "minValue": -1.0,
+   "maxValue": 1.0,
+   "stepSize": 0.01,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device6/etrv/valvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/devices/device6/etrv/valveState",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "adapted"
+  },
+  {
+   "id": "/devices/device6/etrv/whisperMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device6/etrv/whisperMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device6/etrv/whisperMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device6/homematicip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device6/homematicip/dlk"
+    },
+    {
+     "id": "/devices/device6/homematicip/sgtin"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device6/homematicip/dlk",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "DLK-MARKER-0006"
+  },
+  {
+   "id": "/devices/device6/homematicip/sgtin",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "SGTIN-MARKER-0006"
+  },
+  {
+   "id": "/devices/dev7",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "ok",
+     "dlk": "DLK-MARKER-0007",
+     "sgtin": "SGTIN-MARKER-0007",
+     "zone": 6,
+     "type": "thermostat_valve"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device7",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device7/battery"
+    },
+    {
+     "id": "/devices/device7/name"
+    },
+    {
+     "id": "/devices/device7/protocol"
+    },
+    {
+     "id": "/devices/device7/signal"
+    },
+    {
+     "id": "/devices/device7/type"
+    },
+    {
+     "id": "/devices/device7/versionFirmware"
+    },
+    {
+     "id": "/devices/device7/zone"
+    },
+    {
+     "id": "/devices/device7/etrv"
+    },
+    {
+     "id": "/devices/device7/homematicip"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device7/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/devices/device7/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDc="
+  },
+  {
+   "id": "/devices/device7/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device7/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 10.0
+  },
+  {
+   "id": "/devices/device7/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "thermostat_valve"
+  },
+  {
+   "id": "/devices/device7/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.6.0"
+  },
+  {
+   "id": "/devices/device7/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 6.0
+  },
+  {
+   "id": "/devices/device7/etrv",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device7/etrv/childLock"
+    },
+    {
+     "id": "/devices/device7/etrv/maxValvePosition"
+    },
+    {
+     "id": "/devices/device7/etrv/offset"
+    },
+    {
+     "id": "/devices/device7/etrv/openWindowDetection"
+    },
+    {
+     "id": "/devices/device7/etrv/status"
+    },
+    {
+     "id": "/devices/device7/etrv/temperatureActual"
+    },
+    {
+     "id": "/devices/device7/etrv/temperatureGradient"
+    },
+    {
+     "id": "/devices/device7/etrv/valvePosition"
+    },
+    {
+     "id": "/devices/device7/etrv/valveState"
+    },
+    {
+     "id": "/devices/device7/etrv/whisperMode"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device7/etrv/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device7/etrv/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device7/etrv/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device7/etrv/maxValvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device7/etrv/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -2.0,
+   "maxValue": 2.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device7/etrv/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device7/etrv/openWindowDetection/sensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device7/etrv/openWindowDetection/sensitivity",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 0.5,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device7/etrv/status",
+   "type": "stringArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    "ok"
+   ]
+  },
+  {
+   "id": "/devices/device7/etrv/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5
+  },
+  {
+   "id": "/devices/device7/etrv/temperatureGradient",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "K/s",
+   "minValue": -1.0,
+   "maxValue": 1.0,
+   "stepSize": 0.01,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device7/etrv/valvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/devices/device7/etrv/valveState",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "adapted"
+  },
+  {
+   "id": "/devices/device7/etrv/whisperMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device7/etrv/whisperMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device7/etrv/whisperMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device7/homematicip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device7/homematicip/dlk"
+    },
+    {
+     "id": "/devices/device7/homematicip/sgtin"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device7/homematicip/dlk",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "DLK-MARKER-0007"
+  },
+  {
+   "id": "/devices/device7/homematicip/sgtin",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "SGTIN-MARKER-0007"
+  },
+  {
+   "id": "/devices/dev8",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "low",
+     "dlk": "DLK-MARKER-0008",
+     "sgtin": "SGTIN-MARKER-0008",
+     "zone": 7,
+     "type": "thermostat_valve"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device8",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device8/battery"
+    },
+    {
+     "id": "/devices/device8/name"
+    },
+    {
+     "id": "/devices/device8/protocol"
+    },
+    {
+     "id": "/devices/device8/signal"
+    },
+    {
+     "id": "/devices/device8/type"
+    },
+    {
+     "id": "/devices/device8/versionFirmware"
+    },
+    {
+     "id": "/devices/device8/zone"
+    },
+    {
+     "id": "/devices/device8/etrv"
+    },
+    {
+     "id": "/devices/device8/homematicip"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device8/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "low"
+  },
+  {
+   "id": "/devices/device8/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDg="
+  },
+  {
+   "id": "/devices/device8/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device8/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device8/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "thermostat_valve"
+  },
+  {
+   "id": "/devices/device8/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.6.0"
+  },
+  {
+   "id": "/devices/device8/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 7.0
+  },
+  {
+   "id": "/devices/device8/etrv",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device8/etrv/childLock"
+    },
+    {
+     "id": "/devices/device8/etrv/maxValvePosition"
+    },
+    {
+     "id": "/devices/device8/etrv/offset"
+    },
+    {
+     "id": "/devices/device8/etrv/openWindowDetection"
+    },
+    {
+     "id": "/devices/device8/etrv/status"
+    },
+    {
+     "id": "/devices/device8/etrv/temperatureActual"
+    },
+    {
+     "id": "/devices/device8/etrv/temperatureGradient"
+    },
+    {
+     "id": "/devices/device8/etrv/valvePosition"
+    },
+    {
+     "id": "/devices/device8/etrv/valveState"
+    },
+    {
+     "id": "/devices/device8/etrv/whisperMode"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device8/etrv/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device8/etrv/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device8/etrv/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device8/etrv/maxValvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device8/etrv/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -2.0,
+   "maxValue": 2.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device8/etrv/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device8/etrv/openWindowDetection/sensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device8/etrv/openWindowDetection/sensitivity",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 0.5,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device8/etrv/status",
+   "type": "stringArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    "ok"
+   ]
+  },
+  {
+   "id": "/devices/device8/etrv/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5
+  },
+  {
+   "id": "/devices/device8/etrv/temperatureGradient",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "K/s",
+   "minValue": -1.0,
+   "maxValue": 1.0,
+   "stepSize": 0.01,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device8/etrv/valvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/devices/device8/etrv/valveState",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "adapted"
+  },
+  {
+   "id": "/devices/device8/etrv/whisperMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device8/etrv/whisperMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device8/etrv/whisperMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device8/homematicip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device8/homematicip/dlk"
+    },
+    {
+     "id": "/devices/device8/homematicip/sgtin"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device8/homematicip/dlk",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "DLK-MARKER-0008"
+  },
+  {
+   "id": "/devices/device8/homematicip/sgtin",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "SGTIN-MARKER-0008"
+  },
+  {
+   "id": "/devices/dev9",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "ok",
+     "dlk": "DLK-MARKER-0009",
+     "sgtin": "SGTIN-MARKER-0009",
+     "zone": 8,
+     "type": "device_underfloor_heating"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device9",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device9/battery"
+    },
+    {
+     "id": "/devices/device9/name"
+    },
+    {
+     "id": "/devices/device9/protocol"
+    },
+    {
+     "id": "/devices/device9/signal"
+    },
+    {
+     "id": "/devices/device9/type"
+    },
+    {
+     "id": "/devices/device9/versionFirmware"
+    },
+    {
+     "id": "/devices/device9/zone"
+    },
+    {
+     "id": "/devices/device9/etrv"
+    },
+    {
+     "id": "/devices/device9/homematicip"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device9/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/devices/device9/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDk="
+  },
+  {
+   "id": "/devices/device9/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device9/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 80.0
+  },
+  {
+   "id": "/devices/device9/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "device_underfloor_heating"
+  },
+  {
+   "id": "/devices/device9/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.6.0"
+  },
+  {
+   "id": "/devices/device9/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 8.0
+  },
+  {
+   "id": "/devices/device9/etrv",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device9/etrv/childLock"
+    },
+    {
+     "id": "/devices/device9/etrv/maxValvePosition"
+    },
+    {
+     "id": "/devices/device9/etrv/offset"
+    },
+    {
+     "id": "/devices/device9/etrv/openWindowDetection"
+    },
+    {
+     "id": "/devices/device9/etrv/status"
+    },
+    {
+     "id": "/devices/device9/etrv/temperatureActual"
+    },
+    {
+     "id": "/devices/device9/etrv/temperatureGradient"
+    },
+    {
+     "id": "/devices/device9/etrv/valvePosition"
+    },
+    {
+     "id": "/devices/device9/etrv/valveState"
+    },
+    {
+     "id": "/devices/device9/etrv/whisperMode"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device9/etrv/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device9/etrv/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device9/etrv/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device9/etrv/maxValvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device9/etrv/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -2.0,
+   "maxValue": 2.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device9/etrv/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device9/etrv/openWindowDetection/sensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device9/etrv/openWindowDetection/sensitivity",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 0.5,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device9/etrv/status",
+   "type": "stringArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    "ok"
+   ]
+  },
+  {
+   "id": "/devices/device9/etrv/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5
+  },
+  {
+   "id": "/devices/device9/etrv/temperatureGradient",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "K/s",
+   "minValue": -1.0,
+   "maxValue": 1.0,
+   "stepSize": 0.01,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device9/etrv/valvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/devices/device9/etrv/valveState",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "adapted"
+  },
+  {
+   "id": "/devices/device9/etrv/whisperMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device9/etrv/whisperMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device9/etrv/whisperMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device9/homematicip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device9/homematicip/dlk"
+    },
+    {
+     "id": "/devices/device9/homematicip/sgtin"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device9/homematicip/dlk",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "DLK-MARKER-0009"
+  },
+  {
+   "id": "/devices/device9/homematicip/sgtin",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "SGTIN-MARKER-0009"
+  },
+  {
+   "id": "/devices/dev10",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "ok",
+     "dlk": "DLK-MARKER-0010",
+     "sgtin": "SGTIN-MARKER-0010",
+     "zone": 9,
+     "type": "room_thermostat"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device10",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device10/battery"
+    },
+    {
+     "id": "/devices/device10/name"
+    },
+    {
+     "id": "/devices/device10/protocol"
+    },
+    {
+     "id": "/devices/device10/signal"
+    },
+    {
+     "id": "/devices/device10/type"
+    },
+    {
+     "id": "/devices/device10/versionFirmware"
+    },
+    {
+     "id": "/devices/device10/zone"
+    },
+    {
+     "id": "/devices/device10/etrv"
+    },
+    {
+     "id": "/devices/device10/homematicip"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device10/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/devices/device10/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDEw"
+  },
+  {
+   "id": "/devices/device10/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device10/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 75.0
+  },
+  {
+   "id": "/devices/device10/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "room_thermostat"
+  },
+  {
+   "id": "/devices/device10/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.6.0"
+  },
+  {
+   "id": "/devices/device10/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 9.0
+  },
+  {
+   "id": "/devices/device10/etrv",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device10/etrv/childLock"
+    },
+    {
+     "id": "/devices/device10/etrv/maxValvePosition"
+    },
+    {
+     "id": "/devices/device10/etrv/offset"
+    },
+    {
+     "id": "/devices/device10/etrv/openWindowDetection"
+    },
+    {
+     "id": "/devices/device10/etrv/status"
+    },
+    {
+     "id": "/devices/device10/etrv/temperatureActual"
+    },
+    {
+     "id": "/devices/device10/etrv/temperatureGradient"
+    },
+    {
+     "id": "/devices/device10/etrv/valvePosition"
+    },
+    {
+     "id": "/devices/device10/etrv/valveState"
+    },
+    {
+     "id": "/devices/device10/etrv/whisperMode"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device10/etrv/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device10/etrv/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device10/etrv/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device10/etrv/maxValvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device10/etrv/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -2.0,
+   "maxValue": 2.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device10/etrv/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device10/etrv/openWindowDetection/sensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device10/etrv/openWindowDetection/sensitivity",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 0.5,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device10/etrv/status",
+   "type": "stringArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    "ok"
+   ]
+  },
+  {
+   "id": "/devices/device10/etrv/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5
+  },
+  {
+   "id": "/devices/device10/etrv/temperatureGradient",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "K/s",
+   "minValue": -1.0,
+   "maxValue": 1.0,
+   "stepSize": 0.01,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device10/etrv/valvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/devices/device10/etrv/valveState",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "adapted"
+  },
+  {
+   "id": "/devices/device10/etrv/whisperMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device10/etrv/whisperMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device10/etrv/whisperMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device10/homematicip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device10/homematicip/dlk"
+    },
+    {
+     "id": "/devices/device10/homematicip/sgtin"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device10/homematicip/dlk",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "DLK-MARKER-0010"
+  },
+  {
+   "id": "/devices/device10/homematicip/sgtin",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "SGTIN-MARKER-0010"
+  },
+  {
+   "id": "/devices/dev11",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "ok",
+     "dlk": "DLK-MARKER-0011",
+     "sgtin": "SGTIN-MARKER-0011",
+     "zone": 10,
+     "type": "repeater"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device11",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device11/battery"
+    },
+    {
+     "id": "/devices/device11/name"
+    },
+    {
+     "id": "/devices/device11/protocol"
+    },
+    {
+     "id": "/devices/device11/signal"
+    },
+    {
+     "id": "/devices/device11/type"
+    },
+    {
+     "id": "/devices/device11/versionFirmware"
+    },
+    {
+     "id": "/devices/device11/zone"
+    },
+    {
+     "id": "/devices/device11/etrv"
+    },
+    {
+     "id": "/devices/device11/homematicip"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device11/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/devices/device11/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDEx"
+  },
+  {
+   "id": "/devices/device11/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device11/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 70.0
+  },
+  {
+   "id": "/devices/device11/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "repeater"
+  },
+  {
+   "id": "/devices/device11/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.6.0"
+  },
+  {
+   "id": "/devices/device11/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 10.0
+  },
+  {
+   "id": "/devices/device11/etrv",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device11/etrv/childLock"
+    },
+    {
+     "id": "/devices/device11/etrv/maxValvePosition"
+    },
+    {
+     "id": "/devices/device11/etrv/offset"
+    },
+    {
+     "id": "/devices/device11/etrv/openWindowDetection"
+    },
+    {
+     "id": "/devices/device11/etrv/status"
+    },
+    {
+     "id": "/devices/device11/etrv/temperatureActual"
+    },
+    {
+     "id": "/devices/device11/etrv/temperatureGradient"
+    },
+    {
+     "id": "/devices/device11/etrv/valvePosition"
+    },
+    {
+     "id": "/devices/device11/etrv/valveState"
+    },
+    {
+     "id": "/devices/device11/etrv/whisperMode"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device11/etrv/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device11/etrv/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device11/etrv/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device11/etrv/maxValvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device11/etrv/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -2.0,
+   "maxValue": 2.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device11/etrv/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device11/etrv/openWindowDetection/sensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device11/etrv/openWindowDetection/sensitivity",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 0.5,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device11/etrv/status",
+   "type": "stringArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    "ok"
+   ]
+  },
+  {
+   "id": "/devices/device11/etrv/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5
+  },
+  {
+   "id": "/devices/device11/etrv/temperatureGradient",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "K/s",
+   "minValue": -1.0,
+   "maxValue": 1.0,
+   "stepSize": 0.01,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device11/etrv/valvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/devices/device11/etrv/valveState",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "adapted"
+  },
+  {
+   "id": "/devices/device11/etrv/whisperMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device11/etrv/whisperMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device11/etrv/whisperMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device11/homematicip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device11/homematicip/dlk"
+    },
+    {
+     "id": "/devices/device11/homematicip/sgtin"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device11/homematicip/dlk",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "DLK-MARKER-0011"
+  },
+  {
+   "id": "/devices/device11/homematicip/sgtin",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "SGTIN-MARKER-0011"
+  },
+  {
+   "id": "/devices/dev12",
+   "type": "deviceArray",
+   "writeable": 1,
+   "recordable": 0,
+   "value": [
+    {
+     "battery": "ok",
+     "dlk": "DLK-MARKER-0012",
+     "sgtin": "SGTIN-MARKER-0012",
+     "zone": 0,
+     "type": "appliance_link"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device12",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device12/battery"
+    },
+    {
+     "id": "/devices/device12/name"
+    },
+    {
+     "id": "/devices/device12/protocol"
+    },
+    {
+     "id": "/devices/device12/signal"
+    },
+    {
+     "id": "/devices/device12/type"
+    },
+    {
+     "id": "/devices/device12/versionFirmware"
+    },
+    {
+     "id": "/devices/device12/zone"
+    },
+    {
+     "id": "/devices/device12/etrv"
+    },
+    {
+     "id": "/devices/device12/homematicip"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device12/battery",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/devices/device12/name",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "R2VyYWV0IDEy"
+  },
+  {
+   "id": "/devices/device12/protocol",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "homematicip"
+  },
+  {
+   "id": "/devices/device12/signal",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device12/type",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "appliance_link"
+  },
+  {
+   "id": "/devices/device12/versionFirmware",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "1.6.0"
+  },
+  {
+   "id": "/devices/device12/zone",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 24.0,
+   "stepSize": 1.0,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device12/etrv",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device12/etrv/childLock"
+    },
+    {
+     "id": "/devices/device12/etrv/maxValvePosition"
+    },
+    {
+     "id": "/devices/device12/etrv/offset"
+    },
+    {
+     "id": "/devices/device12/etrv/openWindowDetection"
+    },
+    {
+     "id": "/devices/device12/etrv/status"
+    },
+    {
+     "id": "/devices/device12/etrv/temperatureActual"
+    },
+    {
+     "id": "/devices/device12/etrv/temperatureGradient"
+    },
+    {
+     "id": "/devices/device12/etrv/valvePosition"
+    },
+    {
+     "id": "/devices/device12/etrv/valveState"
+    },
+    {
+     "id": "/devices/device12/etrv/whisperMode"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device12/etrv/childLock",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device12/etrv/childLock/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device12/etrv/childLock/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device12/etrv/maxValvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 100.0
+  },
+  {
+   "id": "/devices/device12/etrv/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -2.0,
+   "maxValue": 2.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device12/etrv/openWindowDetection",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device12/etrv/openWindowDetection/sensitivity"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device12/etrv/openWindowDetection/sensitivity",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 0.5,
+   "value": 1.0
+  },
+  {
+   "id": "/devices/device12/etrv/status",
+   "type": "stringArray",
+   "writeable": 0,
+   "recordable": 0,
+   "value": [
+    "ok"
+   ]
+  },
+  {
+   "id": "/devices/device12/etrv/temperatureActual",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 20.5
+  },
+  {
+   "id": "/devices/device12/etrv/temperatureGradient",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "K/s",
+   "minValue": -1.0,
+   "maxValue": 1.0,
+   "stepSize": 0.01,
+   "value": 0.0
+  },
+  {
+   "id": "/devices/device12/etrv/valvePosition",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/devices/device12/etrv/valveState",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "adapted"
+  },
+  {
+   "id": "/devices/device12/etrv/whisperMode",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device12/etrv/whisperMode/enabled"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device12/etrv/whisperMode/enabled",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "false"
+  },
+  {
+   "id": "/devices/device12/homematicip",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/devices/device12/homematicip/dlk"
+    },
+    {
+     "id": "/devices/device12/homematicip/sgtin"
+    }
+   ]
+  },
+  {
+   "id": "/devices/device12/homematicip/dlk",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "DLK-MARKER-0012"
+  },
+  {
+   "id": "/devices/device12/homematicip/sgtin",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "SGTIN-MARKER-0012"
+  }
+ ]
+}

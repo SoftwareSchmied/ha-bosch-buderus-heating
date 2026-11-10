@@ -17,6 +17,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
 
+from . import rrc
 from .const import DOMAIN
 from .i18n import localize
 from .log_helpers import log_failure
@@ -218,6 +219,10 @@ def fault_resource_candidates(resources: Mapping[str, Resource]) -> tuple[str, .
             candidates.add(f"/heatSources/{match[1]}/failurelist")
 
     device_ids: set[str] = set()
+    if rrc.profile_evidence(None, resources):
+        # C8: the radio devices of an RRC controller have no fault resource;
+        # their faults arrive in /notifications.
+        return tuple(sorted(candidates))
     for path in resources:
         match = _DEVICE_PATH.match(path)
         identifier = _safe_identifier(match[1]) if match else None

@@ -577,6 +577,39 @@ day (see `discovery_recovery`). The names of the programs are shown by the
 `program_names` and `program_name` attributes of the selection; diagnostics
 only count them.
 
+## RRC room controller profile
+
+`gateways[].rrc_profile` describes a room controller of the RRC 2.0 platform.
+It contains counts, fixed codes and the firmware version only, never names,
+device identifiers or radio keys. On other gateways it contains only
+`profile: null` and the two access fields.
+
+- `profile`: `rrc2`, and `evidence`: what showed it (`device_type`,
+  `product_type`, `zones`);
+- `confirmation`: `unconfirmed` until a controller of the kind has been
+  tested with this integration; `physical_device_verified` is `false`;
+- `local_access`: `not_available`, as these controllers have none;
+- `product_type`: `RRC 2.0`, `other` or `null`; `firmware`: the controller's
+  firmware version;
+- `zone_count`, `program_count`, `device_count`, `device_types` (count per
+  reported type), `devices_with_low_battery`, `device_fields_missing` (how
+  many listed devices sent no usable type, zone, battery or signal) and
+  `device_firmware_read`;
+- `device_list`: `current`, `not_current` or `missing`, and
+  `device_list_issue` as for the program list;
+- `forbidden_paths` and `access_reason`. A controller refuses some advertised
+  paths as a matter of course (a TC100.2 about 35); that is
+  `some_paths_forbidden`. `scope_or_permission_denied` means that the
+  request as a whole, the zones or every read was refused: the sign-in may
+  lack the rights for this controller.
+
+`gateways[].discovery` also reports `rrc_evidence`, `forbidden_paths`,
+`access_reason` and `paths_not_read`, the number of scheduled paths that were
+deliberately not read: `never_read_private` (keys and personal data),
+`outside_rrc_device_scope` (device parts a room controller does not need)
+and `rrc_5xx_assumed_missing` (probes answered with HTTP 500). The device
+profile is `rrc2` for these controllers.
+
 ## Fault parser status
 
 `faults.parser_status` describes the last actual parsing attempt for a current
