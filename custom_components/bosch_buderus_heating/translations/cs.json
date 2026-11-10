@@ -111,7 +111,7 @@
         "data": {
           "login": "Login na štítku zařízení",
           "password": "Pass na štítku zařízení",
-          "unlocked": "Povolil(a) jsem místní přihlášení a viděl(a) jsem modrý signál"
+          "unlocked": "Místní přihlášení je povoleno a modrý signál byl vidět"
         }
       },
       "local_token": {
@@ -541,7 +541,7 @@
         "data": {
           "login": "Login na štítku zařízení",
           "password": "Pass na štítku zařízení",
-          "unlocked": "Povolil(a) jsem místní přihlášení a viděl(a) jsem modrý signál"
+          "unlocked": "Místní přihlášení je povoleno a modrý signál byl vidět"
         }
       },
       "local_token": {
@@ -901,7 +901,7 @@
             "description": "**Upozornění:** Nelze potvrdit, že brána končící na {new} patří této soustavě. Pokud patří jiné soustavě, hodnoty té soustavy se dostanou do historie této soustavy a vaše automatizace budou jednat na nesprávné soustavě. Pokračujte jen tehdy, pokud jste bránu vyměnili sami a jste si jisti.\n\nSoustava pokračuje s bránou končící na {new}. Její historie, její entity včetně ID, názvů a oblastí i vaše automatizace zůstanou zachovány. Integrace se krátce zastaví a znovu spustí.\n\nPokud je pro tuto soustavu nastaven místní přístup, bude odstraněn, protože patří staré bráně. Poté jej nastavte znovu pro novou bránu.\n\nNejprve prosím vytvořte zálohu Home Assistantu.",
             "data": {
               "confirm": "Pokračovat s touto soustavou s novou bránou",
-              "confirm_unverified": "Jsem si jist(a), že nová brána patří této soustavě"
+              "confirm_unverified": "Potvrzuji, že nová brána patří k této soustavě"
             }
           },
           "separate": {

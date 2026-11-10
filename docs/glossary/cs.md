@@ -1,16 +1,19 @@
 # Glossary: Czech (cs)
 
-Draft, awaiting review by a native speaker. The Czech texts in
+Reviewed by a native speaker (2026-11-10). The Czech texts in
 `translations/cs.json` and `i18n/cs.json` use these terms consistently.
 
 Style: sentence case; the user is addressed formally in the plural
-("Zadejte", "Chcete …"), as Home Assistant does in Czech.
+("Zadejte", "Chcete …"), as Home Assistant does in Czech. Confirmations in the
+first person avoid gendered forms such as "(a)": "Místní přihlášení je
+povoleno a modrý signál byl vidět", "Potvrzuji, že …". Counts are written as
+"(počet: {count})".
 
 | English | Czech |
 | --- | --- |
 | heat pump | tepelné čerpadlo |
-| heating circuit (HC) | topný okruh (TO) |
-| hot water (DHW) | teplá voda (TV) |
+| heating circuit (HC) | topný okruh; in generated names Okruh |
+| hot water (DHW) | teplá voda, also in generated names |
 | extra hot water | extra ohřev teplé vody |
 | heat generator, heat source | zdroj tepla |
 | auxiliary heater | přídavné topení |
@@ -83,9 +86,15 @@ Further terms used in the texts:
 | resource (API) | prostředek |
 | setback | útlum |
 | electric heater | elektrický ohřívač |
+| system health | stav systému |
+| utility power block | blokace dodavatelem energie |
+| plan regeneration (water softener) | naplánování regenerace |
 
 Product, standard and preset names stay as they are: Home Comfort, Eco, Eco+,
 Boost, SG Ready, Smart Function, Power Guard, PV, SingleKey ID. Labels of the
 Chrome developer tools quoted in the sign-in steps stay in English.
+
+Control names write the group out, for example "Okruh 1: Provozní režim" or
+"Teplá voda 1: Teplota".
 
 Date format of notifications: `%d.%m.%Y`.

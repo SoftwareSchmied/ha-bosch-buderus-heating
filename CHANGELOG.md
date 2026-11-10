@@ -110,6 +110,15 @@ Versioning after its first tagged preview.
   glossary in `docs/glossary/<code>.md`, and also wait for a review by native
   speakers. Brazilian Portuguese shows the Portuguese texts and Norwegian
   Nynorsk the Bokmål ones.
+- **Czech and Slovak reviewed:** I reviewed the Czech and Slovak translations
+  myself as a native speaker, so these two are no longer drafts. Generated
+  names write the group out instead of abbreviating it, for example
+  "Okruh 1: Provozní režim" or "Teplá voda 1: Teplota". Slovak now uses
+  "nemrznúca zmes" for the brine of a heat pump, "prídavný ohrev" for the
+  auxiliary heater, "výstupná teplota" and "vratná teplota" for supply and
+  return, and "VYP" for the off options of the holiday settings. Czech
+  confirmations no longer use gendered forms such as "(a)". The glossaries
+  in `docs/glossary/cs.md` and `docs/glossary/sk.md` follow these terms.
 - Names and texts that the integration builds itself (for example
   "Heating circuit 1 – Supply temperature" or "Set heating mode" of a TC100.2
   zone) now follow the Home Assistant system language for all supported

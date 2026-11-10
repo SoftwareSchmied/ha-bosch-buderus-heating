@@ -1017,7 +1017,7 @@
       "options": {
         "saturday": "Ako sobota",
         "fix_temperature": "Stála teplota",
-        "off": "VYPNUTÉ",
+        "off": "VYP",
         "eco": "Útlm",
         "auto_sat": "Ako sobota",
         "fix_temp": "Stála teplota"
@@ -1026,19 +1026,19 @@
     "holiday_dhw_mode": {
       "options": {
         "saturday": "Ako sobota",
-        "off": "VYPNUTÉ",
+        "off": "VYP",
         "eco": "Eco+",
         "low": "Eco",
         "high": "Komfort",
-        "off_td": "VYPNUTÉ s tepelnou dezinfekciou",
+        "off_td": "VYP s tepelnou dezinfekciou",
         "auto_sat": "Ako sobota",
-        "td_off": "VYPNUTÉ s tepelnou dezinfekciou"
+        "td_off": "VYP s tepelnou dezinfekciou"
       }
     },
     "holiday_ventilation_mode": {
       "options": {
         "saturday": "Ako sobota",
-        "off": "VYPNUTÉ",
+        "off": "VYP",
         "min": "Stupeň ventilátora 1",
         "red": "Stupeň ventilátora 2",
         "nom": "Stupeň ventilátora 3",
@@ -1114,7 +1114,7 @@
         "name": "Štartovacia teplota Eco"
       },
       "maximum_supply_temperature": {
-        "name": "Maximálna teplota prívodu"
+        "name": "Maximálna výstupná teplota"
       },
       "softener_salt_threshold": {
         "name": "Prah upozornenia na soľ"
@@ -1174,7 +1174,7 @@
         }
       },
       "auxiliary_heater_operation_mode": {
-        "name": "Prevádzkový režim dohrevu",
+        "name": "Prevádzkový režim prídavného ohrevu",
         "state": {
           "off": "Vypnuté",
           "manual": "Zapnuté",
@@ -1257,10 +1257,10 @@
         "name": "Vonkajšia teplota"
       },
       "supply_temperature": {
-        "name": "Teplota prívodu"
+        "name": "Výstupná teplota"
       },
       "return_temperature": {
-        "name": "Teplota spiatočky"
+        "name": "Vratná teplota"
       },
       "hot_water_temperature": {
         "name": "Teplota teplej vody"
@@ -1399,7 +1399,7 @@
           "wdcoptimized": "Optimalizovaná ekvitermická regulácia",
           "wdcsimplified": "Zjednodušená ekvitermická regulácia",
           "mpc": "Prediktívna regulácia podľa modelu",
-          "room_flow_temperature": "Teplota prívodu regulovaná podľa miestnosti",
+          "room_flow_temperature": "Výstupná teplota regulovaná podľa miestnosti",
           "room_power": "Výkon regulovaný podľa miestnosti",
           "constant": "Konštantná regulácia",
           "valve_feedback_control": "Regulácia so spätnou väzbou ventilov",
@@ -1503,7 +1503,7 @@
         }
       },
       "electric_auxiliary_heater_status": {
-        "name": "Stav dohrevu",
+        "name": "Stav prídavného ohrevu",
         "state": {
           "off": "Vypnuté",
           "heating": "Vykurovanie domu",
@@ -1515,7 +1515,7 @@
         }
       },
       "auxiliary_heater_operation_mode": {
-        "name": "Prevádzkový režim dohrevu",
+        "name": "Prevádzkový režim prídavného ohrevu",
         "state": {
           "off": "Vypnuté",
           "manual": "Zapnuté",
@@ -1595,7 +1595,7 @@
         "name": "Typ tepelného čerpadla",
         "state": {
           "air_water": "Vzduch/voda",
-          "brine_water": "Soľanka/voda",
+          "brine_water": "Nemrznúca zmes/voda",
           "exhaust_air": "Odpadový vzduch/voda"
         }
       },

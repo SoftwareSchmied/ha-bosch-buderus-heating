@@ -16,17 +16,18 @@
 | Portuguese (Portugal) | `pt` | Draft, awaiting review by a native speaker | [`glossary/pt.md`](glossary/pt.md) |
 | Dutch | `nl` | Draft, awaiting review by a native speaker | [`glossary/nl.md`](glossary/nl.md) |
 | Polish | `pl` | Draft, awaiting review by a native speaker | [`glossary/pl.md`](glossary/pl.md) |
-| Czech | `cs` | Draft, awaiting review by a native speaker | [`glossary/cs.md`](glossary/cs.md) |
-| Slovak | `sk` | Draft, awaiting review by a native speaker | [`glossary/sk.md`](glossary/sk.md) |
+| Czech | `cs` | Reviewed by a native speaker (2026-11-10) | [`glossary/cs.md`](glossary/cs.md) |
+| Slovak | `sk` | Reviewed by a native speaker (2026-11-10) | [`glossary/sk.md`](glossary/sk.md) |
 | Greek | `el` | Draft, awaiting review by a native speaker | [`glossary/el.md`](glossary/el.md) |
 | Bulgarian | `bg` | Draft, awaiting review by a native speaker | [`glossary/bg.md`](glossary/bg.md) |
 | Croatian | `hr` | Draft, awaiting review by a native speaker | [`glossary/hr.md`](glossary/hr.md) |
 | Slovenian | `sl` | Draft, awaiting review by a native speaker | [`glossary/sl.md`](glossary/sl.md) |
 | Irish | `ga` | Draft, awaiting review by a native speaker | [`glossary/ga.md`](glossary/ga.md) |
 
-All languages except English and German are a careful first draft. They
-follow the glossary of their language, but nobody who speaks them as a
-mother tongue has checked them yet. Corrections are very welcome (see
+A native speaker reviewed Czech and Slovak on 2026-11-10. All other
+languages except English and German are a careful first draft. They follow
+the glossary of their language, but nobody who speaks them as a mother
+tongue has checked them yet. Corrections are very welcome (see
 [Contributing corrections](#contributing-corrections)). The glossary below
 covers Swedish, Norwegian Bokmål, Finnish and Danish; every other draft has
 its own glossary in `docs/glossary/<code>.md` with the terms and the form of

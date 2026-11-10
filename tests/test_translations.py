@@ -362,6 +362,53 @@ def test_group_and_control_names_in_a_new_language(hass) -> None:
     assert control_name(coordinator, mode, "X") == "HK 1: Betriebsart"
 
 
+@pytest.mark.parametrize(
+    "language,expected",
+    [
+        (
+            "cs",
+            (
+                "Okruh 1: Provozní režim",
+                "Okruh 1: Limit výstupní teploty",
+                "Teplá voda 1: Provozní režim",
+                "Tepelné čerpadlo: Přídavné topení",
+            ),
+        ),
+        (
+            "sk",
+            (
+                "Okruh 1: Prevádzkový režim",
+                "Okruh 1: Limit výstupnej teploty",
+                "Teplá voda 1: Prevádzkový režim",
+                "Tepelné čerpadlo: Prídavný ohrev",
+            ),
+        ),
+    ],
+)
+def test_reviewed_languages_write_the_group_out(hass, language, expected) -> None:
+    from custom_components.bosch_buderus_heating.control_presentation import (
+        control_name,
+    )
+    from custom_components.bosch_buderus_heating.pointt import Resource
+    from tests.test_device import _coordinator
+
+    paths = (
+        "/heatingCircuits/hc1/operationMode",
+        "/heatingCircuits/hc1/maxFlowTemp",
+        "/dhwCircuits/dhw1/operationMode",
+        "/heatSources/additionalHeater/operationMode",
+    )
+    hass.config.language = language
+    coordinator = _coordinator(
+        hass,
+        resources=(
+            *(Resource(path, "auto", True) for path in paths),
+            Resource("/heatSources/hs1/heatPumpType", "air_water", True),
+        ),
+    )
+    assert tuple(control_name(coordinator, path, "X") for path in paths) == expected
+
+
 # The German and English names as they were before the data files existed.
 _RRC_NAMES = {
     "temperatureActual": (

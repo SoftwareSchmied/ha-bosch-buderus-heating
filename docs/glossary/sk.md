@@ -1,6 +1,6 @@
 # Slovak glossary (sk)
 
-Draft, awaiting review by a native speaker. The Slovak texts in
+Reviewed by a native speaker (2026-11-10). The Slovak texts in
 `translations/sk.json` and `i18n/sk.json` use these terms consistently; a
 correction to one term usually applies to every text that uses it.
 
@@ -12,17 +12,17 @@ notifications: `%d. %m. %Y`.
 | English | Slovak |
 | --- | --- |
 | heat pump | tepelné čerpadlo |
-| heating circuit (HC) | vykurovací okruh (VO) |
-| hot water (DHW) | teplá voda; in short forms TÚV (teplá úžitková voda) |
+| heating circuit (HC) | vykurovací okruh; in generated names Okruh |
+| hot water (DHW) | teplá voda, also in generated names |
 | extra hot water | extra teplá voda |
 | heat generator, heat source | zdroj tepla |
-| auxiliary heater | dohrev |
+| auxiliary heater | prídavný ohrev ("Režim prídavného ohrevu") |
 | compressor | kompresor |
 | defrost | odmrazovanie |
 | heating (mode) | vykurovanie |
 | cooling (mode) | chladenie |
-| supply (flow) temperature | teplota prívodu |
-| return temperature | teplota spiatočky |
+| supply (flow) temperature | výstupná teplota ("Limit výstupnej teploty") |
+| return temperature | vratná teplota |
 | outdoor temperature | vonkajšia teplota |
 | room temperature | izbová teplota |
 | setpoint | požadovaná hodnota |
@@ -35,7 +35,8 @@ notifications: `%d. %m. %Y`.
 | silent mode | tichý režim |
 | thermal disinfection | tepelná dezinfekcia |
 | ventilation | vetranie |
-| brine | soľanka |
+| brine (heat pump ground circuit) | nemrznúca zmes ("Teplota vstupu nemrznúcej zmesi") |
+| brine (salt brine of the water softener) | soľanka |
 | refrigerant | chladivo |
 | water softener | zmäkčovač vody |
 | system, installation (plant) | systém |
@@ -83,8 +84,10 @@ notifications: `%d. %m. %Y`.
 | hot water tank | zásobník teplej vody |
 | bivalence point | bod bivalencie |
 | Apply (button) | Použiť |
+| OFF (upper-case option of the holiday dialog) | VYP |
 
-Control names shorten the group, for example "VO 1: Prevádzkový režim".
+Control names write the group out, for example "Okruh 1: Prevádzkový režim"
+or "Teplá voda 1: Teplota".
 Product, standard and preset names stay as they are: Home Comfort, SingleKey
 ID, Eco, Eco+, Boost, SG Ready, Smart Function, Power Guard, PV. "Comfort" is
 translated as "Komfort". Brand names of manufacturers do not appear in labels.
