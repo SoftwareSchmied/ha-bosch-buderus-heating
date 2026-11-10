@@ -24,7 +24,9 @@ def test_every_entity_module_declares_empty_trackers() -> None:
     rrc_platforms.trackers.cache_clear()
     loaded = rrc_platforms.trackers()
     assert [name for name, _ in loaded] == list(rrc_platforms.ENTITY_MODULES)
-    assert all(not table for _, table in loaded)
+    # The packages fill their own tables (W3: time and sensor), each only
+    # for platforms with a hook.
+    assert all(set(table) <= rrc_platforms.PLATFORMS for _, table in loaded)
     assert Platform.TIME in rrc_platforms.PLATFORMS
 
 

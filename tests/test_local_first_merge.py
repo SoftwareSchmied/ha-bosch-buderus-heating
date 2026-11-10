@@ -1029,6 +1029,8 @@ def test_the_hand_over_runs_before_any_sensor_is_added(hass) -> None:
         patch.object(sensor, "track_entity_once", Mock()),
         patch.object(sensor, "BoschBuderusActiveFaultsSensor", Mock()),
         patch.object(sensor, "BoschBuderusActiveNotificationsSensor", Mock()),
+        # The room controller packages' sensors (W3 and later).
+        patch.object(sensor.rrc_platforms, "track", Mock()),
     ):
         sensor._setup_entities(scope, Mock())
     assert registry.async_get_entity_id("sensor", DOMAIN, cloud_id) == entity_id

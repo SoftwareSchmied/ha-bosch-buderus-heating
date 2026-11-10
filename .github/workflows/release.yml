@@ -57,6 +57,7 @@ jobs:
           pytest --no-cov
           tests/frontend/ha_dialog.py
           tests/frontend/ha_water_heater.py
+          tests/frontend/ha_rrc_water_heater.py
           tests/frontend/ha_local_setup.py
           tests/frontend/ha_local_first.py
           tests/frontend/ha_rescan.py
