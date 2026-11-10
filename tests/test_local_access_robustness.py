@@ -379,10 +379,20 @@ async def test_a_pause_keeps_the_values_already_read(polling):
     ).current_observations
 
 
-async def test_the_expiry_timer_wakes_only_what_it_must(polling):
+async def test_the_expiry_timer_wakes_only_what_it_must(polling, monkeypatch):
     """PLAN-4/PERF-1: ageing never wakes the scheduler; a new reading that
     ages earlier than the timer looks next wakes the timer."""
     service, clock, gateway, published = polling
+
+    async def wait_for_event(event, delay):
+        # Time passes only with the test's clock: both loops run when their
+        # event is set, never because a real timeout ran out meanwhile. A
+        # real one (the scheduler waits 0.2 s for the start gap) could
+        # otherwise run the scheduler on a slow machine after the clock
+        # moved past the next due read.
+        await event.wait()
+
+    monkeypatch.setattr(service, "_wait", wait_for_event)
     await running(service, clock, STATIC)
     service._age_wake.set()
     await settle()
