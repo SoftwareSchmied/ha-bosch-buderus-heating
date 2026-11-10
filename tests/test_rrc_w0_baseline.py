@@ -5,6 +5,8 @@ cycle are compared with ``w0-entity-baseline.json``, recorded with the same
 test at the state before W0 (alpha.5 integration state ``83fa1b1``) for a
 CT200-class controller, a TC100.2-shaped controller and a K40 heat pump.
 Record it again only on purpose (``W0_WRITE_BASELINE=1``), after a review.
+The packages W1 to W6 add entities and requests on purpose; the comparison
+runs on the W0 state of the contracts (``tests/helpers/rrc_w0_state``).
 """
 
 from __future__ import annotations
@@ -28,6 +30,7 @@ from tests.helpers.rrc_cloud import (
     load_tree,
     with_containers,
 )
+from tests.helpers.rrc_w0_state import w0_state
 from tests.test_entry import _entry
 from tests.test_rrc_tc100_setup import plant as tc100_plant
 
@@ -92,7 +95,7 @@ async def _snapshot(hass: HomeAssistant, plant: str) -> dict[str, object]:
         if plant == "tc100"
         else nullcontext()
     )
-    with cloud_patches(cloud, clock, gateway), faults:
+    with cloud_patches(cloud, clock, gateway), faults, w0_state():
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
         setup_requests = sorted(cloud.all_requested())

@@ -12,7 +12,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from types import MappingProxyType
 
-from custom_components.bosch_buderus_heating import rrc, rrc_contracts
+from custom_components.bosch_buderus_heating import rrc
 from custom_components.bosch_buderus_heating.discovery import (
     MAX_RRC_DEVICE_SETTING_PROBES,
     DiscoveryDiagnostics,
@@ -22,8 +22,8 @@ from custom_components.bosch_buderus_heating.discovery_inventory import _not_kep
 from custom_components.bosch_buderus_heating.pointt import Gateway, Resource
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from custom_components.bosch_buderus_heating.rrc_contract_base import RrcContract
-from custom_components.bosch_buderus_heating.rrc_contracts import Registry
 from tests.helpers.rrc_cloud import RrcCloud, with_containers
+from tests.helpers.rrc_w0_state import w0_state
 
 LEAVES = tuple(f"etrv/setting{index}" for index in range(10))
 CONTRACT = RrcContract(
@@ -36,12 +36,9 @@ CONTRACT = RrcContract(
 
 @contextmanager
 def installed(*contracts: RrcContract) -> Iterator[None]:
-    original = rrc_contracts._registry
-    rrc_contracts._registry = Registry((*rrc_contracts.CONTRACTS, *contracts))
-    try:
+    """The W0 contracts (whatever the packages added since) and ``contracts``."""
+    with w0_state(*contracts):
         yield
-    finally:
-        rrc_contracts._registry = original
 
 
 def wire(path: str, **fields: object) -> Resource:
@@ -102,7 +99,10 @@ def _setting(path: str) -> bool:
 
 async def test_empty_hooks_add_no_request() -> None:
     cloud = RrcCloud(tree())
-    _found, report, order = await _discover(cloud, Gateway("gw", device_type="rrc2"))
+    with installed():
+        _found, report, order = await _discover(
+            cloud, Gateway("gw", device_type="rrc2")
+        )
     assert report.device_profile == "rrc2"
     assert not any(_setting(path) or path.startswith("/events") for path in order)
     assert "/system/appliance/displayCode" not in order
@@ -144,9 +144,10 @@ async def test_hooks_reach_an_rrc_controller_bounded_and_last() -> None:
     gateway = Gateway("gw", device_type="rrc2")
     with installed(CONTRACT):
         assert not {path for path in _not_kept(gateway, found) if _setting(path)}
-    assert {path for path in _not_kept(gateway, found) if _setting(path)} == {
-        path for path in found if _setting(path)
-    }
+    with installed():
+        assert {path for path in _not_kept(gateway, found) if _setting(path)} == {
+            path for path in found if _setting(path)
+        }
 
 
 async def test_hooks_never_reach_another_gateway() -> None:
@@ -183,4 +184,5 @@ def test_device_scope_follows_the_listed_types() -> None:
         assert not rrc.in_device_scope("/devices/device2/etrv/setting0")
         assert not rrc.in_device_scope("/devices/device2/etrv/other", listed)
         assert rrc.device_setting_paths(wire("/zones/list", type="zoneArray")) == ()
-    assert rrc.device_setting_paths(listed) == ()
+    with installed():
+        assert rrc.device_setting_paths(listed) == ()

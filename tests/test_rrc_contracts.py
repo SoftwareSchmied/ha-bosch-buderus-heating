@@ -3,7 +3,7 @@
 Every RRC variant applies only with an RRC write context (S11); the policy
 extensions keep today's behaviour by default. The contracts shipped with W0
 are empty apart from the temporary-setpoint block moved from the write
-service.
+service; the tests here run on that state (``tests/helpers/rrc_w0_state``).
 """
 
 from __future__ import annotations
@@ -50,6 +50,7 @@ from custom_components.bosch_buderus_heating.writes import (
     WriteService,
     assess_control,
 )
+from tests.helpers.rrc_w0_state import w0_state
 
 AWAY = "/system/awayMode/enabled"
 OVERRIDE = "/zones/zn1/clockOverride/temperatureHeating"
@@ -114,14 +115,10 @@ def away(value: str = "false", **fields: object) -> Resource:
 
 @contextmanager
 def installed(*contracts: RrcContract) -> Iterator[Registry]:
-    """Swap the installed contracts for the duration of a test."""
-    registry = Registry((*rrc_contracts.CONTRACTS, *contracts))
-    original = rrc_contracts._registry
-    rrc_contracts._registry = registry
-    try:
+    """Swap the installed contracts for the duration of a test: the W0
+    contracts (whatever the packages added since) and ``contracts``."""
+    with w0_state(*contracts) as registry:
         yield registry
-    finally:
-        rrc_contracts._registry = original
 
 
 class FakeClient:
@@ -179,12 +176,14 @@ def test_shipped_contracts_are_empty_except_the_moved_override_block() -> None:
         "system",
         "devices",
     ]
-    for contract in registry.contracts:
-        assert not contract.enum_policies and not contract.number_policies
-    assert rrc_contracts.zone_fields() == ()
-    assert rrc_contracts.extra_roots() == ()
-    assert rrc_contracts.device_leaves("thermostat_valve") == ()
-    assert rrc_contracts.optional_children("/system/appliance") == ()
+    # W0 itself declared nothing else; the packages fill their contracts.
+    with installed() as w0:
+        for contract in w0.contracts:
+            assert not contract.enum_policies and not contract.number_policies
+        assert rrc_contracts.zone_fields() == ()
+        assert rrc_contracts.extra_roots() == ()
+        assert rrc_contracts.device_leaves("thermostat_valve") == ()
+        assert rrc_contracts.optional_children("/system/appliance") == ()
     assert rrc_contract_zone.CONTRACT.blocked
     # The block moved unchanged: every RRC zone, nothing else.
     for path in (OVERRIDE, "/zones/zn0/clockOverride/temperatureHeating"):
