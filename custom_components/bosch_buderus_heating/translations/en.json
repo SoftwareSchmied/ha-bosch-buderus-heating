@@ -1002,6 +1002,9 @@
     },
     "gateway_exchange_incomplete": {
       "message": "An interrupted gateway exchange could not be finished, so the integration does not start. Details are in the log; remove what blocks the exchange (for example entities of the new gateway) and restart Home Assistant."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "The start time must be a time of day between 00:00 and 23:59."
     }
   },
   "selector": {
@@ -1130,6 +1133,9 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Ambient light brightness"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Extra hot water duration"
       }
     },
     "select": {
@@ -1212,6 +1218,19 @@
           "orange": "Orange",
           "red": "Red"
         }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Thermal disinfection day",
+        "state": {
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday",
+          "saturday": "Saturday",
+          "sunday": "Sunday",
+          "daily": "Every day"
+        }
       }
     },
     "switch": {
@@ -1253,6 +1272,12 @@
       },
       "bacon_dry_display": {
         "name": "Display"
+      },
+      "rrc_extra_dhw": {
+        "name": "Extra hot water"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Thermal disinfection"
       }
     },
     "sensor": {
@@ -1847,6 +1872,18 @@
             }
           }
         }
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Thermal disinfection result"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Current hot water schedule level",
+        "state": {
+          "off": "Off",
+          "low": "Eco",
+          "high": "Comfort",
+          "eco": "Eco+"
+        }
       }
     },
     "binary_sensor": {
@@ -2040,6 +2077,11 @@
             }
           }
         }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Thermal disinfection start time"
       }
     }
   }

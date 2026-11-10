@@ -1002,6 +1002,9 @@
     },
     "gateway_exchange_incomplete": {
       "message": "Ein unterbrochener Gateway-Austausch ließ sich nicht abschließen, deshalb startet die Integration nicht. Details stehen im Protokoll; entferne, was den Austausch blockiert (zum Beispiel Entitäten des neuen Gateways), und starte Home Assistant neu."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "Die Startzeit muss eine Uhrzeit zwischen 00:00 und 23:59 sein."
     }
   },
   "selector": {
@@ -1130,6 +1133,9 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Helligkeit der Ambientebeleuchtung"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Dauer Extra-Warmwasser"
       }
     },
     "select": {
@@ -1212,6 +1218,19 @@
           "orange": "Orange",
           "red": "Rot"
         }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Tag der thermischen Desinfektion",
+        "state": {
+          "monday": "Montag",
+          "tuesday": "Dienstag",
+          "wednesday": "Mittwoch",
+          "thursday": "Donnerstag",
+          "friday": "Freitag",
+          "saturday": "Samstag",
+          "sunday": "Sonntag",
+          "daily": "Täglich"
+        }
       }
     },
     "switch": {
@@ -1253,6 +1272,12 @@
       },
       "bacon_dry_display": {
         "name": "Display"
+      },
+      "rrc_extra_dhw": {
+        "name": "Extra-Warmwasser"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Thermische Desinfektion"
       }
     },
     "sensor": {
@@ -1847,6 +1872,18 @@
             }
           }
         }
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Ergebnis der thermischen Desinfektion"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Warmwasser-Programmstufe jetzt",
+        "state": {
+          "off": "Aus",
+          "low": "Eco",
+          "high": "Komfort",
+          "eco": "Eco+"
+        }
       }
     },
     "binary_sensor": {
@@ -2040,6 +2077,11 @@
             }
           }
         }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Startzeit der thermischen Desinfektion"
       }
     }
   }

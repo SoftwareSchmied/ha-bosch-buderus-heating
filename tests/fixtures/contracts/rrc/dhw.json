@@ -1,0 +1,1367 @@
+{
+ "provenance": {
+  "kind": "synthetic",
+  "basis": "compatibility_mapping",
+  "reference": "RRC 2.0 room controller hot water circuits (synthetic_from_app_demo_shapes): operation modes high, off, Off and ownprogram; extra hot water usable, unavailable and locked; disinfection time as floatValue and as float; a hot water program with a further field",
+  "firmware": null,
+  "capture_date": null,
+  "created": "2026-11-10",
+  "redaction": "Constructed values only. Leaf names, JSON types, flags and units follow the expected RRC 2.0 shapes and the anonymized TC100.2 device tree of issue 122 (leaf names and types, no values). One disinfection result is an obvious marker for leak tests.",
+  "physical_device_verified": false,
+  "contract": "Merged over ct200-shapes.json. operationMode advertises no allowedValues except on dhw4; switch points are {d, t, dhw}; /gateway/DateTime is the controller clock with a weekday suffix."
+ },
+ "resources": [
+  {
+   "id": "/gateway/DateTime",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "2026-11-10T06:30:00+01:00 Tu"
+  },
+  {
+   "id": "/dhwCircuits",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw1"
+    },
+    {
+     "id": "/dhwCircuits/dhw2"
+    },
+    {
+     "id": "/dhwCircuits/dhw3"
+    },
+    {
+     "id": "/dhwCircuits/dhw4"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw1/actualTemp"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/extraDhw"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/extraDhwDuration"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/hotWaterSystem"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/operationMode"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/programs"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/state"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/temperatureLevels"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/thermalDisinfect"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw1/actualTemp",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": 48.5,
+   "unitOfMeasure": "C",
+   "minValue": 0,
+   "maxValue": 100
+  },
+  {
+   "id": "/dhwCircuits/dhw1/extraDhw",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw1/extraDhwDuration",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 60,
+   "unitOfMeasure": "mins",
+   "minValue": 15,
+   "maxValue": 2880,
+   "stepSize": 15,
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw1/hotWaterSystem",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "storage",
+   "used": true,
+   "available": true
+  },
+  {
+   "id": "/dhwCircuits/dhw1/operationMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "high",
+   "available": "true",
+   "used": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw1/programs",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw1/programs/pg1"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw1/programs/pg1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw1/programs/pg1/week"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw1/programs/pg1/week",
+   "type": "dhwProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "used": "true",
+   "available": "true",
+   "value": [
+    {
+     "d": "Su",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Su",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Su",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Su",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Mo",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Mo",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Mo",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Mo",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Tu",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Tu",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Tu",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Tu",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "We",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "We",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "We",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "We",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Th",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Th",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Th",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Th",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Fr",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Fr",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Fr",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Fr",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Sa",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Sa",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Sa",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Sa",
+     "dhw": "off",
+     "t": 1350
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw1/state",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "on"
+  },
+  {
+   "id": "/dhwCircuits/dhw1/temperatureLevels",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw1/temperatureLevels/high"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw1/temperatureLevels/high",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 44,
+   "unitOfMeasure": "C",
+   "minValue": 10,
+   "maxValue": 60,
+   "stepSize": 2,
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw1/thermalDisinfect",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw1/thermalDisinfect/lastResult"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/thermalDisinfect/state"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/thermalDisinfect/time"
+    },
+    {
+     "id": "/dhwCircuits/dhw1/thermalDisinfect/weekDay"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw1/thermalDisinfect/lastResult",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/dhwCircuits/dhw1/thermalDisinfect/state",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "on",
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw1/thermalDisinfect/time",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 210,
+   "unitOfMeasure": "mins",
+   "minValue": 0,
+   "maxValue": 1439
+  },
+  {
+   "id": "/dhwCircuits/dhw1/thermalDisinfect/weekDay",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "Su"
+  },
+  {
+   "id": "/dhwCircuits/dhw2",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw2/actualTemp"
+    },
+    {
+     "id": "/dhwCircuits/dhw2/extraDhw"
+    },
+    {
+     "id": "/dhwCircuits/dhw2/extraDhwDuration"
+    },
+    {
+     "id": "/dhwCircuits/dhw2/hotWaterSystem"
+    },
+    {
+     "id": "/dhwCircuits/dhw2/operationMode"
+    },
+    {
+     "id": "/dhwCircuits/dhw2/programs"
+    },
+    {
+     "id": "/dhwCircuits/dhw2/state"
+    },
+    {
+     "id": "/dhwCircuits/dhw2/temperatureLevels"
+    },
+    {
+     "id": "/dhwCircuits/dhw2/thermalDisinfect"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw2/actualTemp",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": 48.5,
+   "unitOfMeasure": "C",
+   "minValue": 0,
+   "maxValue": 100
+  },
+  {
+   "id": "/dhwCircuits/dhw2/extraDhw",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "available": "false"
+  },
+  {
+   "id": "/dhwCircuits/dhw2/extraDhwDuration",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 60,
+   "unitOfMeasure": "mins",
+   "minValue": 15,
+   "maxValue": 2880,
+   "stepSize": 15,
+   "available": "false"
+  },
+  {
+   "id": "/dhwCircuits/dhw2/hotWaterSystem",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "instant",
+   "used": true,
+   "available": true
+  },
+  {
+   "id": "/dhwCircuits/dhw2/operationMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "available": "true",
+   "used": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw2/programs",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw2/programs/pg1"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw2/programs/pg1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw2/programs/pg1/week"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw2/programs/pg1/week",
+   "type": "dhwProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "used": "true",
+   "available": "true",
+   "value": [
+    {
+     "d": "Su",
+     "dhw": "high",
+     "t": 390,
+     "flags": 0
+    },
+    {
+     "d": "Su",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Su",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Su",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Mo",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Mo",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Mo",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Mo",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Tu",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Tu",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Tu",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Tu",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "We",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "We",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "We",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "We",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Th",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Th",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Th",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Th",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Fr",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Fr",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Fr",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Fr",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Sa",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Sa",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Sa",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Sa",
+     "dhw": "off",
+     "t": 1350
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw2/state",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "on"
+  },
+  {
+   "id": "/dhwCircuits/dhw2/temperatureLevels",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw2/temperatureLevels/high"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw2/temperatureLevels/high",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 44,
+   "unitOfMeasure": "C",
+   "minValue": 10,
+   "maxValue": 60,
+   "stepSize": 2,
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw2/thermalDisinfect",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw2/thermalDisinfect/lastResult"
+    },
+    {
+     "id": "/dhwCircuits/dhw2/thermalDisinfect/state"
+    },
+    {
+     "id": "/dhwCircuits/dhw2/thermalDisinfect/time"
+    },
+    {
+     "id": "/dhwCircuits/dhw2/thermalDisinfect/weekDay"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw2/thermalDisinfect/lastResult",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/dhwCircuits/dhw2/thermalDisinfect/state",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "on",
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw2/thermalDisinfect/time",
+   "type": "float",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 210
+  },
+  {
+   "id": "/dhwCircuits/dhw2/thermalDisinfect/weekDay",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "Su"
+  },
+  {
+   "id": "/dhwCircuits/dhw3",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw3/actualTemp"
+    },
+    {
+     "id": "/dhwCircuits/dhw3/extraDhw"
+    },
+    {
+     "id": "/dhwCircuits/dhw3/extraDhwDuration"
+    },
+    {
+     "id": "/dhwCircuits/dhw3/hotWaterSystem"
+    },
+    {
+     "id": "/dhwCircuits/dhw3/operationMode"
+    },
+    {
+     "id": "/dhwCircuits/dhw3/programs"
+    },
+    {
+     "id": "/dhwCircuits/dhw3/state"
+    },
+    {
+     "id": "/dhwCircuits/dhw3/temperatureLevels"
+    },
+    {
+     "id": "/dhwCircuits/dhw3/thermalDisinfect"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw3/actualTemp",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": 48.5,
+   "unitOfMeasure": "C",
+   "minValue": 0,
+   "maxValue": 100
+  },
+  {
+   "id": "/dhwCircuits/dhw3/extraDhw",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "true",
+   "available": "false"
+  },
+  {
+   "id": "/dhwCircuits/dhw3/extraDhwDuration",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 60,
+   "unitOfMeasure": "mins",
+   "minValue": 15,
+   "maxValue": 2880,
+   "stepSize": 15,
+   "used": "true",
+   "available": "false"
+  },
+  {
+   "id": "/dhwCircuits/dhw3/hotWaterSystem",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "storage",
+   "used": true,
+   "available": true
+  },
+  {
+   "id": "/dhwCircuits/dhw3/operationMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "Off",
+   "available": "true",
+   "used": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw3/programs",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw3/programs/pg1"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw3/programs/pg1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw3/programs/pg1/week"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw3/programs/pg1/week",
+   "type": "dhwProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "used": "true",
+   "available": "true",
+   "value": [
+    {
+     "d": "Su",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Su",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Su",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Su",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Mo",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Mo",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Mo",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Mo",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Tu",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Tu",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Tu",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Tu",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "We",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "We",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "We",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "We",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Th",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Th",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Th",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Th",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Fr",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Fr",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Fr",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Fr",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Sa",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Sa",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Sa",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Sa",
+     "dhw": "off",
+     "t": 1350
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw3/state",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "on"
+  },
+  {
+   "id": "/dhwCircuits/dhw3/temperatureLevels",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw3/temperatureLevels/high"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw3/temperatureLevels/high",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 44,
+   "unitOfMeasure": "C",
+   "minValue": 10,
+   "maxValue": 60,
+   "stepSize": 2,
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw3/thermalDisinfect",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw3/thermalDisinfect/lastResult"
+    },
+    {
+     "id": "/dhwCircuits/dhw3/thermalDisinfect/state"
+    },
+    {
+     "id": "/dhwCircuits/dhw3/thermalDisinfect/time"
+    },
+    {
+     "id": "/dhwCircuits/dhw3/thermalDisinfect/weekDay"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw3/thermalDisinfect/lastResult",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "PRIVATE-MARKER-RESULT text"
+  },
+  {
+   "id": "/dhwCircuits/dhw3/thermalDisinfect/state",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "on",
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw3/thermalDisinfect/time",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 210,
+   "unitOfMeasure": "mins",
+   "minValue": 0,
+   "maxValue": 1439
+  },
+  {
+   "id": "/dhwCircuits/dhw3/thermalDisinfect/weekDay",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "Su"
+  },
+  {
+   "id": "/dhwCircuits/dhw4",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw4/actualTemp"
+    },
+    {
+     "id": "/dhwCircuits/dhw4/extraDhw"
+    },
+    {
+     "id": "/dhwCircuits/dhw4/extraDhwDuration"
+    },
+    {
+     "id": "/dhwCircuits/dhw4/hotWaterSystem"
+    },
+    {
+     "id": "/dhwCircuits/dhw4/operationMode"
+    },
+    {
+     "id": "/dhwCircuits/dhw4/programs"
+    },
+    {
+     "id": "/dhwCircuits/dhw4/state"
+    },
+    {
+     "id": "/dhwCircuits/dhw4/temperatureLevels"
+    },
+    {
+     "id": "/dhwCircuits/dhw4/thermalDisinfect"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw4/actualTemp",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": 48.5,
+   "unitOfMeasure": "C",
+   "minValue": 0,
+   "maxValue": 100
+  },
+  {
+   "id": "/dhwCircuits/dhw4/extraDhw",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off",
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw4/extraDhwDuration",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 60,
+   "unitOfMeasure": "mins",
+   "minValue": 15,
+   "maxValue": 2880,
+   "stepSize": 15,
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw4/hotWaterSystem",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "storage",
+   "used": true,
+   "available": true
+  },
+  {
+   "id": "/dhwCircuits/dhw4/operationMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "ownprogram",
+   "available": "true",
+   "used": "true",
+   "allowedValues": [
+    "Off",
+    "low",
+    "high",
+    "ownprogram",
+    "eco"
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw4/programs",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw4/programs/pg1"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw4/programs/pg1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw4/programs/pg1/week"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw4/programs/pg1/week",
+   "type": "dhwProgram",
+   "writeable": 1,
+   "recordable": 0,
+   "used": "true",
+   "available": "true",
+   "value": [
+    {
+     "d": "Su",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Su",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Su",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Su",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Mo",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Mo",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Mo",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Mo",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Tu",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Tu",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Tu",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Tu",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "We",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "We",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "We",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "We",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Th",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Th",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Th",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Th",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Fr",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Fr",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Fr",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Fr",
+     "dhw": "off",
+     "t": 1350
+    },
+    {
+     "d": "Sa",
+     "dhw": "high",
+     "t": 390
+    },
+    {
+     "d": "Sa",
+     "dhw": "off",
+     "t": 510
+    },
+    {
+     "d": "Sa",
+     "dhw": "high",
+     "t": 990
+    },
+    {
+     "d": "Sa",
+     "dhw": "off",
+     "t": 1350
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw4/state",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "on"
+  },
+  {
+   "id": "/dhwCircuits/dhw4/temperatureLevels",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw4/temperatureLevels/high"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw4/temperatureLevels/high",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 44,
+   "unitOfMeasure": "C",
+   "minValue": 10,
+   "maxValue": 60,
+   "stepSize": 2,
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw4/thermalDisinfect",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/dhwCircuits/dhw4/thermalDisinfect/lastResult"
+    },
+    {
+     "id": "/dhwCircuits/dhw4/thermalDisinfect/state"
+    },
+    {
+     "id": "/dhwCircuits/dhw4/thermalDisinfect/time"
+    },
+    {
+     "id": "/dhwCircuits/dhw4/thermalDisinfect/weekDay"
+    }
+   ]
+  },
+  {
+   "id": "/dhwCircuits/dhw4/thermalDisinfect/lastResult",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "ok"
+  },
+  {
+   "id": "/dhwCircuits/dhw4/thermalDisinfect/state",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "on",
+   "used": "true",
+   "available": "true"
+  },
+  {
+   "id": "/dhwCircuits/dhw4/thermalDisinfect/time",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": 210,
+   "unitOfMeasure": "mins",
+   "minValue": 0,
+   "maxValue": 1439
+  },
+  {
+   "id": "/dhwCircuits/dhw4/thermalDisinfect/weekDay",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "Su"
+  }
+ ]
+}

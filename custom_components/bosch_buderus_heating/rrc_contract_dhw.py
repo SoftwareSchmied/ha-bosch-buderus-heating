@@ -1,11 +1,215 @@
 """RRC 2.0 contract of the hot water: mode, extra hot water, disinfection.
 
-Owned by work package W3. Empty tables change nothing; see
-``docs/dev/rrc-packages.md`` for what each table does.
+Owned by work package W3; see ``docs/dev/rrc-packages.md`` for what each
+table does. Everything here applies only to a recognised RRC controller
+(S11) and is expected from the controller's data shapes, still untested on
+a real one (CT-G03, CT-D06):
+
+- ``operationMode`` without ``allowedValues`` offers "Off", "high" and
+  "ownprogram"; "low" and "eco" mean different things depending on the heat
+  source and are offered only when the controller advertises them. "Off" is
+  written as such; a reading of "off" confirms it.
+- ``temperatureLevels/high`` uses the advertised step (S4), so that a value
+  the controller would round is refused rather than never confirmed.
+- Extra hot water: a switch and an integer duration, each its own write.
+- Thermal disinfection: a switch, a weekday and a start time (integer
+  minutes after midnight, a time entity), disabled by default.
+- The hot water program is only read (``rrc_dhw``).
 """
 
 from __future__ import annotations
 
-from .rrc_contract_base import RrcContract
+from collections.abc import Mapping
+from types import MappingProxyType
+from typing import Final
 
-CONTRACT = RrcContract(name="dhw")
+from . import rrc_dhw
+from .pointt import Resource
+from .pointt.models import JsonScalar
+from .rrc_contract_base import RrcContract
+from .write_policies import EnumWritePolicy, NumberWritePolicy
+
+_DHW: Final = rrc_dhw.CIRCUIT
+MODE: Final = rf"^{_DHW}/operationMode$"
+LEVEL_HIGH: Final = rf"^{_DHW}/temperatureLevels/high$"
+EXTRA: Final = rf"^{_DHW}/extraDhw$"
+EXTRA_DURATION: Final = rf"^{_DHW}/extraDhwDuration$"
+DISINFECTION: Final = rf"^{_DHW}/thermalDisinfect/state$"
+DISINFECTION_DAY: Final = rf"^{_DHW}/thermalDisinfect/weekDay$"
+DISINFECTION_TIME: Final = rf"^{_DHW}/thermalDisinfect/time$"
+DISINFECTION_RESULT: Final = rf"^{_DHW}/thermalDisinfect/lastResult$"
+PROGRAM: Final = rrc_dhw.PROGRAM_WEEK.pattern
+
+# The minute spellings; another time unit would change the meaning.
+_MINUTES: Final = frozenset({"m", "min", "mins", "minutes"})
+# Mo to Su, and "Ed" for every day.
+WEEKDAYS: Final = (*rrc_dhw.DAYS, "Ed")
+_WEEKDAY_KEYS: Final = MappingProxyType(
+    {
+        "Mo": "monday",
+        "Tu": "tuesday",
+        "We": "wednesday",
+        "Th": "thursday",
+        "Fr": "friday",
+        "Sa": "saturday",
+        "Su": "sunday",
+        "Ed": "daily",
+    }
+)
+TIME_OF_DAY_INVALID: Final = "rrc_time_of_day_invalid"
+
+
+def _time_of_day(
+    _resource: Resource, value: JsonScalar, _related: Mapping[str, Resource]
+) -> str | None:
+    """A start time is a minute of the day, even if the limits allow more."""
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, int | float)
+        or not 0 <= value < rrc_dhw.MINUTES_PER_DAY
+    ):
+        return TIME_OF_DAY_INVALID
+    return None
+
+
+OPERATION_MODE_POLICY: Final = EnumWritePolicy(
+    MODE,
+    frozenset({"stringValue"}),
+    frozenset({"Off", "off", "low", "high", "ownprogram", "eco"}),
+    fallback_options=("Off", "high", "ownprogram"),
+    equivalent_reads=MappingProxyType(
+        {"Off": frozenset({"off"}), "off": frozenset({"Off"})}
+    ),
+)
+EXTRA_DHW_POLICY: Final = EnumWritePolicy(
+    EXTRA,
+    frozenset({"stringValue"}),
+    frozenset({"on", "off"}),
+    known_only=True,
+    fallback_options=("on", "off"),
+    on_value="on",
+    off_value="off",
+)
+DISINFECTION_POLICY: Final = EnumWritePolicy(
+    DISINFECTION,
+    frozenset({"stringValue"}),
+    frozenset({"on", "off"}),
+    known_only=True,
+    enabled_by_default=False,
+    fallback_options=("on", "off"),
+    on_value="on",
+    off_value="off",
+)
+DISINFECTION_DAY_POLICY: Final = EnumWritePolicy(
+    DISINFECTION_DAY,
+    frozenset({"stringValue"}),
+    frozenset(WEEKDAYS),
+    known_only=True,
+    enabled_by_default=False,
+    fallback_options=WEEKDAYS,
+)
+LEVEL_HIGH_POLICY: Final = NumberWritePolicy(LEVEL_HIGH, "C", 1.0, strict_grid=True)
+EXTRA_DURATION_POLICY: Final = NumberWritePolicy(
+    EXTRA_DURATION,
+    "mins",
+    15.0,
+    wire_integer=True,
+    strict_grid=True,
+    accepted_units=_MINUTES,
+)
+# Written by the time entity of ``rrc_dhw_entities``, not as a number.
+DISINFECTION_TIME_POLICY: Final = NumberWritePolicy(
+    DISINFECTION_TIME,
+    "mins",
+    1.0,
+    enabled_by_default=False,
+    wire_integer=True,
+    strict_grid=True,
+    accepted_units=_MINUTES,
+    create_entity=False,
+    value_check=_time_of_day,
+)
+
+NAMES: Final = MappingProxyType(
+    {
+        EXTRA: ("Extra-Warmwasser", "Extra hot water"),
+        EXTRA_DURATION: ("Dauer Extra-Warmwasser", "Extra hot water duration"),
+        DISINFECTION: ("Thermische Desinfektion", "Thermal disinfection"),
+        DISINFECTION_DAY: (
+            "Tag der thermischen Desinfektion",
+            "Thermal disinfection day",
+        ),
+        DISINFECTION_TIME: (
+            "Startzeit der thermischen Desinfektion",
+            "Thermal disinfection start time",
+        ),
+        DISINFECTION_RESULT: (
+            "Ergebnis der thermischen Desinfektion",
+            "Thermal disinfection result",
+        ),
+        PROGRAM: (
+            "Warmwasser-Programmstufe jetzt",
+            "Current hot water schedule level",
+        ),
+    }
+)
+
+CONTRACT = RrcContract(
+    name="dhw",
+    enum_policies=(
+        OPERATION_MODE_POLICY,
+        EXTRA_DHW_POLICY,
+        DISINFECTION_POLICY,
+        DISINFECTION_DAY_POLICY,
+    ),
+    number_policies=(
+        LEVEL_HIGH_POLICY,
+        EXTRA_DURATION_POLICY,
+        DISINFECTION_TIME_POLICY,
+    ),
+    names=NAMES,
+    entity_keys=MappingProxyType(
+        {
+            MODE: MappingProxyType({"select": "hot_water_operation_mode"}),
+            LEVEL_HIGH: MappingProxyType({"number": "hot_water_comfort"}),
+            EXTRA: MappingProxyType({"switch": "rrc_extra_dhw"}),
+            EXTRA_DURATION: MappingProxyType({"number": "rrc_extra_dhw_duration"}),
+            DISINFECTION: MappingProxyType({"switch": "rrc_thermal_disinfection"}),
+            DISINFECTION_DAY: MappingProxyType(
+                {"select": "rrc_thermal_disinfection_weekday"}
+            ),
+            DISINFECTION_TIME: MappingProxyType(
+                {"time": "rrc_thermal_disinfection_time"}
+            ),
+            DISINFECTION_RESULT: MappingProxyType(
+                {"sensor": "rrc_thermal_disinfection_result"}
+            ),
+            PROGRAM: MappingProxyType({"sensor": "rrc_dhw_program_level"}),
+        }
+    ),
+    option_keys=MappingProxyType(
+        {
+            # The controller may read "Off" back as "off": both are "off".
+            MODE: MappingProxyType({"Off": "off", "off": "off"}),
+            DISINFECTION_DAY: _WEEKDAY_KEYS,
+        }
+    ),
+    categories=MappingProxyType(
+        {
+            EXTRA_DURATION: "config",
+            DISINFECTION: "config",
+            DISINFECTION_DAY: "config",
+            DISINFECTION_TIME: "config",
+        }
+    ),
+    icons=MappingProxyType(
+        {
+            EXTRA: "mdi:water-boiler",
+            EXTRA_DURATION: "mdi:timer-outline",
+            DISINFECTION: "mdi:bacteria-outline",
+            DISINFECTION_DAY: "mdi:calendar-week",
+            DISINFECTION_TIME: "mdi:clock-outline",
+        }
+    ),
+    diagnostics=rrc_dhw.diagnostics,
+)
