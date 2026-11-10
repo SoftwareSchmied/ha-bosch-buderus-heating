@@ -33,6 +33,7 @@ from homeassistant.const import (
     UnitOfVolumeFlowRate,
 )
 
+from .i18n import localize
 from .observations import ERROR_MARKERS, Observation, ValueStatus, canonical_unit
 
 TEMPERATURE = "temperature"
@@ -100,7 +101,9 @@ class LocalOnlyDefinition:
     key: str
     kind: str
     enabled: bool
-    names: tuple[str, str]  # German, English; ``{}`` is filled from the path
+    # German, English; ``{}`` is filled from the path. Other languages are
+    # looked up by the English name in ``i18n``.
+    names: tuple[str, str]
     translation_key: str | None = None
     options: tuple[str, ...] = ()
     # C10-b: the unit used only while a reading declares none.
@@ -1270,8 +1273,14 @@ def identifier_name(name: str) -> bool:
 
 
 def entity_name(definition: LocalOnlyDefinition, path: str, language: str) -> str:
+    if definition.key == "spec":
+        # A documented reading is named like its cloud resource, including
+        # names composed from several parts.
+        from .resource_catalog import resource_name
+
+        return resource_name(path, language=language)
     match = definition.pattern.fullmatch(path)
-    name = definition.names[0 if language.casefold().startswith("de") else 1]
+    name = localize(language, *definition.names)
     detail = match.group(1) if match is not None and match.groups() else ""
     return name.format(detail) if "{}" in name else name
 

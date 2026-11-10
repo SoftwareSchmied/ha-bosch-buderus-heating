@@ -172,6 +172,33 @@ const assert = require("node:assert/strict");
   });
   await button.press("Tab");
   assert.equal((await state()).calls.length, 7);
+
+  // The date and time fields name themselves in the profile language.
+  const labels = await page.evaluate(() => {
+    const field = document.createElement(
+      "ha-selector-bosch-buderus-holiday-datetime",
+    );
+    document.body.append(field);
+    field.label = "Start";
+    const result = {};
+    for (const language of ["de", "en", "sv", "nb-NO", "fi", "da", "fr"]) {
+      field.hass = { language };
+      result[language] = [...field.shadowRoot.querySelectorAll("input")].map(
+        (input) => input.getAttribute("aria-label"),
+      );
+    }
+    field.remove();
+    return result;
+  });
+  assert.deepEqual(labels, {
+    de: ["Start: Datum", "Start: Uhrzeit"],
+    en: ["Start: Date", "Start: Time"],
+    sv: ["Start: Datum", "Start: Tid"],
+    "nb-NO": ["Start: Dato", "Start: Tidspunkt"],
+    fi: ["Start: Päivämäärä", "Start: Aika"],
+    da: ["Start: Dato", "Start: Tid"],
+    fr: ["Start: Date", "Start: Time"],
+  });
   assert.deepEqual(errors, []);
   console.log(
     "Actual holiday module: Enter, Space and pointer open the deletion confirmation once without submitting the form; failure message and restored states passed.",

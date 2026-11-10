@@ -8,6 +8,7 @@ from homeassistant.const import EntityCategory
 
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .device import grouped_entity_name
+from .i18n import localize
 
 # Keep the meaning of each setting, especially DHW start temperatures.
 _LABELS = {
@@ -39,22 +40,27 @@ def control_label(path: str, fallback: str, language: str) -> str:
     """Short localized function name without discarding its meaning."""
     if not _heating_presentation(path):
         return fallback
-    german = language.casefold().startswith("de")
     if "/temperatureLevels/" in path:
         level = path.rsplit("/", 1)[-1]
         if path.startswith("/dhwCircuits/"):
             level_labels = {
-                "eco": ("Eco+ Starttemperatur", "Eco+ start temperature"),
-                "low": ("Eco Starttemperatur", "Eco start temperature"),
-                "high": ("Komfort Starttemperatur", "Comfort start temperature"),
+                "eco": localize(
+                    language, "Eco+ Starttemperatur", "Eco+ start temperature"
+                ),
+                "low": localize(
+                    language, "Eco Starttemperatur", "Eco start temperature"
+                ),
+                "high": localize(
+                    language, "Komfort Starttemperatur", "Comfort start temperature"
+                ),
             }
             if level in level_labels:
-                return level_labels[level][not german]
+                return level_labels[level]
         elif level == "eco":
-            return "Absenktemperatur" if german else "Setback temperature"
+            return localize(language, "Absenktemperatur", "Setback temperature")
     for suffix, labels in reversed(tuple(_LABELS.items())):
         if path.endswith("/" + suffix):
-            return labels[not german]
+            return localize(language, *labels)
     return fallback
 
 
@@ -64,19 +70,22 @@ def control_name(
     """Shorten generic groups, preserving configured room and device names."""
     if not _heating_presentation(path):
         return grouped_entity_name(coordinator, path, fallback)
-    name = control_label(path, fallback, coordinator.hass.config.language)
+    language = coordinator.hass.config.language
+    name = control_label(path, fallback, language)
     grouped = grouped_entity_name(coordinator, path, name)
     group = grouped.removesuffix(" \N{EN DASH} " + name)
-    group = re.sub(
-        r"^(?:Heizkreis|Heating circuit) (\d+)$",
-        r"HK \1" if coordinator.hass.config.language.startswith("de") else r"HC \1",
-        group,
-    )
-    group = re.sub(
-        r"^(?:Warmwasser|Hot water) (\d+)$",
-        r"WW \1" if coordinator.hass.config.language.startswith("de") else r"DHW \1",
-        group,
-    )
+    for generic, short in (
+        (
+            ("Heizkreis", "Heating circuit"),
+            localize(language, "HK", "HC"),
+        ),
+        (("Warmwasser", "Hot water"), localize(language, "WW", "DHW")),
+    ):
+        names = {*generic, localize(language, *generic)}
+        pattern = "|".join(re.escape(item) for item in sorted(names))
+        match = re.fullmatch(rf"(?:{pattern}) (\d+)", group)
+        if match is not None:
+            group = f"{short} {match.group(1)}"
     return f"{group}: {name}"
 
 

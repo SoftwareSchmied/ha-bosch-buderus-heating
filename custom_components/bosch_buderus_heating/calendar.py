@@ -48,6 +48,7 @@ from .holidays import (
     parse_holiday_state,
     parse_holiday_write_configuration,
 )
+from .i18n import localize
 from .platform_scope import DiscoveryLifecycle, PlatformScope, setup_platform
 from .pointt import PointTError, Resource, WriteNotConfirmed
 from .writes import WriteBusy
@@ -356,8 +357,9 @@ class BoschBuderusHolidayCalendar(
     def _summary_for_period(self, period: HolidayPeriod) -> str:
         if period.name is not None:
             return period.name
-        language = self.coordinator.hass.config.language.casefold()
-        return "Urlaubszeit" if language.startswith("de") else "Holiday period"
+        return localize(
+            self.coordinator.hass.config.language, "Urlaubszeit", "Holiday period"
+        )
 
     @staticmethod
     def _uid_for_period(period: HolidayPeriod) -> str:

@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any, cast
 from homeassistant.util import dt as dt_util
 
 from .configuration import CLOUD_KIND, LOCAL_KIND
+from .i18n import localize_all
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -147,7 +148,7 @@ _TEXTS: dict[str, dict[str, str]] = {
 
 def _texts(hass: HomeAssistant) -> dict[str, str]:
     language = str(getattr(hass.config, "language", "en") or "en")
-    return _TEXTS["de" if language.casefold().startswith("de") else "en"]
+    return localize_all(language, _TEXTS["de"], _TEXTS["en"])
 
 
 def _clock(when: datetime) -> str:

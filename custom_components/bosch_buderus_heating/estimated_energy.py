@@ -42,16 +42,13 @@ from .derived import (
     power_kilowatts,
 )
 from .device import device_info_for_resource, grouped_entity_name
+from .i18n import localize
 from .log_helpers import log_failure
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
 
 TRANSLATION_KEY = "estimated_energy"
 UNIQUE_SUFFIX = "estimated_energy"
-_NAMES = {
-    "de": "Energie (geschätzt aus aktueller Leistung)",
-    "en": "Energy (estimated from current power)",
-}
 _POWER_PATH = re.compile(r"^/heatSources/(?P<source>hs[^/]+)/actualPower$")
 # A native counter of the plant covers every heat source; a counter of one
 # heat source covers that source. Either one replaces the estimate.
@@ -231,9 +228,14 @@ class BoschBuderusEstimatedEnergySensor(
     ) -> None:
         super().__init__(coordinator)
         self._power_path = power_path
-        german = coordinator.hass.config.language.casefold().startswith("de")
         self._attr_name = grouped_entity_name(
-            coordinator, power_path, _NAMES["de" if german else "en"]
+            coordinator,
+            power_path,
+            localize(
+                coordinator.hass.config.language,
+                "Energie (geschätzt aus aktueller Leistung)",
+                "Energy (estimated from current power)",
+            ),
         )
         self._attr_unique_id = estimated_energy_unique_id(
             coordinator.gateway.gateway_id, power_path

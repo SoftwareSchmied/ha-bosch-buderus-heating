@@ -18,6 +18,7 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
 
 from .const import DOMAIN
+from .i18n import localize
 from .log_helpers import log_failure
 from .pointt import Resource
 from .pointt.models import BatchItemResult, JsonValue
@@ -408,34 +409,27 @@ def local_device_errors(
 
 def fault_summary(fault: ActiveFault, language: str | None) -> str:
     """Return an independently worded, localized summary."""
-    selected_language = "de" if (language or "").lower().startswith("de") else "en"
     normalized_subcode = fault.subcode.upper() if fault.subcode else None
     exact = _KNOWN_SUMMARIES.get((fault.code or "", normalized_subcode))
     generic = _KNOWN_SUMMARIES.get((fault.code or "", None))
     if summary := exact or generic:
-        return summary[selected_language]
-    if selected_language == "de":
-        return (
-            f"Unbekannte Störung (Code {fault.code})"
-            if fault.code
-            else "Unbekannte Störung"
-        )
-    return f"Unknown fault (code {fault.code})" if fault.code else "Unknown fault"
+        return localize(language, summary["de"], summary["en"])
+    if fault.code:
+        return localize(
+            language, "Unbekannte Störung (Code {code})", "Unknown fault (code {code})"
+        ).format(code=fault.code)
+    return localize(language, "Unbekannte Störung", "Unknown fault")
 
 
 def fault_severity_label(severity: FaultSeverity, language: str | None) -> str:
     """Return a localized display label while retaining stable enum values."""
-    selected_language = "de" if (language or "").lower().startswith("de") else "en"
-    return _SEVERITY_LABELS[severity][selected_language]
+    labels = _SEVERITY_LABELS[severity]
+    return localize(language, labels["de"], labels["en"])
 
 
 def no_active_faults_label(language: str | None) -> str:
     """Return the localized healthy-state label used in attributes."""
-    return (
-        "Keine aktiven Störungen"
-        if (language or "").lower().startswith("de")
-        else "No active faults"
-    )
+    return localize(language, "Keine aktiven Störungen", "No active faults")
 
 
 def fault_store_key(entry_id: str, gateway_id: str) -> str:

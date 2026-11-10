@@ -6,6 +6,7 @@ import math
 import re
 from functools import lru_cache
 
+from .i18n import localize
 from .pointt import Resource
 from .resource_catalog import additional_app_value
 
@@ -57,10 +58,16 @@ def zone_control_name(path: str, language: str) -> str | None:
         return None
     heating = "/heating/" in path
     mode = path.endswith("/operationMode")
-    if language.casefold().startswith("de"):
-        prefix = "Heizen" if heating else "Kühlen"
-        action = "Betriebsart einstellen" if mode else "Manuellen Sollwert einstellen"
-    else:
-        prefix = "Heating" if heating else "Cooling"
-        action = "Set operating mode" if mode else "Set manual temperature"
+    prefix = (
+        localize(language, "Heizen", "Heating")
+        if heating
+        else localize(language, "Kühlen", "Cooling")
+    )
+    action = (
+        localize(language, "Betriebsart einstellen", "Set operating mode")
+        if mode
+        else localize(
+            language, "Manuellen Sollwert einstellen", "Set manual temperature"
+        )
+    )
     return f"{prefix}: {action}"

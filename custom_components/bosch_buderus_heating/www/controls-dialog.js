@@ -6,6 +6,117 @@ const onStepGrid = (minimum, step) => {
   return Math.abs(ticks - Math.round(ticks)) < 1e-7;
 };
 
+// Texts in every supported language; keep the keys equal in all of them.
+const CONTROLS_TEXTS = {
+  "en": {
+    "system": "System",
+    "heatingCircuit": "Heating circuit",
+    "hotWater": "Hot water",
+    "sections": "Appliance sections",
+    "moreSettings": "More settings",
+    "checkValue": "Please check this value.",
+    "discard": "Discard",
+    "reload": "Reload values",
+    "unsaved": "{count} unsaved changes",
+    "saved": "Changes confirmed.",
+    "empty": "No controls are currently available.",
+    "pending": "Changes are written only when you select Apply.",
+    "reopen": "Please close and reopen the dialog.",
+    "reloadFailed": "The values could not be reloaded."
+  },
+  "de": {
+    "system": "Anlage",
+    "heatingCircuit": "Heizkreis",
+    "hotWater": "Warmwasser",
+    "sections": "Anlagenbereiche",
+    "moreSettings": "Weitere Einstellungen",
+    "checkValue": "Bitte prüfe diesen Wert.",
+    "discard": "Verwerfen",
+    "reload": "Werte neu laden",
+    "unsaved": "{count} ungespeicherte Änderungen",
+    "saved": "Änderungen bestätigt.",
+    "empty": "Zurzeit sind keine bedienbaren Einstellungen verfügbar.",
+    "pending": "Änderungen werden erst mit Übernehmen geschrieben.",
+    "reopen": "Bitte schließe den Dialog und öffne ihn erneut.",
+    "reloadFailed": "Die Werte konnten nicht neu geladen werden."
+  },
+  "sv": {
+    "system": "Anläggning",
+    "heatingCircuit": "Värmekrets",
+    "hotWater": "Varmvatten",
+    "sections": "Apparatens avsnitt",
+    "moreSettings": "Fler inställningar",
+    "checkValue": "Kontrollera det här värdet.",
+    "discard": "Förkasta",
+    "reload": "Läs in värdena igen",
+    "unsaved": "{count} osparade ändringar",
+    "saved": "Ändringarna bekräftades.",
+    "empty": "Ingen styrning är tillgänglig just nu.",
+    "pending": "Ändringar skrivs först när du väljer Tillämpa.",
+    "reopen": "Stäng och öppna dialogrutan igen.",
+    "reloadFailed": "Värdena kunde inte läsas in igen."
+  },
+  "nb": {
+    "system": "Anlegg",
+    "heatingCircuit": "Varmekrets",
+    "hotWater": "Varmtvann",
+    "sections": "Seksjoner for apparatet",
+    "moreSettings": "Flere innstillinger",
+    "checkValue": "Sjekk denne verdien.",
+    "discard": "Forkast",
+    "reload": "Last verdier på nytt",
+    "unsaved": "{count} ulagrede endringer",
+    "saved": "Endringene er bekreftet.",
+    "empty": "Ingen kontroller er tilgjengelige akkurat nå.",
+    "pending": "Endringer skrives først når du velger Bruk.",
+    "reopen": "Lukk og åpne dialogen på nytt.",
+    "reloadFailed": "Verdiene kunne ikke lastes på nytt."
+  },
+  "fi": {
+    "system": "Järjestelmä",
+    "heatingCircuit": "Lämmityspiiri",
+    "hotWater": "Lämmin käyttövesi",
+    "sections": "Laitteen osiot",
+    "moreSettings": "Lisää asetuksia",
+    "checkValue": "Tarkista tämä arvo.",
+    "discard": "Hylkää",
+    "reload": "Lataa arvot uudelleen",
+    "unsaved": "Tallentamattomia muutoksia: {count}",
+    "saved": "Muutokset vahvistettu.",
+    "empty": "Ohjauksia ei ole tällä hetkellä saatavilla.",
+    "pending": "Muutokset kirjoitetaan vasta, kun valitset Käytä.",
+    "reopen": "Sulje ikkuna ja avaa se uudelleen.",
+    "reloadFailed": "Arvoja ei voitu ladata uudelleen."
+  },
+  "da": {
+    "system": "Anlæg",
+    "heatingCircuit": "Varmekreds",
+    "hotWater": "Varmt brugsvand",
+    "sections": "Apparatets afsnit",
+    "moreSettings": "Flere indstillinger",
+    "checkValue": "Kontrollér denne værdi.",
+    "discard": "Kassér",
+    "reload": "Indlæs værdier igen",
+    "unsaved": "{count} ikke gemte ændringer",
+    "saved": "Ændringerne er bekræftet.",
+    "empty": "Der er ingen tilgængelig styring lige nu.",
+    "pending": "Ændringer skrives først, når du vælger Anvend.",
+    "reopen": "Luk dialogen, og åbn den igen.",
+    "reloadFailed": "Værdierne kunne ikke indlæses igen."
+  }
+};
+// Base language of a tag such as "sv-FI"; English when there is no entry.
+const controlsLanguage = (language) => {
+  const base = String(language || "")
+    .trim()
+    .toLowerCase()
+    .replace("_", "-")
+    .split("-")[0];
+  const code = base === "no" ? "nb" : base;
+  return Object.hasOwn(CONTROLS_TEXTS, code) ? code : "en";
+};
+// end of texts
+
 class BoschBuderusControls extends HTMLElement {
   constructor() {
     super();
@@ -128,14 +239,16 @@ class BoschBuderusControls extends HTMLElement {
     }
     return undefined;
   }
-  get _de() {
-    return (this._hass?.language || "en").startsWith("de");
+  get _language() {
+    return controlsLanguage(this._hass?.language);
   }
-  _text(de, en) {
-    return this._de ? de : en;
+  _text(key, values = {}) {
+    return CONTROLS_TEXTS[this._language][key].replace(/\{(\w+)\}/g, (_, name) =>
+      String(values[name]),
+    );
   }
   _label(labels) {
-    return labels?.[this._de ? "de" : "en"] || "";
+    return labels?.[this._language] || labels?.en || "";
   }
   set hass(value) {
     const before = this._hass?.language;
@@ -198,13 +311,15 @@ class BoschBuderusControls extends HTMLElement {
     this._updateStatus();
   }
   _group(group) {
-    if (group === "system") return this._text("Anlage", "System");
+    if (group === "system") return this._text("system");
     const [family, id] = group.split("/");
     const number = id.match(/\d+$/)?.[0] || id;
     return (
       (family === "heatingCircuits"
-        ? this._text("Heizkreis ", "Heating circuit ")
-        : this._text("Warmwasser ", "Hot water ")) + number
+        ? this._text("heatingCircuit")
+        : this._text("hotWater")) +
+      " " +
+      number
     );
   }
   _selectTab(group, focus = false) {
@@ -226,7 +341,7 @@ class BoschBuderusControls extends HTMLElement {
     panels.replaceChildren();
     tabs.setAttribute(
       "aria-label",
-      this._text("Anlagenbereiche", "Appliance sections"),
+      this._text("sections"),
     );
     const groups = [...new Set(this._rows.map((row) => row.group))];
     if (!groups.includes(this._active)) this._active = groups[0] || "";
@@ -265,10 +380,7 @@ class BoschBuderusControls extends HTMLElement {
       const heading = document.createElement("h3");
       heading.id = "advanced-" + index;
       advanced.setAttribute("aria-labelledby", heading.id);
-      heading.textContent = this._text(
-        "Weitere Einstellungen",
-        "More settings",
-      );
+      heading.textContent = this._text("moreSettings");
       advanced.append(heading);
       this._rows
         .filter((row) => row.group === group)
@@ -330,10 +442,7 @@ class BoschBuderusControls extends HTMLElement {
             hint = document.createElement("p");
             hint.className = "hint";
             hint.id = id + "-hint";
-            hint.textContent = this._text(
-              "Bitte prüfe diesen Wert.",
-              "Please check this value.",
-            );
+            hint.textContent = this._text("checkValue");
             input.setAttribute("aria-invalid", "true");
             input.setAttribute("aria-describedby", hint.id);
           }
@@ -369,35 +478,21 @@ class BoschBuderusControls extends HTMLElement {
       panels.append(panel);
     });
     this._selectTab(this._active);
-    this.shadowRoot.querySelector(".discard").textContent = this._text(
-      "Verwerfen",
-      "Discard",
-    );
-    this.shadowRoot.querySelector(".refresh").textContent = this._text(
-      "Werte neu laden",
-      "Reload values",
-    );
+    this.shadowRoot.querySelector(".discard").textContent =
+      this._text("discard");
+    this.shadowRoot.querySelector(".refresh").textContent = this._text("reload");
     this._updateStatus();
     this._setDisabled();
   }
   _updateStatus() {
     const count = Object.keys(this._changes).length;
     this.shadowRoot.querySelector(".status").textContent = count
-      ? this._text(
-          count + " ungespeicherte Änderungen",
-          count + " unsaved changes",
-        )
+      ? this._text("unsaved", { count })
       : this._config?.status === "saved"
-        ? this._text("Änderungen bestätigt.", "Changes confirmed.")
+        ? this._text("saved")
         : this._config?.status === "empty"
-          ? this._text(
-              "Zurzeit sind keine bedienbaren Einstellungen verfügbar.",
-              "No controls are currently available.",
-            )
-          : this._text(
-              "Änderungen werden erst mit Übernehmen geschrieben.",
-              "Changes are written only when you select Apply.",
-            );
+          ? this._text("empty")
+          : this._text("pending");
   }
   _setDisabled() {
     for (const element of this.shadowRoot.querySelectorAll(
@@ -416,10 +511,7 @@ class BoschBuderusControls extends HTMLElement {
       flow.step?.step_id !== "operate" ||
       !flow.flowConfig?.handleFlowStep
     ) {
-      error.textContent = this._text(
-        "Bitte schließe den Dialog und öffne ihn erneut.",
-        "Please close and reopen the dialog.",
-      );
+      error.textContent = this._text("reopen");
       return;
     }
     this._busy = true;
@@ -440,10 +532,7 @@ class BoschBuderusControls extends HTMLElement {
         fire("flow-update", { step });
       }
     } catch {
-      error.textContent = this._text(
-        "Die Werte konnten nicht neu geladen werden.",
-        "The values could not be reloaded.",
-      );
+      error.textContent = this._text("reloadFailed");
     } finally {
       this._busy = false;
       this._setDisabled();

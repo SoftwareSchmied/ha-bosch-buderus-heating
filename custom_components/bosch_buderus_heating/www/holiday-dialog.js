@@ -1,4 +1,50 @@
 // Only holiday selectors are registered. No existing element is patched.
+// Texts in every supported language; keep the keys equal in all of them.
+const HOLIDAY_TEXTS = {
+  "en": {
+    "date": "Date",
+    "time": "Time",
+    "deleteFailed": "The deletion confirmation could not be opened. Please reload the page and try again."
+  },
+  "de": {
+    "date": "Datum",
+    "time": "Uhrzeit",
+    "deleteFailed": "Die Löschbestätigung konnte nicht geöffnet werden. Bitte lade die Seite neu und versuche es erneut."
+  },
+  "sv": {
+    "date": "Datum",
+    "time": "Tid",
+    "deleteFailed": "Bekräftelsen av borttagningen kunde inte öppnas. Läs in sidan igen och försök på nytt."
+  },
+  "nb": {
+    "date": "Dato",
+    "time": "Tidspunkt",
+    "deleteFailed": "Slettebekreftelsen kunne ikke åpnes. Last siden på nytt og prøv igjen."
+  },
+  "fi": {
+    "date": "Päivämäärä",
+    "time": "Aika",
+    "deleteFailed": "Poiston vahvistusta ei voitu avata. Lataa sivu uudelleen ja yritä uudelleen."
+  },
+  "da": {
+    "date": "Dato",
+    "time": "Tid",
+    "deleteFailed": "Bekræftelsen af sletning kunne ikke åbnes. Genindlæs siden, og prøv igen."
+  }
+};
+// Base language of a tag such as "sv-FI"; English when there is no entry.
+const holidayLanguage = (language) => {
+  const base = String(language || "")
+    .trim()
+    .toLowerCase()
+    .replace("_", "-")
+    .split("-")[0];
+  const code = base === "no" ? "nb" : base;
+  return Object.hasOwn(HOLIDAY_TEXTS, code) ? code : "en";
+};
+const holidayText = (hass, key) => HOLIDAY_TEXTS[holidayLanguage(hass?.language)][key];
+// end of texts
+
 class BoschBuderusHolidayDateTime extends HTMLElement {
   constructor() {
     super();
@@ -49,10 +95,9 @@ class BoschBuderusHolidayDateTime extends HTMLElement {
   set required(value) { this._date.required = this._time.required = Boolean(value); }
   set disabled(value) { this._date.disabled = this._time.disabled = Boolean(value); }
   _labels() {
-    const de = this._hass?.language?.startsWith("de");
     this.shadowRoot.querySelector(".label").textContent = this._label || "";
-    this._date.setAttribute("aria-label", `${this._label || ""}: ${de ? "Datum" : "Date"}`);
-    this._time.setAttribute("aria-label", `${this._label || ""}: ${de ? "Uhrzeit" : "Time"}`);
+    this._date.setAttribute("aria-label", `${this._label || ""}: ${holidayText(this._hass, "date")}`);
+    this._time.setAttribute("aria-label", `${this._label || ""}: ${holidayText(this._hass, "time")}`);
   }
   focus() { this._date.focus(); }
   reportValidity() { return this._date.reportValidity() && this._time.reportValidity(); }
@@ -122,9 +167,7 @@ class BoschBuderusHolidayDelete extends HTMLElement {
       if (node.localName === "step-flow-form") { flow = node; break; }
     }
     const message = this.shadowRoot.querySelector("p");
-    const error = this.hass?.language?.startsWith("de")
-      ? "Die Löschbestätigung konnte nicht geöffnet werden. Bitte lade die Seite neu und versuche es erneut."
-      : "The deletion confirmation could not be opened. Please reload the page and try again.";
+    const error = holidayText(this.hass, "deleteFailed");
     if (!form || flow?.domain !== "bosch_buderus_heating" ||
         !["holiday", "legacy_holiday"].includes(flow.step?.step_id) || !flow.flowConfig?.handleFlowStep) {
       message.textContent = error;

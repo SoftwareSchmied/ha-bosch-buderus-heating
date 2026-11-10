@@ -6,12 +6,14 @@ import base64
 import binascii
 import math
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from functools import lru_cache
 
 from . import rrc
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
+from .i18n import localize
 from .legacy_holidays import is_legacy_holiday_path
 from .pointt import Resource
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
@@ -1520,93 +1522,90 @@ def resource_name(path: str, subkey: str | None = None, *, language: str = "de")
     """Return a localized user-facing name without exposing technical IDs."""
     if (label := rrc.name(path, language)) is not None:
         return label
-    german = language.casefold().startswith("de")
     if (softener := softener_capability(path)) is not None:
         if subkey == "low_salt":
-            return "Salzvorrat niedrig" if german else "Low salt"
-        return softener.name_de if german else softener.name_en
-    names = _GERMAN_NAMES if german else _ENGLISH_NAMES
+            return localize(language, "Salzvorrat niedrig", "Low salt")
+        return localize(language, softener.name_de, softener.name_en)
     if is_additional_app_scalar(path):
         if path.endswith("/dhwType"):
-            return "Warmwasser-Gerätetyp" if german else "Hot-water device type"
+            return localize(language, "Warmwasser-Gerätetyp", "Hot-water device type")
         mode = (
-            ("Heizen" if german else "Heating")
+            localize(language, "Heizen", "Heating")
             if "/heating/" in path
-            else ("Kühlen" if german else "Cooling")
+            else localize(language, "Kühlen", "Cooling")
         )
         key = path.rsplit("/", 1)[-1]
         label = (
-            ("Vorübergehender Sollwert" if german else "Temporary setpoint")
+            localize(language, "Vorübergehender Sollwert", "Temporary setpoint")
             if key == "temporaryRoomSetpoint"
-            else names[key]
+            else _name(language, _GERMAN_NAMES, _ENGLISH_NAMES, key)
         )
         return f"{mode}: {label}"
-    path_names = _GERMAN_PATH_NAMES if german else _ENGLISH_PATH_NAMES
-    subkey_names = _SUBKEY_NAMES if german else _ENGLISH_SUBKEY_NAMES
     tail = path.rsplit("/", 1)[-1]
     app_path = _APP_PATH_ROOT.sub(r"/\1/*/", path)
     if (app_names := _APP_PATH_NAMES.get(app_path)) is not None:
-        base = app_names[0] if german else app_names[1]
+        base = localize(language, *app_names)
     elif "/heatingCircuits/" in path and "/temperatureLevels/" in path:
-        temperature_names = (
-            {"comfort2": "Heizen", "eco": "Absenken"}
-            if german
-            else {"comfort2": "Heating", "eco": "Reduced"}
-        )
+        temperature_names = {
+            "comfort2": localize(language, "Heizen", "Heating"),
+            "eco": localize(language, "Absenken", "Reduced"),
+        }
         base = temperature_names.get(tail, _humanize(tail))
     elif "/dhwCircuits/" in path and "/temperatureLevels/" in path:
-        temperature_names = (
-            {
-                "eco": "Eco+ Starttemperatur",
-                "high": "Komfort Starttemperatur",
-                "low": "Eco Starttemperatur",
-                "off": "Aus",
-            }
-            if german
-            else {
-                "eco": "Eco+ start temperature",
-                "high": "Comfort start temperature",
-                "low": "Eco start temperature",
-                "off": "Off",
-            }
-        )
+        temperature_names = {
+            "eco": localize(language, "Eco+ Starttemperatur", "Eco+ start temperature"),
+            "high": localize(
+                language, "Komfort Starttemperatur", "Comfort start temperature"
+            ),
+            "low": localize(language, "Eco Starttemperatur", "Eco start temperature"),
+            "off": localize(language, "Aus", "Off"),
+        }
         base = temperature_names.get(tail, _humanize(tail))
     elif _PROGRAM_NAME.fullmatch(tail):
         suffix = tail.removeprefix("name")
-        base = (
-            f"Name des Zeitprogramms {suffix}" if german else f"Schedule {suffix} name"
-        )
+        base = localize(
+            language, "Name des Zeitprogramms {suffix}", "Schedule {suffix} name"
+        ).format(suffix=suffix)
     elif path == "/gateway/update/status":
-        base = "Softwareupdate" if german else "Software update"
+        base = localize(language, "Softwareupdate", "Software update")
+    elif path in _ENGLISH_PATH_NAMES:
+        base = _name(language, _GERMAN_PATH_NAMES, _ENGLISH_PATH_NAMES, path)
+    elif tail in _ENGLISH_NAMES:
+        base = _name(language, _GERMAN_NAMES, _ENGLISH_NAMES, tail)
     else:
-        base = path_names.get(path, names.get(tail, _humanize(tail)))
+        base = _humanize(tail)
     if "/emon/" in path:
-        energy_domains = (
-            {
-                "totalConsumption": "Gesamt",
-                "chConsumption": "Heizung",
-                "dhwConsumption": "Warmwasser",
-                "coolingConsumption": "Kühlung",
-            }
-            if german
-            else {
-                "totalConsumption": "Total",
-                "chConsumption": "Heating",
-                "dhwConsumption": "Hot water",
-                "coolingConsumption": "Cooling",
-            }
-        )
+        energy_domains = {
+            "totalConsumption": localize(language, "Gesamt", "Total"),
+            "chConsumption": localize(language, "Heizung", "Heating"),
+            "dhwConsumption": localize(language, "Warmwasser", "Hot water"),
+            "coolingConsumption": localize(language, "Kühlung", "Cooling"),
+        }
         domain = energy_domains.get(tail, base)
         if subkey is None:
             return domain
-        subname = subkey_names.get(subkey, _humanize(subkey))
+        subname = _subkey_name(language, subkey)
         if subkey == "outputProduced" and tail == "coolingConsumption":
-            subname = "Erzeugte Kühlenergie" if german else "Cooling energy produced"
+            subname = localize(
+                language, "Erzeugte Kühlenergie", "Cooling energy produced"
+            )
         return f"{domain} \N{EN DASH} {subname}"
     if subkey is None:
         return base
-    subname = subkey_names.get(subkey, _humanize(subkey))
-    return f"{base} {subname}"
+    return f"{base} {_subkey_name(language, subkey)}"
+
+
+def _name(
+    language: str, german: Mapping[str, str], english: Mapping[str, str], key: str
+) -> str:
+    """One entry of a German/English name table in the given language."""
+    return localize(language, german[key], english[key])
+
+
+def _subkey_name(language: str, subkey: str) -> str:
+    if subkey in _ENGLISH_SUBKEY_NAMES:
+        return _name(language, _SUBKEY_NAMES, _ENGLISH_SUBKEY_NAMES, subkey)
+    return _humanize(subkey)
 
 
 def configured_device_name(value: str) -> str | None:

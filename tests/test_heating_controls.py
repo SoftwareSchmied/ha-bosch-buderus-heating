@@ -27,6 +27,7 @@ from custom_components.bosch_buderus_heating.heating_climate import (
     HeatingCircuitClimate,
     track_heating_climates,
 )
+from custom_components.bosch_buderus_heating.i18n import LANGUAGES
 from custom_components.bosch_buderus_heating.pointt import (
     AuthenticationError,
     Gateway,
@@ -308,8 +309,23 @@ async def test_dialog_shows_real_metadata_and_localized_options(
     assert isinstance(ui, ControlsSelector)
     rows = ui.serialize()["selector"]["bosch-buderus-controls"]["rows"]
     mode = next(row for row in rows if row["key"] == MODE)
-    assert mode["label"] == {"de": "Betriebsart", "en": "Operating mode"}
-    assert mode["options"][1]["label"] == {"de": "Manuell", "en": "Manual"}
+    # Every supported language, so the dialog follows the profile language.
+    assert mode["label"] == {
+        "de": "Betriebsart",
+        "en": "Operating mode",
+        "sv": "Driftläge",
+        "nb": "Driftsmodus",
+        "fi": "Käyttötila",
+        "da": "Driftsform",
+    }
+    assert mode["options"][1]["label"] == {
+        "de": "Manuell",
+        "en": "Manual",
+        "sv": "Manuell",
+        "nb": "Manuell",
+        "fi": "Manuaalinen",
+        "da": "Manuel",
+    }
     assert set(controls(coordinator)) == {MODE, TARGET}
     assert options._entry.options == {}
     coordinator.client.get_resource.assert_not_awaited()
@@ -559,7 +575,7 @@ async def test_new_enum_codes_use_select_without_losing_the_wire_value(
     rows = await options._control_rows({path: resource}, current={path: resource})
     assert rows[0]["kind"] == "select"
     assert rows[0]["options"][-1]["value"] == "boost"
-    assert rows[0]["options"][-1]["label"] == {"de": "boost", "en": "boost"}
+    assert rows[0]["options"][-1]["label"] == dict.fromkeys(LANGUAGES, "boost")
 
 
 async def test_already_applied_draft_causes_no_write(hass, enable_custom_integrations):

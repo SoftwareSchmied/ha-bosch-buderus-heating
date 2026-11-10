@@ -25,6 +25,7 @@ from homeassistant.util.hass_dict import HassKey
 from .const import DOMAIN
 from .control import HeldCapabilities
 from .device import device_info_for_resource, grouped_entity_name
+from .i18n import localize
 from .local_only import (
     BELOW_MEASURING_RANGE,
     CONCENTRATION,
@@ -348,11 +349,14 @@ class BoschBuderusInstallationDateSensor(
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
-        german = coordinator.hass.config.language.casefold().startswith("de")
         self._attr_name = grouped_entity_name(
             coordinator,
             "/system",
-            "Installationsdatum" if german else "Installation date",
+            localize(
+                coordinator.hass.config.language,
+                "Installationsdatum",
+                "Installation date",
+            ),
         )
         self._attr_unique_id = installation_date_unique_id(
             coordinator.gateway.gateway_id

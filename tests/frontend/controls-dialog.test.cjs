@@ -187,6 +187,37 @@ const assert = require("node:assert/strict");
     await ui.getByLabel("Flow limit", { exact: true }).isVisible(),
     true,
   );
+  // The dialog texts follow the profile language ("no" is Norwegian
+  // Bokmål); a row without a label in that language shows the English one.
+  for (const [language, tab, heading] of [
+    ["sv-SE", "Värmekrets 1", "Fler inställningar"],
+    ["no", "Varmekrets 1", "Flere innstillinger"],
+    ["fi", "Lämmityspiiri 1", "Lisää asetuksia"],
+    ["da", "Varmekreds 1", "Flere indstillinger"],
+    ["nn", "Heating circuit 1", "More settings"],
+  ]) {
+    await ui.evaluate((el, value) => {
+      el.hass = { language: value };
+    }, language);
+    assert.equal(
+      await ui.getByRole("tab", { name: tab, exact: true }).isVisible(),
+      true,
+      language,
+    );
+    assert.equal(
+      await ui.getByRole("heading", { name: heading }).isVisible(),
+      true,
+      language,
+    );
+    assert.equal(
+      await ui.getByLabel("Manual setpoint", { exact: true }).inputValue(),
+      "19",
+      language,
+    );
+  }
+  await ui.evaluate((el) => {
+    el.hass = { language: "en" };
+  });
   await ui
     .getByRole("tab", { name: "Heating circuit 1", exact: true })
     .press("ArrowRight");

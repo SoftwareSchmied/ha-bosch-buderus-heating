@@ -86,6 +86,7 @@ from .holidays import (
     is_holiday_resource_path,
     parse_holiday_state,
 )
+from .i18n import localize
 from .local_only import (
     BELOW_MEASURING_RANGE,
     MAX_STATES,
@@ -1505,8 +1506,9 @@ def shown_source(
 
 def source_suffix(hass: object, source: str) -> str:
     language = str(getattr(getattr(hass, "config", None), "language", "en"))
-    table = _SOURCE_SUFFIX["de" if language.casefold().startswith("de") else "en"]
-    return table[source]
+    return localize(
+        language, _SOURCE_SUFFIX["de"][source], _SOURCE_SUFFIX["en"][source]
+    )
 
 
 class BoschBuderusSensor(
@@ -1561,16 +1563,14 @@ class BoschBuderusSensor(
                 language=language,
             )
         elif description.value_kind == "dew_point":
-            display_name = (
-                "Taupunkt (berechnet)"
-                if language.casefold().startswith("de")
-                else "Dew point (calculated)"
+            display_name = localize(
+                language, "Taupunkt (berechnet)", "Dew point (calculated)"
             )
         elif description.value_kind == "pressure_status":
-            display_name = (
-                "Systemdruckstatus (berechnet)"
-                if language.casefold().startswith("de")
-                else "System pressure status (calculated)"
+            display_name = localize(
+                language,
+                "Systemdruckstatus (berechnet)",
+                "System pressure status (calculated)",
             )
         else:
             display_name = resource_name(
