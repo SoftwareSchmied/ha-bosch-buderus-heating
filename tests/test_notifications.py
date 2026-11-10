@@ -261,7 +261,7 @@ async def test_two_gateways_do_not_share_notifications_or_dismissals(hass, rig):
     [
         ("de", "Anlagenstörung"),
         ("en", "heating system fault"),
-        ("fr", "heating system fault"),
+        ("eo", "heating system fault"),
         ("sv", "fel i värmesystemet"),
         ("fi-FI", "lämmitysjärjestelmän vika"),
     ],
@@ -519,7 +519,7 @@ async def test_identically_named_installations_remain_distinguishable(hass, rig)
             "2026-10-03",
         ),
         (
-            "fr",
+            "eo",
             "First detected",
             "Confirmed resolved",
             "Communication between",
