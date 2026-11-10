@@ -241,6 +241,22 @@ def _parse_below_range_states(value: object) -> tuple[int | float, ...]:
     return tuple(sorted(markers))
 
 
+def _parse_availability_flag(
+    data: Mapping[str, object], key: str
+) -> tuple[bool | None, bool]:
+    """Read a used/available flag; an absent flag is valid and unreported."""
+    if key not in data:
+        return None, True
+    raw = data[key]
+    if isinstance(raw, bool):
+        return raw, True
+    # The TC100.2 RRC controller sends the exact JSON strings
+    # "true"/"false". Other spellings and numbers remain malformed.
+    if isinstance(raw, str) and raw in ("true", "false"):
+        return raw == "true", True
+    return None, False
+
+
 SWITCH_PROGRAM_FIELDS = (
     "setpointProperty",
     "maxNbOfSwitchPoints",
@@ -306,7 +322,8 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
     except InvalidPayload:
         step_size = None
     step_size_valid = "stepSize" not in data or step_size is not None
-    used_raw, available_raw = data.get("used"), data.get("available")
+    used, used_valid = _parse_availability_flag(data, "used")
+    available, available_valid = _parse_availability_flag(data, "available")
     program_fields = (
         {key: _json_value(data[key]) for key in SWITCH_PROGRAM_FIELDS if key in data}
         if data.get("type") == "switchProgram"
@@ -322,6 +339,7 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
             resource_type=_optional_string(data.get("type")),
             unit=_optional_string(data.get("unitOfMeasure")),
             allowed_values=allowed_values,
+            allowed_values_missing="allowedValues" not in data,
             minimum=_optional_number(data.get("minValue")),
             maximum=_optional_number(data.get("maxValue")),
             writable=bool(writable_raw),
@@ -330,12 +348,9 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
             below_range_values=below_range_values,
             step_size=step_size,
             step_size_valid=step_size_valid,
-            used=used_raw if isinstance(used_raw, bool) else None,
-            available=(available_raw if isinstance(available_raw, bool) else None),
-            availability_flags_valid=all(
-                key not in data or isinstance(data[key], bool)
-                for key in ("used", "available")
-            ),
+            used=used,
+            available=available,
+            availability_flags_valid=used_valid and available_valid,
         ),
         references=_parse_references(data.get("references")),
         program_fields=program_fields,

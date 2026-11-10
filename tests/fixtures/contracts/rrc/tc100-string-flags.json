@@ -1,0 +1,24 @@
+{
+  "provenance": {
+    "kind": "anonymized_capture",
+    "basis": "observed_structure",
+    "reference": "TC100.2 room controller with RRC zones, read with plain GET requests",
+    "firmware": null,
+    "capture_date": "2026-11-09",
+    "created": "2026-11-09",
+    "redaction": "Only field names, JSON types, flag values, units and limits are as observed. Temperatures and program numbers are constructed. Zone and program list items are reduced to their numeric id; names, icons, status and temperatures are removed. Two observed zones are kept. No identifiers, names or routines.",
+    "physical_device_verified": true,
+    "contract": "used is sent as the JSON strings \"true\"/\"false\"; available is absent; writeable is 0/1; userMode advertises no allowedValues; clockProgram has an empty unit."
+  },
+  "resources": [
+    {"id": "/zones/list", "type": "zoneArray", "writeable": 0, "recordable": 0, "value": [{"id": 1}, {"id": 4}]},
+    {"id": "/programs/list", "type": "programArray", "writeable": 0, "recordable": 0, "value": [{"id": 1}, {"id": 2}, {"id": 3}, {"id": 4}]},
+    {"id": "/zones/zn1/temperatureActual", "type": "floatValue", "used": "true", "writeable": 0, "recordable": 0, "unitOfMeasure": "C", "minValue": 5.0, "maxValue": 30.0, "stepSize": 0.5, "value": 20.5},
+    {"id": "/zones/zn1/temperatureHeatingSetpoint", "type": "floatValue", "used": "true", "writeable": 0, "recordable": 0, "unitOfMeasure": "C", "minValue": 5.0, "maxValue": 30.0, "stepSize": 0.5, "value": 21.0},
+    {"id": "/zones/zn1/manualTemperatureHeating", "type": "floatValue", "writeable": 1, "recordable": 0, "unitOfMeasure": "C", "minValue": 5.0, "maxValue": 30.0, "stepSize": 0.5, "value": 21.0},
+    {"id": "/zones/zn1/userMode", "type": "stringValue", "used": "true", "writeable": 1, "recordable": 0, "value": "clock"},
+    {"id": "/zones/zn1/clockProgram", "type": "floatValue", "used": "true", "writeable": 1, "recordable": 0, "unitOfMeasure": "", "minValue": 0.0, "maxValue": 24.0, "stepSize": 1.0, "value": 2.0},
+    {"id": "/zones/zn4/userMode", "type": "stringValue", "used": "true", "writeable": 1, "recordable": 0, "value": "manual"},
+    {"id": "/zones/zn4/clockProgram", "type": "floatValue", "used": "false", "writeable": 1, "recordable": 0, "unitOfMeasure": "", "minValue": 0.0, "maxValue": 24.0, "stepSize": 1.0, "value": 4.0}
+  ]
+}

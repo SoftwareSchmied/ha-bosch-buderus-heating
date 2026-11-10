@@ -3,7 +3,9 @@
 I added separate RRC zone readings, controls and an editor for existing
 heating schedule points. These functions require compatible resources from
 the selected PointT gateway. They do not establish support for every device
-marketed with an RRC controller. Physical confirmation remains outstanding.
+marketed with an RRC controller. The read structure (flags, types, units and
+limits) has been observed on a TC100.2 with read-only requests;
+writes and other models still need physical confirmation.
 
 ## Discovery and readings
 
@@ -33,10 +35,29 @@ I preserve temperature precision. I accept the reviewed Celsius unit
 spellings `C`, `°C` and `ºC`, without importing other families' conversion
 rules. False or malformed `used`/`available` flags, invalid values, numeric
 error markers and incompatible shapes do not produce a usable reading.
+I also accept the exact strings `"true"` and `"false"`, which the
+TC100.2 sends; other spellings and numbers remain malformed.
 The measured temperature and active target are enabled by default; the
 remaining reading mirrors are optional. Controls have separate stable IDs.
 
-Only offered, known `manual` and `clock` options can be written. The manual
+A zone name from `/zones/zn{id}/name` prefixes the zone's entity names. The
+controller sends it in Base64: canonical Base64 that decodes to printable
+UTF-8 text is shown decoded, any other text as it is, and an empty or
+unprintable name falls back to "RRC zone {id}". Only the names change;
+entity IDs and unique IDs stay. Program names and the names inside
+`/zones/list` and `/programs/list` are not used.
+
+Only offered, known `manual` and `clock` options can be written. If the
+controller sends no `allowedValues` key for `userMode` at all, as the
+TC100.2 does, I offer exactly `manual` and `clock`, as the controller's
+app does; another current mode keeps the select unavailable. An empty or
+different list keeps the strict rules. A mode reported with `used` true and
+`available` false is locked by the controller, for example while the system
+cools: the select keeps showing the current mode, and a change is refused
+with its own message before anything is sent. This applies only to
+`userMode`; other fields with `available` false stay unavailable.
+
+The manual
 target uses this resource's current bounds and advertised step. An absent
 step uses a 0.5 °C UI increment; it does not prove an additional API rule.
 Changing a manual target does not also change the operating mode.
@@ -96,14 +117,17 @@ The schema distinguishes editing existing points from adding new points.
 
 I test these contracts with synthetic multi-zone data, simulated errors,
 concurrent edits, native HA dialogs and an actual local HTTP endpoint.
-Installation and writes on a physical RRC device remain unverified.
+An anonymized fixture records the read structure observed on a
+TC100.2. Writes on a physical RRC device remain unverified.
 
 ## Deutsch
 
 Ich habe RRC-Zonen mit eigenen Anzeigen, Bedienelementen und einem Editor für
 vorhandene Schaltpunkte ergänzt. Voraussetzung sind passende Ressourcen am
 ausgewählten PointT-Gateway. Damit ist noch keine vollständige Unterstützung
-aller Geräte mit RRC-Regelung nachgewiesen. Der Praxistest steht aus.
+aller Geräte mit RRC-Regelung nachgewiesen. Die gelesene Struktur (Merkmale,
+Typen, Einheiten und Grenzen) wurde an einem TC100.2 mit reinen
+Leseanfragen beobachtet; Schreibzugriffe und andere Modelle stehen aus.
 
 Die Zonenpfade `/zones/zn{id}` bleiben von ConnectKey-`zone{id}` getrennt.
 Zonen- und Programmnummern stammen aus gemeldeten Referenzen oder geprüften
@@ -115,12 +139,31 @@ erst beim Bearbeiten zusätzlich.
 
 Raumtemperatur, aktiver Sollwert, manueller Sollwert und vorübergehender
 Sollwert sind getrennte Anzeigen. Ich erhalte die gemeldete Genauigkeit und
-prüfe Celsius-Einheit, Fehlerwerte und Verfügbarkeitsmerkmale. Raumtemperatur
-und aktiver Sollwert sind standardmäßig aktiviert; weitere Anzeigen bleiben
-optional. Die Bedienelemente besitzen eigene stabile IDs.
+prüfe Celsius-Einheit, Fehlerwerte und Verfügbarkeitsmerkmale. Gültig ist ein
+Merkmal als JSON-Wahrheitswert oder als exakte Zeichenkette `"true"` bzw.
+`"false"`, wie sie der TC100.2 sendet; andere Schreibweisen und Zahlen
+bleiben ungültig. Raumtemperatur und aktiver Sollwert sind standardmäßig
+aktiviert; weitere Anzeigen bleiben optional. Die Bedienelemente besitzen
+eigene stabile IDs.
+
+Der Zonenname aus `/zones/zn{id}/name` steht vor den Namen der Entitäten
+dieser Zone. Der Regler sendet ihn in Base64: Gültiges Base64, das sich zu
+druckbarem UTF-8-Text dekodieren lässt, zeige ich dekodiert, jeden anderen
+Text unverändert; ein leerer oder nicht druckbarer Name wird zu
+„RRC-Zone {id}“. Nur die Namen ändern sich, Entitäts-IDs und eindeutige IDs
+bleiben. Programmnamen und die Namen in `/zones/list` und `/programs/list`
+verwende ich nicht.
 
 Die Betriebsart bietet die gemeldeten bekannten Optionen `manual` und
-`clock`. Der manuelle Sollwert verwendet seine eigenen aktuellen Grenzen
+`clock`. Sendet der Regler für `userMode` gar kein `allowedValues`, wie der
+TC100.2, biete ich wie die App des Reglers genau `manual` und `clock`
+an; eine andere aktuelle Betriebsart lässt die Auswahl unverfügbar.
+Eine leere oder abweichende Liste behält die strengen Regeln. Meldet der
+Regler die Betriebsart mit `used` wahr und `available` falsch, sperrt er sie,
+etwa während die Anlage kühlt: Die Auswahl zeigt weiter die aktuelle
+Betriebsart, eine Änderung wird mit eigener Meldung abgelehnt, bevor etwas
+gesendet wird. Das gilt nur für `userMode`; andere Felder mit `available`
+falsch bleiben unverfügbar. Der manuelle Sollwert verwendet seine eigenen aktuellen Grenzen
 und die gemeldete Schrittweite. Ohne Schrittweite nutzt die Oberfläche
 0,5 °C, ohne daraus eine zusätzliche API-Einschränkung abzuleiten.
 Das Ändern des Sollwerts schaltet die Betriebsart nicht um. Auch eine
@@ -162,4 +205,5 @@ Diagnose-Schema 20 zeigt Verfügbarkeit und Formateignung ohne Temperaturen,
 Zeitpläne, Namen oder zusätzliche Anfragen. Numerische Zonen- und
 Programmpfade bleiben erkennbar, unbekannte dynamische IDs redigiert.
 Die Prüfungen verwenden synthetische Daten, einen lokalen HTTP-Endpunkt
-und native HA-Dialoge. Reale RRC-Installation und Schreibtests stehen aus.
+und native HA-Dialoge. Eine anonymisierte Fixture hält die an einem
+TC100.2 beobachtete Lesestruktur fest. Schreibtests am Gerät stehen aus.

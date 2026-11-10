@@ -78,6 +78,7 @@ def resource_to_data(resource: Resource) -> dict[str, Any]:
             "resource_type": metadata.resource_type,
             "unit": metadata.unit,
             "allowed_values": list(metadata.allowed_values),
+            "allowed_values_missing": metadata.allowed_values_missing,
             "minimum": metadata.minimum,
             "maximum": metadata.maximum,
             "writable": metadata.writable,
@@ -202,6 +203,8 @@ def resource_from_data(data: object) -> Resource:
             resource_type=_optional(metadata.get("resource_type"), str),
             unit=_optional(metadata.get("unit"), str),
             allowed_values=_scalars(metadata.get("allowed_values")),
+            # #113: stored by alpha.3 and earlier without it; read strictly.
+            allowed_values_missing=_flag(metadata.get("allowed_values_missing", False)),
             minimum=_number(metadata.get("minimum")),
             maximum=_number(metadata.get("maximum")),
             writable=_flag(metadata.get("writable")),

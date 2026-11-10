@@ -9,6 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
 
+from . import rrc
 from .configuration import ConfigurationError
 from .configuration_access import EntryConfiguration
 from .const import CONF_BRAND, DOMAIN
@@ -225,7 +226,12 @@ def _configured_logical_name(
 ) -> str | None:
     root = resource_path.strip("/").split("/", 1)[0]
     value = _resource_string(coordinator, f"/{root}/{logical_id}/name")
-    return configured_device_name(value) if value is not None else None
+    if value is None:
+        return None
+    if rrc.ZONE.match(resource_path):
+        # #113: RRC zone names are Base64-encoded UTF-8, not UTF-16.
+        return rrc.display_name(value)
+    return configured_device_name(value)
 
 
 def _is_heat_pump(

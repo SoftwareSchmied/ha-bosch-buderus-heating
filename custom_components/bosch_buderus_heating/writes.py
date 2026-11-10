@@ -52,6 +52,10 @@ class WriteBusy(WriteError):
     """C58: a poll or another write held the gateway too long; nothing was sent."""
 
 
+class ControlLocked(WriteValidationError):
+    """#113: the controller shows the setting but locks it for now."""
+
+
 @dataclass(frozen=True, slots=True)
 class EnumWritePolicy:
     """Identify a supported enum function and its known presentation codes."""
@@ -432,6 +436,8 @@ def _validate_enum(
     assessment = assess_control(resource)
     if not assessment.eligible or assessment.policy != policy:
         raise WriteValidationError("Resource does not advertise an enum write contract")
+    if rrc.mode_locked(resource):
+        raise ControlLocked("The controller currently locks this mode")
     if not isinstance(request.value, str) or request.value not in assessment.options:
         raise WriteValidationError("Requested enum value is not currently advertised")
 
@@ -604,18 +610,17 @@ def _enum_rejection_reason(resource: Resource, policy: EnumWritePolicy) -> str |
         return "unknown_action_state"
     if metadata.resource_type not in policy.resource_types:
         return "unsupported_resource_type"
-    if not metadata.allowed_values:
+    allowed = rrc.allowed_values(resource)
+    if not allowed:
         return "missing_options"
     if any(
         not isinstance(value, str) or not value or not value.isprintable()
-        for value in metadata.allowed_values
+        for value in allowed
     ):
         return "invalid_options"
-    if policy.known_only and not policy.known_values.intersection(
-        metadata.allowed_values
-    ):
+    if policy.known_only and not policy.known_values.intersection(allowed):
         return "unsupported_options"
-    advertised = set(metadata.allowed_values)
+    advertised = set(allowed)
     if (policy.options_rule == "subset" and not advertised <= policy.known_values) or (
         policy.options_rule == "exact" and advertised != policy.known_values
     ):
@@ -628,7 +633,7 @@ def _enum_current_value_issue(resource: Resource) -> str | None:
         return "missing_value"
     if not isinstance(resource.value, str):
         return "invalid_value_type"
-    if resource.value not in resource.metadata.allowed_values:
+    if resource.value not in rrc.allowed_values(resource):
         return "current_option_not_advertised"
     return None
 
@@ -666,7 +671,7 @@ def assess_control(resource: Resource) -> ControlAssessment:
             options=tuple(
                 dict.fromkeys(
                     value
-                    for value in resource.metadata.allowed_values
+                    for value in rrc.allowed_values(resource)
                     if isinstance(value, str)
                     and value
                     and value.isprintable()

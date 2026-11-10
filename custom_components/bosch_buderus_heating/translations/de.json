@@ -958,6 +958,9 @@
     "holiday_time_ambiguous": {
       "message": "Die gewählte Start- oder Endzeit kommt wegen der Zeitumstellung in der Zeitzone der Heizungsanlage zweimal vor. Bitte wähle eine eindeutige Uhrzeit."
     },
+    "rrc_mode_locked": {
+      "message": "Der Regler sperrt die Heizungsbetriebsart dieser Zone gerade, zum Beispiel während die Anlage kühlt. Die aktuelle Betriebsart bleibt sichtbar. Versuche es später erneut."
+    },
     "write_validation_failed": {
       "message": "Diese Einstellung kann derzeit nicht sicher geändert werden. Aktualisiere oder konfiguriere die Integration neu und versuche es erneut."
     },
