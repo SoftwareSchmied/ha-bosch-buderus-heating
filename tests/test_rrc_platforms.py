@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import replace
 from types import MappingProxyType, ModuleType
 from unittest.mock import patch
 
@@ -24,7 +25,8 @@ def test_every_entity_module_declares_empty_trackers() -> None:
     rrc_platforms.trackers.cache_clear()
     loaded = rrc_platforms.trackers()
     assert [name for name, _ in loaded] == list(rrc_platforms.ENTITY_MODULES)
-    assert all(not table for _, table in loaded)
+    # A package's trackers use only platforms with a hook (W5 fills its own).
+    assert all(set(table) <= rrc_platforms.PLATFORMS for _, table in loaded)
     assert Platform.TIME in rrc_platforms.PLATFORMS
 
 
@@ -88,6 +90,6 @@ def test_generic_presentation_applies_the_contract() -> None:
         assert rrc_platforms.generic_presentation(plain, Platform.SENSOR) is plain
     finally:
         rrc_contracts._registry = original
-    assert rrc_platforms.generic_presentation(description, Platform.SENSOR) is (
-        description
-    )
+    # A path no shipped contract declares stays unchanged.
+    unclaimed = replace(description, resource_path="/w0/unclaimed")
+    assert rrc_platforms.generic_presentation(unclaimed, Platform.SENSOR) is (unclaimed)
