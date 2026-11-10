@@ -69,9 +69,10 @@ _DEVICE_ERROR_TYPE = re.compile(r"[A-Za-z][A-Za-z0-9_.-]{0,63}")
 _DEVICE_ERROR_STATES = frozenset({"active", "inactive"})
 MAX_DEVICE_ERRORS = 16
 MAX_DEVICE_ERROR_LISTS = 32
-# FAULT-2: discovery answers that a retry does not change.
+# FAULT-2: discovery answers that a retry does not change. A refused access
+# (403) can be temporary and says nothing about whether the path exists.
 _FINAL_ANSWER = re.compile(r"http_4\d\d")
-_RETRYABLE_ANSWERS = frozenset({"http_401", "http_408", "http_429"})
+_RETRYABLE_ANSWERS = frozenset({"http_401", "http_403", "http_408", "http_429"})
 
 _KNOWN_SUMMARIES: dict[tuple[str, str | None], dict[str, str]] = {
     ("6249", None): {
@@ -246,9 +247,10 @@ def discovery_fully_answered(diagnostics: DiscoveryDiagnostics) -> bool:
     """A finished discovery in which every read path got a final answer.
 
     Final means the resource, or a client error that a retry does not change
-    (such as HTTP 404). A 5xx answer, a timeout, a malformed or missing item,
-    a rate limit or a stop at a bound means the tree may be incomplete, so
-    its fault candidates must not retire a required source (FAULT-2).
+    (such as HTTP 404). A refused access (401, 403), a 5xx answer, a timeout,
+    a malformed or missing item, a rate limit or a stop at a bound means the
+    tree may be incomplete, so its fault candidates must not count against a
+    required source (FAULT-2).
     """
     if not diagnostics.completed:
         return False
@@ -854,22 +856,47 @@ class FaultTracker:
         elif changed:
             self._schedule_save()
 
-    def reconcile_discovery(self, resources: Mapping[str, Resource]) -> None:
-        """Retire required sources a fully answered discovery no longer finds.
+    def reconcile_discovery(
+        self,
+        resources: Mapping[str, Resource],
+        *,
+        observed_at: datetime | None = None,
+    ) -> None:
+        """Count required sources a fully answered discovery no longer finds.
 
         Call only when :func:`discovery_fully_answered` holds: then a source
         that is neither discovered nor a fault candidate of the discovered
         tree (for example the error list of a removed radio room device) is
-        gone, not just unreadable (FAULT-2).
+        missing. Like a 404 answer it only counts towards the run of a gone
+        source: it is retired once it has been missing for a day and at least
+        twice, without an answer in between (FAULT-2).
         """
+        now = observed_at or datetime.now(UTC)
         current = {
             _source_key(path)
             for path in (*resources, *fault_resource_candidates(resources))
             if is_active_fault_resource_path(path)
         }
-        gone = self._required_source_keys - current
+        changed = False
+        for path in resources:
+            if is_active_fault_resource_path(path):
+                # Discovered again: the source exists.
+                changed |= self._end_not_found_run(path)
+        gone: set[str] = set()
+        for key in sorted(self._required_source_keys - current):
+            changed |= key not in self._sources_not_found
+            if _advance_aging(
+                self._sources_not_found,
+                key,
+                now,
+                after=FAULT_SOURCE_GONE_AFTER,
+                reads=FAULT_SOURCE_GONE_READS,
+            ):
+                gone.add(key)
         if gone:
             self._retire_sources(gone, "not_discovered")
+        elif changed:
+            self._schedule_save()
 
     def _end_not_found_run(self, path: str) -> bool:
         """The run of 404 answers of a source ends. True if it had one."""
@@ -1399,10 +1426,13 @@ class FaultTracker:
     ) -> None:
         try:
             listener(event)
-        except Exception:
-            _LOGGER.exception(
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.ERROR,
                 "Fault lifecycle listener failed for transition %s",
                 event.event_type.value,
+                error=err,
             )
 
     def _schedule_save(self) -> None:
