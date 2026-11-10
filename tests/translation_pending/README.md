@@ -22,7 +22,8 @@ languages in its own file `W<n>.json`:
 `tests/test_translations.py` lets these keys and texts be missing in the
 other languages and leaves them out of the order check. Another test makes
 sure every listed key and text exists in the source. Each package owns only
-its own file; W7 translates the entries and deletes the files.
+its own file; W7 translates the entries and deletes the files. Texts added
+while the packages are merged go into `M.json`.
 
 To merge the three translation files of two packages, use the JSON deep
 merge instead of a text merge:

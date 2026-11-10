@@ -205,7 +205,8 @@ def test_pending_translations_name_existing_texts() -> None:
     built = code_texts()
     seen: set[str] = set()
     for path in sorted(PENDING.glob("*.json")):
-        assert re.fullmatch(r"W[0-9]\.json", path.name), path.name
+        # W<n>: a work package; M: the integration of the packages.
+        assert re.fullmatch(r"(?:W[0-9]|M)\.json", path.name), path.name
         data = json.loads(path.read_text("utf-8"))
         assert data["package"] == path.stem
         for key in data.get("keys", ()):

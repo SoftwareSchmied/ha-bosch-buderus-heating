@@ -245,7 +245,8 @@
         "title": "Benachrichtigungen",
         "description": "Anlagenstörungen erscheinen unter der Glocke in Home Assistant. Bei mehreren Anlagen wähle diejenigen aus, für die du Meldungen erhalten möchtest. Die Meldungen und ihr Entfernen gelten für alle Benutzer. Die Texte verwenden die Systemsprache. Das Entfernen quittiert keine Störung an der Anlage. Neue oder kritischere Störungen werden erneut angezeigt. Änderungen gelten sofort.",
         "data": {
-          "fault_notifications": "Anlagenstörungen anzeigen"
+          "fault_notifications": "Anlagenstörungen anzeigen",
+          "notify_warnings_and_maintenance": "Warnungen und Wartungsmeldungen auch in der Glocken-Benachrichtigung anzeigen"
         }
       },
       "holidays": {
@@ -960,6 +961,21 @@
     },
     "rrc_mode_locked": {
       "message": "Der Regler sperrt die Heizungsbetriebsart dieser Zone gerade, zum Beispiel während die Anlage kühlt. Die aktuelle Betriebsart bleibt sichtbar. Versuche es später erneut."
+    },
+    "rrc_zone_setting_locked": {
+      "message": "Der Regler sperrt diese Einstellung der Zone gerade. Der aktuelle Wert bleibt sichtbar. Versuche es später erneut."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "Der Regler sperrt diese Einstellung des Heizkreises gerade. Der aktuelle Wert bleibt sichtbar. Versuche es später erneut."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "Der Regler sperrt diese Warmwasser-Einstellung gerade, zum Beispiel weil der Warmwasserbereiter sie im Moment nicht anbietet. Der aktuelle Wert bleibt sichtbar. Versuche es später erneut."
+    },
+    "rrc_device_setting_locked": {
+      "message": "Der Regler sperrt diese Einstellung des Funkgeräts gerade. Der aktuelle Wert bleibt sichtbar. Versuche es später erneut."
+    },
+    "rrc_setting_locked": {
+      "message": "Der Regler sperrt diese Einstellung gerade. Der aktuelle Wert bleibt sichtbar. Versuche es später erneut."
     },
     "write_validation_failed": {
       "message": "Diese Einstellung kann derzeit nicht sicher geändert werden. Aktualisiere oder konfiguriere die Integration neu und versuche es erneut."

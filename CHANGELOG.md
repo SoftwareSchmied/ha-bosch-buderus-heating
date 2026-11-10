@@ -181,6 +181,30 @@ far; I would be glad about reports from owners.
   shape of the TC100.2 device tree from #122. A test on a real CT200
   and of the radio devices on a real controller is still pending.
 
+#### Faults and notifications
+
+- **Class 18/20 messages now count as maintenance:** a notification with the
+  numeric class 18 or 20 is a maintenance message on every gateway, no longer
+  an unknown problem. It no longer turns on System fault or counts as an
+  active fault; Active notifications still counts and lists it, and System
+  notifications still reports it.
+- **Warnings and maintenance in the bell notification (optional):** under
+  **Configure → Notifications** a new option also shows warnings and
+  maintenance messages in the bell notification, with the same details,
+  dismissal and resolution rules as faults. It is off by default, so nothing
+  changes unless you turn it on.
+- **Clearer messages for locked settings on room controllers:** when the
+  controller locks a setting, the message now names what is locked (the
+  heating mode of a zone, another zone setting, a heating circuit, hot water
+  or a radio device setting) instead of always speaking of the zone's
+  heating mode.
+- **Radio device settings on large room controllers:** the setting leaves of
+  the radio devices are read leaf by leaf over all devices and have a limit
+  of their own, so a large controller no longer loses the settings of its
+  last devices. Optional leaves that a controller does not have cost no
+  extra single request anymore; on my large test tree the setup needs 6
+  instead of 170 single requests.
+
 #### Translations
 
 - **Swedish, Norwegian Bokmål, Finnish and Danish:** the integration now

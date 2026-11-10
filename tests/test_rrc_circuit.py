@@ -698,7 +698,7 @@ async def test_selections_and_switch_write_once_with_read_back(
                 },
                 blocking=True,
             )
-        assert locked.value.translation_key == "rrc_mode_locked"
+        assert locked.value.translation_key == "rrc_circuit_setting_locked"
         assert len(cloud.written("PUT")) == 5
     finally:
         await _teardown(hass, entry, stack)

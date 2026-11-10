@@ -996,7 +996,7 @@ async def test_unused_and_locked_settings(hass: HomeAssistant) -> None:
                 {"entity_id": number, "value": 1.0},
                 blocking=True,
             )
-        assert locked.value.translation_key == "rrc_mode_locked"
+        assert locked.value.translation_key == "rrc_device_setting_locked"
         assert cloud.written() == []
     finally:
         await _teardown(hass, entry, stack)

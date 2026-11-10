@@ -7,7 +7,8 @@ remain authoritative.
 ## Entities
 
 - **System fault** is on for a fault, critical fault, or notification whose
-  class is unknown. Warnings and maintenance alone leave it off.
+  class is unknown. Warnings and maintenance alone leave it off. A numeric
+  class 18 or 20 is a maintenance message on every gateway.
 - **Active faults** counts the notifications represented by System fault and
   exposes bounded details in its `faults` attribute.
 - **Active notifications** counts every current warning, maintenance message,
@@ -128,6 +129,15 @@ as a separate configuration menu item.
 Each installation has one notification containing its active faults, critical
 faults and notifications with an unknown class, matching the System fault
 sensor. Warnings and maintenance alone do not create a bell notification.
+
+The option **Also show warnings and maintenance in the bell notification**
+in the same dialog, off by default, adds warnings and maintenance messages
+of all installations. They follow the same rules as faults: the same
+details, the same dismissal and the same confirmed resolution. Faults are
+listed first; with warnings or maintenance messages the title speaks of
+notifications instead of faults. A fault after a dismissed warning shows the
+notification again. Changing the option takes effect at once; turning it off
+removes a notification that only showed warnings or maintenance.
 Details include known descriptions and codes, with a link to the device page.
 Unknown codes are not given an invented explanation.
 
@@ -383,6 +393,36 @@ automation:
       - action: notify.notify
         data:
           title: "New heating notification"
+          message: >-
+            {{ trigger.to_state.attributes.summary }}
+            {% if trigger.to_state.attributes.code %}
+            (code {{ trigger.to_state.attributes.code }})
+            {% endif %}
+```
+
+### Push a maintenance message
+
+Maintenance messages (for example a numeric class 18 or 20) do not turn on
+System fault. To get them on the phone, filter the events by severity:
+
+```yaml
+automation:
+  - alias: "Heating maintenance due"
+    triggers:
+      - trigger: state
+        entity_id: event.heating_system_notifications
+        not_from:
+          - unavailable
+          - unknown
+    conditions:
+      - condition: template
+        value_template: >-
+          {{ trigger.to_state.attributes.event_type == 'appeared'
+             and trigger.to_state.attributes.severity == 'maintenance' }}
+    actions:
+      - action: notify.notify
+        data:
+          title: "Heating maintenance"
           message: >-
             {{ trigger.to_state.attributes.summary }}
             {% if trigger.to_state.attributes.code %}

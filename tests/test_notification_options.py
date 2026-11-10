@@ -9,6 +9,7 @@ from homeassistant.helpers import device_registry as dr
 from custom_components.bosch_buderus_heating.const import (
     CONF_FAULT_NOTIFICATIONS,
     CONF_GATEWAY_IDS,
+    CONF_NOTIFY_NOTICES,
     CONF_POLLING_PROFILE,
     DOMAIN,
 )
@@ -48,7 +49,11 @@ async def test_offline_options_preserve_existing_settings(
     ):
         result = await _start(hass, entry)
         assert result["type"] is FlowResultType.FORM
-        assert result["data_schema"]({}) == {CONF_FAULT_NOTIFICATIONS: True}
+        # Warnings and maintenance stay out of the bell by default.
+        assert result["data_schema"]({}) == {
+            CONF_FAULT_NOTIFICATIONS: True,
+            CONF_NOTIFY_NOTICES: False,
+        }
         # An independent setting changed while the form was open.
         hass.config_entries.async_update_entry(
             entry, options={**entry.options, "future_setting": "new"}
@@ -61,6 +66,7 @@ async def test_offline_options_preserve_existing_settings(
         assert entry.options[CONF_POLLING_PROFILE] == "cloud_friendly"
         assert entry.options["future_setting"] == "new"
         assert notification_policy(entry.options, "one") == (enabled, 0)
+        assert entry.options[CONF_NOTIFY_NOTICES] is False
         reload.assert_not_awaited()
 
 
@@ -156,4 +162,29 @@ def test_malformed_saved_notification_settings_are_safe(value, expected):
             {CONF_FAULT_NOTIFICATIONS: {gateway_notification_key("one"): value}}, "one"
         )
         == expected
+    )
+
+
+async def test_warnings_and_maintenance_option_is_kept_and_shown_again(
+    hass, enable_custom_integrations
+):
+    entry = MockConfigEntry(domain=DOMAIN, data={CONF_GATEWAY_IDS: ["one", "two"]})
+    entry.add_to_hass(hass)
+    result = await _start(hass, entry)
+    assert (
+        result["data_schema"]({CONF_FAULT_NOTIFICATIONS: []})[CONF_NOTIFY_NOTICES]
+        is False
+    )
+    keys = [key for key in result["data_schema"]({CONF_FAULT_NOTIFICATIONS: []})]
+    assert keys == [CONF_FAULT_NOTIFICATIONS, CONF_NOTIFY_NOTICES]
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {CONF_FAULT_NOTIFICATIONS: [], CONF_NOTIFY_NOTICES: True},
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options[CONF_NOTIFY_NOTICES] is True
+    result = await _start(hass, entry)
+    assert (
+        result["data_schema"]({CONF_FAULT_NOTIFICATIONS: []})[CONF_NOTIFY_NOTICES]
+        is True
     )

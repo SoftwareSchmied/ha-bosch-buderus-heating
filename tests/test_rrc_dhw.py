@@ -585,7 +585,7 @@ async def test_writes_send_the_exact_wire_values_once(hass: HomeAssistant) -> No
         locked = _entity_id(hass, "switch", _uid("/dhwCircuits/dhw3/extraDhw"))
         with pytest.raises(ServiceValidationError) as refused:
             await _call(hass, "switch", "turn_on", locked)
-        assert refused.value.translation_key == "rrc_mode_locked"
+        assert refused.value.translation_key == "rrc_dhw_setting_locked"
         assert cloud.calls["PUT", "/dhwCircuits/dhw3/extraDhw"] == 0
         # Each write confirmed at the first RRC read-back.
         assert set(sleeps) == {1.0}

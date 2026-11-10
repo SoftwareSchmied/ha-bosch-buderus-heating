@@ -63,6 +63,7 @@ from .const import (
     CONF_BRAND,
     CONF_FAULT_NOTIFICATIONS,
     CONF_GATEWAY_IDS,
+    CONF_NOTIFY_NOTICES,
     CONF_POLLING_PROFILE,
     DEFAULT_POLLING_PROFILE,
     DOMAIN,
@@ -112,6 +113,7 @@ from .notifications import (
     gateway_notification_key,
     installation_name,
     notification_id,
+    notification_includes_notices,
     notification_policy,
 )
 from .pointt import (
@@ -1082,19 +1084,31 @@ class BoschBuderusOptionsFlow(
                     )
             return self.async_create_entry(
                 title="",
-                data={**self._entry.options, CONF_FAULT_NOTIFICATIONS: options},
+                data={
+                    **self._entry.options,
+                    CONF_FAULT_NOTIFICATIONS: options,
+                    CONF_NOTIFY_NOTICES: user_input.get(CONF_NOTIFY_NOTICES) is True,
+                },
             )
         selected = [
             key
             for gateway_id, key in zip(gateway_ids, current_keys, strict=True)
             if notification_policy(self._entry.options, gateway_id)[0]
         ]
+        # Warnings and maintenance as well, for all installations (off).
+        notices = {
+            vol.Required(
+                CONF_NOTIFY_NOTICES,
+                default=notification_includes_notices(self._entry.options),
+            ): BooleanSelector()
+        }
         if len(gateway_ids) == 1:
             schema = vol.Schema(
                 {
                     vol.Required(
                         CONF_FAULT_NOTIFICATIONS, default=bool(selected)
-                    ): BooleanSelector()
+                    ): BooleanSelector(),
+                    **notices,
                 }
             )
         else:
@@ -1122,7 +1136,8 @@ class BoschBuderusOptionsFlow(
                             multiple=True,
                             mode=SelectSelectorMode.LIST,
                         )
-                    )
+                    ),
+                    **notices,
                 }
             )
         return self.async_show_form(step_id="notifications", data_schema=schema)

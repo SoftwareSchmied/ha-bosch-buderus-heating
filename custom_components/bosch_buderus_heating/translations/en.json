@@ -245,7 +245,8 @@
         "title": "Notifications",
         "description": "Heating system faults appear under the bell in Home Assistant. For multiple installations, select those you want notifications for. Notifications and dismissals are shared by all users. Their text uses the system language. Dismissing a notification does not acknowledge a fault on the appliance. New or more critical faults appear again. Changes take effect immediately.",
         "data": {
-          "fault_notifications": "Show heating system faults"
+          "fault_notifications": "Show heating system faults",
+          "notify_warnings_and_maintenance": "Also show warnings and maintenance in the bell notification"
         }
       },
       "holidays": {
@@ -960,6 +961,21 @@
     },
     "rrc_mode_locked": {
       "message": "The controller currently locks the heating mode of this zone, for example while the system cools. The current mode stays shown. Try again later."
+    },
+    "rrc_zone_setting_locked": {
+      "message": "The controller currently locks this setting of the zone. The current value stays shown. Try again later."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "The controller currently locks this heating circuit setting. The current value stays shown. Try again later."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "The controller currently locks this hot water setting, for example because the water heater does not offer it right now. The current value stays shown. Try again later."
+    },
+    "rrc_device_setting_locked": {
+      "message": "The controller currently locks this setting of the radio device. The current value stays shown. Try again later."
+    },
+    "rrc_setting_locked": {
+      "message": "The controller currently locks this setting. The current value stays shown. Try again later."
     },
     "write_validation_failed": {
       "message": "This setting is not currently safe to change. Refresh or reconfigure the integration and try again."

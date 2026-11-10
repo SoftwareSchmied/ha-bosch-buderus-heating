@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Mapping
 from typing import Any
 
@@ -22,6 +23,7 @@ from .pointt import (
     WriteNotConfirmed,
     WriteValidationError,
 )
+from .rrc_contract_base import RRC_ID
 from .rrc_write import RrcWritePending
 from .writes import (
     ContractRejected,
@@ -187,6 +189,25 @@ def track_entity_once(
         entry.async_on_unload(coordinator.async_add_listener(discover))
 
 
+# S8: the text of a locked setting names what is locked; the first match wins.
+_LOCKED_KEYS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(rf"/zones/zn{RRC_ID}/userMode"), "rrc_mode_locked"),
+    (re.compile(r"/zones/.+"), "rrc_zone_setting_locked"),
+    (re.compile(r"/heatingCircuits/hc[0-9]+/boost.*"), "rrc_boost_locked"),
+    (re.compile(r"/heatingCircuits/.+"), "rrc_circuit_setting_locked"),
+    (re.compile(r"/dhwCircuits/.+"), "rrc_dhw_setting_locked"),
+    (re.compile(r"/devices/.+"), "rrc_device_setting_locked"),
+)
+
+
+def locked_translation_key(path: str) -> str:
+    """The message of a setting the controller currently locks (S8)."""
+    return next(
+        (key for pattern, key in _LOCKED_KEYS if pattern.fullmatch(path)),
+        "rrc_setting_locked",
+    )
+
+
 async def async_set_control(
     coordinator: BoschBuderusDataUpdateCoordinator,
     path: str,
@@ -205,7 +226,7 @@ async def async_set_control(
             await coordinator.async_write_control(path, value, policy)
     except ControlLocked as err:
         raise ServiceValidationError(
-            translation_domain=DOMAIN, translation_key="rrc_mode_locked"
+            translation_domain=DOMAIN, translation_key=locked_translation_key(path)
         ) from err
     except (ContractRejected, RrcWritePending) as err:
         # A contract's own refusal; its token is the translation key.
