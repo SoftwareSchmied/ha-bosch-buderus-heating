@@ -18,7 +18,16 @@ from homeassistant.helpers import entity_registry as er
 
 from custom_components.bosch_buderus_heating import rrc_boost
 from custom_components.bosch_buderus_heating.pointt import WriteValidationError
-from custom_components.bosch_buderus_heating.writes import ContractRejected
+from custom_components.bosch_buderus_heating.rrc_absence_entities import (
+    build_calendar,
+    build_numbers,
+    build_switch,
+)
+from custom_components.bosch_buderus_heating.writes import (
+    GENERIC_CONTEXT,
+    RRC_CONTEXT,
+    ContractRejected,
+)
 from tests.helpers.rrc_absence import (
     BOOST,
     EMS_GATEWAY,
@@ -356,7 +365,7 @@ async def test_403_and_429_end_the_write(hass: HomeAssistant, failure, key) -> N
         await teardown(hass, entry, stack)
 
 
-async def test_no_numbers_without_limits_and_nothing_on_other_gateways(
+async def test_no_numbers_without_limits(
     hass: HomeAssistant,
 ) -> None:
     tree = absence_tree()
@@ -372,6 +381,19 @@ async def test_no_numbers_without_limits_and_nothing_on_other_gateways(
         assert entity_id(hass, "number", DURATION) is None
     finally:
         await teardown(hass, entry, stack)
+
+
+def test_the_builders_need_a_room_controller() -> None:
+    """S11 in the builders themselves, not only in the tracker."""
+    tree = absence_tree()
+    for build in (build_calendar, build_switch, build_numbers):
+        assert build(tree, RRC_CONTEXT)
+        assert build(tree, GENERIC_CONTEXT) == ()
+
+
+async def test_no_boost_entities_on_other_gateways(hass: HomeAssistant) -> None:
+    """S11: a heat pump gateway with the same structure gets no boost
+    entity."""
     ems_tree = {
         path: resource
         for path, resource in absence_tree().items()
@@ -388,6 +410,7 @@ async def test_no_numbers_without_limits_and_nothing_on_other_gateways(
             )
         }
         assert not {uid for uid in unique_ids if "boostShortcut" in uid}
-        assert BOOST not in cloud.all_requested() or not cloud.written()
+        # The structure is read there, only no entity follows from it.
+        assert BOOST in cloud.all_requested()
     finally:
         await teardown(hass, entry, stack)

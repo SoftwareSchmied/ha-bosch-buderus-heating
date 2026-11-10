@@ -98,7 +98,8 @@ def build_calendar(
     resources: Mapping[str, Resource], context: ControlContext
 ) -> tuple[EntityDescription, ...]:
     """The calendar once a list of the expected type is known."""
-    del context
+    if not context.rrc_plant:
+        return ()  # S11, also without the tracker's own check
     if any(
         (resource := resources.get(path)) is not None
         and resource.metadata.resource_type == rrc_events.LIST_TYPE
@@ -111,7 +112,8 @@ def build_calendar(
 def build_switch(
     resources: Mapping[str, Resource], context: ControlContext
 ) -> tuple[EntityDescription, ...]:
-    del context
+    if not context.rrc_plant:
+        return ()  # S11, also without the tracker's own check
     if _boost_writable(resources):
         return (EntityDescription(key=_SWITCH_KEY, translation_key="rrc_boost"),)
     return ()
@@ -121,7 +123,8 @@ def build_numbers(
     resources: Mapping[str, Resource], context: ControlContext
 ) -> tuple[BoostNumberDescription, ...]:
     """S3: a number only with limits from its leaf's metadata."""
-    del context
+    if not context.rrc_plant:
+        return ()  # S11, also without the tracker's own check
     if not _boost_writable(resources):
         return ()
     return tuple(
