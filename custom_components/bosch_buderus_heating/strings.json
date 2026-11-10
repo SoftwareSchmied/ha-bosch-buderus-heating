@@ -1017,6 +1017,12 @@
     },
     "rrc_zone_climate_command": {
       "message": "This zone command is not available at the moment. Check that the zone reports current values and that the temperature lies within the offered range; a temporary setpoint needs the schedule mode."
+    },
+    "rrc_device_setting_unused": {
+      "message": "The radio device does not use this setting at the moment, so it was not changed."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Only the levels high, medium and low can be set for the open window detection."
     }
   },
   "selector": {
@@ -1151,6 +1157,9 @@
       },
       "rrc_window_temperature": {
         "name": "Open window temperature"
+      },
+      "rrc_temperature_offset": {
+        "name": "Temperature offset"
       }
     },
     "select": {
@@ -1233,6 +1242,14 @@
           "orange": "Orange",
           "red": "Red"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Open window detection sensitivity",
+        "state": {
+          "high": "High",
+          "medium": "Medium",
+          "low": "Low"
+        }
       }
     },
     "switch": {
@@ -1280,6 +1297,9 @@
       },
       "rrc_system_window_detection": {
         "name": "Open window detection"
+      },
+      "rrc_child_lock": {
+        "name": "Child lock"
       }
     },
     "sensor": {
@@ -1900,6 +1920,21 @@
       },
       "rrc_optimum_start_heatup_rate": {
         "name": "Optimum start heat-up rate"
+      },
+      "rrc_valve_position": {
+        "name": "Valve opening"
+      },
+      "rrc_max_valve_position": {
+        "name": "Maximum valve opening"
+      },
+      "rrc_valve_temperature": {
+        "name": "Temperature at the valve"
+      },
+      "rrc_valve_state": {
+        "name": "Valve state"
+      },
+      "rrc_whisper_mode": {
+        "name": "Whisper mode"
       }
     },
     "binary_sensor": {
@@ -1966,6 +2001,9 @@
       },
       "rrc_window_open": {
         "name": "Window open"
+      },
+      "rrc_valve_problem": {
+        "name": "Valve problem"
       }
     },
     "calendar": {

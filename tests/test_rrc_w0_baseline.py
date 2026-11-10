@@ -5,6 +5,9 @@ cycle are compared with ``w0-entity-baseline.json``, recorded with the same
 test at the state before W0 (alpha.5 integration state ``83fa1b1``) for a
 CT200-class controller, a TC100.2-shaped controller and a K40 heat pump.
 Record it again only on purpose (``W0_WRITE_BASELINE=1``), after a review.
+The packages W1 to W6 add entities and requests to the RRC plants on
+purpose; the snapshot is recorded again after they are merged and pins the
+shipped state. The K40 heat pump must stay unchanged.
 """
 
 from __future__ import annotations

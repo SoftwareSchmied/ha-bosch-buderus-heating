@@ -20,12 +20,12 @@ from custom_components.bosch_buderus_heating.sensor import (
 PATH = "/system/appliance/displayCode"
 
 
-def test_every_entity_module_declares_empty_trackers() -> None:
+def test_every_entity_module_declares_trackers_for_hooked_platforms() -> None:
+    """W0 shipped empty tables; a package fills only its own module's."""
     rrc_platforms.trackers.cache_clear()
     loaded = rrc_platforms.trackers()
     assert [name for name, _ in loaded] == list(rrc_platforms.ENTITY_MODULES)
-    # W1 fills the zone module; the others are still empty stubs.
-    assert all(not table for name, table in loaded if name != "rrc_zone_entities")
+    assert all(set(table) <= rrc_platforms.PLATFORMS for _, table in loaded)
     assert Platform.TIME in rrc_platforms.PLATFORMS
 
 

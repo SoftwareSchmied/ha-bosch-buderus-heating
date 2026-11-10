@@ -1017,6 +1017,12 @@
     },
     "rrc_zone_climate_command": {
       "message": "Dieser Zonenbefehl ist gerade nicht verfügbar. Prüfe, ob die Zone aktuelle Werte liefert und die Temperatur im angebotenen Bereich liegt; ein vorübergehender Sollwert braucht die Betriebsart Zeitprogramm."
+    },
+    "rrc_device_setting_unused": {
+      "message": "Das Funkgerät nutzt diese Einstellung gerade nicht, deshalb wurde sie nicht geändert."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Für die Fenster-offen-Erkennung lassen sich nur die Stufen hoch, mittel und niedrig einstellen."
     }
   },
   "selector": {
@@ -1151,6 +1157,9 @@
       },
       "rrc_window_temperature": {
         "name": "Fenster-offen-Temperatur"
+      },
+      "rrc_temperature_offset": {
+        "name": "Temperatur-Offset"
       }
     },
     "select": {
@@ -1233,6 +1242,14 @@
           "orange": "Orange",
           "red": "Rot"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Empfindlichkeit Fenster-offen-Erkennung",
+        "state": {
+          "high": "Hoch",
+          "medium": "Mittel",
+          "low": "Niedrig"
+        }
       }
     },
     "switch": {
@@ -1280,6 +1297,9 @@
       },
       "rrc_system_window_detection": {
         "name": "Fenster-offen-Erkennung"
+      },
+      "rrc_child_lock": {
+        "name": "Kindersicherung"
       }
     },
     "sensor": {
@@ -1900,6 +1920,21 @@
       },
       "rrc_optimum_start_heatup_rate": {
         "name": "Aufheizrate optimierter Start"
+      },
+      "rrc_valve_position": {
+        "name": "Ventilöffnung"
+      },
+      "rrc_max_valve_position": {
+        "name": "Maximale Ventilöffnung"
+      },
+      "rrc_valve_temperature": {
+        "name": "Temperatur am Ventil"
+      },
+      "rrc_valve_state": {
+        "name": "Ventilzustand"
+      },
+      "rrc_whisper_mode": {
+        "name": "Flüstermodus"
       }
     },
     "binary_sensor": {
@@ -1966,6 +2001,9 @@
       },
       "rrc_window_open": {
         "name": "Fenster offen"
+      },
+      "rrc_valve_problem": {
+        "name": "Ventilproblem"
       }
     },
     "calendar": {

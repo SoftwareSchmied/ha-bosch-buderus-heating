@@ -23,6 +23,7 @@ from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
+from custom_components.bosch_buderus_heating import rrc
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.diagnostics import (
     async_get_config_entry_diagnostics,
@@ -96,15 +97,20 @@ async def test_large_ct200_plant_reaches_every_platform_within_the_budget(
         assert {"zones", "product_type"} <= set(report.rrc_evidence)
         requested = cloud.all_requested()
         assert {"/zones/list", "/programs/list", DEVICE_LIST} <= requested
+        # W6: and the setting leaves the contracts declare per listed type.
         assert {path for path in requested if path.startswith("/devices")} == {
             "/devices",
             DEVICE_LIST,
             *(f"/devices/device{n}/versionFirmware" for n in range(1, 13)),
+            *rrc.device_setting_paths(cloud.tree[DEVICE_LIST]),
         }
         # CT-E07, CT-F05: keys and personal data are never requested.
         assert not {path for path in requested if PRIVATE.search(path)}
-        # W1 probes eight more leaves per zone (most answer 500 here).
-        assert len(requested) < 480
+        # W1 probes eight more leaves per zone (most answer 500 here); W6
+        # reads the setting leaves of the listed devices.
+        assert len(requested) < 480 + len(
+            rrc.device_setting_paths(cloud.tree[DEVICE_LIST])
+        )
 
         # Every zone offers its program; 24 programs are named options.
         selects = entities(hass, entry, "select")

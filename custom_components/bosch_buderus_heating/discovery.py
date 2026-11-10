@@ -745,6 +745,14 @@ async def async_discover_resources(
     while any(queues):
         capacity = min(MAX_BULK_PATHS, maximum_resources - len(processed))
         if capacity <= 0:
+            if device_pending and not any(queues[:-1]):
+                # W6: only device setting leaves are left. Like those beyond
+                # their own cap, they are counted and not read; every other
+                # path was read, so the discovery is complete.
+                for path in device_pending:
+                    report.paths[path].read_policy = "rrc_device_setting_limit"
+                device_pending.clear()
+                continue
             report.stop_reason = "resource_limit"
             break
         # Leave spare capacity unused so returned references are expanded before

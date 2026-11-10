@@ -3,7 +3,7 @@
 Every RRC variant applies only with an RRC write context (S11); the policy
 extensions keep today's behaviour by default. The contracts shipped with W0
 are empty apart from the temporary-setpoint block moved from the write
-service.
+service; the tests here run on that state (``tests/helpers/rrc_w0_state``).
 """
 
 from __future__ import annotations
@@ -50,6 +50,7 @@ from custom_components.bosch_buderus_heating.writes import (
     WriteService,
     assess_control,
 )
+from tests.helpers.rrc_w0_state import w0_state
 
 AWAY = "/system/awayMode/enabled"
 OVERRIDE = "/zones/zn1/clockOverride/temperatureHeating"
@@ -114,14 +115,10 @@ def away(value: str = "false", **fields: object) -> Resource:
 
 @contextmanager
 def installed(*contracts: RrcContract) -> Iterator[Registry]:
-    """Swap the installed contracts for the duration of a test."""
-    registry = Registry((*rrc_contracts.CONTRACTS, *contracts))
-    original = rrc_contracts._registry
-    rrc_contracts._registry = registry
-    try:
+    """Swap the installed contracts for the duration of a test: the W0
+    contracts (whatever the packages added since) and ``contracts``."""
+    with w0_state(*contracts) as registry:
         yield registry
-    finally:
-        rrc_contracts._registry = original
 
 
 class FakeClient:
@@ -169,7 +166,7 @@ def _service(client: FakeClient, sleeps: list[float]) -> WriteService:
 # ------------------------------------------------------------- registry
 
 
-def test_shipped_contracts_are_empty_except_the_zone_contract() -> None:
+def test_w0_contracts_are_empty_and_the_zone_block_is_lifted() -> None:
     registry = rrc_contracts.registry()
     assert [contract.name for contract in registry.contracts] == [
         "zone",
@@ -179,13 +176,15 @@ def test_shipped_contracts_are_empty_except_the_zone_contract() -> None:
         "system",
         "devices",
     ]
-    # W1 fills the zone contract; the others are still empty stubs.
-    for contract in registry.contracts[1:]:
-        assert not contract.enum_policies and not contract.number_policies
+    # W0 itself declared nothing else; the packages fill their contracts.
+    with installed() as w0:
+        for contract in w0.contracts:
+            assert not contract.enum_policies and not contract.number_policies
+        assert rrc_contracts.zone_fields() == ()
+        assert rrc_contracts.extra_roots() == ()
+        assert rrc_contracts.device_leaves("thermostat_valve") == ()
+        assert rrc_contracts.optional_children("/system/appliance") == ()
     assert rrc_contracts.zone_fields() == rrc_contract_zone.DETAIL_FIELDS
-    assert rrc_contracts.extra_roots() == ()
-    assert rrc_contracts.device_leaves("thermostat_valve") == ()
-    assert rrc_contracts.optional_children("/system/appliance") == ()
     # W1 lifted the block: the temporary setpoint follows its contract policy,
     # only on an RRC controller (S11).
     assert not rrc_contract_zone.CONTRACT.blocked
@@ -312,10 +311,7 @@ def test_lookups_answer_per_path() -> None:
         assert rrc_contracts.category("/system/fireplace/enabled") == "config"
         assert rrc_contracts.icon(AWAY) == "mdi:home-export-outline"
         assert rrc_contracts.in_dialog(AWAY)
-        assert rrc_contracts.zone_fields() == (
-            *rrc_contract_zone.DETAIL_FIELDS,
-            "w0probe",
-        )
+        assert rrc_contracts.zone_fields() == ("w0probe",)
         assert rrc_contracts.extra_roots() == ("/events",)
         assert rrc_contracts.device_leaves("thermostat_valve") == ("etrv/status",)
         assert rrc_contracts.optional_children("/system/appliance") == (
