@@ -4,18 +4,20 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable, Mapping
+from typing import cast
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
 
-from . import rrc
+from . import rrc, rrc_devices
 from .configuration import ConfigurationError
 from .configuration_access import EntryConfiguration
 from .const import CONF_BRAND, DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator
-from .ha_compat import device_by_identifier
+from .ha_compat import device_by_identifier, via_device
 from .i18n import localize
+from .pointt import Resource
 from .resource_catalog import configured_device_name, logical_device_for_path
 
 _UNKNOWN_HEAT_PUMP_TYPES = frozenset(
@@ -38,6 +40,12 @@ def device_info_for_resource(
     resource_path: str,
 ) -> DeviceInfo:
     """Build metadata for the device selected by the plant's resource binding."""
+    if (
+        (device_id := rrc_devices.listed_device(resource_path)) is not None
+        and is_rrc_plant(coordinator)
+        and (info := radio_device_info(coordinator, device_id)) is not None
+    ):
+        return info
     gateway = coordinator.gateway
     binding = coordinator.plant_model.bind_resource(resource_path)
     identifiers = {(DOMAIN, binding.device.identifier)}
@@ -58,6 +66,14 @@ def device_info_for_resource(
     manufacturer = _manufacturer(coordinator)
     system_info = _system_info_values(coordinator)
     model, model_id = _system_model(gateway.model, gateway.device_type, system_info)
+    rrc_plant = is_rrc_plant(coordinator)
+    if rrc_plant:
+        # E05: a room controller's model only from the cloud's own data.
+        model = _rrc_model(coordinator) or (
+            rrc.PRODUCT_TYPE
+            if model == "Heating system" or model.casefold() == rrc.GATEWAY_DEVICE_TYPE
+            else model
+        )
     info = DeviceInfo(
         identifiers=identifiers,
         manufacturer=manufacturer,
@@ -74,7 +90,86 @@ def device_info_for_resource(
     if not known:
         # C8: a new device gets a name without the brand (the manufacturer
         # field still names it); an existing device keeps its name.
-        info["name"] = neutral_device_name(model)
+        info["name"] = (
+            rrc_devices.type_label(
+                rrc_devices.CONTROLLER_TYPE, coordinator.hass.config.language
+            )
+            if rrc_plant
+            else neutral_device_name(model)
+        )
+    return info
+
+
+def is_rrc_plant(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
+    """C8: the gateway is an RRC 2.0 room controller, by its readings."""
+    resources = dict(coordinator.resources)
+    resources.update(
+        (path, snapshot.resource) for path, snapshot in (coordinator.data or {}).items()
+    )
+    return bool(rrc.profile_evidence(coordinator.gateway.device_type, resources))
+
+
+def _rrc_model(coordinator: BoschBuderusDataUpdateCoordinator) -> str | None:
+    """The product type the controller reports, if it reports one."""
+    value = _resource_string(coordinator, rrc.PRODUCT_TYPE_PATH)
+    if value is not None and 1 <= len(value) <= 32 and value.isprintable():
+        return _BRAND_WORDS.sub("", value).strip(" /-") or None
+    return None
+
+
+def _device_list(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resource]:
+    snapshot = (coordinator.data or {}).get(rrc.DEVICE_LIST)
+    resource = (
+        snapshot.resource
+        if snapshot is not None and snapshot.resource.has_value
+        else coordinator.resources.get(rrc.DEVICE_LIST)
+    )
+    return {rrc.DEVICE_LIST: resource} if resource is not None else {}
+
+
+def radio_device_info(
+    coordinator: BoschBuderusDataUpdateCoordinator, device_id: int
+) -> DeviceInfo | None:
+    """E07: a radio device of a room controller as its own device.
+
+    It hangs below the controller (its via device) and is identified by the
+    gateway and its list ID. The controller's own list entry returns
+    ``None``: its values belong to the controller's device.
+    """
+    device = rrc_devices.find(_device_list(coordinator), device_id)
+    if device is not None and device.is_controller:
+        return None
+    gateway_identifier = coordinator.plant_model.gateway_device.identifier
+    identifier = (DOMAIN, rrc_devices.identifier(gateway_identifier, device_id))
+    language = coordinator.hass.config.language
+    info = DeviceInfo(
+        identifiers={identifier},
+        manufacturer=_manufacturer(coordinator),
+        model=rrc_devices.type_label(device.kind if device else None, language),
+    )
+    entry = coordinator.config_entry
+    registry = dr.async_get(coordinator.hass)
+    if entry is not None:
+        info.update(
+            cast(
+                DeviceInfo,
+                via_device(registry, (DOMAIN, gateway_identifier), entry.entry_id),
+            )
+        )
+    firmware = _resource_string(
+        coordinator, f"/devices/device{device_id}/versionFirmware"
+    )
+    if firmware is not None and len(firmware) <= 32 and firmware.isprintable():
+        info["sw_version"] = firmware
+    if entry is not None and device_by_identifier(registry, identifier, entry.entry_id):
+        return info  # an existing device keeps its name and area
+    info["name"] = rrc_devices.device_name(
+        device or rrc_devices.RadioDevice(device_id, None, None, None, None), language
+    )
+    if device is not None and device.zone:
+        zone = _resource_string(coordinator, f"/zones/zn{device.zone}/name")
+        if (area := rrc.display_name(zone)) is not None:
+            info["suggested_area"] = area
     return info
 
 
@@ -107,6 +202,16 @@ def grouped_entity_name(
 ) -> str:
     """Prefix an entity name with its dynamic logical PointT group."""
     language = coordinator.hass.config.language
+    if (
+        device_id := rrc_devices.listed_device(resource_path)
+    ) is not None and is_rrc_plant(coordinator):
+        # E07: a radio device is its own device and needs no prefix; the
+        # controller's own entry is named after the controller.
+        device = rrc_devices.find(_device_list(coordinator), device_id)
+        if device is None or not device.is_controller:
+            return name
+        label = rrc_devices.type_label(rrc_devices.CONTROLLER_TYPE, language)
+        return f"{label}{_GROUP_SEPARATOR}{name}"
     logical = coordinator.plant_model.bind_resource(resource_path).group
     if logical is not None:
         group = _configured_logical_name(coordinator, resource_path, logical.logical_id)

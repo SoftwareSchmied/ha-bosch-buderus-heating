@@ -26,6 +26,8 @@ from .const import DOMAIN
 from .log_helpers import log_failure
 from .pointt import Gateway, Resource, ResourceMetadata, ResourceReference
 from .pointt.redaction import resource_path_template
+from .resource_catalog import is_never_read
+from .rrc import in_device_scope, profile_evidence
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -427,6 +429,13 @@ class DiscoveryInventory:
         """Add or refresh discovered resources; keep parts missing right now."""
         if not resources:
             return
+        resources = {
+            path: resource
+            for path, resource in resources.items()
+            if not is_never_read(path)
+        }
+        if not resources:
+            return
         now = datetime.now(UTC)
         cutoff = now - MAX_AGE
         previous = self._gateways.get(gateway.gateway_id)
@@ -538,6 +547,16 @@ def _gateways(stored: object, now: datetime) -> Iterable[tuple[str, GatewayInven
             described[path] = metadata_only(resource)
             if seen >= cutoff:
                 resources[path] = _Seen(resource, seen)
+        # C8: device keys and personal data an earlier release stored, and
+        # on an RRC controller the device parts it no longer reads, are not
+        # loaded; the next save no longer contains them.
+        dropped = _not_kept(
+            gateway,
+            {**described, **{path: item.resource for path, item in resources.items()}},
+        )
+        for path in dropped:
+            resources.pop(path, None)
+            described.pop(path, None)
         stored_templates: dict[str, Resource] = {}
         raw_templates = data.get("templates")
         if isinstance(raw_templates, Mapping):
@@ -546,7 +565,7 @@ def _gateways(stored: object, now: datetime) -> Iterable[tuple[str, GatewayInven
                     resource = resource_from_data(row)
                 except ValueError:
                     continue
-                if resource.path == path:
+                if resource.path == path and path not in dropped:
                     stored_templates[path] = metadata_only(resource)
         yield (
             gateway_id,
@@ -557,6 +576,17 @@ def _gateways(stored: object, now: datetime) -> Iterable[tuple[str, GatewayInven
                 _bounded_templates(stored_templates, described),
             ),
         )
+
+
+def _not_kept(gateway: Gateway, resources: Mapping[str, Resource]) -> set[str]:
+    """C8: stored paths that a current discovery would never read."""
+    rrc = bool(profile_evidence(gateway.device_type, resources))
+    return {
+        path
+        for path in resources
+        if is_never_read(path)
+        or (rrc and path.startswith("/devices/") and not in_device_scope(path))
+    }
 
 
 def _bounded_templates(

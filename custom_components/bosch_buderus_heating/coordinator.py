@@ -101,7 +101,13 @@ from .poll_slots import plan_poll_slots
 from .refresh_outage import RefreshOutageLog
 from .repair_scope import repair_data, repair_id
 from .resource_catalog import PollGroup, poll_group, slows_when_unused
-from .rrc import PROGRAM_LIST, program_list_expected
+from .rrc import (
+    DEVICE_LIST,
+    PROGRAM_LIST,
+    in_device_scope,
+    profile_evidence,
+    program_list_expected,
+)
 from .rrc_programs import WEEK, RrcProgramService
 from .start_counters import is_start_counter_path
 from .startup_data import (
@@ -2486,6 +2492,7 @@ class BoschBuderusDataUpdateCoordinator(
                 diagnostics=self.discovery_diagnostics,
                 startup_data=self.startup_data,
                 gateway=self.gateway,
+                rrc_evidence=self.rrc_evidence(),
             )
         except AuthenticationError as err:
             raise ConfigEntryAuthFailed from err
@@ -2884,6 +2891,16 @@ class BoschBuderusDataUpdateCoordinator(
             for group in self._poll_intervals
         }
 
+    def rrc_evidence(self) -> tuple[str, ...]:
+        """C8: what the current and the stored readings show of an RRC 2.0
+        room controller; empty for every other gateway."""
+        stored = (
+            self.inventory.resources(self.gateway.gateway_id)
+            if self.inventory is not None
+            else {}
+        )
+        return profile_evidence(self.gateway.device_type, {**stored, **self.resources})
+
     def _missing_reason(self, path: str) -> str:
         report = self.discovery_diagnostics.paths.get(path)
         if report is None:
@@ -2929,6 +2946,27 @@ class BoschBuderusDataUpdateCoordinator(
             and PROGRAM_LIST not in missing
         ):
             missing[PROGRAM_LIST] = self._missing_reason(PROGRAM_LIST)
+        if self.rrc_evidence():
+            # C8: an RRC controller reads only its device list and firmware
+            # leaves below /devices; parts an earlier release read there are
+            # neither searched nor expected any more.
+            outside = [
+                path
+                for path in missing
+                if path.startswith("/devices/") and not in_device_scope(path)
+            ]
+            for path in outside:
+                del missing[path]
+            if outside and self.inventory is not None:
+                self.inventory.forget(self.gateway.gateway_id, outside)
+            # The device list is the only source of the radio devices: a
+            # list that got no answer is searched again like the program list.
+            if (
+                DEVICE_LIST not in self.resources
+                and DEVICE_LIST not in missing
+                and is_transient_result(reason := self._missing_reason(DEVICE_LIST))
+            ):
+                missing[DEVICE_LIST] = reason
         if self.inventory is not None:
             self.inventory.record(self.gateway, discovered)
         self.discovery_recovery.plan(
@@ -2958,6 +2996,7 @@ class BoschBuderusDataUpdateCoordinator(
                 startup_data=self.startup_data,
                 gateway=self.gateway,
                 rediscovery=True,
+                rrc_evidence=self.rrc_evidence(),
             )
         except AuthenticationError as err:
             raise ConfigEntryAuthFailed from err

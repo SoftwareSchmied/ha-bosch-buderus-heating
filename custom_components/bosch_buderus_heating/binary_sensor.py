@@ -50,6 +50,7 @@ from .resource_catalog import (
     resource_name,
     supports_entity,
 )
+from .rrc_device_entities import RadioBatteryLowBinarySensor, track_radio_devices
 from .sensor import (
     _is_boolean_resource,
     _nested_scalar_keys,
@@ -108,6 +109,9 @@ def _setup_entities(
         track_status(entry, account, async_add_entities)
     for coordinator in entry.coordinators:
         _track_binary_sensors(entry, coordinator, async_add_entities)
+        track_radio_devices(
+            entry, coordinator, async_add_entities, RadioBatteryLowBinarySensor
+        )
 
 
 def _track_connectivity(

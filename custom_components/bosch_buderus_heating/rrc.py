@@ -20,6 +20,15 @@ ZONE = re.compile(rf"^/zones/zn({RRC_ID})(?:/|$)")
 PROGRAM = re.compile(rf"^/programs/pg({RRC_ID})(?:/|$)")
 ZONE_LIST = "/zones/list"
 PROGRAM_LIST = "/programs/list"
+# C8 (CT-B02, CT-E01): the radio devices of an RRC controller, one list.
+DEVICE_LIST = "/devices/list"
+RADIO_DEVICE = re.compile(rf"^/devices/device({RRC_ID})(?:/|$)")
+RADIO_FIRMWARE = re.compile(rf"^/devices/device{RRC_ID}/versionFirmware$")
+# CT-A03: the vendor app accepts a controller with exactly this product type.
+PRODUCT_TYPE_PATH = "/gateway/productType"
+PRODUCT_TYPE = "RRC 2.0"
+# The device type the cloud's gateway list reports for these controllers.
+GATEWAY_DEVICE_TYPE = "rrc2"
 MODE_PATTERN = rf"^/zones/zn{RRC_ID}/userMode$"
 MANUAL_PATTERN = rf"^/zones/zn{RRC_ID}/manualTemperatureHeating$"
 MODES = frozenset({"manual", "clock"})
@@ -217,9 +226,11 @@ def listed_ids(resource: Resource) -> tuple[int, ...] | None:
 
 
 def _parse_list(resource: Resource) -> tuple[int, ...] | str:
-    resource_type = {ZONE_LIST: "zoneArray", PROGRAM_LIST: "programArray"}.get(
-        resource.path
-    )
+    resource_type = {
+        ZONE_LIST: "zoneArray",
+        PROGRAM_LIST: "programArray",
+        DEVICE_LIST: "deviceArray",
+    }.get(resource.path)
     if resource_type is None:
         return "not_a_list"
     if resource.metadata.resource_type != resource_type:
@@ -248,11 +259,69 @@ def _parse_list(resource: Resource) -> tuple[int, ...] | str:
 
 
 def listed_paths(resource: Resource) -> tuple[str, ...]:
+    """The zones and programs of a list; a device list supplies no paths."""
+    if resource.path == DEVICE_LIST:
+        return ()
     identifiers = listed_ids(resource)
     if identifiers is None:
         return ()
     root = "/zones/zn" if resource.path == ZONE_LIST else "/programs/pg"
     return tuple(f"{root}{identifier}" for identifier in identifiers)
+
+
+def is_product_type(value: object) -> bool:
+    """CT-A03: the product type of an RRC 2.0 controller, in any case."""
+    return isinstance(value, str) and value.strip().casefold() == (
+        PRODUCT_TYPE.casefold()
+    )
+
+
+def profile_evidence(
+    device_type: str | None, resources: Mapping[str, Resource]
+) -> tuple[str, ...]:
+    """C8: what shows that a gateway is an RRC 2.0 room controller.
+
+    Only resources and the reported device type count, never a model name;
+    the evidence selects probes and device names, it offers nothing.
+    """
+    evidence: list[str] = []
+    if isinstance(device_type, str) and (
+        device_type.strip().casefold() == GATEWAY_DEVICE_TYPE
+    ):
+        evidence.append("device_type")
+    product = resources.get(PRODUCT_TYPE_PATH)
+    if product is not None and is_product_type(product.value):
+        evidence.append("product_type")
+    if any(ZONE.match(path) for path in resources) or (
+        (zones := resources.get(ZONE_LIST)) is not None
+        and listed_ids(zones) is not None
+    ):
+        evidence.append("zones")
+    return tuple(evidence)
+
+
+def in_device_scope(path: str) -> bool:
+    """C8 (CT-B02): the only ``/devices`` paths read on an RRC controller.
+
+    The device list supplies type, zone, battery and signal of every radio
+    device; per device only its firmware version is read. Everything else
+    below ``/devices`` (the device keys, settings and valve details) is not
+    read: it costs most of the discovery budget and feeds no entity.
+    """
+    return (
+        path in ("/devices", DEVICE_LIST) or RADIO_FIRMWARE.fullmatch(path) is not None
+    )
+
+
+def device_firmware_paths(resource: Resource, limit: int) -> tuple[str, ...]:
+    """The firmware leaf of each listed device, at most ``limit`` of them."""
+    if resource.path != DEVICE_LIST:
+        return ()
+    identifiers = listed_ids(resource) or ()
+    return tuple(
+        f"/devices/device{identifier}/versionFirmware"
+        for identifier in identifiers[:limit]
+    )
 
 
 def catalog_paths(path: str) -> tuple[str, ...]:

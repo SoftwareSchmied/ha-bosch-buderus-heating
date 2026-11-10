@@ -302,6 +302,18 @@ class StartupGatewayData:
             read = replace(read, result="pending")
         self._reads[path] = read
 
+    def withdraw(self, unwanted: Callable[[str], bool]) -> tuple[str, ...]:
+        """C8: drop queued reads not attempted yet that a gateway profile
+        found later does not need; returns the dropped paths."""
+        dropped = tuple(
+            path
+            for path, read in self._reads.items()
+            if read.attempts == 0 and not read.registered and unwanted(path)
+        )
+        for path in dropped:
+            del self._reads[path]
+        return dropped
+
     def due(self, now: float, *, limit: int = 30) -> tuple[str, ...]:
         """Select the oldest due reads without enlarging discovery's path budget."""
         remaining = max(0, self._maximum_resources - len(self._requested))

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import re
+from collections import Counter
 from dataclasses import dataclass, field
 from enum import StrEnum
 from itertools import islice
@@ -32,13 +33,20 @@ from .pointt import (
 )
 from .pointt.const import MAX_BULK_PATHS
 from .pointt.redaction import resource_path_template
+from .resource_catalog import is_never_read
 from .rrc import (
+    DEVICE_LIST,
+    PRODUCT_TYPE_PATH,
     PROGRAM_LIST,
     ZONE,
     ZONE_LIST,
     catalog_paths,
+    device_firmware_paths,
+    in_device_scope,
+    is_product_type,
     listed_ids,
     listed_paths,
+    profile_evidence,
 )
 from .startup_data import LICENSE_PATH, StartupGatewayData, is_startup_path
 from .water_softener import (
@@ -78,6 +86,11 @@ MAX_CONSECUTIVE_FALLBACK_5XX = 3
 # before these catalog and optional paths. This changes only the order: both
 # paths were requested before as well, within the same budget.
 PRIORITY_PATHS = frozenset({ZONE_LIST, PROGRAM_LIST})
+# C8 (CT-B02): on an RRC controller the device list joins them. It is the
+# only source of the radio devices; nothing else below /devices is read
+# except one firmware leaf per listed device, at most this many.
+RRC_PRIORITY_PATHS = frozenset({*PRIORITY_PATHS, DEVICE_LIST})
+MAX_RRC_DEVICE_PROBES = 64
 
 
 class DiscoveryPathSource(StrEnum):
@@ -118,6 +131,8 @@ class DiscoveryDiagnostics:
     depth_limit_reached: bool = False
     bulk_calls: int = 0
     device_profile: str = "generic"
+    # C8: what showed an RRC controller (device_type, product_type, zones).
+    rrc_evidence: tuple[str, ...] = ()
 
     def reset(self) -> None:
         """Clear a previous run before rediscovery."""
@@ -127,6 +142,7 @@ class DiscoveryDiagnostics:
         self.depth_limit_reached = False
         self.bulk_calls = 0
         self.device_profile = "generic"
+        self.rrc_evidence = ()
 
     def scheduled(self, path: str, source: DiscoveryPathSource) -> None:
         """Record the highest-priority source assigned to one path."""
@@ -177,8 +193,12 @@ class DiscoveryDiagnostics:
         optionals = tuple(
             item for item in items if item.source is DiscoveryPathSource.OPTIONAL
         )
+        forbidden = sum(
+            "http_403" in (item.bulk_result, item.fallback_result) for item in items
+        )
         return {
             "device_profile": self.device_profile,
+            "rrc_evidence": list(self.rrc_evidence),
             "completed": self.completed,
             "stop_reason": self.stop_reason,
             "depth_limit_reached": self.depth_limit_reached,
@@ -205,7 +225,47 @@ class DiscoveryDiagnostics:
             "fallback_failures": sum(
                 item.fallback_result not in (None, "success") for item in fallbacks
             ),
+            # CT-A02 (E03): answers that refuse access, apart from errors.
+            "forbidden_paths": forbidden,
+            "access_reason": self._access_reason(forbidden),
+            "paths_not_read": dict(
+                sorted(
+                    Counter(
+                        item.read_policy
+                        for item in items
+                        if item.read_policy in _NOT_READ_POLICIES
+                    ).items()
+                )
+            ),
         }
+
+    def _access_reason(self, forbidden: int) -> str | None:
+        """CT-A02 (E03): whether refused reads point to the sign-in's rights.
+
+        A controller refuses some advertised paths as a matter of course
+        (a TC100.2 about 35). Only a refused request, a discovery that found
+        nothing but refusals, or refused zones point to the scope or the
+        rights of the account.
+        """
+        if self.stop_reason == "http_403" or (
+            forbidden
+            and (
+                not any(item.discovered for item in self.paths.values())
+                or any(
+                    "http_403" in (item.bulk_result, item.fallback_result)
+                    for path, item in self.paths.items()
+                    if path in ("/zones", ZONE_LIST)
+                )
+            )
+        ):
+            return "scope_or_permission_denied"
+        return "some_paths_forbidden" if forbidden else None
+
+
+# C8: read policies of paths that were scheduled but deliberately not read.
+_NOT_READ_POLICIES = frozenset(
+    {"never_read_private", "outside_rrc_device_scope", "rrc_5xx_assumed_missing"}
+)
 
 
 # Some gateways omit stable public resources from their reference trees or
@@ -476,12 +536,15 @@ async def async_discover_resources(
     startup_data: StartupGatewayData | None = None,
     gateway: Gateway | None = None,
     rediscovery: bool = False,
+    rrc_evidence: tuple[str, ...] = (),
 ) -> dict[str, Resource]:
     """Follow PointT references without escaping configured safety bounds.
 
     ``rediscovery`` searches exactly the given subtrees again (P46): the device
     profile keeps its probes but does not widen the roots, and start-up values
     stay queued in the existing start-up state instead of resetting it.
+    ``rrc_evidence`` is what earlier readings showed of an RRC controller;
+    its profile then applies from the first request on.
     """
     if maximum_depth < 0 or maximum_resources < 1:
         raise ValueError("Discovery bounds must be positive")
@@ -494,6 +557,9 @@ async def async_discover_resources(
     # references. Unknown gateways may advertise a softener circuit as well.
     allowed_roots = roots if rediscovery else (*roots, SOFTENER_ROOT)
     rrc_enabled = False
+    # C8: an RRC 2.0 room controller (CT200, TC100.2 and their relatives).
+    rrc_profile = False
+    priority_paths = PRIORITY_PATHS
     if softener_profile:
         if not rediscovery:
             roots = ("/notifications", "/gateway", "/system", SOFTENER_ROOT)
@@ -513,6 +579,13 @@ async def async_discover_resources(
 
     def schedule(path: str, depth: int, source: DiscoveryPathSource) -> None:
         report.scheduled(path, source)
+        if is_never_read(path):
+            # CT-E07, CT-F05: device keys and personal data, on any gateway.
+            report.paths[path].read_policy = "never_read_private"
+            return
+        if rrc_profile and _outside_rrc_device_scope(path):
+            report.paths[path].read_policy = "outside_rrc_device_scope"
+            return
         if path == LICENSE_PATH:
             report.paths[path].read_policy = "omitted_license"
             if startup_data is not None:
@@ -535,7 +608,7 @@ async def async_discover_resources(
         report.depth_limit_reached = bool(depth_limited)
         target = (
             priority_pending
-            if path in PRIORITY_PATHS
+            if path in priority_paths
             else queues[1 + _source_priority(report.paths[path].source)]
         )
         for queue in queues:
@@ -543,13 +616,50 @@ async def async_discover_resources(
                 queue.pop(path, None)
         target[path] = depth
 
-    def schedule_children(path: str, depth: int) -> None:
+    def enable_rrc_lists(depth: int) -> None:
         nonlocal rrc_enabled, allowed_roots
-        if ZONE.match(path) and not rrc_enabled:
-            rrc_enabled = True
-            allowed_roots = (*allowed_roots, "/programs")
-            schedule("/programs", depth + 1, DiscoveryPathSource.CATALOG)
-            schedule(PROGRAM_LIST, depth + 1, DiscoveryPathSource.CATALOG)
+        if rrc_enabled:
+            return
+        rrc_enabled = True
+        allowed_roots = (*allowed_roots, "/programs")
+        schedule("/programs", depth, DiscoveryPathSource.CATALOG)
+        schedule(PROGRAM_LIST, depth, DiscoveryPathSource.CATALOG)
+
+    def enable_rrc_profile(evidence: str, depth: int) -> None:
+        """C8 (CT-A03, CT-B02): a room controller, recognised by resources."""
+        nonlocal rrc_profile, priority_paths
+        if evidence not in report.rrc_evidence:
+            report.rrc_evidence = (*report.rrc_evidence, evidence)
+        if rrc_profile:
+            return
+        rrc_profile = True
+        priority_paths = RRC_PRIORITY_PATHS
+        if not softener_profile:
+            report.device_profile = "rrc2"
+        # Probes queued before the controller was recognised (the device
+        # tree comes before the zones) are dropped; none has been sent.
+        for queue in queues:
+            for pending_path in tuple(queue):
+                if _outside_rrc_device_scope(pending_path):
+                    del queue[pending_path]
+                    report.paths[pending_path].read_policy = "outside_rrc_device_scope"
+                    depth_limited.discard(pending_path)
+        report.depth_limit_reached = bool(depth_limited)
+        if startup_data is not None:
+            for withdrawn in startup_data.withdraw(_outside_rrc_device_scope):
+                if (item := report.paths.get(withdrawn)) is not None:
+                    item.read_policy = "outside_rrc_device_scope"
+        if not rediscovery or any(
+            root == "/devices" or root.startswith("/devices/") for root in roots
+        ):
+            schedule(DEVICE_LIST, depth, DiscoveryPathSource.CATALOG)
+
+    def schedule_children(path: str, depth: int) -> None:
+        if is_never_read(path) or (rrc_profile and _outside_rrc_device_scope(path)):
+            return  # nothing below a path that is not read is probed either
+        if ZONE.match(path):
+            enable_rrc_profile("zones", depth + 1)
+            enable_rrc_lists(depth + 1)
         if rrc_enabled:
             catalog_root = "/".join(path.split("/")[:3]) if ZONE.match(path) else path
             for child in catalog_paths(catalog_root):
@@ -574,6 +684,13 @@ async def async_discover_resources(
                 continue
             schedule(fallback, depth + 1, DiscoveryPathSource.OPTIONAL)
 
+    for evidence in dict.fromkeys(
+        (
+            *rrc_evidence,
+            *profile_evidence(gateway.device_type if gateway else None, {}),
+        )
+    ):
+        enable_rrc_profile(evidence, 1)
     for root in roots:
         schedule(root, 0, DiscoveryPathSource.ROOT)
 
@@ -641,6 +758,7 @@ async def async_discover_resources(
             results,
             diagnostics=report,
             consecutive_5xx=consecutive_5xx,
+            rrc_profile=rrc_profile,
         )
         for result in results:
             depth = frontier_entries[result.path]
@@ -655,15 +773,15 @@ async def async_discover_resources(
                 )
                 continue
             discovered[result.path] = resource
-            if (
-                resource.path == ZONE_LIST
-                and listed_ids(resource) is not None
-                and not rrc_enabled
-            ):
-                rrc_enabled = True
-                allowed_roots = (*allowed_roots, "/programs")
-                schedule("/programs", depth + 1, DiscoveryPathSource.CATALOG)
-                schedule(PROGRAM_LIST, depth + 1, DiscoveryPathSource.CATALOG)
+            if resource.path == ZONE_LIST and listed_ids(resource) is not None:
+                enable_rrc_profile("zones", depth + 1)
+                enable_rrc_lists(depth + 1)
+            if resource.path == PRODUCT_TYPE_PATH and is_product_type(resource.value):
+                enable_rrc_profile("product_type", depth)
+            if rrc_profile and resource.path == DEVICE_LIST:
+                # CT-B05: device IDs only from the list, never guessed.
+                for child in device_firmware_paths(resource, MAX_RRC_DEVICE_PROBES):
+                    schedule(child, depth + 1, DiscoveryPathSource.CATALOG)
             if resource.path == ZONE_LIST or rrc_enabled:
                 for child in listed_paths(resource):
                     schedule(child, depth + 1, DiscoveryPathSource.REFERENCE)
@@ -697,6 +815,7 @@ async def _recover_invalid_bulk_results(
     *,
     diagnostics: DiscoveryDiagnostics,
     consecutive_5xx: int = 0,
+    rrc_profile: bool = False,
 ) -> tuple[tuple[BatchItemResult, ...], int]:
     """Retry every recoverable discovery item once with an individual read.
 
@@ -704,6 +823,11 @@ async def _recover_invalid_bulk_results(
     path. Only no answer at all, authentication, a rate limit, or
     ``MAX_CONSECUTIVE_FALLBACK_5XX`` 5xx answers in a row end the discovery.
     Returns the results and the updated count of consecutive 5xx answers.
+
+    CT-B06: an RRC controller answers HTTP 500 for a path it does not have.
+    On that profile a 5xx answer to a catalog or optional probe neither
+    counts towards the outage series nor ends it; the path is taken as
+    missing. Roots and advertised references keep the rule.
     """
     recovered: list[BatchItemResult] = []
     for result in results:
@@ -736,6 +860,17 @@ async def _recover_invalid_bulk_results(
             diagnostics.fallback_finished(
                 result.path, f"http_{status}", discovered=False
             )
+            if (
+                status >= 500
+                and rrc_profile
+                and diagnostics.paths[result.path].source
+                in (DiscoveryPathSource.CATALOG, DiscoveryPathSource.OPTIONAL)
+            ):
+                diagnostics.paths[result.path].read_policy = "rrc_5xx_assumed_missing"
+                recovered.append(
+                    BatchItemResult(gateway_id, result.path, status, error=err)
+                )
+                continue
             if status >= 500:
                 consecutive_5xx += 1
                 if consecutive_5xx >= MAX_CONSECUTIVE_FALLBACK_5XX:
@@ -785,6 +920,11 @@ def _path_local_status(error: PointTError) -> int | None:
     if isinstance(error, ServiceUnavailable):
         return error.status
     return None
+
+
+def _outside_rrc_device_scope(path: str) -> bool:
+    """C8: a ``/devices`` path an RRC controller does not need to read."""
+    return path.startswith("/devices/") and not in_device_scope(path)
 
 
 def _optional_children(path: str) -> tuple[str, ...]:
