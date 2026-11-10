@@ -1,0 +1,33 @@
+{
+ "provenance": {
+  "kind": "synthetic",
+  "basis": "compatibility_mapping",
+  "shapes": "synthetic_from_app_demo_shapes",
+  "reference": "Daily energy records of an RRC 2.0 room controller (energyRecordings)",
+  "firmware": null,
+  "capture_date": null,
+  "created": "2026-11-10",
+  "redaction": "Constructed values only. Record keys and date format follow the expected demo shape of the energy history; nothing comes from a real plant.",
+  "physical_device_verified": false,
+  "contract": "Each record is one completed day (d = dd-MM-yyyy). Units are not part of the records: the energy values are expected to be kWh, the gas unit is a resource of its own (/energy/gas/unit). The test answers ?entry=N with the records from index N on, ?date=yyyy-MM-dd with the records from that day on, both in pages."
+ },
+ "gas_units": {
+  "confirmed": "kWh",
+  "unconfirmed": "m3"
+ },
+ "records": [
+  {"d": "01-10-2026", "T": 12.5, "eCh": 3.0, "eHw": 1.0, "eCo": 0, "pS": 0.5, "gCh": 4.0, "gHw": 2.0, "eChB": 0, "eHwB": 0, "pChB": 0, "pHwB": 0, "pChH": 9.0, "pHwH": 3.0, "pCo": 0, "aCh": 0, "aHw": 0},
+  {"d": "02-10-2026", "T": 11.0, "eCh": 3.5, "eHw": 1.0, "eCo": 0, "pS": 0.0, "gCh": 4.5, "gHw": 2.0, "eChB": 0, "eHwB": 0, "pChB": 0, "pHwB": 0, "pChH": 10.5, "pHwH": 3.0, "pCo": 0, "aCh": 0.2, "aHw": 0},
+  {"d": "03-10-2026", "T": 9.5, "eCh": 4.0, "eHw": 1.5, "eCo": 0, "pS": 1.0, "gCh": 5.0, "gHw": 2.5, "eChB": 0, "eHwB": 0, "pChB": 0, "pHwB": 0, "pChH": 12.0, "pHwH": 4.5, "pCo": 0, "aCh": 0, "aHw": 0},
+  {"d": "05-10-2026", "T": 8.0, "eCh": 5.0, "eHw": 1.0, "eCo": 0, "pS": 0.0, "gCh": 6.0, "gHw": 2.0, "eChB": 0, "eHwB": 0, "pChB": 0, "pHwB": 0, "pChH": 15.0, "pHwH": 3.0, "pCo": 0, "aCh": 0, "aHw": 0},
+  {"d": "06-10-2026", "T": 7.5, "eCH": 5.5, "eHW": 1.5, "eCo": 0, "pS": 0.0, "gCh": 6.5, "gHw": 2.5, "eChB": 0, "eHwB": 0, "pChB": 0, "pHwB": 0, "pChH": 16.5, "pHwH": 4.5, "pCo": 0, "aCh": 0, "aHw": 0},
+  {"d": "07-10-2026", "T": -2.0, "eCh": 6.0, "eHw": 1.0, "eCo": 0, "pS": 0.0, "gCh": 7.0, "gHw": 2.0, "eChB": 0, "eHwB": 0, "pChB": 0, "pHwB": 0, "pChH": 18.0, "pHwH": 3.0, "pCo": 0, "aCh": 0, "aHw": 0},
+  {"d": "07-10-2026", "T": -2.5, "eCh": 6.5, "eHw": 1.0, "eCo": 0, "pS": 0.0, "gCh": 7.0, "gHw": 2.0, "eChB": 0, "eHwB": 0, "pChB": 0, "pHwB": 0, "pChH": 19.5, "pHwH": 3.0, "pCo": 0, "aCh": 0, "aHw": 0},
+  {"d": "$DATE$", "T": 5.0, "eCh": 99.0},
+  {"d": "31-02-2026", "T": 5.0, "eCh": 99.0},
+  {"d": "08-10-2026", "T": 6.0, "eCh": 4.5, "eHw": "1.0", "eCo": 0, "pS": 0.0, "gCh": 5.5, "gHw": 2.0, "eChB": 0, "eHwB": 0, "pChB": 0, "pHwB": 0, "pChH": 13.5, "pHwH": 3.0, "pCo": 0, "aCh": -1.0, "aHw": 0},
+  {"d": "09-10-2026", "T": 7.0, "eCh": 4.0, "eHw": 1.0, "eCo": 0, "pS": 0.0, "gCh": 5.0, "gHw": 2.0, "eChB": 0, "eHwB": 0, "pChB": 0, "pHwB": 0, "pChH": 12.0, "pHwH": 3.0, "pCo": 0, "aCh": 0, "aHw": 0},
+  {"d": "10-10-2026", "T": 8.5, "eCh": 3.0, "eHw": 1.0, "eCo": 0, "pS": 0.5, "gCh": 4.0, "gHw": 2.0, "eChB": 0, "eHwB": 0, "pChB": 0, "pHwB": 0, "pChH": 9.0, "pHwH": 3.0, "pCo": 0, "aCh": 0, "aHw": 0}
+ ],
+ "changed_record": {"d": "09-10-2026", "T": 7.0, "eCh": 6.0, "eHw": 1.0, "eCo": 0, "pS": 0.0, "gCh": 5.0, "gHw": 2.0, "eChB": 0, "eHwB": 0, "pChB": 0, "pHwB": 0, "pChH": 12.0, "pHwH": 3.0, "pCo": 0, "aCh": 0, "aHw": 0}
+}

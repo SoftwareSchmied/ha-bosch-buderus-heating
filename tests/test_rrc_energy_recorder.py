@@ -1,0 +1,101 @@
+"""W5 (CT-G05): the energy history in Home Assistant's recorder.
+
+A real setup of an RRC 2.0 room controller (``ct200-shapes.json``) with a
+recorder: the history days become hourly rows at local midnight, energy as
+running sums in kWh, the outdoor temperature as a mean. Expected, untested
+on real hardware. The recorder is set up before Home Assistant, so this
+module has no module-wide fixtures.
+"""
+
+from __future__ import annotations
+
+import json
+from datetime import UTC, date, datetime, timedelta
+
+from homeassistant.core import HomeAssistant
+from homeassistant.util import dt as dt_util
+
+from custom_components.bosch_buderus_heating.rrc_energy_statistics import (
+    START_DELAY,
+    history_of,
+    statistic_id,
+)
+from tests.test_rrc_energy_statistics import (
+    GW,
+    advance,
+    day_record,
+    history_cloud,
+    legacy_setup_path,  # noqa: F401 - fixture
+    start,
+    stop,
+)
+from tests.test_start_counters import (
+    recorder_runtime_annotations,  # noqa: F401 - fixture
+)
+
+
+async def test_the_history_becomes_sums_and_means_in_the_recorder(
+    recorder_runtime_annotations,  # noqa: F811
+    recorder_mock,
+    enable_custom_integrations,
+    hass: HomeAssistant,
+    freezer,
+) -> None:
+    from homeassistant.components.recorder import get_instance
+    from homeassistant.components.recorder.statistics import (
+        get_metadata,
+        statistics_during_period,
+    )
+
+    from tests.ha_recorder_helpers import async_wait_recording_done
+
+    await hass.config.async_update(time_zone="Europe/Berlin")
+    freezer.move_to(datetime(2026, 10, 28, 7, 0, tzinfo=UTC))
+    # Across the end of summer time (25 October) and a gap (27 October).
+    items = [
+        day_record(date(2026, 10, 24), eCh=2.0, gCh=1.0, T=8.0),
+        day_record(date(2026, 10, 25), eCh=3.0, gCh=1.5, T=6.0),
+        day_record(date(2026, 10, 26), eCh=4.0, gCh=0.5, T=-1.0),
+        day_record(date(2026, 10, 28), eCh=9.0, gCh=9.0, T=0.0),  # today
+    ]
+    cloud = history_cloud(items, page=10)
+    entry, stack = await start(hass, cloud)
+    try:
+        await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+        await async_wait_recording_done(hass)
+        heating = statistic_id(GW, "heat_pump_electricity_heating")
+        gas = statistic_id(GW, "gas_heating")
+        temperature = statistic_id(GW, "outdoor_temperature")
+        rows = await get_instance(hass).async_add_executor_job(
+            statistics_during_period,
+            hass,
+            datetime(2026, 10, 20, tzinfo=UTC),
+            None,
+            {heating, gas, temperature},
+            "hour",
+            None,
+            {"sum", "mean", "state"},
+        )
+        starts = [dt_util.utc_from_timestamp(row["start"]) for row in rows[heating]]
+        assert starts == [
+            datetime(2026, 10, 23, 22, 0, tzinfo=UTC),
+            datetime(2026, 10, 24, 22, 0, tzinfo=UTC),
+            datetime(2026, 10, 25, 23, 0, tzinfo=UTC),
+        ]
+        assert [row["sum"] for row in rows[heating]] == [2.0, 5.0, 9.0]
+        assert [row["sum"] for row in rows[gas]] == [1.0, 2.5, 3.0]
+        assert [row["mean"] for row in rows[temperature]] == [8.0, 6.0, -1.0]
+        metadata = await get_instance(hass).async_add_executor_job(get_metadata, hass)
+        assert metadata[heating][1]["unit_of_measurement"] == "kWh"
+        assert metadata[heating][1]["has_sum"] is True
+        assert "expected" in metadata[heating][1]["name"]
+        assert metadata[temperature][1]["unit_of_measurement"] == "°C"
+        assert GW not in json.dumps(
+            {key: value[1] for key, value in metadata.items()}, default=str
+        )
+        # Today is never imported: it is not complete yet.
+        assert history_of(entry.runtime_data.coordinators[0]).state.last_day == (
+            date(2026, 10, 26)
+        )
+    finally:
+        await stop(hass, entry, stack)
