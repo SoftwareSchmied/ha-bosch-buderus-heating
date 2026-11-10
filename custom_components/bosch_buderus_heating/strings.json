@@ -2082,6 +2082,33 @@
           "cooling": "Cooling",
           "idle": "Idle"
         }
+      },
+      "rrc_display_code": {
+        "name": "Display code"
+      },
+      "rrc_cause_code": {
+        "name": "Cause code"
+      },
+      "rrc_maintenance_request": {
+        "name": "Maintenance request"
+      },
+      "rrc_system_pressure": {
+        "name": "System pressure"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Indoor humidity"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Controller air temperature"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Controller chip temperature"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Controller board temperature"
+      },
+      "rrc_update_state": {
+        "name": "Firmware update state"
       }
     },
     "binary_sensor": {
@@ -2151,6 +2178,18 @@
       },
       "rrc_valve_problem": {
         "name": "Valve problem"
+      },
+      "rrc_locking_error": {
+        "name": "Locking fault"
+      },
+      "rrc_blocking_error": {
+        "name": "Blocking fault"
+      },
+      "rrc_maintenance_due": {
+        "name": "Maintenance due"
+      },
+      "rrc_refill_needed": {
+        "name": "Refill needed"
       }
     },
     "calendar": {

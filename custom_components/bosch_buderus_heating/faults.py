@@ -89,7 +89,62 @@ _KNOWN_SUMMARIES: dict[tuple[str, str | None], dict[str, str]] = {
         "en": "Date or time value invalid",
         "de": "Zeit- oder Datumswert ungültig",
     },
+    # CT-F01: the radio devices of an RRC 2.0 room controller report their
+    # faults with display code A84 and these cause codes (expected, untested).
+    ("1869", "A84"): {
+        "en": "Radio connection to a device lost",
+        "de": "Funkverbindung zu einem Gerät verloren",
+    },
+    ("1870", "A84"): {
+        "en": "Battery of a radio device low",
+        "de": "Batterie eines Funkgeräts schwach",
+    },
+    ("1871", "A84"): {
+        "en": "Valve adaptation of a radiator thermostat pending",
+        "de": "Ventiladaption eines Heizkörperthermostats steht aus",
+    },
+    ("1872", "A84"): {
+        "en": "Valve of a radiator thermostat moves too stiffly",
+        "de": "Ventil eines Heizkörperthermostats zu schwergängig",
+    },
+    ("1873", "A84"): {
+        "en": "Valve travel of a radiator thermostat too large",
+        "de": "Stellbereich eines Heizkörperthermostats zu groß",
+    },
+    ("1874", "A84"): {
+        "en": "Valve travel of a radiator thermostat too small",
+        "de": "Stellbereich eines Heizkörperthermostats zu klein",
+    },
+    ("1876", "A84"): {
+        "en": "Radio device lost its connection to the controller",
+        "de": "Funkgerät hat die Verbindung zum Regler verloren",
+    },
+    ("1879", "A84"): {
+        "en": "Valve of a radiator thermostat in a wrong position",
+        "de": "Ventil eines Heizkörperthermostats in Fehlstellung",
+    },
+    # CT-F01: low water pressure, with any display code (expected, untested).
+    ("207", None): {
+        "en": "Water pressure too low",
+        "de": "Wasserdruck zu niedrig",
+    },
+    ("1017", None): {
+        "en": "Water pressure too low",
+        "de": "Wasserdruck zu niedrig",
+    },
+    ("2971", None): {
+        "en": "Water pressure too low",
+        "de": "Wasserdruck zu niedrig",
+    },
 }
+# CT-F01: a radio device fault with a cause code without a text of its own.
+RADIO_DISPLAY_CODE = "A84"
+# CT-F01: numeric classes of a notification (expected, untested). A fault is
+# reported at display level 8 with a class below 18; classes 18 and 20 are
+# maintenance requests. Named classes and class 12 keep their meaning.
+_FAULT_DISPLAY_LEVEL = 8
+_FAULT_CLASS_LIMIT = 18
+_MAINTENANCE_CLASSES = frozenset({18, 20})
 
 
 class FaultSeverity(StrEnum):
@@ -421,6 +476,12 @@ def fault_summary(fault: ActiveFault, language: str | None) -> str:
     generic = _KNOWN_SUMMARIES.get((fault.code or "", None))
     if summary := exact or generic:
         return localize(language, summary["de"], summary["en"])
+    if normalized_subcode == RADIO_DISPLAY_CODE and fault.code:
+        return localize(
+            language,
+            "Störung eines Funkgeräts (Code {code})",
+            "Radio device fault (code {code})",
+        ).format(code=fault.code)
     if fault.code:
         return localize(
             language, "Unbekannte Störung (Code {code})", "Unknown fault (code {code})"
@@ -1532,9 +1593,9 @@ def _parse_fault_item(
     subcode = _token(data.get("dcd", data.get("subcode")))
     occurrence_id = _token(data.get("occurrenceId", data.get("occurrence_id")))
     class_raw = _token(data.get("fc", data.get("errorType", data.get("cat"))))
-    pointt_class, severity = _classify(class_raw)
     origin = _token(data.get("orig", data.get("origin")))
     display_level = _token(data.get("dlv", data.get("displayLevel")))
+    pointt_class, severity = _classify_notification(class_raw, display_level)
     component_type, component_id = _component_from_path(path)
     occurred_at = _parse_timestamp(data.get("t"), now)
     time_source = (
@@ -1771,6 +1832,35 @@ def _classify(value: str | None) -> tuple[str | None, FaultSeverity]:
     if normalized in {"12", "12.0"}:
         return "blocking", FaultSeverity.FAULT
     return None, FaultSeverity.UNKNOWN
+
+
+def _classify_notification(
+    value: str | None, display_level: str | None
+) -> tuple[str | None, FaultSeverity]:
+    """``_classify`` plus the numeric classes of a notification (CT-F01).
+
+    Only a class ``_classify`` leaves unknown is read as a number: 18 and 20
+    are maintenance, a class below 18 at display level 8 is a fault. Anything
+    else stays unknown, so it still counts as a problem.
+    """
+    pointt_class, severity = _classify(value)
+    number = _whole_number(value)
+    if severity is not FaultSeverity.UNKNOWN or number is None:
+        return pointt_class, severity
+    if number in _MAINTENANCE_CLASSES:
+        return "maintenance", FaultSeverity.MAINTENANCE
+    if 0 <= number < _FAULT_CLASS_LIMIT and (
+        _whole_number(display_level) == _FAULT_DISPLAY_LEVEL
+    ):
+        return "fault", FaultSeverity.FAULT
+    return pointt_class, severity
+
+
+def _whole_number(value: str | None) -> int | None:
+    """A token such as ``18`` or ``18.0`` as an integer, else None."""
+    if value is None or not re.fullmatch(r"[0-9]{1,4}(?:\.0+)?", value):
+        return None
+    return int(value.split(".", 1)[0])
 
 
 def _component_from_path(path: str) -> tuple[str | None, str | None]:

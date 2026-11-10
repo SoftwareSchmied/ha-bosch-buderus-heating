@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import replace
 from types import MappingProxyType, ModuleType
 from unittest.mock import patch
 
@@ -96,6 +97,6 @@ def test_generic_presentation_applies_the_contract() -> None:
         assert rrc_platforms.generic_presentation(plain, Platform.SENSOR) is plain
     finally:
         rrc_contracts._registry = original
-    assert rrc_platforms.generic_presentation(description, Platform.SENSOR) is (
-        description
-    )
+    # A path no shipped contract declares stays unchanged.
+    unclaimed = replace(description, resource_path="/w0/unclaimed")
+    assert rrc_platforms.generic_presentation(unclaimed, Platform.SENSOR) is (unclaimed)

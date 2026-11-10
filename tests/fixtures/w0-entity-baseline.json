@@ -1896,6 +1896,18 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
+     "original_icon": "mdi:update",
+     "original_name": "Firmware update state",
+     "translation_key": "rrc_update_state",
+     "unique_id": "gateway-one:gateway:update:state:value",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
      "original_icon": null,
      "original_name": "Gateway \u2013 Firmware version",
      "translation_key": null,

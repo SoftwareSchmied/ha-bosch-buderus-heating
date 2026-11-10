@@ -13,7 +13,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
-from . import BoschBuderusConfigEntry, rrc, rrc_contracts, rrc_devices
+from . import (
+    BoschBuderusConfigEntry,
+    rrc,
+    rrc_contracts,
+    rrc_devices,
+    rrc_energy_statistics,
+)
 from .auth_diagnostics import loaded_auth_history
 from .auth_lifecycle import connection_token_manager
 from .cloud_pauses import cloud_pause_store
@@ -778,6 +784,8 @@ def _rrc_feature_diagnostics(
         "confirmation": "unconfirmed",
         "read_back_delays": list(coordinator.write_read_back_delays()),
         "awaiting_late_confirmation": stats.awaiting(),
+        # W5: the energy history import, without values or dates.
+        "energy_history": rrc_energy_statistics.diagnostics(coordinator),
         "contracts": contracts,
     }
 

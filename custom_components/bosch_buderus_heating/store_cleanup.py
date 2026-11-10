@@ -24,6 +24,8 @@ _LOGGER = logging.getLogger(__name__)
 # The per-entry stores: the prefix before the entry ID and what follows it.
 _ENTRY_FAMILIES = (
     (f"{DOMAIN}.faults.", r"\.[0-9a-f]{16}"),
+    # W5: the energy history import of an RRC controller.
+    (f"{DOMAIN}.rrc_energy.", r"\.[0-9a-f]{16}"),
     (f"{DOMAIN}_faults_", r"_[0-9a-f]{24}"),
     (f"{DOMAIN}.inventory.", ""),
     (f"{DOMAIN}.discovery_inventory.", ""),
@@ -94,11 +96,13 @@ async def async_remove_entry_stores(
     from .estimated_energy import estimated_energy_store
     from .faults import async_remove_fault_store
     from .notifications import async_remove_notification_store
+    from .rrc_energy_statistics import async_remove_energy_store
 
     gateways = _entry_gateways(entry)
     for gateway_id in gateways:
         await async_remove_fault_store(hass, entry.entry_id, gateway_id)
         await async_remove_notification_store(hass, entry.entry_id, gateway_id)
+        await async_remove_energy_store(hass, entry.entry_id, gateway_id)
     for connection_id in sorted(_cloud_connection_ids(entry)):
         await Store[dict[str, Any]](
             hass,

@@ -2082,6 +2082,33 @@
           "cooling": "Kühlen",
           "idle": "Ruhezustand"
         }
+      },
+      "rrc_display_code": {
+        "name": "Anzeigecode"
+      },
+      "rrc_cause_code": {
+        "name": "Ursachencode"
+      },
+      "rrc_maintenance_request": {
+        "name": "Wartungsanforderung"
+      },
+      "rrc_system_pressure": {
+        "name": "Anlagendruck"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Raumluftfeuchte"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Lufttemperatur am Regler"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Chiptemperatur des Reglers"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Platinentemperatur des Reglers"
+      },
+      "rrc_update_state": {
+        "name": "Stand der Firmware-Aktualisierung"
       }
     },
     "binary_sensor": {
@@ -2151,6 +2178,18 @@
       },
       "rrc_valve_problem": {
         "name": "Ventilproblem"
+      },
+      "rrc_locking_error": {
+        "name": "Verriegelnde Störung"
+      },
+      "rrc_blocking_error": {
+        "name": "Blockierende Störung"
+      },
+      "rrc_maintenance_due": {
+        "name": "Wartung fällig"
+      },
+      "rrc_refill_needed": {
+        "name": "Nachfüllen erforderlich"
       }
     },
     "calendar": {

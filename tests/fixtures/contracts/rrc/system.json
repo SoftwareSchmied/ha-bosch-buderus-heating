@@ -1,0 +1,185 @@
+{
+ "provenance": {
+  "kind": "synthetic",
+  "basis": "compatibility_mapping",
+  "shapes": "synthetic_from_app_demo_shapes",
+  "reference": "System, maintenance and sensor leaves of an RRC 2.0 room controller, laid over ct200-shapes.json",
+  "firmware": null,
+  "capture_date": null,
+  "created": "2026-11-10",
+  "redaction": "Constructed values only. Leaf names and JSON types follow the expected RRC 2.0 demo shapes and the leaf list of the anonymized TC100.2 tree of issue 122 (names and types, no values). The pressure unit is bar, as in that tree; the demo shape has none.",
+  "physical_device_verified": false,
+  "contract": "These resources replace the containers of the same path in ct200-shapes.json and add their leaves. Values are read only; nothing here is written."
+ },
+ "resources": [
+  {
+   "id": "/system/appliance",
+   "type": "refEnum",
+   "references": [
+    {"id": "/system/appliance/displayCode"},
+    {"id": "/system/appliance/causeCode"},
+    {"id": "/system/appliance/lockingError"},
+    {"id": "/system/appliance/blockingError"},
+    {"id": "/system/appliance/maintenanceRequest"},
+    {"id": "/system/appliance/firstMaintenanceRequest"},
+    {"id": "/system/appliance/systemPressure"}
+   ]
+  },
+  {
+   "id": "/system/appliance/displayCode",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "used": "true",
+   "available": "true",
+   "value": "0H"
+  },
+  {
+   "id": "/system/appliance/causeCode",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 200,
+   "maxValue": 65535,
+   "stepSize": 1,
+   "used": "true",
+   "available": "true",
+   "value": 203
+  },
+  {
+   "id": "/system/appliance/lockingError",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "available": "true",
+   "value": "false"
+  },
+  {
+   "id": "/system/appliance/blockingError",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "available": "true",
+   "value": "true"
+  },
+  {
+   "id": "/system/appliance/maintenanceRequest",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "available": "true",
+   "value": "false"
+  },
+  {
+   "id": "/system/appliance/firstMaintenanceRequest",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0,
+   "maxValue": 99,
+   "stepSize": 1,
+   "value": 0
+  },
+  {
+   "id": "/system/appliance/systemPressure",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "bar",
+   "minValue": 0.0,
+   "maxValue": 25.0,
+   "stepSize": 0.1,
+   "used": "true",
+   "available": "true",
+   "value": 1.6
+  },
+  {
+   "id": "/system/sensors",
+   "type": "refEnum",
+   "references": [
+    {"id": "/system/sensors/temperatures"},
+    {"id": "/system/sensors/humidity"}
+   ]
+  },
+  {
+   "id": "/system/sensors/temperatures",
+   "type": "refEnum",
+   "references": [
+    {"id": "/system/sensors/temperatures/outdoor_t1"},
+    {"id": "/system/sensors/temperatures/indoorAirDigital"},
+    {"id": "/system/sensors/temperatures/indoorChip"},
+    {"id": "/system/sensors/temperatures/indoorPCB"},
+    {"id": "/system/sensors/temperatures/offset"}
+   ]
+  },
+  {
+   "id": "/system/sensors/temperatures/indoorAirDigital",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "value": 21.4
+  },
+  {
+   "id": "/system/sensors/temperatures/indoorChip",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "value": 29.5
+  },
+  {
+   "id": "/system/sensors/temperatures/indoorPCB",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "value": 27.0
+  },
+  {
+   "id": "/system/sensors/temperatures/offset",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -5.0,
+   "maxValue": 5.0,
+   "stepSize": 0.5,
+   "value": 0.0
+  },
+  {
+   "id": "/system/sensors/humidity",
+   "type": "refEnum",
+   "references": [
+    {"id": "/system/sensors/humidity/indoor_h1"}
+   ]
+  },
+  {
+   "id": "/system/sensors/humidity/indoor_h1",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "value": 48.0
+  },
+  {
+   "id": "/heatSources",
+   "type": "refEnum",
+   "references": [
+    {"id": "/heatSources/actualModulation"},
+    {"id": "/heatSources/refillNeeded"}
+   ]
+  },
+  {
+   "id": "/heatSources/refillNeeded",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "false"
+  }
+ ]
+}
