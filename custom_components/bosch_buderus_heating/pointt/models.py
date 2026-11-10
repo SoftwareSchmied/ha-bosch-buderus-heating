@@ -79,6 +79,9 @@ class ResourceMetadata:
     resource_type: str | None = None
     unit: str | None = None
     allowed_values: tuple[JsonScalar, ...] = ()
+    # #113: the answer had no "allowedValues" key at all; an empty list or
+    # null is advertised and stays empty.
+    allowed_values_missing: bool = False
     minimum: float | None = None
     maximum: float | None = None
     writable: bool = False

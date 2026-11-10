@@ -339,6 +339,7 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
             resource_type=_optional_string(data.get("type")),
             unit=_optional_string(data.get("unitOfMeasure")),
             allowed_values=allowed_values,
+            allowed_values_missing="allowedValues" not in data,
             minimum=_optional_number(data.get("minValue")),
             maximum=_optional_number(data.get("maxValue")),
             writable=bool(writable_raw),
