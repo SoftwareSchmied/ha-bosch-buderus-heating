@@ -967,6 +967,9 @@
     "write_not_confirmed": {
       "message": "Die Änderung wurde gesendet, aber von der Heizungsanlage nicht bestätigt. Sie kann bereits übernommen sein. Der Wert wird beim nächsten Lesen aktualisiert."
     },
+    "rrc_write_pending_confirmation": {
+      "message": "Die Änderung wurde an den Raumregler gesendet, aber noch nicht bestätigt. Der Regler übernimmt sie eventuell verzögert; der Wert wird beim nächsten Lesen aktualisiert."
+    },
     "write_authentication_failed": {
       "message": "Die Cloud-Anmeldung ist nicht mehr gültig. Authentifiziere Bosch/Buderus Home Comfort erneut und versuche es danach noch einmal."
     },

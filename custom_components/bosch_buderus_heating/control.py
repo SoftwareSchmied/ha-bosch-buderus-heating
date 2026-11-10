@@ -22,7 +22,17 @@ from .pointt import (
     WriteNotConfirmed,
     WriteValidationError,
 )
-from .writes import ControlLocked, EnumWritePolicy, NumberWritePolicy, WriteBusy
+from .rrc_write import RrcWritePending
+from .writes import (
+    ContractRejected,
+    ControlContext,
+    ControlLocked,
+    EnumWritePolicy,
+    NumberWritePolicy,
+    RrcWriteNotConfirmed,
+    WriteBusy,
+    context_of,
+)
 
 
 class HeldCapabilities(Entity):
@@ -77,12 +87,17 @@ def track_control_entities[DescriptionT: EntityDescription](
     entry: DiscoveryLifecycle,
     coordinator: BoschBuderusDataUpdateCoordinator,
     async_add_entities: AddConfigEntryEntitiesCallback,
-    build: Callable[[Mapping[str, Resource]], tuple[DescriptionT, ...]],
+    build: Callable[[Mapping[str, Resource], ControlContext], tuple[DescriptionT, ...]],
     create: Callable[[BoschBuderusDataUpdateCoordinator, DescriptionT], Entity],
 ) -> None:
-    """Add newly eligible resources once and retain registry/user decisions."""
+    """Add newly eligible resources once and retain registry/user decisions.
+
+    ``build`` gets the current resources and the coordinator's write
+    context (S11).
+    """
     seen: set[str] = set()
     checked: list[Mapping[str, Resource]] = []
+    contexts: list[ControlContext] = []
 
     @callback
     def discover() -> None:
@@ -95,10 +110,12 @@ def track_control_entities[DescriptionT: EntityDescription](
         # and stays unavailable until a fresh reading confirms it.
         for path, resource in coordinator.stored_resources().items():
             resources.setdefault(path, resource)
-        if unchanged_input(checked, resources):
+        context = context_of(coordinator)
+        if unchanged_input(checked, resources) and contexts == [context]:
             return
+        contexts[:] = [context]
         entities = []
-        for description in build(resources):
+        for description in build(resources, context):
             if description.key not in seen:
                 seen.add(description.key)
                 entities.append(create(coordinator, description))
@@ -123,6 +140,28 @@ def unchanged_input(
         return True
     checked[:] = [resources]
     return False
+
+
+def track_rrc_entities[DescriptionT: EntityDescription](
+    entry: DiscoveryLifecycle,
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+    build: Callable[[Mapping[str, Resource], ControlContext], tuple[DescriptionT, ...]],
+    create: Callable[[BoschBuderusDataUpdateCoordinator, DescriptionT], Entity],
+) -> None:
+    """``track_control_entities`` for the RRC packages (W1 to W6).
+
+    ``build`` runs only once the coordinator recognised an RRC controller
+    (S11); each description key is added once. Entities stay when the
+    evidence goes away for a moment.
+    """
+
+    def rrc_only(
+        resources: Mapping[str, Resource], context: ControlContext
+    ) -> tuple[DescriptionT, ...]:
+        return build(resources, context) if context.rrc_plant else ()
+
+    track_control_entities(entry, coordinator, async_add_entities, rrc_only, create)
 
 
 def track_entity_once(
@@ -168,9 +207,19 @@ async def async_set_control(
         raise ServiceValidationError(
             translation_domain=DOMAIN, translation_key="rrc_mode_locked"
         ) from err
+    except (ContractRejected, RrcWritePending) as err:
+        # A contract's own refusal; its token is the translation key.
+        raise ServiceValidationError(
+            translation_domain=DOMAIN, translation_key=err.translation_key
+        ) from err
     except WriteValidationError as err:
         raise ServiceValidationError(
             translation_domain=DOMAIN, translation_key="write_validation_failed"
+        ) from err
+    except RrcWriteNotConfirmed as err:
+        # S7: sent to an RRC controller, which may still apply it.
+        raise HomeAssistantError(
+            translation_domain=DOMAIN, translation_key=err.translation_key
         ) from err
     except WriteNotConfirmed as err:
         raise HomeAssistantError(

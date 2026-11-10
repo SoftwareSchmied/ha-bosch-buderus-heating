@@ -13,7 +13,7 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util.unit_conversion import TemperatureDeltaConverter
 
-from . import BoschBuderusConfigEntry
+from . import BoschBuderusConfigEntry, rrc_platforms
 from .bacon import dhw
 from .bacon.access import BaconAccess
 from .bacon.entity import BaconEntity
@@ -43,6 +43,9 @@ def _setup_entities(
 ) -> None:
     for coordinator in entry.coordinators:
         track_pointt_water_heaters(entry, coordinator, async_add_entities)
+        rrc_platforms.track(
+            Platform.WATER_HEATER, entry, coordinator, async_add_entities
+        )
     if (account := entry.bacon) is None:
         return
     seen: set[str] = set()

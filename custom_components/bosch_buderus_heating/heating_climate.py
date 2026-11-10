@@ -34,6 +34,7 @@ from .unit_contracts import TEMPERATURE_UNITS
 from .writes import (
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
     assess_control,
+    context_of,
     number_policy_for_resource,
 )
 
@@ -140,7 +141,7 @@ class HeatingCircuitClimate(
         resource = self._resource("operationMode", strict=strict)
         if resource is None:
             return None
-        assessment = assess_control(resource)
+        assessment = assess_control(resource, context_of(self.coordinator))
         return (
             resource
             if (
@@ -202,7 +203,8 @@ class HeatingCircuitClimate(
             [
                 mapped
                 for raw, mapped in _MODES.items()
-                if mode and raw in assess_control(mode).options
+                if mode
+                and raw in assess_control(mode, context_of(self.coordinator)).options
             ]
             if self.available
             else []
@@ -245,7 +247,7 @@ class HeatingCircuitClimate(
             resource
             if (
                 resource
-                and number_policy_for_resource(resource)
+                and number_policy_for_resource(resource, context_of(self.coordinator))
                 and temperature(resource) is not None
             )
             else None
@@ -290,7 +292,11 @@ class HeatingCircuitClimate(
     @property
     def target_temperature_step(self) -> float | None:
         resource = self._target
-        step = assess_control(resource).ui_step if resource else None
+        step = (
+            assess_control(resource, context_of(self.coordinator)).ui_step
+            if resource
+            else None
+        )
         if resource is None or step is None:
             return None
         source = TEMPERATURE_UNITS[resource.metadata.unit or ""]
@@ -347,7 +353,7 @@ class HeatingCircuitClimate(
             or not math.isfinite(value)
         ):
             raise _invalid()
-        policy = number_policy_for_resource(target)
+        policy = number_policy_for_resource(target, context_of(self.coordinator))
         assert policy is not None
         native_unit = TEMPERATURE_UNITS[target.metadata.unit or ""]
         raw = TemperatureConverter.convert(value, temperature_unit(self), native_unit)

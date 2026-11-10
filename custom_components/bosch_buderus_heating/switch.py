@@ -13,7 +13,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import BoschBuderusConfigEntry
+from . import BoschBuderusConfigEntry, rrc_contracts, rrc_platforms
 from .bacon import purifier
 from .bacon.dry_entities import track_entities as track_dry_entities
 from .bacon.purifier_entities import (
@@ -23,7 +23,7 @@ from .bacon.purifier_entities import (
     track_entities as track_purifier_entities,
 )
 from .control import async_set_control, track_control_entities
-from .control_presentation import control_icon, control_name
+from .control_presentation import control_category, control_icon, control_name
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
     Freshness,
@@ -38,8 +38,10 @@ from .writes import (
     POOL_ENABLED_POLICY,
     SOFTENER_HOLIDAY_POLICY,
     STRING_SWITCH_POLICIES,
+    ControlContext,
     EnumWritePolicy,
     assess_control,
+    context_of,
     enum_policy_for_resource,
 )
 
@@ -80,18 +82,29 @@ def _setup_entities(
             build_switch_descriptions,
             BoschBuderusSwitch,
         )
+        rrc_platforms.track(Platform.SWITCH, entry, coordinator, async_add_entities)
 
 
 def build_switch_descriptions(
     resources: Mapping[str, Resource],
+    context: ControlContext | None = None,
 ) -> tuple[BoschBuderusSwitchEntityDescription, ...]:
-    """Build only the three released string-backed switches."""
+    """Build the released string-backed switches and, on an RRC controller,
+    the switches of its contracts (S11)."""
     descriptions: list[BoschBuderusSwitchEntityDescription] = []
     for resource in resources.values():
-        policy = enum_policy_for_resource(resource)
+        policy = enum_policy_for_resource(resource, context)
+        if (
+            policy is not None
+            and rrc_contracts.owns(policy)
+            and (values := policy.switch_values) is not None
+            and assess_control(resource, context).supports_switch
+        ):
+            descriptions.append(_contract_switch(resource, policy, *values))
+            continue
         if (
             policy not in STRING_SWITCH_POLICIES
-            or not assess_control(resource).supports_switch
+            or not assess_control(resource, context).supports_switch
         ):
             continue
         tail = resource.path.rsplit("/", 1)[-1]
@@ -129,6 +142,25 @@ def build_switch_descriptions(
     return tuple(descriptions)
 
 
+def _contract_switch(
+    resource: Resource, policy: EnumWritePolicy, on_value: str, off_value: str
+) -> BoschBuderusSwitchEntityDescription:
+    """An RRC contract switch, with the unique ID of a generic one."""
+    path = resource.path
+    return BoschBuderusSwitchEntityDescription(
+        key=_semantic_key(path, None),
+        name=rrc_contracts.name(path, "de") or resource_name(path),
+        resource_path=path,
+        write_policy=policy,
+        on_value=on_value,
+        off_value=off_value,
+        translation_key=rrc_contracts.entity_key(path, Platform.SWITCH.value),
+        icon=control_icon(path, contract=True),
+        entity_registry_enabled_default=policy.enabled_by_default,
+        entity_category=control_category(path, contract=True),
+    )
+
+
 class BoschBuderusSwitch(
     CoordinatorEntity[BoschBuderusDataUpdateCoordinator],
     SwitchEntity,
@@ -145,11 +177,17 @@ class BoschBuderusSwitch(
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = description
-        display_name = resource_name(
+        contract = rrc_contracts.owns(description.write_policy)
+        display_name = (
+            contract
+            and rrc_contracts.name(
+                description.resource_path, coordinator.hass.config.language
+            )
+        ) or resource_name(
             description.resource_path, language=coordinator.hass.config.language
         )
         self._attr_name = control_name(
-            coordinator, description.resource_path, display_name
+            coordinator, description.resource_path, display_name, contract=contract
         )
         self._attr_unique_id = (
             f"{coordinator.gateway.gateway_id}:{description.key}:control"
@@ -163,8 +201,12 @@ class BoschBuderusSwitch(
             and snapshot is not None
             and snapshot.available
             and snapshot.freshness is Freshness.FRESH
-            and assess_control(snapshot.resource).supports_switch
-            and enum_policy_for_resource(snapshot.resource)
+            and assess_control(
+                snapshot.resource, context_of(self.coordinator)
+            ).supports_switch
+            and enum_policy_for_resource(
+                snapshot.resource, context_of(self.coordinator)
+            )
             is self.entity_description.write_policy
         )
 

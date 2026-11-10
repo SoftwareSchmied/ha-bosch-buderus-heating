@@ -6,6 +6,7 @@ import re
 
 from homeassistant.const import EntityCategory
 
+from . import rrc_contracts
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .device import grouped_entity_name
 from .i18n import localize
@@ -36,8 +37,15 @@ def _heating_presentation(path: str) -> bool:
     }
 
 
-def control_label(path: str, fallback: str, language: str) -> str:
-    """Short localized function name without discarding its meaning."""
+def control_label(
+    path: str, fallback: str, language: str, *, contract: bool = False
+) -> str:
+    """Short localized function name without discarding its meaning.
+
+    ``contract``: the control comes from an RRC contract, whose name wins.
+    """
+    if contract and (label := rrc_contracts.name(path, language)) is not None:
+        return label
     if not _heating_presentation(path):
         return fallback
     if "/temperatureLevels/" in path:
@@ -65,13 +73,17 @@ def control_label(path: str, fallback: str, language: str) -> str:
 
 
 def control_name(
-    coordinator: BoschBuderusDataUpdateCoordinator, path: str, fallback: str
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    path: str,
+    fallback: str,
+    *,
+    contract: bool = False,
 ) -> str:
     """Shorten generic groups, preserving configured room and device names."""
     if not _heating_presentation(path):
         return grouped_entity_name(coordinator, path, fallback)
     language = coordinator.hass.config.language
-    name = control_label(path, fallback, language)
+    name = control_label(path, fallback, language, contract=contract)
     grouped = grouped_entity_name(coordinator, path, name)
     group = grouped.removesuffix(" \N{EN DASH} " + name)
     for generic, short in (
@@ -89,7 +101,11 @@ def control_name(
     return f"{group}: {name}"
 
 
-def control_icon(path: str, *, numeric: bool = False) -> str | None:
+def control_icon(
+    path: str, *, numeric: bool = False, contract: bool = False
+) -> str | None:
+    if contract and (icon := rrc_contracts.icon(path)) is not None:
+        return icon
     if not _heating_presentation(path):
         return None
     if path.endswith("/chargeDuration"):
@@ -107,7 +123,11 @@ def control_icon(path: str, *, numeric: bool = False) -> str | None:
     return "mdi:radiator"
 
 
-def control_category(path: str, *, numeric: bool = False) -> EntityCategory | None:
+def control_category(
+    path: str, *, numeric: bool = False, contract: bool = False
+) -> EntityCategory | None:
+    if contract and (category := rrc_contracts.category(path)) is not None:
+        return EntityCategory(category)
     if not _heating_presentation(path):
         return EntityCategory.CONFIG if numeric else None
     # Keep the original controls available for automations while combined

@@ -13,7 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
-from . import BoschBuderusConfigEntry, rrc, rrc_devices
+from . import BoschBuderusConfigEntry, rrc, rrc_contracts, rrc_devices
 from .auth_diagnostics import loaded_auth_history
 from .auth_lifecycle import connection_token_manager
 from .cloud_pauses import cloud_pause_store
@@ -54,6 +54,7 @@ from .resource_catalog import (
     supports_entity,
 )
 from .rrc_programs import DAY, WEEK, parse_schedule, program_names, selection_issue
+from .rrc_write import CORE_CONTRACT
 from .runtime import BoschBuderusRuntimeData
 from .start_counters import assess_start_counter, is_start_counter_path
 from .startup_data import LICENSE_PATH, STARTUP_BUDGET_SECONDS, safe_technical_value
@@ -66,7 +67,14 @@ from .water_softener import (
     softener_unit,
     softener_value,
 )
-from .writes import EnumWritePolicy, NumberWritePolicy, assess_control
+from .write_policies import rrc_kwargs
+from .writes import (
+    ControlContext,
+    EnumWritePolicy,
+    NumberWritePolicy,
+    assess_control,
+    context_of,
+)
 
 DIAGNOSTICS_SCHEMA_VERSION = 44
 _LOGGER = logging.getLogger(__name__)
@@ -539,6 +547,7 @@ def _gateway_diagnostics(
     number: int, coordinator: BoschBuderusDataUpdateCoordinator
 ) -> dict[str, object]:
     resources = tuple(coordinator.resources.values())
+    context = context_of(coordinator)
     resource_types = Counter(
         _safe_token(item.metadata.resource_type) for item in resources
     )
@@ -600,6 +609,12 @@ def _gateway_diagnostics(
         "discovery": _discovery_diagnostics(coordinator),
         "discovery_recovery": coordinator.discovery_recovery.diagnostics(monotonic()),
         "rrc_programs": _rrc_program_diagnostics(coordinator),
+        # S12/E04: only for an RRC controller; other gateways keep their report.
+        **(
+            {"rrc_features": _rrc_feature_diagnostics(coordinator)}
+            if context.rrc_plant
+            else {}
+        ),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),
         "firmware_changes": coordinator.firmware.diagnostics(monotonic()),
         "startup_data": _startup_diagnostics(coordinator),
@@ -672,6 +687,7 @@ def _gateway_diagnostics(
                 coordinator.unknown_enum_value_count(resource.path),
                 coordinator.resource_pause_remaining_seconds(resource.path),
                 group=coordinator.polling_group(resource),
+                context=context,
             )
             for resource in sorted(
                 resources, key=lambda item: _path_template(item.path)
@@ -731,6 +747,38 @@ def _rrc_program_diagnostics(
         "program_count": len(identifiers) if identifiers is not None else 0,
         "program_names_readable": len(program_names(programs)),
         "zones": zones,
+    }
+
+
+def _rrc_feature_diagnostics(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, object]:
+    """S12/E04: each RRC contract's value-free report and write counters.
+
+    ``core`` counts the RRC writes outside the contracts (zone mode, manual
+    temperature, program). Nothing is confirmed on a controller yet.
+    """
+    snapshots = coordinator.data or {}
+    resources = dict(coordinator.resources)
+    resources.update(
+        (path, snapshot.resource)
+        for path, snapshot in snapshots.items()
+        if snapshot.available
+    )
+    reports = rrc_contracts.diagnostics(resources)
+    stats = coordinator.rrc_write_stats
+    contracts: dict[str, object] = {}
+    for name in (*reports, CORE_CONTRACT):
+        report = reports.get(name)
+        contracts[name] = {
+            **(report if isinstance(report, dict) else {"confirmation": "unconfirmed"}),
+            "writes": stats.snapshot(name),
+        }
+    return {
+        "confirmation": "unconfirmed",
+        "read_back_delays": list(coordinator.write_read_back_delays()),
+        "awaiting_late_confirmation": stats.awaiting(),
+        "contracts": contracts,
     }
 
 
@@ -853,8 +901,11 @@ def _capability_diagnostics(
     polling_pause_remaining_seconds: int = 0,
     *,
     group: PollGroup | None = None,
+    context: ControlContext | None = None,
 ) -> dict[str, object]:
-    """``group`` is the group the path is actually polled in, if known."""
+    """``group`` is the group the path is actually polled in, if known;
+    ``context`` the gateway's write context (S11)."""
+    rrc_plant = context is not None and context.rrc_plant
     available: bool | None = None
     freshness: str | None = None
     source: str | None = None
@@ -869,15 +920,19 @@ def _capability_diagnostics(
     return {
         "path": diagnostic_resource_path(resource.path),
         "path_template": _path_template(resource.path),
-        "name": resource_name(diagnostic_resource_path(resource.path)),
+        "name": resource_name(
+            diagnostic_resource_path(resource.path), **rrc_kwargs(rrc_plant)
+        ),
         "resource_type": _safe_token(resource.metadata.resource_type),
         "unit": _safe_unit(resource.metadata.unit),
         "poll_group": (group or poll_group(resource)).value,
         "polling_paused": polling_pause_remaining_seconds > 0,
         "polling_pause_remaining_seconds": polling_pause_remaining_seconds,
-        "entity_supported": supports_entity(resource),
-        "maturity": capability_maturity(resource.path).value,
-        "entity_enabled_by_default": entity_enabled_by_default(resource.path),
+        "entity_supported": supports_entity(resource, **rrc_kwargs(rrc_plant)),
+        "maturity": capability_maturity(resource.path, **rrc_kwargs(rrc_plant)).value,
+        "entity_enabled_by_default": entity_enabled_by_default(
+            resource.path, **rrc_kwargs(rrc_plant)
+        ),
         "writable": resource.metadata.writable,
         "has_value": resource.has_value,
         "supported_without_value": _supported_without_value(resource, snapshot),
@@ -887,7 +942,7 @@ def _capability_diagnostics(
         "allowed_values_count": len(resource.metadata.allowed_values),
         "has_minimum": resource.metadata.minimum is not None,
         "has_maximum": resource.metadata.maximum is not None,
-        "control": _control_diagnostics(resource),
+        "control": _control_diagnostics(resource, context),
         **(
             {
                 "rrc_contract": {
@@ -1019,9 +1074,11 @@ def _start_counter_diagnostics(
     }
 
 
-def _control_diagnostics(resource: Resource) -> dict[str, object]:
+def _control_diagnostics(
+    resource: Resource, context: ControlContext | None = None
+) -> dict[str, object]:
     """Explain scalar control eligibility using the entity builders' checks."""
-    assessment = assess_control(resource)
+    assessment = assess_control(resource, context)
     result: dict[str, object] = {
         "platform": assessment.platform,
         "eligible": assessment.eligible,

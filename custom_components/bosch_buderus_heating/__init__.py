@@ -84,6 +84,7 @@ from .startup_data import STARTUP_BUDGET_SECONDS, StartupSession, is_startup_ent
 from .storage_migration import migrate_entry_storage
 from .switch_programs import is_switch_program_path
 from .wallbox import WallboxCoordinator, is_wallbox
+from .write_policies import context_of, rrc_kwargs
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -941,6 +942,7 @@ def _remove_retired_entities(
     present: set[str] = set()
     for coordinator in coordinators:
         gateway_id = coordinator.gateway.gateway_id
+        rrc_plant = context_of(coordinator).rrc_plant
         for domain in (
             "totalConsumption",
             "chConsumption",
@@ -952,7 +954,10 @@ def _remove_retired_entities(
             )
         for resource in coordinator.resources.values():
             present.add(f"{gateway_id}:{resource.path.strip('/').replace('/', ':')}")
-            if capability_maturity(resource.path) is CapabilityMaturity.OBSERVED:
+            if (
+                capability_maturity(resource.path, **rrc_kwargs(rrc_plant))
+                is CapabilityMaturity.OBSERVED
+            ):
                 semantic_path = resource.path.strip("/").replace("/", ":")
                 if unknown_never_entity(resource):
                     # Private data, a structure or configuration: never an
@@ -1039,7 +1044,10 @@ def _enable_new_default_entities(
                 "sensor",
                 [
                     (description, sensor_unique_suffix(description))
-                    for description in build_sensor_descriptions(coordinator.resources)
+                    for description in build_sensor_descriptions(
+                        coordinator.resources,
+                        **rrc_kwargs(context_of(coordinator).rrc_plant),
+                    )
                 ],
             ),
             (
@@ -1047,7 +1055,8 @@ def _enable_new_default_entities(
                 [
                     (description, description.key)
                     for description in build_binary_sensor_descriptions(
-                        coordinator.resources
+                        coordinator.resources,
+                        **rrc_kwargs(context_of(coordinator).rrc_plant),
                     )
                 ],
             ),

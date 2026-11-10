@@ -43,7 +43,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 from homeassistant.util.unit_conversion import TemperatureConverter
 
-from . import BoschBuderusConfigEntry, exchange_counters, rrc
+from . import BoschBuderusConfigEntry, exchange_counters, rrc, rrc_platforms
 from .bacon import purifier
 from .bacon.dry_entities import track_entities as track_dry_entities
 from .bacon.purifier_entities import (
@@ -125,6 +125,7 @@ from .resource_catalog import (
     unknown_entity_kind,
 )
 from .rrc_device_entities import RadioSignalSensor, track_radio_devices
+from .rrc_platforms import generic_presentation
 from .start_counters import (
     OPTIONAL_START_COUNTER_KEY,
     START_COUNTER_KEYS,
@@ -143,6 +144,7 @@ from .unit_contracts import DURATION_UNITS, ENERGY_UNITS, TEMPERATURE_UNITS
 from .wallbox_sensor import DESCRIPTIONS as WALLBOX_DESCRIPTIONS
 from .wallbox_sensor import WallboxSensor
 from .water_softener import PHASES, softener_capability, softener_unit, softener_value
+from .write_policies import context_of, rrc_kwargs
 
 type ValueKind = Literal[
     "value",
@@ -571,6 +573,7 @@ def _setup_entities(
         track_estimated_energy_sensors(entry, coordinator, async_add_entities)
         track_local_only_sensors(entry, coordinator, async_add_entities)
         track_radio_devices(entry, coordinator, async_add_entities, RadioSignalSensor)
+        rrc_platforms.track(Platform.SENSOR, entry, coordinator, async_add_entities)
     async_add_entities(entities)
 
 
@@ -593,7 +596,9 @@ def _track_source_sensors(
             return  # nothing new since the last check
         checked[:] = [paths]
         additions = []
-        for description in build_sensor_descriptions(coordinator.resources):
+        for description in build_sensor_descriptions(
+            coordinator.resources, **rrc_kwargs(context_of(coordinator).rrc_plant)
+        ):
             if not source_entity_eligible(description):
                 continue
             for source in SOURCES:
@@ -624,15 +629,19 @@ def _track_resource_sensors(
     for path in coordinator.startup_data.registered_paths():
         if path not in resources:
             resources[path] = startup_placeholder(path)
+    rrc_plant = context_of(coordinator).rrc_plant
     descriptions_by_key = {
-        item.unique_key: item for item in build_sensor_descriptions(resources)
+        item.unique_key: item
+        for item in build_sensor_descriptions(resources, **rrc_kwargs(rrc_plant))
     }
     for path in coordinator.registered_start_counter_paths:
         # Keep both registered identities after a schema change. The scalar
         # and multipart total must never share a statistic or replace each other.
         for scalar in coordinator.registered_start_counter_shapes[path]:
             placeholder = start_counter_placeholder(path, scalar=scalar)
-            for item in build_sensor_descriptions({path: placeholder}):
+            for item in build_sensor_descriptions(
+                {path: placeholder}, **rrc_kwargs(rrc_plant)
+            ):
                 descriptions_by_key.setdefault(item.unique_key, item)
     descriptions = tuple(descriptions_by_key.values())
     seen = {description.unique_key for description in descriptions}
@@ -651,7 +660,9 @@ def _track_resource_sensors(
         if unchanged_input(checked, recovered):
             return
         entities = []
-        for description in build_sensor_descriptions(recovered):
+        for description in build_sensor_descriptions(
+            recovered, **rrc_kwargs(context_of(coordinator).rrc_plant)
+        ):
             if description.unique_key not in seen:
                 seen.add(description.unique_key)
                 entities.append(BoschBuderusSensor(coordinator, description))
@@ -1095,14 +1106,20 @@ def _fault_list_attributes(
 
 def build_sensor_descriptions(
     resources: Mapping[str, Resource],
+    *,
+    rrc_plant: bool = False,
 ) -> tuple[BoschBuderusSensorEntityDescription, ...]:
-    """Build stable scalar descriptions from the discovered resource shapes."""
+    """Build stable scalar descriptions from the discovered resource shapes.
+
+    ``rrc_plant``: the gateway is an RRC controller; its contracts may
+    promote, name, categorise or mirror generic sensors (S11).
+    """
     descriptions: list[BoschBuderusSensorEntityDescription] = []
     unknown_descriptions: list[BoschBuderusSensorEntityDescription] = []
     for resource in resources.values():
-        if not supports_entity(resource) and not is_opt_in_diagnostic_resource(
-            resource.path
-        ):
+        if not supports_entity(
+            resource, **rrc_kwargs(rrc_plant)
+        ) and not is_opt_in_diagnostic_resource(resource.path):
             if (
                 unknown := unknown_entity_kind(resource)
             ) is not None and not _reserved_by_known(resource.path):
@@ -1181,7 +1198,16 @@ def build_sensor_descriptions(
             continue
         taken_keys.add(item.unique_key)
         descriptions.append(item)
+    if rrc_plant:
+        return tuple(_rrc_presentation(item) for item in descriptions)
     return tuple(descriptions)
+
+
+def _rrc_presentation(
+    description: BoschBuderusSensorEntityDescription,
+) -> BoschBuderusSensorEntityDescription:
+    """Apply an RRC contract's choices to a generic sensor (W1 to W6)."""
+    return generic_presentation(description, Platform.SENSOR)
 
 
 def _pressure_status_description() -> BoschBuderusSensorEntityDescription:
@@ -1576,7 +1602,10 @@ class BoschBuderusSensor(
             )
         else:
             display_name = resource_name(
-                description.resource_path, display_subkey, language=language
+                description.resource_path,
+                display_subkey,
+                language=language,
+                **rrc_kwargs(context_of(coordinator).rrc_plant),
             )
         self._attr_name = grouped_entity_name(
             coordinator, description.resource_path, display_name

@@ -20,7 +20,7 @@ from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
-from . import BoschBuderusConfigEntry
+from . import BoschBuderusConfigEntry, rrc_platforms
 from .bacon.access import BaconAccess
 from .bacon.dhw_status import track_status
 from .bacon.dry_entities import track_entities as track_dry_entities
@@ -51,6 +51,7 @@ from .resource_catalog import (
     supports_entity,
 )
 from .rrc_device_entities import RadioBatteryLowBinarySensor, track_radio_devices
+from .rrc_platforms import generic_presentation
 from .sensor import (
     _is_boolean_resource,
     _nested_scalar_keys,
@@ -60,6 +61,7 @@ from .sensor import (
 )
 from .start_counters import is_start_counter_path
 from .water_softener import low_salt, softener_capability, softener_value
+from .write_policies import context_of, rrc_kwargs
 
 if TYPE_CHECKING:
     from homeassistant.components.binary_sensor.const import BinarySensorDeviceClass
@@ -111,6 +113,9 @@ def _setup_entities(
         _track_binary_sensors(entry, coordinator, async_add_entities)
         track_radio_devices(
             entry, coordinator, async_add_entities, RadioBatteryLowBinarySensor
+        )
+        rrc_platforms.track(
+            Platform.BINARY_SENSOR, entry, coordinator, async_add_entities
         )
 
 
@@ -171,7 +176,9 @@ def _track_binary_sensors(
         if unchanged_input(checked, resources):
             return
         additions = []
-        for description in build_binary_sensor_descriptions(resources):
+        for description in build_binary_sensor_descriptions(
+            resources, **rrc_kwargs(context_of(coordinator).rrc_plant)
+        ):
             if description.key not in seen:
                 seen.add(description.key)
                 additions.append(BoschBuderusBinarySensor(coordinator, description))
@@ -385,11 +392,19 @@ class BoschBuderusSystemFaultBinarySensor(
 
 def build_binary_sensor_descriptions(
     resources: Mapping[str, Resource],
+    *,
+    rrc_plant: bool = False,
 ) -> tuple[BoschBuderusBinarySensorEntityDescription, ...]:
-    """Build stable descriptions for all discovered safe boolean states."""
+    """Build stable descriptions for all discovered safe boolean states.
+
+    ``rrc_plant``: the gateway is an RRC controller; its contracts may
+    promote, name, categorise or mirror generic entities (S11).
+    """
     descriptions: list[BoschBuderusBinarySensorEntityDescription] = []
     for resource in resources.values():
-        if is_start_counter_path(resource.path) or not supports_entity(resource):
+        if is_start_counter_path(resource.path) or not supports_entity(
+            resource, **rrc_kwargs(rrc_plant)
+        ):
             continue
         if (
             softener := softener_capability(resource.path)
@@ -402,6 +417,10 @@ def build_binary_sensor_descriptions(
             descriptions.extend(_description(resource, key) for key in keys)
         elif _is_boolean_resource(resource):
             descriptions.append(_description(resource, None))
+    if rrc_plant:
+        return tuple(
+            generic_presentation(item, Platform.BINARY_SENSOR) for item in descriptions
+        )
     return tuple(descriptions)
 
 
@@ -446,6 +465,7 @@ class BoschBuderusBinarySensor(
             description.resource_path,
             description.value_key,
             language=coordinator.hass.config.language,
+            **rrc_kwargs(context_of(coordinator).rrc_plant),
         )
         self._attr_name = grouped_entity_name(
             coordinator, description.resource_path, display_name

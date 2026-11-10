@@ -108,7 +108,14 @@ from .rrc import (
     profile_evidence,
     program_list_expected,
 )
+from .rrc_contracts import contract_for
 from .rrc_programs import WEEK, RrcProgramService
+from .rrc_write import (
+    CORE_CONTRACT,
+    RrcStructWrite,
+    RrcWritePending,
+    RrcWriteStats,
+)
 from .start_counters import is_start_counter_path
 from .startup_data import (
     LICENSE_PATH,
@@ -118,7 +125,19 @@ from .startup_data import (
 )
 from .startup_reader import StartupReader
 from .update_load import update_load
-from .writes import EnumWritePolicy, NumberWritePolicy, WriteBusy, WriteService
+from .write_policies import rrc_kwargs
+from .writes import (
+    GENERIC_CONTEXT,
+    RRC_CONTEXT,
+    ContractRejected,
+    ControlContext,
+    ControlLocked,
+    EnumWritePolicy,
+    NumberWritePolicy,
+    WriteBusy,
+    WriteService,
+    confirms_value,
+)
 
 if TYPE_CHECKING:
     from .counter_selection import CounterGuard
@@ -608,6 +627,12 @@ class BoschBuderusDataUpdateCoordinator(
         self._assume_stored = False
         self._inventory_confirmed_at: float | None = None
         self._write_service = WriteService(client)
+        # S11/S12: the write context (an RRC controller or not), the write
+        # counters of the RRC contracts and their structured writes.
+        self._control_context: ControlContext = GENERIC_CONTEXT
+        self._control_context_key: tuple[object, ...] | None = None
+        self.rrc_write_stats = RrcWriteStats()
+        self.rrc_struct_writes = RrcStructWrite()
         self._rrc_program_service = RrcProgramService(client)
         self._holiday_write_service = HolidayWriteService(client)
         self._icom_holiday_write_service = IcomHolidayWriteService(client)
@@ -623,7 +648,7 @@ class BoschBuderusDataUpdateCoordinator(
     def _poll_group(self, resource: Resource) -> PollGroup:
         """The group a resource is polled in (O51: a control path whose
         entities are all disabled uses the slow group)."""
-        group = poll_group(resource)
+        group = poll_group(resource, **rrc_kwargs(self.control_context().rrc_plant))
         if (
             group is PollGroup.CONTROL
             and resource.path in self.entity_use.disabled_paths(self.gateway.gateway_id)
@@ -631,6 +656,34 @@ class BoschBuderusDataUpdateCoordinator(
         ):
             return PollGroup.SLOW
         return group
+
+    def control_context(self) -> ControlContext:
+        """S11: whether this gateway is an RRC 2.0 room controller.
+
+        Recomputed only when the readings change (a new snapshot mapping or
+        new paths); entity properties ask for it often.
+        """
+        data, resources = self.data, self.resources
+        cached = self._control_context_key
+        if (
+            cached is None
+            or cached[0] is not data
+            or cached[1] is not resources
+            or cached[2] != len(resources)
+            or cached[3] != self.gateway.device_type
+        ):
+            from .device import is_rrc_plant
+
+            self._control_context = (
+                RRC_CONTEXT if is_rrc_plant(self) else GENERIC_CONTEXT
+            )
+            self._control_context_key = (
+                data,
+                resources,
+                len(resources),
+                self.gateway.device_type,
+            )
+        return self._control_context
 
     @callback
     def _entity_use_changed(self) -> None:
@@ -935,6 +988,23 @@ class BoschBuderusDataUpdateCoordinator(
             self._request_reauthentication()
         return category
 
+    def write_read_back_delays(self) -> tuple[float, ...]:
+        """S7: the read-back schedule of a write in the current context."""
+        return self._write_service.read_back_delays(self.control_context())
+
+    def note_rrc_write_sent(self, path: str) -> None:
+        """S12: a structured RRC write for ``path`` went out (pass it as
+        ``on_sent`` of ``RrcStructWrite.async_write``)."""
+        self.rrc_write_stats.sent(
+            self._rrc_write_contract(path, self.control_context()) or CORE_CONTRACT
+        )
+
+    def _rrc_write_contract(self, path: str, context: ControlContext) -> str | None:
+        """S12: the contract a write on an RRC controller counts for."""
+        if not context.rrc_plant:
+            return None
+        return contract_for(path) or CORE_CONTRACT
+
     async def async_write_control(
         self,
         path: str,
@@ -943,7 +1013,40 @@ class BoschBuderusDataUpdateCoordinator(
         *,
         expected: tuple[Resource, ...] = (),
     ) -> Resource:
-        """Write one allowlisted control and publish its confirmed read-back."""
+        """Write one allowlisted control and publish its confirmed read-back.
+
+        The write context (S11) is this coordinator's own: on an RRC
+        controller the RRC contract policies, the RRC read-back schedule and
+        the write counters apply.
+        """
+        context = self.control_context()
+        contract = self._rrc_write_contract(path, context)
+        try:
+            return await self._async_write_control(
+                path, value, policy, expected, context, contract
+            )
+        except WriteValidationError as err:
+            if contract is not None:
+                self.rrc_write_stats.rejected(contract, _rejection_token(err))
+            raise
+
+    async def _async_write_control(
+        self,
+        path: str,
+        value: str | float,
+        policy: EnumWritePolicy | NumberWritePolicy,
+        expected: tuple[Resource, ...],
+        context: ControlContext,
+        contract: str | None,
+    ) -> Resource:
+        sent = False
+
+        def on_sent() -> None:
+            nonlocal sent
+            sent = True
+            if contract is not None:
+                self.rrc_write_stats.sent(contract)
+
         async with self._write_transaction():
             now_monotonic = monotonic()
             if now_monotonic < self._cloud_backoff_until:
@@ -999,6 +1102,22 @@ class BoschBuderusDataUpdateCoordinator(
                 if any(live[before.path] != before for before in expected):
                     self.async_set_updated_data(changed)
                     raise WriteValidationError("Control changed on the gateway")
+            related: dict[str, Resource] = {}
+            if policy.value_check is not None:
+                # A contract rule compares with the other current readings.
+                related = {
+                    item: current.resource
+                    for item, current in (self.data or {}).items()
+                    if _snapshot_is_fresh(current)
+                }
+                related.update(live)
+            # Only an RRC controller's writes carry the RRC context, contract
+            # readings and counters; every other write stays as it was.
+            extra: dict[str, Any] = {}
+            if context.rrc_plant:
+                extra.update(context=context, on_sent=on_sent)
+            if related:
+                extra["related"] = related
             try:
                 if isinstance(policy, EnumWritePolicy) and isinstance(value, str):
                     result = await self._write_service.async_write_enum(
@@ -1007,6 +1126,7 @@ class BoschBuderusDataUpdateCoordinator(
                         value,
                         policy,
                         current=live.get(path),
+                        **extra,
                     )
                 elif (
                     isinstance(policy, NumberWritePolicy)
@@ -1019,6 +1139,7 @@ class BoschBuderusDataUpdateCoordinator(
                         float(value),
                         policy,
                         current=live.get(path),
+                        **extra,
                     )
                 else:
                     raise WriteValidationError(
@@ -1028,6 +1149,20 @@ class BoschBuderusDataUpdateCoordinator(
                 raise
             except (PointTError, asyncio.CancelledError) as err:
                 category = self._write_failed(path, err)
+                if contract is not None and sent:
+                    if isinstance(err, WriteNotConfirmed | asyncio.CancelledError):
+                        requested = value
+
+                        def shows(resource: Resource) -> bool:
+                            return resource.has_value and confirms_value(
+                                policy, resource.value, requested
+                            )
+
+                        self.rrc_write_stats.unconfirmed(
+                            contract, path, shows, monotonic()
+                        )
+                    else:
+                        self.rrc_write_stats.rejected(contract, category)
                 # C33: only a PUT that was sent may have taken effect. Keep
                 # its last value only as stale until regular polling succeeds;
                 # never let reload or another write reuse it as fresh. A
@@ -1062,6 +1197,8 @@ class BoschBuderusDataUpdateCoordinator(
             self.resources[path] = confirmed
             self._negative_until.pop(path, None)
             self._record_capability(path, "success", SnapshotSource.WRITE)
+            if contract is not None and sent:
+                self.rrc_write_stats.confirmed(contract, path)
             self._read_circuit_soon(path)
             if self.local_selection is not None:
                 # Local readings of this circuit from before the confirmation
@@ -1080,7 +1217,7 @@ class BoschBuderusDataUpdateCoordinator(
             return confirmed
 
     async def async_select_rrc_program(self, path: str, program: int) -> None:
-        await self._async_rrc_operation(
+        await self.async_run_rrc_operation(
             path,
             lambda: self._rrc_program_service.select(
                 self.gateway.gateway_id, path, program
@@ -1092,27 +1229,68 @@ class BoschBuderusDataUpdateCoordinator(
     ) -> None:
         if WEEK.fullmatch(expected.path) is None:
             raise WriteValidationError("Unsupported RRC schedule path")
-        await self._async_rrc_operation(
+        await self.async_run_rrc_operation(
             expected.path,
             lambda: self._rrc_program_service.edit(
                 self.gateway.gateway_id, expected, index, minute, temperature
             ),
         )
 
+    async def async_run_rrc_operation(
+        self,
+        path: str,
+        operation: Callable[[], Awaitable[tuple[Resource, ...]]],
+        *,
+        require_snapshot: bool = True,
+        late_check: Callable[[Resource], bool] | None = None,
+    ) -> None:
+        """Serialize an RRC write with polling and keep the cloud backoff.
+
+        ``operation`` sends at most one write and returns the confirmed
+        readings, which are published; see ``rrc_write.RrcStructWrite``.
+        ``path`` is the resource the write concerns. It needs a fresh reading
+        unless ``require_snapshot`` is false (a creation such as a new event,
+        whose list may be empty or not read yet). After an unconfirmed write,
+        ``late_check`` tells whether a later regular reading of ``path``
+        shows it (CT-C07). The counters (S12) count for the path's contract.
+        """
+        context = self.control_context()
+        contract = self._rrc_write_contract(path, context) or CORE_CONTRACT
+        try:
+            await self._async_run_rrc_operation(
+                path, operation, require_snapshot, late_check, contract
+            )
+        except WriteValidationError as err:
+            self.rrc_write_stats.rejected(contract, _rejection_token(err))
+            raise
+
     async def _async_rrc_operation(
         self, path: str, operation: Callable[[], Awaitable[tuple[Resource, ...]]]
     ) -> None:
-        """Serialize RRC writes with polling and preserve the cloud backoff."""
+        """The former name of ``async_run_rrc_operation``."""
+        await self.async_run_rrc_operation(path, operation)
+
+    async def _async_run_rrc_operation(
+        self,
+        path: str,
+        operation: Callable[[], Awaitable[tuple[Resource, ...]]],
+        require_snapshot: bool,
+        late_check: Callable[[Resource], bool] | None,
+        contract: str,
+    ) -> None:
+        sent_before = self.rrc_write_stats.sent_count(contract)
         async with self._write_transaction():
             now = monotonic()
             if now < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now)
             snapshot = (self.data or {}).get(path)
-            if (
-                now < self._circuit_open_until
-                or snapshot is None
-                or not snapshot.available
-                or snapshot.freshness is not Freshness.FRESH
+            if now < self._circuit_open_until or (
+                require_snapshot
+                and (
+                    snapshot is None
+                    or not snapshot.available
+                    or snapshot.freshness is not Freshness.FRESH
+                )
             ):
                 raise WriteValidationError("RRC resource is unavailable")
             try:
@@ -1133,15 +1311,20 @@ class BoschBuderusDataUpdateCoordinator(
                     else _pointt_result(err),
                     SnapshotSource.WRITE,
                 )
-                updated = dict(self.data or {})
-                updated[path] = replace(
-                    snapshot,
-                    available=False,
-                    freshness=Freshness.STALE,
-                    last_error_category="rrc_write_unconfirmed",
-                    ended=True,
-                )
-                self.async_set_updated_data(updated)
+                if isinstance(err, WriteNotConfirmed | asyncio.CancelledError):
+                    self.rrc_write_stats.unconfirmed(
+                        contract, path, late_check, monotonic()
+                    )
+                if snapshot is not None:
+                    updated = dict(self.data or {})
+                    updated[path] = replace(
+                        snapshot,
+                        available=False,
+                        freshness=Freshness.STALE,
+                        last_error_category="rrc_write_unconfirmed",
+                        ended=True,
+                    )
+                    self.async_set_updated_data(updated)
                 raise
             updated = dict(self.data or {})
             received_at = datetime.now(UTC)
@@ -1156,6 +1339,9 @@ class BoschBuderusDataUpdateCoordinator(
                 )
                 self._negative_until.pop(resource.path, None)
                 self._record_capability(resource.path, "success", SnapshotSource.WRITE)
+            if self.rrc_write_stats.sent_count(contract) > sent_before:
+                # Counted only for a write that went out (``note_rrc_write_sent``).
+                self.rrc_write_stats.confirmed(contract, path)
             self.async_set_updated_data(updated)
 
     async def async_create_holiday(self, values: HolidayWriteValues) -> Resource:
@@ -2955,7 +3141,8 @@ class BoschBuderusDataUpdateCoordinator(
             outside = [
                 path
                 for path in missing
-                if path.startswith("/devices/") and not in_device_scope(path)
+                if path.startswith("/devices/")
+                and not in_device_scope(path, self.resources.get(DEVICE_LIST))
             ]
             for path in outside:
                 del missing[path]
@@ -3303,6 +3490,8 @@ class BoschBuderusDataUpdateCoordinator(
                     source=source,
                 )
                 self.resources[result.path] = result.resource
+                # CT-C07: a regular reading may confirm an unconfirmed write.
+                self.rrc_write_stats.observe(result.resource, now_monotonic)
                 if (
                     result.path in self._manual_setpoint_candidates
                     or is_start_counter_path(result.path)
@@ -3747,6 +3936,17 @@ def _cycle_failure_category(results: list[BatchItemResult]) -> str:
     if not categories:
         return "unknown"
     return max(sorted(categories), key=categories.__getitem__)
+
+
+def _rejection_token(err: WriteValidationError) -> str:
+    """S12: a value-free token of why a write was refused before sending."""
+    if isinstance(err, ContractRejected):
+        return err.reason
+    if isinstance(err, ControlLocked):
+        return "locked"
+    if isinstance(err, RrcWritePending):
+        return "pending"
+    return "validation"
 
 
 def _pointt_result(error: PointTError | None) -> str:

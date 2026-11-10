@@ -22,7 +22,7 @@ from .entity_resources import fresh_resource, temperature
 from .ha_compat import temperature_members
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
-from .writes import DHW_OPERATION_MODE_POLICY, assess_control
+from .writes import DHW_OPERATION_MODE_POLICY, assess_control, context_of
 
 if TYPE_CHECKING:
     from homeassistant.components.water_heater.const import WaterHeaterEntityFeature
@@ -171,7 +171,7 @@ class PointTWaterHeater(
         mode = self._mode
         if mode is None:
             return []
-        assessment = assess_control(mode)
+        assessment = assess_control(mode, context_of(self.coordinator))
         if (
             not assessment.eligible
             or assessment.policy is not DHW_OPERATION_MODE_POLICY

@@ -24,7 +24,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
-from . import BoschBuderusConfigEntry
+from . import BoschBuderusConfigEntry, rrc_platforms
 from .const import DOMAIN
 from .control import track_entity_once
 from .coordinator import BoschBuderusDataUpdateCoordinator
@@ -73,6 +73,7 @@ def _setup_entities(
     """
     for coordinator in entry.coordinators:
         _track_holiday_calendar(entry, coordinator, async_add_entities)
+        rrc_platforms.track(Platform.CALENDAR, entry, coordinator, async_add_entities)
 
 
 def _track_holiday_calendar(

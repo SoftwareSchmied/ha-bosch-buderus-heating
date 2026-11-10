@@ -7,6 +7,17 @@ Versioning after its first tagged preview.
 
 #### RRC zones
 
+- **More time for changes on room controllers:** a room controller applies a
+  change with a delay. On such controllers I now read a change back after 1,
+  2, 4 and 8 seconds instead of 0.5, 1 and 2 seconds, and I still send it
+  only once. If the controller has not confirmed it by then, a message of its
+  own says that the change was sent but is not confirmed yet and may still be
+  applied. Other gateways keep their timing and messages.
+- **Diagnostics:** room controllers get a section `rrc_features` with the
+  read-back timing and value-free write counters (sent, confirmed,
+  unconfirmed, confirmed later by a regular reading, refused). It marks every
+  function as not yet confirmed on a controller. The diagnostics schema stays
+  44.
 - **Select heating schedule on large systems
   ([#113](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/113)):**
   the selection needs the controller's program list. On a large system the

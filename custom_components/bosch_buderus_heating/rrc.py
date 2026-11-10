@@ -10,12 +10,13 @@ from collections.abc import Iterable, Mapping
 from types import MappingProxyType
 from typing import Final
 
+from . import rrc_contracts
 from .i18n import localize
 from .pointt import Resource
 from .pointt.models import JsonScalar
+from .rrc_contract_base import RRC_ID as RRC_ID
 from .unit_contracts import canonical_unit
 
-RRC_ID = r"(?:0|[1-9][0-9]{0,3})"
 ZONE = re.compile(rf"^/zones/zn({RRC_ID})(?:/|$)")
 PROGRAM = re.compile(rf"^/programs/pg({RRC_ID})(?:/|$)")
 ZONE_LIST = "/zones/list"
@@ -41,7 +42,8 @@ TEMPERATURES = (
     "manualTemperatureHeating",
     "clockOverride/temperatureHeating",
 )
-ZONE_FIELDS = (*TEMPERATURES, "userMode", "clockProgram")
+# W1 adds zone leaves through its contract (``rrc_contract_zone.zone_fields``).
+ZONE_FIELDS = (*TEMPERATURES, "userMode", "clockProgram", *rrc_contracts.zone_fields())
 
 
 def scalar_field(path: str) -> str | None:
@@ -300,17 +302,41 @@ def profile_evidence(
     return tuple(evidence)
 
 
-def in_device_scope(path: str) -> bool:
+def in_device_scope(path: str, device_list: Resource | None = None) -> bool:
     """C8 (CT-B02): the only ``/devices`` paths read on an RRC controller.
 
     The device list supplies type, zone, battery and signal of every radio
-    device; per device only its firmware version is read. Everything else
-    below ``/devices`` (the device keys, settings and valve details) is not
-    read: it costs most of the discovery budget and feeds no entity.
+    device; per device only its firmware version is read, and the leaves a
+    contract declares for its type (``device_leaves``, W6) when the given
+    ``device_list`` lists the device. Everything else below ``/devices`` (the
+    device keys, settings and valve details) is not read: it costs most of
+    the discovery budget and feeds no entity.
     """
     return (
-        path in ("/devices", DEVICE_LIST) or RADIO_FIRMWARE.fullmatch(path) is not None
+        path in ("/devices", DEVICE_LIST)
+        or RADIO_FIRMWARE.fullmatch(path) is not None
+        or (device_list is not None and path in device_setting_paths(device_list))
     )
+
+
+def device_setting_paths(
+    resource: Resource, limit: int | None = None
+) -> tuple[str, ...]:
+    """The contract leaves of each listed device by its type (W6), in list
+    order, at most ``limit`` of them; none without such contracts."""
+    if resource.path != DEVICE_LIST or (identifiers := listed_ids(resource)) is None:
+        return ()
+    assert isinstance(resource.value, list)  # checked by listed_ids
+    paths: list[str] = []
+    for identifier, item in zip(identifiers, resource.value, strict=True):
+        kind = item.get("type") if isinstance(item, dict) else None
+        if not isinstance(kind, str):
+            continue
+        paths.extend(
+            f"/devices/device{identifier}/{leaf}"
+            for leaf in rrc_contracts.device_leaves(kind)
+        )
+    return tuple(paths if limit is None else paths[:limit])
 
 
 def device_firmware_paths(resource: Resource, limit: int) -> tuple[str, ...]:
