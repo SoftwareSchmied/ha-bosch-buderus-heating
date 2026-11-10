@@ -1023,6 +1023,9 @@
     },
     "rrc_window_sensitivity_level": {
       "message": "Für die Fenster-offen-Erkennung lassen sich nur die Stufen hoch, mittel und niedrig einstellen."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "Die Startzeit muss eine Uhrzeit zwischen 00:00 und 23:59 sein."
     }
   },
   "selector": {
@@ -1160,6 +1163,9 @@
       },
       "rrc_temperature_offset": {
         "name": "Temperatur-Offset"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Dauer Extra-Warmwasser"
       }
     },
     "select": {
@@ -1250,6 +1256,19 @@
           "medium": "Mittel",
           "low": "Niedrig"
         }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Tag der thermischen Desinfektion",
+        "state": {
+          "monday": "Montag",
+          "tuesday": "Dienstag",
+          "wednesday": "Mittwoch",
+          "thursday": "Donnerstag",
+          "friday": "Freitag",
+          "saturday": "Samstag",
+          "sunday": "Sonntag",
+          "daily": "Täglich"
+        }
       }
     },
     "switch": {
@@ -1300,6 +1319,12 @@
       },
       "rrc_child_lock": {
         "name": "Kindersicherung"
+      },
+      "rrc_extra_dhw": {
+        "name": "Extra-Warmwasser"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Thermische Desinfektion"
       }
     },
     "sensor": {
@@ -1935,6 +1960,18 @@
       },
       "rrc_whisper_mode": {
         "name": "Flüstermodus"
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Ergebnis der thermischen Desinfektion"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Warmwasser-Programmstufe jetzt",
+        "state": {
+          "off": "Aus",
+          "low": "Eco",
+          "high": "Komfort",
+          "eco": "Eco+"
+        }
       }
     },
     "binary_sensor": {
@@ -2152,6 +2189,11 @@
             }
           }
         }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Startzeit der thermischen Desinfektion"
       }
     }
   }

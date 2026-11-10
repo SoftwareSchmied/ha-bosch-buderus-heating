@@ -22,7 +22,13 @@ from .entity_resources import fresh_resource, temperature
 from .ha_compat import temperature_members
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
-from .writes import DHW_OPERATION_MODE_POLICY, assess_control, context_of
+from .rrc_contract_dhw import OPERATION_MODE_POLICY as RRC_OPERATION_MODE_POLICY
+from .writes import (
+    DHW_OPERATION_MODE_POLICY,
+    EnumWritePolicy,
+    assess_control,
+    context_of,
+)
 
 if TYPE_CHECKING:
     from homeassistant.components.water_heater.const import WaterHeaterEntityFeature
@@ -39,6 +45,10 @@ _OPERATIONS = {
     "eco": "eco",
     "HCprogram": "follow_heating_program",
 }
+# W3: an RRC room controller may read its "Off" back as "off". Only there;
+# other gateways keep their exact spelling.
+_RRC_OPERATIONS = {**_OPERATIONS, "off": "off"}
+_POLICIES = (DHW_OPERATION_MODE_POLICY, RRC_OPERATION_MODE_POLICY)
 
 
 def track_pointt_water_heaters(
@@ -119,6 +129,13 @@ class PointTWaterHeater(
         return resource if resource is not None and not resource.references else None
 
     @property
+    def _operations(self) -> dict[str, str]:
+        """Wire codes and their operations, by the kind of gateway (S11)."""
+        if context_of(self.coordinator).rrc_plant:
+            return _RRC_OPERATIONS
+        return _OPERATIONS
+
+    @property
     def _mode(self) -> Resource | None:
         resource = self._resource("operationMode")
         if (
@@ -126,7 +143,7 @@ class PointTWaterHeater(
             or resource.metadata.resource_type != "stringValue"
             or resource.metadata.unit not in (None, "")
             or not isinstance(resource.value, str)
-            or resource.value not in _OPERATIONS
+            or resource.value not in self._operations
         ):
             return None
         return resource
@@ -138,7 +155,7 @@ class PointTWaterHeater(
     @property
     def current_operation(self) -> str | None:
         mode = self._mode
-        return _OPERATIONS[str(mode.value)] if mode is not None else None
+        return self._operations[str(mode.value)] if mode is not None else None
 
     @property
     def native_current_temperature(self) -> float | None:
@@ -166,21 +183,39 @@ class PointTWaterHeater(
             return None
         return temperature(self._resource("currentSetpoint"))
 
-    @property
-    def operation_list(self) -> list[str]:
+    def _writable(self) -> tuple[EnumWritePolicy, dict[str, str]] | None:
+        """The mode's write policy and each offered operation's wire code.
+
+        The first advertised code of an operation wins, in the order of
+        ``_OPERATIONS`` ("Off" before "off").
+        """
         mode = self._mode
         if mode is None:
-            return []
+            return None
         assessment = assess_control(mode, context_of(self.coordinator))
+        policy = assessment.policy
         if (
             not assessment.eligible
-            or assessment.policy is not DHW_OPERATION_MODE_POLICY
+            or not isinstance(policy, EnumWritePolicy)
+            or policy not in _POLICIES
             or assessment.current_value_issue is not None
         ):
+            return None
+        codes: dict[str, str] = {}
+        for raw, value in self._operations.items():
+            if raw in assessment.options:
+                codes.setdefault(value, raw)
+        return policy, codes
+
+    @property
+    def operation_list(self) -> list[str]:
+        writable = self._writable()
+        if writable is None:
             return []
-        return [
-            value for raw, value in _OPERATIONS.items() if raw in assessment.options
-        ]
+        _policy, codes = writable
+        # In the order of the operations, not of the codes.
+        order = list(dict.fromkeys(_RRC_OPERATIONS.values()))
+        return sorted(codes, key=order.index)
 
     @property
     def supported_features(self) -> WaterHeaterEntityFeature:
@@ -201,16 +236,17 @@ class PointTWaterHeater(
 
     async def async_set_operation_mode(self, operation_mode: str) -> None:
         mode = self._mode
-        if mode is None or operation_mode not in self.operation_list:
+        writable = self._writable()
+        if mode is None or writable is None or operation_mode not in writable[1]:
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="write_validation_failed"
             )
-        raw = next(raw for raw, value in _OPERATIONS.items() if value == operation_mode)
+        policy, codes = writable
         await async_set_control(
             self.coordinator,
             mode.path,
-            raw,
-            DHW_OPERATION_MODE_POLICY,
+            codes[operation_mode],
+            policy,
             expected=(mode,),
         )
 

@@ -19,7 +19,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.bosch_buderus_heating import controls_flow, rrc_contracts
+from custom_components.bosch_buderus_heating import controls_flow
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.control import async_set_control
 from custom_components.bosch_buderus_heating.enum_translation import (
@@ -31,7 +31,6 @@ from custom_components.bosch_buderus_heating.resource_catalog import (
     entity_enabled_by_default,
 )
 from custom_components.bosch_buderus_heating.rrc_contract_base import RrcContract
-from custom_components.bosch_buderus_heating.rrc_contracts import Registry
 from custom_components.bosch_buderus_heating.rrc_write import RrcWritePending
 from custom_components.bosch_buderus_heating.writes import (
     ContractRejected,
@@ -40,6 +39,7 @@ from custom_components.bosch_buderus_heating.writes import (
     RrcWriteNotConfirmed,
 )
 from tests.helpers.rrc_cloud import Clock, RrcCloud, cloud_patches, load_tree
+from tests.helpers.rrc_w0_state import w0_state
 from tests.test_entry import _entry
 
 PACKAGE = "custom_components.bosch_buderus_heating"
@@ -106,12 +106,10 @@ def legacy_setup_path():
 
 @contextmanager
 def installed(*contracts: RrcContract) -> Iterator[None]:
-    original = rrc_contracts._registry
-    rrc_contracts._registry = Registry((*rrc_contracts.CONTRACTS, *contracts))
-    try:
+    """The W0 contracts (whatever the packages added since) and ``contracts``:
+    the probes stand in for the package contracts on the same paths."""
+    with w0_state(*contracts):
         yield
-    finally:
-        rrc_contracts._registry = original
 
 
 def wire(path: str, **fields: object) -> Resource:
