@@ -118,8 +118,8 @@ async def test_hooks_reach_an_rrc_controller_bounded_and_last() -> None:
     assert "/system/appliance/displayCode" in order
     settings = [path for path in dict.fromkeys(order) if _setting(path)]
     assert len(settings) == MAX_RRC_DEVICE_SETTING_PROBES
-    # In list order, all ten leaves of each device before the next device.
-    assert settings[:10] == [f"/devices/device1/{leaf}" for leaf in LEAVES]
+    # Leaf by leaf: the first leaf of every device, in list order, first.
+    assert settings[:24] == [f"/devices/device{n}/{LEAVES[0]}" for n in range(1, 25)]
     # After the first setting leaf, the bulk reads carry setting leaves only.
     bulk = [path for paths in cloud.requests for path in paths]
     first = next(index for index, path in enumerate(bulk) if _setting(path))
@@ -136,7 +136,7 @@ async def test_hooks_reach_an_rrc_controller_bounded_and_last() -> None:
     assert len(limited) == 240 - MAX_RRC_DEVICE_SETTING_PROBES
     assert report.snapshot()["paths_not_read"]["rrc_device_setting_limit"] == 48
     # CT-B06: a missing leaf answers 500 and is taken as missing.
-    missing = report.paths["/devices/device1/etrv/setting9"]
+    missing = report.paths["/devices/device1/etrv/setting7"]
     assert missing.read_policy == "rrc_5xx_assumed_missing"
     assert "/devices/device1/etrv/setting0" in found
     # The stored inventory keeps the found leaves while a contract reads
@@ -176,8 +176,8 @@ def test_device_scope_follows_the_listed_types() -> None:
     with installed(CONTRACT):
         assert rrc.device_setting_paths(listed, 3) == (
             "/devices/device1/etrv/setting0",
+            "/devices/device2/etrv/setting0",
             "/devices/device1/etrv/setting1",
-            "/devices/device1/etrv/setting2",
         )
         assert rrc.in_device_scope("/devices/device2/etrv/setting9", listed)
         assert not rrc.in_device_scope("/devices/device3/etrv/setting0", listed)

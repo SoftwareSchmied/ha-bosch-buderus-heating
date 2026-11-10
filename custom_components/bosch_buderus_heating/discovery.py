@@ -39,6 +39,7 @@ from .rrc import (
     DEVICE_LIST,
     PRODUCT_TYPE_PATH,
     PROGRAM_LIST,
+    RRC_ID,
     ZONE,
     ZONE_LIST,
     catalog_paths,
@@ -742,17 +743,20 @@ async def async_discover_resources(
 
     if softener_profile and not rediscovery:
         schedule_children(f"{SOFTENER_ROOT}/sw1", 1)
+    device_reads = 0
     while any(queues):
-        capacity = min(MAX_BULK_PATHS, maximum_resources - len(processed))
+        # W6: the setting leaves of listed devices come after every other path
+        # and have their own cap (MAX_RRC_DEVICE_SETTING_PROBES, applied when
+        # they are scheduled) instead of a share of the overall budget, so a
+        # large controller still reads the leaves of its last devices.
+        device_frontier = not any(queues[:-1])
+        if device_frontier:
+            capacity = MAX_BULK_PATHS
+        else:
+            capacity = min(
+                MAX_BULK_PATHS, maximum_resources - (len(processed) - device_reads)
+            )
         if capacity <= 0:
-            if device_pending and not any(queues[:-1]):
-                # W6: only device setting leaves are left. Like those beyond
-                # their own cap, they are counted and not read; every other
-                # path was read, so the discovery is complete.
-                for path in device_pending:
-                    report.paths[path].read_policy = "rrc_device_setting_limit"
-                device_pending.clear()
-                continue
             report.stop_reason = "resource_limit"
             break
         # Leave spare capacity unused so returned references are expanded before
@@ -760,11 +764,16 @@ async def async_discover_resources(
         # RRC lists join the next batch instead of needing a request of their own.
         frontier_entries = dict(islice(priority_pending.items(), capacity))
         pending = next((queue for queue in queues[1:] if queue), priority_pending)
-        if pending is not priority_pending:
+        if pending is not priority_pending and pending is not device_pending:
             frontier_entries.update(
                 islice(pending.items(), capacity - len(frontier_entries))
             )
-        if startup_data is not None:
+        elif device_frontier:
+            frontier_entries = dict(islice(device_pending.items(), capacity))
+        if device_frontier:
+            # Not charged to the shared distinct-path budget either.
+            device_reads += len(frontier_entries)
+        elif startup_data is not None:
             frontier_entries = {
                 path: frontier_entries[path]
                 for path in startup_data.reserve_discovery(tuple(frontier_entries))
@@ -889,12 +898,25 @@ async def _recover_invalid_bulk_results(
     CT-B06: an RRC controller answers HTTP 500 for a path it does not have.
     On that profile a 5xx answer to a catalog or optional probe neither
     counts towards the outage series nor ends it; the path is taken as
-    missing. Roots and advertised references keep the rule.
+    missing. Roots and advertised references keep the rule. An item 5xx in
+    the bulk answer to an optional probe or a contract zone detail leaf is
+    taken as missing at once, without an individual read: such leaves are
+    often absent, and the next discovery probes them again.
     """
     recovered: list[BatchItemResult] = []
     for result in results:
         fallback_reason = result.fallback_reason
         if fallback_reason is None:
+            recovered.append(result)
+            continue
+        if (
+            rrc_profile
+            and fallback_reason == "item_5xx"
+            and _rrc_missing_without_retry(
+                result.path, diagnostics.paths[result.path].source
+            )
+        ):
+            diagnostics.paths[result.path].read_policy = "rrc_5xx_assumed_missing"
             recovered.append(result)
             continue
 
@@ -969,6 +991,18 @@ async def _recover_invalid_bulk_results(
         # Any other answer ends a series of 5xx answers.
         consecutive_5xx = 0
     return tuple(recovered), consecutive_5xx
+
+
+def _rrc_missing_without_retry(path: str, source: DiscoveryPathSource) -> bool:
+    """CT-B06: an optional probe or a contract detail leaf of a zone (W1),
+    which an RRC controller without it answers with HTTP 500. The known zone
+    fields and the other catalog paths keep their individual read."""
+    if source is DiscoveryPathSource.OPTIONAL:
+        return True
+    if source is not DiscoveryPathSource.CATALOG:
+        return False
+    match = re.fullmatch(rf"/zones/zn{RRC_ID}/(.+)", path)
+    return match is not None and match.group(1) in rrc_contracts.zone_fields()
 
 
 def _path_local_status(error: PointTError) -> int | None:

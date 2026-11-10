@@ -84,6 +84,13 @@ requested path does not consume another distinct-path slot. A `resource_limit`
 or `depth_limit` result is a safety stop for this session, not an ordinary
 temporary failure that will be retried indefinitely.
 
+On a room controller, the setting leaves of the listed radio devices are read
+last and have a limit of their own of 192 paths, outside the 512. The first
+leaf of every device comes first, then the second, so a limit drops the least
+important leaves of all devices. A room controller answers HTTP 500 for a
+leaf it does not have; for optional probes and zone detail leaves I take such
+an answer in a batch as "missing" without a single read of its own.
+
 ## Recovery after startup
 
 Recovery uses existing coordinator wake-ups. It does not add a separate timer

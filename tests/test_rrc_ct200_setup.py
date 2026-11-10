@@ -28,6 +28,7 @@ from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.diagnostics import (
     async_get_config_entry_diagnostics,
 )
+from custom_components.bosch_buderus_heating.discovery import MAX_DISCOVERY_RESOURCES
 from custom_components.bosch_buderus_heating.discovery_inventory import (
     RECOVERY_SCHEDULE,
 )
@@ -107,10 +108,17 @@ async def test_large_ct200_plant_reaches_every_platform_within_the_budget(
         # CT-E07, CT-F05: keys and personal data are never requested.
         assert not {path for path in requested if PRIVATE.search(path)}
         # W1 probes eight more leaves per zone (most answer 500 here); W6
-        # reads the setting leaves of the listed devices.
-        assert len(requested) < 480 + len(
-            rrc.device_setting_paths(cloud.tree[DEVICE_LIST])
-        )
+        # reads the setting leaves of the listed devices under their own cap.
+        settings = rrc.device_setting_paths(cloud.tree[DEVICE_LIST])
+        assert len(requested) < 480 + len(settings)
+        assert len(requested - set(settings)) <= MAX_DISCOVERY_RESOURCES
+        # CT-B06: a 500 on an optional probe or a zone detail leaf counts as
+        # missing without a single read of its own; only the known catalog
+        # paths are read once more. Before: 170 single reads, now 6.
+        retried = [item for item in report.paths.values() if item.fallback_reason]
+        assert len(retried) <= 10
+        assert len(cloud.single) <= 10
+        assert len(cloud.requests) <= 30
 
         # Every zone offers its program; 24 programs are named options.
         selects = entities(hass, entry, "select")

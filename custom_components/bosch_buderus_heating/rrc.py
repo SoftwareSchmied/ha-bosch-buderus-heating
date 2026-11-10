@@ -7,6 +7,7 @@ import binascii
 import math
 import re
 from collections.abc import Iterable, Mapping
+from itertools import zip_longest
 from types import MappingProxyType
 from typing import Final
 
@@ -453,20 +454,34 @@ def in_device_scope(path: str, device_list: Resource | None = None) -> bool:
 def device_setting_paths(
     resource: Resource, limit: int | None = None
 ) -> tuple[str, ...]:
-    """The contract leaves of each listed device by its type (W6), in list
-    order, at most ``limit`` of them; none without such contracts."""
+    """The contract leaves of the listed devices by their type (W6), at most
+    ``limit`` of them; none without such contracts.
+
+    Leaf by leaf: the first leaf of every device (the status of a valve), then
+    the second of every device, and so on, each round in list order. A limit
+    then drops the least important leaves of all devices, not every leaf of
+    the last ones.
+    """
     if resource.path != DEVICE_LIST or (identifiers := listed_ids(resource)) is None:
         return ()
     assert isinstance(resource.value, list)  # checked by listed_ids
-    paths: list[str] = []
+    per_device: list[tuple[str, ...]] = []
     for identifier, item in zip(identifiers, resource.value, strict=True):
         kind = item.get("type") if isinstance(item, dict) else None
         if not isinstance(kind, str):
             continue
-        paths.extend(
-            f"/devices/device{identifier}/{leaf}"
-            for leaf in rrc_contracts.device_leaves(kind)
+        per_device.append(
+            tuple(
+                f"/devices/device{identifier}/{leaf}"
+                for leaf in rrc_contracts.device_leaves(kind)
+            )
         )
+    paths = [
+        path
+        for leaves in zip_longest(*per_device)
+        for path in leaves
+        if path is not None
+    ]
     return tuple(paths if limit is None else paths[:limit])
 
 

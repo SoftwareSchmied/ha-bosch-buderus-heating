@@ -15,7 +15,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from custom_components.bosch_buderus_heating import rrc, rrc_devices
+from custom_components.bosch_buderus_heating import rrc, rrc_contracts, rrc_devices
 from custom_components.bosch_buderus_heating.discovery import (
     MAX_RRC_DEVICE_PROBES,
     DiscoveryDiagnostics,
@@ -378,18 +378,40 @@ async def test_http_500_on_probes_of_a_controller_does_not_end_discovery() -> No
     )
     assert report.stop_reason == "complete"
     assert "/zones/zn1/temperatureActual" in found
-    missing = [
-        item
-        for item in report.paths.values()
+    missing_paths = {
+        path
+        for path, item in report.paths.items()
         if item.read_policy == "rrc_5xx_assumed_missing"
-    ]
+    }
+    missing = [report.paths[path] for path in missing_paths]
     # The heating circuit's catalog and optional probes, and zone fields.
     assert len(missing) > 20
     assert {item.source for item in missing} <= {
         DiscoveryPathSource.CATALOG,
         DiscoveryPathSource.OPTIONAL,
     }
-    assert all(item.fallback_result == "http_500" for item in missing)
+    # The known catalog paths are read once more on their own; an optional
+    # probe or a zone detail leaf is taken as missing at once.
+    retried = {path for path in missing_paths if report.paths[path].fallback_result}
+    assert retried == missing_paths & set(cloud.single)
+    assert all(report.paths[path].fallback_result == "http_500" for path in retried)
+    assert all(
+        report.paths[path].source is DiscoveryPathSource.CATALOG for path in retried
+    )
+    optional = {
+        path
+        for path in missing_paths
+        if report.paths[path].source is DiscoveryPathSource.OPTIONAL
+    }
+    assert optional and not optional & set(cloud.single)
+    detail = {
+        path
+        for path in missing_paths
+        if path.startswith("/zones/zn1/")
+        and path.removeprefix("/zones/zn1/") in rrc_contracts.zone_fields()
+    }
+    assert detail and not detail & set(cloud.single)
+    assert retried
     assert report.snapshot()["paths_not_read"]["rrc_5xx_assumed_missing"] == len(
         missing
     )

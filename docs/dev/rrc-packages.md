@@ -136,11 +136,15 @@ cleanup of unknown structures removes the entity at the next start.
 ## Discovery
 
 `extra_roots`, `optional_children` and `device_leaves` are read only on an
-RRC controller. Device leaves are read for listed devices only, at most
-`MAX_RRC_DEVICE_SETTING_PROBES` (192), after every other path; the rest is
-counted as `rrc_device_setting_limit` in the diagnostics. An HTTP 5xx answer
-to such a probe means "probably missing" (CT-B06). `zone_fields` extend
-`rrc.ZONE_FIELDS`.
+RRC controller. Device leaves are read for listed devices only, leaf by leaf
+(the first leaf of every device, then the second, and so on), at most
+`MAX_RRC_DEVICE_SETTING_PROBES` (192), after every other path. They have
+this cap of their own instead of a share of the overall limit of 512 paths;
+the rest is counted as `rrc_device_setting_limit` in the diagnostics. An
+HTTP 5xx answer to such a probe means "probably missing" (CT-B06). An item
+5xx in a bulk answer to an optional probe or a `zone_fields` leaf is taken
+as missing without an individual read; the known catalog paths keep it.
+`zone_fields` extend `rrc.ZONE_FIELDS`.
 
 ## Translations
 

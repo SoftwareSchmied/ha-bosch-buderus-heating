@@ -149,10 +149,11 @@ def test_each_type_reads_its_own_subfolder() -> None:
     paths = rrc.device_setting_paths(
         listed("thermostat", "repeater", "room_thermostat")
     )
+    # Leaf by leaf over the devices, each round in list order.
     assert paths == (
         "/devices/device1/thermostat/childLock/enabled",
-        "/devices/device1/thermostat/offset",
         "/devices/device3/wth/childLock/enabled",
+        "/devices/device1/thermostat/offset",
         "/devices/device3/wth/offset",
     )
     # No two contract entries for one fixture path.
@@ -415,17 +416,21 @@ async def test_24_valves_stay_within_the_device_cap_and_come_last() -> None:
     order = [path for paths in cloud.requests for path in paths] + cloud.single
     settings = [path for path in dict.fromkeys(order) if split(path) is not None]
     assert len(settings) == MAX_RRC_DEVICE_SETTING_PROBES == 192
-    # Nine leaves per valve: 21 valves complete, the 22nd up to its 3rd leaf.
-    assert settings[:9] == [
-        f"/devices/device1/{leaf}" for leaf in DEVICE_LEAVES["thermostat_valve"]
-    ]
-    assert settings[-1] == "/devices/device22/etrv/offset"
+    # Nine leaves per valve, leaf by leaf: the status of every valve first,
+    # then the next leaf of every valve; the cap drops the last leaf of all
+    # 24 valves instead of every leaf of the last ones.
+    leaves = DEVICE_LEAVES["thermostat_valve"]
+    assert settings[:24] == [f"/devices/device{n}/{leaves[0]}" for n in range(1, 25)]
+    assert settings[-1] == f"/devices/device24/{leaves[7]}"
     limited = [
         path
         for path, item in report.paths.items()
         if item.read_policy == "rrc_device_setting_limit"
     ]
     assert len(limited) == 24 * 9 - 192
+    assert sorted(limited) == sorted(
+        f"/devices/device{n}/{leaves[8]}" for n in range(1, 25)
+    )
     assert report.snapshot()["paths_not_read"]["rrc_device_setting_limit"] == 24
     # Missing leaves answer 500: probably missing, the discovery goes on.
     assert report.paths["/devices/device1/etrv/offset"].read_policy == (
@@ -440,30 +445,32 @@ async def test_24_valves_stay_within_the_device_cap_and_come_last() -> None:
             assert all(split(path) for path in paths)
 
 
-async def test_the_discovery_budget_ends_among_the_device_leaves_complete() -> None:
-    """W0 addendum: where the overall budget runs out with only device
-    leaves left, they are counted like those beyond the cap; every other
-    path was read, so the discovery is complete."""
+async def test_the_device_leaves_have_their_own_cap_beyond_the_budget() -> None:
+    """Where the overall budget is used up by the other paths, the device
+    leaves are still read: they count only against their own cap, so the
+    leaves of the last devices of a large controller are not lost."""
     cloud = RrcCloud(_budget_tree(8))
     _found, unbounded = await _discover(cloud)
     assert unbounded.stop_reason == "complete"
-    read = len(cloud.all_requested())
+    leaves = [path for path in cloud.all_requested() if split(path) is not None]
+    other = len(cloud.all_requested()) - len(leaves)
     cloud = RrcCloud(_budget_tree(8))
-    found, report = await _discover(cloud, maximum_resources=read - 10)
+    found, report = await _discover(cloud, maximum_resources=other)
     assert report.stop_reason == "complete"
     assert report.completed
-    limited = [
+    assert not [
         path
         for path, item in report.paths.items()
         if item.read_policy == "rrc_device_setting_limit"
     ]
-    assert len(limited) == 10
-    assert all(path.startswith("/devices/device8/") for path in limited[1:])
+    assert set(leaves) <= cloud.all_requested()
+    assert "/devices/device8/etrv/status" in found
     assert "/zones/zn1/temperatureActual" in found
-    # A budget that ends before the other paths still stops the discovery.
+    # One path fewer than the others need still stops the discovery.
     cloud = RrcCloud(_budget_tree(8))
-    _found, short = await _discover(cloud, maximum_resources=5)
+    _found, short = await _discover(cloud, maximum_resources=other - 1)
     assert short.stop_reason == "resource_limit"
+    assert not [path for path in cloud.all_requested() if split(path) is not None]
 
 
 async def test_no_devices_no_leaves() -> None:
