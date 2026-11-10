@@ -1002,6 +1002,36 @@
     },
     "gateway_exchange_incomplete": {
       "message": "An interrupted gateway exchange could not be finished, so the integration does not start. Details are in the log; remove what blocks the exchange (for example entities of the new gateway) and restart Home Assistant."
+    },
+    "rrc_event_invalid_name": {
+      "message": "Enter a name with 1 to 32 bytes of printable text (fewer characters with umlauts or emoji)."
+    },
+    "rrc_event_invalid_dates": {
+      "message": "The event needs whole days: a start on or before the end, and an end not in the past."
+    },
+    "rrc_event_overlap": {
+      "message": "The event shares a day with another event of the room controller. Events may not overlap, not even on their first or last day."
+    },
+    "rrc_event_type_read_only": {
+      "message": "A day run like another weekday can only be deleted here, not changed."
+    },
+    "rrc_event_rejected": {
+      "message": "The room controller refused the event, for example because its calendar is full. Nothing was changed."
+    },
+    "rrc_event_pending": {
+      "message": "An earlier change of the events is not confirmed yet. Nothing was sent; wait until it shows in the calendar or try again in ten minutes."
+    },
+    "rrc_event_unsupported_fields": {
+      "message": "The room controller stores only a name and whole days. Recurring events, descriptions and locations are not supported."
+    },
+    "rrc_boost_no_zones": {
+      "message": "The boost has no rooms. Select the rooms for the boost on the room controller first."
+    },
+    "rrc_boost_unsupported_shape": {
+      "message": "The room controller reports the boost in a form this integration does not know completely. The boost is shown but not changed, so that no setting is lost."
+    },
+    "rrc_boost_locked": {
+      "message": "The room controller currently locks the boost. Try again later."
     }
   },
   "selector": {
@@ -1130,6 +1160,15 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Ambient light brightness"
+      },
+      "rrc_boost_temperature": {
+        "name": "Boost temperature"
+      },
+      "rrc_boost_duration": {
+        "name": "Boost duration"
+      },
+      "rrc_away_temperature": {
+        "name": "Away temperature"
       }
     },
     "select": {
@@ -1253,6 +1292,12 @@
       },
       "bacon_dry_display": {
         "name": "Display"
+      },
+      "rrc_boost": {
+        "name": "Boost"
+      },
+      "rrc_fireplace": {
+        "name": "Fireplace function"
       }
     },
     "sensor": {
@@ -1915,6 +1960,9 @@
     "calendar": {
       "holiday_periods": {
         "name": "Holiday periods"
+      },
+      "rrc_events": {
+        "name": "Absences and special days"
       }
     },
     "event": {
