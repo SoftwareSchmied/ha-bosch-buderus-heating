@@ -9,12 +9,14 @@ from zoneinfo import ZoneInfo
 
 import pytest
 from homeassistant.components.calendar.const import CalendarEntityFeature
+from homeassistant.config_entries import SOURCE_REAUTH
 from homeassistant.data_entry_flow import FlowResultType
 
 from custom_components.bosch_buderus_heating.binary_sensor import (
     BoschBuderusHolidayActiveBinarySensor,
 )
 from custom_components.bosch_buderus_heating.calendar import BoschBuderusHolidayCalendar
+from custom_components.bosch_buderus_heating.const import CONF_BRAND
 from custom_components.bosch_buderus_heating.coordinator import Freshness
 from custom_components.bosch_buderus_heating.discovery import _optional_children
 from custom_components.bosch_buderus_heating.holiday_writes import (
@@ -36,6 +38,7 @@ from custom_components.bosch_buderus_heating.legacy_holidays import (
 )
 from custom_components.bosch_buderus_heating.pointt import (
     AuthenticationError,
+    Brand,
     RateLimited,
     RequestTimeout,
     WriteNotConfirmed,
@@ -241,10 +244,13 @@ async def test_icom_wire_transaction_uses_only_selected_slot(environment, operat
     "failure", [RequestTimeout("timeout"), RateLimited(60), AuthenticationError("auth")]
 )
 async def test_failure_mid_transaction_stops_without_retry_or_rollback(
-    environment, failure
+    hass, environment, failure
 ):
     state = wire(environment)
     coordinator, client, _ = environment
+    entry = coordinator.config_entry
+    # A rejected sign-in starts the real reauth flow, which reads the stored brand.
+    hass.config_entries.async_update_entry(entry, data={CONF_BRAND: Brand.BOSCH.value})
     baseline = icom_write_values(state, SLOT)
     original = client.put_resource_value.side_effect
 
@@ -263,6 +269,11 @@ async def test_failure_mid_transaction_stops_without_retry_or_rollback(
     assert state[START].value == RESOURCES[START].value
     assert not coordinator.data[START].available
     assert coordinator.data[START].freshness is Freshness.STALE
+    await hass.async_block_till_done()
+    flows = list(entry.async_get_active_flows(hass, {SOURCE_REAUTH}))
+    assert len(flows) == (1 if isinstance(failure, AuthenticationError) else 0)
+    for flow in flows:
+        hass.config_entries.flow.async_abort(flow["flow_id"])
 
 
 @pytest.mark.parametrize("when", ["before", "between", "readback"])
