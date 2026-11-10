@@ -2,7 +2,7 @@
 // later state updates.
 const { chromium } = require("playwright");
 const path = require("node:path");
-const { dialogConfig } = require("./dialog-texts.cjs");
+const { dialogConfig } = require("./support/dialog-texts.cjs");
 const assert = require("node:assert/strict");
 (async () => {
   const browser = await chromium.launch({

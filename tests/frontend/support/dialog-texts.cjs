@@ -4,7 +4,7 @@ const path = require("node:path");
 
 const I18N = path.join(
   __dirname,
-  "../../custom_components/bosch_buderus_heating/i18n",
+  "../../../custom_components/bosch_buderus_heating/i18n",
 );
 
 // The same aliases as ALIASES in i18n/__init__.py.
