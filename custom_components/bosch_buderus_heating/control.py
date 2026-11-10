@@ -22,7 +22,7 @@ from .pointt import (
     WriteNotConfirmed,
     WriteValidationError,
 )
-from .writes import EnumWritePolicy, NumberWritePolicy, WriteBusy
+from .writes import ControlLocked, EnumWritePolicy, NumberWritePolicy, WriteBusy
 
 
 class HeldCapabilities(Entity):
@@ -164,6 +164,10 @@ async def async_set_control(
             )
         else:
             await coordinator.async_write_control(path, value, policy)
+    except ControlLocked as err:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN, translation_key="rrc_mode_locked"
+        ) from err
     except WriteValidationError as err:
         raise ServiceValidationError(
             translation_domain=DOMAIN, translation_key="write_validation_failed"

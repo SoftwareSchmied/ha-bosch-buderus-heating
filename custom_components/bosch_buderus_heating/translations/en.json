@@ -956,6 +956,9 @@
     "holiday_time_ambiguous": {
       "message": "The selected start or end time occurs twice because the clock moves back in the heating system's time zone. Choose an unambiguous time."
     },
+    "rrc_mode_locked": {
+      "message": "The controller currently locks the heating mode of this zone, for example while the system cools. The current mode stays shown. Try again later."
+    },
     "write_validation_failed": {
       "message": "This setting is not currently safe to change. Refresh or reconfigure the integration and try again."
     },
