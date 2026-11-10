@@ -53,6 +53,12 @@ Versioning after its first tagged preview.
   holiday dialogs. They are drafts based on a shared glossary; nobody who
   speaks them as a mother tongue has checked them yet. I would be glad about
   corrections, see `docs/translations.md`.
+- **French, Spanish, Italian, Portuguese, Dutch, Polish, Czech, Slovak, Greek,
+  Bulgarian, Croatian, Slovenian and Irish:** thirteen more languages, with
+  the same scope as the four above. They are drafts as well, each with its own
+  glossary in `docs/glossary/<code>.md`, and also wait for a review by native
+  speakers. Brazilian Portuguese shows the Portuguese texts and Norwegian
+  Nynorsk the Bokmål ones.
 - Names and texts that the integration builds itself (for example
   "Heating circuit 1 – Supply temperature" or "Set heating mode" of a TC100.2
   zone) now follow the Home Assistant system language for all supported
@@ -61,7 +67,9 @@ Versioning after its first tagged preview.
   switching the system language, reload the integration so generated names
   are rebuilt.
 - A further language needs only two data files, `translations/<code>.json`
-  and `i18n/<code>.json`; `docs/translations.md` describes them.
+  and `i18n/<code>.json`; `docs/translations.md` describes them. The tests
+  take the languages and the expected texts from these files, so a new
+  language needs no test change either.
 
 #### Documentation
 

@@ -2,21 +2,40 @@
 
 ## Languages
 
-| Language | Code | Status |
-| --- | --- | --- |
-| English | `en` | Source language, maintained with the code |
-| German | `de` | Maintained with the code |
-| Swedish | `sv` | Draft, awaiting review by a native speaker |
-| Norwegian Bokmål | `nb` | Draft, awaiting review by a native speaker |
-| Finnish | `fi` | Draft, awaiting review by a native speaker |
-| Danish | `da` | Draft, awaiting review by a native speaker |
+| Language | Code | Status | Glossary |
+| --- | --- | --- | --- |
+| English | `en` | Source language, maintained with the code | – |
+| German | `de` | Maintained with the code | – |
+| Swedish | `sv` | Draft, awaiting review by a native speaker | [Glossary](#glossary) |
+| Norwegian Bokmål | `nb` | Draft, awaiting review by a native speaker | [Glossary](#glossary) |
+| Finnish | `fi` | Draft, awaiting review by a native speaker | [Glossary](#glossary) |
+| Danish | `da` | Draft, awaiting review by a native speaker | [Glossary](#glossary) |
+| French | `fr` | Draft, awaiting review by a native speaker | [`glossary/fr.md`](glossary/fr.md) |
+| Spanish (Spain) | `es` | Draft, awaiting review by a native speaker | [`glossary/es.md`](glossary/es.md) |
+| Italian | `it` | Draft, awaiting review by a native speaker | [`glossary/it.md`](glossary/it.md) |
+| Portuguese (Portugal) | `pt` | Draft, awaiting review by a native speaker | [`glossary/pt.md`](glossary/pt.md) |
+| Dutch | `nl` | Draft, awaiting review by a native speaker | [`glossary/nl.md`](glossary/nl.md) |
+| Polish | `pl` | Draft, awaiting review by a native speaker | [`glossary/pl.md`](glossary/pl.md) |
+| Czech | `cs` | Draft, awaiting review by a native speaker | [`glossary/cs.md`](glossary/cs.md) |
+| Slovak | `sk` | Draft, awaiting review by a native speaker | [`glossary/sk.md`](glossary/sk.md) |
+| Greek | `el` | Draft, awaiting review by a native speaker | [`glossary/el.md`](glossary/el.md) |
+| Bulgarian | `bg` | Draft, awaiting review by a native speaker | [`glossary/bg.md`](glossary/bg.md) |
+| Croatian | `hr` | Draft, awaiting review by a native speaker | [`glossary/hr.md`](glossary/hr.md) |
+| Slovenian | `sl` | Draft, awaiting review by a native speaker | [`glossary/sl.md`](glossary/sl.md) |
+| Irish | `ga` | Draft, awaiting review by a native speaker | [`glossary/ga.md`](glossary/ga.md) |
 
-The Swedish, Norwegian, Finnish and Danish texts are a careful first draft.
-They follow the glossary below, but nobody who speaks these languages as a
+All languages except English and German are a careful first draft. They
+follow the glossary of their language, but nobody who speaks them as a
 mother tongue has checked them yet. Corrections are very welcome (see
-[Contributing corrections](#contributing-corrections)).
+[Contributing corrections](#contributing-corrections)). The glossary below
+covers Swedish, Norwegian Bokmål, Finnish and Danish; every other draft has
+its own glossary in `docs/glossary/<code>.md` with the terms and the form of
+address it uses.
 
-Any other language shows the English texts.
+Regional variants use the base language: Brazilian Portuguese (`pt-BR`)
+shows the European Portuguese draft, and Latin American Spanish the Spanish
+one, until a file for the variant exists. Any other language shows the
+English texts.
 
 ## Where the texts live
 
@@ -52,13 +71,16 @@ Bokmål. Anything else shows English.
 ## Adding a language
 
 Add two files, named with the Home Assistant language code (for example
-`nl`), and nothing else:
+`ro`); no code or test needs to change:
 
-1. `custom_components/bosch_buderus_heating/translations/nl.json`: a copy of
+1. `custom_components/bosch_buderus_heating/translations/ro.json`: a copy of
    `strings.json` with every value translated.
-2. `custom_components/bosch_buderus_heating/i18n/nl.json`: a copy of
+2. `custom_components/bosch_buderus_heating/i18n/ro.json`: a copy of
    `i18n/sv.json` with every value of `texts` and `dialogs` translated.
    Keep the keys (the English texts under `texts`) unchanged.
+3. Optionally `docs/glossary/ro.md` with the terms the texts use, so that a
+   reviewer can correct a term once for every text. Add the language to the
+   table above.
 
 Without the second file the language still works, but built names,
 notifications and the two dialogs stay English.
@@ -161,16 +183,18 @@ Brand names of manufacturers do not appear in labels.
 
 ## Contributing corrections
 
-1. Edit `custom_components/bosch_buderus_heating/translations/<code>.json`
+1. Look up the term in the glossary of your language (the table above links
+   it). Edit `custom_components/bosch_buderus_heating/translations/<code>.json`
    for dialog, repair and entity texts, or
    `custom_components/bosch_buderus_heating/i18n/<code>.json` for generated
    names, notification texts and the controls and holiday dialogs.
 2. Keep the keys, placeholders in braces, Markdown links and line breaks
    exactly as they are; only translate the text.
-3. If a glossary term is wrong, please say so in the pull request, so it can
-   be changed everywhere at once.
+3. If a glossary term is wrong, please say so in the pull request and correct
+   it in the glossary as well, so it can be changed everywhere at once.
 4. Run `pytest tests/test_translations.py` (and `npm test` for the dialogs).
-   No other file needs to change.
+   No other file needs to change; the tests read the languages and the
+   expected texts from the data files.
 
 A short pull request or an issue with the corrected wording is equally
 welcome. Please mention whether you are a native speaker.

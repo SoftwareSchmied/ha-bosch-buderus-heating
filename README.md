@@ -171,9 +171,11 @@ back, it takes over the same entities with their history. See [operation without
   rolling 60-minute request and latency metrics, and a bounded sanitized log
   of individual HTTP attempts
 - German and English entity names and state translations, plus Swedish,
-  Norwegian Bokmål, Finnish and Danish as drafts awaiting review by native
-  speakers; the [translation guide](docs/translations.md) lists the languages
-  and explains how to correct or add one
+  Norwegian Bokmål, Finnish, Danish, French, Spanish, Italian, Portuguese,
+  Dutch, Polish, Czech, Slovak, Greek, Bulgarian, Croatian, Slovenian and
+  Irish as drafts awaiting review by native speakers; the
+  [translation guide](docs/translations.md) lists the languages with their
+  glossaries and explains how to correct or add one
 
 Normal measurements and everyday controls are enabled on a fresh installation.
 The installer-level maximum-supply-temperature control, identity data, detailed
