@@ -1002,6 +1002,12 @@
     },
     "gateway_exchange_incomplete": {
       "message": "Ein unterbrochener Gateway-Austausch ließ sich nicht abschließen, deshalb startet die Integration nicht. Details stehen im Protokoll; entferne, was den Austausch blockiert (zum Beispiel Entitäten des neuen Gateways), und starte Home Assistant neu."
+    },
+    "rrc_device_setting_unused": {
+      "message": "Das Funkgerät nutzt diese Einstellung gerade nicht, deshalb wurde sie nicht geändert."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Für die Fenster-offen-Erkennung lassen sich nur die Stufen hoch, mittel und niedrig einstellen."
     }
   },
   "selector": {
@@ -1130,6 +1136,9 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Helligkeit der Ambientebeleuchtung"
+      },
+      "rrc_temperature_offset": {
+        "name": "Temperatur-Offset"
       }
     },
     "select": {
@@ -1212,6 +1221,14 @@
           "orange": "Orange",
           "red": "Rot"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Empfindlichkeit Fenster-offen-Erkennung",
+        "state": {
+          "high": "Hoch",
+          "medium": "Mittel",
+          "low": "Niedrig"
+        }
       }
     },
     "switch": {
@@ -1253,6 +1270,9 @@
       },
       "bacon_dry_display": {
         "name": "Display"
+      },
+      "rrc_child_lock": {
+        "name": "Kindersicherung"
       }
     },
     "sensor": {
@@ -1847,6 +1867,21 @@
             }
           }
         }
+      },
+      "rrc_valve_position": {
+        "name": "Ventilöffnung"
+      },
+      "rrc_max_valve_position": {
+        "name": "Maximale Ventilöffnung"
+      },
+      "rrc_valve_temperature": {
+        "name": "Temperatur am Ventil"
+      },
+      "rrc_valve_state": {
+        "name": "Ventilzustand"
+      },
+      "rrc_whisper_mode": {
+        "name": "Flüstermodus"
       }
     },
     "binary_sensor": {
@@ -1910,6 +1945,9 @@
       },
       "bacon_dry_device_error": {
         "name": "Gemeldeter Gerätefehler"
+      },
+      "rrc_valve_problem": {
+        "name": "Ventilproblem"
       }
     },
     "calendar": {

@@ -1002,6 +1002,12 @@
     },
     "gateway_exchange_incomplete": {
       "message": "An interrupted gateway exchange could not be finished, so the integration does not start. Details are in the log; remove what blocks the exchange (for example entities of the new gateway) and restart Home Assistant."
+    },
+    "rrc_device_setting_unused": {
+      "message": "The radio device does not use this setting at the moment, so it was not changed."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Only the levels high, medium and low can be set for the open window detection."
     }
   },
   "selector": {
@@ -1130,6 +1136,9 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Ambient light brightness"
+      },
+      "rrc_temperature_offset": {
+        "name": "Temperature offset"
       }
     },
     "select": {
@@ -1212,6 +1221,14 @@
           "orange": "Orange",
           "red": "Red"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Open window detection sensitivity",
+        "state": {
+          "high": "High",
+          "medium": "Medium",
+          "low": "Low"
+        }
       }
     },
     "switch": {
@@ -1253,6 +1270,9 @@
       },
       "bacon_dry_display": {
         "name": "Display"
+      },
+      "rrc_child_lock": {
+        "name": "Child lock"
       }
     },
     "sensor": {
@@ -1847,6 +1867,21 @@
             }
           }
         }
+      },
+      "rrc_valve_position": {
+        "name": "Valve opening"
+      },
+      "rrc_max_valve_position": {
+        "name": "Maximum valve opening"
+      },
+      "rrc_valve_temperature": {
+        "name": "Temperature at the valve"
+      },
+      "rrc_valve_state": {
+        "name": "Valve state"
+      },
+      "rrc_whisper_mode": {
+        "name": "Whisper mode"
       }
     },
     "binary_sensor": {
@@ -1910,6 +1945,9 @@
       },
       "bacon_dry_device_error": {
         "name": "Reported device error"
+      },
+      "rrc_valve_problem": {
+        "name": "Valve problem"
       }
     },
     "calendar": {

@@ -239,7 +239,9 @@ def requested(cloud: RrcCloud) -> set[str]:
 
 
 async def test_issue122_shape_reads_programs_and_spares_the_budget() -> None:
-    """(1) The program list is read; (2) the device tree costs 11 reads."""
+    """(1) The program list is read; (2) the device tree costs 11 reads and
+    the setting leaves of the listed devices (W6), which come last: where the
+    budget ends among them, the rest is counted, not read."""
     tree = issue122_tree()
     cloud = RrcCloud(tree)
     cloud.down["/zones/zn1/item0"] = 403  # refused as on the real controller
@@ -253,10 +255,18 @@ async def test_issue122_shape_reads_programs_and_spares_the_budget() -> None:
     assert report.rrc_evidence == ("zones",)
     assert report.stop_reason == "complete"
     devices = {path for path in requested(cloud) if path.startswith("/devices")}
+    settings = rrc.device_setting_paths(tree["/devices/list"])
+    limited = [
+        path
+        for path in settings
+        if report.paths[path].read_policy == "rrc_device_setting_limit"
+    ]
+    assert limited == list(settings[len(settings) - len(limited) :])
     assert devices == {
         "/devices",
         "/devices/list",
         *(f"/devices/device{n}/versionFirmware" for n in range(1, 10)),
+        *(path for path in settings if path not in limited),
     }
     assert not {path for path in requested(cloud) if PRIVATE.search(path)}
     # Every zone leaf the controller advertises is there.
@@ -283,7 +293,12 @@ async def test_device_tree_before_the_zones_is_dropped_unrequested() -> None:
     assert cloud.requests[0] == ("/devices", "/zones")
     later = {path for paths in cloud.requests[1:] for path in paths}
     assert "/devices/device2" not in later
-    assert not any("/etrv" in path or path.endswith("/battery") for path in later)
+    # Only the setting leaves a contract declares (W6) are read below it.
+    settings = set(rrc.device_setting_paths(tree["/devices/list"]))
+    assert not any(
+        ("/etrv" in path and path not in settings) or path.endswith("/battery")
+        for path in later
+    )
     assert report.paths["/devices/device2"].read_policy == "outside_rrc_device_scope"
     assert report.paths["/devices/dev2"].read_policy == "never_read_private"
 

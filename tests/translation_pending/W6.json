@@ -1,0 +1,29 @@
+{
+  "package": "W6",
+  "keys": [
+    "exceptions.rrc_device_setting_unused.message",
+    "exceptions.rrc_window_sensitivity_level.message",
+    "entity.switch.rrc_child_lock.name",
+    "entity.number.rrc_temperature_offset.name",
+    "entity.select.rrc_window_sensitivity.name",
+    "entity.select.rrc_window_sensitivity.state.high",
+    "entity.select.rrc_window_sensitivity.state.medium",
+    "entity.select.rrc_window_sensitivity.state.low",
+    "entity.sensor.rrc_valve_position.name",
+    "entity.sensor.rrc_max_valve_position.name",
+    "entity.sensor.rrc_valve_temperature.name",
+    "entity.sensor.rrc_valve_state.name",
+    "entity.sensor.rrc_whisper_mode.name",
+    "entity.binary_sensor.rrc_valve_problem.name"
+  ],
+  "texts": [
+    "Temperature offset",
+    "Open window detection sensitivity",
+    "Valve problem",
+    "Valve opening",
+    "Maximum valve opening",
+    "Temperature at the valve",
+    "Valve state",
+    "Whisper mode"
+  ]
+}

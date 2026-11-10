@@ -16,6 +16,7 @@ import pytest
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 
+from custom_components.bosch_buderus_heating import rrc
 from custom_components.bosch_buderus_heating.discovery_inventory import (
     STORAGE_VERSION,
     resource_to_data,
@@ -90,14 +91,16 @@ async def test_alpha4_device_tree_is_neither_searched_nor_requested(
             if path.startswith("/devices/") and path != "/devices/list"
         ]
         assert not {path for path in cloud.all_requested() if PRIVATE.search(path)}
+        # Below the devices only the setting leaves of the contracts (W6).
+        settings = set(rrc.device_setting_paths(tree["/devices/list"]))
         assert not any(
-            "/etrv" in path or path.endswith("/battery")
+            ("/etrv" in path and path not in settings) or path.endswith("/battery")
             for path in cloud.all_requested()
         )
         stored = coordinator.inventory._data()
         kept = stored["gateways"]["gateway-one"]["resources"]
         assert not [path for path in kept if PRIVATE.search(path)]
-        assert not [path for path in kept if "/etrv" in path]
+        assert not [path for path in kept if "/etrv" in path and path not in settings]
         assert "MARKER" not in json.dumps(stored)
 
         await hass.config_entries.async_unload(entry.entry_id)
