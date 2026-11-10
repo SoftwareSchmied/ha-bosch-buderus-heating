@@ -20,6 +20,7 @@ from custom_components.bosch_buderus_heating import (
     async_migrate_entry,
     async_setup_entry,
     async_unload_entry,
+    enable_promoted_defaults,
 )
 from custom_components.bosch_buderus_heating.const import (
     CONF_ACCESS_TOKEN,
@@ -616,6 +617,57 @@ def test_new_defaults_enable_only_integration_disabled_entities(
         entity_registry.async_get(user_disabled.entity_id).disabled_by
         is er.RegistryEntryDisabler.USER
     )
+
+
+def test_new_defaults_stay_disabled_without_enabling_new_entities(
+    hass: HomeAssistant,
+) -> None:
+    """With "enable new entities" switched off nothing is enabled."""
+    entry = _entry(hass)
+    hass.config_entries.async_update_entry(entry, pref_disable_new_entities=True)
+    entity_registry = er.async_get(hass)
+    promoted = entity_registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        "gateway-one:heatSources:hs1:workingTime:total",
+        config_entry=entry,
+        disabled_by=er.RegistryEntryDisabler.INTEGRATION,
+    )
+    coordinator = SimpleNamespace(
+        gateway=Gateway("gateway-one"),
+        resources={
+            "/heatSources/hs1/workingTime": Resource(
+                path="/heatSources/hs1/workingTime",
+                values=({"total": 3600},),
+            )
+        },
+    )
+
+    _enable_new_default_entities(hass, entry, (coordinator,))
+
+    assert (
+        entity_registry.async_get(promoted.entity_id).disabled_by
+        is er.RegistryEntryDisabler.INTEGRATION
+    )
+
+
+def test_a_failing_promotion_logs_only_the_error_class(hass, caplog) -> None:
+    """ERR-9: the error text stays out of the log; the view still starts."""
+    entry = _entry(hass)
+    coordinator = SimpleNamespace(config_entry=entry, hass=hass)
+    with patch(
+        "custom_components.bosch_buderus_heating._enable_promoted_local_only",
+        side_effect=RuntimeError("account@example.invalid"),
+    ):
+        enable_promoted_defaults(coordinator)
+    errors = [record for record in caplog.records if record.levelname == "ERROR"]
+    assert [record.getMessage() for record in errors] == [
+        "Newly enabled default entities could not be enabled (RuntimeError)"
+    ]
+    assert errors[0].exc_info is None
+    # The traceback follows at debug level only.
+    details = [record for record in caplog.records if record.exc_info]
+    assert [record.levelname for record in details] == ["DEBUG"]
 
 
 async def test_device_migration_never_merges_into_another_config_entry(hass):

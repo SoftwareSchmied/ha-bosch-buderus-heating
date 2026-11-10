@@ -9,6 +9,7 @@ entities; systems without a local access keep their entities unavailable.
 import asyncio
 import functools
 import importlib
+import logging
 from copy import deepcopy
 from datetime import timedelta
 from unittest.mock import patch
@@ -391,6 +392,8 @@ def failing_builds(count):
 
 @bounded
 async def test_a_failed_build_is_tried_again(hass, caplog) -> None:
+    runtime_log = "custom_components.bosch_buderus_heating.connection_runtime"
+    caplog.set_level(logging.DEBUG, logger=runtime_log)
     built, failing = failing_builds(2)
     backend = ReadingBackend()
     with failing:
@@ -409,6 +412,19 @@ async def test_a_failed_build_is_tried_again(hass, caplog) -> None:
             assert built[0]._remove_local_listener is None  # stopped
             assert built[0].faults._handed_over  # never writes
             assert "could not be shown; retrying" in caplog.text
+            # ERR-9: the class in the warning, one traceback at debug level.
+            tracebacks = [
+                record
+                for record in caplog.records
+                if record.name == runtime_log and record.exc_info
+            ]
+            assert len(tracebacks) == len(built) == 1
+            assert tracebacks[0].levelname == "DEBUG"
+            assert "broken reading" not in " ".join(
+                record.getMessage()
+                for record in caplog.records
+                if record.levelno >= logging.WARNING
+            )
             retry = runtime._target_retry
             assert retry is not None and not retry.done()
             # Another failure (here: the next change) adds no second retry.

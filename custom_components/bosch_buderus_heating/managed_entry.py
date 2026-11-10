@@ -22,6 +22,7 @@ from .configuration_management import section, sync_not_found_issues
 from .connection_inventory import ConnectionInventory
 from .connection_runtime import ConnectionPhase, ConnectionRuntime, DriverFactory
 from .const import DOMAIN, PLATFORMS
+from .log_helpers import log_failure
 from .managed_platforms import ManagedPlatforms
 from .managed_services import ManagedServices
 
@@ -168,8 +169,13 @@ class ManagedEntry:
             # 6B-a: also systems shown from their local readings alone (R1).
             kept.update(self.connections.target_view_gateways(marked=True).values())
             inventory.keep_templates(kept)
-        except Exception:  # descriptions are optional; never block the entry
-            _LOGGER.warning("Stored descriptions could not be tidied up", exc_info=True)
+        except Exception as err:  # descriptions are optional; never block the entry
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Stored descriptions could not be tidied up",
+                error=err,
+            )
 
     @callback
     def _sync_setup_issue(self, *, create: bool = False) -> None:
