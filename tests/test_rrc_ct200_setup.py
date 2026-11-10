@@ -103,7 +103,8 @@ async def test_large_ct200_plant_reaches_every_platform_within_the_budget(
         }
         # CT-E07, CT-F05: keys and personal data are never requested.
         assert not {path for path in requested if PRIVATE.search(path)}
-        assert len(requested) < 400
+        # W2 adds the events root and its three lists.
+        assert len(requested) < 400 + 4
 
         # Every zone offers its program; 24 programs are named options.
         selects = entities(hass, entry, "select")

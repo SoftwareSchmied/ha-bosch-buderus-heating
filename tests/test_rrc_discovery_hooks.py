@@ -34,10 +34,18 @@ CONTRACT = RrcContract(
 )
 
 
+# W2 fills the absence contract with the paths these probes use (away
+# mode, events); the probes run against the foundation with its empty stub.
+FOUNDATION = tuple(
+    RrcContract(name="absence") if contract.name == "absence" else contract
+    for contract in rrc_contracts.CONTRACTS
+)
+
+
 @contextmanager
 def installed(*contracts: RrcContract) -> Iterator[None]:
     original = rrc_contracts._registry
-    rrc_contracts._registry = Registry((*rrc_contracts.CONTRACTS, *contracts))
+    rrc_contracts._registry = Registry((*FOUNDATION, *contracts))
     try:
         yield
     finally:
@@ -102,7 +110,11 @@ def _setting(path: str) -> bool:
 
 async def test_empty_hooks_add_no_request() -> None:
     cloud = RrcCloud(tree())
-    _found, report, order = await _discover(cloud, Gateway("gw", device_type="rrc2"))
+    # The foundation's empty hooks (W2 fills the absence contract's).
+    with installed():
+        _found, report, order = await _discover(
+            cloud, Gateway("gw", device_type="rrc2")
+        )
     assert report.device_profile == "rrc2"
     assert not any(_setting(path) or path.startswith("/events") for path in order)
     assert "/system/appliance/displayCode" not in order

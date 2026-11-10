@@ -112,10 +112,18 @@ def away(value: str = "false", **fields: object) -> Resource:
     return wire(AWAY, type="stringValue", value=value, **fields)
 
 
+# W2 fills the absence contract with the paths these probes use (away
+# mode, events); the probes run against the foundation with its empty stub.
+FOUNDATION = tuple(
+    RrcContract(name="absence") if contract.name == "absence" else contract
+    for contract in rrc_contracts.CONTRACTS
+)
+
+
 @contextmanager
 def installed(*contracts: RrcContract) -> Iterator[Registry]:
     """Swap the installed contracts for the duration of a test."""
-    registry = Registry((*rrc_contracts.CONTRACTS, *contracts))
+    registry = Registry((*FOUNDATION, *contracts))
     original = rrc_contracts._registry
     rrc_contracts._registry = registry
     try:
@@ -179,10 +187,12 @@ def test_shipped_contracts_are_empty_except_the_moved_override_block() -> None:
         "system",
         "devices",
     ]
+    # W2 fills the absence contract; the others are still empty stubs.
     for contract in registry.contracts:
-        assert not contract.enum_policies and not contract.number_policies
+        if contract.name != "absence":
+            assert not contract.enum_policies and not contract.number_policies
     assert rrc_contracts.zone_fields() == ()
-    assert rrc_contracts.extra_roots() == ()
+    assert rrc_contracts.extra_roots() == ("/events",)
     assert rrc_contracts.device_leaves("thermostat_valve") == ()
     assert rrc_contracts.optional_children("/system/appliance") == ()
     assert rrc_contract_zone.CONTRACT.blocked

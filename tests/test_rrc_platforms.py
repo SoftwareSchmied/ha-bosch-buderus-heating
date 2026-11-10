@@ -20,11 +20,25 @@ from custom_components.bosch_buderus_heating.sensor import (
 PATH = "/system/appliance/displayCode"
 
 
+# W2 fills the absence contract with the paths these probes use (away
+# mode, events); the probes run against the foundation with its empty stub.
+FOUNDATION = tuple(
+    RrcContract(name="absence") if contract.name == "absence" else contract
+    for contract in rrc_contracts.CONTRACTS
+)
+
+
 def test_every_entity_module_declares_empty_trackers() -> None:
     rrc_platforms.trackers.cache_clear()
     loaded = rrc_platforms.trackers()
     assert [name for name, _ in loaded] == list(rrc_platforms.ENTITY_MODULES)
-    assert all(not table for _, table in loaded)
+    # W2 tracks the calendar, the boost switch and its numbers.
+    assert all(not table for name, table in loaded if name != "rrc_absence_entities")
+    assert set(dict(loaded)["rrc_absence_entities"]) == {
+        Platform.CALENDAR,
+        Platform.NUMBER,
+        Platform.SWITCH,
+    }
     assert Platform.TIME in rrc_platforms.PLATFORMS
 
 
@@ -62,7 +76,7 @@ def test_generic_presentation_applies_the_contract() -> None:
         unique_key="system:appliance:displayCode",
     )
     original = rrc_contracts._registry
-    rrc_contracts._registry = Registry((*rrc_contracts.CONTRACTS, contract))
+    rrc_contracts._registry = Registry((*FOUNDATION, contract))
     try:
         shown = rrc_platforms.generic_presentation(description, Platform.SENSOR)
         assert shown.name == "Anzeigecode"

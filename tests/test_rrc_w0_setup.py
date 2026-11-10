@@ -73,10 +73,18 @@ def k40() -> RrcCloud:
     )
 
 
+# W2 fills the absence contract with the paths these probes use (away
+# mode, events); the probes run against the foundation with its empty stub.
+FOUNDATION = tuple(
+    RrcContract(name="absence") if contract.name == "absence" else contract
+    for contract in rrc_contracts.CONTRACTS
+)
+
+
 @contextmanager
 def installed(*contracts: RrcContract) -> Iterator[None]:
     original = rrc_contracts._registry
-    rrc_contracts._registry = Registry((*rrc_contracts.CONTRACTS, *contracts))
+    rrc_contracts._registry = Registry((*FOUNDATION, *contracts))
     try:
         yield
     finally:
@@ -451,7 +459,8 @@ async def test_structured_write_runs_once_with_its_guard_in_real_cycles(
             {"name": "first"},
             {"name": "second"},
         ]
-        core = coordinator.rrc_write_stats.snapshot("core")
+        # W2's absence contract owns the events paths.
+        core = coordinator.rrc_write_stats.snapshot("absence")
         assert core["writes_sent"] == 2
         assert core["writes_confirmed"] == 1
         assert core["writes_unconfirmed"] == 1

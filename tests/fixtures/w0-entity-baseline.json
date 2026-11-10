@@ -339,6 +339,23 @@
      "disabled_by": null,
      "domain": "number",
      "entity_category": "config",
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "System \u2013 Away temperature",
+     "translation_key": "rrc_away_temperature",
+     "unique_id": "gateway-one:system:awayMode:temperature:control",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "max": 30.0,
+      "min": 5.0,
+      "mode": "box",
+      "step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "number",
+     "entity_category": "config",
      "original_icon": null,
      "original_name": "Raum 10 \u2013 Set manual heating setpoint",
      "translation_key": "manual_room_setpoint",
@@ -1626,7 +1643,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": null,
+     "original_icon": "mdi:home-export-outline",
      "original_name": "System \u2013 Away mode",
      "translation_key": "on_off_state",
      "unique_id": "gateway-one:system:awayMode:enabled",
@@ -1640,7 +1657,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": null,
+     "original_icon": "mdi:home-thermometer-outline",
      "original_name": "System \u2013 Away temperature",
      "translation_key": null,
      "unique_id": "gateway-one:system:awayMode:temperature",
@@ -2694,6 +2711,18 @@
      "unit": null
     },
     {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": null,
+     "original_icon": "mdi:home-export-outline",
+     "original_name": "System: Away mode",
+     "translation_key": "away_mode",
+     "unique_id": "gateway-one:system:awayMode:enabled:control",
+     "unit": null
+    },
+    {
      "capabilities": {
       "operation_list": [
        "high"
@@ -2712,7 +2741,7 @@
    ],
    "setup_calls": {
     "bulk": 16,
-    "single": 113
+    "single": 117
    },
    "setup_requests": [
     "/devices",
@@ -2758,6 +2787,10 @@
     "/dhwCircuits/dhw1/volumeFlow",
     "/dhwCircuits/dhw1/waterTotalConsumption",
     "/dhwCircuits/waterTotalConsumption",
+    "/events",
+    "/events/list1",
+    "/events/list2",
+    "/events/list3",
     "/gateway",
     "/gateway/dataProcessing/status",
     "/gateway/hmip",
@@ -6045,6 +6078,10 @@
     "/devices",
     "/devices/list",
     "/dhwCircuits",
+    "/events",
+    "/events/list1",
+    "/events/list2",
+    "/events/list3",
     "/gateway",
     "/heatSources",
     "/heatingCircuits",
