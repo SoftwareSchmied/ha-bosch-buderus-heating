@@ -1025,6 +1025,7 @@ def test_the_hand_over_runs_before_any_sensor_is_added(hass) -> None:
         patch.object(sensor, "_track_source_sensors", Mock()),
         patch.object(sensor, "track_local_only_sensors", Mock()),
         patch.object(sensor, "track_estimated_energy_sensors", Mock()),
+        patch.object(sensor, "track_radio_devices", Mock()),
         patch.object(sensor, "track_entity_once", Mock()),
         patch.object(sensor, "BoschBuderusActiveFaultsSensor", Mock()),
         patch.object(sensor, "BoschBuderusActiveNotificationsSensor", Mock()),

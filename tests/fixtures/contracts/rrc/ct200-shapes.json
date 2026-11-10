@@ -1,7 +1,7 @@
 {
  "provenance": {
   "kind": "synthetic",
-  "basis": "synthetic_from_app_demo_shapes",
+  "basis": "compatibility_mapping",
   "reference": "RRC 2.0 room controller (CT200 class) with 11 zones, 12 radio devices and 24 programs",
   "firmware": null,
   "capture_date": null,
