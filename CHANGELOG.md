@@ -467,7 +467,7 @@ a local test broker; checks with real devices are still open.
 
 ### RRC zones
 
-- RRC zones of the Buderus TC100.2 room controller were rejected because it
+- RRC zones of the TC100.2 room controller were rejected because it
   sends the `used` flag as the JSON string `"true"` or `"false"`. These two
   exact strings are now read like JSON booleans; numbers and other spellings
   remain malformed. On this controller, room temperature, active target,

@@ -250,7 +250,7 @@ def _parse_availability_flag(
     raw = data[key]
     if isinstance(raw, bool):
         return raw, True
-    # The Buderus TC100.2 RRC controller sends the exact JSON strings
+    # The TC100.2 RRC controller sends the exact JSON strings
     # "true"/"false". Other spellings and numbers remain malformed.
     if isinstance(raw, str) and raw in ("true", "false"):
         return raw == "true", True

@@ -4,7 +4,7 @@ I added separate RRC zone readings, controls and an editor for existing
 heating schedule points. These functions require compatible resources from
 the selected PointT gateway. They do not establish support for every device
 marketed with an RRC controller. The read structure (flags, types, units and
-limits) has been observed on a Buderus TC100.2 with read-only requests;
+limits) has been observed on a TC100.2 with read-only requests;
 writes and other models still need physical confirmation.
 
 ## Discovery and readings
@@ -35,7 +35,7 @@ I preserve temperature precision. I accept the reviewed Celsius unit
 spellings `C`, `°C` and `ºC`, without importing other families' conversion
 rules. False or malformed `used`/`available` flags, invalid values, numeric
 error markers and incompatible shapes do not produce a usable reading.
-I also accept the exact strings `"true"` and `"false"`, which the Buderus
+I also accept the exact strings `"true"` and `"false"`, which the
 TC100.2 sends; other spellings and numbers remain malformed.
 The measured temperature and active target are enabled by default; the
 remaining reading mirrors are optional. Controls have separate stable IDs.
@@ -100,7 +100,7 @@ The schema distinguishes editing existing points from adding new points.
 
 I test these contracts with synthetic multi-zone data, simulated errors,
 concurrent edits, native HA dialogs and an actual local HTTP endpoint.
-An anonymized fixture records the read structure observed on a Buderus
+An anonymized fixture records the read structure observed on a
 TC100.2. Writes on a physical RRC device remain unverified.
 
 ## Deutsch
@@ -109,7 +109,7 @@ Ich habe RRC-Zonen mit eigenen Anzeigen, Bedienelementen und einem Editor für
 vorhandene Schaltpunkte ergänzt. Voraussetzung sind passende Ressourcen am
 ausgewählten PointT-Gateway. Damit ist noch keine vollständige Unterstützung
 aller Geräte mit RRC-Regelung nachgewiesen. Die gelesene Struktur (Merkmale,
-Typen, Einheiten und Grenzen) wurde an einem Buderus TC100.2 mit reinen
+Typen, Einheiten und Grenzen) wurde an einem TC100.2 mit reinen
 Leseanfragen beobachtet; Schreibzugriffe und andere Modelle stehen aus.
 
 Die Zonenpfade `/zones/zn{id}` bleiben von ConnectKey-`zone{id}` getrennt.
@@ -124,7 +124,7 @@ Raumtemperatur, aktiver Sollwert, manueller Sollwert und vorübergehender
 Sollwert sind getrennte Anzeigen. Ich erhalte die gemeldete Genauigkeit und
 prüfe Celsius-Einheit, Fehlerwerte und Verfügbarkeitsmerkmale. Gültig ist ein
 Merkmal als JSON-Wahrheitswert oder als exakte Zeichenkette `"true"` bzw.
-`"false"`, wie sie der Buderus TC100.2 sendet; andere Schreibweisen und Zahlen
+`"false"`, wie sie der TC100.2 sendet; andere Schreibweisen und Zahlen
 bleiben ungültig. Raumtemperatur und aktiver Sollwert sind standardmäßig
 aktiviert; weitere Anzeigen bleiben optional. Die Bedienelemente besitzen
 eigene stabile IDs.
@@ -172,5 +172,5 @@ Diagnose-Schema 20 zeigt Verfügbarkeit und Formateignung ohne Temperaturen,
 Zeitpläne, Namen oder zusätzliche Anfragen. Numerische Zonen- und
 Programmpfade bleiben erkennbar, unbekannte dynamische IDs redigiert.
 Die Prüfungen verwenden synthetische Daten, einen lokalen HTTP-Endpunkt
-und native HA-Dialoge. Eine anonymisierte Fixture hält die an einem Buderus
+und native HA-Dialoge. Eine anonymisierte Fixture hält die an einem
 TC100.2 beobachtete Lesestruktur fest. Schreibtests am Gerät stehen aus.

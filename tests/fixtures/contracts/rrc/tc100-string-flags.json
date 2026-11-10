@@ -2,7 +2,7 @@
   "provenance": {
     "kind": "anonymized_capture",
     "basis": "observed_structure",
-    "reference": "Buderus TC100.2 room controller with RRC zones, read with plain GET requests",
+    "reference": "TC100.2 room controller with RRC zones, read with plain GET requests",
     "firmware": null,
     "capture_date": "2026-11-09",
     "created": "2026-11-09",
