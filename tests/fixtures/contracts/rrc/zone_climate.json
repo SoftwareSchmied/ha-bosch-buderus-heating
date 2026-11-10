@@ -1,7 +1,7 @@
 {
  "provenance": {
   "kind": "synthetic",
-  "basis": "synthetic_from_app_demo_shapes",
+  "basis": "compatibility_mapping",
   "reference": "RRC 2.0 room controller with six zones for the zone climate (W1): manual, schedule with and without a temporary setpoint, a locked mode, a zone without temporary setpoint and one without room temperature",
   "firmware": null,
   "capture_date": null,
