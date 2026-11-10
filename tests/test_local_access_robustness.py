@@ -383,6 +383,7 @@ async def test_the_expiry_timer_wakes_only_what_it_must(polling, monkeypatch):
     """PLAN-4/PERF-1: ageing never wakes the scheduler; a new reading that
     ages earlier than the timer looks next wakes the timer."""
     service, clock, gateway, published = polling
+    parked = asyncio.Event()
 
     async def wait_for_event(event, delay):
         # Time passes only with the test's clock: both loops run when their
@@ -390,7 +391,22 @@ async def test_the_expiry_timer_wakes_only_what_it_must(polling, monkeypatch):
         # real one (the scheduler waits 0.2 s for the start gap) could
         # otherwise run the scheduler on a slow machine after the clock
         # moved past the next due read.
-        await event.wait()
+        if event is not service._wake:
+            await event.wait()
+            return
+        parked.set()
+        try:
+            await event.wait()
+        finally:
+            parked.clear()
+
+    async def scheduler_parked():
+        # A pass of the scheduler may save the schedule, which takes real
+        # time in the executor: wait until it waits for its event again.
+        await settle()
+        async with asyncio.timeout(5):
+            await parked.wait()
+        await settle()
 
     monkeypatch.setattr(service, "_wait", wait_for_event)
     await running(service, clock, STATIC)
@@ -418,13 +434,13 @@ async def test_the_expiry_timer_wakes_only_what_it_must(polling, monkeypatch):
     service._wake.clear()
     clock.advance(late_after(60) + 0.01)
     service._age_wake.set()
-    await settle()
+    await scheduler_parked()
     assert published[-1].resources[-1].freshness is Freshness.LATE
     assert not steps and not service._wake.is_set()
     # An expired explicit operation does.
     gateway.hold = asyncio.Event()
     operation = service.request((REQUEST,))
-    await settle()
+    await scheduler_parked()
     assert not operation.done
     service._wake.clear()
     steps.clear()
