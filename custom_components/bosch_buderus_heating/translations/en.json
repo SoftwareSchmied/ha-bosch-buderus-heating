@@ -1002,6 +1002,9 @@
     },
     "gateway_exchange_incomplete": {
       "message": "An interrupted gateway exchange could not be finished, so the integration does not start. Details are in the log; remove what blocks the exchange (for example entities of the new gateway) and restart Home Assistant."
+    },
+    "rrc_curve_order": {
+      "message": "The heating curve and the supply limits must stay in order: the base point below the end point, the minimum supply temperature not above the maximum. Nothing was sent; change the other limit first."
     }
   },
   "selector": {
@@ -1130,6 +1133,27 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Ambient light brightness"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Heating curve base point"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Heating curve end point"
+      },
+      "rrc_min_supply": {
+        "name": "Minimum supply temperature"
+      },
+      "rrc_max_supply": {
+        "name": "Maximum supply temperature"
+      },
+      "rrc_room_influence": {
+        "name": "Room influence"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Stop heating at outdoor temperature"
+      },
+      "rrc_night_threshold": {
+        "name": "Night setback down to outdoor temperature"
       }
     },
     "select": {
@@ -1212,6 +1236,36 @@
           "orange": "Orange",
           "red": "Red"
         }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Summer/winter switching",
+        "state": {
+          "off": "Off",
+          "automatic": "Automatic"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Night setback by outdoor temperature",
+        "state": {
+          "off": "Off",
+          "automatic": "Automatic"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Season mode",
+        "state": {
+          "always_heating": "Always heating",
+          "always_cooling": "Always cooling",
+          "automatic": "Automatic"
+        }
+      },
+      "rrc_building_heatup": {
+        "name": "Heat-up speed",
+        "state": {
+          "slow": "Slow",
+          "normal": "Normal",
+          "fast": "Fast"
+        }
       }
     },
     "switch": {
@@ -1253,6 +1307,9 @@
       },
       "bacon_dry_display": {
         "name": "Display"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Setpoint optimization"
       }
     },
     "sensor": {
@@ -1846,6 +1903,14 @@
               "below": "Below measuring range"
             }
           }
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Operating season",
+        "state": {
+          "heating": "Heating",
+          "cooling": "Cooling",
+          "idle": "Idle"
         }
       }
     },

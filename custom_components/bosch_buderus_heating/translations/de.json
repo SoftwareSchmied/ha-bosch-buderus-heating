@@ -1002,6 +1002,9 @@
     },
     "gateway_exchange_incomplete": {
       "message": "Ein unterbrochener Gateway-Austausch ließ sich nicht abschließen, deshalb startet die Integration nicht. Details stehen im Protokoll; entferne, was den Austausch blockiert (zum Beispiel Entitäten des neuen Gateways), und starte Home Assistant neu."
+    },
+    "rrc_curve_order": {
+      "message": "Heizkurve und Vorlaufgrenzen müssen in der richtigen Reihenfolge bleiben: der Fußpunkt unter dem Endpunkt, die minimale Vorlauftemperatur nicht über der maximalen. Es wurde nichts gesendet; ändere zuerst die andere Grenze."
     }
   },
   "selector": {
@@ -1130,6 +1133,27 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Helligkeit der Ambientebeleuchtung"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Heizkurve Fußpunkt"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Heizkurve Endpunkt"
+      },
+      "rrc_min_supply": {
+        "name": "Minimale Vorlauftemperatur"
+      },
+      "rrc_max_supply": {
+        "name": "Maximale Vorlauftemperatur"
+      },
+      "rrc_room_influence": {
+        "name": "Raumeinfluss"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Heizbetrieb bis Außentemperatur"
+      },
+      "rrc_night_threshold": {
+        "name": "Nachtabsenkung bis Außentemperatur"
       }
     },
     "select": {
@@ -1212,6 +1236,36 @@
           "orange": "Orange",
           "red": "Rot"
         }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Sommer-/Winterumschaltung",
+        "state": {
+          "off": "Aus",
+          "automatic": "Automatisch"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Nachtabsenkung nach Außentemperatur",
+        "state": {
+          "off": "Aus",
+          "automatic": "Automatisch"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Saisonbetrieb",
+        "state": {
+          "always_heating": "Immer heizen",
+          "always_cooling": "Immer kühlen",
+          "automatic": "Automatisch"
+        }
+      },
+      "rrc_building_heatup": {
+        "name": "Aufheizgeschwindigkeit",
+        "state": {
+          "slow": "Langsam",
+          "normal": "Normal",
+          "fast": "Schnell"
+        }
       }
     },
     "switch": {
@@ -1253,6 +1307,9 @@
       },
       "bacon_dry_display": {
         "name": "Display"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Sollwertoptimierung"
       }
     },
     "sensor": {
@@ -1846,6 +1903,14 @@
               "below": "Unter Messbereich"
             }
           }
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Betriebssaison",
+        "state": {
+          "heating": "Heizen",
+          "cooling": "Kühlen",
+          "idle": "Ruhezustand"
         }
       }
     },
