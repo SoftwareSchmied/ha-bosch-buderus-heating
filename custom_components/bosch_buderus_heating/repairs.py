@@ -37,6 +37,7 @@ from .gateway_exchange import (
     short_id,
 )
 from .ha_schema import validation as vol
+from .log_helpers import log_failure
 from .repair_scope import repair_id
 
 _LOGGER = logging.getLogger(__name__)
@@ -402,8 +403,10 @@ class GatewayExchangeRepairFlow(RepairsFlow):
             await async_exchange_gateway(self.hass, entry, self._check)
         except GatewayExchangeError as error:
             return self.async_abort(reason=error.reason)
-        except Exception:
-            _LOGGER.exception("The gateway exchange failed")
+        except Exception as err:
+            log_failure(
+                _LOGGER, logging.ERROR, "The gateway exchange failed", error=err
+            )
             return self.async_abort(reason="exchange_failed")
         return self.async_create_entry(data={})
 

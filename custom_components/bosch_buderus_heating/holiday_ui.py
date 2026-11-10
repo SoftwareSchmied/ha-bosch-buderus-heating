@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.selector import BooleanSelector, TextSelector
 
 from .ha_schema import validation as vol
+from .log_helpers import log_failure
 
 DELETE_FIELD = "holiday_delete"
 _REGISTERED = "bosch_buderus_heating.holiday_ui"
@@ -94,11 +95,13 @@ async def _async_register_module(hass: HomeAssistant, key: str, name: str) -> No
     except (OSError, ValueError, RuntimeError) as error:
         # Only one optional dialog form is affected; the appliances, their
         # entities and the remaining options must still start.
-        _LOGGER.warning(
+        log_failure(
+            _LOGGER,
+            logging.WARNING,
             "The dialog module %s could not be loaded, so its form cannot be "
-            "shown; everything else starts normally: %s",
+            "shown; everything else starts normally",
             name,
-            error,
+            error=error,
         )
         return
     hass.data[key] = url

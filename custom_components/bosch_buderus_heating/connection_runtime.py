@@ -684,7 +684,6 @@ class ConnectionRuntime:
                 "A system's local readings could not be shown; retrying",
                 error=err,
             )
-            _LOGGER.debug("Local plant view build failed", exc_info=True)
             if view is not None:
                 # Never writes and never listens any more.
                 view.faults.discard()

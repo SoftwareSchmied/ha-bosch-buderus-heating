@@ -384,16 +384,24 @@ async def test_rate_limit_and_rejection_keep_their_own_handling() -> None:
     assert manager.refresh_rejected and manager._last_failure is None
 
 
-async def test_unexpected_error_is_kept_but_still_paused() -> None:
+async def test_unexpected_error_propagates_and_pauses_nothing() -> None:
+    """D: a programming error is no failure of the sign-in service."""
     client = _FlakyClient(failures=1, error=RuntimeError("bug"))
     clock = [0.0]
     manager = _paused_manager(client, clock)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError, match="bug"):
         await manager.get_access_token()
+    assert manager._last_failure is None
+    assert manager._failures == 0
+    # The next call tries again at once and succeeds.
+    assert await manager.get_access_token() == "fresh-2"
+    assert client.calls == 2
+    # A failure of the service afterwards starts with the shortest wait.
+    client.failures, client.error = 3, RequestTimeout()
+    manager._tokens = AuthTokens("fresh-2", "rotated", expires_at=0.0)
     with pytest.raises(SignInUnavailable) as caught:
         await manager.get_access_token()
-    assert caught.value.reason == "unexpected_error"
-    assert client.calls == 1
+    assert caught.value.retry_after == 30.0
 
 
 async def test_failed_saving_after_a_refresh_starts_no_pause() -> None:

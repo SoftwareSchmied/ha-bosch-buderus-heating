@@ -42,7 +42,11 @@ from custom_components.bosch_buderus_heating.pointt import (
     ServiceUnavailable,
 )
 from tests.ha_test_helpers import MockConfigEntry
-from tests.test_config_flow import _redirect_from_result
+from tests.test_config_flow import (
+    _redirect_from_result,
+    _scope_rejection,
+)
+from tests.test_config_flow import scope_fallback as scope_fallback
 from tests.test_configuration import legacy
 from tests.test_connection_runtime import entry_for
 from tests.test_managed_connections import choose_connection
@@ -836,6 +840,41 @@ async def test_first_bacon_selection_adds_account_without_touching_pointt_identi
     )
 
 
+@pytest.mark.parametrize(
+    "failure",
+    [TimeoutError(), OSError("/config/.storage/x"), RuntimeError("store")],
+    ids=["timeout", "storage", "unexpected"],
+)
+async def test_selection_is_saved_when_waiting_for_a_rotation_fails(
+    hass, backend, caplog, failure
+):
+    """D: the selection is built on the saved tokens, also if the wait fails."""
+    import logging
+
+    caplog.set_level(logging.DEBUG)
+    entry, cloud, _ = existing(hass)
+    result = await choose_connection(hass, entry, cloud)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "connection_discover"}
+    )
+    wait = AsyncMock(side_effect=failure)
+    with patch(ROOT + ".cloud_options_flow.async_wait_for_entry_refresh", wait):
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {"gateway_ids": ["000123"], "bacon_device_ids": []}
+        )
+    wait.assert_awaited_once()
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    notes = [
+        record.getMessage()
+        for record in caplog.records
+        if "token renewal" in record.getMessage()
+    ]
+    assert notes == [
+        f"Waiting for a running token renewal failed ({type(failure).__name__})"
+    ]
+    assert not any(str(failure) and str(failure) in note for note in notes)
+
+
 async def test_selection_waits_for_a_running_rotation_and_keeps_it(hass, backend):
     """C16/AUTH-3: the first device selection during a refresh keeps the token."""
     import asyncio
@@ -1031,6 +1070,27 @@ async def test_options_sign_in_keeps_its_link_after_a_paste_mistake(hass, backen
         assert result["errors"] == {"base": "invalid_redirect"}
         assert _link(result) == _link(first)
     backend.oauth.assert_not_awaited()
+    result = await manager.async_configure(first["flow_id"], {"redirect_url": good})
+    assert result["step_id"] == "cloud_select"
+    backend.oauth.assert_awaited_once()
+
+
+async def test_options_sign_in_asks_to_open_the_new_link_after_a_scope_rejection(
+    hass, backend, scope_fallback
+):
+    """C: a rejected scope set shows the new link, not a wrong address."""
+    entry = empty_entry(hass)
+    first = await connect_dialog(hass, entry, authenticate=False)
+    manager = hass.config_entries.options
+    result = await manager.async_configure(
+        first["flow_id"], {"redirect_url": _scope_rejection(first, Brand.BUDERUS)}
+    )
+    assert result["step_id"] == "cloud_auth"
+    assert result["errors"] == {"base": "auth_restart"}
+    assert _link(result) != _link(first)
+    assert "pointt.gateway.claiming" in _link(result)
+    backend.oauth.assert_not_awaited()
+    good = _redirect_from_result(result, Brand.BUDERUS)
     result = await manager.async_configure(first["flow_id"], {"redirect_url": good})
     assert result["step_id"] == "cloud_select"
     backend.oauth.assert_awaited_once()

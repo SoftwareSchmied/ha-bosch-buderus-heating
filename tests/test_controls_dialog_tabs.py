@@ -242,6 +242,10 @@ async def test_frontend_module_failure_does_not_stop_the_integration(
     ]
     assert len(messages) == 2
     assert "controls-dialog" in messages[0] and "holiday-dialog" in messages[1]
+    # ERR-9: only the error class; its text may carry a file path.
+    error = next(iter(failure.values()))
+    assert all(f"({type(error).__name__})" in message for message in messages)
+    assert not any(str(error) in message for message in messages)
 
 
 async def test_one_failing_module_keeps_the_other(hass, caplog):
@@ -265,4 +269,6 @@ async def test_one_failing_module_keeps_the_other(hass, caplog):
         "/bosch_buderus_heating/holiday-dialog-"
     )
     add.assert_called_once()
-    assert "locked" in caplog.text
+    warnings = [r.getMessage() for r in caplog.records if r.levelname == "WARNING"]
+    assert len(warnings) == 1 and "(PermissionError)" in warnings[0]
+    assert "locked" not in warnings[0]

@@ -271,6 +271,46 @@ const assert = require("node:assert/strict");
     };
   });
   assert.equal(await ui.evaluate((el) => el.reportValidity()), true);
+  // The browser counts the step from the minimum. A minimum off the step
+  // grid would reject values the appliance accepts: any value is entered
+  // then, and the server checks it.
+  const offGrid = await ui.evaluate((el) => {
+    el.value = { changes: {} };
+    el.selector = {
+      "bosch-buderus-controls": {
+        rows: window.rows.map((row) =>
+          row.key === "target"
+            ? { ...row, minimum: 37.5, maximum: 60, step: 1, value: 40 }
+            : row,
+        ),
+      },
+    };
+    const input = el.shadowRoot.querySelector('input[data-key="target"]');
+    input.value = "38";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    return {
+      step: input.getAttribute("step"),
+      valid: input.checkValidity(),
+      report: el.reportValidity(),
+    };
+  });
+  assert.deepEqual(offGrid, { step: "any", valid: true, report: true });
+  // A minimum on the grid keeps the step for arrow keys.
+  const onGrid = await ui.evaluate((el) => {
+    el.selector = {
+      "bosch-buderus-controls": {
+        rows: window.rows.map((row) =>
+          row.key === "target"
+            ? { ...row, minimum: 37, maximum: 60, step: 0.5, value: 40 }
+            : row,
+        ),
+      },
+    };
+    return el.shadowRoot
+      .querySelector('input[data-key="target"]')
+      .getAttribute("step");
+  });
+  assert.equal(onGrid, "0.5");
   assert.deepEqual(errors, []);
   console.log(
     "Actual controls module: drafts, tabs, discard, validation, refresh, DE/EN, keyboard, disabled controls and 320/390/736px layout passed.",

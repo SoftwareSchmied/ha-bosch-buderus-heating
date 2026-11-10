@@ -1,4 +1,11 @@
 // A native form selector. Draft edits never invoke an appliance service.
+
+// Whether the minimum lies on the step grid (a missing minimum counts as 0).
+const onStepGrid = (minimum, step) => {
+  const ticks = (Number(minimum) || 0) / step;
+  return Math.abs(ticks - Math.round(ticks)) < 1e-7;
+};
+
 class BoschBuderusControls extends HTMLElement {
   constructor() {
     super();
@@ -288,8 +295,14 @@ class BoschBuderusControls extends HTMLElement {
             input.min = row.minimum;
             input.max = row.maximum;
             // Arrow keys and the spinner follow the control's step; without
-            // a known step any value within the bounds can be entered.
-            input.step = row.step > 0 ? String(row.step) : "any";
+            // a known step any value within the bounds can be entered. The
+            // browser counts the step from the minimum: with a minimum off
+            // the step grid it would reject values the appliance accepts, so
+            // any value is entered then and the server checks it.
+            input.step =
+              row.step > 0 && onStepGrid(row.minimum, row.step)
+                ? String(row.step)
+                : "any";
             input.inputMode = "decimal";
             input.required = true;
             input.value = value;

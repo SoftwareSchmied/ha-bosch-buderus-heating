@@ -1005,3 +1005,55 @@ async def test_an_update_enables_promoted_defaults_but_never_a_users_choice(
         assert registry.async_get(vr1).disabled_by is er.RegistryEntryDisabler.USER
         assert registry.async_get(unreviewed).disabled_by is integration
         assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_promotion_keeps_new_entities_disabled_when_the_entry_says_so(
+    hass,
+) -> None:
+    """B: "enable new entities" switched off keeps every promotion disabled.
+
+    Home Assistant registers each new entity of such an entry disabled by the
+    integration; the promotion of an update must not enable them.
+    """
+    entry, _, _ = entry_for(hass)
+    data, options = deepcopy(dict(entry.data)), deepcopy(dict(entry.options))
+    for connection in data["connections"].values():
+        if connection["kind"] == "singlekey_cloud":
+            connection["credentials"]["expires_at"] = 10**12
+    for key, binding in data["bindings"].items():
+        if binding["adapter"] == "bacon":
+            options["bindings"][key]["enabled"] = False
+    paired_target(data, options)
+    options["bindings"]["local"]["enabled"] = False
+    hass.config_entries.async_update_entry(
+        entry, data=data, options=options, pref_disable_new_entities=True
+    )
+    registry = er.async_get(hass)
+    integration = er.RegistryEntryDisabler.INTEGRATION
+
+    def existing(unique_id):
+        return registry.async_get_or_create(
+            "sensor", DOMAIN, unique_id, config_entry=entry, disabled_by=integration
+        ).entity_id
+
+    vr0 = existing(local_only_unique_id(HEAT, VR0))
+    cloud_sensor = existing(SENSOR)
+    before = {item.entity_id for item in registry.entities.values()}
+
+    def added_by_setup():
+        # The sensor platform registers its new entities after the promotion.
+        return [
+            item
+            for item in er.async_entries_for_config_entry(registry, entry.entry_id)
+            if item.domain == "sensor" and item.entity_id not in before
+        ]
+
+    async with loopback(ReadingBackend()):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        assert entry.state is ConfigEntryState.LOADED
+        await eventually(added_by_setup)
+        await settle(hass)
+        assert registry.async_get(cloud_sensor).disabled_by is integration
+        assert registry.async_get(vr0).disabled_by is integration
+        assert all(item.disabled_by is integration for item in added_by_setup())
+        assert await hass.config_entries.async_unload(entry.entry_id)

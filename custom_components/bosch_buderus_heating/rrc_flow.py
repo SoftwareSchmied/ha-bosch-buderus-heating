@@ -32,6 +32,7 @@ from .pointt import (
     WriteValidationError,
 )
 from .rrc_programs import DAYS, WEEK, Schedule, SwitchPoint, edit_point, parse_schedule
+from .writes import WriteBusy
 
 
 @dataclass(frozen=True, slots=True)
@@ -261,6 +262,8 @@ class RrcScheduleOptionsFlow(OptionsFlow):
                         errors["base"] = "rrc_changed"
                     except WriteNotConfirmed:
                         errors["base"] = "rrc_not_confirmed"
+                    except WriteBusy:
+                        errors["base"] = "write_busy"
                     except PointTError:
                         errors["base"] = "rrc_failed"
                     else:

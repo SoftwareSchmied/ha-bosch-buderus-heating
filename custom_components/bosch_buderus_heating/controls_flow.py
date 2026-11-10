@@ -37,6 +37,7 @@ from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
 from .writes import (
     EnumWritePolicy,
     NumberWritePolicy,
+    WriteBusy,
     assess_control,
     validate_control_value,
 )
@@ -332,6 +333,9 @@ class ControlsOptionsFlow(OptionsFlow):
                             errors["base"] = "controls_unconfirmed"
                         except WriteValidationError:
                             errors["base"] = "controls_changed"
+                        except WriteBusy:
+                            # Nothing was sent; the change can be tried again.
+                            errors["base"] = "controls_busy"
                         except PointTError:
                             errors["base"] = "controls_failed"
                         else:

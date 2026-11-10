@@ -18,7 +18,9 @@ Poll batch-first in fast, control, energy, slow, static, and discovery groups:
 
 Discovery processes the reference tree in batches of at most 30 paths.
 Runtime polling combines all groups due in the same cycle before it
-splits the paths into batches of at most 30. A typical installation should need
+splits the paths into batches of at most 30; only the fault sources are read
+together in a first batch of their own, so a failing reading elsewhere never
+fails them with it. A typical installation should need
 one request per minute plus the less frequent additional batches and remain
 well below 5,000 HTTP requests per day. Preserve successful batch items and
 per-resource last-good state with explicit freshness.

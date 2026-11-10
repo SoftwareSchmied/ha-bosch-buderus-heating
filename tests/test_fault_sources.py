@@ -360,18 +360,64 @@ async def test_a_clock_that_went_back_starts_the_run_again(
     assert [event.event_type for event in events] == [FaultEventType.RESOLVED]
 
 
-async def test_a_fully_answered_discovery_retires_a_missing_source(
+async def test_a_fully_answered_discovery_retires_a_missing_source_after_a_day(
     hass: HomeAssistant,
 ) -> None:
+    """FAULT-2: missing from a complete discovery counts like a 404 answer."""
     tracker = _tracker_with_device_fault(hass)
     root = Resource(path="/devices", has_values=True)
-    tracker.reconcile_discovery({root.path: root, "/devices/device3": root})
-    assert not _issues(hass)  # still there: a candidate of the tree
-    tracker.reconcile_discovery({root.path: root})
-    events = _empty_reads(tracker, NOW + timedelta(minutes=5))
+    tracker.reconcile_discovery(
+        {root.path: root, "/devices/device3": root}, observed_at=NOW
+    )
+    assert tracker.diagnostics()["fault_sources"]["not_found"] == 0
+    # Still there: a candidate of the tree.
+    tracker.reconcile_discovery({root.path: root}, observed_at=NOW)
+    assert tracker.diagnostics()["fault_sources"]["not_found"] == 1
+    # Missing, but not for a whole day yet: nothing ends.
+    tracker.reconcile_discovery(
+        {root.path: root}, observed_at=NOW + timedelta(hours=23)
+    )
+    assert _empty_reads(tracker, NOW + timedelta(hours=23, minutes=1), 3) == []
+    assert len(tracker.active_faults) == 1
+    assert not _issues(hass)
+
+    tracker.reconcile_discovery(
+        {root.path: root}, observed_at=NOW + timedelta(hours=24)
+    )
+    events = _empty_reads(tracker, NOW + timedelta(hours=24, minutes=1))
     assert [event.event_type for event in events] == [FaultEventType.RESOLVED]
     (issue,) = _issues(hass)
     assert issue.translation_placeholders == {"count": "1"}
+
+
+async def test_one_discovery_a_day_later_alone_does_not_retire_a_source(
+    hass: HomeAssistant,
+) -> None:
+    """FAULT-2: a day is not enough; a second confirmation is needed too."""
+    tracker = _tracker_with_device_fault(hass)
+    root = Resource(path="/devices", has_values=True)
+    tracker.reconcile_discovery(
+        {root.path: root}, observed_at=NOW + timedelta(hours=48)
+    )
+    assert _empty_reads(tracker, NOW + timedelta(hours=48, minutes=1), 3) == []
+    assert len(tracker.active_faults) == 1
+    assert not _issues(hass)
+
+
+async def test_a_source_discovered_again_ends_its_run(hass: HomeAssistant) -> None:
+    tracker = _tracker_with_device_fault(hass)
+    root = Resource(path="/devices", has_values=True)
+    tracker.reconcile_discovery({root.path: root}, observed_at=NOW)
+    tracker.reconcile_discovery(
+        {root.path: root, DEVICE: _device()}, observed_at=NOW + timedelta(hours=12)
+    )
+    assert tracker.diagnostics()["fault_sources"]["not_found"] == 0
+    tracker.reconcile_discovery(
+        {root.path: root}, observed_at=NOW + timedelta(hours=25)
+    )
+    assert _empty_reads(tracker, NOW + timedelta(hours=25, minutes=1), 3) == []
+    assert len(tracker.active_faults) == 1
+    assert not _issues(hass)
 
 
 def _diagnostics(*results: tuple[str, str, bool], completed: bool = True):
@@ -388,7 +434,6 @@ def _diagnostics(*results: tuple[str, str, bool], completed: bool = True):
 def test_only_final_answers_make_a_discovery_fully_answered() -> None:
     ok = ("/gateway", "success", True)
     assert discovery_fully_answered(_diagnostics(ok, ("/pv", "http_404", False)))
-    assert discovery_fully_answered(_diagnostics(ok, ("/pv", "http_403", False)))
     assert not discovery_fully_answered(_diagnostics(ok, completed=False))
     for result in (
         "http_500",
@@ -398,6 +443,7 @@ def test_only_final_answers_make_a_discovery_fully_answered() -> None:
         "pending",
         "not_attempted",
         "http_401",
+        "http_403",
         "http_408",
         "http_429",
         "service_unavailable",
@@ -441,7 +487,7 @@ class DiscoveryCloud:
 
 
 @pytest.mark.parametrize(
-    ("failing", "retired"),
+    ("failing", "counted"),
     [
         (None, True),
         (BatchItemResult("gateway-1", "/devices/list", 503), False),
@@ -449,12 +495,28 @@ class DiscoveryCloud:
             BatchItemResult("gateway-1", "/devices", None, error=RequestTimeout()),
             False,
         ),
+        (BatchItemResult("gateway-1", "/devices", 403), False),
+        (BatchItemResult("gateway-1", "/heatSources", 403), False),
+        (BatchItemResult("gateway-1", "/notifications", 403), False),
     ],
-    ids=["complete", "5xx", "timeout"],
+    ids=[
+        "complete",
+        "5xx",
+        "timeout",
+        "403-devices",
+        "403-heat-sources",
+        "403-notifications",
+    ],
 )
-async def test_a_start_retires_a_device_source_only_after_a_complete_discovery(
-    hass: HomeAssistant, failing: BatchItemResult | None, retired: bool
+async def test_a_start_retires_a_device_source_only_after_complete_discoveries(
+    hass: HomeAssistant, failing: BatchItemResult | None, counted: bool
 ) -> None:
+    """FAULT-2: only a complete discovery counts against a missing source.
+
+    It counts like a 404 answer: the source is retired only once it has been
+    missing for a day in two complete discoveries. A refused access (403) on
+    a root of the tree never counts, and the active fault stays.
+    """
     clock = Clock()
     coordinator, plant = _plant(hass, clock)
     cloud = DiscoveryCloud(dict(plant.resources))
@@ -471,10 +533,24 @@ async def test_a_start_retires_a_device_source_only_after_a_complete_discovery(
     with _patched(clock)[0], _patched(clock)[1], _patched(clock)[2]:
         await coordinator._async_discover_data()
     sources = coordinator.faults.diagnostics()["fault_sources"]
-    assert sources["removed"] == (1 if retired else 0)
-    assert bool(_issues(hass)) is retired
+    assert sources["not_found"] == (1 if counted else 0)
+    assert sources["removed"] == 0
+    assert not _issues(hass)
+    assert len(coordinator.faults.active_faults) == 1
+    # The same discovery a day later: only complete ones retire the source.
+    faults = coordinator.faults
+    faults._sources_not_found = {
+        key: (since - timedelta(hours=24), count)
+        for key, (since, count) in faults._sources_not_found.items()
+    }
+    coordinator.resources = {}
+    with _patched(clock)[0], _patched(clock)[1], _patched(clock)[2]:
+        await coordinator._async_discover_data()
+    sources = coordinator.faults.diagnostics()["fault_sources"]
+    assert sources["removed"] == (1 if counted else 0)
+    assert bool(_issues(hass)) is counted
     # The remaining sources were read completely: the state is confirmed.
-    assert coordinator.faults._has_valid_state is retired
+    assert coordinator.faults._has_valid_state is counted
 
 
 # ------------------------------------- FAULT-2: old baselines without evidence

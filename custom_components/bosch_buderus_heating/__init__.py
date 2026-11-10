@@ -62,6 +62,7 @@ from .ha_compat import device_by_identifier, identifier_owned_elsewhere
 from .holiday_ui import async_setup_controls_ui, async_setup_holiday_ui
 from .local_budget import LocalBudgetError, local_budget_manager
 from .local_enrollment import LocalEnrollmentError, enrollment_journal
+from .log_helpers import log_failure
 from .managed_entry import ManagedEntry, async_setup_managed_entry
 from .notifications import async_setup_notifications, async_update_notification_options
 from .pointt import (
@@ -865,9 +866,14 @@ def remove_never_entities(coordinator: BoschBuderusDataUpdateCoordinator) -> Non
             (coordinator,),
             keep_customised=True,
         )
-    except Exception:
+    except Exception as err:
         # A cleanup never keeps the entities of a view from being added.
-        _LOGGER.exception("Registry entries could not be cleaned up")
+        log_failure(
+            _LOGGER,
+            logging.ERROR,
+            "Registry entries could not be cleaned up",
+            error=err,
+        )
 
 
 def _consolidate_logical_devices(
@@ -997,7 +1003,14 @@ def _enable_new_default_entities(
     entry: BoschBuderusConfigEntry,
     coordinators: tuple[BoschBuderusDataUpdateCoordinator, ...],
 ) -> None:
-    """Enable newly promoted defaults without overriding user choices."""
+    """Enable newly promoted defaults without overriding user choices.
+
+    With "enable new entities" switched off for the entry, Home Assistant
+    registers every new entity disabled by the integration: those stay
+    disabled, so nothing is enabled here.
+    """
+    if entry.pref_disable_new_entities:
+        return
     from .binary_sensor import build_binary_sensor_descriptions
     from .sensor import build_sensor_descriptions, sensor_unique_suffix
 
@@ -1053,10 +1066,11 @@ def enable_promoted_defaults(coordinator: BoschBuderusDataUpdateCoordinator) -> 
     managed entry the cloud sensors and binary sensors of a cloud view (a
     legacy entry does this in its own setup), on every entry the local-only
     sensors. An entity the user disabled stays disabled. Runs before the
-    view's entities are added and never keeps them from being added.
+    view's entities are added and never keeps them from being added. With
+    "enable new entities" switched off for the entry nothing is enabled.
     """
     entry = getattr(coordinator, "config_entry", None)
-    if entry is None:
+    if entry is None or entry.pref_disable_new_entities:
         return
     hass = coordinator.hass
     try:
@@ -1068,8 +1082,13 @@ def enable_promoted_defaults(coordinator: BoschBuderusDataUpdateCoordinator) -> 
                 hass, cast("BoschBuderusConfigEntry", entry), (coordinator,)
             )
         _enable_promoted_local_only(hass, entry.entry_id, coordinator)
-    except Exception:
-        _LOGGER.exception("Newly enabled default entities could not be enabled")
+    except Exception as err:
+        log_failure(
+            _LOGGER,
+            logging.ERROR,
+            "Newly enabled default entities could not be enabled",
+            error=err,
+        )
 
 
 def _enable_promoted_local_only(

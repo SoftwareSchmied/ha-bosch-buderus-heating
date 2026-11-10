@@ -1068,8 +1068,13 @@ def _revert(
         registry = er.async_get(hass)
         for entity_id, unique_id in reversed(moved):
             registry.async_update_entity(entity_id, new_unique_id=unique_id)
-    except Exception:
-        _LOGGER.exception("A failed gateway exchange could not be reverted fully")
+    except Exception as err:
+        log_failure(
+            _LOGGER,
+            logging.ERROR,
+            "A failed gateway exchange could not be reverted fully",
+            error=err,
+        )
 
 
 async def _async_remove_local_access(

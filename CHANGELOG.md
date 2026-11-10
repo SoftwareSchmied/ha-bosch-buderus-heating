@@ -28,6 +28,8 @@ Versioning after its first tagged preview.
   that already had it as a disabled signal, and applies to readings from the
   cloud as well. An entity you disabled yourself stays disabled. Home
   Assistant reloads the integration once, about 30 seconds after the start.
+  If "Enable newly added entities" is switched off for the integration,
+  nothing is enabled.
 - **No stale unit after a change of form:** a local-only reading that turns
   from a number into a state no longer keeps the unit of the number, which
   made Home Assistant refuse the state. A current number without a known unit
@@ -86,6 +88,13 @@ Versioning after its first tagged preview.
   connection status, the preference for local values without the cloud and
   the switch of paired counters then flipped back and forth. Such a cycle now
   keeps the failure until the cloud really answers.
+- **A cloud outage next to a failing batch is noticed at once:** if one batch
+  of readings kept failing while the others answered, a cycle that only had
+  to read this batch again counted as fine. During a complete cloud outage the
+  integration then stayed "available" and could even report the cloud as
+  recovered. Such a cycle now also reads one reading that answered before. If
+  that one answers, the failing batch alone still changes nothing; if nothing
+  answers, the cycle fails as in any outage.
 - **Failed starts wait longer and no longer pile up in memory:** a system
   whose start keeps failing was tried again every minute without end, and
   each attempt stayed in memory until the integration was reloaded. Attempts
@@ -289,15 +298,18 @@ Versioning after its first tagged preview.
 - **Less load when the sign-in service is down:** after a failed token
   renewal the next one waits 30 seconds, doubling up to 10 minutes. Before,
   every single request started another renewal, and the failure was counted
-  as an outage of the gateway.
+  as an outage of the gateway. Only a failure of the sign-in service starts
+  this wait, not an unexpected program error.
 - **Rotated token kept:** choosing the first separate cloud device exactly
   while a token renewal ran could discard the new token, so the next renewal
   asked for a new sign-in. The renewal is now saved in this case, and the
-  selection waits for it.
+  selection waits for it. If this wait fails, the selection is still saved,
+  with the stored tokens.
 - **Fewer permissions:** a new sign-in now asks only for the permissions the
   integration uses. Removing gateways from the account, claiming gateways and
   managing other users are no longer part of it. If the sign-in service does
-  not accept this, the dialog shows a new link with the previous full set.
+  not accept this, the dialog shows a new link with the previous full set
+  and asks you to open it, instead of reporting a wrong address.
   Existing sign-ins keep their permissions until you sign in again. I have
   not yet confirmed this with a real sign-in; I will test it manually before
   the release.
@@ -409,7 +421,14 @@ a local test broker; checks with real devices are still open.
   scrolled to the top. The focus is now restored only once, when a new form
   appears.
 - Number fields in the dialog step by the setting's step, for example 0.5 °C
-  instead of 1.
+  instead of 1. If the lowest value of a setting is not on this step, any
+  value within the limits can be entered, and the integration checks it;
+  before, the browser could refuse a valid value.
+- **"Busy" instead of a connection error:** if a running poll or another
+  change holds the heating system, the dialogs for the controls, holidays and
+  heating schedules now say that nothing was sent and that you can try again
+  in a moment. Before, they showed a general error that suggested the change
+  might have been made.
 - A missing or blocked dialog file no longer stops the whole integration from
   starting; only the affected form is missing, with a warning in the log.
 
@@ -449,12 +468,15 @@ a local test broker; checks with real devices are still open.
   different cycles. The fault state was then never confirmed, and System
   fault, Active faults and Active notifications stayed unavailable while
   everything was fine. The fault sources are now always read together, in the
-  first batch of a cycle.
+  first request of a cycle, and in a request of their own: a failing reading
+  elsewhere no longer takes them along every minute. This costs one more
+  request every five minutes.
 - **A removed room device no longer blocks every fault:** a fault source that
-  is gone for good (it answers "not found" on every read for 24 hours, or a
-  complete discovery no longer finds it) no longer keeps every fault from
-  ending. Faults only it reported end normally, and a repair notice says so.
-  A temporary error such as a timeout never counts. A fault restored from an
+  is gone for good (it answers "not found" for 24 hours and at least twice,
+  or complete discoveries no longer find it for that long) no longer keeps
+  every fault from ending. Faults only it reported end normally, and a repair
+  notice says so. A temporary error such as a timeout, or a refused access
+  (403), never counts. A fault restored from an
   older version's baseline that no source reports for a whole day of complete
   reads now ends as well instead of staying forever.
 - **System notifications (event) without the cloud:** the event entity now

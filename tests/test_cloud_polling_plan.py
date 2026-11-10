@@ -319,7 +319,9 @@ async def test_reference_plant_uses_one_batch_per_minute(hass: HomeAssistant) ->
         await _run(coordinator, clock, 120)
     start, end = clock.now - 60 * (TICK + CYCLE) + 1, clock.now + 1
     reads = cloud.reads(start, end)
-    assert cloud.batch_count(start, end) == 60
+    # One batch per minute, and the fault sources in one of their own every
+    # five minutes, so that no failing reading takes them along.
+    assert cloud.batch_count(start, end) == 60 + 12
     # Exactly as many path reads as the groups promise: 20 every minute,
     # 32 every five, 16 every fifteen minutes and 9 every hour.
     assert _per_hour(reads) == 60 * 20 + 12 * 32 + 4 * 16 + 9
@@ -337,7 +339,7 @@ async def test_reference_plant_uses_one_batch_per_minute(hass: HomeAssistant) ->
         )
 
 
-async def test_without_slots_the_same_plant_needs_76_batches(
+async def test_without_slots_the_same_plant_needs_16_more_batches(
     hass: HomeAssistant,
 ) -> None:
     """The behaviour before O41, for comparison."""
@@ -351,7 +353,7 @@ async def test_without_slots_the_same_plant_needs_76_batches(
     ):
         await _run(coordinator, clock, 120)
     start, end = clock.now - 60 * (TICK + CYCLE) + 1, clock.now + 1
-    assert cloud.batch_count(start, end) == 76
+    assert cloud.batch_count(start, end) == 76 + 12
     assert _per_hour(cloud.reads(start, end)) == 60 * 20 + 12 * 32 + 4 * 16 + 9
 
 
@@ -520,10 +522,10 @@ async def test_locally_shown_readings_are_read_every_fifteen_minutes(
             times = cloud.reads(0, end)[path]
             gaps = [b - a for a, b in pairwise(times[-4:])]
             assert all(abs(gap - 15 * (TICK + CYCLE)) <= TICK for gap in gaps)
-        # Fewer path reads, still one batch per minute.
+        # Fewer path reads, still one batch per minute and the fault sources.
         full = 60 * 20 + 12 * 32 + 4 * 16 + 9
         assert _per_hour(reads) == full - len(served) * (60 - 4)
-        assert cloud.batch_count(start, end) == 60
+        assert cloud.batch_count(start, end) == 60 + 12
         # The cloud copy, up to 15 minutes old, never expires for that.
         for path in served:
             snapshot = coordinator.data[path]
