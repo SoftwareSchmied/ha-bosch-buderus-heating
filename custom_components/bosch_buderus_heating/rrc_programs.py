@@ -6,7 +6,7 @@ import asyncio
 import json
 import math
 import re
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass
 
 from . import rrc
@@ -60,9 +60,13 @@ class Schedule:
 
 def parse_schedule(resource: Resource) -> Schedule | None:
     day_match = DAY.fullmatch(resource.path)
+    # #113 (RRC-07): the vendor app types a single day as ``dayProgram`` with
+    # the same switch points as the week. This follows the vendor app; a
+    # hardware confirmation is pending. A week stays ``weekProgram`` only.
+    types = {"weekProgram", "dayProgram"} if day_match else {"weekProgram"}
     if (
         not (WEEK.fullmatch(resource.path) or day_match)
-        or resource.metadata.resource_type != "weekProgram"
+        or resource.metadata.resource_type not in types
         or not rrc.available(resource)
         or resource.references
         or resource.has_values
@@ -143,16 +147,65 @@ def edit_point(
     return list(day_points)
 
 
+def selection_issue(resource: Resource, programs: Resource | None) -> str | None:
+    """Why a program selection is not offered for a zone, or ``None``.
+
+    The reasons are stable tokens for diagnostics (#113, RRC-02).
+    """
+    if rrc.scalar_field(resource.path) != "clockProgram":
+        return "not_a_program_selection"
+    if rrc.scalar_value(resource) is None:
+        return "reading_invalid"
+    if not resource.metadata.writable:
+        return "selection_not_writable"
+    if programs is None or programs.path != rrc.PROGRAM_LIST:
+        return "program_list_missing"
+    if (issue := rrc.list_issue(programs)) is not None:
+        return f"program_list_invalid_{issue}"
+    if not rrc.listed_ids(programs):
+        return "program_list_empty"
+    return None
+
+
 def selection_options(resource: Resource, programs: Resource | None) -> tuple[int, ...]:
-    if (
-        rrc.scalar_field(resource.path) != "clockProgram"
-        or rrc.scalar_value(resource) is None
-        or not resource.metadata.writable
-        or programs is None
-        or programs.path != rrc.PROGRAM_LIST
-    ):
+    if selection_issue(resource, programs) is not None or programs is None:
         return ()
     return rrc.listed_ids(programs) or ()
+
+
+def program_names(
+    programs: Resource | None, names: Mapping[int, Resource | None] | None = None
+) -> dict[int, str]:
+    """#113 (RRC-05): the readable name of each listed program.
+
+    The list entry's name comes first, then a known ``/programs/pgN/name``.
+    Both are usually Base64 and are decoded like zone names. A program without
+    a usable name has no entry; its ID stays the option.
+    """
+    if programs is None or not (identifiers := rrc.listed_ids(programs)):
+        return {}
+    assert isinstance(programs.value, list)  # checked by listed_ids
+    listed = {
+        item["id"]: item.get("name")
+        for item in programs.value
+        if isinstance(item, dict)
+    }
+    result: dict[int, str] = {}
+    for identifier in identifiers:
+        named = rrc.display_name(listed.get(identifier))
+        if named is None and names is not None:
+            resource = names.get(identifier)
+            if (
+                resource is not None
+                and resource.path == f"/programs/pg{identifier}/name"
+                and resource.metadata.resource_type == "stringValue"
+                and rrc.available(resource)
+                and resource.has_value
+            ):
+                named = rrc.display_name(resource.value)
+        if named is not None:
+            result[identifier] = named
+    return result
 
 
 class RrcProgramService:

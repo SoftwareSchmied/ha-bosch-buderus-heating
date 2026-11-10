@@ -72,6 +72,12 @@ MAX_DISCOVERY_RESOURCES = 512
 # This many in a row, without any working answer in between, are treated as an
 # outage of the cloud itself and end the discovery like a request-wide error.
 MAX_CONSECUTIVE_FALLBACK_5XX = 3
+# #113 (RRC-01): the RRC lists come first, before every other pending path.
+# The zone list shows RRC zones early, and the program list is the only source
+# of the program selection. On a large tree the budget would otherwise end
+# before these catalog and optional paths. This changes only the order: both
+# paths were requested before as well, within the same budget.
+PRIORITY_PATHS = frozenset({ZONE_LIST, PROGRAM_LIST})
 
 
 class DiscoveryPathSource(StrEnum):
@@ -496,10 +502,11 @@ async def async_discover_resources(
         startup_data.begin_discovery(
             maximum_resources=maximum_resources, maximum_depth=maximum_depth
         )
+    priority_pending: dict[str, int] = {}
     referenced_pending: dict[str, int] = {}
     catalog_pending: dict[str, int] = {}
     optional_pending: dict[str, int] = {}
-    queues = (referenced_pending, catalog_pending, optional_pending)
+    queues = (priority_pending, referenced_pending, catalog_pending, optional_pending)
     consecutive_5xx = 0
     processed: set[str] = set()
     depth_limited: set[str] = set()
@@ -519,19 +526,18 @@ async def async_discover_resources(
             return
         if path in processed:
             return
-        depth = min(
-            depth,
-            referenced_pending.get(path, depth),
-            catalog_pending.get(path, depth),
-            optional_pending.get(path, depth),
-        )
+        depth = min(depth, *(queue.get(path, depth) for queue in queues))
         if depth > maximum_depth:
             depth_limited.add(path)
             report.depth_limit_reached = True
             return
         depth_limited.discard(path)
         report.depth_limit_reached = bool(depth_limited)
-        target = queues[_source_priority(report.paths[path].source)]
+        target = (
+            priority_pending
+            if path in PRIORITY_PATHS
+            else queues[1 + _source_priority(report.paths[path].source)]
+        )
         for queue in queues:
             if queue is not target:
                 queue.pop(path, None)
@@ -573,15 +579,20 @@ async def async_discover_resources(
 
     if softener_profile and not rediscovery:
         schedule_children(f"{SOFTENER_ROOT}/sw1", 1)
-    while referenced_pending or catalog_pending or optional_pending:
+    while any(queues):
         capacity = min(MAX_BULK_PATHS, maximum_resources - len(processed))
         if capacity <= 0:
             report.stop_reason = "resource_limit"
             break
         # Leave spare capacity unused so returned references are expanded before
-        # catalog paths, and catalog paths before other optional probes.
-        pending = referenced_pending or catalog_pending or optional_pending
-        frontier_entries = dict(islice(pending.items(), capacity))
+        # catalog paths, and catalog paths before other optional probes. The
+        # RRC lists join the next batch instead of needing a request of their own.
+        frontier_entries = dict(islice(priority_pending.items(), capacity))
+        pending = next((queue for queue in queues[1:] if queue), priority_pending)
+        if pending is not priority_pending:
+            frontier_entries.update(
+                islice(pending.items(), capacity - len(frontier_entries))
+            )
         if startup_data is not None:
             frontier_entries = {
                 path: frontier_entries[path]
@@ -592,7 +603,8 @@ async def async_discover_resources(
                 break
         frontier = tuple(frontier_entries)
         for path in frontier:
-            del pending[path]
+            for queue in queues:
+                queue.pop(path, None)
         processed.update(frontier)
         report.bulk_started(frontier)
         try:

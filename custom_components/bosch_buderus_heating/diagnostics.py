@@ -53,7 +53,7 @@ from .resource_catalog import (
     resource_name,
     supports_entity,
 )
-from .rrc_programs import DAY, WEEK, parse_schedule
+from .rrc_programs import DAY, WEEK, parse_schedule, program_names, selection_issue
 from .runtime import BoschBuderusRuntimeData
 from .start_counters import assess_start_counter, is_start_counter_path
 from .startup_data import LICENSE_PATH, STARTUP_BUDGET_SECONDS, safe_technical_value
@@ -596,6 +596,7 @@ def _gateway_diagnostics(
         },
         "discovery": _discovery_diagnostics(coordinator),
         "discovery_recovery": coordinator.discovery_recovery.diagnostics(monotonic()),
+        "rrc_programs": _rrc_program_diagnostics(coordinator),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),
         "firmware_changes": coordinator.firmware.diagnostics(monotonic()),
         "startup_data": _startup_diagnostics(coordinator),
@@ -673,6 +674,60 @@ def _gateway_diagnostics(
                 resources, key=lambda item: _path_template(item.path)
             )
         ],
+    }
+
+
+def _rrc_program_diagnostics(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, object]:
+    """#113 (RRC-02): why each RRC zone offers a program selection or not.
+
+    Counts and stable reason tokens only; no program names or values.
+    """
+    snapshots = coordinator.data or {}
+
+    def current(path: str) -> Resource | None:
+        snapshot = snapshots.get(path)
+        if snapshot is not None and snapshot.available:
+            return snapshot.resource
+        return coordinator.resources.get(path)
+
+    programs = current(rrc.PROGRAM_LIST)
+    snapshot = snapshots.get(rrc.PROGRAM_LIST)
+    state = (
+        "missing"
+        if rrc.PROGRAM_LIST not in coordinator.resources
+        else "current"
+        if snapshot is not None
+        and snapshot.available
+        and snapshot.freshness is Freshness.FRESH
+        else "not_current"
+    )
+    identifiers = rrc.listed_ids(programs) if programs is not None else None
+    zones = [
+        {
+            "path": diagnostic_resource_path(path),
+            "selection": reason
+            if (reason := selection_issue(resource, programs)) is not None
+            else "offered",
+            "used": resource.metadata.used,
+        }
+        for path in sorted(coordinator.resources)
+        if rrc.scalar_field(path) == "clockProgram"
+        and (resource := current(path)) is not None
+    ]
+    return {
+        "program_selections": len(zones),
+        "program_selections_offered": sum(
+            zone["selection"] == "offered" for zone in zones
+        ),
+        "program_list": state,
+        "program_list_issue": rrc.list_issue(programs)
+        if programs is not None
+        else None,
+        "program_count": len(identifiers) if identifiers is not None else 0,
+        "program_names_readable": len(program_names(programs)),
+        "zones": zones,
     }
 
 

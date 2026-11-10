@@ -101,6 +101,7 @@ from .poll_slots import plan_poll_slots
 from .refresh_outage import RefreshOutageLog
 from .repair_scope import repair_data, repair_id
 from .resource_catalog import PollGroup, poll_group, slows_when_unused
+from .rrc import PROGRAM_LIST, program_list_expected
 from .rrc_programs import WEEK, RrcProgramService
 from .start_counters import is_start_counter_path
 from .startup_data import (
@@ -2919,6 +2920,15 @@ class BoschBuderusDataUpdateCoordinator(
                 is_transient_result(reason)
             ):
                 missing[root] = reason
+        # #113 (RRC-01): RRC zones without their program list offer no program
+        # selection. A list that failed or was not read is searched again on
+        # its own, within the same bounded schedule as every other part.
+        if (
+            program_list_expected(self.resources)
+            and PROGRAM_LIST not in self.resources
+            and PROGRAM_LIST not in missing
+        ):
+            missing[PROGRAM_LIST] = self._missing_reason(PROGRAM_LIST)
         if self.inventory is not None:
             self.inventory.record(self.gateway, discovered)
         self.discovery_recovery.plan(
