@@ -1,7 +1,8 @@
 {
  "provenance": {
   "kind": "synthetic",
-  "basis": "synthetic_from_app_demo_shapes",
+  "basis": "compatibility_mapping",
+  "shapes": "synthetic_from_app_demo_shapes",
   "reference": "RRC 2.0 room controller with eight radiator thermostats, a room thermostat and a repeater",
   "firmware": null,
   "capture_date": null,
