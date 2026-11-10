@@ -73,6 +73,9 @@ All new fields default to today's behaviour.
   values (S2), for example `"true"`/`"false"`.
 - `EnumWritePolicy.equivalent_reads`: readings that confirm a written value,
   for example `{"Off": frozenset({"off"})}`.
+- `EnumWritePolicy.ignored_options`: advertised placeholders left out of the
+  options, for example `""`; `min_options`: fewer usable options leave no
+  control (`too_few_options`), for example a mode with a single choice.
 - `NumberWritePolicy.wire_integer`: sent as an integer; fractions are refused.
 - `NumberWritePolicy.strict_grid`: the advertised step, else `step`, counted
   from `minValue`; off-grid values are refused, never rounded (S4). A step
@@ -89,7 +92,8 @@ All new fields default to today's behaviour.
   `rrc_override_ended`.
 
 A used but unavailable contract setting is shown and locked (S8,
-`ControlLocked`). Writing needs `writeable` (S1) and limits from the metadata
+`ControlLocked`). An unavailable one that is not marked as used, or one with
+malformed flags, gives no control at all (P41, `rrc_unavailable`). Writing needs `writeable` (S1) and limits from the metadata
 (S3).
 
 ## Writing

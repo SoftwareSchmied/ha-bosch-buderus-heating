@@ -530,6 +530,20 @@ def _locked(resource: Resource, policy: EnumWritePolicy | NumberWritePolicy) -> 
     )
 
 
+def _contract_unavailable(
+    resource: Resource, policy: EnumWritePolicy | NumberWritePolicy
+) -> str | None:
+    """S8/P41: an unavailable contract setting not marked as used, or one
+    with malformed flags, offers no control at all."""
+    metadata = resource.metadata
+    if rrc_contracts.owns(policy) and (
+        not metadata.availability_flags_valid
+        or (metadata.available is False and metadata.used is not True)
+    ):
+        return "rrc_unavailable"
+    return None
+
+
 def _validate_number(
     resource: Resource,
     request: WriteRequest,
@@ -729,6 +743,12 @@ def advertised_options(
         )
     ):
         return policy.fallback_options
+    if policy.ignored_options:
+        return tuple(
+            value
+            for value in metadata.allowed_values
+            if value not in policy.ignored_options
+        )
     return metadata.allowed_values
 
 
@@ -758,6 +778,13 @@ def _enum_rejection_reason(resource: Resource, policy: EnumWritePolicy) -> str |
         policy.options_rule == "exact" and advertised != policy.known_values
     ):
         return "unsupported_options"
+    usable = {
+        value
+        for value in advertised
+        if not policy.known_only or value in policy.known_values
+    }
+    if len(usable) < policy.min_options:
+        return "too_few_options"
     return None
 
 
@@ -815,7 +842,9 @@ def assess_control(
     if isinstance(policy, EnumWritePolicy):
         return ControlAssessment(
             policy,
-            schema_issue or _enum_rejection_reason(resource, policy),
+            schema_issue
+            or _contract_unavailable(resource, policy)
+            or _enum_rejection_reason(resource, policy),
             writable=resource.metadata.writable,
             options=tuple(
                 dict.fromkeys(
@@ -834,6 +863,7 @@ def assess_control(
         return ControlAssessment(
             number_policy,
             schema_issue
+            or _contract_unavailable(resource, number_policy)
             or _number_rejection_reason(resource, number_policy)
             or (
                 _number_value_rejection_reason(resource, resource.value)
