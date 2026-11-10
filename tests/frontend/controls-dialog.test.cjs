@@ -369,6 +369,41 @@ const assert = require("node:assert/strict");
       .getAttribute("step");
   });
   assert.equal(onGrid, "0.5");
+  // A room controller's switch writes the strings "true" and "false".
+  const roomController = await ui.evaluate((el) => {
+    el.value = { changes: {} };
+    el.selector = {
+      "bosch-buderus-controls": {
+        ...window.dialog,
+        rows: [
+          {
+            key: "/system/awayMode/enabled",
+            group: "system",
+            kind: "switch",
+            label: { de: "Abwesenheit", en: "Away mode" },
+            value: "false",
+            options: [{ value: "true" }, { value: "false" }],
+            available: true,
+          },
+        ],
+      },
+    };
+    const input = el.shadowRoot.querySelector(
+      'input[data-key="/system/awayMode/enabled"]',
+    );
+    const before = input.checked;
+    input.checked = true;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    const on = { ...window.draft.changes };
+    input.checked = false;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    return { before, on, off: { ...window.draft.changes } };
+  });
+  assert.deepEqual(roomController, {
+    before: false,
+    on: { "/system/awayMode/enabled": "true" },
+    off: {},
+  });
   assert.deepEqual(errors, []);
   console.log(
     "Actual controls module: drafts, tabs, discard, validation, refresh, DE/EN, keyboard, disabled controls and 320/390/736px layout passed.",

@@ -23,7 +23,7 @@ from homeassistant.helpers import entity_platform
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from custom_components.bosch_buderus_heating import rrc_contracts, rrc_platforms
+from custom_components.bosch_buderus_heating import rrc_platforms
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.control import track_rrc_entities
 from custom_components.bosch_buderus_heating.coordinator import Freshness
@@ -33,7 +33,6 @@ from custom_components.bosch_buderus_heating.diagnostics import (
 from custom_components.bosch_buderus_heating.pointt import Gateway
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from custom_components.bosch_buderus_heating.rrc_contract_base import RrcContract
-from custom_components.bosch_buderus_heating.rrc_contracts import Registry
 from custom_components.bosch_buderus_heating.rrc_write import RrcWritePending
 from custom_components.bosch_buderus_heating.writes import (
     GENERIC_CONTEXT,
@@ -42,6 +41,7 @@ from custom_components.bosch_buderus_heating.writes import (
     RrcWriteNotConfirmed,
 )
 from tests.helpers.rrc_cloud import Clock, RrcCloud, cloud_patches, load_tree
+from tests.helpers.rrc_w0_state import w0_state
 from tests.test_entry import _entry
 
 PACKAGE = "custom_components.bosch_buderus_heating"
@@ -75,12 +75,9 @@ def k40() -> RrcCloud:
 
 @contextmanager
 def installed(*contracts: RrcContract) -> Iterator[None]:
-    original = rrc_contracts._registry
-    rrc_contracts._registry = Registry((*rrc_contracts.CONTRACTS, *contracts))
-    try:
+    """The W0 contracts (whatever the packages added since) and ``contracts``."""
+    with w0_state(*contracts):
         yield
-    finally:
-        rrc_contracts._registry = original
 
 
 async def _setup(hass: HomeAssistant, cloud: RrcCloud, gateway: Gateway, clock):
@@ -451,7 +448,8 @@ async def test_structured_write_runs_once_with_its_guard_in_real_cycles(
             {"name": "first"},
             {"name": "second"},
         ]
-        core = coordinator.rrc_write_stats.snapshot("core")
+        # W2's absence contract owns the events paths.
+        core = coordinator.rrc_write_stats.snapshot("absence")
         assert core["writes_sent"] == 2
         assert core["writes_confirmed"] == 1
         assert core["writes_unconfirmed"] == 1

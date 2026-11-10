@@ -62,6 +62,7 @@ jobs:
           tests/frontend/ha_local_first.py
           tests/frontend/ha_rescan.py
           tests/frontend/ha_rrc_zone.py
+          tests/frontend/ha_rrc_events.py
 
   # The same older Home Assistant versions as CI must pass before publishing.
   compatibility:

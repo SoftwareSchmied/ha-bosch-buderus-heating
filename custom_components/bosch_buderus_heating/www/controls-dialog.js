@@ -6,6 +6,19 @@ const onStepGrid = (minimum, step) => {
   return Math.abs(ticks - Math.round(ticks)) < 1e-7;
 };
 
+// The on and off values of a switch row: "on"/"off", "start"/"stop" or,
+// on a room controller, "true"/"false", as its options name them.
+const switchValues = (options) => {
+  const values = (options || []).map((option) => option.value);
+  for (const pair of [
+    ["start", "stop"],
+    ["true", "false"],
+  ]) {
+    if (pair.every((value) => values.includes(value))) return pair;
+  }
+  return ["on", "off"];
+};
+
 // The server sends the texts of every language that has a data file
 // (i18n/<code>.json); the profile language picks one, else English.
 const controlsLanguage = (language, texts, aliases) => {
@@ -335,7 +348,7 @@ class BoschBuderusControls extends HTMLElement {
           } else if (row.kind === "switch") {
             input.type = "checkbox";
             input.role = "switch";
-            input.checked = ["on", "start"].includes(value);
+            input.checked = value === switchValues(row.options)[0];
             box.append(input);
           } else {
             for (const choice of row.options) {
@@ -364,13 +377,7 @@ class BoschBuderusControls extends HTMLElement {
             }
             const selected =
               row.kind === "switch"
-                ? input.checked
-                  ? row.options.some((option) => option.value === "start")
-                    ? "start"
-                    : "on"
-                  : row.options.some((option) => option.value === "stop")
-                    ? "stop"
-                    : "off"
+                ? switchValues(row.options)[input.checked ? 0 : 1]
                 : row.kind === "number"
                   ? input.value === ""
                     ? null

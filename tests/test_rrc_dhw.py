@@ -49,6 +49,7 @@ from custom_components.bosch_buderus_heating.writes import (
     validate_control_value,
 )
 from tests.helpers.rrc_cloud import Clock, RrcCloud, cloud_patches, load_tree
+from tests.helpers.rrc_w0_state import w0_state
 from tests.test_entry import _entry
 
 PACKAGE = "custom_components.bosch_buderus_heating"
@@ -176,7 +177,9 @@ def test_unavailable_extra_hot_water_has_no_control_and_used_one_is_locked() -> 
         allowedValues=["on", "off"],
         available="false",
     )
-    assert assess_control(away, RRC_CONTEXT).eligible
+    # Its generic policy (the absence contract, W2, owns the path now).
+    with w0_state():
+        assert assess_control(away, RRC_CONTEXT).eligible
 
 
 def test_extra_hot_water_duration_is_a_whole_number_on_the_grid() -> None:

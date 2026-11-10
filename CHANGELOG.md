@@ -5,6 +5,31 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+#### Room controllers: absence, events and boost
+
+All of this is expected to work but untested on a real room controller so
+far; I would be glad about reports from owners.
+
+- **Away mode and fireplace function:** room controllers report both as the
+  text "true" or "false" without a list of values, so they got no switch so
+  far. They now get one that writes exactly these values, once, and reads the
+  change back. The away temperature becomes a setting, and the fireplace
+  function a setting that is disabled by default. Other gateways keep their
+  away switch unchanged.
+- **Absences and special days as a calendar:** the controller's event lists
+  appear as a calendar with whole days. Absences can be created, changed and
+  deleted there; days that run like another weekday can only be deleted.
+  Names have at most 32 bytes, events may not overlap (not even on their
+  first or last day), and dates count in the controller's time zone. Every
+  change reads the lists first and is sent exactly once. If the controller
+  does not confirm it in time, the next change reads the lists again and is
+  refused until the first one shows, so an event is never created twice.
+- **Boost:** a switch and the boost temperature and duration write the
+  controller's boost settings as a whole. The rooms of a boost stay as set on
+  the controller; without a room the boost is refused. The single boost
+  readings stay readings. A boost in a form I do not know completely is shown
+  but never changed.
+
 #### RRC zones
 
 - **Zone climate:** every zone of a room controller that reports a heating

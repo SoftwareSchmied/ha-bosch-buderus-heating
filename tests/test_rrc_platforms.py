@@ -16,6 +16,7 @@ from custom_components.bosch_buderus_heating.rrc_contracts import Registry
 from custom_components.bosch_buderus_heating.sensor import (
     BoschBuderusSensorEntityDescription,
 )
+from tests.helpers.rrc_w0_state import w0_contracts
 
 PATH = "/system/appliance/displayCode"
 
@@ -26,6 +27,12 @@ def test_every_entity_module_declares_trackers_for_hooked_platforms() -> None:
     loaded = rrc_platforms.trackers()
     assert [name for name, _ in loaded] == list(rrc_platforms.ENTITY_MODULES)
     assert all(set(table) <= rrc_platforms.PLATFORMS for _, table in loaded)
+    # W2 tracks the calendar, the boost switch and its numbers.
+    assert set(dict(loaded)["rrc_absence_entities"]) == {
+        Platform.CALENDAR,
+        Platform.NUMBER,
+        Platform.SWITCH,
+    }
     assert Platform.TIME in rrc_platforms.PLATFORMS
 
 
@@ -63,7 +70,7 @@ def test_generic_presentation_applies_the_contract() -> None:
         unique_key="system:appliance:displayCode",
     )
     original = rrc_contracts._registry
-    rrc_contracts._registry = Registry((*rrc_contracts.CONTRACTS, contract))
+    rrc_contracts._registry = Registry((*w0_contracts(), contract))
     try:
         shown = rrc_platforms.generic_presentation(description, Platform.SENSOR)
         assert shown.name == "Anzeigecode"

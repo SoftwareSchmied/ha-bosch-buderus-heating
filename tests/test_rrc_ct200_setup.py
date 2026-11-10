@@ -108,7 +108,8 @@ async def test_large_ct200_plant_reaches_every_platform_within_the_budget(
         # CT-E07, CT-F05: keys and personal data are never requested.
         assert not {path for path in requested if PRIVATE.search(path)}
         # W1 probes eight more leaves per zone (most answer 500 here); W6
-        # reads the setting leaves of the listed devices under their own cap.
+        # reads the setting leaves of the listed devices under their own cap;
+        # W2 adds the events root and its three lists.
         settings = rrc.device_setting_paths(cloud.tree[DEVICE_LIST])
         assert len(requested) < 480 + len(settings)
         assert len(requested - set(settings)) <= MAX_DISCOVERY_RESOURCES

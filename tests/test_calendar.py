@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from datetime import UTC, date, datetime
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from homeassistant.components.calendar.const import (
@@ -43,6 +43,8 @@ from custom_components.bosch_buderus_heating.pointt import (
     WriteNotConfirmed,
 )
 from tests.ha_test_helpers import MockConfigEntry
+
+CALENDAR_MODULE = "custom_components.bosch_buderus_heating.calendar"
 
 
 def _uid(entity: BoschBuderusHolidayCalendar) -> str:
@@ -114,7 +116,9 @@ async def test_calendar_exposes_multiple_overlapping_periods(
 
     entry = SimpleNamespace(runtime_data=SimpleNamespace(coordinators=(coordinator,)))
     added: list[object] = []
-    await async_setup_entry(hass, entry, added.extend)
+    # Independent of the room controller trackers of the calendar platform.
+    with patch(f"{CALENDAR_MODULE}.rrc_platforms.track"):
+        await async_setup_entry(hass, entry, added.extend)
     assert len(added) == 1
     assert isinstance(added[0], BoschBuderusHolidayCalendar)
 
@@ -131,7 +135,8 @@ async def test_calendar_setup_requires_a_period_resource(
     )
     added: list[object] = []
 
-    await async_setup_entry(hass, entry, added.extend)
+    with patch(f"{CALENDAR_MODULE}.rrc_platforms.track"):
+        await async_setup_entry(hass, entry, added.extend)
 
     assert added == []
     assert len(unloads) == 1  # waits for holiday periods found later

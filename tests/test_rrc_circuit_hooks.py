@@ -26,6 +26,7 @@ from custom_components.bosch_buderus_heating.writes import (
     assess_control,
     validate_control_value,
 )
+from tests.helpers.rrc_w0_state import w0_state
 
 MODE = "/system/w4probe/mode"
 LEVEL = "/system/w4probe/level"
@@ -172,4 +173,6 @@ def test_p41_needs_a_contract_policy_and_an_rrc_plant() -> None:
             "available": "false",
         }
     )
-    assert assess_control(away, RRC_CONTEXT).eligible
+    # The generic policy of the path (the absence contract, W2, owns it now).
+    with w0_state():
+        assert assess_control(away, RRC_CONTEXT).eligible
