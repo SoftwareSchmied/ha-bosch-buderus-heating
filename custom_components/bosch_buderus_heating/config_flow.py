@@ -130,6 +130,8 @@ from .pointt import (
     WriteValidationError,
 )
 from .pointt.retry_after import bounded_cloud_pause
+from .rrc import GATEWAY_DEVICE_TYPE
+from .rrc_devices import CONTROLLER_TYPE, TYPE_LABELS
 from .rrc_flow import RrcScheduleOptionsFlow
 from .runtime import BoschBuderusRuntimeData
 from .writes import WDDW2_HOLIDAY_POLICY, WriteBusy, assess_control
@@ -1975,6 +1977,9 @@ def _reconfigure_schema(
 
 def _gateway_label(gateway: Gateway) -> str:
     name = gateway.model or gateway.device_type or "Gateway"
+    if not gateway.model and name.strip().casefold() == GATEWAY_DEVICE_TYPE:
+        # CT-A01 (E05): the cloud lists room controllers without a name.
+        name = TYPE_LABELS[CONTROLLER_TYPE][1]
     suffix = gateway.gateway_id[-4:]
     return f"{name} (…{suffix})"
 

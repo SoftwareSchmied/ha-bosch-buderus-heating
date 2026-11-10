@@ -50,7 +50,8 @@ Versioning after its first tagged preview.
 - **Recognised by their resources:** a gateway the cloud reports as device
   type `rrc2`, with the product type `RRC 2.0` or with RRC zones is handled as
   a room controller. A new controller device is named "Room controller" and
-  shows the product type the cloud reports as its model. Nothing depends on a
+  shows the product type the cloud reports as its model; the setup offers a
+  controller the cloud lists without a name as "Room controller" as well. Nothing depends on a
   model name. The CT200 is listed as expected but untested in the
   [compatibility](docs/compatibility.md) page; the TC100.2 zones remain
   confirmed by the report in #113.

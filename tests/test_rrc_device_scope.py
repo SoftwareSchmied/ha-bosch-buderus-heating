@@ -695,3 +695,22 @@ def test_metadata_without_value_is_no_profile_evidence() -> None:
     }
     assert rrc.profile_evidence(None, resources) == ()
     assert rrc.profile_evidence(" rrc2 ", {}) == ("device_type",)
+
+
+@pytest.mark.parametrize(
+    ("gateway", "label"),
+    [
+        (Gateway("gw-0001", device_type="rrc2"), "Room controller (…0001)"),
+        (Gateway("gw-0002", device_type=" RRC2 "), "Room controller (…0002)"),
+        (Gateway("gw-0003", device_type="rrc2", model="CT 1"), "CT 1 (…0003)"),
+        (Gateway("gw-0004", device_type="K40RF"), "K40RF (…0004)"),
+        (Gateway("gw-0005"), "Gateway (…0005)"),
+    ],
+)
+def test_unnamed_room_controller_is_offered_by_function(
+    gateway: Gateway, label: str
+) -> None:
+    """CT-A01: the cloud lists a room controller without a name."""
+    from custom_components.bosch_buderus_heating.config_flow import _gateway_label
+
+    assert _gateway_label(gateway) == label
