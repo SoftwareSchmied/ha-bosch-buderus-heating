@@ -714,3 +714,67 @@ def test_unnamed_room_controller_is_offered_by_function(
     from custom_components.bosch_buderus_heating.config_flow import _gateway_label
 
     assert _gateway_label(gateway) == label
+
+
+def test_a_reported_controller_type_drops_radio_fault_probes() -> None:
+    """Review: also before its zones are read, an rrc2 gateway has no
+    device fault resources to probe."""
+    resources = {rrc.DEVICE_LIST: device_list([{"id": 1}, {"id": 2}])}
+    assert "/devices/1/errors" in fault_resource_candidates(resources)
+    assert not [
+        path
+        for path in fault_resource_candidates(resources, device_type="rrc2")
+        if path.startswith("/devices")
+    ]
+    assert "/devices/1/errors" in fault_resource_candidates(
+        resources, device_type="K40RF"
+    )
+
+
+@pytest.mark.parametrize(
+    ("device_type", "resources", "data", "expected"),
+    [
+        ("rrc2", {}, {}, True),
+        ("K40RF", {}, {}, False),
+        ("K40RF", {"/zones/zone1/name": "x"}, {}, False),
+        (None, {"/zones/zn3/name": "x"}, {}, True),
+        (None, {}, {"/zones/zn3": "x"}, True),
+        (None, {rrc.PRODUCT_TYPE_PATH: "RRC 2.0"}, {}, True),
+        (
+            None,
+            {rrc.PRODUCT_TYPE_PATH: "RRC 2.0"},
+            {rrc.PRODUCT_TYPE_PATH: "K40"},
+            False,
+        ),
+        (None, {}, {rrc.PRODUCT_TYPE_PATH: "rrc 2.0"}, True),
+        (None, {rrc.ZONE_LIST: "list"}, {}, True),
+    ],
+)
+def test_rrc_plant_check_matches_the_profile_evidence(
+    device_type: str | None,
+    resources: dict[str, str],
+    data: dict[str, str],
+    expected: bool,
+) -> None:
+    """Review: the per-entity check agrees with ``rrc.profile_evidence`` over
+    the merged readings without copying them."""
+    from types import SimpleNamespace
+
+    from custom_components.bosch_buderus_heating.device import is_rrc_plant
+
+    def resource(path: str, value: str) -> Resource:
+        if value == "list":
+            return wire(path, type="zoneArray", value=[{"id": 1}])
+        return text(path, value)
+
+    stored = {path: resource(path, value) for path, value in resources.items()}
+    shown = {
+        path: SimpleNamespace(resource=resource(path, value))
+        for path, value in data.items()
+    }
+    coordinator = SimpleNamespace(
+        gateway=Gateway("gw", device_type=device_type), resources=stored, data=shown
+    )
+    merged = {**stored, **{path: item.resource for path, item in shown.items()}}
+    assert bool(rrc.profile_evidence(device_type, merged)) is expected
+    assert is_rrc_plant(coordinator) is expected

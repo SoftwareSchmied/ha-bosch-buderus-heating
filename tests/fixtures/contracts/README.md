@@ -10,7 +10,7 @@ mapping. `physical_device_verified: false`, `firmware: null` and
 |---|---|
 | connectkey | Temperature, global and structured duration, structured energy, independent heating/cooling zone commands, read-only heating and hot-water switch programs (anonymized structure, constructed times) |
 | icom | Heating and DHW temperatures |
-| rrc | DHW and away-mode temperature, independent zn zones, program selection and existing weekly switch points; string `used` flags and a mode without advertised options (anonymized TC100.2 structure, constructed values); `ct200-shapes.json`: a synthetic RRC 2.0 controller with 11 zones, 12 radio devices and 24 programs, built from the app's demo shapes and the anonymized TC100.2 device tree, with marker values for the privacy tests |
+| rrc | DHW and away-mode temperature, independent zn zones, program selection and existing weekly switch points; string `used` flags and a mode without advertised options (anonymized TC100.2 structure, constructed values); `ct200-shapes.json`: a synthetic RRC 2.0 controller with 11 zones, 12 radio devices and 24 programs, built from constructed values and the anonymized TC100.2 device tree, with marker values for the privacy tests |
 | wddw2 | Unitless hours, explicit minutes, starts, DHW temperature and collection |
 | water_softener | Remaining volume, flow, durations and regeneration phase |
 | bacon-purifier | Two synthetic Air profiles with different offered capabilities; all seven family/filter mappings are exercised by tests |

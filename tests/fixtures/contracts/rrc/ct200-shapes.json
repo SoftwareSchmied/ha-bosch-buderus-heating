@@ -6,7 +6,7 @@
   "firmware": null,
   "capture_date": null,
   "created": "2026-11-10",
-  "redaction": "Constructed values only. Field names and JSON types follow the vendor app's demo answers and the anonymized TC100.2 device tree of issue 122 (leaf names and types, no values). Names are Base64 placeholders; radio keys, identifiers and personal data are obvious markers for leak tests.",
+  "redaction": "Constructed values only. Field names and JSON types follow the expected RRC 2.0 shapes and the anonymized TC100.2 device tree of issue 122 (leaf names and types, no values). Names are Base64 placeholders; radio keys, identifiers and personal data are obvious markers for leak tests.",
   "physical_device_verified": false,
   "contract": "Missing catalog and optional paths answer HTTP 500, as reported for these controllers; missing roots answer 404. /devices/devN, homematicip and the user, installer, password, location and phone resources must never be requested."
  },

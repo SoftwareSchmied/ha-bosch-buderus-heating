@@ -101,12 +101,29 @@ def device_info_for_resource(
 
 
 def is_rrc_plant(coordinator: BoschBuderusDataUpdateCoordinator) -> bool:
-    """C8: the gateway is an RRC 2.0 room controller, by its readings."""
-    resources = dict(coordinator.resources)
-    resources.update(
-        (path, snapshot.resource) for path, snapshot in (coordinator.data or {}).items()
+    """C8: the gateway is an RRC 2.0 room controller, by its readings.
+
+    Called for every entity's device, so the cheap evidence comes first and
+    the readings are not copied: the current snapshot of a path counts
+    before its discovered resource, as in ``rrc.profile_evidence``.
+    """
+    if rrc.profile_evidence(coordinator.gateway.device_type, {}):
+        return True
+    data = coordinator.data or {}
+    resources = coordinator.resources
+    lists: dict[str, Resource] = {}
+    for path in (rrc.PRODUCT_TYPE_PATH, rrc.ZONE_LIST):
+        if (snapshot := data.get(path)) is not None:
+            lists[path] = snapshot.resource
+        elif (resource := resources.get(path)) is not None:
+            lists[path] = resource
+    if rrc.profile_evidence(None, lists):
+        return True
+    return any(
+        path.startswith("/zones/zn") and rrc.ZONE.match(path)
+        for paths in (resources, data)
+        for path in paths
     )
-    return bool(rrc.profile_evidence(coordinator.gateway.device_type, resources))
 
 
 def _rrc_model(coordinator: BoschBuderusDataUpdateCoordinator) -> str | None:

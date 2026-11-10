@@ -24,11 +24,10 @@ Versioning after its first tagged preview.
   contains no program names. The diagnostics schema stays 44.
 - **Zones in manual mode:** the controller marks the selected program of a
   zone in manual mode as not used. The integration used to drop the value, the
-  sensor and the selection then. They now stay, as in the controller's app: the
-  program remains assigned and can be changed. This follows the app; a
-  confirmation on a real device is still pending.
-- **Program list flags:** like the app, the integration now ignores the
-  `used` and `available` flags of the program list itself. The zone list keeps
+  sensor and the selection then. They now stay: the program remains assigned
+  and can be changed. A confirmation on a real device is still pending.
+- **Program list flags:** the integration now ignores the `used` and
+  `available` flags of the program list itself. The zone list keeps
   its rules.
 - **Program names:** the selection keeps the program numbers as its options,
   so automations keep working when a program is renamed. Home Assistant can
@@ -36,14 +35,14 @@ Versioning after its first tagged preview.
   `program_names` (all programs) and `program_name` (the selected one), decoded
   like zone names.
 - **Temporary heating setpoint:** a value of 0 means that no temporary setpoint
-  is active. The sensor now shows unknown instead of 0 °C. This follows the
-  app; a confirmation on a real device is still pending.
+  is active. The sensor now shows unknown instead of 0 °C. A confirmation on a
+  real device is still pending.
 - **Day programs:** a program day that the controller reports as `dayProgram`
   is now read, and its switch points can be edited as before, each change
-  confirmed by reading it back. This follows the app; a confirmation on a real
-  device is still pending.
+  confirmed by reading it back. A confirmation on a real device is still
+  pending.
 - I have tested these changes only with simulated data in the shapes of the
-  observed TC100.2 answers and of the app's demo answers.
+  observed TC100.2 answers.
 
 #### Room controllers of the RRC 2.0 platform (CT200 and TC100.2)
 
@@ -93,8 +92,8 @@ Versioning after its first tagged preview.
   [room controller documentation](docs/rrc-zones-and-schedules.md#room-controllers-of-the-rrc-20-platform)
   explains this.
 - I have tested this only with simulated data: a synthetic controller with 11
-  zones, 12 radio devices and 24 programs built from the app's demo answers,
-  and the shape of the TC100.2 device tree from #122. A test on a real CT200
+  zones, 12 radio devices and 24 programs with constructed values, and the
+  shape of the TC100.2 device tree from #122. A test on a real CT200
   and of the radio devices on a real controller is still pending.
 
 #### Translations

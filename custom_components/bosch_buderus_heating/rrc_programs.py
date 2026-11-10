@@ -60,9 +60,9 @@ class Schedule:
 
 def parse_schedule(resource: Resource) -> Schedule | None:
     day_match = DAY.fullmatch(resource.path)
-    # #113 (RRC-07): the vendor app types a single day as ``dayProgram`` with
-    # the same switch points as the week. This follows the vendor app; a
-    # hardware confirmation is pending. A week stays ``weekProgram`` only.
+    # #113 (RRC-07): a single day is typed ``dayProgram`` with the same
+    # switch points as the week; a hardware confirmation is pending. A week
+    # stays ``weekProgram`` only.
     types = {"weekProgram", "dayProgram"} if day_match else {"weekProgram"}
     if (
         not (WEEK.fullmatch(resource.path) or day_match)

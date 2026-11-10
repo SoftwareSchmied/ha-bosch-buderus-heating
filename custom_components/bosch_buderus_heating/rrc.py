@@ -24,7 +24,7 @@ PROGRAM_LIST = "/programs/list"
 DEVICE_LIST = "/devices/list"
 RADIO_DEVICE = re.compile(rf"^/devices/device({RRC_ID})(?:/|$)")
 RADIO_FIRMWARE = re.compile(rf"^/devices/device{RRC_ID}/versionFirmware$")
-# CT-A03: the vendor app accepts a controller with exactly this product type.
+# CT-A03: the product type of an RRC 2.0 room controller.
 PRODUCT_TYPE_PATH = "/gateway/productType"
 PRODUCT_TYPE = "RRC 2.0"
 # The device type the cloud's gateway list reports for these controllers.
@@ -89,9 +89,9 @@ def program_unused(resource: Resource) -> bool:
     """#113 (RRC-03): an assigned program that does not act at the moment.
 
     The TC100.2 sends ``clockProgram`` with ``used`` false while its zone runs
-    manually. The vendor app only hides the program then and still assigns
-    programs in this state, so the value, its sensor and the selection stay.
-    This follows the vendor app; a hardware confirmation is still pending.
+    manually. The program stays assigned and can be changed in this state,
+    so the value, its sensor and the selection stay. A hardware confirmation
+    is still pending.
     """
     metadata = resource.metadata
     return (
@@ -180,10 +180,10 @@ def scalar_value(resource: Resource) -> str | int | float | None:
 def display_value(resource: Resource) -> str | int | float | None:
     """The state shown in Home Assistant for a valid reading.
 
-    #113 (RRC-06): a temporary setpoint of 0 means that no override is active,
-    as in the vendor app. It is shown as unknown rather than as 0 °C. The
-    reading itself stays valid, so its sensor exists before the first
-    override. This follows the vendor app; a hardware confirmation is pending.
+    #113 (RRC-06): a temporary setpoint of 0 means that no override is
+    active. It is shown as unknown rather than as 0 °C. The reading itself
+    stays valid, so its sensor exists before the first override. A hardware
+    confirmation is pending.
     """
     value = scalar_value(resource)
     if scalar_field(resource.path) == "clockOverride/temperatureHeating" and (
@@ -235,8 +235,8 @@ def _parse_list(resource: Resource) -> tuple[int, ...] | str:
         return "not_a_list"
     if resource.metadata.resource_type != resource_type:
         return "type"
-    # #113 (RRC-04): the vendor app reads only the value of the program list
-    # and ignores its used and available flags. The zone list keeps the rules.
+    # #113 (RRC-04): only the value of the program list counts; its used and
+    # available flags are ignored. The zone list keeps the rules.
     if resource.path != PROGRAM_LIST and not available(resource):
         return "flags"
     if (

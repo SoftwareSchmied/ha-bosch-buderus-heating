@@ -2507,7 +2507,9 @@ class BoschBuderusDataUpdateCoordinator(
         successful_resources = dict(resources)
         candidates = tuple(
             path
-            for path in fault_resource_candidates(successful_resources)
+            for path in fault_resource_candidates(
+                successful_resources, device_type=self.gateway.device_type
+            )
             if path not in successful_resources
         )
         probe_results: tuple[BatchItemResult, ...] = ()

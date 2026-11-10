@@ -49,8 +49,8 @@ entity IDs and unique IDs stay. Program names and the names inside
 
 Only offered, known `manual` and `clock` options can be written. If the
 controller sends no `allowedValues` key for `userMode` at all, as the
-TC100.2 does, I offer exactly `manual` and `clock`, as the controller's
-app does; another current mode keeps the select unavailable. An empty or
+TC100.2 does, I offer exactly `manual` and `clock`; another current mode
+keeps the select unavailable. An empty or
 different list keeps the strict rules. A mode reported with `used` true and
 `available` false is locked by the controller, for example while the system
 cools: the select keeps showing the current mode, and a change is refused
@@ -189,9 +189,9 @@ diagnostics show `access_reason: scope_or_permission_denied`.
 
 ### Local access and older firmware
 
-There is no local access for these room controllers. Their app has no local
-connection, no local interface is documented for them, and the published
-local interface covers only the K40 RF gateway. If a K40 gateway is also
+There is no local access for these room controllers. No local interface is
+documented for them, and the published local interface covers only the
+K40 RF gateway. If a K40 gateway is also
 present, its local access stays independent of the room controller.
 
 A room controller with older firmware talks to a different cloud service and
@@ -202,8 +202,8 @@ SingleKey ID; the setup's "no devices" message says so.
 ### What is confirmed
 
 The zones of a TC100.2 have been read with this integration (issue 113). The
-radio devices, the device list and every CT200 are untested: they follow the
-app's demo answers and the anonymized device tree of a TC100.2, and the
+radio devices, the device list and every CT200 are untested: they are built
+on constructed data and the anonymized device tree of a TC100.2, and the
 diagnostics report `rrc_profile.confirmation: unconfirmed`. A synthetic
 fixture with 11 zones, 12 radio devices and 24 programs
 (`tests/fixtures/contracts/rrc/ct200-shapes.json`) checks the discovery
@@ -245,8 +245,8 @@ verwende ich nicht.
 
 Die Betriebsart bietet die gemeldeten bekannten Optionen `manual` und
 `clock`. Sendet der Regler für `userMode` gar kein `allowedValues`, wie der
-TC100.2, biete ich wie die App des Reglers genau `manual` und `clock`
-an; eine andere aktuelle Betriebsart lässt die Auswahl unverfügbar.
+TC100.2, biete ich genau `manual` und `clock` an; eine andere aktuelle
+Betriebsart lässt die Auswahl unverfügbar.
 Eine leere oder abweichende Liste behält die strengen Regeln. Meldet der
 Regler die Betriebsart mit `used` wahr und `available` falsch, sperrt er sie,
 etwa während die Anlage kühlt: Die Auswahl zeigt weiter die aktuelle

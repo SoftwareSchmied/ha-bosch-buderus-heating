@@ -895,6 +895,23 @@ def _consolidate_logical_devices(
             f"{gateway_id}:{kind}:"
             for kind in ("heating_circuit", "hot_water_circuit", "heat_source")
         )
+        # E07: radio devices added before their room controller was
+        # registered have no parent yet; they hang below it from now on.
+        radio_prefix = (
+            f"{coordinator.plant_model.gateway_device.identifier}:devices:device"
+        )
+        for device in devices:
+            if (
+                device.id != gateway_device.id
+                and device.via_device_id is None
+                and any(
+                    identifier[0] == DOMAIN and identifier[1].startswith(radio_prefix)
+                    for identifier in device.identifiers
+                )
+            ):
+                device_registry.async_update_device(
+                    device.id, via_device_id=gateway_device.id
+                )
         for device in devices:
             if device.id == gateway_device.id or not any(
                 identifier[0] == DOMAIN

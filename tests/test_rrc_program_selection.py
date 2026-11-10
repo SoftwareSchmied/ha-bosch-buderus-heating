@@ -1,7 +1,7 @@
 """#113: program selection, names, override and day programs of RRC zones.
 
-The synthetic answers follow the shapes of the vendor app's demo answers and
-of the observed TC100.2 wire format: the program list as ``programArray`` with
+The synthetic answers follow the expected RRC 2.0 shapes and the observed
+TC100.2 wire format: the program list as ``programArray`` with
 numeric IDs and Base64 names, single days as ``dayProgram``, ``used`` as the
 strings "true"/"false" and a temporary setpoint of 0 without an override.
 Values and names are constructed.
@@ -87,7 +87,7 @@ def program_list(**fields: object) -> Resource:
             "value": [
                 {"id": 1, "name": b64("Wohnen")},
                 {"id": 2, "name": b64("Arbeit")},
-                {"id": 3, "name": "Bad"},  # plain text, as in the demo mode
+                {"id": 3, "name": "Bad"},  # plain text
                 {"id": 4, "name": ""},
             ],
             **fields,
@@ -188,7 +188,7 @@ def wire_coordinator(environment, *resources: Resource) -> dict[str, Resource]:
 
 
 async def test_manual_zone_shows_selects_and_writes_its_program(environment):
-    """#113 (RRC-03): used:"false" keeps the assignment, like the vendor app."""
+    """#113 (RRC-03): used:"false" keeps the assignment."""
     coordinator, client, _ = environment
     state = wire_coordinator(environment, program_list(), manual_selection())
     sensor = BoschBuderusSensor(
@@ -450,7 +450,7 @@ def test_day_programs_are_read_like_the_vendor_app():
     assert [point.minute for point in schedule.points] == [420, 1380]
     # A week stays a week program.
     assert parse_schedule(week(type="dayProgram")) is None
-    # The demo placeholder field stays readable but is not editable.
+    # An extra placeholder field stays readable but is not editable.
     extra = day(value=[{"d": "Mo", "t": 420, "Th": 19, "name": 0}])
     parsed = parse_schedule(extra)
     assert parsed is not None and not parsed.editable

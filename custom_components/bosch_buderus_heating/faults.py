@@ -195,7 +195,9 @@ def is_active_fault_resource_path(path: str) -> bool:
     )
 
 
-def fault_resource_candidates(resources: Mapping[str, Resource]) -> tuple[str, ...]:
+def fault_resource_candidates(
+    resources: Mapping[str, Resource], *, device_type: str | None = None
+) -> tuple[str, ...]:
     """Build bounded optional fault paths from actually discovered IDs."""
     candidates = {_NOTIFICATIONS_PATH}
 
@@ -219,7 +221,7 @@ def fault_resource_candidates(resources: Mapping[str, Resource]) -> tuple[str, .
             candidates.add(f"/heatSources/{match[1]}/failurelist")
 
     device_ids: set[str] = set()
-    if rrc.profile_evidence(None, resources):
+    if rrc.profile_evidence(device_type, resources):
         # C8: the radio devices of an RRC controller have no fault resource;
         # their faults arrive in /notifications.
         return tuple(sorted(candidates))

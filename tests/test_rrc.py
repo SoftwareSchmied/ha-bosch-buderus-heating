@@ -318,7 +318,7 @@ def test_diagnostics_report_observed_string_flags_as_valid(path, used):
 
 
 def test_observed_unused_program_selection_keeps_its_assignment():
-    """#113 (RRC-03): a manual zone keeps its program, as in the vendor app."""
+    """#113 (RRC-03): a manual zone keeps its program."""
     resource = TC100_RESOURCES["/zones/zn4/clockProgram"]
     assert resource.metadata.used is False
     assert rrc.scalar_value(resource) == 4

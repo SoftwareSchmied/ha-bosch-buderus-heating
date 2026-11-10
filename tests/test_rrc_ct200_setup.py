@@ -341,3 +341,29 @@ async def test_device_list_outage_and_late_list_in_real_cycles(
 
         await hass.config_entries.async_unload(entry.entry_id)
         await hass.async_block_till_done()
+
+
+async def test_radio_devices_registered_before_their_controller_get_it(
+    hass: HomeAssistant,
+) -> None:
+    """Review (E07): when a radio device is added before the controller's
+    device exists, it has no parent at first; the setup links it."""
+    entry = _entry(hass)
+    cloud = RrcCloud(ct200_tree())
+    with (
+        cloud_patches(cloud, Clock()),
+        patch(f"{PACKAGE}.device.via_device", return_value={}),
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+        devices = dr.async_get(hass)
+        gateway = device_by_identifier(devices, (DOMAIN, "gateway-one"), entry.entry_id)
+        radios = [
+            device
+            for device in dr.async_entries_for_config_entry(devices, entry.entry_id)
+            if any(":devices:device" in item[1] for item in device.identifiers)
+        ]
+        assert len(radios) == 11
+        assert all(device.via_device_id == gateway.id for device in radios)
+        await hass.config_entries.async_unload(entry.entry_id)
+        await hass.async_block_till_done()

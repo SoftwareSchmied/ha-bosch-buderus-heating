@@ -186,7 +186,7 @@ PROGRAM_NAMES = ("Wohnen", "Arbeit", "Nacht", "Gäste")
 
 
 def large_plant(*, filler: int) -> dict[str, Resource]:
-    """Five TC100.2 zones in the observed and demo shapes, with named programs.
+    """Five TC100.2 zones in the observed and expected shapes, with named programs.
 
     The gateway advertises the zone leaves; ``filler`` further advertised but
     unreadable leaves follow them and use up the discovery budget, as on a
