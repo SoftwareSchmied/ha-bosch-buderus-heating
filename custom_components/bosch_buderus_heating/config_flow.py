@@ -131,7 +131,7 @@ from .pointt import (
 from .pointt.retry_after import bounded_cloud_pause
 from .rrc_flow import RrcScheduleOptionsFlow
 from .runtime import BoschBuderusRuntimeData
-from .writes import WDDW2_HOLIDAY_POLICY, assess_control
+from .writes import WDDW2_HOLIDAY_POLICY, WriteBusy, assess_control
 
 CONF_HOLIDAY_PERIOD = "holiday_period"
 CONF_HOLIDAY_ASSIGNED_TO = "holiday_assigned_to"
@@ -1201,6 +1201,8 @@ class BoschBuderusOptionsFlow(
                 errors = {"base": "write_authentication_failed"}
             except WriteValidationError:
                 errors = {"base": "holiday_changed"}
+            except WriteBusy:
+                errors = {"base": "write_busy"}
             except PointTError:
                 errors = {"base": "delete_failed"}
             else:
@@ -1310,6 +1312,8 @@ class BoschBuderusOptionsFlow(
                 errors = {"base": "write_not_confirmed"}
             except KeyError, WriteValidationError:
                 errors = {"base": "holiday_changed"}
+            except WriteBusy:
+                errors = {"base": "write_busy"}
             except PointTError:
                 errors = {"base": "write_failed"}
             else:
@@ -1567,6 +1571,8 @@ class BoschBuderusOptionsFlow(
                 errors = {"base": "write_authentication_failed"}
             except KeyError, TypeError, ValueError, WriteValidationError:
                 errors = {"base": validation_error}
+            except WriteBusy:
+                errors = {"base": "write_busy"}
             except PointTError:
                 errors = {"base": "write_failed"}
             else:

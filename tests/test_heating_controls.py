@@ -2,7 +2,7 @@
 
 from dataclasses import replace
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from homeassistant.components.climate.const import ClimateEntityFeature, HVACMode
@@ -41,6 +41,7 @@ from custom_components.bosch_buderus_heating.pointt import (
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 from custom_components.bosch_buderus_heating.writes import (
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+    WriteBusy,
 )
 from tests.ha_test_helpers import MockConfigEntry
 
@@ -371,6 +372,28 @@ async def test_dialog_refresh_is_local_and_rebases_changes(
     coordinator.client.get_resource.assert_not_awaited()
 
 
+async def test_dialog_behind_a_long_poll_sends_nothing_and_says_so(
+    hass, enable_custom_integrations
+):
+    """D: a held gateway is no communication failure; nothing was sent."""
+    from custom_components.bosch_buderus_heating import (
+        coordinator as coordinator_module,
+    )
+
+    options, coordinator, _, _ = await flow(hass)
+    write = coordinator._write_service.async_write_enum
+    with patch.object(
+        coordinator_module, "WRITE_LOCK_TIMEOUT", coordinator_module.timedelta(0)
+    ):
+        async with coordinator._update_lock:
+            result = await options.async_step_operate(
+                {"controls": {"changes": {MODE: "auto"}}}
+            )
+    assert result["errors"] == {"base": "controls_busy"}
+    write.assert_not_awaited()
+    assert not coordinator._update_lock.locked()
+
+
 @pytest.mark.parametrize(
     "error,key",
     [
@@ -379,6 +402,7 @@ async def test_dialog_refresh_is_local_and_rebases_changes(
         (WriteNotConfirmed("lost"), "controls_unconfirmed"),
         (WriteValidationError("changed"), "controls_changed"),
         (PointTError("lost"), "controls_failed"),
+        (WriteBusy("busy"), "controls_busy"),
     ],
 )
 async def test_dialog_partial_write_failure_is_explicit(

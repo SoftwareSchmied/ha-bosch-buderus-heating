@@ -17,6 +17,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     WriteValidationError,
 )
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
+from custom_components.bosch_buderus_heating.writes import WriteBusy
 from tests import test_dynamic_controls
 from tests.test_rrc import RESOURCES, WEEK, wire
 
@@ -114,6 +115,7 @@ async def test_invalid_setpoint_is_rejected_before_cloud(
         (WriteValidationError("changed"), "rrc_changed"),
         (WriteNotConfirmed("lost"), "rrc_not_confirmed"),
         (RequestTimeout("lost"), "rrc_failed"),
+        (WriteBusy("busy"), "write_busy"),
     ],
 )
 async def test_write_failure_has_specific_translated_error(

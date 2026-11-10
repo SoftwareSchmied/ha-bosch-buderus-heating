@@ -66,6 +66,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     WriteValidationError,
 )
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
+from custom_components.bosch_buderus_heating.writes import WriteBusy
 from tests.ha_test_helpers import MockConfigEntry
 
 
@@ -543,6 +544,58 @@ async def test_invalid_redirect_stays_in_auth_step(
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "auth"
     assert result["errors"] == {"base": "invalid_redirect"}
+
+
+@pytest.fixture
+def scope_fallback():
+    """Each test starts with the reduced scope set and leaves no fallback."""
+    from custom_components.bosch_buderus_heating.pointt import auth
+
+    auth._ScopeFallback.active = False
+    yield
+    auth._ScopeFallback.active = False
+
+
+def _scope_rejection(result: dict[str, object], brand: Brand) -> str:
+    placeholders = result["description_placeholders"]
+    assert isinstance(placeholders, dict)
+    state = parse_qs(urlparse(placeholders["authorization_url"]).query)["state"][0]
+    return f"{brand.redirect_uri}?error=invalid_scope&state={state}"
+
+
+async def test_a_rejected_scope_set_asks_to_open_the_new_link(
+    hass: HomeAssistant, enable_custom_integrations: None, scope_fallback
+) -> None:
+    """The dialog names the new link, not a wrong address (C, scope rejection)."""
+    first = await _start_auth_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        first["flow_id"],
+        {CONF_REDIRECT_URL: _scope_rejection(first, Brand.BUDERUS)},
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "auth"
+    assert result["errors"] == {"base": "auth_restart"}
+    link = result["description_placeholders"]["authorization_url"]
+    assert link != first["description_placeholders"]["authorization_url"]
+    assert "pointt.gateway.claiming" in parse_qs(urlparse(link).query)["scope"][0]
+    # The new link completes the sign-in.
+    exchange = AsyncMock(return_value=AuthTokens("access", "refresh", 4000.0))
+    with (
+        patch(
+            "custom_components.bosch_buderus_heating.config_flow.OAuthClient.exchange_code",
+            exchange,
+        ),
+        patch(
+            "custom_components.bosch_buderus_heating.config_flow.PointTClient.get_gateways",
+            AsyncMock(return_value=(Gateway("gateway-one"),)),
+        ),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_REDIRECT_URL: _redirect_from_result(result, Brand.BUDERUS)},
+        )
+    assert result["step_id"] == "gateways"
+    exchange.assert_awaited_once()
 
 
 async def test_gateway_discovery_can_retry_without_new_login(
@@ -1264,6 +1317,7 @@ async def test_delete_stops_when_confirmation_is_outdated(
         (AuthenticationError("expired"), "write_authentication_failed"),
         (WriteValidationError("stale"), "holiday_changed"),
         (InvalidPayload("bad"), "delete_failed"),
+        (WriteBusy("busy"), "write_busy"),
         (HolidayChangedError("changed"), "holiday_changed"),
     ],
 )
@@ -1410,6 +1464,7 @@ async def test_options_flow_stops_if_selected_holiday_disappears(
         (AuthenticationError("expired"), "write_authentication_failed"),
         (WriteValidationError("changed"), "write_validation_failed"),
         (InvalidPayload("bad"), "write_failed"),
+        (WriteBusy("busy"), "write_busy"),
     ],
 )
 async def test_options_flow_reports_holiday_write_errors(

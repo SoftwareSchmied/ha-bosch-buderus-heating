@@ -260,11 +260,12 @@ class TokenManager:
                 refresh_token,
                 error=err,
             )
-            failure = self._temporary_failure(err)
             if isinstance(err, PointTError):
                 # Not an answer of the PointT service: no gateway or reading
                 # failed, and an unreadable token answer is no invalid value.
-                raise failure from err
+                raise self._temporary_failure(err) from err
+            # A programming error is no failure of the sign-in service: it
+            # propagates unchanged and pauses no later sign-in.
             raise
 
     def _report(

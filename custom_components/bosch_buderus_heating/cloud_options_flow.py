@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from contextlib import suppress
+import logging
 from typing import Any, ClassVar, cast, override
 
 from homeassistant.config_entries import ConfigFlowResult
@@ -44,6 +44,8 @@ from .pointt import (
     RateLimited,
 )
 from .pointt.transport import RateLimitBackoff
+
+_LOGGER = logging.getLogger(__name__)
 
 # P49b step 8: shown on the selection, which stays open; nothing is saved and
 # deselecting the system keeps it as it is.
@@ -350,9 +352,14 @@ class CloudOptionsFlow(CloudAuthorizationFlow, ConnectionOptionsFlow):
                     )
                     # A token rotation running right now is saved first; the
                     # selection is then built on the saved tokens (AUTH-3).
-                    with suppress(TimeoutError):
+                    try:
                         await async_wait_for_entry_refresh(
                             self.hass, self._entry.entry_id
+                        )
+                    except Exception as err:  # the saved tokens are used anyway
+                        _LOGGER.debug(
+                            "Waiting for a running token renewal failed (%s)",
+                            type(err).__name__,
                         )
                     update_cloud_selection(
                         self._management(),

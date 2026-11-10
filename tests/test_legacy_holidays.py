@@ -449,6 +449,41 @@ async def test_wddw2_options_dialog_has_only_mode(hass, enable_custom_integratio
     )
 
 
+async def test_wddw2_dialog_behind_a_long_poll_sends_nothing_and_says_so(
+    hass, environment
+):
+    """D: a held gateway is reported as such; the mode was not sent."""
+    from custom_components.bosch_buderus_heating import (
+        coordinator as coordinator_module,
+    )
+    from custom_components.bosch_buderus_heating.runtime import (
+        BoschBuderusRuntimeData,
+    )
+    from tests.test_config_flow import _reconfigure_entry
+
+    coordinator, client, _ = environment
+    shown = replace(RESOURCES[WDDW2_HOLIDAY_PATH], value="off")
+    coordinator.resources = {shown.path: shown}
+    coordinator.data = snapshots(shown)
+    entry = _reconfigure_entry(hass)
+    entry.runtime_data = BoschBuderusRuntimeData(
+        client=AsyncMock(),
+        token_manager=AsyncMock(),
+        gateways=(coordinator.gateway,),
+        coordinators=(coordinator,),
+    )
+    result = await _start_holiday_options(hass, entry)
+    with patch.object(
+        coordinator_module, "WRITE_LOCK_TIMEOUT", coordinator_module.timedelta(0)
+    ):
+        async with coordinator._update_lock:
+            result = await hass.config_entries.options.async_configure(
+                result["flow_id"], {"holiday_mode": "on"}
+            )
+    assert result["errors"] == {"base": "write_busy"}
+    client.put_resource_value.assert_not_awaited()
+
+
 @pytest.mark.parametrize(
     "app,submitted,expected",
     [
