@@ -80,6 +80,30 @@ Versioning after its first tagged preview.
 - I have tested these changes only with simulated data in the shapes of the
   observed TC100.2 answers.
 
+#### RRC heating circuit
+
+- **Heating circuit settings on room controllers:** the heating curve (base
+  and end point), the minimum and maximum supply temperature and the room
+  influence are now numbers. They are configuration entities and disabled by
+  default; enable them only if you know these settings. The base point stays
+  below the end point and the minimum supply temperature not above the
+  maximum; before a change I read both limits again and send nothing if one
+  of them changed. The room influence is sent as a whole number.
+- **Summer/winter and night switching, season mode, heat-up speed and
+  setpoint optimization:** the switching modes, the season mode, the heat-up
+  speed (slow, normal, fast), the outdoor temperature thresholds and the
+  setpoint optimization can be changed. The season mode is offered only when
+  the controller offers at least two modes; with a single mode it stays a
+  reading. A new sensor shows whether the circuit heats, cools or idles.
+- **Never changed:** the control strategy, the heating system type and the
+  room control type are installer settings and are not written. A setting
+  the controller marks as unavailable without marking it as used offers no
+  control.
+- Every change is sent once and confirmed by reading it back, as for the
+  zones. I have tested this only with simulated data in the expected shapes
+  and in the shapes of the TC100.2 diagnostics from #122; all of it is expected
+  but untested on a real controller.
+
 #### Room controllers of the RRC 2.0 platform (CT200 and TC100.2)
 
 - **Recognised by their resources:** a gateway the cloud reports as device

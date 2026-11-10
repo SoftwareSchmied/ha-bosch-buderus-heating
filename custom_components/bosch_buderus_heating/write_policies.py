@@ -91,6 +91,10 @@ class EnumWritePolicy:
     # The options offered only when the resource has no ``allowedValues`` key
     # at all and its current value is one of them (#113: ``userMode``).
     fallback_options: tuple[str, ...] = ()
+    # Advertised placeholders left out of the options, such as "" (never
+    # written); fewer than ``min_options`` usable options leave no control.
+    ignored_options: frozenset[str] = frozenset()
+    min_options: int = 1
     # A switch over two exact wire values, such as "true"/"false" (S2).
     on_value: str | None = None
     off_value: str | None = None

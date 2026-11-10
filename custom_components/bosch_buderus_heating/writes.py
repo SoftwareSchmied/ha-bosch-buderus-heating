@@ -747,6 +747,12 @@ def advertised_options(
         )
     ):
         return policy.fallback_options
+    if policy.ignored_options:
+        return tuple(
+            value
+            for value in metadata.allowed_values
+            if value not in policy.ignored_options
+        )
     return metadata.allowed_values
 
 
@@ -776,6 +782,13 @@ def _enum_rejection_reason(resource: Resource, policy: EnumWritePolicy) -> str |
         policy.options_rule == "exact" and advertised != policy.known_values
     ):
         return "unsupported_options"
+    usable = {
+        value
+        for value in advertised
+        if not policy.known_only or value in policy.known_values
+    }
+    if len(usable) < policy.min_options:
+        return "too_few_options"
     return None
 
 
