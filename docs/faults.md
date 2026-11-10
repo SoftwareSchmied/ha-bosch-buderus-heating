@@ -21,6 +21,101 @@ Details can include the code, subcode, normalized severity, component class,
 summary, and first Home Assistant observation. At most 25 entries are attached
 to an entity state; `truncated: true` indicates additional entries.
 
+## Where do I find faults?
+
+The bell notification is not an archive: once it is dismissed, or after a
+Home Assistant restart, it is gone. The faults themselves stay available in
+two places.
+
+### Current faults
+
+Open the **Active faults** entity (German: "Aktive Störungen") and expand
+**Attributes**. The `faults` attribute lists every current fault with:
+
+| Field | Meaning |
+|---|---|
+| `code`, `subcode` | Fault code and subcode as reported by the system |
+| `severity`, `severity_label` | `fault`, `critical` or `unknown`, with a translated label |
+| `component` | Reporting component class, or `unknown` |
+| `summary` | Short description for verified codes; otherwise "Unknown fault (code …)", without an invented explanation |
+| `first_seen` | When Home Assistant first saw the fault |
+| `occurred_at`, `time_source` | Time reported by the system, if any, and where the time comes from |
+
+`status` repeats the summary of the first entry. **Active notifications** has
+the same attribute for all current notifications, including warnings and
+maintenance messages, and adds `severity_counts`. In a template:
+
+```jinja
+{{ state_attr('sensor.heating_active_faults', 'faults') }}
+```
+
+### Past faults
+
+**System notifications** is an event entity. It fires `appeared` when a
+notification is first seen and `resolved` once its end is confirmed. Each
+event carries `event_type`, `code`, `subcode` (when reported), `summary`,
+`severity`, `severity_label`, `component`, `observed_at`, `time_source` and,
+when the system reports a time, `occurred_at`. It covers every notification
+class, so filter on `severity` if you only want faults.
+
+The entity's **history** and the **logbook** record every event with its
+time, and each recorded state keeps these details as attributes. They reach
+back as far as the Home Assistant recorder keeps data, by default 10 days
+(`purge_keep_days` in the
+[recorder configuration](https://www.home-assistant.io/integrations/recorder/)).
+The integration keeps no fault history of its own.
+
+To find the entity ID, open **Settings → Devices & services → Entities** and
+search for "System notifications" (German: "Anlagenmeldungen").
+
+### Keeping a permanent record
+
+The following automation writes each event as a readable logbook entry and
+sends it as a push notification; replace the example entity ID with yours.
+Logbook entries are purged with the recorder as well. A push notification
+stays on the phone, and a notify target of the
+[File integration](https://www.home-assistant.io/integrations/file/) can
+append the same message to a file.
+
+```yaml
+automation:
+  - alias: "Record heating notifications"
+    triggers:
+      - trigger: state
+        entity_id: event.heating_system_notifications
+        # Not when the entity returns from unavailable or unknown, for example
+        # after a restart: that shows the last event again, not a new one.
+        not_from:
+          - unavailable
+          - unknown
+    actions:
+      - variables:
+          text: >-
+            {% set info = trigger.to_state.attributes -%}
+            {{ 'Appeared' if info.event_type == 'appeared' else 'Resolved' }}:
+            {{ info.summary }}
+            {%- if info.code %} [code {{ info.code }}
+            {%- if info.subcode %}, subcode {{ info.subcode }}{% endif %}]{% endif %}
+      - action: logbook.log
+        data:
+          name: "Heating"
+          entity_id: event.heating_system_notifications
+          message: "{{ text }}"
+      - action: notify.notify
+        data:
+          title: "Heating notification"
+          message: "{{ text }}"
+```
+
+### Decoding codes
+
+For verified codes, `summary` already contains a short description. Unknown
+codes are shown without an invented explanation. Look them up in the official
+[Bosch error-code search](https://www.bosch-homecomfort.com/de/de/wohngebaeude/service-und-support/bosch-fehlercode-suche/),
+which lists possible causes and remedies, or in the troubleshooting chapter of
+your appliance's installation and service manual, which has the complete list.
+The appliance display remains authoritative.
+
 ## Home Assistant bell notifications
 
 Fault notifications are enabled by default. Open **Configure**, then

@@ -64,6 +64,31 @@ Versioning after its first tagged preview.
 - The few names of the TC100.2 room controller zones are still German or
   English only.
 
+#### Documentation
+
+- **Where do I find faults?** A new section in the
+  [fault documentation](docs/faults.md#where-do-i-find-faults) and a short
+  pointer in the README explain where current faults are (the `faults`
+  attribute of Active faults) and where past ones are (history and logbook of
+  the System notifications event entity, as far back as the recorder keeps
+  data). It includes an automation that writes every `appeared` and
+  `resolved` event to the logbook and sends it as a push notification, and
+  explains how to look up codes. The bell notification is not an archive.
+  Thank you, @ColinFinck, for pointing out in #120 that this was hard to find.
+- **Confirmed installations** are now also part of the 0.9 documentation,
+  in the README and as a [separate page](docs/confirmed-installations.md).
+  The Logano plus GB212 with a Logamatic TC100.2 now lists the RRC zones as
+  confirmed with 0.9.0-alpha.4 without a local patch: room temperature,
+  active setpoint, zone names, operating mode and manual setpoint changes
+  from Home Assistant. With alpha.4, selecting a heating schedule did not
+  work there yet; see RRC zones above.
+  Thank you, @obvius1, for testing this on your system and reporting it in
+  #113.
+- The README now names the K40/K40RF gateways that the local access
+  recognises for IVT, Worcester and Vulcano. Systems of these brands should
+  work with the cloud access when **Bosch** is selected, but none has been
+  confirmed yet.
+
 ## [0.9.0-alpha.4] - 2026-11-10
 
 > [!IMPORTANT]
