@@ -120,10 +120,10 @@ async def test_failed_write_opens_the_tab_where_writing_stopped(
     options, coordinator, _, _ = await hot_water_flow(hass)
     write = coordinator._write_service.async_write_number.side_effect
 
-    async def fail_target(gateway, resource, value, policy):
+    async def fail_target(gateway, resource, value, policy, **kwargs):
         if resource.path == TARGET:
             raise PointTError("lost")
-        return await write(gateway, resource, value, policy)
+        return await write(gateway, resource, value, policy, **kwargs)
 
     coordinator._write_service.async_write_number.side_effect = fail_target
     # Hot water is written first and confirmed; the setpoint then fails.
