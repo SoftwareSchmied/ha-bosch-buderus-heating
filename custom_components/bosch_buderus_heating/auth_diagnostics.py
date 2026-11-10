@@ -28,6 +28,7 @@ from homeassistant.util.hass_dict import HassKey
 from .configuration import CLOUD_KIND
 from .configuration_migration import legacy_cloud_connection_id
 from .const import DOMAIN
+from .log_helpers import log_failure
 from .pointt import (
     AuthTokens,
     RateLimited,
@@ -90,8 +91,13 @@ async def async_load_auth_histories(
         )
         try:
             stored = await store.async_load()
-        except Exception:
-            _LOGGER.warning("Token refresh history could not be read; starting anew")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Token refresh history could not be read; starting anew",
+                error=err,
+            )
             stored = None
         recorders.setdefault(key, AuthDiagnostics(store, stored, clock=clock))
     hass.data.setdefault(_LOADED_OWNERS, set()).add(entry.entry_id)

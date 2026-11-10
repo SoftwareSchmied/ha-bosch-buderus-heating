@@ -28,6 +28,7 @@ from .faults import (
     fault_severity_label,
     fault_summary,
 )
+from .log_helpers import log_failure
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -238,8 +239,13 @@ class FaultNotifications:
             return
         try:
             stored = await self._store.async_load()
-        except Exception:
-            _LOGGER.warning("Stored fault notification preferences could not be read")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Stored fault notification preferences could not be read",
+                error=err,
+            )
             stored = None
         if self._closed or self._remove_callbacks:
             return
@@ -327,9 +333,14 @@ class FaultNotifications:
             if self._source_current():
                 self._retained_faults = self._tracker.active_faults
             self._update()
-        except Exception:
+        except Exception as err:
             if not self._update_error_logged:
-                _LOGGER.error("The heating fault notification could not be updated")
+                log_failure(
+                    _LOGGER,
+                    logging.ERROR,
+                    "The heating fault notification could not be updated",
+                    error=err,
+                )
                 self._update_error_logged = True
         else:
             self._update_error_logged = False
@@ -551,9 +562,14 @@ class FaultNotifications:
         self._dirty = True
         try:
             self._store.async_delay_save(self._serialize, 1)
-        except Exception:
+        except Exception as err:
             if not self._save_schedule_failed:
-                _LOGGER.warning("Fault notification preferences could not be queued")
+                log_failure(
+                    _LOGGER,
+                    logging.WARNING,
+                    "Fault notification preferences could not be queued",
+                    error=err,
+                )
             self._save_schedule_failed = True
         else:
             self._save_schedule_failed = False
@@ -567,13 +583,23 @@ class FaultNotifications:
         try:
             if self._flush_tracker:
                 await self._tracker.async_flush()
-        except Exception:
-            _LOGGER.warning("The fault baseline could not be saved during unload")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "The fault baseline could not be saved during unload",
+                error=err,
+            )
         if self._dirty:
             try:
                 await self._store.async_save(self._serialize())
-            except Exception:
-                _LOGGER.warning("Fault notification preferences could not be saved")
+            except Exception as err:
+                log_failure(
+                    _LOGGER,
+                    logging.WARNING,
+                    "Fault notification preferences could not be saved",
+                    error=err,
+                )
 
     @callback
     def stop(self) -> None:
@@ -585,8 +611,13 @@ class FaultNotifications:
         self._remove_tracker_callbacks.clear()
         try:
             self._remove_notification()
-        except Exception:
-            _LOGGER.warning("The heating fault notification could not be removed")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "The heating fault notification could not be removed",
+                error=err,
+            )
 
 
 async def async_setup_notifications(
@@ -603,9 +634,14 @@ async def async_setup_notifications(
             for started in managers:
                 started.stop()
             raise
-        except Exception:
+        except Exception as err:
             manager.stop()
-            _LOGGER.error("Heating fault notifications could not be initialized")
+            log_failure(
+                _LOGGER,
+                logging.ERROR,
+                "Heating fault notifications could not be initialized",
+                error=err,
+            )
         else:
             managers.append(manager)
             entry.async_on_unload(manager.stop)

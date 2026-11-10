@@ -28,6 +28,7 @@ from .configuration_changes import ConfigurationRuns, RequestGeneration
 from .configuration_management import ConfigurationManagement, section
 from .gateway_identity import GatewayNamespace, IdentityContext
 from .local_state import LocalCondition, LocalSourceState
+from .log_helpers import log_failure
 from .pointt import AuthenticationError, RateLimited
 from .pointt.retry_after import (
     DEFAULT_CLOUD_PAUSE_SECONDS,
@@ -676,8 +677,13 @@ class ConnectionRuntime:
                         else:
                             await view.async_stop_source()
             raise
-        except Exception:
-            _LOGGER.warning("A system's local readings could not be shown; retrying")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "A system's local readings could not be shown; retrying",
+                error=err,
+            )
             _LOGGER.debug("Local plant view build failed", exc_info=True)
             if view is not None:
                 # Never writes and never listens any more.
@@ -853,8 +859,13 @@ class ConnectionRuntime:
         try:
             async with asyncio.timeout(CLOSE_TIMEOUT):
                 await driver.close()
-        except Exception:
-            _LOGGER.error("A connection resource could not be closed")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.ERROR,
+                "A connection resource could not be closed",
+                error=err,
+            )
 
     async def _connect(self, run: _ConnectionRun) -> None:
         # A replacement waits for its own predecessor, never for another access.
@@ -1254,8 +1265,13 @@ class ConnectionRuntime:
             if hold is not None:
                 try:
                     hold()
-                except Exception:
-                    _LOGGER.error("A view could not continue without the cloud")
+                except Exception as err:
+                    log_failure(
+                        _LOGGER,
+                        logging.ERROR,
+                        "A view could not continue without the cloud",
+                        error=err,
+                    )
 
     # ------------------------------------------- P49: switched off at start
 
@@ -1512,8 +1528,13 @@ class ConnectionRuntime:
         try:
             async with asyncio.timeout(CLOSE_TIMEOUT):
                 await hand_over(owner)
-        except Exception:
-            _LOGGER.error("A fault baseline could not be handed over")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.ERROR,
+                "A fault baseline could not be handed over",
+                error=err,
+            )
         assert item is not None
         return item[0]
 
@@ -1646,7 +1667,12 @@ class ConnectionRuntime:
                 try:
                     async with asyncio.timeout(CLOSE_TIMEOUT):
                         await release()
-                except Exception:
-                    _LOGGER.error("A connection resource could not be closed")
+                except Exception as err:
+                    log_failure(
+                        _LOGGER,
+                        logging.ERROR,
+                        "A connection resource could not be closed",
+                        error=err,
+                    )
         if self._tasks:
             await asyncio.wait(tuple(self._tasks), timeout=2 * CLOSE_TIMEOUT)

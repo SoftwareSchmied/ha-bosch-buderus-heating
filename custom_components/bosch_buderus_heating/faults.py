@@ -18,6 +18,7 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
 
 from .const import DOMAIN
+from .log_helpers import log_failure
 from .pointt import Resource
 from .pointt.models import BatchItemResult, JsonValue
 
@@ -647,8 +648,13 @@ class FaultTracker:
         for listener in tuple(self._state_listeners):
             try:
                 listener()
-            except Exception:
-                _LOGGER.error("A fault-state observer could not update")
+            except Exception as err:
+                log_failure(
+                    _LOGGER,
+                    logging.ERROR,
+                    "A fault-state observer could not update",
+                    error=err,
+                )
 
     @property
     def highest_severity(self) -> FaultSeverity | None:
@@ -663,8 +669,13 @@ class FaultTracker:
         """Restore the minimal active baseline used for restart deduplication."""
         try:
             data = await self._store.async_load()
-        except Exception:
-            _LOGGER.warning("The stored fault baseline could not be read")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "The stored fault baseline could not be read",
+                error=err,
+            )
             return
         # Read (perhaps empty): a later first list is a real first baseline.
         self._store_read = True
@@ -892,8 +903,13 @@ class FaultTracker:
                 translation_key="fault_source_removed",
                 translation_placeholders={"count": str(self._removed_sources)},
             )
-        except Exception:
-            _LOGGER.warning("The notice about a removed fault source failed")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "The notice about a removed fault source failed",
+                error=err,
+            )
         self._schedule_save()
         self._notify_state_listeners()
 
@@ -1394,9 +1410,14 @@ class FaultTracker:
             return
         try:
             self._store.async_delay_save(self._serialize, FAULT_STORAGE_SAVE_DELAY)
-        except Exception:
+        except Exception as err:
             if not self._save_schedule_failed:
-                _LOGGER.warning("The fault baseline could not be queued for storage")
+                log_failure(
+                    _LOGGER,
+                    logging.WARNING,
+                    "The fault baseline could not be queued for storage",
+                    error=err,
+                )
             self._save_schedule_failed = True
         else:
             self._save_schedule_failed = False

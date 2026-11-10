@@ -17,6 +17,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
+from .log_helpers import log_failure
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -116,8 +117,13 @@ async def async_remove_entry_stores(
     if unused := set(gateways) - others:
         try:
             await estimated_energy_store(hass).async_forget_gateways(unused)
-        except Exception:  # the totals are an optional cache
-            _LOGGER.warning("Estimated energy totals could not be updated")
+        except Exception as err:  # the totals are an optional cache
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Estimated energy totals could not be updated",
+                error=err,
+            )
 
 
 def _orphaned(name: str, entry_ids: set[str]) -> bool:

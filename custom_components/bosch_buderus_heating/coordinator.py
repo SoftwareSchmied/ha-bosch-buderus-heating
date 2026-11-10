@@ -1064,7 +1064,9 @@ class BoschBuderusDataUpdateCoordinator(
                     self.local_selection.note_confirmed_write(path, snapshots[path])
                     self.local_selection.request_refresh(path)
                 except Exception:
-                    _LOGGER.debug("Local refresh after a confirmed write failed")
+                    _LOGGER.debug(
+                        "Local refresh after a confirmed write failed", exc_info=True
+                    )
             self.async_set_updated_data(snapshots)
             if (mode_path := _manual_setpoint_mode_path(path)) is not None:
                 self._queue_manual_setpoint_recovery(mode_path, snapshots)

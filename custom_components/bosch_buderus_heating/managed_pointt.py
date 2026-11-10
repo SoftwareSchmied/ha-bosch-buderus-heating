@@ -33,6 +33,7 @@ from .counter_selection import CounterGuard, counter_source_store
 from .discovery import error_category
 from .discovery_inventory import DiscoveryInventory, discovery_inventory
 from .local_selection import LocalSelection
+from .log_helpers import log_failure
 from .managed_updates import SourceUpdates
 from .managed_wallbox import ManagedWallboxCoordinator
 from .pointt import Gateway, PointTClient
@@ -508,8 +509,13 @@ class PointTSource:
                 # the view's baseline later.
                 await attempt.async_hand_over()
             await resume(self)
-        except Exception:
-            _LOGGER.error("A fault baseline could not be taken back")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.ERROR,
+                "A fault baseline could not be taken back",
+                error=err,
+            )
 
     async def _stop(self) -> None:
         self._closed = True
@@ -724,8 +730,13 @@ class ManagedPointTCoordinator(
     async def _async_hold_after_load(self) -> None:
         try:
             await self.async_load_fault_state()
-        except Exception:
-            _LOGGER.error("The fault baseline could not be loaded")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.ERROR,
+                "The fault baseline could not be loaded",
+                error=err,
+            )
             return
         finally:
             self._hold_loading = False

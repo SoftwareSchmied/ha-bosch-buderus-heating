@@ -23,6 +23,7 @@ from homeassistant.helpers.storage import Store
 from homeassistant.util.hass_dict import HassKey
 
 from .const import DOMAIN
+from .log_helpers import log_failure
 from .pointt import Gateway, Resource, ResourceMetadata, ResourceReference
 from .pointt.redaction import resource_path_template
 
@@ -299,8 +300,13 @@ class DiscoveryInventory:
             return
         try:
             stored = await self._store.async_load()
-        except Exception:
-            _LOGGER.warning("Saved discovery inventory could not be read")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Saved discovery inventory could not be read",
+                error=err,
+            )
             stored = None
         if not self._loaded:
             self._gateways = dict(_gateways(stored, datetime.now(UTC)))

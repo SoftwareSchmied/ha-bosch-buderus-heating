@@ -42,6 +42,7 @@ from .derived import (
     power_kilowatts,
 )
 from .device import device_info_for_resource, grouped_entity_name
+from .log_helpers import log_failure
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
 
@@ -84,8 +85,13 @@ class EstimatedEnergyStore:
         if not self._loaded:
             try:
                 stored = await self._store.async_load()
-            except Exception:
-                _LOGGER.warning("Saved estimated energy totals could not be read")
+            except Exception as err:
+                log_failure(
+                    _LOGGER,
+                    logging.WARNING,
+                    "Saved estimated energy totals could not be read",
+                    error=err,
+                )
                 stored = None
             if not self._loaded:
                 totals = stored.get("totals") if isinstance(stored, dict) else None

@@ -68,6 +68,12 @@ Versioning after its first tagged preview.
 
 ### Outages and recovery
 
+- **Clearer log entries for unexpected errors:** about thirty places that
+  logged an unexpected error with a bare sentence, for example "The heating
+  fault notification could not be updated", now name the error class. The
+  error text itself stays out of the log, because it may contain account or
+  device details; with debug logging enabled, the full details follow at debug
+  level.
 - **Short gateway outages no longer hide values for 15 minutes:** when the
   gateway does not answer at all, the cloud reports a timeout for every
   reading. Each of these readings was then paused for 15 minutes, so the most

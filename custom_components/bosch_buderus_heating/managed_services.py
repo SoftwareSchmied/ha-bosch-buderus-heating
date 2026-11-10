@@ -16,6 +16,7 @@ from .const import DOMAIN, GATEWAY_EXCHANGE_ISSUE_PREFIX
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .entry_sources import notification_gateways
 from .faults import FaultTracker
+from .log_helpers import log_failure
 from .notifications import FaultNotifications
 
 if TYPE_CHECKING:
@@ -195,11 +196,14 @@ class ManagedServices:
                 except asyncio.CancelledError:
                     await manager.async_close()
                     raise
-                except Exception:
+                except Exception as err:
                     await manager.async_close()
                     self.notifications.pop(gateway, None)
-                    _LOGGER.error(
-                        "Heating fault notifications could not be initialized"
+                    log_failure(
+                        _LOGGER,
+                        logging.ERROR,
+                        "Heating fault notifications could not be initialized",
+                        error=err,
                     )
                     return
             elif source is None:

@@ -37,6 +37,7 @@ from homeassistant.util.hass_dict import HassKey
 
 from .const import DOMAIN
 from .energy_contracts import assess_energy, is_energy_collection
+from .log_helpers import log_failure
 from .read_contracts import assess_runtime, is_runtime_path
 from .start_counters import assess_start_counter, is_start_counter_path
 
@@ -174,8 +175,13 @@ class CounterSourceStore:
             return
         try:
             stored = await self._store.async_load()
-        except Exception:
-            _LOGGER.warning("Saved counter sources could not be read")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Saved counter sources could not be read",
+                error=err,
+            )
             stored = None
         if not self._loaded:
             self._rows = dict(_rows(stored))

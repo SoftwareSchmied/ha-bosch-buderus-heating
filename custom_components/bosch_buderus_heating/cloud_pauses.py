@@ -26,6 +26,7 @@ from homeassistant.helpers.storage import Store
 from homeassistant.util.hass_dict import HassKey
 
 from .const import DOMAIN
+from .log_helpers import log_failure
 from .pointt.retry_after import MAX_CLOUD_PAUSE_SECONDS
 from .pointt.transport import RateLimitBackoff
 
@@ -71,8 +72,13 @@ class CloudPauseStore:
             return
         try:
             stored = await self._store.async_load()
-        except Exception:
-            _LOGGER.warning("Saved cloud pauses could not be read")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Saved cloud pauses could not be read",
+                error=err,
+            )
             stored = None
         if self._loaded:
             return

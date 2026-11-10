@@ -34,6 +34,7 @@ from .configuration import (
 )
 from .configuration_management import ConfigurationManagement, ConnectionEdit, section
 from .const import DOMAIN, GATEWAY_EXCHANGE_ISSUE_PREFIX
+from .log_helpers import log_failure
 from .repair_scope import repair_data, repair_id
 
 if TYPE_CHECKING:
@@ -722,8 +723,13 @@ class ExchangeJournal:
     async def async_load(self) -> JournalState | None:
         try:
             data = await self._store().async_load()
-        except Exception:
-            _LOGGER.error("The gateway exchange journal could not be read")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.ERROR,
+                "The gateway exchange journal could not be read",
+                error=err,
+            )
             return None
         if not isinstance(data, dict):
             return None
@@ -975,10 +981,13 @@ async def async_resume_gateway_exchange(
         reason = (
             error.reason if isinstance(error, GatewayExchangeError) else "unexpected"
         )
-        _LOGGER.error(
+        log_failure(
+            _LOGGER,
+            logging.ERROR,
             "An interrupted gateway exchange could not be finished (%s); the "
             "entry does not start and the journal is kept",
             reason,
+            error=error,
         )
         raise ConfigEntryError(
             translation_domain=DOMAIN,
@@ -1160,9 +1169,15 @@ async def _async_finish(
     for name, step in steps:
         try:
             await step()
-        except Exception:
+        except Exception as err:
             complete = False
-            _LOGGER.warning("Gateway exchange follow-up failed: %s", name)
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Gateway exchange follow-up failed: %s",
+                name,
+                error=err,
+            )
     clear_exchange_issue(hass, entry, plan.connection_id, plan.binding_id)
     persistent_notification.async_dismiss(hass, notification_id(entry_id, plan.old))
     return complete
