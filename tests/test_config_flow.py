@@ -1805,7 +1805,7 @@ async def test_new_holiday_time_error_can_be_corrected_without_losing_input(
     [
         ("en", "de", "Neue Urlaubszeit"),
         ("de", "en", "New holiday"),
-        ("de", "fr", "New holiday"),
+        ("de", "eo", "New holiday"),
     ],
 )
 async def test_new_holiday_selector_uses_profile_translations(

@@ -183,8 +183,9 @@ def test_code_has_no_branch_for_a_single_language() -> None:
     assert others
     for path in PACKAGE.rglob("*.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"))
+        # Codes are lower case; "Fr" is the abbreviation of Friday.
         literals = {
-            node.value.casefold()
+            node.value
             for node in ast.walk(tree)
             if isinstance(node, ast.Constant) and isinstance(node.value, str)
         }
@@ -209,7 +210,7 @@ def test_a_new_language_needs_only_its_data_file(tmp_path: Path) -> None:
         "utf-8",
     )
     catalogs = i18n.load_catalogs(tmp_path)
-    assert catalogs.languages == ("en", "de", "da", "fi", "nb", "nl", "sv")
+    assert catalogs.languages == ("en", "de", *sorted({*i18n.LANGUAGES[2:], "nl"}))
     assert catalogs.texts["nl"]["Heat pump"] == "Warmtepomp"
     assert catalogs.dialogs["nl"]["holiday"]["date"] == "Datum"
     assert i18n.resolve_language("nl-BE", catalogs.languages) == "nl"
@@ -246,8 +247,9 @@ def test_regional_tags_find_the_closest_language(
         ("nn", "nb"),
         ("fi", "fi"),
         ("da", "da"),
-        ("pt-BR", "en"),
-        ("fr", "en"),
+        ("pt-BR", "pt"),
+        ("pt-PT", "pt"),
+        ("eo", "en"),
         ("", "en"),
         (None, "en"),
     ],
@@ -259,7 +261,7 @@ def test_language_code(tag: str | None, code: str) -> None:
 def test_localize_falls_back_to_english() -> None:
     assert i18n.localize("de-AT", "Wärmepumpe", "Heat pump") == "Wärmepumpe"
     assert i18n.localize("en", "Wärmepumpe", "Heat pump") == "Heat pump"
-    assert i18n.localize("fr", "Wärmepumpe", "Heat pump") == "Heat pump"
+    assert i18n.localize("eo", "Wärmepumpe", "Heat pump") == "Heat pump"
     assert i18n.localize("sv", "Wärmepumpe", "Heat pump") == "Värmepump"
     assert i18n.localize("no", "Wärmepumpe", "Heat pump") == "Varmepumpe"
     assert i18n.localize("fi", "Wärmepumpe", "Heat pump") == "Lämpöpumppu"
@@ -293,7 +295,7 @@ def test_localize_falls_back_to_english() -> None:
             "/zones/zone1/heating/temporaryRoomSetpoint",
             "Värme: Tillfälligt börvärde",
         ),
-        ("fr", "/heatingCircuits/hc1/actualSupplyTemperature", "Supply temperature"),
+        ("eo", "/heatingCircuits/hc1/actualSupplyTemperature", "Supply temperature"),
     ],
 )
 def test_resource_names_follow_the_system_language(
@@ -372,11 +374,11 @@ def test_rrc_zone_names_in_every_language(field: str) -> None:
     for control, (german, english) in enumerate(_RRC_NAMES[field]):
         names = {
             language: rrc.name(path, language, control=bool(control))
-            for language in ("de", "DE-ch", "en", "en-GB", "fr", "sv", "nb", "fi", "da")
+            for language in ("de", "DE-ch", "en", "en-GB", "eo", *i18n.CATALOGS)
         }
         assert names["de"] == names["DE-ch"] == german
-        assert names["en"] == names["en-GB"] == names["fr"] == english
-        for language in ("sv", "nb", "fi", "da"):
+        assert names["en"] == names["en-GB"] == names["eo"] == english
+        for language in i18n.CATALOGS:
             assert names[language] == i18n.CATALOGS[language][english]
             assert names[language] not in {german, english}, language
     assert rrc.name("/zones/znx/userMode", "sv") is None
@@ -389,7 +391,7 @@ def test_local_only_names_in_a_new_language() -> None:
     assert definition is not None
     assert local_only.entity_name(definition, path, "de") == "Externer Eingang 2"
     assert local_only.entity_name(definition, path, "fi") == "Ulkoinen tulo 2"
-    assert local_only.entity_name(definition, path, "pt-BR") == "External input 2"
+    assert local_only.entity_name(definition, path, "eo") == "External input 2"
 
 
 def test_documented_local_readings_are_named_by_the_shared_catalog() -> None:

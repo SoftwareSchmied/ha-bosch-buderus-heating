@@ -190,7 +190,7 @@ const assert = require("node:assert/strict");
       "bosch-buderus-holiday-datetime": { default_time: "", ...window.dialog },
     };
     const result = {};
-    for (const language of ["de", "en", "sv", "nb-NO", "nn", "fi", "da", "fr"]) {
+    for (const language of ["de", "en", "sv", "nb-NO", "nn", "fi", "da", "fr", "eo"]) {
       field.hass = { language };
       result[language] = [...field.shadowRoot.querySelectorAll("input")].map(
         (input) => input.getAttribute("aria-label"),
@@ -207,7 +207,8 @@ const assert = require("node:assert/strict");
     nn: ["Start: Dato", "Start: Tidspunkt"],
     fi: ["Start: Päivämäärä", "Start: Aika"],
     da: ["Start: Dato", "Start: Tid"],
-    fr: ["Start: Date", "Start: Time"],
+    fr: ["Start: Date", "Start: Heure"],
+    eo: ["Start: Date", "Start: Time"],
   });
   assert.deepEqual(errors, []);
   console.log(

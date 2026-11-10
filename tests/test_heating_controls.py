@@ -317,6 +317,10 @@ async def test_dialog_shows_real_metadata_and_localized_options(
         "nb": "Driftsmodus",
         "fi": "Käyttötila",
         "da": "Driftsform",
+        "fr": "Mode de fonctionnement",
+        "es": "Modo de funcionamiento",
+        "it": "Modalità di funzionamento",
+        "pt": "Modo de funcionamento",
     }
     assert mode["options"][1]["label"] == {
         "de": "Manuell",
@@ -325,6 +329,10 @@ async def test_dialog_shows_real_metadata_and_localized_options(
         "nb": "Manuell",
         "fi": "Manuaalinen",
         "da": "Manuel",
+        "fr": "Manuel",
+        "es": "Manual",
+        "it": "Manuale",
+        "pt": "Manual",
     }
     assert set(controls(coordinator)) == {MODE, TARGET}
     assert options._entry.options == {}

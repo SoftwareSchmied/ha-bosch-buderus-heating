@@ -215,7 +215,7 @@ async def test_manual_zone_shows_selects_and_writes_its_program(environment):
         ("de", "Zeitprogramm wählen"),
         ("de-AT", "Zeitprogramm wählen"),
         ("en", "Select heating schedule"),
-        ("fr", "Select heating schedule"),
+        ("eo", "Select heating schedule"),
         ("sv", "Välj värmeprogram"),
         ("nb", "Velg tidsprogram for oppvarming"),
         ("fi", "Valitse lämmitysaikaohjelma"),

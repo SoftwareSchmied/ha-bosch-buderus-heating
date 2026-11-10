@@ -200,7 +200,8 @@ const assert = require("node:assert/strict");
     ["fi", "Lämmityspiiri 1", "Lisää asetuksia"],
     ["da", "Varmekreds 1", "Flere indstillinger"],
     ["nn", "Varmekrets 1", "Flere innstillinger"],
-    ["pt-BR", "Heating circuit 1", "More settings"],
+    ["pt-BR", "Circuito de aquecimento 1", "Mais definições"],
+    ["eo", "Heating circuit 1", "More settings"],
   ]) {
     await ui.evaluate((el, value) => {
       el.hass = { language: value };
