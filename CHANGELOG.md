@@ -7,6 +7,31 @@ Versioning after its first tagged preview.
 
 #### RRC zones
 
+- **Zone climate:** every zone of a room controller that reports a heating
+  mode and a room temperature now gets a climate entity. `heat` is the manual
+  mode and `auto` the schedule; room controllers have no off mode. In manual
+  mode a new target changes the manual setpoint. In the schedule mode it sets
+  a temporary setpoint, which lasts only until the next switch point of the
+  schedule; the attribute `override_until_next_switch_point` says so. A
+  temperature together with a mode changes the mode first and the target only
+  once the controller has confirmed the mode; I never change a mode on the
+  side. The attributes also show the next setpoint, the minutes until it and
+  the zone status. The mode and the manual setpoint were confirmed on a
+  TC100.2; the temporary setpoint is expected to work but not tested on a real
+  controller yet.
+- **Clear the temporary setpoint:** a button per zone writes 0 while the zone
+  follows its schedule and waits until the controller shows it. If the
+  controller ends a replaced temporary setpoint at once, for example at a
+  switch point, a message of its own says so. Expected, not tested yet.
+- **Zone details (expected, not tested yet):** sensors for the next setpoint
+  (unknown instead of 999), the minutes until it, the zone status, the valve
+  opening and the optimum start, and a binary sensor for an open window.
+  Switches for the open window detection of each zone and of the system, and
+  numbers for its duration and temperature where the controller allows
+  writing. The valve opening, the optimum start and the system settings are
+  disabled by default.
+- **No second climate:** a room controller with zone climates no longer gets
+  a climate entity for its heating circuit as well.
 - **More time for changes on room controllers:** a room controller applies a
   change with a delay. On such controllers I now read a change back after 1,
   2, 4 and 8 seconds instead of 0.5, 1 and 2 seconds, and I still send it
