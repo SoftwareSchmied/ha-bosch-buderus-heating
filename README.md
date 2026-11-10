@@ -200,6 +200,7 @@ on Home Assistant 2026.5.4, 2026.9.2 and the current release.
 | Tested on my system | Buderus heat pump with a Logamatic BC400 controller and an MX400 internet module (K40/K40RF gateway), cloud and local access |
 | Designed for | Systems with an MX300 or MX400 internet module or a K30 RF/K40 RF Connect-Key, reported by PointT as K30/K30RF or K40/K40RF gateways |
 | Optional when reported | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
+| Room controllers (RRC 2.0) | TC100.2: zones read with 0.9.0-alpha.4. CT200: expected, untested. Cloud only, no local access; radio devices read only. See [room controllers](docs/rrc-zones-and-schedules.md#room-controllers-of-the-rrc-20-platform) |
 | Additional device families | Midea/RWH water heaters, Midea Climate Series, seven air purifier families, Dry 4000i/6000i/8000i and read-only wallboxes |
 | Optional local access | K40/K40RF gateways with firmware 15.00.01 or newer, read-only over the local network next to the cloud access; only the heating system, not air conditioners, wallboxes or other devices of the account. See [compatibility](docs/compatibility.md) |
 | Not covered | Matter devices, arbitrary MQTT devices and gateway network administration |

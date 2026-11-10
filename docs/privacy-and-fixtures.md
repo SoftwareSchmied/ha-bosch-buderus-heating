@@ -58,6 +58,17 @@ identifiers are redacted. The contract fixtures and browser data are synthetic,
 except an anonymized TC100.2 read structure with constructed values.
 See [RRC zones and schedules](rrc-zones-and-schedules.md) for their scope.
 
+Some resources are never requested at all, on any gateway: the radio device
+arrays `/devices/devN` of room controllers (they carry the radio key `dlk` and
+the radio identifier `sgtin`), `/devices/productLookup`, every `homematicip`
+subtree, `/gateway/userPassword`, `/gateway/user/*`, `/gateway/installer/*`,
+`/system/location/*` and `/system/autoAway/users/list`. They are not stored in
+the discovery inventory either; an inventory of an earlier release drops them
+when it is loaded. `dlk` counts as an identifier word like `sgtin`. The
+synthetic fixture `ct200-shapes.json` fills these resources with marker
+values, and a test checks that no marker reaches a request, the stored
+inventory, a log, an entity state or the diagnostics.
+
 Maintainers can reduce a downloaded diagnostics report further with the
 [anonymized inventory exporter](anonymized-inventory.md). It removes runtime
 metrics, discovery details, all technical values, concrete diagnostic paths,

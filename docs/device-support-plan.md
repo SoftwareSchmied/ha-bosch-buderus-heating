@@ -8,7 +8,7 @@ missing capabilities are simply omitted.
 | Family | Access | Shows | Operates | Details |
 | --- | --- | --- | --- | --- |
 | Heating systems with MX300/MX400 internet modules or K30/K40 Connect-Keys (K30/K40 gateways) (heat pumps, gas condensing boilers) | Cloud; K40 gateways also local | Heating circuits, hot water, heat source, energy and start counters, faults, time programs | Heating-circuit mode and setpoints, hot-water mode and extra hot water, holidays, existing time-program switch points | [Heating controls](heating-controls.md), [hot water](pointt-hot-water.md), [faults](faults.md), [holidays](holiday-periods.md) |
-| Room controllers and zones | Cloud | Zone temperatures and states, programs | Zone mode, manual setpoint, program selection, existing switch points | [Zone controls](zone-controls.md), [room controller zones](rrc-zones-and-schedules.md) |
+| Room controllers and zones (RRC 2.0 platform, for example TC100.2; CT200 expected, untested) | Cloud only, no local access | Zone temperatures and states, programs; radio devices with battery low, signal and firmware | Zone mode, manual setpoint, program selection, existing switch points; nothing on radio devices | [Zone controls](zone-controls.md), [room controller zones](rrc-zones-and-schedules.md) |
 | WDDW2 appliances | Cloud | Heat-source values, start counters, safety temperature | Holiday mode | [WDDW2 types](wddw2-types.md) |
 | Water softener WE800i | Cloud | Salt level, soft water, flow, regeneration | Four controls, disabled by default | [Water softener](water-softener.md) |
 | Water heaters (Midea/RWH) | Cloud, selected at setup | Temperatures and state | Operation mode and target temperature | [Water heaters](bacon-water-heaters.md) |
