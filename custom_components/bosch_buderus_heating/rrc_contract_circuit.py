@@ -136,7 +136,8 @@ def _threshold(name: str) -> NumberWritePolicy:
 
 
 def _mode(name: str, values: tuple[str, ...]) -> EnumWritePolicy:
-    """A selection of known modes; the app shapes advertise none (#122)."""
+    """A selection of known modes; the expected shapes and #122 advertise
+    none, so the known modes are offered for a current known value."""
     return EnumWritePolicy(
         leaf(name),
         _STRING,
