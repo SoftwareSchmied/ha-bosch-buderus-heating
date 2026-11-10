@@ -183,6 +183,31 @@ controller, and remains visible in diagnostics and the gateway hardware data.
 > affect the integration. Keep the original Bosch or Buderus app available for
 > commissioning and service work.
 
+### Confirmed installations
+
+Users' reports and my own reference installation confirm the integration on
+these heaters. A feature that is not listed was not reported, which does not
+mean it does not work. The same list is also available as
+[Confirmed installations](docs/confirmed-installations.md).
+
+| Manufacturer | Model | Variants | Type | Controller | Gateway / internet module | Confirmed features |
+|---|---|---|---|---|---|---|
+| Buderus | Logatherm WLW176i | WLW176i-12 TP70, WLW-10 MB AR | air-to-water heat pump (monobloc) | Logamatic BC400 | MX400, K40RF | readings, heating setpoint, hot water mode, holidays, time programs (read-only), faults and notifications, energy counters, local access, operation without cloud |
+| Buderus | Logatherm WLW186i | WLW186i-12 TP70, WLW186i-12 E | air-to-water heat pump (monobloc) | Logamatic BC400 | MX400, K40RF | readings, heating controls, time programs (read-only) |
+| Buderus | Logatherm WLW196i | WLW196i AR | air-to-water heat pump (split) | – | MX300, K30 | readings, holidays (read-only) |
+| Buderus | Logamax plus GB172 | – | gas condensing boiler, wall-hung | Logamatic RC310 | Logamatic web KM200 | readings |
+| Buderus | Logano plus GB212 | GB212-22 H | gas condensing boiler, floor-standing | Logamatic TC100.2 | built-in Wi-Fi | readings, faults and notifications, RRC zones (only with a local patch) |
+| Buderus | Logano G125 BE | G125 BE ECO-21 | oil boiler with burner | – | – | start counter (with the reporter's own fix) |
+
+The Logatherm WLW176i is my own reference installation. "–" means not stated
+in the report.
+
+Is your system missing, or have you checked further features? Please post your
+heater, controller, gateway and the features you checked in
+[Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81), or in the
+[0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) if you are testing a 0.9 alpha.
+I will add it to the list.
+
 ## Installation
 
 ### 1. Install HACS if necessary
