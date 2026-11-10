@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import re
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -403,6 +402,9 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
     hass.config.language = language
     config = entry(hass, mixed=mixed)
     data = fixture()
+    # A power value whose digits appear nowhere else in the diagnostics, so the
+    # leak check below cannot match an unrelated number such as a token lifetime.
+    data["telemetry"]["values"]["meter"] = "1250;7.2468"
     gateways = (Gateway("wallbox-A", device_type="commodule2"),) + (
         (Gateway("heating", device_type="K40"),) if mixed else ()
     )
@@ -501,9 +503,8 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
             "2026-10-24",
         ):
             assert private not in serialized
-        # The power reading must not leak; other numbers (for example token
-        # lifetimes) may contain the digits "7.2" by chance.
-        assert not re.search(r"(?<![\d.])7\.2(?!\d)", serialized)
+        # The power reading must not leak.
+        assert "7.2468" not in serialized
         old = registry.async_get(state_id)
         registry.async_update_entity(state_id, name="Meine Wallbox")
         disabled = entity_id("hardware_current_limit")
