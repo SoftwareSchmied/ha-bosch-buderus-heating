@@ -111,7 +111,7 @@
         "data": {
           "login": "Login zo štítka zariadenia",
           "password": "Pass zo štítka zariadenia",
-          "unlocked": "Uvoľnil som lokálne prihlásenie a videl som modrý signál"
+          "unlocked": "Lokálne prihlásenie je povolené a modrý signál bol vidieť"
         }
       },
       "local_token": {
@@ -138,7 +138,7 @@
       },
       "local_retry": {
         "title": "Lokálnu kontrolu sa nepodarilo dokončiť",
-        "description": "Prečítajte si nižšie uvedené hlásenie a skúste to znova, keď budete pripravený. Žiadny token sa nevytvára ani nenahrádza automaticky."
+        "description": "Prečítajte si nižšie uvedené hlásenie a potom to skúste znova. Žiadny token sa nevytvára ani nenahrádza automaticky."
       }
     },
     "error": {
@@ -541,7 +541,7 @@
         "data": {
           "login": "Login zo štítka zariadenia",
           "password": "Pass zo štítka zariadenia",
-          "unlocked": "Uvoľnil som lokálne prihlásenie a videl som modrý signál"
+          "unlocked": "Lokálne prihlásenie je povolené a modrý signál bol vidieť"
         }
       },
       "local_token": {
@@ -568,7 +568,7 @@
       },
       "local_retry": {
         "title": "Lokálnu kontrolu sa nepodarilo dokončiť",
-        "description": "Prečítajte si nižšie uvedené hlásenie a skúste to znova, keď budete pripravený. Žiadny token sa nevytvára ani nenahrádza automaticky."
+        "description": "Prečítajte si nižšie uvedené hlásenie a potom to skúste znova. Žiadny token sa nevytvára ani nenahrádza automaticky."
       },
       "local_polling": {
         "title": "Lokálne dopytovanie",
@@ -901,7 +901,7 @@
             "description": "**Upozornenie:** Nedá sa potvrdiť, že brána končiaca na {new} patrí tomuto systému. Ak patrí inému systému, hodnoty tohto systému skončia v histórii tohto systému a vaše automatizácie budú konať na nesprávnom systéme. Pokračujte len vtedy, ak ste bránu vymenili sami a ste si istí.\n\nSystém pokračuje s bránou končiacou na {new}. Jeho história, jeho entity s ich ID, názvami a oblasťami a vaše automatizácie zostanú zachované. Integrácia sa nakrátko zastaví a znova spustí.\n\nAk je pre tento systém nastavený lokálny prístup, odstráni sa, pretože patrí starej bráne. Nastavte ho potom znova pre novú bránu.\n\nNajprv, prosím, vytvorte zálohu Home Assistant.",
             "data": {
               "confirm": "Pokračovať s týmto systémom s novou bránou",
-              "confirm_unverified": "Som si istý, že nová brána patrí tomuto systému"
+              "confirm_unverified": "Potvrdzujem, že nová brána patrí k tomuto systému"
             }
           },
           "separate": {
@@ -1048,8 +1048,8 @@
     },
     "holiday_thermal_disinfection": {
       "options": {
-        "on": "Zapnuté",
-        "off": "Vypnuté"
+        "on": "ZAP",
+        "off": "VYP"
       }
     },
     "holiday_mode": {
@@ -1099,10 +1099,10 @@
         "name": "Útlm"
       },
       "extra_hot_water_duration": {
-        "name": "Trvanie extra teplej vody"
+        "name": "Trvanie extra ohrevu"
       },
       "extra_hot_water_setpoint": {
-        "name": "Požadovaná hodnota extra teplej vody"
+        "name": "Požadovaná hodnota extra ohrevu"
       },
       "hot_water_eco_plus": {
         "name": "Štartovacia teplota Eco+"
@@ -1120,7 +1120,7 @@
         "name": "Prah upozornenia na soľ"
       },
       "softener_regeneration_delay": {
-        "name": "Naplánovať regeneráciu"
+        "name": "Naplánovanie regenerácie"
       },
       "bacon_purifier_fan_speed": {
         "name": "Stupeň ventilátora"
@@ -1213,7 +1213,7 @@
     },
     "switch": {
       "extra_hot_water": {
-        "name": "Extra teplá voda"
+        "name": "Extra ohrev"
       },
       "reduce_temperature_on_alarm": {
         "name": "Zníženie teploty pri poruche"
@@ -1492,7 +1492,7 @@
       "compressor_status": {
         "name": "Stav kompresora",
         "state": {
-          "off": "Vypnuté",
+          "off": "VYP",
           "heating": "Vykurovanie domu",
           "cooling": "Chladenie domu",
           "dhw": "Teplá voda",
@@ -1505,7 +1505,7 @@
       "electric_auxiliary_heater_status": {
         "name": "Stav prídavného ohrevu",
         "state": {
-          "off": "Vypnuté",
+          "off": "VYP",
           "heating": "Vykurovanie domu",
           "dhw": "Teplá voda",
           "pool": "Ohrev bazéna",
@@ -1517,8 +1517,8 @@
       "auxiliary_heater_operation_mode": {
         "name": "Prevádzkový režim prídavného ohrevu",
         "state": {
-          "off": "Vypnuté",
-          "manual": "Zapnuté",
+          "off": "VYP",
+          "manual": "ZAP",
           "auto": "Auto"
         }
       },

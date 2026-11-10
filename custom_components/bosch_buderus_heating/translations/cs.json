@@ -1099,10 +1099,10 @@
         "name": "Snížená"
       },
       "extra_hot_water_duration": {
-        "name": "Doba extra ohřevu teplé vody"
+        "name": "Doba extra ohřevu"
       },
       "extra_hot_water_setpoint": {
-        "name": "Požadovaná hodnota extra ohřevu teplé vody"
+        "name": "Požadovaná hodnota extra ohřevu"
       },
       "hot_water_eco_plus": {
         "name": "Počáteční teplota Eco+"
@@ -1213,7 +1213,7 @@
     },
     "switch": {
       "extra_hot_water": {
-        "name": "Extra ohřev teplé vody"
+        "name": "Extra ohřev"
       },
       "reduce_temperature_on_alarm": {
         "name": "Snížení teploty při poruše"
@@ -1260,7 +1260,7 @@
         "name": "Výstupní teplota"
       },
       "return_temperature": {
-        "name": "Teplota zpátečky"
+        "name": "Vratná teplota"
       },
       "hot_water_temperature": {
         "name": "Teplota teplé vody"
@@ -1595,7 +1595,7 @@
         "name": "Typ tepelného čerpadla",
         "state": {
           "air_water": "Vzduch/voda",
-          "brine_water": "Solanka/voda",
+          "brine_water": "Nemrznoucí směs/voda",
           "exhaust_air": "Odpadní vzduch/voda"
         }
       },

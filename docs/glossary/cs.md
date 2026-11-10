@@ -14,15 +14,16 @@ povoleno a modrý signál byl vidět", "Potvrzuji, že …". Counts are written 
 | heat pump | tepelné čerpadlo |
 | heating circuit (HC) | topný okruh; in generated names Okruh |
 | hot water (DHW) | teplá voda, also in generated names |
-| extra hot water | extra ohřev teplé vody |
+| extra hot water | extra ohřev (after the group, "Teplá voda 1: Extra ohřev") |
 | heat generator, heat source | zdroj tepla |
-| auxiliary heater | přídavné topení |
+| auxiliary heater | přídavné topení (kept) |
 | compressor | kompresor |
 | defrost | odmrazování |
 | heating (mode) | topení |
 | cooling (mode) | chlazení |
 | supply (flow) temperature | výstupní teplota |
-| return temperature | teplota zpátečky |
+| return temperature | vratná teplota ("Vratná teplota tepelného čerpadla") |
+| requested supply temperature (signal) | vyžádaná výstupní teplota ("Vyžádaná výstupní teplota okruhu 1 (signál)") |
 | outdoor temperature | venkovní teplota |
 | room temperature | pokojová teplota |
 | setpoint | požadovaná hodnota |
@@ -35,7 +36,8 @@ povoleno a modrý signál byl vidět", "Potvrzuji, že …". Counts are written 
 | silent mode | tichý režim |
 | thermal disinfection | termická dezinfekce |
 | ventilation | větrání |
-| brine | solanka |
+| brine (heat pump ground circuit) | nemrznoucí směs ("Vstupní teplota nemrznoucí směsi") |
+| brine (salt brine of the water softener) | solanka |
 | refrigerant | chladivo |
 | water softener | změkčovač vody |
 | system, installation (plant) | soustava |
@@ -86,7 +88,7 @@ Further terms used in the texts:
 | resource (API) | prostředek |
 | setback | útlum |
 | electric heater | elektrický ohřívač |
-| system health | stav systému |
+| system health | stav systému (only for that sensor; "soustava" elsewhere) |
 | utility power block | blokace dodavatelem energie |
 | plan regeneration (water softener) | naplánování regenerace |
 

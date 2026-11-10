@@ -5,7 +5,7 @@ Reviewed by a native speaker (2026-11-10). The Slovak texts in
 correction to one term usually applies to every text that uses it.
 
 Style: sentence case, formal address (vykanie: "Zadajte", "Vyberte"), as Home
-Assistant uses for Slovak. Counts are written in a neutral form
+Assistant uses for Slovak. Confirmations in the first person avoid gendered forms: "Lokálne prihlásenie je povolené a modrý signál bol vidieť", "Potvrdzujem, že …". Counts are written in a neutral form
 ("Neuložené zmeny: {count}") so that no plural form is needed. Date format of
 notifications: `%d. %m. %Y`.
 
@@ -14,7 +14,7 @@ notifications: `%d. %m. %Y`.
 | heat pump | tepelné čerpadlo |
 | heating circuit (HC) | vykurovací okruh; in generated names Okruh |
 | hot water (DHW) | teplá voda, also in generated names |
-| extra hot water | extra teplá voda |
+| extra hot water | extra ohrev (after the group, "Teplá voda 1: Extra ohrev") |
 | heat generator, heat source | zdroj tepla |
 | auxiliary heater | prídavný ohrev ("Režim prídavného ohrevu") |
 | compressor | kompresor |
@@ -84,7 +84,11 @@ notifications: `%d. %m. %Y`.
 | hot water tank | zásobník teplej vody |
 | bivalence point | bod bivalencie |
 | Apply (button) | Použiť |
-| OFF (upper-case option of the holiday dialog) | VYP |
+| OFF / ON (upper-case options and states) | VYP / ZAP |
+| auxiliary heater (generated names) | Prídavný ohrev, "Režim prídavného ohrevu" |
+| fresh-water station | stanica čerstvej vody ("Primárne čerpadlo stanice čerstvej vody") |
+| plan regeneration (water softener) | naplánovanie regenerácie ("Naplánovanie regenerácie") |
+| requested supply temperature (signal) | vyžiadaná výstupná teplota ("Vyžiadaná výstupná teplota okruhu 1 (signál)") |
 
 Control names write the group out, for example "Okruh 1: Prevádzkový režim"
 or "Teplá voda 1: Teplota".
