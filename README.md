@@ -170,7 +170,10 @@ back, it takes over the same entities with their history. See [operation without
 - Privacy-preserving Home Assistant diagnostics with capability counters,
   rolling 60-minute request and latency metrics, and a bounded sanitized log
   of individual HTTP attempts
-- German and English entity names and state translations
+- German and English entity names and state translations, plus Swedish,
+  Norwegian Bokmål, Finnish and Danish as drafts awaiting review by native
+  speakers; the [translation guide](docs/translations.md) lists the languages
+  and explains how to correct or add one
 
 Normal measurements and everyday controls are enabled on a fresh installation.
 The installer-level maximum-supply-temperature control, identity data, detailed
@@ -555,6 +558,7 @@ gateway IDs, serial numbers, network identifiers, or unredacted API responses.
 | [Resource inventory](docs/resource-inventory.md) | Path models, unresolved formats and adapter boundaries |
 | [Reconfiguration](docs/reconfiguration.md) | Gateway selection, rediscovery, and polling profiles |
 | [Diagnostics](docs/diagnostics.md) | Redacted diagnostics and request metrics |
+| [Translations](docs/translations.md) | Supported languages, glossary and how to contribute corrections |
 | [Validity of readings](docs/reading-validity.md) | How long cloud and local readings are shown |
 | [Cloud and local access](docs/operation-without-cloud.md) | Short overview of both accesses and operation without the cloud |
 | [Source selection](docs/source-selection.md) | Which connection supplies paired readings |

@@ -538,6 +538,45 @@ capability placeholders and are checked again after their 24-hour pause. They
 count toward the inventory but not toward available runtime resources. Historical
 failure lists are checked at startup only.
 
+## RRC program selection
+
+`gateways[].rrc_programs` explains for the zones of an RRC room controller,
+such as the TC100.2, why the heating schedule selection is offered or not.
+The schema stays 44. The section contains counts and fixed codes only, never
+program names or current values:
+
+- `program_selections`: zones with a selected program (`clockProgram`);
+- `program_selections_offered`: how many of them offer the selection;
+- `program_list`: the state of the controller's program list
+  (`/programs/list`): `current` when the last read is fresh, `not_current`
+  when it is known but its last read failed or is outdated, and `missing`
+  when it has not been found yet;
+- `program_list_issue`: why the program list supplies no programs (`type`,
+  `value` or `ids`, see below), or `null` when it is valid or missing;
+- `program_count`: the number of programs in the list, 0 if it is unusable;
+- `program_names_readable`: how many of them have a readable name;
+- `zones`: one entry per zone with its `path`, `selection` and `used`. `used`
+  is the flag the controller sets for the zone's program; it is `false` in
+  manual mode, and the selection is offered all the same.
+
+`selection` is `offered` or the first reason that applies:
+
+| Code | Meaning |
+| --- | --- |
+| `reading_invalid` | The zone reports no usable program number. |
+| `selection_not_writable` | The controller does not allow changing the program. |
+| `program_list_missing` | The program list has not been read yet. |
+| `program_list_invalid_type` | The program list has an unexpected resource type. |
+| `program_list_invalid_value` | The program list has no list value, or more than 128 entries. |
+| `program_list_invalid_ids` | An entry has no valid, unique program number from 0 to 9999. |
+| `program_list_empty` | The program list is valid but contains no programs. |
+
+If zones select a program but the program list has not been found, the
+integration searches for it again on its own, at most seven times within a
+day (see `discovery_recovery`). The names of the programs are shown by the
+`program_names` and `program_name` attributes of the selection; diagnostics
+only count them.
+
 ## Fault parser status
 
 `faults.parser_status` describes the last actual parsing attempt for a current

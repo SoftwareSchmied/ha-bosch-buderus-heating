@@ -54,15 +54,14 @@ Versioning after its first tagged preview.
   speaks them as a mother tongue has checked them yet. I would be glad about
   corrections, see `docs/translations.md`.
 - Names and texts that the integration builds itself (for example
-  "Heating circuit 1 – Supply temperature") now follow the Home Assistant
-  system language for all supported languages; any other language still
-  shows English. German and English texts are unchanged, so existing entity
-  names stay the same. After switching the system language, reload the
-  integration so generated names are rebuilt.
+  "Heating circuit 1 – Supply temperature" or "Set heating mode" of a TC100.2
+  zone) now follow the Home Assistant system language for all supported
+  languages; any other language still shows English. German and English
+  texts are unchanged, so existing entity names stay the same. After
+  switching the system language, reload the integration so generated names
+  are rebuilt.
 - A further language needs only two data files, `translations/<code>.json`
   and `i18n/<code>.json`; `docs/translations.md` describes them.
-- The few names of the TC100.2 room controller zones are still German or
-  English only.
 
 #### Documentation
 
@@ -88,6 +87,9 @@ Versioning after its first tagged preview.
   recognises for IVT, Worcester and Vulcano. Systems of these brands should
   work with the cloud access when **Bosch** is selected, but none has been
   confirmed yet.
+- The [diagnostics guide](docs/diagnostics.md#rrc-program-selection) now
+  describes the new `rrc_programs` section with all its codes, and the README
+  links the [translation guide](docs/translations.md).
 
 ## [0.9.0-alpha.4] - 2026-11-10
 

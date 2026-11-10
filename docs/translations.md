@@ -70,13 +70,11 @@ dialog texts have the same keys in every language.
 
 ## Known gaps
 
-- The names of the TC100.2 room controller zones and their settings are
-  still German or English only.
 - Readings that only the local access provides carry the wording of the
   controller's Info menu in German and English. In the other languages they
   are translations of the English wording, not the controller's own text.
-- Values the appliance reports as free text (for example circuit names set
-  on the controller) stay as reported.
+- Values the appliance reports as free text (for example circuit, zone and
+  schedule names set on the controller) stay as reported.
 
 ## Glossary
 
