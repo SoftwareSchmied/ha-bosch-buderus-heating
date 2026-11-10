@@ -447,3 +447,21 @@ async def test_a_second_target_while_one_is_sent_is_busy(hass: HomeAssistant) ->
         assert cloud.written("PUT") == [("PUT", path(3, OVERRIDE), 22.0)]
     finally:
         await teardown(hass, entry, stack)
+
+
+async def test_the_setpoint_is_read_fresh_before_the_put(hass: HomeAssistant) -> None:
+    """S5: the temporary setpoint is read on the gateway right before the
+    write; a value the controller already shows is not sent again."""
+    cloud = zone_cloud()
+    entry, _coordinator, _sleeps, stack, _clock = await setup(hass, cloud)
+    target = path(3, OVERRIDE)
+    try:
+        cloud.tree[target] = replace(cloud.tree[target], value=22.0)
+        reads = cloud.calls["GET", target]
+        await set_temperature(hass, climate(hass, 3), temperature=22.0)
+        assert not cloud.writes
+        assert cloud.calls["GET", target] > reads
+        await set_temperature(hass, climate(hass, 3), temperature=21.0)
+        assert cloud.written("PUT") == [("PUT", target, 21.0)]
+    finally:
+        await teardown(hass, entry, stack)
