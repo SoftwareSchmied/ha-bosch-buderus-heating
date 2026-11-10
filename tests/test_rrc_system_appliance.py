@@ -22,7 +22,11 @@ from custom_components.bosch_buderus_heating import rrc_contracts
 from custom_components.bosch_buderus_heating.diagnostics import (
     async_get_config_entry_diagnostics,
 )
-from custom_components.bosch_buderus_heating.pointt import Gateway, Resource
+from custom_components.bosch_buderus_heating.pointt import (
+    Gateway,
+    Resource,
+    ResourceReference,
+)
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from custom_components.bosch_buderus_heating.poll_group import PollGroup
 from custom_components.bosch_buderus_heating.resource_catalog import (
@@ -231,9 +235,16 @@ async def test_the_same_paths_at_another_gateway_get_nothing(
             if path.startswith(APPLIANCE)
         },
     }
+    system = tree["/system"]
+    tree["/system"] = replace(
+        system, references=(*system.references, ResourceReference(APPLIANCE))
+    )
     cloud = RrcCloud(tree, forbidden=set(), missing_as_500=False)
     entry, _clock, stack = await setup(hass, cloud, Gateway(GW, device_type="k40"))
     try:
+        coordinator = entry.runtime_data.coordinators[0]
+        # The leaves are read there too, but give no W5 entity.
+        assert f"{APPLIANCE}/lockingError" in coordinator.resources
         found = entries(hass, entry)
         assert not [key for key in found if key.endswith((":value", ":problem"))]
     finally:
