@@ -1664,7 +1664,7 @@ class BoschBuderusSensor(
         if description.value_kind == "switch_program":
             return self._switch_program_level()
         if rrc.scalar_field(resource.path):
-            return rrc.scalar_value(resource) if self.available else None
+            return rrc.display_value(resource) if self.available else None
         if is_monitor_collection(resource.path):
             return None
         if is_runtime_path(resource.path):

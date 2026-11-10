@@ -677,7 +677,8 @@ class DiscoveryRecovery:
             )
         else:
             message = (
-                "%d PointT root resources failed temporarily during discovery "
+                # A root with a temporary error, or the RRC program list.
+                "%d PointT resources could not be read during discovery "
                 "(%s); searching again in %d minutes"
             )
         _LOGGER.warning(

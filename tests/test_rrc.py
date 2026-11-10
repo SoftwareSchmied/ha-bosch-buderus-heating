@@ -292,12 +292,14 @@ async def test_observed_tc100_zone_creates_reading_and_program_select(environmen
         RrcProgramSelect(coordinator, description)
         for description in descriptions(TC100_RESOURCES)
     ]
+    # #113 (RRC-03): the manual zone zn4 keeps its assigned program as well.
     assert [select.entity_description.resource_path for select in selects] == [
-        "/zones/zn1/clockProgram"
+        "/zones/zn1/clockProgram",
+        "/zones/zn4/clockProgram",
     ]
-    assert selects[0].available
-    assert selects[0].options == ["1", "2", "3", "4"]
-    assert selects[0].current_option == "2"
+    assert all(select.available for select in selects)
+    assert [select.options for select in selects] == [["1", "2", "3", "4"]] * 2
+    assert [select.current_option for select in selects] == ["2", "4"]
 
 
 @pytest.mark.parametrize(
@@ -311,14 +313,22 @@ def test_diagnostics_report_observed_string_flags_as_valid(path, used):
     assert contract["used"] is used
     assert contract["available"] is None
     assert contract["availability_flags_valid"]
-    assert contract["reading_valid"] is used
+    # #113 (RRC-03): an unused program selection is still a valid reading.
+    assert contract["reading_valid"]
 
 
-def test_observed_unused_program_selection_stays_unavailable():
+def test_observed_unused_program_selection_keeps_its_assignment():
+    """#113 (RRC-03): a manual zone keeps its program, as in the vendor app."""
     resource = TC100_RESOURCES["/zones/zn4/clockProgram"]
     assert resource.metadata.used is False
-    assert rrc.scalar_value(resource) is None
-    assert not selection_options(resource, TC100_RESOURCES[rrc.PROGRAM_LIST])
+    assert rrc.scalar_value(resource) == 4
+    assert supports_entity(resource)
+    assert selection_options(resource, TC100_RESOURCES[rrc.PROGRAM_LIST]) == (
+        1,
+        2,
+        3,
+        4,
+    )
 
 
 @pytest.mark.parametrize("path", ["/zones/zn1/userMode", "/zones/zn4/userMode"])

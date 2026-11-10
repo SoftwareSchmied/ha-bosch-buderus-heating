@@ -6,6 +6,7 @@ import base64
 import binascii
 import math
 import re
+from collections.abc import Iterable
 
 from .pointt import Resource
 from .pointt.models import JsonScalar
@@ -38,6 +39,11 @@ def scalar_field(path: str) -> str | None:
     return field if field in ZONE_FIELDS else None
 
 
+def program_list_expected(paths: Iterable[str]) -> bool:
+    """Whether a zone selects a program, which needs the program list."""
+    return any(scalar_field(path) == "clockProgram" for path in paths)
+
+
 def is_control(path: str) -> bool:
     return scalar_field(path) in {"userMode", "manualTemperatureHeating"}
 
@@ -67,6 +73,23 @@ def mode_locked(resource: Resource) -> bool:
     )
 
 
+def program_unused(resource: Resource) -> bool:
+    """#113 (RRC-03): an assigned program that does not act at the moment.
+
+    The TC100.2 sends ``clockProgram`` with ``used`` false while its zone runs
+    manually. The vendor app only hides the program then and still assigns
+    programs in this state, so the value, its sensor and the selection stay.
+    This follows the vendor app; a hardware confirmation is still pending.
+    """
+    metadata = resource.metadata
+    return (
+        scalar_field(resource.path) == "clockProgram"
+        and metadata.availability_flags_valid
+        and metadata.used is False
+        and metadata.available is not False
+    )
+
+
 def allowed_values(resource: Resource) -> tuple[JsonScalar, ...]:
     """The advertised values; a mode without any allowedValues key falls back.
 
@@ -90,7 +113,9 @@ def scalar_value(resource: Resource) -> str | int | float | None:
     value = resource.value
     if (
         field is None
-        or not (available(resource) or mode_locked(resource))
+        or not (
+            available(resource) or mode_locked(resource) or program_unused(resource)
+        )
         or not resource.has_value
         or resource.has_values
         or resource.references
@@ -140,6 +165,22 @@ def scalar_value(resource: Resource) -> str | int | float | None:
     )
 
 
+def display_value(resource: Resource) -> str | int | float | None:
+    """The state shown in Home Assistant for a valid reading.
+
+    #113 (RRC-06): a temporary setpoint of 0 means that no override is active,
+    as in the vendor app. It is shown as unknown rather than as 0 °C. The
+    reading itself stays valid, so its sensor exists before the first
+    override. This follows the vendor app; a hardware confirmation is pending.
+    """
+    value = scalar_value(resource)
+    if scalar_field(resource.path) == "clockOverride/temperatureHeating" and (
+        value == 0
+    ):
+        return None
+    return value
+
+
 def control_issue(resource: Resource) -> str | None:
     """Share read, write and diagnostic checks without creating permissions."""
     if scalar_value(resource) is None:
@@ -156,29 +197,49 @@ def control_issue(resource: Resource) -> str | None:
     return None
 
 
+def list_issue(resource: Resource) -> str | None:
+    """Why an RRC list supplies no IDs, or ``None`` when it does.
+
+    An empty list is valid and supplies no IDs. Only the value array is an ID
+    source, never a guessed ID range.
+    """
+    parsed = _parse_list(resource)
+    return parsed if isinstance(parsed, str) else None
+
+
 def listed_ids(resource: Resource) -> tuple[int, ...] | None:
     """Only the RRC value array is an ID source, never a guessed ID range."""
+    parsed = _parse_list(resource)
+    return None if isinstance(parsed, str) else parsed
+
+
+def _parse_list(resource: Resource) -> tuple[int, ...] | str:
     resource_type = {ZONE_LIST: "zoneArray", PROGRAM_LIST: "programArray"}.get(
         resource.path
     )
+    if resource_type is None:
+        return "not_a_list"
+    if resource.metadata.resource_type != resource_type:
+        return "type"
+    # #113 (RRC-04): the vendor app reads only the value of the program list
+    # and ignores its used and available flags. The zone list keeps the rules.
+    if resource.path != PROGRAM_LIST and not available(resource):
+        return "flags"
     if (
-        resource_type is None
-        or resource.metadata.resource_type != resource_type
-        or not available(resource)
-        or not resource.has_value
+        not resource.has_value
         or not isinstance(resource.value, list)
         or len(resource.value) > 128
     ):
-        return None
+        return "value"
     identifiers: list[int] = []
     for item in resource.value:
         if not isinstance(item, dict):
-            return None
+            return "ids"
         identifier = item.get("id")
         if type(identifier) is not int or not 0 <= identifier <= 9999:
-            return None
+            return "ids"
         if identifier in identifiers:
-            return None
+            return "ids"
         identifiers.append(identifier)
     return tuple(identifiers)
 

@@ -5,6 +5,46 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+#### RRC zones
+
+- **Select heating schedule on large systems
+  ([#113](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/113)):**
+  the selection needs the controller's program list. On a large system the
+  discovery could reach its limit before it read this list, and a failed read
+  was never repeated, so no zone got the selection. The program list and the
+  zone list are now read together with the zones, within the same limit and
+  without an extra request. If zones select a program but the list is still
+  missing or failed, it is read again on its own in the usual bounded search
+  (at most seven attempts within a day). Thank you, @obvius1, for testing
+  alpha.4 on a TC100.2 and reporting the missing selection.
+- **Diagnostics:** a new section `rrc_programs` shows for each zone why the
+  program selection is offered or not, for example `program_list_missing`,
+  `program_list_invalid_type`, `program_list_empty` or
+  `selection_not_writable`, and whether the program list is current. It
+  contains no program names. The diagnostics schema stays 44.
+- **Zones in manual mode:** the controller marks the selected program of a
+  zone in manual mode as not used. The integration used to drop the value, the
+  sensor and the selection then. They now stay, as in the controller's app: the
+  program remains assigned and can be changed. This follows the app; a
+  confirmation on a real device is still pending.
+- **Program list flags:** like the app, the integration now ignores the
+  `used` and `available` flags of the program list itself. The zone list keeps
+  its rules.
+- **Program names:** the selection keeps the program numbers as its options,
+  so automations keep working when a program is renamed. Home Assistant can
+  only translate fixed options, so the names appear as the attributes
+  `program_names` (all programs) and `program_name` (the selected one), decoded
+  like zone names.
+- **Temporary heating setpoint:** a value of 0 means that no temporary setpoint
+  is active. The sensor now shows unknown instead of 0 °C. This follows the
+  app; a confirmation on a real device is still pending.
+- **Day programs:** a program day that the controller reports as `dayProgram`
+  is now read, and its switch points can be edited as before, each change
+  confirmed by reading it back. This follows the app; a confirmation on a real
+  device is still pending.
+- I have tested these changes only with simulated data in the shapes of the
+  observed TC100.2 answers and of the app's demo answers.
+
 ## [0.9.0-alpha.4] - 2026-11-10
 
 > [!IMPORTANT]
