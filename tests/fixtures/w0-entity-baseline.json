@@ -2,6 +2,70 @@
  "plants": {
   "ct200": {
    "cycle_requests": [
+    "/devices/device1/thermostat/childLock/enabled",
+    "/devices/device2/etrv/childLock/enabled",
+    "/devices/device2/etrv/maxValvePosition",
+    "/devices/device2/etrv/offset",
+    "/devices/device2/etrv/openWindowDetection/sensitivity",
+    "/devices/device2/etrv/status",
+    "/devices/device2/etrv/temperatureActual",
+    "/devices/device2/etrv/valvePosition",
+    "/devices/device2/etrv/valveState",
+    "/devices/device2/etrv/whisperMode/enabled",
+    "/devices/device3/etrv/childLock/enabled",
+    "/devices/device3/etrv/maxValvePosition",
+    "/devices/device3/etrv/offset",
+    "/devices/device3/etrv/openWindowDetection/sensitivity",
+    "/devices/device3/etrv/status",
+    "/devices/device3/etrv/temperatureActual",
+    "/devices/device3/etrv/valvePosition",
+    "/devices/device3/etrv/valveState",
+    "/devices/device3/etrv/whisperMode/enabled",
+    "/devices/device4/etrv/childLock/enabled",
+    "/devices/device4/etrv/maxValvePosition",
+    "/devices/device4/etrv/offset",
+    "/devices/device4/etrv/openWindowDetection/sensitivity",
+    "/devices/device4/etrv/status",
+    "/devices/device4/etrv/temperatureActual",
+    "/devices/device4/etrv/valvePosition",
+    "/devices/device4/etrv/valveState",
+    "/devices/device4/etrv/whisperMode/enabled",
+    "/devices/device5/etrv/childLock/enabled",
+    "/devices/device5/etrv/maxValvePosition",
+    "/devices/device5/etrv/offset",
+    "/devices/device5/etrv/openWindowDetection/sensitivity",
+    "/devices/device5/etrv/status",
+    "/devices/device5/etrv/temperatureActual",
+    "/devices/device5/etrv/valvePosition",
+    "/devices/device5/etrv/valveState",
+    "/devices/device5/etrv/whisperMode/enabled",
+    "/devices/device6/etrv/childLock/enabled",
+    "/devices/device6/etrv/maxValvePosition",
+    "/devices/device6/etrv/offset",
+    "/devices/device6/etrv/openWindowDetection/sensitivity",
+    "/devices/device6/etrv/status",
+    "/devices/device6/etrv/temperatureActual",
+    "/devices/device6/etrv/valvePosition",
+    "/devices/device6/etrv/valveState",
+    "/devices/device6/etrv/whisperMode/enabled",
+    "/devices/device7/etrv/childLock/enabled",
+    "/devices/device7/etrv/maxValvePosition",
+    "/devices/device7/etrv/offset",
+    "/devices/device7/etrv/openWindowDetection/sensitivity",
+    "/devices/device7/etrv/status",
+    "/devices/device7/etrv/temperatureActual",
+    "/devices/device7/etrv/valvePosition",
+    "/devices/device7/etrv/valveState",
+    "/devices/device7/etrv/whisperMode/enabled",
+    "/devices/device8/etrv/childLock/enabled",
+    "/devices/device8/etrv/maxValvePosition",
+    "/devices/device8/etrv/offset",
+    "/devices/device8/etrv/openWindowDetection/sensitivity",
+    "/devices/device8/etrv/status",
+    "/devices/device8/etrv/temperatureActual",
+    "/devices/device8/etrv/valvePosition",
+    "/devices/device8/etrv/valveState",
+    "/devices/device8/etrv/whisperMode/enabled",
     "/devices/list",
     "/dhwCircuits/dhw1/operationMode",
     "/gateway/hmip/versionApplication",
@@ -217,6 +281,18 @@
     },
     {
      "capabilities": null,
+     "device_class": "problem",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Valve problem",
+     "translation_key": "rrc_valve_problem",
+     "unique_id": "gateway-one:devices:device2:valve_problem",
+     "unit": null
+    },
+    {
+     "capabilities": null,
      "device_class": "battery",
      "disabled_by": null,
      "domain": "binary_sensor",
@@ -225,6 +301,18 @@
      "original_name": "Battery low",
      "translation_key": null,
      "unique_id": "gateway-one:devices:device3:battery",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": "problem",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Valve problem",
+     "translation_key": "rrc_valve_problem",
+     "unique_id": "gateway-one:devices:device3:valve_problem",
      "unit": null
     },
     {
@@ -241,6 +329,18 @@
     },
     {
      "capabilities": null,
+     "device_class": "problem",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Valve problem",
+     "translation_key": "rrc_valve_problem",
+     "unique_id": "gateway-one:devices:device4:valve_problem",
+     "unit": null
+    },
+    {
+     "capabilities": null,
      "device_class": "battery",
      "disabled_by": null,
      "domain": "binary_sensor",
@@ -249,6 +349,18 @@
      "original_name": "Battery low",
      "translation_key": null,
      "unique_id": "gateway-one:devices:device5:battery",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": "problem",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Valve problem",
+     "translation_key": "rrc_valve_problem",
+     "unique_id": "gateway-one:devices:device5:valve_problem",
      "unit": null
     },
     {
@@ -265,6 +377,18 @@
     },
     {
      "capabilities": null,
+     "device_class": "problem",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Valve problem",
+     "translation_key": "rrc_valve_problem",
+     "unique_id": "gateway-one:devices:device6:valve_problem",
+     "unit": null
+    },
+    {
+     "capabilities": null,
      "device_class": "battery",
      "disabled_by": null,
      "domain": "binary_sensor",
@@ -277,6 +401,18 @@
     },
     {
      "capabilities": null,
+     "device_class": "problem",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Valve problem",
+     "translation_key": "rrc_valve_problem",
+     "unique_id": "gateway-one:devices:device7:valve_problem",
+     "unit": null
+    },
+    {
+     "capabilities": null,
      "device_class": "battery",
      "disabled_by": null,
      "domain": "binary_sensor",
@@ -285,6 +421,18 @@
      "original_name": "Battery low",
      "translation_key": null,
      "unique_id": "gateway-one:devices:device8:battery",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": "problem",
+     "disabled_by": null,
+     "domain": "binary_sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Valve problem",
+     "translation_key": "rrc_valve_problem",
+     "unique_id": "gateway-one:devices:device8:valve_problem",
      "unit": null
     },
     {
@@ -673,6 +821,142 @@
     },
     {
      "capabilities": {
+      "max": 2.0,
+      "min": -2.0,
+      "mode": "box",
+      "step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "number",
+     "entity_category": "config",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": "rrc_temperature_offset",
+     "unique_id": "gateway-one:devices:device2:etrv:offset:control",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "max": 2.0,
+      "min": -2.0,
+      "mode": "box",
+      "step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "number",
+     "entity_category": "config",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": "rrc_temperature_offset",
+     "unique_id": "gateway-one:devices:device3:etrv:offset:control",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "max": 2.0,
+      "min": -2.0,
+      "mode": "box",
+      "step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "number",
+     "entity_category": "config",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": "rrc_temperature_offset",
+     "unique_id": "gateway-one:devices:device4:etrv:offset:control",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "max": 2.0,
+      "min": -2.0,
+      "mode": "box",
+      "step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "number",
+     "entity_category": "config",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": "rrc_temperature_offset",
+     "unique_id": "gateway-one:devices:device5:etrv:offset:control",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "max": 2.0,
+      "min": -2.0,
+      "mode": "box",
+      "step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "number",
+     "entity_category": "config",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": "rrc_temperature_offset",
+     "unique_id": "gateway-one:devices:device6:etrv:offset:control",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "max": 2.0,
+      "min": -2.0,
+      "mode": "box",
+      "step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "number",
+     "entity_category": "config",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": "rrc_temperature_offset",
+     "unique_id": "gateway-one:devices:device7:etrv:offset:control",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "max": 2.0,
+      "min": -2.0,
+      "mode": "box",
+      "step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "number",
+     "entity_category": "config",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": "rrc_temperature_offset",
+     "unique_id": "gateway-one:devices:device8:etrv:offset:control",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "max": 30.0,
+      "min": 5.0,
+      "mode": "box",
+      "step": 0.5
+     },
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "number",
+     "entity_category": "config",
+     "original_icon": "mdi:home-thermometer-outline",
+     "original_name": "System \u2013 Away temperature",
+     "translation_key": "rrc_away_temperature",
+     "unique_id": "gateway-one:system:awayMode:temperature:control",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
       "max": 30.0,
       "min": 5.0,
       "mode": "box",
@@ -857,6 +1141,132 @@
      "translation_key": "manual_room_setpoint",
      "unique_id": "gateway-one:zones:zn9:manualTemperatureHeating:control",
      "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "options": [
+       "high",
+       "medium",
+       "low"
+      ]
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "select",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": "rrc_window_sensitivity",
+     "unique_id": "gateway-one:devices:device2:etrv:openWindowDetection:sensitivity:control",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "options": [
+       "high",
+       "medium",
+       "low"
+      ]
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "select",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": "rrc_window_sensitivity",
+     "unique_id": "gateway-one:devices:device3:etrv:openWindowDetection:sensitivity:control",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "options": [
+       "high",
+       "medium",
+       "low"
+      ]
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "select",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": "rrc_window_sensitivity",
+     "unique_id": "gateway-one:devices:device4:etrv:openWindowDetection:sensitivity:control",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "options": [
+       "high",
+       "medium",
+       "low"
+      ]
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "select",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": "rrc_window_sensitivity",
+     "unique_id": "gateway-one:devices:device5:etrv:openWindowDetection:sensitivity:control",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "options": [
+       "high",
+       "medium",
+       "low"
+      ]
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "select",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": "rrc_window_sensitivity",
+     "unique_id": "gateway-one:devices:device6:etrv:openWindowDetection:sensitivity:control",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "options": [
+       "high",
+       "medium",
+       "low"
+      ]
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "select",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": "rrc_window_sensitivity",
+     "unique_id": "gateway-one:devices:device7:etrv:openWindowDetection:sensitivity:control",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "options": [
+       "high",
+       "medium",
+       "low"
+      ]
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "select",
+     "entity_category": "config",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": "rrc_window_sensitivity",
+     "unique_id": "gateway-one:devices:device8:etrv:openWindowDetection:sensitivity:control",
+     "unit": null
     },
     {
      "capabilities": {
@@ -1641,10 +2051,128 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
+     "original_icon": "mdi:lock",
+     "original_name": "Room controller \u2013 Child lock",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device1:thermostat:childLock:enabled",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
      "original_icon": null,
      "original_name": "Room controller \u2013 Firmware version",
      "translation_key": null,
      "unique_id": "gateway-one:devices:device1:versionFirmware",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device2:etrv:childLock:enabled",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve-open",
+     "original_name": "Maximum valve opening",
+     "translation_key": "rrc_max_valve_position",
+     "unique_id": "gateway-one:devices:device2:etrv:maxValvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device2:etrv:offset",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device2:etrv:openWindowDetection:sensitivity",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Temperature at the valve",
+     "translation_key": "rrc_valve_temperature",
+     "unique_id": "gateway-one:devices:device2:etrv:temperatureActual",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:valve",
+     "original_name": "Valve opening",
+     "translation_key": "rrc_valve_position",
+     "unique_id": "gateway-one:devices:device2:etrv:valvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve",
+     "original_name": "Valve state",
+     "translation_key": "rrc_valve_state",
+     "unique_id": "gateway-one:devices:device2:etrv:valveState",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:volume-low",
+     "original_name": "Whisper mode",
+     "translation_key": "rrc_whisper_mode",
+     "unique_id": "gateway-one:devices:device2:etrv:whisperMode:enabled",
      "unit": null
     },
     {
@@ -1674,6 +2202,112 @@
      "unit": null
     },
     {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device3:etrv:childLock:enabled",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve-open",
+     "original_name": "Maximum valve opening",
+     "translation_key": "rrc_max_valve_position",
+     "unique_id": "gateway-one:devices:device3:etrv:maxValvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device3:etrv:offset",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device3:etrv:openWindowDetection:sensitivity",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Temperature at the valve",
+     "translation_key": "rrc_valve_temperature",
+     "unique_id": "gateway-one:devices:device3:etrv:temperatureActual",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:valve",
+     "original_name": "Valve opening",
+     "translation_key": "rrc_valve_position",
+     "unique_id": "gateway-one:devices:device3:etrv:valvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve",
+     "original_name": "Valve state",
+     "translation_key": "rrc_valve_state",
+     "unique_id": "gateway-one:devices:device3:etrv:valveState",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:volume-low",
+     "original_name": "Whisper mode",
+     "translation_key": "rrc_whisper_mode",
+     "unique_id": "gateway-one:devices:device3:etrv:whisperMode:enabled",
+     "unit": null
+    },
+    {
      "capabilities": {
       "state_class": "measurement"
      },
@@ -1697,6 +2331,112 @@
      "original_name": "Firmware version",
      "translation_key": null,
      "unique_id": "gateway-one:devices:device3:versionFirmware",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device4:etrv:childLock:enabled",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve-open",
+     "original_name": "Maximum valve opening",
+     "translation_key": "rrc_max_valve_position",
+     "unique_id": "gateway-one:devices:device4:etrv:maxValvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device4:etrv:offset",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device4:etrv:openWindowDetection:sensitivity",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Temperature at the valve",
+     "translation_key": "rrc_valve_temperature",
+     "unique_id": "gateway-one:devices:device4:etrv:temperatureActual",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:valve",
+     "original_name": "Valve opening",
+     "translation_key": "rrc_valve_position",
+     "unique_id": "gateway-one:devices:device4:etrv:valvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve",
+     "original_name": "Valve state",
+     "translation_key": "rrc_valve_state",
+     "unique_id": "gateway-one:devices:device4:etrv:valveState",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:volume-low",
+     "original_name": "Whisper mode",
+     "translation_key": "rrc_whisper_mode",
+     "unique_id": "gateway-one:devices:device4:etrv:whisperMode:enabled",
      "unit": null
     },
     {
@@ -1726,6 +2466,112 @@
      "unit": null
     },
     {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device5:etrv:childLock:enabled",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve-open",
+     "original_name": "Maximum valve opening",
+     "translation_key": "rrc_max_valve_position",
+     "unique_id": "gateway-one:devices:device5:etrv:maxValvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device5:etrv:offset",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device5:etrv:openWindowDetection:sensitivity",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Temperature at the valve",
+     "translation_key": "rrc_valve_temperature",
+     "unique_id": "gateway-one:devices:device5:etrv:temperatureActual",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:valve",
+     "original_name": "Valve opening",
+     "translation_key": "rrc_valve_position",
+     "unique_id": "gateway-one:devices:device5:etrv:valvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve",
+     "original_name": "Valve state",
+     "translation_key": "rrc_valve_state",
+     "unique_id": "gateway-one:devices:device5:etrv:valveState",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:volume-low",
+     "original_name": "Whisper mode",
+     "translation_key": "rrc_whisper_mode",
+     "unique_id": "gateway-one:devices:device5:etrv:whisperMode:enabled",
+     "unit": null
+    },
+    {
      "capabilities": {
       "state_class": "measurement"
      },
@@ -1749,6 +2595,112 @@
      "original_name": "Firmware version",
      "translation_key": null,
      "unique_id": "gateway-one:devices:device5:versionFirmware",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device6:etrv:childLock:enabled",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve-open",
+     "original_name": "Maximum valve opening",
+     "translation_key": "rrc_max_valve_position",
+     "unique_id": "gateway-one:devices:device6:etrv:maxValvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device6:etrv:offset",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device6:etrv:openWindowDetection:sensitivity",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Temperature at the valve",
+     "translation_key": "rrc_valve_temperature",
+     "unique_id": "gateway-one:devices:device6:etrv:temperatureActual",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:valve",
+     "original_name": "Valve opening",
+     "translation_key": "rrc_valve_position",
+     "unique_id": "gateway-one:devices:device6:etrv:valvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve",
+     "original_name": "Valve state",
+     "translation_key": "rrc_valve_state",
+     "unique_id": "gateway-one:devices:device6:etrv:valveState",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:volume-low",
+     "original_name": "Whisper mode",
+     "translation_key": "rrc_whisper_mode",
+     "unique_id": "gateway-one:devices:device6:etrv:whisperMode:enabled",
      "unit": null
     },
     {
@@ -1778,6 +2730,112 @@
      "unit": null
     },
     {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device7:etrv:childLock:enabled",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve-open",
+     "original_name": "Maximum valve opening",
+     "translation_key": "rrc_max_valve_position",
+     "unique_id": "gateway-one:devices:device7:etrv:maxValvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device7:etrv:offset",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device7:etrv:openWindowDetection:sensitivity",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Temperature at the valve",
+     "translation_key": "rrc_valve_temperature",
+     "unique_id": "gateway-one:devices:device7:etrv:temperatureActual",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:valve",
+     "original_name": "Valve opening",
+     "translation_key": "rrc_valve_position",
+     "unique_id": "gateway-one:devices:device7:etrv:valvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve",
+     "original_name": "Valve state",
+     "translation_key": "rrc_valve_state",
+     "unique_id": "gateway-one:devices:device7:etrv:valveState",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:volume-low",
+     "original_name": "Whisper mode",
+     "translation_key": "rrc_whisper_mode",
+     "unique_id": "gateway-one:devices:device7:etrv:whisperMode:enabled",
+     "unit": null
+    },
+    {
      "capabilities": {
       "state_class": "measurement"
      },
@@ -1801,6 +2859,112 @@
      "original_name": "Firmware version",
      "translation_key": null,
      "unique_id": "gateway-one:devices:device7:versionFirmware",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device8:etrv:childLock:enabled",
+     "unit": null
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve-open",
+     "original_name": "Maximum valve opening",
+     "translation_key": "rrc_max_valve_position",
+     "unique_id": "gateway-one:devices:device8:etrv:maxValvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:thermometer-plus",
+     "original_name": "Temperature offset",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device8:etrv:offset",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:window-open-variant",
+     "original_name": "Open window detection sensitivity",
+     "translation_key": null,
+     "unique_id": "gateway-one:devices:device8:etrv:openWindowDetection:sensitivity",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": "temperature",
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": null,
+     "original_name": "Temperature at the valve",
+     "translation_key": "rrc_valve_temperature",
+     "unique_id": "gateway-one:devices:device8:etrv:temperatureActual",
+     "unit": "\u00b0C"
+    },
+    {
+     "capabilities": {
+      "state_class": "measurement"
+     },
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": null,
+     "original_icon": "mdi:valve",
+     "original_name": "Valve opening",
+     "translation_key": "rrc_valve_position",
+     "unique_id": "gateway-one:devices:device8:etrv:valvePosition",
+     "unit": "%"
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:valve",
+     "original_name": "Valve state",
+     "translation_key": "rrc_valve_state",
+     "unique_id": "gateway-one:devices:device8:etrv:valveState",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:volume-low",
+     "original_name": "Whisper mode",
+     "translation_key": "rrc_whisper_mode",
+     "unique_id": "gateway-one:devices:device8:etrv:whisperMode:enabled",
      "unit": null
     },
     {
@@ -1981,7 +3145,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": null,
+     "original_icon": "mdi:home-export-outline",
      "original_name": "System \u2013 Away mode",
      "translation_key": "on_off_state",
      "unique_id": "gateway-one:system:awayMode:enabled",
@@ -1995,7 +3159,7 @@
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
-     "original_icon": null,
+     "original_icon": "mdi:home-thermometer-outline",
      "original_name": "System \u2013 Away temperature",
      "translation_key": null,
      "unique_id": "gateway-one:system:awayMode:temperature",
@@ -3304,6 +4468,114 @@
     {
      "capabilities": null,
      "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:lock",
+     "original_name": "Room controller \u2013 Child lock",
+     "translation_key": "rrc_child_lock",
+     "unique_id": "gateway-one:devices:device1:thermostat:childLock:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": "rrc_child_lock",
+     "unique_id": "gateway-one:devices:device2:etrv:childLock:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": "rrc_child_lock",
+     "unique_id": "gateway-one:devices:device3:etrv:childLock:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": "rrc_child_lock",
+     "unique_id": "gateway-one:devices:device4:etrv:childLock:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": "rrc_child_lock",
+     "unique_id": "gateway-one:devices:device5:etrv:childLock:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": "rrc_child_lock",
+     "unique_id": "gateway-one:devices:device6:etrv:childLock:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": "rrc_child_lock",
+     "unique_id": "gateway-one:devices:device7:etrv:childLock:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": "integration",
+     "domain": "switch",
+     "entity_category": "config",
+     "original_icon": "mdi:lock",
+     "original_name": "Child lock",
+     "translation_key": "rrc_child_lock",
+     "unique_id": "gateway-one:devices:device8:etrv:childLock:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "switch",
+     "entity_category": null,
+     "original_icon": "mdi:home-export-outline",
+     "original_name": "System: Away mode",
+     "translation_key": "away_mode",
+     "unique_id": "gateway-one:system:awayMode:enabled:control",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
      "disabled_by": null,
      "domain": "switch",
      "entity_category": "config",
@@ -3452,22 +4724,91 @@
     }
    ],
    "setup_calls": {
-    "bulk": 18,
-    "single": 168
+    "bulk": 21,
+    "single": 7
    },
    "setup_requests": [
     "/devices",
+    "/devices/device1/thermostat/childLock/enabled",
+    "/devices/device1/thermostat/offset",
     "/devices/device1/versionFirmware",
     "/devices/device10/versionFirmware",
+    "/devices/device10/wth/childLock/enabled",
+    "/devices/device10/wth/offset",
     "/devices/device11/versionFirmware",
     "/devices/device12/versionFirmware",
+    "/devices/device2/etrv/childLock/enabled",
+    "/devices/device2/etrv/maxValvePosition",
+    "/devices/device2/etrv/offset",
+    "/devices/device2/etrv/openWindowDetection/sensitivity",
+    "/devices/device2/etrv/status",
+    "/devices/device2/etrv/temperatureActual",
+    "/devices/device2/etrv/valvePosition",
+    "/devices/device2/etrv/valveState",
+    "/devices/device2/etrv/whisperMode/enabled",
     "/devices/device2/versionFirmware",
+    "/devices/device3/etrv/childLock/enabled",
+    "/devices/device3/etrv/maxValvePosition",
+    "/devices/device3/etrv/offset",
+    "/devices/device3/etrv/openWindowDetection/sensitivity",
+    "/devices/device3/etrv/status",
+    "/devices/device3/etrv/temperatureActual",
+    "/devices/device3/etrv/valvePosition",
+    "/devices/device3/etrv/valveState",
+    "/devices/device3/etrv/whisperMode/enabled",
     "/devices/device3/versionFirmware",
+    "/devices/device4/etrv/childLock/enabled",
+    "/devices/device4/etrv/maxValvePosition",
+    "/devices/device4/etrv/offset",
+    "/devices/device4/etrv/openWindowDetection/sensitivity",
+    "/devices/device4/etrv/status",
+    "/devices/device4/etrv/temperatureActual",
+    "/devices/device4/etrv/valvePosition",
+    "/devices/device4/etrv/valveState",
+    "/devices/device4/etrv/whisperMode/enabled",
     "/devices/device4/versionFirmware",
+    "/devices/device5/etrv/childLock/enabled",
+    "/devices/device5/etrv/maxValvePosition",
+    "/devices/device5/etrv/offset",
+    "/devices/device5/etrv/openWindowDetection/sensitivity",
+    "/devices/device5/etrv/status",
+    "/devices/device5/etrv/temperatureActual",
+    "/devices/device5/etrv/valvePosition",
+    "/devices/device5/etrv/valveState",
+    "/devices/device5/etrv/whisperMode/enabled",
     "/devices/device5/versionFirmware",
+    "/devices/device6/etrv/childLock/enabled",
+    "/devices/device6/etrv/maxValvePosition",
+    "/devices/device6/etrv/offset",
+    "/devices/device6/etrv/openWindowDetection/sensitivity",
+    "/devices/device6/etrv/status",
+    "/devices/device6/etrv/temperatureActual",
+    "/devices/device6/etrv/valvePosition",
+    "/devices/device6/etrv/valveState",
+    "/devices/device6/etrv/whisperMode/enabled",
     "/devices/device6/versionFirmware",
+    "/devices/device7/etrv/childLock/enabled",
+    "/devices/device7/etrv/maxValvePosition",
+    "/devices/device7/etrv/offset",
+    "/devices/device7/etrv/openWindowDetection/sensitivity",
+    "/devices/device7/etrv/status",
+    "/devices/device7/etrv/temperatureActual",
+    "/devices/device7/etrv/valvePosition",
+    "/devices/device7/etrv/valveState",
+    "/devices/device7/etrv/whisperMode/enabled",
     "/devices/device7/versionFirmware",
+    "/devices/device8/etrv/childLock/enabled",
+    "/devices/device8/etrv/maxValvePosition",
+    "/devices/device8/etrv/offset",
+    "/devices/device8/etrv/openWindowDetection/sensitivity",
+    "/devices/device8/etrv/status",
+    "/devices/device8/etrv/temperatureActual",
+    "/devices/device8/etrv/valvePosition",
+    "/devices/device8/etrv/valveState",
+    "/devices/device8/etrv/whisperMode/enabled",
     "/devices/device8/versionFirmware",
+    "/devices/device9/bwth/childLock/enabled",
+    "/devices/device9/bwth/offset",
     "/devices/device9/versionFirmware",
     "/devices/list",
     "/dhwCircuits",
@@ -3499,6 +4840,10 @@
     "/dhwCircuits/dhw1/volumeFlow",
     "/dhwCircuits/dhw1/waterTotalConsumption",
     "/dhwCircuits/waterTotalConsumption",
+    "/events",
+    "/events/list1",
+    "/events/list2",
+    "/events/list3",
     "/gateway",
     "/gateway/dataProcessing/status",
     "/gateway/hmip",
@@ -6879,6 +8224,10 @@
     "/devices",
     "/devices/list",
     "/dhwCircuits",
+    "/events",
+    "/events/list1",
+    "/events/list2",
+    "/events/list3",
     "/gateway",
     "/heatSources",
     "/heatingCircuits",
