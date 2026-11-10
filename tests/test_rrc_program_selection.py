@@ -210,6 +210,31 @@ async def test_manual_zone_shows_selects_and_writes_its_program(environment):
 
 
 @pytest.mark.parametrize(
+    ("language", "expected"),
+    [
+        ("de", "Zeitprogramm wählen"),
+        ("de-AT", "Zeitprogramm wählen"),
+        ("en", "Select heating schedule"),
+        ("fr", "Select heating schedule"),
+        ("sv", "Välj värmeprogram"),
+        ("nb", "Velg tidsprogram for oppvarming"),
+        ("fi", "Valitse lämmitysaikaohjelma"),
+        ("da", "Vælg varmeprogram"),
+    ],
+)
+async def test_program_selection_is_named_in_the_system_language(
+    environment, language, expected
+):
+    coordinator, _, _ = environment
+    state = wire_coordinator(environment, program_list(), manual_selection())
+    (description,) = descriptions(state)
+    coordinator.hass.config.language = language
+    entity = RrcProgramSelect(coordinator, description)
+    assert entity.name.endswith(expected)
+    assert entity.name != expected  # grouped under the zone
+
+
+@pytest.mark.parametrize(
     "flags",
     [
         {"used": "False"},  # not a valid flag value

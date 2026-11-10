@@ -6,8 +6,11 @@ import base64
 import binascii
 import math
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
+from types import MappingProxyType
+from typing import Final
 
+from .i18n import localize
 from .pointt import Resource
 from .pointt.models import JsonScalar
 from .unit_contracts import canonical_unit
@@ -283,9 +286,10 @@ def _printable_name(value: str) -> bool:
     return 1 <= len(value) <= 64 and value.isprintable()
 
 
-def name(path: str, language: str, *, control: bool = False) -> str | None:
-    field = scalar_field(path)
-    labels = {
+# German and English names of the zone leaves; other languages translate the
+# English text in their i18n data file.
+_LABELS: Final[Mapping[str, tuple[str, str]]] = MappingProxyType(
+    {
         "temperatureActual": ("Raumtemperatur", "Room temperature"),
         "temperatureHeatingSetpoint": (
             "Aktiver Heizsollwert",
@@ -302,10 +306,19 @@ def name(path: str, language: str, *, control: bool = False) -> str | None:
         "userMode": ("Heizungsbetriebsart", "Heating mode"),
         "clockProgram": ("Gewähltes Zeitprogramm", "Selected heating schedule"),
     }
+)
+# The names of the controls, as whole texts so that a translation need not
+# follow the German or English word order.
+_CONTROL_LABELS: Final[Mapping[str, tuple[str, str]]] = MappingProxyType(
+    {
+        field: (f"{german} einstellen", f"Set {english.lower()}")
+        for field, (german, english) in _LABELS.items()
+    }
+)
+
+
+def name(path: str, language: str, *, control: bool = False) -> str | None:
+    field = scalar_field(path)
     if field is None:
         return None
-    german = language.casefold().startswith("de")
-    label = labels[field][0 if german else 1]
-    if control:
-        label = f"{label} einstellen" if german else f"Set {label.lower()}"
-    return label
+    return localize(language, *(_CONTROL_LABELS if control else _LABELS)[field])

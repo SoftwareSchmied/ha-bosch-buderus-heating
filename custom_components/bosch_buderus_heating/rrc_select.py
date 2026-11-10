@@ -16,6 +16,7 @@ from . import rrc
 from .const import DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
+from .i18n import localize
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -65,9 +66,11 @@ class RrcProgramSelect(
         self._attr_name = grouped_entity_name(
             coordinator,
             description.resource_path,
-            "Zeitprogramm wählen"
-            if coordinator.hass.config.language.startswith("de")
-            else "Select heating schedule",
+            localize(
+                coordinator.hass.config.language,
+                "Zeitprogramm wählen",
+                "Select heating schedule",
+            ),
         )
 
     @property

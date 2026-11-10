@@ -18,6 +18,7 @@ from custom_components.bosch_buderus_heating import (
     local_only,
     notifications,
     resource_catalog,
+    rrc,
     sensor,
     water_softener,
 )
@@ -96,6 +97,8 @@ def code_texts() -> dict[str, str]:
         pairs.extend((german[key], english[key]) for key in english)
     pairs.extend(catalog._APP_PATH_NAMES.values())
     pairs.extend(control_presentation._LABELS.values())
+    pairs.extend(rrc._LABELS.values())
+    pairs.extend(rrc._CONTROL_LABELS.values())
     pairs.extend(
         (texts["de"], texts["en"])
         for table in (faults._KNOWN_SUMMARIES, faults._SEVERITY_LABELS)
@@ -332,6 +335,52 @@ def test_group_and_control_names_in_a_new_language(hass) -> None:
     assert control_name(coordinator, mode, "X") == "LP 1: Käyttötila"
     hass.config.language = "de"
     assert control_name(coordinator, mode, "X") == "HK 1: Betriebsart"
+
+
+# The German and English names as they were before the data files existed.
+_RRC_NAMES = {
+    "temperatureActual": (
+        ("Raumtemperatur", "Room temperature"),
+        ("Raumtemperatur einstellen", "Set room temperature"),
+    ),
+    "temperatureHeatingSetpoint": (
+        ("Aktiver Heizsollwert", "Active heating setpoint"),
+        ("Aktiver Heizsollwert einstellen", "Set active heating setpoint"),
+    ),
+    "manualTemperatureHeating": (
+        ("Manueller Heizsollwert", "Manual heating setpoint"),
+        ("Manueller Heizsollwert einstellen", "Set manual heating setpoint"),
+    ),
+    "clockOverride/temperatureHeating": (
+        ("Vorübergehender Heizsollwert", "Temporary heating setpoint"),
+        ("Vorübergehender Heizsollwert einstellen", "Set temporary heating setpoint"),
+    ),
+    "userMode": (
+        ("Heizungsbetriebsart", "Heating mode"),
+        ("Heizungsbetriebsart einstellen", "Set heating mode"),
+    ),
+    "clockProgram": (
+        ("Gewähltes Zeitprogramm", "Selected heating schedule"),
+        ("Gewähltes Zeitprogramm einstellen", "Set selected heating schedule"),
+    ),
+}
+
+
+@pytest.mark.parametrize("field", sorted(_RRC_NAMES))
+def test_rrc_zone_names_in_every_language(field: str) -> None:
+    path = f"/zones/zn2/{field}"
+    for control, (german, english) in enumerate(_RRC_NAMES[field]):
+        names = {
+            language: rrc.name(path, language, control=bool(control))
+            for language in ("de", "DE-ch", "en", "en-GB", "fr", "sv", "nb", "fi", "da")
+        }
+        assert names["de"] == names["DE-ch"] == german
+        assert names["en"] == names["en-GB"] == names["fr"] == english
+        for language in ("sv", "nb", "fi", "da"):
+            assert names[language] == i18n.CATALOGS[language][english]
+            assert names[language] not in {german, english}, language
+    assert rrc.name("/zones/znx/userMode", "sv") is None
+    assert rrc.name("/zones/zn2/unknown", "sv", control=True) is None
 
 
 def test_local_only_names_in_a_new_language() -> None:
