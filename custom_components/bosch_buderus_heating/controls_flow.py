@@ -23,6 +23,7 @@ from .entity_resources import fresh_resource
 from .entry_sources import pointt_coordinators
 from .enum_translation import enum_value_to_ha
 from .ha_schema import validation as vol
+from .i18n import LANGUAGES, dialog_config
 from .notifications import gateway_notification_key, installation_name
 from .pointt import (
     AuthenticationError,
@@ -73,6 +74,7 @@ class ControlsSelector(ObjectSelector):
                     "status": self.status,
                     "active": self.active,
                     "invalid": self.invalid,
+                    **dialog_config("controls"),
                 }
             }
         }
@@ -387,7 +389,7 @@ class ControlsOptionsFlow(OptionsFlow):
             language: await async_get_translations(
                 self.hass, language, "entity", {DOMAIN}
             )
-            for language in ("de", "en")
+            for language in LANGUAGES
         }
         rows = []
         for path in sorted(displayed, key=_row_order):

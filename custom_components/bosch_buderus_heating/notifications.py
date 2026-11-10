@@ -28,6 +28,7 @@ from .faults import (
     fault_severity_label,
     fault_summary,
 )
+from .i18n import language_code, localize, localize_all
 from .log_helpers import log_failure
 
 if TYPE_CHECKING:
@@ -93,6 +94,10 @@ _TEXT = {
         "system": "Anlage {number}",
     },
 }
+
+
+def _texts(language: str) -> dict[str, str]:
+    return localize_all(language, _TEXT["de"], _TEXT["en"])
 
 
 def gateway_notification_key(gateway_id: str) -> str:
@@ -164,8 +169,7 @@ def installation_name(
     device = installation_device(hass, entry_id, gateway_id)
     if device and (name := device.name_by_user or device.name):
         return name
-    language = "de" if hass.config.language.lower().startswith("de") else "en"
-    return _TEXT[language]["system"].format(number=number)
+    return _texts(hass.config.language)["system"].format(number=number)
 
 
 def _incident_key(fault: ActiveFault) -> str:
@@ -410,13 +414,14 @@ class FaultNotifications:
     def _time(self, value: datetime, language: str) -> str:
         """Show HA observation times with the configured zone's actual UTC offset."""
         local = dt_util.as_local(value)
-        date_format = "%d.%m.%Y" if language == "de" else "%Y-%m-%d"
+        # The usual date order of the language; a data file can set its own.
+        date_format = localize(language, "%d.%m.%Y", "%Y-%m-%d")
         return local.strftime(f"{date_format} %H:%M:%S %z")
 
     def _detail(
         self, fault: ActiveFault, language: str, resolved_at: datetime | None = None
     ) -> str:
-        texts = _TEXT[language]
+        texts = _texts(language)
         details = [
             fault_severity_label(fault.severity, language),
             fault.code or "",
@@ -432,8 +437,8 @@ class FaultNotifications:
         return line
 
     def _content(self, active: tuple[ActiveFault, ...]) -> tuple[str, str]:
-        language = "de" if self.hass.config.language.lower().startswith("de") else "en"
-        texts = _TEXT[language]
+        language = language_code(self.hass.config.language)
+        texts = _texts(language)
         try:
             gateways = notification_gateways(self.entry)
         except ValueError:

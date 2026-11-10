@@ -104,6 +104,7 @@ from .holidays import (
     parse_holiday_state,
     parse_holiday_write_configuration,
 )
+from .i18n import localize
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
 from .local_credentials import LOCAL_STORAGE_MINOR_VERSION
 from .local_flow import LocalSetupFlow
@@ -241,9 +242,12 @@ class BoschBuderusConfigFlow(
             return self.async_abort(reason="configuration_changed")
         await self.async_set_unique_id("installation_" + self.flow_id)
         self._then_local = True
-        german = self.hass.config.language.startswith("de")
         return self.async_create_entry(
-            title="Home Comfort (lokal)" if german else "Home Comfort (local)",
+            title=localize(
+                self.hass.config.language,
+                "Home Comfort (lokal)",
+                "Home Comfort (local)",
+            ),
             data=data,
             options=options,
         )
@@ -1878,7 +1882,7 @@ def _holiday_label(
     language: str,
 ) -> str:
     holiday_id = holiday_period_id(period)
-    fallback = "Urlaub" if language.casefold().startswith("de") else "Holiday"
+    fallback = localize(language, "Urlaub", "Holiday")
     name = period.name or f"{fallback} {holiday_id}"
     if period.all_day:
         timespan = f"{period.start:%Y-%m-%d} / {period.end:%Y-%m-%d}"
@@ -1892,16 +1896,11 @@ def _holiday_circuit_label(value: str, language: str) -> str:
     match = re.fullmatch(r"(hc|dhw|vent)(\d+)", value.casefold())
     if match is None:
         return value
-    german = language.casefold().startswith("de")
-    names = (
-        {"hc": "Heizkreis", "dhw": "Warmwasser", "vent": "Lüftung"}
-        if german
-        else {
-            "hc": "Heating circuit",
-            "dhw": "Hot water",
-            "vent": "Ventilation",
-        }
-    )
+    names = {
+        "hc": localize(language, "Heizkreis", "Heating circuit"),
+        "dhw": localize(language, "Warmwasser", "Hot water"),
+        "vent": localize(language, "Lüftung", "Ventilation"),
+    }
     return f"{names[match.group(1)]} {match.group(2)}"
 
 

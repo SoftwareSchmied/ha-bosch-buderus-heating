@@ -1,5 +1,6 @@
 const { chromium } = require("playwright");
 const path = require("node:path");
+const { dialogConfig } = require("./support/dialog-texts.cjs");
 const assert = require("node:assert/strict");
 (async () => {
   const browser = await chromium.launch({
@@ -21,6 +22,10 @@ const assert = require("node:assert/strict");
       "../../custom_components/bosch_buderus_heating/www/controls-dialog.js",
     ),
   });
+  // The texts the server sends with every dialog step.
+  await page.evaluate((dialog) => {
+    window.dialog = dialog;
+  }, dialogConfig("controls"));
   await page.evaluate(() => {
     const selector = document.querySelector(
       "ha-selector-bosch-buderus-controls",
@@ -83,7 +88,7 @@ const assert = require("node:assert/strict");
     ];
     window.rows = rows;
     selector.hass = { language: "de" };
-    selector.selector = { "bosch-buderus-controls": { rows } };
+    selector.selector = { "bosch-buderus-controls": { ...window.dialog, rows } };
     selector.value = { changes: {} };
     window.draft = {};
     window.calls = [];
@@ -187,6 +192,38 @@ const assert = require("node:assert/strict");
     await ui.getByLabel("Flow limit", { exact: true }).isVisible(),
     true,
   );
+  // The dialog texts follow the profile language ("no" is Norwegian
+  // Bokmål); a row without a label in that language shows the English one.
+  for (const [language, tab, heading] of [
+    ["sv-SE", "Värmekrets 1", "Fler inställningar"],
+    ["no", "Varmekrets 1", "Flere innstillinger"],
+    ["fi", "Lämmityspiiri 1", "Lisää asetuksia"],
+    ["da", "Varmekreds 1", "Flere indstillinger"],
+    ["nn", "Varmekrets 1", "Flere innstillinger"],
+    ["pt-BR", "Heating circuit 1", "More settings"],
+  ]) {
+    await ui.evaluate((el, value) => {
+      el.hass = { language: value };
+    }, language);
+    assert.equal(
+      await ui.getByRole("tab", { name: tab, exact: true }).isVisible(),
+      true,
+      language,
+    );
+    assert.equal(
+      await ui.getByRole("heading", { name: heading }).isVisible(),
+      true,
+      language,
+    );
+    assert.equal(
+      await ui.getByLabel("Manual setpoint", { exact: true }).inputValue(),
+      "19",
+      language,
+    );
+  }
+  await ui.evaluate((el) => {
+    el.hass = { language: "en" };
+  });
   await ui
     .getByRole("tab", { name: "Heating circuit 1", exact: true })
     .press("ArrowRight");
@@ -217,7 +254,7 @@ const assert = require("node:assert/strict");
   );
   await ui.evaluate((el) => {
     el.selector = {
-      "bosch-buderus-controls": {
+      "bosch-buderus-controls": { ...window.dialog,
         rows: window.rows,
         active: "dhwCircuits/dhw1",
         invalid: ["water"],
@@ -250,7 +287,7 @@ const assert = require("node:assert/strict");
   // Without a tab from the server, the open tab stays as it is.
   await ui.evaluate((el) => {
     el.selector = {
-      "bosch-buderus-controls": { rows: window.rows, status: "saved" },
+      "bosch-buderus-controls": { ...window.dialog, rows: window.rows, status: "saved" },
     };
   });
   assert.equal(
@@ -263,7 +300,7 @@ const assert = require("node:assert/strict");
   await ui.evaluate((el) => {
     el.value = { changes: {} };
     el.selector = {
-      "bosch-buderus-controls": {
+      "bosch-buderus-controls": { ...window.dialog,
         rows: window.rows.map((row) =>
           row.key === "target" ? { ...row, value: 19.3 } : row,
         ),
@@ -277,7 +314,7 @@ const assert = require("node:assert/strict");
   const offGrid = await ui.evaluate((el) => {
     el.value = { changes: {} };
     el.selector = {
-      "bosch-buderus-controls": {
+      "bosch-buderus-controls": { ...window.dialog,
         rows: window.rows.map((row) =>
           row.key === "target"
             ? { ...row, minimum: 37.5, maximum: 60, step: 1, value: 40 }
@@ -298,7 +335,7 @@ const assert = require("node:assert/strict");
   // A minimum on the grid keeps the step for arrow keys.
   const onGrid = await ui.evaluate((el) => {
     el.selector = {
-      "bosch-buderus-controls": {
+      "bosch-buderus-controls": { ...window.dialog,
         rows: window.rows.map((row) =>
           row.key === "target"
             ? { ...row, minimum: 37, maximum: 60, step: 0.5, value: 40 }

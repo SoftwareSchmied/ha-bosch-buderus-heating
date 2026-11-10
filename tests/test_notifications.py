@@ -262,6 +262,8 @@ async def test_two_gateways_do_not_share_notifications_or_dismissals(hass, rig):
         ("de", "Anlagenstörung"),
         ("en", "heating system fault"),
         ("fr", "heating system fault"),
+        ("sv", "fel i värmesystemet"),
+        ("fi-FI", "lämmitysjärjestelmän vika"),
     ],
 )
 async def test_device_name_link_and_system_language(hass, rig, language, phrase):

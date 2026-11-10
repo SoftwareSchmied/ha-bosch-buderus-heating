@@ -31,6 +31,7 @@ from .configuration import LOCAL_KIND, ConfigurationError
 from .configuration_management import ConfigurationManagement
 from .const import DOMAIN
 from .ha_schema import validation as vol
+from .i18n import localize
 from .local_auth import AuthState, LabelCredentials
 from .local_budget import LocalReadBudget, local_budget_manager
 from .local_completion import LOCAL_FIRST, RecoveryStatus, ScopedIdentityContract
@@ -343,7 +344,6 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             # P49b step 7: an entry without any plant sets one up locally.
             user_input = {"target": NEW_PLANT}
         if user_input is None:
-            german = self.hass.config.language.startswith("de")
             return self._local_form(
                 "local_target",
                 vol.Schema(
@@ -366,9 +366,11 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                                     [
                                         SelectOptionDict(
                                             value=NEW_PLANT,
-                                            label="Neue Anlage (nur lokal)"
-                                            if german
-                                            else "New system (local only)",
+                                            label=localize(
+                                                self.hass.config.language,
+                                                "Neue Anlage (nur lokal)",
+                                                "New system (local only)",
+                                            ),
                                         )
                                     ]
                                     if offer_new

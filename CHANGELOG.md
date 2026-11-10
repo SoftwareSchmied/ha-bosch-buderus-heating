@@ -45,6 +45,25 @@ Versioning after its first tagged preview.
 - I have tested these changes only with simulated data in the shapes of the
   observed TC100.2 answers and of the app's demo answers.
 
+#### Translations
+
+- **Swedish, Norwegian Bokmål, Finnish and Danish:** the integration now
+  speaks these four languages as well, in the setup and options dialogs,
+  repairs, entity and device names, notifications and the controls and
+  holiday dialogs. They are drafts based on a shared glossary; nobody who
+  speaks them as a mother tongue has checked them yet. I would be glad about
+  corrections, see `docs/translations.md`.
+- Names and texts that the integration builds itself (for example
+  "Heating circuit 1 – Supply temperature") now follow the Home Assistant
+  system language for all supported languages; any other language still
+  shows English. German and English texts are unchanged, so existing entity
+  names stay the same. After switching the system language, reload the
+  integration so generated names are rebuilt.
+- A further language needs only two data files, `translations/<code>.json`
+  and `i18n/<code>.json`; `docs/translations.md` describes them.
+- The few names of the TC100.2 room controller zones are still German or
+  English only.
+
 ## [0.9.0-alpha.4] - 2026-11-10
 
 > [!IMPORTANT]

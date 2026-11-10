@@ -6,6 +6,23 @@ const onStepGrid = (minimum, step) => {
   return Math.abs(ticks - Math.round(ticks)) < 1e-7;
 };
 
+// The server sends the texts of every language that has a data file
+// (i18n/<code>.json); the profile language picks one, else English.
+const controlsLanguage = (language, texts, aliases) => {
+  const tag = String(language || "")
+    .trim()
+    .toLowerCase()
+    .replace("_", "-");
+  const base = tag.split("-")[0];
+  const known = new Map(
+    Object.keys(texts || {}).map((code) => [code.toLowerCase(), code]),
+  );
+  for (const candidate of [tag, aliases?.[tag], base, aliases?.[base]]) {
+    if (candidate && known.has(candidate)) return known.get(candidate);
+  }
+  return "en";
+};
+
 class BoschBuderusControls extends HTMLElement {
   constructor() {
     super();
@@ -128,14 +145,20 @@ class BoschBuderusControls extends HTMLElement {
     }
     return undefined;
   }
-  get _de() {
-    return (this._hass?.language || "en").startsWith("de");
+  get _language() {
+    return controlsLanguage(
+      this._hass?.language,
+      this._config?.texts,
+      this._config?.aliases,
+    );
   }
-  _text(de, en) {
-    return this._de ? de : en;
+  _text(key, values = {}) {
+    const texts = this._config?.texts || {};
+    const text = texts[this._language]?.[key] ?? texts.en?.[key] ?? "";
+    return text.replace(/\{(\w+)\}/g, (_, name) => String(values[name]));
   }
   _label(labels) {
-    return labels?.[this._de ? "de" : "en"] || "";
+    return labels?.[this._language] || labels?.en || "";
   }
   set hass(value) {
     const before = this._hass?.language;
@@ -198,13 +221,15 @@ class BoschBuderusControls extends HTMLElement {
     this._updateStatus();
   }
   _group(group) {
-    if (group === "system") return this._text("Anlage", "System");
+    if (group === "system") return this._text("system");
     const [family, id] = group.split("/");
     const number = id.match(/\d+$/)?.[0] || id;
     return (
       (family === "heatingCircuits"
-        ? this._text("Heizkreis ", "Heating circuit ")
-        : this._text("Warmwasser ", "Hot water ")) + number
+        ? this._text("heatingCircuit")
+        : this._text("hotWater")) +
+      " " +
+      number
     );
   }
   _selectTab(group, focus = false) {
@@ -226,7 +251,7 @@ class BoschBuderusControls extends HTMLElement {
     panels.replaceChildren();
     tabs.setAttribute(
       "aria-label",
-      this._text("Anlagenbereiche", "Appliance sections"),
+      this._text("sections"),
     );
     const groups = [...new Set(this._rows.map((row) => row.group))];
     if (!groups.includes(this._active)) this._active = groups[0] || "";
@@ -265,10 +290,7 @@ class BoschBuderusControls extends HTMLElement {
       const heading = document.createElement("h3");
       heading.id = "advanced-" + index;
       advanced.setAttribute("aria-labelledby", heading.id);
-      heading.textContent = this._text(
-        "Weitere Einstellungen",
-        "More settings",
-      );
+      heading.textContent = this._text("moreSettings");
       advanced.append(heading);
       this._rows
         .filter((row) => row.group === group)
@@ -330,10 +352,7 @@ class BoschBuderusControls extends HTMLElement {
             hint = document.createElement("p");
             hint.className = "hint";
             hint.id = id + "-hint";
-            hint.textContent = this._text(
-              "Bitte prüfe diesen Wert.",
-              "Please check this value.",
-            );
+            hint.textContent = this._text("checkValue");
             input.setAttribute("aria-invalid", "true");
             input.setAttribute("aria-describedby", hint.id);
           }
@@ -369,35 +388,21 @@ class BoschBuderusControls extends HTMLElement {
       panels.append(panel);
     });
     this._selectTab(this._active);
-    this.shadowRoot.querySelector(".discard").textContent = this._text(
-      "Verwerfen",
-      "Discard",
-    );
-    this.shadowRoot.querySelector(".refresh").textContent = this._text(
-      "Werte neu laden",
-      "Reload values",
-    );
+    this.shadowRoot.querySelector(".discard").textContent =
+      this._text("discard");
+    this.shadowRoot.querySelector(".refresh").textContent = this._text("reload");
     this._updateStatus();
     this._setDisabled();
   }
   _updateStatus() {
     const count = Object.keys(this._changes).length;
     this.shadowRoot.querySelector(".status").textContent = count
-      ? this._text(
-          count + " ungespeicherte Änderungen",
-          count + " unsaved changes",
-        )
+      ? this._text("unsaved", { count })
       : this._config?.status === "saved"
-        ? this._text("Änderungen bestätigt.", "Changes confirmed.")
+        ? this._text("saved")
         : this._config?.status === "empty"
-          ? this._text(
-              "Zurzeit sind keine bedienbaren Einstellungen verfügbar.",
-              "No controls are currently available.",
-            )
-          : this._text(
-              "Änderungen werden erst mit Übernehmen geschrieben.",
-              "Changes are written only when you select Apply.",
-            );
+          ? this._text("empty")
+          : this._text("pending");
   }
   _setDisabled() {
     for (const element of this.shadowRoot.querySelectorAll(
@@ -416,10 +421,7 @@ class BoschBuderusControls extends HTMLElement {
       flow.step?.step_id !== "operate" ||
       !flow.flowConfig?.handleFlowStep
     ) {
-      error.textContent = this._text(
-        "Bitte schließe den Dialog und öffne ihn erneut.",
-        "Please close and reopen the dialog.",
-      );
+      error.textContent = this._text("reopen");
       return;
     }
     this._busy = true;
@@ -440,10 +442,7 @@ class BoschBuderusControls extends HTMLElement {
         fire("flow-update", { step });
       }
     } catch {
-      error.textContent = this._text(
-        "Die Werte konnten nicht neu geladen werden.",
-        "The values could not be reloaded.",
-      );
+      error.textContent = this._text("reloadFailed");
     } finally {
       this._busy = false;
       this._setDisabled();

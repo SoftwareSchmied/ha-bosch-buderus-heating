@@ -52,6 +52,7 @@ from custom_components.bosch_buderus_heating.holidays import (
     HOLIDAY_LIST_PATH,
     parse_holiday_state,
 )
+from custom_components.bosch_buderus_heating.i18n import dialog_config
 from custom_components.bosch_buderus_heating.pointt import (
     AuthenticationError,
     AuthTokens,
@@ -265,15 +266,16 @@ async def test_create_and_edit_share_the_same_native_form_fields(
         for marker, selector in creating["data_schema"].schema.items()
     }
     assert existing_fields.pop("holiday_delete") == {
-        "selector": {"bosch-buderus-holiday-delete": {}}
+        "selector": {"bosch-buderus-holiday-delete": dialog_config("holiday")}
     }
     if not date_only:
         for field in ("holiday_start", "holiday_end"):
             assert existing_fields[field]["selector"][
                 "bosch-buderus-holiday-datetime"
-            ] == {"default_time": ""}
+            ] == {"default_time": "", **dialog_config("holiday")}
             assert new_fields[field]["selector"]["bosch-buderus-holiday-datetime"] == {
-                "default_time": "08:00"
+                "default_time": "08:00",
+                **dialog_config("holiday"),
             }
             existing_fields[field] = new_fields[field]
     assert existing_fields == new_fields
@@ -1911,7 +1913,8 @@ async def test_new_holiday_dates_start_empty_and_remain_required(
             assert "date" in serialized[field]["selector"]
         else:
             assert serialized[field]["selector"]["bosch-buderus-holiday-datetime"] == {
-                "default_time": "08:00"
+                "default_time": "08:00",
+                **dialog_config("holiday"),
             }
         assert f"{field}_time" not in serialized
     assert "holiday_heating_mode" in serialized

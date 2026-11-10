@@ -15,6 +15,7 @@ from .configuration_access import EntryConfiguration
 from .const import CONF_BRAND, DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .ha_compat import device_by_identifier
+from .i18n import localize
 from .resource_catalog import configured_device_name, logical_device_for_path
 
 _UNKNOWN_HEAT_PUMP_TYPES = frozenset(
@@ -105,37 +106,37 @@ def grouped_entity_name(
     name: str,
 ) -> str:
     """Prefix an entity name with its dynamic logical PointT group."""
-    german = coordinator.hass.config.language.casefold().startswith("de")
+    language = coordinator.hass.config.language
     logical = coordinator.plant_model.bind_resource(resource_path).group
     if logical is not None:
         group = _configured_logical_name(coordinator, resource_path, logical.logical_id)
-        group = _localized_generic_name(group, logical.kind, german)
+        group = _localized_generic_name(group, logical.kind, language)
         if logical.kind == "heat_source" and _is_heat_pump(
             coordinator, resource_path, logical.logical_id
         ):
-            group = group or _heat_pump_name(coordinator, logical.logical_id, german)
-        group = group or _logical_name(logical.kind, logical.logical_id, german)
+            group = group or _heat_pump_name(coordinator, logical.logical_id, language)
+        group = group or _logical_name(logical.kind, logical.logical_id, language)
         return f"{group}{_GROUP_SEPARATOR}{name}"
     if resource_path == "/gateway" or resource_path.startswith("/gateway/"):
-        group = "Gateway"
+        group = localize(language, "Gateway", "Gateway")
     elif resource_path == "/system" or resource_path.startswith("/system/"):
-        group = "Anlage" if german else "System"
+        group = localize(language, "Anlage", "System")
     elif resource_path == "/heatSources" or resource_path.startswith("/heatSources/"):
-        group = _central_heat_source_name(coordinator, german)
+        group = _central_heat_source_name(coordinator, language)
     elif resource_path == "/solarCircuits" or resource_path.startswith(
         "/solarCircuits/"
     ):
-        group = "Solar"
+        group = localize(language, "Solar", "Solar")
     elif resource_path == "/pool" or resource_path.startswith("/pool/"):
-        group = "Pool"
+        group = localize(language, "Pool", "Pool")
     elif resource_path == "/ventilation" or resource_path.startswith("/ventilation/"):
-        group = "Lüftung" if german else "Ventilation"
+        group = localize(language, "Lüftung", "Ventilation")
     elif resource_path == "/zones" or resource_path.startswith("/zones/"):
-        group = "Zone"
+        group = localize(language, "Zone", "Zone")
     elif resource_path == "/pv" or resource_path.startswith("/pv/"):
-        group = "Photovoltaik" if german else "Photovoltaics"
+        group = localize(language, "Photovoltaik", "Photovoltaics")
     else:
-        group = "Anlage" if german else "System"
+        group = localize(language, "Anlage", "System")
     return f"{group}{_GROUP_SEPARATOR}{name}"
 
 
@@ -254,7 +255,7 @@ def _is_heat_pump(
 
 
 def _heat_pump_name(
-    coordinator: BoschBuderusDataUpdateCoordinator, logical_id: str, german: bool
+    coordinator: BoschBuderusDataUpdateCoordinator, logical_id: str, language: str
 ) -> str:
     heat_source_ids = {
         logical.logical_id
@@ -262,7 +263,7 @@ def _heat_pump_name(
         if (logical := logical_device_for_path(path)) is not None
         and logical.kind == "heat_source"
     }
-    label = "Wärmepumpe" if german else "Heat pump"
+    label = localize(language, "Wärmepumpe", "Heat pump")
     if len(heat_source_ids) <= 1:
         return label
     suffix = re.search(r"(\d+)$", logical_id)
@@ -270,7 +271,7 @@ def _heat_pump_name(
 
 
 def _central_heat_source_name(
-    coordinator: BoschBuderusDataUpdateCoordinator, german: bool
+    coordinator: BoschBuderusDataUpdateCoordinator, language: str
 ) -> str:
     heat_source_ids = {
         logical.logical_id
@@ -281,29 +282,34 @@ def _central_heat_source_name(
     if len(heat_source_ids) == 1:
         logical_id = next(iter(heat_source_ids))
         if _is_heat_pump(coordinator, f"/heatSources/{logical_id}", logical_id):
-            return "Wärmepumpe" if german else "Heat pump"
-    return "Wärmeerzeuger" if german else "Heat generator"
+            return localize(language, "Wärmepumpe", "Heat pump")
+    return localize(language, "Wärmeerzeuger", "Heat generator")
 
 
-def _logical_name(kind: str, logical_id: str, german: bool) -> str:
-    """Return a localized generic name for one dynamic PointT group."""
-    label = {
-        "heating_circuit": "Heizkreis" if german else "Heating circuit",
-        "hot_water_circuit": "Warmwasser" if german else "Hot water",
-        "heat_source": "Wärmeerzeuger" if german else "Heat generator",
-        "solar_circuit": "Solarkreis" if german else "Solar circuit",
-        "ventilation_zone": "Lüftungszone" if german else "Ventilation zone",
-        "room_zone": "Zone",
-        "rrc_zone": "RRC-Zone" if german else "RRC zone",
-        "room_device": "Raumgerät" if german else "Room device",
-        "water_softener": "Enthärter" if german else "Water softener",
+def _kind_label(kind: str, language: str) -> str:
+    """Return the localized generic name of one kind of dynamic PointT group."""
+    return {
+        "heating_circuit": localize(language, "Heizkreis", "Heating circuit"),
+        "hot_water_circuit": localize(language, "Warmwasser", "Hot water"),
+        "heat_source": localize(language, "Wärmeerzeuger", "Heat generator"),
+        "solar_circuit": localize(language, "Solarkreis", "Solar circuit"),
+        "ventilation_zone": localize(language, "Lüftungszone", "Ventilation zone"),
+        "room_zone": localize(language, "Zone", "Zone"),
+        "rrc_zone": localize(language, "RRC-Zone", "RRC zone"),
+        "room_device": localize(language, "Raumgerät", "Room device"),
+        "water_softener": localize(language, "Enthärter", "Water softener"),
     }[kind]
+
+
+def _logical_name(kind: str, logical_id: str, language: str) -> str:
+    """Return a localized generic name for one dynamic PointT group."""
+    label = _kind_label(kind, language)
     suffix = re.search(r"(\d+)$", logical_id)
     return f"{label} {suffix.group(1) if suffix else logical_id}"
 
 
 def _localized_generic_name(
-    configured_name: str | None, kind: str, german: bool
+    configured_name: str | None, kind: str, language: str
 ) -> str | None:
     """Translate vendor default names while preserving genuine custom names."""
     if configured_name is None:
@@ -322,17 +328,7 @@ def _localized_generic_name(
     }[kind]
     if normalized not in generic_names:
         return configured_name
-    return {
-        "heating_circuit": "Heizkreis" if german else "Heating circuit",
-        "hot_water_circuit": "Warmwasser" if german else "Hot water",
-        "heat_source": "Wärmeerzeuger" if german else "Heat generator",
-        "solar_circuit": "Solarkreis" if german else "Solar circuit",
-        "ventilation_zone": "Lüftungszone" if german else "Ventilation zone",
-        "room_zone": "Zone",
-        "rrc_zone": "RRC-Zone" if german else "RRC zone",
-        "room_device": "Raumgerät" if german else "Room device",
-        "water_softener": "Enthärter" if german else "Water softener",
-    }[kind]
+    return _kind_label(kind, language)
 
 
 def _resource_string(

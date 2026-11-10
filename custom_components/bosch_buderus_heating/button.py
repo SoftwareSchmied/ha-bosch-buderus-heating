@@ -13,6 +13,7 @@ from . import BoschBuderusConfigEntry
 from .control import async_set_control, track_control_entities
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
+from .i18n import localize
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .writes import SOFTENER_REGENERATION_POLICY, assess_control
@@ -76,9 +77,11 @@ class BoschBuderusRegenerationButton(
         self._attr_name = grouped_entity_name(
             coordinator,
             description.key,
-            "Regeneration starten"
-            if coordinator.hass.config.language.startswith("de")
-            else "Start regeneration",
+            localize(
+                coordinator.hass.config.language,
+                "Regeneration starten",
+                "Start regeneration",
+            ),
         )
 
     @property

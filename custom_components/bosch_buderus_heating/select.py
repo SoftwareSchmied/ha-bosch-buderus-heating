@@ -29,6 +29,7 @@ from .coordinator import (
 )
 from .device import device_info_for_resource
 from .enum_translation import writable_enum_options
+from .i18n import localize
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
 from .resource_catalog import resource_name
@@ -182,16 +183,14 @@ class BoschBuderusSelect(
         super().__init__(coordinator)
         self.entity_description = description
         if description.write_policy is SILENT_MODE_POLICY:
-            display_name = (
-                "Silent Mode"
-                if coordinator.hass.config.language.casefold().startswith("de")
-                else "Silent mode"
+            display_name = localize(
+                coordinator.hass.config.language, "Silent Mode", "Silent mode"
             )
         elif description.write_policy is AUXILIARY_HEATER_OPERATION_MODE_POLICY:
-            display_name = (
-                "Zuheizer-Betriebsart"
-                if coordinator.hass.config.language.casefold().startswith("de")
-                else "Auxiliary heater mode"
+            display_name = localize(
+                coordinator.hass.config.language,
+                "Zuheizer-Betriebsart",
+                "Auxiliary heater mode",
             )
         else:
             display_name = (
