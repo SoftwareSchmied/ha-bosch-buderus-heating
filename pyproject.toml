@@ -44,10 +44,6 @@ line-length = 88
 [tool.ruff.lint]
 select = ["ASYNC", "B", "E", "F", "I", "RUF", "SIM", "UP"]
 
-[tool.ruff.lint.per-file-ignores]
-# Translation catalogs: one text per line is easier to review than split ones.
-"custom_components/bosch_buderus_heating/i18n/[a-z][a-z].py" = ["E501"]
-
 [tool.pytest.ini_options]
 addopts = "-p no:respx --strict-config --strict-markers --cov=custom_components/bosch_buderus_heating --cov-branch --cov-report=term-missing --cov-fail-under=95"
 asyncio_mode = "auto"
