@@ -174,10 +174,11 @@ listed gateway does not by itself guarantee that every entity or control is
 available. Missing capabilities are simply omitted without affecting the rest
 of the integration.
 
-Systems registered in the IVT Anywhere II app use the same cloud as the
-Bosch HomeCom Easy app. They should work when you select **Bosch** during
-setup and sign in with the SingleKey ID of the IVT app. No IVT system has
-been confirmed yet; if you use one, please share your experience in
+Systems registered in the IVT Anywhere II app, and Worcester or Vulcano
+systems registered in the Bosch HomeCom Easy app, use the same cloud. They
+should work when you select **Bosch** during setup and sign in with the
+SingleKey ID of that app. No IVT, Worcester or Vulcano system has been
+confirmed yet; if you use one, please share your experience in
 [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
 
 Home Assistant shows a uniquely identified MX300/MX400 controller as the
