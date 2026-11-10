@@ -12,9 +12,10 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from homeassistant.components.repairs.issue_handler import RepairsFlowManager
+from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.setup import async_setup_component
 
 from custom_components.bosch_buderus_heating import managed_local as module
 from custom_components.bosch_buderus_heating.configuration_management import (
@@ -202,7 +203,7 @@ async def test_a_permanent_start_problem_stops_and_removes_the_retry_note(
 
 
 async def test_the_repair_note_names_the_cause_after_five_checks_and_goes_on_success(
-    hass, start
+    hass, start, enable_custom_integrations, hass_client
 ):
     p = start
     p.plan = ["pending"] * 6
@@ -225,22 +226,36 @@ async def test_the_repair_note_names_the_cause_after_five_checks_and_goes_on_suc
         "problem": "system_information_incomplete",
     }
 
-    # The repair tries again at once; Home Assistant removes the note when
-    # the flow ends, and the next failed check brings it back.
+    # The repair, opened like the repair dialog does, asks first and then
+    # tries again at once; Home Assistant removes the note when the flow
+    # ends, and the next failed check brings it back.
     p.entry.runtime_data = SimpleNamespace(connections=p.runtime)
-    flow = await async_create_fix_flow(hass, p.issue_id, issue.data)
-    assert isinstance(flow, LocalStartRepairFlow)
-    flow.hass, flow.handler = hass, DOMAIN
-    flow.context = {"issue_id": p.issue_id}
-    form = await flow.async_step_init()
-    assert form["type"] is FlowResultType.FORM
+    hass.config.components.add(DOMAIN)
+    assert await async_setup_component(hass, "repairs", {})
+    notes = []
+
+    @callback
+    def note_changed(event):
+        if event.data["issue_id"] == p.issue_id:
+            notes.append(event.data["action"])
+
+    hass.bus.async_listen(ir.EVENT_REPAIRS_ISSUE_REGISTRY_UPDATED, note_changed)
+    client = await hass_client()
+    response = await client.post(
+        "/api/repairs/issues/fix", json={"handler": DOMAIN, "issue_id": p.issue_id}
+    )
+    assert response.status == 200
+    form = await response.json()
+    assert form["type"] == "form" and form["step_id"] == "confirm"
     assert form["description_placeholders"] == {"code": "system_information_incomplete"}
-    result = await flow.async_step_confirm({})
-    assert result["type"] is FlowResultType.CREATE_ENTRY
-    await RepairsFlowManager(hass).async_finish_flow(flow, result)
-    assert p.issue() is None
+    assert len(p.probes) == module.START_ISSUE_ATTEMPTS
+    response = await client.post(f"/api/repairs/issues/fix/{form['flow_id']}")
+    assert response.status == 200
+    assert (await response.json())["type"] == "create_entry"
     await step(hass, p, 6)
+    await hass.async_block_till_done()
     assert p.waits[-1] == 2400.0
+    assert notes == ["remove", "create"]
     assert p.issue() is not None
 
     # The gateway is ready: the start succeeds and the note goes.

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Iterable
+from collections.abc import Collection, Iterable
 from dataclasses import dataclass, field
 from functools import partial
 from typing import TYPE_CHECKING
@@ -101,12 +101,17 @@ class ManagedPlatforms:
         if jobs:
             await asyncio.wait(jobs, timeout=_SUSPEND_WAIT_SECONDS)
 
-    def resume(self) -> None:
-        """The platforms were not unloaded: attach the sources again where
-        the platform is still set up; one already unloaded stays stopped."""
+    def resume(self, unloaded: Collection[Platform] = ()) -> None:
+        """The platforms were not all unloaded: attach the sources again where
+        the platform is still set up; one already unloaded stays stopped.
+
+        ``unloaded`` names the platforms whose unload succeeded; Home
+        Assistant before 2026.10 still lists them afterwards."""
         loaded = entity_platform.async_get_platforms(self.owner.hass, DOMAIN)
-        for controller in self._platforms.values():
-            if any(platform is controller.platform for platform in loaded):
+        for name, controller in self._platforms.items():
+            if name not in unloaded and any(
+                platform is controller.platform for platform in loaded
+            ):
                 controller.resume()
             else:
                 controller.stop()

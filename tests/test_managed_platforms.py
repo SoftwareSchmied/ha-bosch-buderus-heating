@@ -11,7 +11,7 @@ from homeassistant.core import Event
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.entity_platform import EntityPlatform
+from homeassistant.helpers.entity_platform import EntityPlatform, async_get_platforms
 from homeassistant.helpers.trigger import TriggerConfig
 
 from custom_components.bosch_buderus_heating import managed_platforms
@@ -803,18 +803,21 @@ async def test_nothing_is_added_while_the_platforms_unload(hass):
         await settle(hass)
         add = heat_add(captured, Platform.SENSOR)
         original = hass.config_entries.async_unload_platforms
-        seen = []
+        seen, asked = [], []
 
         async def unload(entry, platforms):
-            # A source finishes a new entity exactly while unloading.
-            add([_LateSensor(late)])
-            seen.append(dict(owner.platforms._platforms[Platform.SENSOR]._jobs))
+            asked.extend(platforms)
+            if Platform.SENSOR in platforms:
+                # A source finishes a new entity exactly while unloading.
+                add([_LateSensor(late)])
+                seen.append(dict(owner.platforms._platforms[Platform.SENSOR]._jobs))
             await asyncio.sleep(0)
             return await original(entry, platforms)
 
         with patch.object(hass.config_entries, "async_unload_platforms", unload):
             assert await owner.unload()
         await settle(hass)
+        assert sorted(asked) == sorted(PLATFORMS)  # each platform once
         assert seen == [{}]  # no attachment job was started
         assert registered(hass, "sensor", late) is None
         assert not [
@@ -825,7 +828,8 @@ async def test_nothing_is_added_while_the_platforms_unload(hass):
         ]
 
 
-async def test_a_failed_unload_attaches_the_sources_again(hass):
+@pytest.mark.parametrize("kept_listed", [False, True])
+async def test_a_failed_unload_attaches_the_sources_again(hass, kept_listed):
     late = HEAT + ":late_probe"
     captured, capturing = capture_adds()
     async with running(hass, Backend()) as (_, _, owner, _):
@@ -838,11 +842,19 @@ async def test_a_failed_unload_attaches_the_sources_again(hass):
         add = heat_add(captured, Platform.SENSOR)
         original = hass.config_entries.async_unload_platforms
 
+        sensors = owner.platforms._platforms[Platform.SENSOR].platform
+        listed = async_get_platforms(hass, DOMAIN)
+
         async def partly(entry, platforms):
             # Only the sensor platform unloads; the others report a failure.
+            if list(platforms) != [Platform.SENSOR]:
+                return False
             add([_LateSensor(late)])
-            await original(entry, [Platform.SENSOR])
-            return False
+            unloaded = await original(entry, platforms)
+            if kept_listed and sensors not in listed:
+                # As Home Assistant before 2026.10 does after an unload.
+                listed.append(sensors)
+            return unloaded
 
         with patch.object(hass.config_entries, "async_unload_platforms", partly):
             assert not await owner.unload()
@@ -867,6 +879,8 @@ async def test_a_failed_unload_attaches_the_sources_again(hass):
         await settle(hass)
         assert available(owner, "number", NUMBER)
         assert not owner._closed
+        if kept_listed and sensors in listed:
+            listed.remove(sensors)
 
 
 async def test_an_unload_error_attaches_the_sources_again(hass):

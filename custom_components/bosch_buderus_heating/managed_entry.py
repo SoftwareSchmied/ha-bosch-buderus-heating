@@ -213,15 +213,31 @@ class ManagedEntry:
         if self._platforms_started:
             # C57: no source adds an entity while the platforms are unloaded.
             await self.platforms.suspend()
+            # One unload per platform: Home Assistant before 2026.10 keeps an
+            # unloaded platform listed, so only these results tell which went.
             try:
-                unloaded = await self.hass.config_entries.async_unload_platforms(
-                    self.entry, PLATFORMS
+                results = await asyncio.gather(
+                    *(
+                        self.hass.config_entries.async_unload_platforms(
+                            self.entry, (platform,)
+                        )
+                        for platform in PLATFORMS
+                    ),
+                    return_exceptions=True,
                 )
             except BaseException:
                 self.platforms.resume()
                 raise
-            if not unloaded:
-                self.platforms.resume()
+            unloaded = {
+                platform
+                for platform, result in zip(PLATFORMS, results, strict=True)
+                if result is True
+            }
+            if len(unloaded) < len(PLATFORMS):
+                self.platforms.resume(unloaded)
+                for result in results:
+                    if isinstance(result, BaseException):
+                        raise result
                 return False
             self._platforms_started = False
         await self.close()

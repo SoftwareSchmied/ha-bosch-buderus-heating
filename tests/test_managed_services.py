@@ -11,6 +11,7 @@ from homeassistant.components import persistent_notification as pn
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.setup import async_setup_component
 
 from custom_components.bosch_buderus_heating.config_flow import BoschBuderusOptionsFlow
 from custom_components.bosch_buderus_heating.const import (
@@ -270,6 +271,40 @@ async def test_rate_limit_repairs_are_separate_and_change_only_affected_connecti
         )
         assert source_for(owner, "gateway-b") is peer
         assert registry.async_get_issue(DOMAIN, second)
+
+
+async def test_a_rate_limit_repair_opened_in_home_assistant_asks_first(
+    hass, enable_custom_integrations, hass_client
+):
+    # Started like the repair dialog does: Home Assistant hands the issue to
+    # the first step as input, which must still show the confirmation.
+    async with running(hass, Backend()) as (entry, cloud, owner, _):
+        await ready(owner)
+        source = source_for(owner, HEAT)
+        for _ in range(3):
+            source._activate_rate_limit_backoff(RateLimited(60), monotonic())
+        issue = repair_id(RATE_LIMIT_ISSUE_PREFIX, entry, cloud)
+        assert ir.async_get(hass).async_get_issue(DOMAIN, issue)
+        # The owner runs without the setup that marks the integration loaded.
+        hass.config.components.add(DOMAIN)
+        assert await async_setup_component(hass, "repairs", {})
+        client = await hass_client()
+        response = await client.post(
+            "/api/repairs/issues/fix", json={"handler": DOMAIN, "issue_id": issue}
+        )
+        assert response.status == 200
+        form = await response.json()
+        assert form["type"] == "form" and form["step_id"] == "confirm"
+        profile = entry.options["connections"][cloud].get("polling_profile")
+        assert profile != "cloud_friendly"
+
+        response = await client.post(f"/api/repairs/issues/fix/{form['flow_id']}")
+        assert response.status == 200
+        assert (await response.json())["type"] == "create_entry"
+        assert (
+            entry.options["connections"][cloud]["polling_profile"] == "cloud_friendly"
+        )
+        assert not ir.async_get(hass).async_get_issue(DOMAIN, issue)
 
 
 @pytest.mark.parametrize("action", ["disable", "remove", "replace"])

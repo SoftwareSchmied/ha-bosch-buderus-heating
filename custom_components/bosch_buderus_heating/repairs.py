@@ -105,6 +105,10 @@ async def async_create_fix_flow(
     return RateLimitRepairFlow(entry_id, issue_id)
 
 
+# Every confirmation starts with its form: Home Assistant hands the issue to
+# the first step as input, which is no confirmation.
+
+
 class InvalidRepairFlow(RepairsFlow):
     """Abort a repair whose config entry no longer exists."""
 
@@ -129,7 +133,7 @@ class ManagedRepairFlow(RepairsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> RepairsFlowResult:
-        return await self.async_step_confirm(user_input)
+        return await self.async_step_confirm()
 
     async def async_step_confirm(
         self, user_input: dict[str, Any] | None = None
@@ -201,7 +205,7 @@ class LocalStartRepairFlow(RepairsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> RepairsFlowResult:
-        return await self.async_step_confirm(user_input)
+        return await self.async_step_confirm()
 
     async def async_step_confirm(
         self, user_input: dict[str, Any] | None = None
@@ -231,7 +235,7 @@ class RateLimitRepairFlow(RepairsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> RepairsFlowResult:
         """Start the confirmation step."""
-        return await self.async_step_confirm(user_input)
+        return await self.async_step_confirm()
 
     async def async_step_confirm(
         self, user_input: dict[str, Any] | None = None
@@ -270,7 +274,7 @@ class FirmwareCompatibilityRepairFlow(RepairsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> RepairsFlowResult:
         """Start the rediscovery confirmation step."""
-        return await self.async_step_confirm(user_input)
+        return await self.async_step_confirm()
 
     async def async_step_confirm(
         self, user_input: dict[str, Any] | None = None

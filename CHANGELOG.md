@@ -179,7 +179,9 @@ so far; the sections below say where.
   cause is logged once.
 - **Reloading the integration is cleaner:** while Home Assistant unloads the
   entities, no new entity is added any more. If the unload fails, the
-  entities that are still loaded are set up again.
+  entities that are still loaded are set up again. On Home Assistant before
+  2026.10 this included a kind of entity that had already been unloaded; now
+  it stays unloaded there as well.
 - **Less work per local reading:** a new local reading no longer makes the
   integration check its repairs, notifications and entity lists again; only
   the entities that show the reading are updated. Changes of a connection
@@ -222,6 +224,15 @@ so far; the sections below say where.
   the pause now starts when the cloud answered. With the cloud-friendly
   profile already in use the repair is not offered, because it would change
   nothing.
+- **Repairs ask first and work again:** Home Assistant hands a repair its
+  note when it opens, and the repairs took that for the confirmation. The
+  repairs for limited cloud requests and for changed capabilities after a
+  firmware update ended at once with "The access or heating system has
+  changed" and changed nothing; the repair for a local gateway that is not
+  ready tried again without asking. Now every repair shows its question first
+  and acts only after it is confirmed. I checked this with simulated repairs
+  on Home Assistant 2026.5, 2026.9 and 2026.10, not yet on a real
+  installation.
 - **A gateway missing from the cloud's list still shows its values:** if the
   cloud answers its gateway list without this gateway, also with an empty
   list, the system now starts with its saved inventory as during a cloud

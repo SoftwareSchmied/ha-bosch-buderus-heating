@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from collections.abc import Callable
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -546,6 +547,21 @@ async def test_waiting_write_starts_when_the_poll_ends_in_time(hass):
 # C70: a registered climate stays provided in a cooling context ---------------
 
 
+class _Lifecycle:
+    """Keep the unload callbacks like a config entry and run them on unload."""
+
+    def __init__(self) -> None:
+        self._callbacks: list[Callable[[], None]] = []
+
+    def async_on_unload(self, callback: Callable[[], None]) -> None:
+        self._callbacks.append(callback)
+
+    def unload(self) -> None:
+        # The listener's removal also stops the coordinator's refresh timer.
+        while self._callbacks:
+            self._callbacks.pop()()
+
+
 @pytest.mark.parametrize("registered", [True, False])
 async def test_registered_climate_is_added_unavailable_in_cooling(hass, registered):
     entry, coordinator, _entity = setup(hass)
@@ -559,7 +575,7 @@ async def test_registered_climate_is_added_unavailable_in_cooling(hass, register
             config_entry=entry,
         )
     added = []
-    lifecycle = type("Lifecycle", (), {"async_on_unload": lambda self, _cb: None})()
+    lifecycle = _Lifecycle()
     track_heating_climates(lifecycle, coordinator, added.extend)
     assert len(added) == int(registered)
     if registered:
@@ -567,6 +583,8 @@ async def test_registered_climate_is_added_unavailable_in_cooling(hass, register
         with pytest.raises(ServiceValidationError):
             await added[0].async_set_hvac_mode(HVACMode.HEAT)
     coordinator.client.put_resource_value.assert_not_awaited()
+    lifecycle.unload()
+    assert coordinator._unsub_refresh is None
 
 
 async def test_climate_registered_for_another_entry_is_not_adopted(hass):
@@ -577,6 +595,8 @@ async def test_climate_registered_for_another_entry_is_not_adopted(hass):
         "climate", DOMAIN, "gateway:heatingCircuits:hc2:climate"
     )
     added = []
-    lifecycle = type("Lifecycle", (), {"async_on_unload": lambda self, _cb: None})()
+    lifecycle = _Lifecycle()
     track_heating_climates(lifecycle, coordinator, added.extend)
     assert added == []
+    lifecycle.unload()
+    assert coordinator._unsub_refresh is None
