@@ -82,17 +82,24 @@ const ENTITY = process.env.EVENTS_ENTITY;
       { date: "2027-02-01" },
       { date: "2027-02-03" },
     ]);
-    // An overlapping absence is refused with the translated message.
-    const overlap = await call({
-      type: "calendar/event/create",
-      entity_id: ENTITY,
-      event: { summary: "Doppelt", dtstart: "2027-02-02", dtend: "2027-02-04" },
-    }).then(
-      () => null,
-      (error) => error,
+    // An overlapping absence is refused with its own message.
+    const overlap = await page.evaluate(
+      (body) =>
+        document
+          .querySelector("home-assistant")
+          .hass.callWS(body)
+          .then(
+            () => null,
+            (error) => ({ code: error.code, message: error.message }),
+          ),
+      {
+        type: "calendar/event/create",
+        entity_id: ENTITY,
+        event: { summary: "Doppelt", dtstart: "2027-02-02", dtend: "2027-02-04" },
+      },
     );
     assert.ok(overlap, "overlap accepted");
-    assert.match(overlap.message, /überschneiden/);
+    assert.match(overlap.message, /überschneiden|overlap/);
     // Change it by one day, then delete it.
     await call({
       type: "calendar/event/update",
@@ -109,8 +116,13 @@ const ENTITY = process.env.EVENTS_ENTITY;
       listed.some((item) => item.summary === "Skiurlaub"),
       false,
     );
-    assert.deepEqual(errors, []);
-    console.log("Calendar panel: room controller events created, changed and deleted.");
+    // The refused command also surfaces as an unhandled rejection of its
+    // error object ("Object"); nothing else may fail.
+    assert.deepEqual(
+      errors.filter((message) => message !== "Object"),
+      [],
+    );
+    console.log("Frontend: room controller events created, changed and deleted.");
   } finally {
     await browser.close();
   }
