@@ -214,10 +214,10 @@ of the integration.
 Systems registered in the IVT Anywhere II app, and Worcester or Vulcano
 systems registered in the Bosch HomeCom Easy app, use the same cloud. They
 should work when you select **Bosch** during setup and sign in with the
-SingleKey ID of that app. The local access also recognises gateways of these
-brands. No IVT, Worcester or Vulcano system has been confirmed yet, neither
-with the cloud nor with the local access; if you use one, please share your
-experience in
+SingleKey ID of that app. The local access also recognises K40/K40RF gateways
+of these brands. No IVT, Worcester or Vulcano system has been confirmed yet,
+neither with the cloud nor with the local access; if you use one, please share
+your experience in
 [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
 
 Home Assistant shows a uniquely identified MX300/MX400 controller as the
@@ -228,6 +228,31 @@ controller, and remains visible in diagnostics and the gateway hardware data.
 > The PointT Cloud API is not a publicly guaranteed API. Cloud-side changes may
 > affect the integration. Keep the original Bosch or Buderus app available for
 > commissioning and service work.
+
+### Confirmed installations
+
+Users' reports and my own reference installation confirm the integration on
+these heaters. A feature that is not listed was not reported, which does not
+mean it does not work. The same list is also available as
+[Confirmed installations](docs/confirmed-installations.md).
+
+| Manufacturer | Model | Variants | Type | Controller | Gateway / internet module | Confirmed features |
+|---|---|---|---|---|---|---|
+| Buderus | Logatherm WLW176i | WLW176i-12 TP70, WLW-10 MB AR | air-to-water heat pump (monobloc) | Logamatic BC400 | MX400, K40RF | readings, heating setpoint, hot water mode, holidays, time programs (read-only), faults and notifications, energy counters, local access, operation without cloud |
+| Buderus | Logatherm WLW186i | WLW186i-12 TP70, WLW186i-12 E | air-to-water heat pump (monobloc) | Logamatic BC400 | MX400, K40RF | readings, heating controls, time programs (read-only) |
+| Buderus | Logatherm WLW196i | WLW196i AR | air-to-water heat pump (split) | – | MX300, K30 | readings, holidays (read-only) |
+| Buderus | Logamax plus GB172 | – | gas condensing boiler, wall-hung | Logamatic RC310 | Logamatic web KM200 | readings |
+| Buderus | Logano plus GB212 | GB212-22 H | gas condensing boiler, floor-standing | Logamatic TC100.2 | built-in Wi-Fi | readings, faults and notifications, RRC zones from 0.9.0-alpha.4 without a local patch: room temperature, active setpoint, zone names, operating mode and manual setpoint changed from Home Assistant (also shown in the manufacturer's app); heating schedule selection not working yet |
+| Buderus | Logano G125 BE | G125 BE ECO-21 | oil boiler with burner | – | – | start counter (with the reporter's own fix) |
+
+The Logatherm WLW176i is my own reference installation. "–" means not stated
+in the report.
+
+Is your system missing, or have you checked further features? Please post your
+heater, controller, gateway and the features you checked in
+[Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81), or in the
+[0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) if you are testing a 0.9 alpha.
+I will add it to the list.
 
 ## Installation
 
@@ -306,6 +331,14 @@ shown when their meaning has been verified. Unknown codes remain visible and
 are never guessed. The integration observes when a fault first appears or
 disappears in PointT; these Home Assistant observation times are not presented
 as exact appliance timestamps.
+
+**Where do I find faults?** Current faults, with code, subcode and
+description, are in the `faults` attribute of **Active faults**. Past faults
+are in the history and logbook of **System notifications** (`appeared` and
+`resolved` events), as far back as the Home Assistant recorder keeps data.
+The bell notification is not an archive. See
+[where do I find faults](docs/faults.md#where-do-i-find-faults) for details
+and an automation that keeps a permanent record.
 
 The appliance display and the official
 [Bosch error-code search](https://www.bosch-homecomfort.com/de/de/wohngebaeude/service-und-support/bosch-fehlercode-suche/)
@@ -508,7 +541,8 @@ gateway IDs, serial numbers, network identifiers, or unredacted API responses.
 | [Connection recovery](docs/connection-recovery.md) | Token lifecycle, request behavior and remaining field checks |
 | [Additional cloud water heaters](docs/bacon-water-heaters.md) | Midea/RWH readings and controls; physical-device tests open |
 | [Additional cloud device connection](docs/bacon-connection.md) | Connection foundation and outstanding family/device tests |
-| [Faults and notifications](docs/faults.md) | Fault entities, lifecycle behavior, and automation examples |
+| [Faults and notifications](docs/faults.md) | Where to find current and past faults, fault entities, lifecycle behavior, and automation examples |
+| [Confirmed installations](docs/confirmed-installations.md) | Heaters on which users and I have confirmed the integration, with the confirmed features |
 | [Holiday periods](docs/holiday-periods.md) | Creating, editing, and deleting holidays with their heating settings |
 | [Season switching](docs/season-switching.md) | The central season setting of a gateway and its options |
 | [Older holiday formats](docs/legacy-holidays.md) | ICOM date-only slots, WDDW2 on/off mode, write confirmation and device-check limits |
