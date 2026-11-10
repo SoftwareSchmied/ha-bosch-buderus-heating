@@ -23,13 +23,13 @@
 > ### Testers wanted for the 0.9 alpha pre-releases
 >
 > **What's new**
-> - **Local access:** reads K40/K40RF gateways (for example with an MX400 controller) directly in your home network. It only reads; changes still go through the cloud.
+> - **Local access:** reads K40/K40RF gateways (for example the Buderus MX400 internet module) directly in your home network. It only reads; changes still go through the cloud.
 > - **More and fresher readings:** many values update more often, and some are only available locally (for example refrigerant circuit, compressor and pump values).
 > - **Works without the cloud:** your readings stay available when the cloud is not.
 > - **Fewer cloud requests:** since 0.9.0-alpha.3, readings the local access delivers are read from the cloud less often.
 > - **Less load on Home Assistant, without losing any functionality:** on my system, CPU load dropped by about three quarters, memory use by about 80 MB, and the database writes about 75 % fewer rows.
 >
-> **Tested on:** my own heat pump (K40RF gateway, firmware 15.00.01, MX400 controller), where it runs without problems.
+> **Tested on:** my own heat pump (Logamatic BC400 controller, MX400 internet module reported as K40RF gateway, firmware 15.00.01), where it runs without problems.
 >
 > **Looking for:** more testers and feedback, especially with other gateways, firmware versions and device families, so that a stable 0.9 is checked on as many installations as possible.
 >
@@ -158,8 +158,8 @@ account, gateway, controller, and heating system.
 
 | Status | Systems |
 |---|---|
-| Tested | Buderus heat-pump installation with an MX400 controller connected through a gateway reported by PointT as K40/K40RF |
-| Designed for | Compatible Bosch/Buderus systems using MX300 or MX400 controllers and K30/K30RF or K40/K40RF gateways |
+| Tested | Buderus heat-pump installation with a Logamatic BC400 controller and an MX400 internet module, reported by PointT as a K40/K40RF gateway |
+| Designed for | Compatible Bosch/Buderus systems with an MX300 or MX400 internet module or a K30 RF/K40 RF Connect-Key, reported by PointT as K30/K30RF or K40/K40RF gateways |
 | Optional when reported by PointT | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
 | Included but experimental, field checks pending | Identified Midea/RWH water heaters, Midea Climate Series, seven connected Air purifier families, Dry 4000i/6000i/8000i, and read-only PointT wallboxes |
 | Not covered | Matter devices, arbitrary MQTT devices, gateway network administration, and local LAN access |
@@ -181,9 +181,9 @@ SingleKey ID of that app. No IVT, Worcester or Vulcano system has been
 confirmed yet; if you use one, please share your experience in
 [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
 
-Home Assistant shows a uniquely identified MX300/MX400 controller as the
-system model. K30/K40 describes the PointT communication gateway, not the
-controller, and remains visible in diagnostics and the gateway hardware data.
+Home Assistant shows a uniquely identified MX300/MX400 internet module as the
+system model. K30/K40 is the gateway type that PointT reports for these modules
+and remains visible in diagnostics and the gateway hardware data.
 
 > [!IMPORTANT]
 > The PointT Cloud API is not a publicly guaranteed API. Cloud-side changes may
