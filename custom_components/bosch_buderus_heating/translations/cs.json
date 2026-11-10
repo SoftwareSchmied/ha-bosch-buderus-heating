@@ -1,0 +1,2043 @@
+{
+  "title": "Bosch/Buderus Home Comfort",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Připojení Home Comfort",
+        "description": "Zvolte, jak se Home Assistant připojí k vaší soustavě.\n\n**Cloudový přístup** se přihlašuje k vašemu účtu. Nabízí ovládání, časové programy, dovolenou a informace o soustavě.\n\n**Místní přístup** se připojuje k bráně ve vaší domácí síti. Pouze čte: žádné ovládání ani nastavení. Mnoho hodnot aktualizuje častěji a může přidat technické hodnoty, které cloud nenabízí, například okruh chladiva, čerpadla a interní signály.\n\nKaždý přístup má hodnoty, které ten druhý nemá. Pokud je možné obojí, doporučujeme **cloudový a místní přístup**.",
+        "menu_options": {
+          "cloud": "Cloudový přístup",
+          "cloud_local": "Cloudový a místní přístup (doporučeno)",
+          "local_only": "Pouze místní přístup"
+        }
+      },
+      "cloud": {
+        "title": "Připojení účtu topení",
+        "description": "Zvolte značku mobilní aplikace, která je již propojena s topnou soustavou. Pro aplikaci Bosch vyberte **Bosch**, pro aplikaci Buderus **Buderus**. Značka aplikace je důležitější než logo na spotřebiči.",
+        "data": {
+          "brand": "Značka"
+        }
+      },
+      "auth": {
+        "title": "Přihlášení pomocí SingleKey ID",
+        "description": "SingleKey ID je stejné přihlášení, jaké používá vaše aplikace Bosch nebo Buderus. Použijte stejnou e-mailovou adresu nebo číslo mobilu a stejné heslo. Nepotřebujete nový účet a heslo do Home Assistantu **nezadáváte**.\n\n1. Nechte toto okno otevřené a otevřete [SingleKey ID]({authorization_url}) na nové kartě prohlížeče Chrome. Vždy použijte tento nově vytvořený odkaz.\n2. Stiskněte tam `F12` a ve vývojářských nástrojích otevřete **Console**.\n3. Přihlaste se údaji SingleKey ID, které používá vaše aplikace pro topení.\n4. Po přihlášení se může objevit zpráva o problému se sítí. V takovém případě obvykle jen znamená, že Chrome nemohl otevřít adresu aplikace `{redirect_scheme}://`.\n5. V konzoli najděte červenou zprávu **Failed to launch** nebo **Connecting to**. Klikněte pravým tlačítkem na modrou adresu `{redirect_scheme}://` v této zprávě a zvolte **Copy link address**.\n6. Vraťte se do tohoto okna, vložte níže celou adresu a vyberte **OK**. Z bezpečnostních důvodů může pole zobrazovat tečky.\n\nPoužijte adresu z právě tohoto pokusu o přihlášení a nekopírujte pouze parametr `code`. Úplná adresa obsahuje krátkodobý jednorázový kód. Nikdy jej nesdílejte v hlášení problému, chatu, na snímku obrazovky ani v protokolu.",
+        "data": {
+          "redirect_url": "Úplná přesměrovací adresa"
+        }
+      },
+      "auth_wait": {
+        "title": "Počkejte před dalším přihlášením",
+        "description": "SingleKey ID dočasně omezuje požadavky na přihlášení. Počkejte ještě alespoň {seconds} s a poté vyberte **Odeslat**. Další krok poskytne nový odkaz pro přihlášení."
+      },
+      "retry": {
+        "title": "Opakovat vyhledání bran",
+        "description": "Přihlášení bylo úspěšné, ale seznam zařízení se nepodařilo načíst. Zkontrolujte připojení Home Assistantu k internetu, chvíli počkejte a zkuste to znovu."
+      },
+      "selection_expired": {
+        "title": "Znovu načíst seznam zařízení",
+        "description": "Seznam zařízení je starší než pět minut a před uložením je nutné jej znovu načíst. Zůstáváte přihlášeni. Výběrem **Odeslat** seznam znovu načtěte a poté zvolte zařízení."
+      },
+      "gateways": {
+        "title": "Výběr zařízení",
+        "description": "Vyberte brány a další zařízení, která má Home Assistant používat. Poslední znaky pomáhají zařízení rozlišit. Dostupné hodnoty a ovládání závisejí na modelu a na funkcích, které zařízení hlásí.",
+        "data": {
+          "gateway_ids": "Brány",
+          "bacon_device_ids": "Další cloudová zařízení"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Přihlaste se znovu",
+        "description": "Uložené oprávnění již neplatí. Zopakujte přihlášení pomocí SingleKey ID. Váš dosavadní výběr zařízení zůstane zachován."
+      },
+      "reconfigure": {
+        "title": "Překonfigurovat a znovu vyhledat",
+        "description": "Zvolte značku aplikace, brány a profil dotazování. Uložením se integrace znovu načte a provede se úplné nové vyhledání prostředků. Použijte to po aktualizaci firmwaru nebo když se změnily okruhy, systémy teplé vody, zdroje tepla či brány. **Standardní** čte aktuální provozní hodnoty každou minutu. **Šetrný ke cloudu** snižuje provoz cloudu tím, že je čte každé dvě minuty a všechny ostatní měnící se hodnoty méně často. Změna značky aplikace vyžaduje nové přihlášení pomocí SingleKey ID.",
+        "data": {
+          "brand": "Značka aplikace",
+          "gateway_ids": "Brány",
+          "polling_profile": "Profil dotazování",
+          "bacon_device_ids": "Další cloudová zařízení"
+        }
+      },
+      "reconfigure_retry": {
+        "title": "Opakovat vyhledání bran",
+        "description": "Aktuální seznam bran se nepodařilo načíst. Zkontrolujte připojení Home Assistantu k internetu, chvíli počkejte a vyberte **Odeslat**."
+      },
+      "local_owner": {
+        "title": "Výběr existující konfigurace",
+        "description": "Vyberte konfiguraci, ke které tato místní brána patří. Nevznikne tím další instalace.",
+        "data": {
+          "owner": "Existující konfigurace"
+        }
+      },
+      "local_target": {
+        "title": "Výběr instalace",
+        "description": "Vyberte instalaci, která se má připojit místně. Před uložením se ověří identita její brány.",
+        "data": {
+          "target": "Instalace / brána"
+        }
+      },
+      "local_address": {
+        "title": "Adresa místní brány",
+        "description": "Vyberte nalezenou adresu nebo zadejte IP adresu či název hostitele. Vyhledávání nemění žádné uložené připojení.",
+        "data": {
+          "address": "IP adresa nebo název hostitele"
+        }
+      },
+      "local_method": {
+        "title": "Připojení k místní bráně",
+        "description": "Přihlaste se údaji ze štítku zařízení, nebo použijte existující přístupový token. Místní přístup ke spotřebiči je pouze pro čtení.",
+        "data": {
+          "method": "Způsob přihlášení"
+        }
+      },
+      "local_method_keep": {
+        "title": "Opětovné připojení k místní bráně",
+        "description": "Doporučujeme nové přihlášení pomocí **údajů ze štítku zařízení**.\n\nSoučasný token ponechte jen tehdy, pokud jste si jisti, že certifikát, který se chystáte potvrdit, patří vaší vlastní bráně, například hned po aktualizaci nebo obnovení, které jste sami provedli. U této volby se uložený token odešle zařízení, které předloží nově potvrzený certifikát. Pokud to není vaše brána, získá funkční token k vaší soustavě. Přihlášení údaji ze štítku zařízení je bezpečnější: údaje ze štítku fungují jen společně s tlačítky na bráně, zatímco uložený token funguje okamžitě každému, kdo jej získá.\n\nMístní přístup ke spotřebiči je pouze pro čtení.",
+        "data": {
+          "method": "Způsob přihlášení"
+        }
+      },
+      "local_certificate": {
+        "title": "Potvrzení certifikátu brány",
+        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.",
+        "data": {
+          "confirm": "Potvrzuji tuto bránu a její certifikát"
+        }
+      },
+      "local_auth": {
+        "title": "Přihlášení pomocí údajů ze štítku zařízení",
+        "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení asi na dvě sekundy, ne však na tři, a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a heslo se neukládají.",
+        "data": {
+          "login": "Login na štítku zařízení",
+          "password": "Pass na štítku zařízení",
+          "unlocked": "Povolil(a) jsem místní přihlášení a viděl(a) jsem modrý signál"
+        }
+      },
+      "local_token": {
+        "title": "Použít existující token",
+        "description": "Zadejte přístupový token místního API. Bude soukromě uchován, aby bylo možné toto nastavení obnovit. Datové připojení a identitu brány je stále nutné ověřit.",
+        "data": {
+          "token": "Přístupový token místního přístupu"
+        }
+      },
+      "local_pending": {
+        "title": "Obnovení místního nastavení",
+        "description": "Je uložen předchozí pokus. Pokud byl token přijat, pokračujte s ním. Pokud se odpověď ztratila, může na bráně token existovat, i když jej Home Assistant nemohl uložit. Zahozením se odstraní pouze místní čekající kopie a umožní se další pokus; tokeny na bráně se tím neodvolají.\n\nZbývající pauza serveru: {seconds} s.",
+        "data": {
+          "action": "Další akce",
+          "confirm": "Rozumím a chci tento čekající pokus zahodit"
+        }
+      },
+      "local_result": {
+        "title": "Potvrzení místního připojení",
+        "description": "Kontrola čtení pro **{host}** proběhla úspěšně a brána **{gateway}** odpovídá vybrané instalaci. Uložení znovu zkontroluje aktuální data a přidá nebo aktualizuje tento přístup u existující konfigurace.",
+        "data": {
+          "confirm": "Uložit toto místní připojení"
+        }
+      },
+      "local_retry": {
+        "title": "Místní kontrolu nebylo možné dokončit",
+        "description": "Zkontrolujte zprávu níže a zkuste to znovu, až budete připraveni. Žádný token se automaticky nevytvoří ani nenahradí."
+      }
+    },
+    "error": {
+      "auth_expired": "Platnost tohoto pokusu o přihlášení vypršela. Otevřete nový odkaz SingleKey ID zobrazený výše a přihlaste se znovu.",
+      "auth_restart": "Tento pokus o přihlášení již nelze použít. Otevřete nový odkaz SingleKey ID zobrazený výše a přihlaste se znovu.",
+      "cannot_connect": "Služba PointT není dostupná. Zkontrolujte připojení k internetu, chvíli počkejte a zkuste to znovu.",
+      "invalid_auth": "SingleKey ID oprávnění odmítlo nebo mu vypršela platnost. Použijte nový odkaz SingleKey ID zobrazený výše a přihlášení zopakujte.",
+      "invalid_redirect": "Home Assistant nemohl tuto adresu použít. Zkopírujte úplnou adresu aplikace ze zprávy ‚Failed to launch‘ v konzoli Chrome. Musí začínat schématem zobrazeným výše a patřit k aktuálnímu pokusu o přihlášení.",
+      "gateway_changed": "Seznam bran se během otevření tohoto okna změnil. Zavřete okno a znovu otevřete Překonfigurovat.",
+      "select_gateway": "Před pokračováním vyberte ze seznamu alespoň jedno zařízení.",
+      "unknown": "Došlo k neočekávané chybě PointT. Chvíli počkejte a zkuste to znovu.",
+      "bacon_unavailable": "Seznam dalších cloudových zařízení momentálně není dostupný. Počkejte alespoň minutu a zkuste to znovu.",
+      "bacon_selection_unavailable": "Další cloudová zařízení se nyní nepodařilo dotázat. Můžete vybrat dosažitelné brány topení. Stávající výběr cloudových zařízení zůstane zachován.",
+      "reauth_targets_missing": "Při tomto přihlášení nebyla nalezena žádná ze zapnutých soustav a zařízení. Předchozí přihlašovací údaje zůstávají zachovány. Zkontrolujte, zda jste se přihlásili ke stejnému účtu jako dříve. Pokud byly soustavy z účtu odebrány, otevřete Konfigurovat → Připojení → cloudový přístup: u položky **Použít pro soustavy a zařízení** zapněte soustavu, která v účtu stále je, nebo odebrané soustavy vypněte a odstraňte je pomocí **Zapomenout nevybrané soustavy**. Pokud žádná nezůstane, odstraňte cloudový přístup a připojte jej znovu.",
+      "cloud_rate_limited": "Cloud požádal o pauzu. Před dalším pokusem počkejte.",
+      "local_invalid_address": "Zadejte IP adresu nebo název hostitele bez URL, cesty a přihlašovacích údajů.",
+      "local_interface_required": "Tato adresa IPv6 vyžaduje síťové rozhraní na hostiteli Home Assistantu.",
+      "local_invalid_token": "Formát tokenu je neplatný. Zkopírujte celý token bez mezer.",
+      "local_invalid_credentials": "Zkontrolujte Login a Pass na štítku brány a zadejte je znovu.",
+      "local_unlock_required": "Povolte na bráně místní přihlášení a před dalším pokusem potvrďte modrý signál.",
+      "local_token_database_full": "Databáze tokenů brány je plná. Před vytvořením dalšího zkontrolujte stávající tokeny. Žádné tokeny nebyly odstraněny.",
+      "local_rate_limited": "Brána požádala o pauzu. Počkejte, dokud neuplyne zobrazená doba.",
+      "local_service_unavailable": "Služba brány je dočasně nedostupná. Počkejte a zkuste to znovu.",
+      "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
+      "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
+      "local_certificate_changed": "Certifikát nebylo možné potvrdit, nebo se změnil. Před pokračováním certifikát brány znovu prověřte.",
+      "local_token_rejected": "Brána tento token odmítla. Zkontrolujte jej, nebo tento pokus záměrně zahoďte a použijte jiný.",
+      "local_resource_forbidden": "Brána odepřela přístup k požadovanému prostředku. Samotný token neprokazuje oprávnění ke čtení.",
+      "local_missing_resource": "Brána neposkytuje požadovaný prostředek pro nastavení.",
+      "local_unknown_firmware": "Verzi firmwaru se nepodařilo ověřit.",
+      "local_old_firmware": "Před nastavením místního připojení aktualizujte firmware brány.",
+      "local_unsupported_brand": "Tato značka brány není podporována zdokumentovaným místním rozhraním.",
+      "local_incomplete_system": "Informace o soustavě z brány zatím nejsou úplné. Kontrolu čtení zopakujte později.",
+      "local_invalid_response": "Požadovanou odpověď brány se nepodařilo ověřit.",
+      "local_identity_unverified": "Tato soustava zatím nebyla jednoznačně přiřazena. První nastavení vyžaduje dostupný cloudový přístup a shodné identifikátory brány a modulu z obou rozhraní. Ověřená propojení lze následně používat bez cloudu.",
+      "local_identity_conflict": "Identita brány je v rozporu s vybranou instalací nebo jinou konfigurací.",
+      "local_configuration_changed": "Vybrané připojení nebo instalace se změnily. Zavřete toto okno a před pokračováním zkontrolujte aktuální nastavení.",
+      "local_pending_exists": "Pro tuto instalaci nebo adresu brány existuje jiný čekající pokus. Nejprve jej obnovte nebo záměrně zahoďte.",
+      "local_storage_failed": "Soukromý záznam nastavení se nepodařilo přečíst nebo uložit. Před pokračováním zkontrolujte úložiště Home Assistantu.",
+      "local_completion_uncertain": "Připojení již mohlo být uloženo. Před další změnou znovu otevřete místní nastavení a zkontrolujte jeho stav.",
+      "local_unexpected": "Místní kontrolu nebylo možné dokončit. Čekající token, pokud byl přijat, zůstává uchován pro obnovu.",
+      "local_confirmation_required": "Před pokračováním tuto akci výslovně potvrďte.",
+      "local_busy": "Místní přístup je momentálně zaneprázdněn nebo pozastaven. Před dalším pokusem počkejte.",
+      "local_cloud_auth_required": "Přihlaste se znovu ke cloudovému přístupu, aby bylo možné ověřit první propojení. Již ověřený místní přístup se spouští nezávisle na cloudu.",
+      "local_cloud_rate_limited": "Cloud momentálně omezuje počet požadavků. Počkejte na konec jeho pauzy a poté porovnání identity zopakujte.",
+      "local_cloud_unavailable": "Informace o soustavě z cloudu se nepodařilo přečíst. Zkontrolujte cloudový přístup a porovnání identity zopakujte.",
+      "local_auth_forbidden": "Přihlašovací služba brány požadavek odmítla. Zkontrolujte, zda je na bráně místní přístup povolen, a zkuste to znovu.",
+      "local_creation_uncertain": "Není jasné, zda brána token vytvořila, protože její odpověď byla neúplná. Pokračujte s čekajícím pokusem; nový token se automaticky nevytvoří.",
+      "local_plant_known": "Tato brána již patří ke konfigurované soustavě. Zvolte tuto soustavu místo nové."
+    },
+    "abort": {
+      "configuration_changed": "Nastavení připojení se během otevření tohoto okna změnilo. Zavřete je a zkuste to znovu.",
+      "already_configured": "Tento účet topení nebo alespoň jedna vybraná brána je již v Home Assistantu nakonfigurována.",
+      "invalid_flow": "Tato relace nastavení je neúplná nebo vypršela. Zavřete okno a přidejte Bosch/Buderus Home Comfort znovu.",
+      "no_gateways": "Nebyla nalezena žádná zařízení. Zkontrolujte, zda vybraná značka a účet SingleKey ID odpovídají vaší aplikaci.",
+      "reauth_required": "Uložené oprávnění již neplatí. Zavřete toto okno a u Bosch/Buderus Home Comfort vyberte Znovu ověřit.",
+      "reauth_successful": "Přihlášení bylo úspěšně obnoveno.",
+      "reauth_wrong_account": "Vybraný účet neodpovídá nakonfigurovaným zařízením. Přihlaste se původním účtem.",
+      "reauth_no_targets": "Tento cloudový přístup již nemá žádné soustavy ani zařízení a nelze potvrdit účet, ke kterému patří. Předchozí přihlašovací údaje zůstávají zachovány. Chcete-li znovu použít cloudový účet, odstraňte cloudový přístup v Konfigurovat → Připojení a připojte jej znovu.",
+      "reauth_successful_targets_missing": "Přihlášení bylo obnoveno. Počet zapnutých soustav nebo zařízení nenalezených v účtu: {count}. Zůstávají nakonfigurovány. Oznámení o opravě je jmenuje a vysvětluje, jak je zapomenout.",
+      "reconfigure_successful": "Nastavení bylo uloženo. Bosch/Buderus Home Comfort se znovu načítá a znovu vyhledává všechny dostupné prostředky.",
+      "connection_required": "Před novým přihlášením vyberte připojení v Nastavení.",
+      "connection_settings_required": "Tento přístup spravujte v Nastavení a Připojení.",
+      "cloud_already_connected": "Cloudové připojení je již nakonfigurováno. Pomocí jeho nastavení připojení vyberte další zařízení nebo se přihlaste znovu. Druhé souběžné cloudové přihlášení zatím není podporováno.",
+      "cloud_setup_in_progress": "Jiné nastavení cloudu je již otevřeno. Nejprve dokončete nebo zavřete toto okno.",
+      "cloud_setup_taken_over": "Toto okno nastavení cloudu nahradilo novější. Zavřete toto okno a pokračujte v novějším.",
+      "cloud_target_owned": "Vybraná soustava nebo zařízení patří k jiné nakonfigurované položce nebo cloudovému připojení. Připojte je znovu prostřednictvím jeho stávající položky.",
+      "cloud_selection_expired": "Tento seznam zařízení již není aktuální. Před uložením znovu otevřete vyhledávání zařízení.",
+      "cloud_selection_changed": "Vybrané zařízení není v potvrzeném seznamu. Vyhledejte znovu.",
+      "cloud_connection_disabled": "Před vyhledáním zařízení zapněte toto cloudové připojení.",
+      "cloud_rate_limited": "Cloud požádal o pauzu. Před dalším pokusem počkejte.",
+      "local_setup_unavailable": "Místní nastavení není dostupné, dokud není připraveno pravidelné zásobování místními daty.",
+      "local_session_changed": "Tato relace nastavení skončila nebo se změnil její výběr. Pro pokračování znovu otevřete místní nastavení.",
+      "local_discovery_invalid": "Toto oznámení o nalezení nepopisuje podporovaný koncový bod místní brány.",
+      "local_existing_owner_required": "Soustavu bez cloudu nastavte při přidání integrace pomocí „Pouze místní přístup“. Nalezenou bránu lze přidat k existující konfiguraci.",
+      "local_target_required": "Tato konfigurace nemá žádnou vhodnou uchovanou instalaci pro místní připojení.",
+      "local_setup_complete": "Místní přístup byl nastaven.",
+      "local_pending_saved": "Čekající pokus je uchován. Můžete jej obnovit v místním nastavení.",
+      "local_storage_failed": "Soukromý záznam nastavení se nepodařilo přečíst nebo uložit. Před pokračováním zkontrolujte úložiště Home Assistantu.",
+      "already_in_progress": "Nastavení této místní brány již probíhá.",
+      "cloud_local_first_other_entry": "Tato soustava je již nastavena prostřednictvím místního přístupu v jiné položce této integrace. Cloudový přístup přidejte raději v této položce."
+    },
+    "progress": {
+      "local_work": "Kontroluje se místní připojení. Čekejte prosím."
+    },
+    "flow_title": "Místní brána ({host})"
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Nastavení",
+        "menu_options": {
+          "notifications": "Oznámení",
+          "holidays": "Správa období dovolené",
+          "rrc_programs": "Časové programy topení RRC",
+          "controls": "Obsluha spotřebiče",
+          "connections": "Připojení",
+          "connection_add_cloud": "Připojit cloudový přístup",
+          "local_setup": "Nastavit místní přístup",
+          "rescan": "Znovu vyhledat soustavu"
+        }
+      },
+      "notifications": {
+        "title": "Oznámení",
+        "description": "Poruchy topné soustavy se zobrazují pod zvonkem v Home Assistantu. Při více instalacích vyberte ty, pro které chcete oznámení. Oznámení a jejich skrytí jsou společné pro všechny uživatele. Jejich text používá jazyk systému. Skrytí oznámení nepotvrzuje poruchu na spotřebiči. Nové nebo závažnější poruchy se zobrazí znovu. Změny se projeví okamžitě.",
+        "data": {
+          "fault_notifications": "Zobrazovat poruchy topné soustavy"
+        }
+      },
+      "holidays": {
+        "title": "Správa období dovolené",
+        "description": "Vytvořte dovolenou, nebo vyberte existující a změňte její název, data a nastavení topení, případně ji odstraňte. Kalendář Období dovolené zůstává k dispozici také.",
+        "data": {
+          "holiday_period": "Dovolená"
+        }
+      },
+      "delete_holiday": {
+        "title": "Odstranit dovolenou",
+        "description": "**{holiday}**\n\nOdstranit tuto dovolenou úplně? Odstraní se také z topné soustavy a z kalendáře. Ponecháte-li potvrzení nezaškrtnuté, vrátíte se bez odstranění.",
+        "data": {
+          "confirm_delete": "Odstranit tuto dovolenou úplně"
+        }
+      },
+      "holiday": {
+        "title": "Období dovolené",
+        "description": "Nastavte název, období a nastavení. Zvolte časy po čtvrthodinách: minuty 00, 15, 30 nebo 45. Na konci se obnoví běžný provoz.",
+        "data": {
+          "holiday_name": "Název",
+          "holiday_start": "Začátek",
+          "holiday_end": "Konec (bez tohoto okamžiku)",
+          "holiday_assigned_to": "Použít pro",
+          "holiday_heating_mode": "Ústřední topení",
+          "holiday_dhw_mode": "Teplá voda",
+          "holiday_ventilation_mode": "Větrání",
+          "holiday_thermal_disinfection": "Termická dezinfekce",
+          "holiday_fix_temperature": "Konstantní teplota",
+          "holiday_delete": "Odstranit období dovolené úplně"
+        }
+      },
+      "holiday_gateway": {
+        "title": "Výběr instalace",
+        "description": "Vyberte instalaci pro novou dovolenou.",
+        "data": {
+          "holiday_gateway": "Instalace"
+        }
+      },
+      "new_holiday": {
+        "title": "Období dovolené",
+        "description": "Nastavte název, období a nastavení. Zvolte časy po čtvrthodinách: minuty 00, 15, 30 nebo 45. Na konci se obnoví běžný provoz.",
+        "data": {
+          "holiday_name": "Název",
+          "holiday_start": "Začátek",
+          "holiday_end": "Konec (bez tohoto okamžiku)",
+          "holiday_assigned_to": "Použít pro",
+          "holiday_heating_mode": "Ústřední topení",
+          "holiday_dhw_mode": "Teplá voda",
+          "holiday_ventilation_mode": "Větrání",
+          "holiday_thermal_disinfection": "Termická dezinfekce",
+          "holiday_fix_temperature": "Konstantní teplota"
+        }
+      },
+      "legacy_holiday": {
+        "title": "Období dovolené",
+        "description": "Upravte **{holiday}**. Toto zařízení ukládá celé dny dovolené. Datum konce je první den po dovolené. Časy a vlastní názvy nejsou podporovány. Nabízejí se pouze nastavení a volné pozice dovolené, které zařízení hlásí.",
+        "data": {
+          "holiday_name": "Název",
+          "holiday_start": "Začátek",
+          "holiday_end": "Konec (bez tohoto okamžiku)",
+          "holiday_assigned_to": "Použít pro",
+          "holiday_heating_mode": "Ústřední topení",
+          "holiday_dhw_mode": "Teplá voda",
+          "holiday_ventilation_mode": "Větrání",
+          "holiday_thermal_disinfection": "Termická dezinfekce",
+          "holiday_fix_temperature": "Konstantní teplota",
+          "holiday_delete": "Odstranit období dovolené úplně"
+        }
+      },
+      "new_legacy_holiday": {
+        "title": "Období dovolené",
+        "description": "Zvolte data a nastavení. Toto zařízení ukládá celé dny dovolené. Datum konce je první den po dovolené. Časy a vlastní názvy nejsou podporovány. Nabízejí se pouze nastavení a volné pozice dovolené, které zařízení hlásí.",
+        "data": {
+          "holiday_name": "Název",
+          "holiday_start": "Začátek",
+          "holiday_end": "Konec (bez tohoto okamžiku)",
+          "holiday_assigned_to": "Použít pro",
+          "holiday_heating_mode": "Ústřední topení",
+          "holiday_dhw_mode": "Teplá voda",
+          "holiday_ventilation_mode": "Větrání",
+          "holiday_thermal_disinfection": "Termická dezinfekce",
+          "holiday_fix_temperature": "Konstantní teplota"
+        }
+      },
+      "holiday_mode": {
+        "title": "Nastavení dovolené",
+        "description": "Toto zařízení nabízí režim dovolené, který lze zapnout a vypnout. Neukládá období dovolené.",
+        "data": {
+          "holiday_mode": "Režim dovolené"
+        }
+      },
+      "rrc_programs": {
+        "title": "Výběr časového programu topení",
+        "description": "Vyberte existující týdenní program. Může být sdílen několika zónami.",
+        "data": {
+          "program": "Časový program topení"
+        }
+      },
+      "rrc_schedule": {
+        "title": "Zobrazení časového programu topení",
+        "description": "**{program}**\n\n**Pondělí:** {mo}\n\n**Úterý:** {tu}\n\n**Středa:** {we}\n\n**Čtvrtek:** {th}\n\n**Pátek:** {fr}\n\n**Sobota:** {sa}\n\n**Neděle:** {su}\n\nVyberte den v týdnu. Časy se opakují každý týden v místním čase topné soustavy. ∅ znamená, že pro tento den není uložen žádný spínací bod. Změny se týkají každé zóny, která tento program používá.",
+        "data": {
+          "day": "Den v týdnu"
+        }
+      },
+      "rrc_readonly": {
+        "title": "Zobrazení časového programu topení",
+        "description": "**{program}**\n\n**Pondělí:** {mo}\n\n**Úterý:** {tu}\n\n**Středa:** {we}\n\n**Čtvrtek:** {th}\n\n**Pátek:** {fr}\n\n**Sobota:** {sa}\n\n**Neděle:** {su}\n\nTento program lze zde pouze zobrazit. Nemá žádné upravitelné spínací body nebo obsahuje nepodporovaná nastavení. ∅ znamená, že není uložen žádný spínací bod. Změny můžete provést v aplikaci výrobce."
+      },
+      "rrc_point": {
+        "title": "Úprava spínacího bodu",
+        "description": "**{program}**\n\nZvolte čas v pětiminutových krocích a teplotu od 5 do 30 °C v krocích po 0,5 °C. Čas se opakuje každý týden v místním čase topné soustavy. Změny se týkají všech přiřazených zón.",
+        "data": {
+          "time": "Čas",
+          "temperature": "Teplota"
+        }
+      },
+      "rrc_day": {
+        "title": "Výběr spínacího bodu",
+        "description": "**{program}**",
+        "data": {
+          "point": "Spínací bod"
+        }
+      },
+      "controls": {
+        "title": "Výběr spotřebiče",
+        "data": {
+          "installation": "Spotřebič"
+        }
+      },
+      "operate": {
+        "title": "Obsluha spotřebiče",
+        "description": "Vyberte sekci a upravte nastavení. Možnost Použít zapíše pouze vaše změny. Při změně více nastavení se každé potvrzuje zvlášť.",
+        "data": {
+          "controls": "Ovládání"
+        },
+        "submit": "Použít"
+      },
+      "connections": {
+        "title": "Připojení",
+        "description": "Vyberte přístup, který chcete spravovat.",
+        "data": {
+          "connection": "Připojení"
+        }
+      },
+      "connection_test": {
+        "title": "Test připojení",
+        "description": "{result}"
+      },
+      "connection": {
+        "title": "Správa připojení",
+        "description": "{status}",
+        "menu_options": {
+          "connection_test": "Otestovat připojení nyní",
+          "connection_enabled": "Zapnout nebo vypnout přístup",
+          "connection_forget": "Zapomenout nevybrané soustavy",
+          "connection_targets": "Použít pro soustavy a zařízení",
+          "connection_reauthenticate": "Přihlásit se znovu",
+          "connection_remove": "Odstranit přístup",
+          "connection_discover": "Vyhledání a výběr zařízení",
+          "connection_polling": "Frekvence dotazování",
+          "local_setup": "Změna místního přístupu",
+          "local_polling": "Frekvence a stav místního dotazování",
+          "local_values": "Použít místní hodnoty pro existující entity"
+        }
+      },
+      "connection_enabled": {
+        "title": "Zapnout přístup",
+        "description": "Vypnutí se týká pouze tohoto přístupu. Ostatní připojení nadále běží. Soustavy a entity zůstávají zachovány.",
+        "data": {
+          "enabled": "Zapnuto"
+        }
+      },
+      "connection_forget": {
+        "title": "Zapomenout nevybrané soustavy",
+        "description": "Tyto soustavy jsou pro tento přístup vypnuty. Zapomenuté soustavy se zde již nezobrazují a nové přihlášení je již nemusí najít. Jejich zařízení a entity zůstávají v Home Assistantu, dokud je neodstraníte. Pokud byla brána vyměněna, ponechte soustavu raději zapnutou: oznámení o opravě pak nabídne její pokračování i s historií.",
+        "data": {
+          "bindings": "Soustavy"
+        }
+      },
+      "connection_targets": {
+        "title": "Soustavy a zařízení",
+        "description": "Vyberte cíle, které mají tento přístup používat. Ostatní cíle nadále používají svá připojení nezávisle.",
+        "data": {
+          "targets": "Použít pro"
+        }
+      },
+      "connection_remove_cloud": {
+        "title": "Odstranění cloudového přístupu",
+        "description": "Přihlášení bude odstraněno. Vybrané soustavy se zapnutým místním přístupem nadále zobrazují své místní hodnoty (pouze čtení, bez ovládání; počítadla pokračují od poslední zobrazené hodnoty). Ostatní soustavy si ponechají své entity bez aktuálních hodnot. Pokud se později znovu přihlásíte, stejné entity budou pokračovat. Pro dočasné pozastavení přístup raději vypněte.",
+        "data": {
+          "confirm": "Odstranit tento přístup"
+        }
+      },
+      "connection_remove": {
+        "title": "Odstranění přístupu",
+        "description": "Přihlašovací údaje budou odstraněny. Soustavy a entity zůstávají zachovány, i když jde o poslední přístup. Bez dostupného připojení entity nemohou zobrazovat aktuální hodnoty.",
+        "data": {
+          "confirm": "Odstranit tento přístup"
+        }
+      },
+      "connection_polling": {
+        "title": "Frekvence dotazování",
+        "description": "Standardní profil čte aktuální provozní hodnoty topení každou minutu, nastavení a hodnoty energie každých 5 minut a pomalejší informace každých 15 minut. Šetrný ke cloudu tyto intervaly zdvojnásobuje. Aktivní poruchy se v obou profilech kontrolují každou minutu. Profil se vztahuje na dotazování topení a nabíjecích stanic PointT u vybraného cloudového připojení; další cloudová zařízení hlásí změny zprávami. Přihlášení, kontroly zařízení a potvrzení po změně mohou přidat dotazy mimo tento rozvrh. Pokud cyklus dotazování trvá déle než jeho interval, další začne později.",
+        "data": {
+          "polling_profile": "Profil dotazování"
+        }
+      },
+      "connection_add_cloud": {
+        "title": "Připojit cloudový přístup",
+        "description": "Zvolte značku aplikace, kterou používáte. Po přihlášení vyberte soustavy a zařízení, která se mají připojit k této položce. Existující soustavy a entity zůstávají zachovány.",
+        "data": {
+          "brand": "Značka aplikace"
+        }
+      },
+      "cloud_auth": {
+        "title": "Přihlášení pomocí SingleKey ID",
+        "description": "SingleKey ID je stejné přihlášení, jaké používá vaše aplikace Bosch nebo Buderus. Použijte stejnou e-mailovou adresu nebo číslo mobilu a stejné heslo. Nepotřebujete nový účet a heslo do Home Assistantu **nezadáváte**.\n\n1. Nechte toto okno otevřené a otevřete [SingleKey ID]({authorization_url}) na nové kartě prohlížeče Chrome. Vždy použijte tento nově vytvořený odkaz.\n2. Stiskněte tam `F12` a ve vývojářských nástrojích otevřete **Console**.\n3. Přihlaste se údaji SingleKey ID, které používá vaše aplikace pro topení.\n4. Po přihlášení se může objevit zpráva o problému se sítí. V takovém případě obvykle jen znamená, že Chrome nemohl otevřít adresu aplikace `{redirect_scheme}://`.\n5. V konzoli najděte červenou zprávu **Failed to launch** nebo **Connecting to**. Klikněte pravým tlačítkem na modrou adresu `{redirect_scheme}://` v této zprávě a zvolte **Copy link address**.\n6. Vraťte se do tohoto okna, vložte níže celou adresu a vyberte **OK**. Z bezpečnostních důvodů může pole zobrazovat tečky.\n\nPoužijte adresu z právě tohoto pokusu o přihlášení a nekopírujte pouze parametr `code`. Úplná adresa obsahuje krátkodobý jednorázový kód. Nikdy jej nesdílejte v hlášení problému, chatu, na snímku obrazovky ani v protokolu.",
+        "data": {
+          "redirect_url": "Úplná přesměrovací adresa"
+        }
+      },
+      "cloud_retry": {
+        "title": "Opakovat cloudové připojení",
+        "description": "Zkuste to znovu, až bude cloud opět dostupný. Vaše položka nebyla změněna."
+      },
+      "cloud_select": {
+        "title": "Výběr soustav a zařízení",
+        "description": "Vyberte soustavy a zařízení, která se mají připojit. Odpovídající existující soustava si ponechá své entity a nastavení.",
+        "data": {
+          "gateway_ids": "Brány",
+          "bacon_device_ids": "Další cloudová zařízení"
+        }
+      },
+      "connection_discover": {
+        "title": "Vyhledání a výběr zařízení",
+        "description": "Vyberte soustavy a zařízení, která se mají používat prostřednictvím tohoto cloudového připojení. Dříve nakonfigurovaná zařízení zůstávají uvedena, i když jsou dočasně nedostupná. Zrušením výběru se zastaví jejich dotazování a entity zůstanou zachovány.",
+        "data": {
+          "gateway_ids": "Brány",
+          "bacon_device_ids": "Další cloudová zařízení"
+        }
+      },
+      "connection_discover_retry": {
+        "title": "Opakovat vyhledání zařízení",
+        "description": "Výběr nebyl změněn. Opakováním načtěte nový seznam."
+      },
+      "local_owner": {
+        "title": "Výběr existující konfigurace",
+        "description": "Vyberte konfiguraci, ke které tato místní brána patří. Nevznikne tím další instalace.",
+        "data": {
+          "owner": "Existující konfigurace"
+        }
+      },
+      "local_target": {
+        "title": "Výběr instalace",
+        "description": "Vyberte instalaci, která se má připojit místně. Před uložením se ověří identita její brány.",
+        "data": {
+          "target": "Instalace / brána"
+        }
+      },
+      "local_address": {
+        "title": "Adresa místní brány",
+        "description": "Vyberte nalezenou adresu nebo zadejte IP adresu či název hostitele. Vyhledávání nemění žádné uložené připojení.",
+        "data": {
+          "address": "IP adresa nebo název hostitele"
+        }
+      },
+      "local_method": {
+        "title": "Připojení k místní bráně",
+        "description": "Přihlaste se údaji ze štítku zařízení, nebo použijte existující přístupový token. Místní přístup ke spotřebiči je pouze pro čtení.",
+        "data": {
+          "method": "Způsob přihlášení"
+        }
+      },
+      "local_method_keep": {
+        "title": "Opětovné připojení k místní bráně",
+        "description": "Doporučujeme nové přihlášení pomocí **údajů ze štítku zařízení**.\n\nSoučasný token ponechte jen tehdy, pokud jste si jisti, že certifikát, který se chystáte potvrdit, patří vaší vlastní bráně, například hned po aktualizaci nebo obnovení, které jste sami provedli. U této volby se uložený token odešle zařízení, které předloží nově potvrzený certifikát. Pokud to není vaše brána, získá funkční token k vaší soustavě. Přihlášení údaji ze štítku zařízení je bezpečnější: údaje ze štítku fungují jen společně s tlačítky na bráně, zatímco uložený token funguje okamžitě každému, kdo jej získá.\n\nMístní přístup ke spotřebiči je pouze pro čtení.",
+        "data": {
+          "method": "Způsob přihlášení"
+        }
+      },
+      "local_certificate": {
+        "title": "Potvrzení certifikátu brány",
+        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.",
+        "data": {
+          "confirm": "Potvrzuji tuto bránu a její certifikát"
+        }
+      },
+      "local_auth": {
+        "title": "Přihlášení pomocí údajů ze štítku zařízení",
+        "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení asi na dvě sekundy, ne však na tři, a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a heslo se neukládají.",
+        "data": {
+          "login": "Login na štítku zařízení",
+          "password": "Pass na štítku zařízení",
+          "unlocked": "Povolil(a) jsem místní přihlášení a viděl(a) jsem modrý signál"
+        }
+      },
+      "local_token": {
+        "title": "Použít existující token",
+        "description": "Zadejte přístupový token místního API. Bude soukromě uchován, aby bylo možné toto nastavení obnovit. Datové připojení a identitu brány je stále nutné ověřit.",
+        "data": {
+          "token": "Přístupový token místního přístupu"
+        }
+      },
+      "local_pending": {
+        "title": "Obnovení místního nastavení",
+        "description": "Je uložen předchozí pokus. Pokud byl token přijat, pokračujte s ním. Pokud se odpověď ztratila, může na bráně token existovat, i když jej Home Assistant nemohl uložit. Zahozením se odstraní pouze místní čekající kopie a umožní se další pokus; tokeny na bráně se tím neodvolají.\n\nZbývající pauza serveru: {seconds} s.",
+        "data": {
+          "action": "Další akce",
+          "confirm": "Rozumím a chci tento čekající pokus zahodit"
+        }
+      },
+      "local_result": {
+        "title": "Potvrzení místního připojení",
+        "description": "Kontrola čtení pro **{host}** proběhla úspěšně a brána **{gateway}** odpovídá vybrané instalaci. Uložení znovu zkontroluje aktuální data a přidá nebo aktualizuje tento přístup u existující konfigurace.",
+        "data": {
+          "confirm": "Uložit toto místní připojení"
+        }
+      },
+      "local_retry": {
+        "title": "Místní kontrolu nebylo možné dokončit",
+        "description": "Zkontrolujte zprávu níže a zkuste to znovu, až budete připraveni. Žádný token se automaticky nevytvoří ani nenahradí."
+      },
+      "local_polling": {
+        "title": "Místní dotazování",
+        "description": "Potvrzené prostředky: {known}. Aktuálně dostupné: {available}. Tyto počty ukazují stav při otevření tohoto okna. Interval je cílem pro aktuální hodnoty. Nastavení, hodnoty energie a diagnostika se čtou každých 5 minut a počítadla každých 15 minut, případně v tomto intervalu, je-li delší; statické údaje se čtou denně. Hodnota se stane nedostupnou po třech zmeškaných intervalech. Rozsáhlé sady prostředků mohou trvat déle. Dotazování cloudu zůstává nezávislé. Hodnoty, které poskytuje i cloud, se místně čtou alespoň tak často jako v cloudu.",
+        "data": {
+          "interval": "Cílový interval pro aktuální hodnoty"
+        }
+      },
+      "local_values": {
+        "title": "Místní hodnoty pro existující entity",
+        "description": "Dokud cloud běží, tato volba určuje, zda existující senzory používají místní hodnotu údaje, který oba přístupy poskytují pod stejným zdokumentovaným prostředkem. Bez cloudu (vypnutého, vyžadujícího přihlášení, pozastaveného, omezeného nebo nedostupného) se místní hodnoty používají vždy. Volba je u nových konfigurací s cloudovým i místním přístupem ve výchozím stavu zapnuta.\n\nPři zapnutí se místní hodnota používá, dokud je aktuální. Je-li místní hodnota zastaralá nebo chybí, použije se aktuální hodnota z cloudu; jsou-li zastaralé obě, senzor se stane nedostupným. Počítadla energie, startů a doby provozu používají také místní hodnotu, ale zdroj mění jen tehdy, když je každý zobrazený počet alespoň tak velký jako naposledy zobrazený, takže změna zdroje nikdy nezpůsobí zpětný chod počítadla. Nastavitelné hodnoty nadále používají cloud. ID entit, názvy a historie zůstávají beze změny. Ovládání a změny se stále odesílají přes cloud.",
+        "data": {
+          "enabled": "Použít místní hodnoty"
+        }
+      },
+      "rescan": {
+        "title": "Znovu vyhledat soustavu",
+        "description": "Znovu prohledá soustavu kvůli součástem a hodnotám, přes cloudový i místní přístup. Použijte po přidání nebo změně komponent. Vyhledávání proběhne při příští pravidelné aktualizaci a v rámci obvyklých omezení počtu dotazů; nikdy neodstraní žádnou entitu a hodnoty, které znovu nenajde, zůstanou, jak jsou."
+      }
+    },
+    "error": {
+      "holiday_changed": "Vybraná dovolená se během otevření tohoto okna změnila. Zavřete okno a zkuste to znovu.",
+      "invalid_holiday_details": "Zkontrolujte zadaný název, data a časy.",
+      "delete_failed": "Dovolenou se nepodařilo odstranit. Zkontrolujte připojení a před dalším pokusem o odstranění dovolenou znovu otevřete.",
+      "delete_not_confirmed": "Odstranění se nepodařilo potvrdit. Před dalším pokusem zkontrolujte, zda dovolená ještě existuje.",
+      "holiday_time_step": "Zvolte čas po čtvrthodinách: minuty 00, 15, 30 nebo 45.",
+      "holiday_time_nonexistent": "Vybraný čas začátku nebo konce neexistuje, protože se v časovém pásmu topné soustavy posouvají hodiny dopředu. Zvolte jiný čas.",
+      "holiday_time_ambiguous": "Vybraný čas začátku nebo konce nastává dvakrát, protože se v časovém pásmu topné soustavy posouvají hodiny zpět. Zvolte jednoznačný čas.",
+      "write_authentication_failed": "Cloudové přihlášení již neplatí. Před dalším pokusem u Bosch/Buderus Home Comfort zvolte Znovu ověřit.",
+      "write_failed": "Nastavení dovolené se nepodařilo změnit.",
+      "write_busy": "Topná soustava se právě čte nebo stále probíhá jiná změna. Nic nebylo odesláno. Zkuste to za chvíli znovu.",
+      "write_not_confirmed": "Změnu se nepodařilo plně potvrdit. Některá nastavení již mohla být uložena. Znovu otevřete dovolenou a zkontrolujte její aktuální nastavení.",
+      "write_rate_limited": "Cloud PointT momentálně omezuje počet požadavků. Před dalším pokusem počkejte.",
+      "write_validation_failed": "Alespoň jedna volba již není topnou soustavou podporována. Zavřete okno, obnovte integraci a zkuste to znovu.",
+      "holiday_end_not_after_start": "Konec musí být po začátku. Zvolte pozdější konec.",
+      "rrc_time": "Zvolte čas v pětiminutových krocích, bez sekund.",
+      "rrc_temperature": "Zadejte teplotu od 5 do 30 °C v krocích po 0,5 °C.",
+      "rrc_point_invalid": "Zkontrolujte čas a teplotu. Dva spínací body ve stejný den nemohou mít stejný čas.",
+      "rrc_changed": "Časový program se změnil nebo jej již nelze upravovat. Znovu jej otevřete a zkontrolujte aktuální nastavení.",
+      "rrc_not_confirmed": "Změnu se nepodařilo potvrdit. Možná již byla uložena. Znovu otevřete časový program a zkontrolujte jeho aktuální nastavení.",
+      "rrc_failed": "Časový program topení se nepodařilo změnit. Zkontrolujte připojení a znovu otevřete časový program.",
+      "controls_invalid": "Některý vstup je neplatný nebo se zobrazené hodnoty změnily. Zkontrolujte zadané údaje nebo hodnoty znovu načtěte. Nic nebylo zapsáno.",
+      "controls_changed": "Nastavení se změnilo nebo již není dostupné. Dříve potvrzené změny zůstávají použity. Před dalším pokusem hodnoty znovu načtěte.",
+      "controls_auth": "Platnost ověření vypršela. Integraci znovu ověřte. Dříve potvrzené změny zůstávají použity. Před dalším pokusem hodnoty znovu načtěte.",
+      "controls_rate_limit": "Spotřebič momentálně omezuje počet požadavků. Před dalším pokusem počkejte. Dříve potvrzené změny zůstávají použity. Před dalším pokusem hodnoty znovu načtěte.",
+      "controls_unconfirmed": "Poslední změnu se nepodařilo potvrdit. Na spotřebiči se již mohla projevit. Dříve potvrzené změny zůstávají použity. Před dalším pokusem hodnoty znovu načtěte.",
+      "controls_failed": "Komunikace se spotřebičem selhala. Poslední změna se již mohla projevit. Dříve potvrzené změny zůstávají použity. Před dalším pokusem hodnoty znovu načtěte.",
+      "controls_busy": "Spotřebič se právě čte nebo stále probíhá jiná změna. Tato změna nebyla odeslána. Dříve potvrzené změny zůstávají použity. Zkuste to za chvíli znovu.",
+      "cloud_already_connected": "Cloudové připojení je již nakonfigurováno. Pomocí jeho nastavení připojení vyberte další zařízení nebo se přihlaste znovu. Druhé souběžné cloudové přihlášení zatím není podporováno.",
+      "cloud_setup_in_progress": "Jiné nastavení cloudu je již otevřeno. Nejprve dokončete nebo zavřete toto okno.",
+      "cloud_target_owned": "Vybraná soustava nebo zařízení patří k jiné nakonfigurované položce nebo cloudovému připojení. Připojte je znovu prostřednictvím jeho stávající položky.",
+      "cloud_selection_expired": "Tento seznam zařízení již není aktuální. Před uložením znovu otevřete vyhledávání zařízení.",
+      "cloud_selection_changed": "Vybrané zařízení není v potvrzeném seznamu. Vyhledejte znovu.",
+      "cloud_connection_disabled": "Před vyhledáním zařízení zapněte toto cloudové připojení.",
+      "cloud_rate_limited": "Cloud požádal o pauzu. Před dalším pokusem počkejte.",
+      "invalid_auth": "SingleKey ID oprávnění odmítlo nebo mu vypršela platnost. Použijte nový odkaz SingleKey ID zobrazený výše a přihlášení zopakujte.",
+      "invalid_redirect": "Home Assistant nemohl tuto adresu použít. Zkopírujte úplnou adresu aplikace ze zprávy ‚Failed to launch‘ v konzoli Chrome. Musí začínat schématem zobrazeným výše a patřit k aktuálnímu pokusu o přihlášení.",
+      "cannot_connect": "Služba PointT není dostupná. Zkontrolujte připojení k internetu, chvíli počkejte a zkuste to znovu.",
+      "select_gateway": "Před pokračováním vyberte ze seznamu alespoň jedno zařízení.",
+      "no_gateways": "Nebyla nalezena žádná zařízení. Zkontrolujte, zda vybraná značka a účet SingleKey ID odpovídají vaší aplikaci.",
+      "local_invalid_address": "Zadejte IP adresu nebo název hostitele bez URL, cesty a přihlašovacích údajů.",
+      "local_interface_required": "Tato adresa IPv6 vyžaduje síťové rozhraní na hostiteli Home Assistantu.",
+      "local_invalid_token": "Formát tokenu je neplatný. Zkopírujte celý token bez mezer.",
+      "local_invalid_credentials": "Zkontrolujte Login a Pass na štítku brány a zadejte je znovu.",
+      "local_unlock_required": "Povolte na bráně místní přihlášení a před dalším pokusem potvrďte modrý signál.",
+      "local_token_database_full": "Databáze tokenů brány je plná. Před vytvořením dalšího zkontrolujte stávající tokeny. Žádné tokeny nebyly odstraněny.",
+      "local_rate_limited": "Brána požádala o pauzu. Počkejte, dokud neuplyne zobrazená doba.",
+      "local_service_unavailable": "Služba brány je dočasně nedostupná. Počkejte a zkuste to znovu.",
+      "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
+      "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
+      "local_certificate_changed": "Certifikát nebylo možné potvrdit, nebo se změnil. Před pokračováním certifikát brány znovu prověřte.",
+      "local_token_rejected": "Brána tento token odmítla. Zkontrolujte jej, nebo tento pokus záměrně zahoďte a použijte jiný.",
+      "local_resource_forbidden": "Brána odepřela přístup k požadovanému prostředku. Samotný token neprokazuje oprávnění ke čtení.",
+      "local_missing_resource": "Brána neposkytuje požadovaný prostředek pro nastavení.",
+      "local_unknown_firmware": "Verzi firmwaru se nepodařilo ověřit.",
+      "local_old_firmware": "Před nastavením místního připojení aktualizujte firmware brány.",
+      "local_unsupported_brand": "Tato značka brány není podporována zdokumentovaným místním rozhraním.",
+      "local_incomplete_system": "Informace o soustavě z brány zatím nejsou úplné. Kontrolu čtení zopakujte později.",
+      "local_invalid_response": "Požadovanou odpověď brány se nepodařilo ověřit.",
+      "local_identity_unverified": "Tato soustava zatím nebyla jednoznačně přiřazena. První nastavení vyžaduje dostupný cloudový přístup a shodné identifikátory brány a modulu z obou rozhraní. Ověřená propojení lze následně používat bez cloudu.",
+      "local_identity_conflict": "Identita brány je v rozporu s vybranou instalací nebo jinou konfigurací.",
+      "local_configuration_changed": "Vybrané připojení nebo instalace se změnily. Zavřete toto okno a před pokračováním zkontrolujte aktuální nastavení.",
+      "local_pending_exists": "Pro tuto instalaci nebo adresu brány existuje jiný čekající pokus. Nejprve jej obnovte nebo záměrně zahoďte.",
+      "local_storage_failed": "Soukromý záznam nastavení se nepodařilo přečíst nebo uložit. Před pokračováním zkontrolujte úložiště Home Assistantu.",
+      "local_completion_uncertain": "Připojení již mohlo být uloženo. Před další změnou znovu otevřete místní nastavení a zkontrolujte jeho stav.",
+      "local_unexpected": "Místní kontrolu nebylo možné dokončit. Čekající token, pokud byl přijat, zůstává uchován pro obnovu.",
+      "local_confirmation_required": "Před pokračováním tuto akci výslovně potvrďte.",
+      "local_busy": "Místní přístup je momentálně zaneprázdněn nebo pozastaven. Před dalším pokusem počkejte.",
+      "local_invalid_interval": "Zvolte 60 až 900 sekund v krocích po 60 sekundách.",
+      "local_cloud_auth_required": "Přihlaste se znovu ke cloudovému přístupu, aby bylo možné ověřit první propojení. Již ověřený místní přístup se spouští nezávisle na cloudu.",
+      "local_cloud_rate_limited": "Cloud momentálně omezuje počet požadavků. Počkejte na konec jeho pauzy a poté porovnání identity zopakujte.",
+      "local_cloud_unavailable": "Informace o soustavě z cloudu se nepodařilo přečíst. Zkontrolujte cloudový přístup a porovnání identity zopakujte.",
+      "local_auth_forbidden": "Přihlašovací služba brány požadavek odmítla. Zkontrolujte, zda je na bráně místní přístup povolen, a zkuste to znovu.",
+      "local_creation_uncertain": "Není jasné, zda brána token vytvořila, protože její odpověď byla neúplná. Pokračujte s čekajícím pokusem; nový token se automaticky nevytvoří.",
+      "cloud_local_first_other_entry": "Tato soustava je již nastavena prostřednictvím místního přístupu v jiné položce této integrace. Cloudový přístup přidejte raději v této položce.",
+      "cloud_local_first_unverified": "Tuto soustavu se nepodařilo porovnat s cloudem. Nic nebylo uloženo. Zkuste to znovu.",
+      "cloud_local_first_local_unavailable": "Místní přístup této soustavy je vypnutý, neběží, je nedostupný nebo pozastavený. Zapněte jej a zajistěte jeho dostupnost, nebo jej nastavte znovu, a poté to zkuste znovu. Nic nebylo uloženo.",
+      "cloud_local_first_local_busy": "Místní přístup této soustavy je zaneprázdněn pravidelným čtením. Nic nebylo uloženo. Chvíli počkejte a zkuste to znovu.",
+      "cloud_rate_limited_until": "Cloud požádal o pauzu do {until}. Nic nebylo uloženo. Zkuste to znovu až poté.",
+      "cloud_local_first_conflict": "Cloud a místní přístup nepopisují stejnou soustavu. Nic nebylo uloženo. Zrušte výběr této soustavy, chcete-li ji nadále používat pouze přes místní přístup.",
+      "local_plant_known": "Tato brána již patří ke konfigurované soustavě. Zvolte tuto soustavu místo nové.",
+      "auth_expired": "Platnost tohoto pokusu o přihlášení vypršela. Otevřete nový odkaz SingleKey ID zobrazený výše a přihlaste se znovu.",
+      "auth_restart": "Tento pokus o přihlášení již nelze použít. Otevřete nový odkaz SingleKey ID zobrazený výše a přihlaste se znovu."
+    },
+    "abort": {
+      "no_notification_gateways": "Není nakonfigurována žádná topná soustava.",
+      "notification_gateways_changed": "Výběr instalace se změnil. Znovu otevřete nastavení.",
+      "holiday_changed": "Vybraná dovolená se změnila nebo ji již nelze upravovat. Znovu otevřete dovolenou a zkontrolujte její aktuální údaje.",
+      "holiday_updated": "Nastavení dovolené bylo uloženo a potvrzeno topnou soustavou.",
+      "holiday_unchanged": "Nic se nezměnilo, proto nebylo topné soustavě nic odesláno.",
+      "no_writable_holidays": "Správa dovolené momentálně není dostupná. Počkejte, až instalace poskytne svá nastavení dovolené.",
+      "holiday_deleted": "Dovolená byla odstraněna a její odstranění potvrdila topná soustava.",
+      "not_loaded": "Před nastavením dovolené musí být Bosch/Buderus Home Comfort načten.",
+      "holiday_created": "Dovolená byla vytvořena a potvrzena zpětným načtením.",
+      "holiday_previous_request_found": "Dřívější nevyřešený požadavek je nyní potvrzen. Vaše nové vstupy nebyly odeslány. Nejprve zkontrolujte existující dovolenou v části Správa období dovolené.",
+      "holiday_already_exists": "Dovolená se stejným začátkem a výběrem okruhů již existuje. Nebyla vytvořena žádná další dovolená. Otevřete Správa období dovolené a upravte existující položku.",
+      "holiday_create_unconfirmed": "Požadavek na vytvoření se nepodařilo potvrdit. Dovolená již může existovat. Zkontrolujte Správa období dovolené nebo aplikaci výrobce. Následujících 10 minut další pokus ověří výsledek tohoto požadavku, aniž by vytvořil druhou dovolenou.",
+      "holiday_create_adjusted": "Topná soustava vrátila novou dovolenou, ale její nastavení se liší od vašeho požadavku. Požadované období: {requested}. Vrácené období: {actual}. Otevřete Správa období dovolené, zkontrolujte tuto položku a upravte ji.",
+      "holiday_update_adjusted": "Topná soustava vrátila nastavení, která se liší od vámi požadované změny. Požadované období: {requested}. Vrácené období: {actual}. Otevřete Správa období dovolené, zkontrolujte aktuální položku a upravte ji.",
+      "no_rrc_schedules": "Není k dispozici žádný aktuální podporovaný týdenní program RRC.",
+      "controls_not_loaded": "Ovládání je dostupné pouze přes cloudový přístup; místní přístup pouze čte. Připojte cloudový přístup nebo počkejte, až se načte.",
+      "controls_auth_required": "Ovládání není dostupné: cloudový přístup vyžaduje nové přihlášení. Hodnoty zůstávají viditelné.",
+      "controls_cloud_stopped": "Ovládání není dostupné: cloudový přístup je zastaven nebo se restartuje. Hodnoty zůstávají viditelné.",
+      "controls_rate_limited": "Ovládání je pozastaveno po omezení počtu požadavků cloudem, přibližně do {until}. Hodnoty zůstávají viditelné.",
+      "controls_protection_pause": "Ovládání je pozastaveno po opakovaných chybách cloudu, přibližně do {until}. Hodnoty zůstávají viditelné.",
+      "controls_cloud_unreachable": "Ovládání není dostupné: cloud je momentálně nedosažitelný. Hodnoty zůstávají viditelné.",
+      "controls_not_current": "Ovládání zatím není dostupné: cloud nedodal aktuální hodnoty. Zkuste to za chvíli znovu.",
+      "controls_none": "Tento spotřebič momentálně nehlásí žádná nastavení, která by zde šlo měnit.",
+      "configuration_changed": "Nastavení připojení se během otevření tohoto okna změnilo. Zavřete je a zkuste to znovu.",
+      "no_connections": "Není nakonfigurován žádný přístup. Existující soustavy a entity zůstávají zachovány.",
+      "connection_reauth_started": "Bylo vyžádáno přihlášení. Otevřete výzvu k ověření pro tuto položku.",
+      "cloud_already_connected": "Cloudové připojení je již nakonfigurováno. Pomocí jeho nastavení připojení vyberte další zařízení nebo se přihlaste znovu. Druhé souběžné cloudové přihlášení zatím není podporováno.",
+      "cloud_setup_in_progress": "Jiné nastavení cloudu je již otevřeno. Nejprve dokončete nebo zavřete toto okno.",
+      "cloud_setup_taken_over": "Toto okno nastavení cloudu nahradilo novější. Zavřete toto okno a pokračujte v novějším.",
+      "cloud_target_owned": "Vybraná soustava nebo zařízení patří k jiné nakonfigurované položce nebo cloudovému připojení. Připojte je znovu prostřednictvím jeho stávající položky.",
+      "cloud_selection_expired": "Tento seznam zařízení již není aktuální. Před uložením znovu otevřete vyhledávání zařízení.",
+      "cloud_selection_changed": "Vybrané zařízení není v potvrzeném seznamu. Vyhledejte znovu.",
+      "cloud_connection_disabled": "Před vyhledáním zařízení zapněte toto cloudové připojení.",
+      "cloud_rate_limited": "Cloud požádal o pauzu. Před dalším pokusem počkejte.",
+      "local_setup_unavailable": "Místní nastavení není dostupné, dokud není připraveno pravidelné zásobování místními daty.",
+      "local_session_changed": "Tato relace nastavení skončila nebo se změnil její výběr. Pro pokračování znovu otevřete místní nastavení.",
+      "local_discovery_invalid": "Toto oznámení o nalezení nepopisuje podporovaný koncový bod místní brány.",
+      "local_existing_owner_required": "Soustavu bez cloudu nastavte při přidání integrace pomocí „Pouze místní přístup“. Nalezenou bránu lze přidat k existující konfiguraci.",
+      "local_target_required": "Tato konfigurace nemá žádnou vhodnou uchovanou instalaci pro místní připojení.",
+      "local_setup_complete": "Místní přístup byl nastaven.",
+      "local_pending_saved": "Čekající pokus je uchován. Můžete jej obnovit v místním nastavení.",
+      "local_storage_failed": "Soukromý záznam nastavení se nepodařilo přečíst nebo uložit. Před pokračováním zkontrolujte úložiště Home Assistantu.",
+      "cloud_local_first_other_entry": "Tato soustava je již nastavena prostřednictvím místního přístupu v jiné položce této integrace. Cloudový přístup přidejte raději v této položce.",
+      "rescan_planned": "Vyhledávání je naplánováno a proběhne při příští pravidelné aktualizaci; nové součásti se objeví, jakmile budou nalezeny.",
+      "rescan_paused": "Vyhledávání nebylo spuštěno: dotazy jsou právě pozastaveny (například poté, co cloud požádal o pauzu). Zkuste to později znovu.",
+      "rescan_running": "Vyhledávání již probíhá nebo je naplánováno. Počkejte, až skončí.",
+      "rescan_partial": "Vyhledávání je naplánováno pro součásti, které jsou připraveny, a proběhne při příští pravidelné aktualizaci. Součásti, které jsou právě pozastaveny, byly přeskočeny; u nich to zkuste později znovu.",
+      "rescan_unavailable": "Vyhledávání nebylo spuštěno: žádný přístup k soustavě momentálně není připraven."
+    },
+    "progress": {
+      "local_work": "Kontroluje se místní připojení. Čekejte prosím."
+    }
+  },
+  "issues": {
+    "fault_source_removed": {
+      "title": "Zdroj poruch již neexistuje",
+      "description": "Integrace již nečeká na zdroje poruch topné soustavy, které už neexistují (počet: {count}), například seznam chyb odebrané nebo vyměněné bezdrátové prostorové jednotky. Dosud takový zdroj bránil ukončení všech poruch. Poruchy, které hlásil pouze on, nyní skončí po příštích dvou úplných čteních běžnou událostí „vyřešeno“. Pokud je zařízení stále nainstalováno, zkontrolujte jeho připojení k soustavě; jeho seznam chyb se znovu započítá, jakmile jej soustava opět nahlásí. Toto upozornění můžete ignorovat; po dalším restartu zmizí."
+    },
+    "repeated_rate_limit": {
+      "title": "Požadavky na cloud jsou omezovány",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Použít dotazování šetrné ke cloudu",
+            "description": "Výběrem **Odeslat** přepnete tuto integraci na profil dotazování šetrný ke cloudu. Aktuální provozní hodnoty se pak budou číst každé dvě minuty místo každé minuty; hodnoty ovládání a energie každých deset minut; pomalá počítadla každých třicet minut. Integrace se znovu načte a provede úplné nové vyhledání prostředků."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotčená položka Bosch/Buderus Home Comfort již neexistuje."
+        }
+      }
+    },
+    "incompatible_firmware": {
+      "title": "Schopnosti PointT se po aktualizaci firmwaru změnily",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Znovu vyhledat schopnosti PointT",
+            "description": "Bosch/Buderus Home Comfort našel známé schopnosti, jejichž datový typ nebo jednotka již neodpovídají bezpečně podporovanému schématu PointT (počet: {conflict_count}). Výběrem **Odeslat** integraci znovu načtete a všechny schopnosti znovu prověříte. Pokud se varování vrátí, stáhněte diagnostiku integrace a nahlaste změněné schéma, aniž byste sdíleli přihlašovací údaje nebo nezpracované hodnoty."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotčená položka Bosch/Buderus Home Comfort již neexistuje."
+        }
+      }
+    },
+    "managed_rate_limit": {
+      "title": "Požadavky na cloud jsou omezovány",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Použít dotazování šetrné ke cloudu",
+            "description": "Přepne na dotazování šetrné ke cloudu pouze dotčené cloudové připojení: aktuální provozní hodnoty každé dvě minuty, hodnoty ovládání a energie každých deset minut a pomalá počítadla každých třicet minut. Znovu se připojí pouze toto připojení; ostatní připojení zůstávají aktivní."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotčená položka Bosch/Buderus Home Comfort již neexistuje.",
+          "configuration_changed": "Přístup nebo topná soustava se změnily. Znovu otevřete opravu."
+        }
+      }
+    },
+    "managed_firmware": {
+      "title": "Schopnosti PointT se po aktualizaci firmwaru změnily",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Znovu vyhledat schopnosti PointT",
+            "description": "Tato topná soustava hlásí známé schopnosti s neočekávaným datovým typem nebo jednotkou (počet: {conflict_count}). Znovu prověřte její schopnosti. Restartuje se pouze tento zdroj; ostatní soustavy a připojení zůstávají aktivní. Existující ID entit a vlastní nastavení zůstávají zachovány."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotčená položka Bosch/Buderus Home Comfort již neexistuje.",
+          "configuration_changed": "Přístup nebo topná soustava se změnily. Znovu otevřete opravu."
+        }
+      }
+    },
+    "local_certificate_changed": {
+      "title": "Certifikát místní brány se změnil",
+      "description": "Brána místního přístupu předkládá jiný certifikát. Integrace jej sama nepřijme a přestane číst místně. Pokud víte, proč se certifikát změnil (například po aktualizaci nebo obnovení brány), otevřete možnosti integrace, zvolte místní přístup a vyberte „Změna místního přístupu“. Tam nový certifikát potvrdíte. Doporučujeme nové přihlášení pomocí údajů ze štítku zařízení; současný token ponechte jen tehdy, pokud jste si jisti, že nový certifikát patří vaší vlastní bráně."
+    },
+    "local_start_certificate": {
+      "title": "Místní přístup se nemůže bezpečně připojit",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Zkusit místní přístup znovu",
+            "description": "Místní přístup se několikrát po sobě nepodařilo spustit, protože nebylo možné navázat zabezpečené spojení s bránou (kód: {code}). To se může stát při restartu brány. Integrace to zkouší sama dál, nejpozději každou hodinu, a toto upozornění odstraní, jakmile se místní přístup spustí. Ostatní přístupy to neovlivní. Výběrem **Odeslat** to zkusíte znovu hned. Pokud potíže přetrvávají, zkontrolujte, zda uložená adresa stále patří vaší bráně."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotčená položka již neexistuje.",
+          "configuration_changed": "Přístup nebo topná soustava se změnily. Znovu otevřete opravu."
+        }
+      }
+    },
+    "local_start_incomplete": {
+      "title": "Místní brána ještě není připravena",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Zkusit místní přístup znovu",
+            "description": "Místní přístup se několikrát po sobě nepodařilo spustit, protože brána hlásí, že její informace o soustavě ještě nejsou úplné (kód: {code}). To je po spuštění brány chvíli běžné. Integrace to zkouší sama dál, nejpozději každou hodinu, a toto upozornění odstraní, jakmile se místní přístup spustí. Ostatní přístupy to neovlivní. Výběrem **Odeslat** to zkusíte znovu hned. Pokud upozornění zůstává celé hodiny, restartujte bránu."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotčená položka již neexistuje.",
+          "configuration_changed": "Přístup nebo topná soustava se změnily. Znovu otevřete opravu."
+        }
+      }
+    },
+    "local_start_unrecognized": {
+      "title": "Odpověď místní brány nebyla rozpoznána",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Zkusit místní přístup znovu",
+            "description": "Místní přístup se několikrát po sobě nepodařilo spustit, protože odpověď brány o její značce, firmwaru nebo identitě nebylo možné rozpoznat (kód: {code}). Integrace to zkouší sama dál, nejpozději každou hodinu, a toto upozornění odstraní, jakmile se místní přístup spustí. Ostatní přístupy to neovlivní. Výběrem **Odeslat** to zkusíte znovu hned. Pokud upozornění zůstává po aktualizaci brány, nahlaste prosím kód."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotčená položka již neexistuje.",
+          "configuration_changed": "Přístup nebo topná soustava se změnily. Znovu otevřete opravu."
+        }
+      }
+    },
+    "local_start_response": {
+      "title": "Místní brána odpovídá neočekávaně",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Zkusit místní přístup znovu",
+            "description": "Místní přístup se několikrát po sobě nepodařilo spustit, protože brána sice odpovídá, ale ne podle očekávání, například chybou nebo nečitelnou odpovědí (kód: {code}). Integrace to zkouší sama dál, nejpozději každou hodinu, a toto upozornění odstraní, jakmile se místní přístup spustí. Ostatní přístupy to neovlivní. Výběrem **Odeslat** to zkusíte znovu hned. Pokud potíže přetrvávají, zkontrolujte, zda uložená adresa stále patří vaší bráně."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotčená položka již neexistuje.",
+          "configuration_changed": "Přístup nebo topná soustava se změnily. Znovu otevřete opravu."
+        }
+      }
+    },
+    "cloud_targets_not_found": {
+      "title": "Soustavy nenalezené v cloudovém účtu",
+      "description": "Při posledním přihlášení cloudového přístupu v „{title}“ nebyly nalezeny zapnuté soustavy nebo zařízení (počet: {count}; končící na {systems}). Zůstávají nakonfigurovány a nedostupné, dokud se v účtu znovu neobjeví; poté toto oznámení zmizí.\n\nPokud byly z účtu odebrány, otevřete Konfigurovat → Připojení → cloudový přístup, vypněte je u položky **Použít pro soustavy a zařízení** a odstraňte je pomocí **Zapomenout nevybrané soustavy**. Jejich zařízení a entity zůstávají v Home Assistantu, dokud je neodstraníte. Pokud byla brána vyměněna, ponechte ji zapnutou: samostatné oznámení o opravě nabídne pokračování soustavy i s historií."
+    },
+    "gateway_exchange": {
+      "title": "Brána vyměněna?",
+      "fix_flow": {
+        "step": {
+          "evidence_match": {
+            "title": "Brána vyměněna?",
+            "description": "Brána končící na **{old}** se v cloudovém přístupu již nezobrazuje. Místo ní se objevila nová brána končící na **{new}**. Alespoň jeden modul zařízení, který hlásí, odpovídá modulu, který tato soustava hlásila dříve (například zdroj tepla nebo regulátor). To silně naznačuje, že brána byla vyměněna.\n\nJak chcete pokračovat?",
+            "menu_options": {
+              "continue": "Pokračovat jako stejná soustava",
+              "separate": "Ponechat jako samostatnou soustavu",
+              "later": "Rozhodnout později"
+            }
+          },
+          "evidence_no_match": {
+            "title": "Brána vyměněna?",
+            "description": "Brána končící na **{old}** se v cloudovém přístupu již nezobrazuje. Místo ní se objevila nová brána končící na **{new}**. Moduly zařízení, které hlásí, se však liší od těch, které tato soustava hlásila dříve. Může patřit jiné soustavě.\n\nJak chcete pokračovat?",
+            "menu_options": {
+              "continue": "Pokračovat jako stejná soustava",
+              "separate": "Ponechat jako samostatnou soustavu",
+              "later": "Rozhodnout později"
+            }
+          },
+          "evidence_unknown": {
+            "title": "Brána vyměněna?",
+            "description": "Brána končící na **{old}** se v cloudovém přístupu již nezobrazuje. Místo ní se objevila nová brána končící na **{new}**. Její moduly zařízení nebylo možné porovnat, protože nejsou uložena dřívější data modulů nebo nová brána žádná nenahlásila. Zda jde o stejnou soustavu, nelze potvrdit.\n\nJak chcete pokračovat?",
+            "menu_options": {
+              "continue": "Pokračovat jako stejná soustava",
+              "separate": "Ponechat jako samostatnou soustavu",
+              "later": "Rozhodnout později"
+            }
+          },
+          "continue_match": {
+            "title": "Pokračovat jako stejná soustava",
+            "description": "Soustava pokračuje s bránou končící na {new}. Její historie, její entity včetně ID, názvů a oblastí i vaše automatizace zůstanou zachovány. Integrace se krátce zastaví a znovu spustí.\n\nPokud je pro tuto soustavu nastaven místní přístup, bude odstraněn, protože patří staré bráně. Poté jej nastavte znovu pro novou bránu.\n\nNejprve prosím vytvořte zálohu Home Assistantu.",
+            "data": {
+              "confirm": "Pokračovat s touto soustavou s novou bránou"
+            }
+          },
+          "continue_unverified": {
+            "title": "Pokračovat bez potvrzení",
+            "description": "**Upozornění:** Nelze potvrdit, že brána končící na {new} patří této soustavě. Pokud patří jiné soustavě, hodnoty té soustavy se dostanou do historie této soustavy a vaše automatizace budou jednat na nesprávné soustavě. Pokračujte jen tehdy, pokud jste bránu vyměnili sami a jste si jisti.\n\nSoustava pokračuje s bránou končící na {new}. Její historie, její entity včetně ID, názvů a oblastí i vaše automatizace zůstanou zachovány. Integrace se krátce zastaví a znovu spustí.\n\nPokud je pro tuto soustavu nastaven místní přístup, bude odstraněn, protože patří staré bráně. Poté jej nastavte znovu pro novou bránu.\n\nNejprve prosím vytvořte zálohu Home Assistantu.",
+            "data": {
+              "confirm": "Pokračovat s touto soustavou s novou bránou",
+              "confirm_unverified": "Jsem si jist(a), že nová brána patří této soustavě"
+            }
+          },
+          "separate": {
+            "title": "Ponechat jako samostatnou soustavu",
+            "description": "Integrace se na tuto bránu již neptá. Soustava se starou bránou zůstává beze změny. Chcete-li novou bránu přidat jako samostatnou soustavu, vyberte ji v možnostech cloudového přístupu."
+          }
+        },
+        "error": {
+          "confirmation_required": "Pro pokračování potvrďte."
+        },
+        "abort": {
+          "entry_not_found": "Dotčená položka této integrace již neexistuje.",
+          "configuration_changed": "Přístup nebo soustava se změnily. Znovu otevřete opravu.",
+          "later": "Nic se nezměnilo. Oznámení zůstává v opravách, dokud se nerozhodnete.",
+          "exchange_unavailable": "Integrace neběží. Spusťte ji a znovu otevřete opravu.",
+          "cloud_unavailable": "Cloudový přístup je momentálně nedosažitelný. Zkuste to později znovu.",
+          "exchange_changed": "Brány v cloudovém přístupu se změnily. Znovu otevřete opravu, až se zobrazí znovu.",
+          "exchange_collision": "Nic se nezměnilo: entity nebo zařízení pro novou bránu již existují. Nejprve je odstraňte, nebo ponechte novou bránu jako samostatnou soustavu.",
+          "exchange_failed": "Nic se nezměnilo; soustava pokračuje se starou bránou. Podrobnosti jsou v protokolu.",
+          "unload_failed": "Nic se nezměnilo: integraci nebylo možné zastavit. Restartujte Home Assistant a znovu otevřete opravu."
+        }
+      }
+    },
+    "setup_unfinished": {
+      "title": "Nastavení není dokončeno",
+      "description": "Položka „{title}“ zatím nemá žádný přístup. Otevřete její možnosti konfigurace a zvolte „Nastavit místní přístup“ (nebo přidejte cloudový přístup), čímž nastavení dokončíte."
+    }
+  },
+  "exceptions": {
+    "invalid_stored_configuration": {
+      "message": "Uloženou konfiguraci této položky nelze přečíst ({reason}). Nic se nezměnilo. Obnovte zálohu z doby před vznikem problému, nebo položku odstraňte a přidejte znovu."
+    },
+    "holiday_previous_request_found": {
+      "message": "Dřívější nevyřešený požadavek je nyní potvrzen. Vaše nové vstupy nebyly odeslány. Zkontrolujte existující dovolenou v části Konfigurovat → Správa období dovolené."
+    },
+    "holiday_already_exists": {
+      "message": "Dovolená se stejným začátkem a výběrem okruhů již existuje. Upravte tuto položku v části Konfigurovat → Správa období dovolené."
+    },
+    "holiday_create_unconfirmed": {
+      "message": "Vytvoření se nepodařilo potvrdit. Dovolená již může existovat. Zkontrolujte Správa období dovolené nebo aplikaci výrobce. Následujících 10 minut další pokus ověří nevyřešený požadavek, aniž by vytvořil druhou dovolenou."
+    },
+    "holiday_update_unconfirmed": {
+      "message": "Změnu se nepodařilo plně potvrdit. Některá nastavení již mohla být uložena. Zkontrolujte aktuální dovolenou v části Konfigurovat → Správa období dovolené."
+    },
+    "holiday_write_adjusted": {
+      "message": "Topná soustava vrátila nastavení dovolené, která se liší od vašeho požadavku. Zkontrolujte vrácená data a nastavení v části Konfigurovat → Správa období dovolené a upravte tuto položku."
+    },
+    "holiday_time_step": {
+      "message": "Zvolte čas po čtvrthodinách: minuty 00, 15, 30 nebo 45 a sekundy 00."
+    },
+    "holiday_time_nonexistent": {
+      "message": "Vybraný čas začátku nebo konce neexistuje, protože se v časovém pásmu topné soustavy posouvají hodiny dopředu. Zvolte jiný čas."
+    },
+    "holiday_time_ambiguous": {
+      "message": "Vybraný čas začátku nebo konce nastává dvakrát, protože se v časovém pásmu topné soustavy posouvají hodiny zpět. Zvolte jednoznačný čas."
+    },
+    "rrc_mode_locked": {
+      "message": "Regulátor momentálně zamyká režim topení této zóny, například když soustava chladí. Aktuální režim zůstává zobrazen. Zkuste to později znovu."
+    },
+    "write_validation_failed": {
+      "message": "Toto nastavení momentálně není bezpečné měnit. Obnovte nebo překonfigurujte integraci a zkuste to znovu."
+    },
+    "write_not_confirmed": {
+      "message": "Změna byla odeslána, ale topná soustava ji nepotvrdila. Již se mohla projevit. Hodnota se aktualizuje při příštím čtení."
+    },
+    "write_authentication_failed": {
+      "message": "Cloudové přihlášení již neplatí. Před dalším pokusem u Bosch/Buderus Home Comfort zvolte Znovu ověřit."
+    },
+    "write_rate_limited": {
+      "message": "Cloud PointT momentálně omezuje počet požadavků. Před opakováním změny počkejte."
+    },
+    "write_failed": {
+      "message": "Změnu se nepodařilo dokončit a topná soustava ji nepotvrdila. Zobrazená hodnota se aktualizuje při příštím čtení."
+    },
+    "write_busy": {
+      "message": "Topná soustava se právě čte nebo stále probíhá jiná změna. Nic nebylo odesláno. Zkuste to za chvíli znovu."
+    },
+    "holiday_end_not_after_start": {
+      "message": "Konec musí být po začátku. Zvolte pozdější konec."
+    },
+    "bacon_unsupported_command": {
+      "message": "Zařízení toto nastavení momentálně nepodporuje. Zkontrolujte jeho připojení, dostupné režimy a teplotní limity."
+    },
+    "bacon_command_failed": {
+      "message": "Změnu zařízení nepotvrdilo. Znovu odeslána nebyla. Před dalším pokusem zkontrolujte hlášený stav."
+    },
+    "bacon_separate_settings": {
+      "message": "Změňte prosím teplotu a provozní režim zvlášť, aby bylo možné každou změnu potvrdit."
+    },
+    "heating_climate_command": {
+      "message": "Tento příkaz termostatu momentálně není dostupný. Teploty lze měnit pouze v ručním režimu topení. Vyberte režim zvlášť a ověřte, že spotřebič poskytuje aktuální hodnoty."
+    },
+    "pointt_dhw_temperature_read_only": {
+      "message": "Aktuální požadovanou hodnotu teplé vody určuje spotřebič. Samostatné počáteční teploty režimů můžete upravit v části Obsluha spotřebiče."
+    },
+    "gateway_exchange_incomplete": {
+      "message": "Přerušenou výměnu brány nebylo možné dokončit, proto se integrace nespustí. Podrobnosti jsou v protokolu; odstraňte, co výměně brání (například entity nové brány), a restartujte Home Assistant."
+    }
+  },
+  "selector": {
+    "holiday_period": {
+      "options": {
+        "create": "Nová dovolená"
+      }
+    },
+    "polling_profile": {
+      "options": {
+        "standard": "Standardní",
+        "cloud_friendly": "Šetrný ke cloudu"
+      }
+    },
+    "holiday_heating_mode": {
+      "options": {
+        "saturday": "Jako sobota",
+        "fix_temperature": "Konstantní teplota",
+        "off": "Vypnuto",
+        "eco": "Útlum",
+        "auto_sat": "Jako sobota",
+        "fix_temp": "Konstantní teplota"
+      }
+    },
+    "holiday_dhw_mode": {
+      "options": {
+        "saturday": "Jako sobota",
+        "off": "Vypnuto",
+        "eco": "Eco+",
+        "low": "Eco",
+        "high": "Komfort",
+        "off_td": "Vypnuto s termickou dezinfekcí",
+        "auto_sat": "Jako sobota",
+        "td_off": "Vypnuto s termickou dezinfekcí"
+      }
+    },
+    "holiday_ventilation_mode": {
+      "options": {
+        "saturday": "Jako sobota",
+        "off": "Vypnuto",
+        "min": "Stupeň ventilátoru 1",
+        "red": "Stupeň ventilátoru 2",
+        "nom": "Stupeň ventilátoru 3",
+        "max": "Stupeň ventilátoru 4",
+        "dem": "Podle potřeby"
+      }
+    },
+    "holiday_thermal_disinfection": {
+      "options": {
+        "on": "Zapnuto",
+        "off": "Vypnuto"
+      }
+    },
+    "holiday_mode": {
+      "options": {
+        "on": "Zapnuto",
+        "off": "Vypnuto"
+      }
+    },
+    "rrc_weekday": {
+      "options": {
+        "mo": "Pondělí",
+        "tu": "Úterý",
+        "we": "Středa",
+        "th": "Čtvrtek",
+        "fr": "Pátek",
+        "sa": "Sobota",
+        "su": "Neděle"
+      }
+    },
+    "local_method": {
+      "options": {
+        "label": "Štítek zařízení (doporučeno)",
+        "token": "Existující token",
+        "keep": "Ponechat současný token (nedoporučeno)"
+      }
+    },
+    "local_pending_action": {
+      "options": {
+        "continue": "Pokračovat s uloženým tokenem",
+        "discard": "Zahodit čekající pokus",
+        "later": "Pokračovat později"
+      }
+    }
+  },
+  "entity": {
+    "number": {
+      "manual_room_setpoint": {
+        "name": "Ruční požadovaná hodnota"
+      },
+      "pool_setpoint_temperature": {
+        "name": "Požadovaná teplota bazénu"
+      },
+      "heating_temperature": {
+        "name": "Topení"
+      },
+      "reduced_temperature": {
+        "name": "Snížená"
+      },
+      "extra_hot_water_duration": {
+        "name": "Doba extra ohřevu teplé vody"
+      },
+      "extra_hot_water_setpoint": {
+        "name": "Požadovaná hodnota extra ohřevu teplé vody"
+      },
+      "hot_water_eco_plus": {
+        "name": "Počáteční teplota Eco+"
+      },
+      "hot_water_comfort": {
+        "name": "Počáteční teplota Komfort"
+      },
+      "hot_water_eco": {
+        "name": "Počáteční teplota Eco"
+      },
+      "maximum_supply_temperature": {
+        "name": "Maximální výstupní teplota"
+      },
+      "softener_salt_threshold": {
+        "name": "Práh upozornění na sůl"
+      },
+      "softener_regeneration_delay": {
+        "name": "Naplánování regenerace"
+      },
+      "bacon_purifier_fan_speed": {
+        "name": "Stupeň ventilátoru"
+      },
+      "bacon_purifier_light_intensity": {
+        "name": "Jas okolního osvětlení"
+      }
+    },
+    "select": {
+      "zone_operation_mode": {
+        "name": "Nastavit provozní režim zóny",
+        "state": {
+          "off": "Vypnuto",
+          "manual": "Ruční",
+          "auto": "Automatický"
+        }
+      },
+      "heating_circuit_operation_mode": {
+        "name": "Provozní režim topného okruhu",
+        "state": {
+          "off": "Vypnuto",
+          "manual": "Ruční",
+          "auto": "Automatický"
+        }
+      },
+      "hot_water_operation_mode": {
+        "name": "Provozní režim teplé vody",
+        "state": {
+          "off": "Vypnuto",
+          "low": "Eco",
+          "high": "Komfort",
+          "ownprogram": "Automatický",
+          "eco": "Eco+"
+        }
+      },
+      "season_switching": {
+        "name": "Přepínání sezóny",
+        "state": {
+          "off": "Topení/chlazení vypnuto",
+          "automatic": "Automatický",
+          "forced_heat": "Pouze topení",
+          "forced_cool": "Pouze chlazení"
+        }
+      },
+      "silent_mode": {
+        "name": "Tichý režim",
+        "state": {
+          "off": "Vypnuto",
+          "auto": "Automatický",
+          "on": "Zapnuto"
+        }
+      },
+      "auxiliary_heater_operation_mode": {
+        "name": "Provozní režim přídavného topení",
+        "state": {
+          "off": "Vypnuto",
+          "manual": "Zapnuto",
+          "auto": "Automatický"
+        }
+      },
+      "ventilation_exhaust_fan_level": {
+        "name": "Stupeň odtahového ventilátoru",
+        "state": {
+          "off": "Vypnuto",
+          "min": "Stupeň ventilátoru 1",
+          "red": "Stupeň ventilátoru 2",
+          "nom": "Stupeň ventilátoru 3",
+          "max": "Stupeň ventilátoru 4",
+          "dem": "Podle potřeby"
+        }
+      },
+      "rrc_user_mode": {
+        "state": {
+          "manual": "Ruční",
+          "clock": "Časový program"
+        }
+      },
+      "bacon_purifier_light_color": {
+        "name": "Barva okolního osvětlení",
+        "state": {
+          "warm_white": "Teplá bílá",
+          "neutral_white": "Neutrální bílá",
+          "cool_white": "Studená bílá",
+          "blue": "Modrá",
+          "purple": "Fialová",
+          "orange": "Oranžová",
+          "red": "Červená"
+        }
+      }
+    },
+    "switch": {
+      "extra_hot_water": {
+        "name": "Extra ohřev teplé vody"
+      },
+      "reduce_temperature_on_alarm": {
+        "name": "Snížení teploty při poruše"
+      },
+      "away_mode": {
+        "name": "Režim nepřítomnosti"
+      },
+      "softener_holiday_mode": {
+        "name": "Režim dovolené"
+      },
+      "wddw2_holiday_mode": {
+        "name": "Režim dovolené"
+      },
+      "pool_enabled": {
+        "name": "Bazén"
+      },
+      "bacon_purifier_child_lock": {
+        "name": "Dětský zámek"
+      },
+      "bacon_purifier_display": {
+        "name": "Displej"
+      },
+      "bacon_purifier_light": {
+        "name": "Světelný kroužek"
+      },
+      "bacon_purifier_light_in_standby": {
+        "name": "Okolní osvětlení v pohotovostním režimu"
+      },
+      "bacon_purifier_light_in_sleep": {
+        "name": "Okolní osvětlení v tichém režimu"
+      },
+      "bacon_dry_child_lock": {
+        "name": "Dětský zámek"
+      },
+      "bacon_dry_display": {
+        "name": "Displej"
+      }
+    },
+    "sensor": {
+      "outdoor_temperature": {
+        "name": "Venkovní teplota"
+      },
+      "supply_temperature": {
+        "name": "Výstupní teplota"
+      },
+      "return_temperature": {
+        "name": "Teplota zpátečky"
+      },
+      "hot_water_temperature": {
+        "name": "Teplota teplé vody"
+      },
+      "modulation": {
+        "name": "Skutečná modulace"
+      },
+      "system_pressure": {
+        "name": "Tlak v soustavě"
+      },
+      "heating_status": {
+        "name": "Stav topení"
+      },
+      "hot_water_status": {
+        "name": "Stav teplé vody"
+      },
+      "total_electricity": {
+        "name": "Celkem – Spotřeba elektřiny"
+      },
+      "total_heat_produced": {
+        "name": "Celkem – Vyrobené teplo"
+      },
+      "environmental_energy": {
+        "name": "Celkem – Energie z okolí (vypočteno)"
+      },
+      "heating_electricity": {
+        "name": "Topení – Spotřeba elektřiny"
+      },
+      "heating_heat_produced": {
+        "name": "Topení – Vyrobené teplo"
+      },
+      "hot_water_electricity": {
+        "name": "Teplá voda – Spotřeba elektřiny"
+      },
+      "hot_water_heat_produced": {
+        "name": "Teplá voda – Vyrobené teplo"
+      },
+      "calculated_dew_point": {
+        "name": "Rosný bod (vypočteno)"
+      },
+      "estimated_energy": {
+        "name": "Energie (odhad z aktuálního výkonu)"
+      },
+      "heating_switch_program": {
+        "name": "Časový program topení",
+        "state": {
+          "comfort1": "Komfort 1",
+          "comfort2": "Topení",
+          "comfort3": "Komfort 3",
+          "eco": "Snížená",
+          "off": "Vypnuto"
+        }
+      },
+      "dhw_switch_program": {
+        "name": "Časový program teplé vody",
+        "state": {
+          "low": "Eco",
+          "eco": "Eco+",
+          "high": "Komfort",
+          "off": "Vypnuto"
+        }
+      },
+      "heating_circuit_switch_program_mode": {
+        "name": "Typ časového programu topného okruhu",
+        "state": {
+          "level": "Teplotní úroveň",
+          "levels": "Teplotní úrovně",
+          "absolute": "Volně nastavitelné teploty"
+        }
+      },
+      "heating_circuit_operation_mode": {
+        "name": "Provozní režim topného okruhu",
+        "state": {
+          "off": "Vypnuto",
+          "manual": "Ruční",
+          "auto": "Automatický"
+        }
+      },
+      "heating_circuit_overall_status": {
+        "name": "Stav topného okruhu",
+        "state": {
+          "ch_enabled": "Topení zapnuto",
+          "ch_disabled": "Topení vypnuto",
+          "emergency_mode": "Nouzový režim",
+          "floor_drying": "Vysoušení podlahy",
+          "summer_idle": "Letní pauza",
+          "boost": "Topení Boost",
+          "away": "Nepřítomnost",
+          "holiday": "Dovolená",
+          "cooling_manual_on": "Ruční chlazení aktivní",
+          "cooling_manual_off": "Ruční chlazení vypnuto",
+          "heating_manual_on": "Ruční topení aktivní",
+          "heating_manual_off": "Ruční topení vypnuto",
+          "heating_auto": "Automatické topení"
+        }
+      },
+      "heating_circuit_summer_winter_mode": {
+        "name": "Aktuální stav topení/chlazení",
+        "state": {
+          "off": "Nečinný",
+          "forced": "Topení",
+          "cooling": "Chlazení"
+        }
+      },
+      "heating_circuit_summer_winter_switch_mode": {
+        "name": "Přepínání topení/chlazení",
+        "state": {
+          "off": "Nečinný",
+          "automatic": "Automatické přepínání",
+          "forced": "Vždy topení",
+          "cooling": "Vždy chlazení"
+        }
+      },
+      "heating_circuit_heat_cool_mode": {
+        "name": "Podpora topení/chlazení",
+        "state": {
+          "heat": "Pouze topení",
+          "cool": "Pouze chlazení",
+          "heat_cool": "Topení a chlazení"
+        }
+      },
+      "heating_circuit_type": {
+        "name": "Typ topného okruhu",
+        "state": {
+          "floor": "Podlahové topení",
+          "radiator": "Radiátory",
+          "convector": "Konvektory"
+        }
+      },
+      "heating_circuit_control_type": {
+        "name": "Typ regulace",
+        "state": {
+          "room": "Řízeno pokojovou teplotou",
+          "outdoor": "Řízeno venkovní teplotou",
+          "wdc": "Ekvitermní",
+          "wdcoptimized": "Optimalizovaná ekvitermní",
+          "wdcsimplified": "Zjednodušená ekvitermní",
+          "mpc": "Prediktivní regulace s modelem",
+          "room_flow_temperature": "Výstupní teplota řízená podle místnosti",
+          "room_power": "Výkon řízený podle místnosti",
+          "constant": "Konstantní regulace",
+          "valve_feedback_control": "Regulace se zpětnou vazbou ventilů",
+          "isrc": "Individuální regulace místností (iSRC)",
+          "vbh": "VBH",
+          "external": "Externí regulace"
+        }
+      },
+      "heating_circuit_cooling_control_type": {
+        "name": "Typ regulace chlazení",
+        "state": {
+          "constant": "Konstantní teplota",
+          "rtcc_with_dewpoint": "Regulace pokojové teploty s hlídáním rosného bodu",
+          "rtcc_no_dewpoint": "Regulace pokojové teploty bez hlídání rosného bodu"
+        }
+      },
+      "hot_water_temperature_level": {
+        "name": "Teplotní úroveň teplé vody",
+        "state": {
+          "off": "Vypnuto",
+          "low": "Eco",
+          "high": "Komfort",
+          "eco": "Eco+"
+        }
+      },
+      "hot_water_operation_mode": {
+        "name": "Provozní režim teplé vody",
+        "state": {
+          "off": "Vypnuto",
+          "low": "Eco",
+          "high": "Komfort",
+          "ownprogram": "Automatický",
+          "eco": "Eco+",
+          "follow_heating_program": "Podle programu topení"
+        }
+      },
+      "hot_water_overall_status": {
+        "name": "Stav teplé vody",
+        "state": {
+          "dhw_enabled": "Teplá voda zapnuta",
+          "dhw_disabled": "Teplá voda vypnuta",
+          "auto": "Automatický",
+          "manual_off": "Vypnuto",
+          "manual_on_low": "Eco",
+          "manual_on_eco": "Eco+",
+          "manual_on_high": "Komfort",
+          "extra": "Extra ohřev teplé vody",
+          "away": "Nepřítomnost",
+          "holiday": "Dovolená",
+          "floor_drying": "Vysoušení podlahy",
+          "td": "Termická dezinfekce"
+        }
+      },
+      "on_off_state": {
+        "name": "Stav",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto",
+          "stop": "Vypnuto",
+          "start": "Zapnuto"
+        }
+      },
+      "four_way_valve_position": {
+        "name": "Čtyřcestný ventil",
+        "state": {
+          "off": "Topení",
+          "on": "Chlazení/odmrazování"
+        }
+      },
+      "dhw_valve_position": {
+        "name": "Třícestný ventil teplé vody",
+        "state": {
+          "off": "Topení",
+          "on": "Teplá voda"
+        }
+      },
+      "heat_demand": {
+        "name": "Aktuální požadavek na teplo",
+        "state": {
+          "none": "Žádný",
+          "ch": "Topení",
+          "dhw": "Teplá voda",
+          "frost": "Ochrana proti zamrznutí",
+          "ch_dhw": "Topení a teplá voda",
+          "ch_frost": "Topení a ochrana proti zamrznutí",
+          "dhw_frost": "Teplá voda a ochrana proti zamrznutí",
+          "ch_dhw_frost": "Topení, teplá voda a ochrana proti zamrznutí"
+        }
+      },
+      "compressor_status": {
+        "name": "Stav kompresoru",
+        "state": {
+          "off": "Vypnuto",
+          "heating": "Topení domu",
+          "cooling": "Chlazení domu",
+          "dhw": "Teplá voda",
+          "pool": "Ohřev bazénu",
+          "pool_heat": "Topení domu + ohřev bazénu",
+          "defrost": "Odmrazování",
+          "alarm": "Blokováno"
+        }
+      },
+      "electric_auxiliary_heater_status": {
+        "name": "Stav přídavného topení",
+        "state": {
+          "off": "Vypnuto",
+          "heating": "Topení domu",
+          "dhw": "Teplá voda",
+          "pool": "Ohřev bazénu",
+          "pool_heat": "Topení domu + ohřev bazénu",
+          "defrost": "Odmrazování",
+          "alarm": "Blokováno"
+        }
+      },
+      "auxiliary_heater_operation_mode": {
+        "name": "Provozní režim přídavného topení",
+        "state": {
+          "off": "Vypnuto",
+          "manual": "Zapnuto",
+          "auto": "Automatický"
+        }
+      },
+      "refrigerant_status": {
+        "name": "Stav okruhu chladiva",
+        "state": {
+          "idle": "Nečinný",
+          "startup": "Spouštění",
+          "heating": "Topení",
+          "cooling": "Chlazení",
+          "defrost": "Odmrazování",
+          "passive_defrost": "Pasivní odmrazování",
+          "shutoff": "Odstaveno",
+          "alarm": "Alarm",
+          "test_mode": "Testovací režim",
+          "off": "Vypnuto",
+          "dhw": "Teplá voda",
+          "pool": "Bazén",
+          "pool_heat": "Ohřev bazénu"
+        }
+      },
+      "ventilation_fan_level": {
+        "name": "Stupeň odtahového ventilátoru",
+        "state": {
+          "off": "Vypnuto",
+          "min": "Stupeň ventilátoru 1",
+          "red": "Stupeň ventilátoru 2",
+          "nom": "Stupeň ventilátoru 3",
+          "max": "Stupeň ventilátoru 4",
+          "dem": "Podle potřeby"
+        }
+      },
+      "pv_contact_state": {
+        "name": "Stav kontaktu PV",
+        "state": {
+          "inactive": "Neaktivní",
+          "active": "Aktivní"
+        }
+      },
+      "data_processing_status": {
+        "name": "Stav zpracování dat",
+        "state": {
+          "in_progress": "Probíhá",
+          "completed": "Dokončeno"
+        }
+      },
+      "season_optimizer_mode": {
+        "name": "Aktuální stav topení/chlazení",
+        "state": {
+          "off": "Nečinný",
+          "heating": "Topení",
+          "cooling": "Chlazení",
+          "automatic": "Automatické přepínání",
+          "forced_heat": "Vždy topení",
+          "forced_cool": "Vždy chlazení"
+        }
+      },
+      "isrc_support_status": {
+        "name": "Podpora iSRC",
+        "state": {
+          "not_supported_incompatible_controller": "Nepodporováno: nekompatibilní regulátor",
+          "not_supported_pairing_enabled": "Nepodporováno: párování zapnuto",
+          "supported": "Podporováno",
+          "in_evaluation": "Vyhodnocuje se"
+        }
+      },
+      "isrc_installation_status": {
+        "name": "Stav instalace iSRC",
+        "state": {
+          "timeout": "Vypršel časový limit"
+        }
+      },
+      "heat_pump_type": {
+        "name": "Typ tepelného čerpadla",
+        "state": {
+          "air_water": "Vzduch/voda",
+          "brine_water": "Solanka/voda",
+          "exhaust_air": "Odpadní vzduch/voda"
+        }
+      },
+      "heat_source_type": {
+        "name": "Typ zdroje tepla",
+        "state": {
+          "no_appliance": "Žádný spotřebič",
+          "heatpump": "Tepelné čerpadlo",
+          "boiler": "Kotel",
+          "boiler_oil": "Olejový kotel",
+          "boiler_gas": "Plynový kotel",
+          "boiler_unknown": "Neznámý kotel",
+          "hybrid": "Hybridní soustava"
+        }
+      },
+      "system_type": {
+        "name": "Typ soustavy",
+        "state": {
+          "heatpump_single": "Jedno tepelné čerpadlo",
+          "heatpump_cascade": "Kaskáda tepelných čerpadel",
+          "boiler_single": "Jeden kotel",
+          "hybrid": "Hybridní soustava"
+        }
+      },
+      "energy_management_status": {
+        "name": "Stav energetického managementu",
+        "state": {
+          "not_connected": "Nepřipojeno",
+          "inactive": "Neaktivní",
+          "active_ch": "Aktivní pro topení",
+          "active_dhw": "Aktivní pro teplou vodu",
+          "active_em": "Aktivní energetický management",
+          "connected": "Připojeno",
+          "active": "Aktivní",
+          "error": "Chyba"
+        }
+      },
+      "outdoor_temperature_source": {
+        "name": "Zdroj venkovní teploty",
+        "state": {
+          "appliance": "Topná soustava",
+          "internet": "Internet",
+          "roomcontroller": "Prostorový regulátor"
+        }
+      },
+      "support_status": {
+        "name": "Stav podpory",
+        "state": {
+          "not_supported": "Nepodporováno",
+          "supported": "Podporováno",
+          "active": "Aktivní"
+        }
+      },
+      "update_status": {
+        "name": "Stav aktualizace",
+        "state": {
+          "idle": "Nečinný",
+          "running": "Běží",
+          "success": "Úspěšné",
+          "failed": "Selhalo"
+        }
+      },
+      "pressure_status": {
+        "name": "Stav tlaku v soustavě (vypočteno)",
+        "state": {
+          "critical_low": "Kriticky nízký",
+          "low": "Nízký",
+          "normal": "Normální",
+          "high": "Vysoký",
+          "critical_high": "Kriticky vysoký"
+        }
+      },
+      "active_faults": {
+        "name": "Aktivní poruchy"
+      },
+      "active_notifications": {
+        "name": "Aktivní hlášení"
+      },
+      "next_holiday": {
+        "name": "Další dovolená"
+      },
+      "pointt_api_requests_total": {
+        "name": "Počet požadavků PointT API celkem"
+      },
+      "pointt_api_requests_last_hour": {
+        "name": "Požadavky PointT API – poslední hodina"
+      },
+      "pointt_api_response_time_last_hour": {
+        "name": "Doba odezvy PointT API – poslední hodina"
+      },
+      "softener_regeneration_phase": {
+        "state": {
+          "end": "Konec",
+          "backwash": "Zpětné proplachování",
+          "rinse": "Oplach",
+          "normal": "Normální provoz",
+          "brine_draw": "Nasávání solanky",
+          "brine_preparation": "Příprava solanky",
+          "refill": "Doplnění"
+        }
+      },
+      "rrc_user_mode": {
+        "state": {
+          "manual": "Ruční",
+          "clock": "Časový program"
+        }
+      },
+      "bacon_purifier_air_quality": {
+        "name": "Kvalita vzduchu",
+        "state": {
+          "good": "Dobrá",
+          "fair": "Přijatelná",
+          "poor": "Špatná",
+          "bad": "Velmi špatná"
+        }
+      },
+      "bacon_purifier_pm2_5": {
+        "name": "PM2.5"
+      },
+      "bacon_purifier_tvoc": {
+        "name": "Hodnota TVOC"
+      },
+      "bacon_purifier_temperature": {
+        "name": "Pokojová teplota"
+      },
+      "bacon_purifier_humidity": {
+        "name": "Relativní vlhkost"
+      },
+      "bacon_purifier_filter_life": {
+        "name": "Zbývající životnost filtru"
+      },
+      "bacon_purifier_filter_status": {
+        "name": "Stav filtru",
+        "state": {
+          "ok": "OK",
+          "warning": "Blíží se výměna",
+          "error": "Vyměňte filtr"
+        }
+      },
+      "bacon_dry_temperature": {
+        "name": "Pokojová teplota"
+      },
+      "bacon_dry_humidity": {
+        "name": "Relativní vlhkost"
+      },
+      "bacon_dry_operating_status": {
+        "name": "Provozní stav",
+        "state": {
+          "off": "Vypnuto",
+          "running": "Běží",
+          "idle": "Nečinný",
+          "water_tank_full": "Nádrž na vodu plná",
+          "defrosting": "Odmrazování",
+          "device_error": "Hlášena chyba zařízení"
+        }
+      },
+      "wallbox_state": {
+        "name": "Stav nabíjení",
+        "state": {
+          "initializing": "Inicializace",
+          "available": "Dostupné",
+          "authenticated": "Ověřeno",
+          "preparing": "Příprava",
+          "charging": "Nabíjení",
+          "suspended_ev": "Pozastaveno vozidlem",
+          "suspended_evse": "Pozastaveno nabíjecí stanicí",
+          "faulted": "Porucha",
+          "locked": "Uzamčeno",
+          "limited": "Omezeno",
+          "phase_switch": "Přepínání fází"
+        }
+      },
+      "wallbox_power": {
+        "name": "Nabíjecí výkon"
+      },
+      "wallbox_energy": {
+        "name": "Hlášená nabitá energie"
+      },
+      "wallbox_duration": {
+        "name": "Doba aktivního nabíjení"
+      },
+      "wallbox_current_limit": {
+        "name": "Hlášený proudový limit"
+      },
+      "wallbox_charging_start": {
+        "name": "Zahájení nabíjení"
+      },
+      "wallbox_role": {
+        "name": "Role nabíjecí stanice",
+        "state": {
+          "standalone": "Samostatná",
+          "leader": "Vedoucí",
+          "follower": "Podřízená"
+        }
+      },
+      "wallbox_hardware_current_limit": {
+        "name": "Hardwarový proudový limit"
+      },
+      "smart_grid_mode": {
+        "name": "Režim Smart Grid",
+        "state": {
+          "blocked": "Blokováno",
+          "normal": "Normální",
+          "preferred": "Preferováno",
+          "forced": "Vynuceno",
+          "not_used": "Nepoužito"
+        }
+      },
+      "signal_season_mode": {
+        "name": "Sezónní režim",
+        "state": {
+          "heating": "Topení",
+          "idle": "Nečinný",
+          "cooling": "Chlazení"
+        }
+      },
+      "signal_heat_cool": {
+        "name": "Stav topení/chlazení",
+        "state": {
+          "idle": "Nečinný",
+          "heat": "Topení",
+          "cool": "Chlazení"
+        }
+      },
+      "signal_holiday_slot": {
+        "name": "Období dovolené",
+        "state": {
+          "idle": "Neplánováno",
+          "planned": "Naplánováno",
+          "active": "Aktivní"
+        }
+      },
+      "signal_true_false": {
+        "name": "Stav",
+        "state": {
+          "true": "Ano",
+          "false": "Ne"
+        }
+      },
+      "volume_flow": {
+        "state_attributes": {
+          "measuring_range": {
+            "name": "Rozsah měření",
+            "state": {
+              "below": "Pod rozsahem měření"
+            }
+          }
+        }
+      }
+    },
+    "binary_sensor": {
+      "holiday_active": {
+        "name": "Režim dovolené aktivní"
+      },
+      "cloud_control": {
+        "name": "Cloudové ovládání dostupné",
+        "state_attributes": {
+          "reason": {
+            "name": "Důvod",
+            "state": {
+              "auth_required": "Vyžadováno přihlášení",
+              "cloud_stopped": "Cloudový přístup zastaven",
+              "rate_limited": "Pozastaveno po omezení počtu požadavků",
+              "protection_pause": "Ochranná pauza po opakovaných chybách",
+              "cloud_unreachable": "Cloud nedosažitelný",
+              "not_current": "Hodnoty zatím nejsou aktuální"
+            }
+          },
+          "until": {
+            "name": "Do"
+          }
+        }
+      },
+      "system_fault": {
+        "name": "Porucha soustavy"
+      },
+      "bacon_connectivity": {
+        "name": "Připojení zařízení"
+      },
+      "bacon_dhw_energy_saving": {
+        "name": "Úsporný provoz aktivní"
+      },
+      "bacon_dhw_standard_mode": {
+        "name": "Standardní režim aktivní"
+      },
+      "bacon_dhw_thermal_disinfection": {
+        "name": "Termická dezinfekce aktivní"
+      },
+      "bacon_dhw_vacation": {
+        "name": "Režim dovolené aktivní"
+      },
+      "bacon_dhw_top_heater": {
+        "name": "Horní elektrický ohřívač aktivní"
+      },
+      "bacon_dhw_bottom_heater": {
+        "name": "Dolní elektrický ohřívač aktivní"
+      },
+      "bacon_dry_water_tank_full": {
+        "name": "Nádrž na vodu plná"
+      },
+      "bacon_dry_defrosting": {
+        "name": "Odmrazování"
+      },
+      "bacon_dry_condensate_pump": {
+        "name": "Kondenzátní čerpadlo běží"
+      },
+      "bacon_dry_idle": {
+        "name": "Klidový stav"
+      },
+      "bacon_dry_device_error": {
+        "name": "Hlášená chyba zařízení"
+      }
+    },
+    "calendar": {
+      "holiday_periods": {
+        "name": "Období dovolené"
+      }
+    },
+    "event": {
+      "system_notifications": {
+        "name": "Hlášení soustavy"
+      }
+    },
+    "button": {
+      "softener_start_regeneration": {
+        "name": "Spustit regeneraci"
+      }
+    },
+    "water_heater": {
+      "bacon_dhw": {
+        "name": "Teplá voda",
+        "state": {
+          "off": "Vypnuto",
+          "electric": "Elektrický ohřívač",
+          "economy": "Ekonomický",
+          "hybrid": "Hybridní",
+          "smart": "Smart",
+          "comfort": "Komfort",
+          "dual": "Dual",
+          "eco": "Eco"
+        },
+        "state_attributes": {
+          "operation_mode": {
+            "state": {
+              "off": "Vypnuto",
+              "electric": "Elektrický ohřívač",
+              "economy": "Ekonomický",
+              "hybrid": "Hybridní",
+              "smart": "Smart",
+              "comfort": "Komfort",
+              "dual": "Dual",
+              "eco": "Eco"
+            }
+          }
+        }
+      },
+      "pointt_dhw": {
+        "name": "Teplá voda",
+        "state": {
+          "off": "Vypnuto",
+          "low": "Eco",
+          "high": "Komfort",
+          "ownprogram": "Automatický",
+          "eco": "Eco+",
+          "follow_heating_program": "Podle časového programu topení"
+        },
+        "state_attributes": {
+          "operation_mode": {
+            "state": {
+              "off": "Vypnuto",
+              "low": "Eco",
+              "high": "Komfort",
+              "ownprogram": "Automatický",
+              "eco": "Eco+",
+              "follow_heating_program": "Podle časového programu topení"
+            }
+          }
+        }
+      }
+    },
+    "climate": {
+      "bacon_rac": {
+        "name": "Klimatizace",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automatický",
+              "quiet": "Tichý",
+              "low": "Nízký",
+              "medium": "Střední",
+              "high": "Vysoký",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Vypnuto",
+              "on": "Zapnuto"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Vypnuto",
+              "on": "Zapnuto"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Žádný",
+              "eco": "Eco"
+            }
+          }
+        }
+      }
+    },
+    "fan": {
+      "bacon_purifier_fan": {
+        "name": "Čistička vzduchu",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "auto": "Automatický",
+              "manual": "Ruční",
+              "silent": "Tichý"
+            }
+          }
+        }
+      }
+    },
+    "humidifier": {
+      "bacon_dry_dehumidifier": {
+        "name": "Odvlhčovač",
+        "state_attributes": {
+          "mode": {
+            "state": {
+              "auto": "Automatický",
+              "night": "Noc",
+              "laundry": "Sušení prádla"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,2043 @@
+{
+  "title": "Bosch/Buderus Home Comfort",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Połącz Home Comfort",
+        "description": "Wybierz, w jaki sposób Home Assistant łączy się z Twoją instalacją.\n\n**Dostęp przez chmurę** loguje się na Twoje konto. Udostępnia sterowanie, programy czasowe, urlopy i informacje o instalacji.\n\n**Dostęp lokalny** łączy się z bramką w Twojej sieci domowej. Tylko odczytuje: bez sterowania i bez ustawień. Wiele odczytów aktualizuje częściej i może dodać odczyty techniczne, których chmura nie udostępnia, takie jak obieg czynnika chłodniczego, pompy i sygnały wewnętrzne.\n\nKażdy dostęp ma odczyty, których drugi nie ma. Jeśli możliwe są oba, zalecany jest **dostęp przez chmurę i lokalny**.",
+        "menu_options": {
+          "cloud": "Dostęp przez chmurę",
+          "cloud_local": "Dostęp przez chmurę i lokalny (zalecane)",
+          "local_only": "Tylko dostęp lokalny"
+        }
+      },
+      "cloud": {
+        "title": "Połącz konto instalacji grzewczej",
+        "description": "Wybierz markę aplikacji mobilnej, która jest już połączona z instalacją grzewczą. Wybierz **Bosch** dla aplikacji Bosch lub **Buderus** dla aplikacji Buderus. Marka aplikacji jest ważniejsza niż logo na urządzeniu.",
+        "data": {
+          "brand": "Marka"
+        }
+      },
+      "auth": {
+        "title": "Zaloguj się za pomocą SingleKey ID",
+        "description": "SingleKey ID to to samo logowanie, którego używa Twoja aplikacja Bosch lub Buderus. Użyj tego samego adresu e-mail lub numeru telefonu i tego samego hasła. Nie potrzebujesz nowego konta i **nie** wpisujesz hasła w Home Assistant.\n\n1. Pozostaw to okno otwarte i otwórz [SingleKey ID]({authorization_url}) w nowej karcie Chrome. Zawsze używaj tego świeżo wygenerowanego linku.\n2. Naciśnij tam `F12` i otwórz **Console** w narzędziach deweloperskich.\n3. Zaloguj się danymi SingleKey ID używanymi w aplikacji grzewczej.\n4. Po zalogowaniu może pojawić się komunikat o problemie z siecią. W takim przypadku zwykle oznacza to tylko, że Chrome nie mógł otworzyć adresu aplikacji `{redirect_scheme}://`.\n5. Znajdź w konsoli czerwony komunikat **Failed to launch** lub **Connecting to**. Kliknij prawym przyciskiem myszy niebieski adres `{redirect_scheme}://` w tym komunikacie i wybierz **Copy link address**.\n6. Wróć do tego okna, wklej poniżej cały adres i wybierz **OK**. Ze względów bezpieczeństwa pole może wyświetlać kropki.\n\nUżyj adresu z tej właśnie próby logowania i nie kopiuj samego parametru `code`. Pełny adres zawiera krótkotrwały kod jednorazowy. Nigdy nie udostępniaj go w zgłoszeniu, na czacie, w zrzucie ekranu ani w logu.",
+        "data": {
+          "redirect_url": "Pełny adres przekierowania"
+        }
+      },
+      "auth_wait": {
+        "title": "Zaczekaj przed ponownym logowaniem",
+        "description": "SingleKey ID tymczasowo ogranicza liczbę żądań logowania. Zaczekaj jeszcze co najmniej {seconds} s, a następnie wybierz **Prześlij**. Następny krok poda nowy link do logowania."
+      },
+      "retry": {
+        "title": "Ponów wykrywanie bramek",
+        "description": "Logowanie się powiodło, ale nie udało się wczytać listy urządzeń. Sprawdź połączenie Home Assistant z internetem, zaczekaj chwilę i spróbuj ponownie."
+      },
+      "selection_expired": {
+        "title": "Wczytaj listę urządzeń ponownie",
+        "description": "Lista urządzeń jest starsza niż pięć minut i przed zapisaniem musi zostać wczytana ponownie. Pozostajesz zalogowany. Wybierz **Prześlij**, aby ponownie wczytać listę, a następnie wybierz urządzenia."
+      },
+      "gateways": {
+        "title": "Wybierz urządzenia",
+        "description": "Wybierz bramki i dodatkowe urządzenia, których ma używać Home Assistant. Końcowe znaki pomagają odróżnić urządzenia. Dostępne odczyty i elementy sterowania zależą od modelu i możliwości zgłaszanych przez urządzenie.",
+        "data": {
+          "gateway_ids": "Bramki",
+          "bacon_device_ids": "Dodatkowe urządzenia w chmurze"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Zaloguj się ponownie",
+        "description": "Zapisane uwierzytelnienie nie jest już ważne. Powtórz logowanie przez SingleKey ID. Dotychczasowy wybór urządzeń zostanie zachowany."
+      },
+      "reconfigure": {
+        "title": "Skonfiguruj ponownie i wykryj na nowo",
+        "description": "Wybierz markę aplikacji, bramki i profil odpytywania. Zapisanie przeładowuje integrację i wykonuje pełne wykrywanie zasobów. Użyj tego po aktualizacji oprogramowania układowego lub gdy zmieniły się obiegi, układy ciepłej wody, źródła ciepła albo bramki. **Standardowy** odczytuje bieżące wartości robocze co minutę. **Oszczędzający chmurę** zmniejsza ruch do chmury, odczytując je co dwie minuty, a wszystkie pozostałe zmienne wartości rzadziej. Zmiana marki aplikacji wymaga ponownego logowania przez SingleKey ID.",
+        "data": {
+          "brand": "Marka aplikacji",
+          "gateway_ids": "Bramki",
+          "polling_profile": "Profil odpytywania",
+          "bacon_device_ids": "Dodatkowe urządzenia w chmurze"
+        }
+      },
+      "reconfigure_retry": {
+        "title": "Ponów wykrywanie bramek",
+        "description": "Nie udało się wczytać bieżącej listy bramek. Sprawdź połączenie Home Assistant z internetem, zaczekaj chwilę i wybierz **Prześlij**."
+      },
+      "local_owner": {
+        "title": "Wybierz istniejącą konfigurację",
+        "description": "Wybierz konfigurację, do której należy ta lokalna bramka. Nie zostanie utworzona kolejna instalacja.",
+        "data": {
+          "owner": "Istniejąca konfiguracja"
+        }
+      },
+      "local_target": {
+        "title": "Wybierz instalację",
+        "description": "Wybierz instalację, z którą ma zostać nawiązane połączenie lokalne. Tożsamość jej bramki zostanie sprawdzona przed zapisaniem.",
+        "data": {
+          "target": "Instalacja / bramka"
+        }
+      },
+      "local_address": {
+        "title": "Adres lokalnej bramki",
+        "description": "Wybierz wykryty adres albo wprowadź adres IP lub nazwę hosta. Wykrywanie nie zmienia żadnego zapisanego połączenia.",
+        "data": {
+          "address": "Adres IP lub nazwa hosta"
+        }
+      },
+      "local_method": {
+        "title": "Połącz z lokalną bramką",
+        "description": "Zaloguj się za pomocą etykiety urządzenia albo użyj istniejącego tokenu dostępu. Lokalny dostęp do urządzenia jest tylko do odczytu.",
+        "data": {
+          "method": "Metoda logowania"
+        }
+      },
+      "local_method_keep": {
+        "title": "Połącz ponownie z lokalną bramką",
+        "description": "Zalecane jest nowe logowanie za pomocą **etykiety urządzenia**.\n\nZachowaj obecny token tylko wtedy, gdy masz pewność, że certyfikat, który zaraz potwierdzisz, należy do Twojej własnej bramki, na przykład tuż po aktualizacji lub resecie, który sam rozpocząłeś. Przy tej opcji zapisany token jest wysyłany do urządzenia, które przedstawia nowo potwierdzony certyfikat. Jeśli nie jest to Twoja bramka, otrzymuje działający token do Twojej instalacji. Logowanie za pomocą etykiety urządzenia jest bezpieczniejsze: dane z etykiety działają tylko razem z przyciskami na bramce, natomiast zapisany token działa od razu dla każdego, kto go otrzyma.\n\nLokalny dostęp do urządzenia jest tylko do odczytu.",
+        "data": {
+          "method": "Metoda logowania"
+        }
+      },
+      "local_certificate": {
+        "title": "Potwierdź certyfikat bramki",
+        "description": "Home Assistant połączył się z **{host}:{port}**. Przed wysłaniem danych logowania potwierdź, że jest to Twoja bramka. Sam odcisk palca nie jest dowodem tożsamości.\n\nSHA-256: `{fingerprint}`\n\nPoprzedni odcisk palca: `{previous}`. Znak zapytania oznacza, że dla tego adresu i portu nie ma zapisanego certyfikatu.",
+        "data": {
+          "confirm": "Potwierdzam tę bramkę i jej certyfikat"
+        }
+      },
+      "local_auth": {
+        "title": "Zaloguj się za pomocą etykiety urządzenia",
+        "description": "Wprowadź Login i Pass z etykiety bramki. Aby odblokować logowanie lokalne, naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na około dwie sekundy, krócej niż trzy sekundy, i zwolnij je jednocześnie. Potwierdź krótki niebieski sygnał i kontynuuj w ciągu pięciu minut. Dostęp pozostaje na wybranym adresie LAN. To odpowiedź bramki rozstrzyga, czy logowanie zostało odblokowane. Login i hasło nie są zapisywane.",
+        "data": {
+          "login": "Login z etykiety urządzenia",
+          "password": "Pass z etykiety urządzenia",
+          "unlocked": "Odblokowałem logowanie lokalne i widziałem niebieski sygnał"
+        }
+      },
+      "local_token": {
+        "title": "Użyj istniejącego tokenu",
+        "description": "Wprowadź token dostępu do lokalnego API. Zostanie zachowany prywatnie, aby można było wznowić tę konfigurację. Połączenie danych i tożsamość bramki nadal wymagają sprawdzenia.",
+        "data": {
+          "token": "Token dostępu lokalnego"
+        }
+      },
+      "local_pending": {
+        "title": "Wznów konfigurację lokalną",
+        "description": "Poprzednia próba jest zapisana. Jeśli token został otrzymany, kontynuuj z tym tokenem. Jeśli odpowiedź zaginęła, na bramce może istnieć token, mimo że Home Assistant nie mógł go zapisać. Odrzucenie usuwa tylko lokalną kopię oczekującą i pozwala na kolejną próbę; nie unieważnia tokenów na bramce.\n\nPozostała pauza serwera: {seconds} s.",
+        "data": {
+          "action": "Następna czynność",
+          "confirm": "Rozumiem i chcę odrzucić tę oczekującą próbę"
+        }
+      },
+      "local_result": {
+        "title": "Potwierdź połączenie lokalne",
+        "description": "Sprawdzenie odczytu dla **{host}** zakończyło się powodzeniem, a bramka **{gateway}** odpowiada wybranej instalacji. Zapisanie ponownie sprawdza bieżące dane i dodaje lub aktualizuje ten dostęp w istniejącej konfiguracji.",
+        "data": {
+          "confirm": "Zapisz to połączenie lokalne"
+        }
+      },
+      "local_retry": {
+        "title": "Sprawdzenie lokalne nie mogło zostać zakończone",
+        "description": "Sprawdź poniższy komunikat i spróbuj ponownie, gdy będziesz gotowy. Żaden token nie jest tworzony ani zastępowany automatycznie."
+      }
+    },
+    "error": {
+      "auth_expired": "Ta próba logowania wygasła. Otwórz nowy link SingleKey ID wyświetlony powyżej i zaloguj się ponownie.",
+      "auth_restart": "Tej próby logowania nie można już użyć. Otwórz nowy link SingleKey ID wyświetlony powyżej i zaloguj się ponownie.",
+      "cannot_connect": "Usługa PointT jest nieosiągalna. Sprawdź połączenie z internetem, zaczekaj chwilę i spróbuj ponownie.",
+      "invalid_auth": "SingleKey ID odrzucił autoryzację lub jej ważność wygasła. Użyj nowego linku SingleKey ID wyświetlonego powyżej i powtórz logowanie.",
+      "invalid_redirect": "Home Assistant nie mógł użyć tego adresu. Skopiuj pełny adres aplikacji z komunikatu ‘Failed to launch’ w konsoli Chrome. Musi zaczynać się od schematu wyświetlonego powyżej i należeć do bieżącej próby logowania.",
+      "gateway_changed": "Lista bramek zmieniła się, gdy to okno było otwarte. Zamknij okno i ponownie otwórz opcję Skonfiguruj ponownie.",
+      "select_gateway": "Przed kontynuowaniem wybierz z listy co najmniej jedno urządzenie.",
+      "unknown": "Wystąpił nieoczekiwany błąd PointT. Zaczekaj chwilę i spróbuj ponownie.",
+      "bacon_unavailable": "Lista dodatkowych urządzeń w chmurze jest obecnie niedostępna. Zaczekaj co najmniej minutę i spróbuj ponownie.",
+      "bacon_selection_unavailable": "Nie można teraz odpytać dodatkowych urządzeń w chmurze. Możesz wybrać osiągalne bramki grzewcze. Dotychczasowy wybór urządzeń w chmurze zostanie zachowany.",
+      "reauth_targets_missing": "To logowanie nie znalazło żadnej z włączonych instalacji i żadnego z włączonych urządzeń. Poprzednie dane logowania zostają zachowane. Sprawdź, czy zalogowałeś się na to samo konto co wcześniej. Jeśli instalacje zostały usunięte z konta, otwórz Konfiguruj → Połączenia → dostęp przez chmurę: włącz w sekcji **Używaj dla instalacji i urządzeń** instalację, która nadal jest na koncie, albo wyłącz usunięte i usuń je opcją **Zapomnij odznaczone instalacje**. Jeśli żadna nie pozostała, usuń dostęp przez chmurę i połącz go ponownie.",
+      "cloud_rate_limited": "Chmura zażądała przerwy. Zaczekaj przed ponowną próbą.",
+      "local_invalid_address": "Wprowadź adres IP lub nazwę hosta bez adresu URL, ścieżki i danych logowania.",
+      "local_interface_required": "Ten adres IPv6 wymaga podania interfejsu sieciowego na hoście Home Assistant.",
+      "local_invalid_token": "Format tokenu jest nieprawidłowy. Skopiuj cały token bez spacji.",
+      "local_invalid_credentials": "Sprawdź Login i Pass na etykiecie bramki i wprowadź je ponownie.",
+      "local_unlock_required": "Odblokuj logowanie lokalne na bramce i potwierdź niebieski sygnał przed ponowną próbą.",
+      "local_token_database_full": "Baza tokenów bramki jest pełna. Przejrzyj istniejące tokeny, zanim utworzysz kolejny. Żaden token nie został usunięty.",
+      "local_rate_limited": "Bramka zażądała przerwy. Zaczekaj, aż upłynie wyświetlony czas.",
+      "local_service_unavailable": "Usługa bramki jest tymczasowo niedostępna. Zaczekaj i spróbuj ponownie.",
+      "local_timeout": "Lokalna bramka nie odpowiedziała w wymaganym czasie. Sprawdź połączenie i spróbuj ponownie.",
+      "local_connection_failed": "Home Assistant nie mógł połączyć się z tą bramką. Sprawdź jej adres i połączenie sieciowe.",
+      "local_certificate_changed": "Nie udało się potwierdzić certyfikatu albo uległ on zmianie. Przed kontynuowaniem sprawdź ponownie certyfikat bramki.",
+      "local_token_rejected": "Bramka odrzuciła ten token. Sprawdź go albo celowo odrzuć tę próbę, aby użyć innego.",
+      "local_resource_forbidden": "Bramka odmówiła dostępu do wymaganego zasobu. Sam token nie dowodzi prawa do odczytu.",
+      "local_missing_resource": "Bramka nie udostępnia wymaganego zasobu konfiguracji.",
+      "local_unknown_firmware": "Nie udało się zweryfikować wersji oprogramowania układowego.",
+      "local_old_firmware": "Przed skonfigurowaniem połączenia lokalnego zaktualizuj oprogramowanie układowe bramki.",
+      "local_unsupported_brand": "Marka tej bramki nie jest obsługiwana przez udokumentowany interfejs lokalny.",
+      "local_incomplete_system": "Informacje o instalacji z bramki nie są jeszcze kompletne. Spróbuj ponownie sprawdzić odczyt później.",
+      "local_invalid_response": "Nie udało się zweryfikować wymaganej odpowiedzi bramki.",
+      "local_identity_unverified": "Ta instalacja nie została jeszcze jednoznacznie dopasowana. Pierwsza konfiguracja wymaga dostępnego dostępu przez chmurę oraz zgodnych identyfikatorów bramki i modułu z obu interfejsów. Zweryfikowanych powiązań można następnie używać bez chmury.",
+      "local_identity_conflict": "Tożsamość bramki jest sprzeczna z wybraną instalacją lub inną konfiguracją.",
+      "local_configuration_changed": "Wybrane połączenie lub instalacja uległy zmianie. Zamknij to okno i przejrzyj bieżącą konfigurację przed kontynuowaniem.",
+      "local_pending_exists": "Dla tej instalacji lub adresu bramki istnieje już inna oczekująca próba. Najpierw wznów ją albo celowo odrzuć.",
+      "local_storage_failed": "Nie udało się odczytać lub zapisać prywatnego rekordu konfiguracji. Przed kontynuowaniem sprawdź pamięć masową Home Assistant.",
+      "local_completion_uncertain": "Połączenie mogło już zostać zapisane. Przed kolejną zmianą ponownie otwórz konfigurację lokalną, aby sprawdzić jego stan.",
+      "local_unexpected": "Nie udało się dokończyć sprawdzenia lokalnego. Oczekujący token, jeśli został otrzymany, jest zachowany do odzyskania.",
+      "local_confirmation_required": "Przed kontynuowaniem wyraźnie potwierdź tę czynność.",
+      "local_busy": "Dostęp lokalny jest obecnie zajęty lub wstrzymany. Zaczekaj przed ponowną próbą.",
+      "local_cloud_auth_required": "Zaloguj się ponownie do dostępu przez chmurę, aby można było zweryfikować pierwsze powiązanie. Już zweryfikowany dostęp lokalny uruchamia się niezależnie od chmury.",
+      "local_cloud_rate_limited": "Chmura obecnie ogranicza liczbę żądań. Zaczekaj na koniec pauzy, a następnie ponów porównanie tożsamości.",
+      "local_cloud_unavailable": "Nie udało się odczytać informacji o instalacji z chmury. Sprawdź dostęp przez chmurę i ponów porównanie tożsamości.",
+      "local_auth_forbidden": "Usługa logowania bramki odrzuciła żądanie. Sprawdź, czy na bramce dozwolony jest dostęp lokalny, a następnie spróbuj ponownie.",
+      "local_creation_uncertain": "Nie wiadomo, czy bramka utworzyła token, ponieważ jej odpowiedź była niekompletna. Kontynuuj z oczekującą próbą; nowy token nie jest tworzony automatycznie.",
+      "local_plant_known": "Ta bramka należy już do skonfigurowanej instalacji. Wybierz tę instalację zamiast nowej."
+    },
+    "abort": {
+      "configuration_changed": "Ustawienia połączenia zmieniły się, gdy to okno było otwarte. Zamknij je i spróbuj ponownie.",
+      "already_configured": "To konto instalacji grzewczej lub co najmniej jedna wybrana bramka jest już skonfigurowana w Home Assistant.",
+      "invalid_flow": "Ta sesja konfiguracji jest niekompletna lub wygasła. Zamknij okno i ponownie dodaj Bosch/Buderus Home Comfort.",
+      "no_gateways": "Nie znaleziono żadnych urządzeń. Sprawdź, czy wybrana marka i konto SingleKey ID odpowiadają Twojej aplikacji.",
+      "reauth_required": "Zapisane uwierzytelnienie nie jest już ważne. Zamknij to okno i wybierz Uwierzytelnij ponownie dla Bosch/Buderus Home Comfort.",
+      "reauth_successful": "Logowanie zostało pomyślnie odnowione.",
+      "reauth_wrong_account": "Wybrane konto nie odpowiada skonfigurowanym urządzeniom. Zaloguj się na oryginalne konto.",
+      "reauth_no_targets": "Ten dostęp przez chmurę nie ma już żadnych instalacji ani urządzeń, a konta, do którego należy, nie można potwierdzić. Poprzednie dane logowania zostają zachowane. Aby ponownie użyć konta w chmurze, usuń dostęp przez chmurę w sekcji Konfiguruj → Połączenia i połącz go ponownie.",
+      "reauth_successful_targets_missing": "Logowanie zostało odnowione. Nie znaleziono na koncie włączonych instalacji lub urządzeń. Liczba: {count}. Pozostają skonfigurowane. Naprawa wymienia je i wyjaśnia, jak je zapomnieć.",
+      "reconfigure_successful": "Ustawienia zostały zapisane. Bosch/Buderus Home Comfort przeładowuje się i ponownie wykrywa wszystkie dostępne zasoby.",
+      "connection_required": "Przed ponownym logowaniem wybierz połączenie w Ustawieniach.",
+      "connection_settings_required": "Zarządzaj tym dostępem w Ustawieniach i Połączeniach.",
+      "cloud_already_connected": "Połączenie z chmurą jest już skonfigurowane. Użyj jego ustawień połączenia, aby wybrać więcej urządzeń lub zalogować się ponownie. Drugie równoległe logowanie do chmury nie jest jeszcze obsługiwane.",
+      "cloud_setup_in_progress": "Otwarta jest już inna konfiguracja chmury. Najpierw zakończ lub zamknij to okno.",
+      "cloud_setup_taken_over": "Nowsze okno konfiguracji chmury zastąpiło to okno. Zamknij to okno i kontynuuj w nowszym.",
+      "cloud_target_owned": "Wybrana instalacja lub urządzenie należy do innego skonfigurowanego wpisu albo połączenia z chmurą. Połącz je ponownie przez istniejący wpis.",
+      "cloud_selection_expired": "Ta lista urządzeń nie jest już aktualna. Przed zapisaniem ponownie otwórz wykrywanie urządzeń.",
+      "cloud_selection_changed": "Wybranego urządzenia nie ma na potwierdzonej liście. Wyszukaj ponownie.",
+      "cloud_connection_disabled": "Włącz to połączenie z chmurą przed wyszukiwaniem urządzeń.",
+      "cloud_rate_limited": "Chmura zażądała przerwy. Zaczekaj przed ponowną próbą.",
+      "local_setup_unavailable": "Konfiguracja lokalna jest niedostępna, dopóki regularne zasilanie danymi lokalnymi nie będzie gotowe.",
+      "local_session_changed": "Ta sesja konfiguracji została zakończona albo zmienił się jej wybór. Ponownie otwórz konfigurację lokalną, aby kontynuować.",
+      "local_discovery_invalid": "To ogłoszenie wykrycia nie opisuje obsługiwanego lokalnego punktu końcowego bramki.",
+      "local_existing_owner_required": "Instalację bez chmury skonfiguruj opcją „Tylko dostęp lokalny” przy dodawaniu integracji. Wykrytą bramkę można dodać do istniejącej konfiguracji.",
+      "local_target_required": "Ta konfiguracja nie ma odpowiedniej zachowanej instalacji do połączenia lokalnego.",
+      "local_setup_complete": "Dostęp lokalny został skonfigurowany.",
+      "local_pending_saved": "Oczekująca próba jest zachowana. Możesz ją wznowić z konfiguracji lokalnej.",
+      "local_storage_failed": "Nie udało się odczytać lub zapisać prywatnego rekordu konfiguracji. Przed kontynuowaniem sprawdź pamięć masową Home Assistant.",
+      "already_in_progress": "Konfiguracja dla tej lokalnej bramki jest już w toku.",
+      "cloud_local_first_other_entry": "Ta instalacja jest już skonfigurowana przez swój dostęp lokalny w innym wpisie tej integracji. Dodaj dostęp przez chmurę w tamtym wpisie."
+    },
+    "progress": {
+      "local_work": "Sprawdzanie połączenia lokalnego. Proszę czekać."
+    },
+    "flow_title": "Lokalna bramka ({host})"
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Ustawienia",
+        "menu_options": {
+          "notifications": "Powiadomienia",
+          "holidays": "Zarządzaj okresami urlopu",
+          "rrc_programs": "Programy czasowe grzania RRC",
+          "controls": "Obsługa urządzenia",
+          "connections": "Połączenia",
+          "connection_add_cloud": "Połącz dostęp przez chmurę",
+          "local_setup": "Skonfiguruj dostęp lokalny",
+          "rescan": "Wyszukaj instalację ponownie"
+        }
+      },
+      "notifications": {
+        "title": "Powiadomienia",
+        "description": "Usterki instalacji grzewczej pojawiają się pod dzwonkiem w Home Assistant. Przy wielu instalacjach wybierz te, dla których chcesz otrzymywać powiadomienia. Powiadomienia i ich odrzucenia są wspólne dla wszystkich użytkowników. Ich tekst używa języka systemu. Odrzucenie powiadomienia nie potwierdza usterki na urządzeniu. Nowe lub poważniejsze usterki pojawiają się ponownie. Zmiany obowiązują natychmiast.",
+        "data": {
+          "fault_notifications": "Pokazuj usterki instalacji grzewczej"
+        }
+      },
+      "holidays": {
+        "title": "Zarządzaj okresami urlopu",
+        "description": "Utwórz urlop albo wybierz istniejący, aby zmienić jego nazwę, daty i ustawienia grzewcze lub go usunąć. Kalendarz Okresy urlopu nadal pozostaje dostępny.",
+        "data": {
+          "holiday_period": "Urlop"
+        }
+      },
+      "delete_holiday": {
+        "title": "Usuń urlop",
+        "description": "**{holiday}**\n\nUsunąć ten urlop całkowicie? Zostanie on także usunięty z instalacji grzewczej i kalendarza. Pozostaw potwierdzenie niezaznaczone, aby wrócić bez usuwania.",
+        "data": {
+          "confirm_delete": "Usuń ten urlop całkowicie"
+        }
+      },
+      "holiday": {
+        "title": "Okres urlopu",
+        "description": "Ustaw nazwę, okres i ustawienia. Wybierz czasy co kwadrans: minuty 00, 15, 30 lub 45. Na końcu wznawiana jest normalna praca.",
+        "data": {
+          "holiday_name": "Nazwa",
+          "holiday_start": "Początek",
+          "holiday_end": "Koniec (wyłącznie)",
+          "holiday_assigned_to": "Zastosuj dla",
+          "holiday_heating_mode": "Centralne ogrzewanie",
+          "holiday_dhw_mode": "Ciepła woda użytkowa",
+          "holiday_ventilation_mode": "Wentylacja",
+          "holiday_thermal_disinfection": "Dezynfekcja termiczna",
+          "holiday_fix_temperature": "Stała temperatura",
+          "holiday_delete": "Usuń okres urlopu całkowicie"
+        }
+      },
+      "holiday_gateway": {
+        "title": "Wybierz instalację",
+        "description": "Wybierz instalację dla nowego urlopu.",
+        "data": {
+          "holiday_gateway": "Instalacja"
+        }
+      },
+      "new_holiday": {
+        "title": "Okres urlopu",
+        "description": "Ustaw nazwę, okres i ustawienia. Wybierz czasy co kwadrans: minuty 00, 15, 30 lub 45. Na końcu wznawiana jest normalna praca.",
+        "data": {
+          "holiday_name": "Nazwa",
+          "holiday_start": "Początek",
+          "holiday_end": "Koniec (wyłącznie)",
+          "holiday_assigned_to": "Zastosuj dla",
+          "holiday_heating_mode": "Centralne ogrzewanie",
+          "holiday_dhw_mode": "Ciepła woda użytkowa",
+          "holiday_ventilation_mode": "Wentylacja",
+          "holiday_thermal_disinfection": "Dezynfekcja termiczna",
+          "holiday_fix_temperature": "Stała temperatura"
+        }
+      },
+      "legacy_holiday": {
+        "title": "Okres urlopu",
+        "description": "Dostosuj **{holiday}**. To urządzenie zapisuje całe dni urlopu. Data końcowa to pierwszy dzień po urlopie. Godziny i własne nazwy nie są obsługiwane. Oferowane są tylko ustawienia i wolne miejsca na urlop zgłaszane przez urządzenie.",
+        "data": {
+          "holiday_name": "Nazwa",
+          "holiday_start": "Początek",
+          "holiday_end": "Koniec (wyłącznie)",
+          "holiday_assigned_to": "Zastosuj dla",
+          "holiday_heating_mode": "Centralne ogrzewanie",
+          "holiday_dhw_mode": "Ciepła woda użytkowa",
+          "holiday_ventilation_mode": "Wentylacja",
+          "holiday_thermal_disinfection": "Dezynfekcja termiczna",
+          "holiday_fix_temperature": "Stała temperatura",
+          "holiday_delete": "Usuń okres urlopu całkowicie"
+        }
+      },
+      "new_legacy_holiday": {
+        "title": "Okres urlopu",
+        "description": "Wybierz daty i ustawienia. To urządzenie zapisuje całe dni urlopu. Data końcowa to pierwszy dzień po urlopie. Godziny i własne nazwy nie są obsługiwane. Oferowane są tylko ustawienia i wolne miejsca na urlop zgłaszane przez urządzenie.",
+        "data": {
+          "holiday_name": "Nazwa",
+          "holiday_start": "Początek",
+          "holiday_end": "Koniec (wyłącznie)",
+          "holiday_assigned_to": "Zastosuj dla",
+          "holiday_heating_mode": "Centralne ogrzewanie",
+          "holiday_dhw_mode": "Ciepła woda użytkowa",
+          "holiday_ventilation_mode": "Wentylacja",
+          "holiday_thermal_disinfection": "Dezynfekcja termiczna",
+          "holiday_fix_temperature": "Stała temperatura"
+        }
+      },
+      "holiday_mode": {
+        "title": "Skonfiguruj urlop",
+        "description": "To urządzenie udostępnia tryb urlopowy, który można włączać i wyłączać. Nie zapisuje okresów urlopu.",
+        "data": {
+          "holiday_mode": "Tryb urlopowy"
+        }
+      },
+      "rrc_programs": {
+        "title": "Wybierz program czasowy grzania",
+        "description": "Wybierz istniejący tygodniowy program czasowy. Może być współdzielony przez kilka stref.",
+        "data": {
+          "program": "Program czasowy grzania"
+        }
+      },
+      "rrc_schedule": {
+        "title": "Wyświetl program czasowy grzania",
+        "description": "**{program}**\n\n**Poniedziałek:** {mo}\n\n**Wtorek:** {tu}\n\n**Środa:** {we}\n\n**Czwartek:** {th}\n\n**Piątek:** {fr}\n\n**Sobota:** {sa}\n\n**Niedziela:** {su}\n\nWybierz dzień tygodnia. Godziny powtarzają się co tydzień w czasie lokalnym instalacji grzewczej. ∅ oznacza, że dla tego dnia nie zapisano punktu przełączenia. Zmiany dotyczą każdej strefy używającej tego programu czasowego.",
+        "data": {
+          "day": "Dzień tygodnia"
+        }
+      },
+      "rrc_readonly": {
+        "title": "Wyświetl program czasowy grzania",
+        "description": "**{program}**\n\n**Poniedziałek:** {mo}\n\n**Wtorek:** {tu}\n\n**Środa:** {we}\n\n**Czwartek:** {th}\n\n**Piątek:** {fr}\n\n**Sobota:** {sa}\n\n**Niedziela:** {su}\n\nTen program czasowy można tu tylko wyświetlić. Nie ma edytowalnych punktów przełączenia lub zawiera nieobsługiwane ustawienia. ∅ oznacza, że nie zapisano punktu przełączenia. Zmian możesz dokonać w aplikacji producenta."
+      },
+      "rrc_point": {
+        "title": "Edytuj punkt przełączenia",
+        "description": "**{program}**\n\nWybierz godzinę w krokach pięciominutowych i temperaturę od 5 do 30 °C w krokach co 0,5 °C. Godzina powtarza się co tydzień w czasie lokalnym instalacji grzewczej. Zmiany dotyczą wszystkich przypisanych stref.",
+        "data": {
+          "time": "Godzina",
+          "temperature": "Temperatura"
+        }
+      },
+      "rrc_day": {
+        "title": "Wybierz punkt przełączenia",
+        "description": "**{program}**",
+        "data": {
+          "point": "Punkt przełączenia"
+        }
+      },
+      "controls": {
+        "title": "Wybierz urządzenie",
+        "data": {
+          "installation": "Urządzenie"
+        }
+      },
+      "operate": {
+        "title": "Obsługa urządzenia",
+        "description": "Wybierz sekcję i dostosuj ustawienia. Zastosuj zapisuje tylko Twoje zmiany. Przy zmianie kilku ustawień każde jest potwierdzane osobno.",
+        "data": {
+          "controls": "Elementy sterowania"
+        },
+        "submit": "Zastosuj"
+      },
+      "connections": {
+        "title": "Połączenia",
+        "description": "Wybierz dostęp, którym chcesz zarządzać.",
+        "data": {
+          "connection": "Połączenie"
+        }
+      },
+      "connection_test": {
+        "title": "Test połączenia",
+        "description": "{result}"
+      },
+      "connection": {
+        "title": "Zarządzaj połączeniem",
+        "description": "{status}",
+        "menu_options": {
+          "connection_test": "Przetestuj połączenie teraz",
+          "connection_enabled": "Włącz lub wyłącz dostęp",
+          "connection_forget": "Zapomnij odznaczone instalacje",
+          "connection_targets": "Używaj dla instalacji i urządzeń",
+          "connection_reauthenticate": "Zaloguj się ponownie",
+          "connection_remove": "Usuń dostęp",
+          "connection_discover": "Wyszukaj i wybierz urządzenia",
+          "connection_polling": "Częstotliwość odpytywania",
+          "local_setup": "Zmień dostęp lokalny",
+          "local_polling": "Częstotliwość odpytywania lokalnego i stan",
+          "local_values": "Używaj wartości lokalnych dla istniejących encji"
+        }
+      },
+      "connection_enabled": {
+        "title": "Włącz dostęp",
+        "description": "Wyłączenie dotyczy tylko tego dostępu. Pozostałe połączenia nadal działają. Instalacje i encje są zachowane.",
+        "data": {
+          "enabled": "Włączony"
+        }
+      },
+      "connection_forget": {
+        "title": "Zapomnij odznaczone instalacje",
+        "description": "Te instalacje są wyłączone dla tego dostępu. Zapomniane instalacje nie są już tu wymieniane, a nowe logowanie nie musi ich już znajdować. Ich urządzenia i encje pozostają w Home Assistant, dopóki ich nie usuniesz. Jeśli bramka została wymieniona, pozostaw instalację włączoną: naprawa zaproponuje wtedy kontynuowanie jej z historią.",
+        "data": {
+          "bindings": "Instalacje"
+        }
+      },
+      "connection_targets": {
+        "title": "Instalacje i urządzenia",
+        "description": "Wybierz cele, które mają używać tego dostępu. Pozostałe cele nadal używają swoich połączeń niezależnie.",
+        "data": {
+          "targets": "Używaj dla"
+        }
+      },
+      "connection_remove_cloud": {
+        "title": "Usuń dostęp przez chmurę",
+        "description": "Logowanie zostanie usunięte. Wybrane instalacje z włączonym dostępem lokalnym nadal pokazują swoje odczyty lokalne (tylko do odczytu, bez sterowania; liczniki kontynuują od ostatniej pokazanej wartości). Pozostałe instalacje zachowują swoje encje bez wartości bieżących. Jeśli zalogujesz się ponownie później, te same encje będą działać dalej. Aby wstrzymać dostęp tymczasowo, wyłącz go zamiast usuwać.",
+        "data": {
+          "confirm": "Usuń ten dostęp"
+        }
+      },
+      "connection_remove": {
+        "title": "Usuń dostęp",
+        "description": "Dane logowania zostaną usunięte. Instalacje i encje są zachowane, nawet jeśli jest to ostatni dostęp. Bez dostępnego połączenia encje nie mogą pokazywać wartości bieżących.",
+        "data": {
+          "confirm": "Usuń ten dostęp"
+        }
+      },
+      "connection_polling": {
+        "title": "Częstotliwość odpytywania",
+        "description": "Profil standardowy odczytuje bieżące wartości robocze instalacji grzewczej co minutę, ustawienia i wartości energii co 5 minut, a wolniej zmieniające się informacje co 15 minut. Profil oszczędzający chmurę podwaja te odstępy. Aktywne usterki są sprawdzane co minutę w obu profilach. Profil dotyczy odpytywania instalacji grzewczej PointT i stacji ładowania w wybranym połączeniu z chmurą; dodatkowe urządzenia w chmurze zgłaszają zmiany jako komunikaty. Logowanie, sprawdzanie urządzeń i potwierdzenie po zmianie mogą dodać żądania poza tym harmonogramem. Jeśli cykl odpytywania trwa dłużej niż jego odstęp, następny rozpoczyna się później.",
+        "data": {
+          "polling_profile": "Profil odpytywania"
+        }
+      },
+      "connection_add_cloud": {
+        "title": "Połącz dostęp przez chmurę",
+        "description": "Wybierz markę używanej aplikacji. Po zalogowaniu wybierz instalacje i urządzenia, które mają zostać połączone z tym wpisem. Istniejące instalacje i encje są zachowane.",
+        "data": {
+          "brand": "Marka aplikacji"
+        }
+      },
+      "cloud_auth": {
+        "title": "Zaloguj się za pomocą SingleKey ID",
+        "description": "SingleKey ID to to samo logowanie, którego używa Twoja aplikacja Bosch lub Buderus. Użyj tego samego adresu e-mail lub numeru telefonu i tego samego hasła. Nie potrzebujesz nowego konta i **nie** wpisujesz hasła w Home Assistant.\n\n1. Pozostaw to okno otwarte i otwórz [SingleKey ID]({authorization_url}) w nowej karcie Chrome. Zawsze używaj tego świeżo wygenerowanego linku.\n2. Naciśnij tam `F12` i otwórz **Console** w narzędziach deweloperskich.\n3. Zaloguj się danymi SingleKey ID używanymi w aplikacji grzewczej.\n4. Po zalogowaniu może pojawić się komunikat o problemie z siecią. W takim przypadku zwykle oznacza to tylko, że Chrome nie mógł otworzyć adresu aplikacji `{redirect_scheme}://`.\n5. Znajdź w konsoli czerwony komunikat **Failed to launch** lub **Connecting to**. Kliknij prawym przyciskiem myszy niebieski adres `{redirect_scheme}://` w tym komunikacie i wybierz **Copy link address**.\n6. Wróć do tego okna, wklej poniżej cały adres i wybierz **OK**. Ze względów bezpieczeństwa pole może wyświetlać kropki.\n\nUżyj adresu z tej właśnie próby logowania i nie kopiuj samego parametru `code`. Pełny adres zawiera krótkotrwały kod jednorazowy. Nigdy nie udostępniaj go w zgłoszeniu, na czacie, w zrzucie ekranu ani w logu.",
+        "data": {
+          "redirect_url": "Pełny adres przekierowania"
+        }
+      },
+      "cloud_retry": {
+        "title": "Ponów połączenie z chmurą",
+        "description": "Spróbuj ponownie, gdy chmura będzie znów dostępna. Twój wpis nie został zmieniony."
+      },
+      "cloud_select": {
+        "title": "Wybierz instalacje i urządzenia",
+        "description": "Wybierz instalacje i urządzenia do połączenia. Pasująca istniejąca instalacja zachowuje swoje encje i ustawienia.",
+        "data": {
+          "gateway_ids": "Bramki",
+          "bacon_device_ids": "Dodatkowe urządzenia w chmurze"
+        }
+      },
+      "connection_discover": {
+        "title": "Wyszukaj i wybierz urządzenia",
+        "description": "Wybierz instalacje i urządzenia, które mają być używane przez to połączenie z chmurą. Wcześniej skonfigurowane urządzenia pozostają na liście, nawet gdy są tymczasowo niedostępne. Odznaczenie zatrzymuje ich odpytywanie i zachowuje ich encje.",
+        "data": {
+          "gateway_ids": "Bramki",
+          "bacon_device_ids": "Dodatkowe urządzenia w chmurze"
+        }
+      },
+      "connection_discover_retry": {
+        "title": "Ponów wykrywanie urządzeń",
+        "description": "Wybór nie został zmieniony. Spróbuj ponownie, aby wczytać świeżą listę."
+      },
+      "local_owner": {
+        "title": "Wybierz istniejącą konfigurację",
+        "description": "Wybierz konfigurację, do której należy ta lokalna bramka. Nie zostanie utworzona kolejna instalacja.",
+        "data": {
+          "owner": "Istniejąca konfiguracja"
+        }
+      },
+      "local_target": {
+        "title": "Wybierz instalację",
+        "description": "Wybierz instalację, z którą ma zostać nawiązane połączenie lokalne. Tożsamość jej bramki zostanie sprawdzona przed zapisaniem.",
+        "data": {
+          "target": "Instalacja / bramka"
+        }
+      },
+      "local_address": {
+        "title": "Adres lokalnej bramki",
+        "description": "Wybierz wykryty adres albo wprowadź adres IP lub nazwę hosta. Wykrywanie nie zmienia żadnego zapisanego połączenia.",
+        "data": {
+          "address": "Adres IP lub nazwa hosta"
+        }
+      },
+      "local_method": {
+        "title": "Połącz z lokalną bramką",
+        "description": "Zaloguj się za pomocą etykiety urządzenia albo użyj istniejącego tokenu dostępu. Lokalny dostęp do urządzenia jest tylko do odczytu.",
+        "data": {
+          "method": "Metoda logowania"
+        }
+      },
+      "local_method_keep": {
+        "title": "Połącz ponownie z lokalną bramką",
+        "description": "Zalecane jest nowe logowanie za pomocą **etykiety urządzenia**.\n\nZachowaj obecny token tylko wtedy, gdy masz pewność, że certyfikat, który zaraz potwierdzisz, należy do Twojej własnej bramki, na przykład tuż po aktualizacji lub resecie, który sam rozpocząłeś. Przy tej opcji zapisany token jest wysyłany do urządzenia, które przedstawia nowo potwierdzony certyfikat. Jeśli nie jest to Twoja bramka, otrzymuje działający token do Twojej instalacji. Logowanie za pomocą etykiety urządzenia jest bezpieczniejsze: dane z etykiety działają tylko razem z przyciskami na bramce, natomiast zapisany token działa od razu dla każdego, kto go otrzyma.\n\nLokalny dostęp do urządzenia jest tylko do odczytu.",
+        "data": {
+          "method": "Metoda logowania"
+        }
+      },
+      "local_certificate": {
+        "title": "Potwierdź certyfikat bramki",
+        "description": "Home Assistant połączył się z **{host}:{port}**. Przed wysłaniem danych logowania potwierdź, że jest to Twoja bramka. Sam odcisk palca nie jest dowodem tożsamości.\n\nSHA-256: `{fingerprint}`\n\nPoprzedni odcisk palca: `{previous}`. Znak zapytania oznacza, że dla tego adresu i portu nie ma zapisanego certyfikatu.",
+        "data": {
+          "confirm": "Potwierdzam tę bramkę i jej certyfikat"
+        }
+      },
+      "local_auth": {
+        "title": "Zaloguj się za pomocą etykiety urządzenia",
+        "description": "Wprowadź Login i Pass z etykiety bramki. Aby odblokować logowanie lokalne, naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na około dwie sekundy, krócej niż trzy sekundy, i zwolnij je jednocześnie. Potwierdź krótki niebieski sygnał i kontynuuj w ciągu pięciu minut. Dostęp pozostaje na wybranym adresie LAN. To odpowiedź bramki rozstrzyga, czy logowanie zostało odblokowane. Login i hasło nie są zapisywane.",
+        "data": {
+          "login": "Login z etykiety urządzenia",
+          "password": "Pass z etykiety urządzenia",
+          "unlocked": "Odblokowałem logowanie lokalne i widziałem niebieski sygnał"
+        }
+      },
+      "local_token": {
+        "title": "Użyj istniejącego tokenu",
+        "description": "Wprowadź token dostępu do lokalnego API. Zostanie zachowany prywatnie, aby można było wznowić tę konfigurację. Połączenie danych i tożsamość bramki nadal wymagają sprawdzenia.",
+        "data": {
+          "token": "Token dostępu lokalnego"
+        }
+      },
+      "local_pending": {
+        "title": "Wznów konfigurację lokalną",
+        "description": "Poprzednia próba jest zapisana. Jeśli token został otrzymany, kontynuuj z tym tokenem. Jeśli odpowiedź zaginęła, na bramce może istnieć token, mimo że Home Assistant nie mógł go zapisać. Odrzucenie usuwa tylko lokalną kopię oczekującą i pozwala na kolejną próbę; nie unieważnia tokenów na bramce.\n\nPozostała pauza serwera: {seconds} s.",
+        "data": {
+          "action": "Następna czynność",
+          "confirm": "Rozumiem i chcę odrzucić tę oczekującą próbę"
+        }
+      },
+      "local_result": {
+        "title": "Potwierdź połączenie lokalne",
+        "description": "Sprawdzenie odczytu dla **{host}** zakończyło się powodzeniem, a bramka **{gateway}** odpowiada wybranej instalacji. Zapisanie ponownie sprawdza bieżące dane i dodaje lub aktualizuje ten dostęp w istniejącej konfiguracji.",
+        "data": {
+          "confirm": "Zapisz to połączenie lokalne"
+        }
+      },
+      "local_retry": {
+        "title": "Sprawdzenie lokalne nie mogło zostać zakończone",
+        "description": "Sprawdź poniższy komunikat i spróbuj ponownie, gdy będziesz gotowy. Żaden token nie jest tworzony ani zastępowany automatycznie."
+      },
+      "local_polling": {
+        "title": "Odpytywanie lokalne",
+        "description": "Potwierdzone zasoby: {known}. Obecnie dostępne: {available}. Te liczby pokazują stan z chwili otwarcia tego okna. Odstęp to wartość docelowa dla wartości bieżących. Ustawienia, wartości energii i diagnostyka są odczytywane co 5 minut, a liczniki co 15 minut, lub w tym odstępie, jeśli jest dłuższy; szczegóły statyczne są odczytywane raz dziennie. Wartość staje się niedostępna po trzech pominiętych odstępach. Duże zestawy zasobów mogą trwać dłużej. Odpytywanie chmury pozostaje niezależne. Odczyty, które udostępnia także chmura, są odczytywane lokalnie co najmniej tak często jak w chmurze.",
+        "data": {
+          "interval": "Docelowy odstęp dla wartości bieżących"
+        }
+      },
+      "local_values": {
+        "title": "Wartości lokalne dla istniejących encji",
+        "description": "Gdy chmura działa, ta opcja decyduje, czy istniejące czujniki używają wartości lokalnej odczytu, który oba dostępy udostępniają w tym samym udokumentowanym zasobie. Bez chmury (wyłączonej, wymagającej logowania, wstrzymanej, ograniczonej lub nieosiągalnej) zawsze używane są wartości lokalne. Opcja jest domyślnie włączona dla nowych konfiguracji z dostępem przez chmurę i lokalnym.\n\nPo włączeniu wartość lokalna jest używana, dopóki jest aktualna. Jeśli wartość lokalna jest nieaktualna lub jej brak, używana jest aktualna wartość z chmury; jeśli obie są nieaktualne, czujnik staje się niedostępny. Liczniki energii, uruchomień i czasu pracy również używają wartości lokalnej, ale zmieniają źródło tylko wtedy, gdy każdy pokazywany stan jest co najmniej równy ostatnio pokazanemu, więc zmiana źródła nigdy nie sprawia, że liczą wstecz. Regulowane ustawienia nadal korzystają z chmury. Identyfikatory encji, nazwy i historia pozostają bez zmian. Sterowanie i zmiany są nadal wysyłane przez chmurę.",
+        "data": {
+          "enabled": "Używaj wartości lokalnych"
+        }
+      },
+      "rescan": {
+        "title": "Wyszukaj instalację ponownie",
+        "description": "Wyszukuje w instalacji jeszcze raz części i odczyty, przez dostęp przez chmurę i dostęp lokalny. Użyj tego po dodaniu lub zmianie komponentów. Wyszukiwanie odbywa się przy następnej regularnej aktualizacji i w zwykłych limitach żądań; nigdy nie usuwa encji, a odczyty, których nie znajdzie ponownie, pozostają bez zmian."
+      }
+    },
+    "error": {
+      "holiday_changed": "Wybrany urlop zmienił się, gdy to okno było otwarte. Zamknij okno i spróbuj ponownie.",
+      "invalid_holiday_details": "Sprawdź wprowadzoną nazwę, daty i godziny.",
+      "delete_failed": "Nie udało się usunąć urlopu. Sprawdź połączenie i ponownie otwórz urlop, zanim spróbujesz go usunąć.",
+      "delete_not_confirmed": "Nie udało się potwierdzić usunięcia. Przed ponowną próbą sprawdź, czy urlop nadal istnieje.",
+      "holiday_time_step": "Wybierz godzinę co kwadrans: minuty 00, 15, 30 lub 45.",
+      "holiday_time_nonexistent": "Wybrana godzina rozpoczęcia lub zakończenia nie istnieje, ponieważ zegar w strefie czasowej instalacji grzewczej przesuwa się do przodu. Wybierz inną godzinę.",
+      "holiday_time_ambiguous": "Wybrana godzina rozpoczęcia lub zakończenia występuje dwukrotnie, ponieważ zegar w strefie czasowej instalacji grzewczej cofa się. Wybierz jednoznaczną godzinę.",
+      "write_authentication_failed": "Logowanie do chmury nie jest już ważne. Uwierzytelnij ponownie Bosch/Buderus Home Comfort, zanim spróbujesz ponownie.",
+      "write_failed": "Nie udało się zmienić ustawień urlopu.",
+      "write_busy": "Instalacja grzewcza jest odczytywana albo trwa jeszcze inna zmiana. Nic nie wysłano. Spróbuj ponownie za chwilę.",
+      "write_not_confirmed": "Nie udało się w pełni potwierdzić zmiany. Niektóre ustawienia mogły już zostać zapisane. Ponownie otwórz urlop i sprawdź jego bieżące ustawienia.",
+      "write_rate_limited": "Chmura PointT obecnie ogranicza liczbę żądań. Zaczekaj przed ponowną próbą.",
+      "write_validation_failed": "Co najmniej jeden wybór nie jest już obsługiwany przez instalację grzewczą. Zamknij okno, odśwież integrację i spróbuj ponownie.",
+      "holiday_end_not_after_start": "Koniec musi być po początku. Wybierz późniejszy koniec.",
+      "rrc_time": "Wybierz godzinę w krokach pięciominutowych, bez sekund.",
+      "rrc_temperature": "Wprowadź temperaturę od 5 do 30 °C w krokach co 0,5 °C.",
+      "rrc_point_invalid": "Sprawdź godzinę i temperaturę. Dwa punkty przełączenia tego samego dnia nie mogą mieć tej samej godziny.",
+      "rrc_changed": "Program czasowy uległ zmianie lub nie można go już edytować. Ponownie otwórz go, aby sprawdzić bieżące ustawienia.",
+      "rrc_not_confirmed": "Nie udało się potwierdzić zmiany. Mogła już zostać zapisana. Ponownie otwórz program czasowy i sprawdź jego bieżące ustawienia.",
+      "rrc_failed": "Nie udało się zmienić programu czasowego grzania. Sprawdź połączenie i ponownie otwórz program czasowy.",
+      "controls_invalid": "Wprowadzone dane są nieprawidłowe lub wyświetlane wartości uległy zmianie. Sprawdź wprowadzone dane lub wczytaj wartości ponownie. Nic nie zostało zapisane.",
+      "controls_changed": "Ustawienie uległo zmianie lub nie jest już dostępne. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
+      "controls_auth": "Uwierzytelnienie wygasło. Uwierzytelnij integrację ponownie. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
+      "controls_rate_limit": "Urządzenie obecnie ogranicza liczbę żądań. Zaczekaj przed ponowną próbą. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
+      "controls_unconfirmed": "Nie udało się potwierdzić ostatniej zmiany. Mogła już zacząć obowiązywać na urządzeniu. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
+      "controls_failed": "Komunikacja z urządzeniem nie powiodła się. Ostatnia zmiana mogła już zacząć obowiązywać. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
+      "controls_busy": "Urządzenie jest odczytywane albo trwa jeszcze inna zmiana. Ta zmiana nie została wysłana. Wcześniej potwierdzone zmiany pozostają zastosowane. Spróbuj ponownie za chwilę.",
+      "cloud_already_connected": "Połączenie z chmurą jest już skonfigurowane. Użyj jego ustawień połączenia, aby wybrać więcej urządzeń lub zalogować się ponownie. Drugie równoległe logowanie do chmury nie jest jeszcze obsługiwane.",
+      "cloud_setup_in_progress": "Otwarta jest już inna konfiguracja chmury. Najpierw zakończ lub zamknij to okno.",
+      "cloud_target_owned": "Wybrana instalacja lub urządzenie należy do innego skonfigurowanego wpisu albo połączenia z chmurą. Połącz je ponownie przez istniejący wpis.",
+      "cloud_selection_expired": "Ta lista urządzeń nie jest już aktualna. Przed zapisaniem ponownie otwórz wykrywanie urządzeń.",
+      "cloud_selection_changed": "Wybranego urządzenia nie ma na potwierdzonej liście. Wyszukaj ponownie.",
+      "cloud_connection_disabled": "Włącz to połączenie z chmurą przed wyszukiwaniem urządzeń.",
+      "cloud_rate_limited": "Chmura zażądała przerwy. Zaczekaj przed ponowną próbą.",
+      "invalid_auth": "SingleKey ID odrzucił autoryzację lub jej ważność wygasła. Użyj nowego linku SingleKey ID wyświetlonego powyżej i powtórz logowanie.",
+      "invalid_redirect": "Home Assistant nie mógł użyć tego adresu. Skopiuj pełny adres aplikacji z komunikatu ‘Failed to launch’ w konsoli Chrome. Musi zaczynać się od schematu wyświetlonego powyżej i należeć do bieżącej próby logowania.",
+      "cannot_connect": "Usługa PointT jest nieosiągalna. Sprawdź połączenie z internetem, zaczekaj chwilę i spróbuj ponownie.",
+      "select_gateway": "Przed kontynuowaniem wybierz z listy co najmniej jedno urządzenie.",
+      "no_gateways": "Nie znaleziono żadnych urządzeń. Sprawdź, czy wybrana marka i konto SingleKey ID odpowiadają Twojej aplikacji.",
+      "local_invalid_address": "Wprowadź adres IP lub nazwę hosta bez adresu URL, ścieżki i danych logowania.",
+      "local_interface_required": "Ten adres IPv6 wymaga podania interfejsu sieciowego na hoście Home Assistant.",
+      "local_invalid_token": "Format tokenu jest nieprawidłowy. Skopiuj cały token bez spacji.",
+      "local_invalid_credentials": "Sprawdź Login i Pass na etykiecie bramki i wprowadź je ponownie.",
+      "local_unlock_required": "Odblokuj logowanie lokalne na bramce i potwierdź niebieski sygnał przed ponowną próbą.",
+      "local_token_database_full": "Baza tokenów bramki jest pełna. Przejrzyj istniejące tokeny, zanim utworzysz kolejny. Żaden token nie został usunięty.",
+      "local_rate_limited": "Bramka zażądała przerwy. Zaczekaj, aż upłynie wyświetlony czas.",
+      "local_service_unavailable": "Usługa bramki jest tymczasowo niedostępna. Zaczekaj i spróbuj ponownie.",
+      "local_timeout": "Lokalna bramka nie odpowiedziała w wymaganym czasie. Sprawdź połączenie i spróbuj ponownie.",
+      "local_connection_failed": "Home Assistant nie mógł połączyć się z tą bramką. Sprawdź jej adres i połączenie sieciowe.",
+      "local_certificate_changed": "Nie udało się potwierdzić certyfikatu albo uległ on zmianie. Przed kontynuowaniem sprawdź ponownie certyfikat bramki.",
+      "local_token_rejected": "Bramka odrzuciła ten token. Sprawdź go albo celowo odrzuć tę próbę, aby użyć innego.",
+      "local_resource_forbidden": "Bramka odmówiła dostępu do wymaganego zasobu. Sam token nie dowodzi prawa do odczytu.",
+      "local_missing_resource": "Bramka nie udostępnia wymaganego zasobu konfiguracji.",
+      "local_unknown_firmware": "Nie udało się zweryfikować wersji oprogramowania układowego.",
+      "local_old_firmware": "Przed skonfigurowaniem połączenia lokalnego zaktualizuj oprogramowanie układowe bramki.",
+      "local_unsupported_brand": "Marka tej bramki nie jest obsługiwana przez udokumentowany interfejs lokalny.",
+      "local_incomplete_system": "Informacje o instalacji z bramki nie są jeszcze kompletne. Spróbuj ponownie sprawdzić odczyt później.",
+      "local_invalid_response": "Nie udało się zweryfikować wymaganej odpowiedzi bramki.",
+      "local_identity_unverified": "Ta instalacja nie została jeszcze jednoznacznie dopasowana. Pierwsza konfiguracja wymaga dostępnego dostępu przez chmurę oraz zgodnych identyfikatorów bramki i modułu z obu interfejsów. Zweryfikowanych powiązań można następnie używać bez chmury.",
+      "local_identity_conflict": "Tożsamość bramki jest sprzeczna z wybraną instalacją lub inną konfiguracją.",
+      "local_configuration_changed": "Wybrane połączenie lub instalacja uległy zmianie. Zamknij to okno i przejrzyj bieżącą konfigurację przed kontynuowaniem.",
+      "local_pending_exists": "Dla tej instalacji lub adresu bramki istnieje już inna oczekująca próba. Najpierw wznów ją albo celowo odrzuć.",
+      "local_storage_failed": "Nie udało się odczytać lub zapisać prywatnego rekordu konfiguracji. Przed kontynuowaniem sprawdź pamięć masową Home Assistant.",
+      "local_completion_uncertain": "Połączenie mogło już zostać zapisane. Przed kolejną zmianą ponownie otwórz konfigurację lokalną, aby sprawdzić jego stan.",
+      "local_unexpected": "Nie udało się dokończyć sprawdzenia lokalnego. Oczekujący token, jeśli został otrzymany, jest zachowany do odzyskania.",
+      "local_confirmation_required": "Przed kontynuowaniem wyraźnie potwierdź tę czynność.",
+      "local_busy": "Dostęp lokalny jest obecnie zajęty lub wstrzymany. Zaczekaj przed ponowną próbą.",
+      "local_invalid_interval": "Wybierz od 60 do 900 sekund w krokach co 60 sekund.",
+      "local_cloud_auth_required": "Zaloguj się ponownie do dostępu przez chmurę, aby można było zweryfikować pierwsze powiązanie. Już zweryfikowany dostęp lokalny uruchamia się niezależnie od chmury.",
+      "local_cloud_rate_limited": "Chmura obecnie ogranicza liczbę żądań. Zaczekaj na koniec pauzy, a następnie ponów porównanie tożsamości.",
+      "local_cloud_unavailable": "Nie udało się odczytać informacji o instalacji z chmury. Sprawdź dostęp przez chmurę i ponów porównanie tożsamości.",
+      "local_auth_forbidden": "Usługa logowania bramki odrzuciła żądanie. Sprawdź, czy na bramce dozwolony jest dostęp lokalny, a następnie spróbuj ponownie.",
+      "local_creation_uncertain": "Nie wiadomo, czy bramka utworzyła token, ponieważ jej odpowiedź była niekompletna. Kontynuuj z oczekującą próbą; nowy token nie jest tworzony automatycznie.",
+      "cloud_local_first_other_entry": "Ta instalacja jest już skonfigurowana przez swój dostęp lokalny w innym wpisie tej integracji. Dodaj dostęp przez chmurę w tamtym wpisie.",
+      "cloud_local_first_unverified": "Nie udało się porównać tej instalacji z chmurą. Nic nie zapisano. Spróbuj ponownie.",
+      "cloud_local_first_local_unavailable": "Dostęp lokalny tej instalacji jest wyłączony, nie działa, jest nieosiągalny lub wstrzymany. Włącz go i upewnij się, że jest osiągalny, albo skonfiguruj go ponownie, a następnie spróbuj ponownie. Nic nie zapisano.",
+      "cloud_local_first_local_busy": "Dostęp lokalny tej instalacji jest zajęty regularnymi odczytami. Nic nie zapisano. Zaczekaj chwilę i spróbuj ponownie.",
+      "cloud_rate_limited_until": "Chmura zażądała przerwy do {until}. Nic nie zapisano. Spróbuj ponownie po tym czasie.",
+      "cloud_local_first_conflict": "Chmura i dostęp lokalny nie opisują tej samej instalacji. Nic nie zapisano. Odznacz tę instalację, aby nadal używać jej tylko przez dostęp lokalny.",
+      "local_plant_known": "Ta bramka należy już do skonfigurowanej instalacji. Wybierz tę instalację zamiast nowej.",
+      "auth_expired": "Ta próba logowania wygasła. Otwórz nowy link SingleKey ID wyświetlony powyżej i zaloguj się ponownie.",
+      "auth_restart": "Tej próby logowania nie można już użyć. Otwórz nowy link SingleKey ID wyświetlony powyżej i zaloguj się ponownie."
+    },
+    "abort": {
+      "no_notification_gateways": "Nie skonfigurowano żadnej instalacji grzewczej.",
+      "notification_gateways_changed": "Wybór instalacji uległ zmianie. Ponownie otwórz ustawienia.",
+      "holiday_changed": "Wybrany urlop uległ zmianie lub nie jest już dostępny do edycji. Ponownie otwórz urlop, aby sprawdzić jego bieżące dane.",
+      "holiday_updated": "Ustawienia urlopu zostały zapisane i potwierdzone przez instalację grzewczą.",
+      "holiday_unchanged": "Nic nie zmieniono, więc nic nie wysłano do instalacji grzewczej.",
+      "no_writable_holidays": "Zarządzanie urlopami jest obecnie niedostępne. Zaczekaj, aż instalacja udostępni swoje ustawienia urlopu.",
+      "holiday_deleted": "Urlop został usunięty, a jego usunięcie potwierdziła instalacja grzewcza.",
+      "not_loaded": "Bosch/Buderus Home Comfort musi być załadowany, zanim będzie można skonfigurować urlop.",
+      "holiday_created": "Urlop został utworzony i potwierdzony przez ponowny odczyt.",
+      "holiday_previous_request_found": "Wcześniejsze nierozstrzygnięte żądanie zostało teraz potwierdzone. Twoje nowe dane nie zostały wysłane. Najpierw sprawdź istniejący urlop w sekcji Zarządzaj okresami urlopu.",
+      "holiday_already_exists": "Urlop z tym początkiem i wyborem obiegów już istnieje. Nie utworzono dodatkowego urlopu. Otwórz Zarządzaj okresami urlopu i edytuj istniejący wpis.",
+      "holiday_create_unconfirmed": "Nie udało się potwierdzić żądania utworzenia. Urlop mógł już istnieć. Sprawdź Zarządzaj okresami urlopu lub aplikację producenta. Przez następne 10 minut kolejna próba sprawdzi wynik tego żądania bez tworzenia drugiego urlopu.",
+      "holiday_create_adjusted": "Instalacja grzewcza zwróciła nowy urlop, ale jego ustawienia różnią się od Twojego żądania. Żądany okres: {requested}. Zwrócony okres: {actual}. Otwórz Zarządzaj okresami urlopu, aby sprawdzić i edytować ten wpis.",
+      "holiday_update_adjusted": "Instalacja grzewcza zwróciła ustawienia, które różnią się od żądanej zmiany. Żądany okres: {requested}. Zwrócony okres: {actual}. Otwórz Zarządzaj okresami urlopu, aby sprawdzić i edytować bieżący wpis.",
+      "no_rrc_schedules": "Brak aktualnego, obsługiwanego tygodniowego programu czasowego RRC.",
+      "controls_not_loaded": "Sterowanie jest dostępne tylko przez dostęp przez chmurę; dostęp lokalny tylko odczytuje. Połącz dostęp przez chmurę albo zaczekaj, aż się załaduje.",
+      "controls_auth_required": "Sterowanie jest niedostępne: dostęp przez chmurę wymaga nowego logowania. Odczyty pozostają widoczne.",
+      "controls_cloud_stopped": "Sterowanie jest niedostępne: dostęp przez chmurę jest zatrzymany lub uruchamiany ponownie. Odczyty pozostają widoczne.",
+      "controls_rate_limited": "Sterowanie jest wstrzymane po przekroczeniu limitu żądań chmury do około {until}. Odczyty pozostają widoczne.",
+      "controls_protection_pause": "Sterowanie jest wstrzymane po powtarzających się błędach chmury do około {until}. Odczyty pozostają widoczne.",
+      "controls_cloud_unreachable": "Sterowanie jest niedostępne: chmura jest teraz nieosiągalna. Odczyty pozostają widoczne.",
+      "controls_not_current": "Sterowanie nie jest jeszcze dostępne: chmura nie dostarczyła bieżących wartości. Spróbuj ponownie za chwilę.",
+      "controls_none": "To urządzenie obecnie nie zgłasza żadnych ustawień, które można tu zmienić.",
+      "configuration_changed": "Ustawienia połączenia zmieniły się, gdy to okno było otwarte. Zamknij je i spróbuj ponownie.",
+      "no_connections": "Nie skonfigurowano żadnego dostępu. Istniejące instalacje i encje są zachowane.",
+      "connection_reauth_started": "Zażądano logowania. Otwórz monit uwierzytelniania dla tego wpisu.",
+      "cloud_already_connected": "Połączenie z chmurą jest już skonfigurowane. Użyj jego ustawień połączenia, aby wybrać więcej urządzeń lub zalogować się ponownie. Drugie równoległe logowanie do chmury nie jest jeszcze obsługiwane.",
+      "cloud_setup_in_progress": "Otwarta jest już inna konfiguracja chmury. Najpierw zakończ lub zamknij to okno.",
+      "cloud_setup_taken_over": "Nowsze okno konfiguracji chmury zastąpiło to okno. Zamknij to okno i kontynuuj w nowszym.",
+      "cloud_target_owned": "Wybrana instalacja lub urządzenie należy do innego skonfigurowanego wpisu albo połączenia z chmurą. Połącz je ponownie przez istniejący wpis.",
+      "cloud_selection_expired": "Ta lista urządzeń nie jest już aktualna. Przed zapisaniem ponownie otwórz wykrywanie urządzeń.",
+      "cloud_selection_changed": "Wybranego urządzenia nie ma na potwierdzonej liście. Wyszukaj ponownie.",
+      "cloud_connection_disabled": "Włącz to połączenie z chmurą przed wyszukiwaniem urządzeń.",
+      "cloud_rate_limited": "Chmura zażądała przerwy. Zaczekaj przed ponowną próbą.",
+      "local_setup_unavailable": "Konfiguracja lokalna jest niedostępna, dopóki regularne zasilanie danymi lokalnymi nie będzie gotowe.",
+      "local_session_changed": "Ta sesja konfiguracji została zakończona albo zmienił się jej wybór. Ponownie otwórz konfigurację lokalną, aby kontynuować.",
+      "local_discovery_invalid": "To ogłoszenie wykrycia nie opisuje obsługiwanego lokalnego punktu końcowego bramki.",
+      "local_existing_owner_required": "Instalację bez chmury skonfiguruj opcją „Tylko dostęp lokalny” przy dodawaniu integracji. Wykrytą bramkę można dodać do istniejącej konfiguracji.",
+      "local_target_required": "Ta konfiguracja nie ma odpowiedniej zachowanej instalacji do połączenia lokalnego.",
+      "local_setup_complete": "Dostęp lokalny został skonfigurowany.",
+      "local_pending_saved": "Oczekująca próba jest zachowana. Możesz ją wznowić z konfiguracji lokalnej.",
+      "local_storage_failed": "Nie udało się odczytać lub zapisać prywatnego rekordu konfiguracji. Przed kontynuowaniem sprawdź pamięć masową Home Assistant.",
+      "cloud_local_first_other_entry": "Ta instalacja jest już skonfigurowana przez swój dostęp lokalny w innym wpisie tej integracji. Dodaj dostęp przez chmurę w tamtym wpisie.",
+      "rescan_planned": "Wyszukiwanie jest zaplanowane i odbywa się przy następnej regularnej aktualizacji; nowe części pojawią się, gdy tylko zostaną znalezione.",
+      "rescan_paused": "Wyszukiwanie nie zostało uruchomione: żądania są teraz wstrzymane (na przykład po tym, jak chmura zażądała przerwy). Spróbuj ponownie później.",
+      "rescan_running": "Wyszukiwanie już trwa lub jest zaplanowane. Zaczekaj, aż się zakończy.",
+      "rescan_partial": "Wyszukiwanie jest zaplanowane dla gotowych części i odbywa się przy następnej regularnej aktualizacji. Części, które są teraz wstrzymane, pominięto; spróbuj dla nich ponownie później.",
+      "rescan_unavailable": "Wyszukiwanie nie zostało uruchomione: żaden dostęp do instalacji nie jest teraz gotowy."
+    },
+    "progress": {
+      "local_work": "Sprawdzanie połączenia lokalnego. Proszę czekać."
+    }
+  },
+  "issues": {
+    "fault_source_removed": {
+      "title": "Źródło usterek już nie istnieje",
+      "description": "Integracja nie czeka już na źródła usterek instalacji grzewczej, które już nie istnieją (liczba: {count}), na przykład listę błędów radiowego urządzenia pokojowego, które usunięto lub wymieniono. Dotychczas takie źródło powodowało, że żadna usterka nie mogła się zakończyć. Usterki zgłaszane tylko przez nie kończą się teraz po następnych dwóch pełnych odczytach normalnym zdarzeniem „rozwiązano”. Jeśli urządzenie jest nadal zainstalowane, sprawdź jego połączenie z instalacją; jego lista błędów znów jest liczona, gdy tylko instalacja ją ponownie zgłosi. Możesz zignorować to powiadomienie; zniknie po następnym ponownym uruchomieniu."
+    },
+    "repeated_rate_limit": {
+      "title": "Żądania do chmury są ograniczane",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Użyj odpytywania oszczędzającego chmurę",
+            "description": "Wybierz **Prześlij**, aby przełączyć tę integrację na profil odpytywania oszczędzający chmurę. Bieżące wartości robocze będą wtedy odczytywane co dwie minuty zamiast co minutę; wartości sterowania i energii co dziesięć minut; wolne liczniki co trzydzieści minut. Integracja przeładuje się i wykona pełne wykrywanie zasobów."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotyczący wpis Bosch/Buderus Home Comfort już nie istnieje."
+        }
+      }
+    },
+    "incompatible_firmware": {
+      "title": "Możliwości PointT zmieniły się po aktualizacji oprogramowania układowego",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Wykryj możliwości PointT na nowo",
+            "description": "Bosch/Buderus Home Comfort wykrył znane możliwości, których typ danych lub jednostka nie odpowiadają już bezpiecznie obsługiwanemu schematowi PointT (liczba: {conflict_count}). Wybierz **Prześlij**, aby przeładować integrację i ponownie sprawdzić wszystkie możliwości. Jeśli ostrzeżenie wróci, pobierz diagnostykę integracji i zgłoś zmieniony schemat bez udostępniania danych logowania ani surowych wartości."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotyczący wpis Bosch/Buderus Home Comfort już nie istnieje."
+        }
+      }
+    },
+    "managed_rate_limit": {
+      "title": "Żądania do chmury są ograniczane",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Użyj odpytywania oszczędzającego chmurę",
+            "description": "Przełącz tylko dotyczące połączenie z chmurą na odpytywanie oszczędzające chmurę: bieżące wartości robocze co dwie minuty, wartości sterowania i energii co dziesięć minut, a wolne liczniki co trzydzieści minut. Ponownie łączy się tylko to połączenie; pozostałe połączenia pozostają aktywne."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotyczący wpis Bosch/Buderus Home Comfort już nie istnieje.",
+          "configuration_changed": "Dostęp lub instalacja grzewcza uległy zmianie. Otwórz naprawę ponownie."
+        }
+      }
+    },
+    "managed_firmware": {
+      "title": "Możliwości PointT zmieniły się po aktualizacji oprogramowania układowego",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Wykryj możliwości PointT na nowo",
+            "description": "Ta instalacja grzewcza zgłasza możliwości z nieoczekiwanym typem danych lub jednostką (liczba: {conflict_count}). Sprawdź jej możliwości ponownie. Uruchamia się ponownie tylko to źródło; pozostałe instalacje i połączenia pozostają aktywne. Istniejące identyfikatory encji i własne ustawienia są zachowane."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotyczący wpis Bosch/Buderus Home Comfort już nie istnieje.",
+          "configuration_changed": "Dostęp lub instalacja grzewcza uległy zmianie. Otwórz naprawę ponownie."
+        }
+      }
+    },
+    "local_certificate_changed": {
+      "title": "Certyfikat lokalnej bramki uległ zmianie",
+      "description": "Bramka dostępu lokalnego przedstawia inny certyfikat. Integracja nie akceptuje go samodzielnie i przestaje odczytywać dane lokalnie. Jeśli wiesz, dlaczego certyfikat się zmienił (na przykład po aktualizacji lub resecie bramki), otwórz opcje integracji, wybierz dostęp lokalny i wybierz „Zmień dostęp lokalny”. Tam potwierdzisz nowy certyfikat. Zalecane jest nowe logowanie za pomocą etykiety urządzenia; zachowaj obecny token tylko wtedy, gdy masz pewność, że nowy certyfikat należy do Twojej własnej bramki."
+    },
+    "local_start_certificate": {
+      "title": "Dostęp lokalny nie może nawiązać bezpiecznego połączenia",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Spróbuj ponownie użyć dostępu lokalnego",
+            "description": "Dostęp lokalny kilka razy z rzędu nie uruchomił się, ponieważ nie udało się nawiązać bezpiecznego połączenia z bramką (kod: {code}). Może się tak zdarzyć podczas ponownego uruchamiania bramki. Integracja sama próbuje dalej, najpóźniej co godzinę, i usuwa to powiadomienie, gdy dostęp lokalny się uruchomi. Pozostałe dostępy nie są dotknięte. Wybierz **Prześlij**, aby spróbować ponownie teraz. Jeśli problem się utrzymuje, sprawdź, czy zapisany adres nadal należy do Twojej bramki."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotyczący wpis już nie istnieje.",
+          "configuration_changed": "Dostęp lub instalacja grzewcza uległy zmianie. Otwórz naprawę ponownie."
+        }
+      }
+    },
+    "local_start_incomplete": {
+      "title": "Lokalna bramka nie jest jeszcze gotowa",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Spróbuj ponownie użyć dostępu lokalnego",
+            "description": "Dostęp lokalny kilka razy z rzędu nie uruchomił się, ponieważ bramka zgłasza, że jej informacje o instalacji nie są jeszcze kompletne (kod: {code}). Jest to normalne przez pewien czas po uruchomieniu bramki. Integracja sama próbuje dalej, najpóźniej co godzinę, i usuwa to powiadomienie, gdy dostęp lokalny się uruchomi. Pozostałe dostępy nie są dotknięte. Wybierz **Prześlij**, aby spróbować ponownie teraz. Jeśli powiadomienie utrzymuje się przez wiele godzin, uruchom bramkę ponownie."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotyczący wpis już nie istnieje.",
+          "configuration_changed": "Dostęp lub instalacja grzewcza uległy zmianie. Otwórz naprawę ponownie."
+        }
+      }
+    },
+    "local_start_unrecognized": {
+      "title": "Nie rozpoznano odpowiedzi lokalnej bramki",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Spróbuj ponownie użyć dostępu lokalnego",
+            "description": "Dostęp lokalny kilka razy z rzędu nie uruchomił się, ponieważ nie udało się rozpoznać odpowiedzi bramki dotyczącej jej marki, oprogramowania układowego lub tożsamości (kod: {code}). Integracja sama próbuje dalej, najpóźniej co godzinę, i usuwa to powiadomienie, gdy dostęp lokalny się uruchomi. Pozostałe dostępy nie są dotknięte. Wybierz **Prześlij**, aby spróbować ponownie teraz. Jeśli powiadomienie utrzymuje się po aktualizacji bramki, zgłoś ten kod."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotyczący wpis już nie istnieje.",
+          "configuration_changed": "Dostęp lub instalacja grzewcza uległy zmianie. Otwórz naprawę ponownie."
+        }
+      }
+    },
+    "local_start_response": {
+      "title": "Lokalna bramka odpowiada w nieoczekiwany sposób",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Spróbuj ponownie użyć dostępu lokalnego",
+            "description": "Dostęp lokalny kilka razy z rzędu nie uruchomił się, ponieważ bramka odpowiada, ale nie tak, jak oczekiwano, na przykład błędem lub nieczytelną odpowiedzią (kod: {code}). Integracja sama próbuje dalej, najpóźniej co godzinę, i usuwa to powiadomienie, gdy dostęp lokalny się uruchomi. Pozostałe dostępy nie są dotknięte. Wybierz **Prześlij**, aby spróbować ponownie teraz. Jeśli problem się utrzymuje, sprawdź, czy zapisany adres nadal należy do Twojej bramki."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Dotyczący wpis już nie istnieje.",
+          "configuration_changed": "Dostęp lub instalacja grzewcza uległy zmianie. Otwórz naprawę ponownie."
+        }
+      }
+    },
+    "cloud_targets_not_found": {
+      "title": "Instalacje nieznalezione na koncie w chmurze",
+      "description": "Ostatnie logowanie dostępu przez chmurę we wpisie „{title}” nie znalazło włączonych instalacji lub urządzeń (liczba: {count}; końcówki: {systems}). Pozostają skonfigurowane i niedostępne, dopóki nie pojawią się ponownie na koncie; wtedy to powiadomienie zniknie.\n\nJeśli zostały usunięte z konta, otwórz Konfiguruj → Połączenia → dostęp przez chmurę, wyłącz je w sekcji **Używaj dla instalacji i urządzeń** i usuń je opcją **Zapomnij odznaczone instalacje**. Ich urządzenia i encje pozostają w Home Assistant, dopóki ich nie usuniesz. Jeśli bramka została wymieniona, pozostaw ją włączoną: osobna naprawa zaproponuje kontynuowanie instalacji z jej historią."
+    },
+    "gateway_exchange": {
+      "title": "Czy bramka została wymieniona?",
+      "fix_flow": {
+        "step": {
+          "evidence_match": {
+            "title": "Czy bramka została wymieniona?",
+            "description": "Bramka z końcówką **{old}** nie pojawia się już w dostępie przez chmurę. Zamiast niej pojawiła się nowa bramka z końcówką **{new}**. Co najmniej jeden moduł urządzenia, który zgłasza, odpowiada modułowi zgłaszanemu wcześniej przez tę instalację (na przykład źródło ciepła lub regulator). Silnie sugeruje to, że bramka została wymieniona.\n\nJak chcesz kontynuować?",
+            "menu_options": {
+              "continue": "Kontynuuj jako ta sama instalacja",
+              "separate": "Zachowaj jako osobną instalację",
+              "later": "Zdecyduj później"
+            }
+          },
+          "evidence_no_match": {
+            "title": "Czy bramka została wymieniona?",
+            "description": "Bramka z końcówką **{old}** nie pojawia się już w dostępie przez chmurę. Zamiast niej pojawiła się nowa bramka z końcówką **{new}**. Moduły urządzeń, które zgłasza, różnią się jednak od tych zgłaszanych wcześniej przez tę instalację. Może należeć do innej instalacji.\n\nJak chcesz kontynuować?",
+            "menu_options": {
+              "continue": "Kontynuuj jako ta sama instalacja",
+              "separate": "Zachowaj jako osobną instalację",
+              "later": "Zdecyduj później"
+            }
+          },
+          "evidence_unknown": {
+            "title": "Czy bramka została wymieniona?",
+            "description": "Bramka z końcówką **{old}** nie pojawia się już w dostępie przez chmurę. Zamiast niej pojawiła się nowa bramka z końcówką **{new}**. Nie udało się porównać modułów jej urządzeń, ponieważ nie zapisano wcześniejszych danych modułów albo nowa bramka żadnych nie zgłosiła. Nie można potwierdzić, czy jest to ta sama instalacja.\n\nJak chcesz kontynuować?",
+            "menu_options": {
+              "continue": "Kontynuuj jako ta sama instalacja",
+              "separate": "Zachowaj jako osobną instalację",
+              "later": "Zdecyduj później"
+            }
+          },
+          "continue_match": {
+            "title": "Kontynuuj jako ta sama instalacja",
+            "description": "Instalacja jest kontynuowana z bramką z końcówką {new}. Jej historia, jej encje wraz z identyfikatorami, nazwami i obszarami oraz Twoje automatyzacje pozostają. Integracja na chwilę się zatrzymuje i uruchamia ponownie.\n\nJeśli dla tej instalacji skonfigurowano dostęp lokalny, zostaje usunięty, ponieważ należy do starej bramki. Skonfiguruj go ponownie dla nowej bramki.\n\nNajpierw utwórz kopię zapasową Home Assistant.",
+            "data": {
+              "confirm": "Kontynuuj tę instalację z nową bramką"
+            }
+          },
+          "continue_unverified": {
+            "title": "Kontynuuj bez potwierdzenia",
+            "description": "**Ostrzeżenie:** Nie można potwierdzić, że bramka z końcówką {new} należy do tej instalacji. Jeśli należy do innej instalacji, jej wartości trafią do historii tej instalacji, a Twoje automatyzacje będą działać na niewłaściwej instalacji. Kontynuuj tylko wtedy, gdy sam wymieniłeś bramkę i masz pewność.\n\nInstalacja jest kontynuowana z bramką z końcówką {new}. Jej historia, jej encje wraz z identyfikatorami, nazwami i obszarami oraz Twoje automatyzacje pozostają. Integracja na chwilę się zatrzymuje i uruchamia ponownie.\n\nJeśli dla tej instalacji skonfigurowano dostęp lokalny, zostaje usunięty, ponieważ należy do starej bramki. Skonfiguruj go ponownie dla nowej bramki.\n\nNajpierw utwórz kopię zapasową Home Assistant.",
+            "data": {
+              "confirm": "Kontynuuj tę instalację z nową bramką",
+              "confirm_unverified": "Mam pewność, że nowa bramka należy do tej instalacji"
+            }
+          },
+          "separate": {
+            "title": "Zachowaj jako osobną instalację",
+            "description": "Integracja nie pyta już o tę bramkę. Instalacja ze starą bramką pozostaje bez zmian. Aby dodać nową bramkę jako osobną instalację, wybierz ją w opcjach dostępu przez chmurę."
+          }
+        },
+        "error": {
+          "confirmation_required": "Potwierdź, aby kontynuować."
+        },
+        "abort": {
+          "entry_not_found": "Dotyczący wpis tej integracji już nie istnieje.",
+          "configuration_changed": "Dostęp lub instalacja uległy zmianie. Otwórz naprawę ponownie.",
+          "later": "Nic nie zmieniono. Powiadomienie pozostaje w naprawach, dopóki nie podejmiesz decyzji.",
+          "exchange_unavailable": "Integracja nie działa. Uruchom ją i otwórz naprawę ponownie.",
+          "cloud_unavailable": "Dostęp przez chmurę jest teraz nieosiągalny. Spróbuj ponownie później.",
+          "exchange_changed": "Bramki w dostępie przez chmurę uległy zmianie. Otwórz naprawę ponownie, gdy zostanie znów wyświetlona.",
+          "exchange_collision": "Nic nie zmieniono: encje lub urządzenie dla nowej bramki już istnieją. Najpierw je usuń albo zachowaj nową bramkę jako osobną instalację.",
+          "exchange_failed": "Nic nie zmieniono; instalacja jest kontynuowana ze starą bramką. Szczegóły są w logu.",
+          "unload_failed": "Nic nie zmieniono: nie udało się zatrzymać integracji. Uruchom ponownie Home Assistant i otwórz naprawę ponownie."
+        }
+      }
+    },
+    "setup_unfinished": {
+      "title": "Konfiguracja nie została zakończona",
+      "description": "Wpis „{title}” nie ma jeszcze żadnego dostępu. Otwórz jego opcje konfiguracji i wybierz „Skonfiguruj dostęp lokalny” (albo dodaj dostęp przez chmurę), aby zakończyć konfigurację."
+    }
+  },
+  "exceptions": {
+    "invalid_stored_configuration": {
+      "message": "Nie można odczytać zapisanej konfiguracji tego wpisu ({reason}). Nic nie zmieniono. Przywróć kopię zapasową sprzed problemu albo usuń wpis i dodaj go ponownie."
+    },
+    "holiday_previous_request_found": {
+      "message": "Wcześniejsze nierozstrzygnięte żądanie zostało teraz potwierdzone. Twoje nowe dane nie zostały wysłane. Sprawdź istniejący urlop w sekcji Konfiguruj → Zarządzaj okresami urlopu."
+    },
+    "holiday_already_exists": {
+      "message": "Urlop z tym początkiem i wyborem obiegów już istnieje. Edytuj ten wpis w sekcji Konfiguruj → Zarządzaj okresami urlopu."
+    },
+    "holiday_create_unconfirmed": {
+      "message": "Nie udało się potwierdzić utworzenia. Urlop mógł już istnieć. Sprawdź Zarządzaj okresami urlopu lub aplikację producenta. Przez następne 10 minut kolejna próba sprawdzi nierozstrzygnięte żądanie bez tworzenia drugiego urlopu."
+    },
+    "holiday_update_unconfirmed": {
+      "message": "Nie udało się w pełni potwierdzić zmiany. Niektóre ustawienia mogły już zostać zapisane. Sprawdź bieżący urlop w sekcji Konfiguruj → Zarządzaj okresami urlopu."
+    },
+    "holiday_write_adjusted": {
+      "message": "Instalacja grzewcza zwróciła ustawienia urlopu, które różnią się od Twojego żądania. Sprawdź zwrócone daty i ustawienia w sekcji Konfiguruj → Zarządzaj okresami urlopu i edytuj ten wpis."
+    },
+    "holiday_time_step": {
+      "message": "Wybierz godzinę co kwadrans: minuty 00, 15, 30 lub 45 i sekundy 00."
+    },
+    "holiday_time_nonexistent": {
+      "message": "Wybrana godzina rozpoczęcia lub zakończenia nie istnieje, ponieważ zegar w strefie czasowej instalacji grzewczej przesuwa się do przodu. Wybierz inną godzinę."
+    },
+    "holiday_time_ambiguous": {
+      "message": "Wybrana godzina rozpoczęcia lub zakończenia występuje dwukrotnie, ponieważ zegar w strefie czasowej instalacji grzewczej cofa się. Wybierz jednoznaczną godzinę."
+    },
+    "rrc_mode_locked": {
+      "message": "Regulator obecnie blokuje tryb grzania tej strefy, na przykład gdy instalacja chłodzi. Bieżący tryb pozostaje wyświetlany. Spróbuj ponownie później."
+    },
+    "write_validation_failed": {
+      "message": "Zmiana tego ustawienia nie jest obecnie bezpieczna. Odśwież lub skonfiguruj ponownie integrację i spróbuj jeszcze raz."
+    },
+    "write_not_confirmed": {
+      "message": "Zmiana została wysłana, ale instalacja grzewcza jej nie potwierdziła. Mogła już zacząć obowiązywać. Wartość zostanie zaktualizowana przy następnym odczycie."
+    },
+    "write_authentication_failed": {
+      "message": "Logowanie do chmury nie jest już ważne. Uwierzytelnij ponownie Bosch/Buderus Home Comfort, zanim spróbujesz ponownie."
+    },
+    "write_rate_limited": {
+      "message": "Chmura PointT obecnie ogranicza liczbę żądań. Zaczekaj przed ponowną próbą zmiany."
+    },
+    "write_failed": {
+      "message": "Nie udało się zakończyć zmiany i instalacja grzewcza jej nie potwierdziła. Wyświetlana wartość zostanie zaktualizowana przy następnym odczycie."
+    },
+    "write_busy": {
+      "message": "Instalacja grzewcza jest odczytywana albo trwa jeszcze inna zmiana. Nic nie wysłano. Spróbuj ponownie za chwilę."
+    },
+    "holiday_end_not_after_start": {
+      "message": "Koniec musi być po początku. Wybierz późniejszy koniec."
+    },
+    "bacon_unsupported_command": {
+      "message": "Urządzenie obecnie nie obsługuje tego ustawienia. Sprawdź jego połączenie, dostępne tryby i limity temperatury."
+    },
+    "bacon_command_failed": {
+      "message": "Urządzenie nie potwierdziło zmiany. Nie wysłano jej ponownie. Przed ponowną próbą sprawdź zgłaszany stan."
+    },
+    "bacon_separate_settings": {
+      "message": "Zmień temperaturę i tryb pracy osobno, aby każdą zmianę można było potwierdzić."
+    },
+    "heating_climate_command": {
+      "message": "To polecenie termostatu nie jest obecnie dostępne. Temperatury można zmieniać tylko w ręcznym trybie grzania. Wybierz tryb osobno i sprawdź, czy urządzenie dostarcza bieżące wartości."
+    },
+    "pointt_dhw_temperature_read_only": {
+      "message": "Bieżącą wartość zadaną ciepłej wody użytkowej określa urządzenie. Osobne temperatury startowe trybów możesz dostosować w sekcji Obsługa urządzenia."
+    },
+    "gateway_exchange_incomplete": {
+      "message": "Nie udało się dokończyć przerwanej wymiany bramki, więc integracja nie uruchamia się. Szczegóły są w logu; usuń to, co blokuje wymianę (na przykład encje nowej bramki) i uruchom ponownie Home Assistant."
+    }
+  },
+  "selector": {
+    "holiday_period": {
+      "options": {
+        "create": "Nowy urlop"
+      }
+    },
+    "polling_profile": {
+      "options": {
+        "standard": "Standardowy",
+        "cloud_friendly": "Oszczędzający chmurę"
+      }
+    },
+    "holiday_heating_mode": {
+      "options": {
+        "saturday": "Jak w sobotę",
+        "fix_temperature": "Stała temperatura",
+        "off": "WYŁ.",
+        "eco": "Obniżenie",
+        "auto_sat": "Jak w sobotę",
+        "fix_temp": "Stała temperatura"
+      }
+    },
+    "holiday_dhw_mode": {
+      "options": {
+        "saturday": "Jak w sobotę",
+        "off": "WYŁ.",
+        "eco": "Eco+",
+        "low": "Eco",
+        "high": "Komfort",
+        "off_td": "WYŁ. z dezynfekcją termiczną",
+        "auto_sat": "Jak w sobotę",
+        "td_off": "WYŁ. z dezynfekcją termiczną"
+      }
+    },
+    "holiday_ventilation_mode": {
+      "options": {
+        "saturday": "Jak w sobotę",
+        "off": "WYŁ.",
+        "min": "Bieg wentylatora 1",
+        "red": "Bieg wentylatora 2",
+        "nom": "Bieg wentylatora 3",
+        "max": "Bieg wentylatora 4",
+        "dem": "Na żądanie"
+      }
+    },
+    "holiday_thermal_disinfection": {
+      "options": {
+        "on": "Włączony",
+        "off": "Wyłączony"
+      }
+    },
+    "holiday_mode": {
+      "options": {
+        "on": "Włączony",
+        "off": "Wyłączony"
+      }
+    },
+    "rrc_weekday": {
+      "options": {
+        "mo": "Poniedziałek",
+        "tu": "Wtorek",
+        "we": "Środa",
+        "th": "Czwartek",
+        "fr": "Piątek",
+        "sa": "Sobota",
+        "su": "Niedziela"
+      }
+    },
+    "local_method": {
+      "options": {
+        "label": "Etykieta urządzenia (zalecane)",
+        "token": "Istniejący token",
+        "keep": "Zachowaj obecny token (niezalecane)"
+      }
+    },
+    "local_pending_action": {
+      "options": {
+        "continue": "Kontynuuj z zapisanym tokenem",
+        "discard": "Odrzuć oczekującą próbę",
+        "later": "Kontynuuj później"
+      }
+    }
+  },
+  "entity": {
+    "number": {
+      "manual_room_setpoint": {
+        "name": "Ręczna wartość zadana"
+      },
+      "pool_setpoint_temperature": {
+        "name": "Temperatura zadana basenu"
+      },
+      "heating_temperature": {
+        "name": "Grzanie"
+      },
+      "reduced_temperature": {
+        "name": "Obniżona"
+      },
+      "extra_hot_water_duration": {
+        "name": "Czas trwania dodatkowej ciepłej wody"
+      },
+      "extra_hot_water_setpoint": {
+        "name": "Wartość zadana dodatkowej ciepłej wody"
+      },
+      "hot_water_eco_plus": {
+        "name": "Temperatura startowa Eco+"
+      },
+      "hot_water_comfort": {
+        "name": "Temperatura startowa Komfort"
+      },
+      "hot_water_eco": {
+        "name": "Temperatura startowa Eco"
+      },
+      "maximum_supply_temperature": {
+        "name": "Maksymalna temperatura zasilania"
+      },
+      "softener_salt_threshold": {
+        "name": "Próg alarmu soli"
+      },
+      "softener_regeneration_delay": {
+        "name": "Zaplanuj regenerację"
+      },
+      "bacon_purifier_fan_speed": {
+        "name": "Bieg wentylatora"
+      },
+      "bacon_purifier_light_intensity": {
+        "name": "Jasność oświetlenia otoczenia"
+      }
+    },
+    "select": {
+      "zone_operation_mode": {
+        "name": "Ustaw tryb pracy strefy",
+        "state": {
+          "off": "Wyłączony",
+          "manual": "Ręczny",
+          "auto": "Automatyczny"
+        }
+      },
+      "heating_circuit_operation_mode": {
+        "name": "Tryb pracy obiegu grzewczego",
+        "state": {
+          "off": "Wyłączony",
+          "manual": "Ręczny",
+          "auto": "Automatyczny"
+        }
+      },
+      "hot_water_operation_mode": {
+        "name": "Tryb pracy ciepłej wody użytkowej",
+        "state": {
+          "off": "Wyłączony",
+          "low": "Eco",
+          "high": "Komfort",
+          "ownprogram": "Automatyczny",
+          "eco": "Eco+"
+        }
+      },
+      "season_switching": {
+        "name": "Przełączanie sezonowe",
+        "state": {
+          "off": "Grzanie/chłodzenie wyłączone",
+          "automatic": "Automatyczne",
+          "forced_heat": "Tylko grzanie",
+          "forced_cool": "Tylko chłodzenie"
+        }
+      },
+      "silent_mode": {
+        "name": "Tryb cichy",
+        "state": {
+          "off": "Wyłączony",
+          "auto": "Automatyczny",
+          "on": "Włączony"
+        }
+      },
+      "auxiliary_heater_operation_mode": {
+        "name": "Tryb pracy dogrzewacza",
+        "state": {
+          "off": "Wyłączony",
+          "manual": "Włączony",
+          "auto": "Automatyczny"
+        }
+      },
+      "ventilation_exhaust_fan_level": {
+        "name": "Bieg wentylatora wyciągowego",
+        "state": {
+          "off": "Wyłączony",
+          "min": "Bieg wentylatora 1",
+          "red": "Bieg wentylatora 2",
+          "nom": "Bieg wentylatora 3",
+          "max": "Bieg wentylatora 4",
+          "dem": "Na żądanie"
+        }
+      },
+      "rrc_user_mode": {
+        "state": {
+          "manual": "Ręczny",
+          "clock": "Program czasowy"
+        }
+      },
+      "bacon_purifier_light_color": {
+        "name": "Kolor oświetlenia otoczenia",
+        "state": {
+          "warm_white": "Ciepła biel",
+          "neutral_white": "Neutralna biel",
+          "cool_white": "Zimna biel",
+          "blue": "Niebieski",
+          "purple": "Fioletowy",
+          "orange": "Pomarańczowy",
+          "red": "Czerwony"
+        }
+      }
+    },
+    "switch": {
+      "extra_hot_water": {
+        "name": "Dodatkowa ciepła woda"
+      },
+      "reduce_temperature_on_alarm": {
+        "name": "Obniżenie temperatury podczas usterki"
+      },
+      "away_mode": {
+        "name": "Tryb nieobecności"
+      },
+      "softener_holiday_mode": {
+        "name": "Tryb urlopowy"
+      },
+      "wddw2_holiday_mode": {
+        "name": "Tryb urlopowy"
+      },
+      "pool_enabled": {
+        "name": "Basen"
+      },
+      "bacon_purifier_child_lock": {
+        "name": "Blokada rodzicielska"
+      },
+      "bacon_purifier_display": {
+        "name": "Wyświetlacz"
+      },
+      "bacon_purifier_light": {
+        "name": "Pierścień świetlny"
+      },
+      "bacon_purifier_light_in_standby": {
+        "name": "Oświetlenie otoczenia w trybie czuwania"
+      },
+      "bacon_purifier_light_in_sleep": {
+        "name": "Oświetlenie otoczenia w trybie cichym"
+      },
+      "bacon_dry_child_lock": {
+        "name": "Blokada rodzicielska"
+      },
+      "bacon_dry_display": {
+        "name": "Wyświetlacz"
+      }
+    },
+    "sensor": {
+      "outdoor_temperature": {
+        "name": "Temperatura zewnętrzna"
+      },
+      "supply_temperature": {
+        "name": "Temperatura zasilania"
+      },
+      "return_temperature": {
+        "name": "Temperatura powrotu"
+      },
+      "hot_water_temperature": {
+        "name": "Temperatura ciepłej wody użytkowej"
+      },
+      "modulation": {
+        "name": "Rzeczywista modulacja"
+      },
+      "system_pressure": {
+        "name": "Ciśnienie w instalacji"
+      },
+      "heating_status": {
+        "name": "Stan grzania"
+      },
+      "hot_water_status": {
+        "name": "Stan ciepłej wody użytkowej"
+      },
+      "total_electricity": {
+        "name": "Razem – zużycie energii elektrycznej"
+      },
+      "total_heat_produced": {
+        "name": "Razem – wytworzone ciepło"
+      },
+      "environmental_energy": {
+        "name": "Razem – energia środowiska (obliczona)"
+      },
+      "heating_electricity": {
+        "name": "Grzanie – zużycie energii elektrycznej"
+      },
+      "heating_heat_produced": {
+        "name": "Grzanie – wytworzone ciepło"
+      },
+      "hot_water_electricity": {
+        "name": "Ciepła woda użytkowa – zużycie energii elektrycznej"
+      },
+      "hot_water_heat_produced": {
+        "name": "Ciepła woda użytkowa – wytworzone ciepło"
+      },
+      "calculated_dew_point": {
+        "name": "Punkt rosy (obliczony)"
+      },
+      "estimated_energy": {
+        "name": "Energia (szacowana na podstawie bieżącej mocy)"
+      },
+      "heating_switch_program": {
+        "name": "Program czasowy grzania",
+        "state": {
+          "comfort1": "Komfort 1",
+          "comfort2": "Grzanie",
+          "comfort3": "Komfort 3",
+          "eco": "Obniżona",
+          "off": "Wyłączony"
+        }
+      },
+      "dhw_switch_program": {
+        "name": "Program czasowy ciepłej wody użytkowej",
+        "state": {
+          "low": "Eco",
+          "eco": "Eco+",
+          "high": "Komfort",
+          "off": "Wyłączony"
+        }
+      },
+      "heating_circuit_switch_program_mode": {
+        "name": "Typ programu czasowego obiegu grzewczego",
+        "state": {
+          "level": "Poziom temperatury",
+          "levels": "Poziomy temperatury",
+          "absolute": "Dowolnie regulowane temperatury"
+        }
+      },
+      "heating_circuit_operation_mode": {
+        "name": "Tryb pracy obiegu grzewczego",
+        "state": {
+          "off": "Wyłączony",
+          "manual": "Ręczny",
+          "auto": "Automatyczny"
+        }
+      },
+      "heating_circuit_overall_status": {
+        "name": "Stan obiegu grzewczego",
+        "state": {
+          "ch_enabled": "Grzanie włączone",
+          "ch_disabled": "Grzanie wyłączone",
+          "emergency_mode": "Tryb awaryjny",
+          "floor_drying": "Suszenie wylewki",
+          "summer_idle": "Przerwa letnia",
+          "boost": "Grzanie przyspieszone",
+          "away": "Nieobecność",
+          "holiday": "Urlop",
+          "cooling_manual_on": "Ręczne chłodzenie aktywne",
+          "cooling_manual_off": "Ręczne chłodzenie wyłączone",
+          "heating_manual_on": "Ręczne grzanie aktywne",
+          "heating_manual_off": "Ręczne grzanie wyłączone",
+          "heating_auto": "Grzanie automatyczne"
+        }
+      },
+      "heating_circuit_summer_winter_mode": {
+        "name": "Bieżący stan grzania/chłodzenia",
+        "state": {
+          "off": "Bezczynność",
+          "forced": "Grzanie",
+          "cooling": "Chłodzenie"
+        }
+      },
+      "heating_circuit_summer_winter_switch_mode": {
+        "name": "Przełączanie grzania/chłodzenia",
+        "state": {
+          "off": "Bezczynność",
+          "automatic": "Przełączanie automatyczne",
+          "forced": "Zawsze grzanie",
+          "cooling": "Zawsze chłodzenie"
+        }
+      },
+      "heating_circuit_heat_cool_mode": {
+        "name": "Obsługa grzania/chłodzenia",
+        "state": {
+          "heat": "Tylko grzanie",
+          "cool": "Tylko chłodzenie",
+          "heat_cool": "Grzanie i chłodzenie"
+        }
+      },
+      "heating_circuit_type": {
+        "name": "Typ obiegu grzewczego",
+        "state": {
+          "floor": "Ogrzewanie podłogowe",
+          "radiator": "Grzejniki",
+          "convector": "Konwektory"
+        }
+      },
+      "heating_circuit_control_type": {
+        "name": "Typ regulacji",
+        "state": {
+          "room": "Regulacja według temperatury pomieszczenia",
+          "outdoor": "Regulacja według temperatury zewnętrznej",
+          "wdc": "Pogodowa",
+          "wdcoptimized": "Zoptymalizowana pogodowa",
+          "wdcsimplified": "Uproszczona pogodowa",
+          "mpc": "Regulacja predykcyjna z modelem",
+          "room_flow_temperature": "Temperatura zasilania regulowana według pomieszczenia",
+          "room_power": "Moc regulowana według pomieszczenia",
+          "constant": "Regulacja stała",
+          "valve_feedback_control": "Regulacja ze sprzężeniem zwrotnym zaworu",
+          "isrc": "Regulacja poszczególnych pomieszczeń (iSRC)",
+          "vbh": "VBH",
+          "external": "Regulacja zewnętrzna"
+        }
+      },
+      "heating_circuit_cooling_control_type": {
+        "name": "Typ regulacji chłodzenia",
+        "state": {
+          "constant": "Stała temperatura",
+          "rtcc_with_dewpoint": "Regulacja temperatury pomieszczenia z monitorowaniem punktu rosy",
+          "rtcc_no_dewpoint": "Regulacja temperatury pomieszczenia bez monitorowania punktu rosy"
+        }
+      },
+      "hot_water_temperature_level": {
+        "name": "Poziom temperatury ciepłej wody użytkowej",
+        "state": {
+          "off": "Wyłączony",
+          "low": "Eco",
+          "high": "Komfort",
+          "eco": "Eco+"
+        }
+      },
+      "hot_water_operation_mode": {
+        "name": "Tryb pracy ciepłej wody użytkowej",
+        "state": {
+          "off": "Wyłączony",
+          "low": "Eco",
+          "high": "Komfort",
+          "ownprogram": "Automatyczny",
+          "eco": "Eco+",
+          "follow_heating_program": "Zgodnie z programem grzania"
+        }
+      },
+      "hot_water_overall_status": {
+        "name": "Stan ciepłej wody użytkowej",
+        "state": {
+          "dhw_enabled": "Ciepła woda użytkowa włączona",
+          "dhw_disabled": "Ciepła woda użytkowa wyłączona",
+          "auto": "Automatyczny",
+          "manual_off": "Wyłączony",
+          "manual_on_low": "Eco",
+          "manual_on_eco": "Eco+",
+          "manual_on_high": "Komfort",
+          "extra": "Dodatkowa ciepła woda",
+          "away": "Nieobecność",
+          "holiday": "Urlop",
+          "floor_drying": "Suszenie wylewki",
+          "td": "Dezynfekcja termiczna"
+        }
+      },
+      "on_off_state": {
+        "name": "Stan",
+        "state": {
+          "off": "Wyłączony",
+          "on": "Włączony",
+          "stop": "Wyłączony",
+          "start": "Włączony"
+        }
+      },
+      "four_way_valve_position": {
+        "name": "Zawór 4-drogowy",
+        "state": {
+          "off": "Grzanie",
+          "on": "Chłodzenie/odszranianie"
+        }
+      },
+      "dhw_valve_position": {
+        "name": "Zawór 3-drogowy ciepłej wody użytkowej",
+        "state": {
+          "off": "Grzanie",
+          "on": "Ciepła woda użytkowa"
+        }
+      },
+      "heat_demand": {
+        "name": "Bieżące zapotrzebowanie na ciepło",
+        "state": {
+          "none": "Brak",
+          "ch": "Grzanie",
+          "dhw": "Ciepła woda użytkowa",
+          "frost": "Ochrona przed zamarzaniem",
+          "ch_dhw": "Grzanie i ciepła woda użytkowa",
+          "ch_frost": "Grzanie i ochrona przed zamarzaniem",
+          "dhw_frost": "Ciepła woda użytkowa i ochrona przed zamarzaniem",
+          "ch_dhw_frost": "Grzanie, ciepła woda użytkowa i ochrona przed zamarzaniem"
+        }
+      },
+      "compressor_status": {
+        "name": "Stan sprężarki",
+        "state": {
+          "off": "Wyłączona",
+          "heating": "Grzanie domu",
+          "cooling": "Chłodzenie domu",
+          "dhw": "Ciepła woda użytkowa",
+          "pool": "Grzanie basenu",
+          "pool_heat": "Grzanie domu + basenu",
+          "defrost": "Odszranianie",
+          "alarm": "Zablokowana"
+        }
+      },
+      "electric_auxiliary_heater_status": {
+        "name": "Stan dogrzewacza",
+        "state": {
+          "off": "Wyłączony",
+          "heating": "Grzanie domu",
+          "dhw": "Ciepła woda użytkowa",
+          "pool": "Grzanie basenu",
+          "pool_heat": "Grzanie domu + basenu",
+          "defrost": "Odszranianie",
+          "alarm": "Zablokowany"
+        }
+      },
+      "auxiliary_heater_operation_mode": {
+        "name": "Tryb pracy dogrzewacza",
+        "state": {
+          "off": "Wyłączony",
+          "manual": "Włączony",
+          "auto": "Automatyczny"
+        }
+      },
+      "refrigerant_status": {
+        "name": "Stan obiegu czynnika chłodniczego",
+        "state": {
+          "idle": "Bezczynność",
+          "startup": "Uruchamianie",
+          "heating": "Grzanie",
+          "cooling": "Chłodzenie",
+          "defrost": "Odszranianie",
+          "passive_defrost": "Odszranianie pasywne",
+          "shutoff": "Zatrzymany",
+          "alarm": "Alarm",
+          "test_mode": "Tryb testowy",
+          "off": "Wyłączony",
+          "dhw": "Ciepła woda użytkowa",
+          "pool": "Basen",
+          "pool_heat": "Grzanie basenu"
+        }
+      },
+      "ventilation_fan_level": {
+        "name": "Bieg wentylatora wyciągowego",
+        "state": {
+          "off": "Wyłączony",
+          "min": "Bieg wentylatora 1",
+          "red": "Bieg wentylatora 2",
+          "nom": "Bieg wentylatora 3",
+          "max": "Bieg wentylatora 4",
+          "dem": "Na żądanie"
+        }
+      },
+      "pv_contact_state": {
+        "name": "Stan styku PV",
+        "state": {
+          "inactive": "Nieaktywny",
+          "active": "Aktywny"
+        }
+      },
+      "data_processing_status": {
+        "name": "Stan przetwarzania danych",
+        "state": {
+          "in_progress": "W toku",
+          "completed": "Zakończono"
+        }
+      },
+      "season_optimizer_mode": {
+        "name": "Bieżący stan grzania/chłodzenia",
+        "state": {
+          "off": "Bezczynność",
+          "heating": "Grzanie",
+          "cooling": "Chłodzenie",
+          "automatic": "Przełączanie automatyczne",
+          "forced_heat": "Zawsze grzanie",
+          "forced_cool": "Zawsze chłodzenie"
+        }
+      },
+      "isrc_support_status": {
+        "name": "Obsługa iSRC",
+        "state": {
+          "not_supported_incompatible_controller": "Nieobsługiwane: niekompatybilny regulator",
+          "not_supported_pairing_enabled": "Nieobsługiwane: włączone parowanie",
+          "supported": "Obsługiwane",
+          "in_evaluation": "W trakcie oceny"
+        }
+      },
+      "isrc_installation_status": {
+        "name": "Stan instalacji iSRC",
+        "state": {
+          "timeout": "Przekroczono czas"
+        }
+      },
+      "heat_pump_type": {
+        "name": "Typ pompy ciepła",
+        "state": {
+          "air_water": "Powietrze/woda",
+          "brine_water": "Solanka/woda",
+          "exhaust_air": "Powietrze wywiewane/woda"
+        }
+      },
+      "heat_source_type": {
+        "name": "Typ źródła ciepła",
+        "state": {
+          "no_appliance": "Brak urządzenia",
+          "heatpump": "Pompa ciepła",
+          "boiler": "Kocioł",
+          "boiler_oil": "Kocioł olejowy",
+          "boiler_gas": "Kocioł gazowy",
+          "boiler_unknown": "Nieznany kocioł",
+          "hybrid": "Układ hybrydowy"
+        }
+      },
+      "system_type": {
+        "name": "Typ instalacji",
+        "state": {
+          "heatpump_single": "Pojedyncza pompa ciepła",
+          "heatpump_cascade": "Kaskada pomp ciepła",
+          "boiler_single": "Pojedynczy kocioł",
+          "hybrid": "Układ hybrydowy"
+        }
+      },
+      "energy_management_status": {
+        "name": "Stan zarządzania energią",
+        "state": {
+          "not_connected": "Niepołączone",
+          "inactive": "Nieaktywne",
+          "active_ch": "Aktywne dla grzania",
+          "active_dhw": "Aktywne dla ciepłej wody użytkowej",
+          "active_em": "Aktywne zarządzanie energią",
+          "connected": "Połączone",
+          "active": "Aktywne",
+          "error": "Błąd"
+        }
+      },
+      "outdoor_temperature_source": {
+        "name": "Źródło temperatury zewnętrznej",
+        "state": {
+          "appliance": "Instalacja grzewcza",
+          "internet": "Internet",
+          "roomcontroller": "Regulator pokojowy"
+        }
+      },
+      "support_status": {
+        "name": "Stan obsługi",
+        "state": {
+          "not_supported": "Nieobsługiwane",
+          "supported": "Obsługiwane",
+          "active": "Aktywne"
+        }
+      },
+      "update_status": {
+        "name": "Stan aktualizacji",
+        "state": {
+          "idle": "Bezczynność",
+          "running": "W toku",
+          "success": "Zakończona pomyślnie",
+          "failed": "Niepowodzenie"
+        }
+      },
+      "pressure_status": {
+        "name": "Stan ciśnienia w instalacji (obliczony)",
+        "state": {
+          "critical_low": "Krytycznie niskie",
+          "low": "Niskie",
+          "normal": "Normalne",
+          "high": "Wysokie",
+          "critical_high": "Krytycznie wysokie"
+        }
+      },
+      "active_faults": {
+        "name": "Aktywne usterki"
+      },
+      "active_notifications": {
+        "name": "Aktywne komunikaty"
+      },
+      "next_holiday": {
+        "name": "Następny urlop"
+      },
+      "pointt_api_requests_total": {
+        "name": "Żądania API PointT łącznie"
+      },
+      "pointt_api_requests_last_hour": {
+        "name": "Żądania API PointT – ostatnia godzina"
+      },
+      "pointt_api_response_time_last_hour": {
+        "name": "Czas odpowiedzi API PointT – ostatnia godzina"
+      },
+      "softener_regeneration_phase": {
+        "state": {
+          "end": "Koniec",
+          "backwash": "Płukanie wsteczne",
+          "rinse": "Płukanie",
+          "normal": "Praca normalna",
+          "brine_draw": "Pobór solanki",
+          "brine_preparation": "Przygotowanie solanki",
+          "refill": "Napełnianie"
+        }
+      },
+      "rrc_user_mode": {
+        "state": {
+          "manual": "Ręczny",
+          "clock": "Program czasowy"
+        }
+      },
+      "bacon_purifier_air_quality": {
+        "name": "Jakość powietrza",
+        "state": {
+          "good": "Dobra",
+          "fair": "Dostateczna",
+          "poor": "Słaba",
+          "bad": "Zła"
+        }
+      },
+      "bacon_purifier_pm2_5": {
+        "name": "PM2.5"
+      },
+      "bacon_purifier_tvoc": {
+        "name": "Wartość TVOC"
+      },
+      "bacon_purifier_temperature": {
+        "name": "Temperatura pomieszczenia"
+      },
+      "bacon_purifier_humidity": {
+        "name": "Wilgotność względna"
+      },
+      "bacon_purifier_filter_life": {
+        "name": "Pozostała żywotność filtra"
+      },
+      "bacon_purifier_filter_status": {
+        "name": "Stan filtra",
+        "state": {
+          "ok": "OK",
+          "warning": "Zbliża się wymiana",
+          "error": "Wymień filtr"
+        }
+      },
+      "bacon_dry_temperature": {
+        "name": "Temperatura pomieszczenia"
+      },
+      "bacon_dry_humidity": {
+        "name": "Wilgotność względna"
+      },
+      "bacon_dry_operating_status": {
+        "name": "Stan pracy",
+        "state": {
+          "off": "Wyłączony",
+          "running": "Pracuje",
+          "idle": "Bezczynność",
+          "water_tank_full": "Zbiornik na wodę pełny",
+          "defrosting": "Odszranianie",
+          "device_error": "Zgłoszono błąd urządzenia"
+        }
+      },
+      "wallbox_state": {
+        "name": "Stan ładowania",
+        "state": {
+          "initializing": "Inicjalizacja",
+          "available": "Dostępna",
+          "authenticated": "Uwierzytelniono",
+          "preparing": "Przygotowanie",
+          "charging": "Ładowanie",
+          "suspended_ev": "Wstrzymane przez pojazd",
+          "suspended_evse": "Wstrzymane przez stację ładowania",
+          "faulted": "Usterka",
+          "locked": "Zablokowana",
+          "limited": "Ograniczone",
+          "phase_switch": "Przełączanie faz"
+        }
+      },
+      "wallbox_power": {
+        "name": "Moc ładowania"
+      },
+      "wallbox_energy": {
+        "name": "Zgłoszona energia ładowania"
+      },
+      "wallbox_duration": {
+        "name": "Aktywny czas ładowania"
+      },
+      "wallbox_current_limit": {
+        "name": "Zgłoszony limit prądu"
+      },
+      "wallbox_charging_start": {
+        "name": "Początek ładowania"
+      },
+      "wallbox_role": {
+        "name": "Rola stacji ładowania",
+        "state": {
+          "standalone": "Samodzielna",
+          "leader": "Wiodąca",
+          "follower": "Podrzędna"
+        }
+      },
+      "wallbox_hardware_current_limit": {
+        "name": "Sprzętowy limit prądu"
+      },
+      "smart_grid_mode": {
+        "name": "Tryb Smart Grid",
+        "state": {
+          "blocked": "Zablokowany",
+          "normal": "Normalny",
+          "preferred": "Preferowany",
+          "forced": "Wymuszony",
+          "not_used": "Nieużywany"
+        }
+      },
+      "signal_season_mode": {
+        "name": "Tryb sezonowy",
+        "state": {
+          "heating": "Grzanie",
+          "idle": "Bezczynność",
+          "cooling": "Chłodzenie"
+        }
+      },
+      "signal_heat_cool": {
+        "name": "Stan grzania/chłodzenia",
+        "state": {
+          "idle": "Bezczynność",
+          "heat": "Grzanie",
+          "cool": "Chłodzenie"
+        }
+      },
+      "signal_holiday_slot": {
+        "name": "Okres urlopu",
+        "state": {
+          "idle": "Niezaplanowany",
+          "planned": "Zaplanowany",
+          "active": "Aktywny"
+        }
+      },
+      "signal_true_false": {
+        "name": "Stan",
+        "state": {
+          "true": "Tak",
+          "false": "Nie"
+        }
+      },
+      "volume_flow": {
+        "state_attributes": {
+          "measuring_range": {
+            "name": "Zakres pomiarowy",
+            "state": {
+              "below": "Poniżej zakresu pomiarowego"
+            }
+          }
+        }
+      }
+    },
+    "binary_sensor": {
+      "holiday_active": {
+        "name": "Tryb urlopowy aktywny"
+      },
+      "cloud_control": {
+        "name": "Sterowanie przez chmurę dostępne",
+        "state_attributes": {
+          "reason": {
+            "name": "Przyczyna",
+            "state": {
+              "auth_required": "Wymagane logowanie",
+              "cloud_stopped": "Dostęp przez chmurę zatrzymany",
+              "rate_limited": "Wstrzymano po przekroczeniu limitu żądań",
+              "protection_pause": "Pauza ochronna po powtarzających się błędach",
+              "cloud_unreachable": "Chmura nieosiągalna",
+              "not_current": "Wartości jeszcze nieaktualne"
+            }
+          },
+          "until": {
+            "name": "Do"
+          }
+        }
+      },
+      "system_fault": {
+        "name": "Usterka instalacji"
+      },
+      "bacon_connectivity": {
+        "name": "Połączenie urządzenia"
+      },
+      "bacon_dhw_energy_saving": {
+        "name": "Oszczędzanie energii aktywne"
+      },
+      "bacon_dhw_standard_mode": {
+        "name": "Tryb standardowy aktywny"
+      },
+      "bacon_dhw_thermal_disinfection": {
+        "name": "Dezynfekcja termiczna aktywna"
+      },
+      "bacon_dhw_vacation": {
+        "name": "Tryb urlopowy aktywny"
+      },
+      "bacon_dhw_top_heater": {
+        "name": "Górna grzałka elektryczna aktywna"
+      },
+      "bacon_dhw_bottom_heater": {
+        "name": "Dolna grzałka elektryczna aktywna"
+      },
+      "bacon_dry_water_tank_full": {
+        "name": "Zbiornik na wodę pełny"
+      },
+      "bacon_dry_defrosting": {
+        "name": "Odszranianie"
+      },
+      "bacon_dry_condensate_pump": {
+        "name": "Pompa skroplin pracuje"
+      },
+      "bacon_dry_idle": {
+        "name": "Stan bezczynności"
+      },
+      "bacon_dry_device_error": {
+        "name": "Zgłoszony błąd urządzenia"
+      }
+    },
+    "calendar": {
+      "holiday_periods": {
+        "name": "Okresy urlopu"
+      }
+    },
+    "event": {
+      "system_notifications": {
+        "name": "Komunikaty instalacji"
+      }
+    },
+    "button": {
+      "softener_start_regeneration": {
+        "name": "Rozpocznij regenerację"
+      }
+    },
+    "water_heater": {
+      "bacon_dhw": {
+        "name": "Ciepła woda użytkowa",
+        "state": {
+          "off": "Wyłączony",
+          "electric": "Grzałka elektryczna",
+          "economy": "Ekonomiczny",
+          "hybrid": "Hybrydowy",
+          "smart": "Smart",
+          "comfort": "Komfort",
+          "dual": "Podwójny",
+          "eco": "Eco"
+        },
+        "state_attributes": {
+          "operation_mode": {
+            "state": {
+              "off": "Wyłączony",
+              "electric": "Grzałka elektryczna",
+              "economy": "Ekonomiczny",
+              "hybrid": "Hybrydowy",
+              "smart": "Smart",
+              "comfort": "Komfort",
+              "dual": "Podwójny",
+              "eco": "Eco"
+            }
+          }
+        }
+      },
+      "pointt_dhw": {
+        "name": "Ciepła woda użytkowa",
+        "state": {
+          "off": "Wyłączony",
+          "low": "Eco",
+          "high": "Komfort",
+          "ownprogram": "Automatyczny",
+          "eco": "Eco+",
+          "follow_heating_program": "Zgodnie z programem grzania"
+        },
+        "state_attributes": {
+          "operation_mode": {
+            "state": {
+              "off": "Wyłączony",
+              "low": "Eco",
+              "high": "Komfort",
+              "ownprogram": "Automatyczny",
+              "eco": "Eco+",
+              "follow_heating_program": "Zgodnie z programem grzania"
+            }
+          }
+        }
+      }
+    },
+    "climate": {
+      "bacon_rac": {
+        "name": "Klimatyzator",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automatyczny",
+              "quiet": "Cichy",
+              "low": "Niski",
+              "medium": "Średni",
+              "high": "Wysoki",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Wyłączony",
+              "on": "Włączony"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Wyłączony",
+              "on": "Włączony"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Brak",
+              "eco": "Eco"
+            }
+          }
+        }
+      }
+    },
+    "fan": {
+      "bacon_purifier_fan": {
+        "name": "Oczyszczacz powietrza",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "auto": "Automatyczny",
+              "manual": "Ręczny",
+              "silent": "Cichy"
+            }
+          }
+        }
+      }
+    },
+    "humidifier": {
+      "bacon_dry_dehumidifier": {
+        "name": "Osuszacz",
+        "state_attributes": {
+          "mode": {
+            "state": {
+              "auto": "Automatyczny",
+              "night": "Noc",
+              "laundry": "Suszenie prania"
+            }
+          }
+        }
+      }
+    }
+  }
+}
