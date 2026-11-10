@@ -5,7 +5,23 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
-### Entities
+## [0.9.0-alpha.4] - 2026-11-10
+
+> [!IMPORTANT]
+> **Alpha pre-release for testing.** Make a full Home Assistant backup first.
+> From alpha.1, alpha.2 or alpha.3 no new setup is needed; from 0.8.x, the
+> notes of alpha.1 below apply as well.
+
+Alpha.4 mainly makes 0.9 more robust. The code was reviewed area by area, and
+I fixed the problems found, most of them in rare error and outage situations.
+It also reads the zones of the TC100.2 room controller, logs unexpected errors
+more clearly and handles fault sources, the sign-in and the additional cloud
+devices more reliably. Several fixes could only be tested with simulated data
+so far; the sections below say where.
+
+### What changed since alpha.3
+
+#### Entities
 
 - **Names as on the controller:** readings that only the local access
   provides now use the wording and sensor codes of the controller's Info menu,
@@ -46,7 +62,7 @@ Versioning after its first tagged preview.
   its unit as "°C" instead of "C" now gets its entity like any other
   temperature.
 
-### Local values and counters
+#### Local values and counters
 
 - **No false states from local texts:** a local text that the cloud does not
   declare for this reading now keeps the cloud state instead of showing
@@ -68,14 +84,15 @@ Versioning after its first tagged preview.
   kept postponing the save of the last shown counts. The save now happens at
   most about a minute after the first change.
 
-### Outages and recovery
+#### Outages and recovery
 
 - **Clearer log entries for unexpected errors:** about thirty places that
   logged an unexpected error with a bare sentence, for example "The heating
-  fault notification could not be updated", now name the error class. The
-  error text itself stays out of the log, because it may contain account or
-  device details; with debug logging enabled, the full details follow at debug
-  level.
+  fault notification could not be updated", now name the error class.
+  Internal errors that repeat with every reading are logged once. The error
+  text itself stays out of the log, because it may contain account or device
+  details or values; with debug logging enabled, the full details follow at
+  debug level.
 - **Short gateway outages no longer hide values for 15 minutes:** when the
   gateway does not answer at all, the cloud reports a timeout for every
   reading. Each of these readings was then paused for 15 minutes, so the most
@@ -103,10 +120,10 @@ Versioning after its first tagged preview.
 - **Unexpected start errors are visible:** an unexpected error while starting
   or running a source or an access was not logged at all. The first one of a
   series is now logged as a warning with its error type, the details at debug
-  level, and the recovery as info. Diagnostics (schema 44) count the failed
-  attempts of each access and source with the last error type.
+  level, and the recovery as info. Diagnostics count the failed attempts of
+  each access and source with the last error type.
 
-### Local access
+#### Local access
 
 - **The local access no longer gives up at startup:** if the gateway answers
   at startup but not usably, for example because it is still starting, the
@@ -152,7 +169,7 @@ Versioning after its first tagged preview.
 - The local access needs less processing time per read, which matters most
   on small boards such as a Raspberry Pi.
 
-### Cloud connection and robustness
+#### Cloud connection and robustness
 
 - **One entity no longer blocks all others:** if a single entity could not
   be set up, for example because another entry already owns its ID or the
@@ -167,9 +184,6 @@ Versioning after its first tagged preview.
   integration check its repairs, notifications and entity lists again; only
   the entities that show the reading are updated. Changes of a connection
   still do all checks.
-- **Clearer error messages:** internal errors that repeat with every reading
-  are logged once with their type, the details only in the debug log. They
-  no longer contain values.
 - **Local readings without the cloud are tried again:** if the view of a
   system with the cloud switched off (or unavailable) could not be built,
   this was only visible in the debug log and was not tried again until a
@@ -213,17 +227,55 @@ Versioning after its first tagged preview.
   list, the system now starts with its saved inventory as during a cloud
   outage, or shows the local readings when there is no usable inventory. The
   question about an exchanged gateway works as before.
-- **No new sign-in for a single refused value:** if the cloud refused just the
-  manual room setpoint inside an answered request (HTTP 401), the integration
-  asked for a new sign-in although the sign-in was working. This value is now
-  read again with the regular poll, as all other values already were.
 - **"Search the system again" no longer warns about parts it keeps:** a part
   the gateway did not report during a requested search or the search after a
   firmware update stays and is read as before; the warning now names only the
   parts that are really missing.
 
-### Diagnostics
+#### Sign-in
 
+- **No new sign-in for a single refused value:** if the cloud refused just
+  one value with HTTP 401, for example the manual room setpoint inside an
+  answered request or a single value during the start, the integration asked
+  for a new sign-in although the sign-in was working. Such a value is now read
+  again with the regular poll, as all other values already were.
+- **Only a clear refusal ends the sign-in:** a refusal of the sign-in service
+  without a definite reason, for example an HTML page of a firewall, no longer
+  ends the sign-in; only a clear answer such as `invalid_grant` does. After a
+  rejected sign-in, reloading the entry tries the stored token once more.
+- **Less load when the sign-in service is down:** after a failed token
+  renewal the next one waits 30 seconds, doubling up to 10 minutes. Before,
+  every single request started another renewal, and the failure was counted
+  as an outage of the gateway. Only a failure of the sign-in service starts
+  this wait, not an unexpected program error.
+- **Rotated token kept:** choosing the first separate cloud device exactly
+  while a token renewal ran could discard the new token, so the next renewal
+  asked for a new sign-in. The renewal is now saved in this case, and the
+  selection waits for it. If this wait fails, the selection is still saved,
+  with the stored tokens.
+- **Fewer permissions:** a new sign-in now asks only for the permissions the
+  integration uses. Removing gateways from the account, claiming gateways and
+  managing other users are no longer part of it. If the sign-in service does
+  not accept this, the dialog shows a new link with the previous full set
+  and asks you to open it, instead of reporting a wrong address.
+  Existing sign-ins keep their permissions until you sign in again. I have
+  not yet confirmed this with a real sign-in.
+- The token request no longer follows redirects, so the refresh token is only
+  sent to the sign-in service itself, and its answer is read with a size
+  limit. A rejection sent in several parts keeps its OAuth error code in the
+  diagnostics.
+- A pasted app address with a stray `[` or `]` now shows the usual hint for
+  an unusable address instead of "Unknown error".
+- One unreadable entry in the account's gateway list, for example a new device
+  without an ID, no longer blocks adding or changing systems; it is left out
+  and counted in the diagnostics.
+
+#### Diagnostics
+
+- **Diagnostics schema 44** counts the failed attempts of each access and
+  source with the last error type (see "Outages and recovery") and adds the
+  fields below. See
+  [diagnostics](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.4/docs/diagnostics.md).
 - `energy_counter_resets_detected` no longer counts the produced heat falling
   during a defrost, and a change of the energy unit is no reset any more; the
   values are compared in kWh. Decreases of the produced heat are counted in
@@ -232,7 +284,7 @@ Versioning after its first tagged preview.
   `explicit_refreshes_full`, `explicit_refreshes_control_only` and
   `explicit_refresh_gap_seconds`.
 
-### Changes to the heating system
+#### Changes to the heating system
 
 - **Half degrees for hot water are refused up front:** the heating system
   rounds hot-water temperatures to whole degrees and heating-circuit setpoints
@@ -266,7 +318,7 @@ Versioning after its first tagged preview.
   starts while the system cools. It no longer appears as "no longer provided"
   for the whole summer.
 
-### Holidays
+#### Holidays
 
 - **Creating holidays no longer stays blocked:** when the cloud finally
   refused a new holiday (for example with HTTP 400) or the connection failed
@@ -288,42 +340,8 @@ Versioning after its first tagged preview.
   twice and waits briefly for a slow confirmation. A lost response is
   resolved by reading instead of ending the change. I tested this with
   synthetic data only; a test on a real device is still open.
-- **Sign-in problems that are not a sign-in problem:** a 401 for a single
-  value during the start no longer asks for a new sign-in; the value is read
-  again later, as in the regular poll. A refusal of the sign-in service
-  without a definite reason, for example an HTML page of a firewall, no longer
-  ends the sign-in either; only a clear answer such as `invalid_grant` does.
-  After a rejected sign-in, reloading the entry tries the stored token once
-  more.
-- **Less load when the sign-in service is down:** after a failed token
-  renewal the next one waits 30 seconds, doubling up to 10 minutes. Before,
-  every single request started another renewal, and the failure was counted
-  as an outage of the gateway. Only a failure of the sign-in service starts
-  this wait, not an unexpected program error.
-- **Rotated token kept:** choosing the first separate cloud device exactly
-  while a token renewal ran could discard the new token, so the next renewal
-  asked for a new sign-in. The renewal is now saved in this case, and the
-  selection waits for it. If this wait fails, the selection is still saved,
-  with the stored tokens.
-- **Fewer permissions:** a new sign-in now asks only for the permissions the
-  integration uses. Removing gateways from the account, claiming gateways and
-  managing other users are no longer part of it. If the sign-in service does
-  not accept this, the dialog shows a new link with the previous full set
-  and asks you to open it, instead of reporting a wrong address.
-  Existing sign-ins keep their permissions until you sign in again. I have
-  not yet confirmed this with a real sign-in; I will test it manually before
-  the release.
-- The token request no longer follows redirects, so the refresh token is only
-  sent to the sign-in service itself, and its answer is read with a size
-  limit. A rejection sent in several parts keeps its OAuth error code in the
-  diagnostics.
-- A pasted app address with a stray `[` or `]` now shows the usual hint for
-  an unusable address instead of "Unknown error".
-- One unreadable entry in the account's gateway list, for example a new device
-  without an ID, no longer blocks adding or changing systems; it is left out
-  and counted in the diagnostics.
 
-### Additional cloud devices
+#### Additional cloud devices
 
 These fixes concern air conditioners, air purifiers, dehumidifiers and water
 heaters connected through the cloud. I tested them with synthetic devices and
@@ -372,7 +390,7 @@ a local test broker; checks with real devices are still open.
   reconnects with a growing wait. Unloading the integration no longer reports
   "A connection resource could not be closed" because of it.
 
-### Dialogs
+#### Dialogs
 
 - **Cloud setup no longer stays blocked:** a cloud sign-in dialog left behind
   by a reloaded page or a restarted companion app blocked every new cloud
@@ -432,7 +450,7 @@ a local test broker; checks with real devices are still open.
 - A missing or blocked dialog file no longer stops the whole integration from
   starting; only the affected form is missing, with a warning in the log.
 
-### Storage and removal
+#### Storage and removal
 
 - **A damaged or newer entity inventory no longer stops the integration:**
   if the stored entity inventory could not be read, came from a newer version
@@ -450,7 +468,7 @@ a local test broker; checks with real devices are still open.
 - A failed configuration migration now names its cause in the log, as a
   static code or the error type.
 
-### Faults
+#### Faults
 
 - **Room device errors from the cloud:** a device error list now counts only
   rows that report an active error as faults. A valve status such as
@@ -487,7 +505,7 @@ a local test broker; checks with real devices are still open.
   I recommend adding the same `not_from` to your own automations on this
   entity.
 
-### RRC zones
+#### RRC zones
 
 - **Zones of the TC100.2 are read
   ([#113](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/113)):**
@@ -496,7 +514,8 @@ a local test broker; checks with real devices are still open.
   other spellings stay invalid. Room temperature, active target, the heating
   mode reading, the selected program and **Select heating schedule** become
   available on this controller. Thank you, @obvius1, for the analysis, the
-  fix and the tests.
+  fix and the tests in
+  [#114](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/pull/114).
 - **Heating mode without a list of options:** if the controller sends no
   `allowedValues` for the heating mode at all, as the TC100.2 does, the mode
   select offers Manual and Schedule (`manual`, `clock`), as the controller's
@@ -515,7 +534,7 @@ a local test broker; checks with real devices are still open.
   have not tested this version on a TC100.2 myself; program selection and the
   zone names still need a check on the device.
 
-### Release checks
+#### Release checks
 
 - The release workflow now also runs the browser tests of the dialogs before
   it publishes anything. Before, only the pull request ran them, and my

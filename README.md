@@ -28,6 +28,7 @@
 > - **Works without the cloud:** your readings stay available when the cloud is not.
 > - **Fewer cloud requests:** since 0.9.0-alpha.3, readings the local access delivers are read from the cloud less often.
 > - **Less load on Home Assistant, without losing any functionality:** on my system, CPU load dropped by about three quarters, memory use by about 80 MB, and the database writes about 75 % fewer rows.
+> - **More robust:** since 0.9.0-alpha.4, many rare error and outage situations are handled better, the zones of the TC100.2 room controller are read, and unexpected errors are logged more clearly.
 >
 > **Tested on:** my own heat pump (K40RF gateway, firmware 15.00.01, MX400 controller), where it runs without problems.
 >
@@ -36,10 +37,10 @@
 > **How to test:** make a backup, show pre-releases for this repository in HACS and install the latest alpha from the [releases](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases). Please share your experience in the [0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) and report bugs as [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new?template=bug.yml).
 
 > [!NOTE]
-> **0.9.0-alpha.3 is the current pre-release.** It needs Home Assistant
+> **0.9.0-alpha.4 is the current pre-release.** It needs Home Assistant
 > 2026.5.0 or newer, and 0.8.x cannot load its storage format, so make a full
 > backup first. See the
-> [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.3).
+> [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.4).
 
 Bosch/Buderus Home Comfort (formerly Bosch/Buderus Heating) is an unofficial Home Assistant custom integration.
 It discovers PointT heating-system resources and uses separate cloud adapters
@@ -209,6 +210,15 @@ An unlisted model may still work because discovery is capability based. A
 listed gateway does not by itself guarantee that every entity or control is
 available. Missing capabilities are simply omitted without affecting the rest
 of the integration.
+
+Systems registered in the IVT Anywhere II app, and Worcester or Vulcano
+systems registered in the Bosch HomeCom Easy app, use the same cloud. They
+should work when you select **Bosch** during setup and sign in with the
+SingleKey ID of that app. The local access also recognises gateways of these
+brands. No IVT, Worcester or Vulcano system has been confirmed yet, neither
+with the cloud nor with the local access; if you use one, please share your
+experience in
+[Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
 
 Home Assistant shows a uniquely identified MX300/MX400 controller as the
 system model. K30/K40 describes the PointT communication gateway, not the
