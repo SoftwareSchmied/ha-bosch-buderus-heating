@@ -10,7 +10,7 @@ from collections.abc import Iterable, Mapping
 from types import MappingProxyType
 from typing import Final
 
-from . import rrc_contracts
+from . import rrc_contract_zone, rrc_contracts
 from .i18n import localize
 from .pointt import Resource
 from .pointt.models import JsonScalar
@@ -44,6 +44,13 @@ TEMPERATURES = (
 )
 # W1 adds zone leaves through its contract (``rrc_contract_zone.zone_fields``).
 ZONE_FIELDS = (*TEMPERATURES, "userMode", "clockProgram", *rrc_contracts.zone_fields())
+# W1: the zone details. Only the zone entities (``rrc_zone_entities``) read
+# them, through ``detail_value``; they are no generic zone scalars.
+DETAIL_FIELDS = frozenset(rrc_contracts.zone_fields())
+OVERRIDE_FIELD = rrc_contract_zone.OVERRIDE_LEAF
+# The writable zone scalars: the mode and the manual setpoint (hardware
+# confirmed on the TC100.2) and the temporary setpoint (W1, expected).
+CONTROL_FIELDS = frozenset({"userMode", "manualTemperatureHeating", OVERRIDE_FIELD})
 
 
 def scalar_field(path: str) -> str | None:
@@ -59,7 +66,12 @@ def program_list_expected(paths: Iterable[str]) -> bool:
 
 
 def is_control(path: str) -> bool:
-    return scalar_field(path) in {"userMode", "manualTemperatureHeating"}
+    """A zone scalar written with the RRC checks (fresh read, metadata grid).
+
+    The temporary setpoint is written only through its contract policy, so
+    only on an RRC controller (S11).
+    """
+    return scalar_field(path) in CONTROL_FIELDS
 
 
 def available(resource: Resource) -> bool:
@@ -127,6 +139,7 @@ def scalar_value(resource: Resource) -> str | int | float | None:
     value = resource.value
     if (
         field is None
+        or field in DETAIL_FIELDS
         or not (
             available(resource) or mode_locked(resource) or program_unused(resource)
         )
@@ -209,6 +222,124 @@ def control_issue(resource: Resource) -> str | None:
     ):
         return "invalid_step"
     return None
+
+
+_DETAIL_TYPES: Final[Mapping[str, str]] = MappingProxyType(
+    {
+        rrc_contract_zone.NEXT_SETPOINT: "floatValue",
+        rrc_contract_zone.MINUTES_TO_NEXT: "floatValue",
+        rrc_contract_zone.STATUS: "stringValue",
+        rrc_contract_zone.WINDOW_ENABLED: "stringValue",
+        rrc_contract_zone.WINDOW_STATUS: "stringValue",
+        rrc_contract_zone.VALVE_POSITION: "floatValue",
+        rrc_contract_zone.OPTIMUM_STATE: "stringValue",
+        rrc_contract_zone.OPTIMUM_RATE: "floatValue",
+    }
+)
+# A state token of the controller (optimum start); other text is not shown.
+_STATE_TOKEN = re.compile(r"[A-Za-z][A-Za-z0-9 _-]{0,31}")
+_MINUTE_UNITS = frozenset({"m", "min", "mins", "minutes"})
+
+
+def detail_field(path: str) -> str | None:
+    """The W1 zone detail leaf of a path, or ``None``."""
+    field = scalar_field(path)
+    return field if field in DETAIL_FIELDS else None
+
+
+def detail_shape(resource: Resource) -> bool:
+    """Whether a zone detail has the type its entity reads (CT-C06).
+
+    The entity exists for such a resource; its state is ``detail_value``.
+    """
+    field = detail_field(resource.path)
+    return (
+        field is not None
+        and resource.metadata.resource_type == _DETAIL_TYPES[field]
+        and not resource.references
+        and not resource.has_values
+    )
+
+
+def detail_value(resource: Resource) -> str | float | bool | None:
+    """The state of a zone detail; ``None`` shows it as unknown.
+
+    - ``nextSetpoint``: °C; 999 (P07) or an unused value is none.
+    - ``timeToNextSetpoint``: minutes, never negative.
+    - ``status``: the option key of a known zone status (CT-G07).
+    - ``openWindowDetection/status``: ``True`` for open, ``False`` for
+      closed; other values are unknown (the values are expected only).
+    - ``actualValvePosition``: percent from 0 to 100.
+    - ``optimumStartState``: a short state token; ``optimumStartHeatupRate``
+      a non-negative number in the unit the controller names.
+    """
+    field = detail_field(resource.path)
+    metadata = resource.metadata
+    if (
+        field is None
+        or not detail_shape(resource)
+        or not resource.has_value
+        or not metadata.availability_flags_valid
+        or metadata.used is False
+        or metadata.available is False
+    ):
+        return None
+    value = resource.value
+    if _DETAIL_TYPES[field] == "stringValue":
+        if not isinstance(value, str):
+            return None
+        if field == rrc_contract_zone.STATUS:
+            return rrc_contract_zone.ZONE_STATUS.get(value)
+        if field == rrc_contract_zone.WINDOW_STATUS:
+            return rrc_contract_zone.WINDOW_OPEN.get(value)
+        if field == rrc_contract_zone.WINDOW_ENABLED:
+            return value if value in ("on", "off") else None
+        return value if _STATE_TOKEN.fullmatch(value) else None
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, int | float)
+        or not math.isfinite(value)
+        or not metadata.numeric_error_states_valid
+        or value in metadata.numeric_error_values
+    ):
+        return None
+    number = float(value)
+    unit = canonical_unit(metadata.unit)
+    if field == rrc_contract_zone.NEXT_SETPOINT:
+        if number == rrc_contract_zone.NO_NEXT_SETPOINT or unit not in {
+            "C",
+            "°C",
+            "ºC",
+        }:
+            return None
+        return number if -50 <= number <= 100 else None
+    if field == rrc_contract_zone.MINUTES_TO_NEXT:
+        if (metadata.unit or "") not in _MINUTE_UNITS:
+            return None
+        return number if 0 <= number <= 7 * 24 * 60 else None
+    if field == rrc_contract_zone.VALVE_POSITION:
+        return number if unit == "%" and 0 <= number <= 100 else None
+    return number if number >= 0 else None
+
+
+def zone_roots(paths: Iterable[str]) -> tuple[str, ...]:
+    """The ``/zones/znN`` roots with a mode, in order of their numbers."""
+    roots = {
+        path.removesuffix("/userMode")
+        for path in paths
+        if re.fullmatch(MODE_PATTERN, path)
+    }
+    return tuple(sorted(roots, key=lambda root: int(root.rsplit("zn", 1)[1])))
+
+
+def climate_roots(paths: Iterable[str]) -> tuple[str, ...]:
+    """The zones that get a climate entity: a mode and a room temperature
+    (W1, CT-C03). A zone without its room temperature keeps its select and
+    number only."""
+    known = set(paths)
+    return tuple(
+        root for root in zone_roots(known) if f"{root}/temperatureActual" in known
+    )
 
 
 def list_issue(resource: Resource) -> str | None:
@@ -414,6 +545,7 @@ _CONTROL_LABELS: Final[Mapping[str, tuple[str, str]]] = MappingProxyType(
 
 def name(path: str, language: str, *, control: bool = False) -> str | None:
     field = scalar_field(path)
-    if field is None:
+    if field is None or field not in _LABELS:
+        # The zone details are named by their own entities (W1).
         return None
     return localize(language, *(_CONTROL_LABELS if control else _LABELS)[field])

@@ -22,6 +22,7 @@ from homeassistant.util.unit_conversion import (
     TemperatureDeltaConverter,
 )
 
+from . import rrc
 from .const import DOMAIN
 from .control import HeldCapabilities, async_set_control
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
@@ -52,9 +53,14 @@ def track_heating_climates(
     @callback
     def discover() -> None:
         additions = []
+        # W1: an RRC controller with zone climates is controlled per zone;
+        # its heating circuit gets no second climate entity.
+        rrc_zones = context_of(coordinator).rrc_plant and bool(
+            rrc.climate_roots(coordinator.data or {})
+        )
         for path in coordinator.data or {}:
             match = _MODE_PATH.fullmatch(path)
-            if match is None or match[1] in seen:
+            if match is None or match[1] in seen or rrc_zones:
                 continue
             entity = HeatingCircuitClimate(coordinator, match[1])
             if not entity.available and not _registered(coordinator, entity):
