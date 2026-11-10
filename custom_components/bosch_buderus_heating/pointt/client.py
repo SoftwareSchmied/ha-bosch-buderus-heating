@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import Literal, Protocol
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 
 import aiohttp
 
-from .bulk import chunk_resource_paths, normalize_resource_path
+from .bulk import chunk_resource_paths, normalize_query, normalize_resource_path
 from .const import DEFAULT_USER_AGENT, MAX_BULK_PATHS, POINTT_BASE_URL
 from .exceptions import AccessTokenRejected
 from .metrics import RequestMetrics
@@ -184,6 +184,62 @@ class PointTClient:
         )
         if payload is None:
             return None
+        return parse_resource(payload, path=normalized)
+
+    async def put_resource_json(
+        self, gateway_id: str, path: str, value: JsonValue
+    ) -> Resource | None:
+        """Write one structured value (a list or an object) exactly once.
+
+        The body is ``{"value": value}`` as for scalars; never retried.
+        """
+        if not isinstance(value, list | dict):
+            raise ValueError("A structured PointT value is a list or an object")
+        return await self.put_resource_value(gateway_id, path, value)
+
+    async def post_resource(
+        self, gateway_id: str, path: str, value: JsonValue
+    ) -> JsonValue:
+        """Create one entry below a resource (``{"value": value}``) without
+        retrying the non-idempotent POST; returns the raw answer, if any."""
+        gateway = self._encode_gateway(gateway_id)
+        normalized = normalize_resource_path(path)
+        return await self._request(
+            "POST",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}",
+            json_body={"value": value},
+            retryable=False,
+            resource_path=normalized,
+        )
+
+    async def delete_resource(self, gateway_id: str, path: str) -> None:
+        """Delete one resource without an automatic retry."""
+        gateway = self._encode_gateway(gateway_id)
+        normalized = normalize_resource_path(path)
+        await self._request(
+            "DELETE",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}",
+            retryable=False,
+            resource_path=normalized,
+        )
+
+    async def get_resource_query(
+        self, gateway_id: str, path: str, query: Mapping[str, str | int]
+    ) -> Resource:
+        """Read one resource with a validated query (W5: ``?entry=``,
+        ``?date=``, ``?next=``).
+
+        Errors, metrics and logs name the path without its query.
+        """
+        gateway = self._encode_gateway(gateway_id)
+        normalized = normalize_resource_path(path)
+        parameters = urlencode(normalize_query(query))
+        payload = await self._request(
+            "GET",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}?{parameters}",
+            retryable=True,
+            resource_path=normalized,
+        )
         return parse_resource(payload, path=normalized)
 
     async def put_icom_holiday_assignments(
@@ -367,6 +423,12 @@ class PointTClient:
         if self._gateway_id is not None and gateway_id != self._gateway_id:
             raise ValueError("Gateway does not match the source binding")
         return _encode_gateway_id(gateway_id)
+
+
+def _encode_path(normalized: str) -> str:
+    return "/".join(
+        quote(segment, safe="") for segment in normalized.lstrip("/").split("/")
+    )
 
 
 def _encode_gateway_id(gateway_id: str) -> str:

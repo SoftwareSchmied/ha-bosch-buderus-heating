@@ -17,7 +17,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import BoschBuderusConfigEntry, rrc
+from . import BoschBuderusConfigEntry, rrc, rrc_contracts, rrc_platforms
 from .bacon import purifier
 from .bacon.purifier_entities import (
     BaconPurifierNumber,
@@ -38,7 +38,13 @@ from .pointt import Resource
 from .resource_catalog import resource_name
 from .sensor import _semantic_key
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
-from .writes import NumberWritePolicy, assess_control, number_policy_for_resource
+from .writes import (
+    ControlContext,
+    NumberWritePolicy,
+    assess_control,
+    context_of,
+    number_policy_for_resource,
+)
 from .zone_controls import zone_control_name
 
 
@@ -83,19 +89,38 @@ def _setup_entities(
             build_number_descriptions,
             BoschBuderusNumber,
         )
+        rrc_platforms.track(Platform.NUMBER, entry, coordinator, async_add_entities)
 
 
 def build_number_descriptions(
     resources: Mapping[str, Resource],
+    context: ControlContext | None = None,
 ) -> tuple[BoschBuderusNumberEntityDescription, ...]:
-    """Build controls using the gateway's own bounds within safe envelopes."""
+    """Build controls using the gateway's own bounds within safe envelopes.
+
+    On an RRC controller its contracts' numbers join them (S11); a contract
+    policy without an entity of its own (``create_entity``) adds none.
+    """
     descriptions: list[BoschBuderusNumberEntityDescription] = []
     for resource in resources.values():
-        policy = number_policy_for_resource(resource)
+        policy = number_policy_for_resource(resource, context)
         minimum, maximum = resource.metadata.minimum, resource.metadata.maximum
-        if policy is None or minimum is None or maximum is None:
+        if (
+            policy is None
+            or minimum is None
+            or maximum is None
+            or not policy.create_entity
+        ):
             continue
-        key, name = _number_identity(resource.path)
+        contract = rrc_contracts.owns(policy)
+        if contract:
+            key = rrc_contracts.entity_key(resource.path, Platform.NUMBER.value)
+            name = rrc_contracts.name(resource.path, "de") or resource_name(
+                resource.path
+            )
+        else:
+            key, name = _number_identity(resource.path)
+        assessment = assess_control(resource, context)
         descriptions.append(
             BoschBuderusNumberEntityDescription(
                 key=_semantic_key(resource.path, None),
@@ -104,16 +129,26 @@ def build_number_descriptions(
                 write_policy=policy,
                 native_min_value=minimum,
                 native_max_value=maximum,
-                native_step=assess_control(resource).ui_step,
-                native_unit_of_measurement=_native_unit(assess_control(resource).unit),
+                native_step=assessment.ui_step,
+                native_unit_of_measurement=_policy_unit(policy, assessment.unit),
                 mode=NumberMode.BOX,
-                icon=control_icon(resource.path, numeric=True),
-                entity_category=control_category(resource.path, numeric=True),
+                icon=control_icon(resource.path, numeric=True, contract=contract),
+                entity_category=control_category(
+                    resource.path, numeric=True, contract=contract
+                ),
                 translation_key=key,
                 entity_registry_enabled_default=policy.enabled_by_default,
             )
         )
     return tuple(descriptions)
+
+
+def _policy_unit(policy: NumberWritePolicy, unit: str | None) -> str | None:
+    """The unit shown: a contract's override ("" for none), else the
+    resource's."""
+    if policy.ui_unit_override is not None:
+        return policy.ui_unit_override or None
+    return _native_unit(unit)
 
 
 class BoschBuderusNumber(
@@ -135,8 +170,15 @@ class BoschBuderusNumber(
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = description
+        contract = rrc_contracts.owns(description.write_policy)
         display_name = (
-            rrc.name(
+            (
+                contract
+                and rrc_contracts.name(
+                    description.resource_path, coordinator.hass.config.language
+                )
+            )
+            or rrc.name(
                 description.resource_path,
                 coordinator.hass.config.language,
                 control=True,
@@ -149,11 +191,14 @@ class BoschBuderusNumber(
             )
         )
         self._attr_name = control_name(
-            coordinator, description.resource_path, display_name
+            coordinator, description.resource_path, display_name, contract=contract
         )
         self._attr_unique_id = (
             f"{coordinator.gateway.gateway_id}:{description.key}:control"
         )
+
+    def _policy(self, resource: Resource) -> NumberWritePolicy | None:
+        return number_policy_for_resource(resource, context_of(self.coordinator))
 
     @property
     def available(self) -> bool:
@@ -163,13 +208,13 @@ class BoschBuderusNumber(
             and snapshot is not None
             and snapshot.available
             and snapshot.freshness is Freshness.FRESH
-            and number_policy_for_resource(snapshot.resource) is not None
+            and self._policy(snapshot.resource) is not None
         )
 
     @property
     def native_min_value(self) -> float:
         snapshot = self._snapshot
-        if snapshot is not None and number_policy_for_resource(snapshot.resource):
+        if snapshot is not None and self._policy(snapshot.resource):
             minimum = snapshot.resource.metadata.minimum
             if minimum is not None:
                 return minimum
@@ -178,7 +223,7 @@ class BoschBuderusNumber(
     @property
     def native_max_value(self) -> float:
         snapshot = self._snapshot
-        if snapshot is not None and number_policy_for_resource(snapshot.resource):
+        if snapshot is not None and self._policy(snapshot.resource):
             maximum = snapshot.resource.metadata.maximum
             if maximum is not None:
                 return maximum
@@ -204,7 +249,9 @@ class BoschBuderusNumber(
     def native_step(self) -> float | None:
         snapshot = self._snapshot
         if snapshot is not None:
-            step = assess_control(snapshot.resource).ui_step
+            step = assess_control(
+                snapshot.resource, context_of(self.coordinator)
+            ).ui_step
             if step is not None:
                 return step
         return super().native_step
@@ -213,7 +260,10 @@ class BoschBuderusNumber(
     def native_unit_of_measurement(self) -> str | None:
         snapshot = self._snapshot
         if snapshot is not None:
-            unit = _native_unit(assess_control(snapshot.resource).unit)
+            unit = _policy_unit(
+                self.entity_description.write_policy,
+                assess_control(snapshot.resource, context_of(self.coordinator)).unit,
+            )
             self._held_unit = unit
             return unit
         if self._held_unit is not None:

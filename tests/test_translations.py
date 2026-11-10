@@ -19,6 +19,7 @@ from custom_components.bosch_buderus_heating import (
     notifications,
     resource_catalog,
     rrc,
+    rrc_contracts,
     rrc_device_entities,
     rrc_devices,
     sensor,
@@ -27,6 +28,9 @@ from custom_components.bosch_buderus_heating import (
 
 PACKAGE = Path(__file__).parents[1] / "custom_components" / "bosch_buderus_heating"
 TRANSLATIONS = PACKAGE / "translations"
+# W0: what a work package added in German and English only (W1 to W6); the
+# other languages follow in W7, which deletes these files.
+PENDING = Path(__file__).parent / "translation_pending"
 DIALOGS = ("controls", "holiday")
 _PLACEHOLDER = re.compile(r"\{[^{}]*\}")
 _LINK = re.compile(r"\]\(([^)]*)\)")
@@ -83,6 +87,18 @@ def _local_only_definitions() -> Iterator[local_only.LocalOnlyDefinition]:
             pending.extend(item.values())
 
 
+def pending_translations() -> tuple[frozenset[str], frozenset[str]]:
+    """The strings.json keys and built English texts still to translate."""
+    keys: set[str] = set()
+    texts: set[str] = set()
+    for path in sorted(PENDING.glob("*.json")):
+        data = json.loads(path.read_text("utf-8"))
+        assert set(data) <= {"package", "keys", "texts"}, path.name
+        keys.update(data.get("keys", ()))
+        texts.update(data.get("texts", ()))
+    return frozenset(keys), frozenset(texts)
+
+
 def code_texts() -> dict[str, str]:
     """English source texts the integration builds itself, with their German."""
     pairs: list[tuple[str, str]] = list(_literal_pairs())
@@ -102,6 +118,7 @@ def code_texts() -> dict[str, str]:
     pairs.extend(rrc._LABELS.values())
     pairs.extend(rrc._CONTROL_LABELS.values())
     pairs.extend(rrc_devices.TYPE_LABELS.values())
+    pairs.extend(rrc_contracts.texts())
     pairs.append(rrc_devices.UNKNOWN_TYPE_LABEL)
     pairs.extend(
         entity.names
@@ -134,9 +151,17 @@ def test_translation_files_have_the_source_keys_and_markup() -> None:
     assert {"en", "de"} <= set(i18n.LANGUAGES) <= set(files)
     english = json.loads(files["en"].read_text("utf-8"))
     assert english == json.loads((PACKAGE / "strings.json").read_text("utf-8"))
+    pending, _ = pending_translations()
     for language, path in files.items():
         texts = dict(_flat(json.loads(path.read_text("utf-8"))))
-        assert list(texts) == list(source), language
+        if language in i18n.SOURCE_LANGUAGES:
+            assert list(texts) == list(source), language
+        else:
+            # A pending key may be missing; the order of the others holds.
+            assert set(texts) <= set(source), language
+            assert [key for key in texts if key not in pending] == [
+                key for key in source if key not in pending
+            ], language
         for key, text in texts.items():
             assert text.strip(), (language, key)
             assert _markup(text) == _markup(source[key]), (language, key)
@@ -163,13 +188,47 @@ def test_data_files_translate_every_built_text() -> None:
         assert set(content) == {"dialogs", "texts"}, language
         catalog = content["texts"]
         assert isinstance(catalog, dict)
-        assert set(catalog) == set(source), language
+        _, pending = pending_translations()
+        assert set(source) - pending <= set(catalog) <= set(source), language
         for english, text in catalog.items():
             assert text.strip(), (language, english)
             assert _markup(text) == _markup(english), (language, english)
     # German is kept next to the code; it must use the same placeholders.
     for english, german in source.items():
         assert _markup(german) == _markup(english), english
+
+
+def test_pending_translations_name_existing_texts() -> None:
+    """W0: a pending entry names a real key or built text of its package's
+    file, once."""
+    source = dict(_flat(json.loads((PACKAGE / "strings.json").read_text("utf-8"))))
+    built = code_texts()
+    seen: set[str] = set()
+    for path in sorted(PENDING.glob("*.json")):
+        assert re.fullmatch(r"W[0-9]\.json", path.name), path.name
+        data = json.loads(path.read_text("utf-8"))
+        assert data["package"] == path.stem
+        for key in data.get("keys", ()):
+            assert key in source, (path.name, key)
+            assert key not in seen, key
+            seen.add(key)
+        for text in data.get("texts", ()):
+            assert text in built, (path.name, text)
+            assert f"text:{text}" not in seen, text
+            seen.add(f"text:{text}")
+
+
+def test_pending_translations_are_missing_only_where_allowed() -> None:
+    """The order check skips exactly the pending keys."""
+    pending, _ = pending_translations()
+    source = list(_flat(json.loads((PACKAGE / "strings.json").read_text("utf-8"))))
+    assert pending <= {key for key, _ in source}
+    for path in TRANSLATIONS.glob("*.json"):
+        if path.stem in i18n.SOURCE_LANGUAGES:
+            continue
+        texts = dict(_flat(json.loads(path.read_text("utf-8"))))
+        missing = {key for key, _ in source} - set(texts)
+        assert missing <= pending, (path.stem, sorted(missing - pending))
 
 
 @pytest.mark.parametrize("name", DIALOGS)

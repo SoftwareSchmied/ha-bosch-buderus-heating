@@ -16,6 +16,7 @@ from homeassistant.helpers.selector import (
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.util import dt as dt_util
 
+from . import rrc_contracts
 from .const import DOMAIN
 from .control_presentation import control_category, control_icon, control_label
 from .coordinator import BoschBuderusDataUpdateCoordinator
@@ -36,10 +37,12 @@ from .pointt import (
 from .resource_catalog import resource_name
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
 from .writes import (
+    ControlContext,
     EnumWritePolicy,
     NumberWritePolicy,
     WriteBusy,
     assess_control,
+    context_of,
     validate_control_value,
 )
 
@@ -105,7 +108,12 @@ def _row_order(path: str) -> tuple[int, int, str, str]:
 
 
 def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resource]:
-    """Use only discovered scalar controls from the approved heating functions."""
+    """Use only discovered scalar controls from the approved heating functions.
+
+    On an RRC controller the contracts' policies apply, and their
+    ``dialog_paths`` join (S11).
+    """
+    context = context_of(coordinator)
     result = {}
     for path in coordinator.data or {}:
         if not (
@@ -117,12 +125,13 @@ def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resour
                 "/system/seasonOptimizer/mode",
                 "/heatSources/additionalHeater/operationMode",
             }
+            or (context.rrc_plant and rrc_contracts.in_dialog(path))
         ):
             continue
         resource = fresh_resource(coordinator, path)
         if resource is None:
             continue
-        assessment = assess_control(resource)
+        assessment = assess_control(resource, context)
         if (
             assessment.eligible
             and assessment.current_value_issue is None
@@ -302,7 +311,7 @@ class ControlsOptionsFlow(OptionsFlow):
                         stopped = stopped or path
                         continue
                     try:
-                        validate_control_value(before, value)
+                        validate_control_value(before, value, context_of(coordinator))
                     except WriteValidationError:
                         errors["base"] = "controls_invalid"
                         invalid.append(path)
@@ -321,7 +330,7 @@ class ControlsOptionsFlow(OptionsFlow):
                         if value == before.value:
                             draft.pop(path)
                             continue
-                        policy = assess_control(before).policy
+                        policy = assess_control(before, context_of(coordinator)).policy
                         assert isinstance(policy, (EnumWritePolicy, NumberWritePolicy))
                         try:
                             confirmed = await coordinator.async_write_control(
@@ -352,7 +361,9 @@ class ControlsOptionsFlow(OptionsFlow):
                         draft = {}
                         status = "saved"
         rows = await self._control_rows(
-            self._control_displayed, current=controls(coordinator)
+            self._control_displayed,
+            current=controls(coordinator),
+            context=context_of(coordinator),
         )
         if not rows:
             status = "empty"
@@ -383,7 +394,11 @@ class ControlsOptionsFlow(OptionsFlow):
         )
 
     async def _control_rows(
-        self, displayed: dict[str, Resource], *, current: dict[str, Resource]
+        self,
+        displayed: dict[str, Resource],
+        *,
+        current: dict[str, Resource],
+        context: ControlContext | None = None,
     ) -> list[dict[str, Any]]:
         translations = {
             language: await async_get_translations(
@@ -394,11 +409,18 @@ class ControlsOptionsFlow(OptionsFlow):
         rows = []
         for path in sorted(displayed, key=_row_order):
             resource = displayed[path]
-            assessment = assess_control(resource)
+            assessment = assess_control(resource, context)
+            contract = rrc_contracts.owns(assessment.policy)
             group = control_group(path)
-            key = _translation_key(path)
+            key = (
+                rrc_contracts.entity_key(path, "select") or ""
+                if contract
+                else _translation_key(path)
+            )
             labels = {
-                lang: control_label(path, resource_name(path, language=lang), lang)
+                lang: control_label(
+                    path, resource_name(path, language=lang), lang, contract=contract
+                )
                 for lang in translations
             }
             options = [
@@ -407,7 +429,10 @@ class ControlsOptionsFlow(OptionsFlow):
                     "label": {
                         lang: translations[lang].get(
                             f"component.{DOMAIN}.entity.select.{key}.state."
-                            + enum_value_to_ha(key, raw),
+                            + (
+                                (contract and rrc_contracts.option_key(path, raw))
+                                or enum_value_to_ha(key, raw)
+                            ),
                             raw,
                         )
                         for lang in translations
@@ -431,9 +456,15 @@ class ControlsOptionsFlow(OptionsFlow):
                     "unit": {**TEMPERATURE_UNITS, **DURATION_UNITS}.get(
                         assessment.unit or "", assessment.unit or ""
                     ),
-                    "icon": control_icon(path, numeric=assessment.platform == "number"),
+                    "icon": control_icon(
+                        path,
+                        numeric=assessment.platform == "number",
+                        contract=contract,
+                    ),
                     "advanced": control_category(
-                        path, numeric=assessment.platform == "number"
+                        path,
+                        numeric=assessment.platform == "number",
+                        contract=contract,
                     )
                     is not None
                     and not (

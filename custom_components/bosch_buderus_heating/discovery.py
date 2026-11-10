@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from itertools import islice
 
+from . import rrc_contracts
 from .holidays import HOLIDAY_RESOURCE_PATHS
 from .legacy_holidays import (
     ICOM_FIELDS,
@@ -42,6 +43,7 @@ from .rrc import (
     ZONE_LIST,
     catalog_paths,
     device_firmware_paths,
+    device_setting_paths,
     in_device_scope,
     is_product_type,
     listed_ids,
@@ -91,6 +93,9 @@ PRIORITY_PATHS = frozenset({ZONE_LIST, PROGRAM_LIST})
 # except one firmware leaf per listed device, at most this many.
 RRC_PRIORITY_PATHS = frozenset({*PRIORITY_PATHS, DEVICE_LIST})
 MAX_RRC_DEVICE_PROBES = 64
+# W6: the setting leaves the contracts declare per listed device type, at
+# most this many, read after every other path.
+MAX_RRC_DEVICE_SETTING_PROBES = 192
 
 
 class DiscoveryPathSource(StrEnum):
@@ -264,7 +269,12 @@ class DiscoveryDiagnostics:
 
 # C8: read policies of paths that were scheduled but deliberately not read.
 _NOT_READ_POLICIES = frozenset(
-    {"never_read_private", "outside_rrc_device_scope", "rrc_5xx_assumed_missing"}
+    {
+        "never_read_private",
+        "outside_rrc_device_scope",
+        "rrc_5xx_assumed_missing",
+        "rrc_device_setting_limit",
+    }
 )
 
 
@@ -572,7 +582,20 @@ async def async_discover_resources(
     referenced_pending: dict[str, int] = {}
     catalog_pending: dict[str, int] = {}
     optional_pending: dict[str, int] = {}
-    queues = (priority_pending, referenced_pending, catalog_pending, optional_pending)
+    # W6: device setting leaves come last, after every other path.
+    device_pending: dict[str, int] = {}
+    queues = (
+        priority_pending,
+        referenced_pending,
+        catalog_pending,
+        optional_pending,
+        device_pending,
+    )
+    device_settings: set[str] = set()
+
+    def outside_device_scope(path: str) -> bool:
+        return _outside_rrc_device_scope(path) and path not in device_settings
+
     consecutive_5xx = 0
     processed: set[str] = set()
     depth_limited: set[str] = set()
@@ -583,7 +606,7 @@ async def async_discover_resources(
             # CT-E07, CT-F05: device keys and personal data, on any gateway.
             report.paths[path].read_policy = "never_read_private"
             return
-        if rrc_profile and _outside_rrc_device_scope(path):
+        if rrc_profile and outside_device_scope(path):
             report.paths[path].read_policy = "outside_rrc_device_scope"
             return
         if path == LICENSE_PATH:
@@ -609,6 +632,8 @@ async def async_discover_resources(
         target = (
             priority_pending
             if path in priority_paths
+            else device_pending
+            if path in device_settings
             else queues[1 + _source_priority(report.paths[path].source)]
         )
         for queue in queues:
@@ -653,6 +678,24 @@ async def async_discover_resources(
             root == "/devices" or root.startswith("/devices/") for root in roots
         ):
             schedule(DEVICE_LIST, depth, DiscoveryPathSource.CATALOG)
+        enable_contract_paths(depth)
+
+    def enable_contract_paths(depth: int) -> None:
+        """W2/W5: the roots and optional leaves the contracts add on an RRC
+        controller; none without such contracts."""
+        nonlocal allowed_roots
+        for extra in rrc_contracts.extra_roots():
+            if rediscovery and not any(
+                root == extra or root.startswith(f"{extra}/") for root in roots
+            ):
+                continue
+            if extra not in allowed_roots:
+                allowed_roots = (*allowed_roots, extra)
+            schedule(extra, 0, DiscoveryPathSource.CATALOG)
+        # Containers read before the controller was recognised.
+        for container in tuple(discovered):
+            for child in rrc_contracts.optional_children(container):
+                schedule(child, depth + 1, DiscoveryPathSource.OPTIONAL)
 
     def schedule_children(path: str, depth: int) -> None:
         if is_never_read(path) or (rrc_profile and _outside_rrc_device_scope(path)):
@@ -674,6 +717,9 @@ async def async_discover_resources(
         if _HEATING_CIRCUIT_PATH.fullmatch(path):
             for suffix in _HEATING_CIRCUIT_CATALOG_SUFFIXES:
                 schedule(f"{path}{suffix}", depth + 1, DiscoveryPathSource.CATALOG)
+        if rrc_profile:
+            for child in rrc_contracts.optional_children(path):
+                schedule(child, depth + 1, DiscoveryPathSource.OPTIONAL)
         for fallback in _optional_children(path):
             if (
                 softener_profile
@@ -782,6 +828,14 @@ async def async_discover_resources(
                 # CT-B05: device IDs only from the list, never guessed.
                 for child in device_firmware_paths(resource, MAX_RRC_DEVICE_PROBES):
                     schedule(child, depth + 1, DiscoveryPathSource.CATALOG)
+                # W6: the contract leaves of each listed device type, bounded.
+                for position, child in enumerate(device_setting_paths(resource)):
+                    if position >= MAX_RRC_DEVICE_SETTING_PROBES:
+                        report.scheduled(child, DiscoveryPathSource.OPTIONAL)
+                        report.paths[child].read_policy = "rrc_device_setting_limit"
+                        continue
+                    device_settings.add(child)
+                    schedule(child, depth + 1, DiscoveryPathSource.OPTIONAL)
             if resource.path == ZONE_LIST or rrc_enabled:
                 for child in listed_paths(resource):
                     schedule(child, depth + 1, DiscoveryPathSource.REFERENCE)

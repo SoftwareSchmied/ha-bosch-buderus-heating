@@ -12,7 +12,6 @@ from __future__ import annotations
 import json
 import logging
 import re
-from contextlib import ExitStack
 from dataclasses import replace
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
@@ -28,21 +27,13 @@ from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.diagnostics import (
     async_get_config_entry_diagnostics,
 )
-from custom_components.bosch_buderus_heating.discovery import ROOT_RESOURCE_PATHS
 from custom_components.bosch_buderus_heating.discovery_inventory import (
     RECOVERY_SCHEDULE,
 )
 from custom_components.bosch_buderus_heating.ha_compat import device_by_identifier
-from custom_components.bosch_buderus_heating.pointt import (
-    BatchItemResult,
-    Gateway,
-    PointTClient,
-    Resource,
-    ResourceError,
-    ServiceUnavailable,
-)
+from custom_components.bosch_buderus_heating.pointt import Gateway, Resource
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
-from tests.test_discovery_recovery import Clock, Cloud
+from tests.helpers.rrc_cloud import Clock, RrcCloud, cloud_patches
 from tests.test_entry import _entry
 
 FIXTURE = Path(__file__).parent / "fixtures" / "contracts" / "rrc" / "ct200-shapes.json"
@@ -72,66 +63,6 @@ def ct200_tree() -> dict[str, Resource]:
     data = json.loads(FIXTURE.read_text(encoding="utf-8"))
     assert data["provenance"]["physical_device_verified"] is False
     return {item["id"]: parse_resource(item) for item in data["resources"]}
-
-
-class RrcCloud(Cloud):
-    """A missing catalog or optional path answers HTTP 500 (P31)."""
-
-    def __init__(self, resources: dict[str, Resource]) -> None:
-        super().__init__(resources)
-        self.single: list[str] = []
-        self.forbidden = {"/devices/inclusionWhitelist"}
-
-    def _missing(self, path: str) -> int:
-        if path in self.forbidden:
-            return 403
-        return 404 if path in ROOT_RESOURCE_PATHS else 500
-
-    async def get_resources_bulk(self, gateway_id, paths, **kwargs):
-        results = await super().get_resources_bulk(gateway_id, paths, **kwargs)
-        answered = []
-        for result in results:
-            if result.status == 404 and result.path not in self.down:
-                status = self._missing(result.path)
-                error = ResourceError(result.path, status)
-                result = BatchItemResult(gateway_id, result.path, status, error=error)
-            answered.append(result)
-        return tuple(answered)
-
-    async def get_resource(self, gateway_id, path, **kwargs):
-        self.single.append(path)
-        if path not in self.tree and path not in self.down:
-            status = self._missing(path)
-            if status >= 500:
-                raise ServiceUnavailable(status)
-            raise ResourceError(path, status)
-        return await super().get_resource(gateway_id, path, **kwargs)
-
-    def all_requested(self) -> set[str]:
-        return {path for paths in self.requests for path in paths} | set(self.single)
-
-
-def cloud_patches(cloud: Cloud, clock: Clock, gateway: Gateway = GATEWAY) -> ExitStack:
-    async def put(gateway_id, path, value, **_kwargs):
-        cloud.tree[path] = replace(cloud.tree[path], value=value)
-
-    stack = ExitStack()
-    for item in (
-        patch(f"{COORDINATOR}.monotonic", clock),
-        patch.object(PointTClient, "get_gateways", AsyncMock(return_value=(gateway,))),
-        patch.object(
-            PointTClient,
-            "get_resources_bulk",
-            AsyncMock(side_effect=cloud.get_resources_bulk),
-        ),
-        patch.object(
-            PointTClient, "get_resource", AsyncMock(side_effect=cloud.get_resource)
-        ),
-        patch.object(PointTClient, "put_resource_value", AsyncMock(side_effect=put)),
-        patch(f"{PACKAGE}.async_setup_notifications", AsyncMock(return_value=())),
-    ):
-        stack.enter_context(item)
-    return stack
 
 
 def entities(hass: HomeAssistant, entry, domain: str) -> dict[str, er.RegistryEntry]:

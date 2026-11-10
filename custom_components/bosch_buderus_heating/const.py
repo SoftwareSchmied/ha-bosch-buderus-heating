@@ -60,5 +60,7 @@ PLATFORMS: Final = (
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SWITCH,
+    # W3 (RRC): the disinfection time; no entity on other gateways.
+    Platform.TIME,
     Platform.WATER_HEATER,
 )

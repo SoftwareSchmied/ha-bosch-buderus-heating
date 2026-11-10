@@ -1,0 +1,17 @@
+"""RRC 2.0 entities: radio device details and settings.
+
+Owned by work package W6. ``rrc_platforms.track`` calls the tracker of each
+platform listed in ``TRACKERS`` once per coordinator; see
+``docs/dev/rrc-packages.md``.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from types import MappingProxyType
+
+from homeassistant.const import Platform
+
+from .rrc_platforms import Tracker
+
+TRACKERS: Mapping[Platform, Tracker] = MappingProxyType({})

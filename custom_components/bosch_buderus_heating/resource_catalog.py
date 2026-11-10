@@ -11,30 +11,19 @@ from dataclasses import dataclass
 from enum import StrEnum
 from functools import lru_cache
 
-from . import rrc
+from . import rrc, rrc_contracts
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .i18n import localize
 from .legacy_holidays import is_legacy_holiday_path
 from .pointt import Resource
+from .poll_group import PollGroup as PollGroup
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
 from .start_counters import assess_start_counter, is_start_counter_path
 from .startup_data import is_static_startup_resource
 from .switch_programs import assess_switch_program, is_switch_program_path
 from .unit_contracts import canonical_unit
 from .water_softener import softener_capability, softener_schema_issue
-
-
-class PollGroup(StrEnum):
-    """Cloud polling cadence for one discovered resource."""
-
-    FAST = "fast"
-    NOTIFICATIONS = "notifications"
-    CONTROL = "control"
-    ENERGY = "energy"
-    SLOW = "slow"
-    # O50: containers and lists without an entity (new devices or zones).
-    HOURLY = "hourly"
-    STATIC = "static"
+from .write_policies import rrc_kwargs
 
 
 class CapabilityMaturity(StrEnum):
@@ -1006,11 +995,15 @@ def is_opt_in_diagnostic_resource(path: str) -> bool:
     return path in _OPT_IN_DIAGNOSTIC_PATHS
 
 
-def is_read_only_control_mirror(path: str) -> bool:
-    """Return whether a read-only entity duplicates an available control."""
+def is_read_only_control_mirror(path: str, *, rrc_plant: bool = False) -> bool:
+    """Return whether a read-only entity duplicates an available control.
+
+    ``rrc_plant``: the gateway is an RRC controller, whose contracts may
+    declare further mirrors (S11).
+    """
     return any(
         pattern.fullmatch(path) for pattern in _READ_ONLY_CONTROL_MIRROR_PATTERNS
-    )
+    ) or (rrc_plant and rrc_contracts.is_mirror(path))
 
 
 # The words of a reading name that denote an identifier, address, location or
@@ -1239,10 +1232,11 @@ def unknown_entity_kind(resource: Resource) -> str | None:
     return None  # free text could carry an identifier
 
 
-def supports_entity(resource: Resource) -> bool:
+def supports_entity(resource: Resource, *, rrc_plant: bool = False) -> bool:
     """Return whether the resource can yield at least one safe HA state."""
     return (
-        capability_maturity(resource.path) is not CapabilityMaturity.OBSERVED
+        capability_maturity(resource.path, **rrc_kwargs(rrc_plant))
+        is not CapabilityMaturity.OBSERVED
         and not is_private_resource(resource.path)
         and resource.path not in _NO_ENTITY_PATHS
         and not any(pattern.fullmatch(resource.path) for pattern in _NO_ENTITY_PATTERNS)
@@ -1282,8 +1276,14 @@ def _matches_optional_app_schema(resource: Resource) -> bool:
 
 
 @lru_cache(maxsize=4096)
-def capability_maturity(path: str) -> CapabilityMaturity:
-    """Return the curated evidence level for a concrete PointT path."""
+def capability_maturity(path: str, *, rrc_plant: bool = False) -> CapabilityMaturity:
+    """Return the curated evidence level for a concrete PointT path.
+
+    On an RRC controller (``rrc_plant``) the paths of its contracts are
+    understood (S11).
+    """
+    if rrc_plant and rrc_contracts.is_understood(path):
+        return CapabilityMaturity.UNDERSTOOD
     if rrc.scalar_field(path):
         return CapabilityMaturity.UNDERSTOOD
     if is_switch_program_path(path):
@@ -1305,8 +1305,10 @@ def capability_maturity(path: str) -> CapabilityMaturity:
     return CapabilityMaturity.OBSERVED
 
 
-def entity_enabled_by_default(path: str) -> bool:
+def entity_enabled_by_default(path: str, *, rrc_plant: bool = False) -> bool:
     """Apply the explicit user-facing default entity policy."""
+    if rrc_plant and (enabled := rrc_contracts.default_enabled(path)) is not None:
+        return enabled
     if rrc.scalar_field(path):
         return rrc.scalar_field(path) in {
             "temperatureActual",
@@ -1316,7 +1318,9 @@ def entity_enabled_by_default(path: str) -> bool:
         return True
     if is_additional_app_scalar(path):
         return not path.endswith("/dhwType")
-    if is_opt_in_diagnostic_resource(path) or is_read_only_control_mirror(path):
+    if is_opt_in_diagnostic_resource(path) or is_read_only_control_mirror(
+        path, **rrc_kwargs(rrc_plant)
+    ):
         return False
     return path in _DEFAULT_ENABLED_PATHS or any(
         pattern.fullmatch(path) for pattern in _DEFAULT_ENABLED_PATTERNS
@@ -1355,16 +1359,19 @@ _FAST_HEAT_SOURCE_PATTERN = re.compile(
 )
 
 
-def poll_group(resource: Resource) -> PollGroup:
-    """Classify a discovered resource into a cloud-friendly cadence."""
-    group = _poll_group(resource)
+def poll_group(resource: Resource, *, rrc_plant: bool = False) -> PollGroup:
+    """Classify a discovered resource into a cloud-friendly cadence.
+
+    On an RRC controller (``rrc_plant``) its contracts' groups come first.
+    """
+    group = _poll_group(resource, rrc_plant)
     if (
         group in (PollGroup.FAST, PollGroup.CONTROL, PollGroup.SLOW)
         and (
             resource.path in _HOURLY_CONTAINER_PATHS
             or _HOURLY_CONTAINER_PATTERN.fullmatch(resource.path) is not None
         )
-        and not supports_entity(resource)
+        and not supports_entity(resource, **rrc_kwargs(rrc_plant))
     ):
         return PollGroup.HOURLY
     return group
@@ -1395,7 +1402,9 @@ def slows_when_unused(path: str) -> bool:
     )
 
 
-def _poll_group(resource: Resource) -> PollGroup:
+def _poll_group(resource: Resource, rrc_plant: bool = False) -> PollGroup:
+    if rrc_plant and (group := rrc_contracts.poll_group(resource.path)) is not None:
+        return group
     if resource.path in FIRMWARE_PATHS:
         return PollGroup.SLOW
     if rrc.scalar_field(resource.path):
@@ -1547,8 +1556,23 @@ _CAMEL_BOUNDARY = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
 
 
 @lru_cache(maxsize=4096)
-def resource_name(path: str, subkey: str | None = None, *, language: str = "de") -> str:
-    """Return a localized user-facing name without exposing technical IDs."""
+def resource_name(
+    path: str,
+    subkey: str | None = None,
+    *,
+    language: str = "de",
+    rrc_plant: bool = False,
+) -> str:
+    """Return a localized user-facing name without exposing technical IDs.
+
+    On an RRC controller (``rrc_plant``) its contracts' names come first.
+    """
+    if (
+        rrc_plant
+        and subkey is None
+        and (label := rrc_contracts.name(path, language)) is not None
+    ):
+        return label
     if (label := rrc.name(path, language)) is not None:
         return label
     if (softener := softener_capability(path)) is not None:
