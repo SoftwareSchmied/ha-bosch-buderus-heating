@@ -692,6 +692,10 @@ async def async_discover_resources(
             if extra not in allowed_roots:
                 allowed_roots = (*allowed_roots, extra)
             schedule(extra, 0, DiscoveryPathSource.CATALOG)
+            # Its fixed leaves (W2: the event lists) are read also when the
+            # root itself does not answer or does not name them.
+            for child in rrc_contracts.optional_children(extra):
+                schedule(child, 1, DiscoveryPathSource.OPTIONAL)
         # Containers read before the controller was recognised.
         for container in tuple(discovered):
             for child in rrc_contracts.optional_children(container):
