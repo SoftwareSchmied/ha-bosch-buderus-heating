@@ -2139,10 +2139,6 @@ class BoschBuderusDataUpdateCoordinator(
                 )
             )
         )
-        # FAULT-1: the fault sources go first, into the first batch, so the
-        # cycle budget never splits them over two cycles.
-        fault_sources = set(paths_by_group.get(PollGroup.NOTIFICATIONS, ()))
-        paths.sort(key=lambda path: path not in fault_sources)
         if not paths:
             self._main_cycle_failed = not self.last_update_success
             self._cycle_idle = True
@@ -2163,12 +2159,33 @@ class BoschBuderusDataUpdateCoordinator(
         attempted_paths: set[str] = set()
         interrupted_paths: set[str] = set()
         over_budget = False
+        # FAULT-1: the fault sources form the first batch, so the cycle budget
+        # never splits them over two cycles. They share it with no other
+        # reading, so a failing reading elsewhere never fails them with it.
         # COORD-3: the paths of a batch that failed beside answered ones form
         # their own batches, read last, so they fail no other reading with them.
-        failing = [path for path in paths if path in self._failing_batch_paths]
-        others = [path for path in paths if path not in self._failing_batch_paths]
-        paths = [*others, *failing]
+        fault_sources = set(paths_by_group.get(PollGroup.NOTIFICATIONS, ()))
+        faults = [path for path in paths if path in fault_sources]
+        failing = [
+            path
+            for path in paths
+            if path in self._failing_batch_paths and path not in fault_sources
+        ]
+        others = [
+            path
+            for path in paths
+            if path not in self._failing_batch_paths and path not in fault_sources
+        ]
+        if set(paths) <= self._failing_batch_paths and (
+            probe := self._outage_probe(paths_by_group, now_monotonic)
+        ):
+            # COORD-3: only the failing batch is due. Its failure alone cannot
+            # tell a broken batch from a cloud outage: one answered reading,
+            # read before it, tells them apart.
+            others = [probe]
+        paths = [*faults, *others, *failing]
         chunks = (
+            *chunk_resource_paths(faults, size=MAX_BULK_PATHS),
             *chunk_resource_paths(others, size=MAX_BULK_PATHS),
             *chunk_resource_paths(failing, size=MAX_BULK_PATHS),
         )
@@ -2332,18 +2349,12 @@ class BoschBuderusDataUpdateCoordinator(
             },
         )
 
-        # COORD-3: this cycle read only the batch that already failed beside
-        # answered ones, which wait for their interval. As when it was read
-        # with them, its failure alone is no failure of the gateway.
-        retry_only = (
-            successful == 0
-            and bool(failed_chunks)
-            and bool(attempted_paths)
-            and attempted_paths <= self._failing_batch_paths
-            and monotonic() >= self._cloud_backoff_until
-        )
-        if successful == 0 and failed_chunks and not retry_only:
-            self._failing_batch_paths = frozenset()
+        # COORD-3: a cycle in which nothing answered fails, also one that read
+        # only the batch that failed beside answered ones before; while those
+        # wait for their interval, a reading of them is read with it.
+        if successful == 0 and failed_chunks:
+            # The failing batch stays apart: after the outage, its failure
+            # alone again fails no other reading (COORD-3).
             # Retain failures without declaring the coordinator healthy. A later
             # cycle with only paused paths must not resurrect old fresh snapshots.
             self.data = snapshots
@@ -2369,11 +2380,10 @@ class BoschBuderusDataUpdateCoordinator(
             # O41: read before its group's deadline; not again until then.
             if path in completed_paths:
                 self._spread_progress.setdefault(group, {})[path] = now_monotonic
-        if successful == 0 and not over_budget and not retry_only:
+        if successful == 0 and not over_budget:
             self._advance_groups(due_groups, now_monotonic)
             return snapshots
-        if not retry_only:
-            self._record_gateway_recovery(monotonic())
+        self._record_gateway_recovery(monotonic())
         # Paths of a failed batch beside answered ones (COORD-3).
         self._failing_batch_paths = frozenset(interrupted_paths - completed_paths)
         # Advance complete groups even if a different group was interrupted.
@@ -3354,6 +3364,37 @@ class BoschBuderusDataUpdateCoordinator(
             self._negative_until[snapshot.resource.path] = (
                 now_monotonic + pause.total_seconds()
             )
+
+    def _outage_probe(
+        self, paths_by_group: dict[PollGroup, tuple[str, ...]], now_monotonic: float
+    ) -> str | None:
+        """COORD-3: the reading the cloud answered last, outside the failing batch.
+
+        Read beside the failing batch, it shows whether the cloud still
+        answers; during an outage it stays the same reading. No fault source
+        (their reads keep their own cadence), no reading an explicit answer
+        ended and no locally shown reading whose cloud read is not due (O45).
+        """
+        data = self.data or {}
+        probe: tuple[datetime, str] | None = None
+        for group, group_paths in paths_by_group.items():
+            if group is PollGroup.NOTIFICATIONS:
+                continue
+            for path in group_paths:
+                snapshot = data.get(path)
+                if (
+                    snapshot is None
+                    or snapshot.ended
+                    or snapshot.source is SnapshotSource.LOCAL
+                    or path not in self.resources
+                    or path in self._failing_batch_paths
+                    or self._resource_is_paused(path, now_monotonic)
+                    or self._served_skip(path, now_monotonic)
+                ):
+                    continue
+                if probe is None or snapshot.last_success > probe[0]:
+                    probe = (snapshot.last_success, path)
+        return probe[1] if probe is not None else None
 
     def _resource_is_paused(self, path: str, now_monotonic: float) -> bool:
         until = self._negative_until.get(path)

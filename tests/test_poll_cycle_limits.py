@@ -9,6 +9,8 @@ a controlled monotonic clock.
 from __future__ import annotations
 
 import logging
+from contextlib import contextmanager
+from dataclasses import replace
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
@@ -161,13 +163,15 @@ async def test_a_recovered_batch_completes_its_group(
     coordinator = _plant(hass, client, {PollGroup.SLOW: (*SLOW, BAD)})
     await coordinator.async_refresh()
     assert coordinator._next_update.get(PollGroup.SLOW, 0.0) <= clock.now
-    # Cycles that read only the failing batch: no failure of the gateway,
-    # as when it failed beside the answered ones.
+    # Cycles in which only the failing batch is due: one answered reading is
+    # read first, so its failure alone stays no failure of the gateway, as
+    # when it failed beside the answered ones.
     for _ in range(CIRCUIT_FAILURE_THRESHOLD + 1):
         clock.now += 60.0
         before = len(cloud.requests)
         await coordinator.async_refresh()
-        assert all(BAD in chunk for chunk in cloud.requests[before:])
+        probe, batch = cloud.requests[before:]
+        assert probe == (SLOW[0],) and BAD in batch
         assert coordinator.last_update_success
     assert coordinator._gateway_failure_count == 0
     assert coordinator._circuit_open_until == 0.0
@@ -182,6 +186,191 @@ async def test_a_recovered_batch_completes_its_group(
     assert not coordinator._interrupted_progress
     assert not coordinator._failing_batch_paths
     assert coordinator.data[BAD].available
+
+
+def _failing_slow_plant(hass: HomeAssistant, cloud: FailingBatch):
+    client = AsyncMock()
+    client.get_resources_bulk.side_effect = cloud.read
+    client.get_resource.side_effect = ServiceUnavailable(500)
+    return _plant(hass, client, {PollGroup.SLOW: (*SLOW, BAD)})
+
+
+@contextmanager
+def _observed():
+    """Spies on the end of an outage, the inventory and the missing parts."""
+    coordinator_class = coordinator_module.BoschBuderusDataUpdateCoordinator
+    with (
+        patch.object(
+            refresh_outage.RefreshOutageLog,
+            "recovered",
+            autospec=True,
+            side_effect=refresh_outage.RefreshOutageLog.recovered,
+        ) as recovered,
+        patch.object(
+            coordinator_class,
+            "_confirm_inventory",
+            autospec=True,
+            side_effect=coordinator_class._confirm_inventory,
+        ) as confirm,
+        patch.object(
+            coordinator_module.DiscoveryRecovery,
+            "due",
+            autospec=True,
+            side_effect=coordinator_module.DiscoveryRecovery.due,
+        ) as recover_missing,
+    ):
+        yield recovered, confirm, recover_missing
+
+
+def _recovered_logs(caplog: pytest.LogCaptureFixture) -> list[str]:
+    return [
+        record.getMessage()
+        for record in caplog.records
+        if "recovered" in record.getMessage()
+    ]
+
+
+async def test_a_cloud_outage_after_a_failing_batch_fails_the_next_cycle(
+    hass: HomeAssistant, clock: Clock
+) -> None:
+    """COORD-3 (A): only slow paths, one batch fails, then the whole cloud."""
+    cloud = FailingBatch()
+    coordinator = _failing_slow_plant(hass, cloud)
+    await coordinator.async_refresh()
+    assert coordinator.last_update_success
+    assert BAD in coordinator._failing_batch_paths
+    cloud.down = True
+    clock.now += 60.0
+    with _observed() as (recovered, confirm, recover_missing):
+        await coordinator.async_refresh()
+    assert not coordinator.last_update_success
+    recover_missing.assert_not_called()
+    assert coordinator._gateway_failure_count == 1
+    recovered.assert_not_called()
+    confirm.assert_not_called()
+    assert not coordinator.data[SLOW[0]].available
+    # Each further cycle of the outage counts, so the breaker opens.
+    for _ in range(CIRCUIT_FAILURE_THRESHOLD - 1):
+        clock.now += 60.0
+        await coordinator.async_refresh()
+    assert coordinator._circuit_open_until > clock.now
+
+
+async def test_a_failing_retry_after_an_aborted_cycle_does_not_recover(
+    hass: HomeAssistant, clock: Clock, caplog: pytest.LogCaptureFixture
+) -> None:
+    """COORD-3 (B): a partial cycle, a cycle stopped at its start, a retry."""
+    cloud = FailingBatch()
+    coordinator = _failing_slow_plant(hass, cloud)
+    caplog.set_level(logging.DEBUG)
+    await coordinator.async_refresh()
+    assert coordinator.last_update_success
+    # The pause of a rate limit stops the next cycle before any request.
+    coordinator._cloud_backoff_until = clock.now + 90.0
+    clock.now += 60.0
+    before = len(cloud.requests)
+    await coordinator.async_refresh()
+    assert not coordinator.last_update_success
+    assert len(cloud.requests) == before
+    # The whole cloud fails meanwhile: the retry answers nothing.
+    cloud.down = True
+    clock.now += 60.0
+    with _observed() as (recovered, confirm, recover_missing):
+        await coordinator.async_refresh()
+    assert len(cloud.requests) > before
+    assert not coordinator.last_update_success
+    recovered.assert_not_called()
+    confirm.assert_not_called()
+    recover_missing.assert_not_called()
+    assert not _recovered_logs(caplog)
+
+    # Only an answered reading ends the outage, also while the batch fails.
+    cloud.down = False
+    clock.now += 60.0
+    with _observed() as (recovered, confirm, _):
+        await coordinator.async_refresh()
+    assert coordinator.last_update_success
+    recovered.assert_called_once()
+    confirm.assert_called_once()
+    assert _recovered_logs(caplog)
+    assert BAD in coordinator._failing_batch_paths
+
+
+async def test_a_failing_batch_without_another_reading_is_a_failure(
+    hass: HomeAssistant, clock: Clock
+) -> None:
+    """COORD-3: with no answered reading to read beside it, nothing answered."""
+    cloud = FailingBatch()
+    coordinator = _failing_slow_plant(hass, cloud)
+    await coordinator.async_refresh()
+    # The answered readings meanwhile come from the local access only.
+    for path in SLOW:
+        coordinator.data[path] = replace(
+            coordinator.data[path], source=coordinator_module.SnapshotSource.LOCAL
+        )
+    clock.now += 60.0
+    before = len(cloud.requests)
+    await coordinator.async_refresh()
+    assert all(BAD in chunk for chunk in cloud.requests[before:])
+    assert not coordinator.last_update_success
+
+
+async def test_a_failing_live_value_never_fails_the_fault_sources(
+    hass: HomeAssistant, clock: Clock
+) -> None:
+    """D: the fault sources share no request with a failing reading.
+
+    BAD comes first among the live values, so it used to share the first
+    request with the fault sources, and its failing batch took them along
+    every minute.
+    """
+    notifications = "/notifications"
+    live = (BAD, *(f"/heatSources/live{index}" for index in range(40)))
+    requests: list[tuple[str, ...]] = []
+
+    async def read(_gateway, chunk, **_kwargs):
+        requests.append(tuple(chunk))
+        if BAD in chunk:
+            raise ServiceUnavailable(500)
+        return tuple(
+            BatchItemResult(
+                "gateway-one",
+                path,
+                200,
+                resource=Resource(path=path, values=(), has_values=True),
+            )
+            if path == notifications
+            else _success(path, 2.0)
+            for path in chunk
+        )
+
+    client = AsyncMock()
+    client.get_resources_bulk.side_effect = read
+    client.get_resource.side_effect = ServiceUnavailable(500)
+    coordinator = _plant(
+        hass,
+        client,
+        {PollGroup.NOTIFICATIONS: (notifications,), PollGroup.FAST: live},
+    )
+    coordinator.resources[notifications] = Resource(
+        path=notifications, values=(), has_values=True
+    )
+    for minute in range(7):
+        clock.now = 1000.0 + minute * 60.0
+        before = len(requests)
+        await coordinator.async_refresh()
+        assert coordinator.last_update_success, minute
+        sent = requests[before:]
+        assert not any(notifications in chunk and len(chunk) > 1 for chunk in sent), (
+            minute
+        )
+        if any(notifications in chunk for chunk in sent):
+            # FAULT-1: all fault sources together, in the first request.
+            assert sent[0] == (notifications,), minute
+            assert coordinator.data[notifications].available, minute
+    assert coordinator.faults.has_known_state
+    assert notifications not in coordinator._failing_batch_paths
+    assert BAD in coordinator._failing_batch_paths
 
 
 # ------------------------------------------------------- COORD-5 / CHAOS-5
