@@ -884,3 +884,24 @@ def test_installer_settings_have_no_policy(name: str) -> None:
     resource = circuit_tree()[f"{HC1}/{name}"]
     assert resource.metadata.writable  # writeable on the wire, still refused
     assert assess_control(resource, RRC_CONTEXT).policy is None
+
+
+@pytest.mark.parametrize(
+    ("flags", "created"),
+    [
+        ({"available": "false"}, False),  # P41
+        ({"available": "maybe"}, False),  # malformed flags
+        ({"used": "true", "available": "false"}, True),
+        ({}, True),
+    ],
+)
+def test_operating_season_sensor_follows_p41(
+    flags: dict[str, object], created: bool
+) -> None:
+    season = parse_resource(
+        {"id": SEASON, "type": "stringValue", "writeable": 0, "value": "idle", **flags}
+    )
+    built = rrc_circuit_entities.build_sensor_descriptions(
+        {SEASON: season}, RRC_CONTEXT
+    )
+    assert bool(built) is created
