@@ -63,6 +63,15 @@ class WriteBusy(WriteError):
     """C58: a poll or another write held the gateway too long; nothing was sent."""
 
 
+class WriteDeadlineExceeded(WriteNotConfirmed):
+    """D25: a write transaction ran out of its overall time and was stopped.
+
+    Its request may already have been sent, so the change counts as not
+    confirmed; a later regular reading shows what the gateway holds. Nothing
+    is sent again.
+    """
+
+
 class ControlLocked(WriteValidationError):
     """#113: the controller shows the setting but locks it for now."""
 

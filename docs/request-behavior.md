@@ -198,6 +198,15 @@ one second of timer-rounding tolerance; retry deadlines and rate-limit pauses
 are not shortened by that tolerance. Normal writes retain metadata validation
 and read-back confirmation and are never blindly retried.
 
+A write waits at most 60 seconds for a running poll or another write of its
+gateway; after that it sends nothing and says so. Since 0.9.0-alpha.6 a write
+that has started also has an overall deadline of 60 seconds (180 seconds for a
+holiday change) for its fresh reads, its one request and the read-back. With a
+slow cloud it then no longer holds the polling of its gateway and the calling
+automation for minutes. At the deadline it ends as not confirmed: the request
+may already have been sent, so the reading involved is no longer shown as
+current until it is read again, and nothing is sent a second time.
+
 Since 0.9.0-alpha.3, paths of the groups read every 5, 15 or 60 minutes are
 spread over the minutes before their group's deadline where the batch of that
 minute has room left, instead of all falling due together and needing extra
@@ -346,6 +355,13 @@ verfügbar. Die Wartezeiten steigen nach Fehlern von 1 auf 2, 5, 15 und 30 Minut
 und bleiben danach bei 30 Minuten. Cloud-Sperrzeiten und reguläre Anlagenabfragen
 haben Vorrang. Nicht unterstützte reine Zusatzpfade und Sicherheitsgrenzen sind
 ausdrücklich von dieser fortgesetzten Wiederholung ausgenommen.
+
+Ein Schreibvorgang wartet höchstens 60 Sekunden auf eine laufende Abfrage und
+sendet sonst nichts. Seit 0.9.0-alpha.6 hat ein begonnener Schreibvorgang
+außerdem eine Gesamtfrist von 60 Sekunden (Urlaubsänderungen 180 Sekunden) für
+die frische Prüfung, die eine Anfrage und das Zurücklesen. Danach gilt er als
+nicht bestätigt; der betroffene Wert gilt bis zum nächsten Lesen nicht mehr
+als aktuell, und nichts wird ein zweites Mal gesendet.
 
 Die Integration spart wiederholte Metadatenabrufe und lässt unwichtige
 Zusatzabfragen die funktionierende Einrichtung nicht mehr abbrechen. Neue,

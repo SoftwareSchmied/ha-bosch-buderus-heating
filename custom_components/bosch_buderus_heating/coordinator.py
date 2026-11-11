@@ -139,6 +139,7 @@ from .writes import (
     NumberWritePolicy,
     RrcWriteNotConfirmed,
     WriteBusy,
+    WriteDeadlineExceeded,
     WriteService,
     confirms_value,
 )
@@ -290,6 +291,14 @@ MANUAL_SETPOINT_RETRY_DELAYS = (3.0, 10.0, 20.0)
 # Longer than a normal cycle with its 50 s budget, far shorter than a slow
 # discovery or rescan; a write that cannot start sends nothing.
 WRITE_LOCK_TIMEOUT = timedelta(seconds=60)
+# D25: how long a write transaction may hold the polling/write lock once it
+# has it: the fresh reads, the one request and its read-back. A healthy
+# write needs a fraction of it (RRC read-back: 15 s of waits); a slow cloud
+# with request retries no longer blocks polling and the caller for minutes.
+WRITE_TRANSACTION_DEADLINE = timedelta(seconds=60)
+# A holiday change on a legacy slot sends up to five values one after the
+# other, each read back over several paths.
+HOLIDAY_WRITE_DEADLINE = timedelta(seconds=180)
 # HA rounds scheduled callbacks to whole seconds plus a fixed offset. A callback
 # just before our exact deadline must not postpone a group by another minute.
 # This tolerance applies to group cadence only, never to error/backoff deadlines.
@@ -917,12 +926,18 @@ class BoschBuderusDataUpdateCoordinator(
         self._manual_setpoint_candidates.clear()
 
     @asynccontextmanager
-    async def _write_transaction(self) -> AsyncIterator[None]:
+    async def _write_transaction(
+        self, deadline: timedelta | None = None
+    ) -> AsyncIterator[None]:
         """C58: hold the polling/write lock, but wait for it only so long.
 
-        Only acquiring the lock is limited. Once a write holds it, nothing
-        interrupts its PUT or read-back. A write that cannot start sends
-        nothing and is reported at once instead of being sent much later.
+        A write that cannot start sends nothing and is reported at once
+        instead of being sent much later. D25: once it holds the lock, the
+        transaction has ``deadline`` (``WRITE_TRANSACTION_DEADLINE``) for its
+        reads, its request and its read-back. At the deadline it is cancelled
+        like any cancelled write (its reading is no longer current) and ends
+        with ``WriteDeadlineExceeded``: the request may have been sent, it is
+        never sent again.
         """
         try:
             async with asyncio.timeout(WRITE_LOCK_TIMEOUT.total_seconds()):
@@ -931,8 +946,17 @@ class BoschBuderusDataUpdateCoordinator(
             raise WriteBusy(
                 "Another request held the gateway; the change was not sent"
             ) from err
+        limit = deadline if deadline is not None else WRITE_TRANSACTION_DEADLINE
         try:
-            yield
+            async with asyncio.timeout(limit.total_seconds()) as scope:
+                yield
+        except TimeoutError as err:
+            if not scope.expired():
+                raise
+            _LOGGER.debug("A write transaction reached its deadline and was stopped")
+            raise WriteDeadlineExceeded(
+                "The change was not confirmed in time; nothing is sent again"
+            ) from err
         finally:
             self._update_lock.release()
 
@@ -1445,7 +1469,7 @@ class BoschBuderusDataUpdateCoordinator(
         expected: HolidayWriteValues | None = None,
     ) -> Resource:
         """Run one capability-gated holiday mutation and confirm it."""
-        async with self._write_transaction():
+        async with self._write_transaction(HOLIDAY_WRITE_DEADLINE):
             now_monotonic = monotonic()
             if now_monotonic < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now_monotonic)
@@ -1541,6 +1565,14 @@ class BoschBuderusDataUpdateCoordinator(
                 self._record_capability(
                     HOLIDAY_LIST_PATH, _pointt_result(err), SnapshotSource.WRITE
                 )
+                raise
+            except asyncio.CancelledError:
+                # D25: stopped at the deadline (or on shutdown); the request
+                # may have been sent. Read the list with the next cycle.
+                self._record_capability(
+                    HOLIDAY_LIST_PATH, "write_not_confirmed", SnapshotSource.WRITE
+                )
+                self._read_soon_after_write(HOLIDAY_LIST_PATH)
                 raise
 
             await self._async_publish_holiday_readback(confirmed)

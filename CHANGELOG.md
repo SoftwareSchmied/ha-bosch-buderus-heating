@@ -46,6 +46,13 @@ reporting it in #122.
 
 #### Fixes
 
+- **Writes with a slow cloud:** a change that has started now has an overall
+  deadline of 60 seconds (180 seconds for a holiday change) for its checks,
+  its request and the read-back. Before, a slow cloud with request retries
+  could hold the polling of the gateway and the calling automation for
+  several minutes. At the deadline the change is reported as not confirmed,
+  its value counts as not current until it is read again, and nothing is
+  sent a second time.
 - **Warning after a restart:** Home Assistant no longer logs "Detected
   blocking call to import_module … inside the event loop" for the room
   controller functions. I now load their modules in the background before
