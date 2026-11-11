@@ -5,12 +5,18 @@ Assistant's end date is exclusive, the controller's inclusive. Dates count in
 the controller's time zone (``/gateway/time/timeZone``), else in Home
 Assistant's.
 
+Reading (AWAY-04): a list that fails to read (P31: a controller may answer
+500 at times) keeps showing its last valid reading while that stays valid
+(three poll intervals, as every displayed reading); the attribute ``stale``
+tells so. Writing needs a current reading of every list.
+
 Writing (expected, untested on hardware): absences are created, changed and
 deleted; weekday events are only deleted. Every write reads the lists first,
-sends one request and reads them again until the change shows (S5 to S7).
-While the outcome of one write is unknown, the next one reads the lists
-again and is refused until the first shows (C36), so a creation after a
-timeout is never sent twice.
+sends one request and reads them again until the change shows (S5 to S7);
+the read-back needs only the lists the change can show in (AWAY-11). While
+the outcome of one write is unknown, the next one reads the lists again and
+is refused until the first shows (C36), so a creation after a timeout is
+never sent twice.
 """
 
 from __future__ import annotations
@@ -167,12 +173,19 @@ class RrcEventCalendar(
     def _known(self) -> tuple[str, ...]:
         return rrc_events.known_lists(self.coordinator.resources)
 
-    @property
-    def _state(self) -> EventState:
-        data = self.coordinator.data or {}
+    def _readings(self, *, fresh: bool) -> dict[str, Resource | None]:
+        """The list readings; ``None`` for a list without one.
+
+        With ``fresh`` only current readings count. Otherwise a list whose
+        last read failed (P31: a sporadic 500) keeps its last valid reading
+        as long as any displayed reading stays valid, three poll intervals
+        (AWAY-04).
+        """
+        coordinator = self.coordinator
+        data = coordinator.data or {}
         readings: dict[str, Resource | None] = {}
         for path in self._known:
-            snapshot = data.get(path)
+            snapshot = data.get(path) if fresh else coordinator.display_snapshot(path)
             readings[path] = (
                 snapshot.resource
                 if snapshot is not None
@@ -180,7 +193,17 @@ class RrcEventCalendar(
                 and snapshot.freshness is Freshness.FRESH
                 else None
             )
-        return rrc_events.parse_state(readings, self._known)
+        return readings
+
+    @property
+    def _state(self) -> EventState:
+        """The events shown, from current or recent readings."""
+        return rrc_events.parse_state(self._readings(fresh=False), self._known)
+
+    @property
+    def _write_state(self) -> EventState:
+        """The events of current readings only, the base of writing."""
+        return rrc_events.parse_state(self._readings(fresh=True), self._known)
 
     @property
     def available(self) -> bool:
@@ -188,9 +211,15 @@ class RrcEventCalendar(
 
     @property
     def supported_features(self) -> CalendarEntityFeature:
-        """Writing only while every known list reads validly (no hidden
+        """Writing only while every known list reads validly now (no hidden
         event could overlap a new one)."""
-        return _FEATURES if self._state.writable else CalendarEntityFeature(0)
+        return _FEATURES if self._write_state.writable else CalendarEntityFeature(0)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """``stale``: a list is shown from an earlier reading or not at all,
+        because its last read failed."""
+        return {"stale": bool(self._write_state.unreadable)}
 
     @property
     def event(self) -> CalendarEvent | None:
@@ -324,18 +353,18 @@ class RrcEventCalendar(
             )
             rrc_events.check_dates(start, end, self._today)
 
-            def check(state: EventState) -> frozenset[int]:
+            def check(state: EventState) -> tuple[EventFields, ...]:
                 rrc_events.check_overlap(fields, state)
-                return state.identifiers()
+                return tuple(event.fields for event in state.events)
 
-            async def send(_before: frozenset[int]) -> None:
+            async def send(_before: tuple[EventFields, ...]) -> None:
                 await self.coordinator.client.post_resource(
                     self.coordinator.gateway.gateway_id,
                     rrc_events.EVENTS_ROOT,
                     fields.wire(),
                 )
 
-            def confirm(before: frozenset[int], state: EventState) -> bool:
+            def confirm(before: tuple[EventFields, ...], state: EventState) -> bool:
                 return rrc_events.created(before, fields, state) is not None
 
             return await self._async_structured(check, send, confirm)
@@ -442,8 +471,11 @@ class RrcEventCalendar(
     ) -> tuple[Resource, ...]:
         """Fresh lists, one request, the lists again until the change shows.
 
-        A 4xx answer to the request is the controller's refusal (for
-        example a full calendar): ``rrc_event_rejected``.
+        The preflight needs every list; the read-back only the lists
+        ``confirm`` looks at, so a sporadic 500 of another list does not
+        leave a change unconfirmed (AWAY-11). A 4xx answer to the request is
+        the controller's refusal (for example a full calendar):
+        ``rrc_event_rejected``.
         """
         coordinator = self.coordinator
         known = self._known
@@ -470,7 +502,7 @@ class RrcEventCalendar(
             prepared: tuple[T, EventState],
         ) -> tuple[Resource, ...] | None:
             readings, state = await read()
-            if state.unreadable or not confirm(prepared[0], state):
+            if not confirm(prepared[0], state):
                 return None
             return tuple(item for item in readings.values() if item is not None)
 

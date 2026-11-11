@@ -1074,7 +1074,7 @@
       "message": "Introduza um nome com 1 a 32 bytes de texto imprimível (menos carateres com acentos ou emojis)."
     },
     "rrc_event_invalid_dates": {
-      "message": "O evento requer dias inteiros: um início na data de fim ou antes dela e um fim que não esteja no passado."
+      "message": "O evento requer dias inteiros entre 2016 e 2099: um início na data de fim ou antes dela e um fim que não esteja no passado."
     },
     "rrc_event_overlap": {
       "message": "O evento partilha um dia com outro evento do regulador de ambiente. Os eventos não podem sobrepor-se, nem sequer no primeiro ou no último dia."
@@ -1099,6 +1099,9 @@
     },
     "rrc_boost_locked": {
       "message": "O regulador de ambiente bloqueia o boost neste momento. Tente novamente mais tarde."
+    },
+    "rrc_boost_running": {
+      "message": "O boost está em curso. A temperatura e a duração só podem ser alteradas enquanto está desligado; aplicam-se então a partir do próximo arranque. Nada foi alterado."
     }
   },
   "selector": {
@@ -2237,7 +2240,12 @@
         "name": "Períodos de férias"
       },
       "rrc_events": {
-        "name": "Ausências e dias especiais"
+        "name": "Ausências e dias especiais",
+        "state_attributes": {
+          "stale": {
+            "name": "Eventos possivelmente desatualizados"
+          }
+        }
       }
     },
     "event": {

@@ -1074,7 +1074,7 @@
       "message": "Unesite naziv od 1 do 32 bajtova ispisivog teksta (manje znakova s dijakritičkim znakovima ili emojijima)."
     },
     "rrc_event_invalid_dates": {
-      "message": "Događaj zahtijeva cijele dane: početak na dan završetka ili prije njega te završetak koji nije u prošlosti."
+      "message": "Događaj zahtijeva cijele dane od 2016. do 2099.: početak na dan završetka ili prije njega te završetak koji nije u prošlosti."
     },
     "rrc_event_overlap": {
       "message": "Događaj dijeli dan s drugim događajem sobnog regulatora. Događaji se ne smiju preklapati, čak ni prvog ili posljednjeg dana."
@@ -1099,6 +1099,9 @@
     },
     "rrc_boost_locked": {
       "message": "Sobni regulator trenutačno blokira funkciju Boost. Pokušajte ponovno kasnije."
+    },
+    "rrc_boost_running": {
+      "message": "Funkcija Boost je aktivna. Njezina temperatura i trajanje mogu se promijeniti samo dok je isključena; tada vrijede od sljedećeg pokretanja. Ništa nije promijenjeno."
     }
   },
   "selector": {
@@ -2237,7 +2240,12 @@
         "name": "Razdoblja odmora"
       },
       "rrc_events": {
-        "name": "Odsutnosti i posebni dani"
+        "name": "Odsutnosti i posebni dani",
+        "state_attributes": {
+          "stale": {
+            "name": "Događaji su možda zastarjeli"
+          }
+        }
       }
     },
     "event": {

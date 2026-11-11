@@ -152,18 +152,44 @@ def test_limits_only_from_valid_leaf_metadata() -> None:
             bounds.check(value)
 
 
-def test_boost_on_needs_a_zone_it_may_heat() -> None:
+def test_a_start_heats_only_existing_zones_it_may_heat() -> None:
+    """AWAY-08: the set zones that still exist and are allowed; without
+    ``allowedZones`` or without such a zone nothing starts."""
     boost = rrc_boost.Boost(20.0, 2, "off", (1, 2), (1, 2, 3, 4))
-    assert rrc_boost.switched(boost, True).mode == "on"
-    for zones, allowed in (((), (1, 2)), ((5,), (1, 2))):
-        with pytest.raises(ContractRejected) as refused:
-            rrc_boost.switched(rrc_boost.Boost(20.0, 2, "off", zones, allowed), True)
-        assert refused.value.reason == "rrc_boost_no_zones"
-    # Off needs no zone.
-    assert (
-        rrc_boost.switched(rrc_boost.Boost(20.0, 2, "on", (), None), False).mode
-        == "off"
+    assert rrc_boost.started(boost, (1, 2, 3)) == rrc_boost.Boost(
+        20.0, 2, "on", (1, 2), (1, 2, 3, 4)
     )
+    # A deleted zone (2) and one it may not heat (5) are left out.
+    mixed = rrc_boost.Boost(20.0, 2, "off", (5, 2, 1), (1, 2, 3, 4))
+    assert rrc_boost.started(mixed, (1, 3, 5)).zones == (1,)
+    for zones, allowed, existing in (
+        ((), (1, 2), (1, 2)),
+        ((5,), (1, 2), (1, 2, 5)),
+        ((1, 2), None, (1, 2)),  # no allowedZones
+        ((1, 2), (1, 2), (3,)),  # both deleted
+        ((1, 2), (1, 2), None),  # no valid zone list
+    ):
+        with pytest.raises(ContractRejected) as refused:
+            rrc_boost.started(rrc_boost.Boost(20.0, 2, "off", zones, allowed), existing)
+        assert refused.value.reason == "rrc_boost_no_zones"
+    # Off needs no zone and keeps everything else.
+    running = rrc_boost.Boost(22.5, 3, "on", (), None)
+    assert rrc_boost.stopped(running) == rrc_boost.Boost(22.5, 3, "off", (), None)
+
+
+def test_a_start_sends_the_preset() -> None:
+    """AWAY-06: temperature and duration go only with mode on."""
+    boost = rrc_boost.Boost(20.0, 2, "off", (1, 2), (1, 2))
+    assert rrc_boost.started(boost, (1, 2), rrc_boost.Preset(22.5, None)).body() == [
+        {"temperature": 22.5, "duration": 2, "mode": "on", "zones": [1, 2]}
+    ]
+    assert rrc_boost.started(boost, (1, 2), rrc_boost.Preset(None, 4)).body() == [
+        {"temperature": 20.0, "duration": 4, "mode": "on", "zones": [1, 2]}
+    ]
+    bounds = rrc_boost.Limits(1.0, 8.0, 1.0)
+    assert rrc_boost.preset_value("duration", 3.0, bounds) == 3.0
+    with pytest.raises(WriteValidationError):
+        rrc_boost.preset_value("duration", 3.5, bounds)
 
 
 # ------------------------------------------------------------- real cycles
@@ -215,40 +241,166 @@ async def test_boost_switch_and_settings_write_the_whole_structure(
         assert mirror.disabled_by is er.RegistryEntryDisabler.INTEGRATION
         assert mirror.entity_category is EntityCategory.DIAGNOSTIC
 
+        # AWAY-06: while the boost is off, a new temperature or duration is
+        # kept for the next start and shown; nothing is sent.
+        await _number(hass, TEMPERATURE, 22.5)
+        await _number(hass, DURATION, 3)
+        assert cloud.written() == []
+        assert hass.states.get(temperature).state == "22.5"
+        assert hass.states.get(duration).state == "3.0"
+        # The controller's value again drops the preset.
+        await _number(hass, DURATION, 2)
+        await _number(hass, DURATION, 3)
+        assert cloud.written() == []
+
         await _turn(hass, True)
         assert cloud.written() == [
             (
                 "PUT",
                 BOOST,
-                [{"temperature": 20.0, "duration": 2, "mode": "on", "zones": [1, 2]}],
+                [{"temperature": 22.5, "duration": 3, "mode": "on", "zones": [1, 2]}],
             )
         ]
+        assert isinstance(cloud.written()[0][2][0]["duration"], int)
         assert sleeps[-2:] == [1.0, 2.0]
         assert hass.states.get(switch).state == "on"
-        await _number(hass, TEMPERATURE, 22.5)
-        await _number(hass, DURATION, 3)
-        assert cloud.written()[1:] == [
-            (
-                "PUT",
-                BOOST,
-                [{"temperature": 22.5, "duration": 2, "mode": "on", "zones": [1, 2]}],
-            ),
-            (
-                "PUT",
-                BOOST,
-                [{"temperature": 22.5, "duration": 3, "mode": "on", "zones": [1, 2]}],
-            ),
-        ]
-        assert isinstance(cloud.written()[2][2][0]["duration"], int)
+        assert hass.states.get(temperature).state == "22.5"
+        # Already running: nothing is sent.
+        await _turn(hass, True)
+        assert len(cloud.written()) == 1
+        # While it runs, a change is refused and nothing is sent or kept.
+        with pytest.raises(ServiceValidationError) as running:
+            await _number(hass, TEMPERATURE, 25.0)
+        assert running.value.translation_key == "rrc_boost_running"
+        assert len(cloud.written()) == 1
         await _turn(hass, False)
-        assert cloud.written()[-1][2][0]["mode"] == "off"
+        assert cloud.written()[-1] == (
+            "PUT",
+            BOOST,
+            [{"temperature": 22.5, "duration": 3, "mode": "off", "zones": [1, 2]}],
+        )
+        # The preset was sent with the start: none is left.
+        assert hass.states.get(temperature).state == "22.5"
+        assert hass.states.get(duration).state == "3.0"
         # Already off: nothing is sent.
         await _turn(hass, False)
-        assert len(cloud.written()) == 4
+        assert len(cloud.written()) == 2
         # The single leaves are never written (W2-E1).
         assert {path for _method, path, _value in cloud.written()} == {BOOST}
         stats = coordinator.rrc_write_stats.snapshot("absence")
-        assert stats["writes_sent"] == 4 and stats["writes_confirmed"] == 4
+        assert stats["writes_sent"] == 2 and stats["writes_confirmed"] == 2
+        # A value changed on the controller later shows: no preset is left.
+        set_value(
+            cloud,
+            BOOST,
+            [{**absence_tree()[BOOST].value[0], "temperature": 21.0}],
+        )
+        _clock.now += 3600
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        assert hass.states.get(temperature).state == "21.0"
+        assert hass.states.get(duration).state == "2.0"
+    finally:
+        await teardown(hass, entry, stack)
+
+
+async def test_a_preset_waits_for_a_confirmed_start(hass: HomeAssistant) -> None:
+    """AWAY-06: an unconfirmed start keeps the preset; a preset outside the
+    current limits is not sent."""
+    cloud = RrcCloud(absence_tree())
+    entry, coordinator, clock, _sleeps, stack = await setup(hass, cloud)
+    temperature = entity_id(hass, "number", TEMPERATURE)
+    try:
+        await _number(hass, TEMPERATURE, 24.0)
+        cloud.ignore_writes.add(BOOST)
+        with pytest.raises(HomeAssistantError) as unconfirmed:
+            await _turn(hass, True)
+        assert unconfirmed.value.translation_key == "rrc_write_pending_confirmation"
+        assert cloud.written()[-1][2][0]["temperature"] == 24.0
+        cloud.ignore_writes.clear()
+        clock.now += 3600
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        assert hass.states.get(temperature).state == "24.0"
+        # The limits shrink meanwhile: the preset is refused at the start.
+        cloud.tree[rrc_boost.BOOST_TEMPERATURE_PATH] = _leaf(
+            rrc_boost.BOOST_TEMPERATURE_PATH, "C", 5.0, 23.0, 0.5
+        )
+        clock.now += 3600
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        with pytest.raises(ServiceValidationError) as outside:
+            await _turn(hass, True)
+        assert outside.value.translation_key == "write_validation_failed"
+        assert cloud.calls["PUT", BOOST] == 1
+    finally:
+        await teardown(hass, entry, stack)
+
+
+async def test_the_preset_survives_a_reload(hass: HomeAssistant) -> None:
+    """The kept value is restored with the entity, not lost on a reload."""
+    cloud = RrcCloud(absence_tree())
+    entry, _coordinator, _clock, _sleeps, stack = await setup(hass, cloud)
+    try:
+        temperature = entity_id(hass, "number", TEMPERATURE)
+        await _number(hass, TEMPERATURE, 23.5)
+        assert await hass.config_entries.async_reload(entry.entry_id)
+        await hass.async_block_till_done()
+        reloaded = entry.runtime_data.coordinators[0]
+
+        async def no_sleep(_delay: float) -> None:
+            return None
+
+        reloaded.rrc_struct_writes._sleep = no_sleep
+        assert hass.states.get(temperature).state == "23.5"
+        await _turn(hass, True)
+        assert cloud.written() == [
+            (
+                "PUT",
+                BOOST,
+                [{"temperature": 23.5, "duration": 2, "mode": "on", "zones": [1, 2]}],
+            )
+        ]
+    finally:
+        await teardown(hass, entry, stack)
+
+
+async def test_a_start_leaves_out_deleted_zones(hass: HomeAssistant) -> None:
+    """AWAY-08: zone 2 was deleted; the start heats only zone 1. Without
+    ``allowedZones`` nothing starts."""
+    cloud = RrcCloud(absence_tree())
+    entry, coordinator, clock, _sleeps, stack = await setup(hass, cloud)
+    try:
+        zones = cloud.tree["/zones/list"]
+        set_value(
+            cloud,
+            "/zones/list",
+            [item for item in zones.value if item["id"] != 2],
+        )
+        clock.now += 2 * 3600
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        await _turn(hass, True)
+        assert cloud.written() == [
+            (
+                "PUT",
+                BOOST,
+                [{"temperature": 20.0, "duration": 2, "mode": "on", "zones": [1]}],
+            )
+        ]
+        await _turn(hass, False)
+        set_value(
+            cloud,
+            BOOST,
+            [{"duration": 2, "mode": "off", "temperature": 20, "zones": [1]}],
+        )
+        clock.now += 3600
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        with pytest.raises(ServiceValidationError) as no_zones:
+            await _turn(hass, True)
+        assert no_zones.value.translation_key == "rrc_boost_no_zones"
+        assert len(cloud.written()) == 2
     finally:
         await teardown(hass, entry, stack)
 
@@ -257,9 +409,11 @@ async def test_refusals_send_nothing(hass: HomeAssistant) -> None:
     cloud = RrcCloud(absence_tree())
     entry, coordinator, clock, _sleeps, stack = await setup(hass, cloud)
     try:
+        # Off the grid: not kept (the numbers send nothing, AWAY-06).
         with pytest.raises(ServiceValidationError) as off_grid:
             await _number(hass, TEMPERATURE, 22.2)
         assert off_grid.value.translation_key == "write_validation_failed"
+        assert hass.states.get(entity_id(hass, "number", TEMPERATURE)).state == ("20.0")
         # The zones were cleared in the app meanwhile: the fresh read decides.
         set_value(cloud, BOOST, variants()["boost_without_zones"])
         with pytest.raises(ServiceValidationError) as no_zones:
@@ -268,7 +422,7 @@ async def test_refusals_send_nothing(hass: HomeAssistant) -> None:
         # The mode changed, seen only by the fresh read (S5, AWAY-09).
         set_value(cloud, BOOST, variants()["boost_on"])
         with pytest.raises(ServiceValidationError) as changed:
-            await _number(hass, DURATION, 4)
+            await _turn(hass, False)
         assert changed.value.translation_key == "rrc_boost_changed"
         # Unknown fields: shown, never written.
         set_value(cloud, BOOST, variants()["boost_extra_field"])
@@ -289,7 +443,6 @@ async def test_refusals_send_nothing(hass: HomeAssistant) -> None:
         assert cloud.written() == []
         reasons = coordinator.rrc_write_stats.snapshot("absence")["rejection_reasons"]
         assert reasons == {
-            "validation": 1,
             "rrc_boost_changed": 1,
             "rrc_boost_no_zones": 1,
             "rrc_boost_unsupported_shape": 1,

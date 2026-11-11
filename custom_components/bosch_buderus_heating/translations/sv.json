@@ -1074,7 +1074,7 @@
       "message": "Ange ett namn med 1 till 32 byte utskrivbar text (färre tecken med å, ä, ö eller emoji)."
     },
     "rrc_event_invalid_dates": {
-      "message": "Händelsen kräver hela dagar: en start på eller före slutet och ett slut som inte ligger i det förflutna."
+      "message": "Händelsen kräver hela dagar från 2016 till 2099: en start på eller före slutet och ett slut som inte ligger i det förflutna."
     },
     "rrc_event_overlap": {
       "message": "Händelsen delar en dag med en annan händelse i rumsregulatorn. Händelser får inte överlappa varandra, inte ens på första eller sista dagen."
@@ -1099,6 +1099,9 @@
     },
     "rrc_boost_locked": {
       "message": "Rumsregulatorn spärrar just nu boosten. Försök igen senare."
+    },
+    "rrc_boost_running": {
+      "message": "Boosten är igång. Dess temperatur och varaktighet kan bara ändras medan den är avstängd; de gäller då från nästa start. Ingenting ändrades."
     }
   },
   "selector": {
@@ -2237,7 +2240,12 @@
         "name": "Semesterperioder"
       },
       "rrc_events": {
-        "name": "Frånvaro och specialdagar"
+        "name": "Frånvaro och specialdagar",
+        "state_attributes": {
+          "stale": {
+            "name": "Händelser kan vara inaktuella"
+          }
+        }
       }
     },
     "event": {

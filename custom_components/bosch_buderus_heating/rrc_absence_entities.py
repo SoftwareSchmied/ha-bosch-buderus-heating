@@ -7,16 +7,20 @@ platform listed in ``TRACKERS`` once per coordinator; see
 Away mode, its temperature and the fireplace function are generic switches
 and numbers of the contract (``rrc_contract_absence``). This module adds the
 events calendar and the boost entities: a switch and two numbers over the
-one structure ``boostShortcut`` (``rrc_boost``). All of it is expected,
-untested on hardware.
+one structure ``boostShortcut`` (``rrc_boost``). The numbers send nothing
+themselves (AWAY-06): while the boost is off they keep a preset that the
+switch sends with the next start; while it runs they refuse a change. All
+of it is expected, untested on hardware.
 """
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any, Final
+from weakref import WeakKeyDictionary
 
 from homeassistant.components.number import (
     NumberEntity,
@@ -29,9 +33,10 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.restore_state import ExtraStoredData, RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import rrc_boost, rrc_events
+from . import rrc, rrc_boost, rrc_events
 from .const import DOMAIN
 from .control import track_rrc_entities
 from .control_presentation import control_name
@@ -40,7 +45,7 @@ from .device import device_info_for_resource
 from .i18n import localize
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource, WriteValidationError
-from .rrc_boost import BOOST_PATH, Boost, Setting
+from .rrc_boost import BOOST_PATH, Boost, Preset, Setting
 from .rrc_event_calendar import RrcEventCalendar, async_run_rrc_write
 from .rrc_platforms import Tracker
 from .writes import ContractRejected, ControlContext, ControlLocked
@@ -53,6 +58,24 @@ _LIMIT_PATHS: Final[Mapping[Setting, str]] = MappingProxyType(
         "duration": rrc_boost.BOOST_DURATION_PATH,
     }
 )
+# AWAY-06: the preset of the next start per coordinator, set by the numbers
+# and sent by the switch.
+_PRESETS: Final[
+    WeakKeyDictionary[BoschBuderusDataUpdateCoordinator, dict[Setting, float]]
+] = WeakKeyDictionary()
+
+
+def _presets(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[Setting, float]:
+    return _PRESETS.setdefault(coordinator, {})
+
+
+def _refusal(issue: str) -> Exception:
+    """The error of a boost structure that may not be written now."""
+    if issue == "locked":
+        return ControlLocked("The controller currently locks the boost")
+    if issue == rrc_boost.UNSUPPORTED_SHAPE:
+        return ContractRejected(issue)
+    return WriteValidationError(f"Boost not writable: {issue}")
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -181,17 +204,90 @@ class _BoostEntity(CoordinatorEntity[BoschBuderusDataUpdateCoordinator]):
     def device_info(self) -> DeviceInfo:
         return device_info_for_resource(self.coordinator, BOOST_PATH)
 
-    def _unchanged(self, shown: Boost, current: Boost) -> bool:
-        """S5 (AWAY-09): whether the fields this write depends on are still
-        as shown. Switching depends on the mode and the zones it heats; a
-        number keeps the mode, so only the mode counts. The other fields are
-        sent as the fresh reading has them."""
-        if self._role == "switch":
-            return shown.mode == current.mode and shown.zones == current.zones
-        return shown.mode == current.mode
+    def _limits_of(self, setting: Setting) -> rrc_boost.Limits | None:
+        return rrc_boost.limits(self._fresh(_LIMIT_PATHS[setting]), setting)
 
-    async def _async_change(self, change: Callable[[Boost], Boost]) -> None:
-        """Fresh preflight (S5), one PUT (S6), read-back (S7)."""
+
+class RrcBoostSwitch(_BoostEntity, SwitchEntity):
+    """Boost on or off; a start sends the preset of the numbers and the set
+    zones that still exist and that the boost may heat."""
+
+    _role = "switch"
+    _attr_translation_key = "rrc_boost"
+    _attr_icon = "mdi:rocket-launch-outline"
+    _unrecorded_attributes = frozenset({"zones"})
+
+    def __init__(
+        self, coordinator: BoschBuderusDataUpdateCoordinator, description: Any
+    ) -> None:
+        del description
+        super().__init__(
+            coordinator, localize(coordinator.hass.config.language, "Boost", "Boost")
+        )
+
+    @property
+    def is_on(self) -> bool | None:
+        boost = self._boost
+        return boost.on if boost is not None else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object] | None:
+        boost = self._boost
+        return {"zones": list(boost.zones)} if boost is not None else None
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        del kwargs
+        used = dict(_presets(self.coordinator))
+
+        def start(boost: Boost) -> Boost:
+            if boost.on:
+                # Already running: nothing is sent, the preset waits.
+                return boost
+            return rrc_boost.started(boost, self._zone_ids(), self._preset(used))
+
+        if await self._async_change(start):
+            # The controller holds the preset now.
+            presets = _presets(self.coordinator)
+            for setting, value in used.items():
+                if presets.get(setting) == value:
+                    del presets[setting]
+            self.coordinator.async_update_listeners()
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        del kwargs
+        await self._async_change(rrc_boost.stopped)
+
+    def _preset(self, values: Mapping[Setting, float]) -> Preset:
+        """S3 once more at the start: a preset outside the current limits is
+        not sent."""
+        for setting, value in values.items():
+            limits = self._limits_of(setting)
+            if limits is None:
+                raise WriteValidationError("The boost limits are unknown")
+            limits.check(value)
+        duration = values.get("duration")
+        return Preset(
+            values.get("temperature"), int(duration) if duration is not None else None
+        )
+
+    def _zone_ids(self) -> tuple[int, ...] | None:
+        """The zones of the last valid zone list (AWAY-08: a deleted zone is
+        not sent)."""
+        snapshot = (self.coordinator.data or {}).get(rrc.ZONE_LIST)
+        resource = (
+            snapshot.resource
+            if snapshot is not None
+            else self.coordinator.resources.get(rrc.ZONE_LIST)
+        )
+        return rrc.listed_ids(resource) if resource is not None else None
+
+    async def _async_change(self, change: Callable[[Boost], Boost]) -> bool:
+        """Fresh preflight (S5), one PUT (S6), read-back (S7); whether a
+        change was sent and confirmed.
+
+        S5 (AWAY-09): only the mode and the zones must still be as shown;
+        the other fields are sent as the fresh reading has them.
+        """
         coordinator = self.coordinator
         gateway_id = coordinator.gateway.gateway_id
         shown = self._boost
@@ -200,21 +296,15 @@ class _BoostEntity(CoordinatorEntity[BoschBuderusDataUpdateCoordinator]):
         async def operation() -> tuple[Resource, ...]:
             current = await coordinator.client.get_resource(gateway_id, BOOST_PATH)
             issue = rrc_boost.write_issue(current)
-            if issue == "locked":
-                raise ControlLocked("The controller currently locks the boost")
             if issue is not None:
-                raise (
-                    ContractRejected(issue)
-                    if issue == rrc_boost.UNSUPPORTED_SHAPE
-                    else WriteValidationError(f"Boost not writable: {issue}")
-                )
+                raise _refusal(issue)
             boost = rrc_boost.parse(current)
             assert boost is not None  # checked by write_issue
             target = change(boost)
             if boost.shows(target):
                 # Already so; nothing is sent.
                 return (current,)
-            if shown is None or not self._unchanged(shown, boost):
+            if shown is None or shown.mode != boost.mode or shown.zones != boost.zones:
                 raise ContractRejected("rrc_boost_changed")
             targets.append(target)
 
@@ -245,45 +335,26 @@ class _BoostEntity(CoordinatorEntity[BoschBuderusDataUpdateCoordinator]):
             return bool(targets) and parsed is not None and parsed.shows(targets[0])
 
         await async_run_rrc_write(coordinator, BOOST_PATH, operation, late_check=late)
+        return bool(targets)
 
 
-class RrcBoostSwitch(_BoostEntity, SwitchEntity):
-    """Boost on or off; the zones stay as set on the controller."""
+@dataclass(frozen=True, slots=True)
+class _PresetData(ExtraStoredData):
+    """The preset of one number across restarts."""
 
-    _role = "switch"
-    _attr_translation_key = "rrc_boost"
-    _attr_icon = "mdi:rocket-launch-outline"
-    _unrecorded_attributes = frozenset({"zones"})
+    value: float | None
 
-    def __init__(
-        self, coordinator: BoschBuderusDataUpdateCoordinator, description: Any
-    ) -> None:
-        del description
-        super().__init__(
-            coordinator, localize(coordinator.hass.config.language, "Boost", "Boost")
-        )
-
-    @property
-    def is_on(self) -> bool | None:
-        boost = self._boost
-        return boost.on if boost is not None else None
-
-    @property
-    def extra_state_attributes(self) -> dict[str, object] | None:
-        boost = self._boost
-        return {"zones": list(boost.zones)} if boost is not None else None
-
-    async def async_turn_on(self, **kwargs: Any) -> None:
-        del kwargs
-        await self._async_change(lambda boost: rrc_boost.switched(boost, True))
-
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        del kwargs
-        await self._async_change(lambda boost: rrc_boost.switched(boost, False))
+    def as_dict(self) -> dict[str, Any]:
+        return {"next_start": self.value}
 
 
-class RrcBoostNumber(_BoostEntity, NumberEntity):
-    """The temperature or the duration of the boost; the mode stays."""
+class RrcBoostNumber(_BoostEntity, RestoreEntity, NumberEntity):
+    """The temperature or the duration of the next boost start (AWAY-06).
+
+    Nothing is sent from here: while the boost is off a new value is kept
+    and shown until the switch sends it with the next start; while it runs
+    a change is refused. The kept value survives a restart.
+    """
 
     entity_description: BoostNumberDescription
 
@@ -304,8 +375,7 @@ class RrcBoostNumber(_BoostEntity, NumberEntity):
 
     @property
     def _limits(self) -> rrc_boost.Limits | None:
-        setting = self.entity_description.setting
-        return rrc_boost.limits(self._fresh(_LIMIT_PATHS[setting]), setting)
+        return self._limits_of(self.entity_description.setting)
 
     @property
     def available(self) -> bool:
@@ -326,26 +396,74 @@ class RrcBoostNumber(_BoostEntity, NumberEntity):
         limits = self._limits
         return limits.step if limits is not None else super().native_step
 
-    @property
-    def native_value(self) -> float | None:
-        boost = self._boost
-        if boost is None:
-            return None
+    def _controller_value(self, boost: Boost) -> float:
         if self.entity_description.setting == "temperature":
             return boost.temperature
         return float(boost.duration)
 
+    @property
+    def native_value(self) -> float | None:
+        """The kept value while the boost is off, else the controller's."""
+        boost = self._boost
+        if boost is None:
+            return None
+        preset = _presets(self.coordinator).get(self.entity_description.setting)
+        if preset is not None and not boost.on:
+            return preset
+        return self._controller_value(boost)
+
     async def async_set_native_value(self, value: float) -> None:
+        """Keep the value for the next start; nothing is sent (AWAY-06)."""
+        setting = self.entity_description.setting
         limits = self._limits
-        if limits is None:
-            # S3: no limits from the metadata, no value is sent.
+        resource = self._fresh(BOOST_PATH)
+        boost = rrc_boost.parse(resource)
+        try:
+            if limits is None or resource is None or boost is None:
+                # S3: no limits from the metadata, no value is kept.
+                raise WriteValidationError("The boost or its limits are unknown")
+            if (issue := rrc_boost.write_issue(resource)) is not None:
+                raise _refusal(issue)
+            if boost.on:
+                raise ContractRejected(rrc_boost.RUNNING)
+            checked = rrc_boost.preset_value(setting, value, limits)
+        except ContractRejected as err:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key=err.translation_key
+            ) from err
+        except ControlLocked as err:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="rrc_boost_locked"
+            ) from err
+        except WriteValidationError as err:
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="write_validation_failed"
-            )
-        setting = self.entity_description.setting
-        await self._async_change(
-            lambda boost: rrc_boost.adjusted(boost, setting, value, limits)
+            ) from err
+        presets = _presets(self.coordinator)
+        if math.isclose(checked, self._controller_value(boost), abs_tol=1e-6):
+            presets.pop(setting, None)
+        else:
+            presets[setting] = checked
+        self.async_write_ha_state()
+
+    @property
+    def extra_restore_state_data(self) -> _PresetData:
+        return _PresetData(
+            _presets(self.coordinator).get(self.entity_description.setting)
         )
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        stored = await self.async_get_last_extra_data()
+        value = stored.as_dict().get("next_start") if stored is not None else None
+        if (
+            isinstance(value, int | float)
+            and not isinstance(value, bool)
+            and math.isfinite(value)
+        ):
+            _presets(self.coordinator).setdefault(
+                self.entity_description.setting, float(value)
+            )
 
 
 def _track_calendar(

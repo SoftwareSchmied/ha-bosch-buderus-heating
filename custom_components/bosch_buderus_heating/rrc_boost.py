@@ -5,8 +5,15 @@ duration in hours, mode ``on``/``off``, the zones it heats and the zones it
 may heat. It is written as a whole and only through this path: the single
 leaves (``boostMode``, ``boostTemperature`` ...) stay readings (P43). The
 body is ``[{"temperature", "duration", "mode", "zones"}]`` without
-``allowedZones``. The zones stay as set on the controller; a boost without
-zones is refused.
+``allowedZones``.
+
+A start sends mode ``on`` with the temperature, the duration and the zones
+it heats; a stop sends the same structure with mode ``off``. Temperature
+and duration are never sent alone (AWAY-06): while the boost is off, a new
+value is kept as the preset of the next start; while it runs, a change is
+refused. A start heats only the set zones that still exist and that it may
+heat (``allowedZones``); without such a zone, or without ``allowedZones``,
+it is refused (AWAY-08).
 
 Limits come only from the metadata of ``boostTemperature`` and
 ``boostDuration`` (S3). A structure with fields not known here is shown but
@@ -18,7 +25,7 @@ Pure: no Home Assistant import. Expected, untested on hardware.
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
 from typing import Final, Literal
 
@@ -41,6 +48,7 @@ _DURATION_RANGE: Final = (0.0, 48.0)
 
 NO_ZONES: Final = "rrc_boost_no_zones"
 UNSUPPORTED_SHAPE: Final = "rrc_boost_unsupported_shape"
+RUNNING: Final = "rrc_boost_running"
 
 type Setting = Literal["temperature", "duration"]
 
@@ -233,26 +241,49 @@ def limits(resource: Resource | None, setting: Setting) -> Limits | None:
     return Limits(minimum, maximum, float(step))
 
 
-def switched(boost: Boost, on: bool) -> Boost:
-    """The structure with boost on or off; on needs at least one zone it
-    may heat."""
-    if on and (
-        not boost.zones
-        or (
-            boost.allowed_zones is not None
-            and not set(boost.zones) <= set(boost.allowed_zones)
-        )
-    ):
+@dataclass(frozen=True, slots=True)
+class Preset:
+    """Temperature and duration for the next start (AWAY-06); ``None`` keeps
+    the controller's value."""
+
+    temperature: float | None = None
+    duration: int | None = None
+
+
+def started(
+    boost: Boost, existing_zones: Iterable[int] | None, preset: Preset | None = None
+) -> Boost:
+    """The structure of a start: mode on, the preset's temperature and
+    duration, and the set zones that still exist and that the boost may
+    heat (AWAY-08). Without ``allowedZones`` or without such a zone the
+    start is refused."""
+    if boost.allowed_zones is None or existing_zones is None:
         raise ContractRejected(NO_ZONES)
-    return replace(boost, mode="on" if on else "off")
+    allowed = set(boost.allowed_zones) & set(existing_zones)
+    zones = tuple(zone for zone in boost.zones if zone in allowed)
+    if not zones:
+        raise ContractRejected(NO_ZONES)
+    preset = preset or Preset()
+    return replace(
+        boost,
+        mode="on",
+        zones=zones,
+        temperature=boost.temperature
+        if preset.temperature is None
+        else float(preset.temperature),
+        duration=boost.duration if preset.duration is None else int(preset.duration),
+    )
 
 
-def adjusted(boost: Boost, setting: Setting, value: float, bounds: Limits) -> Boost:
-    """The structure with one setting changed; the mode stays as it is."""
+def stopped(boost: Boost) -> Boost:
+    """The structure of a stop: the same with mode off."""
+    return replace(boost, mode="off")
+
+
+def preset_value(setting: Setting, value: float, bounds: Limits) -> float:
+    """A checked value for the preset (S3/S4); the duration in whole hours."""
     bounds.check(value)
-    if setting == "temperature":
-        return replace(boost, temperature=float(value))
-    return replace(boost, duration=int(value))
+    return float(round(value)) if setting == "duration" else float(value)
 
 
 def diagnostics(resources: Mapping[str, Resource]) -> dict[str, object]:

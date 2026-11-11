@@ -1074,7 +1074,7 @@
       "message": "Cuir isteach ainm 1 go 32 beart de théacs infhoilsithe (níos lú carachtar le séimhiú, sínte fada nó emoji)."
     },
     "rrc_event_invalid_dates": {
-      "message": "Teastaíonn laethanta iomlána don imeacht: tosach ar an lá deireanach nó roimhe agus deireadh nach bhfuil san am atá caite."
+      "message": "Teastaíonn laethanta iomlána idir 2016 agus 2099 don imeacht: tosach ar an lá deireanach nó roimhe agus deireadh nach bhfuil san am atá caite."
     },
     "rrc_event_overlap": {
       "message": "Roinneann an t-imeacht lá le himeacht eile den rialaitheoir seomra. Ní féidir imeachtaí a bheith ag forluí, fiú ar a gcéad lá nó ar a lá deireanach."
@@ -1099,6 +1099,9 @@
     },
     "rrc_boost_locked": {
       "message": "Tá an rialaitheoir seomra ag glasáil Boost faoi láthair. Bain triail eile as níos déanaí."
+    },
+    "rrc_boost_running": {
+      "message": "Tá Boost ar siúl. Ní féidir a theocht ná a fhad a athrú ach amháin nuair atá sé múchta; beidh feidhm acu ansin ón gcéad tosú eile. Níor athraíodh aon rud."
     }
   },
   "selector": {
@@ -2237,7 +2240,12 @@
         "name": "Tréimhsí saoire"
       },
       "rrc_events": {
-        "name": "Neamhláithreachtaí agus laethanta speisialta"
+        "name": "Neamhláithreachtaí agus laethanta speisialta",
+        "state_attributes": {
+          "stale": {
+            "name": "D'fhéadfadh imeachtaí a bheith as dáta"
+          }
+        }
       }
     },
     "event": {
