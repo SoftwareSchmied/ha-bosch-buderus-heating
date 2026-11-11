@@ -138,7 +138,8 @@ class PointTWaterHeater(
 
     def _mode_reading(self) -> Resource | None:
         """The mode reading; on a room controller also one it does not use
-        now (``used`` false), which stays shown and refuses every change."""
+        now (``used`` false), which stays shown and refuses every change. Not
+        available or malformed flags leave no reading, so no water heater."""
         resource = self._resource("operationMode")
         if resource is not None or not context_of(self.coordinator).rrc_plant:
             return resource
@@ -165,14 +166,6 @@ class PointTWaterHeater(
             or not isinstance(resource.value, str)
             or resource.value not in self._operations
         ):
-            return None
-        if context_of(self.coordinator).rrc_plant and rrc.flag_state(resource) in (
-            "unavailable",
-            "invalid",
-        ):
-            # A room controller that does not offer the hot water mode, or
-            # reports malformed flags: no water heater (S11 keeps the other
-            # gateways as they were).
             return None
         return resource
 
