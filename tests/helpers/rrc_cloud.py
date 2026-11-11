@@ -357,6 +357,13 @@ def cloud_patches(
             AsyncMock(side_effect=cloud.get_resource_query),
             create=True,
         ),
+        # F1: the firmware update list names no gateway unless a test says so.
+        patch.object(
+            PointTClient,
+            "get_firmware_updates",
+            AsyncMock(return_value=None),
+            create=True,
+        ),
         patch(f"{PACKAGE}.async_setup_notifications", AsyncMock(return_value=())),
     ):
         stack.enter_context(item)

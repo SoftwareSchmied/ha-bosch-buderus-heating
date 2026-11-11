@@ -2517,6 +2517,29 @@
       "rrc_thermal_disinfection_time": {
         "name": "Ώρα έναρξης θερμικής απολύμανσης"
       }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Υλικολογισμικό",
+        "state_attributes": {
+          "auto_update_enabled": {
+            "name": "Αυτόματη ενημέρωση ενεργή"
+          },
+          "auto_update_changeable": {
+            "name": "Η αυτόματη ενημέρωση μπορεί να αλλάξει"
+          },
+          "update_state": {
+            "name": "Κατάσταση ενημέρωσης",
+            "state": {
+              "waiting": "Αναμονή έγκρισης",
+              "denied": "Απορρίφθηκε",
+              "approved": "Εγκρίθηκε",
+              "none": "Χωρίς κατάσταση έγκρισης",
+              "unknown": "Άγνωστη"
+            }
+          }
+        }
+      }
     }
   }
 }

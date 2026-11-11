@@ -2517,6 +2517,29 @@
       "rrc_thermal_disinfection_time": {
         "name": "Am tosaithe an díghalrúcháin theirmigh"
       }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Dochtearraí",
+        "state_attributes": {
+          "auto_update_enabled": {
+            "name": "Nuashonrú uathoibríoch ar siúl"
+          },
+          "auto_update_changeable": {
+            "name": "Is féidir an nuashonrú uathoibríoch a athrú"
+          },
+          "update_state": {
+            "name": "Staid an nuashonraithe",
+            "state": {
+              "waiting": "Ag fanacht le ceadú",
+              "denied": "Diúltaithe",
+              "approved": "Ceadaithe",
+              "none": "Gan staid cheadaithe",
+              "unknown": "Anaithnid"
+            }
+          }
+        }
+      }
     }
   }
 }

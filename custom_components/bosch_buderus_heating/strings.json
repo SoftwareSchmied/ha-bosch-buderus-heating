@@ -2517,6 +2517,29 @@
       "rrc_thermal_disinfection_time": {
         "name": "Thermal disinfection start time"
       }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Firmware",
+        "state_attributes": {
+          "auto_update_enabled": {
+            "name": "Automatic update enabled"
+          },
+          "auto_update_changeable": {
+            "name": "Automatic update changeable"
+          },
+          "update_state": {
+            "name": "Update state",
+            "state": {
+              "waiting": "Waiting for approval",
+              "denied": "Declined",
+              "approved": "Approved",
+              "none": "No approval state",
+              "unknown": "Unknown"
+            }
+          }
+        }
+      }
     }
   }
 }

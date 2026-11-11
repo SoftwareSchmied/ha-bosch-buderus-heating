@@ -193,6 +193,12 @@ moves its control back to the control group within seconds, without a restart;
 a cloud value older than the control interval is then read at once. A reading
 that is also shown from the local access keeps the slower of the two rates.
 
+The firmware update list of a cloud gateway is one extra request about ten
+minutes after the start and then every six hours, at most four a day per
+gateway; a gateway the list refuses or does not name is read once a day. It is
+sent once, without a retry, and waits like every request while the cloud
+access is paused.
+
 Due functional groups share batches of up to 30 paths. Group scheduling permits
 one second of timer-rounding tolerance; retry deadlines and rate-limit pauses
 are not shortened by that tolerance. Normal writes retain metadata validation

@@ -117,6 +117,108 @@ def parse_schedule(resource: Resource) -> Schedule | None:
     )
 
 
+# R4 (T4): the reasons a program is not read or not editable, as stable
+# tokens. ``parse_schedule`` decides; these only name why (diagnostics).
+SHAPE_ISSUES = (
+    "not_a_program",
+    "type_unexpected",
+    "not_available",
+    "has_references",
+    "has_values",
+    "no_value",
+    "not_a_list",
+    "too_many_points",
+    "point_not_object",
+    "day_missing_d",
+    "day_invalid",
+    "day_mismatch",
+    "minute_invalid",
+    "temperature_invalid",
+)
+EDIT_ISSUES = (
+    "not_writable",
+    "unknown_fields",
+    "extra_key",
+    "unsorted",
+    "off_grid_minute",
+    "temperature_range",
+    "temperature_grid",
+)
+
+
+def schedule_issues(resource: Resource) -> tuple[str, ...]:
+    """Why ``parse_schedule`` rejects a program or marks it read-only.
+
+    Empty for an editable program. A rejected shape names its first
+    rejecting reason (the parser stops there too) after the read-only
+    reasons found up to that point; an accepted one names every reason.
+    Tokens only, never values (R4, T4).
+    """
+    day_match = DAY.fullmatch(resource.path)
+    if not (WEEK.fullmatch(resource.path) or day_match):
+        return ("not_a_program",)
+    types = {"weekProgram", "dayProgram"} if day_match else {"weekProgram"}
+    for failed, token in (
+        (resource.metadata.resource_type not in types, "type_unexpected"),
+        (not rrc.available(resource), "not_available"),
+        (bool(resource.references), "has_references"),
+        (resource.has_values, "has_values"),
+        (not resource.has_value, "no_value"),
+        (not isinstance(resource.value, list), "not_a_list"),
+    ):
+        if failed:
+            return (token,)
+    assert isinstance(resource.value, list)
+    if len(resource.value) > 512:
+        return ("too_many_points",)
+    found: set[str] = set()
+    if not resource.metadata.writable:
+        found.add("not_writable")
+    if resource.unknown_fields:
+        found.add("unknown_fields")
+    last: dict[str, int] = {}
+    for item in resource.value:
+        if not isinstance(item, dict):
+            return (*_ordered(found), "point_not_object")
+        day, minute, temperature = item.get("d"), item.get("t"), item.get("Th")
+        shape = (
+            "day_missing_d"
+            if "d" not in item
+            else "day_invalid"
+            if not isinstance(day, str) or day not in DAYS
+            else "day_mismatch"
+            if day_match is not None and day != DAYS[DAY_PATHS.index(day_match[2])]
+            else "minute_invalid"
+            if type(minute) is not int or not 0 <= minute < 1440
+            else "temperature_invalid"
+            if isinstance(temperature, bool)
+            or not isinstance(temperature, int | float)
+            or not math.isfinite(temperature)
+            or not 0 <= temperature <= 30
+            else None
+        )
+        if shape is not None:
+            return (*_ordered(found), shape)
+        assert isinstance(day, str) and type(minute) is int
+        assert isinstance(temperature, int | float)
+        if set(item) - {"d", "t", "Th"}:
+            found.add("extra_key")
+        if minute <= last.get(day, -1):
+            found.add("unsorted")
+        if minute % 5:
+            found.add("off_grid_minute")
+        if not 5 <= temperature <= 30:
+            found.add("temperature_range")
+        if not float(temperature * 2).is_integer():
+            found.add("temperature_grid")
+        last[day] = minute
+    return _ordered(found)
+
+
+def _ordered(found: set[str]) -> tuple[str, ...]:
+    return tuple(token for token in EDIT_ISSUES if token in found)
+
+
 def edit_point(
     schedule: Schedule, index: int, minute: int, temperature: float
 ) -> list[JsonValue]:

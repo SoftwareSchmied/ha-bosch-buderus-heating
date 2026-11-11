@@ -37,6 +37,7 @@ from .coordinator import (
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .discovery import DiscoveryPathSource
 from .energy_contracts import energy_diagnostics, is_energy_collection
+from .firmware_updates import existing_tracker
 from .holidays import (
     parse_holiday_state,
     parse_holiday_write_configuration,
@@ -61,7 +62,14 @@ from .resource_catalog import (
     resource_name,
     supports_entity,
 )
-from .rrc_programs import DAY, WEEK, parse_schedule, program_names, selection_issue
+from .rrc_programs import (
+    DAY,
+    WEEK,
+    parse_schedule,
+    program_names,
+    schedule_issues,
+    selection_issue,
+)
 from .rrc_write import CORE_CONTRACT
 from .runtime import BoschBuderusRuntimeData
 from .start_counters import (
@@ -641,6 +649,8 @@ def _gateway_diagnostics(
         ),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),
         "firmware_changes": coordinator.firmware.diagnostics(monotonic()),
+        # F1: the firmware update list (read-only); no gateway ID, no links.
+        "firmware_updates": _firmware_update_diagnostics(coordinator),
         "startup_data": _startup_diagnostics(coordinator),
         # Z2: counters and point counts only, no times or levels.
         "switch_program_writes": switch_program_write_diagnostics(coordinator),
@@ -780,7 +790,48 @@ def _rrc_program_diagnostics(
         "program_count": len(identifiers) if identifiers is not None else 0,
         "program_names_readable": len(program_names(programs)),
         "zones": zones,
+        # R4 (T4): the week and day programs, with their reasons.
+        "schedules": _rrc_schedule_summary(coordinator),
     }
+
+
+def _rrc_schedule_summary(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, object]:
+    """R4 (T4): per kind (week, day) how many programs are read and editable,
+    and how often each reason occurs; no values, keys or names."""
+    snapshots = coordinator.data or {}
+    summary: dict[str, object] = {}
+    for kind, pattern in (("week", WEEK), ("day", DAY)):
+        programs = [
+            snapshot.resource
+            if (snapshot := snapshots.get(path)) is not None and snapshot.available
+            else resource
+            for path, resource in sorted(coordinator.resources.items())
+            if pattern.fullmatch(path)
+        ]
+        schedules = [parse_schedule(resource) for resource in programs]
+        issues: Counter[str] = Counter()
+        for resource in programs:
+            issues.update(schedule_issues(resource))
+        summary[kind] = {
+            "count": len(programs),
+            "readable": sum(item is not None for item in schedules),
+            "editable": sum(item is not None and item.editable for item in schedules),
+            "issues": dict(sorted(issues.items())),
+        }
+    return summary
+
+
+def _firmware_update_diagnostics(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, object]:
+    """F1: the reads of the firmware update list, once the update platform
+    started them; versions and result classes only."""
+    tracker = existing_tracker(coordinator)
+    if tracker is None:
+        return {"active": False, "result": None}
+    return tracker.diagnostics()
 
 
 def _rrc_feature_diagnostics(
@@ -1003,6 +1054,14 @@ def _capability_diagnostics(
                     if schedule is not None
                     else False,
                     "new_points_supported": False,
+                    # R4 (T4): why a program is not read or not editable.
+                    **(
+                        {
+                            "schedule_issues": schedule_issues(resource),
+                        }
+                        if WEEK.fullmatch(resource.path) or DAY.fullmatch(resource.path)
+                        else {}
+                    ),
                 }
             }
             if rrc.scalar_field(resource.path)

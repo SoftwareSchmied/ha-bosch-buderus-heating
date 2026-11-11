@@ -13,6 +13,7 @@ import aiohttp
 from .bulk import chunk_resource_paths, normalize_query, normalize_resource_path
 from .const import DEFAULT_USER_AGENT, MAX_BULK_PATHS, POINTT_BASE_URL
 from .exceptions import AccessTokenRejected
+from .firmware_updates import FirmwareUpdates, parse_firmware_updates
 from .metrics import RequestMetrics
 from .models import BatchItemResult, Gateway, JsonValue, Resource
 from .parsers import (
@@ -165,6 +166,21 @@ class PointTClient:
             retryable=True,
             resource_path=path,
         )
+
+    async def get_firmware_updates(self, gateway_id: str) -> FirmwareUpdates | None:
+        """F1: the gateway's entry in the firmware update list, read-only.
+
+        No resource path: ``GET firmwareUpdates?gatewayId=<id>``. Sent once,
+        without an automatic retry; the account pause (429/Retry-After)
+        applies as for every request. ``None``: the list does not name the
+        gateway.
+        """
+        self._encode_gateway(gateway_id)
+        query = urlencode({"gatewayId": gateway_id.strip()})
+        payload = await self._request(
+            "GET", f"firmwareUpdates?{query}", retryable=False
+        )
+        return parse_firmware_updates(payload, gateway_id)
 
     async def put_resource_value(
         self, gateway_id: str, path: str, value: JsonValue

@@ -346,6 +346,16 @@ async def test_diagnostics_name_the_reason_per_zone_without_names(environment):
                 "used": False,
             },
         ],
+        # R4: no week or day program in this tree.
+        "schedules": {
+            kind: {
+                "count": 0,
+                "readable": 0,
+                "editable": 0,
+                "issues": {},
+            }
+            for kind in ("week", "day")
+        },
     }
     dump = json.dumps(report)
     assert "Wohnen" not in dump and b64("Wohnen") not in dump and "Bad" not in dump

@@ -293,6 +293,7 @@ counters—not holiday dates, names, or raw configuration data.
 | Software update – progress | Diagnostic sensor | `/gateway/update/status` → `progress.percent` | No | No | 15 min |
 | Software update – status | Diagnostic sensor | `/gateway/update/status` → `status.value` | No | No | 15 min |
 | Firmware version | Diagnostic sensor | `/gateway/versionFirmware` | No | No | startup only |
+| Firmware | Update entity | firmware update list (`firmwareUpdates`, no resource path) | No | No | 10 min after start, then 6 h |
 | Hardware version | Diagnostic sensor | `/gateway/versionHardware` | No | No | startup only |
 | Current heat demand | Sensor | `/heatSources/actualHeatDemand` | No | No | 60 s |
 | Current modulation | Sensor | `/heatSources/actualModulation` | No | No | 60 s |
@@ -359,6 +360,33 @@ that only reveal new devices, zones, solar circuits or ventilation zones and
 give no entity (for example `/devices/list` or `/zones/list`) are read hourly.
 On a room controller the zone list is read every five minutes, because it
 shows the open window and the standby of each zone.
+
+### Firmware update
+
+Each cloud gateway gets an update entity **Firmware**, read-only. It shows the
+installed gateway firmware and, when the cloud offers an update, its version
+and a link to the release notes (`release_url`, in the language of Home
+Assistant, else English, else the first link). The integration never fetches
+the release notes and never installs: the entity has no install function, and
+no request confirms an update or changes the gateway's automatic update
+setting. The attributes are `auto_update_enabled` and
+`auto_update_changeable` (the gateway's own automatic update) and
+`update_state`, the state the cloud reports for the update (`waiting`,
+`denied`, `approved`, `none`, `unknown`, or another reported value as it
+is). Like the official app, `waiting` and `denied` count as an offered
+update and `approved` and `none` as an update being installed; any other
+state keeps the entity current. Without a version in the list, the entity
+shows the firmware version the gateway reports.
+
+The list is not a resource path. It is read once about ten minutes after the
+start (spread over three minutes per gateway), then every six hours, without
+a retry of its own; the pause after a rate limit applies as for every request,
+and a round while the cloud is paused or unreachable sends nothing and looks
+again after an hour. A gateway the list refuses (HTTP 403, 404 or 405) or does
+not name gets no entity, or an existing one becomes unavailable; it is then
+read once a day. An answer of an unexpected shape also makes the entity
+unavailable. The last answer is shown for 13 hours. The function follows the
+app's firmware update model and is expected, untested on a real device.
 
 Some K40 gateways serve the status paths above without listing them in the
 PointT reference tree. The integration probes only this bounded, documented
