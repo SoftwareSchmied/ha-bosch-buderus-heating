@@ -239,9 +239,13 @@ device.
   an iCom gateway, which is read back more slowly) for its checks, its
   request and the read-back. Before, a slow cloud with request retries
   could hold the polling of the gateway and the calling automation for
-  several minutes. At the deadline the change is reported as not confirmed,
-  its value counts as not current until it is read again, and nothing is
-  sent a second time.
+  several minutes. Right before each request the time left is checked: if
+  it no longer covers the request and its read-back, nothing is sent and
+  the change is reported as busy, so a slow check can no longer cut a
+  request off while it is sent. A change stopped before its request keeps
+  its value as it is. At the deadline after a request the change is
+  reported as not confirmed, its value counts as not current until it is
+  read again, and nothing is sent a second time.
 - **Warning after a restart:** Home Assistant no longer logs "Detected
   blocking call to import_module … inside the event loop" for the room
   controller functions. I now load their modules in the background before

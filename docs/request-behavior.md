@@ -212,9 +212,14 @@ requests and the read-backs. A gateway that is read back more slowly gets
 correspondingly longer, at least its read-back waits plus 30 seconds per step,
 so a healthy change is never cut short. With a
 slow cloud it then no longer holds the polling of its gateway and the calling
-automation for minutes. At the deadline it ends as not confirmed: the request
-may already have been sent, so the reading involved is no longer shown as
-current until it is read again, and nothing is sent a second time.
+automation for minutes. Right before each request the integration checks the
+time left: if it no longer covers the request timeout (30 seconds) and the
+read-back waits, the request is not sent and the change is reported as busy,
+so it can simply be tried again; a slow check before it thus never cuts a
+request off while it is sent. A change stopped before its request went out
+changes no reading. At the deadline after a request it ends as not confirmed:
+the request may already have been sent, so the reading involved is no longer
+shown as current until it is read again, and nothing is sent a second time.
 
 Since 0.9.0-alpha.3, paths of the groups read every 5, 15 or 60 minutes are
 spread over the minutes before their group's deadline where the batch of that
@@ -423,9 +428,14 @@ sendet sonst nichts. Seit 0.9.0-alpha.6 hat ein begonnener Schreibvorgang
 außerdem eine Gesamtfrist von 60 Sekunden (Urlaubsänderungen mit bis zu fünf
 Werten 180 Sekunden) für die frische Prüfung, die Anfragen und das
 Zurücklesen. Bei einem Gateway mit längeren Rücklesezeiten verlängert sie sich
-auf mindestens diese Wartezeiten plus 30 Sekunden je Schritt. Danach gilt er als
-nicht bestätigt; der betroffene Wert gilt bis zum nächsten Lesen nicht mehr
-als aktuell, und nichts wird ein zweites Mal gesendet.
+auf mindestens diese Wartezeiten plus 30 Sekunden je Schritt. Direkt vor jeder
+Anfrage prüft die Integration die verbleibende Zeit: Reicht sie nicht mehr für
+die Anfragezeit (30 Sekunden) und das Zurücklesen, wird nichts gesendet und
+der Vorgang als belegt gemeldet, er kann also einfach wiederholt werden. Ein
+Abbruch vor der Anfrage ändert keinen Wert. Läuft die Frist nach einer Anfrage
+ab, gilt der Vorgang als nicht bestätigt; der betroffene Wert gilt bis zum
+nächsten Lesen nicht mehr als aktuell, und nichts wird ein zweites Mal
+gesendet.
 
 Die Integration spart wiederholte Metadatenabrufe und lässt unwichtige
 Zusatzabfragen die funktionierende Einrichtung nicht mehr abbrechen. Neue,

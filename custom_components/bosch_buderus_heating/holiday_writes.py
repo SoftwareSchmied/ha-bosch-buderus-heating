@@ -40,6 +40,7 @@ from .pointt import (
     WriteNotConfirmed,
     WriteValidationError,
 )
+from .write_window import ensure_send_window
 
 DEFAULT_HOLIDAY_READ_BACK_DELAY = 0.5
 DEFAULT_HOLIDAY_READ_BACK_ATTEMPTS = 3
@@ -141,6 +142,12 @@ class HolidayWriteService:
         self._read_back_attempts = read_back_attempts
         self._pending_creations: dict[str, _PendingCreation] = {}
 
+    def _read_back_seconds(self) -> float:
+        delay: float = self._read_back_delay
+        return sum(
+            delay * (1 << attempt) for attempt in range(self._read_back_attempts)
+        )
+
     async def async_create(
         self,
         gateway_id: str,
@@ -189,6 +196,8 @@ class HolidayWriteService:
                 ),
                 self._clock(),
             )
+            # D25: refused before sending when the time left is too short.
+            ensure_send_window(self._read_back_seconds())
             # Record before POST: cancellation or a lost response must not cause
             # a second non-idempotent write from another form or the calendar.
             self._pending_creations[gateway_id] = pending
@@ -329,6 +338,7 @@ class HolidayWriteService:
             is None
         ):
             raise WriteValidationError("Updated holiday no longer has a valid timespan")
+        ensure_send_window(self._read_back_seconds())
         with suppress(RequestTimeout, ServiceUnavailable):
             await self._client.update_holiday_period(
                 gateway_id, holiday_id, values.as_payload()
@@ -386,6 +396,7 @@ class HolidayWriteService:
             )
             if current != expected:
                 raise HolidayChangedError("Holiday changed before deletion")
+        ensure_send_window(self._read_back_seconds())
         with suppress(RequestTimeout, ServiceUnavailable):
             await self._client.delete_holiday_period(gateway_id, holiday_id)
 

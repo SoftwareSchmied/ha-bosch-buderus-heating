@@ -35,6 +35,7 @@ from .pointt import (
     WriteValidationError,
 )
 from .pointt.models import JsonValue
+from .write_window import ensure_send_window
 
 
 class IcomHolidayWriteService:
@@ -213,6 +214,7 @@ class IcomHolidayWriteService:
 
     async def _async_put(self, gateway_id: str, path: str, value: JsonValue) -> None:
         """Send one leaf once; resolve an unknown outcome only by reading."""
+        ensure_send_window(sum(self._read_back_delays))
         try:
             await self.client.put_resource_value(gateway_id, path, value)
         except RateLimited:
@@ -226,6 +228,7 @@ class IcomHolidayWriteService:
         self, gateway_id: str, source_path: str, circuits: tuple[str, ...]
     ) -> None:
         """Send the circuit list once; resolve an unknown outcome by reading."""
+        ensure_send_window(sum(self._read_back_delays))
         try:
             await self.client.put_icom_holiday_assignments(
                 gateway_id, int(source_path.rsplit("hm", 1)[-1]), circuits

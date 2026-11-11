@@ -10,19 +10,24 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import replace
+from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
 from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.bosch_buderus_heating import coordinator as coordinator_module
+from custom_components.bosch_buderus_heating import write_window
 from custom_components.bosch_buderus_heating.coordinator import Freshness
 from custom_components.bosch_buderus_heating.holidays import icom_write_values
 from custom_components.bosch_buderus_heating.pointt import (
     WriteNotConfirmed,
     WriteValidationError,
 )
-from custom_components.bosch_buderus_heating.writes import WriteDeadlineExceeded
+from custom_components.bosch_buderus_heating.writes import (
+    WriteBusy,
+    WriteDeadlineExceeded,
+)
 from tests import test_dynamic_controls
 from tests.test_heating_controls import TARGET, setup
 from tests.test_legacy_holidays import FREE
@@ -32,6 +37,8 @@ from tests.test_rrc import wire as wire_rrc
 from tests.test_write_guards import Cloud
 
 SHORT = coordinator_module.timedelta(seconds=0.05)
+# The real send budget, before a fixture replaces it.
+REAL_BUDGET = write_window.send_budget
 
 
 async def _hang(*_args, **_kwargs):
@@ -40,8 +47,10 @@ async def _hang(*_args, **_kwargs):
 
 @pytest.fixture(autouse=True)
 def no_floor():
-    """The tests shorten the deadlines; no read-back floor may lengthen them."""
+    """The tests shorten the deadlines; no read-back floor may lengthen them,
+    and no send budget refuses the request before it is sent."""
     with (
+        patch.object(write_window, "send_budget", return_value=0.0),
         patch.object(coordinator_module, "WRITE_STEP_MARGIN_SECONDS", 0.0),
         patch.object(
             coordinator_module.BoschBuderusDataUpdateCoordinator,
@@ -279,3 +288,246 @@ async def test_holiday_list_at_its_deadline_is_read_with_the_next_cycle(hass):
     client.delete_holiday_period.assert_awaited_once()
     assert HOLIDAY_LIST_PATH in coordinator._urgent_reads
     assert not coordinator._update_lock.locked()
+
+
+# M1/M2 (review of alpha.6): the time left is checked before the request.
+
+
+class _Clock:
+    """The loop time the send window sees; a slow read moves it on."""
+
+    def __init__(self) -> None:
+        self.now = 1000.0
+
+    def __call__(self) -> float:
+        return self.now
+
+
+@pytest.fixture
+def window_clock():
+    clock = _Clock()
+    with (
+        patch.object(write_window, "_now", clock),
+        patch.object(write_window, "send_budget", REAL_BUDGET),
+    ):
+        yield clock
+
+
+def test_the_send_window_refuses_before_and_stops_after_a_request(window_clock):
+    with write_window.send_window(60.0) as window:
+        write_window.ensure_send_window(3.5)
+        assert window.sent
+        window_clock.now += 27.0
+        # 33 s left, 30 s request and 3.5 s read-back needed: nothing more.
+        with pytest.raises(WriteDeadlineExceeded):
+            write_window.ensure_send_window(3.5)
+    with write_window.send_window(60.0) as window:
+        window_clock.now += 26.6
+        with pytest.raises(WriteBusy):
+            write_window.ensure_send_window(3.5)
+        assert not window.sent
+    # Outside a write transaction nothing is checked.
+    write_window.ensure_send_window(1000.0)
+
+
+@pytest.mark.parametrize(("slow", "sent"), [(45.0, False), (20.0, True)])
+async def test_a_slow_check_before_a_write_sends_nothing(
+    hass, window_clock, slow, sent
+):
+    _, coordinator, entity = setup(hass)
+    cloud = Cloud(coordinator)
+    original = cloud.bulk
+
+    async def bulk(gateway, paths, **kwargs):
+        if not cloud.puts:
+            window_clock.now += slow
+        return await original(gateway, paths, **kwargs)
+
+    coordinator.client.get_resources_bulk.side_effect = bulk
+    if sent:
+        await entity.async_set_temperature(temperature=20.5)
+        assert cloud.puts == [(TARGET, 20.5)]
+        return
+    with pytest.raises(HomeAssistantError) as error:
+        await entity.async_set_temperature(temperature=20.5)
+    assert error.value.translation_key == "write_busy"
+    assert isinstance(error.value.__cause__, WriteBusy)
+    assert cloud.puts == []
+    # Nothing was sent: the reading stays current.
+    assert coordinator.data[TARGET].freshness is Freshness.FRESH
+    assert coordinator.data[TARGET].available
+    assert not coordinator._update_lock.locked()
+
+
+async def test_a_write_stopped_before_its_request_keeps_the_reading(hass):
+    """M2: the deadline ends the transaction before the PUT went out."""
+    _, coordinator, entity = setup(hass)
+    cloud = Cloud(coordinator)
+    service = coordinator._write_service
+    original = service.async_write_number
+
+    async def slow(*args, **kwargs):
+        await _hang()  # a slow check inside the service, before its PUT
+        return await original(*args, **kwargs)
+
+    with (
+        patch.object(service, "async_write_number", side_effect=slow),
+        patch.object(coordinator_module, "WRITE_TRANSACTION_DEADLINE", SHORT),
+        pytest.raises(HomeAssistantError) as error,
+    ):
+        await entity.async_set_temperature(temperature=20.5)
+    assert error.value.translation_key == "write_busy"
+    assert cloud.puts == []
+    assert coordinator.data[TARGET].freshness is Freshness.FRESH
+    assert coordinator.data[TARGET].available
+    assert TARGET not in coordinator._urgent_reads
+    assert not coordinator._update_lock.locked()
+
+
+async def test_a_slow_rrc_preflight_sends_nothing(environment, window_clock):
+    coordinator, client, _ = environment
+    wire_rrc(environment)
+    original = client.get_resource.side_effect
+
+    async def get(gateway, path):
+        if not client.put_resource_value.await_count:
+            window_clock.now += 45.0
+        return await original(gateway, path)
+
+    client.get_resource.side_effect = get
+    with pytest.raises(WriteBusy):
+        await coordinator.async_select_rrc_program(SELECTION, 7)
+    client.put_resource_value.assert_not_awaited()
+    assert coordinator.data[SELECTION].freshness is Freshness.FRESH
+    stats = coordinator.rrc_write_stats.snapshot("core")
+    assert stats["writes_sent"] == 0 and stats["writes_unconfirmed"] == 0
+    # No guard is left pending: the next write starts normally.
+    client.get_resource.side_effect = original
+    await coordinator.async_select_rrc_program(SELECTION, 7)
+    assert client.put_resource_value.await_count == 1
+
+
+async def test_an_rrc_operation_stopped_before_its_request_counts_nothing(
+    environment,
+):
+    """M2: no stale reading and no unconfirmed write without a send."""
+    coordinator, client, _ = environment
+    wire_rrc(environment)
+    original = client.get_resource.side_effect
+
+    async def get(gateway, path):
+        if not client.put_resource_value.await_count:
+            await _hang()
+        return await original(gateway, path)
+
+    client.get_resource.side_effect = get
+    with (
+        patch.object(coordinator_module, "WRITE_TRANSACTION_DEADLINE", SHORT),
+        pytest.raises(WriteBusy),
+    ):
+        await coordinator.async_select_rrc_program(SELECTION, 7)
+    client.put_resource_value.assert_not_awaited()
+    assert coordinator.data[SELECTION].freshness is Freshness.FRESH
+    stats = coordinator.rrc_write_stats.snapshot("core")
+    assert stats["writes_sent"] == 0 and stats["writes_unconfirmed"] == 0
+    assert not coordinator._update_lock.locked()
+
+
+async def test_a_slow_legacy_holiday_check_sends_nothing(environment, window_clock):
+    coordinator, client, _ = environment
+    state = wire_holidays(environment)
+    original = client.get_resource.side_effect
+
+    async def get(gateway, path):
+        if not client.put_resource_value.await_count:
+            window_clock.now += 160.0
+        return await original(gateway, path)
+
+    client.get_resource.side_effect = get
+    values = replace(
+        icom_write_values(state, FREE),
+        start_date="2030-11-01",
+        end_date="2030-11-03",
+        assigned_to=("hc2",),
+    )
+    with pytest.raises(WriteBusy):
+        await coordinator.async_create_holiday(values)
+    client.put_resource_value.assert_not_awaited()
+    client.put_icom_holiday_assignments.assert_not_awaited()
+    assert not coordinator._update_lock.locked()
+
+
+@pytest.mark.parametrize("operation", ["create", "delete", "update"])
+async def test_a_slow_holiday_check_sends_nothing(hass, window_clock, operation):
+    from custom_components.bosch_buderus_heating.calendar import (
+        BoschBuderusHolidayCalendar,
+    )
+    from custom_components.bosch_buderus_heating.holiday_writes import (
+        HolidayWriteService,
+    )
+    from custom_components.bosch_buderus_heating.holidays import HOLIDAY_LIST_PATH
+    from tests.test_calendar import _coordinator, _uid, _writable_holiday_resources
+
+    coordinator = _coordinator(hass, _writable_holiday_resources())
+    client = coordinator.client
+    coordinator._holiday_write_service = HolidayWriteService(client, sleep=AsyncMock())
+    listed = coordinator.data[HOLIDAY_LIST_PATH].resource
+
+    async def slow(*_args, **_kwargs):
+        window_clock.now += 160.0
+        return listed
+
+    client.get_resource.side_effect = slow
+    entity = BoschBuderusHolidayCalendar(coordinator)
+    with pytest.raises(HomeAssistantError):
+        if operation == "create":
+            await entity.async_create_event(
+                dtstart=datetime(2030, 9, 1).date(),
+                dtend=datetime(2030, 9, 8).date(),
+                summary="New trip",
+            )
+        elif operation == "delete":
+            await entity.async_delete_event(_uid(entity))
+        else:
+            event = (await entity.async_get_events(hass, *_span()))[0]
+            await entity.async_update_event(
+                _uid(entity),
+                {"summary": "Away", "dtstart": event.start, "dtend": event.end},
+            )
+    client.create_holiday_period.assert_not_awaited()
+    client.delete_holiday_period.assert_not_awaited()
+    client.update_holiday_period.assert_not_awaited()
+    assert HOLIDAY_LIST_PATH not in coordinator._urgent_reads
+    assert not coordinator._update_lock.locked()
+
+
+async def test_a_holiday_stopped_before_its_request_is_not_read_again(hass):
+    """M2: the deadline ends the holiday change before its request."""
+    from custom_components.bosch_buderus_heating.calendar import (
+        BoschBuderusHolidayCalendar,
+    )
+    from custom_components.bosch_buderus_heating.holiday_writes import (
+        HolidayWriteService,
+    )
+    from custom_components.bosch_buderus_heating.holidays import HOLIDAY_LIST_PATH
+    from tests.test_calendar import _coordinator, _uid, _writable_holiday_resources
+
+    coordinator = _coordinator(hass, _writable_holiday_resources())
+    client = coordinator.client
+    coordinator._holiday_write_service = HolidayWriteService(client, sleep=AsyncMock())
+    client.get_resource.side_effect = _hang
+    entity = BoschBuderusHolidayCalendar(coordinator)
+    with (
+        patch.object(coordinator_module, "HOLIDAY_WRITE_DEADLINE", SHORT),
+        pytest.raises(HomeAssistantError),
+    ):
+        await entity.async_delete_event(_uid(entity))
+    client.delete_holiday_period.assert_not_awaited()
+    assert HOLIDAY_LIST_PATH not in coordinator._urgent_reads
+    assert not coordinator._update_lock.locked()
+
+
+def _span():
+    from datetime import UTC
+
+    return datetime(2000, 1, 1, tzinfo=UTC), datetime(2100, 1, 1, tzinfo=UTC)

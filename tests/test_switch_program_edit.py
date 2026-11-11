@@ -16,6 +16,7 @@ import pytest
 from aiohttp import web
 
 from custom_components.bosch_buderus_heating import coordinator as coordinator_module
+from custom_components.bosch_buderus_heating import write_window
 from custom_components.bosch_buderus_heating.coordinator import Freshness
 from custom_components.bosch_buderus_heating.diagnostics import (
     switch_program_write_diagnostics,
@@ -419,6 +420,7 @@ async def test_the_lock_and_the_deadline_apply(gateway):
 
     gateway.client.put_resource_raw_json.side_effect = hang
     with (
+        patch.object(write_window, "send_budget", return_value=0.0),
         patch.object(coordinator_module, "WRITE_STEP_MARGIN_SECONDS", 0.0),
         patch.object(coordinator, "write_read_back_delays", return_value=(0.0,)),
         patch.object(
@@ -490,3 +492,29 @@ async def test_the_client_sends_a_raw_array_once() -> None:
         ("/gateways/gw/resource/heatingCircuits/hc1/switchPrograms/A", body),
         ("/gateways/gw/resource/heatingCircuits/hc1/switchPrograms/A", body),
     ]
+
+
+async def test_a_slow_check_before_the_program_write_sends_nothing(gateway):
+    """D25/M1: the fresh read leaves too little time for the PUT and its
+    read-back; nothing is sent, nothing is stale, nothing is counted."""
+    from custom_components.bosch_buderus_heating.writes import WriteBusy
+
+    coordinator = gateway.coordinator
+    clock = [1000.0]
+    original = gateway.get
+
+    async def slow(gateway_id, path, **kwargs):
+        clock[0] += 45.0
+        return await original(gateway_id, path, **kwargs)
+
+    gateway.client.get_resource.side_effect = slow
+    with (
+        patch.object(write_window, "_now", lambda: clock[0]),
+        pytest.raises(WriteBusy),
+    ):
+        await coordinator.async_write_switch_program(HEATING, moved(program().points))
+    assert gateway.raw_puts == []
+    assert coordinator.data[PROGRAM_A].freshness is Freshness.FRESH
+    counters = coordinator.switch_program_write_stats.snapshot("heating")
+    assert counters["writes_sent"] == 0 and counters["writes_unconfirmed"] == 0
+    assert not coordinator._update_lock.locked()

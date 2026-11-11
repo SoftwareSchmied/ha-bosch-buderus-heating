@@ -36,6 +36,7 @@ from .pointt import (
     WriteValidationError,
 )
 from .write_policies import RRC_READ_BACK_DELAYS, RrcWriteNotConfirmed
+from .write_window import ensure_send_window
 
 # C36: an unresolved write blocks a repetition only this long. After it, a
 # fresh preflight decides whether the first one took effect.
@@ -138,6 +139,9 @@ class RrcStructWrite:
                 # The earlier write did take effect; a fresh preflight sees it.
                 del self._pending[guard]
         state = await preflight()
+        # D25: refused before sending (and before the guard is recorded) when
+        # the transaction's time cannot cover the request and its read-back.
+        ensure_send_window(sum(self._delays))
         if guard is not None:
             # Recorded before sending: a lost answer or a cancellation must
             # not allow a second non-idempotent write.

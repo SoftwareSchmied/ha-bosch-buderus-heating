@@ -107,11 +107,30 @@ async def test_uncertain_put_never_leaves_old_target_fresh(
 
 
 async def test_cancelled_put_invalidates_only_affected_setting(hass):
+    from custom_components.bosch_buderus_heating.write_window import (
+        ensure_send_window,
+    )
+
+    _, coordinator, entity = setup(hass)
+
+    async def cancelled_put(*_args, **_kwargs):
+        ensure_send_window(0.0)  # the PUT goes out ...
+        raise asyncio.CancelledError  # ... and is cancelled on its way
+
+    coordinator._write_service.async_write_number.side_effect = cancelled_put
+    with pytest.raises(asyncio.CancelledError):
+        await entity.async_set_temperature(temperature=22)
+    assert TARGET not in controls(coordinator)
+    assert MODE in controls(coordinator)
+
+
+async def test_cancelled_write_before_its_put_keeps_the_setting(hass):
+    """M2: a cancellation before the PUT went out changes nothing."""
     _, coordinator, entity = setup(hass)
     coordinator._write_service.async_write_number.side_effect = asyncio.CancelledError()
     with pytest.raises(asyncio.CancelledError):
         await entity.async_set_temperature(temperature=22)
-    assert TARGET not in controls(coordinator)
+    assert TARGET in controls(coordinator)
     assert MODE in controls(coordinator)
 
 

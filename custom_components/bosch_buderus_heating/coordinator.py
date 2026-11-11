@@ -139,6 +139,7 @@ from .switch_program_service import SwitchProgramService, program_shows
 from .switch_programs import SwitchPoint, is_switch_program_path
 from .update_load import update_load
 from .write_policies import RRC_HEAT_PUMP_CONTEXT, rrc_kwargs
+from .write_window import SendWindow, send_window
 from .writes import (
     GENERIC_CONTEXT,
     RRC_CONTEXT,
@@ -979,7 +980,7 @@ class BoschBuderusDataUpdateCoordinator(
     @asynccontextmanager
     async def _write_transaction(
         self, deadline: timedelta | None = None, *, steps: int = 1
-    ) -> AsyncIterator[None]:
+    ) -> AsyncIterator[SendWindow]:
         """C58: hold the polling/write lock, but wait for it only so long.
 
         A write that cannot start sends nothing and is reported at once
@@ -989,7 +990,9 @@ class BoschBuderusDataUpdateCoordinator(
         its requests and its read-backs. At the deadline it is cancelled
         like any cancelled write (its reading is no longer current) and ends
         with ``WriteDeadlineExceeded``: the request may have been sent, it is
-        never sent again.
+        never sent again. A write service checks the time left right before
+        each request (``ensure_send_window``); a transaction that ends before
+        its first request sent nothing and ends with ``WriteBusy``.
         """
         limit = self._write_deadline(deadline, steps)
         try:
@@ -999,13 +1002,19 @@ class BoschBuderusDataUpdateCoordinator(
             raise WriteBusy(
                 "Another request held the gateway; the change was not sent"
             ) from err
+        window: SendWindow | None = None
         try:
-            async with asyncio.timeout(limit.total_seconds()) as scope:
-                yield
+            with send_window(limit.total_seconds()) as window:
+                async with asyncio.timeout(limit.total_seconds()) as scope:
+                    yield window
         except TimeoutError as err:
             if not scope.expired():
                 raise
             _LOGGER.debug("A write transaction reached its deadline and was stopped")
+            if window is not None and not window.sent:
+                raise WriteBusy(
+                    "The change could not start in time; it was not sent"
+                ) from err
             raise WriteDeadlineExceeded(
                 "The change was not confirmed in time; nothing is sent again"
             ) from err
@@ -1144,7 +1153,7 @@ class BoschBuderusDataUpdateCoordinator(
             if contract is not None:
                 self.rrc_write_stats.sent(contract)
 
-        async with self._write_transaction():
+        async with self._write_transaction() as window:
             now_monotonic = monotonic()
             if now_monotonic < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now_monotonic)
@@ -1256,9 +1265,17 @@ class BoschBuderusDataUpdateCoordinator(
                     raise WriteValidationError(
                         "Control value does not match its write policy"
                     )
-            except WriteValidationError:
+            except WriteValidationError, WriteBusy:
+                # Refused or not started in time: nothing was sent.
                 raise
             except (PointTError, asyncio.CancelledError) as err:
+                if isinstance(err, asyncio.CancelledError) and not (
+                    window.sent or sent
+                ):
+                    # M2: stopped before the request went out (a slow guard
+                    # read at the deadline, or a shutdown): nothing changed
+                    # on the gateway, so the reading stays as it is.
+                    raise
                 category = self._write_failed(path, err)
                 if contract is not None and sent:
                     if isinstance(err, WriteNotConfirmed | asyncio.CancelledError):
@@ -1466,7 +1483,7 @@ class BoschBuderusDataUpdateCoordinator(
         contract: str,
     ) -> None:
         sent_before = self.rrc_write_stats.sent_count(contract)
-        async with self._write_transaction():
+        async with self._write_transaction() as window:
             now = monotonic()
             if now < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now)
@@ -1482,11 +1499,19 @@ class BoschBuderusDataUpdateCoordinator(
                 raise WriteValidationError("RRC resource is unavailable")
             try:
                 confirmed = await operation()
-            except WriteValidationError:
+            except WriteValidationError, WriteBusy:
                 # C33: a refused preflight, such as a program no longer
-                # offered, sends nothing and leaves the reading as it is.
+                # offered, sends nothing and leaves the reading as it is; so
+                # does a write that could not start in time (D25).
                 raise
             except (PointTError, asyncio.CancelledError) as err:
+                if isinstance(err, asyncio.CancelledError) and not (
+                    window.sent
+                    or self.rrc_write_stats.sent_count(contract) > sent_before
+                ):
+                    # M2: stopped before the request went out; nothing was
+                    # sent, nothing is unconfirmed, the reading stays.
+                    raise
                 if isinstance(err, RateLimited):
                     self._activate_rate_limit_backoff(err, monotonic())
                 if isinstance(err, AuthenticationError):
@@ -1573,7 +1598,7 @@ class BoschBuderusDataUpdateCoordinator(
         """Run one capability-gated holiday mutation and confirm it."""
         async with self._write_transaction(
             HOLIDAY_WRITE_DEADLINE, steps=HOLIDAY_WRITE_STEPS
-        ):
+        ) as window:
             now_monotonic = monotonic()
             if now_monotonic < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now_monotonic)
@@ -1663,7 +1688,7 @@ class BoschBuderusDataUpdateCoordinator(
                         HOLIDAY_LIST_PATH, "write_not_confirmed", SnapshotSource.WRITE
                     )
                 raise
-            except WriteValidationError:
+            except WriteValidationError, WriteBusy:
                 raise
             except PointTError as err:
                 self._record_capability(
@@ -1671,6 +1696,8 @@ class BoschBuderusDataUpdateCoordinator(
                 )
                 raise
             except asyncio.CancelledError:
+                if not window.sent:
+                    raise  # M2: stopped before the request went out
                 # D25: stopped at the deadline (or on shutdown); the request
                 # may have been sent. Read the list with the next cycle.
                 self._record_capability(
@@ -1710,6 +1737,8 @@ class BoschBuderusDataUpdateCoordinator(
         except AuthenticationError:
             self._request_reauthentication()
             self._record_capability(path, "authentication_error", SnapshotSource.WRITE)
+            raise
+        except WriteBusy:
             raise
         except PointTError as err:
             self._record_capability(path, _pointt_result(err), SnapshotSource.WRITE)
@@ -1821,7 +1850,7 @@ class BoschBuderusDataUpdateCoordinator(
                     delays=self.write_read_back_delays(),
                     on_sent=on_sent,
                 )
-            except WriteValidationError:
+            except WriteValidationError, WriteBusy:
                 # Refused before sending; the reading stays as it is.
                 raise
             except (PointTError, asyncio.CancelledError) as err:

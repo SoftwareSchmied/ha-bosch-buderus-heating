@@ -436,6 +436,11 @@ class WriteService:
             RrcWriteNotConfirmed if rrc_plant else WriteNotConfirmed
         )
         put_timed_out = False
+        # D25: refused before sending when the transaction's time cannot
+        # cover this request and its read-back.
+        from .write_window import ensure_send_window
+
+        ensure_send_window(sum(self.read_back_delays(context)))
         if on_sent is not None:
             on_sent()
         try:
