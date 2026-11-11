@@ -512,6 +512,7 @@ def test_evidence_of_another_gateway_does_not_count(hass: HomeAssistant) -> None
     assert tracker.room_controller
 
 
+@pytest.mark.usefixtures("enable_custom_integrations")
 async def test_installer_levels_on_a_real_room_controller(
     hass: HomeAssistant,
 ) -> None:
