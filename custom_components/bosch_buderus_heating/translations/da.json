@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Ændringen kunne ikke bekræftes. Den er muligvis allerede gemt. Åbn tidsprogrammet igen, og kontrollér dets koblingspunkter; de tidligere står ovenfor.",
       "switch_program_rejected": "Varmeanlægget afviste tidsprogrammet. Der blev ikke ændret noget.",
       "switch_program_unused": "Varmeanlægget bruger ikke dette tidsprogram i øjeblikket. Der blev ikke sendt noget.",
+      "switch_program_paused": "Skrivning til varmeanlægget er sat på pause i nogle minutter efter gentagne mislykkede aflæsninger. Der blev ikke sendt noget. Prøv igen senere.",
+      "switch_program_mode": "Tidsprogrammet er ikke længere et niveauprogram, eller dets programtype kunne ikke læses. Der blev ikke sendt noget. Åbn tidsprogrammet igen.",
       "switch_program_failed": "Tidsprogrammet kunne ikke ændres. Kontrollér forbindelsen, og åbn tidsprogrammet igen.",
       "controls_invalid": "Et input er ugyldigt, eller de viste værdier er ændret. Kontrollér dine indtastninger, eller indlæs værdierne igen. Der blev ikke skrevet noget.",
       "controls_changed": "En indstilling er ændret eller ikke længere tilgængelig. Tidligere bekræftede ændringer er stadig anvendt. Indlæs værdierne igen, før du prøver igen.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Komfort",
+          "comfort": "Komfort",
           "off": "Fra"
         }
       },

@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Změnu se nepodařilo potvrdit. Možná již byla uložena. Znovu otevřete časový program a zkontrolujte spínací body; dosavadní jsou uvedeny výše.",
       "switch_program_rejected": "Topná soustava časový program odmítla. Nic nebylo změněno.",
       "switch_program_unused": "Topná soustava tento časový program právě nepoužívá. Nic nebylo odesláno.",
+      "switch_program_paused": "Zápis do topné soustavy je po opakovaně neúspěšném čtení na několik minut pozastaven. Nic nebylo odesláno. Zkuste to později znovu.",
+      "switch_program_mode": "Časový program už není programem s úrovněmi, nebo se nepodařilo přečíst jeho typ. Nic nebylo odesláno. Otevřete časový program znovu.",
       "switch_program_failed": "Časový program se nepodařilo změnit. Zkontrolujte připojení a znovu otevřete časový program.",
       "controls_invalid": "Některý vstup je neplatný nebo se zobrazené hodnoty změnily. Zkontrolujte zadané údaje nebo hodnoty znovu načtěte. Nic nebylo zapsáno.",
       "controls_changed": "Nastavení se změnilo nebo již není dostupné. Dříve potvrzené změny zůstávají použity. Před dalším pokusem hodnoty znovu načtěte.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Komfort",
+          "comfort": "Komfort",
           "off": "Vypnuto"
         }
       },

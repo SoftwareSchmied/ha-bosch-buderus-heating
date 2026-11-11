@@ -18,9 +18,10 @@ names, times or identifiers:
   `late_confirmed`; `read_back_delays` is the read-back schedule of a write
   and `last_read_back_seconds` the duration of the last confirmed read-back.
   `programs` has per program path `editable`, `edit_issue` (a fixed token
-  such as `not_writable`, `unavailable`, `level_not_listed` or
-  `no_current_reading`, otherwise `null`) and `points_per_day`, the number of
-  switch points of each weekday;
+  such as `not_writable`, `unavailable`, `not_used`, `not_level_program`,
+  `program_mode_unknown` (the circuit reports its program type, but it has
+  no current reading), `level_not_listed` or `no_current_reading`, otherwise
+  `null`) and `points_per_day`, the number of switch points of each weekday;
 - on a room controller: the reasons why a program stays read-only
   (`rrc_contract.schedule_issues`, `rrc_programs.schedules`, see
   [RRC program selection](#rrc-program-selection)), the confirmation per

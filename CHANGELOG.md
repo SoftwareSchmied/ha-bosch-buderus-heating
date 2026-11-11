@@ -95,7 +95,14 @@ simulated data:
   last step shows the changed days before and after; the whole week is then
   sent once, read back and shown at once. A program that changed in the
   meantime is not overwritten, and nothing is ever sent twice. The program
-  type and the program names stay read-only.
+  type and the program names stay read-only. The program type is read again
+  right before sending, so an absolute program is never written as a level
+  program; a program whose type has no current reading, or that the gateway
+  reports as not used, is not offered. An unreadable answer to an accepted
+  request is resolved by reading back. A refusal names its cause: writing
+  paused after failed readings, a changed program type or a rule of the
+  draft. Program names and level names in the dialog texts show as plain
+  text.
 - **Active schedule:** a select switches between programs A and B, but only
   where the gateway allows both and both programs can be read. With a
   single program, as on my heat pump, there is none.

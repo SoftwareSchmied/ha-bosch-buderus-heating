@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Non è stato possibile confermare la modifica. Potrebbe essere già stata salvata. Riapri il programma orario e controlla i suoi punti di commutazione; quelli precedenti sono indicati sopra.",
       "switch_program_rejected": "L'impianto di riscaldamento ha rifiutato il programma orario. Non è stato modificato nulla.",
       "switch_program_unused": "L'impianto di riscaldamento non usa questo programma orario al momento. Non è stato inviato nulla.",
+      "switch_program_paused": "La scrittura sull'impianto di riscaldamento è sospesa per alcuni minuti dopo ripetute letture non riuscite. Non è stato inviato nulla. Riprova più tardi.",
+      "switch_program_mode": "Il programma orario non è più un programma a livelli oppure non è stato possibile leggerne il tipo. Non è stato inviato nulla. Riapri il programma orario.",
       "switch_program_failed": "Non è stato possibile modificare il programma orario. Controlla la connessione e riapri il programma orario.",
       "controls_invalid": "Un valore inserito non è valido oppure i valori mostrati sono cambiati. Controlla i valori inseriti o ricarica i valori. Non è stato scritto nulla.",
       "controls_changed": "Un'impostazione è cambiata o non è più disponibile. Le modifiche già confermate restano applicate. Ricarica i valori prima di riprovare.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Comfort",
+          "comfort": "Comfort",
           "off": "Spento"
         }
       },

@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "De wijziging kon niet worden bevestigd. Ze is mogelijk al opgeslagen. Open het tijdprogramma opnieuw en controleer de schakelpunten; de vorige staan hierboven.",
       "switch_program_rejected": "De verwarmingsinstallatie heeft het tijdprogramma geweigerd. Er is niets gewijzigd.",
       "switch_program_unused": "De verwarmingsinstallatie gebruikt dit tijdprogramma op dit moment niet. Er is niets verzonden.",
+      "switch_program_paused": "Schrijven naar de verwarmingsinstallatie is na herhaaldelijk mislukte uitlezingen een paar minuten gepauzeerd. Er is niets verzonden. Probeer het later opnieuw.",
+      "switch_program_mode": "Het tijdprogramma is geen niveauprogramma meer of het programmatype kon niet worden gelezen. Er is niets verzonden. Open het tijdprogramma opnieuw.",
       "switch_program_failed": "Het tijdprogramma kon niet worden gewijzigd. Controleer de verbinding en open het tijdprogramma opnieuw.",
       "controls_invalid": "Een invoer is ongeldig of de getoonde waarden zijn gewijzigd. Controleer je invoer of laad de waarden opnieuw. Er is niets geschreven.",
       "controls_changed": "Een instelling is gewijzigd of niet meer beschikbaar. Eerder bevestigde wijzigingen blijven toegepast. Laad de waarden opnieuw voordat je het opnieuw probeert.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Comfort",
+          "comfort": "Comfort",
           "off": "Uit"
         }
       },

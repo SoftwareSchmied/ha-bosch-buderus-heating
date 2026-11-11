@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Níorbh fhéidir an t-athrú a dheimhniú. B'fhéidir go bhfuil sé sábháilte cheana. Oscail an sceideal arís agus seiceáil a phointí lasctha; tá na cinn roimhe seo thuas.",
       "switch_program_rejected": "Dhiúltaigh an córas téimh don sceideal. Níor athraíodh aon rud.",
       "switch_program_unused": "Ní úsáideann an córas téimh an sceideal seo faoi láthair. Níor seoladh aon rud.",
+      "switch_program_paused": "Tá scríobh chuig an gcóras téimh ar sos ar feadh cúpla nóiméad tar éis léamha teipthe arís agus arís eile. Níor seoladh aon rud. Déan iarracht arís níos déanaí.",
+      "switch_program_mode": "Ní clár leibhéal é an sceideal a thuilleadh, nó níorbh fhéidir a chineál cláir a léamh. Níor seoladh aon rud. Oscail an sceideal arís.",
       "switch_program_failed": "Níorbh fhéidir an sceideal a athrú. Seiceáil an nasc agus oscail an sceideal arís.",
       "controls_invalid": "Tá ionchur neamhbhailí nó athraíodh na luachanna a thaispeántar. Seiceáil d'ionchuir nó athlódáil na luachanna. Níor scríobhadh aon rud.",
       "controls_changed": "Athraíodh socrú nó níl sé ar fáil a thuilleadh. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Athlódáil na luachanna sula ndéanann tú iarracht arís.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Compord",
+          "comfort": "Compord",
           "off": "As"
         }
       },

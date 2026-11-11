@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Nie udało się potwierdzić zmiany. Mogła już zostać zapisana. Otwórz ponownie program czasowy i sprawdź jego punkty przełączenia; dotychczasowe są podane powyżej.",
       "switch_program_rejected": "Instalacja grzewcza odrzuciła program czasowy. Nic nie zostało zmienione.",
       "switch_program_unused": "Instalacja grzewcza obecnie nie używa tego programu czasowego. Nic nie wysłano.",
+      "switch_program_paused": "Zapis do instalacji grzewczej jest wstrzymany na kilka minut po wielokrotnych nieudanych odczytach. Nic nie wysłano. Spróbuj ponownie później.",
+      "switch_program_mode": "Program czasowy nie jest już programem poziomów albo nie udało się odczytać jego typu. Nic nie wysłano. Otwórz program czasowy ponownie.",
       "switch_program_failed": "Nie udało się zmienić programu czasowego. Sprawdź połączenie i ponownie otwórz program czasowy.",
       "controls_invalid": "Wprowadzone dane są nieprawidłowe lub wyświetlane wartości uległy zmianie. Sprawdź wprowadzone dane lub wczytaj wartości ponownie. Nic nie zostało zapisane.",
       "controls_changed": "Ustawienie uległo zmianie lub nie jest już dostępne. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Komfort",
+          "comfort": "Komfort",
           "off": "Wyłączony"
         }
       },

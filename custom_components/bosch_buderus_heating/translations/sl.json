@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Spremembe ni bilo mogoče potrditi. Morda je že shranjena. Znova odprite časovni program in preverite njegove preklopne točke; dosedanje so navedene zgoraj.",
       "switch_program_rejected": "Ogrevalni sistem je časovni program zavrnil. Nič ni bilo spremenjeno.",
       "switch_program_unused": "Ogrevalni sistem tega časovnega programa trenutno ne uporablja. Nič ni bilo poslano.",
+      "switch_program_paused": "Pisanje v ogrevalni sistem je po večkratnih neuspelih branjih za nekaj minut ustavljeno. Nič ni bilo poslano. Poskusite znova pozneje.",
+      "switch_program_mode": "Časovni program ni več program z ravnmi ali pa njegove vrste ni bilo mogoče prebrati. Nič ni bilo poslano. Znova odprite časovni program.",
       "switch_program_failed": "Časovnega programa ni bilo mogoče spremeniti. Preverite povezavo in znova odprite časovni program.",
       "controls_invalid": "Vnos je neveljaven ali pa so se prikazane vrednosti spremenile. Preverite vnose ali znova naložite vrednosti. Nič ni bilo zapisano.",
       "controls_changed": "Nastavitev se je spremenila ali ni več na voljo. Predhodno potrjene spremembe ostanejo uveljavljene. Pred ponovnim poskusom znova naložite vrednosti.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Udobno",
+          "comfort": "Udobno",
           "off": "Izklopljeno"
         }
       },

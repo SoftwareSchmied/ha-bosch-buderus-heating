@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "The change could not be confirmed. It may already have been saved. Reopen the schedule and check its switch points; the previous ones are shown above.",
       "switch_program_rejected": "The heating system refused the schedule. Nothing was changed.",
       "switch_program_unused": "The heating system does not use this schedule at the moment. Nothing was sent.",
+      "switch_program_paused": "Writing to the heating system is paused for a few minutes after repeated failed readings. Nothing was sent. Try again later.",
+      "switch_program_mode": "The schedule is no longer a level program, or its program type could not be read. Nothing was sent. Reopen the schedule.",
       "switch_program_failed": "The schedule could not be changed. Check the connection and reopen the schedule.",
       "controls_invalid": "An input is invalid or the displayed values have changed. Check your inputs or reload the values. Nothing was written.",
       "controls_changed": "A setting has changed or is no longer available. Previously confirmed changes remain applied. Reload the values before trying again.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Comfort",
+          "comfort": "Comfort",
           "off": "Off"
         }
       },

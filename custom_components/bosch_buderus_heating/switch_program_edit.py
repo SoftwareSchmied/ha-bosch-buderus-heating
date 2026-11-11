@@ -9,7 +9,10 @@ is unknown, so nothing is left for it to judge.
 The rules follow what the gateway reports: the time raster, the points per
 day and in all, and the levels of the circuit's ``temperatureLevels``. A
 program that is not read as a level program (``switchProgramMode``
-``level``) is never offered; the program type itself is never written.
+``level``) is never offered: a circuit that reports its program type needs a
+current reading of it, and the write reads it again right before sending.
+A program the gateway reports as not used (``used: false``) is not offered
+either. The program type itself is never written.
 """
 
 from __future__ import annotations
@@ -29,9 +32,8 @@ from .switch_programs import (
     is_switch_program_path,
 )
 
-# The levels a heating circuit program may use, as the manufacturer's
-# heating circuit programs do; another level only where the program already
-# uses it and the circuit lists it.
+# The levels a heating circuit program may use; another level only where the
+# program already uses it and the circuit lists it.
 HEATING_LEVELS = frozenset({"eco", "comfort2"})
 # The hot water levels a program may use where the circuit lists them.
 DHW_LEVELS = frozenset({"off", "low", "eco", "eco_plus", "comfort", "high"})
@@ -45,6 +47,21 @@ _LEVEL_LEAF = re.compile(
 def circuit_path(path: str) -> str:
     """The circuit of a program path, e.g. ``/heatingCircuits/hc1``."""
     return path.rsplit("/switchPrograms/", 1)[0]
+
+
+def program_mode_path(path: str) -> str | None:
+    """The program type of a heating circuit program; ``None`` for hot water."""
+    if is_dhw_switch_program_path(path):
+        return None
+    return f"{circuit_path(path)}/switchProgramMode"
+
+
+def program_mode_issue(path: str, program_mode: Resource | None) -> str | None:
+    """Why the program type of a current reading refuses a change, or ``None``."""
+    if program_mode is None or program_mode.path != program_mode_path(path):
+        return "program_mode_unknown"
+    value = program_mode.value if program_mode.has_value else None
+    return None if value in LEVEL_MODES else "not_level_program"
 
 
 def contract_of(path: str) -> str:
@@ -120,7 +137,9 @@ def edit_issue(
     """Why a program cannot be changed here, as a stable token, or ``None``.
 
     ``program_mode`` is the current reading of the heating circuit's
-    ``switchProgramMode``, if the circuit reports one.
+    ``switchProgramMode``. A circuit that reports one (its path is among
+    ``resources``) needs it: without a current reading the program is not
+    offered (``program_mode_unknown``).
     """
     if resource is None or not is_switch_program_path(resource.path):
         return "not_switch_program"
@@ -134,10 +153,14 @@ def edit_issue(
         return "invalid_flags"
     if metadata.available is False:
         return "unavailable"
-    if program_mode is not None and not is_dhw_switch_program_path(resource.path):
-        value = program_mode.value if program_mode.has_value else None
-        if value not in LEVEL_MODES:
-            return "not_level_program"
+    if metadata.used is False:
+        # Consistent with the write, which refuses such a program (N3).
+        return "not_used"
+    mode_path = program_mode_path(resource.path)
+    if mode_path is not None and (program_mode is not None or mode_path in resources):
+        issue = program_mode_issue(resource.path, program_mode)
+        if issue is not None:
+            return issue
     levels = allowed_levels(resource.path, assessment, resources)
     if not levels:
         return "levels_unknown"
@@ -234,8 +257,8 @@ def same_points(left: Iterable[SwitchPoint], right: Iterable[SwitchPoint]) -> bo
 
 
 def encode_week(points: Iterable[SwitchPoint]) -> list[JsonValue]:
-    """The wire body: the whole week sorted by day and time, in the field
-    order of the manufacturer's apps (``dayOfWeek``, ``setpoint``, ``time``)."""
+    """The wire body: the whole week sorted by day and time, with the fields
+    in the order ``dayOfWeek``, ``setpoint``, ``time``."""
     return [
         {"dayOfWeek": DAYS[point.day], "setpoint": point.level, "time": point.minute}
         for point in sorted_points(points)

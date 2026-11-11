@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "La modification n'a pas pu être confirmée. Elle a peut-être déjà été enregistrée. Rouvrez le programme horaire et vérifiez ses points de commutation ; les précédents sont indiqués ci-dessus.",
       "switch_program_rejected": "L'installation de chauffage a refusé le programme horaire. Rien n'a été modifié.",
       "switch_program_unused": "L'installation de chauffage n'utilise pas ce programme horaire pour le moment. Rien n'a été envoyé.",
+      "switch_program_paused": "L'écriture vers l'installation de chauffage est suspendue quelques minutes après des lectures échouées répétées. Rien n'a été envoyé. Réessayez plus tard.",
+      "switch_program_mode": "Le programme horaire n'est plus un programme par niveaux ou son type n'a pas pu être lu. Rien n'a été envoyé. Rouvrez le programme horaire.",
       "switch_program_failed": "Le programme horaire n'a pas pu être modifié. Vérifiez la connexion et rouvrez le programme horaire.",
       "controls_invalid": "Une saisie n'est pas valide ou les valeurs affichées ont changé. Vérifiez vos saisies ou rechargez les valeurs. Rien n'a été écrit.",
       "controls_changed": "Un réglage a changé ou n'est plus disponible. Les modifications précédemment confirmées restent appliquées. Rechargez les valeurs avant de réessayer.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Confort",
+          "comfort": "Confort",
           "off": "Arrêt"
         }
       },

@@ -21,9 +21,14 @@ from custom_components.bosch_buderus_heating.pointt import (
     WriteValidationError,
 )
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
+from custom_components.bosch_buderus_heating.switch_program_flow import (
+    SwitchProgramOptionsFlow,
+)
 from custom_components.bosch_buderus_heating.switch_program_service import (
     SwitchProgramService,
 )
+from custom_components.bosch_buderus_heating.switch_programs import SwitchPoint
+from custom_components.bosch_buderus_heating.write_policies import ContractRejected
 from custom_components.bosch_buderus_heating.writes import ControlUnused, WriteBusy
 from tests import test_dynamic_controls
 from tests.switch_program_helpers import ACTIVE, DHW, PROGRAM_A, PROGRAM_B, Gateway
@@ -358,3 +363,118 @@ async def test_a_program_name_cannot_add_markup_to_the_dialogs(hass, environment
     assert _rendered(shown) == labels[f"1:{PROGRAM_A}"]
     active = _strip(shown)
     assert "![" not in active and "](" not in active and "://" not in active
+
+
+# Review of alpha.6 (N1, N3, N6, N9) ----------------------------------------
+
+
+async def _to_confirm(flow):
+    await open_program(flow)
+    await flow.async_step_switch_program_week({"action": "edit", "day": "mo"})
+    await flow.async_step_switch_program_day({"point": "0"})
+    await flow.async_step_switch_program_point({"time": "06:45", "level": "comfort2"})
+    await flow.async_step_switch_program_day({"point": "done"})
+    return await flow.async_step_switch_program_week({"action": "review"})
+
+
+@pytest.mark.parametrize(
+    ("error", "key"),
+    [
+        (ContractRejected("circuit_breaker"), "switch_program_paused"),
+        (ContractRejected("program_mode_unknown"), "switch_program_mode"),
+        (ContractRejected("program_mode_not_level"), "switch_program_mode"),
+        (
+            ContractRejected("program_too_many_per_day"),
+            "switch_program_too_many_per_day",
+        ),
+        (ContractRejected("program_empty_week"), "switch_program_empty_week"),
+        (ContractRejected("program_level_not_allowed"), "switch_program_level"),
+        (ContractRejected("program_changed"), "switch_program_changed"),
+        (ContractRejected("program_not_editable"), "switch_program_changed"),
+        (WriteValidationError("no current reading"), "switch_program_changed"),
+        (ControlUnused("unused"), "switch_program_unused"),
+    ],
+)
+async def test_a_refusal_before_sending_names_its_cause(hass, environment, error, key):
+    """N6: the breaker, the program type and an invalid draft each have
+    their own text instead of "changed in the meantime"."""
+    flow, gateway = make_flow(hass, environment)
+    await _to_confirm(flow)
+    gateway.coordinator.async_write_switch_program = AsyncMock(side_effect=error)
+    result = await flow.async_step_switch_program_confirm({})
+    assert result["errors"] == {"base": key}
+
+
+@pytest.mark.parametrize("language", ["en", "de", "cs", "sk", "fr", "pl"])
+async def test_the_refusal_texts_exist(hass, enable_custom_integrations, language):
+    options = await async_get_translations(hass, language, "options", {DOMAIN})
+    prefix = f"component.{DOMAIN}.options.error."
+    for key in ("switch_program_paused", "switch_program_mode"):
+        assert options[prefix + key]
+    entities = await async_get_translations(hass, language, "entity", {DOMAIN})
+    state = f"component.{DOMAIN}.entity.sensor.dhw_switch_program.state."
+    for level in ("eco_plus", "comfort", "low", "eco", "high", "off"):
+        assert entities[state + level]
+
+
+async def test_hot_water_level_comfort_has_a_name(hass, environment):
+    """N9: a hot water level the program may use is shown translated, not
+    as its key. (``eco_plus`` has a name as well; the strict program check
+    accepts only level keys without an underscore.)"""
+    from tests.switch_program_helpers import payload
+
+    hass.config.language = "en"
+    item = payload(DHW)
+    item["switchPoints"][0]["setpoint"] = "comfort"
+    level = "/dhwCircuits/dhw1/temperatureLevels/comfort"
+    listed = payload("/dhwCircuits/dhw1/temperatureLevels/high") | {"id": level}
+    flow, _ = make_flow(hass, environment, **{DHW: item, level: listed})
+    week, _ = await open_program(flow, DHW)
+    shown = week["description_placeholders"]["week"]
+    assert "05:45 Comfort" in shown
+    assert "comfort" not in shown
+
+
+async def test_level_names_and_the_saved_program_are_plain_text(hass, environment):
+    """N1/D43: a program name in the success message and a level name from
+    the cloud in the dialog descriptions cannot add markup; the selection
+    labels stay plain text."""
+    from tests.switch_program_helpers import HC, payload
+    from tests.test_markdown_text import _rendered, _strip
+
+    name = "![](https://t.invalid/p)"
+    item = payload(f"{HC}/switchPrograms/nameA")
+    item["value"] = name
+    flow, gateway = make_flow(hass, environment, **{f"{HC}/switchPrograms/nameA": item})
+    await _to_confirm(flow)
+    done = await flow.async_step_switch_program_confirm({})
+    assert done["reason"] == "switch_program_saved"
+    shown = done["description_placeholders"]["program"]
+    assert _rendered(shown).endswith(f"({name})")
+    assert "![" not in _strip(shown) and "://" not in _strip(shown)
+    assert len(gateway.raw_puts) == 1
+    # A level name that is markup is escaped in a description, not in a label.
+    levels = {"eco": "**[x](https://t.invalid)**"}
+    point = SwitchPoint(0, 360, "eco")
+    described = SwitchProgramOptionsFlow._points_text((point,), levels)
+    assert _rendered(described) == "06:00 **[x](https://t.invalid)**"
+    assert "](" not in _strip(described)
+    label = SwitchProgramOptionsFlow._points_text((point,), levels, markdown=False)
+    assert label == "06:00 **[x](https://t.invalid)**"
+
+
+async def test_unused_programs_and_an_unknown_program_type_are_not_offered(
+    hass, environment
+):
+    """N2/N3 in the dialog: ``used: false`` and a program type without a
+    current reading keep the heating programs out of the list."""
+    from tests.switch_program_helpers import MODE, payload
+
+    flow, _ = make_flow(
+        hass, environment, **{PROGRAM_A: payload(PROGRAM_A) | {"used": "false"}}
+    )
+    assert f"1:{PROGRAM_A}" not in flow._switch_program_choices()
+    assert f"1:{PROGRAM_B}" in flow._switch_program_choices()
+    coordinator = environment[0]
+    coordinator.data[MODE] = replace(coordinator.data[MODE], freshness=Freshness.STALE)
+    assert set(flow._switch_program_choices()) == {f"1:{DHW}"}

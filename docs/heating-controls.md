@@ -139,8 +139,9 @@ browser and the automated Home Assistant test, without an extra click.
 
 Since 0.9.0-alpha.6, **Configure > Heating and hot water schedules** changes
 the weekly programs A and B of a heating circuit and program A of the hot
-water. I list a program only when the gateway reports it as writable, it
-passes the strict program check, its type is a level program (`level`), and
+water. I list a program only when the gateway reports it as writable and
+in use, it passes the strict program check, its type is a level program
+(`level`, from a current reading where the circuit reports its type), and
 every level it uses belongs to the circuit's reported temperature levels.
 The program type itself and the program names are never written.
 
@@ -154,10 +155,13 @@ The program type itself and the program names are never written.
 3. The changes collect in a draft of the whole week. The last step shows the
    changed days before and after. Only then is the week sent.
 
-The program is read again just before sending. If it differs from what the
-dialog showed, nothing is sent. The whole week goes out once as a raw JSON
+The program is read again just before sending, on a heating circuit
+together with its program type. If the program differs from what the dialog
+showed, or its type is no longer a level program or cannot be read, nothing
+is sent and the dialog says why. The whole week goes out once as a raw JSON
 array and is read back; the confirmed program is shown at once. A refusal of
-the gateway changes nothing. After a lost answer or a server error the outcome is resolved only
+the gateway changes nothing. After a lost answer, a server error or an
+accepted request whose answer cannot be read, the outcome is resolved only
 by reading, never by sending again; until then the program counts as not
 current. The success message repeats the previous switch points, so they
 can be set back by hand. Diagnostics count the writes and the switch points
@@ -318,8 +322,9 @@ Browser sowie im automatisierten Home-Assistant-Test ohne weiteren Klick geprüf
 Seit 0.9.0-alpha.6 ändert **Konfigurieren > Zeitprogramme Heizung und
 Warmwasser** die Wochenprogramme A und B eines Heizkreises und das Programm A
 des Warmwassers. Angeboten wird ein Programm nur, wenn das Gateway es als
-schreibbar meldet, es die strenge Programmprüfung besteht, es ein
-Stufenprogramm (`level`) ist und jede verwendete Stufe zu den gemeldeten
+schreibbar und in Gebrauch meldet, es die strenge Programmprüfung besteht,
+es ein Stufenprogramm (`level`) ist (aus einer aktuellen Lesung, wo der
+Kreis seine Programmart meldet) und jede verwendete Stufe zu den gemeldeten
 Temperaturstufen des Kreises gehört. Die Programmart und die Programmnamen
 werden nie geschrieben.
 
@@ -335,12 +340,15 @@ werden nie geschrieben.
    Schritt zeigt die geänderten Tage vorher und nachher. Erst dann wird die
    Woche gesendet.
 
-Direkt vor dem Senden wird das Programm erneut gelesen. Weicht es vom Stand
-im Dialog ab, wird nichts gesendet. Die ganze Woche geht einmal als rohes
+Direkt vor dem Senden wird das Programm erneut gelesen, bei einem Heizkreis
+zusammen mit seiner Programmart. Weicht das Programm vom Stand im Dialog ab,
+ist seine Art kein Stufenprogramm mehr oder lässt sie sich nicht lesen, wird
+nichts gesendet, und der Dialog nennt den Grund. Die ganze Woche geht einmal als rohes
 JSON-Array hinaus und wird zurückgelesen; das bestätigte Programm erscheint
-sofort. Lehnt das Gateway ab, ändert sich nichts. Nach einer verlorenen Antwort oder einem
-Serverfehler klärt nur das Lesen den Ausgang, nie ein zweites Senden; bis
-dahin gilt das Programm als nicht aktuell. Die Erfolgsmeldung wiederholt die
+sofort. Lehnt das Gateway ab, ändert sich nichts. Nach einer verlorenen
+Antwort, einem Serverfehler oder einer angenommenen Anfrage mit unlesbarer
+Antwort klärt nur das Lesen den Ausgang, nie ein zweites Senden; bis dahin
+gilt das Programm als nicht aktuell. Die Erfolgsmeldung wiederholt die
 bisherigen Schaltpunkte, damit man sie von Hand zurückstellen kann. Die
 Diagnose zählt die Schreibvorgänge und die Schaltpunkte pro Tag, ohne
 Uhrzeiten und Stufen.

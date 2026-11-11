@@ -1,6 +1,7 @@
 """Z2: one write transaction for an EMS/iCom weekly switch program.
 
-Fresh read, comparison with the program shown, exactly one PUT of the whole
+Fresh read of the program and, on a heating circuit that reports it, of its
+program type, comparison with the program shown, exactly one PUT of the whole
 week as a raw JSON array, read-back of the whole week. The PUT is never
 repeated: a lost answer or a server error after sending is resolved only by
 reading (``rrc_write.RrcStructWrite``, the same rules as the structured room
@@ -16,13 +17,23 @@ import asyncio
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from time import monotonic
 
-from .pointt import InvalidPayload, PointTClient, Resource
+from .pointt import (
+    AuthenticationError,
+    PointTClient,
+    PointTError,
+    ProtocolError,
+    RateLimited,
+    Resource,
+)
+from .pointt.exceptions import SourceStopped
 from .rrc_write import RrcStructWrite
 from .switch_program_edit import (
     EditableProgram,
     editable_program,
     encode_week,
     fingerprint,
+    program_mode_issue,
+    program_mode_path,
     same_points,
     week_issue,
 )
@@ -89,6 +100,8 @@ class SwitchProgramService:
         circuit, if reported. Returns the confirmed reading; a refusal raises
         a ``WriteValidationError`` before anything is sent.
         """
+        if expected.metadata.used is False:
+            raise ControlUnused("The gateway does not use this program now")
         shown = editable_program(expected, resources, program_mode=program_mode)
         if shown is None:
             raise ContractRejected("program_not_editable")
@@ -97,6 +110,10 @@ class SwitchProgramService:
         desired = tuple(points)
         path = expected.path
         shows = program_shows(path, desired)
+        mode_path = program_mode_path(path)
+        reads_mode = mode_path is not None and (
+            program_mode is not None or mode_path in resources
+        )
 
         async def preflight() -> Resource:
             current = await self.client.get_resource(gateway_id, path)
@@ -108,8 +125,20 @@ class SwitchProgramService:
                 raise SwitchProgramChanged
             if current.metadata.used is False:
                 raise ControlUnused("The gateway does not use this program now")
+            mode = program_mode
+            if reads_mode and mode_path is not None:
+                # N2: the program type is read again with the program; an
+                # absolute program or one whose type cannot be read is never
+                # written as a level program.
+                mode = await self._read_mode(gateway_id, mode_path)
+                if (issue := program_mode_issue(path, mode)) is not None:
+                    raise ContractRejected(
+                        "program_mode_unknown"
+                        if issue == "program_mode_unknown"
+                        else "program_mode_not_level"
+                    )
             live: EditableProgram | None = editable_program(
-                current, resources, program_mode=program_mode
+                current, resources, program_mode=mode
             )
             if live is None or week_issue(desired, live) is not None:
                 raise SwitchProgramChanged
@@ -130,9 +159,10 @@ class SwitchProgramService:
                 await self.client.put_resource_raw_json(
                     gateway_id, path, encode_week(desired)
                 )
-            except InvalidPayload:
-                # The gateway accepted the request (2xx) but its answer is
-                # not JSON: only reading tells whether the week was stored.
+            except ProtocolError:
+                # The gateway accepted the request (2xx) but its answer could
+                # not be read (not JSON, too large, an unexpected envelope):
+                # only reading tells whether the week was stored (N5).
                 return
 
         async def confirm(_current: Resource) -> Resource | None:
@@ -146,3 +176,12 @@ class SwitchProgramService:
         if started:
             self.last_read_back_seconds = round(self._clock() - started[0], 1)
         return confirmed
+
+    async def _read_mode(self, gateway_id: str, mode_path: str) -> Resource | None:
+        """The current program type; ``None`` if it cannot be read now."""
+        try:
+            return await self.client.get_resource(gateway_id, mode_path)
+        except AuthenticationError, RateLimited, SourceStopped:
+            raise
+        except PointTError:
+            return None

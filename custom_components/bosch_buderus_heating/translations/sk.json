@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Zmenu sa nepodarilo potvrdiť. Mohla byť už uložená. Znova otvorte časový program a skontrolujte spínacie body; doterajšie sú uvedené vyššie.",
       "switch_program_rejected": "Vykurovací systém časový program odmietol. Nič sa nezmenilo.",
       "switch_program_unused": "Vykurovací systém tento časový program práve nepoužíva. Nič sa neodoslalo.",
+      "switch_program_paused": "Zápis do vykurovacieho systému je po opakovanom neúspešnom čítaní na niekoľko minút pozastavený. Nič sa neodoslalo. Skúste to neskôr znova.",
+      "switch_program_mode": "Časový program už nie je programom s úrovňami alebo sa nepodarilo prečítať jeho typ. Nič sa neodoslalo. Otvorte časový program znova.",
       "switch_program_failed": "Časový program sa nepodarilo zmeniť. Skontrolujte pripojenie a znova otvorte časový program.",
       "controls_invalid": "Niektorý vstup je neplatný alebo sa zobrazené hodnoty zmenili. Skontrolujte svoje vstupy alebo hodnoty znova načítajte. Nič sa nezapísalo.",
       "controls_changed": "Nastavenie sa zmenilo alebo už nie je dostupné. Predtým potvrdené zmeny zostávajú použité. Pred ďalším pokusom hodnoty znova načítajte.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Komfort",
+          "comfort": "Komfort",
           "off": "Vypnuté"
         }
       },

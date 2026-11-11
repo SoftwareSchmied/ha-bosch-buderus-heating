@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Muutosta ei voitu vahvistaa. Se on voitu jo tallentaa. Avaa aikaohjelma uudelleen ja tarkista sen kytkentäpisteet; aiemmat näkyvät yllä.",
       "switch_program_rejected": "Lämmitysjärjestelmä hylkäsi aikaohjelman. Mitään ei muutettu.",
       "switch_program_unused": "Lämmitysjärjestelmä ei käytä tätä aikaohjelmaa tällä hetkellä. Mitään ei lähetetty.",
+      "switch_program_paused": "Kirjoittaminen lämmitysjärjestelmään on keskeytetty muutamaksi minuutiksi toistuvien epäonnistuneiden lukujen jälkeen. Mitään ei lähetetty. Yritä myöhemmin uudelleen.",
+      "switch_program_mode": "Aikaohjelma ei ole enää tasoohjelma, tai sen ohjelmatyyppiä ei voitu lukea. Mitään ei lähetetty. Avaa aikaohjelma uudelleen.",
       "switch_program_failed": "Aikaohjelmaa ei voitu muuttaa. Tarkista yhteys ja avaa aikaohjelma uudelleen.",
       "controls_invalid": "Syöte on virheellinen tai näytetyt arvot ovat muuttuneet. Tarkista syötteesi tai lataa arvot uudelleen. Mitään ei kirjoitettu.",
       "controls_changed": "Asetus on muuttunut tai ei ole enää käytettävissä. Aiemmin vahvistetut muutokset pysyvät voimassa. Lataa arvot uudelleen ennen uutta yritystä.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Mukavuus",
+          "comfort": "Mukavuus",
           "off": "Pois"
         }
       },

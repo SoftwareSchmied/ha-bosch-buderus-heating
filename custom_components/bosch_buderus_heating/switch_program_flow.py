@@ -59,6 +59,7 @@ from .switch_programs import (
     is_dhw_switch_program_path,
     is_switch_program_path,
 )
+from .write_policies import ContractRejected
 from .writes import ControlUnused, WriteBusy
 
 _TIME = re.compile(r"([01][0-9]|2[0-3]):([0-5][0-9])(?::00)?")
@@ -73,6 +74,23 @@ _ISSUE_ERRORS = {
     "level_not_allowed": "switch_program_level",
 }
 _ACTIONS = ("edit", "copy", "review")
+# N6: the dialog error of a refusal before sending, by its token.
+_REFUSAL_ERRORS = {
+    "circuit_breaker": "switch_program_paused",
+    "program_mode_unknown": "switch_program_mode",
+    "program_mode_not_level": "switch_program_mode",
+    **{f"program_{issue}": error for issue, error in _ISSUE_ERRORS.items()},
+}
+
+
+def _refusal_error(err: WriteValidationError) -> str:
+    """The dialog error of a write refused before anything was sent."""
+    if isinstance(err, ControlUnused):
+        return "switch_program_unused"
+    if isinstance(err, ContractRejected) and err.reason in _REFUSAL_ERRORS:
+        return _REFUSAL_ERRORS[err.reason]
+    # Changed meanwhile, no current reading or no longer editable.
+    return "switch_program_changed"
 
 
 @dataclass(frozen=True, slots=True)
@@ -194,12 +212,21 @@ class SwitchProgramOptionsFlow(OptionsFlow):
         return days, levels
 
     @staticmethod
-    def _points_text(points: tuple[SwitchPoint, ...], levels: dict[str, str]) -> str:
+    def _points_text(
+        points: tuple[SwitchPoint, ...],
+        levels: dict[str, str],
+        *,
+        markdown: bool = True,
+    ) -> str:
+        """The points of a day as text; for a dialog description (Markdown)
+        the level names are shown literally (D43: a level may be a raw value
+        from the cloud), for a selection label as they are."""
         return (
             ", ".join(
                 f"{point.minute // 60:02d}:{point.minute % 60:02d} "
-                f"{levels.get(point.level, point.level)}"
+                + (markdown_literal(label) if markdown else label)
                 for point in points
+                for label in (levels.get(point.level, point.level),)
             )
             or "∅"
         )
@@ -362,7 +389,8 @@ class SwitchProgramOptionsFlow(OptionsFlow):
         days, levels = await self._sp_labels()
         options = [
             SelectOptionDict(
-                value=str(index), label=self._points_text((point,), levels)
+                value=str(index),
+                label=self._points_text((point,), levels, markdown=False),
             )
             for index, point in enumerate(points)
         ]
@@ -552,10 +580,8 @@ class SwitchProgramOptionsFlow(OptionsFlow):
                 errors["base"] = "write_rate_limited"
             except AuthenticationError:
                 errors["base"] = "write_authentication_failed"
-            except ControlUnused:
-                errors["base"] = "switch_program_unused"
-            except WriteValidationError:
-                errors["base"] = "switch_program_changed"
+            except WriteValidationError as err:
+                errors["base"] = _refusal_error(err)
             except WriteNotConfirmed:
                 errors["base"] = "switch_program_not_confirmed"
             except WriteBusy:
@@ -569,7 +595,8 @@ class SwitchProgramOptionsFlow(OptionsFlow):
                 return self.async_abort(
                     reason="switch_program_saved",
                     description_placeholders={
-                        "program": choice.label,
+                        # D43: the label holds the program name from the cloud.
+                        "program": markdown_literal(choice.label),
                         "before": before,
                     },
                 )

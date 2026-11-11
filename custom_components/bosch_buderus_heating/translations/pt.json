@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Não foi possível confirmar a alteração. Pode já ter sido guardada. Abra novamente o programa horário e verifique os seus pontos de comutação; os anteriores são indicados acima.",
       "switch_program_rejected": "O sistema de aquecimento recusou o programa horário. Nada foi alterado.",
       "switch_program_unused": "O sistema de aquecimento não utiliza este programa horário de momento. Nada foi enviado.",
+      "switch_program_paused": "A escrita no sistema de aquecimento está em pausa durante alguns minutos após leituras falhadas repetidas. Nada foi enviado. Tente novamente mais tarde.",
+      "switch_program_mode": "O programa horário já não é um programa por níveis ou não foi possível ler o seu tipo. Nada foi enviado. Volte a abrir o programa horário.",
       "switch_program_failed": "Não foi possível alterar o programa horário. Verifique a ligação e abra novamente o programa horário.",
       "controls_invalid": "Uma entrada é inválida ou os valores apresentados foram alterados. Verifique as suas entradas ou recarregue os valores. Nada foi gravado.",
       "controls_changed": "Uma definição foi alterada ou já não está disponível. As alterações confirmadas anteriormente mantêm-se aplicadas. Recarregue os valores antes de tentar novamente.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Conforto",
+          "comfort": "Conforto",
           "off": "Desligado"
         }
       },

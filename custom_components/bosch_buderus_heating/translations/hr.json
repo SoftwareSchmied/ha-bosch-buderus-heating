@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Promjena se nije mogla potvrditi. Možda je već spremljena. Ponovno otvorite vremenski program i provjerite njegove točke uklapanja; dosadašnje su navedene gore.",
       "switch_program_rejected": "Sustav grijanja odbio je vremenski program. Ništa nije promijenjeno.",
       "switch_program_unused": "Sustav grijanja trenutno ne koristi ovaj vremenski program. Ništa nije poslano.",
+      "switch_program_paused": "Pisanje u sustav grijanja pauzirano je nekoliko minuta nakon ponovljenih neuspjelih očitanja. Ništa nije poslano. Pokušajte ponovno kasnije.",
+      "switch_program_mode": "Vremenski program više nije program s razinama ili se njegova vrsta nije mogla pročitati. Ništa nije poslano. Ponovno otvorite vremenski program.",
       "switch_program_failed": "Vremenski program nije se mogao promijeniti. Provjerite vezu i ponovno otvorite vremenski program.",
       "controls_invalid": "Unos nije valjan ili su se prikazane vrijednosti promijenile. Provjerite unose ili ponovno učitajte vrijednosti. Ništa nije zapisano.",
       "controls_changed": "Postavka se promijenila ili više nije dostupna. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Komfor",
+          "comfort": "Komfor",
           "off": "Isključeno"
         }
       },

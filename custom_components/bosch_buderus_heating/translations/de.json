@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Die Änderung konnte nicht bestätigt werden. Sie kann bereits gespeichert sein. Öffne das Zeitprogramm erneut und prüfe die Schaltpunkte; die bisherigen stehen oben.",
       "switch_program_rejected": "Die Heizungsanlage hat das Zeitprogramm abgelehnt. Es wurde nichts geändert.",
       "switch_program_unused": "Die Heizungsanlage verwendet dieses Zeitprogramm zurzeit nicht. Es wurde nichts gesendet.",
+      "switch_program_paused": "Das Schreiben an die Heizungsanlage pausiert nach wiederholt fehlgeschlagenen Abfragen einige Minuten. Es wurde nichts gesendet. Versuche es später noch einmal.",
+      "switch_program_mode": "Das Zeitprogramm ist kein Stufenprogramm mehr, oder seine Programmart ließ sich nicht lesen. Es wurde nichts gesendet. Öffne das Zeitprogramm erneut.",
       "switch_program_failed": "Das Zeitprogramm konnte nicht geändert werden. Prüfe die Verbindung und öffne das Zeitprogramm erneut.",
       "controls_invalid": "Eine Eingabe ist ungültig oder die angezeigten Werte haben sich geändert. Prüfe die Eingaben oder lade die Werte neu. Es wurde nichts geschrieben.",
       "controls_changed": "Eine Einstellung wurde inzwischen geändert oder ist nicht mehr verfügbar. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Komfort",
+          "comfort": "Komfort",
           "off": "Aus"
         }
       },

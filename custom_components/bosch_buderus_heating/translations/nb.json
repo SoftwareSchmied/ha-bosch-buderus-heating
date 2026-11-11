@@ -683,6 +683,8 @@
       "switch_program_not_confirmed": "Endringen kunne ikke bekreftes. Den kan allerede være lagret. Åpne tidsprogrammet på nytt og sjekk koblingspunktene; de tidligere står ovenfor.",
       "switch_program_rejected": "Varmeanlegget avviste tidsprogrammet. Ingenting ble endret.",
       "switch_program_unused": "Varmeanlegget bruker ikke dette tidsprogrammet for øyeblikket. Ingenting ble sendt.",
+      "switch_program_paused": "Skriving til varmeanlegget er satt på pause i noen minutter etter gjentatte mislykkede avlesninger. Ingenting ble sendt. Prøv igjen senere.",
+      "switch_program_mode": "Tidsprogrammet er ikke lenger et nivåprogram, eller programtypen kunne ikke leses. Ingenting ble sendt. Åpne tidsprogrammet på nytt.",
       "switch_program_failed": "Tidsprogrammet kunne ikke endres. Sjekk tilkoblingen og åpne tidsprogrammet på nytt.",
       "controls_invalid": "En inndata er ugyldig, eller de viste verdiene har endret seg. Sjekk inndataene dine eller last verdiene på nytt. Ingenting ble skrevet.",
       "controls_changed": "En innstilling har endret seg eller er ikke lenger tilgjengelig. Tidligere bekreftede endringer forblir brukt. Last verdiene på nytt før du prøver igjen.",
@@ -1651,7 +1653,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Komfort",
+          "comfort": "Komfort",
           "off": "Av"
         }
       },

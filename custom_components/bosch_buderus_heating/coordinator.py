@@ -1832,9 +1832,8 @@ class BoschBuderusDataUpdateCoordinator(
             if now < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now)
             if now < self._circuit_open_until:
-                raise WriteValidationError(
-                    "Gateway circuit breaker is active; writing is paused"
-                )
+                # N6: its own token, so the dialog says writing is paused.
+                raise ContractRejected("circuit_breaker")
             snapshot = (self.data or {}).get(path)
             if snapshot is None or not _snapshot_is_fresh(snapshot):
                 raise WriteValidationError("The program has no current reading")

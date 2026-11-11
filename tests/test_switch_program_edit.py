@@ -22,8 +22,10 @@ from custom_components.bosch_buderus_heating.diagnostics import (
     switch_program_write_diagnostics,
 )
 from custom_components.bosch_buderus_heating.pointt import (
+    AuthenticationError,
     InvalidPayload,
     PointTClient,
+    ProtocolError,
     RateLimited,
     RequestTimeout,
     RetryPolicy,
@@ -31,6 +33,9 @@ from custom_components.bosch_buderus_heating.pointt import (
     UnexpectedHttpStatus,
     WriteNotConfirmed,
     WriteValidationError,
+)
+from custom_components.bosch_buderus_heating.pointt.exceptions import (
+    InvalidBatchEnvelope,
 )
 from custom_components.bosch_buderus_heating.switch_program_edit import (
     allowed_levels,
@@ -40,6 +45,7 @@ from custom_components.bosch_buderus_heating.switch_program_edit import (
     encode_week,
     fingerprint,
     points_per_day,
+    program_mode_path,
     replace_day,
     same_points,
     week_issue,
@@ -73,7 +79,7 @@ READINGS = {path: resource(payload(path)) for path in (MODE,)} | {
 
 
 def program():
-    shown = editable_program(HEATING, READINGS)
+    shown = editable_program(HEATING, READINGS, program_mode=READINGS[MODE])
     assert shown is not None
     return shown
 
@@ -225,11 +231,13 @@ def test_heating_levels_are_eco_and_comfort2_and_listed_used_ones():
     item = payload(PROGRAM_A)
     item["switchPoints"][0]["setpoint"] = "comfort1"
     unusual = resource(item)
-    assert edit_issue(unusual, READINGS) == "level_not_listed"
+    assert edit_issue(unusual, READINGS, program_mode=READINGS[MODE]) == (
+        "level_not_listed"
+    )
     listed = {**READINGS, "/heatingCircuits/hc1/temperatureLevels/comfort1": HEATING}
     levels = allowed_levels(PROGRAM_A, assess_switch_program(unusual), listed)
     assert set(levels) == {"comfort1", "comfort2", "eco"}
-    assert edit_issue(unusual, listed) is None
+    assert edit_issue(unusual, listed, program_mode=READINGS[MODE]) is None
 
 
 def test_fingerprint_ignores_the_order_but_not_the_content():
@@ -267,7 +275,8 @@ async def test_one_put_of_the_whole_week_is_confirmed_and_shown_at_once(gateway)
 
 async def test_unchanged_week_reads_but_sends_nothing(gateway):
     await gateway.coordinator.async_write_switch_program(HEATING, program().points)
-    assert gateway.raw_puts == [] and gateway.gets == [PROGRAM_A]
+    # The program and its type are read again; nothing is sent.
+    assert gateway.raw_puts == [] and gateway.gets == [PROGRAM_A, MODE]
 
 
 async def test_a_change_in_the_app_meanwhile_sends_nothing(gateway):
@@ -299,7 +308,7 @@ async def test_an_invalid_week_is_refused_before_any_request(gateway):
     assert gateway.raw_puts == [] and gateway.gets == []
 
 
-async def test_an_unused_program_is_shown_but_never_written(gateway):
+async def test_an_unused_program_is_never_written(gateway):
     coordinator = gateway.coordinator
     gateway.change(PROGRAM_A, used="false")
     shown = gateway.read(PROGRAM_A)
@@ -361,7 +370,7 @@ async def test_a_refusal_of_the_gateway_is_final_and_not_read_back(gateway, stat
         await gateway.coordinator.async_write_switch_program(
             HEATING, moved(program().points)
         )
-    assert gateway.gets == [PROGRAM_A]
+    assert gateway.gets == [PROGRAM_A, MODE]
     assert gateway.coordinator.data[PROGRAM_A].freshness is Freshness.FRESH
     counters = gateway.coordinator.switch_program_write_stats.snapshot("heating")
     assert counters["rejection_reasons"] == {f"device_rejected_{status}": 1}
@@ -518,3 +527,119 @@ async def test_a_slow_check_before_the_program_write_sends_nothing(gateway):
     counters = coordinator.switch_program_write_stats.snapshot("heating")
     assert counters["writes_sent"] == 0 and counters["writes_unconfirmed"] == 0
     assert not coordinator._update_lock.locked()
+
+
+# Review of alpha.6 (N2, N3, N5) --------------------------------------------
+
+
+def test_a_program_whose_type_is_not_current_is_not_offered():
+    """N2: the circuit reports its program type; without a current reading
+    of it the program is not offered (no longer fail-open)."""
+    assert MODE in READINGS
+    assert edit_issue(HEATING, READINGS) == "program_mode_unknown"
+    assert editable_program(HEATING, READINGS) is None
+    # A circuit that does not report one keeps its program.
+    without = {key: value for key, value in READINGS.items() if key != MODE}
+    assert edit_issue(HEATING, without) is None
+    # A reading of another path never counts as the program type.
+    other = replace(READINGS[MODE], path="/heatingCircuits/hc2/switchProgramMode")
+    assert edit_issue(HEATING, READINGS, program_mode=other) == ("program_mode_unknown")
+    # Hot water has no program type.
+    dhw = resource(payload(DHW))
+    assert program_mode_path(DHW) is None
+    assert edit_issue(dhw, READINGS) != "program_mode_unknown"
+
+
+def test_a_program_the_gateway_does_not_use_is_not_offered():
+    """N3: consistent with the write, which refuses ``used: false``."""
+    item = payload(PROGRAM_A) | {"used": "false"}
+    assert edit_issue(resource(item), READINGS, program_mode=READINGS[MODE]) == (
+        "not_used"
+    )
+    assert editable_program(resource(item), READINGS) is None
+
+
+@pytest.mark.parametrize(
+    ("mode", "reason"),
+    [
+        ({"value": "absolute"}, "program_mode_not_level"),
+        (RequestTimeout("lost"), "program_mode_unknown"),
+        (ServiceUnavailable(503), "program_mode_unknown"),
+    ],
+)
+async def test_the_program_type_is_read_again_before_the_put(gateway, mode, reason):
+    """N2: an absolute program, or one whose type cannot be read now, is
+    refused before sending, also when it changed after it was shown."""
+    original = gateway.get
+
+    async def get(gw, path, **kwargs):
+        if path == MODE and isinstance(mode, Exception):
+            raise mode
+        return await original(gw, path, **kwargs)
+
+    if isinstance(mode, dict):
+        gateway.change(MODE, **mode)
+    gateway.client.get_resource.side_effect = get
+    coordinator = gateway.coordinator
+    with pytest.raises(WriteValidationError) as caught:
+        await coordinator.async_write_switch_program(HEATING, moved(program().points))
+    assert caught.value.reason == reason
+    assert gateway.raw_puts == []
+    assert coordinator.data[PROGRAM_A].freshness is Freshness.FRESH
+    counters = coordinator.switch_program_write_stats.snapshot("heating")
+    assert counters["writes_sent"] == 0
+    assert counters["rejection_reasons"] == {reason: 1}
+
+
+@pytest.mark.parametrize("error", [RateLimited(60), AuthenticationError("expired")])
+async def test_a_program_type_read_keeps_a_pause_or_sign_in(gateway, error):
+    original = gateway.get
+
+    async def get(gw, path, **kwargs):
+        if path == MODE:
+            raise error
+        return await original(gw, path, **kwargs)
+
+    gateway.client.get_resource.side_effect = get
+    with pytest.raises(type(error)):
+        await gateway.coordinator.async_write_switch_program(
+            HEATING, moved(program().points)
+        )
+    assert gateway.raw_puts == []
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        ProtocolError("answer too large"),
+        InvalidBatchEnvelope("unexpected envelope"),
+    ],
+)
+async def test_an_unreadable_answer_to_the_put_is_resolved_by_reading(gateway, error):
+    """N5: a 2xx answer that cannot be read is no refusal; the week may be
+    stored, so only reading decides, and nothing is sent again."""
+    original = gateway.put_raw
+
+    async def applied(gw, path, body):
+        await original(gw, path, body)
+        raise error
+
+    gateway.client.put_resource_raw_json.side_effect = applied
+    coordinator = gateway.coordinator
+    confirmed = await coordinator.async_write_switch_program(
+        HEATING, moved(program().points)
+    )
+    assert len(gateway.raw_puts) == 1
+    assert confirmed.path == PROGRAM_A
+    counters = coordinator.switch_program_write_stats.snapshot("heating")
+    assert counters["writes_confirmed"] == 1
+    assert counters["writes_rejected"] == 0
+
+
+async def test_the_breaker_has_its_own_refusal(gateway):
+    coordinator = gateway.coordinator
+    coordinator._circuit_open_until = coordinator_module.monotonic() + 60
+    with pytest.raises(WriteValidationError) as caught:
+        await coordinator.async_write_switch_program(HEATING, moved(program().points))
+    assert caught.value.reason == "circuit_breaker"
+    assert gateway.raw_puts == [] and gateway.gets == []
