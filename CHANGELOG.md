@@ -5,185 +5,128 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
-#### Room controllers: absence, events and boost
+Alpha.5 brings the functions of the room controllers of the RRC 2.0 platform
+(TC100.2 and CT200) beyond the zone readings, clearer fault and maintenance
+notifications, and texts in 19 languages. On a real room controller, a
+TC100.2 has so far confirmed the zone readings, switching a zone between
+manual mode and the schedule, and changing the manual setpoint. Everything
+else for room controllers I have tested only with simulated data, in the
+shapes of the observed TC100.2 answers and of a constructed controller with
+11 zones, 12 radio devices and 24 programs. It is expected to work but
+untested on a real controller; I would be glad about reports from owners.
+The new [room controller page](docs/room-controllers.md) lists every
+function with its status.
 
-All of this is expected to work but untested on a real room controller so
-far; I would be glad about reports from owners.
+#### Room controllers (TC100.2, CT200)
 
-- **Away mode and fireplace function:** room controllers report both as the
-  text "true" or "false" without a list of values, so they got no switch so
-  far. They now get one that writes exactly these values, once, and reads the
-  change back. The away temperature becomes a setting, and the fireplace
-  function a setting that is disabled by default. Other gateways keep their
-  away switch unchanged.
-- **Absences and special days as a calendar:** the controller's event lists
-  appear as a calendar with whole days. Absences can be created, changed and
-  deleted there; days that run like another weekday can only be deleted.
-  Names have at most 32 bytes, events may not overlap (not even on their
-  first or last day), and dates count in the controller's time zone. Every
-  change reads the lists first and is sent exactly once. If the controller
-  does not confirm it in time, the next change reads the lists again and is
-  refused until the first one shows, so an event is never created twice.
-- **Boost:** a switch and the boost temperature and duration write the
-  controller's boost settings as a whole. The rooms of a boost stay as set on
-  the controller; without a room the boost is refused. The single boost
-  readings stay readings. A boost in a form I do not know completely is shown
-  but never changed.
+Confirmed on a real controller:
 
-#### RRC zones
+- **Zone climate:** every zone that reports a heating mode and a room
+  temperature now gets a climate entity. `heat` is the manual mode and
+  `auto` the schedule; room controllers have no off mode. In manual mode a
+  new target changes the manual setpoint. A mode together with a temperature
+  changes the mode first and the target only once the controller has
+  confirmed the mode. The mode and manual setpoint changes behind it were
+  confirmed on a TC100.2 with alpha.4; the climate entity itself is new.
+- **Confirmed installations:** the Logano plus GB212 with a Logamatic TC100.2
+  is listed in the README and on a
+  [separate page](docs/confirmed-installations.md) with the zones confirmed
+  with 0.9.0-alpha.4 without a local patch: room temperature, active
+  setpoint, zone names, operating mode and manual setpoint changes from Home
+  Assistant. Thank you, @obvius1, for testing this on your system and
+  reporting it in #113.
 
-- **Zone climate:** every zone of a room controller that reports a heating
-  mode and a room temperature now gets a climate entity. `heat` is the manual
-  mode and `auto` the schedule; room controllers have no off mode. In manual
-  mode a new target changes the manual setpoint. In the schedule mode it sets
-  a temporary setpoint, which lasts only until the next switch point of the
-  schedule; the attribute `override_until_next_switch_point` says so. A
-  temperature together with a mode changes the mode first and the target only
-  once the controller has confirmed the mode; I never change a mode on the
-  side. The attributes also show the next setpoint, the minutes until it and
-  the zone status. The mode and the manual setpoint were confirmed on a
-  TC100.2; the temporary setpoint is expected to work but not tested on a real
-  controller yet.
-- **Clear the temporary setpoint:** a button per zone writes 0 while the zone
-  follows its schedule and waits until the controller shows it. If the
-  controller ends a replaced temporary setpoint at once, for example at a
-  switch point, a message of its own says so. Expected, not tested yet.
-- **Zone details (expected, not tested yet):** sensors for the next setpoint
-  (unknown instead of 999), the minutes until it, the zone status, the valve
-  opening and the optimum start, and a binary sensor for an open window.
-  Switches for the open window detection of each zone and of the system, and
-  numbers for its duration and temperature where the controller allows
-  writing. The valve opening, the optimum start and the system settings are
-  disabled by default.
-- **No second climate:** a room controller with zone climates no longer gets
-  a climate entity for its heating circuit as well.
-- **More time for changes on room controllers:** a room controller applies a
-  change with a delay. On such controllers I now read a change back after 1,
-  2, 4 and 8 seconds instead of 0.5, 1 and 2 seconds, and I still send it
-  only once. If the controller has not confirmed it by then, a message of its
-  own says that the change was sent but is not confirmed yet and may still be
-  applied. Other gateways keep their timing and messages.
-- **Diagnostics:** room controllers get a section `rrc_features` with the
-  read-back timing and value-free write counters (sent, confirmed,
-  unconfirmed, confirmed later by a regular reading, refused). It marks every
-  function as not yet confirmed on a controller. The diagnostics schema stays
-  44.
-- **Select heating schedule on large systems
-  ([#113](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/113)):**
-  the selection needs the controller's program list. On a large system the
-  discovery could reach its limit before it read this list, and a failed read
-  was never repeated, so no zone got the selection. The program list and the
-  zone list are now read together with the zones, within the same limit and
-  without an extra request. If zones select a program but the list is still
-  missing or failed, it is read again on its own in the usual bounded search
-  (at most seven attempts within a day). Thank you, @obvius1, for testing
-  alpha.4 on a TC100.2 and reporting the missing selection.
-- **Diagnostics:** a new section `rrc_programs` shows for each zone why the
-  program selection is offered or not, for example `program_list_missing`,
-  `program_list_invalid_type`, `program_list_empty` or
-  `selection_not_writable`, and whether the program list is current. It
-  contains no program names. The diagnostics schema stays 44.
-- **Zones in manual mode:** the controller marks the selected program of a
-  zone in manual mode as not used. The integration used to drop the value, the
-  sensor and the selection then. They now stay: the program remains assigned
-  and can be changed. A confirmation on a real device is still pending.
-- **Program list flags:** the integration now ignores the `used` and
-  `available` flags of the program list itself. The zone list keeps
-  its rules.
-- **Program names:** the selection keeps the program numbers as its options,
-  so automations keep working when a program is renamed. Home Assistant can
-  only translate fixed options, so the names appear as the attributes
-  `program_names` (all programs) and `program_name` (the selected one), decoded
-  like zone names.
-- **Temporary heating setpoint:** a value of 0 means that no temporary setpoint
-  is active. The sensor now shows unknown instead of 0 °C. A confirmation on a
-  real device is still pending.
-- **Day programs:** a program day that the controller reports as `dayProgram`
-  is now read, and its switch points can be edited as before, each change
-  confirmed by reading it back. A confirmation on a real device is still
-  pending.
-- I have tested these changes only with simulated data in the shapes of the
-  observed TC100.2 answers.
+Expected, untested on a real controller:
 
-#### RRC heating circuit
-
-- **Heating circuit settings on room controllers:** the heating curve (base
-  and end point), the minimum and maximum supply temperature and the room
-  influence are now numbers. They are configuration entities and disabled by
-  default; enable them only if you know these settings. The base point stays
-  below the end point and the minimum supply temperature not above the
-  maximum; before a change I read both limits again and send nothing if one
-  of them changed. The room influence is sent as a whole number.
-- **Summer/winter and night switching, season mode, heat-up speed and
-  setpoint optimization:** the switching modes, the season mode, the heat-up
-  speed (slow, normal, fast), the outdoor temperature thresholds and the
-  setpoint optimization can be changed. The season mode is offered only when
-  the controller offers at least two modes; with a single mode it stays a
-  reading. A new sensor shows whether the circuit heats, cools or idles.
-- **Never changed:** the control strategy, the heating system type and the
-  room control type are installer settings and are not written. A setting
-  the controller marks as unavailable without marking it as used offers no
-  control.
-- Every change is sent once and confirmed by reading it back, as for the
-  zones. I have tested this only with simulated data in the expected shapes
-  and in the shapes of the TC100.2 diagnostics from #122; all of it is expected
-  but untested on a real controller.
-
-#### Room controllers of the RRC 2.0 platform (CT200 and TC100.2)
-
+- **Temporary setpoint:** in the schedule mode a new target sets a temporary
+  setpoint until the next switch point of the schedule; the attribute
+  `override_until_next_switch_point` says so. A button per zone clears it.
+  If the controller ends a replaced temporary setpoint at once, for example
+  at a switch point, a message of its own says so.
+- **Zone details:** sensors for the next setpoint (unknown instead of 999),
+  the minutes until it, the zone status, the valve opening and the optimum
+  start, a binary sensor for an open window, and switches and numbers for
+  the open window detection of each zone and of the system. The valve
+  opening, the optimum start and the system settings are disabled by
+  default.
+- **Programs:** the program selection keeps the program numbers as its
+  options, so automations keep working when a program is renamed; the names
+  appear as the attributes `program_names` and `program_name`. A program day
+  reported as `dayProgram` is read, and its switch points can be edited like
+  those of a week program.
+- **Away mode, absences and special days:** the away mode is a switch and
+  the away temperature a number. The controller's events appear as a
+  calendar of whole days in the controller's time zone; absences can be
+  created, changed and deleted there, days that run like another weekday
+  only deleted. Names have at most 32 bytes and events may not overlap, not
+  even on their first or last day. Every change reads the lists first and is
+  sent once; until an unconfirmed change shows, the next one is refused, so
+  an event is never created twice.
+- **Boost and fireplace function:** a switch and the boost temperature and
+  duration write the controller's boost settings as a whole; the rooms of a
+  boost stay as set on the controller, and without a room the boost is
+  refused. The fireplace function is a switch, disabled by default.
+- **Hot water:** the operating mode as a select and a water heater entity,
+  the comfort temperature, extra hot water with its duration, the thermal
+  disinfection (switch, weekday, start time and last result, disabled by
+  default) and the current level of the hot water program (disabled by
+  default).
+- **Heating circuit:** summer/winter switching and night setback by outdoor
+  temperature with their thresholds, the season mode (only with at least two
+  offered modes), the heat-up speed, the setpoint optimization and a sensor
+  for the operating season. The heating curve, the supply temperature limits
+  and the room influence are disabled by default; enable them only if you
+  know these settings. Before such a change I read both limits again and
+  send nothing if one of them changed. Installer settings are never written.
+- **System readings:** display code, cause code, system pressure and its
+  status, indoor humidity, and binary sensors for a locking fault (locked
+  out until a manual reset), a blocking fault, maintenance due and refill
+  needed. The maintenance request text, the controller's own temperatures
+  and the firmware update state are disabled by default.
+- **Energy history:** the controller's daily energy values are imported
+  into the Home Assistant statistics, for the Energy dashboard. Their names
+  end with "(kWh expected)" because the unit kWh is assumed but not
+  confirmed; gas values follow only when the controller confirms the unit.
+  You choose the statistics in the Energy dashboard yourself and can delete
+  them under Developer tools → Statistics.
+- **Radio devices:** every device in the controller's device list becomes
+  its own device below the controller, named after its type (for example
+  "Radiator thermostat 2") with its zone as the suggested area. It shows
+  "Battery low", "Radio signal" (disabled by default) and its firmware; a
+  radiator thermostat also its valve readings and whisper mode (disabled by
+  default) and a "Valve problem" binary sensor. The child lock, the
+  temperature offset and the open window sensitivity can be changed and are
+  disabled by default. The valve calibration and the whisper mode are never
+  written.
 - **Recognised by their resources:** a gateway the cloud reports as device
-  type `rrc2`, with the product type `RRC 2.0` or with RRC zones is handled as
-  a room controller. A new controller device is named "Room controller" and
-  shows the product type the cloud reports as its model; the setup offers a
-  controller the cloud lists without a name as "Room controller" as well.
-  Nothing depends on a model name. The CT200 is listed as expected but untested in the
-  [compatibility](docs/compatibility.md) page; the TC100.2 zones remain
-  confirmed by the report in #113.
-- **Discovery no longer starves on large systems
-  ([#122](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/122)):**
-  on a TC100.2 with nine radio devices the device tree used 206 of the 512
-  discovery reads and the program list was never requested. On a room
-  controller the zone, program and device lists are now read first, and of
-  the device tree only the device list and one firmware reading per device
-  (at most 64). Probes meant for other device families are no longer sent
-  there. Thank you, @obvius1, for the diagnostics that showed this.
-- **HTTP 500 for missing paths:** these controllers answer HTTP 500 for a
-  path they do not have. Such an answer to a catalog or optional probe now
-  counts as "missing" and no longer ends the discovery; roots, advertised
-  references and failing requests keep the outage rule.
-- **Radio devices, read only:** every radio device in the controller's device
-  list becomes its own device below the controller, named after its type
-  (for example "Radiator thermostat 2") with its zone as the suggested area.
-  It has a "Battery low" binary sensor (enabled) and a "Radio signal" sensor
-  (disabled by default), both diagnostic, and shows its firmware version.
-  Nothing is written to radio devices.
-- **Privacy:** the device arrays that carry the radio key (`dlk`) and radio
+  type `rrc2`, with the product type `RRC 2.0` or with RRC zones is handled
+  as a room controller, never by a model name. A controller without a name
+  is called "Room controller" and shows the reported product type as its
+  model. The CT200 is listed as expected but untested on the
+  [compatibility](docs/compatibility.md) page.
+- **Privacy:** the device arrays with the radio key (`dlk`) and radio
   identifier (`sgtin`) of each device, the product lookup, the user,
   installer, password, location and phone resources are never requested,
   stored or exported, on any gateway. A discovery inventory stored by an
-  earlier release drops them when it is loaded. `dlk` now counts as an
-  identifier.
-- **Diagnostics:** a new section `rrc_profile` reports the profile, its
-  evidence, the firmware, the numbers of zones, programs and radio devices,
-  `confirmation: unconfirmed` and `local_access: not_available`. Discovery
-  diagnostics separate single refused paths (`some_paths_forbidden`) from a
-  sign-in without the rights for the controller
-  (`scope_or_permission_denied`), and count the paths deliberately not read.
+  earlier release drops them when it is loaded.
+- **Older firmware:** the setup's "no devices" message explains that a room
+  controller with older firmware only appears once its firmware has been
+  updated and it has been set up in the current app with the SingleKey ID.
+- **Diagnostics:** room controllers get the sections `rrc_profile` (profile,
+  firmware, numbers of zones, programs and devices, access reason),
+  `rrc_programs` (why each zone offers the program selection or not, with
+  codes such as `program_list_missing`) and `rrc_features` (read-back timing,
+  value-free write counters and counts per function, the state of the energy
+  history import). The discovery diagnostics separate single refused paths
+  (`some_paths_forbidden`) from a sign-in without the rights for the
+  controller (`scope_or_permission_denied`) and count the paths deliberately
+  not read. None of this contains names or values, and everything is marked
+  `unconfirmed`. The [diagnostics guide](docs/diagnostics.md) describes them.
   The diagnostics schema stays 44.
-- **No devices found:** the setup message now explains that a room controller
-  with older firmware only appears once its firmware has been updated and it
-  has been set up in the current app with the SingleKey ID.
-- **No local access:** these room controllers have no local interface; the
-  [room controller documentation](docs/rrc-zones-and-schedules.md#room-controllers-of-the-rrc-20-platform)
-  explains this.
-- I have tested this only with simulated data: a synthetic controller with 11
-  zones, 12 radio devices and 24 programs with constructed values, and the
-  shape of the TC100.2 device tree from #122. A test on a real CT200
-  and of the radio devices on a real controller is still pending.
 
 #### Faults and notifications
 
-- **Class 18/20 messages now count as maintenance:** a notification with the
+- **Class 18/20 messages count as maintenance:** a notification with the
   numeric class 18 or 20 is a maintenance message on every gateway, no longer
   an unknown problem. It no longer turns on System fault or counts as an
   active fault; Active notifications still counts and lists it, and System
@@ -193,80 +136,119 @@ far; I would be glad about reports from owners.
   maintenance messages in the bell notification, with the same details,
   dismissal and resolution rules as faults. It is off by default, so nothing
   changes unless you turn it on.
-- **Clearer messages for locked settings on room controllers:** when the
-  controller locks a setting, the message now names what is locked (the
-  heating mode of a zone, another zone setting, a heating circuit, hot water
-  or a radio device setting) instead of always speaking of the zone's
-  heating mode.
-- **Radio device settings on large room controllers:** the setting leaves of
-  the radio devices are read leaf by leaf over all devices and have a limit
-  of their own, so a large controller no longer loses the settings of its
-  last devices. Optional leaves that a controller does not have cost no
-  extra single request anymore; on my large test tree the setup needs 6
-  instead of 170 single requests.
-
-#### Translations
-
-- **Swedish, Norwegian Bokmål, Finnish and Danish:** the integration now
-  speaks these four languages as well, in the setup and options dialogs,
-  repairs, entity and device names, notifications and the controls and
-  holiday dialogs. They are drafts based on a shared glossary; nobody who
-  speaks them as a mother tongue has checked them yet. I would be glad about
-  corrections, see `docs/translations.md`.
-- **French, Spanish, Italian, Portuguese, Dutch, Polish, Czech, Slovak, Greek,
-  Bulgarian, Croatian, Slovenian and Irish:** thirteen more languages, with
-  the same scope as the four above. They are drafts as well, each with its own
-  glossary in `docs/glossary/<code>.md`, and also wait for a review by native
-  speakers. Brazilian Portuguese shows the Portuguese texts and Norwegian
-  Nynorsk the Bokmål ones.
-- **Czech and Slovak reviewed:** I reviewed the Czech and Slovak translations
-  myself as a native speaker, so these two are no longer drafts. Generated
-  names write the group out instead of abbreviating it, for example
-  "Okruh 1: Provozní režim" or "Teplá voda 1: Teplota". Slovak now uses
-  "nemrznúca zmes" for the brine of a heat pump, "prídavný ohrev" for the
-  auxiliary heater, "výstupná teplota" and "vratná teplota" for supply and
-  return, and "VYP" for the off options of the holiday settings. Czech
-  confirmations no longer use gendered forms such as "(a)". The glossaries
-  in `docs/glossary/cs.md` and `docs/glossary/sk.md` follow these terms.
-- Names and texts that the integration builds itself (for example
-  "Heating circuit 1 – Supply temperature" or "Set heating mode" of a TC100.2
-  zone) now follow the Home Assistant system language for all supported
-  languages; any other language still shows English. German and English
-  texts are unchanged, so existing entity names stay the same. After
-  switching the system language, reload the integration so generated names
-  are rebuilt.
-- A further language needs only two data files, `translations/<code>.json`
-  and `i18n/<code>.json`; `docs/translations.md` describes them. The tests
-  take the languages and the expected texts from these files, so a new
-  language needs no test change either.
-
-#### Documentation
-
+- **Faults of radio devices:** on room controllers, the faults of radio
+  devices get their own texts (for example "Battery of a radio device low"),
+  other ones "Radio device fault (code …)", and a too low water pressure
+  reads "Water pressure too low". Expected, untested on a real controller.
+- **Clearer messages for locked settings:** when a room controller locks a
+  setting, the message now names what is locked (the heating mode of a zone,
+  another zone setting, a heating circuit, hot water or a radio device
+  setting) instead of always speaking of the zone's heating mode.
 - **Where do I find faults?** A new section in the
   [fault documentation](docs/faults.md#where-do-i-find-faults) and a short
   pointer in the README explain where current faults are (the `faults`
-  attribute of Active faults) and where past ones are (history and logbook of
-  the System notifications event entity, as far back as the recorder keeps
-  data). It includes an automation that writes every `appeared` and
-  `resolved` event to the logbook and sends it as a push notification, and
-  explains how to look up codes. The bell notification is not an archive.
-  Thank you, @ColinFinck, for pointing out in #120 that this was hard to find.
-- **Confirmed installations** are now also part of the 0.9 documentation,
-  in the README and as a [separate page](docs/confirmed-installations.md).
-  The Logano plus GB212 with a Logamatic TC100.2 now lists the RRC zones as
-  confirmed with 0.9.0-alpha.4 without a local patch: room temperature,
-  active setpoint, zone names, operating mode and manual setpoint changes
-  from Home Assistant. With alpha.4, selecting a heating schedule did not
-  work there yet; see RRC zones above.
-  Thank you, @obvius1, for testing this on your system and reporting it in
-  #113.
+  attribute of Active faults) and where past ones are (history and logbook
+  of the System notifications event entity). It includes an automation that
+  writes every `appeared` and `resolved` event to the logbook and sends it as
+  a push notification. Thank you, @ColinFinck, for pointing out in #120 that
+  this was hard to find.
+
+#### Requests and local access
+
+- **Discovery on large room controllers
+  ([#122](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/122)):**
+  on a TC100.2 with nine radio devices the device tree used 206 of the 512
+  discovery reads and the program list was never requested. On a room
+  controller the zone, program and device lists are now read first. Of the
+  device tree only the device list, one firmware reading per device (at most
+  64) and the known setting leaves are read; probes meant for other device
+  families are no longer sent. The setting leaves come last, leaf by leaf
+  over all devices, with a cap of their own of 192 paths outside the 512, so
+  a large controller no longer loses the settings of its last devices.
+  Thank you, @obvius1, for the diagnostics that showed this.
+- **HTTP 500 for missing paths:** room controllers answer HTTP 500 for a
+  path they do not have. Such an answer to a catalog or optional probe now
+  counts as "missing" and no longer ends the discovery; for optional probes
+  and zone detail leaves a 500 inside a batch answer costs no single request
+  either. Roots, advertised references and failing requests keep the outage
+  rule. On my large test tree with all functions active the setup needs 21
+  batch and 7 single requests, and an hour of regular polling about 150
+  requests.
+- **More time for changes on room controllers:** a room controller applies a
+  change with a delay. On such controllers I now read a change back after 1,
+  2, 4 and 8 seconds instead of 0.5, 1 and 2 seconds, and still send it only
+  once. If it is not confirmed by then, a message says that the change was
+  sent but is not confirmed yet; a later regular reading can still confirm
+  it. Other gateways keep their timing and messages.
+- **Energy history:** at most eight requests every three hours, the first
+  run 15 minutes after the start; a first filling reaches back at most 400
+  days.
+- **No local access for room controllers:** they have no local interface;
+  the [room controller page](docs/room-controllers.md#sign-in-local-access-and-older-firmware)
+  explains this. A K40 gateway next to them keeps its own local access.
 - The README now names the K40/K40RF gateways that the local access
   recognises for IVT, Worcester and Vulcano. Systems of these brands should
   work with the cloud access when **Bosch** is selected, but none has been
   confirmed yet.
-- The [diagnostics guide](docs/diagnostics.md#rrc-program-selection) now
-  describes the new `rrc_programs` section with all its codes, and the README
-  links the [translation guide](docs/translations.md).
+
+#### Translations
+
+- **19 languages:** besides English and German, the integration now speaks
+  Swedish, Norwegian Bokmål, Finnish, Danish, French, Spanish, Italian,
+  Portuguese, Dutch, Polish, Czech, Slovak, Greek, Bulgarian, Croatian,
+  Slovenian and Irish, in the setup and options dialogs, repairs, entity and
+  device names, notifications and the controls and holiday dialogs. Brazilian
+  Portuguese shows the Portuguese texts and Norwegian Nynorsk the Bokmål
+  ones.
+- **Czech and Slovak reviewed by me:** I reviewed the Czech and Slovak
+  translations myself as a native speaker on 2026-11-10. Generated names
+  write the group out instead of abbreviating it, for example
+  "Okruh 1: Provozní režim" or "Teplá voda 1: Teplota". Slovak uses
+  "nemrznúca zmes" for the brine of a heat pump, "prídavný ohrev" for the
+  auxiliary heater, "výstupná teplota" and "vratná teplota" for supply and
+  return, and "VYP" for the off options of the holiday settings. Czech
+  confirmations no longer use gendered forms such as "(a)".
+- **The other languages are drafts:** they follow a glossary per language
+  (`docs/glossary/<code>.md`, and a shared one for the Nordic languages in
+  `docs/translations.md`), but nobody who speaks them as a mother tongue has
+  checked them yet. The room controller texts added in alpha.5 are drafts in
+  every language, Czech and Slovak included; I will review those two
+  separately. Corrections are very welcome, see
+  [translations](docs/translations.md).
+- Names and texts that the integration builds itself (for example
+  "Heating circuit 1 – Supply temperature") follow the Home Assistant system
+  language; any other language still shows English. German and English
+  texts are unchanged, so existing entity names stay the same. After
+  switching the system language, reload the integration so generated names
+  are rebuilt.
+- A further language needs only two data files, `translations/<code>.json`
+  and `i18n/<code>.json`; the tests take the languages and the expected
+  texts from these files.
+
+#### Fixes
+
+- **Select heating schedule on large systems
+  ([#113](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/113)):**
+  the selection needs the controller's program list. On a large system the
+  discovery could reach its limit before it read this list, and a failed
+  read was never repeated, so no zone got the selection. The program list
+  and the zone list are now read together with the zones, within the same
+  limit and without an extra request. If zones select a program but the list
+  is still missing or failed, it is read again on its own (at most seven
+  attempts within a day). Thank you, @obvius1, for testing alpha.4 on a
+  TC100.2 and reporting the missing selection. Not yet confirmed on a real
+  controller.
+- **Zones in manual mode:** the controller marks the selected program of a
+  zone in manual mode as not used. The integration used to drop the value,
+  the sensor and the selection then; they now stay, and the program can be
+  changed. Not yet confirmed on a real controller.
+- **Program list flags:** the integration now ignores the `used` and
+  `available` flags of the program list itself; the zone list keeps its
+  rules.
+- **Temporary heating setpoint:** a value of 0 means that no temporary
+  setpoint is active. The sensor now shows unknown instead of 0 °C.
+- **No second climate:** a room controller with zone climates no longer
+  gets a climate entity for its heating circuit as well.
 
 ## [0.9.0-alpha.4] - 2026-11-10
 
