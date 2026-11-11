@@ -44,6 +44,38 @@ settings of the radio devices and the CT200 stay expected, untested. Thank you, 
 testing all of this on your TC100.2, checking every change in the app and
 reporting it in #122.
 
+#### iCom gateways (KM200, KM100, KM50, MB LAN 2 and others)
+
+These changes apply only to gateways that report the device type `icom`;
+every other gateway keeps its behaviour. I tested them with simulated data in
+the shapes of a real iCom gateway with a boiler controller. On a real iCom
+gateway they are expected, untested.
+
+- **Load profile:** a new cloud connection with an iCom gateway starts with
+  the cloud-friendly profile; it can be changed in the connection options.
+  After a cycle with a timeout the next one reads batches of half the size,
+  at least 10 paths, and after three good cycles in a row the size doubles
+  back step by step to 30. During a long outage the breaker pauses 5, 10, 20
+  and then 30 minutes, and starts at 5 minutes again after the first good
+  cycle. Writes are read back after 1, 2, 3 and 4 seconds. The timing comes
+  from the diagnostics and logs in
+  [#104](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/104)
+  and [#105](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/105);
+  thank you, [gejomo](https://github.com/gejomo), for them.
+- **Holidays:** before the first change I now check that every field to be
+  changed is writable. A fixed temperature reported in `°C` is accepted like
+  `C`. Two rules of the manufacturer's app are taken over and only remove
+  choices: with a HMI800 HP Light controller the heating mode and the
+  circuits of a holiday stay as the slot reports them, and with token 16 in
+  the component list the heating circuits of the tokens 24 to 27 are not
+  offered. I have not seen either case on a system.
+- **Control type `constants`:** the heating circuit climate then only shows
+  the circuit and sends no command, like the manufacturer's app.
+- **Diagnostics:** a new `icom` section shows the state of the load profile,
+  the component type numbers of `/system/info` (no serial numbers or names),
+  the reported bus with a hint for `EMS1_0`, `CAN` and `No_Bus`, and whether a
+  holiday rule applies.
+
 #### Fixes
 
 - **Warning after a restart:** Home Assistant no longer logs "Detected

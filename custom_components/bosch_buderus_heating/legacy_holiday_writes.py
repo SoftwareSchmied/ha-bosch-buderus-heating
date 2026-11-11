@@ -17,8 +17,11 @@ from .holiday_writes import (
 )
 from .holidays import HolidayWriteValues, icom_write_configuration, icom_write_values
 from .legacy_holidays import (
+    HMI800_FIXED_FIELDS,
     ICOM_EMPTY_PERIODS,
     ICOM_FIELDS,
+    SYSTEM_INFO_PATH,
+    icom_components,
     icom_dates,
     icom_empty,
     is_icom_slot,
@@ -44,17 +47,21 @@ class IcomHolidayWriteService:
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
         read_back_delay: float = DEFAULT_HOLIDAY_READ_BACK_DELAY,
         read_back_attempts: int = DEFAULT_HOLIDAY_READ_BACK_ATTEMPTS,
+        read_back_delays: tuple[float, ...] | None = None,
     ) -> None:
-        if read_back_delay < 0:
+        if read_back_delay < 0 or any(delay < 0 for delay in read_back_delays or ()):
             raise ValueError("Read-back delay must not be negative")
-        if read_back_attempts < 1:
+        if read_back_attempts < 1 or read_back_delays == ():
             raise ValueError("Read-back attempts must be positive")
         self.client = client
         self.confirmed: dict[str, Resource] = {}
         self.invalidated: set[str] = set()
         self._sleep = sleep
-        self._read_back_delay = read_back_delay
-        self._read_back_attempts = read_back_attempts
+        # I1: an iCom gateway reads back after 1, 2, 3 and 4 seconds; the
+        # default stays 0.5, 1 and 2 seconds.
+        self._read_back_delays = read_back_delays or tuple(
+            read_back_delay * (2**attempt) for attempt in range(read_back_attempts)
+        )
 
     async def async_write(
         self,
@@ -82,7 +89,16 @@ class IcomHolidayWriteService:
         if not paths:
             raise WriteValidationError("The legacy holiday was not discovered")
         current = await self._read(gateway_id, paths)
-        configuration = icom_write_configuration(current, source_path)
+        # I2: the component list is not read again; the last fresh reading
+        # of the coordinator applies its rules to this transaction.
+        system_info = resources.get(SYSTEM_INFO_PATH)
+        components = icom_components(system_info)
+        configuration = icom_write_configuration(
+            {**current, SYSTEM_INFO_PATH: system_info}
+            if system_info is not None
+            else current,
+            source_path,
+        )
         baseline = icom_write_values(current, source_path)
         if configuration is None or baseline is None:
             raise WriteValidationError("Legacy holiday capabilities are incomplete")
@@ -148,15 +164,26 @@ class IcomHolidayWriteService:
             "assignedTo": list(values.assigned_to),
             "startStop": f"{values.start_date}/{values.end_date}",
         }
-        for field, value in desired.items():
-            path = f"{source_path}/{field}"
-            if path not in current:
+        # I2: every field to change is checked before the first PUT, so a
+        # field that may not be written never leaves half a holiday behind.
+        steps = [
+            (field, f"{source_path}/{field}", value)
+            for field, value in desired.items()
+            if f"{source_path}/{field}" in current
+            and not _field_matches(field, current[f"{source_path}/{field}"], value)
+        ]
+        if any(not current[path].metadata.writable for _field, path, _ in steps):
+            raise WriteValidationError("Legacy holiday field is not writable")
+        if components.hmi800_hp_light and any(
+            field in HMI800_FIXED_FIELDS for field, _path, _value in steps
+        ):
+            # Expected, untested: the app never writes these fields there.
+            raise WriteValidationError(
+                "This controller keeps the holiday circuits and heating mode"
+            )
+        for field, path, value in steps:
+            if _field_matches(field, current[path], value):
                 continue
-            previous = current[path]
-            if _field_matches(field, previous, value):
-                continue
-            if not previous.metadata.writable:
-                raise WriteValidationError("Legacy holiday field is not writable")
             # C38: ``current`` is the complete read just before this step: the
             # initial one or the previous step's read-back, without any wait.
             # Each read-back compares every other field, so a change in the
@@ -220,12 +247,13 @@ class IcomHolidayWriteService:
         """C38: read back like the scalar writes, with a short wait and retries.
 
         A change of another field is a conflict and ends at once; a value not
-        yet updated is read again after 0.5, 1 and 2 seconds.
+        yet updated is read again after 0.5, 1 and 2 seconds (iCom gateways:
+        1, 2, 3 and 4 seconds, I1).
         """
         last_temporary_error: RequestTimeout | ServiceUnavailable | None = None
         actual: dict[str, Resource] | None = None
-        for attempt in range(self._read_back_attempts):
-            await self._sleep(self._read_back_delay * (2**attempt))
+        for delay in self._read_back_delays:
+            await self._sleep(delay)
             try:
                 actual = await self._read(gateway_id, paths)
             except (RequestTimeout, ServiceUnavailable) as err:

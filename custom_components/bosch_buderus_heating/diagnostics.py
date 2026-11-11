@@ -40,6 +40,7 @@ from .holidays import (
     parse_holiday_state,
     parse_holiday_write_configuration,
 )
+from .icom_diagnostics import icom_diagnostics
 from .observations import (
     Observation,
     from_cloud_snapshot,
@@ -619,6 +620,16 @@ def _gateway_diagnostics(
         **(
             {"rrc_features": _rrc_feature_diagnostics(coordinator)}
             if context.rrc_plant
+            else {}
+        ),
+        # I1/I2: only for an iCom gateway; other gateways keep their report.
+        **(
+            {
+                "icom": icom_diagnostics(
+                    snapshots, icom, coordinator.write_read_back_delays()
+                )
+            }
+            if (icom := coordinator.icom_profile_diagnostics()) is not None
             else {}
         ),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),

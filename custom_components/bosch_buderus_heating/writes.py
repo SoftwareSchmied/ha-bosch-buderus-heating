@@ -302,21 +302,32 @@ class WriteService:
         read_back_delay: float = DEFAULT_READ_BACK_DELAY,
         read_back_attempts: int = DEFAULT_READ_BACK_ATTEMPTS,
         rrc_read_back_delays: tuple[float, ...] = RRC_READ_BACK_DELAYS,
+        read_back_schedule: tuple[float, ...] | None = None,
     ) -> None:
-        if read_back_delay < 0 or any(delay < 0 for delay in rrc_read_back_delays):
+        if read_back_delay < 0 or any(
+            delay < 0 for delay in (*rrc_read_back_delays, *(read_back_schedule or ()))
+        ):
             raise ValueError("Read-back delay must not be negative")
-        if read_back_attempts < 1 or not rrc_read_back_delays:
+        if (
+            read_back_attempts < 1
+            or not rrc_read_back_delays
+            or read_back_schedule == ()
+        ):
             raise ValueError("Read-back attempts must be positive")
         self._client = client
         self._sleep = sleep
         self._read_back_delay = read_back_delay
         self._read_back_attempts = read_back_attempts
         self._rrc_read_back_delays = rrc_read_back_delays
+        # I1: a fixed schedule for a slower gateway family (iCom).
+        self._read_back_schedule = read_back_schedule
 
     def read_back_delays(self, context: ControlContext | None) -> tuple[float, ...]:
         """S7: the read-back schedule of a write in this context."""
         if _context(context).rrc_plant:
             return self._rrc_read_back_delays
+        if self._read_back_schedule is not None:
+            return self._read_back_schedule
         return tuple(
             self._read_back_delay * (2**attempt)
             for attempt in range(self._read_back_attempts)

@@ -12,7 +12,9 @@ from datetime import UTC, date, datetime, time, timedelta, timezone, tzinfo
 from functools import lru_cache
 
 from .legacy_holidays import (
+    SYSTEM_INFO_PATH,
     icom_assignments,
+    icom_components,
     icom_dates,
     icom_empty,
     icom_mode,
@@ -558,6 +560,24 @@ def icom_write_configuration(
             not options or mode not in options
         ):
             return None
+    # I2 (expected, untested): the rules of the manufacturer's app for the
+    # components of ``/system/info``. They only remove choices.
+    components = icom_components(resources.get(SYSTEM_INFO_PATH))
+    if hidden := components.hidden_circuits:
+        # Token 16: these circuits are not offered; one already assigned stays.
+        allowed = tuple(
+            item
+            for item in allowed
+            if item not in hidden or item in current.assigned_to
+        )
+    if components.hmi800_hp_light:
+        # HMI800 HP Light: circuits and heating mode stay as the slot has them.
+        allowed = tuple(item for item in allowed if item in current.assigned_to)
+        heating_modes = tuple(
+            mode for mode in heating_modes if mode == current.heating_mode
+        )
+    if not allowed:
+        return None
     fixed = resources.get(f"{source_path}/fixTemperature")
     if fixed is None and any(
         mode in ("FIX_TEMP", "FIX_TEMPERATURE") for mode in heating_modes
