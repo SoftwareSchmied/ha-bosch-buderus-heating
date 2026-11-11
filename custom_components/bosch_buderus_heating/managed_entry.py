@@ -17,6 +17,7 @@ from homeassistant.config_entries import (
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import issue_registry as ir
 
+from . import rrc_platforms
 from .configuration import CLOUD_KIND, LOCAL_KIND, ConfigurationError, JsonObject
 from .configuration_management import section, sync_not_found_issues
 from .connection_inventory import ConnectionInventory
@@ -114,6 +115,8 @@ class ManagedEntry:
         if self._closed or self._platforms_started:
             raise RuntimeError("Native platforms cannot be started twice")
         self._platforms_started = True
+        # #122: a source's platform setup must not import in the event loop.
+        await rrc_platforms.async_load_trackers(self.hass)
         await self.hass.config_entries.async_forward_entry_setups(self.entry, PLATFORMS)
 
     @callback

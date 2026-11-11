@@ -22,6 +22,7 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.util import dt as dt_util
 
+from . import rrc_platforms
 from .auth_diagnostics import async_load_auth_histories
 from .auth_lifecycle import (
     async_wait_for_entry_refresh,
@@ -368,6 +369,8 @@ async def _async_setup_legacy_entry(
 
     _remove_unselected_gateway_entries(hass, entry, selected_ids)
     _enable_new_default_entities(hass, entry, coordinators)
+    # #122: the platform setups must not import in the event loop.
+    await rrc_platforms.async_load_trackers(hass)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     if (bacon := entry.runtime_data.bacon) is not None:
         bacon.attach_task(

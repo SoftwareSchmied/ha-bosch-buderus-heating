@@ -16,6 +16,7 @@ from functools import cache
 from typing import Final, cast
 
 from homeassistant.const import EntityCategory, Platform
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -73,6 +74,15 @@ def trackers() -> tuple[tuple[str, Mapping[Platform, Tracker]], ...]:
             raise ValueError(f"{name} tracks platforms without a hook: {unknown}")
         loaded.append((name, table))
     return tuple(loaded)
+
+
+async def async_load_trackers(hass: HomeAssistant) -> None:
+    """Import the entity modules in the executor, before platforms start.
+
+    Every path that sets up the entity platforms awaits this first, so
+    ``track`` finds the cached trackers and never imports in the event loop.
+    """
+    await hass.async_add_import_executor_job(trackers)
 
 
 def track(
