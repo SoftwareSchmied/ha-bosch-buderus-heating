@@ -234,6 +234,7 @@
           "notifications": "Benachrichtigungen",
           "holidays": "Urlaubszeiten verwalten",
           "rrc_programs": "RRC-Zeitprogramme",
+          "switch_programs": "Zeitprogramme Heizung und Warmwasser",
           "controls": "Anlage bedienen",
           "connections": "Verbindungen",
           "connection_add_cloud": "Cloud-Zugang verbinden",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Schaltpunkt"
         }
+      },
+      "switch_programs": {
+        "title": "Zeitprogramm auswählen",
+        "description": "Wähle das Wochenprogramm eines Heizkreises oder des Warmwassers. Angezeigt werden nur Programme, die die Heizungsanlage als änderbar meldet.",
+        "data": {
+          "program": "Zeitprogramm"
+        }
+      },
+      "switch_program_week": {
+        "title": "Zeitprogramm ändern",
+        "description": "**{program}**\n\n{week}\n\nHöchstens {per_day} Schaltpunkte pro Tag und {total} pro Woche, Uhrzeiten in Schritten von {raster} Minuten. Jeder Schaltpunkt gilt bis zum nächsten; die Zeiten gelten jede Woche in der Ortszeit der Heizungsanlage. Mit * markierte Tage haben noch nicht gespeicherte Änderungen. Vor dem letzten Schritt wird nichts gesendet.",
+        "data": {
+          "action": "Nächster Schritt",
+          "day": "Wochentag"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Zeitprogramm ändern",
+        "description": "**{program}**\n\n{week}\n\nHöchstens {per_day} Schaltpunkte pro Tag und {total} pro Woche, Uhrzeiten in Schritten von {raster} Minuten. Jeder Schaltpunkt gilt bis zum nächsten; die Zeiten gelten jede Woche in der Ortszeit der Heizungsanlage. Mit * markierte Tage haben noch nicht gespeicherte Änderungen. Vor dem letzten Schritt wird nichts gesendet.\n\nDieses Programm ist nicht das aktive Programm des Heizkreises. Änderungen wirken erst, wenn es ausgewählt ist.",
+        "data": {
+          "action": "Nächster Schritt",
+          "day": "Wochentag"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Zeitprogramm ändern",
+        "description": "**{program}**\n\n{week}\n\nHöchstens {per_day} Schaltpunkte pro Tag und {total} pro Woche, Uhrzeiten in Schritten von {raster} Minuten. Jeder Schaltpunkt gilt bis zum nächsten; die Zeiten gelten jede Woche in der Ortszeit der Heizungsanlage. Mit * markierte Tage haben noch nicht gespeicherte Änderungen. Vor dem letzten Schritt wird nichts gesendet.\n\nDas Warmwasserprogramm wirkt nur, solange die Warmwasser-Betriebsart auf Auto steht.",
+        "data": {
+          "action": "Nächster Schritt",
+          "day": "Wochentag"
+        }
+      },
+      "switch_program_day": {
+        "title": "Schaltpunkt auswählen",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nWähle einen Schaltpunkt, um ihn zu ändern oder zu löschen, füge einen neuen hinzu oder kehre zur Woche zurück.",
+        "data": {
+          "point": "Schaltpunkt"
+        }
+      },
+      "switch_program_point": {
+        "title": "Schaltpunkt bearbeiten",
+        "description": "**{program}** – **{day}**\n\nWähle eine Uhrzeit in Schritten von {raster} Minuten und eine Stufe. Die Stufe gilt ab dieser Uhrzeit bis zum nächsten Schaltpunkt.",
+        "data": {
+          "time": "Uhrzeit",
+          "level": "Stufe",
+          "delete": "Diesen Schaltpunkt löschen"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Tag kopieren",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nWähle die Tage, die dieselben Schaltpunkte bekommen sollen. Ihre bisherigen Schaltpunkte werden ersetzt.",
+        "data": {
+          "days": "Tage"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Zeitprogramm speichern",
+        "description": "**{program}**\n\n**Vorher:**\n\n{before}\n\n**Nachher:**\n\n{after}\n\nDie ganze Woche wird einmal gesendet und danach zurückgelesen. Notiere dir die bisherigen Schaltpunkte, falls du sie wieder zurückstellen möchtest."
       },
       "controls": {
         "title": "Anlage auswählen",
@@ -611,6 +670,20 @@
       "rrc_changed": "Das Programm wurde inzwischen geändert oder ist nicht mehr bearbeitbar. Öffne es erneut, um die aktuellen Angaben zu prüfen.",
       "rrc_not_confirmed": "Die Änderung konnte nicht bestätigt werden. Sie kann bereits gespeichert sein. Öffne das Programm erneut und prüfe die aktuellen Angaben.",
       "rrc_failed": "Das Zeitprogramm konnte nicht geändert werden. Prüfe die Verbindung und öffne das Programm erneut.",
+      "switch_program_time": "Bitte wähle eine Uhrzeit in Schritten von {raster} Minuten, ohne Sekunden.",
+      "switch_program_level": "Bitte wähle eine der angebotenen Stufen.",
+      "switch_program_duplicate_time": "An diesem Tag gibt es zu dieser Uhrzeit schon einen Schaltpunkt.",
+      "switch_program_too_many_per_day": "Dieser Tag hat schon die höchste Zahl an Schaltpunkten, die die Heizungsanlage erlaubt ({per_day}).",
+      "switch_program_too_many_in_all": "Die Woche hätte mehr Schaltpunkte, als die Heizungsanlage erlaubt ({total}).",
+      "switch_program_empty_week": "Die Woche braucht mindestens einen Schaltpunkt.",
+      "switch_program_day_required": "Bitte wähle einen Tag.",
+      "switch_program_no_changes": "Es wurde noch nichts geändert.",
+      "switch_program_invalid": "Die Änderung passt nicht zu den Grenzen des Zeitprogramms.",
+      "switch_program_changed": "Das Zeitprogramm wurde inzwischen geändert oder ist nicht mehr änderbar. Es wurde nichts gesendet. Öffne es erneut, um die aktuellen Schaltpunkte zu sehen.",
+      "switch_program_not_confirmed": "Die Änderung konnte nicht bestätigt werden. Sie kann bereits gespeichert sein. Öffne das Zeitprogramm erneut und prüfe die Schaltpunkte; die bisherigen stehen oben.",
+      "switch_program_rejected": "Die Heizungsanlage hat das Zeitprogramm abgelehnt. Es wurde nichts geändert.",
+      "switch_program_unused": "Die Heizungsanlage verwendet dieses Zeitprogramm zurzeit nicht. Es wurde nichts gesendet.",
+      "switch_program_failed": "Das Zeitprogramm konnte nicht geändert werden. Prüfe die Verbindung und öffne das Zeitprogramm erneut.",
       "controls_invalid": "Eine Eingabe ist ungültig oder die angezeigten Werte haben sich geändert. Prüfe die Eingaben oder lade die Werte neu. Es wurde nichts geschrieben.",
       "controls_changed": "Eine Einstellung wurde inzwischen geändert oder ist nicht mehr verfügbar. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
       "controls_auth": "Die Anmeldung ist abgelaufen. Bitte melde die Integration erneut an. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "Die Heizungsanlage meldet eine neue Urlaubszeit zurück, deren Einstellungen von deiner Eingabe abweichen. Gewünschter Zeitraum: {requested}. Zurückgemeldeter Zeitraum: {actual}. Öffne Urlaubszeiten verwalten, um diesen Eintrag zu prüfen und zu bearbeiten.",
       "holiday_update_adjusted": "Die Heizungsanlage meldet Einstellungen zurück, die von deiner gewünschten Änderung abweichen. Gewünschter Zeitraum: {requested}. Zurückgemeldeter Zeitraum: {actual}. Öffne Urlaubszeiten verwalten, um den aktuellen Eintrag zu prüfen und zu bearbeiten.",
       "no_rrc_schedules": "Es ist kein aktuelles, unterstütztes RRC-Wochenprogramm verfügbar.",
+      "no_switch_programs": "Es gibt hier kein aktuelles, änderbares Zeitprogramm eines Heizkreises oder des Warmwassers.",
+      "switch_program_changed": "Das Zeitprogramm wurde inzwischen geändert oder ist nicht mehr änderbar. Öffne es erneut, um die aktuellen Schaltpunkte zu sehen.",
+      "switch_program_saved": "Das Zeitprogramm {program} wurde gespeichert und durch Zurücklesen bestätigt.\n\nBisherige Schaltpunkte der geänderten Tage:\n\n{before}",
       "controls_not_loaded": "Bedienung ist nur über den Cloud-Zugang möglich; der lokale Zugang liest nur. Verbinde einen Cloud-Zugang oder warte, bis er geladen ist.",
       "controls_auth_required": "Bedienung nicht möglich: Der Cloud-Zugang braucht eine neue Anmeldung. Messwerte bleiben sichtbar.",
       "controls_cloud_stopped": "Bedienung nicht möglich: Der Cloud-Zugang ist angehalten oder startet neu. Messwerte bleiben sichtbar.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "Der Boost läuft. Temperatur und Dauer lassen sich nur ändern, solange er aus ist; sie gelten dann ab dem nächsten Start. Es wurde nichts geändert."
+    },
+    "switch_program_not_readable": {
+      "message": "Das gewählte Zeitprogramm kann gerade nicht gelesen werden. Es wurde nichts gesendet."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Freitag",
         "sa": "Samstag",
         "su": "Sonntag"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Einen Tag bearbeiten",
+        "copy": "Einen Tag auf andere Tage kopieren",
+        "review": "Änderungen prüfen und speichern"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Schaltpunkt hinzufügen",
+        "done": "Zurück zur Woche"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Immer heizen",
           "always_cooling": "Immer kühlen",
           "automatic": "Automatisch"
+        }
+      },
+      "active_switch_program": {
+        "name": "Aktives Zeitprogramm",
+        "state": {
+          "a": "Programm A",
+          "b": "Programm B"
         }
       }
     },

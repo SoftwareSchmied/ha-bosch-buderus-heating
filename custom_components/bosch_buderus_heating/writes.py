@@ -29,6 +29,7 @@ from .pointt import (
 )
 from .pointt.models import JsonScalar
 from .rrc_contracts import ContractConflict
+from .switch_program_selection import ACTIVE_SWITCH_PROGRAM_POLICY
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
 from .water_softener import softener_capability, softener_schema_issue, softener_unit
 from .write_policies import DEFAULT_READ_BACK_ATTEMPTS as DEFAULT_READ_BACK_ATTEMPTS
@@ -981,6 +982,8 @@ _ENUM_POLICIES = (
     AUXILIARY_HEATER_OPERATION_MODE_POLICY,
     VENTILATION_FAN_LEVEL_POLICY,
     SOFTENER_REGENERATION_POLICY,
+    # Z1: the active weekly program of a heating circuit (A/B).
+    ACTIVE_SWITCH_PROGRAM_POLICY,
     *STRING_SWITCH_POLICIES,
 )
 

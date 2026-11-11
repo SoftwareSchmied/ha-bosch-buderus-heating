@@ -234,6 +234,7 @@
           "notifications": "Notifications",
           "holidays": "Manage holiday periods",
           "rrc_programs": "RRC heating schedules",
+          "switch_programs": "Heating and hot water schedules",
           "controls": "Operate appliance",
           "connections": "Connections",
           "connection_add_cloud": "Connect cloud access",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Switch point"
         }
+      },
+      "switch_programs": {
+        "title": "Select schedule",
+        "description": "Choose the weekly schedule of a heating circuit or of the hot water. Only schedules that the heating system reports as changeable are listed.",
+        "data": {
+          "program": "Schedule"
+        }
+      },
+      "switch_program_week": {
+        "title": "Change schedule",
+        "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.",
+        "data": {
+          "action": "Next step",
+          "day": "Weekday"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Change schedule",
+        "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.\n\nThis schedule is not the active one of the heating circuit. Changes take effect once it is selected.",
+        "data": {
+          "action": "Next step",
+          "day": "Weekday"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Change schedule",
+        "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.\n\nThe hot water schedule applies only while the hot water operation mode is Auto.",
+        "data": {
+          "action": "Next step",
+          "day": "Weekday"
+        }
+      },
+      "switch_program_day": {
+        "title": "Choose switch point",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nChoose a switch point to change or delete it, add a new one, or go back to the week.",
+        "data": {
+          "point": "Switch point"
+        }
+      },
+      "switch_program_point": {
+        "title": "Edit switch point",
+        "description": "**{program}** – **{day}**\n\nChoose a time in steps of {raster} minutes and a level. The level applies from this time until the next switch point.",
+        "data": {
+          "time": "Time",
+          "level": "Level",
+          "delete": "Delete this switch point"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Copy day",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nChoose the days that get the same switch points. Their current switch points are replaced.",
+        "data": {
+          "days": "Days"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Save schedule",
+        "description": "**{program}**\n\n**Before:**\n\n{before}\n\n**After:**\n\n{after}\n\nThe whole week is sent once and then read back. Note the previous switch points in case you want to set them back."
       },
       "controls": {
         "title": "Select appliance",
@@ -611,6 +670,20 @@
       "rrc_changed": "The schedule has changed or can no longer be edited. Reopen it to check the current settings.",
       "rrc_not_confirmed": "The change could not be confirmed. It may already have been saved. Reopen the schedule and check its current settings.",
       "rrc_failed": "The heating schedule could not be changed. Check the connection and reopen the schedule.",
+      "switch_program_time": "Choose a time in steps of {raster} minutes, without seconds.",
+      "switch_program_level": "Choose one of the offered levels.",
+      "switch_program_duplicate_time": "This day already has a switch point at this time.",
+      "switch_program_too_many_per_day": "This day already has the highest number of switch points the heating system allows ({per_day}).",
+      "switch_program_too_many_in_all": "The week would have more switch points than the heating system allows ({total}).",
+      "switch_program_empty_week": "The week needs at least one switch point.",
+      "switch_program_day_required": "Choose a day.",
+      "switch_program_no_changes": "Nothing has been changed yet.",
+      "switch_program_invalid": "The change does not fit the limits of the schedule.",
+      "switch_program_changed": "The schedule has changed in the meantime or can no longer be changed. Nothing was sent. Reopen it to see the current switch points.",
+      "switch_program_not_confirmed": "The change could not be confirmed. It may already have been saved. Reopen the schedule and check its switch points; the previous ones are shown above.",
+      "switch_program_rejected": "The heating system refused the schedule. Nothing was changed.",
+      "switch_program_unused": "The heating system does not use this schedule at the moment. Nothing was sent.",
+      "switch_program_failed": "The schedule could not be changed. Check the connection and reopen the schedule.",
       "controls_invalid": "An input is invalid or the displayed values have changed. Check your inputs or reload the values. Nothing was written.",
       "controls_changed": "A setting has changed or is no longer available. Previously confirmed changes remain applied. Reload the values before trying again.",
       "controls_auth": "Authentication has expired. Please reauthenticate the integration. Previously confirmed changes remain applied. Reload the values before trying again.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "The heating system returned a new holiday, but its settings differ from your request. Requested period: {requested}. Returned period: {actual}. Open Manage holiday periods to check and edit this entry.",
       "holiday_update_adjusted": "The heating system returned settings that differ from your requested change. Requested period: {requested}. Returned period: {actual}. Open Manage holiday periods to check and edit the current entry.",
       "no_rrc_schedules": "No current, supported RRC weekly schedule is available.",
+      "no_switch_programs": "No current schedule of a heating circuit or of the hot water can be changed here.",
+      "switch_program_changed": "The schedule has changed in the meantime or can no longer be changed. Reopen it to see the current switch points.",
+      "switch_program_saved": "The schedule {program} was saved and confirmed by reading it back.\n\nPrevious switch points of the changed days:\n\n{before}",
       "controls_not_loaded": "Controls are only available through the cloud access; the local access only reads. Connect a cloud access or wait until it has loaded.",
       "controls_auth_required": "Controls are not available: the cloud access needs a new sign-in. Readings stay visible.",
       "controls_cloud_stopped": "Controls are not available: the cloud access is stopped or being restarted. Readings stay visible.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "The boost is running. Its temperature and duration can be changed only while it is off; they then apply from its next start. Nothing was changed."
+    },
+    "switch_program_not_readable": {
+      "message": "The selected schedule cannot be read at the moment. Nothing was sent."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Friday",
         "sa": "Saturday",
         "su": "Sunday"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Edit a day",
+        "copy": "Copy a day to other days",
+        "review": "Review and save the changes"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Add a switch point",
+        "done": "Back to the week"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Always heating",
           "always_cooling": "Always cooling",
           "automatic": "Automatic"
+        }
+      },
+      "active_switch_program": {
+        "name": "Active schedule",
+        "state": {
+          "a": "Program A",
+          "b": "Program B"
         }
       }
     },

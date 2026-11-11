@@ -234,6 +234,7 @@
           "notifications": "Oznámení",
           "holidays": "Správa období dovolené",
           "rrc_programs": "Časové programy topení RRC",
+          "switch_programs": "Časové programy topení a teplé vody",
           "controls": "Obsluha spotřebiče",
           "connections": "Připojení",
           "connection_add_cloud": "Připojit cloudový přístup",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Spínací bod"
         }
+      },
+      "switch_programs": {
+        "title": "Výběr časového programu",
+        "description": "Vyberte týdenní program topného okruhu nebo teplé vody. Zobrazí se jen programy, které topná soustava hlásí jako změnitelné.",
+        "data": {
+          "program": "Časový program"
+        }
+      },
+      "switch_program_week": {
+        "title": "Změna časového programu",
+        "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.",
+        "data": {
+          "action": "Další krok",
+          "day": "Den v týdnu"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Změna časového programu",
+        "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nTento program není aktivním programem topného okruhu. Změny se projeví, až bude vybrán.",
+        "data": {
+          "action": "Další krok",
+          "day": "Den v týdnu"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Změna časového programu",
+        "description": "**{program}**\n\n{week}\n\nNejvýše {per_day} spínacích bodů za den a {total} za týden, časy v krocích po {raster} minutách. Každý spínací bod platí až do dalšího; časy se opakují každý týden v místním čase topné soustavy. Dny označené * mají dosud neuložené změny. Před posledním krokem se nic neodesílá.\n\nProgram teplé vody platí jen tehdy, když je provozní režim teplé vody nastaven na Automatický.",
+        "data": {
+          "action": "Další krok",
+          "day": "Den v týdnu"
+        }
+      },
+      "switch_program_day": {
+        "title": "Výběr spínacího bodu",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nVyberte spínací bod, který chcete změnit nebo smazat, přidejte nový, nebo se vraťte k týdnu.",
+        "data": {
+          "point": "Spínací bod"
+        }
+      },
+      "switch_program_point": {
+        "title": "Úprava spínacího bodu",
+        "description": "**{program}** – **{day}**\n\nZvolte čas v krocích po {raster} minutách a stupeň. Stupeň platí od tohoto času do dalšího spínacího bodu.",
+        "data": {
+          "time": "Čas",
+          "level": "Stupeň",
+          "delete": "Smazat tento spínací bod"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Kopírování dne",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nVyberte dny, které dostanou stejné spínací body. Jejich dosavadní spínací body budou nahrazeny.",
+        "data": {
+          "days": "Dny"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Uložení časového programu",
+        "description": "**{program}**\n\n**Před:**\n\n{before}\n\n**Po:**\n\n{after}\n\nCelý týden se odešle jednou a poté se zpětně načte. Poznamenejte si dosavadní spínací body pro případ, že je budete chtít vrátit."
       },
       "controls": {
         "title": "Výběr spotřebiče",
@@ -611,6 +670,20 @@
       "rrc_changed": "Časový program se změnil nebo jej již nelze upravovat. Znovu jej otevřete a zkontrolujte aktuální nastavení.",
       "rrc_not_confirmed": "Změnu se nepodařilo potvrdit. Možná již byla uložena. Znovu otevřete časový program a zkontrolujte jeho aktuální nastavení.",
       "rrc_failed": "Časový program topení se nepodařilo změnit. Zkontrolujte připojení a znovu otevřete časový program.",
+      "switch_program_time": "Zvolte čas v krocích po {raster} minutách, bez sekund.",
+      "switch_program_level": "Zvolte jeden z nabízených stupňů.",
+      "switch_program_duplicate_time": "Tento den už má spínací bod v tomto čase.",
+      "switch_program_too_many_per_day": "Tento den už má nejvyšší počet spínacích bodů, který topná soustava povoluje ({per_day}).",
+      "switch_program_too_many_in_all": "Týden by měl více spínacích bodů, než topná soustava povoluje ({total}).",
+      "switch_program_empty_week": "Týden potřebuje alespoň jeden spínací bod.",
+      "switch_program_day_required": "Zvolte den.",
+      "switch_program_no_changes": "Zatím nebylo nic změněno.",
+      "switch_program_invalid": "Změna neodpovídá limitům časového programu.",
+      "switch_program_changed": "Časový program se mezitím změnil nebo jej již nelze měnit. Nic nebylo odesláno. Znovu jej otevřete a podívejte se na aktuální spínací body.",
+      "switch_program_not_confirmed": "Změnu se nepodařilo potvrdit. Možná již byla uložena. Znovu otevřete časový program a zkontrolujte spínací body; dosavadní jsou uvedeny výše.",
+      "switch_program_rejected": "Topná soustava časový program odmítla. Nic nebylo změněno.",
+      "switch_program_unused": "Topná soustava tento časový program právě nepoužívá. Nic nebylo odesláno.",
+      "switch_program_failed": "Časový program se nepodařilo změnit. Zkontrolujte připojení a znovu otevřete časový program.",
       "controls_invalid": "Některý vstup je neplatný nebo se zobrazené hodnoty změnily. Zkontrolujte zadané údaje nebo hodnoty znovu načtěte. Nic nebylo zapsáno.",
       "controls_changed": "Nastavení se změnilo nebo již není dostupné. Dříve potvrzené změny zůstávají použity. Před dalším pokusem hodnoty znovu načtěte.",
       "controls_auth": "Platnost ověření vypršela. Integraci znovu ověřte. Dříve potvrzené změny zůstávají použity. Před dalším pokusem hodnoty znovu načtěte.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "Topná soustava vrátila novou dovolenou, ale její nastavení se liší od vašeho požadavku. Požadované období: {requested}. Vrácené období: {actual}. Otevřete Správa období dovolené, zkontrolujte tuto položku a upravte ji.",
       "holiday_update_adjusted": "Topná soustava vrátila nastavení, která se liší od vámi požadované změny. Požadované období: {requested}. Vrácené období: {actual}. Otevřete Správa období dovolené, zkontrolujte aktuální položku a upravte ji.",
       "no_rrc_schedules": "Není k dispozici žádný aktuální podporovaný týdenní program RRC.",
+      "no_switch_programs": "Zde nelze změnit žádný aktuální časový program topného okruhu ani teplé vody.",
+      "switch_program_changed": "Časový program se mezitím změnil nebo jej již nelze měnit. Znovu jej otevřete a podívejte se na aktuální spínací body.",
+      "switch_program_saved": "Časový program {program} byl uložen a potvrzen zpětným načtením.\n\nDosavadní spínací body změněných dnů:\n\n{before}",
       "controls_not_loaded": "Ovládání je dostupné pouze přes cloudový přístup; místní přístup pouze čte. Připojte cloudový přístup nebo počkejte, až se načte.",
       "controls_auth_required": "Ovládání není dostupné: cloudový přístup vyžaduje nové přihlášení. Hodnoty zůstávají viditelné.",
       "controls_cloud_stopped": "Ovládání není dostupné: cloudový přístup je zastaven nebo se restartuje. Hodnoty zůstávají viditelné.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "Funkce Boost je aktivní. Její teplotu a dobu trvání lze změnit, jen když je vypnutá; platí pak od jejího příštího spuštění. Nic nebylo změněno."
+    },
+    "switch_program_not_readable": {
+      "message": "Vybraný časový program teď nelze načíst. Nic nebylo odesláno."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Pátek",
         "sa": "Sobota",
         "su": "Neděle"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Upravit den",
+        "copy": "Kopírovat den do jiných dnů",
+        "review": "Zkontrolovat a uložit změny"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Přidat spínací bod",
+        "done": "Zpět k týdnu"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Vždy topení",
           "always_cooling": "Vždy chlazení",
           "automatic": "Automatický"
+        }
+      },
+      "active_switch_program": {
+        "name": "Aktivní časový program",
+        "state": {
+          "a": "Program A",
+          "b": "Program B"
         }
       }
     },

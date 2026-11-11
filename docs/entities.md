@@ -375,7 +375,7 @@ no entity; a configured name is added dynamically.
 
 | Entity | HA type | PointT resource | PointT reports writable | Controllable in HA | Polling |
 |---|---|---|:---:|:---:|---:|
-| Active schedule | Sensor | `/heatingCircuits/{hc}/activeSwitchProgram` | Yes | No | 5 min |
+| Active schedule | Sensor; select only with two readable programs (since 0.9.0-alpha.6) | `/heatingCircuits/{hc}/activeSwitchProgram` | Yes | Yes, A/B | 5 min; read back after change |
 | Control type | Sensor | `/heatingCircuits/{hc}/controlType` | Yes | No | 5 min |
 | Desired temperature | Sensor | `/heatingCircuits/{hc}/currentRoomSetpoint` | No | No | 60 s |
 | Current heating/cooling status | Sensor | `/heatingCircuits/{hc}/currentSuWiMode` | No | No | 60 s |
@@ -390,7 +390,7 @@ no entity; a configured name is added dynamically.
 | Operating status | Sensor | `/heatingCircuits/{hc}/overallStatus` | No | No | 60 s |
 | Schedule type | Sensor | `/heatingCircuits/{hc}/switchProgramMode` | Yes | No | 5 min |
 | Schedule name A | Sensor | `/heatingCircuits/{hc}/switchPrograms/nameA` | Yes | No | 5 min |
-| Time program A (B) | Diagnostic enum sensor | `/heatingCircuits/{hc}/switchPrograms/A` | Yes | No | 15/30 min; scheduled level recalculated locally each minute |
+| Time program A (B) | Diagnostic enum sensor | `/heatingCircuits/{hc}/switchPrograms/A` | Yes | Yes, under Configure (since 0.9.0-alpha.6) | 15/30 min; scheduled level recalculated locally each minute; read back after change |
 | Heating | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/comfort2` | Yes | Yes | 5 min; read back after change |
 | Setback | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/eco` | Yes | Yes | 5 min; read back after change |
 
@@ -471,7 +471,7 @@ reported.
 | Comfort start temperature | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/high` | Yes | Yes | 5 min; read back after change |
 | Eco start temperature | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/low` | Yes | Yes | 5 min; read back after change |
 | Off | Sensor | `/dhwCircuits/{dhw}/temperatureLevels/off` | No | No | 15 min |
-| Time program A | Diagnostic enum sensor | `/dhwCircuits/{dhw}/switchPrograms/A` | Yes | No | 15/30 min; scheduled level recalculated locally each minute |
+| Time program A | Diagnostic enum sensor | `/dhwCircuits/{dhw}/switchPrograms/A` | Yes | Yes, under Configure (since 0.9.0-alpha.6) | 15/30 min; scheduled level recalculated locally each minute; read back after change |
 
 Number controls use the minimum and maximum reported by the gateway. They are
 created only when both limits are complete and lie within a broad plausibility

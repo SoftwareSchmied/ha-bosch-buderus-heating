@@ -234,6 +234,7 @@
           "notifications": "Fógraí",
           "holidays": "Bainistigh tréimhsí saoire",
           "rrc_programs": "Sceidil téimh RRC",
+          "switch_programs": "Sceidil téimh agus uisce te",
           "controls": "Oibrigh an trealamh",
           "connections": "Naisc",
           "connection_add_cloud": "Ceangail rochtain néil",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Pointe lasctha"
         }
+      },
+      "switch_programs": {
+        "title": "Roghnaigh sceideal",
+        "description": "Roghnaigh sceideal seachtainiúil ciorcad téimh nó an uisce te. Ní liostaítear ach sceidil a thuairiscíonn an córas téimh mar cinn is féidir a athrú.",
+        "data": {
+          "program": "Sceideal"
+        }
+      },
+      "switch_program_week": {
+        "title": "Athraigh an sceideal",
+        "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.",
+        "data": {
+          "action": "An chéad chéim eile",
+          "day": "Lá den tseachtain"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Athraigh an sceideal",
+        "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nNí hé an sceideal seo sceideal gníomhach an chiorcaid téimh. Beidh éifeacht ag athruithe nuair a roghnaítear é.",
+        "data": {
+          "action": "An chéad chéim eile",
+          "day": "Lá den tseachtain"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Athraigh an sceideal",
+        "description": "**{program}**\n\n{week}\n\n{per_day} pointe lasctha ar a mhéad in aghaidh an lae agus {total} in aghaidh na seachtaine, amanna i gcéimeanna {raster} nóiméad. Bíonn feidhm ag gach pointe lasctha go dtí an chéad cheann eile; athdhéantar na hamanna gach seachtain in am áitiúil an chórais téimh. Tá athruithe nach bhfuil sábháilte fós ar na laethanta atá marcáilte le *. Ní sheoltar aon rud roimh an gcéim dheireanach.\n\nNí bhíonn feidhm ag sceideal an uisce te ach fad atá mód oibríochta an uisce te socraithe ar Uathoibríoch.",
+        "data": {
+          "action": "An chéad chéim eile",
+          "day": "Lá den tseachtain"
+        }
+      },
+      "switch_program_day": {
+        "title": "Roghnaigh pointe lasctha",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nRoghnaigh pointe lasctha chun é a athrú nó a scriosadh, cuir ceann nua leis, nó fill ar an tseachtain.",
+        "data": {
+          "point": "Pointe lasctha"
+        }
+      },
+      "switch_program_point": {
+        "title": "Cuir pointe lasctha in eagar",
+        "description": "**{program}** – **{day}**\n\nRoghnaigh am i gcéimeanna {raster} nóiméad agus leibhéal. Bíonn feidhm ag an leibhéal ón am seo go dtí an chéad phointe lasctha eile.",
+        "data": {
+          "time": "Am",
+          "level": "Leibhéal",
+          "delete": "Scrios an pointe lasctha seo"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Cóipeáil lá",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nRoghnaigh na laethanta a gheobhaidh na pointí lasctha céanna. Cuirfear pointí lasctha nua in ionad na bpointí atá acu faoi láthair.",
+        "data": {
+          "days": "Laethanta"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Sábháil an sceideal",
+        "description": "**{program}**\n\n**Roimhe:**\n\n{before}\n\n**Ina dhiaidh:**\n\n{after}\n\nSeoltar an tseachtain ar fad uair amháin agus léitear arís í ina dhiaidh sin. Breac síos na pointí lasctha roimhe seo ar eagla gur mhaith leat iad a chur ar ais."
       },
       "controls": {
         "title": "Roghnaigh trealamh",
@@ -611,6 +670,20 @@
       "rrc_changed": "Tá an sceideal athraithe nó ní féidir é a chur in eagar a thuilleadh. Oscail arís é chun na socruithe reatha a sheiceáil.",
       "rrc_not_confirmed": "Níorbh fhéidir an t-athrú a dheimhniú. B'fhéidir go bhfuil sé sábháilte cheana. Oscail an sceideal arís agus seiceáil a shocruithe reatha.",
       "rrc_failed": "Níorbh fhéidir an sceideal téimh a athrú. Seiceáil an nasc agus oscail an sceideal arís.",
+      "switch_program_time": "Roghnaigh am i gcéimeanna {raster} nóiméad, gan soicindí.",
+      "switch_program_level": "Roghnaigh ceann de na leibhéil a thairgtear.",
+      "switch_program_duplicate_time": "Tá pointe lasctha ag an am seo ar an lá seo cheana.",
+      "switch_program_too_many_per_day": "Tá an líon is mó pointí lasctha a cheadaíonn an córas téimh ar an lá seo cheana ({per_day}).",
+      "switch_program_too_many_in_all": "Bheadh níos mó pointí lasctha sa tseachtain ná mar a cheadaíonn an córas téimh ({total}).",
+      "switch_program_empty_week": "Teastaíonn pointe lasctha amháin ar a laghad ón tseachtain.",
+      "switch_program_day_required": "Roghnaigh lá.",
+      "switch_program_no_changes": "Níor athraíodh aon rud fós.",
+      "switch_program_invalid": "Ní oireann an t-athrú do theorainneacha an sceidil.",
+      "switch_program_changed": "Tá an sceideal athraithe idir an dá linn nó ní féidir é a athrú a thuilleadh. Níor seoladh aon rud. Oscail arís é chun na pointí lasctha reatha a fheiceáil.",
+      "switch_program_not_confirmed": "Níorbh fhéidir an t-athrú a dheimhniú. B'fhéidir go bhfuil sé sábháilte cheana. Oscail an sceideal arís agus seiceáil a phointí lasctha; tá na cinn roimhe seo thuas.",
+      "switch_program_rejected": "Dhiúltaigh an córas téimh don sceideal. Níor athraíodh aon rud.",
+      "switch_program_unused": "Ní úsáideann an córas téimh an sceideal seo faoi láthair. Níor seoladh aon rud.",
+      "switch_program_failed": "Níorbh fhéidir an sceideal a athrú. Seiceáil an nasc agus oscail an sceideal arís.",
       "controls_invalid": "Tá ionchur neamhbhailí nó athraíodh na luachanna a thaispeántar. Seiceáil d'ionchuir nó athlódáil na luachanna. Níor scríobhadh aon rud.",
       "controls_changed": "Athraíodh socrú nó níl sé ar fáil a thuilleadh. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Athlódáil na luachanna sula ndéanann tú iarracht arís.",
       "controls_auth": "Tá an fíordheimhniú imithe in éag. Athfhíordheimhnigh an comhtháthú le do thoil. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Athlódáil na luachanna sula ndéanann tú iarracht arís.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "Sheol an córas téimh saoire nua ar ais, ach tá a socruithe difriúil ó d'iarratas. An tréimhse iarrtha: {requested}. An tréimhse seolta ar ais: {actual}. Oscail Bainistigh tréimhsí saoire chun an iontráil seo a sheiceáil agus a chur in eagar.",
       "holiday_update_adjusted": "Sheol an córas téimh socruithe ar ais atá difriúil ón athrú a d'iarr tú. An tréimhse iarrtha: {requested}. An tréimhse seolta ar ais: {actual}. Oscail Bainistigh tréimhsí saoire chun an iontráil reatha a sheiceáil agus a chur in eagar.",
       "no_rrc_schedules": "Níl aon sceideal seachtainiúil RRC reatha tacaithe ar fáil.",
+      "no_switch_programs": "Ní féidir aon sceideal reatha de chiorcad téimh nó den uisce te a athrú anseo.",
+      "switch_program_changed": "Tá an sceideal athraithe idir an dá linn nó ní féidir é a athrú a thuilleadh. Oscail arís é chun na pointí lasctha reatha a fheiceáil.",
+      "switch_program_saved": "Sábháladh an sceideal {program} agus deimhníodh é trína léamh arís.\n\nPointí lasctha roimhe seo na laethanta a athraíodh:\n\n{before}",
       "controls_not_loaded": "Níl rialuithe ar fáil ach tríd an rochtain néil; ní dhéanann an rochtain áitiúil ach léamh. Ceangail rochtain néil nó fan go mbeidh sí luchtaithe.",
       "controls_auth_required": "Níl rialuithe ar fáil: teastaíonn síniú isteach nua don rochtain néil. Fanann léamh le feiceáil.",
       "controls_cloud_stopped": "Níl rialuithe ar fáil: tá an rochtain néil stoptha nó á hatosú. Fanann léamh le feiceáil.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "Tá Boost ar siúl. Ní féidir a theocht ná a fhad a athrú ach amháin nuair atá sé múchta; beidh feidhm acu ansin ón gcéad tosú eile. Níor athraíodh aon rud."
+    },
+    "switch_program_not_readable": {
+      "message": "Ní féidir an sceideal roghnaithe a léamh faoi láthair. Níor seoladh aon rud."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Dé hAoine",
         "sa": "Dé Sathairn",
         "su": "Dé Domhnaigh"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Cuir lá in eagar",
+        "copy": "Cóipeáil lá chuig laethanta eile",
+        "review": "Athbhreithnigh agus sábháil na hathruithe"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Cuir pointe lasctha leis",
+        "done": "Ar ais chuig an tseachtain"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Téamh i gcónaí",
           "always_cooling": "Fuarú i gcónaí",
           "automatic": "Uathoibríoch"
+        }
+      },
+      "active_switch_program": {
+        "name": "Sceideal gníomhach",
+        "state": {
+          "a": "Clár A",
+          "b": "Clár B"
         }
       }
     },

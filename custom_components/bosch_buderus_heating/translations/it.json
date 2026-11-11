@@ -234,6 +234,7 @@
           "notifications": "Notifiche",
           "holidays": "Gestisci i periodi di vacanza",
           "rrc_programs": "Programmi orari di riscaldamento RRC",
+          "switch_programs": "Programmi orari di riscaldamento e acqua calda",
           "controls": "Comanda l'apparecchio",
           "connections": "Connessioni",
           "connection_add_cloud": "Collega l'accesso cloud",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Punto di commutazione"
         }
+      },
+      "switch_programs": {
+        "title": "Seleziona programma orario",
+        "description": "Scegli il programma settimanale di un circuito di riscaldamento o dell'acqua calda. Sono elencati solo i programmi che l'impianto di riscaldamento indica come modificabili.",
+        "data": {
+          "program": "Programma orario"
+        }
+      },
+      "switch_program_week": {
+        "title": "Modifica programma orario",
+        "description": "**{program}**\n\n{week}\n\nAl massimo {per_day} punti di commutazione al giorno e {total} alla settimana, orari a passi di {raster} minuti. Ogni punto di commutazione vale fino al successivo; gli orari si ripetono ogni settimana nell'ora locale dell'impianto di riscaldamento. I giorni contrassegnati con * hanno modifiche non ancora salvate. Prima dell'ultimo passo non viene inviato nulla.",
+        "data": {
+          "action": "Passo successivo",
+          "day": "Giorno della settimana"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Modifica programma orario",
+        "description": "**{program}**\n\n{week}\n\nAl massimo {per_day} punti di commutazione al giorno e {total} alla settimana, orari a passi di {raster} minuti. Ogni punto di commutazione vale fino al successivo; gli orari si ripetono ogni settimana nell'ora locale dell'impianto di riscaldamento. I giorni contrassegnati con * hanno modifiche non ancora salvate. Prima dell'ultimo passo non viene inviato nulla.\n\nQuesto programma non è il programma attivo del circuito di riscaldamento. Le modifiche hanno effetto quando viene selezionato.",
+        "data": {
+          "action": "Passo successivo",
+          "day": "Giorno della settimana"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Modifica programma orario",
+        "description": "**{program}**\n\n{week}\n\nAl massimo {per_day} punti di commutazione al giorno e {total} alla settimana, orari a passi di {raster} minuti. Ogni punto di commutazione vale fino al successivo; gli orari si ripetono ogni settimana nell'ora locale dell'impianto di riscaldamento. I giorni contrassegnati con * hanno modifiche non ancora salvate. Prima dell'ultimo passo non viene inviato nulla.\n\nIl programma dell'acqua calda vale solo finché la modalità di funzionamento dell'acqua calda è su Auto.",
+        "data": {
+          "action": "Passo successivo",
+          "day": "Giorno della settimana"
+        }
+      },
+      "switch_program_day": {
+        "title": "Scegli il punto di commutazione",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nScegli un punto di commutazione per modificarlo o eliminarlo, aggiungine uno nuovo o torna alla settimana.",
+        "data": {
+          "point": "Punto di commutazione"
+        }
+      },
+      "switch_program_point": {
+        "title": "Modifica punto di commutazione",
+        "description": "**{program}** – **{day}**\n\nScegli un orario a passi di {raster} minuti e un livello. Il livello vale da questo orario fino al punto di commutazione successivo.",
+        "data": {
+          "time": "Ora",
+          "level": "Livello",
+          "delete": "Elimina questo punto di commutazione"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Copia giorno",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nScegli i giorni che ricevono gli stessi punti di commutazione. I loro punti di commutazione attuali vengono sostituiti.",
+        "data": {
+          "days": "Giorni"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Salva programma orario",
+        "description": "**{program}**\n\n**Prima:**\n\n{before}\n\n**Dopo:**\n\n{after}\n\nL'intera settimana viene inviata una volta e poi riletta. Annota i punti di commutazione precedenti nel caso volessi ripristinarli."
       },
       "controls": {
         "title": "Seleziona apparecchio",
@@ -611,6 +670,20 @@
       "rrc_changed": "Il programma è cambiato o non può più essere modificato. Riaprilo per controllare le impostazioni attuali.",
       "rrc_not_confirmed": "Non è stato possibile confermare la modifica. Potrebbe essere già stata salvata. Riapri il programma e controlla le impostazioni attuali.",
       "rrc_failed": "Non è stato possibile modificare il programma di riscaldamento. Controlla la connessione e riapri il programma.",
+      "switch_program_time": "Scegli un orario a passi di {raster} minuti, senza secondi.",
+      "switch_program_level": "Scegli uno dei livelli offerti.",
+      "switch_program_duplicate_time": "Questo giorno ha già un punto di commutazione a quest'ora.",
+      "switch_program_too_many_per_day": "Questo giorno ha già il numero massimo di punti di commutazione consentito dall'impianto di riscaldamento ({per_day}).",
+      "switch_program_too_many_in_all": "La settimana avrebbe più punti di commutazione di quanti ne consenta l'impianto di riscaldamento ({total}).",
+      "switch_program_empty_week": "La settimana ha bisogno di almeno un punto di commutazione.",
+      "switch_program_day_required": "Scegli un giorno.",
+      "switch_program_no_changes": "Non è ancora stato modificato nulla.",
+      "switch_program_invalid": "La modifica non rispetta i limiti del programma orario.",
+      "switch_program_changed": "Il programma orario è cambiato nel frattempo o non può più essere modificato. Non è stato inviato nulla. Riaprilo per vedere i punti di commutazione attuali.",
+      "switch_program_not_confirmed": "Non è stato possibile confermare la modifica. Potrebbe essere già stata salvata. Riapri il programma orario e controlla i suoi punti di commutazione; quelli precedenti sono indicati sopra.",
+      "switch_program_rejected": "L'impianto di riscaldamento ha rifiutato il programma orario. Non è stato modificato nulla.",
+      "switch_program_unused": "L'impianto di riscaldamento non usa questo programma orario al momento. Non è stato inviato nulla.",
+      "switch_program_failed": "Non è stato possibile modificare il programma orario. Controlla la connessione e riapri il programma orario.",
       "controls_invalid": "Un valore inserito non è valido oppure i valori mostrati sono cambiati. Controlla i valori inseriti o ricarica i valori. Non è stato scritto nulla.",
       "controls_changed": "Un'impostazione è cambiata o non è più disponibile. Le modifiche già confermate restano applicate. Ricarica i valori prima di riprovare.",
       "controls_auth": "L'autenticazione è scaduta. Autentica di nuovo l'integrazione. Le modifiche già confermate restano applicate. Ricarica i valori prima di riprovare.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "L'impianto di riscaldamento ha restituito una nuova vacanza, ma le sue impostazioni differiscono dalla tua richiesta. Periodo richiesto: {requested}. Periodo restituito: {actual}. Apri Gestisci i periodi di vacanza per controllare e modificare questa voce.",
       "holiday_update_adjusted": "L'impianto di riscaldamento ha restituito impostazioni che differiscono dalla modifica richiesta. Periodo richiesto: {requested}. Periodo restituito: {actual}. Apri Gestisci i periodi di vacanza per controllare e modificare la voce attuale.",
       "no_rrc_schedules": "Non è disponibile nessun programma settimanale RRC attuale e supportato.",
+      "no_switch_programs": "Qui non è possibile modificare nessun programma orario attuale di un circuito di riscaldamento o dell'acqua calda.",
+      "switch_program_changed": "Il programma orario è cambiato nel frattempo o non può più essere modificato. Riaprilo per vedere i punti di commutazione attuali.",
+      "switch_program_saved": "Il programma orario {program} è stato salvato e confermato rileggendolo.\n\nPunti di commutazione precedenti dei giorni modificati:\n\n{before}",
       "controls_not_loaded": "I comandi sono disponibili solo tramite l'accesso cloud; l'accesso locale esegue solo letture. Collega un accesso cloud o attendi che sia stato caricato.",
       "controls_auth_required": "I comandi non sono disponibili: l'accesso cloud richiede un nuovo login. I valori restano visibili.",
       "controls_cloud_stopped": "I comandi non sono disponibili: l'accesso cloud è fermo o in fase di riavvio. I valori restano visibili.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "Il boost è in corso. La sua temperatura e la sua durata si possono modificare solo mentre è spento; valgono poi dal prossimo avvio. Non è stato modificato nulla."
+    },
+    "switch_program_not_readable": {
+      "message": "Il programma orario selezionato non può essere letto al momento. Non è stato inviato nulla."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Venerdì",
         "sa": "Sabato",
         "su": "Domenica"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Modifica un giorno",
+        "copy": "Copia un giorno su altri giorni",
+        "review": "Controlla e salva le modifiche"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Aggiungi un punto di commutazione",
+        "done": "Torna alla settimana"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Sempre riscaldare",
           "always_cooling": "Sempre raffrescare",
           "automatic": "Automatico"
+        }
+      },
+      "active_switch_program": {
+        "name": "Programma orario attivo",
+        "state": {
+          "a": "Programma A",
+          "b": "Programma B"
         }
       }
     },
