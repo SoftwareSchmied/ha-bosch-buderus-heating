@@ -1068,6 +1068,20 @@ COMPRESSOR_SPEED = "/heatSources/hs1/refrigerant/compressorActualSpeed"
 PUMP_SPEED_SIGNAL = "/signals/SRC.CUHP.HP1.CHPumpSpeed"
 PRIMARY_FLOW_SIGNAL = "/signals/SRC.SystemPumpVolumeFlow"
 PUMP_MODULATION_SIGNAL = "/signals/SRC.CHPumpModulation"
+# Also since alpha.6: what a hydraulic view of the heat pump shows.
+PROMOTED_TEMPERATURES = (
+    "/heatSources/additionalHeater/flowTemp",  # TC1
+    "/heatSources/sensors/evaporatorTemp_tl2",  # TL2
+    "/heatSources/hs1/refrigerant/hotGasTemp",  # TR6
+    "/heatSources/hs1/refrigerant/liquidPipeHeatingTemp",  # TR3
+    "/heatSources/hs1/refrigerant/highPressureTemp",  # JR1
+    "/heatSources/hs1/refrigerant/lowPressureTemp",  # JR0
+    "/heatSources/hs1/refrigerant/suctionGasTemp",  # TR5
+)
+KEPT_DISABLED = (
+    "/heatSources/hs1/refrigerant/compressorTemp",
+    "/heatSources/hs1/refrigerant/liquidPipeCoolingTemp",  # TR4
+)
 
 
 async def test_an_update_enables_the_fan_and_pump_speeds(hass) -> None:
@@ -1100,9 +1114,15 @@ async def test_an_update_enables_the_fan_and_pump_speeds(hass) -> None:
     fan = existing(FAN_SPEED)
     pump = existing(PUMP_SPEED)
     compressor = existing(COMPRESSOR_SPEED)
+    promoted = [existing(path) for path in PROMOTED_TEMPERATURES]
     duplicates = [
         existing(path)
-        for path in (PUMP_SPEED_SIGNAL, PRIMARY_FLOW_SIGNAL, PUMP_MODULATION_SIGNAL)
+        for path in (
+            PUMP_SPEED_SIGNAL,
+            PRIMARY_FLOW_SIGNAL,
+            PUMP_MODULATION_SIGNAL,
+            *KEPT_DISABLED,
+        )
     ]
     async with loopback(ReadingBackend()):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -1112,6 +1132,8 @@ async def test_an_update_enables_the_fan_and_pump_speeds(hass) -> None:
         assert registry.async_get(fan).disabled_by is None
         assert registry.async_get(pump).disabled_by is None
         assert registry.async_get(compressor).disabled_by is integration
+        for entity_id in promoted:
+            assert registry.async_get(entity_id).disabled_by is None, entity_id
         for entity_id in duplicates:
             assert registry.async_get(entity_id).disabled_by is integration
         assert await hass.config_entries.async_unload(entry.entry_id)

@@ -16,6 +16,15 @@ Versioning after its first tagged preview.
   On an existing installation they are enabled at the next start, unless
   you disabled them yourself. The compressor speed and the controller
   signals that repeat these readings stay disabled.
+- **Heat pump temperatures enabled:** also enabled by default are the
+  readings of the local access a hydraulic view of the heat pump needs: the
+  primary supply temperature (TC1), the air intake temperature (TL2), and the
+  hot gas (TR6), condenser heating (TR3), high-pressure (JR1), low-pressure
+  (JR0) and suction line (TR5) temperatures. Existing installations get them
+  at the next start unless you disabled them; the entity IDs stay. The
+  compressor temperature, the condenser cooling temperature (TR4) and the
+  compressor speed, which practically repeats the compressor modulation,
+  stay disabled.
 - **Confirmed installations:** the Logatherm WLW186i-12 E with the outdoor
   unit WLW MB-5 AR, a Logamatic BC400 and an MX400 gateway now also lists
   the local access as confirmed, in the README and on the

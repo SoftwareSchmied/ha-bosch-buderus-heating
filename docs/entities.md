@@ -615,9 +615,17 @@ stored inventory or from its local readings alone (see
 
 | Enabled | Readings |
 | --- | --- |
-| yes | current supply setpoint, volume flow (L/h), compressor and electric heater power (W), outdoor unit fan (PL3) and primary heating pump (PC0) speed (%, since 0.9.0-alpha.6), refrigerant circuit status, heating circuit pump, thermal disinfection running, silent mode, utility power block |
-| no | cylinder temperature (the same value as the hot water temperature), hot gas (TR6), suction line (TR5), high-pressure (JR1) and low-pressure (JR0), condenser heating (TR3) and cooling (TR4), compressor and air intake (TL2) temperatures; compressor speed (%); primary supply temperature (TC1); a second compressor power reading and a coarse electric heater power; ventilation readings: exhaust, extract, outdoor and supply air temperatures, indoor, outdoor and highest humidity (%), indoor, outdoor and highest air quality (ppm, no device class), exhaust and supply fan power, summer bypass flap and auxiliary heater power (%), exhaust fan speed (rpm), supply fan speed (no device class or statistics), run time and filter remaining time (min, no statistics) and the exhaust fan level |
+| yes | current supply setpoint, volume flow (L/h), compressor and electric heater power (W), refrigerant circuit status, heating circuit pump, thermal disinfection running, silent mode, utility power block; since 0.9.0-alpha.6 also outdoor unit fan (PL3) and primary heating pump (PC0) speed (%), primary supply temperature (TC1), air intake temperature (TL2), hot gas (TR6), condenser heating (TR3), high-pressure (JR1), low-pressure (JR0) and suction line (TR5) temperatures |
+| no | cylinder temperature (the same value as the hot water temperature), condenser cooling (TR4) and compressor temperatures; compressor speed (%, practically the same value as the enabled compressor modulation); a second compressor power reading and a coarse electric heater power; ventilation readings: exhaust, extract, outdoor and supply air temperatures, indoor, outdoor and highest humidity (%), indoor, outdoor and highest air quality (ppm, no device class), exhaust and supply fan power, summer bypass flap and auxiliary heater power (%), exhaust fan speed (rpm), supply fan speed (no device class or statistics), run time and filter remaining time (min, no statistics) and the exhaust fan level |
 | no, diagnostic | the controller's other internal signals (`/signals/…`) with numeric readings: unit taken from the reading, long-term statistics when that unit is one of a measurement (not for run and remaining times), meaning not documented in detail. Identifiers, addresses or keys (for example the energy-management link ID) and free text are never offered. |
+
+The readings enabled in 0.9.0-alpha.6 are what a hydraulic view of the
+heat pump shows: its flow (TC1) and return, the source air (TL2), the fan and
+pump speeds and the refrigerant circuit. On an existing installation they are
+enabled at the next start, unless you disabled them yourself. Their entity
+IDs stay as they were; TC1 and TL2 keep the IDs of their former names, for
+example `…_additional_heater_flow_temperature` and
+`…_evaporator_temperature`.
 
 The controller's signals are offered as follows. Signals reported as true or
 false, also as declared TRUE/FALSE states, are on/off states (`on`/`off`, not

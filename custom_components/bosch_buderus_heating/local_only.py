@@ -821,24 +821,31 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         translation_key="pv_contact_state",
         options=("active", "inactive"),
     ),
-    # Disabled: technical readings of the refrigerant circuit and drives.
+    # The refrigerant circuit temperatures. Since 0.9.0-alpha.6 the ones a
+    # hydraulic view of the heat pump shows are enabled (hot gas TR6,
+    # condenser heating TR3, high and low pressure JR1/JR0, suction line
+    # TR5); the compressor and the condenser cooling temperature stay
+    # disabled.
     *(
-        _define(REFRIGERANT + "/" + name, key, TEMPERATURE, names)
-        for name, key, names in (
+        _define(REFRIGERANT + "/" + name, key, TEMPERATURE, names, enabled=enabled)
+        for name, key, names, enabled in (
             (
                 "compressorTemp",
                 "compressor_temperature",
                 ("Verdichtertemperatur", "Compressor temperature"),
+                False,
             ),
             (
                 "highPressureTemp",
                 "high_pressure_temperature",
                 ("Hochdrucktemperatur (JR1)", "High-pressure temperature (JR1)"),
+                True,
             ),
             (
                 "hotGasTemp",
                 "hot_gas_temperature",
                 ("Heißgastemperatur (TR6)", "Hot gas temperature (TR6)"),
+                True,
             ),
             (
                 "liquidPipeCoolingTemp",
@@ -847,6 +854,7 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
                     "Verflüssigertemperatur Kühlen (TR4)",
                     "Condenser temperature cooling (TR4)",
                 ),
+                False,
             ),
             (
                 "liquidPipeHeatingTemp",
@@ -855,24 +863,30 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
                     "Verflüssigertemperatur Heizen (TR3)",
                     "Condenser temperature heating (TR3)",
                 ),
+                True,
             ),
             (
                 "lowPressureTemp",
                 "low_pressure_temperature",
                 ("Niederdrucktemperatur (JR0)", "Low-pressure temperature (JR0)"),
+                True,
             ),
             (
                 "suctionGasTemp",
                 "suction_gas_temperature",
                 ("Temperatur Saugleitung (TR5)", "Suction line temperature (TR5)"),
+                True,
             ),
         )
     ),
+    # Enabled since 0.9.0-alpha.6: the air intake (TL2) and the primary
+    # supply temperature (TC1), the source and the flow of the heat pump.
     _define(
         "/heatSources/sensors/evaporatorTemp_tl2",
         "evaporator_temperature",
         TEMPERATURE,
         ("Luftansaugtemperatur (TL2)", "Air intake temperature (TL2)"),
+        enabled=True,
     ),
     # Enabled since 0.9.0-alpha.6: the fan and the primary heating pump
     # speeds; the compressor speed waits for the entity review.
@@ -901,6 +915,7 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         "additional_heater_flow",
         TEMPERATURE,
         ("Vorlauftemperatur primär (TC1)", "Primary supply temperature (TC1)"),
+        enabled=True,
     ),
     # Second sources of readings above: offered, but disabled.
     _define(

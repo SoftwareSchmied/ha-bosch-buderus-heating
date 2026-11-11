@@ -306,7 +306,7 @@ async def test_selecting_the_plant_on_an_existing_cloud_merges_it(
         sensors = entity_ids(owner)
         with evidence() as reads:
             result = await rediscover(hass, entry, cloud, [GATEWAY, "gateway-b"])
-        assert result["type"] is FlowResultType.CREATE_ENTRY, result
+        assert result["type"] is FlowResultType.MENU, result
         reads.cloud.assert_awaited_once_with(GATEWAY)
         snapshot = owner.connections.management.current()
         assert_merged(snapshot, target)
@@ -1062,7 +1062,7 @@ async def test_a_plain_selection_is_saved_during_a_cloud_pause(hass, backend) ->
         result = await hass.config_entries.options.async_configure(
             result["flow_id"], {"gateway_ids": [GATEWAY], "bacon_device_ids": []}
         )
-    assert result["type"] is FlowResultType.CREATE_ENTRY, result
+    assert result["type"] is FlowResultType.MENU, result
     assert backend.gateways.await_count == listings
     reads.cloud.assert_not_awaited()
 

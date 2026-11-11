@@ -115,8 +115,9 @@ async def test_entities_for_readable_local_only_paths(hass: HomeAssistant) -> No
     assert not set(PRIVATE) & set(entities)
     assert TEXT_SIGNAL not in entities
     enabled = {p for p, e in entities.items() if e.entity_registry_enabled_default}
-    # Since alpha.6 the outdoor unit fan speed (PL3) is enabled too.
-    assert enabled == {SETPOINT, FLOW, STATUS, FAN}
+    # Since alpha.6 the outdoor unit fan speed (PL3) and the hot gas
+    # temperature (TR6) are enabled too.
+    assert enabled == {SETPOINT, FLOW, STATUS, FAN, HOT_GAS}
     assert entities[SIGNAL].entity_category is EntityCategory.DIAGNOSTIC
     assert entities[SETPOINT].entity_category is None
     assert entities[SETPOINT].unique_id == local_only_unique_id("gateway-one", SETPOINT)
