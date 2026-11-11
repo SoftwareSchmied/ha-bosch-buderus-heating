@@ -9,6 +9,11 @@ with a confirmed unit.
 The history is never a discovered resource and never the state of an entity
 (P39). A cycle sends at most ``MAX_REQUESTS`` requests, and a first filling
 reaches back at most ``FIRST_FILL_DAYS`` days.
+
+Every cycle reads again from the last day the controller is known to have:
+that day may have been the running one when it was read, and a full history
+drops its oldest days, so neither the day after it nor a stored entry index
+alone is a safe start.
 """
 
 from __future__ import annotations
@@ -35,6 +40,7 @@ HISTORY_PATH: Final = "/energy/history"
 ENTRIES_PATH: Final = "/energy/historyEntries"
 GAS_UNIT_PATH: Final = "/energy/gas/unit"
 FIRMWARE_PATH: Final = "/gateway/versionFirmware"
+HEAT_SOURCE_TYPE_PATH: Final = "/heatSources/type"
 # Firmware from which the history is read by date instead of by entry.
 DATE_QUERY_FIRMWARE: Final = (5, 3, 0)
 MAX_REQUESTS: Final = 8
@@ -51,6 +57,10 @@ MAX_SERVER_ERROR_CYCLES: Final = 3
 
 type Mode = Literal["date", "entry"]
 type Kind = Literal["energy", "gas", "temperature"]
+# What the older keys ``eCH``/``eHW`` measure: the heat pump's electricity on
+# a heat pump or hybrid plant, gas on any other (boiler, no appliance,
+# unknown type).
+type Legacy = Literal["electricity", "gas"]
 _DATE = re.compile(r"(\d{2})-(\d{2})-(\d{4})")
 _NUMBER = re.compile(r"-?(?:\d+(?:\.\d*)?|\.\d+)")
 _FIRMWARE = re.compile(r"(\d{1,3})\.(\d{1,3})(?:\.(\d{1,3}))?")
@@ -65,22 +75,14 @@ class EnergyKey:
     slug: str
     kind: Kind
     names: tuple[str, str]
-    # Other spellings of the wire key, read only without the key itself.
-    aliases: tuple[str, ...] = ()
 
 
 _KWH = ("(kWh erwartet)", "(kWh expected)")
 
 
-def _energy(
-    wire: str, slug: str, german: str, english: str, *aliases: str
-) -> EnergyKey:
+def _energy(wire: str, slug: str, german: str, english: str) -> EnergyKey:
     return EnergyKey(
-        wire,
-        slug,
-        "energy",
-        (f"{german} {_KWH[0]}", f"{english} {_KWH[1]}"),
-        aliases,
+        wire, slug, "energy", (f"{german} {_KWH[0]}", f"{english} {_KWH[1]}")
     )
 
 
@@ -90,14 +92,12 @@ KEYS: Final[tuple[EnergyKey, ...]] = (
         "heat_pump_electricity_heating",
         "Wärmepumpe Strom Heizen",
         "Heat pump electricity heating",
-        "eCH",
     ),
     _energy(
         "eHw",
         "heat_pump_electricity_hot_water",
         "Wärmepumpe Strom Warmwasser",
         "Heat pump electricity hot water",
-        "eHW",
     ),
     _energy(
         "eCo",
@@ -188,11 +188,41 @@ KEYS: Final[tuple[EnergyKey, ...]] = (
     ),
 )
 KEY_BY_SLUG: Final = {key.slug: key for key in KEYS}
+# An older key -> the key it stands for on an electric plant and on any
+# other plant. It is read only when that key itself is missing.
+LEGACY_KEYS: Final[Mapping[str, tuple[str, str]]] = {
+    "eCH": ("eCh", "gCh"),
+    "eHW": ("eHw", "gHw"),
+}
+_ELECTRIC_SOURCES: Final = frozenset({"heatpump", "hybrid", "hybridgas", "hybridoil"})
 
 
 def statistic_names() -> tuple[tuple[str, str], ...]:
     """Every (German, English) statistic name, for the translation checks."""
     return tuple(key.names for key in KEYS)
+
+
+def legacy_meaning(heat_source_type: object) -> Legacy:
+    """What ``eCH``/``eHW`` measure on a plant with this heat source type.
+
+    A heat pump or a hybrid plant: the heat pump's electricity. A boiler, no
+    appliance, an unknown or a missing type: gas, which is imported only
+    with a confirmed unit, so gas never becomes heat pump electricity.
+    """
+    if isinstance(heat_source_type, str):
+        text = re.sub(r"[^a-z]", "", heat_source_type.casefold())
+        if text in _ELECTRIC_SOURCES:
+            return "electricity"
+    return "gas"
+
+
+def uses_legacy_keys(items: Iterable[object]) -> bool:
+    """Whether an answer carries a value under an older key."""
+    return any(
+        isinstance(item, dict)
+        and any(item.get(name) is not None for name in LEGACY_KEYS)
+        for item in items
+    )
 
 
 class HistoryRefused(PointTError):
@@ -228,7 +258,15 @@ def _number(value: object) -> float | None:
     return float(value)
 
 
-def _record(item: object) -> DayRecord | None:
+def _wire_names(wire: str, legacy: Legacy | None) -> tuple[str, ...]:
+    """The key itself, then the older key that stands for it on this plant."""
+    if legacy is None:
+        return (wire,)
+    index = 0 if legacy == "electricity" else 1
+    return (wire, *(old for old, meant in LEGACY_KEYS.items() if meant[index] == wire))
+
+
+def _record(item: object, legacy: Legacy | None) -> DayRecord | None:
     if not isinstance(item, dict):
         return None
     day = parse_day(item.get("d"))
@@ -239,7 +277,7 @@ def _record(item: object) -> DayRecord | None:
         raw = next(
             (
                 item[name]
-                for name in (key.wire, *key.aliases)
+                for name in _wire_names(key.wire, legacy)
                 if name in item and item[name] is not None
             ),
             None,
@@ -268,12 +306,18 @@ def history_items(value: JsonValue, values: Iterable[JsonValue] = ()) -> list[ob
     return []
 
 
-def parse_records(items: Iterable[object]) -> tuple[list[DayRecord], int]:
-    """Valid daily records in their order, and the number of invalid ones."""
+def parse_records(
+    items: Iterable[object], legacy: Legacy | None = None
+) -> tuple[list[DayRecord], int]:
+    """Valid daily records in their order, and the number of invalid ones.
+
+    The older keys ``eCH``/``eHW`` are read only with their ``legacy``
+    meaning; without it they are left out, never guessed.
+    """
     records: list[DayRecord] = []
     invalid = 0
     for item in items:
-        record = _record(item)
+        record = _record(item, legacy)
         if record is None:
             invalid += 1
         else:
@@ -353,9 +397,20 @@ class HistoryState:
     switched: bool = False
     unsupported: bool = False
     firmware: str | None = None
+    # By entry: the index of the first entry not known as a completed day.
     position: int | None = None
     entries: int | None = None
     last_day: date | None = None
+    # By date: the newest completed day the controller answered; the next
+    # cycle asks from this day on, which it has for sure.
+    cursor: date | None = None
+    # Days up to this one are in statistics recorded before this state
+    # began: they are never written again, the sums go on from those rows.
+    floor: date | None = None
+    statistics_checked: bool = False
+    # What the older keys eCH/eHW measure on this plant, once known.
+    heat_source: Legacy | None = None
+    heat_source_errors: int = 0
     base: dict[str, float] = field(default_factory=dict)
     recent: dict[date, dict[str, float]] = field(default_factory=dict)
     # Statistics with at least one value above zero, and their offsets.
@@ -386,6 +441,11 @@ class HistoryState:
             "position": self.position,
             "entries": self.entries,
             "last_day": _iso(self.last_day),
+            "cursor": _iso(self.cursor),
+            "floor": _iso(self.floor),
+            "statistics_checked": self.statistics_checked,
+            "heat_source": self.heat_source,
+            "heat_source_errors": self.heat_source_errors,
             "base": dict(self.base),
             "recent": {
                 day.isoformat(): dict(values)
@@ -440,6 +500,7 @@ class HistoryState:
             return cls()  # values without their position cannot be continued
         gas = data.get("gas_unit_confirmed")
         reason = data.get("reason")
+        heat_source = data.get("heat_source")
         return cls(
             mode=mode if mode in ("date", "entry") else None,
             switched=data.get("switched") is True,
@@ -448,6 +509,13 @@ class HistoryState:
             position=integer("position"),
             entries=integer("entries"),
             last_day=last_day,
+            cursor=_day(data.get("cursor")),
+            floor=_day(data.get("floor")),
+            statistics_checked=data.get("statistics_checked") is True,
+            heat_source=(
+                heat_source if heat_source in ("electricity", "gas") else None
+            ),
+            heat_source_errors=integer("heat_source_errors") or 0,
             base=_float_map(data.get("base")),
             recent=recent,
             active=_float_map(data.get("active")),
@@ -484,12 +552,13 @@ def _digest(values: Mapping[str, float]) -> str:
 def merge(state: HistoryState, records: Iterable[DayRecord], today: date) -> Rows:
     """Add the records of one answer and return the statistic rows to write.
 
-    Only completed days count (never today) and none older than
-    ``FIRST_FILL_DAYS``. A new day extends the sums; a known day of the last
-    ``RECOMPUTE_DAYS`` days whose values changed recalculates the sums from
-    that day; an older change is counted and left alone. Within one answer
-    a later record of the same day wins. A statistic starts with its first
-    value above zero, a gas statistic only with a confirmed unit.
+    Only completed days count (never today), none older than
+    ``FIRST_FILL_DAYS`` and none up to ``floor``. A new day extends the sums;
+    a known day of the last ``RECOMPUTE_DAYS`` days whose values changed
+    recalculates the sums from that day; an older change is counted and left
+    alone. Within one answer a later record of the same day wins. A statistic
+    starts with its first value above zero, a gas statistic only with a
+    confirmed unit.
     """
     oldest = today - timedelta(days=FIRST_FILL_DAYS)
     window_start = (
@@ -499,7 +568,9 @@ def merge(state: HistoryState, records: Iterable[DayRecord], today: date) -> Row
     )
     incoming: dict[date, dict[str, float]] = {}
     for record in records:
-        if oldest <= record.day < today:
+        if oldest <= record.day < today and (
+            state.floor is None or record.day > state.floor
+        ):
             incoming[record.day] = dict(record.values)
     changed_from: date | None = None
     for day, values in sorted(incoming.items()):
@@ -522,10 +593,12 @@ def merge(state: HistoryState, records: Iterable[DayRecord], today: date) -> Row
     for day, values in sorted(state.recent.items()):
         for slug, value in values.items():
             key = KEY_BY_SLUG[slug]
-            if value == 0 or slug in state.active:
+            if value == 0:
                 continue
             if key.kind == "gas":
                 state.gas_seen = True
+            if slug in state.active:
+                continue
             if importable(key, state):
                 state.active[slug] = _sum_before(state, slug, max(day, changed_from))
     rows = _rows(state, changed_from)
@@ -577,10 +650,35 @@ def _fold(state: HistoryState, today: date) -> None:
         del state.digests[day]
 
 
-class HistorySource(Protocol):
-    """The three reads of a cycle; each is one request.
+def continue_from(
+    state: HistoryState, last_rows: Mapping[str, tuple[date, float | None]]
+) -> None:
+    """Go on from the statistics already recorded, for an empty state.
 
-    ``page`` raises ``HistoryRefused`` for HTTP 400 or 404.
+    ``last_rows`` holds the last recorded row of each statistic: its day and
+    its sum (None for the temperature). Every sum continues from its row,
+    and no day up to the newest of these rows is written again, so a lost or
+    new import state neither runs a sum backwards nor counts a day twice.
+    """
+    state.statistics_checked = True
+    known = {slug: row for slug, row in last_rows.items() if slug in KEY_BY_SLUG}
+    if not known:
+        return
+    floor = max(day for day, _total in known.values())
+    state.floor = floor
+    state.last_day = floor
+    for slug, (_day_of_row, total) in known.items():
+        if KEY_BY_SLUG[slug].kind != "temperature":
+            finite = total is not None and math.isfinite(total)
+            state.base[slug] = max(0.0, total) if total is not None and finite else 0.0
+        state.active[slug] = 0.0
+
+
+class HistorySource(Protocol):
+    """The reads of a cycle; each is one request.
+
+    ``page`` reads the history without a query for an empty mapping and
+    raises ``HistoryRefused`` for HTTP 400 or 404.
     """
 
     async def entries(self) -> int | None: ...
@@ -588,6 +686,8 @@ class HistorySource(Protocol):
     async def page(self, query: Mapping[str, str | int]) -> list[object]: ...
 
     async def gas_unit(self) -> str | None: ...
+
+    async def heat_source_type(self) -> str | None: ...
 
 
 @dataclass(slots=True)
@@ -605,7 +705,13 @@ class _BudgetSpent(Exception):
     pass
 
 
+class _HeatSourceUnknown(Exception):
+    """An answer has older keys and the plant type could not be read yet."""
+
+
 type _Call = Callable[..., Awaitable[object]]
+type _Legacy = Callable[[list[object]], Awaitable[Legacy | None]]
+type _Write = Callable[[Rows], Awaitable[None] | None]
 
 
 async def run_cycle(
@@ -615,8 +721,9 @@ async def run_cycle(
     today: date,
     now: datetime,
     firmware: str | None,
-    write: Callable[[Rows], Awaitable[None] | None],
+    write: _Write,
     max_requests: int = MAX_REQUESTS,
+    heat_source_type: str | None = None,
 ) -> CycleResult:
     """Read new history days with at most ``max_requests`` requests.
 
@@ -624,6 +731,11 @@ async def run_cycle(
     the cycle keeps what was read before it. A refused query form switches
     once to the other form for the next cycle; a refused second form stops
     the reads until the firmware changes or seven days passed.
+
+    ``heat_source_type`` is the plant type if already read; otherwise it is
+    read once the first answer has an older key. An answer is only taken
+    once the meaning of its older keys is known, so no value is lost or
+    filed under the wrong statistic.
     """
     result = CycleResult()
 
@@ -633,12 +745,36 @@ async def run_cycle(
         result.requests += 1
         return await read(*args)
 
+    async def legacy_for(items: list[object]) -> Legacy | None:
+        if not uses_legacy_keys(items):
+            return None
+        if heat_source_type is not None:
+            state.heat_source = legacy_meaning(heat_source_type)
+        elif state.heat_source is None:
+            try:
+                value = await call(source.heat_source_type)
+            except ResourceError:
+                value = None  # refused or missing: an unknown type
+            except ServiceUnavailable, UnexpectedHttpStatus:
+                # A 5xx may also mean a missing path (P31): only after three
+                # cycles in a row; until then the answer waits on the
+                # controller.
+                state.heat_source_errors += 1
+                if state.heat_source_errors < MAX_SERVER_ERROR_CYCLES:
+                    raise _HeatSourceUnknown from None
+                value = None
+            state.heat_source_errors = 0
+            state.heat_source = legacy_meaning(value)
+        return state.heat_source
+
     if firmware != state.firmware:
         # S10: another firmware may answer the other form; choose again.
         state.firmware = firmware
         state.mode = None
         state.switched = False
         state.unsupported = False
+        state.heat_source = None
+        state.heat_source_errors = 0
     if state.mode is None:
         state.mode = preferred_mode(firmware)
     mode: Mode = state.mode
@@ -659,14 +795,17 @@ async def run_cycle(
                 isinstance(unit, str) and unit.strip().casefold() == "kwh"
             )
         if mode == "entry":
-            await _entry_pages(state, source, call, today, write)
+            await _entry_pages(state, source, call, legacy_for, today, write)
         else:
-            await _date_pages(state, source, call, today, write)
+            await _date_pages(state, source, call, legacy_for, today, write)
         state.unsupported = False
         state.server_errors = 0
     except _BudgetSpent:
         state.server_errors = 0
         state.reason = "request_budget_reached"
+    except _HeatSourceUnknown:
+        state.server_errors = 0
+        state.reason = "heat_source_type_unavailable"
     except HistoryRefused:
         state.server_errors = 0
         _refused(state, mode, result)
@@ -712,63 +851,140 @@ def _error_token(err: PointTError) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
 
 
-async def _write(write: Callable[[Rows], Awaitable[None] | None], rows: Rows) -> None:
+async def _write(write: _Write, rows: Rows) -> None:
     if rows:
         pending = write(rows)
         if pending is not None:
             await pending
 
 
+def _running(items: list[object], today: date) -> int | None:
+    """The index of the first entry of the running day (or later), if any."""
+    for index, item in enumerate(items):
+        day = parse_day(item.get("d")) if isinstance(item, dict) else None
+        if day is not None and day >= today:
+            return index
+    return None
+
+
 async def _entry_pages(
     state: HistoryState,
     source: HistorySource,
     call: _Call,
+    legacy_for: _Legacy,
     today: date,
-    write: Callable[[Rows], Awaitable[None] | None],
+    write: _Write,
 ) -> None:
+    """By entry (firmware before 5.3.0): ``?entry=N`` from index N on.
+
+    The entry of the last known day is read again first. It shows whether
+    the indices moved: a full history keeps its number of entries and drops
+    its oldest day, so the same index then holds a later day; the reads step
+    back until they reach the last known day. The running day is never
+    passed: its entry is read again by the next cycle.
+    """
     entries = await call(source.entries)
     if not isinstance(entries, int) or isinstance(entries, bool) or entries < 0:
         state.reason = "history_entries_invalid"
         return
     position = state.position
     if position is None:
-        position = max(0, entries - FIRST_FILL_DAYS)
+        start = max(0, entries - FIRST_FILL_DAYS)
     elif entries < position:
         # The counter went back (reset): read again from the last known day
         # on; days already imported are recognised by their date.
         behind = (today - state.last_day).days + 1 if state.last_day else 0
-        position = max(0, entries - behind - 1) if state.last_day else 0
+        start = max(0, entries - behind - 1) if state.last_day else 0
+    elif state.last_day is not None and position > 0:
+        start = position - 1
+    else:
+        start = position
     state.entries = entries
-    state.position = position
-    while position < entries:
-        items = await call(source.page, {"entry": position})
+    aligning = state.last_day is not None
+    while start < entries:
+        items = await call(source.page, {"entry": start})
         assert isinstance(items, list)
         if not items:
             break
-        records, invalid = parse_records(items)
+        records, invalid = parse_records(items, await legacy_for(items))
+        first = min((record.day for record in records), default=None)
+        last_day = state.last_day
+        if (
+            aligning
+            and start > 0
+            and last_day is not None
+            and first is not None
+            and first > last_day
+        ):
+            # The entries moved: step back by the days in between (with
+            # gaps that reaches back further, which costs no data).
+            start = max(0, start - (first - last_day).days)
+            continue
+        aligning = False
         state.invalid_records += invalid
-        position += len(items)
-        state.position = position
         await _write(write, merge(state, records, today))
+        if (running := _running(items, today)) is not None:
+            state.position = start + running
+            return
+        start += len(items)
+        state.position = start
 
 
 async def _date_pages(
     state: HistoryState,
     source: HistorySource,
     call: _Call,
+    legacy_for: _Legacy,
     today: date,
-    write: Callable[[Rows], Awaitable[None] | None],
+    write: _Write,
 ) -> None:
+    """By date (firmware 5.3.0 and later).
+
+    Without a known day the first answer comes without a query (the oldest
+    days); after that every query names a day the controller is known to
+    have, so a day without a record never stops the import. A first filling
+    whose oldest days are beyond ``FIRST_FILL_DAYS`` tries once to jump to
+    that limit. If the known day is gone (the history started again), the
+    reads begin anew without a query; days already imported are recognised
+    by their date.
+    """
     oldest = today - timedelta(days=FIRST_FILL_DAYS)
-    start = state.last_day + timedelta(days=1) if state.last_day else oldest
-    start = max(start, oldest)
-    while start < today:
-        items = await call(source.page, {"date": start.isoformat()})
+    anchor = state.cursor or state.last_day
+    jumped = probed = False
+    while True:
+        query: dict[str, str | int]
+        if anchor is None:
+            if probed:
+                return
+            probed = True
+            kind, query = "start", {}
+        elif anchor < oldest and not jumped:
+            jumped = True
+            kind, query = "jump", {"date": oldest.isoformat()}
+        else:
+            kind, query = "known", {"date": anchor.isoformat()}
+        items = await call(source.page, query)
         assert isinstance(items, list)
-        records, invalid = parse_records(items)
+        records, invalid = parse_records(items, await legacy_for(items))
+        newest = max(
+            (record.day for record in records if record.day < today), default=None
+        )
+        progressed = newest is not None and (anchor is None or newest > anchor)
+        if kind == "jump" and not progressed:
+            continue  # nothing from the limit on: step on from the known day
         state.invalid_records += invalid
-        newer = [record for record in records if record.day >= start]
-        if not newer:
-            break
         await _write(write, merge(state, records, today))
-        start = max(record.day for record in newer) + timedelta(days=1)
+        if progressed:
+            assert newest is not None
+            anchor = state.cursor = newest
+            if _running(items, today) is not None:
+                return  # the answer reached the running day
+            continue
+        if (
+            kind == "known"
+            and not probed
+            and all(record.day != anchor for record in records)
+        ):
+            anchor = None  # the known day is gone: start again
+            continue
+        return

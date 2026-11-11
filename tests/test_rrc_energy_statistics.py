@@ -21,22 +21,30 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
 from custom_components.bosch_buderus_heating import rrc_energy_statistics
-from custom_components.bosch_buderus_heating.pointt import Gateway, RateLimited
+from custom_components.bosch_buderus_heating.pointt import (
+    Gateway,
+    RateLimited,
+    Resource,
+)
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from custom_components.bosch_buderus_heating.rrc_energy import (
+    HEAT_SOURCE_TYPE_PATH,
     MAX_REQUESTS,
     parse_day,
 )
 from custom_components.bosch_buderus_heating.rrc_energy_statistics import (
     CADENCE,
+    RETRY_DELAY,
     START_DELAY,
     day_start,
     energy_store_key,
     history_of,
+    row_day,
     statistic_id,
 )
 from tests.helpers.rrc_cloud import Clock, RrcCloud, cloud_patches, load_tree
 from tests.test_entry import _entry
+from tests.test_rrc_budget_all_packages import PLANTS
 
 try:
     from pytest_homeassistant.common import async_fire_time_changed
@@ -51,6 +59,7 @@ GW = "gateway-one"
 HISTORY = "/energy/history"
 START = datetime(2026, 10, 20, 7, 0, tzinfo=UTC)
 ADD = "homeassistant.components.recorder.statistics.async_add_external_statistics"
+LAST_ROWS = f"{PACKAGE}.rrc_energy_statistics.async_last_rows"
 
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
 
@@ -72,18 +81,42 @@ def day_record(day: date, **values: float) -> dict[str, object]:
 
 
 def history_cloud(
-    items: list[dict[str, object]], *, page: int = 4, gas_unit: str = "kWh"
+    items: list[dict[str, object]],
+    *,
+    page: int = 4,
+    gas_unit: str = "kWh",
+    heat_source: str | None = "Hybrid",
+    tree: dict[str, Resource] | None = None,
 ) -> RrcCloud:
-    """The CT200 tree with a history answered by date or by entry."""
-    cloud = RrcCloud(load_tree("rrc/ct200-shapes.json"))
+    """The CT200 tree with a history answered by date or by entry; without
+    a query from the first record on."""
+    cloud = RrcCloud(load_tree("rrc/ct200-shapes.json") if tree is None else tree)
     cloud.tree["/energy/gas/unit"] = parse_resource(
         {"id": "/energy/gas/unit", "type": "stringValue", "value": gas_unit}
     )
     cloud.tree["/energy/historyEntries"] = parse_resource(
         {"id": "/energy/historyEntries", "type": "floatValue", "value": len(items)}
     )
+    if heat_source is not None:
+        cloud.tree[HEAT_SOURCE_TYPE_PATH] = parse_resource(
+            {"id": HEAT_SOURCE_TYPE_PATH, "type": "stringValue", "value": heat_source}
+        )
     cloud.history = items  # type: ignore[attr-defined]
     cloud.history_queries = []  # type: ignore[attr-defined]
+    plain_get = cloud.get_resource
+
+    async def get(gateway_id, path, **kwargs):
+        if path != HISTORY:
+            return await plain_get(gateway_id, path, **kwargs)
+        cloud.calls["GET", path] += 1
+        cloud.history_queries.append({})  # type: ignore[attr-defined]
+        cloud._check_rate_limit(path)
+        chunk = cloud.history[:page]  # type: ignore[attr-defined]
+        return parse_resource(
+            {"id": HISTORY, "type": "energyRecordings", "value": list(chunk)}
+        )
+
+    cloud.get_resource = get  # type: ignore[method-assign]
 
     async def query(gateway_id, path, query, **_kwargs):
         cloud.calls["GET?", path] += 1
@@ -109,10 +142,12 @@ def history_cloud(
 
 
 def history_requests(cloud: RrcCloud) -> int:
+    """The requests of the history import (the plant type only for it)."""
     return sum(
         count
         for (method, path), count in cloud.calls.items()
         if path.startswith("/energy")
+        or (method == "GET" and path == HEAT_SOURCE_TYPE_PATH)
     )
 
 
@@ -124,9 +159,9 @@ async def advance(
     await hass.async_block_till_done()
 
 
-async def start(hass: HomeAssistant, cloud: RrcCloud, entry=None):
+async def start(hass: HomeAssistant, cloud: RrcCloud, entry=None, gateway=None):
     entry = entry or _entry(hass)
-    stack = cloud_patches(cloud, Clock(), Gateway(GW))
+    stack = cloud_patches(cloud, Clock(), gateway or Gateway(GW))
     stack.__enter__()
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
@@ -140,7 +175,14 @@ async def stop(hass: HomeAssistant, entry, stack) -> None:
 
 
 @pytest.fixture
-def recorder_loaded(hass: HomeAssistant):
+def last_rows():
+    """No statistics recorded before (the recorder is not running)."""
+    with patch(LAST_ROWS, AsyncMock(return_value={})) as mock:
+        yield mock
+
+
+@pytest.fixture
+def recorder_loaded(hass: HomeAssistant, last_rows):
     """The recorder counts as loaded; its import is recorded instead."""
     hass.config.components.add("recorder")
     added = MagicMock()
@@ -174,7 +216,7 @@ async def test_nothing_is_read_at_the_start_and_nothing_without_a_recorder(
 
 
 async def test_cycles_come_every_three_hours_with_a_bounded_budget(
-    hass: HomeAssistant, freezer: FrozenDateTimeFactory, recorder_loaded
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, recorder_loaded, last_rows
 ) -> None:
     freezer.move_to(START)
     first = date(2026, 9, 1)
@@ -196,8 +238,10 @@ async def test_cycles_come_every_three_hours_with_a_bounded_budget(
         await advance(hass, freezer, timedelta(minutes=10))
         assert history_requests(cloud) - reads <= MAX_REQUESTS
         assert history_requests(cloud) > reads
-        # The gas unit was read once for the day.
+        # The gas unit was read once for the day, the recorded statistics
+        # once for the empty state.
         assert cloud.calls["GET", "/energy/gas/unit"] == 1
+        assert last_rows.await_count == 1
         # No statistic holds an identifier of the gateway.
         for call in recorder_loaded.call_args_list:
             metadata = call.args[1]
@@ -242,7 +286,7 @@ async def test_a_rate_limit_on_the_history_pauses_the_cloud_access(
         assert history.state.next_due >= dt_util.utcnow() + timedelta(
             hours=1, minutes=59
         )
-        assert cloud.calls["GET?", HISTORY] == 1
+        assert cloud.calls["GET", HISTORY] + cloud.calls["GET?", HISTORY] == 1
     finally:
         await stop(hass, entry, stack)
 
@@ -277,8 +321,9 @@ async def test_a_restart_continues_where_the_import_stopped(
         assert dt_util.utcnow() < due
         assert cloud.history_queries == []  # type: ignore[attr-defined]
         await advance(hass, freezer, due - dt_util.utcnow() + timedelta(minutes=1))
+        # It asks from the last known day on, which the controller has.
         assert cloud.history_queries[0] == {  # type: ignore[attr-defined]
-            "date": (last_day + timedelta(days=1)).isoformat()
+            "date": last_day.isoformat()
         }
     finally:
         await stop(hass, entry, stack)
@@ -314,6 +359,10 @@ def test_day_starts_are_local_midnight_at_the_top_of_an_hour() -> None:
     assert day_start(date(2026, 10, 26), kolkata) == datetime(
         2026, 10, 25, 18, 0, tzinfo=UTC
     )
+    # A recorded row gives its day back, also in a half-hour zone.
+    for zone in (berlin, kolkata, dt_util.get_time_zone("America/St_Johns")):
+        for day in (date(2026, 3, 29), date(2026, 10, 25), date(2026, 10, 26)):
+            assert row_day(day_start(day, zone).timestamp(), zone) == day
     assert statistic_id(GW, "gas_heating") == statistic_id(GW, "gas_heating")
     assert GW not in statistic_id(GW, "gas_heating")
 
@@ -361,5 +410,114 @@ async def test_a_history_answer_with_rate_limit_counts_once(
         assert history.state.next_due >= dt_util.utcnow() + CADENCE - timedelta(
             minutes=1
         )
+    finally:
+        await stop(hass, entry, stack)
+
+
+# ------------------------------------------------- deep review (SYSTEM-02/05/14)
+def legacy_record(day: date, **values: float) -> dict[str, object]:
+    """A record of older firmware: ``eCH``/``eHW`` instead of the keys."""
+    return {"d": day.strftime("%d-%m-%Y"), "T": 5.0, "eCH": 3.0, "eHW": 1.0, **values}
+
+
+async def test_a_boiler_never_records_older_keys_as_heat_pump_electricity(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, recorder_loaded
+) -> None:
+    """SYSTEM-02: on a boiler ``eCH``/``eHW`` are gas, here without a
+    confirmed unit, so only the temperature is recorded."""
+    freezer.move_to(START)
+    first = date(2026, 10, 15)
+    items = [legacy_record(first + timedelta(days=n)) for n in range(4)]
+    cloud = history_cloud(items, page=10, gas_unit="m3", heat_source="Boiler")
+    entry, stack = await start(hass, cloud)
+    try:
+        await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+        written = {
+            call.args[1]["statistic_id"] for call in recorder_loaded.call_args_list
+        }
+        assert written == {statistic_id(GW, "outdoor_temperature")}
+        history = history_of(entry.runtime_data.coordinators[0])
+        assert history.state.heat_source == "gas"
+        assert history.state.reason == "gas_unit_unconfirmed"
+        assert history.state.last_day == date(2026, 10, 18)
+    finally:
+        await stop(hass, entry, stack)
+
+
+async def test_an_unreadable_recorder_holds_the_first_import_back(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, recorder_loaded, last_rows
+) -> None:
+    """SYSTEM-05: without the recorded rows an empty state imports nothing."""
+    freezer.move_to(START)
+    cloud = history_cloud(records())
+    last_rows.side_effect = RuntimeError("database is locked")
+    entry, stack = await start(hass, cloud)
+    try:
+        await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+        history = history_of(entry.runtime_data.coordinators[0])
+        assert history.waiting == "statistics_unreadable"
+        assert history_requests(cloud) == 0
+        assert recorder_loaded.call_count == 0
+        assert not history.state.statistics_checked
+        assert history.state.next_due == dt_util.utcnow() + RETRY_DELAY
+        last_rows.side_effect = None
+        await advance(hass, freezer, RETRY_DELAY + timedelta(minutes=1))
+        assert history.waiting is None
+        assert history.state.statistics_checked
+        assert history_requests(cloud) > 0
+        assert recorder_loaded.call_count > 0
+    finally:
+        await stop(hass, entry, stack)
+
+
+@pytest.mark.parametrize("plant", sorted(PLANTS))
+async def test_t2_the_energy_history_stays_within_its_budget(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, recorder_loaded, plant
+) -> None:
+    """SYSTEM-14: T2 with the energy history. A day of cycles on both
+    room controller trees: every cycle at most eight requests (the plant
+    type read for older keys included), none between the cycles."""
+    build, gateway, *_ = PLANTS[plant]
+    freezer.move_to(START)
+    first = START.date() - timedelta(days=150)
+    items = [
+        (legacy_record if n % 10 == 0 else day_record)(first + timedelta(days=n))
+        for n in range(150)
+    ]
+    # No plant type in the tree: it answers HTTP 500 like a missing path.
+    cloud = history_cloud(items, page=5, tree=build(), heat_source=None)
+    entry, stack = await start(hass, cloud, gateway=gateway)
+    try:
+        history = history_of(entry.runtime_data.coordinators[0])
+        assert history is not None
+        reads = history_requests(cloud)
+        await advance(hass, freezer, START_DELAY - timedelta(minutes=1))
+        assert history_requests(cloud) == reads
+        per_cycle: list[int] = []
+        days: list[date | None] = []
+        await advance(hass, freezer, timedelta(minutes=2))
+        for _cycle in range(8):
+            per_cycle.append(history_requests(cloud) - reads)
+            reads = history_requests(cloud)
+            days.append(history.state.last_day)
+            assert history.state.last_requests == per_cycle[-1]
+            # Nothing between two cycles.
+            await advance(hass, freezer, CADENCE - timedelta(minutes=5))
+            assert history_requests(cloud) == reads
+            await advance(hass, freezer, timedelta(minutes=6))
+        assert all(0 < count <= MAX_REQUESTS for count in per_cycle), per_cycle
+        assert sum(per_cycle) <= 8 * MAX_REQUESTS
+        # The import goes on: the older keys wait for the plant type, then
+        # count as gas (unknown type), never as heat pump electricity.
+        assert history.state.heat_source == "gas"
+        assert [day for day in days if day is not None] == sorted(
+            day for day in days if day is not None
+        )
+        assert days[-1] is not None and days[-1] > first
+        written = {
+            call.args[1]["statistic_id"] for call in recorder_loaded.call_args_list
+        }
+        assert statistic_id(GW, "heat_pump_electricity_heating") in written
+        assert statistic_id(GW, "gas_heating") in written
     finally:
         await stop(hass, entry, stack)

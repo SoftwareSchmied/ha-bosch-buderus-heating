@@ -9,7 +9,7 @@
   "created": "2026-11-10",
   "redaction": "Constructed values only. Record keys and date format follow the expected demo shape of the energy history; nothing comes from a real plant.",
   "physical_device_verified": false,
-  "contract": "Each record is one completed day (d = dd-MM-yyyy). Units are not part of the records: the energy values are expected to be kWh, the gas unit is a resource of its own (/energy/gas/unit). The test answers ?entry=N with the records from index N on, ?date=yyyy-MM-dd with the records from that day on, both in pages."
+  "contract": "Each record is one completed day (d = dd-MM-yyyy). Units are not part of the records: the energy values are expected to be kWh, the gas unit is a resource of its own (/energy/gas/unit). The test answers ?entry=N with the records from index N on, ?date=yyyy-MM-dd with the records from that day on and no query with the first records, all in pages. The older keys eCH/eHW (6 October) stand for eCh/eHw on a heat pump or hybrid plant and for gCh/gHw on any other; the tests read them as a hybrid plant."
  },
  "gas_units": {
   "confirmed": "kWh",
