@@ -8,6 +8,12 @@ not merely planned architecture.
 Status updated on **2026-11-02**. The current stable release, its
 locally tested controls and remaining work are listed below.
 
+Since 2026-11-08 the 0.9.0 line is in pre-release testing (versions
+0.9.0-alpha.N). These test versions add the local access and the room
+controller support; what each one contains and what was tested on real devices
+is in the [CHANGELOG](../CHANGELOG.md). The sections below describe the stable
+line unless they say otherwise.
+
 ## Current stable release: 0.8.3
 
 I fixed platform imports that prevented startup on Home Assistant 2026.9.2.

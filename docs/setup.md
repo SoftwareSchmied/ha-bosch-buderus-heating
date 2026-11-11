@@ -18,6 +18,8 @@ still displays it.
 
 ## Requirements
 
+- Home Assistant 2026.5.0 or newer (HACS does not offer the integration to
+  older versions);
 - a compatible Bosch or Buderus heating system with an MX300, MX400, K30/K30RF,
   K40/K40RF, or another compatible PointT gateway;
 - a working SingleKey ID account that is already connected to the heating app;
@@ -251,11 +253,12 @@ restart; you can still add the local access from the entry's options.
 
 <a id="everyday-operation-from-beta7"></a>
 
-## Everyday operation in 0.8.2
+## Everyday operation since 0.8.2
 
-The following controls are included in stable **0.8.2** and were introduced
+The following controls are included since stable **0.8.2** and were introduced
 in Beta.7. The older 0.8.2-beta.6 and 0.8.1 packages do not contain this dialog.
-Update to **0.8.2** through HACS, restart Home Assistant and reload the browser.
+Update to the latest release through HACS, restart Home Assistant and reload the
+browser.
 
 1. Open **Settings > Devices & services > Bosch/Buderus Home Comfort > Configure**.
 2. Select **Operate appliance**. With several PointT gateways, select the
@@ -290,8 +293,8 @@ is not necessary.
 ### The new controls are missing or look different
 
 - Check the installed integration version and its release notes. The PointT
-  dialog, climate and hot-water entity described above are included in stable
-  **0.8.2** and Beta.7. The published Beta.6 and 0.8.1 packages do not contain them.
+  dialog, climate and hot-water entity described above are included since
+  stable **0.8.2** and Beta.7. The published Beta.6 and 0.8.1 packages do not contain them.
 - After installing a build that includes them, restart Home Assistant and
   reload the browser. Check disabled entities as well.
 - Entities follow the resources offered by each circuit. A missing valid
@@ -329,6 +332,14 @@ is not necessary.
 
 Diagnostics show both under `startup_inventory` and `discovery_recovery` for
 each gateway.
+
+### A device that no longer exists
+
+Since 0.9.0-alpha.6 a device of the integration can be deleted on its device
+page (**⋮ > Delete**) once none of its entities is provided any more, for
+example a heating circuit removed at the controller. While one of its entities
+or a device connected through it is still provided, Home Assistant offers no
+Delete. If the system reports the device again, the next start creates it anew.
 
 ### Chrome Console is empty or the redirect address is missing
 

@@ -12,6 +12,6 @@ receive an acknowledgement within seven days.
 
 ## Supported versions
 
-The project has not published a supported release yet. Security fixes will be
-applied to the latest development line until a version support policy is
-announced.
+Security fixes go into the latest stable release and the current pre-release
+line. Older releases are not updated; please update to the latest release
+through HACS before reporting a problem that may already be fixed.
