@@ -245,6 +245,29 @@ async def test_read_back_schedule_follows_the_device_type(
     assert (diagnostics is not None) is (device_type == "icom")
 
 
+@pytest.mark.parametrize(
+    ("device_type", "single", "holiday"),
+    [("icom", 60, 200), ("MX300", 60, 180), (None, 60, 180)],
+)
+async def test_the_write_deadline_follows_the_icom_read_back(
+    hass: HomeAssistant, device_type, single, holiday
+) -> None:
+    """D25 with I1: the overall deadline of a write comes from the same
+    read-back schedule the scalar and the holiday writes use; an iCom holiday
+    (five steps of 1 + 2 + 3 + 4 s) gets 200 s instead of 180 s."""
+    coordinator = _polling(hass, AsyncMock(), device_type)
+    delays = coordinator.write_read_back_delays()
+    assert coordinator._icom_holiday_write_service._read_back_delays == delays
+    assert coordinator._write_deadline(None, 1).total_seconds() == single
+    assert (
+        coordinator._write_deadline(
+            coordinator_module.HOLIDAY_WRITE_DEADLINE,
+            coordinator_module.HOLIDAY_WRITE_STEPS,
+        ).total_seconds()
+        == holiday
+    )
+
+
 async def test_icom_write_is_read_back_after_one_to_four_seconds() -> None:
     sleep = AsyncMock()
     service = WriteService(
