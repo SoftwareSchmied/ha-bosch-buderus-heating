@@ -1,5 +1,10 @@
 # Gateway identity evidence
 
+> Development record: the status sentences on this page describe the state
+> before 0.9.0-alpha.1. Since then local setup and regular local polling are
+> active; see [local setup completion](local-completion.md) and
+> [managed local access](local-runtime.md).
+
 I added a separate identity parser and comparison in `gateway_identity.py`.
 It provides a foundation for connecting a future local source to an existing
 installation. It does not yet run during setup or polling.

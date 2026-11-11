@@ -4,7 +4,7 @@ The enrollment component extends the [credential handover](local-credentials.md)
 It prepares device-label authentication and restart recovery for an explicitly
 selected retained installation. Completion and native removal now use the journal;
 setup UI and polling remain separate.
-The active config flow remains on storage version 4.1.
+The active config flow uses storage version 4.2 (since 0.9.0-alpha.1).
 
 ## One request with explicit trust
 

@@ -1,5 +1,10 @@
 # Local resource catalog and response contracts
 
+> Development record: the status sentences on this page describe the state
+> before 0.9.0-alpha.1. Since then local setup and regular local polling are
+> active; see [local setup completion](local-completion.md) and
+> [managed local access](local-runtime.md).
+
 I added a pure resource layer covering all 261 GET path templates in the pinned
 K40/MX400 OpenAPI specification. It describes valid addresses and decodes local
 responses; it does not make network requests, discover installed equipment or
