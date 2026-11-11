@@ -713,12 +713,28 @@ async def test_an_unreadable_heat_source_type_keeps_the_answer_for_later() -> No
         assert sink.rows == {}
         assert state.last_day is None and state.position is None
         assert state.server_errors == 0 and not state.switched
-    # The third 5xx in a row counts as a missing path: an unknown type.
+    # VER-04: from the third 5xx in a row the answers are taken without
+    # their older keys, never as gas or heat pump electricity, and no type
+    # is stored; one read of the type per cycle, not per page.
+    source.page_size = 1
     result = await cycle(state, source, sink)
-    assert result.reason is None
-    assert state.heat_source == "gas"
-    assert "gas_heating" in sink.rows
-    assert not [slug for slug in sink.rows if slug.startswith("heat_pump")]
+    assert result.reason == "legacy_keys_ambiguous"
+    assert state.heat_source is None
+    assert set(sink.rows) == {"outdoor_temperature"}
+    assert state.last_day == TODAY - timedelta(days=1)
+    assert [name for name, _ in source.calls].count("heat_source_type") == 3
+    # The next cycle reads the type again; once it answers, it is stored
+    # and the older keys follow it from the last known day on (read again).
+    source.items.append(legacy_record(TODAY))
+    source.type_error = None
+    await cycle(state, source, sink, today=TODAY + timedelta(days=1))
+    assert [name for name, _ in source.calls].count("heat_source_type") == 4
+    assert state.heat_source == "electricity" and state.heat_source_errors == 0
+    assert sink.rows["heat_pump_electricity_heating"] == {
+        TODAY - timedelta(days=1): 3.0,
+        TODAY: 6.0,
+    }
+    assert "gas_heating" not in sink.rows
     # A refused path is an unknown type at once.
     source = Source(items)
     source.type_error = ResourceNotFound(HEAT_SOURCE_TYPE_PATH, 404)

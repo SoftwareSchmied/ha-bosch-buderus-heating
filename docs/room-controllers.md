@@ -318,7 +318,10 @@ values are imported only when the controller confirms the unit kWh.
   a boiler, without a heat source or with an unknown heat source type they
   count as gas and follow the gas rule: without the confirmed unit kWh they
   are not imported. The heat source type is read once, only when such keys
-  appear; until it is known, these days wait on the controller.
+  appear; until it is known, these days wait on the controller. If the
+  controller answers its type with a server error three runs in a row, the
+  days are imported without these two values, nothing is assumed, and the
+  next run reads the type again.
 - If the import starts over, for example after the integration was added
   again or its stored import state could not be read, the statistics
   continue from their last recorded value; recorded days are not written

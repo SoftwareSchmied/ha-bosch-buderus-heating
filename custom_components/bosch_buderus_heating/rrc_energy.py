@@ -745,24 +745,33 @@ async def run_cycle(
         result.requests += 1
         return await read(*args)
 
+    # VER-04: the plant type stayed unknown in this cycle after 5xx answers.
+    unknown_type = False
+
     async def legacy_for(items: list[object]) -> Legacy | None:
+        nonlocal unknown_type
         if not uses_legacy_keys(items):
             return None
         if heat_source_type is not None:
             state.heat_source = legacy_meaning(heat_source_type)
         elif state.heat_source is None:
+            if unknown_type:
+                return None
             try:
                 value = await call(source.heat_source_type)
             except ResourceError:
                 value = None  # refused or missing: an unknown type
             except ServiceUnavailable, UnexpectedHttpStatus:
-                # A 5xx may also mean a missing path (P31): only after three
-                # cycles in a row; until then the answer waits on the
-                # controller.
+                # A 5xx may also mean a missing path (P31): for two cycles
+                # the answer waits on the controller. From the third on,
+                # VER-04: the answers are taken without their older keys,
+                # which are then never guessed, and nothing is stored, so
+                # the next cycle reads the type again.
                 state.heat_source_errors += 1
                 if state.heat_source_errors < MAX_SERVER_ERROR_CYCLES:
                     raise _HeatSourceUnknown from None
-                value = None
+                unknown_type = True
+                return None
             state.heat_source_errors = 0
             state.heat_source = legacy_meaning(value)
         return state.heat_source
@@ -825,6 +834,8 @@ async def run_cycle(
         result.defer = timedelta(hours=24)
     except PointTError as err:
         state.reason = _error_token(err)
+    if state.reason is None and unknown_type:
+        state.reason = "legacy_keys_ambiguous"
     if state.reason is None and state.old_changes > old_changes:
         state.reason = "history_change_outside_window"
     if state.reason is None and state.gas_unit_confirmed is not True and state.gas_seen:

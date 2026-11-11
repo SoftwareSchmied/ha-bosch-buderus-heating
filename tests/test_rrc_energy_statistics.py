@@ -507,9 +507,10 @@ async def test_t2_the_energy_history_stays_within_its_budget(
             await advance(hass, freezer, timedelta(minutes=6))
         assert all(0 < count <= MAX_REQUESTS for count in per_cycle), per_cycle
         assert sum(per_cycle) <= 8 * MAX_REQUESTS
-        # The import goes on: the older keys wait for the plant type, then
-        # count as gas (unknown type), never as heat pump electricity.
-        assert history.state.heat_source == "gas"
+        # The import goes on: the older keys wait for the plant type; while
+        # it stays unreadable they are left out (VER-04), never filed as gas
+        # or as heat pump electricity, and the type is read again.
+        assert history.state.heat_source is None
         assert [day for day in days if day is not None] == sorted(
             day for day in days if day is not None
         )
@@ -518,6 +519,6 @@ async def test_t2_the_energy_history_stays_within_its_budget(
             call.args[1]["statistic_id"] for call in recorder_loaded.call_args_list
         }
         assert statistic_id(GW, "heat_pump_electricity_heating") in written
-        assert statistic_id(GW, "gas_heating") in written
+        assert statistic_id(GW, "gas_heating") not in written
     finally:
         await stop(hass, entry, stack)

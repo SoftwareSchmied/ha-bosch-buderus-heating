@@ -135,7 +135,9 @@ Expected, untested on a real controller:
   last day already read, so a running day, a day without a record or a full
   history on the controller costs no day. The older keys `eCH`/`eHW` count
   as heat pump electricity only on a heat pump or hybrid system, otherwise
-  as gas under the gas rule. If the import starts over, the statistics
+  as gas under the gas rule; while the controller does not answer its heat
+  source type, I leave them out instead of assuming gas and read the type
+  again in the next run. If the import starts over, the statistics
   continue from their last recorded value instead of starting at zero.
 - **Radio devices:** every device in the controller's device list becomes
   its own device below the controller, named after its type (for example
