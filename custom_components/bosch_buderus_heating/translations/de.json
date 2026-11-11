@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Das Funkgerät nutzt diese Einstellung gerade nicht, deshalb wurde sie nicht geändert."
     },
+    "rrc_setting_unused": {
+      "message": "Der Raumregler nutzt diese Einstellung gerade nicht, deshalb wurde sie nicht geändert."
+    },
+    "rrc_away_unused": {
+      "message": "Der Abwesenheitsmodus ist im aktuellen Betriebsmodus des Raumreglers nicht möglich, deshalb wurde er nicht geändert."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Der Raumregler bietet die Fenster-offen-Erkennung hier gerade nicht an, deshalb wurde sie nicht geändert."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Der Raumregler nutzt diese Warmwasser-Einstellung gerade nicht, deshalb wurde sie nicht geändert."
+    },
+    "rrc_boost_changed": {
+      "message": "Der Boost wurde am Raumregler geändert, nachdem er angezeigt wurde, deshalb wurde nichts gesendet. Prüfe den aktuellen Boost und versuche es erneut."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Für die Fenster-offen-Erkennung lassen sich nur die Stufen hoch, mittel und niedrig einstellen."
     },

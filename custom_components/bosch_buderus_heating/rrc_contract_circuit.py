@@ -110,6 +110,10 @@ def check_order(
 
 
 _STRING = frozenset({"stringValue"})
+# The heating circuit settings do not depend on their ``used`` flag: a
+# setting the controller reports as not used stays writable, a used but
+# unavailable one is shown and locked (``unused_writable``).
+_UNUSED_WRITABLE: Final = True
 SWITCH_MODES: Final = ("off", "automatic")
 SEASON_MODES: Final = ("always_heating", "always_cooling", "automatic")
 HEATUP_SPEEDS: Final = ("slow", "normal", "fast")
@@ -125,13 +129,19 @@ def _limit(name: str) -> NumberWritePolicy:
         strict_grid=True,
         create_entity=False,
         value_check=check_order,
+        unused_writable=_UNUSED_WRITABLE,
     )
 
 
 def _threshold(name: str) -> NumberWritePolicy:
     """An outdoor temperature threshold: 0.5 K steps."""
     return NumberWritePolicy(
-        leaf(name), "C", 0.5, strict_grid=True, create_entity=False
+        leaf(name),
+        "C",
+        0.5,
+        strict_grid=True,
+        create_entity=False,
+        unused_writable=_UNUSED_WRITABLE,
     )
 
 
@@ -144,6 +154,7 @@ def _mode(name: str, values: tuple[str, ...]) -> EnumWritePolicy:
         frozenset(values),
         known_only=True,
         fallback_options=values,
+        unused_writable=_UNUSED_WRITABLE,
     )
 
 
@@ -162,6 +173,7 @@ ROOM_INFLUENCE_POLICY: Final = NumberWritePolicy(
     accepted_units=frozenset({"", "other"}),
     ui_unit_override="",
     create_entity=False,
+    unused_writable=_UNUSED_WRITABLE,
 )
 SUMMER_WINTER_THRESHOLD_POLICY: Final = _threshold("suWiThreshold")
 NIGHT_THRESHOLD_POLICY: Final = _threshold("nightThreshold")
@@ -187,6 +199,7 @@ SEASON_MODE_POLICY: Final = EnumWritePolicy(
     known_only=True,
     ignored_options=frozenset({""}),
     min_options=2,
+    unused_writable=_UNUSED_WRITABLE,
 )
 SETPOINT_OPTIMIZATION_POLICY: Final = EnumWritePolicy(
     leaf("setpointOptimization"),
@@ -196,6 +209,7 @@ SETPOINT_OPTIMIZATION_POLICY: Final = EnumWritePolicy(
     fallback_options=("on", "off"),
     on_value="on",
     off_value="off",
+    unused_writable=_UNUSED_WRITABLE,
 )
 ENUM_POLICIES: Final = (
     SUMMER_WINTER_MODE_POLICY,

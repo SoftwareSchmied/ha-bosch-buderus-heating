@@ -27,7 +27,12 @@ from .log_helpers import log_failure
 from .pointt import Gateway, Resource, ResourceMetadata, ResourceReference
 from .pointt.redaction import resource_path_template
 from .resource_catalog import is_never_read
-from .rrc import DEVICE_LIST, in_device_scope, profile_evidence
+from .rrc import (
+    DEVICE_LIST,
+    in_device_scope,
+    is_unread_event_entry,
+    profile_evidence,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -590,6 +595,7 @@ def _not_kept(gateway: Gateway, resources: Mapping[str, Resource]) -> set[str]:
             and path.startswith("/devices/")
             and not in_device_scope(path, resources.get(DEVICE_LIST))
         )
+        or (rrc and is_unread_event_entry(path))
     }
 
 

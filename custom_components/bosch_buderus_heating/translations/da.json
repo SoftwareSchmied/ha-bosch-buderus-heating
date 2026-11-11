@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Radioenheden bruger ikke denne indstilling i øjeblikket, så den blev ikke ændret."
     },
+    "rrc_setting_unused": {
+      "message": "Rumregulatoren bruger ikke denne indstilling i øjeblikket, så den blev ikke ændret."
+    },
+    "rrc_away_unused": {
+      "message": "Fraværstilstand er ikke mulig i rumregulatorens aktuelle driftstilstand, så den blev ikke ændret."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Rumregulatoren tilbyder ikke registrering af åbent vindue her i øjeblikket, så den blev ikke ændret."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Rumregulatoren bruger ikke denne indstilling for varmt brugsvand i øjeblikket, så den blev ikke ændret."
+    },
+    "rrc_boost_changed": {
+      "message": "Boostet blev ændret på rumregulatoren, efter at det blev vist, så intet blev sendt. Kontrollér det aktuelle boost, og prøv igen."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Til registrering af åbent vindue kan kun niveauerne høj, mellem og lav indstilles."
     },

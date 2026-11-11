@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Urządzenie radiowe w tej chwili nie korzysta z tego ustawienia, więc nie zostało ono zmienione."
     },
+    "rrc_setting_unused": {
+      "message": "Regulator pokojowy w tej chwili nie korzysta z tego ustawienia, więc nie zostało ono zmienione."
+    },
+    "rrc_away_unused": {
+      "message": "Tryb nieobecności nie jest możliwy w bieżącym trybie pracy regulatora pokojowego, więc nie został zmieniony."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Regulator pokojowy w tej chwili nie udostępnia tutaj wykrywania otwartego okna, więc nie zostało ono zmienione."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Regulator pokojowy w tej chwili nie korzysta z tego ustawienia ciepłej wody użytkowej, więc nie zostało ono zmienione."
+    },
+    "rrc_boost_changed": {
+      "message": "Funkcja Boost została zmieniona na regulatorze pokojowym po jej wyświetleniu, więc nic nie zostało wysłane. Sprawdź bieżące ustawienia funkcji Boost i spróbuj ponownie."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Dla wykrywania otwartego okna można ustawić tylko poziomy wysoki, średni i niski."
     },

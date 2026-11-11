@@ -120,14 +120,16 @@ async def test_hooks_reach_an_rrc_controller_bounded_and_last() -> None:
     assert len(settings) == MAX_RRC_DEVICE_SETTING_PROBES
     # Leaf by leaf: the first leaf of every device, in list order, first.
     assert settings[:24] == [f"/devices/device{n}/{LEAVES[0]}" for n in range(1, 25)]
-    # After the first setting leaf, the bulk reads carry setting leaves only.
-    bulk = [path for paths in cloud.requests for path in paths]
-    first = next(index for index, path in enumerate(bulk) if _setting(path))
-    assert all(_setting(path) for path in bulk[first:])
-    # Bulk requests: no other path shares a request with a setting leaf.
-    for paths in cloud.requests:
-        if any(_setting(path) for path in paths):
-            assert all(_setting(path) for path in paths)
+    # After the first setting leaf, the bulk reads carry setting leaves only,
+    # each with one path read before as its last path (SYSTEM-12).
+    first = next(
+        index
+        for index, paths in enumerate(cloud.requests)
+        if any(_setting(path) for path in paths)
+    )
+    for paths in cloud.requests[first:]:
+        assert all(_setting(path) for path in paths[:-1])
+        assert paths[-1] in found
     limited = [
         path
         for path, item in report.paths.items()

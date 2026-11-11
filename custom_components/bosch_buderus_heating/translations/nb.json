@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Radioenheten bruker ikke denne innstillingen for øyeblikket, så den ble ikke endret."
     },
+    "rrc_setting_unused": {
+      "message": "Romregulatoren bruker ikke denne innstillingen for øyeblikket, så den ble ikke endret."
+    },
+    "rrc_away_unused": {
+      "message": "Bortemodus er ikke mulig i romregulatorens nåværende driftsmodus, så den ble ikke endret."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Romregulatoren tilbyr ikke registrering av åpent vindu her for øyeblikket, så den ble ikke endret."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Romregulatoren bruker ikke denne varmtvannsinnstillingen for øyeblikket, så den ble ikke endret."
+    },
+    "rrc_boost_changed": {
+      "message": "Boosten ble endret på romregulatoren etter at den ble vist, så ingenting ble sendt. Kontroller den gjeldende boosten og prøv igjen."
+    },
     "rrc_window_sensitivity_level": {
       "message": "For registrering av åpent vindu kan bare nivåene høy, middels og lav stilles inn."
     },

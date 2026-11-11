@@ -126,7 +126,10 @@ async def test_controller_ending_a_replaced_setpoint_at_once(
         assert ended.value.translation_key == "rrc_override_ended"
         assert cloud.calls["PUT", path(2, OVERRIDE)] == 1
         assert sleeps == [1.0]
-        assert coordinator.data[path(2, OVERRIDE)].freshness is Freshness.STALE
+        # ZONE-03: the reading of 0 that ended the wait is valid and current.
+        ended_reading = coordinator.data[path(2, OVERRIDE)]
+        assert ended_reading.freshness is Freshness.FRESH and ended_reading.available
+        assert ended_reading.resource.value == 0
         assert stats(coordinator)["writes_unconfirmed"] == 1
     finally:
         await teardown(hass, entry, stack)

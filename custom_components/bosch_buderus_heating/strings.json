@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "The radio device does not use this setting at the moment, so it was not changed."
     },
+    "rrc_setting_unused": {
+      "message": "The room controller does not use this setting at the moment, so it was not changed."
+    },
+    "rrc_away_unused": {
+      "message": "Away mode is not possible in the room controller's current operating mode, so it was not changed."
+    },
+    "rrc_window_detection_unused": {
+      "message": "The room controller does not offer open window detection here at the moment, so it was not changed."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "The room controller does not use this hot water setting at the moment, so it was not changed."
+    },
+    "rrc_boost_changed": {
+      "message": "The boost changed on the room controller after it was shown, so nothing was sent. Check the current boost and try again."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Only the levels high, medium and low can be set for the open window detection."
     },

@@ -91,20 +91,34 @@ All new fields default to today's behaviour.
   confirmed (`RrcWriteNotConfirmed` with that key), for example
   `rrc_override_ended`.
 
-A used but unavailable contract setting is shown and locked (S8,
-`ControlLocked`). An unavailable one that is not marked as used, or one with
-malformed flags, gives no control at all (P41, `rrc_unavailable`; one check,
-`writes._contract_availability_issue`, for every contract policy). Writing
-needs `writeable` (S1) and limits from the metadata (S3).
+The flags of a contract setting (one check,
+`writes._contract_availability_issue`, for every contract policy; the states
+come from `rrc.flag_state`):
+
+- `available` false, used or not, or malformed flags: no control
+  (`rrc_unavailable`); an existing entity goes unavailable.
+- `available` true (or missing) with `used` false: the control stays and
+  every write is refused unsent (`ControlUnused`, a `ControlLocked`; the
+  message comes from `control.unused_translation_key`).
+- `unused_writable=True` on a policy keeps the earlier rule for settings
+  that do not depend on `used` (the heating circuit): `used` false stays
+  writable, used but unavailable is shown and locked (S8, `ControlLocked`).
+
+Readings decide on their own whether a flag matters to them. Writing needs
+`writeable` (S1) and limits from the metadata (S3).
 
 ## Writing
 
 - Scalars: `control.async_set_control(coordinator, path, value, policy,
-  expected=(...))`. The coordinator reads `expected` freshly first (S5),
-  writes once (S6) and reads back after 1, 2, 4 and 8 seconds on an RRC
-  controller (S7, `RRC_READ_BACK_DELAYS`). Unconfirmed:
-  `rrc_write_pending_confirmation`; a later regular poll that shows the value
-  counts as `late_confirmed`.
+  expected=(...))`. The coordinator reads `expected` and, for a contract
+  policy, the written path itself freshly in one bulk request first (S5; a
+  change of `expected` refuses, a change of the path itself only updates the
+  reading it is checked against), writes once (S6) and reads back after 1,
+  2, 4 and 8 seconds on an RRC controller (S7, `RRC_READ_BACK_DELAYS`).
+  Unconfirmed: `rrc_write_pending_confirmation`, and the path is read again
+  with the next cycle; a later regular poll that shows the value counts as
+  `late_confirmed`. A reading that a `read_back_check` ended the wait with
+  is published as current.
 - Structures (events, boost): `coordinator.async_run_rrc_operation(path,
   operation, require_snapshot=..., late_check=...)` around
   `coordinator.rrc_struct_writes.async_write(preflight=..., send=...,
@@ -112,7 +126,11 @@ needs `writeable` (S1) and limits from the metadata (S3).
   on_sent=lambda: coordinator.note_rrc_write_sent(path))` from
   `rrc_write.py`. `guard`
   blocks a second creation for 10 minutes while the first one's outcome is
-  unknown (`RrcWritePending`).
+  unknown (`RrcWritePending`). Only an unresolved outcome
+  (`WriteNotConfirmed`, a cancellation) marks the path stale and reads it
+  with the next cycle; a failed preflight or a refusal keeps the reading.
+  `on_sent` runs once the request may have left, not for a connection that
+  never opened.
 - Client: `put_resource_json`, `post_resource` and `delete_resource` send once
   without retries; `get_resource_query(gateway, path, {"entry": n})` accepts
   only `entry`, `next` (integers) and `date` (`yyyy-MM-dd`).
@@ -149,7 +167,13 @@ the rest is counted as `rrc_device_setting_limit` in the diagnostics. An
 HTTP 5xx answer to such a probe means "probably missing" (CT-B06). An item
 5xx in a bulk answer to an optional probe or a `zone_fields` leaf is taken
 as missing without an individual read; the known catalog paths keep it.
-`zone_fields` extend `rrc.ZONE_FIELDS`.
+That rule needs a cloud that answers: a batch of nothing but such probes
+carries one path discovered before as its last path (a full batch leaves
+one probe for the next); if it brought no resource at all, the 5xx answers
+count towards the outage rule. A 5xx below an
+`extra_roots` root never ends the discovery. The event entries
+(`/events/evN`, `/events/activeEvent`, `rrc.is_unread_event_entry`) are
+never read. `zone_fields` extend `rrc.ZONE_FIELDS`.
 
 ## Translations
 

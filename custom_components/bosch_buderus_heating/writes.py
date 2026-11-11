@@ -67,6 +67,11 @@ class ControlLocked(WriteValidationError):
     """#113: the controller shows the setting but locks it for now."""
 
 
+class ControlUnused(ControlLocked):
+    """The controller offers the setting but does not use it now (``used``
+    false); it stays shown and is not written."""
+
+
 ZONE_OPERATION_MODE_POLICY = EnumWritePolicy(
     ZONE_MODE_PATTERN,
     frozenset({"stringValue"}),
@@ -332,7 +337,7 @@ class WriteService:
         live = current is not None and current.path == resource.path
         if live and current is not None:
             resource = current
-        elif rrc.is_control(resource.path):
+        elif _reads_fresh(resource.path, policy, context):
             resource = await self._client.get_resource(gateway_id, resource.path)
         _validate_enum(resource, request, policy, context, related)
         if _confirms(policy, resource.value, value):
@@ -377,7 +382,7 @@ class WriteService:
         live = current is not None and current.path == resource.path
         if live and current is not None:
             resource = current
-        elif rrc.is_control(resource.path):
+        elif _reads_fresh(resource.path, policy, context):
             resource = await self._client.get_resource(gateway_id, resource.path)
         _validate_number(resource, request, policy, context, related)
         if _values_equal(resource.value, wire):
@@ -453,15 +458,35 @@ class WriteService:
                 reason = policy.read_back_check(confirmed, value)
                 if reason is not None:
                     # A contract rule: this reading ends the wait (for example
-                    # a temporary setpoint the controller already ended).
+                    # a temporary setpoint the controller already ended). The
+                    # reading itself is valid and current.
                     raise RrcWriteNotConfirmed(
-                        "PointT read-back ended the write unconfirmed", reason=reason
+                        "PointT read-back ended the write unconfirmed",
+                        reason=reason,
+                        reading=confirmed,
                     )
         if last_temporary_error is not None:
             raise not_confirmed("PointT read-back could not be completed") from (
                 last_temporary_error
             )
         raise not_confirmed("PointT read-back did not confirm the value")
+
+
+def _reads_fresh(
+    path: str,
+    policy: EnumWritePolicy | NumberWritePolicy,
+    context: ControlContext | None,
+) -> bool:
+    """S5: whether the transaction reads the resource itself before a PUT.
+
+    A zone control always; on an RRC controller every contract setting, so
+    that its flags, limits and value are checked against the controller's
+    current state, not against the reading of the last poll. A caller may
+    pass that current reading as ``current`` instead (the coordinator does).
+    """
+    return rrc.is_control(path) or (
+        _context(context).rrc_plant and rrc_contracts.owns(policy)
+    )
 
 
 def validate_control_value(
@@ -514,6 +539,8 @@ def _validate_enum(
         raise WriteValidationError("Resource does not advertise an enum write contract")
     if rrc.mode_locked(resource) or _locked(resource, policy):
         raise ControlLocked("The controller currently locks this mode")
+    if _unused(resource, policy):
+        raise ControlUnused("The controller does not use this setting now")
     if not isinstance(request.value, str) or request.value not in assessment.options:
         raise WriteValidationError("Requested enum value is not currently advertised")
     _run_value_check(policy, resource, request.value, related)
@@ -522,29 +549,50 @@ def _validate_enum(
 def _contract_availability_issue(
     resource: Resource, policy: EnumWritePolicy | NumberWritePolicy
 ) -> str | None:
-    """S8/P41: a contract setting the controller marks as unavailable, and
-    not as used, gets no control at all (for example extra hot water on an
-    instantaneous water heater); malformed flags get none either
-    (``rrc_unavailable``). A used but unavailable one stays and is locked
-    (``_locked``). The one availability check of every contract policy."""
+    """The one availability check of every contract policy (P41, S8).
+
+    A setting the controller marks as not available gets no control at all,
+    whether it is used or not (for example extra hot water on an
+    instantaneous water heater, or the fireplace function while away mode
+    runs); malformed flags get none either (``rrc_unavailable``). An
+    available setting that is not used keeps its control, which refuses to
+    write (``_unused``). A policy with ``unused_writable`` keeps the earlier
+    rule: no control only when unavailable and not used, a used but
+    unavailable setting is shown and locked (``_locked``). The flags come
+    from ``rrc.flag_state``; readings are not affected.
+    """
     if not rrc_contracts.owns(policy):
         return None
-    metadata = resource.metadata
-    if not metadata.availability_flags_valid or (
-        metadata.available is False and metadata.used is not True
-    ):
+    state = rrc.flag_state(resource)
+    if state == "invalid":
         return "rrc_unavailable"
-    return None
+    if policy.unused_writable:
+        if state == "unavailable" and resource.metadata.used is not True:
+            return "rrc_unavailable"
+        return None
+    return "rrc_unavailable" if state == "unavailable" else None
 
 
 def _locked(resource: Resource, policy: EnumWritePolicy | NumberWritePolicy) -> bool:
-    """S8: a used but unavailable contract setting is shown and locked."""
+    """S8: a used but unavailable contract setting with ``unused_writable``
+    is shown and locked."""
     metadata = resource.metadata
     return (
         rrc_contracts.owns(policy)
+        and policy.unused_writable
         and metadata.availability_flags_valid
         and metadata.used is True
         and metadata.available is False
+    )
+
+
+def _unused(resource: Resource, policy: EnumWritePolicy | NumberWritePolicy) -> bool:
+    """An available contract setting the controller does not use now: shown,
+    never written (``ControlUnused``)."""
+    return (
+        rrc_contracts.owns(policy)
+        and not policy.unused_writable
+        and rrc.flag_state(resource) == "unused"
     )
 
 
@@ -566,6 +614,8 @@ def _validate_number(
         )
     if _locked(resource, policy):
         raise ControlLocked("The controller currently locks this setting")
+    if _unused(resource, policy):
+        raise ControlUnused("The controller does not use this setting now")
     reason = _number_value_rejection_reason(resource, request.value)
     if reason is not None:
         raise WriteValidationError(f"Numeric control validation failed: {reason}")

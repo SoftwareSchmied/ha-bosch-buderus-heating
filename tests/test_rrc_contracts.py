@@ -550,12 +550,15 @@ async def test_a_used_but_unavailable_contract_setting_is_locked() -> None:
 
 
 async def test_locked_contract_setting_raises_control_locked() -> None:
+    """S8 for a policy with ``unused_writable``: used but unavailable is
+    shown and locked."""
     policy = EnumWritePolicy(
         rf"^{AWAY}$",
         frozenset({"stringValue"}),
         frozenset({"true", "false"}),
         on_value="true",
         off_value="false",
+        unused_writable=True,
     )
     contract = RrcContract(name="locked", enum_policies=(policy,))
     locked = away(
@@ -570,6 +573,15 @@ async def test_locked_contract_setting_raises_control_locked() -> None:
                 "gw", locked, "true", policy, context=RRC_CONTEXT
             )
         assert client.puts == []
+        # Not used, but available: writable with this rule.
+        unused = away(
+            "false", used="false", available="true", allowedValues=["true", "false"]
+        )
+        client = FakeClient(unused)
+        await _service(client, []).async_write_enum(
+            "gw", unused, "true", policy, context=RRC_CONTEXT
+        )
+        assert client.puts == ["true"]
 
 
 # ------------------------------------------------------- read-back (S7)

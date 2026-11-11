@@ -181,6 +181,15 @@ class _BoostEntity(CoordinatorEntity[BoschBuderusDataUpdateCoordinator]):
     def device_info(self) -> DeviceInfo:
         return device_info_for_resource(self.coordinator, BOOST_PATH)
 
+    def _unchanged(self, shown: Boost, current: Boost) -> bool:
+        """S5 (AWAY-09): whether the fields this write depends on are still
+        as shown. Switching depends on the mode and the zones it heats; a
+        number keeps the mode, so only the mode counts. The other fields are
+        sent as the fresh reading has them."""
+        if self._role == "switch":
+            return shown.mode == current.mode and shown.zones == current.zones
+        return shown.mode == current.mode
+
     async def _async_change(self, change: Callable[[Boost], Boost]) -> None:
         """Fresh preflight (S5), one PUT (S6), read-back (S7)."""
         coordinator = self.coordinator
@@ -205,8 +214,8 @@ class _BoostEntity(CoordinatorEntity[BoschBuderusDataUpdateCoordinator]):
             if boost.shows(target):
                 # Already so; nothing is sent.
                 return (current,)
-            if shown is None or not boost.shows(shown):
-                raise WriteValidationError("The boost changed; read it again")
+            if shown is None or not self._unchanged(shown, boost):
+                raise ContractRejected("rrc_boost_changed")
             targets.append(target)
 
             async def preflight() -> Boost:

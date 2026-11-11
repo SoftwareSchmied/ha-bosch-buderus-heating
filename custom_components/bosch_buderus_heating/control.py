@@ -29,6 +29,7 @@ from .writes import (
     ContractRejected,
     ControlContext,
     ControlLocked,
+    ControlUnused,
     EnumWritePolicy,
     NumberWritePolicy,
     RrcWriteNotConfirmed,
@@ -208,6 +209,27 @@ def locked_translation_key(path: str) -> str:
     )
 
 
+# The text of a setting the controller offers but does not use now (``used``
+# false); the first match wins.
+_UNUSED_KEYS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"/system/awayMode/enabled"), "rrc_away_unused"),
+    (
+        re.compile(rf"(?:/zones/zn{RRC_ID}|/system)/openWindowDetection/.+"),
+        "rrc_window_detection_unused",
+    ),
+    (re.compile(r"/dhwCircuits/.+"), "rrc_dhw_setting_unused"),
+    (re.compile(r"/devices/.+"), "rrc_device_setting_unused"),
+)
+
+
+def unused_translation_key(path: str) -> str:
+    """The message of a setting the controller does not use now."""
+    return next(
+        (key for pattern, key in _UNUSED_KEYS if pattern.fullmatch(path)),
+        "rrc_setting_unused",
+    )
+
+
 async def async_set_control(
     coordinator: BoschBuderusDataUpdateCoordinator,
     path: str,
@@ -224,6 +246,10 @@ async def async_set_control(
             )
         else:
             await coordinator.async_write_control(path, value, policy)
+    except ControlUnused as err:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN, translation_key=unused_translation_key(path)
+        ) from err
     except ControlLocked as err:
         raise ServiceValidationError(
             translation_domain=DOMAIN, translation_key=locked_translation_key(path)

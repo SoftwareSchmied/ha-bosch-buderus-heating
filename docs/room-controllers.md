@@ -48,11 +48,40 @@ change by then, a message says that the change was sent but is not
 confirmed yet; a later regular reading that shows it counts as confirmed.
 A change is never resent on its own.
 
-A setting the controller reports as used but currently unavailable stays
-visible and is locked: a change is refused with a message that names what
-is locked (the heating mode of a zone, another zone setting, a heating
-circuit, hot water, a radio device or another setting). A setting that is
-unavailable and not marked as used gets no control at all.
+For every room controller setting, "reads again" means one request to the
+controller right before the change, also when the last poll is only a few
+minutes old. A changed value does not block the change; a setting that is
+now unavailable or not used is refused, and the entity shows the new state
+at once. If this read fails, nothing is sent and the last reading stays.
+
+The controller marks each setting as used and available:
+
+- **Not available** (whether used or not): the setting gets no control; an
+  existing entity becomes unavailable.
+- **Available but not used:** the control stays visible with its value, but
+  a change is refused before anything is sent, with a message that names
+  the setting (away mode, open window detection, hot water, a radio device
+  or another setting). An example is the open window detection of a zone
+  that the controller does not use at the moment.
+- The settings of the **heating circuit** do not depend on "used": a setting
+  that is not used stays changeable, and one that is used but unavailable
+  stays visible and is locked with a message that names the heating circuit.
+  The heating mode of a zone keeps its own rule (locked, for example while
+  the system cools).
+
+Readings are not affected by these flags. All of this is expected,
+untested: which settings a real controller marks as not used, and when, is
+still to be confirmed.
+
+If a change stays unconfirmed, its value is read again with the next
+regular cycle (within a minute) instead of with its own, slower group, so a
+zone's target control is back quickly. If the controller ends a replaced
+temporary setpoint at once, its reading of 0 stays valid and is shown.
+
+For the boost, only what a change depends on must still be as shown:
+switching depends on the mode and the rooms, a new temperature or duration
+on the mode. Otherwise the change is refused with a message that the boost
+changed on the controller.
 
 ## Zones
 
@@ -236,9 +265,16 @@ The integration keeps the load on the cloud bounded:
   end the discovery. For optional probes and zone detail leaves, an item
   answered with 5xx in a batch is not read again on its own. Roots,
   advertised references and a failing request as a whole keep the outage
-  rule.
+  rule. The rule applies only while the cloud answers: a batch of nothing
+  but such probes (for example the radio device settings) carries one path
+  read before; if neither that path nor any other answers, the 5xx answers
+  count as an outage, not as missing parts. A 5xx
+  answer below `/events` or `/energy` never ends the discovery.
 - **Never read:** the radio key and radio identifier of each device, user,
-  installer, password, location and phone data.
+  installer, password, location and phone data, and the single event
+  entries (`/events/evN`, `/events/activeEvent`): the event lists hold the
+  events, and the entries are only written. An inventory stored by an
+  earlier test version drops them.
 - **Energy history:** at most eight requests every three hours.
 
 On the large synthetic test controller with all functions active, the setup
@@ -301,8 +337,25 @@ ebenso der CT200 insgesamt:
   (standardmäßig deaktiviert). Ventilkalibrierung und Flüstermodus werden nie
   geschrieben.
 
-Jede Änderung wird genau einmal gesendet und nach 1, 2, 4 und 8 Sekunden
-zurückgelesen. Die Discovery liest höchstens 512 Pfade, die Einstellungen
-der Funkgeräte haben einen eigenen Deckel von 192 Pfaden. Eine
-HTTP-500-Antwort auf eine Katalog- oder Zusatzabfrage gilt als „fehlt“ und
-beendet die Discovery nicht.
+Vor jeder Änderung einer Raumregler-Einstellung lese ich den Wert, seine
+Grenzen und seine Kennzeichen frisch vom Regler; schlägt das fehl, wird
+nichts gesendet und die letzte Lesung bleibt. Jede Änderung wird genau
+einmal gesendet und nach 1, 2, 4 und 8 Sekunden zurückgelesen; bleibt sie
+unbestätigt, wird der Wert mit dem nächsten Zyklus (innerhalb einer Minute)
+erneut gelesen.
+
+Eine Einstellung, die der Regler als **nicht verfügbar** meldet, bekommt
+keine Steuerung (eine bestehende Entität wird nicht verfügbar). Eine
+**verfügbare, aber nicht genutzte** Einstellung bleibt mit ihrem Wert
+sichtbar; eine Änderung wird ohne Senden mit einer eigenen Meldung
+abgelehnt. Die Heizkreis-Einstellungen hängen nicht an „genutzt“; eine
+genutzte, aber nicht verfügbare bleibt sichtbar und gesperrt. Messwerte
+betrifft das nicht. Auch das ist erwartet, ungetestet.
+
+Die Discovery liest höchstens 512 Pfade, die Einstellungen der Funkgeräte
+haben einen eigenen Deckel von 192 Pfaden. Eine HTTP-500-Antwort auf eine
+Katalog- oder Zusatzabfrage gilt als „fehlt“ und beendet die Discovery
+nicht, solange die Cloud antwortet: Ein Abruf, der nur solche Abfragen
+enthält, nimmt einen bereits gelesenen Pfad mit; antwortet keiner, gelten die
+500-Antworten als Ausfall. Die einzelnen
+Ereigniseinträge (`/events/evN`, `/events/activeEvent`) werden nie gelesen.

@@ -138,7 +138,9 @@ def test_default_policies_need_only_one_option() -> None:
         ({"available": "false"}, "rrc_unavailable"),
         ({"available": False, "used": "false"}, "rrc_unavailable"),
         ({"available": "maybe"}, "rrc_unavailable"),
-        ({"used": "true", "available": "false"}, None),  # S8: shown, locked
+        # Not available, even though used: no control either.
+        ({"used": "true", "available": "false"}, "rrc_unavailable"),
+        ({"used": "false"}, None),  # shown, writing refused
         ({"used": "true", "available": "true"}, None),
         ({}, None),
     ],

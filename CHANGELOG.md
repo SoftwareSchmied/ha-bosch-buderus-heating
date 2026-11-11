@@ -98,6 +98,21 @@ Expected, untested on a real controller:
   temperature offset and the open window sensitivity can be changed and are
   disabled by default. The valve calibration and the whisper mode are never
   written.
+- **Settings the controller does not offer or use:** a setting the
+  controller reports as not available gets no control, and an existing one
+  becomes unavailable. A setting that is available but not used, such as
+  the open window detection of a zone, stays visible with its value; a
+  change is refused before anything is sent, with a message that names it.
+  The heating circuit settings keep their earlier rule. Before every change
+  of a room controller setting I read it from the controller once more, so
+  a lock that came after the last poll is found; a value changed in the
+  meantime no longer blocks the change, and a failed read sends nothing and
+  keeps the last reading. For the boost only the mode and the rooms must
+  still be as shown.
+- **Unconfirmed changes:** a change that the controller has not confirmed
+  yet is read again with the next cycle, within a minute, so a zone's target
+  temperature control is back quickly. A temporary setpoint that the
+  controller ended at once keeps its valid reading.
 - **Recognised by their resources:** a gateway the cloud reports as device
   type `rrc2`, with the product type `RRC 2.0` or with RRC zones is handled
   as a room controller, never by a model name. A controller without a name
@@ -171,7 +186,13 @@ Expected, untested on a real controller:
   counts as "missing" and no longer ends the discovery; for optional probes
   and zone detail leaves a 500 inside a batch answer costs no single request
   either. Roots, advertised references and failing requests keep the outage
-  rule. On my large test tree with all functions active the setup needs 21
+  rule. This rule now applies only while the cloud answers: a batch of
+  nothing but such probes carries one path read before, so a short outage
+  no longer makes every optional part, such as the radio device settings,
+  count as missing until the next start. The single event entries
+  (`/events/evN`, `/events/activeEvent`) are no longer read at all; the event
+  lists hold the events, and an entry answering HTTP 500 could end the setup.
+  On my large test tree with all functions active the setup needs 21
   batch and 7 single requests, and an hour of regular polling about 150
   requests.
 - **More time for changes on room controllers:** a room controller applies a
