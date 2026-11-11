@@ -245,7 +245,8 @@
         "title": "Fógraí",
         "description": "Taispeántar lochtanna an chórais téimh faoin gclog in Home Assistant. Maidir le suiteálacha iolracha, roghnaigh na cinn ar mhaith leat fógraí dóibh. Roinntear fógraí agus a ndúnadh ar gach úsáideoir. Úsáideann a dtéacs teanga an chórais. Ní admhaíonn fógra a dhúnadh locht ar an trealamh. Taispeántar lochtanna nua nó níos criticiúla arís. Tagann athruithe i bhfeidhm láithreach.",
         "data": {
-          "fault_notifications": "Taispeáin lochtanna an chórais téimh"
+          "fault_notifications": "Taispeáin lochtanna an chórais téimh",
+          "notify_warnings_and_maintenance": "Taispeáin rabhaidh agus cothabháil freisin san fhógra faoin gcloigín"
         }
       },
       "holidays": {
@@ -961,11 +962,29 @@
     "rrc_mode_locked": {
       "message": "Cuireann an rialaitheoir glas faoi láthair ar mhód téimh an chriosa seo, mar shampla agus an córas ag fuarú. Taispeántar an mód reatha fós. Déan iarracht arís níos déanaí."
     },
+    "rrc_zone_setting_locked": {
+      "message": "Cuireann an rialaitheoir glas faoi láthair ar an socrú seo den chrios. Taispeántar an luach reatha fós. Déan iarracht arís níos déanaí."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "Cuireann an rialaitheoir glas faoi láthair ar an socrú seo den chiorcad téimh. Taispeántar an luach reatha fós. Déan iarracht arís níos déanaí."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "Cuireann an rialaitheoir glas faoi láthair ar an socrú uisce te seo, mar shampla toisc nach dtairgeann an téitheoir uisce é faoi láthair. Taispeántar an luach reatha fós. Déan iarracht arís níos déanaí."
+    },
+    "rrc_device_setting_locked": {
+      "message": "Cuireann an rialaitheoir glas faoi láthair ar an socrú seo den ghléas raidió. Taispeántar an luach reatha fós. Déan iarracht arís níos déanaí."
+    },
+    "rrc_setting_locked": {
+      "message": "Cuireann an rialaitheoir glas faoi láthair ar an socrú seo. Taispeántar an luach reatha fós. Déan iarracht arís níos déanaí."
+    },
     "write_validation_failed": {
       "message": "Níl sé sábháilte an socrú seo a athrú faoi láthair. Athnuaigh nó athchumraigh an comhtháthú agus déan iarracht arís."
     },
     "write_not_confirmed": {
       "message": "Seoladh an t-athrú, ach níor dheimhnigh an córas téimh é. B'fhéidir go bhfuil sé i bhfeidhm cheana. Nuashonraítear an luach leis an gcéad léamh eile."
+    },
+    "rrc_write_pending_confirmation": {
+      "message": "Seoladh an t-athrú chuig an rialaitheoir seomra, ach níor dheimhnigh sé go fóill é. Is féidir leis an rialaitheoir é a chur i bhfeidhm le moill; nuashonrófar an luach leis an gcéad léamh eile."
     },
     "write_authentication_failed": {
       "message": "Níl síniú isteach an néil bailí a thuilleadh. Athfhíordheimhnigh Bosch/Buderus Home Comfort sula ndéanann tú iarracht arís."
@@ -999,6 +1018,63 @@
     },
     "gateway_exchange_incomplete": {
       "message": "Níorbh fhéidir malartú geata a cuireadh isteach a chríochnú, mar sin ní thosaíonn an comhtháthú. Tá sonraí sa logchomhad; bain an rud a chuireann bac ar an malartú (mar shampla aonáin an gheata nua) agus atosaigh Home Assistant."
+    },
+    "rrc_override_ended": {
+      "message": "Chuir an rialaitheoir seomra deireadh leis an socphointe sealadach láithreach, mar shampla toisc gur sroicheadh an chéad phointe lasctha eile den sceideal. Baineann socphointe an sceidil leis."
+    },
+    "rrc_override_needs_clock_mode": {
+      "message": "Ní féidir socphointe sealadach a shocrú ná a ghlanadh ach amháin nuair a leanann an crios a sceideal. Roghnaigh mód an sceidil ar dtús."
+    },
+    "rrc_override_below_minimum": {
+      "message": "Caithfidh an socphointe sealadach a bheith ar comhleibhéal leis an socphointe láimhe is ísle den chrios nó os a chionn. Roghnaigh teocht níos airde."
+    },
+    "rrc_override_not_active": {
+      "message": "Níl aon socphointe sealadach ag an gcrios seo faoi láthair le glanadh."
+    },
+    "rrc_zone_climate_command": {
+      "message": "Níl an t-ordú crios seo ar fáil faoi láthair. Seiceáil go dtuairiscíonn an crios luachanna reatha agus go bhfuil an teocht laistigh den raon a thairgtear; teastaíonn mód an sceidil ó shocphointe sealadach."
+    },
+    "rrc_device_setting_unused": {
+      "message": "Ní úsáideann an gléas raidió an socrú seo faoi láthair, mar sin níor athraíodh é."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Ní féidir ach na leibhéil ard, meánach agus íseal a shocrú do bhrath fuinneoige oscailte."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "Caithfidh an t-am tosaithe a bheith ina am den lá idir 00:00 agus 23:59."
+    },
+    "rrc_curve_order": {
+      "message": "Ní mór don chuar téimh agus do theorainneacha an tsreafa fanacht in ord: an bunphointe faoi bhun an chríochphointe, an íosteocht sreafa nach mó ná an uasteocht. Níor seoladh aon rud; athraigh an teorainn eile ar dtús."
+    },
+    "rrc_event_invalid_name": {
+      "message": "Cuir isteach ainm 1 go 32 beart de théacs infhoilsithe (níos lú carachtar le séimhiú, sínte fada nó emoji)."
+    },
+    "rrc_event_invalid_dates": {
+      "message": "Teastaíonn laethanta iomlána don imeacht: tosach ar an lá deireanach nó roimhe agus deireadh nach bhfuil san am atá caite."
+    },
+    "rrc_event_overlap": {
+      "message": "Roinneann an t-imeacht lá le himeacht eile den rialaitheoir seomra. Ní féidir imeachtaí a bheith ag forluí, fiú ar a gcéad lá nó ar a lá deireanach."
+    },
+    "rrc_event_type_read_only": {
+      "message": "Ní féidir lá a rialaítear cosúil le lá eile den tseachtain a scriosadh anseo ach ní féidir é a athrú."
+    },
+    "rrc_event_rejected": {
+      "message": "Dhiúltaigh an rialaitheoir seomra don imeacht, mar shampla toisc go bhfuil a fhéilire lán. Níor athraíodh aon rud."
+    },
+    "rrc_event_pending": {
+      "message": "Níor deimhníodh athrú níos luaithe ar na himeachtaí go fóill. Níor seoladh aon rud; fan go dtaispeánfar sa fhéilire é nó bain triail eile as i gceann deich nóiméad."
+    },
+    "rrc_event_unsupported_fields": {
+      "message": "Ní stórálann an rialaitheoir seomra ach ainm agus laethanta iomlána. Ní thacaítear le himeachtaí athfhillteacha, tuairiscí ná suímh."
+    },
+    "rrc_boost_no_zones": {
+      "message": "Níl aon seomra ag Boost. Roghnaigh na seomraí do Boost ar an rialaitheoir seomra ar dtús."
+    },
+    "rrc_boost_unsupported_shape": {
+      "message": "Tuairiscíonn an rialaitheoir seomra Boost i bhfoirm nach bhfuil aithne iomlán ag an gcomhtháthú seo uirthi. Taispeántar Boost ach ní athraítear é, ionas nach gcaillfear aon socrú."
+    },
+    "rrc_boost_locked": {
+      "message": "Tá an rialaitheoir seomra ag glasáil Boost faoi láthair. Bain triail eile as níos déanaí."
     }
   },
   "selector": {
@@ -1127,6 +1203,48 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Gile an tsolais thimpeallaigh"
+      },
+      "rrc_window_duration": {
+        "name": "Fad na fuinneoige oscailte"
+      },
+      "rrc_window_temperature": {
+        "name": "Teocht na fuinneoige oscailte"
+      },
+      "rrc_temperature_offset": {
+        "name": "Fritháireamh teochta"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Fad an uisce te bhreise"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Bunphointe an chuair téimh"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Críochphointe an chuair téimh"
+      },
+      "rrc_min_supply": {
+        "name": "Íosteocht an tsreafa"
+      },
+      "rrc_max_supply": {
+        "name": "Uasteocht an tsreafa"
+      },
+      "rrc_room_influence": {
+        "name": "Tionchar an tseomra"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Stop an téamh ag teocht lasmuigh"
+      },
+      "rrc_night_threshold": {
+        "name": "Íslithe oíche síos go teocht lasmuigh"
+      },
+      "rrc_boost_temperature": {
+        "name": "Teocht Boost"
+      },
+      "rrc_boost_duration": {
+        "name": "Fad Boost"
+      },
+      "rrc_away_temperature": {
+        "name": "Teocht as baile"
       }
     },
     "select": {
@@ -1209,6 +1327,57 @@
           "orange": "Oráiste",
           "red": "Dearg"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Íogaireacht bhrath fuinneoige oscailte",
+        "state": {
+          "high": "Ard",
+          "medium": "Meánach",
+          "low": "Íseal"
+        }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Lá an díghalrúcháin theirmigh",
+        "state": {
+          "monday": "Dé Luain",
+          "tuesday": "Dé Máirt",
+          "wednesday": "Dé Céadaoin",
+          "thursday": "Déardaoin",
+          "friday": "Dé hAoine",
+          "saturday": "Dé Sathairn",
+          "sunday": "Dé Domhnaigh",
+          "daily": "Gach lá"
+        }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Aistriú samhraidh/geimhridh",
+        "state": {
+          "off": "As",
+          "automatic": "Uathoibríoch"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Íslithe oíche de réir teochta lasmuigh",
+        "state": {
+          "off": "As",
+          "automatic": "Uathoibríoch"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Mód séasúir",
+        "state": {
+          "always_heating": "Téamh i gcónaí",
+          "always_cooling": "Fuarú i gcónaí",
+          "automatic": "Uathoibríoch"
+        }
+      },
+      "rrc_building_heatup": {
+        "name": "Luas teasaithe",
+        "state": {
+          "slow": "Mall",
+          "normal": "Gnáth",
+          "fast": "Tapa"
+        }
       }
     },
     "switch": {
@@ -1250,6 +1419,30 @@
       },
       "bacon_dry_display": {
         "name": "Taispeántas"
+      },
+      "rrc_window_detection": {
+        "name": "Brath fuinneoige oscailte"
+      },
+      "rrc_system_window_detection": {
+        "name": "Brath fuinneoige oscailte"
+      },
+      "rrc_child_lock": {
+        "name": "Glas leanaí"
+      },
+      "rrc_extra_dhw": {
+        "name": "Uisce te breise"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Díghalrú teirmeach"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Barrfheabhsú socphointe"
+      },
+      "rrc_boost": {
+        "name": "Boost"
+      },
+      "rrc_fireplace": {
+        "name": "Feidhm teallaigh"
       }
     },
     "sensor": {
@@ -1844,6 +2037,94 @@
             }
           }
         }
+      },
+      "rrc_next_setpoint": {
+        "name": "An chéad socphointe eile"
+      },
+      "rrc_minutes_to_next_setpoint": {
+        "name": "Nóiméid go dtí an chéad socphointe eile"
+      },
+      "rrc_zone_status": {
+        "name": "Stádas an chriosa",
+        "state": {
+          "idle": "Díomhaoin",
+          "heat_request": "Éileamh teasa",
+          "zone_error": "Earráid chriosa",
+          "comm_error": "Earráid cumarsáide",
+          "comm_warning": "Rabhadh cumarsáide",
+          "low_battery": "Ceallra íseal"
+        }
+      },
+      "rrc_zone_valve_position": {
+        "name": "Oscailt na comhla"
+      },
+      "rrc_optimum_start_state": {
+        "name": "Tosú optamach"
+      },
+      "rrc_optimum_start_heatup_rate": {
+        "name": "Ráta teasaithe an tosaithe optamaigh"
+      },
+      "rrc_valve_position": {
+        "name": "Oscailt na comhla"
+      },
+      "rrc_max_valve_position": {
+        "name": "Uastoscailt na comhla"
+      },
+      "rrc_valve_temperature": {
+        "name": "Teocht ag an gcomhla"
+      },
+      "rrc_valve_state": {
+        "name": "Stádas na comhla"
+      },
+      "rrc_whisper_mode": {
+        "name": "Oibriú ciúin na comhla"
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Toradh an díghalrúcháin theirmigh"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Leibhéal reatha sceideal an uisce te",
+        "state": {
+          "off": "As",
+          "low": "Eco",
+          "high": "Compord",
+          "eco": "Eco+"
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Séasúr oibríochta",
+        "state": {
+          "heating": "Téamh",
+          "cooling": "Fuarú",
+          "idle": "Díomhaoin"
+        }
+      },
+      "rrc_display_code": {
+        "name": "Cód taispeána"
+      },
+      "rrc_cause_code": {
+        "name": "Cód cúise"
+      },
+      "rrc_maintenance_request": {
+        "name": "Iarratas ar chothabháil"
+      },
+      "rrc_system_pressure": {
+        "name": "Brú an chórais"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Taise istigh"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Teocht an aeir ag an rialaitheoir"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Teocht an chliabháin den rialaitheoir"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Teocht an chláir den rialaitheoir"
+      },
+      "rrc_update_state": {
+        "name": "Stádas nuashonraithe dochtearraí"
       }
     },
     "binary_sensor": {
@@ -1907,11 +2188,32 @@
       },
       "bacon_dry_device_error": {
         "name": "Earráid gléis tuairiscithe"
+      },
+      "rrc_window_open": {
+        "name": "Fuinneog oscailte"
+      },
+      "rrc_valve_problem": {
+        "name": "Fadhb comhla"
+      },
+      "rrc_locking_error": {
+        "name": "Locht a éilíonn athshocrú"
+      },
+      "rrc_blocking_error": {
+        "name": "Locht blocála"
+      },
+      "rrc_maintenance_due": {
+        "name": "Cothabháil dlite"
+      },
+      "rrc_refill_needed": {
+        "name": "Athlíonadh de dhíth"
       }
     },
     "calendar": {
       "holiday_periods": {
         "name": "Tréimhsí saoire"
+      },
+      "rrc_events": {
+        "name": "Neamhláithreachtaí agus laethanta speisialta"
       }
     },
     "event": {
@@ -1922,6 +2224,9 @@
     "button": {
       "softener_start_regeneration": {
         "name": "Tosaigh athghiniúint"
+      },
+      "rrc_override_clear": {
+        "name": "Glan an socphointe sealadach"
       }
     },
     "water_heater": {
@@ -2009,6 +2314,21 @@
             }
           }
         }
+      },
+      "rrc_zone": {
+        "name": "Crios",
+        "state_attributes": {
+          "zone_status": {
+            "state": {
+              "idle": "Díomhaoin",
+              "heat_request": "Éileamh teasa",
+              "zone_error": "Earráid chriosa",
+              "comm_error": "Earráid cumarsáide",
+              "comm_warning": "Rabhadh cumarsáide",
+              "low_battery": "Ceallra íseal"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2037,6 +2357,11 @@
             }
           }
         }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Am tosaithe an díghalrúcháin theirmigh"
       }
     }
   }

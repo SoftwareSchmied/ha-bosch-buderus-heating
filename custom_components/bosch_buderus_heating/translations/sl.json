@@ -245,7 +245,8 @@
         "title": "Obvestila",
         "description": "Napake ogrevalnega sistema se prikažejo pod zvončkom v Home Assistant. Pri več napeljavah izberite tiste, za katere želite obvestila. Obvestila in njihovo opuščanje so skupna vsem uporabnikom. Njihovo besedilo uporablja sistemski jezik. Opustitev obvestila ne potrdi napake na napravi. Nove ali kritičnejše napake se prikažejo znova. Spremembe začnejo veljati takoj.",
         "data": {
-          "fault_notifications": "Prikaži napake ogrevalnega sistema"
+          "fault_notifications": "Prikaži napake ogrevalnega sistema",
+          "notify_warnings_and_maintenance": "Prikaži tudi opozorila in vzdrževanje v obvestilu pod zvoncem"
         }
       },
       "holidays": {
@@ -961,11 +962,29 @@
     "rrc_mode_locked": {
       "message": "Regulator trenutno zaklepa način ogrevanja te cone, na primer med hlajenjem sistema. Trenutni način ostane prikazan. Poskusite znova pozneje."
     },
+    "rrc_zone_setting_locked": {
+      "message": "Regulator trenutno zaklepa to nastavitev cone. Trenutna vrednost ostane prikazana. Poskusite znova pozneje."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "Regulator trenutno zaklepa to nastavitev ogrevalnega kroga. Trenutna vrednost ostane prikazana. Poskusite znova pozneje."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "Regulator trenutno zaklepa to nastavitev tople vode, na primer ker je grelnik vode trenutno ne ponuja. Trenutna vrednost ostane prikazana. Poskusite znova pozneje."
+    },
+    "rrc_device_setting_locked": {
+      "message": "Regulator trenutno zaklepa to nastavitev radijske naprave. Trenutna vrednost ostane prikazana. Poskusite znova pozneje."
+    },
+    "rrc_setting_locked": {
+      "message": "Regulator trenutno zaklepa to nastavitev. Trenutna vrednost ostane prikazana. Poskusite znova pozneje."
+    },
     "write_validation_failed": {
       "message": "Te nastavitve trenutno ni varno spreminjati. Osvežite ali rekonfigurirajte integracijo in poskusite znova."
     },
     "write_not_confirmed": {
       "message": "Sprememba je bila poslana, vendar je ogrevalni sistem ni potrdil. Morda je že začela veljati. Vrednost se posodobi ob naslednjem branju."
+    },
+    "rrc_write_pending_confirmation": {
+      "message": "Sprememba je bila poslana sobnemu regulatorju, vendar je ta še ni potrdil. Regulator jo morda uporabi z zamudo; vrednost se posodobi ob naslednjem branju."
     },
     "write_authentication_failed": {
       "message": "Prijava v oblak ni več veljavna. Pred ponovnim poskusom za Bosch/Buderus Home Comfort opravite ponovno avtentikacijo."
@@ -999,6 +1018,63 @@
     },
     "gateway_exchange_incomplete": {
       "message": "Prekinjene zamenjave prehoda ni bilo mogoče dokončati, zato se integracija ne zažene. Podrobnosti so v dnevniku; odstranite, kar ovira zamenjavo (na primer entitete novega prehoda), in znova zaženite Home Assistant."
+    },
+    "rrc_override_ended": {
+      "message": "Sobni regulator je takoj prekinil začasno nastavljeno vrednost, na primer ker je bila dosežena naslednja preklopna točka časovnega programa. Velja nastavljena vrednost časovnega programa."
+    },
+    "rrc_override_needs_clock_mode": {
+      "message": "Začasno nastavljeno vrednost je mogoče nastaviti ali preklicati le, medtem ko cona sledi svojemu časovnemu programu. Najprej izberite način delovanja Časovni program."
+    },
+    "rrc_override_below_minimum": {
+      "message": "Začasna nastavljena vrednost mora biti vsaj tako visoka kot najnižja ročna nastavljena vrednost cone. Izberite višjo temperaturo."
+    },
+    "rrc_override_not_active": {
+      "message": "Ta cona trenutno nima začasne nastavljene vrednosti, ki bi jo bilo mogoče preklicati."
+    },
+    "rrc_zone_climate_command": {
+      "message": "Ta ukaz cone trenutno ni na voljo. Preverite, ali cona sporoča trenutne vrednosti in ali je temperatura znotraj ponujenega razpona; začasna nastavljena vrednost zahteva način Časovni program."
+    },
+    "rrc_device_setting_unused": {
+      "message": "Radijska naprava te nastavitve trenutno ne uporablja, zato ni bila spremenjena."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Za zaznavanje odprtega okna je mogoče nastaviti samo stopnje visoka, srednja in nizka."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "Začetni čas mora biti ura dneva med 00:00 in 23:59."
+    },
+    "rrc_curve_order": {
+      "message": "Ogrevalna krivulja in meje temperature dvižnega voda morajo ostati v pravilnem vrstnem redu: začetna točka pod končno točko, najnižja temperatura dvižnega voda ne nad najvišjo. Nič ni bilo poslano; najprej spremenite drugo mejo."
+    },
+    "rrc_event_invalid_name": {
+      "message": "Vnesite ime dolžine od 1 do 32 bajtov tiskljivega besedila (manj znakov z diakritičnimi znaki ali emojiji)."
+    },
+    "rrc_event_invalid_dates": {
+      "message": "Dogodek zahteva cele dneve: začetek na dan konca ali prej ter konec, ki ni v preteklosti."
+    },
+    "rrc_event_overlap": {
+      "message": "Dogodek si deli dan z drugim dogodkom sobnega regulatorja. Dogodki se ne smejo prekrivati, niti prvi ali zadnji dan."
+    },
+    "rrc_event_type_read_only": {
+      "message": "Dan, ki se regulira kot drug dan v tednu, je tukaj mogoče samo izbrisati, ne pa spremeniti."
+    },
+    "rrc_event_rejected": {
+      "message": "Sobni regulator je dogodek zavrnil, na primer ker je njegov koledar poln. Nič ni bilo spremenjeno."
+    },
+    "rrc_event_pending": {
+      "message": "Prejšnja sprememba dogodkov še ni potrjena. Nič ni bilo poslano; počakajte, da se prikaže v koledarju, ali poskusite znova čez deset minut."
+    },
+    "rrc_event_unsupported_fields": {
+      "message": "Sobni regulator shranjuje samo ime in cele dneve. Ponavljajoči se dogodki, opisi in lokacije niso podprti."
+    },
+    "rrc_boost_no_zones": {
+      "message": "Funkcija Boost nima prostorov. Najprej izberite prostore za Boost na sobnem regulatorju."
+    },
+    "rrc_boost_unsupported_shape": {
+      "message": "Sobni regulator sporoča funkcijo Boost v obliki, ki je ta integracija ne pozna popolnoma. Boost je prikazan, vendar ni spremenjen, da se ne izgubi nobena nastavitev."
+    },
+    "rrc_boost_locked": {
+      "message": "Sobni regulator trenutno blokira funkcijo Boost. Poskusite znova pozneje."
     }
   },
   "selector": {
@@ -1127,6 +1203,48 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Svetlost ambientalne osvetlitve"
+      },
+      "rrc_window_duration": {
+        "name": "Trajanje odprtega okna"
+      },
+      "rrc_window_temperature": {
+        "name": "Temperatura pri odprtem oknu"
+      },
+      "rrc_temperature_offset": {
+        "name": "Odmik temperature"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Trajanje dodatne tople vode"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Začetna točka ogrevalne krivulje"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Končna točka ogrevalne krivulje"
+      },
+      "rrc_min_supply": {
+        "name": "Najnižja temperatura dvižnega voda"
+      },
+      "rrc_max_supply": {
+        "name": "Najvišja temperatura dvižnega voda"
+      },
+      "rrc_room_influence": {
+        "name": "Vpliv prostora"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Ustavi ogrevanje pri zunanji temperaturi"
+      },
+      "rrc_night_threshold": {
+        "name": "Nočno zniževanje do zunanje temperature"
+      },
+      "rrc_boost_temperature": {
+        "name": "Temperatura funkcije Boost"
+      },
+      "rrc_boost_duration": {
+        "name": "Trajanje funkcije Boost"
+      },
+      "rrc_away_temperature": {
+        "name": "Temperatura odsotnosti"
       }
     },
     "select": {
@@ -1209,6 +1327,57 @@
           "orange": "Oranžna",
           "red": "Rdeča"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Občutljivost zaznavanja odprtega okna",
+        "state": {
+          "high": "Visoka",
+          "medium": "Srednja",
+          "low": "Nizka"
+        }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Dan termične dezinfekcije",
+        "state": {
+          "monday": "Ponedeljek",
+          "tuesday": "Torek",
+          "wednesday": "Sreda",
+          "thursday": "Četrtek",
+          "friday": "Petek",
+          "saturday": "Sobota",
+          "sunday": "Nedelja",
+          "daily": "Vsak dan"
+        }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Poletno/zimsko preklapljanje",
+        "state": {
+          "off": "Izklopljeno",
+          "automatic": "Samodejno"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Nočno zniževanje glede na zunanjo temperaturo",
+        "state": {
+          "off": "Izklopljeno",
+          "automatic": "Samodejno"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Sezonski način delovanja",
+        "state": {
+          "always_heating": "Vedno ogrevanje",
+          "always_cooling": "Vedno hlajenje",
+          "automatic": "Samodejno"
+        }
+      },
+      "rrc_building_heatup": {
+        "name": "Hitrost segrevanja",
+        "state": {
+          "slow": "Počasi",
+          "normal": "Običajno",
+          "fast": "Hitro"
+        }
       }
     },
     "switch": {
@@ -1250,6 +1419,30 @@
       },
       "bacon_dry_display": {
         "name": "Zaslon"
+      },
+      "rrc_window_detection": {
+        "name": "Zaznavanje odprtega okna"
+      },
+      "rrc_system_window_detection": {
+        "name": "Zaznavanje odprtega okna"
+      },
+      "rrc_child_lock": {
+        "name": "Otroška ključavnica"
+      },
+      "rrc_extra_dhw": {
+        "name": "Dodatna topla voda"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Termična dezinfekcija"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Optimizacija nastavljene vrednosti"
+      },
+      "rrc_boost": {
+        "name": "Boost"
+      },
+      "rrc_fireplace": {
+        "name": "Funkcija kamina"
       }
     },
     "sensor": {
@@ -1844,6 +2037,94 @@
             }
           }
         }
+      },
+      "rrc_next_setpoint": {
+        "name": "Naslednja nastavljena vrednost"
+      },
+      "rrc_minutes_to_next_setpoint": {
+        "name": "Minute do naslednje nastavljene vrednosti"
+      },
+      "rrc_zone_status": {
+        "name": "Stanje cone",
+        "state": {
+          "idle": "Mirovanje",
+          "heat_request": "Zahteva po ogrevanju",
+          "zone_error": "Napaka cone",
+          "comm_error": "Napaka komunikacije",
+          "comm_warning": "Opozorilo o komunikaciji",
+          "low_battery": "Šibka baterija"
+        }
+      },
+      "rrc_zone_valve_position": {
+        "name": "Odprtost ventila"
+      },
+      "rrc_optimum_start_state": {
+        "name": "Optimiran zagon"
+      },
+      "rrc_optimum_start_heatup_rate": {
+        "name": "Hitrost segrevanja pri optimiranem zagonu"
+      },
+      "rrc_valve_position": {
+        "name": "Odprtost ventila"
+      },
+      "rrc_max_valve_position": {
+        "name": "Največja odprtost ventila"
+      },
+      "rrc_valve_temperature": {
+        "name": "Temperatura na ventilu"
+      },
+      "rrc_valve_state": {
+        "name": "Stanje ventila"
+      },
+      "rrc_whisper_mode": {
+        "name": "Tiho delovanje ventila"
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Rezultat termične dezinfekcije"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Trenutna stopnja časovnega programa tople vode",
+        "state": {
+          "off": "Izklopljeno",
+          "low": "Eco",
+          "high": "Udobno",
+          "eco": "Eco+"
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Sezona delovanja",
+        "state": {
+          "heating": "Ogrevanje",
+          "cooling": "Hlajenje",
+          "idle": "Mirovanje"
+        }
+      },
+      "rrc_display_code": {
+        "name": "Koda prikaza"
+      },
+      "rrc_cause_code": {
+        "name": "Koda vzroka"
+      },
+      "rrc_maintenance_request": {
+        "name": "Zahteva za vzdrževanje"
+      },
+      "rrc_system_pressure": {
+        "name": "Tlak v sistemu"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Vlažnost zraka v prostoru"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Temperatura zraka na regulatorju"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Temperatura čipa regulatorja"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Temperatura plošče regulatorja"
+      },
+      "rrc_update_state": {
+        "name": "Stanje posodobitve vdelane programske opreme"
       }
     },
     "binary_sensor": {
@@ -1907,11 +2188,32 @@
       },
       "bacon_dry_device_error": {
         "name": "Sporočena napaka naprave"
+      },
+      "rrc_window_open": {
+        "name": "Okno odprto"
+      },
+      "rrc_valve_problem": {
+        "name": "Težava z ventilom"
+      },
+      "rrc_locking_error": {
+        "name": "Napaka, ki zahteva ponastavitev"
+      },
+      "rrc_blocking_error": {
+        "name": "Blokirajoča napaka"
+      },
+      "rrc_maintenance_due": {
+        "name": "Potrebno vzdrževanje"
+      },
+      "rrc_refill_needed": {
+        "name": "Potrebno dolivanje"
       }
     },
     "calendar": {
       "holiday_periods": {
         "name": "Obdobja počitnic"
+      },
+      "rrc_events": {
+        "name": "Odsotnosti in posebni dnevi"
       }
     },
     "event": {
@@ -1922,6 +2224,9 @@
     "button": {
       "softener_start_regeneration": {
         "name": "Zaženi regeneracijo"
+      },
+      "rrc_override_clear": {
+        "name": "Prekliči začasno nastavljeno vrednost"
       }
     },
     "water_heater": {
@@ -2009,6 +2314,21 @@
             }
           }
         }
+      },
+      "rrc_zone": {
+        "name": "Cona",
+        "state_attributes": {
+          "zone_status": {
+            "state": {
+              "idle": "Mirovanje",
+              "heat_request": "Zahteva po ogrevanju",
+              "zone_error": "Napaka cone",
+              "comm_error": "Napaka komunikacije",
+              "comm_warning": "Opozorilo o komunikaciji",
+              "low_battery": "Šibka baterija"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2037,6 +2357,11 @@
             }
           }
         }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Začetni čas termične dezinfekcije"
       }
     }
   }

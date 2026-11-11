@@ -16,16 +16,20 @@
 | Portuguese (Portugal) | `pt` | Draft, awaiting review by a native speaker | [`glossary/pt.md`](glossary/pt.md) |
 | Dutch | `nl` | Draft, awaiting review by a native speaker | [`glossary/nl.md`](glossary/nl.md) |
 | Polish | `pl` | Draft, awaiting review by a native speaker | [`glossary/pl.md`](glossary/pl.md) |
-| Czech | `cs` | Reviewed by a native speaker (2026-11-10) | [`glossary/cs.md`](glossary/cs.md) |
-| Slovak | `sk` | Reviewed by a native speaker (2026-11-10) | [`glossary/sk.md`](glossary/sk.md) |
+| Czech | `cs` | Reviewed by a native speaker (2026-11-10); room controller texts of 0.9.0-alpha.5 are drafts awaiting review | [`glossary/cs.md`](glossary/cs.md) |
+| Slovak | `sk` | Reviewed by a native speaker (2026-11-10); room controller texts of 0.9.0-alpha.5 are drafts awaiting review | [`glossary/sk.md`](glossary/sk.md) |
 | Greek | `el` | Draft, awaiting review by a native speaker | [`glossary/el.md`](glossary/el.md) |
 | Bulgarian | `bg` | Draft, awaiting review by a native speaker | [`glossary/bg.md`](glossary/bg.md) |
 | Croatian | `hr` | Draft, awaiting review by a native speaker | [`glossary/hr.md`](glossary/hr.md) |
 | Slovenian | `sl` | Draft, awaiting review by a native speaker | [`glossary/sl.md`](glossary/sl.md) |
 | Irish | `ga` | Draft, awaiting review by a native speaker | [`glossary/ga.md`](glossary/ga.md) |
 
-A native speaker reviewed Czech and Slovak on 2026-11-10. All other
-languages except English and German are a careful first draft. They follow
+A native speaker reviewed Czech and Slovak on 2026-11-10. That review
+covers the texts up to then; the room controller texts added in
+0.9.0-alpha.5 (zones, programs, absences, hot water, heating circuit,
+system, faults, energy history and radio devices) are drafts in Czech and
+Slovak too and still await that review. All other languages except English
+and German are a careful first draft. They follow
 the glossary of their language, but nobody who speaks them as a mother
 tongue has checked them yet. Corrections are very welcome (see
 [Contributing corrections](#contributing-corrections)). The glossary below
@@ -170,6 +174,24 @@ applies to every text that uses it.
 | fan level | Lüfterstufe | fläktsteg | viftetrinn | puhallintaso | blæserniveau |
 | Apply (button) | Übernehmen | Tillämpa | Bruk | Käytä | Anvend |
 | reauthenticate | erneut authentifizieren | autentisera igen | autentiser på nytt | todenna uudelleen | godkend igen |
+| temporary setpoint | vorübergehender Sollwert | tillfälligt börvärde | midlertidig settpunkt | väliaikainen asetusarvo | midlertidigt sætpunkt |
+| radiator thermostat | Heizkörperthermostat | radiatortermostat | radiatortermostat | patteritermostaatti | radiatortermostat |
+| valve | Ventil | ventil | ventil | venttiili | ventil |
+| open window detection | Fenster-offen-Erkennung | detektering av öppet fönster | registrering av åpent vindu | avoimen ikkunan tunnistus | registrering af åbent vindue |
+| boost | Boost | boost | boost | boost | boost |
+| fireplace function | Kaminfunktion | eldstadsfunktion | peisfunksjon | takkatoiminto | pejsefunktion |
+| heating curve | Heizkurve | värmekurva | varmekurve | lämmityskäyrä | varmekurve |
+| heating curve base/end point | Fußpunkt / Endpunkt | startpunkt / slutpunkt | startpunkt / sluttpunkt | alkupiste / loppupiste | startpunkt / slutpunkt |
+| optimum start | optimierter Start | optimerad start | optimalisert oppstart | optimoitu käynnistys | optimeret start |
+| night setback | Nachtabsenkung | nattsänkning | nattsenking | yöalennus | natsænkning |
+| operating season | Betriebssaison | driftsäsong | driftssesong | käyttökausi | driftssæson |
+| event (calendar) | Termin | händelse | hendelse | tapahtuma | begivenhed |
+| locking / blocking fault | verriegelnde / blockierende Störung | fel som kräver återställning / blockerande fel | feil som krever tilbakestilling / blokkerende feil | kuittausta vaativa vika / estävä vika | fejl der kræver nulstilling / blokerende fejl |
+| whisper mode (radiator valve) | Flüstermodus | tyst ventildrift | stille ventildrift | venttiilin hiljainen käyttö | lydsvag ventildrift |
+| display code / cause code | Anzeigecode / Ursachencode | visningskod / orsakskod | visningskode / årsakskode | näyttökoodi / syykoodi | visningskode / årsagskode |
+| temperature offset | Temperatur-Offset | temperaturjustering | temperaturjustering | lämpötilakorjaus | temperaturjustering |
+| radio device | Funkgerät | radioenhet | radioenhet | radiolaite | radioenhed |
+| energy statistics, unit not confirmed | (kWh erwartet) | (kWh, ej bekräftat) | (kWh, ikke bekreftet) | (kWh, ei vahvistettu) | (kWh, ikke bekræftet) |
 
 Control names shorten the group, for example "HC 1: Operating mode". The
 short forms are given in brackets in the first rows of the table.

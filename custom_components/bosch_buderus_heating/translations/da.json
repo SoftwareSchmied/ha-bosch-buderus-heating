@@ -245,7 +245,8 @@
         "title": "Notifikationer",
         "description": "Fejl i varmeanlægget vises under klokken i Home Assistant. Hvis du har flere anlæg, skal du vælge dem, du vil have notifikationer for. Notifikationer og afvisninger deles af alle brugere. Deres tekst bruger systemsproget. Når du afviser en notifikation, kvitteres der ikke for en fejl på apparatet. Nye eller mere kritiske fejl vises igen. Ændringer træder i kraft med det samme.",
         "data": {
-          "fault_notifications": "Vis fejl i varmeanlægget"
+          "fault_notifications": "Vis fejl i varmeanlægget",
+          "notify_warnings_and_maintenance": "Vis også advarsler og vedligeholdelsesmeddelelser i notifikationen under klokken"
         }
       },
       "holidays": {
@@ -961,11 +962,29 @@
     "rrc_mode_locked": {
       "message": "Regulatoren låser i øjeblikket opvarmningsformen for denne zone, f.eks. mens anlægget køler. Den aktuelle form vises stadig. Prøv igen senere."
     },
+    "rrc_zone_setting_locked": {
+      "message": "Regulatoren låser i øjeblikket denne indstilling for zonen. Den aktuelle værdi vises stadig. Prøv igen senere."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "Regulatoren låser i øjeblikket denne indstilling for varmekredsen. Den aktuelle værdi vises stadig. Prøv igen senere."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "Regulatoren låser i øjeblikket denne indstilling for varmt brugsvand, f.eks. fordi varmtvandsbeholderen ikke tilbyder den lige nu. Den aktuelle værdi vises stadig. Prøv igen senere."
+    },
+    "rrc_device_setting_locked": {
+      "message": "Regulatoren låser i øjeblikket denne indstilling for radioenheden. Den aktuelle værdi vises stadig. Prøv igen senere."
+    },
+    "rrc_setting_locked": {
+      "message": "Regulatoren låser i øjeblikket denne indstilling. Den aktuelle værdi vises stadig. Prøv igen senere."
+    },
     "write_validation_failed": {
       "message": "Denne indstilling er ikke sikker at ændre lige nu. Opdatér eller omkonfigurer integrationen, og prøv igen."
     },
     "write_not_confirmed": {
       "message": "Ændringen blev sendt, men varmeanlægget bekræftede den ikke. Den kan allerede have trådt i kraft. Værdien opdateres ved næste aflæsning."
+    },
+    "rrc_write_pending_confirmation": {
+      "message": "Ændringen blev sendt til rumregulatoren, men den har endnu ikke bekræftet den. Regulatoren anvender den muligvis med forsinkelse; værdien opdateres ved næste aflæsning."
     },
     "write_authentication_failed": {
       "message": "Cloudlogin er ikke længere gyldigt. Godkend Bosch/Buderus Home Comfort igen, før du prøver igen."
@@ -999,6 +1018,63 @@
     },
     "gateway_exchange_incomplete": {
       "message": "En afbrudt gatewayudveksling kunne ikke afsluttes, så integrationen starter ikke. Detaljer findes i loggen; fjern det, der blokerer udvekslingen (f.eks. entiteter fra den nye gateway), og genstart Home Assistant."
+    },
+    "rrc_override_ended": {
+      "message": "Rumregulatoren afsluttede det midlertidige sætpunkt med det samme, for eksempel fordi tidsprogrammets næste koblingspunkt blev nået. Tidsprogrammets sætpunkt gælder."
+    },
+    "rrc_override_needs_clock_mode": {
+      "message": "Et midlertidigt sætpunkt kan kun angives eller ophæves, mens zonen følger sit tidsprogram. Vælg først driftsformen tidsprogram."
+    },
+    "rrc_override_below_minimum": {
+      "message": "Det midlertidige sætpunkt skal ligge på eller over zonens laveste manuelle sætpunkt. Vælg en højere temperatur."
+    },
+    "rrc_override_not_active": {
+      "message": "Denne zone har i øjeblikket intet midlertidigt sætpunkt, der kan ophæves."
+    },
+    "rrc_zone_climate_command": {
+      "message": "Denne zonekommando er ikke tilgængelig i øjeblikket. Kontrollér, at zonen rapporterer aktuelle værdier, og at temperaturen ligger inden for det tilbudte område; et midlertidigt sætpunkt kræver driftsformen tidsprogram."
+    },
+    "rrc_device_setting_unused": {
+      "message": "Radioenheden bruger ikke denne indstilling i øjeblikket, så den blev ikke ændret."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Til registrering af åbent vindue kan kun niveauerne høj, mellem og lav indstilles."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "Starttidspunktet skal være et klokkeslæt mellem 00:00 og 23:59."
+    },
+    "rrc_curve_order": {
+      "message": "Varmekurven og fremløbsgrænserne skal forblive i rigtig rækkefølge: startpunktet under slutpunktet, den minimale fremløbstemperatur ikke over den maksimale. Der blev ikke sendt noget; ændr først den anden grænse."
+    },
+    "rrc_event_invalid_name": {
+      "message": "Indtast et navn på 1 til 32 byte udskrivbar tekst (færre tegn med æ, ø, å eller emoji)."
+    },
+    "rrc_event_invalid_dates": {
+      "message": "Begivenheden kræver hele dage: en start på eller før slutningen og en slutning, der ikke ligger i fortiden."
+    },
+    "rrc_event_overlap": {
+      "message": "Begivenheden deler en dag med en anden begivenhed i rumregulatoren. Begivenheder må ikke overlappe, heller ikke på første eller sidste dag."
+    },
+    "rrc_event_type_read_only": {
+      "message": "En dag, der styres som en anden ugedag, kan kun slettes her, ikke ændres."
+    },
+    "rrc_event_rejected": {
+      "message": "Rumregulatoren afviste begivenheden, for eksempel fordi dens kalender er fuld. Der blev ikke ændret noget."
+    },
+    "rrc_event_pending": {
+      "message": "En tidligere ændring af begivenhederne er endnu ikke bekræftet. Der blev ikke sendt noget; vent, til den vises i kalenderen, eller prøv igen om ti minutter."
+    },
+    "rrc_event_unsupported_fields": {
+      "message": "Rumregulatoren gemmer kun et navn og hele dage. Tilbagevendende begivenheder, beskrivelser og placeringer understøttes ikke."
+    },
+    "rrc_boost_no_zones": {
+      "message": "Boostet har ingen rum. Vælg først rummene til boostet på rumregulatoren."
+    },
+    "rrc_boost_unsupported_shape": {
+      "message": "Rumregulatoren rapporterer boostet i en form, som denne integration ikke kender fuldt ud. Boostet vises, men ændres ikke, så ingen indstilling går tabt."
+    },
+    "rrc_boost_locked": {
+      "message": "Rumregulatoren spærrer i øjeblikket boostet. Prøv igen senere."
     }
   },
   "selector": {
@@ -1127,6 +1203,48 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Lysstyrke for stemningslys"
+      },
+      "rrc_window_duration": {
+        "name": "Varighed af åbent vindue"
+      },
+      "rrc_window_temperature": {
+        "name": "Temperatur ved åbent vindue"
+      },
+      "rrc_temperature_offset": {
+        "name": "Temperaturjustering"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Varighed af ekstra varmt vand"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Varmekurvens startpunkt"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Varmekurvens slutpunkt"
+      },
+      "rrc_min_supply": {
+        "name": "Minimal fremløbstemperatur"
+      },
+      "rrc_max_supply": {
+        "name": "Maksimal fremløbstemperatur"
+      },
+      "rrc_room_influence": {
+        "name": "Rumpåvirkning"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Stop opvarmning ved udetemperatur"
+      },
+      "rrc_night_threshold": {
+        "name": "Natsænkning ned til udetemperatur"
+      },
+      "rrc_boost_temperature": {
+        "name": "Temperatur for boost"
+      },
+      "rrc_boost_duration": {
+        "name": "Varighed af boost"
+      },
+      "rrc_away_temperature": {
+        "name": "Fraværstemperatur"
       }
     },
     "select": {
@@ -1209,6 +1327,57 @@
           "orange": "Orange",
           "red": "Rød"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Følsomhed for registrering af åbent vindue",
+        "state": {
+          "high": "Høj",
+          "medium": "Mellem",
+          "low": "Lav"
+        }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Dag for termisk desinfektion",
+        "state": {
+          "monday": "Mandag",
+          "tuesday": "Tirsdag",
+          "wednesday": "Onsdag",
+          "thursday": "Torsdag",
+          "friday": "Fredag",
+          "saturday": "Lørdag",
+          "sunday": "Søndag",
+          "daily": "Hver dag"
+        }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Sommer-/vinteromskiftning",
+        "state": {
+          "off": "Fra",
+          "automatic": "Automatisk"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Natsænkning efter udetemperatur",
+        "state": {
+          "off": "Fra",
+          "automatic": "Automatisk"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Sæsontilstand",
+        "state": {
+          "always_heating": "Altid opvarmning",
+          "always_cooling": "Altid køling",
+          "automatic": "Automatisk"
+        }
+      },
+      "rrc_building_heatup": {
+        "name": "Opvarmningshastighed",
+        "state": {
+          "slow": "Langsom",
+          "normal": "Normal",
+          "fast": "Hurtig"
+        }
       }
     },
     "switch": {
@@ -1250,6 +1419,30 @@
       },
       "bacon_dry_display": {
         "name": "Display"
+      },
+      "rrc_window_detection": {
+        "name": "Registrering af åbent vindue"
+      },
+      "rrc_system_window_detection": {
+        "name": "Registrering af åbent vindue"
+      },
+      "rrc_child_lock": {
+        "name": "Børnesikring"
+      },
+      "rrc_extra_dhw": {
+        "name": "Ekstra varmt vand"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Termisk desinfektion"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Optimering af sætpunkt"
+      },
+      "rrc_boost": {
+        "name": "Boost"
+      },
+      "rrc_fireplace": {
+        "name": "Pejsefunktion"
       }
     },
     "sensor": {
@@ -1844,6 +2037,94 @@
             }
           }
         }
+      },
+      "rrc_next_setpoint": {
+        "name": "Næste sætpunkt"
+      },
+      "rrc_minutes_to_next_setpoint": {
+        "name": "Minutter til næste sætpunkt"
+      },
+      "rrc_zone_status": {
+        "name": "Zonestatus",
+        "state": {
+          "idle": "Inaktiv",
+          "heat_request": "Varmebehov",
+          "zone_error": "Zonefejl",
+          "comm_error": "Kommunikationsfejl",
+          "comm_warning": "Kommunikationsadvarsel",
+          "low_battery": "Lavt batteriniveau"
+        }
+      },
+      "rrc_zone_valve_position": {
+        "name": "Ventilåbning"
+      },
+      "rrc_optimum_start_state": {
+        "name": "Optimeret start"
+      },
+      "rrc_optimum_start_heatup_rate": {
+        "name": "Opvarmningshastighed ved optimeret start"
+      },
+      "rrc_valve_position": {
+        "name": "Ventilåbning"
+      },
+      "rrc_max_valve_position": {
+        "name": "Maksimal ventilåbning"
+      },
+      "rrc_valve_temperature": {
+        "name": "Temperatur ved ventilen"
+      },
+      "rrc_valve_state": {
+        "name": "Ventilstatus"
+      },
+      "rrc_whisper_mode": {
+        "name": "Lydsvag ventildrift"
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Resultat af termisk desinfektion"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Aktuelt niveau i varmtvandsprogrammet",
+        "state": {
+          "off": "Fra",
+          "low": "Eco",
+          "high": "Komfort",
+          "eco": "Eco+"
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Driftssæson",
+        "state": {
+          "heating": "Opvarmning",
+          "cooling": "Køling",
+          "idle": "Hviletilstand"
+        }
+      },
+      "rrc_display_code": {
+        "name": "Visningskode"
+      },
+      "rrc_cause_code": {
+        "name": "Årsagskode"
+      },
+      "rrc_maintenance_request": {
+        "name": "Vedligeholdelsesbehov"
+      },
+      "rrc_system_pressure": {
+        "name": "Systemtryk"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Indendørs luftfugtighed"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Lufttemperatur ved regulatoren"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Regulatorens chiptemperatur"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Regulatorens printpladetemperatur"
+      },
+      "rrc_update_state": {
+        "name": "Status for firmwareopdatering"
       }
     },
     "binary_sensor": {
@@ -1907,11 +2188,32 @@
       },
       "bacon_dry_device_error": {
         "name": "Rapporteret enhedsfejl"
+      },
+      "rrc_window_open": {
+        "name": "Vindue åbent"
+      },
+      "rrc_valve_problem": {
+        "name": "Ventilproblem"
+      },
+      "rrc_locking_error": {
+        "name": "Fejl der kræver nulstilling"
+      },
+      "rrc_blocking_error": {
+        "name": "Blokerende fejl"
+      },
+      "rrc_maintenance_due": {
+        "name": "Vedligeholdelse forfalden"
+      },
+      "rrc_refill_needed": {
+        "name": "Genopfyldning nødvendig"
       }
     },
     "calendar": {
       "holiday_periods": {
         "name": "Ferieperioder"
+      },
+      "rrc_events": {
+        "name": "Fravær og særlige dage"
       }
     },
     "event": {
@@ -1922,6 +2224,9 @@
     "button": {
       "softener_start_regeneration": {
         "name": "Start regenerering"
+      },
+      "rrc_override_clear": {
+        "name": "Ophæv midlertidigt sætpunkt"
       }
     },
     "water_heater": {
@@ -2009,6 +2314,21 @@
             }
           }
         }
+      },
+      "rrc_zone": {
+        "name": "Zone",
+        "state_attributes": {
+          "zone_status": {
+            "state": {
+              "idle": "Inaktiv",
+              "heat_request": "Varmebehov",
+              "zone_error": "Zonefejl",
+              "comm_error": "Kommunikationsfejl",
+              "comm_warning": "Kommunikationsadvarsel",
+              "low_battery": "Lavt batteriniveau"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2037,6 +2357,11 @@
             }
           }
         }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Starttidspunkt for termisk desinfektion"
       }
     }
   }

@@ -92,6 +92,25 @@ Further terms used in the texts:
 | utility power block | blokace dodavatelem energie |
 | plan regeneration (water softener) | naplánování regenerace |
 
+Room controller terms added in 0.9.0-alpha.5 (drafts, awaiting review):
+
+| English | Czech |
+| --- | --- |
+| program / schedule | časový program |
+| radiator valve | ventil termostatické hlavice |
+| window open detection | detekce otevřeného okna |
+| boost | Boost (funkce Boost) |
+| fireplace mode | funkce krbu |
+| energy history | historie energie |
+| temporary setpoint | dočasná požadovaná hodnota |
+| radio device | rádiové zařízení |
+| heating curve | topná křivka |
+| night setback | noční útlum |
+| season mode | sezónní provoz |
+| child lock | dětský zámek |
+| away / absence | nepřítomnost |
+| energy statistics, unit not confirmed | (kWh, nepotvrzeno) |
+
 Product, standard and preset names stay as they are: Home Comfort, Eco, Eco+,
 Boost, SG Ready, Smart Function, Power Guard, PV, SingleKey ID. Labels of the
 Chrome developer tools quoted in the sign-in steps stay in English.

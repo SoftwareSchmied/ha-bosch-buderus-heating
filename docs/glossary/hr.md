@@ -96,5 +96,24 @@ polaznog voda"), so names and group names stand alone in the nominative.
 | on, off (state) | uključeno, isključeno |
 | Comfort (preset) | Komfor |
 
+Room controller terms added in 0.9.0-alpha.5:
+
+| English | Croatian |
+| --- | --- |
+| program / schedule | vremenski program |
+| radiator valve | ventil termostatske glave |
+| window open detection | prepoznavanje otvorenog prozora |
+| boost | Boost (funkcija Boost) |
+| fireplace mode | funkcija kamina |
+| energy history | povijest energije |
+| temporary setpoint | privremena zadana vrijednost |
+| radio device | radijski uređaj |
+| heating curve | krivulja grijanja |
+| night setback | noćno sniženje |
+| season mode | sezonski način rada |
+| child lock | dječja brava |
+| away / absence | odsutnost |
+| energy statistics, unit not confirmed | (kWh, nepotvrđeno) |
+
 Unchanged: Home Comfort, Eco, Eco+, Boost, SG Ready, Smart Function, Power
 Guard, PV, SingleKey ID, product and brand names, codes such as VR1 or TC0.

@@ -84,6 +84,32 @@ Date format of notifications: `%d.%m.%Y`.
 | bivalence point | бивалентна точка |
 | Apply (button) | Приложи |
 
+Room controller terms added in 0.9.0-alpha.5:
+
+| English | Bulgarian |
+| --- | --- |
+| temporary setpoint | временна зададена стойност |
+| open window detection | откриване на отворен прозорец |
+| valve opening | отваряне на вентила |
+| optimum start | оптимизиран старт |
+| heating curve | отоплителна крива |
+| base point / end point (heating curve) | базова точка / крайна точка |
+| night setback | нощно понижение |
+| fireplace function | функция камина |
+| boost | Boost (unchanged) |
+| radiator valve | вентил на радиаторен термостат |
+| whisper mode (radiator valve) | тиха работа на вентила |
+| locking / blocking fault | повреда, изискваща нулиране / блокираща повреда |
+| heat-up rate | скорост на загряване |
+| heat request (zone) | заявка за топлина |
+| event (calendar) | събитие |
+| absence | отсъствие |
+| child lock | детска ключалка |
+| season mode | сезонен режим |
+| boiler (Heizgeraet) | котел |
+| electric heater (Elektroheizstab) | електрически нагревател |
+| energy statistics, unit not confirmed | (kWh, непотвърдено) |
+
 Control names shorten the group, for example "ОК 1: Режим на работа". The
 short form ОК (отоплителен кръг) resembles the Latin "OK"; it is kept because
 it is the abbreviation used in Bulgarian heating documentation.

@@ -84,6 +84,27 @@ core already has a term, the draft uses it.
 | Apply (button) | Applica |
 | Comfort (preset) | Comfort |
 
+Room controller terms added in 0.9.0-alpha.5:
+
+| English | Italian |
+| --- | --- |
+| radiator valve | valvola (della testina termostatica) |
+| window open detection | rilevamento finestra aperta |
+| boost | boost |
+| fireplace mode | funzione camino |
+| radio device | dispositivo radio |
+| optimum start | avvio ottimizzato |
+| temporary setpoint | setpoint temporaneo |
+| heating curve base/end point | punto base / punto finale della curva di riscaldamento |
+| night setback | riduzione notturna |
+| energy history | storico energia |
+| event (calendar) | evento |
+| locking / blocking fault | anomalia con riarmo manuale / anomalia bloccante |
+| whisper mode (radiator valve) | funzionamento silenzioso della valvola |
+| season mode | modalità stagionale |
+| room influence | influenza dell'ambiente |
+| energy statistics, unit not confirmed | (kWh, non confermato) |
+
 Control names shorten the group with the abbreviation in brackets, for
 example "HC 1: Operating mode".
 

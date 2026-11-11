@@ -245,7 +245,8 @@
         "title": "Powiadomienia",
         "description": "Usterki instalacji grzewczej pojawiają się pod dzwonkiem w Home Assistant. Przy wielu instalacjach wybierz te, dla których chcesz otrzymywać powiadomienia. Powiadomienia i ich odrzucenia są wspólne dla wszystkich użytkowników. Ich tekst używa języka systemu. Odrzucenie powiadomienia nie potwierdza usterki na urządzeniu. Nowe lub poważniejsze usterki pojawiają się ponownie. Zmiany obowiązują natychmiast.",
         "data": {
-          "fault_notifications": "Pokazuj usterki instalacji grzewczej"
+          "fault_notifications": "Pokazuj usterki instalacji grzewczej",
+          "notify_warnings_and_maintenance": "Pokazuj także ostrzeżenia i konserwację w powiadomieniu pod dzwonkiem"
         }
       },
       "holidays": {
@@ -961,11 +962,29 @@
     "rrc_mode_locked": {
       "message": "Regulator obecnie blokuje tryb grzania tej strefy, na przykład gdy instalacja chłodzi. Bieżący tryb pozostaje wyświetlany. Spróbuj ponownie później."
     },
+    "rrc_zone_setting_locked": {
+      "message": "Regulator obecnie blokuje to ustawienie strefy. Bieżąca wartość pozostaje wyświetlana. Spróbuj ponownie później."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "Regulator obecnie blokuje to ustawienie obiegu grzewczego. Bieżąca wartość pozostaje wyświetlana. Spróbuj ponownie później."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "Regulator obecnie blokuje to ustawienie ciepłej wody użytkowej, na przykład dlatego, że podgrzewacz wody w tej chwili go nie udostępnia. Bieżąca wartość pozostaje wyświetlana. Spróbuj ponownie później."
+    },
+    "rrc_device_setting_locked": {
+      "message": "Regulator obecnie blokuje to ustawienie urządzenia radiowego. Bieżąca wartość pozostaje wyświetlana. Spróbuj ponownie później."
+    },
+    "rrc_setting_locked": {
+      "message": "Regulator obecnie blokuje to ustawienie. Bieżąca wartość pozostaje wyświetlana. Spróbuj ponownie później."
+    },
     "write_validation_failed": {
       "message": "Zmiana tego ustawienia nie jest obecnie bezpieczna. Odśwież lub skonfiguruj ponownie integrację i spróbuj jeszcze raz."
     },
     "write_not_confirmed": {
       "message": "Zmiana została wysłana, ale instalacja grzewcza jej nie potwierdziła. Mogła już zacząć obowiązywać. Wartość zostanie zaktualizowana przy następnym odczycie."
+    },
+    "rrc_write_pending_confirmation": {
+      "message": "Zmiana została wysłana do regulatora pokojowego, ale jeszcze jej nie potwierdził. Regulator może zastosować ją z opóźnieniem; wartość zostanie zaktualizowana przy następnym odczycie."
     },
     "write_authentication_failed": {
       "message": "Logowanie do chmury nie jest już ważne. Uwierzytelnij ponownie Bosch/Buderus Home Comfort, zanim spróbujesz ponownie."
@@ -999,6 +1018,63 @@
     },
     "gateway_exchange_incomplete": {
       "message": "Nie udało się dokończyć przerwanej wymiany bramki, więc integracja nie uruchamia się. Szczegóły są w logu; usuń to, co blokuje wymianę (na przykład encje nowej bramki) i uruchom ponownie Home Assistant."
+    },
+    "rrc_override_ended": {
+      "message": "Regulator pokojowy natychmiast zakończył tymczasową wartość zadaną, na przykład dlatego, że osiągnięto następny punkt przełączenia programu czasowego. Obowiązuje wartość zadana programu czasowego."
+    },
+    "rrc_override_needs_clock_mode": {
+      "message": "Tymczasową wartość zadaną można ustawić lub usunąć tylko wtedy, gdy strefa działa według programu czasowego. Najpierw wybierz tryb programu czasowego."
+    },
+    "rrc_override_below_minimum": {
+      "message": "Tymczasowa wartość zadana musi być co najmniej równa najniższej ręcznej wartości zadanej strefy. Wybierz wyższą temperaturę."
+    },
+    "rrc_override_not_active": {
+      "message": "Ta strefa nie ma w tej chwili tymczasowej wartości zadanej do usunięcia."
+    },
+    "rrc_zone_climate_command": {
+      "message": "To polecenie strefy jest w tej chwili niedostępne. Sprawdź, czy strefa podaje aktualne wartości i czy temperatura mieści się w oferowanym zakresie; tymczasowa wartość zadana wymaga trybu programu czasowego."
+    },
+    "rrc_device_setting_unused": {
+      "message": "Urządzenie radiowe w tej chwili nie korzysta z tego ustawienia, więc nie zostało ono zmienione."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Dla wykrywania otwartego okna można ustawić tylko poziomy wysoki, średni i niski."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "Czas rozpoczęcia musi być godziną z przedziału od 00:00 do 23:59."
+    },
+    "rrc_curve_order": {
+      "message": "Krzywa grzewcza i limity zasilania muszą zachować właściwą kolejność: punkt początkowy poniżej punktu końcowego, minimalna temperatura zasilania nie wyższa niż maksymalna. Nic nie wysłano; najpierw zmień drugi limit."
+    },
+    "rrc_event_invalid_name": {
+      "message": "Wpisz nazwę o długości od 1 do 32 bajtów drukowalnego tekstu (mniej znaków przy polskich znakach diakrytycznych lub emoji)."
+    },
+    "rrc_event_invalid_dates": {
+      "message": "Wydarzenie wymaga pełnych dni: początek w dniu zakończenia lub wcześniej oraz koniec, który nie jest w przeszłości."
+    },
+    "rrc_event_overlap": {
+      "message": "Wydarzenie ma wspólny dzień z innym wydarzeniem regulatora pokojowego. Wydarzenia nie mogą się nakładać, nawet w pierwszym lub ostatnim dniu."
+    },
+    "rrc_event_type_read_only": {
+      "message": "Dzień regulowany jak inny dzień tygodnia można tutaj tylko usunąć, nie zmienić."
+    },
+    "rrc_event_rejected": {
+      "message": "Regulator pokojowy odrzucił wydarzenie, na przykład dlatego, że jego kalendarz jest pełny. Nic nie zostało zmienione."
+    },
+    "rrc_event_pending": {
+      "message": "Wcześniejsza zmiana wydarzeń nie została jeszcze potwierdzona. Nic nie wysłano; poczekaj, aż pojawi się w kalendarzu, lub spróbuj ponownie za dziesięć minut."
+    },
+    "rrc_event_unsupported_fields": {
+      "message": "Regulator pokojowy zapisuje tylko nazwę i pełne dni. Wydarzenia cykliczne, opisy i lokalizacje nie są obsługiwane."
+    },
+    "rrc_boost_no_zones": {
+      "message": "Funkcja Boost nie ma przypisanych pomieszczeń. Najpierw wybierz na regulatorze pokojowym pomieszczenia dla funkcji Boost."
+    },
+    "rrc_boost_unsupported_shape": {
+      "message": "Regulator pokojowy zgłasza funkcję Boost w formie, której ta integracja nie zna w pełni. Boost jest wyświetlany, ale nie jest zmieniany, aby nie utracić żadnego ustawienia."
+    },
+    "rrc_boost_locked": {
+      "message": "Regulator pokojowy blokuje w tej chwili funkcję Boost. Spróbuj ponownie później."
     }
   },
   "selector": {
@@ -1127,6 +1203,48 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Jasność oświetlenia otoczenia"
+      },
+      "rrc_window_duration": {
+        "name": "Czas trwania otwartego okna"
+      },
+      "rrc_window_temperature": {
+        "name": "Temperatura przy otwartym oknie"
+      },
+      "rrc_temperature_offset": {
+        "name": "Przesunięcie temperatury"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Czas trwania dodatkowej ciepłej wody"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Punkt początkowy krzywej grzewczej"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Punkt końcowy krzywej grzewczej"
+      },
+      "rrc_min_supply": {
+        "name": "Minimalna temperatura zasilania"
+      },
+      "rrc_max_supply": {
+        "name": "Maksymalna temperatura zasilania"
+      },
+      "rrc_room_influence": {
+        "name": "Wpływ pomieszczenia"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Zakończ grzanie przy temperaturze zewnętrznej"
+      },
+      "rrc_night_threshold": {
+        "name": "Obniżenie nocne do temperatury zewnętrznej"
+      },
+      "rrc_boost_temperature": {
+        "name": "Temperatura Boost"
+      },
+      "rrc_boost_duration": {
+        "name": "Czas trwania Boost"
+      },
+      "rrc_away_temperature": {
+        "name": "Temperatura nieobecności"
       }
     },
     "select": {
@@ -1209,6 +1327,57 @@
           "orange": "Pomarańczowy",
           "red": "Czerwony"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Czułość wykrywania otwartego okna",
+        "state": {
+          "high": "Wysoka",
+          "medium": "Średnia",
+          "low": "Niska"
+        }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Dzień dezynfekcji termicznej",
+        "state": {
+          "monday": "Poniedziałek",
+          "tuesday": "Wtorek",
+          "wednesday": "Środa",
+          "thursday": "Czwartek",
+          "friday": "Piątek",
+          "saturday": "Sobota",
+          "sunday": "Niedziela",
+          "daily": "Codziennie"
+        }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Przełączanie lato/zima",
+        "state": {
+          "off": "Wyłączony",
+          "automatic": "Automatyczne"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Obniżenie nocne według temperatury zewnętrznej",
+        "state": {
+          "off": "Wyłączony",
+          "automatic": "Automatyczne"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Tryb sezonowy",
+        "state": {
+          "always_heating": "Zawsze grzanie",
+          "always_cooling": "Zawsze chłodzenie",
+          "automatic": "Automatyczne"
+        }
+      },
+      "rrc_building_heatup": {
+        "name": "Prędkość nagrzewania",
+        "state": {
+          "slow": "Wolna",
+          "normal": "Normalna",
+          "fast": "Szybka"
+        }
       }
     },
     "switch": {
@@ -1250,6 +1419,30 @@
       },
       "bacon_dry_display": {
         "name": "Wyświetlacz"
+      },
+      "rrc_window_detection": {
+        "name": "Wykrywanie otwartego okna"
+      },
+      "rrc_system_window_detection": {
+        "name": "Wykrywanie otwartego okna"
+      },
+      "rrc_child_lock": {
+        "name": "Blokada rodzicielska"
+      },
+      "rrc_extra_dhw": {
+        "name": "Dodatkowa ciepła woda"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Dezynfekcja termiczna"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Optymalizacja wartości zadanej"
+      },
+      "rrc_boost": {
+        "name": "Boost"
+      },
+      "rrc_fireplace": {
+        "name": "Funkcja kominkowa"
       }
     },
     "sensor": {
@@ -1844,6 +2037,94 @@
             }
           }
         }
+      },
+      "rrc_next_setpoint": {
+        "name": "Następna wartość zadana"
+      },
+      "rrc_minutes_to_next_setpoint": {
+        "name": "Minuty do następnej wartości zadanej"
+      },
+      "rrc_zone_status": {
+        "name": "Stan strefy",
+        "state": {
+          "idle": "Bezczynność",
+          "heat_request": "Żądanie ciepła",
+          "zone_error": "Błąd strefy",
+          "comm_error": "Błąd komunikacji",
+          "comm_warning": "Ostrzeżenie komunikacji",
+          "low_battery": "Słaba bateria"
+        }
+      },
+      "rrc_zone_valve_position": {
+        "name": "Otwarcie zaworu"
+      },
+      "rrc_optimum_start_state": {
+        "name": "Optymalny start"
+      },
+      "rrc_optimum_start_heatup_rate": {
+        "name": "Szybkość nagrzewania przy optymalnym starcie"
+      },
+      "rrc_valve_position": {
+        "name": "Otwarcie zaworu"
+      },
+      "rrc_max_valve_position": {
+        "name": "Maksymalne otwarcie zaworu"
+      },
+      "rrc_valve_temperature": {
+        "name": "Temperatura przy zaworze"
+      },
+      "rrc_valve_state": {
+        "name": "Stan zaworu"
+      },
+      "rrc_whisper_mode": {
+        "name": "Cicha praca zaworu"
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Wynik dezynfekcji termicznej"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Aktualny poziom programu ciepłej wody",
+        "state": {
+          "off": "Wyłączony",
+          "low": "Eco",
+          "high": "Komfort",
+          "eco": "Eco+"
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Sezon pracy",
+        "state": {
+          "heating": "Grzanie",
+          "cooling": "Chłodzenie",
+          "idle": "Bezczynność"
+        }
+      },
+      "rrc_display_code": {
+        "name": "Kod wyświetlacza"
+      },
+      "rrc_cause_code": {
+        "name": "Kod przyczyny"
+      },
+      "rrc_maintenance_request": {
+        "name": "Wymóg konserwacji"
+      },
+      "rrc_system_pressure": {
+        "name": "Ciśnienie w instalacji"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Wilgotność w pomieszczeniu"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Temperatura powietrza przy regulatorze"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Temperatura układu scalonego regulatora"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Temperatura płytki regulatora"
+      },
+      "rrc_update_state": {
+        "name": "Stan aktualizacji oprogramowania układowego"
       }
     },
     "binary_sensor": {
@@ -1907,11 +2188,32 @@
       },
       "bacon_dry_device_error": {
         "name": "Zgłoszony błąd urządzenia"
+      },
+      "rrc_window_open": {
+        "name": "Okno otwarte"
+      },
+      "rrc_valve_problem": {
+        "name": "Problem z zaworem"
+      },
+      "rrc_locking_error": {
+        "name": "Usterka wymagająca resetu"
+      },
+      "rrc_blocking_error": {
+        "name": "Usterka blokująca"
+      },
+      "rrc_maintenance_due": {
+        "name": "Wymagana konserwacja"
+      },
+      "rrc_refill_needed": {
+        "name": "Wymagane uzupełnienie"
       }
     },
     "calendar": {
       "holiday_periods": {
         "name": "Okresy urlopu"
+      },
+      "rrc_events": {
+        "name": "Nieobecności i dni specjalne"
       }
     },
     "event": {
@@ -1922,6 +2224,9 @@
     "button": {
       "softener_start_regeneration": {
         "name": "Rozpocznij regenerację"
+      },
+      "rrc_override_clear": {
+        "name": "Usuń tymczasową wartość zadaną"
       }
     },
     "water_heater": {
@@ -2009,6 +2314,21 @@
             }
           }
         }
+      },
+      "rrc_zone": {
+        "name": "Strefa",
+        "state_attributes": {
+          "zone_status": {
+            "state": {
+              "idle": "Bezczynność",
+              "heat_request": "Żądanie ciepła",
+              "zone_error": "Błąd strefy",
+              "comm_error": "Błąd komunikacji",
+              "comm_warning": "Ostrzeżenie komunikacji",
+              "low_battery": "Słaba bateria"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2037,6 +2357,11 @@
             }
           }
         }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Godzina rozpoczęcia dezynfekcji termicznej"
       }
     }
   }

@@ -90,6 +90,25 @@ notifications: `%d. %m. %Y`.
 | plan regeneration (water softener) | naplánovanie regenerácie ("Naplánovanie regenerácie") |
 | requested supply temperature (signal) | vyžiadaná výstupná teplota ("Vyžiadaná výstupná teplota okruhu 1 (signál)") |
 
+Room controller terms added in 0.9.0-alpha.5 (drafts, awaiting review):
+
+| English | Slovak |
+| --- | --- |
+| program / schedule | časový program |
+| radiator valve | ventil termostatickej hlavice |
+| window open detection | detekcia otvoreného okna |
+| boost | Boost (funkcia Boost) |
+| fireplace mode | funkcia krbu |
+| energy history | história energie |
+| temporary setpoint | dočasná požadovaná hodnota |
+| radio device | rádiové zariadenie |
+| heating curve | vykurovacia krivka |
+| night setback | nočný útlm |
+| season mode | sezónny režim |
+| child lock | detský zámok |
+| away / absence | neprítomnosť |
+| energy statistics, unit not confirmed | (kWh, nepotvrdené) |
+
 Control names write the group out, for example "Okruh 1: Prevádzkový režim"
 or "Teplá voda 1: Teplota".
 Product, standard and preset names stay as they are: Home Comfort, SingleKey

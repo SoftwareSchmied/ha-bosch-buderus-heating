@@ -245,7 +245,8 @@
         "title": "Notificações",
         "description": "As avarias do sistema de aquecimento aparecem sob o sino no Home Assistant. Com várias instalações, selecione aquelas para as quais pretende receber notificações. As notificações e as dispensas são partilhadas por todos os utilizadores. O texto utiliza o idioma do sistema. Dispensar uma notificação não confirma uma avaria no equipamento. As avarias novas ou mais críticas voltam a aparecer. As alterações têm efeito imediato.",
         "data": {
-          "fault_notifications": "Mostrar avarias do sistema de aquecimento"
+          "fault_notifications": "Mostrar avarias do sistema de aquecimento",
+          "notify_warnings_and_maintenance": "Mostrar também avisos e manutenção na notificação do sino"
         }
       },
       "holidays": {
@@ -961,11 +962,29 @@
     "rrc_mode_locked": {
       "message": "O regulador bloqueia atualmente o modo de aquecimento desta zona, por exemplo enquanto o sistema arrefece. O modo atual continua a ser apresentado. Tente novamente mais tarde."
     },
+    "rrc_zone_setting_locked": {
+      "message": "O regulador bloqueia atualmente esta definição da zona. O valor atual continua a ser apresentado. Tente novamente mais tarde."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "O regulador bloqueia atualmente esta definição do circuito de aquecimento. O valor atual continua a ser apresentado. Tente novamente mais tarde."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "O regulador bloqueia atualmente esta definição de água quente, por exemplo porque o acumulador de água quente não a disponibiliza neste momento. O valor atual continua a ser apresentado. Tente novamente mais tarde."
+    },
+    "rrc_device_setting_locked": {
+      "message": "O regulador bloqueia atualmente esta definição do dispositivo de rádio. O valor atual continua a ser apresentado. Tente novamente mais tarde."
+    },
+    "rrc_setting_locked": {
+      "message": "O regulador bloqueia atualmente esta definição. O valor atual continua a ser apresentado. Tente novamente mais tarde."
+    },
     "write_validation_failed": {
       "message": "Atualmente não é seguro alterar esta definição. Atualize ou reconfigure a integração e tente novamente."
     },
     "write_not_confirmed": {
       "message": "A alteração foi enviada, mas o sistema de aquecimento não a confirmou. Pode já ter produzido efeito. O valor é atualizado com a leitura seguinte."
+    },
+    "rrc_write_pending_confirmation": {
+      "message": "A alteração foi enviada ao regulador de ambiente, mas este ainda não a confirmou. O regulador pode aplicá-la com atraso; o valor é atualizado na próxima leitura."
     },
     "write_authentication_failed": {
       "message": "O início de sessão na cloud já não é válido. Autentique novamente o Bosch/Buderus Home Comfort antes de tentar novamente."
@@ -999,6 +1018,63 @@
     },
     "gateway_exchange_incomplete": {
       "message": "Não foi possível concluir uma substituição de gateway interrompida, pelo que a integração não arranca. Os detalhes estão no registo; remova o que bloqueia a substituição (por exemplo, entidades do novo gateway) e reinicie o Home Assistant."
+    },
+    "rrc_override_ended": {
+      "message": "O regulador de ambiente terminou imediatamente o valor de referência temporário, por exemplo porque foi atingido o ponto de comutação seguinte do programa horário. Aplica-se o valor de referência do programa horário."
+    },
+    "rrc_override_needs_clock_mode": {
+      "message": "Um valor de referência temporário só pode ser definido ou cancelado enquanto a zona segue o seu programa horário. Selecione primeiro o modo programa horário."
+    },
+    "rrc_override_below_minimum": {
+      "message": "O valor de referência temporário tem de ser pelo menos igual ao valor de referência manual mais baixo da zona. Escolha uma temperatura mais elevada."
+    },
+    "rrc_override_not_active": {
+      "message": "Esta zona não tem de momento nenhum valor de referência temporário para cancelar."
+    },
+    "rrc_zone_climate_command": {
+      "message": "Este comando de zona não está disponível de momento. Verifique se a zona fornece valores atuais e se a temperatura se encontra dentro do intervalo oferecido; um valor de referência temporário requer o modo programa horário."
+    },
+    "rrc_device_setting_unused": {
+      "message": "O dispositivo de rádio não utiliza esta definição de momento, por isso não foi alterada."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Para a deteção de janela aberta só podem ser definidos os níveis alto, médio e baixo."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "A hora de início tem de ser uma hora do dia entre 00:00 e 23:59."
+    },
+    "rrc_curve_order": {
+      "message": "A curva de aquecimento e os limites de ida têm de manter a ordem: o ponto base abaixo do ponto final e a temperatura de ida mínima não acima da máxima. Não foi enviado nada; altere primeiro o outro limite."
+    },
+    "rrc_event_invalid_name": {
+      "message": "Introduza um nome com 1 a 32 bytes de texto imprimível (menos carateres com acentos ou emojis)."
+    },
+    "rrc_event_invalid_dates": {
+      "message": "O evento requer dias inteiros: um início na data de fim ou antes dela e um fim que não esteja no passado."
+    },
+    "rrc_event_overlap": {
+      "message": "O evento partilha um dia com outro evento do regulador de ambiente. Os eventos não podem sobrepor-se, nem sequer no primeiro ou no último dia."
+    },
+    "rrc_event_type_read_only": {
+      "message": "Um dia regulado como outro dia da semana só pode ser eliminado aqui, não alterado."
+    },
+    "rrc_event_rejected": {
+      "message": "O regulador de ambiente recusou o evento, por exemplo porque o seu calendário está cheio. Nada foi alterado."
+    },
+    "rrc_event_pending": {
+      "message": "Uma alteração anterior dos eventos ainda não foi confirmada. Não foi enviado nada; aguarde até aparecer no calendário ou tente novamente dentro de dez minutos."
+    },
+    "rrc_event_unsupported_fields": {
+      "message": "O regulador de ambiente guarda apenas um nome e dias inteiros. Eventos recorrentes, descrições e locais não são suportados."
+    },
+    "rrc_boost_no_zones": {
+      "message": "O boost não tem divisões. Selecione primeiro as divisões do boost no regulador de ambiente."
+    },
+    "rrc_boost_unsupported_shape": {
+      "message": "O regulador de ambiente comunica o boost numa forma que esta integração não conhece por completo. O boost é apresentado, mas não é alterado, para que nenhuma definição se perca."
+    },
+    "rrc_boost_locked": {
+      "message": "O regulador de ambiente bloqueia o boost neste momento. Tente novamente mais tarde."
     }
   },
   "selector": {
@@ -1127,6 +1203,48 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Luminosidade da luz ambiente"
+      },
+      "rrc_window_duration": {
+        "name": "Duração de janela aberta"
+      },
+      "rrc_window_temperature": {
+        "name": "Temperatura de janela aberta"
+      },
+      "rrc_temperature_offset": {
+        "name": "Desvio de temperatura"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Duração da água quente extra"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Ponto base da curva de aquecimento"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Ponto final da curva de aquecimento"
+      },
+      "rrc_min_supply": {
+        "name": "Temperatura de ida mínima"
+      },
+      "rrc_max_supply": {
+        "name": "Temperatura de ida máxima"
+      },
+      "rrc_room_influence": {
+        "name": "Influência da divisão"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Fim do aquecimento à temperatura exterior"
+      },
+      "rrc_night_threshold": {
+        "name": "Redução noturna até à temperatura exterior"
+      },
+      "rrc_boost_temperature": {
+        "name": "Temperatura do boost"
+      },
+      "rrc_boost_duration": {
+        "name": "Duração do boost"
+      },
+      "rrc_away_temperature": {
+        "name": "Temperatura de ausência"
       }
     },
     "select": {
@@ -1209,6 +1327,57 @@
           "orange": "Laranja",
           "red": "Vermelho"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Sensibilidade da deteção de janela aberta",
+        "state": {
+          "high": "Alta",
+          "medium": "Média",
+          "low": "Baixa"
+        }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Dia da desinfeção térmica",
+        "state": {
+          "monday": "Segunda-feira",
+          "tuesday": "Terça-feira",
+          "wednesday": "Quarta-feira",
+          "thursday": "Quinta-feira",
+          "friday": "Sexta-feira",
+          "saturday": "Sábado",
+          "sunday": "Domingo",
+          "daily": "Todos os dias"
+        }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Comutação verão/inverno",
+        "state": {
+          "off": "Desligada",
+          "automatic": "Automática"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Redução noturna conforme a temperatura exterior",
+        "state": {
+          "off": "Desligada",
+          "automatic": "Automática"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Modo sazonal",
+        "state": {
+          "always_heating": "Aquecer sempre",
+          "always_cooling": "Arrefecer sempre",
+          "automatic": "Automático"
+        }
+      },
+      "rrc_building_heatup": {
+        "name": "Velocidade de aquecimento",
+        "state": {
+          "slow": "Lenta",
+          "normal": "Normal",
+          "fast": "Rápida"
+        }
       }
     },
     "switch": {
@@ -1250,6 +1419,30 @@
       },
       "bacon_dry_display": {
         "name": "Ecrã"
+      },
+      "rrc_window_detection": {
+        "name": "Deteção de janela aberta"
+      },
+      "rrc_system_window_detection": {
+        "name": "Deteção de janela aberta"
+      },
+      "rrc_child_lock": {
+        "name": "Bloqueio para crianças"
+      },
+      "rrc_extra_dhw": {
+        "name": "Água quente extra"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Desinfeção térmica"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Otimização do valor de referência"
+      },
+      "rrc_boost": {
+        "name": "Boost"
+      },
+      "rrc_fireplace": {
+        "name": "Função lareira"
       }
     },
     "sensor": {
@@ -1844,6 +2037,94 @@
             }
           }
         }
+      },
+      "rrc_next_setpoint": {
+        "name": "Próximo valor de referência"
+      },
+      "rrc_minutes_to_next_setpoint": {
+        "name": "Minutos até ao próximo valor de referência"
+      },
+      "rrc_zone_status": {
+        "name": "Estado da zona",
+        "state": {
+          "idle": "Inativo",
+          "heat_request": "Pedido de calor",
+          "zone_error": "Erro de zona",
+          "comm_error": "Erro de comunicação",
+          "comm_warning": "Aviso de comunicação",
+          "low_battery": "Bateria fraca"
+        }
+      },
+      "rrc_zone_valve_position": {
+        "name": "Abertura da válvula"
+      },
+      "rrc_optimum_start_state": {
+        "name": "Arranque otimizado"
+      },
+      "rrc_optimum_start_heatup_rate": {
+        "name": "Taxa de aquecimento do arranque otimizado"
+      },
+      "rrc_valve_position": {
+        "name": "Abertura da válvula"
+      },
+      "rrc_max_valve_position": {
+        "name": "Abertura máxima da válvula"
+      },
+      "rrc_valve_temperature": {
+        "name": "Temperatura na válvula"
+      },
+      "rrc_valve_state": {
+        "name": "Estado da válvula"
+      },
+      "rrc_whisper_mode": {
+        "name": "Funcionamento silencioso da válvula"
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Resultado da desinfeção térmica"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Nível atual do programa de água quente",
+        "state": {
+          "off": "Desligado",
+          "low": "Eco",
+          "high": "Conforto",
+          "eco": "Eco+"
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Estação de funcionamento",
+        "state": {
+          "heating": "Aquecimento",
+          "cooling": "Arrefecimento",
+          "idle": "Inativo"
+        }
+      },
+      "rrc_display_code": {
+        "name": "Código de visualização"
+      },
+      "rrc_cause_code": {
+        "name": "Código da causa"
+      },
+      "rrc_maintenance_request": {
+        "name": "Pedido de manutenção"
+      },
+      "rrc_system_pressure": {
+        "name": "Pressão da instalação"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Humidade ambiente"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Temperatura do ar no regulador"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Temperatura do chip do regulador"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Temperatura da placa do regulador"
+      },
+      "rrc_update_state": {
+        "name": "Estado da atualização do firmware"
       }
     },
     "binary_sensor": {
@@ -1907,11 +2188,32 @@
       },
       "bacon_dry_device_error": {
         "name": "Avaria do dispositivo comunicada"
+      },
+      "rrc_window_open": {
+        "name": "Janela aberta"
+      },
+      "rrc_valve_problem": {
+        "name": "Problema da válvula"
+      },
+      "rrc_locking_error": {
+        "name": "Avaria com rearme manual"
+      },
+      "rrc_blocking_error": {
+        "name": "Avaria bloqueante"
+      },
+      "rrc_maintenance_due": {
+        "name": "Manutenção devida"
+      },
+      "rrc_refill_needed": {
+        "name": "Reposição necessária"
       }
     },
     "calendar": {
       "holiday_periods": {
         "name": "Períodos de férias"
+      },
+      "rrc_events": {
+        "name": "Ausências e dias especiais"
       }
     },
     "event": {
@@ -1922,6 +2224,9 @@
     "button": {
       "softener_start_regeneration": {
         "name": "Iniciar regeneração"
+      },
+      "rrc_override_clear": {
+        "name": "Cancelar o valor de referência temporário"
       }
     },
     "water_heater": {
@@ -2009,6 +2314,21 @@
             }
           }
         }
+      },
+      "rrc_zone": {
+        "name": "Zona",
+        "state_attributes": {
+          "zone_status": {
+            "state": {
+              "idle": "Inativo",
+              "heat_request": "Pedido de calor",
+              "zone_error": "Erro de zona",
+              "comm_error": "Erro de comunicação",
+              "comm_warning": "Aviso de comunicação",
+              "low_battery": "Bateria fraca"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2037,6 +2357,11 @@
             }
           }
         }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Hora de início da desinfeção térmica"
       }
     }
   }

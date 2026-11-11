@@ -96,6 +96,25 @@ dvižnega voda"), so names and group names stand alone in the nominative.
 | on, off (state) | vklopljeno, izklopljeno (HA) |
 | Comfort (preset) | Udobno (HA) |
 
+Room controller terms added in 0.9.0-alpha.5:
+
+| English | Slovenian |
+| --- | --- |
+| program / schedule | časovni program |
+| radiator valve | ventil termostatske glave |
+| window open detection | zaznavanje odprtega okna |
+| boost | Boost (funkcija Boost) |
+| fireplace mode | funkcija kamina |
+| energy history | zgodovina energije |
+| temporary setpoint | začasna nastavljena vrednost |
+| radio device | radijska naprava |
+| heating curve | ogrevalna krivulja |
+| night setback | nočno zniževanje |
+| season mode | sezonski način delovanja |
+| child lock | otroška ključavnica |
+| away / absence | odsotnost |
+| energy statistics, unit not confirmed | (kWh, nepotrjeno) |
+
 Pressure is "tlak", the technical term, although some core texts use
 "pritisk".
 

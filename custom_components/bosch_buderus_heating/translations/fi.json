@@ -245,7 +245,8 @@
         "title": "Ilmoitukset",
         "description": "Lämmitysjärjestelmän viat näkyvät Home Assistantin kellon alla. Jos asennuksia on useita, valitse ne, joista haluat ilmoituksia. Ilmoitukset ja niiden sulkemiset ovat kaikkien käyttäjien yhteisiä. Niiden teksti käyttää järjestelmän kieltä. Ilmoituksen sulkeminen ei kuittaa laitteen vikaa. Uudet tai vakavammat viat tulevat uudelleen näkyviin. Muutokset tulevat voimaan heti.",
         "data": {
-          "fault_notifications": "Näytä lämmitysjärjestelmän viat"
+          "fault_notifications": "Näytä lämmitysjärjestelmän viat",
+          "notify_warnings_and_maintenance": "Näytä myös varoitukset ja huoltoilmoitukset kellon ilmoituksessa"
         }
       },
       "holidays": {
@@ -961,11 +962,29 @@
     "rrc_mode_locked": {
       "message": "Säädin lukitsee tämän vyöhykkeen lämmitystilan tällä hetkellä, esimerkiksi järjestelmän jäähdyttäessä. Nykyinen tila pysyy näkyvissä. Yritä myöhemmin uudelleen."
     },
+    "rrc_zone_setting_locked": {
+      "message": "Säädin lukitsee tämän vyöhykkeen asetuksen tällä hetkellä. Nykyinen arvo pysyy näkyvissä. Yritä myöhemmin uudelleen."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "Säädin lukitsee tämän lämmityspiirin asetuksen tällä hetkellä. Nykyinen arvo pysyy näkyvissä. Yritä myöhemmin uudelleen."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "Säädin lukitsee tämän lämpimän käyttöveden asetuksen tällä hetkellä, esimerkiksi koska lämminvesivaraaja ei tarjoa sitä juuri nyt. Nykyinen arvo pysyy näkyvissä. Yritä myöhemmin uudelleen."
+    },
+    "rrc_device_setting_locked": {
+      "message": "Säädin lukitsee tämän radiolaitteen asetuksen tällä hetkellä. Nykyinen arvo pysyy näkyvissä. Yritä myöhemmin uudelleen."
+    },
+    "rrc_setting_locked": {
+      "message": "Säädin lukitsee tämän asetuksen tällä hetkellä. Nykyinen arvo pysyy näkyvissä. Yritä myöhemmin uudelleen."
+    },
     "write_validation_failed": {
       "message": "Tätä asetusta ei ole tällä hetkellä turvallista muuttaa. Päivitä tai määritä integraatio uudelleen ja yritä uudelleen."
     },
     "write_not_confirmed": {
       "message": "Muutos lähetettiin, mutta lämmitysjärjestelmä ei vahvistanut sitä. Se on voinut jo tulla voimaan. Arvo päivittyy seuraavalla lukukerralla."
+    },
+    "rrc_write_pending_confirmation": {
+      "message": "Muutos lähetettiin huonesäätimelle, mutta se ei ole vielä vahvistanut sitä. Säädin voi ottaa sen käyttöön viiveellä; arvo päivittyy seuraavalla lukukerralla."
     },
     "write_authentication_failed": {
       "message": "Pilvikirjautuminen ei ole enää voimassa. Todenna Bosch/Buderus Home Comfort uudelleen ennen kuin yrität uudelleen."
@@ -999,6 +1018,63 @@
     },
     "gateway_exchange_incomplete": {
       "message": "Keskeytynyttä yhdyskäytävän vaihtoa ei voitu viimeistellä, joten integraatio ei käynnisty. Tiedot ovat lokissa. Poista vaihdon estävät asiat (esimerkiksi uuden yhdyskäytävän entiteetit) ja käynnistä Home Assistant uudelleen."
+    },
+    "rrc_override_ended": {
+      "message": "Huonesäädin lopetti väliaikaisen asetusarvon heti, esimerkiksi koska aikaohjelman seuraava kytkentäpiste saavutettiin. Aikaohjelman asetusarvo on voimassa."
+    },
+    "rrc_override_needs_clock_mode": {
+      "message": "Väliaikainen asetusarvo voidaan asettaa tai poistaa vain, kun vyöhyke seuraa aikaohjelmaansa. Valitse ensin käyttötila aikaohjelma."
+    },
+    "rrc_override_below_minimum": {
+      "message": "Väliaikaisen asetusarvon on oltava vähintään vyöhykkeen alin manuaalinen asetusarvo. Valitse korkeampi lämpötila."
+    },
+    "rrc_override_not_active": {
+      "message": "Tällä vyöhykkeellä ei tällä hetkellä ole poistettavaa väliaikaista asetusarvoa."
+    },
+    "rrc_zone_climate_command": {
+      "message": "Tämä vyöhykekomento ei ole tällä hetkellä käytettävissä. Tarkista, että vyöhyke ilmoittaa ajantasaiset arvot ja että lämpötila on tarjotulla alueella; väliaikainen asetusarvo edellyttää käyttötilaa aikaohjelma."
+    },
+    "rrc_device_setting_unused": {
+      "message": "Radiolaite ei käytä tätä asetusta tällä hetkellä, joten sitä ei muutettu."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Avoimen ikkunan tunnistukselle voi asettaa vain tasot korkea, keskitaso ja matala."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "Aloitusajan on oltava kellonaika välillä 00:00–23:59."
+    },
+    "rrc_curve_order": {
+      "message": "Lämmityskäyrän ja menolämpötilarajojen on pysyttävä oikeassa järjestyksessä: alkupisteen on oltava loppupistettä alempana, eikä pienin menolämpötila saa olla suurinta korkeampi. Mitään ei lähetetty; muuta ensin toista rajaa."
+    },
+    "rrc_event_invalid_name": {
+      "message": "Anna nimi, jossa on 1–32 tavua tulostettavaa tekstiä (vähemmän merkkejä, jos käytät ä:tä, ö:tä tai emojeja)."
+    },
+    "rrc_event_invalid_dates": {
+      "message": "Tapahtuma vaatii kokonaisia päiviä: alkamisen on oltava päättymispäivänä tai sitä ennen, eikä päättyminen saa olla menneisyydessä."
+    },
+    "rrc_event_overlap": {
+      "message": "Tapahtuma jakaa päivän huonesäätimen toisen tapahtuman kanssa. Tapahtumat eivät saa mennä päällekkäin, ei edes ensimmäisenä tai viimeisenä päivänä."
+    },
+    "rrc_event_type_read_only": {
+      "message": "Päivä, jota ohjataan kuten toista viikonpäivää, voidaan täällä vain poistaa, ei muuttaa."
+    },
+    "rrc_event_rejected": {
+      "message": "Huonesäädin hylkäsi tapahtuman, esimerkiksi koska sen kalenteri on täynnä. Mitään ei muutettu."
+    },
+    "rrc_event_pending": {
+      "message": "Aiempaa tapahtumien muutosta ei ole vielä vahvistettu. Mitään ei lähetetty; odota, kunnes se näkyy kalenterissa, tai yritä uudelleen kymmenen minuutin kuluttua."
+    },
+    "rrc_event_unsupported_fields": {
+      "message": "Huonesäädin tallentaa vain nimen ja kokonaisia päiviä. Toistuvia tapahtumia, kuvauksia ja sijainteja ei tueta."
+    },
+    "rrc_boost_no_zones": {
+      "message": "Boostilla ei ole huoneita. Valitse ensin boostin huoneet huonesäätimestä."
+    },
+    "rrc_boost_unsupported_shape": {
+      "message": "Huonesäädin ilmoittaa boostin muodossa, jota tämä integraatio ei tunne täysin. Boost näytetään, mutta sitä ei muuteta, jotta mikään asetus ei katoa."
+    },
+    "rrc_boost_locked": {
+      "message": "Huonesäädin estää tällä hetkellä boostin. Yritä myöhemmin uudelleen."
     }
   },
   "selector": {
@@ -1127,6 +1203,48 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Tunnelmavalon kirkkaus"
+      },
+      "rrc_window_duration": {
+        "name": "Avoimen ikkunan kesto"
+      },
+      "rrc_window_temperature": {
+        "name": "Avoimen ikkunan lämpötila"
+      },
+      "rrc_temperature_offset": {
+        "name": "Lämpötilakorjaus"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Lisälämpimän käyttöveden kesto"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Lämmityskäyrän alkupiste"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Lämmityskäyrän loppupiste"
+      },
+      "rrc_min_supply": {
+        "name": "Pienin menolämpötila"
+      },
+      "rrc_max_supply": {
+        "name": "Suurin menolämpötila"
+      },
+      "rrc_room_influence": {
+        "name": "Huoneen vaikutus"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Lopeta lämmitys ulkolämpötilassa"
+      },
+      "rrc_night_threshold": {
+        "name": "Yöalennus ulkolämpötilaan asti"
+      },
+      "rrc_boost_temperature": {
+        "name": "Boostin lämpötila"
+      },
+      "rrc_boost_duration": {
+        "name": "Boostin kesto"
+      },
+      "rrc_away_temperature": {
+        "name": "Poissaolon lämpötila"
       }
     },
     "select": {
@@ -1209,6 +1327,57 @@
           "orange": "Oranssi",
           "red": "Punainen"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Avoimen ikkunan tunnistuksen herkkyys",
+        "state": {
+          "high": "Korkea",
+          "medium": "Keskitaso",
+          "low": "Matala"
+        }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Lämpödesinfioinnin päivä",
+        "state": {
+          "monday": "Maanantai",
+          "tuesday": "Tiistai",
+          "wednesday": "Keskiviikko",
+          "thursday": "Torstai",
+          "friday": "Perjantai",
+          "saturday": "Lauantai",
+          "sunday": "Sunnuntai",
+          "daily": "Joka päivä"
+        }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Kesä-/talvivaihto",
+        "state": {
+          "off": "Pois",
+          "automatic": "Automaattinen"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Yöalennus ulkolämpötilan mukaan",
+        "state": {
+          "off": "Pois",
+          "automatic": "Automaattinen"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Kausitila",
+        "state": {
+          "always_heating": "Aina lämmitys",
+          "always_cooling": "Aina jäähdytys",
+          "automatic": "Automaattinen"
+        }
+      },
+      "rrc_building_heatup": {
+        "name": "Lämmitysnopeus",
+        "state": {
+          "slow": "Hidas",
+          "normal": "Normaali",
+          "fast": "Nopea"
+        }
       }
     },
     "switch": {
@@ -1250,6 +1419,30 @@
       },
       "bacon_dry_display": {
         "name": "Näyttö"
+      },
+      "rrc_window_detection": {
+        "name": "Avoimen ikkunan tunnistus"
+      },
+      "rrc_system_window_detection": {
+        "name": "Avoimen ikkunan tunnistus"
+      },
+      "rrc_child_lock": {
+        "name": "Lapsilukko"
+      },
+      "rrc_extra_dhw": {
+        "name": "Lisälämmin käyttövesi"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Lämpödesinfiointi"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Asetusarvon optimointi"
+      },
+      "rrc_boost": {
+        "name": "Boost"
+      },
+      "rrc_fireplace": {
+        "name": "Takkatoiminto"
       }
     },
     "sensor": {
@@ -1844,6 +2037,94 @@
             }
           }
         }
+      },
+      "rrc_next_setpoint": {
+        "name": "Seuraava asetusarvo"
+      },
+      "rrc_minutes_to_next_setpoint": {
+        "name": "Minuutteja seuraavaan asetusarvoon"
+      },
+      "rrc_zone_status": {
+        "name": "Vyöhykkeen tila",
+        "state": {
+          "idle": "Lepotilassa",
+          "heat_request": "Lämmöntarve",
+          "zone_error": "Vyöhykevika",
+          "comm_error": "Tiedonsiirtovirhe",
+          "comm_warning": "Tiedonsiirtovaroitus",
+          "low_battery": "Akku vähissä"
+        }
+      },
+      "rrc_zone_valve_position": {
+        "name": "Venttiilin avaus"
+      },
+      "rrc_optimum_start_state": {
+        "name": "Optimoitu käynnistys"
+      },
+      "rrc_optimum_start_heatup_rate": {
+        "name": "Optimoidun käynnistyksen lämmitysnopeus"
+      },
+      "rrc_valve_position": {
+        "name": "Venttiilin avaus"
+      },
+      "rrc_max_valve_position": {
+        "name": "Venttiilin suurin avaus"
+      },
+      "rrc_valve_temperature": {
+        "name": "Venttiilin lämpötila"
+      },
+      "rrc_valve_state": {
+        "name": "Venttiilin tila"
+      },
+      "rrc_whisper_mode": {
+        "name": "Venttiilin hiljainen käyttö"
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Lämpödesinfioinnin tulos"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Lämpimän käyttöveden aikaohjelman nykyinen taso",
+        "state": {
+          "off": "Pois",
+          "low": "Eco",
+          "high": "Mukavuus",
+          "eco": "Eco+"
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Käyttökausi",
+        "state": {
+          "heating": "Lämmitys",
+          "cooling": "Jäähdytys",
+          "idle": "Lepotila"
+        }
+      },
+      "rrc_display_code": {
+        "name": "Näyttökoodi"
+      },
+      "rrc_cause_code": {
+        "name": "Syykoodi"
+      },
+      "rrc_maintenance_request": {
+        "name": "Huoltotarve"
+      },
+      "rrc_system_pressure": {
+        "name": "Järjestelmän paine"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Sisäilman kosteus"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Säätimen ilman lämpötila"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Säätimen piirin lämpötila"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Säätimen piirilevyn lämpötila"
+      },
+      "rrc_update_state": {
+        "name": "Laiteohjelmistopäivityksen tila"
       }
     },
     "binary_sensor": {
@@ -1907,11 +2188,32 @@
       },
       "bacon_dry_device_error": {
         "name": "Ilmoitettu laitevirhe"
+      },
+      "rrc_window_open": {
+        "name": "Ikkuna auki"
+      },
+      "rrc_valve_problem": {
+        "name": "Venttiilin ongelma"
+      },
+      "rrc_locking_error": {
+        "name": "Kuittausta vaativa vika"
+      },
+      "rrc_blocking_error": {
+        "name": "Estävä vika"
+      },
+      "rrc_maintenance_due": {
+        "name": "Huolto erääntynyt"
+      },
+      "rrc_refill_needed": {
+        "name": "Täyttö tarpeen"
       }
     },
     "calendar": {
       "holiday_periods": {
         "name": "Lomajaksot"
+      },
+      "rrc_events": {
+        "name": "Poissaolot ja erikoispäivät"
       }
     },
     "event": {
@@ -1922,6 +2224,9 @@
     "button": {
       "softener_start_regeneration": {
         "name": "Käynnistä regenerointi"
+      },
+      "rrc_override_clear": {
+        "name": "Poista väliaikainen asetusarvo"
       }
     },
     "water_heater": {
@@ -2009,6 +2314,21 @@
             }
           }
         }
+      },
+      "rrc_zone": {
+        "name": "Vyöhyke",
+        "state_attributes": {
+          "zone_status": {
+            "state": {
+              "idle": "Lepotilassa",
+              "heat_request": "Lämmöntarve",
+              "zone_error": "Vyöhykevika",
+              "comm_error": "Tiedonsiirtovirhe",
+              "comm_warning": "Tiedonsiirtovaroitus",
+              "low_battery": "Akku vähissä"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2037,6 +2357,11 @@
             }
           }
         }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Lämpödesinfioinnin aloitusaika"
       }
     }
   }

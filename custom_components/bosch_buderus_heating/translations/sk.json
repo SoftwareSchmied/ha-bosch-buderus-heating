@@ -245,7 +245,8 @@
         "title": "Upozornenia",
         "description": "Poruchy vykurovacieho systému sa zobrazujú pod zvončekom v Home Assistant. Ak máte viac inštalácií, vyberte tie, pre ktoré chcete dostávať upozornenia. Upozornenia a ich zrušenia sú spoločné pre všetkých používateľov. Ich text používa jazyk systému. Zrušenie upozornenia nepotvrdzuje poruchu na zariadení. Nové alebo kritickejšie poruchy sa zobrazia znova. Zmeny sa prejavia okamžite.",
         "data": {
-          "fault_notifications": "Zobrazovať poruchy vykurovacieho systému"
+          "fault_notifications": "Zobrazovať poruchy vykurovacieho systému",
+          "notify_warnings_and_maintenance": "Zobrazovať v upozornení pod zvončekom aj varovania a údržbu"
         }
       },
       "holidays": {
@@ -961,11 +962,29 @@
     "rrc_mode_locked": {
       "message": "Regulátor momentálne zamyká režim vykurovania tejto zóny, napríklad počas chladenia systému. Aktuálny režim zostáva zobrazený. Skúste to neskôr."
     },
+    "rrc_zone_setting_locked": {
+      "message": "Regulátor momentálne zamyká toto nastavenie zóny. Aktuálna hodnota zostáva zobrazená. Skúste to neskôr."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "Regulátor momentálne zamyká toto nastavenie vykurovacieho okruhu. Aktuálna hodnota zostáva zobrazená. Skúste to neskôr."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "Regulátor momentálne zamyká toto nastavenie teplej vody, napríklad preto, že ohrievač vody ho práve neponúka. Aktuálna hodnota zostáva zobrazená. Skúste to neskôr."
+    },
+    "rrc_device_setting_locked": {
+      "message": "Regulátor momentálne zamyká toto nastavenie rádiového zariadenia. Aktuálna hodnota zostáva zobrazená. Skúste to neskôr."
+    },
+    "rrc_setting_locked": {
+      "message": "Regulátor momentálne zamyká toto nastavenie. Aktuálna hodnota zostáva zobrazená. Skúste to neskôr."
+    },
     "write_validation_failed": {
       "message": "Toto nastavenie sa momentálne nedá bezpečne zmeniť. Obnovte alebo prekonfigurujte integráciu a skúste to znova."
     },
     "write_not_confirmed": {
       "message": "Zmena bola odoslaná, ale vykurovací systém ju nepotvrdil. Mohla sa už prejaviť. Hodnota sa aktualizuje pri nasledujúcom čítaní."
+    },
+    "rrc_write_pending_confirmation": {
+      "message": "Zmena bola odoslaná do izbového regulátora, ten ju však zatiaľ nepotvrdil. Regulátor ju môže prevziať s oneskorením; hodnota sa aktualizuje pri nasledujúcom čítaní."
     },
     "write_authentication_failed": {
       "message": "Cloudové prihlásenie už nie je platné. Pred ďalším pokusom znova overte Bosch/Buderus Home Comfort."
@@ -999,6 +1018,63 @@
     },
     "gateway_exchange_incomplete": {
       "message": "Prerušenú výmenu brány sa nepodarilo dokončiť, preto sa integrácia nespustí. Podrobnosti sú v protokole; odstráňte to, čo výmene bráni (napríklad entity novej brány), a reštartujte Home Assistant."
+    },
+    "rrc_override_ended": {
+      "message": "Izbový regulátor dočasnú požadovanú hodnotu okamžite ukončil, napríklad preto, že bol dosiahnutý ďalší spínací bod časového programu. Platí požadovaná hodnota časového programu."
+    },
+    "rrc_override_needs_clock_mode": {
+      "message": "Dočasnú požadovanú hodnotu možno nastaviť alebo zrušiť iba vtedy, keď zóna sleduje svoj časový program. Najprv vyberte prevádzkový režim Časový program."
+    },
+    "rrc_override_below_minimum": {
+      "message": "Dočasná požadovaná hodnota musí byť aspoň taká vysoká ako najnižšia manuálna požadovaná hodnota zóny. Zvoľte vyššiu teplotu."
+    },
+    "rrc_override_not_active": {
+      "message": "Táto zóna momentálne nemá žiadnu dočasnú požadovanú hodnotu, ktorú by bolo možné zrušiť."
+    },
+    "rrc_zone_climate_command": {
+      "message": "Tento príkaz zóny momentálne nie je k dispozícii. Skontrolujte, či zóna hlási aktuálne hodnoty a či teplota leží v ponúkanom rozsahu; dočasná požadovaná hodnota vyžaduje režim časového programu."
+    },
+    "rrc_device_setting_unused": {
+      "message": "Rádiové zariadenie toto nastavenie momentálne nepoužíva, preto nebolo zmenené."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Pre detekciu otvoreného okna možno nastaviť iba úrovne vysoká, stredná a nízka."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "Čas spustenia musí byť denný čas medzi 00:00 a 23:59."
+    },
+    "rrc_curve_order": {
+      "message": "Vykurovacia krivka a limity výstupnej teploty musia zostať v správnom poradí: počiatočný bod pod koncovým bodom, minimálna výstupná teplota nie nad maximálnou. Nič nebolo odoslané; najprv zmeňte druhý limit."
+    },
+    "rrc_event_invalid_name": {
+      "message": "Zadajte názov s dĺžkou 1 až 32 bajtov tlačiteľného textu (menej znakov pri znakoch s diakritikou alebo emoji)."
+    },
+    "rrc_event_invalid_dates": {
+      "message": "Udalosť vyžaduje celé dni: začiatok v deň konca alebo skôr a koniec, ktorý nie je v minulosti."
+    },
+    "rrc_event_overlap": {
+      "message": "Udalosť zdieľa deň s inou udalosťou izbového regulátora. Udalosti sa nesmú prekrývať, ani v prvý alebo posledný deň."
+    },
+    "rrc_event_type_read_only": {
+      "message": "Deň riadený ako iný deň v týždni možno tu iba odstrániť, nie zmeniť."
+    },
+    "rrc_event_rejected": {
+      "message": "Izbový regulátor udalosť odmietol, napríklad preto, že jeho kalendár je plný. Nič sa nezmenilo."
+    },
+    "rrc_event_pending": {
+      "message": "Predchádzajúca zmena udalostí ešte nie je potvrdená. Nič nebolo odoslané; počkajte, kým sa prejaví v kalendári, alebo to skúste znova o desať minút."
+    },
+    "rrc_event_unsupported_fields": {
+      "message": "Izbový regulátor ukladá iba názov a celé dni. Opakujúce sa udalosti, popisy a miesta nie sú podporované."
+    },
+    "rrc_boost_no_zones": {
+      "message": "Funkcia Boost nemá priradené žiadne miestnosti. Najprv vyberte miestnosti pre Boost na izbovom regulátore."
+    },
+    "rrc_boost_unsupported_shape": {
+      "message": "Izbový regulátor hlási funkciu Boost vo forme, ktorú táto integrácia nepozná úplne. Boost sa zobrazuje, ale nemení sa, aby sa nestratilo žiadne nastavenie."
+    },
+    "rrc_boost_locked": {
+      "message": "Izbový regulátor funkciu Boost momentálne blokuje. Skúste to znova neskôr."
     }
   },
   "selector": {
@@ -1127,6 +1203,48 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Jas okolitého osvetlenia"
+      },
+      "rrc_window_duration": {
+        "name": "Trvanie otvoreného okna"
+      },
+      "rrc_window_temperature": {
+        "name": "Teplota pri otvorenom okne"
+      },
+      "rrc_temperature_offset": {
+        "name": "Posun teploty"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Trvanie extra ohrevu"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Počiatočný bod vykurovacej krivky"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Koncový bod vykurovacej krivky"
+      },
+      "rrc_min_supply": {
+        "name": "Minimálna výstupná teplota"
+      },
+      "rrc_max_supply": {
+        "name": "Maximálna výstupná teplota"
+      },
+      "rrc_room_influence": {
+        "name": "Vplyv miestnosti"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Zastaviť vykurovanie pri vonkajšej teplote"
+      },
+      "rrc_night_threshold": {
+        "name": "Nočný útlm do vonkajšej teploty"
+      },
+      "rrc_boost_temperature": {
+        "name": "Teplota funkcie Boost"
+      },
+      "rrc_boost_duration": {
+        "name": "Trvanie funkcie Boost"
+      },
+      "rrc_away_temperature": {
+        "name": "Teplota pri neprítomnosti"
       }
     },
     "select": {
@@ -1209,6 +1327,57 @@
           "orange": "Oranžová",
           "red": "Červená"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Citlivosť detekcie otvoreného okna",
+        "state": {
+          "high": "Vysoká",
+          "medium": "Stredná",
+          "low": "Nízka"
+        }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Deň tepelnej dezinfekcie",
+        "state": {
+          "monday": "Pondelok",
+          "tuesday": "Utorok",
+          "wednesday": "Streda",
+          "thursday": "Štvrtok",
+          "friday": "Piatok",
+          "saturday": "Sobota",
+          "sunday": "Nedeľa",
+          "daily": "Každý deň"
+        }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Letné/zimné prepínanie",
+        "state": {
+          "off": "Vypnuté",
+          "automatic": "Automaticky"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Nočný útlm podľa vonkajšej teploty",
+        "state": {
+          "off": "Vypnuté",
+          "automatic": "Automaticky"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Sezónny režim",
+        "state": {
+          "always_heating": "Vždy vykurovanie",
+          "always_cooling": "Vždy chladenie",
+          "automatic": "Automaticky"
+        }
+      },
+      "rrc_building_heatup": {
+        "name": "Rýchlosť ohrevu",
+        "state": {
+          "slow": "Pomaly",
+          "normal": "Normálne",
+          "fast": "Rýchlo"
+        }
       }
     },
     "switch": {
@@ -1250,6 +1419,30 @@
       },
       "bacon_dry_display": {
         "name": "Displej"
+      },
+      "rrc_window_detection": {
+        "name": "Detekcia otvoreného okna"
+      },
+      "rrc_system_window_detection": {
+        "name": "Detekcia otvoreného okna"
+      },
+      "rrc_child_lock": {
+        "name": "Detský zámok"
+      },
+      "rrc_extra_dhw": {
+        "name": "Extra ohrev"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Tepelná dezinfekcia"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Optimalizácia požadovanej hodnoty"
+      },
+      "rrc_boost": {
+        "name": "Boost"
+      },
+      "rrc_fireplace": {
+        "name": "Funkcia krbu"
       }
     },
     "sensor": {
@@ -1844,6 +2037,94 @@
             }
           }
         }
+      },
+      "rrc_next_setpoint": {
+        "name": "Ďalšia požadovaná hodnota"
+      },
+      "rrc_minutes_to_next_setpoint": {
+        "name": "Minúty do ďalšej požadovanej hodnoty"
+      },
+      "rrc_zone_status": {
+        "name": "Stav zóny",
+        "state": {
+          "idle": "Nečinné",
+          "heat_request": "Požiadavka na vykurovanie",
+          "zone_error": "Chyba zóny",
+          "comm_error": "Chyba komunikácie",
+          "comm_warning": "Varovanie komunikácie",
+          "low_battery": "Slabá batéria"
+        }
+      },
+      "rrc_zone_valve_position": {
+        "name": "Otvorenie ventilu"
+      },
+      "rrc_optimum_start_state": {
+        "name": "Optimalizovaný štart"
+      },
+      "rrc_optimum_start_heatup_rate": {
+        "name": "Rýchlosť ohrevu pri optimalizovanom štarte"
+      },
+      "rrc_valve_position": {
+        "name": "Otvorenie ventilu"
+      },
+      "rrc_max_valve_position": {
+        "name": "Maximálne otvorenie ventilu"
+      },
+      "rrc_valve_temperature": {
+        "name": "Teplota na ventile"
+      },
+      "rrc_valve_state": {
+        "name": "Stav ventilu"
+      },
+      "rrc_whisper_mode": {
+        "name": "Tichý chod ventilu"
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Výsledok tepelnej dezinfekcie"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Aktuálny stupeň časového programu teplej vody",
+        "state": {
+          "off": "Vypnuté",
+          "low": "Eco",
+          "high": "Komfort",
+          "eco": "Eco+"
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Prevádzková sezóna",
+        "state": {
+          "heating": "Vykurovanie",
+          "cooling": "Chladenie",
+          "idle": "Nečinné"
+        }
+      },
+      "rrc_display_code": {
+        "name": "Kód displeja"
+      },
+      "rrc_cause_code": {
+        "name": "Kód príčiny"
+      },
+      "rrc_maintenance_request": {
+        "name": "Požiadavka na údržbu"
+      },
+      "rrc_system_pressure": {
+        "name": "Tlak v systéme"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Vlhkosť vzduchu v miestnosti"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Teplota vzduchu na regulátore"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Teplota čipu regulátora"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Teplota dosky regulátora"
+      },
+      "rrc_update_state": {
+        "name": "Stav aktualizácie firmvéru"
       }
     },
     "binary_sensor": {
@@ -1907,11 +2188,32 @@
       },
       "bacon_dry_device_error": {
         "name": "Nahlásená chyba zariadenia"
+      },
+      "rrc_window_open": {
+        "name": "Okno otvorené"
+      },
+      "rrc_valve_problem": {
+        "name": "Problém s ventilom"
+      },
+      "rrc_locking_error": {
+        "name": "Porucha vyžadujúca reset"
+      },
+      "rrc_blocking_error": {
+        "name": "Blokujúca porucha"
+      },
+      "rrc_maintenance_due": {
+        "name": "Potrebná údržba"
+      },
+      "rrc_refill_needed": {
+        "name": "Nutné doplnenie"
       }
     },
     "calendar": {
       "holiday_periods": {
         "name": "Obdobia dovolenky"
+      },
+      "rrc_events": {
+        "name": "Neprítomnosti a osobitné dni"
       }
     },
     "event": {
@@ -1922,6 +2224,9 @@
     "button": {
       "softener_start_regeneration": {
         "name": "Spustiť regeneráciu"
+      },
+      "rrc_override_clear": {
+        "name": "Zrušiť dočasnú požadovanú hodnotu"
       }
     },
     "water_heater": {
@@ -2009,6 +2314,21 @@
             }
           }
         }
+      },
+      "rrc_zone": {
+        "name": "Zóna",
+        "state_attributes": {
+          "zone_status": {
+            "state": {
+              "idle": "Nečinné",
+              "heat_request": "Požiadavka na vykurovanie",
+              "zone_error": "Chyba zóny",
+              "comm_error": "Chyba komunikácie",
+              "comm_warning": "Varovanie komunikácie",
+              "low_battery": "Slabá batéria"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2037,6 +2357,11 @@
             }
           }
         }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Čas spustenia tepelnej dezinfekcie"
       }
     }
   }

@@ -245,7 +245,8 @@
         "title": "Notificaties",
         "description": "Storingen van de verwarmingsinstallatie verschijnen onder de bel in Home Assistant. Selecteer bij meerdere installaties degene waarvoor je notificaties wilt. Notificaties en het negeren ervan gelden voor alle gebruikers. De tekst gebruikt de systeemtaal. Een notificatie negeren bevestigt een storing op het apparaat niet. Nieuwe of kritiekere storingen verschijnen opnieuw. Wijzigingen worden direct van kracht.",
         "data": {
-          "fault_notifications": "Storingen van de verwarmingsinstallatie tonen"
+          "fault_notifications": "Storingen van de verwarmingsinstallatie tonen",
+          "notify_warnings_and_maintenance": "Ook waarschuwingen en onderhoud tonen in de notificatie onder de bel"
         }
       },
       "holidays": {
@@ -961,11 +962,29 @@
     "rrc_mode_locked": {
       "message": "De regelaar vergrendelt momenteel de verwarmingsmodus van deze zone, bijvoorbeeld terwijl de installatie koelt. De huidige modus blijft zichtbaar. Probeer het later opnieuw."
     },
+    "rrc_zone_setting_locked": {
+      "message": "De regelaar vergrendelt momenteel deze instelling van de zone. De huidige waarde blijft zichtbaar. Probeer het later opnieuw."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "De regelaar vergrendelt momenteel deze instelling van het verwarmingscircuit. De huidige waarde blijft zichtbaar. Probeer het later opnieuw."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "De regelaar vergrendelt momenteel deze warmwaterinstelling, bijvoorbeeld omdat de warmwaterbereider ze op dit moment niet aanbiedt. De huidige waarde blijft zichtbaar. Probeer het later opnieuw."
+    },
+    "rrc_device_setting_locked": {
+      "message": "De regelaar vergrendelt momenteel deze instelling van het radioapparaat. De huidige waarde blijft zichtbaar. Probeer het later opnieuw."
+    },
+    "rrc_setting_locked": {
+      "message": "De regelaar vergrendelt momenteel deze instelling. De huidige waarde blijft zichtbaar. Probeer het later opnieuw."
+    },
     "write_validation_failed": {
       "message": "Deze instelling kan momenteel niet veilig worden gewijzigd. Vernieuw of configureer de integratie opnieuw en probeer het nog eens."
     },
     "write_not_confirmed": {
       "message": "De wijziging is verzonden, maar de verwarmingsinstallatie heeft deze niet bevestigd. Ze is mogelijk al van kracht. De waarde wordt bijgewerkt bij de volgende meting."
+    },
+    "rrc_write_pending_confirmation": {
+      "message": "De wijziging is naar de kamerregelaar gestuurd, maar die heeft haar nog niet bevestigd. De regelaar past haar mogelijk met vertraging toe; de waarde wordt bijgewerkt bij de volgende uitlezing."
     },
     "write_authentication_failed": {
       "message": "De cloudaanmelding is niet meer geldig. Authenticeer Bosch/Buderus Home Comfort opnieuw voordat je het opnieuw probeert."
@@ -999,6 +1018,63 @@
     },
     "gateway_exchange_incomplete": {
       "message": "Een onderbroken gatewaywissel kon niet worden voltooid, daarom start de integratie niet. Details staan in het logboek; verwijder wat de wissel blokkeert (bijvoorbeeld entiteiten van de nieuwe gateway) en herstart Home Assistant."
+    },
+    "rrc_override_ended": {
+      "message": "De kamerregelaar heeft de tijdelijke instelwaarde meteen beëindigd, bijvoorbeeld omdat het volgende schakelpunt van het tijdprogramma werd bereikt. De instelwaarde van het tijdprogramma geldt."
+    },
+    "rrc_override_needs_clock_mode": {
+      "message": "Een tijdelijke instelwaarde kan alleen worden ingesteld of opgeheven terwijl de zone zijn tijdprogramma volgt. Kies eerst de bedrijfsmodus tijdprogramma."
+    },
+    "rrc_override_below_minimum": {
+      "message": "De tijdelijke instelwaarde moet gelijk zijn aan of hoger liggen dan de laagste handmatige instelwaarde van de zone. Kies een hogere temperatuur."
+    },
+    "rrc_override_not_active": {
+      "message": "Deze zone heeft op dit moment geen tijdelijke instelwaarde die kan worden opgeheven."
+    },
+    "rrc_zone_climate_command": {
+      "message": "Dit zonecommando is op dit moment niet beschikbaar. Controleer of de zone actuele waarden meldt en of de temperatuur binnen het aangeboden bereik ligt; een tijdelijke instelwaarde vraagt om de bedrijfsmodus tijdprogramma."
+    },
+    "rrc_device_setting_unused": {
+      "message": "Het radioapparaat gebruikt deze instelling op dit moment niet, daarom is ze niet gewijzigd."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Voor de detectie van open ramen kunnen alleen de niveaus hoog, gemiddeld en laag worden ingesteld."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "De starttijd moet een tijdstip tussen 00:00 en 23:59 zijn."
+    },
+    "rrc_curve_order": {
+      "message": "De stooklijn en de aanvoergrenzen moeten in de juiste volgorde blijven: het voetpunt onder het eindpunt, de minimale aanvoertemperatuur niet boven de maximale. Er is niets verzonden; wijzig eerst de andere grens."
+    },
+    "rrc_event_invalid_name": {
+      "message": "Voer een naam in van 1 tot 32 bytes afdrukbare tekst (minder tekens bij letters met accenten of emoji)."
+    },
+    "rrc_event_invalid_dates": {
+      "message": "De gebeurtenis heeft hele dagen nodig: een begin op of vóór het einde en een einde dat niet in het verleden ligt."
+    },
+    "rrc_event_overlap": {
+      "message": "De gebeurtenis deelt een dag met een andere gebeurtenis van de kamerregelaar. Gebeurtenissen mogen elkaar niet overlappen, ook niet op hun eerste of laatste dag."
+    },
+    "rrc_event_type_read_only": {
+      "message": "Een dag die als een andere weekdag wordt geregeld, kan hier alleen worden verwijderd, niet worden gewijzigd."
+    },
+    "rrc_event_rejected": {
+      "message": "De kamerregelaar heeft de gebeurtenis geweigerd, bijvoorbeeld omdat de agenda vol is. Er is niets gewijzigd."
+    },
+    "rrc_event_pending": {
+      "message": "Een eerdere wijziging van de gebeurtenissen is nog niet bevestigd. Er is niets verzonden; wacht tot die in de agenda verschijnt of probeer het over tien minuten opnieuw."
+    },
+    "rrc_event_unsupported_fields": {
+      "message": "De kamerregelaar slaat alleen een naam en hele dagen op. Terugkerende gebeurtenissen, beschrijvingen en locaties worden niet ondersteund."
+    },
+    "rrc_boost_no_zones": {
+      "message": "De boost heeft geen ruimtes. Kies eerst de ruimtes voor de boost op de kamerregelaar."
+    },
+    "rrc_boost_unsupported_shape": {
+      "message": "De kamerregelaar meldt de boost in een vorm die deze integratie niet volledig kent. De boost wordt weergegeven maar niet gewijzigd, zodat er geen instelling verloren gaat."
+    },
+    "rrc_boost_locked": {
+      "message": "De kamerregelaar blokkeert de boost momenteel. Probeer het later opnieuw."
     }
   },
   "selector": {
@@ -1127,6 +1203,48 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Helderheid sfeerverlichting"
+      },
+      "rrc_window_duration": {
+        "name": "Duur open raam"
+      },
+      "rrc_window_temperature": {
+        "name": "Temperatuur open raam"
+      },
+      "rrc_temperature_offset": {
+        "name": "Temperatuurcorrectie"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Duur extra warm water"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Stooklijn voetpunt"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Stooklijn eindpunt"
+      },
+      "rrc_min_supply": {
+        "name": "Minimale aanvoertemperatuur"
+      },
+      "rrc_max_supply": {
+        "name": "Maximale aanvoertemperatuur"
+      },
+      "rrc_room_influence": {
+        "name": "Kamerinvloed"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Verwarming stoppen bij buitentemperatuur"
+      },
+      "rrc_night_threshold": {
+        "name": "Nachtverlaging tot buitentemperatuur"
+      },
+      "rrc_boost_temperature": {
+        "name": "Temperatuur boost"
+      },
+      "rrc_boost_duration": {
+        "name": "Duur boost"
+      },
+      "rrc_away_temperature": {
+        "name": "Afwezigheidstemperatuur"
       }
     },
     "select": {
@@ -1209,6 +1327,57 @@
           "orange": "Oranje",
           "red": "Rood"
         }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Gevoeligheid detectie open raam",
+        "state": {
+          "high": "Hoog",
+          "medium": "Gemiddeld",
+          "low": "Laag"
+        }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Dag van thermische desinfectie",
+        "state": {
+          "monday": "Maandag",
+          "tuesday": "Dinsdag",
+          "wednesday": "Woensdag",
+          "thursday": "Donderdag",
+          "friday": "Vrijdag",
+          "saturday": "Zaterdag",
+          "sunday": "Zondag",
+          "daily": "Elke dag"
+        }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Zomer-/winteromschakeling",
+        "state": {
+          "off": "Uit",
+          "automatic": "Automatisch"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Nachtverlaging op basis van buitentemperatuur",
+        "state": {
+          "off": "Uit",
+          "automatic": "Automatisch"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Seizoensmodus",
+        "state": {
+          "always_heating": "Altijd verwarmen",
+          "always_cooling": "Altijd koelen",
+          "automatic": "Automatisch"
+        }
+      },
+      "rrc_building_heatup": {
+        "name": "Opwarmsnelheid",
+        "state": {
+          "slow": "Langzaam",
+          "normal": "Normaal",
+          "fast": "Snel"
+        }
       }
     },
     "switch": {
@@ -1250,6 +1419,30 @@
       },
       "bacon_dry_display": {
         "name": "Display"
+      },
+      "rrc_window_detection": {
+        "name": "Detectie open raam"
+      },
+      "rrc_system_window_detection": {
+        "name": "Detectie open raam"
+      },
+      "rrc_child_lock": {
+        "name": "Kinderslot"
+      },
+      "rrc_extra_dhw": {
+        "name": "Extra warm water"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Thermische desinfectie"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Optimalisatie van de instelwaarde"
+      },
+      "rrc_boost": {
+        "name": "Boost"
+      },
+      "rrc_fireplace": {
+        "name": "Haardfunctie"
       }
     },
     "sensor": {
@@ -1844,6 +2037,94 @@
             }
           }
         }
+      },
+      "rrc_next_setpoint": {
+        "name": "Volgende instelwaarde"
+      },
+      "rrc_minutes_to_next_setpoint": {
+        "name": "Minuten tot de volgende instelwaarde"
+      },
+      "rrc_zone_status": {
+        "name": "Zonestatus",
+        "state": {
+          "idle": "Inactief",
+          "heat_request": "Warmtevraag",
+          "zone_error": "Zonestoring",
+          "comm_error": "Communicatiefout",
+          "comm_warning": "Communicatiewaarschuwing",
+          "low_battery": "Batterij bijna leeg"
+        }
+      },
+      "rrc_zone_valve_position": {
+        "name": "Klepopening"
+      },
+      "rrc_optimum_start_state": {
+        "name": "Geoptimaliseerde start"
+      },
+      "rrc_optimum_start_heatup_rate": {
+        "name": "Opwarmsnelheid bij geoptimaliseerde start"
+      },
+      "rrc_valve_position": {
+        "name": "Klepopening"
+      },
+      "rrc_max_valve_position": {
+        "name": "Maximale klepopening"
+      },
+      "rrc_valve_temperature": {
+        "name": "Temperatuur bij de klep"
+      },
+      "rrc_valve_state": {
+        "name": "Klepstatus"
+      },
+      "rrc_whisper_mode": {
+        "name": "Stille klepaandrijving"
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Resultaat thermische desinfectie"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Huidig niveau warmwatertijdprogramma",
+        "state": {
+          "off": "Uit",
+          "low": "Eco",
+          "high": "Comfort",
+          "eco": "Eco+"
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Bedrijfsseizoen",
+        "state": {
+          "heating": "Verwarmen",
+          "cooling": "Koelen",
+          "idle": "Rust"
+        }
+      },
+      "rrc_display_code": {
+        "name": "Weergavecode"
+      },
+      "rrc_cause_code": {
+        "name": "Oorzaakcode"
+      },
+      "rrc_maintenance_request": {
+        "name": "Onderhoudsbehoefte"
+      },
+      "rrc_system_pressure": {
+        "name": "Systeemdruk"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Binnenluchtvochtigheid"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Luchttemperatuur bij de regelaar"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Chiptemperatuur van de regelaar"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Printplaattemperatuur van de regelaar"
+      },
+      "rrc_update_state": {
+        "name": "Status firmware-update"
       }
     },
     "binary_sensor": {
@@ -1907,11 +2188,32 @@
       },
       "bacon_dry_device_error": {
         "name": "Gemelde apparaatfout"
+      },
+      "rrc_window_open": {
+        "name": "Raam open"
+      },
+      "rrc_valve_problem": {
+        "name": "Klepprobleem"
+      },
+      "rrc_locking_error": {
+        "name": "Vergrendelende storing"
+      },
+      "rrc_blocking_error": {
+        "name": "Blokkerende storing"
+      },
+      "rrc_maintenance_due": {
+        "name": "Onderhoud nodig"
+      },
+      "rrc_refill_needed": {
+        "name": "Bijvullen nodig"
       }
     },
     "calendar": {
       "holiday_periods": {
         "name": "Vakantieperiodes"
+      },
+      "rrc_events": {
+        "name": "Afwezigheden en bijzondere dagen"
       }
     },
     "event": {
@@ -1922,6 +2224,9 @@
     "button": {
       "softener_start_regeneration": {
         "name": "Regeneratie starten"
+      },
+      "rrc_override_clear": {
+        "name": "Tijdelijke instelwaarde opheffen"
       }
     },
     "water_heater": {
@@ -2009,6 +2314,21 @@
             }
           }
         }
+      },
+      "rrc_zone": {
+        "name": "Zone",
+        "state_attributes": {
+          "zone_status": {
+            "state": {
+              "idle": "Inactief",
+              "heat_request": "Warmtevraag",
+              "zone_error": "Zonestoring",
+              "comm_error": "Communicatiefout",
+              "comm_warning": "Communicatiewaarschuwing",
+              "low_battery": "Batterij bijna leeg"
+            }
+          }
+        }
       }
     },
     "fan": {
@@ -2037,6 +2357,11 @@
             }
           }
         }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Starttijd thermische desinfectie"
       }
     }
   }

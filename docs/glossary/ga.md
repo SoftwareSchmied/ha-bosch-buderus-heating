@@ -97,6 +97,32 @@ tsreafa"), so names and group names stand alone in the nominative.
 | on, off (state) | ar siúl, as (HA) |
 | Comfort (preset) | Compord |
 
+Room controller terms added in 0.9.0-alpha.5:
+
+| English | Irish |
+| --- | --- |
+| temporary setpoint | socphointe sealadach |
+| open window detection | brath fuinneoige oscailte |
+| valve opening | oscailt na comhla |
+| optimum start | tosú optamach |
+| heating curve | cuar téimh |
+| base point / end point (heating curve) | bunphointe / críochphointe |
+| night setback | íslithe oíche |
+| fireplace function | feidhm teallaigh |
+| boost | Boost (unchanged) |
+| radiator valve | comhla teirmeastait radaitheora |
+| whisper mode (radiator valve) | oibriú ciúin na comhla |
+| locking / blocking fault | locht a éilíonn athshocrú / locht blocála |
+| heat-up rate | ráta teasaithe |
+| heat request (zone) | éileamh teasa |
+| event (calendar) | imeacht |
+| absence | neamhláithreacht |
+| child lock | glas leanaí |
+| season mode | mód séasúir |
+| boiler (Heizgeraet) | coire |
+| electric heater (Elektroheizstab) | téitheoir leictreach |
+| energy statistics, unit not confirmed | (kWh, gan deimhniú) |
+
 Core terms not taken over: "vótaíocht" for polling (it means voting),
 "Díreoite" for the defrost state, and "lucht leanúna" for a fan (it means
 followers); "fean" is used instead.

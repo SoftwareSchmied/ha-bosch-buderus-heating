@@ -83,6 +83,32 @@ Further terms used in the texts:
 | low-noise (operation) | niskohałasowy |
 | on / off (states) | włączony / wyłączony |
 
+Room controller terms added in 0.9.0-alpha.5:
+
+| English | Polish |
+| --- | --- |
+| temporary setpoint | tymczasowa wartość zadana |
+| open window detection | wykrywanie otwartego okna |
+| valve opening | otwarcie zaworu |
+| optimum start | optymalny start |
+| heating curve | krzywa grzewcza |
+| base point / end point (heating curve) | punkt początkowy / punkt końcowy |
+| night setback | obniżenie nocne |
+| fireplace function | funkcja kominkowa |
+| boost | Boost (unchanged) |
+| radiator valve | zawór termostatu grzejnikowego |
+| whisper mode (radiator valve) | cicha praca zaworu |
+| locking / blocking fault | usterka wymagająca resetu / usterka blokująca |
+| heat-up rate | szybkość nagrzewania |
+| heat request (zone) | żądanie ciepła |
+| event (calendar) | wydarzenie |
+| absence | nieobecność |
+| child lock | blokada rodzicielska |
+| season mode | tryb sezonowy |
+| boiler (Heizgeraet) | kocioł |
+| electric heater (Elektroheizstab) | grzałka elektryczna |
+| energy statistics, unit not confirmed | (kWh, niepotwierdzone) |
+
 Product, standard and preset names stay as they are: Home Comfort, Eco, Eco+,
 Boost, SG Ready, Smart Function, Power Guard, PV, SingleKey ID. Labels of the
 Chrome developer tools quoted in the sign-in steps stay in English.

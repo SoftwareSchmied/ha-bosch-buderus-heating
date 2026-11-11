@@ -87,6 +87,28 @@ Further terms used in the texts:
 | reduced, setback | verlaagd |
 | leader / follower (wallbox) | leider / volger |
 
+Room controller terms added in 0.9.0-alpha.5:
+
+| English | Dutch |
+| --- | --- |
+| temporary setpoint | tijdelijke instelwaarde |
+| valve | klep |
+| open window detection | detectie open raam |
+| boost | boost |
+| fireplace function | haardfunctie |
+| heating curve | stooklijn |
+| heating curve base/end point | voetpunt / eindpunt |
+| optimum start | geoptimaliseerde start |
+| night setback | nachtverlaging |
+| operating season | bedrijfsseizoen |
+| event (calendar) | gebeurtenis |
+| locking / blocking fault | vergrendelende storing / blokkerende storing |
+| whisper mode (radiator valve) | stille klepaandrijving |
+| display code / cause code | weergavecode / oorzaakcode |
+| temperature offset | temperatuurcorrectie |
+| radio device | radioapparaat |
+| energy statistics, unit not confirmed | (kWh, onbevestigd) |
+
 Product, standard and preset names stay as they are: Home Comfort, Eco, Eco+,
 Boost, SG Ready, Smart Function, Power Guard, PV, SingleKey ID. Labels of the
 Chrome developer tools quoted in the sign-in steps stay in English.
