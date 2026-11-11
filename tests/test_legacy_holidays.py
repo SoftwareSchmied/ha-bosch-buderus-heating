@@ -57,6 +57,7 @@ from tests.test_config_flow import (
     _start_holiday_options,
 )
 from tests.test_dynamic_controls import snapshots
+from tests.helpers.options_menu import outcome
 
 PAYLOADS = json.loads(
     (Path(__file__).parent / "fixtures/contracts/holidays/legacy.json").read_text()
@@ -417,8 +418,11 @@ async def test_legacy_native_dialog_has_dates_no_clock_or_name_and_saves(
     assert _holiday_form_input(result)["holiday_start"] == "2030-11-03"
     draft.update(holiday_start="2030-11-01", holiday_end="2030-11-04")
     result = await hass.config_entries.options.async_configure(result["flow_id"], draft)
-    assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == ("holiday_created" if creating else "holiday_updated")
+    # Back in the main menu with the note of the saved holiday.
+    assert result["type"] is FlowResultType.MENU
+    assert await outcome(hass, result) == (
+        "holiday_created" if creating else "holiday_updated"
+    )
     call = (
         coordinator.async_create_holiday
         if creating
@@ -442,7 +446,7 @@ async def test_wddw2_options_dialog_has_only_mode(hass, enable_custom_integratio
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"holiday_mode": "on"}
     )
-    assert result["reason"] == "holiday_updated"
+    assert await outcome(hass, result) == "holiday_updated"
     assert coordinator.async_write_control.await_args.args[:2] == (
         WDDW2_HOLIDAY_PATH,
         "on",
@@ -538,9 +542,9 @@ async def test_wddw2_dialog_writes_only_against_the_mode_shown(
         result = await hass.config_entries.options.async_configure(
             result["flow_id"], {"holiday_mode": "on"}
         )
-        assert result["reason"] == "holiday_unchanged"
+        assert await outcome(hass, result) == "holiday_unchanged"
     else:
-        assert result["reason"] == expected
+        assert await outcome(hass, result) == expected
     if expected == "holiday_updated":
         client.put_resource_value.assert_awaited_once_with(
             coordinator.gateway.gateway_id, shown.path, "on"
