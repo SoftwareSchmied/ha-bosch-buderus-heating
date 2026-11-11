@@ -71,8 +71,10 @@ def _coordinator(
 
 
 async def test_calendar_exposes_multiple_overlapping_periods(
-    hass: HomeAssistant,
+    hass: HomeAssistant, freezer
 ) -> None:
+    # D48: before the periods, so the current event exists in any year.
+    freezer.move_to("2029-12-01T00:00:00+00:00")
     periods = Resource(
         path=HOLIDAY_LIST_PATH,
         value=[

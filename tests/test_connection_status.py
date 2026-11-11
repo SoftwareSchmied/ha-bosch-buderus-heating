@@ -320,7 +320,10 @@ async def test_source_change_is_logged_at_debug_level(caplog) -> None:
     assert "30" not in messages[0] and "31" not in messages[0]
 
 
-def test_times_show_the_date_when_not_today() -> None:
+def test_times_show_the_date_when_not_today(freezer) -> None:
+    # D48: a fixed time, so the first minute after midnight never fails.
+    # 11:00 UTC stays on one local date for every offset from -12 to +14 h.
+    freezer.move_to("2026-11-10T11:00:00+00:00")
     assert len(status._clock(datetime.now(UTC) - timedelta(minutes=1))) == 5
     assert len(status._clock(datetime.now(UTC) - timedelta(days=2))) == 16
 

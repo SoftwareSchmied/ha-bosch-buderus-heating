@@ -381,14 +381,20 @@ def test_dialog_uses_the_appliance_state_of_a_ready_access(source, expected) -> 
     assert _missing_cloud_reason(SimpleNamespace(runtime_data=runtime)) == expected
 
 
-def test_pause_end_text_has_a_date_when_not_today() -> None:
+def test_pause_end_text_has_a_date_when_not_today(freezer) -> None:
+    import re
     from datetime import timedelta
 
     from custom_components.bosch_buderus_heating.controls_flow import _until_text
 
+    # D48: a fixed time; 11:00 UTC stays on one local date for every offset.
+    freezer.move_to("2026-11-10T11:00:00+00:00")
     assert _until_text(None) == ""
-    assert _until_text(datetime.now(UTC) + timedelta(minutes=5)).count(":") == 1
-    assert "-" in _until_text(datetime.now(UTC) + timedelta(days=1, hours=1))
+    # Today only the time, otherwise the date as well, in exactly these forms.
+    today = _until_text(datetime.now(UTC) + timedelta(minutes=5))
+    assert re.fullmatch(r"\d{2}:\d{2}", today), today
+    later = _until_text(datetime.now(UTC) + timedelta(days=1, hours=1))
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}", later), later
 
 
 async def test_options_dialog_reports_a_required_sign_in(hass: HomeAssistant) -> None:
