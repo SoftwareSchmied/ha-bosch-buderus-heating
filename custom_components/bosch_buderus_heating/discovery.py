@@ -1050,9 +1050,17 @@ async def _recover_invalid_bulk_results(
 
 
 def _sentinel_path(discovered: dict[str, Resource]) -> str | None:
-    """SYSTEM-12: a path this discovery has read, preferably a value."""
+    """SYSTEM-12: a path this discovery has read, preferably a small single
+    value (no list or structure, such as the zone or program list)."""
     return next(
-        (path for path, resource in discovered.items() if resource.has_value),
+        (
+            path
+            for path, resource in discovered.items()
+            if resource.has_value
+            and not resource.has_values
+            and not resource.references
+            and not isinstance(resource.value, list | dict)
+        ),
         next(iter(discovered), None),
     )
 
