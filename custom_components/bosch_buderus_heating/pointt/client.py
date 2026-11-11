@@ -197,6 +197,27 @@ class PointTClient:
             raise ValueError("A structured PointT value is a list or an object")
         return await self.put_resource_value(gateway_id, path, value)
 
+    async def put_resource_raw_json(
+        self, gateway_id: str, path: str, body: list[JsonValue]
+    ) -> None:
+        """Write a raw JSON array exactly once, without a ``{"value": ...}``
+        envelope (Z2: a weekly switch program); never retried.
+
+        The answer of the gateway is not used: the caller confirms the write
+        by reading the resource again.
+        """
+        if not isinstance(body, list):
+            raise ValueError("A raw PointT array body is a list")
+        gateway = self._encode_gateway(gateway_id)
+        normalized = normalize_resource_path(path)
+        await self._request(
+            "PUT",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}",
+            json_body=body,
+            retryable=False,
+            resource_path=normalized,
+        )
+
     async def post_resource(
         self, gateway_id: str, path: str, value: JsonValue
     ) -> JsonValue:

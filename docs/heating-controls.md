@@ -128,6 +128,46 @@ This practical check also caught lost keyboard focus after Apply. I corrected
 it and verified Escape directly after Apply and Reload values in the real
 browser and the automated Home Assistant test, without an extra click.
 
+### Heating and hot water schedules
+
+Since 0.9.0-alpha.6, **Configure > Heating and hot water schedules** changes
+the weekly programs A and B of a heating circuit and program A of the hot
+water. I list a program only when the gateway reports it as writable, it
+passes the strict program check, its type is a level program (`level`), and
+every level it uses belongs to the circuit's reported temperature levels.
+The program type itself and the program names are never written.
+
+1. Choose a program. The week shows every day's switch points and the limits
+   the gateway reports, for example at most 2 points per day, 14 per week and
+   times in 15-minute steps. A heating program that is not the active one,
+   and the hot water program, which applies only in the hot water mode Auto,
+   say so.
+2. Edit a day: change the time or level of a switch point, delete it or add
+   one, within the reported limits. Or copy a day onto other days.
+3. The changes collect in a draft of the whole week. The last step shows the
+   changed days before and after. Only then is the week sent.
+
+The program is read again just before sending. If it differs from what the
+dialog showed, nothing is sent. The whole week goes out once as a raw JSON
+array, the way the manufacturer's apps write it, and is read back; the
+confirmed program is shown at once. A refusal of the gateway changes
+nothing. After a lost answer or a server error the outcome is resolved only
+by reading, never by sending again; until then the program counts as not
+current. The success message repeats the previous switch points, so they
+can be set back by hand. Diagnostics count the writes and the switch points
+per day, without times or levels.
+
+The selection **Active schedule** switches between programs A and B. It
+appears only when the gateway allows both, the current one among them, and
+both programs can be read and are valid. The options are `a` and `b`; the
+reported names are in the attributes `program_names` and `program_name`.
+With a single program, as on my heat pump, there is no selection.
+
+So far tested with simulated data only: both functions are expected to work
+but untested on a real gateway. A test on my heat pump (heating circuit 1,
+program A, and hot water program A) is planned. Program B, iCom gateways and
+programs with absolute temperatures stay expected, untested.
+
 ## Deutsch
 
 Diese Anleitung beschreibt die Bedienung in Stable **0.8.2**, eingeführt mit **0.8.2-beta.7**,
@@ -259,3 +299,49 @@ damit nicht praktisch bestätigt.
 Dabei fiel außerdem ein verlorener Tastaturfokus nach Übernehmen auf. Ich habe
 ihn korrigiert und Escape direkt nach Übernehmen und Werte neu laden im realen
 Browser sowie im automatisierten Home-Assistant-Test ohne weiteren Klick geprüft.
+
+### Zeitprogramme Heizung und Warmwasser
+
+Seit 0.9.0-alpha.6 ändert **Konfigurieren > Zeitprogramme Heizung und
+Warmwasser** die Wochenprogramme A und B eines Heizkreises und das Programm A
+des Warmwassers. Angeboten wird ein Programm nur, wenn das Gateway es als
+schreibbar meldet, es die strenge Programmprüfung besteht, es ein
+Stufenprogramm (`level`) ist und jede verwendete Stufe zu den gemeldeten
+Temperaturstufen des Kreises gehört. Die Programmart und die Programmnamen
+werden nie geschrieben.
+
+1. Programm wählen. Die Woche zeigt die Schaltpunkte jedes Tages und die
+   gemeldeten Grenzen, zum Beispiel höchstens 2 Punkte pro Tag, 14 pro Woche
+   und Uhrzeiten im 15-Minuten-Raster. Ein Heizprogramm, das nicht aktiv ist,
+   und das Warmwasserprogramm, das nur in der Warmwasser-Betriebsart Auto
+   wirkt, weisen darauf hin.
+2. Tag bearbeiten: Uhrzeit oder Stufe eines Schaltpunkts ändern, ihn löschen
+   oder einen hinzufügen, jeweils in den gemeldeten Grenzen. Oder einen Tag
+   auf andere Tage kopieren.
+3. Die Änderungen sammeln sich in einem Entwurf der ganzen Woche. Der letzte
+   Schritt zeigt die geänderten Tage vorher und nachher. Erst dann wird die
+   Woche gesendet.
+
+Direkt vor dem Senden wird das Programm erneut gelesen. Weicht es vom Stand
+im Dialog ab, wird nichts gesendet. Die ganze Woche geht einmal als rohes
+JSON-Array hinaus, so wie die Hersteller-Apps sie schreiben, und wird
+zurückgelesen; das bestätigte Programm erscheint sofort. Lehnt das Gateway
+ab, ändert sich nichts. Nach einer verlorenen Antwort oder einem
+Serverfehler klärt nur das Lesen den Ausgang, nie ein zweites Senden; bis
+dahin gilt das Programm als nicht aktuell. Die Erfolgsmeldung wiederholt die
+bisherigen Schaltpunkte, damit man sie von Hand zurückstellen kann. Die
+Diagnose zählt die Schreibvorgänge und die Schaltpunkte pro Tag, ohne
+Uhrzeiten und Stufen.
+
+Die Auswahl **Aktives Zeitprogramm** wechselt zwischen den Programmen A und
+B. Sie entsteht nur, wenn das Gateway beide erlaubt, das aktuelle darunter
+ist und beide Programme lesbar und gültig sind. Die Optionen sind `a` und
+`b`; die gemeldeten Namen stehen in den Attributen `program_names` und
+`program_name`. Mit nur einem Programm, wie an meiner Wärmepumpe, gibt es
+keine Auswahl.
+
+Bisher nur mit simulierten Daten getestet: Beide Funktionen sollten
+funktionieren, sind aber an einem echten Gateway ungetestet. Ein Test an
+meiner Wärmepumpe (Heizkreis 1, Programm A, und Warmwasserprogramm A) ist
+geplant. Programm B, iCom-Gateways und Programme mit absoluten Temperaturen
+bleiben erwartet, ungetestet.

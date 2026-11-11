@@ -29,6 +29,7 @@ from .pointt import (
 )
 from .pointt.models import JsonScalar
 from .rrc_contracts import ContractConflict
+from .switch_program_selection import ACTIVE_SWITCH_PROGRAM_POLICY
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
 from .water_softener import softener_capability, softener_schema_issue, softener_unit
 from .write_policies import DEFAULT_READ_BACK_ATTEMPTS as DEFAULT_READ_BACK_ATTEMPTS
@@ -61,6 +62,15 @@ _CELSIUS_UNITS = frozenset({"C", "degC", "°C", "ºC"})
 
 class WriteBusy(WriteError):
     """C58: a poll or another write held the gateway too long; nothing was sent."""
+
+
+class WriteDeadlineExceeded(WriteNotConfirmed):
+    """D25: a write transaction ran out of its overall time and was stopped.
+
+    Its request may already have been sent, so the change counts as not
+    confirmed; a later regular reading shows what the gateway holds. Nothing
+    is sent again.
+    """
 
 
 class ControlLocked(WriteValidationError):
@@ -972,6 +982,8 @@ _ENUM_POLICIES = (
     AUXILIARY_HEATER_OPERATION_MODE_POLICY,
     VENTILATION_FAN_LEVEL_POLICY,
     SOFTENER_REGENERATION_POLICY,
+    # Z1: the active weekly program of a heating circuit (A/B).
+    ACTIVE_SWITCH_PROGRAM_POLICY,
     *STRING_SWITCH_POLICIES,
 )
 

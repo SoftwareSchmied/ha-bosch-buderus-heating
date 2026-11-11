@@ -234,6 +234,7 @@
           "notifications": "Aviseringar",
           "holidays": "Hantera semesterperioder",
           "rrc_programs": "RRC-värmeprogram",
+          "switch_programs": "Tidsprogram för värme och varmvatten",
           "controls": "Styr apparaten",
           "connections": "Anslutningar",
           "connection_add_cloud": "Anslut molnåtkomst",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Växlingspunkt"
         }
+      },
+      "switch_programs": {
+        "title": "Välj tidsprogram",
+        "description": "Välj veckoprogrammet för en värmekrets eller för varmvattnet. Endast program som värmesystemet anger som ändringsbara visas.",
+        "data": {
+          "program": "Tidsprogram"
+        }
+      },
+      "switch_program_week": {
+        "title": "Ändra tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHögst {per_day} växlingspunkter per dag och {total} per vecka, tider i steg om {raster} minuter. Varje växlingspunkt gäller till nästa; tiderna upprepas varje vecka i värmesystemets lokala tid. Dagar markerade med * har ändringar som ännu inte sparats. Inget skickas före sista steget.",
+        "data": {
+          "action": "Nästa steg",
+          "day": "Veckodag"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Ändra tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHögst {per_day} växlingspunkter per dag och {total} per vecka, tider i steg om {raster} minuter. Varje växlingspunkt gäller till nästa; tiderna upprepas varje vecka i värmesystemets lokala tid. Dagar markerade med * har ändringar som ännu inte sparats. Inget skickas före sista steget.\n\nDet här programmet är inte värmekretsens aktiva program. Ändringar får verkan när det väljs.",
+        "data": {
+          "action": "Nästa steg",
+          "day": "Veckodag"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Ändra tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHögst {per_day} växlingspunkter per dag och {total} per vecka, tider i steg om {raster} minuter. Varje växlingspunkt gäller till nästa; tiderna upprepas varje vecka i värmesystemets lokala tid. Dagar markerade med * har ändringar som ännu inte sparats. Inget skickas före sista steget.\n\nVarmvattenprogrammet gäller bara så länge varmvattnets driftläge står på Auto.",
+        "data": {
+          "action": "Nästa steg",
+          "day": "Veckodag"
+        }
+      },
+      "switch_program_day": {
+        "title": "Välj växlingspunkt",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nVälj en växlingspunkt för att ändra eller ta bort den, lägg till en ny eller gå tillbaka till veckan.",
+        "data": {
+          "point": "Växlingspunkt"
+        }
+      },
+      "switch_program_point": {
+        "title": "Redigera växlingspunkt",
+        "description": "**{program}** – **{day}**\n\nVälj en tid i steg om {raster} minuter och en nivå. Nivån gäller från denna tid till nästa växlingspunkt.",
+        "data": {
+          "time": "Tid",
+          "level": "Nivå",
+          "delete": "Ta bort den här växlingspunkten"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Kopiera dag",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nVälj de dagar som ska få samma växlingspunkter. Deras nuvarande växlingspunkter ersätts.",
+        "data": {
+          "days": "Dagar"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Spara tidsprogram",
+        "description": "**{program}**\n\n**Före:**\n\n{before}\n\n**Efter:**\n\n{after}\n\nHela veckan skickas en gång och läses sedan tillbaka. Anteckna de tidigare växlingspunkterna ifall du vill återställa dem."
       },
       "controls": {
         "title": "Välj apparat",
@@ -611,6 +670,20 @@
       "rrc_changed": "Programmet har ändrats eller kan inte längre redigeras. Öppna det igen för att kontrollera de aktuella inställningarna.",
       "rrc_not_confirmed": "Ändringen kunde inte bekräftas. Den kan redan ha sparats. Öppna programmet igen och kontrollera dess aktuella inställningar.",
       "rrc_failed": "Värmeprogrammet kunde inte ändras. Kontrollera anslutningen och öppna programmet igen.",
+      "switch_program_time": "Välj en tid i steg om {raster} minuter, utan sekunder.",
+      "switch_program_level": "Välj en av de erbjudna nivåerna.",
+      "switch_program_duplicate_time": "Den här dagen har redan en växlingspunkt vid den här tiden.",
+      "switch_program_too_many_per_day": "Den här dagen har redan det högsta antal växlingspunkter som värmesystemet tillåter ({per_day}).",
+      "switch_program_too_many_in_all": "Veckan skulle få fler växlingspunkter än värmesystemet tillåter ({total}).",
+      "switch_program_empty_week": "Veckan behöver minst en växlingspunkt.",
+      "switch_program_day_required": "Välj en dag.",
+      "switch_program_no_changes": "Inget har ändrats ännu.",
+      "switch_program_invalid": "Ändringen passar inte tidsprogrammets gränser.",
+      "switch_program_changed": "Tidsprogrammet har ändrats under tiden eller kan inte längre ändras. Inget skickades. Öppna det igen för att se de aktuella växlingspunkterna.",
+      "switch_program_not_confirmed": "Ändringen kunde inte bekräftas. Den kan redan ha sparats. Öppna tidsprogrammet igen och kontrollera dess växlingspunkter; de tidigare visas ovan.",
+      "switch_program_rejected": "Värmesystemet avvisade tidsprogrammet. Inget ändrades.",
+      "switch_program_unused": "Värmesystemet använder inte det här tidsprogrammet för närvarande. Inget skickades.",
+      "switch_program_failed": "Tidsprogrammet kunde inte ändras. Kontrollera anslutningen och öppna tidsprogrammet igen.",
       "controls_invalid": "En inmatning är ogiltig eller så har de visade värdena ändrats. Kontrollera dina inmatningar eller läs in värdena igen. Inget skrevs.",
       "controls_changed": "En inställning har ändrats eller är inte längre tillgänglig. Tidigare bekräftade ändringar förblir tillämpade. Läs in värdena igen innan du försöker på nytt.",
       "controls_auth": "Autentiseringen har gått ut. Autentisera integrationen igen. Tidigare bekräftade ändringar förblir tillämpade. Läs in värdena igen innan du försöker på nytt.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "Värmesystemet returnerade en ny semester, men dess inställningar skiljer sig från din förfrågan. Begärd period: {requested}. Returnerad period: {actual}. Öppna Hantera semesterperioder för att kontrollera och redigera den här posten.",
       "holiday_update_adjusted": "Värmesystemet returnerade inställningar som skiljer sig från din begärda ändring. Begärd period: {requested}. Returnerad period: {actual}. Öppna Hantera semesterperioder för att kontrollera och redigera den aktuella posten.",
       "no_rrc_schedules": "Inget aktuellt, stött RRC-veckoprogram är tillgängligt.",
+      "no_switch_programs": "Det finns inget aktuellt tidsprogram för en värmekrets eller för varmvattnet som kan ändras här.",
+      "switch_program_changed": "Tidsprogrammet har ändrats under tiden eller kan inte längre ändras. Öppna det igen för att se de aktuella växlingspunkterna.",
+      "switch_program_saved": "Tidsprogrammet {program} sparades och bekräftades genom att läsas tillbaka.\n\nTidigare växlingspunkter för de ändrade dagarna:\n\n{before}",
       "controls_not_loaded": "Styrning är bara tillgänglig via molnåtkomsten. Den lokala åtkomsten kan bara läsa. Anslut en molnåtkomst eller vänta tills den har lästs in.",
       "controls_auth_required": "Styrning är inte tillgänglig: molnåtkomsten behöver en ny inloggning. Mätvärdena förblir synliga.",
       "controls_cloud_stopped": "Styrning är inte tillgänglig: molnåtkomsten är stoppad eller håller på att startas om. Mätvärdena förblir synliga.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "Boosten är igång. Dess temperatur och varaktighet kan bara ändras medan den är avstängd; de gäller då från nästa start. Ingenting ändrades."
+    },
+    "switch_program_not_readable": {
+      "message": "Det valda tidsprogrammet kan inte läsas just nu. Inget skickades."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Fredag",
         "sa": "Lördag",
         "su": "Söndag"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Redigera en dag",
+        "copy": "Kopiera en dag till andra dagar",
+        "review": "Granska och spara ändringarna"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Lägg till en växlingspunkt",
+        "done": "Tillbaka till veckan"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Alltid värme",
           "always_cooling": "Alltid kyla",
           "automatic": "Automatisk"
+        }
+      },
+      "active_switch_program": {
+        "name": "Aktivt tidsprogram",
+        "state": {
+          "a": "Program A",
+          "b": "Program B"
         }
       }
     },

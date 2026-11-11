@@ -44,8 +44,33 @@ settings of the radio devices and the CT200 stay expected, untested. Thank you, 
 testing all of this on your TC100.2, checking every change in the app and
 reporting it in #122.
 
+#### Heating and hot water schedules
+
+Expected, untested on a real gateway; so far I have tested both only with
+simulated data:
+
+- **Change a schedule:** **Configure > Heating and hot water schedules**
+  changes the weekly programs A and B of a heating circuit and program A of
+  the hot water. Choose a day, then change, add or delete its switch points
+  within the limits the gateway reports, or copy a day onto other days. The
+  last step shows the changed days before and after; the whole week is then
+  sent once, read back and shown at once. A program that changed in the
+  meantime is not overwritten, and nothing is ever sent twice. The program
+  type and the program names stay read-only.
+- **Active schedule:** a select switches between programs A and B, but only
+  where the gateway allows both and both programs can be read. With a
+  single program, as on my heat pump, there is none.
+
 #### Fixes
 
+- **Writes with a slow cloud:** a change that has started now has an overall
+  deadline of 60 seconds (180 seconds for a holiday change, longer for a
+  gateway that is read back more slowly) for its checks, its request and the
+  read-back. Before, a slow cloud with request retries
+  could hold the polling of the gateway and the calling automation for
+  several minutes. At the deadline the change is reported as not confirmed,
+  its value counts as not current until it is read again, and nothing is
+  sent a second time.
 - **Warning after a restart:** Home Assistant no longer logs "Detected
   blocking call to import_module … inside the event loop" for the room
   controller functions. I now load their modules in the background before

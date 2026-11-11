@@ -234,6 +234,7 @@
           "notifications": "Powiadomienia",
           "holidays": "Zarządzaj okresami urlopu",
           "rrc_programs": "Programy czasowe grzania RRC",
+          "switch_programs": "Programy czasowe grzania i ciepłej wody użytkowej",
           "controls": "Obsługa urządzenia",
           "connections": "Połączenia",
           "connection_add_cloud": "Połącz dostęp przez chmurę",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Punkt przełączenia"
         }
+      },
+      "switch_programs": {
+        "title": "Wybierz program czasowy",
+        "description": "Wybierz tygodniowy program obiegu grzewczego lub ciepłej wody użytkowej. Wyświetlane są tylko programy, które instalacja grzewcza zgłasza jako możliwe do zmiany.",
+        "data": {
+          "program": "Program czasowy"
+        }
+      },
+      "switch_program_week": {
+        "title": "Zmień program czasowy",
+        "description": "**{program}**\n\n{week}\n\nNajwyżej {per_day} punktów przełączenia na dzień i {total} na tydzień, godziny w krokach co {raster} minut. Każdy punkt przełączenia obowiązuje do następnego; godziny powtarzają się co tydzień w czasie lokalnym instalacji grzewczej. Dni oznaczone * mają jeszcze niezapisane zmiany. Przed ostatnim krokiem nic nie jest wysyłane.",
+        "data": {
+          "action": "Następny krok",
+          "day": "Dzień tygodnia"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Zmień program czasowy",
+        "description": "**{program}**\n\n{week}\n\nNajwyżej {per_day} punktów przełączenia na dzień i {total} na tydzień, godziny w krokach co {raster} minut. Każdy punkt przełączenia obowiązuje do następnego; godziny powtarzają się co tydzień w czasie lokalnym instalacji grzewczej. Dni oznaczone * mają jeszcze niezapisane zmiany. Przed ostatnim krokiem nic nie jest wysyłane.\n\nTen program nie jest aktywnym programem obiegu grzewczego. Zmiany zaczną działać, gdy zostanie wybrany.",
+        "data": {
+          "action": "Następny krok",
+          "day": "Dzień tygodnia"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Zmień program czasowy",
+        "description": "**{program}**\n\n{week}\n\nNajwyżej {per_day} punktów przełączenia na dzień i {total} na tydzień, godziny w krokach co {raster} minut. Każdy punkt przełączenia obowiązuje do następnego; godziny powtarzają się co tydzień w czasie lokalnym instalacji grzewczej. Dni oznaczone * mają jeszcze niezapisane zmiany. Przed ostatnim krokiem nic nie jest wysyłane.\n\nProgram ciepłej wody użytkowej działa tylko wtedy, gdy tryb pracy ciepłej wody użytkowej jest ustawiony na Automatyczny.",
+        "data": {
+          "action": "Następny krok",
+          "day": "Dzień tygodnia"
+        }
+      },
+      "switch_program_day": {
+        "title": "Wybierz punkt przełączenia",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nWybierz punkt przełączenia, aby go zmienić lub usunąć, dodaj nowy albo wróć do tygodnia.",
+        "data": {
+          "point": "Punkt przełączenia"
+        }
+      },
+      "switch_program_point": {
+        "title": "Edytuj punkt przełączenia",
+        "description": "**{program}** – **{day}**\n\nWybierz godzinę w krokach co {raster} minut i poziom. Poziom obowiązuje od tej godziny do następnego punktu przełączenia.",
+        "data": {
+          "time": "Godzina",
+          "level": "Poziom",
+          "delete": "Usuń ten punkt przełączenia"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Kopiuj dzień",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nWybierz dni, które otrzymają te same punkty przełączenia. Ich dotychczasowe punkty przełączenia zostaną zastąpione.",
+        "data": {
+          "days": "Dni"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Zapisz program czasowy",
+        "description": "**{program}**\n\n**Przed:**\n\n{before}\n\n**Po:**\n\n{after}\n\nCały tydzień jest wysyłany raz, a następnie odczytywany ponownie. Zanotuj dotychczasowe punkty przełączenia na wypadek, gdybyś chciał je przywrócić."
       },
       "controls": {
         "title": "Wybierz urządzenie",
@@ -611,6 +670,20 @@
       "rrc_changed": "Program czasowy uległ zmianie lub nie można go już edytować. Ponownie otwórz go, aby sprawdzić bieżące ustawienia.",
       "rrc_not_confirmed": "Nie udało się potwierdzić zmiany. Mogła już zostać zapisana. Ponownie otwórz program czasowy i sprawdź jego bieżące ustawienia.",
       "rrc_failed": "Nie udało się zmienić programu czasowego grzania. Sprawdź połączenie i ponownie otwórz program czasowy.",
+      "switch_program_time": "Wybierz godzinę w krokach co {raster} minut, bez sekund.",
+      "switch_program_level": "Wybierz jeden z oferowanych poziomów.",
+      "switch_program_duplicate_time": "Ten dzień ma już punkt przełączenia o tej godzinie.",
+      "switch_program_too_many_per_day": "Ten dzień ma już największą liczbę punktów przełączenia, na jaką pozwala instalacja grzewcza ({per_day}).",
+      "switch_program_too_many_in_all": "Tydzień miałby więcej punktów przełączenia, niż pozwala instalacja grzewcza ({total}).",
+      "switch_program_empty_week": "Tydzień potrzebuje co najmniej jednego punktu przełączenia.",
+      "switch_program_day_required": "Wybierz dzień.",
+      "switch_program_no_changes": "Nic jeszcze nie zostało zmienione.",
+      "switch_program_invalid": "Zmiana nie mieści się w limitach programu czasowego.",
+      "switch_program_changed": "Program czasowy zmienił się w międzyczasie lub nie można go już zmienić. Nic nie wysłano. Otwórz go ponownie, aby zobaczyć bieżące punkty przełączenia.",
+      "switch_program_not_confirmed": "Nie udało się potwierdzić zmiany. Mogła już zostać zapisana. Otwórz ponownie program czasowy i sprawdź jego punkty przełączenia; dotychczasowe są podane powyżej.",
+      "switch_program_rejected": "Instalacja grzewcza odrzuciła program czasowy. Nic nie zostało zmienione.",
+      "switch_program_unused": "Instalacja grzewcza obecnie nie używa tego programu czasowego. Nic nie wysłano.",
+      "switch_program_failed": "Nie udało się zmienić programu czasowego. Sprawdź połączenie i ponownie otwórz program czasowy.",
       "controls_invalid": "Wprowadzone dane są nieprawidłowe lub wyświetlane wartości uległy zmianie. Sprawdź wprowadzone dane lub wczytaj wartości ponownie. Nic nie zostało zapisane.",
       "controls_changed": "Ustawienie uległo zmianie lub nie jest już dostępne. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
       "controls_auth": "Uwierzytelnienie wygasło. Uwierzytelnij integrację ponownie. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "Instalacja grzewcza zwróciła nowy urlop, ale jego ustawienia różnią się od Twojego żądania. Żądany okres: {requested}. Zwrócony okres: {actual}. Otwórz Zarządzaj okresami urlopu, aby sprawdzić i edytować ten wpis.",
       "holiday_update_adjusted": "Instalacja grzewcza zwróciła ustawienia, które różnią się od żądanej zmiany. Żądany okres: {requested}. Zwrócony okres: {actual}. Otwórz Zarządzaj okresami urlopu, aby sprawdzić i edytować bieżący wpis.",
       "no_rrc_schedules": "Brak aktualnego, obsługiwanego tygodniowego programu czasowego RRC.",
+      "no_switch_programs": "Tutaj nie można zmienić żadnego aktualnego programu czasowego obiegu grzewczego ani ciepłej wody użytkowej.",
+      "switch_program_changed": "Program czasowy zmienił się w międzyczasie lub nie można go już zmienić. Otwórz go ponownie, aby zobaczyć bieżące punkty przełączenia.",
+      "switch_program_saved": "Program czasowy {program} został zapisany i potwierdzony ponownym odczytem.\n\nDotychczasowe punkty przełączenia zmienionych dni:\n\n{before}",
       "controls_not_loaded": "Sterowanie jest dostępne tylko przez dostęp przez chmurę; dostęp lokalny tylko odczytuje. Połącz dostęp przez chmurę albo zaczekaj, aż się załaduje.",
       "controls_auth_required": "Sterowanie jest niedostępne: dostęp przez chmurę wymaga nowego logowania. Odczyty pozostają widoczne.",
       "controls_cloud_stopped": "Sterowanie jest niedostępne: dostęp przez chmurę jest zatrzymany lub uruchamiany ponownie. Odczyty pozostają widoczne.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "Funkcja Boost jest aktywna. Jej temperaturę i czas trwania można zmienić tylko wtedy, gdy jest wyłączona; obowiązują one wtedy od następnego uruchomienia. Nic nie zostało zmienione."
+    },
+    "switch_program_not_readable": {
+      "message": "Wybranego programu czasowego nie można teraz odczytać. Nic nie wysłano."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Piątek",
         "sa": "Sobota",
         "su": "Niedziela"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Edytuj dzień",
+        "copy": "Kopiuj dzień na inne dni",
+        "review": "Sprawdź i zapisz zmiany"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Dodaj punkt przełączenia",
+        "done": "Wróć do tygodnia"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Zawsze grzanie",
           "always_cooling": "Zawsze chłodzenie",
           "automatic": "Automatyczne"
+        }
+      },
+      "active_switch_program": {
+        "name": "Aktywny program czasowy",
+        "state": {
+          "a": "Program A",
+          "b": "Program B"
         }
       }
     },

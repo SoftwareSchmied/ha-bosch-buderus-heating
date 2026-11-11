@@ -234,6 +234,7 @@
           "notifications": "Notifications",
           "holidays": "Gérer les périodes de vacances",
           "rrc_programs": "Programmes de chauffage RRC",
+          "switch_programs": "Programmes horaires du chauffage et de l'eau chaude",
           "controls": "Commander l'appareil",
           "connections": "Connexions",
           "connection_add_cloud": "Connecter l'accès cloud",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Point de commutation"
         }
+      },
+      "switch_programs": {
+        "title": "Sélectionner le programme horaire",
+        "description": "Choisissez le programme hebdomadaire d'un circuit de chauffage ou de l'eau chaude. Seuls les programmes que l'installation de chauffage déclare modifiables sont listés.",
+        "data": {
+          "program": "Programme horaire"
+        }
+      },
+      "switch_program_week": {
+        "title": "Modifier le programme horaire",
+        "description": "**{program}**\n\n{week}\n\nAu plus {per_day} points de commutation par jour et {total} par semaine, heures par pas de {raster} minutes. Chaque point de commutation s'applique jusqu'au suivant ; les heures se répètent chaque semaine à l'heure locale de l'installation de chauffage. Les jours marqués * ont des modifications pas encore enregistrées. Rien n'est envoyé avant la dernière étape.",
+        "data": {
+          "action": "Étape suivante",
+          "day": "Jour de la semaine"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Modifier le programme horaire",
+        "description": "**{program}**\n\n{week}\n\nAu plus {per_day} points de commutation par jour et {total} par semaine, heures par pas de {raster} minutes. Chaque point de commutation s'applique jusqu'au suivant ; les heures se répètent chaque semaine à l'heure locale de l'installation de chauffage. Les jours marqués * ont des modifications pas encore enregistrées. Rien n'est envoyé avant la dernière étape.\n\nCe programme n'est pas le programme actif du circuit de chauffage. Les modifications prennent effet une fois qu'il est sélectionné.",
+        "data": {
+          "action": "Étape suivante",
+          "day": "Jour de la semaine"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Modifier le programme horaire",
+        "description": "**{program}**\n\n{week}\n\nAu plus {per_day} points de commutation par jour et {total} par semaine, heures par pas de {raster} minutes. Chaque point de commutation s'applique jusqu'au suivant ; les heures se répètent chaque semaine à l'heure locale de l'installation de chauffage. Les jours marqués * ont des modifications pas encore enregistrées. Rien n'est envoyé avant la dernière étape.\n\nLe programme de l'eau chaude ne s'applique que lorsque le mode de fonctionnement de l'eau chaude est sur Auto.",
+        "data": {
+          "action": "Étape suivante",
+          "day": "Jour de la semaine"
+        }
+      },
+      "switch_program_day": {
+        "title": "Choisir le point de commutation",
+        "description": "**{program}**\n\n**{day} :** {points}\n\nChoisissez un point de commutation pour le modifier ou le supprimer, ajoutez-en un nouveau ou revenez à la semaine.",
+        "data": {
+          "point": "Point de commutation"
+        }
+      },
+      "switch_program_point": {
+        "title": "Modifier le point de commutation",
+        "description": "**{program}** – **{day}**\n\nChoisissez une heure par pas de {raster} minutes et un niveau. Le niveau s'applique de cette heure jusqu'au point de commutation suivant.",
+        "data": {
+          "time": "Heure",
+          "level": "Niveau",
+          "delete": "Supprimer ce point de commutation"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Copier le jour",
+        "description": "**{program}**\n\n**{day} :** {points}\n\nChoisissez les jours qui reçoivent les mêmes points de commutation. Leurs points de commutation actuels sont remplacés.",
+        "data": {
+          "days": "Jours"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Enregistrer le programme horaire",
+        "description": "**{program}**\n\n**Avant :**\n\n{before}\n\n**Après :**\n\n{after}\n\nToute la semaine est envoyée une seule fois puis relue. Notez les points de commutation précédents au cas où vous voudriez les rétablir."
       },
       "controls": {
         "title": "Sélectionner l'appareil",
@@ -611,6 +670,20 @@
       "rrc_changed": "Le programme a changé ou ne peut plus être modifié. Rouvrez-le pour vérifier les réglages actuels.",
       "rrc_not_confirmed": "La modification n'a pas pu être confirmée. Elle a peut-être déjà été enregistrée. Rouvrez le programme et vérifiez ses réglages actuels.",
       "rrc_failed": "Le programme de chauffage n'a pas pu être modifié. Vérifiez la connexion et rouvrez le programme.",
+      "switch_program_time": "Choisissez une heure par pas de {raster} minutes, sans secondes.",
+      "switch_program_level": "Choisissez l'un des niveaux proposés.",
+      "switch_program_duplicate_time": "Ce jour a déjà un point de commutation à cette heure.",
+      "switch_program_too_many_per_day": "Ce jour a déjà le nombre maximal de points de commutation autorisé par l'installation de chauffage ({per_day}).",
+      "switch_program_too_many_in_all": "La semaine aurait plus de points de commutation que l'installation de chauffage n'en autorise ({total}).",
+      "switch_program_empty_week": "La semaine a besoin d'au moins un point de commutation.",
+      "switch_program_day_required": "Choisissez un jour.",
+      "switch_program_no_changes": "Rien n'a encore été modifié.",
+      "switch_program_invalid": "La modification ne respecte pas les limites du programme horaire.",
+      "switch_program_changed": "Le programme horaire a changé entre-temps ou ne peut plus être modifié. Rien n'a été envoyé. Rouvrez-le pour voir les points de commutation actuels.",
+      "switch_program_not_confirmed": "La modification n'a pas pu être confirmée. Elle a peut-être déjà été enregistrée. Rouvrez le programme horaire et vérifiez ses points de commutation ; les précédents sont indiqués ci-dessus.",
+      "switch_program_rejected": "L'installation de chauffage a refusé le programme horaire. Rien n'a été modifié.",
+      "switch_program_unused": "L'installation de chauffage n'utilise pas ce programme horaire pour le moment. Rien n'a été envoyé.",
+      "switch_program_failed": "Le programme horaire n'a pas pu être modifié. Vérifiez la connexion et rouvrez le programme horaire.",
       "controls_invalid": "Une saisie n'est pas valide ou les valeurs affichées ont changé. Vérifiez vos saisies ou rechargez les valeurs. Rien n'a été écrit.",
       "controls_changed": "Un réglage a changé ou n'est plus disponible. Les modifications précédemment confirmées restent appliquées. Rechargez les valeurs avant de réessayer.",
       "controls_auth": "L'authentification a expiré. Veuillez réauthentifier l'intégration. Les modifications précédemment confirmées restent appliquées. Rechargez les valeurs avant de réessayer.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "L'installation de chauffage a renvoyé de nouvelles vacances, mais leurs réglages diffèrent de votre demande. Période demandée : {requested}. Période renvoyée : {actual}. Ouvrez Gérer les périodes de vacances pour vérifier et modifier cette entrée.",
       "holiday_update_adjusted": "L'installation de chauffage a renvoyé des réglages qui diffèrent de la modification demandée. Période demandée : {requested}. Période renvoyée : {actual}. Ouvrez Gérer les périodes de vacances pour vérifier et modifier l'entrée actuelle.",
       "no_rrc_schedules": "Aucun programme hebdomadaire RRC actuel et pris en charge n'est disponible.",
+      "no_switch_programs": "Aucun programme horaire actuel d'un circuit de chauffage ou de l'eau chaude ne peut être modifié ici.",
+      "switch_program_changed": "Le programme horaire a changé entre-temps ou ne peut plus être modifié. Rouvrez-le pour voir les points de commutation actuels.",
+      "switch_program_saved": "Le programme horaire {program} a été enregistré et confirmé par relecture.\n\nPoints de commutation précédents des jours modifiés :\n\n{before}",
       "controls_not_loaded": "Les commandes ne sont disponibles que via l'accès cloud ; l'accès local est en lecture seule. Connectez un accès cloud ou attendez qu'il soit chargé.",
       "controls_auth_required": "Les commandes ne sont pas disponibles : l'accès cloud nécessite une nouvelle connexion. Les valeurs restent visibles.",
       "controls_cloud_stopped": "Les commandes ne sont pas disponibles : l'accès cloud est arrêté ou en cours de redémarrage. Les valeurs restent visibles.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "Le boost est en cours. Sa température et sa durée ne peuvent être modifiées que lorsqu'il est arrêté ; elles s'appliquent alors à partir de son prochain démarrage. Rien n'a été modifié."
+    },
+    "switch_program_not_readable": {
+      "message": "Le programme horaire sélectionné ne peut pas être lu pour le moment. Rien n'a été envoyé."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Vendredi",
         "sa": "Samedi",
         "su": "Dimanche"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Modifier un jour",
+        "copy": "Copier un jour vers d'autres jours",
+        "review": "Vérifier et enregistrer les modifications"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Ajouter un point de commutation",
+        "done": "Revenir à la semaine"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Toujours chauffer",
           "always_cooling": "Toujours rafraîchir",
           "automatic": "Automatique"
+        }
+      },
+      "active_switch_program": {
+        "name": "Programme horaire actif",
+        "state": {
+          "a": "Programme A",
+          "b": "Programme B"
         }
       }
     },

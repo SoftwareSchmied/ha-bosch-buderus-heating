@@ -234,6 +234,7 @@
           "notifications": "Notificaties",
           "holidays": "Vakantieperiodes beheren",
           "rrc_programs": "RRC-verwarmingstijdprogramma's",
+          "switch_programs": "Tijdprogramma's voor verwarming en warm water",
           "controls": "Apparaat bedienen",
           "connections": "Verbindingen",
           "connection_add_cloud": "Cloudtoegang verbinden",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Schakelpunt"
         }
+      },
+      "switch_programs": {
+        "title": "Tijdprogramma selecteren",
+        "description": "Kies het weekprogramma van een verwarmingscircuit of van het warm water. Alleen programma's die de verwarmingsinstallatie als wijzigbaar meldt, worden getoond.",
+        "data": {
+          "program": "Tijdprogramma"
+        }
+      },
+      "switch_program_week": {
+        "title": "Tijdprogramma wijzigen",
+        "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.",
+        "data": {
+          "action": "Volgende stap",
+          "day": "Weekdag"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Tijdprogramma wijzigen",
+        "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nDit programma is niet het actieve programma van het verwarmingscircuit. Wijzigingen werken pas als het is geselecteerd.",
+        "data": {
+          "action": "Volgende stap",
+          "day": "Weekdag"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Tijdprogramma wijzigen",
+        "description": "**{program}**\n\n{week}\n\nHoogstens {per_day} schakelpunten per dag en {total} per week, tijden in stappen van {raster} minuten. Elk schakelpunt geldt tot het volgende; de tijden herhalen zich wekelijks in de lokale tijd van de verwarmingsinstallatie. Dagen met * hebben wijzigingen die nog niet zijn opgeslagen. Vóór de laatste stap wordt niets verzonden.\n\nHet warmwaterprogramma geldt alleen zolang de bedrijfsmodus voor warm water op Auto staat.",
+        "data": {
+          "action": "Volgende stap",
+          "day": "Weekdag"
+        }
+      },
+      "switch_program_day": {
+        "title": "Schakelpunt kiezen",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nKies een schakelpunt om het te wijzigen of te verwijderen, voeg een nieuw toe of ga terug naar de week.",
+        "data": {
+          "point": "Schakelpunt"
+        }
+      },
+      "switch_program_point": {
+        "title": "Schakelpunt bewerken",
+        "description": "**{program}** – **{day}**\n\nKies een tijd in stappen van {raster} minuten en een niveau. Het niveau geldt vanaf deze tijd tot het volgende schakelpunt.",
+        "data": {
+          "time": "Tijd",
+          "level": "Niveau",
+          "delete": "Dit schakelpunt verwijderen"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Dag kopiëren",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nKies de dagen die dezelfde schakelpunten krijgen. Hun huidige schakelpunten worden vervangen.",
+        "data": {
+          "days": "Dagen"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Tijdprogramma opslaan",
+        "description": "**{program}**\n\n**Voor:**\n\n{before}\n\n**Na:**\n\n{after}\n\nDe hele week wordt één keer verzonden en daarna teruggelezen. Noteer de vorige schakelpunten voor het geval je ze wilt terugzetten."
       },
       "controls": {
         "title": "Apparaat selecteren",
@@ -611,6 +670,20 @@
       "rrc_changed": "Het tijdprogramma is gewijzigd of kan niet meer worden bewerkt. Open het opnieuw om de huidige instellingen te controleren.",
       "rrc_not_confirmed": "De wijziging kon niet worden bevestigd. Ze is mogelijk al opgeslagen. Open het tijdprogramma opnieuw en controleer de huidige instellingen.",
       "rrc_failed": "Het verwarmingstijdprogramma kon niet worden gewijzigd. Controleer de verbinding en open het tijdprogramma opnieuw.",
+      "switch_program_time": "Kies een tijd in stappen van {raster} minuten, zonder seconden.",
+      "switch_program_level": "Kies een van de aangeboden niveaus.",
+      "switch_program_duplicate_time": "Deze dag heeft al een schakelpunt op deze tijd.",
+      "switch_program_too_many_per_day": "Deze dag heeft al het hoogste aantal schakelpunten dat de verwarmingsinstallatie toestaat ({per_day}).",
+      "switch_program_too_many_in_all": "De week zou meer schakelpunten hebben dan de verwarmingsinstallatie toestaat ({total}).",
+      "switch_program_empty_week": "De week heeft minstens één schakelpunt nodig.",
+      "switch_program_day_required": "Kies een dag.",
+      "switch_program_no_changes": "Er is nog niets gewijzigd.",
+      "switch_program_invalid": "De wijziging past niet binnen de grenzen van het tijdprogramma.",
+      "switch_program_changed": "Het tijdprogramma is intussen gewijzigd of kan niet meer worden gewijzigd. Er is niets verzonden. Open het opnieuw om de huidige schakelpunten te zien.",
+      "switch_program_not_confirmed": "De wijziging kon niet worden bevestigd. Ze is mogelijk al opgeslagen. Open het tijdprogramma opnieuw en controleer de schakelpunten; de vorige staan hierboven.",
+      "switch_program_rejected": "De verwarmingsinstallatie heeft het tijdprogramma geweigerd. Er is niets gewijzigd.",
+      "switch_program_unused": "De verwarmingsinstallatie gebruikt dit tijdprogramma op dit moment niet. Er is niets verzonden.",
+      "switch_program_failed": "Het tijdprogramma kon niet worden gewijzigd. Controleer de verbinding en open het tijdprogramma opnieuw.",
       "controls_invalid": "Een invoer is ongeldig of de getoonde waarden zijn gewijzigd. Controleer je invoer of laad de waarden opnieuw. Er is niets geschreven.",
       "controls_changed": "Een instelling is gewijzigd of niet meer beschikbaar. Eerder bevestigde wijzigingen blijven toegepast. Laad de waarden opnieuw voordat je het opnieuw probeert.",
       "controls_auth": "De authenticatie is verlopen. Authenticeer de integratie opnieuw. Eerder bevestigde wijzigingen blijven toegepast. Laad de waarden opnieuw voordat je het opnieuw probeert.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "De verwarmingsinstallatie heeft een nieuwe vakantie teruggegeven, maar de instellingen wijken af van je verzoek. Gevraagde periode: {requested}. Teruggegeven periode: {actual}. Open Vakantieperiodes beheren om deze invoer te controleren en te bewerken.",
       "holiday_update_adjusted": "De verwarmingsinstallatie heeft instellingen teruggegeven die afwijken van je gevraagde wijziging. Gevraagde periode: {requested}. Teruggegeven periode: {actual}. Open Vakantieperiodes beheren om de huidige invoer te controleren en te bewerken.",
       "no_rrc_schedules": "Er is geen actueel, ondersteund RRC-weektijdprogramma beschikbaar.",
+      "no_switch_programs": "Hier kan geen actueel tijdprogramma van een verwarmingscircuit of van het warm water worden gewijzigd.",
+      "switch_program_changed": "Het tijdprogramma is intussen gewijzigd of kan niet meer worden gewijzigd. Open het opnieuw om de huidige schakelpunten te zien.",
+      "switch_program_saved": "Het tijdprogramma {program} is opgeslagen en door teruglezen bevestigd.\n\nVorige schakelpunten van de gewijzigde dagen:\n\n{before}",
       "controls_not_loaded": "Bediening is alleen beschikbaar via de cloudtoegang; de lokale toegang leest alleen. Verbind een cloudtoegang of wacht tot die is geladen.",
       "controls_auth_required": "Bediening is niet beschikbaar: de cloudtoegang vereist een nieuwe aanmelding. Meetwaarden blijven zichtbaar.",
       "controls_cloud_stopped": "Bediening is niet beschikbaar: de cloudtoegang is gestopt of wordt opnieuw gestart. Meetwaarden blijven zichtbaar.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "De boost is actief. De temperatuur en duur kunnen alleen worden gewijzigd terwijl hij uit is; ze gelden dan vanaf de volgende start. Er is niets gewijzigd."
+    },
+    "switch_program_not_readable": {
+      "message": "Het gekozen tijdprogramma kan op dit moment niet worden gelezen. Er is niets verzonden."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Vrijdag",
         "sa": "Zaterdag",
         "su": "Zondag"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Een dag bewerken",
+        "copy": "Een dag naar andere dagen kopiëren",
+        "review": "Wijzigingen controleren en opslaan"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Schakelpunt toevoegen",
+        "done": "Terug naar de week"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Altijd verwarmen",
           "always_cooling": "Altijd koelen",
           "automatic": "Automatisch"
+        }
+      },
+      "active_switch_program": {
+        "name": "Actief tijdprogramma",
+        "state": {
+          "a": "Programma A",
+          "b": "Programma B"
         }
       }
     },

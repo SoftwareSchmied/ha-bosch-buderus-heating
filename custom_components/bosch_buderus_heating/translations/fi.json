@@ -234,6 +234,7 @@
           "notifications": "Ilmoitukset",
           "holidays": "Hallitse lomajaksoja",
           "rrc_programs": "RRC-lämmitysaikaohjelmat",
+          "switch_programs": "Lämmityksen ja lämpimän käyttöveden aikaohjelmat",
           "controls": "Käytä laitetta",
           "connections": "Yhteydet",
           "connection_add_cloud": "Yhdistä pilviyhteys",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Kytkentäpiste"
         }
+      },
+      "switch_programs": {
+        "title": "Valitse aikaohjelma",
+        "description": "Valitse lämmityspiirin tai lämpimän käyttöveden viikkoaikaohjelma. Luettelossa ovat vain ohjelmat, jotka lämmitysjärjestelmä ilmoittaa muutettaviksi.",
+        "data": {
+          "program": "Aikaohjelma"
+        }
+      },
+      "switch_program_week": {
+        "title": "Muuta aikaohjelmaa",
+        "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.",
+        "data": {
+          "action": "Seuraava vaihe",
+          "day": "Viikonpäivä"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Muuta aikaohjelmaa",
+        "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nTämä ohjelma ei ole lämmityspiirin aktiivinen ohjelma. Muutokset tulevat voimaan, kun se valitaan.",
+        "data": {
+          "action": "Seuraava vaihe",
+          "day": "Viikonpäivä"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Muuta aikaohjelmaa",
+        "description": "**{program}**\n\n{week}\n\nEnintään {per_day} kytkentäpistettä päivässä ja {total} viikossa, ajat {raster} minuutin portain. Kukin kytkentäpiste on voimassa seuraavaan asti; ajat toistuvat viikoittain lämmitysjärjestelmän paikallisessa ajassa. Merkinnällä * merkityillä päivillä on muutoksia, joita ei ole vielä tallennettu. Mitään ei lähetetä ennen viimeistä vaihetta.\n\nLämpimän käyttöveden aikaohjelma on voimassa vain, kun lämpimän käyttöveden käyttötila on Automaattinen.",
+        "data": {
+          "action": "Seuraava vaihe",
+          "day": "Viikonpäivä"
+        }
+      },
+      "switch_program_day": {
+        "title": "Valitse kytkentäpiste",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nValitse kytkentäpiste muuttaaksesi tai poistaaksesi sen, lisää uusi tai palaa viikkoon.",
+        "data": {
+          "point": "Kytkentäpiste"
+        }
+      },
+      "switch_program_point": {
+        "title": "Muokkaa kytkentäpistettä",
+        "description": "**{program}** – **{day}**\n\nValitse aika {raster} minuutin portain ja taso. Taso on voimassa tästä ajasta seuraavaan kytkentäpisteeseen asti.",
+        "data": {
+          "time": "Aika",
+          "level": "Taso",
+          "delete": "Poista tämä kytkentäpiste"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Kopioi päivä",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nValitse päivät, jotka saavat samat kytkentäpisteet. Niiden nykyiset kytkentäpisteet korvataan.",
+        "data": {
+          "days": "Päivät"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Tallenna aikaohjelma",
+        "description": "**{program}**\n\n**Ennen:**\n\n{before}\n\n**Jälkeen:**\n\n{after}\n\nKoko viikko lähetetään kerran ja luetaan sen jälkeen takaisin. Kirjaa aiemmat kytkentäpisteet muistiin siltä varalta, että haluat palauttaa ne."
       },
       "controls": {
         "title": "Valitse laite",
@@ -611,6 +670,20 @@
       "rrc_changed": "Aikaohjelma on muuttunut tai sitä ei voi enää muokata. Avaa se uudelleen ja tarkista nykyiset asetukset.",
       "rrc_not_confirmed": "Muutosta ei voitu vahvistaa. Se on voitu jo tallentaa. Avaa aikaohjelma uudelleen ja tarkista sen nykyiset asetukset.",
       "rrc_failed": "Lämmitysaikaohjelmaa ei voitu muuttaa. Tarkista yhteys ja avaa aikaohjelma uudelleen.",
+      "switch_program_time": "Valitse aika {raster} minuutin portain, ilman sekunteja.",
+      "switch_program_level": "Valitse jokin tarjotuista tasoista.",
+      "switch_program_duplicate_time": "Tällä päivällä on jo kytkentäpiste tähän aikaan.",
+      "switch_program_too_many_per_day": "Tällä päivällä on jo suurin lämmitysjärjestelmän sallima määrä kytkentäpisteitä ({per_day}).",
+      "switch_program_too_many_in_all": "Viikossa olisi enemmän kytkentäpisteitä kuin lämmitysjärjestelmä sallii ({total}).",
+      "switch_program_empty_week": "Viikossa on oltava vähintään yksi kytkentäpiste.",
+      "switch_program_day_required": "Valitse päivä.",
+      "switch_program_no_changes": "Mitään ei ole vielä muutettu.",
+      "switch_program_invalid": "Muutos ei sovi aikaohjelman rajoihin.",
+      "switch_program_changed": "Aikaohjelma on muuttunut sillä välin tai sitä ei voi enää muuttaa. Mitään ei lähetetty. Avaa se uudelleen nähdäksesi nykyiset kytkentäpisteet.",
+      "switch_program_not_confirmed": "Muutosta ei voitu vahvistaa. Se on voitu jo tallentaa. Avaa aikaohjelma uudelleen ja tarkista sen kytkentäpisteet; aiemmat näkyvät yllä.",
+      "switch_program_rejected": "Lämmitysjärjestelmä hylkäsi aikaohjelman. Mitään ei muutettu.",
+      "switch_program_unused": "Lämmitysjärjestelmä ei käytä tätä aikaohjelmaa tällä hetkellä. Mitään ei lähetetty.",
+      "switch_program_failed": "Aikaohjelmaa ei voitu muuttaa. Tarkista yhteys ja avaa aikaohjelma uudelleen.",
       "controls_invalid": "Syöte on virheellinen tai näytetyt arvot ovat muuttuneet. Tarkista syötteesi tai lataa arvot uudelleen. Mitään ei kirjoitettu.",
       "controls_changed": "Asetus on muuttunut tai ei ole enää käytettävissä. Aiemmin vahvistetut muutokset pysyvät voimassa. Lataa arvot uudelleen ennen uutta yritystä.",
       "controls_auth": "Todennus on vanhentunut. Todenna integraatio uudelleen. Aiemmin vahvistetut muutokset pysyvät voimassa. Lataa arvot uudelleen ennen uutta yritystä.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "Lämmitysjärjestelmä palautti uuden loman, mutta sen asetukset poikkeavat pyynnöstäsi. Pyydetty jakso: {requested}. Palautettu jakso: {actual}. Avaa Hallitse lomajaksoja tarkistaaksesi ja muokataksesi tätä merkintää.",
       "holiday_update_adjusted": "Lämmitysjärjestelmä palautti asetukset, jotka poikkeavat pyytämästäsi muutoksesta. Pyydetty jakso: {requested}. Palautettu jakso: {actual}. Avaa Hallitse lomajaksoja tarkistaaksesi ja muokataksesi nykyistä merkintää.",
       "no_rrc_schedules": "Ajantasaista, tuettua RRC-viikkoaikaohjelmaa ei ole saatavilla.",
+      "no_switch_programs": "Täällä ei voi muuttaa yhtään lämmityspiirin tai lämpimän käyttöveden ajantasaista aikaohjelmaa.",
+      "switch_program_changed": "Aikaohjelma on muuttunut sillä välin tai sitä ei voi enää muuttaa. Avaa se uudelleen nähdäksesi nykyiset kytkentäpisteet.",
+      "switch_program_saved": "Aikaohjelma {program} tallennettiin ja vahvistettiin lukemalla se takaisin.\n\nMuutettujen päivien aiemmat kytkentäpisteet:\n\n{before}",
       "controls_not_loaded": "Ohjaukset ovat käytettävissä vain pilviyhteyden kautta; paikallinen yhteys vain lukee. Yhdistä pilviyhteys tai odota, kunnes se on latautunut.",
       "controls_auth_required": "Ohjaukset eivät ole käytettävissä: pilviyhteys tarvitsee uuden kirjautumisen. Mittausarvot pysyvät näkyvissä.",
       "controls_cloud_stopped": "Ohjaukset eivät ole käytettävissä: pilviyhteys on pysäytetty tai käynnistyy uudelleen. Mittausarvot pysyvät näkyvissä.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "Boost on käynnissä. Sen lämpötilaa ja kestoa voi muuttaa vain, kun se on pois päältä; ne ovat silloin voimassa seuraavasta käynnistyksestä alkaen. Mitään ei muutettu."
+    },
+    "switch_program_not_readable": {
+      "message": "Valittua aikaohjelmaa ei voi lukea juuri nyt. Mitään ei lähetetty."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Perjantai",
         "sa": "Lauantai",
         "su": "Sunnuntai"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Muokkaa päivää",
+        "copy": "Kopioi päivä muille päiville",
+        "review": "Tarkista ja tallenna muutokset"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Lisää kytkentäpiste",
+        "done": "Takaisin viikkoon"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Aina lämmitys",
           "always_cooling": "Aina jäähdytys",
           "automatic": "Automaattinen"
+        }
+      },
+      "active_switch_program": {
+        "name": "Aktiivinen aikaohjelma",
+        "state": {
+          "a": "Ohjelma A",
+          "b": "Ohjelma B"
         }
       }
     },

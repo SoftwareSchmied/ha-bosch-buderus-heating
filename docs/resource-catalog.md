@@ -129,7 +129,7 @@ of `/holidayMode/list`; a timeout does not cause the mutation to be repeated.
 |---|---|---:|---|
 | `/heatingCircuits` | Available heating circuits | R | Internal: dynamic discovery |
 | `/heatingCircuits/{hc}` | Heating circuit | R | Internal: circuit resources |
-| `.../activeSwitchProgram` | Active schedule | R/W | Diagnostic; write only after observing multiple schedules |
+| `.../activeSwitchProgram` | Active schedule | R/W | Sensor; a select with the options A/B only when at least two of A and B are allowed, the current one among them, and every allowed program is readable and valid |
 | `.../controlType` | Control type | R/W | Diagnostic; safety-relevant configuration, read-only initially |
 | `.../currentRoomSetpoint` | Desired temperature | R | Temperature sensor |
 | `.../currentSuWiMode` | Current heating/cooling status | R | `off`, `forced`, `cooling` |
@@ -141,9 +141,9 @@ of `/holidayMode/list`; a timeout does not cause the mutation to be repeated.
 | `.../name` | Heating-circuit name | R/W | Decoded sensor only when configured; renaming not offered initially |
 | `.../operationMode` | Operation mode | R/W | Select: Off, Manual, Auto |
 | `.../overallStatus` | Operating status | R | Status sensor |
-| `.../switchProgramMode` | Schedule type | R/W | Read-only diagnostic; supports the `level`, `levels`, and `absolute` modes |
+| `.../switchProgramMode` | Schedule type | R/W | Read-only diagnostic; supports the `level`, `levels`, and `absolute` modes; never written, because it changes the meaning of every switch point |
 | `.../switchPrograms` | Available schedules | R | Internal: dynamic discovery |
-| `.../switchPrograms/{program}` | Schedule | R/W | No separate entity without scalar content; a future editor requires a verified schema |
+| `.../switchPrograms/{program}` | Schedule | R/W | Diagnostic enum sensor; changed as a whole week under Configure > Heating and hot water schedules (raw JSON array, one PUT, read-back) |
 | `.../switchPrograms/name{program}` | Schedule name | R/W | Readable decoded configuration value |
 | `.../temperatureLevels` | Available temperature levels | R | Internal: dynamic discovery |
 | `.../temperatureLevels/comfort2` | Heating | R/W | Number in °C, when available |

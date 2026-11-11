@@ -137,6 +137,7 @@ from .rrc import GATEWAY_DEVICE_TYPE
 from .rrc_devices import CONTROLLER_TYPE, TYPE_LABELS
 from .rrc_flow import RrcScheduleOptionsFlow
 from .runtime import BoschBuderusRuntimeData
+from .switch_program_flow import SwitchProgramOptionsFlow
 from .writes import WDDW2_HOLIDAY_POLICY, WriteBusy, assess_control
 
 CONF_HOLIDAY_PERIOD = "holiday_period"
@@ -963,7 +964,11 @@ class _HolidayChoice:
 
 
 class BoschBuderusOptionsFlow(
-    LocalSetupFlow, ControlsOptionsFlow, RrcScheduleOptionsFlow, CloudOptionsFlow
+    LocalSetupFlow,
+    ControlsOptionsFlow,
+    RrcScheduleOptionsFlow,
+    SwitchProgramOptionsFlow,
+    CloudOptionsFlow,
 ):
     """Manage holidays and installation-specific notification settings."""
 
@@ -1026,6 +1031,7 @@ class BoschBuderusOptionsFlow(
                 "controls",
                 "notifications",
                 "holidays",
+                *(["switch_programs"] if self._switch_program_choices() else []),
                 *(["rrc_programs"] if self._rrc_choices() else []),
             ],
         )

@@ -126,6 +126,10 @@ from .startup_data import (
     is_startup_path,
 )
 from .startup_reader import StartupReader
+from .switch_program_edit import circuit_path
+from .switch_program_edit import contract_of as switch_program_contract
+from .switch_program_service import SwitchProgramService, program_shows
+from .switch_programs import SwitchPoint, is_switch_program_path
 from .update_load import update_load
 from .write_policies import rrc_kwargs
 from .writes import (
@@ -139,6 +143,7 @@ from .writes import (
     NumberWritePolicy,
     RrcWriteNotConfirmed,
     WriteBusy,
+    WriteDeadlineExceeded,
     WriteService,
     confirms_value,
 )
@@ -290,6 +295,20 @@ MANUAL_SETPOINT_RETRY_DELAYS = (3.0, 10.0, 20.0)
 # Longer than a normal cycle with its 50 s budget, far shorter than a slow
 # discovery or rescan; a write that cannot start sends nothing.
 WRITE_LOCK_TIMEOUT = timedelta(seconds=60)
+# D25: how long a write transaction may hold the polling/write lock once it
+# has it: the fresh reads, the one request and its read-back. A healthy
+# write needs a fraction of it (RRC read-back: 15 s of waits); a slow cloud
+# with request retries no longer blocks polling and the caller for minutes.
+WRITE_TRANSACTION_DEADLINE = timedelta(seconds=60)
+# A holiday change on a legacy slot sends up to five values one after the
+# other, each read back over several paths.
+HOLIDAY_WRITE_DEADLINE = timedelta(seconds=180)
+HOLIDAY_WRITE_STEPS = 5
+# D25: what each step needs beyond the waits of its read-back schedule
+# (fresh reads, the request, the read-backs themselves). A slower read-back
+# schedule (an iCom gateway: 1, 2, 3 and 4 s) lengthens the deadline rather
+# than cutting a healthy transaction.
+WRITE_STEP_MARGIN_SECONDS = 30.0
 # HA rounds scheduled callbacks to whole seconds plus a fixed offset. A callback
 # just before our exact deadline must not postpone a group by another minute.
 # This tolerance applies to group cadence only, never to error/backoff deadlines.
@@ -640,6 +659,9 @@ class BoschBuderusDataUpdateCoordinator(
         self._rrc_program_service = RrcProgramService(client)
         self._holiday_write_service = HolidayWriteService(client)
         self._icom_holiday_write_service = IcomHolidayWriteService(client)
+        # Z2: the weekly switch program writes and their value-free counters.
+        self._switch_program_service = SwitchProgramService(client)
+        self.switch_program_write_stats = RrcWriteStats()
         self.faults = FaultTracker(hass, config_entry.entry_id, gateway.gateway_id)
         # O51: control paths whose entities are all disabled poll slowly.
         from .entity_use import entity_use
@@ -917,13 +939,21 @@ class BoschBuderusDataUpdateCoordinator(
         self._manual_setpoint_candidates.clear()
 
     @asynccontextmanager
-    async def _write_transaction(self) -> AsyncIterator[None]:
+    async def _write_transaction(
+        self, deadline: timedelta | None = None, *, steps: int = 1
+    ) -> AsyncIterator[None]:
         """C58: hold the polling/write lock, but wait for it only so long.
 
-        Only acquiring the lock is limited. Once a write holds it, nothing
-        interrupts its PUT or read-back. A write that cannot start sends
-        nothing and is reported at once instead of being sent much later.
+        A write that cannot start sends nothing and is reported at once
+        instead of being sent much later. D25: once it holds the lock, the
+        transaction has ``deadline`` (``WRITE_TRANSACTION_DEADLINE``), but at
+        least what ``steps`` read-backs of this gateway need, for its reads,
+        its requests and its read-backs. At the deadline it is cancelled
+        like any cancelled write (its reading is no longer current) and ends
+        with ``WriteDeadlineExceeded``: the request may have been sent, it is
+        never sent again.
         """
+        limit = self._write_deadline(deadline, steps)
         try:
             async with asyncio.timeout(WRITE_LOCK_TIMEOUT.total_seconds()):
                 await self._update_lock.acquire()
@@ -932,9 +962,25 @@ class BoschBuderusDataUpdateCoordinator(
                 "Another request held the gateway; the change was not sent"
             ) from err
         try:
-            yield
+            async with asyncio.timeout(limit.total_seconds()) as scope:
+                yield
+        except TimeoutError as err:
+            if not scope.expired():
+                raise
+            _LOGGER.debug("A write transaction reached its deadline and was stopped")
+            raise WriteDeadlineExceeded(
+                "The change was not confirmed in time; nothing is sent again"
+            ) from err
         finally:
             self._update_lock.release()
+
+    def _write_deadline(self, deadline: timedelta | None, steps: int) -> timedelta:
+        """D25: the overall deadline, never shorter than ``steps`` read-backs
+        with the read-back schedule of this gateway need."""
+        limit = deadline if deadline is not None else WRITE_TRANSACTION_DEADLINE
+        waits = sum(self.write_read_back_delays())
+        needed = timedelta(seconds=steps * (waits + WRITE_STEP_MARGIN_SECONDS))
+        return max(limit, needed)
 
     async def _async_read_write_guards(
         self, expected: tuple[Resource, ...]
@@ -1445,7 +1491,9 @@ class BoschBuderusDataUpdateCoordinator(
         expected: HolidayWriteValues | None = None,
     ) -> Resource:
         """Run one capability-gated holiday mutation and confirm it."""
-        async with self._write_transaction():
+        async with self._write_transaction(
+            HOLIDAY_WRITE_DEADLINE, steps=HOLIDAY_WRITE_STEPS
+        ):
             now_monotonic = monotonic()
             if now_monotonic < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now_monotonic)
@@ -1542,6 +1590,14 @@ class BoschBuderusDataUpdateCoordinator(
                     HOLIDAY_LIST_PATH, _pointt_result(err), SnapshotSource.WRITE
                 )
                 raise
+            except asyncio.CancelledError:
+                # D25: stopped at the deadline (or on shutdown); the request
+                # may have been sent. Read the list with the next cycle.
+                self._record_capability(
+                    HOLIDAY_LIST_PATH, "write_not_confirmed", SnapshotSource.WRITE
+                )
+                self._read_soon_after_write(HOLIDAY_LIST_PATH)
+                raise
 
             await self._async_publish_holiday_readback(confirmed)
             self._record_capability(HOLIDAY_LIST_PATH, "success", SnapshotSource.WRITE)
@@ -1617,6 +1673,131 @@ class BoschBuderusDataUpdateCoordinator(
         self._negative_until.pop(HOLIDAY_LIST_PATH, None)
         await self._async_prepare_holiday_timezones()
         self.async_set_updated_data(updated)
+
+    def switch_program_readings(self) -> dict[str, Resource]:
+        """Z2: the discovered resources with their current readings, for the
+        level rules of a program change."""
+        readings = dict(self.resources)
+        readings.update(
+            (path, snapshot.resource)
+            for path, snapshot in (self.data or {}).items()
+            if _snapshot_is_fresh(snapshot)
+        )
+        return readings
+
+    def switch_program_mode(self, path: str) -> Resource | None:
+        """Z2: the current program type of a heating circuit program, if read."""
+        snapshot = (self.data or {}).get(f"{circuit_path(path)}/switchProgramMode")
+        if snapshot is None or not _snapshot_is_fresh(snapshot):
+            return None
+        return snapshot.resource
+
+    async def async_write_switch_program(
+        self, expected: Resource, points: tuple[SwitchPoint, ...]
+    ) -> Resource:
+        """Z2: write one weekly switch program as shown and publish its
+        confirmed read-back; see ``switch_program_service``."""
+        if not is_switch_program_path(expected.path):
+            raise WriteValidationError("Unsupported switch program path")
+        contract = switch_program_contract(expected.path)
+        try:
+            return await self._async_write_switch_program(expected, points, contract)
+        except WriteValidationError as err:
+            self.switch_program_write_stats.rejected(contract, _rejection_token(err))
+            raise
+
+    async def _async_write_switch_program(
+        self, expected: Resource, points: tuple[SwitchPoint, ...], contract: str
+    ) -> Resource:
+        path = expected.path
+        stats = self.switch_program_write_stats
+        sent = False
+
+        def on_sent() -> None:
+            nonlocal sent
+            sent = True
+            stats.sent(contract)
+
+        async with self._write_transaction():
+            now = monotonic()
+            if now < self._cloud_backoff_until:
+                raise RateLimited(self._cloud_backoff_until - now)
+            if now < self._circuit_open_until:
+                raise WriteValidationError(
+                    "Gateway circuit breaker is active; writing is paused"
+                )
+            snapshot = (self.data or {}).get(path)
+            if snapshot is None or not _snapshot_is_fresh(snapshot):
+                raise WriteValidationError("The program has no current reading")
+            if snapshot.resource != expected:
+                raise WriteValidationError("The program changed since it was shown")
+            try:
+                confirmed = await self._switch_program_service.async_write(
+                    self.gateway.gateway_id,
+                    expected,
+                    points,
+                    self.switch_program_readings(),
+                    program_mode=self.switch_program_mode(path),
+                    delays=self.write_read_back_delays(),
+                    on_sent=on_sent,
+                )
+            except WriteValidationError:
+                # Refused before sending; the reading stays as it is.
+                raise
+            except (PointTError, asyncio.CancelledError) as err:
+                if isinstance(err, RateLimited):
+                    self._activate_rate_limit_backoff(err, monotonic())
+                if isinstance(err, AuthenticationError):
+                    self._request_reauthentication()
+                unresolved = sent and isinstance(
+                    err, WriteNotConfirmed | asyncio.CancelledError
+                )
+                category = (
+                    _pointt_result(err)
+                    if isinstance(err, PointTError) and not unresolved
+                    else "write_not_confirmed"
+                )
+                self._record_capability(path, category, SnapshotSource.WRITE)
+                if unresolved:
+                    # The week may have been stored: not current until read.
+                    stats.unconfirmed(
+                        contract, path, program_shows(path, points), monotonic()
+                    )
+                    updated = dict(self.data or {})
+                    updated[path] = replace(
+                        snapshot,
+                        available=False,
+                        freshness=Freshness.STALE,
+                        last_error_category="write_not_confirmed",
+                        ended=True,
+                    )
+                    self.async_set_updated_data(updated)
+                    self._read_soon_after_write(path)
+                elif sent:
+                    # The gateway's final answer: nothing changed.
+                    stats.rejected(
+                        contract,
+                        f"device_rejected_{err.status}"
+                        if isinstance(err, UnexpectedHttpStatus)
+                        else category,
+                    )
+                raise
+            received_at = datetime.now(UTC)
+            updated = dict(self.data or {})
+            updated[path] = ResourceSnapshot(
+                resource=confirmed,
+                available=True,
+                last_success=received_at,
+                last_attempt=received_at,
+                source=SnapshotSource.WRITE,
+            )
+            self.resources[path] = confirmed
+            self._negative_until.pop(path, None)
+            self._record_capability(path, "success", SnapshotSource.WRITE)
+            if sent:
+                stats.confirmed(contract, path)
+            self.async_set_updated_data(updated)
+            return confirmed
 
     async def _async_update_data(self) -> dict[str, ResourceSnapshot]:
         started = monotonic()
@@ -3572,6 +3753,7 @@ class BoschBuderusDataUpdateCoordinator(
                 self.resources[result.path] = result.resource
                 # CT-C07: a regular reading may confirm an unconfirmed write.
                 self.rrc_write_stats.observe(result.resource, now_monotonic)
+                self.switch_program_write_stats.observe(result.resource, now_monotonic)
                 if (
                     result.path in self._manual_setpoint_candidates
                     or is_start_counter_path(result.path)

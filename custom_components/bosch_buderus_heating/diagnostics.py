@@ -64,6 +64,8 @@ from .rrc_write import CORE_CONTRACT
 from .runtime import BoschBuderusRuntimeData
 from .start_counters import assess_start_counter, is_start_counter_path
 from .startup_data import LICENSE_PATH, STARTUP_BUDGET_SECONDS, safe_technical_value
+from .switch_program_edit import edit_issue, points_per_day
+from .switch_programs import is_switch_program_path
 from .update_load import update_load_diagnostics
 from .wallbox import WallboxCoordinator
 from .water_softener import (
@@ -624,6 +626,8 @@ def _gateway_diagnostics(
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),
         "firmware_changes": coordinator.firmware.diagnostics(monotonic()),
         "startup_data": _startup_diagnostics(coordinator),
+        # Z2: counters and point counts only, no times or levels.
+        "switch_program_writes": switch_program_write_diagnostics(coordinator),
         "start_counter_recovery": coordinator.start_counter_recovery_diagnostics(),
         "technical_metadata": [
             {"path": diagnostic_resource_path(resource.path), "value": value}
@@ -1317,3 +1321,44 @@ def _safe_unit(value: str | None) -> str:
     if value is None:
         return "none"
     return value if re.fullmatch(r"[A-Za-z0-9%./°_-]{1,16}", value) else "other"
+
+
+def switch_program_write_diagnostics(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+) -> dict[str, object]:
+    """Z2: the weekly program writes without times, levels or names.
+
+    The counters of each kind (heating circuit, hot water), the read-back
+    schedule and the duration of the last confirmed read-back; per program
+    whether it can be changed, why not (a token) and the number of switch
+    points of each weekday.
+    """
+    stats = coordinator.switch_program_write_stats
+    readings = coordinator.switch_program_readings()
+    programs: dict[str, object] = {}
+    for path, snapshot in sorted((coordinator.data or {}).items()):
+        if not is_switch_program_path(path):
+            continue
+        issue = (
+            edit_issue(
+                snapshot.resource,
+                readings,
+                program_mode=coordinator.switch_program_mode(path),
+            )
+            if snapshot.available and snapshot.freshness is Freshness.FRESH
+            else "no_current_reading"
+        )
+        programs[path] = {
+            "editable": issue is None,
+            "edit_issue": issue,
+            "points_per_day": points_per_day(snapshot.resource),
+        }
+    return {
+        "read_back_delays": list(coordinator.write_read_back_delays()),
+        "last_read_back_seconds": (
+            coordinator._switch_program_service.last_read_back_seconds
+        ),
+        "heating": stats.snapshot("heating"),
+        "dhw": stats.snapshot("dhw"),
+        "programs": programs,
+    }

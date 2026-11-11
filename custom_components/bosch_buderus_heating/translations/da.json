@@ -234,6 +234,7 @@
           "notifications": "Notifikationer",
           "holidays": "Administrer ferieperioder",
           "rrc_programs": "RRC-varmeprogrammer",
+          "switch_programs": "Tidsprogrammer for opvarmning og varmt brugsvand",
           "controls": "Betjen apparat",
           "connections": "Forbindelser",
           "connection_add_cloud": "Forbind cloudadgang",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Koblingspunkt"
         }
+      },
+      "switch_programs": {
+        "title": "Vælg tidsprogram",
+        "description": "Vælg ugeprogrammet for en varmekreds eller for det varme brugsvand. Kun programmer, som varmeanlægget melder som ændringsbare, vises.",
+        "data": {
+          "program": "Tidsprogram"
+        }
+      },
+      "switch_program_week": {
+        "title": "Skift tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHøjst {per_day} koblingspunkter pr. dag og {total} pr. uge, tidspunkter i trin på {raster} minutter. Hvert koblingspunkt gælder indtil det næste; tidspunkterne gentages hver uge i varmeanlæggets lokale tid. Dage markeret med * har ændringer, der endnu ikke er gemt. Der sendes intet før sidste trin.",
+        "data": {
+          "action": "Næste trin",
+          "day": "Ugedag"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Skift tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHøjst {per_day} koblingspunkter pr. dag og {total} pr. uge, tidspunkter i trin på {raster} minutter. Hvert koblingspunkt gælder indtil det næste; tidspunkterne gentages hver uge i varmeanlæggets lokale tid. Dage markeret med * har ændringer, der endnu ikke er gemt. Der sendes intet før sidste trin.\n\nDette program er ikke varmekredsens aktive program. Ændringer får virkning, når det vælges.",
+        "data": {
+          "action": "Næste trin",
+          "day": "Ugedag"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Skift tidsprogram",
+        "description": "**{program}**\n\n{week}\n\nHøjst {per_day} koblingspunkter pr. dag og {total} pr. uge, tidspunkter i trin på {raster} minutter. Hvert koblingspunkt gælder indtil det næste; tidspunkterne gentages hver uge i varmeanlæggets lokale tid. Dage markeret med * har ændringer, der endnu ikke er gemt. Der sendes intet før sidste trin.\n\nProgrammet for varmt brugsvand gælder kun, så længe driftsformen for varmt brugsvand står på Auto.",
+        "data": {
+          "action": "Næste trin",
+          "day": "Ugedag"
+        }
+      },
+      "switch_program_day": {
+        "title": "Vælg koblingspunkt",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nVælg et koblingspunkt for at ændre eller slette det, tilføj et nyt, eller gå tilbage til ugen.",
+        "data": {
+          "point": "Koblingspunkt"
+        }
+      },
+      "switch_program_point": {
+        "title": "Redigér koblingspunkt",
+        "description": "**{program}** – **{day}**\n\nVælg et tidspunkt i trin på {raster} minutter og et niveau. Niveauet gælder fra dette tidspunkt til næste koblingspunkt.",
+        "data": {
+          "time": "Tidspunkt",
+          "level": "Niveau",
+          "delete": "Slet dette koblingspunkt"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Kopiér dag",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nVælg de dage, der skal have de samme koblingspunkter. Deres nuværende koblingspunkter erstattes.",
+        "data": {
+          "days": "Dage"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Gem tidsprogram",
+        "description": "**{program}**\n\n**Før:**\n\n{before}\n\n**Efter:**\n\n{after}\n\nHele ugen sendes én gang og læses derefter igen. Notér de tidligere koblingspunkter, hvis du vil sætte dem tilbage."
       },
       "controls": {
         "title": "Vælg apparat",
@@ -611,6 +670,20 @@
       "rrc_changed": "Programmet er ændret eller kan ikke længere redigeres. Åbn det igen for at kontrollere de aktuelle indstillinger.",
       "rrc_not_confirmed": "Ændringen kunne ikke bekræftes. Den er muligvis allerede gemt. Åbn programmet igen, og kontrollér dets aktuelle indstillinger.",
       "rrc_failed": "Varmeprogrammet kunne ikke ændres. Kontrollér forbindelsen, og åbn programmet igen.",
+      "switch_program_time": "Vælg et tidspunkt i trin på {raster} minutter uden sekunder.",
+      "switch_program_level": "Vælg et af de tilbudte niveauer.",
+      "switch_program_duplicate_time": "Denne dag har allerede et koblingspunkt på dette tidspunkt.",
+      "switch_program_too_many_per_day": "Denne dag har allerede det højeste antal koblingspunkter, som varmeanlægget tillader ({per_day}).",
+      "switch_program_too_many_in_all": "Ugen ville få flere koblingspunkter, end varmeanlægget tillader ({total}).",
+      "switch_program_empty_week": "Ugen skal have mindst ét koblingspunkt.",
+      "switch_program_day_required": "Vælg en dag.",
+      "switch_program_no_changes": "Der er endnu ikke ændret noget.",
+      "switch_program_invalid": "Ændringen passer ikke til tidsprogrammets grænser.",
+      "switch_program_changed": "Tidsprogrammet er ændret i mellemtiden eller kan ikke længere ændres. Der blev ikke sendt noget. Åbn det igen for at se de aktuelle koblingspunkter.",
+      "switch_program_not_confirmed": "Ændringen kunne ikke bekræftes. Den er muligvis allerede gemt. Åbn tidsprogrammet igen, og kontrollér dets koblingspunkter; de tidligere står ovenfor.",
+      "switch_program_rejected": "Varmeanlægget afviste tidsprogrammet. Der blev ikke ændret noget.",
+      "switch_program_unused": "Varmeanlægget bruger ikke dette tidsprogram i øjeblikket. Der blev ikke sendt noget.",
+      "switch_program_failed": "Tidsprogrammet kunne ikke ændres. Kontrollér forbindelsen, og åbn tidsprogrammet igen.",
       "controls_invalid": "Et input er ugyldigt, eller de viste værdier er ændret. Kontrollér dine indtastninger, eller indlæs værdierne igen. Der blev ikke skrevet noget.",
       "controls_changed": "En indstilling er ændret eller ikke længere tilgængelig. Tidligere bekræftede ændringer er stadig anvendt. Indlæs værdierne igen, før du prøver igen.",
       "controls_auth": "Godkendelsen er udløbet. Godkend integrationen igen. Tidligere bekræftede ændringer er stadig anvendt. Indlæs værdierne igen, før du prøver igen.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "Varmeanlægget returnerede en ny ferie, men dens indstillinger afviger fra din forespørgsel. Ønsket periode: {requested}. Returneret periode: {actual}. Åbn Administrer ferieperioder for at kontrollere og redigere denne post.",
       "holiday_update_adjusted": "Varmeanlægget returnerede indstillinger, der afviger fra din ønskede ændring. Ønsket periode: {requested}. Returneret periode: {actual}. Åbn Administrer ferieperioder for at kontrollere og redigere den aktuelle post.",
       "no_rrc_schedules": "Der findes intet aktuelt, understøttet RRC-ugeprogram.",
+      "no_switch_programs": "Der er ikke noget aktuelt tidsprogram for en varmekreds eller for det varme brugsvand, der kan ændres her.",
+      "switch_program_changed": "Tidsprogrammet er ændret i mellemtiden eller kan ikke længere ændres. Åbn det igen for at se de aktuelle koblingspunkter.",
+      "switch_program_saved": "Tidsprogrammet {program} blev gemt og bekræftet ved at læse det igen.\n\nTidligere koblingspunkter for de ændrede dage:\n\n{before}",
       "controls_not_loaded": "Styring er kun tilgængelig via cloudadgangen; den lokale adgang kan kun læse. Forbind en cloudadgang, eller vent, til den er indlæst.",
       "controls_auth_required": "Styring er ikke tilgængelig: cloudadgangen kræver et nyt login. Måleværdierne forbliver synlige.",
       "controls_cloud_stopped": "Styring er ikke tilgængelig: cloudadgangen er stoppet eller bliver genstartet. Måleværdierne forbliver synlige.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "Boostet kører. Dets temperatur og varighed kan kun ændres, mens det er slukket; de gælder så fra næste start. Intet blev ændret."
+    },
+    "switch_program_not_readable": {
+      "message": "Det valgte tidsprogram kan ikke læses lige nu. Der blev ikke sendt noget."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Fredag",
         "sa": "Lørdag",
         "su": "Søndag"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Redigér en dag",
+        "copy": "Kopiér en dag til andre dage",
+        "review": "Gennemse og gem ændringerne"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Tilføj et koblingspunkt",
+        "done": "Tilbage til ugen"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Altid opvarmning",
           "always_cooling": "Altid køling",
           "automatic": "Automatisk"
+        }
+      },
+      "active_switch_program": {
+        "name": "Aktivt tidsprogram",
+        "state": {
+          "a": "Program A",
+          "b": "Program B"
         }
       }
     },

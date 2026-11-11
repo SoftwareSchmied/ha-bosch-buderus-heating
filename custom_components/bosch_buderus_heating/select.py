@@ -36,6 +36,9 @@ from .resource_catalog import resource_name
 from .rrc_select import RrcProgramSelect
 from .rrc_select import descriptions as rrc_descriptions
 from .sensor import _semantic_key
+from .switch_program_select import SwitchProgramSelect
+from .switch_program_select import descriptions as switch_program_descriptions
+from .switch_program_selection import ACTIVE_SWITCH_PROGRAM_POLICY
 from .writes import (
     AUXILIARY_HEATER_OPERATION_MODE_POLICY,
     DHW_OPERATION_MODE_POLICY,
@@ -101,6 +104,14 @@ def _setup_entities(
             lambda resources, _context: rrc_descriptions(resources),
             RrcProgramSelect,
         )
+        # Z1: the active weekly program, only with every program readable.
+        track_control_entities(
+            entry,
+            coordinator,
+            async_add_entities,
+            switch_program_descriptions,
+            SwitchProgramSelect,
+        )
         rrc_platforms.track(Platform.SELECT, entry, coordinator, async_add_entities)
 
 
@@ -120,6 +131,8 @@ def build_select_descriptions(
             not assessment.eligible
             or not assessment.supports_select
             or not isinstance(policy, EnumWritePolicy)
+            # Z1: a select of its own, which also checks the programs.
+            or policy is ACTIVE_SWITCH_PROGRAM_POLICY
         ):
             continue
         options: tuple[str, ...]

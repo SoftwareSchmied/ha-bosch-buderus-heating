@@ -234,6 +234,7 @@
           "notifications": "Obavijesti",
           "holidays": "Upravljanje razdobljima odmora",
           "rrc_programs": "RRC vremenski programi grijanja",
+          "switch_programs": "Vremenski programi grijanja i tople vode",
           "controls": "Upravljanje uređajem",
           "connections": "Veze",
           "connection_add_cloud": "Povezivanje pristupa putem oblaka",
@@ -371,6 +372,64 @@
         "data": {
           "point": "Točka uklapanja"
         }
+      },
+      "switch_programs": {
+        "title": "Odabir vremenskog programa",
+        "description": "Odaberite tjedni program kruga grijanja ili tople vode. Prikazuju se samo programi koje sustav grijanja javlja kao promjenjive.",
+        "data": {
+          "program": "Vremenski program"
+        }
+      },
+      "switch_program_week": {
+        "title": "Promjena vremenskog programa",
+        "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.",
+        "data": {
+          "action": "Sljedeći korak",
+          "day": "Dan u tjednu"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Promjena vremenskog programa",
+        "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.\n\nOvaj program nije aktivni program kruga grijanja. Promjene djeluju kada bude odabran.",
+        "data": {
+          "action": "Sljedeći korak",
+          "day": "Dan u tjednu"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Promjena vremenskog programa",
+        "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.\n\nProgram tople vode vrijedi samo dok je način rada tople vode postavljen na Automatski.",
+        "data": {
+          "action": "Sljedeći korak",
+          "day": "Dan u tjednu"
+        }
+      },
+      "switch_program_day": {
+        "title": "Odabir točke uklapanja",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nOdaberite točku uklapanja da biste je promijenili ili izbrisali, dodajte novu ili se vratite na tjedan.",
+        "data": {
+          "point": "Točka uklapanja"
+        }
+      },
+      "switch_program_point": {
+        "title": "Uređivanje točke uklapanja",
+        "description": "**{program}** – **{day}**\n\nOdaberite vrijeme u koracima od {raster} minuta i razinu. Razina vrijedi od tog vremena do sljedeće točke uklapanja.",
+        "data": {
+          "time": "Vrijeme",
+          "level": "Razina",
+          "delete": "Izbriši ovu točku uklapanja"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Kopiranje dana",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nOdaberite dane koji dobivaju iste točke uklapanja. Njihove dosadašnje točke uklapanja bit će zamijenjene.",
+        "data": {
+          "days": "Dani"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Spremanje vremenskog programa",
+        "description": "**{program}**\n\n**Prije:**\n\n{before}\n\n**Poslije:**\n\n{after}\n\nCijeli tjedan šalje se jednom i zatim ponovno čita. Zabilježite dosadašnje točke uklapanja za slučaj da ih želite vratiti."
       },
       "controls": {
         "title": "Odabir uređaja",
@@ -611,6 +670,20 @@
       "rrc_changed": "Vremenski program se promijenio ili se više ne može uređivati. Ponovno ga otvorite kako biste provjerili trenutne postavke.",
       "rrc_not_confirmed": "Promjena se nije mogla potvrditi. Možda je već spremljena. Ponovno otvorite vremenski program i provjerite njegove trenutne postavke.",
       "rrc_failed": "Vremenski program grijanja nije se mogao promijeniti. Provjerite vezu i ponovno otvorite vremenski program.",
+      "switch_program_time": "Odaberite vrijeme u koracima od {raster} minuta, bez sekundi.",
+      "switch_program_level": "Odaberite jednu od ponuđenih razina.",
+      "switch_program_duplicate_time": "Ovaj dan već ima točku uklapanja u to vrijeme.",
+      "switch_program_too_many_per_day": "Ovaj dan već ima najveći broj točaka uklapanja koji sustav grijanja dopušta ({per_day}).",
+      "switch_program_too_many_in_all": "Tjedan bi imao više točaka uklapanja nego što sustav grijanja dopušta ({total}).",
+      "switch_program_empty_week": "Tjedan treba barem jednu točku uklapanja.",
+      "switch_program_day_required": "Odaberite dan.",
+      "switch_program_no_changes": "Još ništa nije promijenjeno.",
+      "switch_program_invalid": "Promjena ne odgovara ograničenjima vremenskog programa.",
+      "switch_program_changed": "Vremenski program se u međuvremenu promijenio ili se više ne može mijenjati. Ništa nije poslano. Ponovno ga otvorite da biste vidjeli trenutne točke uklapanja.",
+      "switch_program_not_confirmed": "Promjena se nije mogla potvrditi. Možda je već spremljena. Ponovno otvorite vremenski program i provjerite njegove točke uklapanja; dosadašnje su navedene gore.",
+      "switch_program_rejected": "Sustav grijanja odbio je vremenski program. Ništa nije promijenjeno.",
+      "switch_program_unused": "Sustav grijanja trenutno ne koristi ovaj vremenski program. Ništa nije poslano.",
+      "switch_program_failed": "Vremenski program nije se mogao promijeniti. Provjerite vezu i ponovno otvorite vremenski program.",
       "controls_invalid": "Unos nije valjan ili su se prikazane vrijednosti promijenile. Provjerite unose ili ponovno učitajte vrijednosti. Ništa nije zapisano.",
       "controls_changed": "Postavka se promijenila ili više nije dostupna. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
       "controls_auth": "Autentifikacija je istekla. Ponovno autentificirajte integraciju. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
@@ -696,6 +769,9 @@
       "holiday_create_adjusted": "Sustav grijanja vratio je novi odmor, ali se njegove postavke razlikuju od vašeg zahtjeva. Traženo razdoblje: {requested}. Vraćeno razdoblje: {actual}. Otvorite Upravljanje razdobljima odmora kako biste provjerili i uredili ovaj unos.",
       "holiday_update_adjusted": "Sustav grijanja vratio je postavke koje se razlikuju od vaše tražene promjene. Traženo razdoblje: {requested}. Vraćeno razdoblje: {actual}. Otvorite Upravljanje razdobljima odmora kako biste provjerili i uredili trenutni unos.",
       "no_rrc_schedules": "Nije dostupan nijedan aktualni, podržani RRC tjedni vremenski program.",
+      "no_switch_programs": "Ovdje se ne može promijeniti nijedan aktualni vremenski program kruga grijanja ni tople vode.",
+      "switch_program_changed": "Vremenski program se u međuvremenu promijenio ili se više ne može mijenjati. Ponovno ga otvorite da biste vidjeli trenutne točke uklapanja.",
+      "switch_program_saved": "Vremenski program {program} spremljen je i potvrđen ponovnim čitanjem.\n\nDosadašnje točke uklapanja promijenjenih dana:\n\n{before}",
       "controls_not_loaded": "Upravljanje je dostupno samo putem pristupa putem oblaka; lokalni pristup samo čita. Povežite pristup putem oblaka ili pričekajte da se učita.",
       "controls_auth_required": "Upravljanje nije dostupno: pristup putem oblaka treba novu prijavu. Mjerne vrijednosti ostaju vidljive.",
       "controls_cloud_stopped": "Upravljanje nije dostupno: pristup putem oblaka je zaustavljen ili se ponovno pokreće. Mjerne vrijednosti ostaju vidljive.",
@@ -1120,6 +1196,9 @@
     },
     "rrc_boost_running": {
       "message": "Funkcija Boost je aktivna. Njezina temperatura i trajanje mogu se promijeniti samo dok je isključena; tada vrijede od sljedećeg pokretanja. Ništa nije promijenjeno."
+    },
+    "switch_program_not_readable": {
+      "message": "Odabrani vremenski program trenutno se ne može pročitati. Ništa nije poslano."
     }
   },
   "selector": {
@@ -1188,6 +1267,19 @@
         "fr": "Petak",
         "sa": "Subota",
         "su": "Nedjelja"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Uredi dan",
+        "copy": "Kopiraj dan na druge dane",
+        "review": "Provjeri i spremi promjene"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Dodaj točku uklapanja",
+        "done": "Natrag na tjedan"
       }
     },
     "local_method": {
@@ -1414,6 +1506,13 @@
           "always_heating": "Uvijek grijanje",
           "always_cooling": "Uvijek hlađenje",
           "automatic": "Automatski"
+        }
+      },
+      "active_switch_program": {
+        "name": "Aktivni vremenski program",
+        "state": {
+          "a": "Program A",
+          "b": "Program B"
         }
       }
     },

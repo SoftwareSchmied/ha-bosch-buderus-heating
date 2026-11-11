@@ -43,6 +43,7 @@ from .rrc_contract_circuit import (
     limit_role,
     weather_control_off,
 )
+from .switch_program_selection import is_active_program_path
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
 from .writes import (
     ContractRejected,
@@ -143,7 +144,9 @@ def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resour
         ):
             continue
         resource = fresh_resource(coordinator, path)
-        if resource is None:
+        if resource is None or is_active_program_path(path):
+            # Z1: the active program has its own select, which also checks
+            # that the program it names can be read.
             continue
         assessment = assess_control(resource, context)
         if (
