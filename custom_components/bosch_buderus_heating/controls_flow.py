@@ -217,17 +217,27 @@ def _refusal_error(err: WriteValidationError) -> str | None:
 
 def _guards(
     coordinator: BoschBuderusDataUpdateCoordinator, path: str
-) -> tuple[Resource, ...]:
+) -> tuple[Resource, ...] | None:
     """S5: the readings a heating circuit setting is checked against (the
     limits it is ordered against, the control strategy), read again with it
-    before the write; a change there sends nothing."""
+    before the write; a change there sends nothing.
+
+    VER-05: the control strategy counts only with a current reading, as on
+    the number entity. A limit the plant has but without a current reading
+    gives ``None``: the order cannot be checked, so nothing is sent (the
+    entity refuses it the same way) instead of checking without that limit.
+    """
     if not context_of(coordinator).rrc_plant:
         return ()
-    return tuple(
-        resource
-        for item in guard_paths(path)
-        if (resource := fresh_resource(coordinator, item)) is not None
-    )
+    snapshots = coordinator.data or {}
+    guards: list[Resource] = []
+    for item in guard_paths(path):
+        resource = fresh_resource(coordinator, item)
+        if resource is not None:
+            guards.append(resource)
+        elif control_path(path) != item and item in snapshots:
+            return None
+    return tuple(guards)
 
 
 def _draft_readings(
@@ -479,12 +489,19 @@ class ControlsOptionsFlow(OptionsFlow):
                             continue
                         policy = assess_control(before, context_of(coordinator)).policy
                         assert isinstance(policy, (EnumWritePolicy, NumberWritePolicy))
+                        guards = _guards(coordinator, path)
+                        if guards is None:
+                            # A limit it is ordered against has no current
+                            # reading: nothing is sent.
+                            errors["base"] = "controls_changed"
+                            stopped = path
+                            break
                         try:
                             confirmed = await coordinator.async_write_control(
                                 path,
                                 value,
                                 policy,
-                                expected=(before, *_guards(coordinator, path)),
+                                expected=(before, *guards),
                             )
                         except AuthenticationError:
                             errors["base"] = "controls_auth"

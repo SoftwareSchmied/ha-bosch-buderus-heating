@@ -1343,6 +1343,41 @@ async def test_dialog_refuses_a_draft_out_of_order_unsent(
         await _teardown(hass, entry, stack)
 
 
+async def test_dialog_refuses_a_limit_without_a_current_other_limit(
+    hass: HomeAssistant,
+) -> None:
+    """VER-05 in the dialog: without a current reading of a limit it is
+    ordered against, a heating curve point is refused as changed and nothing
+    is sent, as on the number entity; a stale control strategy alone still
+    lets it through."""
+    cloud = CircuitCloud(plant())
+    entry, coordinator, _sleeps, stack, _clock = await _setup(hass, cloud)
+    control = f"{HC1}/control"
+    try:
+        flow, _ = await _dialog(hass, entry)
+        snapshots = dict(coordinator.data)
+        snapshots[CURVE_MAX] = replace(snapshots[CURVE_MAX], freshness=Freshness.STALE)
+        coordinator.async_set_updated_data(snapshots)
+        refused = await flow.async_step_operate(
+            {"controls": {"changes": {CURVE_MIN: 30}}}
+        )
+        assert refused["errors"] == {"base": "controls_changed"}
+        assert cloud.written() == []
+
+        snapshots = dict(coordinator.data)
+        snapshots[CURVE_MAX] = replace(snapshots[CURVE_MAX], freshness=Freshness.FRESH)
+        snapshots[control] = replace(snapshots[control], freshness=Freshness.STALE)
+        coordinator.async_set_updated_data(snapshots)
+        flow, _ = await _dialog(hass, entry)
+        written = await flow.async_step_operate(
+            {"controls": {"changes": {CURVE_MIN: 30}}}
+        )
+        assert not written["errors"]
+        assert cloud.written("PUT") == [("PUT", CURVE_MIN, 30.0)]
+    finally:
+        await _teardown(hass, entry, stack)
+
+
 async def test_dialog_offers_weather_settings_only_with_weather_control(
     hass: HomeAssistant,
 ) -> None:
