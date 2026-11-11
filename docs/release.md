@@ -15,7 +15,7 @@ Automated checks on the release state (2026-11-11, run locally):
 | Check | Environment | Result |
 |---|---|---|
 | Full suite with coverage, current version | Home Assistant 2026.11.0, local | 9488 passed; coverage 95.89 % |
-| Full suite | Home Assistant 2026.10.4, local | 9488 passed; coverage 95.89 % |
+| Full suite | Home Assistant 2026.10.4, local | 9488 passed; coverage 95.90 % |
 | Full suite, compatibility version | Home Assistant 2026.9.2, same test packages as the workflow, local | 9488 passed; coverage 95.90 % |
 | Full suite, minimum version | Home Assistant 2026.5.4, local | 9486 passed, 2 skipped (version-dependent); coverage 95.89 % |
 | Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 200 files (2026.10.4 and 2026.11.0); Ruff clean; 554 files formatted |
