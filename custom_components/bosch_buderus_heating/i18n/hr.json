@@ -10,7 +10,9 @@
       "discard": "Odbaci",
       "reload": "Ponovno učitaj vrijednosti",
       "unsaved": "Nespremljene promjene: {count}",
+      "unsavedOne": "Nespremljene promjene: {count}",
       "saved": "Promjene su potvrđene.",
+      "unchanged": "Nema promjena, ništa nije zapisano.",
       "empty": "Trenutno nije dostupno nikakvo upravljanje.",
       "pending": "Promjene se zapisuju tek kada odaberete Primijeni.",
       "reopen": "Zatvorite i ponovno otvorite dijalog.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Datum",
       "time": "Vrijeme",
-      "deleteFailed": "Potvrda brisanja nije se mogla otvoriti. Ponovno učitajte stranicu i pokušajte ponovno."
+      "deleteFailed": "Potvrda brisanja nije se mogla otvoriti. Ponovno učitajte stranicu i pokušajte ponovno.",
+      "reopen": "Zatvorite i ponovno otvorite dijalog."
     }
   },
   "texts": {

@@ -508,7 +508,9 @@ class ControlsOptionsFlow(OptionsFlow):
                     if not errors:
                         self._control_displayed = controls(coordinator)
                         draft = {}
-                        status = "saved"
+                        # D53: "confirmed" only after a write; an empty or
+                        # unchanged draft wrote nothing.
+                        status = "saved" if written else "unchanged"
         rows = await self._control_rows(
             self._control_displayed,
             current=controls(coordinator),

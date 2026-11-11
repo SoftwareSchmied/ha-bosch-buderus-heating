@@ -10,7 +10,9 @@
       "discard": "Zavrzi",
       "reload": "Znova naloži vrednosti",
       "unsaved": "Neshranjene spremembe: {count}",
+      "unsavedOne": "Neshranjene spremembe: {count}",
       "saved": "Spremembe so potrjene.",
+      "unchanged": "Ni sprememb, nič ni bilo zapisano.",
       "empty": "Trenutno ni na voljo nobenega upravljanja.",
       "pending": "Spremembe se zapišejo šele, ko izberete Uporabi.",
       "reopen": "Zaprite pogovorni okvir in ga znova odprite.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Datum",
       "time": "Čas",
-      "deleteFailed": "Potrditve brisanja ni bilo mogoče odpreti. Znova naložite stran in poskusite znova."
+      "deleteFailed": "Potrditve brisanja ni bilo mogoče odpreti. Znova naložite stran in poskusite znova.",
+      "reopen": "Zaprite pogovorni okvir in ga znova odprite."
     }
   },
   "texts": {

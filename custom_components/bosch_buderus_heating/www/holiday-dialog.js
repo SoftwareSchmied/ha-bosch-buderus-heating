@@ -172,8 +172,13 @@ class BoschBuderusHolidayDelete extends HTMLElement {
         ...form.data, holiday_delete: true,
       });
       if (this.isConnected && flow.step.flow_id === flowId) fire("flow-update", { step });
-    } catch {
-      message.textContent = error;
+    } catch (err) {
+      // D53: a flow HA no longer knows (404, e.g. after a restart) needs a
+      // new dialog, not another try.
+      message.textContent =
+        err?.status_code === 404 || err?.status === 404
+          ? holidayText(this.hass, this._config, "reopen")
+          : error;
     } finally {
       this._busy = false;
       this.disabled = this._disabled;

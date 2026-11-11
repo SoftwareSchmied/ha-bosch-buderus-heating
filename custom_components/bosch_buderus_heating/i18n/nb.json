@@ -10,7 +10,9 @@
       "discard": "Forkast",
       "reload": "Last verdier på nytt",
       "unsaved": "{count} ulagrede endringer",
+      "unsavedOne": "{count} ulagret endring",
       "saved": "Endringene er bekreftet.",
+      "unchanged": "Ingen endringer, ingenting ble skrevet.",
       "empty": "Ingen kontroller er tilgjengelige akkurat nå.",
       "pending": "Endringer skrives først når du velger Bruk.",
       "reopen": "Lukk og åpne dialogen på nytt.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Dato",
       "time": "Tidspunkt",
-      "deleteFailed": "Slettebekreftelsen kunne ikke åpnes. Last siden på nytt og prøv igjen."
+      "deleteFailed": "Slettebekreftelsen kunne ikke åpnes. Last siden på nytt og prøv igjen.",
+      "reopen": "Lukk og åpne dialogen på nytt."
     }
   },
   "texts": {

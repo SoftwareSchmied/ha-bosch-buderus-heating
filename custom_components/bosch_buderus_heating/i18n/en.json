@@ -10,7 +10,9 @@
       "discard": "Discard",
       "reload": "Reload values",
       "unsaved": "{count} unsaved changes",
+      "unsavedOne": "{count} unsaved change",
       "saved": "Changes confirmed.",
+      "unchanged": "No changes, nothing was written.",
       "empty": "No controls are currently available.",
       "pending": "Changes are written only when you select Apply.",
       "reopen": "Please close and reopen the dialog.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Date",
       "time": "Time",
-      "deleteFailed": "The deletion confirmation could not be opened. Please reload the page and try again."
+      "deleteFailed": "The deletion confirmation could not be opened. Please reload the page and try again.",
+      "reopen": "Please close and reopen the dialog."
     }
   }
 }

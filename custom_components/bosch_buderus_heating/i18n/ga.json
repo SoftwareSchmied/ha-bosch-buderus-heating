@@ -10,7 +10,9 @@
       "discard": "Caith amach",
       "reload": "Athlódáil luachanna",
       "unsaved": "{count} athrú gan sábháil",
+      "unsavedOne": "{count} athrú gan sábháil",
       "saved": "Deimhníodh na hathruithe.",
+      "unchanged": "Gan athruithe, níor scríobhadh aon rud.",
       "empty": "Níl aon rialuithe ar fáil faoi láthair.",
       "pending": "Ní scríobhtar athruithe ach nuair a roghnaíonn tú Cuir i bhfeidhm.",
       "reopen": "Dún an dialóg agus oscail arís í.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Dáta",
       "time": "Am",
-      "deleteFailed": "Níorbh fhéidir an deimhniú scriosta a oscailt. Athlódáil an leathanach agus déan iarracht arís."
+      "deleteFailed": "Níorbh fhéidir an deimhniú scriosta a oscailt. Athlódáil an leathanach agus déan iarracht arís.",
+      "reopen": "Dún an dialóg agus oscail arís í."
     }
   },
   "texts": {

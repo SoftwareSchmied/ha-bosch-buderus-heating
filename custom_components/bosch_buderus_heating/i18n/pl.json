@@ -10,7 +10,9 @@
       "discard": "Odrzuć",
       "reload": "Wczytaj wartości ponownie",
       "unsaved": "Niezapisane zmiany: {count}",
+      "unsavedOne": "Niezapisane zmiany: {count}",
       "saved": "Zmiany zostały potwierdzone.",
+      "unchanged": "Brak zmian, nic nie zostało zapisane.",
       "empty": "Obecnie brak dostępnych elementów sterowania.",
       "pending": "Zmiany są zapisywane dopiero po wybraniu Zastosuj.",
       "reopen": "Zamknij okno i otwórz je ponownie.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Data",
       "time": "Godzina",
-      "deleteFailed": "Nie udało się otworzyć potwierdzenia usunięcia. Odśwież stronę i spróbuj ponownie."
+      "deleteFailed": "Nie udało się otworzyć potwierdzenia usunięcia. Odśwież stronę i spróbuj ponownie.",
+      "reopen": "Zamknij okno i otwórz je ponownie."
     }
   },
   "texts": {

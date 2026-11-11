@@ -21,6 +21,17 @@ const switchValues = (options) => {
 
 // The server sends the texts of every language that has a data file
 // (i18n/<code>.json); the profile language picks one, else English.
+// D53: the singular text for counts the language calls "one" (1 in
+// English, also 0 in French); languages without it repeat the plural text.
+const pluralOne = (language, count) => {
+  try {
+    return new Intl.PluralRules(language).select(count) === "one";
+  } catch {
+    return count === 1;
+  }
+};
+// HA answers 404 for a flow it no longer knows.
+const flowGone = (err) => err?.status_code === 404 || err?.status === 404;
 const controlsLanguage = (language, texts, aliases) => {
   const tag = String(language || "")
     .trim()
@@ -404,12 +415,16 @@ class BoschBuderusControls extends HTMLElement {
   _updateStatus() {
     const count = Object.keys(this._changes).length;
     this.shadowRoot.querySelector(".status").textContent = count
-      ? this._text("unsaved", { count })
+      ? pluralOne(this._language, count)
+        ? this._text("unsavedOne", { count })
+        : this._text("unsaved", { count })
       : this._config?.status === "saved"
         ? this._text("saved")
-        : this._config?.status === "empty"
-          ? this._text("empty")
-          : this._text("pending");
+        : this._config?.status === "unchanged"
+          ? this._text("unchanged")
+          : this._config?.status === "empty"
+            ? this._text("empty")
+            : this._text("pending");
   }
   _setDisabled() {
     for (const element of this.shadowRoot.querySelectorAll(
@@ -448,8 +463,12 @@ class BoschBuderusControls extends HTMLElement {
         this._changes = {};
         fire("flow-update", { step });
       }
-    } catch {
-      error.textContent = this._text("reloadFailed");
+    } catch (err) {
+      // A flow that no longer exists (after a restart of Home Assistant) is
+      // not helped by another try: only closing and reopening helps.
+      error.textContent = flowGone(err)
+        ? this._text("reopen")
+        : this._text("reloadFailed");
     } finally {
       this._busy = false;
       this._setDisabled();
