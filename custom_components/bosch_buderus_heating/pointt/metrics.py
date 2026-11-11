@@ -10,7 +10,8 @@ from time import monotonic
 
 ROLLING_MINUTES = 60
 MAX_RECENT_REQUESTS = 250
-_LATENCY_BOUNDS_MS = (100, 250, 500, 1000, 2000, 5000, 10000)
+# Up to the 30 s request timeout, so slow phases keep their size (D16).
+_LATENCY_BOUNDS_MS = (100, 250, 500, 1000, 2000, 5000, 10000, 20000, 30000)
 
 
 @dataclass(slots=True)
@@ -430,6 +431,9 @@ class RequestMetrics:
             responses_by_status.update(bucket.responses_by_status)
             outcomes.update(bucket.outcomes)
         latest_bucket = max(buckets, key=lambda item: item.minute) if buckets else None
+        maximum = max(
+            (bucket.maximum_successful_duration_ms for bucket in buckets), default=0.0
+        )
         return {
             "requests_total": requests,
             "requests_successful": successful,
@@ -454,15 +458,10 @@ class RequestMetrics:
                 duration_total / samples if samples else None
             ),
             "p95_successful_response_time_ms": _rounded(
-                _percentile_from_histogram(histogram, samples, 0.95)
+                _percentile_from_histogram(histogram, samples, 0.95, maximum)
             ),
             "maximum_successful_response_time_ms": _rounded(
-                max(
-                    (bucket.maximum_successful_duration_ms for bucket in buckets),
-                    default=0.0,
-                )
-                if samples
-                else None
+                maximum if samples else None
             ),
             "latest_response_time_ms": _rounded(
                 latest_bucket.latest_duration_ms if latest_bucket is not None else None
@@ -530,8 +529,14 @@ def _latency_bucket(duration_ms: float) -> int:
 
 
 def _percentile_from_histogram(
-    histogram: Counter[int], samples: int, percentile: float
+    histogram: Counter[int], samples: int, percentile: float, maximum: float
 ) -> float | None:
+    """Upper bound of the percentile's bucket, never above the measured maximum.
+
+    A bucket bound is only an upper estimate: a p95 of 5000 ms beside a
+    maximum of 3054 ms overstates the slowest answer (D16). Beyond the last
+    bound the maximum itself is the honest value.
+    """
     if not samples:
         return None
     target = ceil(samples * percentile)
@@ -539,7 +544,9 @@ def _percentile_from_histogram(
     for bound in (*_LATENCY_BOUNDS_MS, _LATENCY_BOUNDS_MS[-1] + 1):
         seen += histogram[bound]
         if seen >= target:
-            return float(bound) if bound <= _LATENCY_BOUNDS_MS[-1] else 10000.0
+            if bound > _LATENCY_BOUNDS_MS[-1]:
+                return maximum
+            return min(float(bound), maximum)
     return None
 
 
