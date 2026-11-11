@@ -524,18 +524,28 @@ async def test_writes_need_a_successful_cycle(hass: HomeAssistant) -> None:
         await teardown(hass, entry, stack)
 
 
-async def test_room_temperature_outage_makes_the_climate_unavailable(
+async def test_room_temperature_outage_keeps_the_climate(
     hass: HomeAssistant,
 ) -> None:
+    """ZONE-07: only the mode makes the climate available; an invalid room
+    temperature is unknown."""
     cloud = zone_cloud()
     entry, coordinator, _sleeps, stack, clock = await setup(hass, cloud)
     try:
         actual = path(1, "temperatureActual")
         cloud.tree[actual] = replace(cloud.tree[actual], value=99.0)  # off range
         await refresh(hass, coordinator, clock, 61)
+        state = hass.states.get(climate(hass, 1))
+        assert state.state == "heat"
+        assert state.attributes["current_temperature"] is None
+        assert state.attributes["temperature"] == 21.0
+        mode = path(1, MODE)
+        cloud.tree[mode] = replace(cloud.tree[mode], value="eco")  # no mode
+        await refresh(hass, coordinator, clock, 301)
         assert hass.states.get(climate(hass, 1)).state == "unavailable"
+        cloud.tree[mode] = replace(cloud.tree[mode], value="manual")
         cloud.tree[actual] = replace(cloud.tree[actual], value=20.0)
-        await refresh(hass, coordinator, clock, 61)
+        await refresh(hass, coordinator, clock, 301)
         state = hass.states.get(climate(hass, 1))
         assert state.state == "heat"
         assert state.attributes["current_temperature"] == 20.0

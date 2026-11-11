@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Denne zonekommando er ikke tilgængelig i øjeblikket. Kontrollér, at zonen rapporterer aktuelle værdier, og at temperaturen ligger inden for det tilbudte område; et midlertidigt sætpunkt kræver driftsformen tidsprogram."
     },
+    "rrc_zone_locked_away": {
+      "message": "Fraværstilstand er aktiv. Slå den fra for at ændre sætpunktet for denne zone; intet blev sendt."
+    },
+    "rrc_zone_standby": {
+      "message": "Denne zone er i standby på rumregulatoren og kan ikke styres lige nu; intet blev sendt."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Rumregulatoren melder en zone- eller kommunikationsfejl for denne zone, så den kan ikke styres lige nu; intet blev sendt."
+    },
     "rrc_device_setting_unused": {
       "message": "Radioenheden bruger ikke denne indstilling i øjeblikket, så den blev ikke ændret."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Kommunikationsfejl",
               "comm_warning": "Kommunikationsadvarsel",
               "low_battery": "Lavt batteriniveau"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Fraværstilstand",
+              "standby": "Standby",
+              "unreachable": "Zone- eller kommunikationsfejl"
             }
           }
         }

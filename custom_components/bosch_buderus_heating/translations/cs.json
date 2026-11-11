@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Tento příkaz zóny momentálně není k dispozici. Zkontrolujte, zda zóna hlásí aktuální hodnoty a zda teplota leží v nabízeném rozsahu; dočasná požadovaná hodnota vyžaduje režim časového programu."
     },
+    "rrc_zone_locked_away": {
+      "message": "Režim nepřítomnosti je aktivní. Chcete-li změnit požadovanou hodnotu této zóny, vypněte jej; nic nebylo odesláno."
+    },
+    "rrc_zone_standby": {
+      "message": "Tato zóna je na prostorovém regulátoru v pohotovostním režimu a momentálně ji nelze ovládat; nic nebylo odesláno."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Prostorový regulátor hlásí pro tuto zónu chybu zóny nebo chybu komunikace, proto ji momentálně nelze ovládat; nic nebylo odesláno."
+    },
     "rrc_device_setting_unused": {
       "message": "Rádiové zařízení toto nastavení momentálně nepoužívá, proto nebylo změněno."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Chyba komunikace",
               "comm_warning": "Varování komunikace",
               "low_battery": "Slabá baterie"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Režim nepřítomnosti",
+              "standby": "Pohotovostní režim",
+              "unreachable": "Chyba zóny nebo komunikace"
             }
           }
         }

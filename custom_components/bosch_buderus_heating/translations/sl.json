@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Ta ukaz cone trenutno ni na voljo. Preverite, ali cona sporoča trenutne vrednosti in ali je temperatura znotraj ponujenega razpona; začasna nastavljena vrednost zahteva način Časovni program."
     },
+    "rrc_zone_locked_away": {
+      "message": "Način odsotnosti je vklopljen. Izklopite ga, če želite spremeniti nastavljeno vrednost te cone; nič ni bilo poslano."
+    },
+    "rrc_zone_standby": {
+      "message": "Ta cona je na sobnem regulatorju v pripravljenosti in je trenutno ni mogoče upravljati; nič ni bilo poslano."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Sobni regulator za to cono sporoča napako cone ali napako komunikacije, zato je trenutno ni mogoče upravljati; nič ni bilo poslano."
+    },
     "rrc_device_setting_unused": {
       "message": "Radijska naprava te nastavitve trenutno ne uporablja, zato ni bila spremenjena."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Napaka komunikacije",
               "comm_warning": "Opozorilo o komunikaciji",
               "low_battery": "Šibka baterija"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Način odsotnosti",
+              "standby": "Pripravljenost",
+              "unreachable": "Napaka cone ali komunikacije"
             }
           }
         }

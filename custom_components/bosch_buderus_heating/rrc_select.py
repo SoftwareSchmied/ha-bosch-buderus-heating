@@ -26,6 +26,9 @@ from .pointt import (
     WriteValidationError,
 )
 from .rrc_programs import program_names, selection_options
+from .rrc_write import RrcWritePending
+from .write_policies import ContractRejected, RrcWriteNotConfirmed
+from .writes import WriteBusy
 
 _PROGRAM_NAME = re.compile(rf"^/programs/pg({rrc.RRC_ID})/name$")
 
@@ -146,12 +149,24 @@ class RrcProgramSelect(
             await self.coordinator.async_select_rrc_program(
                 self.entity_description.resource_path, int(option)
             )
+        except (ContractRejected, RrcWritePending) as err:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key=err.translation_key
+            ) from err
+        except WriteValidationError as err:
+            # ZONE-13: a refusal before sending is a validation error.
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="write_validation_failed"
+            ) from err
         except PointTError as err:
             key = (
-                "write_validation_failed"
-                if isinstance(err, WriteValidationError)
+                # S7: sent, the controller may still apply it.
+                err.translation_key
+                if isinstance(err, RrcWriteNotConfirmed)
                 else "write_not_confirmed"
                 if isinstance(err, WriteNotConfirmed)
+                else "write_busy"
+                if isinstance(err, WriteBusy)
                 else "write_rate_limited"
                 if isinstance(err, RateLimited)
                 else "write_authentication_failed"

@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Questo comando di zona al momento non è disponibile. Controlla che la zona fornisca valori aggiornati e che la temperatura rientri nell'intervallo offerto; un setpoint temporaneo richiede la modalità programma orario."
     },
+    "rrc_zone_locked_away": {
+      "message": "La modalità fuori casa è attiva. Disattivala per modificare il setpoint di questa zona; non è stato inviato nulla."
+    },
+    "rrc_zone_standby": {
+      "message": "Questa zona è in standby sul regolatore ambiente e al momento non può essere comandata; non è stato inviato nulla."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Il regolatore ambiente segnala un errore di zona o di comunicazione per questa zona, quindi al momento non può essere comandata; non è stato inviato nulla."
+    },
     "rrc_device_setting_unused": {
       "message": "Il dispositivo radio al momento non utilizza questa impostazione, quindi non è stata modificata."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Errore di comunicazione",
               "comm_warning": "Avviso di comunicazione",
               "low_battery": "Batteria scarica"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Modalità fuori casa",
+              "standby": "Standby",
+              "unreachable": "Errore di zona o di comunicazione"
             }
           }
         }

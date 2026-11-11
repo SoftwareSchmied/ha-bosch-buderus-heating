@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Det här zonkommandot är inte tillgängligt just nu. Kontrollera att zonen rapporterar aktuella värden och att temperaturen ligger inom det erbjudna området; ett tillfälligt börvärde kräver driftläget tidsprogram."
     },
+    "rrc_zone_locked_away": {
+      "message": "Bortaläget är aktivt. Stäng av det för att ändra börvärdet för den här zonen; inget skickades."
+    },
+    "rrc_zone_standby": {
+      "message": "Den här zonen är i standby på rumsregulatorn och kan inte styras just nu; inget skickades."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Rumsregulatorn rapporterar ett zon- eller kommunikationsfel för den här zonen, så den kan inte styras just nu; inget skickades."
+    },
     "rrc_device_setting_unused": {
       "message": "Radioenheten använder inte den här inställningen just nu, så den ändrades inte."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Kommunikationsfel",
               "comm_warning": "Kommunikationsvarning",
               "low_battery": "Låg batterinivå"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Bortaläge",
+              "standby": "Standby",
+              "unreachable": "Zon- eller kommunikationsfel"
             }
           }
         }

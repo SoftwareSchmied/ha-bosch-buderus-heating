@@ -10,7 +10,8 @@ platform listed in ``TRACKERS`` once per coordinator; see
 - button: "clear temporary setpoint" per zone with a temporary setpoint;
 - sensor: next setpoint, minutes to it, zone status, valve opening and the
   optimum start (CT-C06, CT-G07);
-- binary sensor: window open.
+- binary sensor: window open, from the zone list's ``functionIcons`` and,
+  where the list does not say, the zone's open window status (ZONE-04).
 """
 
 from __future__ import annotations
@@ -49,7 +50,12 @@ from .device import device_info_for_resource, grouped_entity_name
 from .i18n import localize
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
-from .rrc_climate import RrcZoneClimate, zone_reading
+from .rrc_climate import (
+    RrcZoneClimate,
+    away_guard,
+    refuse_locked,
+    zone_reading,
+)
 from .rrc_platforms import Tracker
 from .writes import ControlContext, context_of, number_policy_for_resource
 
@@ -207,16 +213,53 @@ class RrcZoneSensor(_ZoneLeafEntity, SensorEntity):
         return unit if isinstance(unit, str) and 0 < len(unit) <= 8 else None
 
 
-class RrcWindowOpenSensor(_ZoneLeafEntity, BinarySensorEntity):
-    """On while the zone reports an open window; other values are unknown."""
+class RrcWindowOpenSensor(
+    CoordinatorEntity[BoschBuderusDataUpdateCoordinator], BinarySensorEntity
+):
+    """ZONE-04: on while the zone list shows an open window for the zone.
 
+    Where the list does not say, the zone's open window status counts
+    (``open``/``closed``, expected values); otherwise it is unknown. Its
+    unique ID stays the one of the status leaf.
+    """
+
+    _attr_has_entity_name = True
     _attr_device_class = BinarySensorDeviceClass.WINDOW
     _attr_translation_key = "rrc_window_open"
 
+    def __init__(
+        self, coordinator: BoschBuderusDataUpdateCoordinator, root: str
+    ) -> None:
+        super().__init__(coordinator)
+        self.root = root
+        # O51: the paths this entity reads, for the entity usage of polling.
+        self.resource_path = f"{root}/{Z.WINDOW_STATUS}"
+        self.extra_resource_paths = (Z.ZONE_LIST,)
+        self._attr_unique_id = (
+            f"{coordinator.gateway.gateway_id}:{_key(self.resource_path)}"
+        )
+        self._attr_name = _leaf_name(coordinator, self.resource_path, Z.WINDOW_STATUS)
+
+    def _icon(self) -> str | None:
+        return Z.function_icon(zone_reading(self.coordinator, Z.ZONE_LIST), self.root)
+
+    def _status(self) -> Resource | None:
+        resource = zone_reading(self.coordinator, self.resource_path)
+        return resource if resource is not None and rrc.detail_shape(resource) else None
+
+    @property
+    def available(self) -> bool:
+        return self._icon() is not None or self._status() is not None
+
     @property
     def is_on(self) -> bool | None:
-        value = self._value
-        return value if isinstance(value, bool) else None
+        status = self._status()
+        value = rrc.detail_value(status) if status is not None else None
+        return Z.window_open(self._icon(), value if isinstance(value, bool) else None)
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return device_info_for_resource(self.coordinator, self.root)
 
 
 class RrcOverrideClearButton(
@@ -238,19 +281,26 @@ class RrcOverrideClearButton(
         super().__init__(coordinator)
         self.root = root
         self.resource_path = f"{root}/{Z.OVERRIDE_LEAF}"
-        self.extra_resource_paths = (f"{root}/userMode",)
+        self.extra_resource_paths = (
+            f"{root}/userMode",
+            f"{root}/{Z.STATUS}",
+            Z.ZONE_LIST,
+            Z.AWAY_ENABLED,
+        )
         self._attr_unique_id = (
             f"{coordinator.gateway.gateway_id}:{_key(self.resource_path)}:clear"
         )
         self._attr_name = _leaf_name(coordinator, self.resource_path, "clear_override")
 
     def _state(self, *, strict: bool) -> tuple[Resource, Resource] | None:
-        """The active temporary setpoint and the mode ``clock``, if both are."""
+        """The active temporary setpoint and the mode ``clock``, if both are,
+        and 0 lies within the limits of the temporary setpoint (ZONE-09)."""
         override = zone_reading(self.coordinator, self.resource_path, strict=strict)
         mode = zone_reading(self.coordinator, f"{self.root}/userMode", strict=strict)
         if (
             override is None
             or mode is None
+            or not clears_to_zero(override)
             or rrc.scalar_value(mode) != "clock"
             or rrc.scalar_value(override) in (None, 0)
             or number_policy_for_resource(override, context_of(self.coordinator))
@@ -269,9 +319,15 @@ class RrcOverrideClearButton(
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="rrc_override_not_active"
             )
+        # ZONE-02, ZONE-05: no change while the zone is locked.
+        refuse_locked(self.coordinator, self.root, setpoint=True)
         override, mode = state
         await async_set_control(
-            self.coordinator, override.path, 0.0, Z.OVERRIDE_POLICY, expected=(mode,)
+            self.coordinator,
+            override.path,
+            0.0,
+            Z.OVERRIDE_POLICY,
+            expected=(mode, *away_guard(self.coordinator)),
         )
 
     @property
@@ -280,6 +336,13 @@ class RrcOverrideClearButton(
 
 
 # ------------------------------------------------------------- builders
+def clears_to_zero(override: Resource) -> bool:
+    """ZONE-09: 0 clears a temporary setpoint; it must lie within its
+    limits, or clearing is not offered."""
+    minimum = override.metadata.minimum
+    return minimum is not None and minimum <= 0
+
+
 def climate_descriptions(
     resources: Mapping[str, Resource], context: ControlContext
 ) -> tuple[ZoneEntityDescription, ...]:
@@ -302,6 +365,7 @@ def button_descriptions(
             override is not None
             and override.metadata.writable
             and override.metadata.resource_type == "floatValue"
+            and clears_to_zero(override)
             and rrc_contracts.policy_for(override, context) is Z.OVERRIDE_POLICY
         ):
             descriptions.append(ZoneEntityDescription(key=root, root=root))
@@ -340,11 +404,25 @@ def sensor_descriptions(
 def window_descriptions(
     resources: Mapping[str, Resource], context: ControlContext
 ) -> tuple[ZoneEntityDescription, ...]:
+    """A zone with an open window status, or whose zone list entry carries
+    ``functionIcons`` (ZONE-04), gets the window sensor."""
     del context
-    return tuple(
-        ZoneEntityDescription(key=path, root=Z.zone_root(path) or path)
+    zone_list = resources.get(Z.ZONE_LIST)
+    roots = [
+        root
         for path, resource in resources.items()
-        if rrc.detail_field(path) == Z.WINDOW_STATUS and rrc.detail_shape(resource)
+        if rrc.detail_field(path) == Z.WINDOW_STATUS
+        and rrc.detail_shape(resource)
+        and (root := Z.zone_root(path)) is not None
+    ]
+    roots += [
+        root
+        for root in rrc.zone_roots(resources)
+        if Z.function_icon(zone_list, root) is not None
+    ]
+    return tuple(
+        ZoneEntityDescription(key=f"{root}/{Z.WINDOW_STATUS}", root=root)
+        for root in dict.fromkeys(roots)
     )
 
 
@@ -370,7 +448,7 @@ def _sensor(
 def _window(
     coordinator: BoschBuderusDataUpdateCoordinator, description: ZoneEntityDescription
 ) -> Entity:
-    return RrcWindowOpenSensor(coordinator, description.key, Z.WINDOW_STATUS)
+    return RrcWindowOpenSensor(coordinator, description.root)
 
 
 def track_climates(

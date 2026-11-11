@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Cette commande de zone n'est pas disponible actuellement. Vérifiez que la zone fournit des valeurs actuelles et que la température se situe dans la plage proposée ; une consigne temporaire nécessite le mode programme horaire."
     },
+    "rrc_zone_locked_away": {
+      "message": "Le mode absent est actif. Désactivez-le pour modifier la consigne de cette zone ; rien n'a été envoyé."
+    },
+    "rrc_zone_standby": {
+      "message": "Cette zone est en veille sur le régulateur d'ambiance et ne peut pas être commandée actuellement ; rien n'a été envoyé."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Le régulateur d'ambiance signale une erreur de zone ou de communication pour cette zone, elle ne peut donc pas être commandée actuellement ; rien n'a été envoyé."
+    },
     "rrc_device_setting_unused": {
       "message": "L'appareil radio n'utilise actuellement pas ce réglage, il n'a donc pas été modifié."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Erreur de communication",
               "comm_warning": "Avertissement de communication",
               "low_battery": "Batterie faible"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Mode absent",
+              "standby": "Veille",
+              "unreachable": "Erreur de zone ou de communication"
             }
           }
         }

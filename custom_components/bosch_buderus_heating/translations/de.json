@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Dieser Zonenbefehl ist gerade nicht verfügbar. Prüfe, ob die Zone aktuelle Werte liefert und die Temperatur im angebotenen Bereich liegt; ein vorübergehender Sollwert braucht die Betriebsart Zeitprogramm."
     },
+    "rrc_zone_locked_away": {
+      "message": "Der Abwesenheitsmodus ist aktiv. Schalte ihn aus, um den Sollwert dieser Zone zu ändern; es wurde nichts gesendet."
+    },
+    "rrc_zone_standby": {
+      "message": "Diese Zone ist am Raumregler im Standby und lässt sich gerade nicht bedienen; es wurde nichts gesendet."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Der Raumregler meldet für diese Zone einen Zonen- oder Kommunikationsfehler, deshalb lässt sie sich gerade nicht bedienen; es wurde nichts gesendet."
+    },
     "rrc_device_setting_unused": {
       "message": "Das Funkgerät nutzt diese Einstellung gerade nicht, deshalb wurde sie nicht geändert."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Kommunikationsfehler",
               "comm_warning": "Kommunikationswarnung",
               "low_battery": "Batterie schwach"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Abwesenheitsmodus",
+              "standby": "Standby",
+              "unreachable": "Zonen- oder Kommunikationsfehler"
             }
           }
         }

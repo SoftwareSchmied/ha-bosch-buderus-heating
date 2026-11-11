@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "This zone command is not available at the moment. Check that the zone reports current values and that the temperature lies within the offered range; a temporary setpoint needs the schedule mode."
     },
+    "rrc_zone_locked_away": {
+      "message": "Away mode is active. Switch it off to change the setpoint of this zone; nothing was sent."
+    },
+    "rrc_zone_standby": {
+      "message": "This zone is in standby on the room controller and cannot be controlled at the moment; nothing was sent."
+    },
+    "rrc_zone_unreachable": {
+      "message": "The room controller reports a zone or communication error for this zone, so it cannot be controlled at the moment; nothing was sent."
+    },
     "rrc_device_setting_unused": {
       "message": "The radio device does not use this setting at the moment, so it was not changed."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Communication error",
               "comm_warning": "Communication warning",
               "low_battery": "Low battery"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Away mode",
+              "standby": "Standby",
+              "unreachable": "Zone or communication error"
             }
           }
         }

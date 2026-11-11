@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "To polecenie strefy jest w tej chwili niedostępne. Sprawdź, czy strefa podaje aktualne wartości i czy temperatura mieści się w oferowanym zakresie; tymczasowa wartość zadana wymaga trybu programu czasowego."
     },
+    "rrc_zone_locked_away": {
+      "message": "Tryb nieobecności jest aktywny. Wyłącz go, aby zmienić wartość zadaną tej strefy; nic nie zostało wysłane."
+    },
+    "rrc_zone_standby": {
+      "message": "Ta strefa jest w trybie czuwania na regulatorze pokojowym i nie można nią teraz sterować; nic nie zostało wysłane."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Regulator pokojowy zgłasza dla tej strefy błąd strefy lub błąd komunikacji, dlatego nie można nią teraz sterować; nic nie zostało wysłane."
+    },
     "rrc_device_setting_unused": {
       "message": "Urządzenie radiowe w tej chwili nie korzysta z tego ustawienia, więc nie zostało ono zmienione."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Błąd komunikacji",
               "comm_warning": "Ostrzeżenie komunikacji",
               "low_battery": "Słaba bateria"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Tryb nieobecności",
+              "standby": "Tryb czuwania",
+              "unreachable": "Błąd strefy lub komunikacji"
             }
           }
         }

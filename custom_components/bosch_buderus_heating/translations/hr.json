@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Ova naredba zone trenutačno nije dostupna. Provjerite izvješćuje li zona o trenutačnim vrijednostima i nalazi li se temperatura unutar ponuđenog raspona; privremena zadana vrijednost zahtijeva način rada Vremenski program."
     },
+    "rrc_zone_locked_away": {
+      "message": "Način odsutnosti je aktivan. Isključite ga kako biste promijenili zadanu vrijednost ove zone; ništa nije poslano."
+    },
+    "rrc_zone_standby": {
+      "message": "Ova je zona na sobnom regulatoru u stanju pripravnosti i njome se trenutačno ne može upravljati; ništa nije poslano."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Sobni regulator javlja grešku zone ili grešku u komunikaciji za ovu zonu, pa se njome trenutačno ne može upravljati; ništa nije poslano."
+    },
     "rrc_device_setting_unused": {
       "message": "Radijski uređaj trenutačno ne koristi ovu postavku, pa nije promijenjena."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Greška u komunikaciji",
               "comm_warning": "Upozorenje o komunikaciji",
               "low_battery": "Slaba baterija"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Način odsutnosti",
+              "standby": "Stanje pripravnosti",
+              "unreachable": "Greška zone ili komunikacije"
             }
           }
         }
