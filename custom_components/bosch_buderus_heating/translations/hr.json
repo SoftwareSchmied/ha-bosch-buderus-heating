@@ -618,6 +618,12 @@
       "controls_unconfirmed": "Posljednja promjena nije se mogla potvrditi. Možda je već stupila na snagu na uređaju. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
       "controls_failed": "Komunikacija s uređajem nije uspjela. Posljednja promjena možda je već stupila na snagu. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
       "controls_busy": "Uređaj se čita ili je u tijeku druga promjena. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene. Pokušajte ponovno za trenutak.",
+      "controls_locked": "Uređaj trenutno zaključava ovu postavku. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene. Pokušajte ponovno kasnije.",
+      "controls_unused": "Uređaj trenutačno ne koristi ovu postavku. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene.",
+      "controls_curve_order": "Krivulja grijanja i granice temperature polaznog voda moraju ostati u ispravnom redoslijedu: početna točka i minimalna temperatura polaznog voda ne iznad krajnje točke i maksimalne temperature polaznog voda. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene.",
+      "controls_weather_control_off": "Ova postavka kruga grijanja djeluje samo uz regulaciju prema vanjskoj temperaturi, a krug trenutno koristi drugi način regulacije. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene.",
+      "controls_extra_dhw_duration_zero": "Dodatna topla voda treba trajanje dulje od 0 minuta. Najprije postavite trajanje. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene.",
+      "controls_rejected": "Uređaj trenutačno ne prihvaća ovu vrijednost. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene. Provjerite vrijednost ili ponovno učitajte vrijednosti.",
       "cloud_already_connected": "Veza s oblakom već je konfigurirana. Upotrijebite njezine postavke veze za odabir dodatnih uređaja ili ponovnu prijavu. Druga paralelna prijava u oblak još nije podržana.",
       "cloud_setup_in_progress": "Već je otvorena druga konfiguracija oblaka. Prvo dovršite ili zatvorite taj dijalog.",
       "cloud_target_owned": "Odabrani sustav ili uređaj pripada drugom konfiguriranom unosu ili vezi s oblakom. Ponovno ga povežite putem njegova postojećeg unosa.",
@@ -1067,8 +1073,17 @@
     "rrc_time_of_day_invalid": {
       "message": "Vrijeme početka mora biti doba dana između 00:00 i 23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Odaberite vrijeme početka u koracima od {step} minuta."
+    },
     "rrc_curve_order": {
-      "message": "Krivulja grijanja i granice temperature polaznog voda moraju ostati u ispravnom redoslijedu: početna točka ispod krajnje točke, minimalna temperatura polaznog voda ne iznad maksimalne. Ništa nije poslano; najprije promijenite drugu granicu."
+      "message": "Krivulja grijanja i granice temperature polaznog voda moraju ostati u ispravnom redoslijedu: početna točka i minimalna temperatura polaznog voda ne iznad krajnje točke i maksimalne temperature polaznog voda. Ništa nije poslano; najprije promijenite drugu granicu."
+    },
+    "rrc_weather_control_off": {
+      "message": "Ova postavka kruga grijanja djeluje samo uz regulaciju prema vanjskoj temperaturi, a krug trenutno koristi drugi način regulacije. Ništa nije poslano."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Dodatna topla voda treba trajanje dulje od 0 minuta. Najprije postavite trajanje. Ništa nije poslano."
     },
     "rrc_event_invalid_name": {
       "message": "Unesite naziv od 1 do 32 bajtova ispisivog teksta (manje znakova s dijakritičkim znakovima ili emojijima)."
@@ -1396,14 +1411,6 @@
           "always_heating": "Uvijek grijanje",
           "always_cooling": "Uvijek hlađenje",
           "automatic": "Automatski"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Brzina zagrijavanja",
-        "state": {
-          "slow": "Sporo",
-          "normal": "Normalno",
-          "fast": "Brzo"
         }
       }
     },

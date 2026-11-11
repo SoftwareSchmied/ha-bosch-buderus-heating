@@ -618,6 +618,12 @@
       "controls_unconfirmed": "Den sidste ændring kunne ikke bekræftes. Den kan allerede have trådt i kraft på apparatet. Tidligere bekræftede ændringer er stadig anvendt. Indlæs værdierne igen, før du prøver igen.",
       "controls_failed": "Kommunikationen med apparatet mislykkedes. Den sidste ændring kan allerede have trådt i kraft. Tidligere bekræftede ændringer er stadig anvendt. Indlæs værdierne igen, før du prøver igen.",
       "controls_busy": "Apparatet bliver aflæst, eller en anden ændring kører stadig. Denne ændring blev ikke sendt. Tidligere bekræftede ændringer er stadig anvendt. Prøv igen om et øjeblik.",
+      "controls_locked": "Apparatet låser i øjeblikket denne indstilling. Denne ændring blev ikke sendt. Tidligere bekræftede ændringer er stadig anvendt. Prøv igen senere.",
+      "controls_unused": "Apparatet bruger ikke denne indstilling i øjeblikket. Denne ændring blev ikke sendt. Tidligere bekræftede ændringer er stadig anvendt.",
+      "controls_curve_order": "Varmekurven og fremløbsgrænserne skal forblive i rigtig rækkefølge: startpunktet og den minimale fremløbstemperatur ikke over slutpunktet og den maksimale fremløbstemperatur. Denne ændring blev ikke sendt. Tidligere bekræftede ændringer er stadig anvendt.",
+      "controls_weather_control_off": "Denne indstilling for varmekredsen virker kun med vejrkompenseret regulering, og kredsen bruger i øjeblikket en anden regulering. Denne ændring blev ikke sendt. Tidligere bekræftede ændringer er stadig anvendt.",
+      "controls_extra_dhw_duration_zero": "Ekstra varmt vand kræver en varighed på mere end 0 minutter. Indstil først varigheden. Denne ændring blev ikke sendt. Tidligere bekræftede ændringer er stadig anvendt.",
+      "controls_rejected": "Apparatet accepterer ikke denne værdi i øjeblikket. Denne ændring blev ikke sendt. Tidligere bekræftede ændringer er stadig anvendt. Kontrollér værdien, eller indlæs værdierne igen.",
       "cloud_already_connected": "Der er allerede konfigureret en cloudforbindelse. Brug dens forbindelsesindstillinger til at vælge flere enheder eller logge ind igen. Et andet parallelt cloudlogin understøttes endnu ikke.",
       "cloud_setup_in_progress": "En anden cloudopsætning er allerede åben. Afslut eller luk først den dialog.",
       "cloud_target_owned": "Et valgt anlæg eller en valgt enhed hører til en anden konfigureret post eller cloudforbindelse. Forbind det igen via dets eksisterende post.",
@@ -1067,8 +1073,17 @@
     "rrc_time_of_day_invalid": {
       "message": "Starttidspunktet skal være et klokkeslæt mellem 00:00 og 23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Vælg et starttidspunkt i trin på {step} minutter."
+    },
     "rrc_curve_order": {
-      "message": "Varmekurven og fremløbsgrænserne skal forblive i rigtig rækkefølge: startpunktet under slutpunktet, den minimale fremløbstemperatur ikke over den maksimale. Der blev ikke sendt noget; ændr først den anden grænse."
+      "message": "Varmekurven og fremløbsgrænserne skal forblive i rigtig rækkefølge: startpunktet og den minimale fremløbstemperatur ikke over slutpunktet og den maksimale fremløbstemperatur. Der blev ikke sendt noget; ændr først den anden grænse."
+    },
+    "rrc_weather_control_off": {
+      "message": "Denne indstilling for varmekredsen virker kun med vejrkompenseret regulering, og kredsen bruger i øjeblikket en anden regulering. Der blev ikke sendt noget."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Ekstra varmt vand kræver en varighed på mere end 0 minutter. Indstil først varigheden. Der blev ikke sendt noget."
     },
     "rrc_event_invalid_name": {
       "message": "Indtast et navn på 1 til 32 byte udskrivbar tekst (færre tegn med æ, ø, å eller emoji)."
@@ -1396,14 +1411,6 @@
           "always_heating": "Altid opvarmning",
           "always_cooling": "Altid køling",
           "automatic": "Automatisk"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Opvarmningshastighed",
-        "state": {
-          "slow": "Langsom",
-          "normal": "Normal",
-          "fast": "Hurtig"
         }
       }
     },

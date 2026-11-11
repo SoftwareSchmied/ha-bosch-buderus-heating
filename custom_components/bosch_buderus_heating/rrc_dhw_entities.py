@@ -48,7 +48,7 @@ from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
 from .rrc_contract_dhw import DISINFECTION_TIME_POLICY
 from .rrc_platforms import Tracker
-from .writes import ControlContext, number_policy_for_resource
+from .writes import ControlContext, assess_control, number_policy_for_resource
 
 
 def _key(path: str) -> str:
@@ -157,11 +157,20 @@ class RrcDhwTime(CoordinatorEntity[BoschBuderusDataUpdateCoordinator], TimeEntit
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="write_validation_failed"
             )
+        minute = value.hour * 60 + value.minute
+        resource = self._current
+        if resource is not None:
+            # S4: a time off the step would be refused anyway; say why.
+            step = assess_control(resource, self.coordinator.control_context()).ui_step
+            ticks = (minute - (resource.metadata.minimum or 0.0)) / step if step else 0
+            if not math.isclose(ticks, round(ticks), abs_tol=1e-7):
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="rrc_time_of_day_step",
+                    translation_placeholders={"step": f"{step:g}"},
+                )
         await async_set_control(
-            self.coordinator,
-            self.resource_path,
-            value.hour * 60 + value.minute,
-            DISINFECTION_TIME_POLICY,
+            self.coordinator, self.resource_path, minute, DISINFECTION_TIME_POLICY
         )
 
     @property

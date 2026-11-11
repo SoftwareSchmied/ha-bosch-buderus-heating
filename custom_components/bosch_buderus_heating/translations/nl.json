@@ -618,6 +618,12 @@
       "controls_unconfirmed": "De laatste wijziging kon niet worden bevestigd. Ze is mogelijk al van kracht op het apparaat. Eerder bevestigde wijzigingen blijven toegepast. Laad de waarden opnieuw voordat je het opnieuw probeert.",
       "controls_failed": "De communicatie met het apparaat is mislukt. De laatste wijziging is mogelijk al van kracht. Eerder bevestigde wijzigingen blijven toegepast. Laad de waarden opnieuw voordat je het opnieuw probeert.",
       "controls_busy": "Het apparaat wordt gelezen of een andere wijziging loopt nog. Deze wijziging is niet verzonden. Eerder bevestigde wijzigingen blijven toegepast. Probeer het over een moment opnieuw.",
+      "controls_locked": "Het apparaat vergrendelt momenteel deze instelling. Deze wijziging is niet verzonden. Eerder bevestigde wijzigingen blijven toegepast. Probeer het later opnieuw.",
+      "controls_unused": "Het apparaat gebruikt deze instelling op dit moment niet. Deze wijziging is niet verzonden. Eerder bevestigde wijzigingen blijven toegepast.",
+      "controls_curve_order": "De stooklijn en de aanvoergrenzen moeten in de juiste volgorde blijven: het voetpunt en de minimale aanvoertemperatuur niet boven het eindpunt en de maximale aanvoertemperatuur. Deze wijziging is niet verzonden. Eerder bevestigde wijzigingen blijven toegepast.",
+      "controls_weather_control_off": "Deze instelling van het verwarmingscircuit werkt alleen bij weersafhankelijke regeling, en het circuit gebruikt op dit moment een andere regeling. Deze wijziging is niet verzonden. Eerder bevestigde wijzigingen blijven toegepast.",
+      "controls_extra_dhw_duration_zero": "Extra warm water heeft een duur van meer dan 0 minuten nodig. Stel eerst de duur in. Deze wijziging is niet verzonden. Eerder bevestigde wijzigingen blijven toegepast.",
+      "controls_rejected": "Het apparaat accepteert deze waarde op dit moment niet. Deze wijziging is niet verzonden. Eerder bevestigde wijzigingen blijven toegepast. Controleer de waarde of laad de waarden opnieuw.",
       "cloud_already_connected": "Er is al een cloudverbinding geconfigureerd. Gebruik de verbindingsinstellingen daarvan om meer apparaten te selecteren of je opnieuw aan te melden. Een tweede parallelle cloudaanmelding wordt nog niet ondersteund.",
       "cloud_setup_in_progress": "Er is al een andere cloudconfiguratie geopend. Voltooi of sluit dat dialoogvenster eerst.",
       "cloud_target_owned": "Een geselecteerde installatie of een geselecteerd apparaat hoort bij een andere geconfigureerde invoer of cloudverbinding. Verbind opnieuw via de bestaande invoer.",
@@ -1067,8 +1073,17 @@
     "rrc_time_of_day_invalid": {
       "message": "De starttijd moet een tijdstip tussen 00:00 en 23:59 zijn."
     },
+    "rrc_time_of_day_step": {
+      "message": "Kies een starttijd in stappen van {step} minuten."
+    },
     "rrc_curve_order": {
-      "message": "De stooklijn en de aanvoergrenzen moeten in de juiste volgorde blijven: het voetpunt onder het eindpunt, de minimale aanvoertemperatuur niet boven de maximale. Er is niets verzonden; wijzig eerst de andere grens."
+      "message": "De stooklijn en de aanvoergrenzen moeten in de juiste volgorde blijven: het voetpunt en de minimale aanvoertemperatuur niet boven het eindpunt en de maximale aanvoertemperatuur. Er is niets verzonden; wijzig eerst de andere grens."
+    },
+    "rrc_weather_control_off": {
+      "message": "Deze instelling van het verwarmingscircuit werkt alleen bij weersafhankelijke regeling, en het circuit gebruikt op dit moment een andere regeling. Er is niets verzonden."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Extra warm water heeft een duur van meer dan 0 minuten nodig. Stel eerst de duur in. Er is niets verzonden."
     },
     "rrc_event_invalid_name": {
       "message": "Voer een naam in van 1 tot 32 bytes afdrukbare tekst (minder tekens bij letters met accenten of emoji)."
@@ -1396,14 +1411,6 @@
           "always_heating": "Altijd verwarmen",
           "always_cooling": "Altijd koelen",
           "automatic": "Automatisch"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Opwarmsnelheid",
-        "state": {
-          "slow": "Langzaam",
-          "normal": "Normaal",
-          "fast": "Snel"
         }
       }
     },

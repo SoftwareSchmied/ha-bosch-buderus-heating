@@ -787,7 +787,8 @@ def advertised_options(
 ) -> tuple[JsonScalar, ...]:
     """The advertised values; without any ``allowedValues`` key, the policy's
     fallback options when the current value is one of them (or an equivalent
-    read of one, such as "off" for "Off").
+    read of one, such as "off" for "Off"), and the fallback options with
+    ``fallback_current_options`` when the current value is one of those.
 
     An empty or different list stays as advertised, so it keeps the strict
     rules (#113, generalised from ``userMode``).
@@ -799,12 +800,15 @@ def advertised_options(
         and not metadata.allowed_values
         and resource.has_value
         and isinstance(resource.value, str)
-        and any(
-            policy.confirms(resource.value, option)
-            for option in policy.fallback_options
-        )
     ):
-        return policy.fallback_options
+        current = resource.value
+        if any(policy.confirms(current, option) for option in policy.fallback_options):
+            return policy.fallback_options
+        if any(
+            policy.confirms(current, option)
+            for option in policy.fallback_current_options
+        ):
+            return (*policy.fallback_options, *policy.fallback_current_options)
     if policy.ignored_options:
         return tuple(
             value

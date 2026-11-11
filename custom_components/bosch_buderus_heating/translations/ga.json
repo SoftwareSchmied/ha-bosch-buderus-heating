@@ -618,6 +618,12 @@
       "controls_unconfirmed": "Níorbh fhéidir an t-athrú deireanach a dheimhniú. B'fhéidir go bhfuil sé i bhfeidhm cheana ar an trealamh. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Athlódáil na luachanna sula ndéanann tú iarracht arís.",
       "controls_failed": "Theip ar an gcumarsáid leis an trealamh. B'fhéidir go bhfuil an t-athrú deireanach i bhfeidhm cheana. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Athlódáil na luachanna sula ndéanann tú iarracht arís.",
       "controls_busy": "Tá an trealamh á léamh nó tá athrú eile fós ar siúl. Níor seoladh an t-athrú seo. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Déan iarracht arís i gceann tamaill.",
+      "controls_locked": "Cuireann an trealamh glas faoi láthair ar an socrú seo. Níor seoladh an t-athrú seo. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Déan iarracht arís níos déanaí.",
+      "controls_unused": "Ní úsáideann an trealamh an socrú seo faoi láthair. Níor seoladh an t-athrú seo. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm.",
+      "controls_curve_order": "Ní mór don chuar téimh agus do theorainneacha an tsreafa fanacht in ord: an bunphointe agus an íosteocht sreafa nach mó ná an críochphointe ná an uasteocht sreafa. Níor seoladh an t-athrú seo. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm.",
+      "controls_weather_control_off": "Ní oibríonn an socrú seo den chiorcad téimh ach le rialú de réir teochta lasmuigh, agus tá rialú eile in úsáid ag an gciorcad faoi láthair. Níor seoladh an t-athrú seo. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm.",
+      "controls_extra_dhw_duration_zero": "Teastaíonn fad níos mó ná 0 nóiméad ón uisce te breise. Socraigh an fad ar dtús. Níor seoladh an t-athrú seo. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm.",
+      "controls_rejected": "Ní ghlacann an trealamh leis an luach seo faoi láthair. Níor seoladh an t-athrú seo. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Seiceáil an luach nó athlódáil na luachanna.",
       "cloud_already_connected": "Tá nasc néil cumraithe cheana. Úsáid a shocruithe nasctha chun tuilleadh gléasanna a roghnú nó chun síniú isteach arís. Ní thacaítear go fóill le dara síniú isteach néil comhthreomhar.",
       "cloud_setup_in_progress": "Tá socrú néil eile oscailte cheana. Críochnaigh nó dún an dialóg sin ar dtús.",
       "cloud_target_owned": "Baineann córas nó gléas roghnaithe le hiontráil chumraithe eile nó le nasc néil eile. Athnasc é tríd an iontráil atá ann cheana.",
@@ -1067,8 +1073,17 @@
     "rrc_time_of_day_invalid": {
       "message": "Caithfidh an t-am tosaithe a bheith ina am den lá idir 00:00 agus 23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Roghnaigh am tosaithe i gcéimeanna {step} nóiméad."
+    },
     "rrc_curve_order": {
-      "message": "Ní mór don chuar téimh agus do theorainneacha an tsreafa fanacht in ord: an bunphointe faoi bhun an chríochphointe, an íosteocht sreafa nach mó ná an uasteocht. Níor seoladh aon rud; athraigh an teorainn eile ar dtús."
+      "message": "Ní mór don chuar téimh agus do theorainneacha an tsreafa fanacht in ord: an bunphointe agus an íosteocht sreafa nach mó ná an críochphointe ná an uasteocht sreafa. Níor seoladh aon rud; athraigh an teorainn eile ar dtús."
+    },
+    "rrc_weather_control_off": {
+      "message": "Ní oibríonn an socrú seo den chiorcad téimh ach le rialú de réir teochta lasmuigh, agus tá rialú eile in úsáid ag an gciorcad faoi láthair. Níor seoladh aon rud."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Teastaíonn fad níos mó ná 0 nóiméad ón uisce te breise. Socraigh an fad ar dtús. Níor seoladh aon rud."
     },
     "rrc_event_invalid_name": {
       "message": "Cuir isteach ainm 1 go 32 beart de théacs infhoilsithe (níos lú carachtar le séimhiú, sínte fada nó emoji)."
@@ -1396,14 +1411,6 @@
           "always_heating": "Téamh i gcónaí",
           "always_cooling": "Fuarú i gcónaí",
           "automatic": "Uathoibríoch"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Luas teasaithe",
-        "state": {
-          "slow": "Mall",
-          "normal": "Gnáth",
-          "fast": "Tapa"
         }
       }
     },

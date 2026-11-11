@@ -618,6 +618,12 @@
       "controls_unconfirmed": "Zadnje spremembe ni bilo mogoče potrditi. Morda je na napravi že začela veljati. Predhodno potrjene spremembe ostanejo uveljavljene. Pred ponovnim poskusom znova naložite vrednosti.",
       "controls_failed": "Komunikacija z napravo ni uspela. Zadnja sprememba je morda že začela veljati. Predhodno potrjene spremembe ostanejo uveljavljene. Pred ponovnim poskusom znova naložite vrednosti.",
       "controls_busy": "Naprava se bere ali pa še poteka druga sprememba. Ta sprememba ni bila poslana. Predhodno potrjene spremembe ostanejo uveljavljene. Poskusite znova čez trenutek.",
+      "controls_locked": "Naprava trenutno zaklepa to nastavitev. Ta sprememba ni bila poslana. Predhodno potrjene spremembe ostanejo uveljavljene. Poskusite znova pozneje.",
+      "controls_unused": "Naprava te nastavitve trenutno ne uporablja. Ta sprememba ni bila poslana. Predhodno potrjene spremembe ostanejo uveljavljene.",
+      "controls_curve_order": "Ogrevalna krivulja in meje temperature dvižnega voda morajo ostati v pravilnem vrstnem redu: začetna točka in najnižja temperatura dvižnega voda ne nad končno točko in najvišjo temperaturo dvižnega voda. Ta sprememba ni bila poslana. Predhodno potrjene spremembe ostanejo uveljavljene.",
+      "controls_weather_control_off": "Ta nastavitev ogrevalnega kroga deluje samo pri regulaciji glede na zunanjo temperaturo, krog pa trenutno uporablja drug način regulacije. Ta sprememba ni bila poslana. Predhodno potrjene spremembe ostanejo uveljavljene.",
+      "controls_extra_dhw_duration_zero": "Dodatna topla voda potrebuje trajanje, daljše od 0 minut. Najprej nastavite trajanje. Ta sprememba ni bila poslana. Predhodno potrjene spremembe ostanejo uveljavljene.",
+      "controls_rejected": "Naprava te vrednosti trenutno ne sprejme. Ta sprememba ni bila poslana. Predhodno potrjene spremembe ostanejo uveljavljene. Preverite vrednost ali znova naložite vrednosti.",
       "cloud_already_connected": "Povezava z oblakom je že nastavljena. V njenih nastavitvah povezave izberite več naprav ali se znova prijavite. Druga vzporedna prijava v oblak še ni podprta.",
       "cloud_setup_in_progress": "Druga nastavitev oblaka je že odprta. Najprej dokončajte ali zaprite tisti pogovorni okvir.",
       "cloud_target_owned": "Izbran sistem ali naprava pripada drugemu nastavljenemu vnosu ali povezavi z oblakom. Znova ga povežite prek obstoječega vnosa.",
@@ -1067,8 +1073,17 @@
     "rrc_time_of_day_invalid": {
       "message": "Začetni čas mora biti ura dneva med 00:00 in 23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Izberite začetni čas v korakih po {step} minut."
+    },
     "rrc_curve_order": {
-      "message": "Ogrevalna krivulja in meje temperature dvižnega voda morajo ostati v pravilnem vrstnem redu: začetna točka pod končno točko, najnižja temperatura dvižnega voda ne nad najvišjo. Nič ni bilo poslano; najprej spremenite drugo mejo."
+      "message": "Ogrevalna krivulja in meje temperature dvižnega voda morajo ostati v pravilnem vrstnem redu: začetna točka in najnižja temperatura dvižnega voda ne nad končno točko in najvišjo temperaturo dvižnega voda. Nič ni bilo poslano; najprej spremenite drugo mejo."
+    },
+    "rrc_weather_control_off": {
+      "message": "Ta nastavitev ogrevalnega kroga deluje samo pri regulaciji glede na zunanjo temperaturo, krog pa trenutno uporablja drug način regulacije. Nič ni bilo poslano."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Dodatna topla voda potrebuje trajanje, daljše od 0 minut. Najprej nastavite trajanje. Nič ni bilo poslano."
     },
     "rrc_event_invalid_name": {
       "message": "Vnesite ime dolžine od 1 do 32 bajtov tiskljivega besedila (manj znakov z diakritičnimi znaki ali emojiji)."
@@ -1396,14 +1411,6 @@
           "always_heating": "Vedno ogrevanje",
           "always_cooling": "Vedno hlajenje",
           "automatic": "Samodejno"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Hitrost segrevanja",
-        "state": {
-          "slow": "Počasi",
-          "normal": "Običajno",
-          "fast": "Hitro"
         }
       }
     },

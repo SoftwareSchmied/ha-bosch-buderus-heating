@@ -618,6 +618,12 @@
       "controls_unconfirmed": "Den senaste ändringen kunde inte bekräftas. Den kan redan ha trätt i kraft på apparaten. Tidigare bekräftade ändringar förblir tillämpade. Läs in värdena igen innan du försöker på nytt.",
       "controls_failed": "Kommunikationen med apparaten misslyckades. Den senaste ändringen kan redan ha trätt i kraft. Tidigare bekräftade ändringar förblir tillämpade. Läs in värdena igen innan du försöker på nytt.",
       "controls_busy": "Apparaten läses av eller en annan ändring pågår fortfarande. Den här ändringen skickades inte. Tidigare bekräftade ändringar förblir tillämpade. Försök igen om en stund.",
+      "controls_locked": "Apparaten låser just nu den här inställningen. Den här ändringen skickades inte. Tidigare bekräftade ändringar förblir tillämpade. Försök igen senare.",
+      "controls_unused": "Apparaten använder inte den här inställningen just nu. Den här ändringen skickades inte. Tidigare bekräftade ändringar förblir tillämpade.",
+      "controls_curve_order": "Värmekurvan och framledningsgränserna måste förbli i rätt ordning: startpunkten och den minimala framledningstemperaturen inte över slutpunkten och den maximala framledningstemperaturen. Den här ändringen skickades inte. Tidigare bekräftade ändringar förblir tillämpade.",
+      "controls_weather_control_off": "Den här inställningen för värmekretsen fungerar bara med utetemperaturstyrd reglering, och kretsen använder just nu en annan reglering. Den här ändringen skickades inte. Tidigare bekräftade ändringar förblir tillämpade.",
+      "controls_extra_dhw_duration_zero": "Extra varmvatten behöver en varaktighet på mer än 0 minuter. Ställ först in varaktigheten. Den här ändringen skickades inte. Tidigare bekräftade ändringar förblir tillämpade.",
+      "controls_rejected": "Apparaten godtar inte det här värdet just nu. Den här ändringen skickades inte. Tidigare bekräftade ändringar förblir tillämpade. Kontrollera värdet eller läs in värdena igen.",
       "cloud_already_connected": "En molnanslutning är redan konfigurerad. Använd dess anslutningsinställningar för att välja fler enheter eller logga in igen. En andra parallell molninloggning stöds inte ännu.",
       "cloud_setup_in_progress": "En annan molnkonfiguration är redan öppen. Slutför eller stäng den dialogrutan först.",
       "cloud_target_owned": "En vald anläggning eller enhet tillhör en annan konfigurerad post eller molnanslutning. Anslut den på nytt via dess befintliga post.",
@@ -1067,8 +1073,17 @@
     "rrc_time_of_day_invalid": {
       "message": "Starttiden måste vara en tid på dygnet mellan 00:00 och 23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Välj en starttid i steg om {step} minuter."
+    },
     "rrc_curve_order": {
-      "message": "Värmekurvan och framledningsgränserna måste förbli i rätt ordning: startpunkten under slutpunkten, den minimala framledningstemperaturen inte över den maximala. Inget skickades; ändra först den andra gränsen."
+      "message": "Värmekurvan och framledningsgränserna måste förbli i rätt ordning: startpunkten och den minimala framledningstemperaturen inte över slutpunkten och den maximala framledningstemperaturen. Inget skickades; ändra först den andra gränsen."
+    },
+    "rrc_weather_control_off": {
+      "message": "Den här inställningen för värmekretsen fungerar bara med utetemperaturstyrd reglering, och kretsen använder just nu en annan reglering. Inget skickades."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Extra varmvatten behöver en varaktighet på mer än 0 minuter. Ställ först in varaktigheten. Inget skickades."
     },
     "rrc_event_invalid_name": {
       "message": "Ange ett namn med 1 till 32 byte utskrivbar text (färre tecken med å, ä, ö eller emoji)."
@@ -1396,14 +1411,6 @@
           "always_heating": "Alltid värme",
           "always_cooling": "Alltid kyla",
           "automatic": "Automatisk"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Uppvärmningshastighet",
-        "state": {
-          "slow": "Långsam",
-          "normal": "Normal",
-          "fast": "Snabb"
         }
       }
     },

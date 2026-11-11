@@ -115,7 +115,9 @@ def writable_enum_options(
     when only one spelling is advertised. Metadata changes cannot silently
     redirect an existing option to a different wire value. ``overrides`` (an
     RRC contract's ``option_keys``) name wire codes first; a key already
-    taken falls back to the escaped code.
+    taken falls back to the escaped code. Two codes the overrides give the
+    same key are spellings of one option, such as "Off" and "off": only the
+    first one is offered.
     """
     aliases = _POINTT_TO_HA.get(translation_key, {})
     canonical = {key: raw for raw, key in reversed(tuple(aliases.items()))}
@@ -126,6 +128,8 @@ def writable_enum_options(
             key = overrides.get(raw)
             if key and key not in result:
                 result[key] = raw
+            elif key and overrides.get(result[key]) == key:
+                continue
             else:
                 fallback = aliases.get(raw, raw)
                 if fallback in reserved or fallback in result:

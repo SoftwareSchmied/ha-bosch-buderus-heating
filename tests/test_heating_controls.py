@@ -44,6 +44,9 @@ from custom_components.bosch_buderus_heating.pointt import (
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 from custom_components.bosch_buderus_heating.writes import (
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+    ContractRejected,
+    ControlLocked,
+    ControlUnused,
     WriteBusy,
 )
 from tests.ha_test_helpers import MockConfigEntry
@@ -433,6 +436,16 @@ async def test_dialog_behind_a_long_poll_sends_nothing_and_says_so(
         (RateLimited(60), "controls_rate_limit"),
         (WriteNotConfirmed("lost"), "controls_unconfirmed"),
         (WriteValidationError("changed"), "controls_changed"),
+        # CIRCUIT-08: a lock or a contract rule names itself.
+        (ControlLocked("locked"), "controls_locked"),
+        (ControlUnused("unused"), "controls_unused"),
+        (ContractRejected("rrc_curve_order"), "controls_curve_order"),
+        (ContractRejected("rrc_weather_control_off"), "controls_weather_control_off"),
+        (
+            ContractRejected("rrc_extra_dhw_duration_zero"),
+            "controls_extra_dhw_duration_zero",
+        ),
+        (ContractRejected("rrc_time_of_day_invalid"), "controls_rejected"),
         (PointTError("lost"), "controls_failed"),
         (WriteBusy("busy"), "controls_busy"),
     ],

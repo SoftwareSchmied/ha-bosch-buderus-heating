@@ -618,6 +618,12 @@
       "controls_unconfirmed": "The last change could not be confirmed. It may already have taken effect on the appliance. Previously confirmed changes remain applied. Reload the values before trying again.",
       "controls_failed": "Communication with the appliance failed. The last change may already have taken effect. Previously confirmed changes remain applied. Reload the values before trying again.",
       "controls_busy": "The appliance is being read or another change is still running. This change was not sent. Previously confirmed changes remain applied. Try again in a moment.",
+      "controls_locked": "The appliance currently locks this setting. This change was not sent. Previously confirmed changes remain applied. Try again later.",
+      "controls_unused": "The appliance does not use this setting at the moment. This change was not sent. Previously confirmed changes remain applied.",
+      "controls_curve_order": "The heating curve and the supply limits must stay in order: the base point and the minimum supply temperature at or below the end point and the maximum supply temperature. This change was not sent. Previously confirmed changes remain applied.",
+      "controls_weather_control_off": "This heating circuit setting only works with weather-compensated control, and the circuit uses another control at the moment. This change was not sent. Previously confirmed changes remain applied.",
+      "controls_extra_dhw_duration_zero": "Extra hot water needs a duration of more than 0 minutes. Set the duration first. This change was not sent. Previously confirmed changes remain applied.",
+      "controls_rejected": "The appliance does not accept this value at the moment. This change was not sent. Previously confirmed changes remain applied. Check the value or reload the values.",
       "cloud_already_connected": "A cloud connection is already configured. Use its connection settings to select more devices or sign in again. A second parallel cloud sign-in is not supported yet.",
       "cloud_setup_in_progress": "Another cloud setup is already open. Finish or close that dialog first.",
       "cloud_target_owned": "A selected system or device belongs to another configured entry or cloud connection. Reconnect it through its existing entry.",
@@ -1067,8 +1073,17 @@
     "rrc_time_of_day_invalid": {
       "message": "The start time must be a time of day between 00:00 and 23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Choose a start time in steps of {step} minutes."
+    },
     "rrc_curve_order": {
-      "message": "The heating curve and the supply limits must stay in order: the base point below the end point, the minimum supply temperature not above the maximum. Nothing was sent; change the other limit first."
+      "message": "The heating curve and the supply limits must stay in order: the base point and the minimum supply temperature at or below the end point and the maximum supply temperature. Nothing was sent; change the other limit first."
+    },
+    "rrc_weather_control_off": {
+      "message": "This heating circuit setting only works with weather-compensated control, and the circuit uses another control at the moment. Nothing was sent."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Extra hot water needs a duration of more than 0 minutes. Set the duration first. Nothing was sent."
     },
     "rrc_event_invalid_name": {
       "message": "Enter a name with 1 to 32 bytes of printable text (fewer characters with umlauts or emoji)."
@@ -1396,14 +1411,6 @@
           "always_heating": "Always heating",
           "always_cooling": "Always cooling",
           "automatic": "Automatic"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Heat-up speed",
-        "state": {
-          "slow": "Slow",
-          "normal": "Normal",
-          "fast": "Fast"
         }
       }
     },

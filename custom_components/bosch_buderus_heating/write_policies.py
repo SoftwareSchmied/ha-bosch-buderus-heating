@@ -91,6 +91,10 @@ class EnumWritePolicy:
     # The options offered only when the resource has no ``allowedValues`` key
     # at all and its current value is one of them (#113: ``userMode``).
     fallback_options: tuple[str, ...] = ()
+    # Offered with ``fallback_options`` under the same condition, but only
+    # while the current value is one of them (for example modes that only
+    # some heat sources have); the options are then both tuples together.
+    fallback_current_options: tuple[str, ...] = ()
     # Advertised placeholders left out of the options, such as "" (never
     # written); fewer than ``min_options`` usable options leave no control.
     ignored_options: frozenset[str] = frozenset()
