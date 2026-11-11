@@ -246,7 +246,10 @@ value type (for example text instead of a number) since discovery. See [compatib
 The discovered resources are kept per gateway in
 `.storage/bosch_buderus_heating.discovery_inventory.<entry>`, only on the Home
 Assistant host and deleted together with the integration entry. The file is
-not part of diagnostics.
+not part of diagnostics. Since 0.9.0-alpha.6 it keeps no values of private or
+identifier resources (for example the gateway serial number, the UUID or the
+module serial numbers of `/system/info`), only their description; an older
+file loses those values the next time it is saved.
 
 Schema 38 adds `update_load` with process-wide counts and whole milliseconds
 since Home Assistant started: garbage collections per generation, their total
@@ -816,7 +819,8 @@ over the last hour.
 Enable them under **Settings → Devices & services → Entities** when continuous
 monitoring is useful. The response-time sensor is the average of successful
 attempts; its attributes include the sample count, approximate p95, maximum,
-and latest attempt duration. The request sensors expose bounded aggregate
+and latest attempt duration. The p95 is the upper bound of its histogram bucket
+(up to the 30-second timeout), never above the measured maximum. The request sensors expose bounded aggregate
 attributes for success, failures, request types, HTTP statuses, retries,
 fallbacks, and rate limits.
 

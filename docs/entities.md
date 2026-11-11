@@ -584,24 +584,40 @@ stored inventory or from its local readings alone (see
 | Enabled | Readings |
 | --- | --- |
 | yes | current supply setpoint, volume flow (L/h), compressor and electric heater power (W), refrigerant circuit status, heating circuit pump, thermal disinfection running, silent mode, utility power block |
-| no | cylinder temperature (the same value as the hot water temperature), hot gas, suction gas, high- and low-pressure, liquid line (heating and cooling), compressor and evaporator temperatures; outdoor fan, heat carrier pump and compressor speed (%); additional heater flow temperature; a second compressor power reading and a coarse electric heater power; ventilation readings: exhaust, extract, outdoor and supply air temperatures, indoor, outdoor and highest humidity (%), indoor, outdoor and highest air quality (ppm, no device class), exhaust and supply fan power, summer bypass flap and auxiliary heater power (%), exhaust fan speed (rpm), supply fan speed (no device class or statistics), run time and filter remaining time (min, no statistics) and the exhaust fan level |
+| no | cylinder temperature (the same value as the hot water temperature), hot gas (TR6), suction line (TR5), high-pressure (JR1) and low-pressure (JR0), condenser heating (TR3) and cooling (TR4), compressor and air intake (TL2) temperatures; outdoor unit fan (PL3), primary heating pump (PC0) and compressor speed (%); primary supply temperature (TC1); a second compressor power reading and a coarse electric heater power; ventilation readings: exhaust, extract, outdoor and supply air temperatures, indoor, outdoor and highest humidity (%), indoor, outdoor and highest air quality (ppm, no device class), exhaust and supply fan power, summer bypass flap and auxiliary heater power (%), exhaust fan speed (rpm), supply fan speed (no device class or statistics), run time and filter remaining time (min, no statistics) and the exhaust fan level |
 | no, diagnostic | the controller's other internal signals (`/signals/…`) with numeric readings: unit taken from the reading, long-term statistics when that unit is one of a measurement (not for run and remaining times), meaning not documented in detail. Identifiers, addresses or keys (for example the energy-management link ID) and free text are never offered. |
 
 The controller's signals are offered as follows. Signals reported as true or
 false, also as declared TRUE/FALSE states, are on/off states (`on`/`off`, not
-`true`/`false`, since 0.9.0-alpha.2); compressor, hot water valve, four-way valve, electric
-heater stages 1 to 3, drip pan and crankcase heaters, heating pump, cooling,
-low-noise mode, low heating volume flow and an overheated inverter are enabled.
+`true`/`false`, since 0.9.0-alpha.2); compressor, electric heater stages 1 to 3,
+drip pan and crankcase heaters, primary heating pump (PC0), cooling, low-noise
+mode, low heating volume flow and an overheated inverter are enabled. The hot
+water 3-way valve (VW1) and the 4-way valve (VR4) are enabled too and show the
+position instead of on/off: VW1 *Heating* or *Hot water*, VR4 *Heating* or
+*Cooling/defrost*. A second compressor status, electric heater stage 4 and the
+heating circuit 1 pump (PC1) are disabled.
 Signals that declare named states without a unit are states; season mode,
 heating/cooling state and smart grid mode are enabled, the holiday slots and
 other states disabled. A signal with a unit stays a number: its named marker
 states (for example an open sensor) show no value. Damped outdoor temperature,
-drip pan temperature, heat output (compressor), expansion valve opening, the
-compressor run times for heating, hot water and cooling (shown in hours, no
-long-term statistics) and the heating circuit 1 volume flow are enabled. An
+drain pan temperature (TA4), heat output (compressor), the opening of the
+expansion valves VR1 and VR0 (%), the compressor run times for heating, hot
+water and cooling (shown in hours, no long-term statistics) and the heating
+circuit 1 flow rate (PC1) are enabled. The compressor start delay is disabled.
+Nine signals that are a second source of a reading another entity already shows
+are named after it with "(signal)", for example *Compressor speed (signal)* or
+*Return temperature (TC0, signal)*; they are disabled diagnostic entities with
+long-term statistics where their unit is one of a measurement. An
 **Installation date** sensor is derived from the three installation date
 signals (year counted from 2000); the parts stay available, disabled. External
 inputs and the room controller assignment are disabled states.
+
+On/off signals are enum sensors (`sensor.…` with the states `on` and `off`),
+not binary sensors. Automations, templates or cards written for a
+`binary_sensor.…` of such a signal need the sensor's entity ID and the states
+`on`/`off`. A signal that the gateway no longer lists keeps its entity: it
+becomes unavailable and the integration does not delete it, so its history and
+settings stay for the case that the gateway lists the signal again.
 
 A volume flow too low for its sensor to measure is reported by the device as
 its declared low-flow state (for example `lowflow` with the value 65535). The
