@@ -1157,6 +1157,11 @@ def _identifier_name(name: str, *, added: bool) -> bool:
     )
 
 
+def is_identifier_path(path: str) -> bool:
+    """A path whose leaf or parents name an identifier, address or secret."""
+    return _identifier_path(path)
+
+
 def _identifier_path(path: str) -> bool:
     """An identifier in a path: the leaf by every rule, its parents only by
     the earlier ones, so a newer word never retires a whole subtree."""

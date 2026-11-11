@@ -74,19 +74,24 @@ def device_info_for_resource(
             if model == "Heating system" or model.casefold() == rrc.GATEWAY_DEVICE_TYPE
             else model
         )
+    serial_number = _clean_serial(
+        _resource_string(coordinator, "/gateway/serialId")
+    ) or _first_serial(system_info, "ProductSerialNumber", "ModuleSerialNumber")
     info = DeviceInfo(
         identifiers=identifiers,
         manufacturer=manufacturer,
         model=model,
         model_id=model_id,
-        serial_number=_clean_serial(_resource_string(coordinator, "/gateway/serialId"))
-        or _first_serial(system_info, "ProductSerialNumber", "ModuleSerialNumber"),
         sw_version=_resource_string(coordinator, "/gateway/versionFirmware")
         or gateway.firmware_version
         or _first_value(system_info, "Ver", "SwIdenStr"),
         hw_version=_resource_string(coordinator, "/gateway/versionHardware")
         or _first_value(system_info, "HwVersion", "ModuleHwIdentStr"),
     )
+    if serial_number:
+        # D34: without a reading (the stored inventory keeps no serial
+        # number) the key is left out, so the registry keeps the known one.
+        info["serial_number"] = serial_number
     if not known:
         # C8: a new device gets a name without the brand (the manufacturer
         # field still names it); an existing device keeps its name.
