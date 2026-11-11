@@ -27,6 +27,7 @@ from .holidays import (
     parse_holiday_state,
     parse_holiday_write_configuration,
 )
+from .legacy_holidays import SYSTEM_INFO_PATH
 from .pointt import (
     AuthenticationError,
     PointTClient,
@@ -919,7 +920,10 @@ def holiday_resources_from_snapshots(
     """Extract fresh-enough holiday resources without depending on coordinator types."""
     resources: dict[str, Resource] = {}
     for path, snapshot in snapshots.items():
-        if not (is_holiday_resource_path(path) or path == HOLIDAY_TIMEZONE_PATH):
+        if not (
+            is_holiday_resource_path(path)
+            or path in (HOLIDAY_TIMEZONE_PATH, SYSTEM_INFO_PATH)
+        ):
             continue
         resource = getattr(snapshot, "resource", None)
         available = getattr(snapshot, "available", False)

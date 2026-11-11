@@ -98,6 +98,13 @@ automatic mode because this mode does not support temperature commands.
 The reported target remains available through the climate's `temperature`
 attribute and the existing current-target sensor.
 
+When the circuit reports the control type `constants` (`controlType`), the
+manufacturer's app offers no control of the circuit. Since 0.9.0-alpha.6 the
+climate then only shows the circuit: it offers no target, no other mode and
+no off command, and a mode or temperature call is refused before any request.
+The individual entities of the circuit keep their own rules. This is expected,
+untested on a real device.
+
 I show room temperature only from that circuit's valid `roomtemperature`
 resource. I do not substitute a flow temperature, infer active heating from
 a temperature difference or claim that a winter-mode flag proves heat output.
@@ -266,6 +273,13 @@ Home Assistants Standardthermostat zeigt im Automatikbetrieb keinen
 Sollwertregler, weil dort keine Temperaturbefehle unterstützt werden.
 Der gemeldete Sollwert steht im Attribut `temperature` der Klimaentität
 und im bestehenden Sensor für den aktuellen Sollwert zur Verfügung.
+
+Meldet der Heizkreis die Regelungsart `constants` (`controlType`), bietet die
+Hersteller-App keine Bedienung des Kreises an. Seit 0.9.0-alpha.6 zeigt die
+Klimaentität den Kreis dann nur an: kein Sollwert, keine andere Betriebsart,
+kein Ausschalten; ein Befehl wird vor jeder Anfrage abgewiesen. Die
+Einzelentitäten folgen weiter ihren eigenen Regeln. Erwartet, aber an einem
+echten Gerät ungetestet.
 
 Die Raumtemperatur stammt ausschließlich aus einem gültigen
 `roomtemperature`-Messwert dieses Kreises. Vorlauftemperaturen werden nicht

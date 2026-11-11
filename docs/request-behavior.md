@@ -265,6 +265,39 @@ add a dedicated initial batch. Failed supplementary reads also need later
 recovery requests. The test does not establish faster startup, a guaranteed
 percentage reduction, or real-world uptime on a physical heating system.
 
+## iCom gateways
+
+Gateways that report the device type `icom` (for example KM200, KM100, KM50
+or MB LAN 2) pass every request on to the gateway itself. In one diagnostic I
+evaluated, such a gateway answered about 40 % slower per path than a room
+controller, and during an outage every request ran into the 30 s timeout. The
+cloud then answered with a rate limit after a few failed cycles. Since
+0.9.0-alpha.6 I therefore apply a separate load profile to these gateways
+only; every other gateway keeps the behaviour described above:
+
+- **Cloud-friendly from the start:** a new cloud connection with an iCom
+  gateway starts with the cloud-friendly profile. It can be changed in the
+  options of the connection like any other profile. Existing connections keep
+  their profile.
+- **Smaller batches after a timeout:** after a cycle with a timeout, the next
+  cycle reads batches of half the size, at least 10 paths (30, 15, 10). After
+  three cycles in a row in which every batch answered, the size doubles again
+  step by step (10, 20, 30). A fixed batch size of 10 would double the number
+  of requests in normal operation without any evidence that it helps, so the
+  size goes back to 30 once the gateway answers. The fault sources stay one
+  batch.
+- **Growing breaker:** the breaker still opens after three failed cycles in a
+  row. During one outage each further opening pauses longer: 5, 10, 20 and
+  then 30 minutes at most. The first usable cycle closes it, and the next
+  outage starts again at 5 minutes.
+- **Longer read-back:** a write is read back after 1, 2, 3 and 4 seconds
+  (10 s in all) instead of 0.5, 1 and 2 seconds. A write is still sent only
+  once.
+
+I tested this with simulated outages of this shape (timeouts, a rate limit
+after four failed cycles, recovery). It is expected, untested on a real iCom
+gateway.
+
 ## Capacity with several systems
 
 All PointT requests of one saved cloud access share three request slots:
@@ -387,6 +420,18 @@ als aktuell, und nichts wird ein zweites Mal gesendet.
 Die Integration spart wiederholte Metadatenabrufe und lässt unwichtige
 Zusatzabfragen die funktionierende Einrichtung nicht mehr abbrechen. Neue,
 bisher unbekannte Anlagenbestandteile benötigen weiterhin eine neue Discovery.
+
+Für iCom-Gateways (Gerätetyp `icom`) gilt seit 0.9.0-alpha.6 ein eigenes
+Lastprofil, alle anderen Gateways bleiben unverändert: Eine neue
+Cloud-Verbindung mit einem iCom-Gateway beginnt mit dem cloudschonenden
+Profil, das sich in den Optionen wie bisher ändern lässt. Nach einem Zyklus
+mit Zeitüberschreitung liest der nächste Zyklus halb so große Pakete,
+mindestens 10 Pfade; nach drei fehlerfreien Zyklen in Folge verdoppelt sich
+die Größe schrittweise wieder bis 30. Der Schutzschalter pausiert während
+eines Ausfalls 5, 10, 20 und höchstens 30 Minuten und beginnt nach dem ersten
+brauchbaren Zyklus wieder bei 5 Minuten. Schreibvorgänge werden nach 1, 2, 3
+und 4 Sekunden zurückgelesen. Ich habe das mit simulierten Ausfällen geprüft;
+an einem echten iCom-Gateway ist es erwartet, aber ungetestet.
 
 Für einen fehlenden manuellen Heizkreis-Sollwert gibt es zusätzlich höchstens
 drei gezielte Abrufe pro zusammenhängendem Ausfall. Die Wartezeiten von 3, 10

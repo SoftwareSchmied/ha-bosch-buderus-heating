@@ -44,6 +44,7 @@ from .configuration_migration import (
 )
 from .const import DOMAIN, PollingProfile
 from .data import tokens_to_data
+from .icom_profile import any_icom_gateway
 from .local_identity import CONTRACT
 from .pointt import AuthTokens, Brand, Gateway, OAuthClient, OAuthFlow, PointTClient
 
@@ -642,7 +643,13 @@ def new_cloud_configuration(
     }
     section(options, "connections")[connection] = {
         "enabled": True,
-        "polling_profile": PollingProfile.STANDARD.value,
+        # I1: a new connection with an iCom gateway starts cloud-friendly;
+        # the options change it like any other profile.
+        "polling_profile": (
+            PollingProfile.CLOUD_FRIENDLY
+            if any_icom_gateway(discovery.gateways, gateways)
+            else PollingProfile.STANDARD
+        ).value,
     }
     _merge_targets(
         hass,

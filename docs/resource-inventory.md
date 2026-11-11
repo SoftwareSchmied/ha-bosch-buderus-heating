@@ -394,3 +394,57 @@ No real device capture is claimed for these new examples.
 | R359 | wddw2 | `/dhwCircuits/waterTotalConsumption` | supported_read | device confirmation as applicable |
 | R360 | wddw2 | `/gateway/wifi/mac` | excluded | device confirmation as applicable |
 | R361 | wddw2 | `/gateway/wifi/ssid` | excluded | device confirmation as applicable |
+
+## iCom rows R199 to R243 compared with a real gateway
+
+The iCom rows R199 to R243 follow the path list of an app module that the
+current manufacturer's app ships switched off; the app's active iCom code path
+reads and writes more. For 0.9.0-alpha.6 I compared the rows with the
+diagnostic of a real iCom gateway with a boiler controller (EMS 2), evaluated
+locally and only as shapes. The table above is unchanged; the model rows keep
+their IDs. The differences are listed here, and the synthetic fixture
+[`icom/gateway-shapes.json`](../tests/fixtures/contracts/icom/gateway-shapes.json)
+holds these shapes with constructed values.
+
+**Present on the real gateway, missing from R199 to R243 (I4):**
+
+| Path | Shape on that gateway | Note |
+|---|---|---|
+| `/system/holidayModes/hm{n}/assignedTo` | `arrayData`, 2 options, writable | used by the [older holiday formats](legacy-holidays.md) |
+| `/system/holidayModes/hm{n}/delete` | 403 | deleting a holiday stays unavailable there |
+| `/dhwCircuits/dhw1/tdMode` | string, 2 options, writable | like R352 (wddw2) |
+| `/dhwCircuits/dhw1/currentSetpoint` | float, °C | like R016 (connectkey) |
+| `/dhwCircuits/dhw1/temperatureLevels/off` | float, °C, read-only | like R028 (connectkey) |
+| `/heatSources/flameStatus`, `/heatSources/actualModulation` | string with 2 options; float, % | the `hs1` leaves of the same name answer 403 |
+| `/heatSources/systemPressure` | float, bar | like R076 (connectkey) |
+| `/heatSources/hs1/actualPower` | float, kW | like R310 (wddw2) |
+| `/system/healthStatus`, `/gateway/update/status` | string, 3 options each | read-only |
+| `/system/sensors/temperatures/chimney`, `return`, `supply_t1`, `supply_t1_setpoint` | float, °C | read-only |
+| `/heatingCircuits/hc1/heatCurveMax`, `heatCurveMin` | float, °C, writable with limits | no entity |
+| `/heatingCircuits/hc1/roomInfluence` | float, unit `K`, writable with limits | no entity |
+| `/heatingCircuits/hc1/suWiThreshold` | float, °C, writable with limits | like R104 (connectkey) |
+| `/heatingCircuits/hc1/supplyTemperatureSetpoint` | float, °C, read-only | no entity |
+
+**In R199 to R243, but not answered by that gateway (I5):**
+
+| Row | Path | Answer |
+|---|---|---|
+| R223 | `/heatingCircuits/hc{n}/manualRoomSetpoint` | 404; the circuit offers `temporaryRoomSetpoint` (writable, with limits) instead |
+| R235 | `/system/holidayModes/hm{n}/fixTemperature` | 404 in all five slots |
+| R202 | `/heatingCircuits/hc{n}/cooling/roomTempSetpoint` | 404 |
+| R211 | `/dhwCircuits/dhw{n}/temperatureLevels/low` | not offered; the levels are `high` and `off` |
+| R207, R222 | `/dhwCircuits/dhw{n}/holidayMode/activated`, `/heatingCircuits/hc{n}/holidayMode/activated` | the parent `holidayMode` answers 403 |
+
+The slot parents `/system/holidayModes/hm{n}` answer 403 while their leaves
+are readable. Faults come only through `/notifications`; `hs1/activefailure`
+and `hs1/failurelist` answer 404. The diagnostic held no active notification,
+so the format of an iCom notification entry is still unconfirmed.
+
+**Used by the active app code path, not by R199 to R243 (APP-24):** writing
+`temporaryRoomSetpoint` (−1 clears it), `roomtemperature`, `charge`,
+`chargeDuration` and `singleChargeSetpoint`, the pool values below
+`/heatSources`, the energy histories below `/recordings`, `/gateway/serialId`,
+`/system/brand`, `suWiThreshold`, `cooling/outdoorThreshold`,
+`switchProgramMode` and `/notifications`. Reading most of these works through
+the generic discovery already; writing `temporaryRoomSetpoint`, the pool and
+the energy histories is not part of alpha.6.

@@ -541,6 +541,28 @@ capability placeholders and are checked again after their 24-hour pause. They
 count toward the inventory but not toward available runtime resources. Historical
 failure lists are checked at startup only.
 
+## iCom gateways
+
+`gateways[].icom` appears only for a gateway that reports the device type
+`icom`; other gateways keep their report. It contains sizes, counts, fixed
+tokens and component type numbers only:
+
+- `load_profile`: the current batch size (`bulk_size`, normally 30, at least
+  10 after timeouts), `good_cycles_towards_next_step`, `bulk_size_reductions`,
+  `circuit_openings_in_outage`, the breaker pauses in minutes
+  (`circuit_pause_minutes`: 5, 10, 20, 30) and the `read_back_delays` of a
+  write (1, 2, 3 and 4 s), see [request behavior](request-behavior.md#icom-gateways);
+- `system_info_read` and `system_components`: the component type (`id`) and
+  token (`token`) of each entry of `/system/info`. Serial numbers, product
+  names and versions are never included;
+- `bus`: `EMS2_0`, `EMS1_0`, `CAN`, `MODBUS`, `No_Bus`, `other` or `null`.
+  With `EMS1_0`, `CAN` or `No_Bus`, `bus_hint` says that the manufacturer's
+  app shows such a system as not supported and the integration shows only the
+  values the cloud reports;
+- `holiday_rules`: whether the HMI800 HP Light rule applies and which heating
+  circuits token 16 hides, with `status: expected_untested`
+  (see [older holiday formats](legacy-holidays.md)).
+
 ## RRC program selection
 
 `gateways[].rrc_programs` explains for the zones of an RRC room controller,

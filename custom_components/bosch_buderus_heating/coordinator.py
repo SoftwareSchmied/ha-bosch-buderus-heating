@@ -68,6 +68,12 @@ from .holidays import (
     HolidayWriteValues,
     parse_holiday_write_configuration,
 )
+from .icom_profile import (
+    ICOM_READ_BACK_DELAYS,
+    AdaptiveBulkSize,
+    GrowingCircuitPause,
+    is_icom_gateway,
+)
 from .legacy_holiday_writes import IcomHolidayWriteService
 from .legacy_holidays import is_icom_slot
 from .plant_model import PlantModel
@@ -548,6 +554,10 @@ class BoschBuderusDataUpdateCoordinator(
         self._negative_until: dict[str, float] = {}
         self._gateway_failure_count = 0
         self._circuit_open_until = 0.0
+        # I1: the load profile of an iCom gateway; None on every other one.
+        icom = is_icom_gateway(gateway)
+        self._icom_bulk = AdaptiveBulkSize() if icom else None
+        self._icom_circuit_pause = GrowingCircuitPause() if icom else None
         # O80: monotonic time the breaker first opened in the current outage;
         # None while closed. Only the first opening logs a warning.
         self._circuit_outage_since: float | None = None
@@ -649,7 +659,9 @@ class BoschBuderusDataUpdateCoordinator(
         self._reconcile_result: str | None = None
         self._assume_stored = False
         self._inventory_confirmed_at: float | None = None
-        self._write_service = WriteService(client)
+        self._write_service = WriteService(
+            client, read_back_schedule=ICOM_READ_BACK_DELAYS if icom else None
+        )
         # S11/S12: the write context (an RRC controller or not), the write
         # counters of the RRC contracts and their structured writes.
         self._control_context: ControlContext = GENERIC_CONTEXT
@@ -658,7 +670,9 @@ class BoschBuderusDataUpdateCoordinator(
         self.rrc_struct_writes = RrcStructWrite()
         self._rrc_program_service = RrcProgramService(client)
         self._holiday_write_service = HolidayWriteService(client)
-        self._icom_holiday_write_service = IcomHolidayWriteService(client)
+        self._icom_holiday_write_service = IcomHolidayWriteService(
+            client, read_back_delays=ICOM_READ_BACK_DELAYS if icom else None
+        )
         # Z2: the weekly switch program writes and their value-free counters.
         self._switch_program_service = SwitchProgramService(client)
         self.switch_program_write_stats = RrcWriteStats()
@@ -1037,6 +1051,15 @@ class BoschBuderusDataUpdateCoordinator(
         if isinstance(cause, AuthenticationError):
             self._request_reauthentication()
         return category
+
+    def icom_profile_diagnostics(self) -> dict[str, object] | None:
+        """I1: the state of the iCom load profile; None on other gateways."""
+        if self._icom_bulk is None or self._icom_circuit_pause is None:
+            return None
+        return {
+            **self._icom_bulk.diagnostics(),
+            **self._icom_circuit_pause.diagnostics(),
+        }
 
     def write_read_back_delays(self) -> tuple[float, ...]:
         """S7: the read-back schedule of a write in the current context."""
@@ -2626,10 +2649,16 @@ class BoschBuderusDataUpdateCoordinator(
             # read before it, tells them apart.
             others = [probe]
         paths = [*faults, *others, *failing]
+        # I1: an iCom gateway reads smaller batches after a timeout; the
+        # fault sources stay one batch (FAULT-1).
+        bulk_size = (
+            self._icom_bulk.size if self._icom_bulk is not None else MAX_BULK_PATHS
+        )
+        cycle_timed_out = False
         chunks = (
             *chunk_resource_paths(faults, size=MAX_BULK_PATHS),
-            *chunk_resource_paths(others, size=MAX_BULK_PATHS),
-            *chunk_resource_paths(failing, size=MAX_BULK_PATHS),
+            *chunk_resource_paths(others, size=bulk_size),
+            *chunk_resource_paths(failing, size=bulk_size),
         )
         for chunk in chunks:
             if attempted_paths and monotonic() - now_monotonic >= CYCLE_BUDGET_SECONDS:
@@ -2682,6 +2711,7 @@ class BoschBuderusDataUpdateCoordinator(
                 break
             except PointTError as err:
                 interrupted_paths.update(chunk)
+                cycle_timed_out = cycle_timed_out or isinstance(err, RequestTimeout)
                 cycle_results.extend(
                     BatchItemResult(self.gateway.gateway_id, path, None, error=err)
                     for path in chunk
@@ -2758,6 +2788,12 @@ class BoschBuderusDataUpdateCoordinator(
         )
         # A switched reading was requested once; afterwards its normal rate.
         self._urgent_reads -= attempted_paths
+        if self._icom_bulk is not None:
+            # I1: halve once after a timeout; recover after good cycles.
+            if cycle_timed_out:
+                self._icom_bulk.record_timeout()
+            elif not failed_chunks:
+                self._icom_bulk.record_good_cycle()
         self._main_cycle_failed = bool(failed_chunks) or any(
             not result.ok and result.status not in (403, 404, 406)
             for result in cycle_results
@@ -4043,7 +4079,13 @@ class BoschBuderusDataUpdateCoordinator(
     def _record_gateway_failure(self, now_monotonic: float) -> None:
         self._gateway_failure_count += 1
         if self._gateway_failure_count >= CIRCUIT_FAILURE_THRESHOLD:
-            pause = CIRCUIT_OPEN_INTERVAL.total_seconds()
+            # I1: on an iCom gateway each further opening of one outage
+            # pauses longer (5, 10, 20, then 30 minutes).
+            pause = (
+                self._icom_circuit_pause.next_pause_seconds()
+                if self._icom_circuit_pause is not None
+                else CIRCUIT_OPEN_INTERVAL.total_seconds()
+            )
             self._circuit_open_until = now_monotonic + pause
             if self._circuit_outage_since is None:
                 # O80: one warning when the breaker opens; while the outage
@@ -4090,6 +4132,8 @@ class BoschBuderusDataUpdateCoordinator(
         """Close the breaker after a usable cycle; report a recovered outage once."""
         self._gateway_failure_count = 0
         self._circuit_open_until = 0.0
+        if self._icom_circuit_pause is not None:
+            self._icom_circuit_pause.reset()
         # The batch warning (O81) ends only with a cycle without a failed
         # batch (COORD-3), not with every usable one.
         since, self._circuit_outage_since = self._circuit_outage_since, None

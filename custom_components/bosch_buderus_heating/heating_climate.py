@@ -41,6 +41,9 @@ from .writes import (
 
 _MODE_PATH = re.compile(r"^(/heatingCircuits/[^/]+)/operationMode$")
 _MODES = {"off": HVACMode.OFF, "manual": HVACMode.HEAT, "auto": HVACMode.AUTO}
+# APP-15: with this control type the manufacturer's app offers no control of
+# the circuit; the climate then only shows it (expected, untested).
+_READ_ONLY_CONTROL_TYPES = frozenset({"constants"})
 
 
 def track_heating_climates(
@@ -202,9 +205,17 @@ class HeatingCircuitClimate(
         mode = self._mode
         return _MODES.get(str(mode.value)) if self.available and mode else None
 
+    def _read_only_control(self, *, strict: bool = False) -> bool:
+        """APP-15: the circuit reports a control type without control."""
+        resource = self._resource("controlType", strict=strict)
+        return resource is not None and resource.value in _READ_ONLY_CONTROL_TYPES
+
     @property
     def hvac_modes(self) -> list[HVACMode]:
         mode = self._mode
+        if self._read_only_control():
+            current = self.hvac_mode
+            return [current] if current is not None else []
         return (
             [
                 mapped
@@ -261,6 +272,8 @@ class HeatingCircuitClimate(
 
     @property
     def supported_features(self) -> Feature:
+        if self._read_only_control():
+            return Feature(0)
         features = (
             Feature.TARGET_TEMPERATURE
             if (self.hvac_mode == HVACMode.HEAT and self._target is not None)
@@ -323,7 +336,12 @@ class HeatingCircuitClimate(
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         mode = self._checked_mode(strict=True)
         context = self._checked_context(strict=True)
-        if mode is None or context is None or hvac_mode not in self.hvac_modes:
+        if (
+            mode is None
+            or context is None
+            or hvac_mode not in self.hvac_modes
+            or self._read_only_control(strict=True)
+        ):
             raise _invalid()
         raw = next(raw for raw, mapped in _MODES.items() if mapped == hvac_mode)
         await async_set_control(
@@ -354,6 +372,7 @@ class HeatingCircuitClimate(
             or mode.value != "manual"
             or target is None
             or context is None
+            or self._read_only_control(strict=True)
             or isinstance(value, bool)
             or not isinstance(value, (int, float))
             or not math.isfinite(value)
