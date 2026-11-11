@@ -75,6 +75,10 @@ gateway they are expected, untested.
   the component type numbers of `/system/info` (no serial numbers or names),
   the reported bus with a hint for `EMS1_0`, `CAN` and `No_Bus`, and whether a
   holiday rule applies.
+- **Inventory:** the [resource inventory](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.6/docs/resource-inventory.md#icom-rows-r199-to-r243-compared-with-a-real-gateway)
+  now lists the iCom paths a real gateway offers beyond the rows R199 to R243
+  and the rows it does not answer, and a synthetic fixture holds these shapes
+  with constructed values.
 
 #### Fixes
 
