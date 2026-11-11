@@ -9,6 +9,7 @@ setpoint. The browser part is ``ha-rrc-zone.test.cjs``.
 import asyncio
 import json
 import os
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
@@ -57,6 +58,10 @@ async def test_zone_climate_frontend(
         assert await async_setup_component(hass, component, frontend_config)
     hass.data["onboarding"].onboarded = True
     cloud = zone_cloud()
+    # Zone 2 with a closed window: with an open one the target shown is the
+    # active setpoint (ZONE-08), not the temporary setpoint set here.
+    window = path(2, "openWindowDetection/status")
+    cloud.tree[window] = replace(cloud.tree[window], value="closed")
     entry = _entry(hass)
     with (
         patch(f"{PACKAGE}.async_migrate_entry", AsyncMock(return_value=True)),
