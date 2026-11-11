@@ -12,8 +12,11 @@ controller yet ("expected, untested").
   first.
 - Summer/winter and night switching with their thresholds: selections and
   numbers, disabled by default. The season mode: a selection, only with at
-  least two offered modes, the empty one left out. Setpoint optimization: a
-  switch.
+  least two offered modes, the empty one left out, and only while its
+  current mode is one of them. Setpoint optimization: a switch. Both are
+  end-user settings, enabled by default, and follow the general rule of the
+  ``used`` and ``available`` flags: not available gives no control, not
+  used keeps the control and refuses every write unsent.
 - The heating curve, the supply limits, the room influence and the
   summer/winter and night settings act only in weather-compensated control
   (``control`` "weather"); in any other control a write is refused unsent
@@ -176,9 +179,11 @@ def check_limit(
 
 
 _STRING = frozenset({"stringValue"})
-# The heating circuit settings do not depend on their ``used`` flag: a
-# setting the controller reports as not used stays writable, a used but
-# unavailable one is shown and locked (``unused_writable``).
+# The installer-like heating circuit settings do not depend on their
+# ``used`` flag: a setting the controller reports as not used stays
+# writable, a used but unavailable one is shown and locked
+# (``unused_writable``). The season mode and the setpoint optimization do
+# depend on it and keep the general rule.
 _UNUSED_WRITABLE: Final = True
 SWITCH_MODES: Final = ("off", "automatic")
 SEASON_MODES: Final = ("always_heating", "always_cooling", "automatic")
@@ -273,7 +278,8 @@ NUMBER_POLICIES: Final = (
 SUMMER_WINTER_MODE_POLICY: Final = _mode("suWiSwitchMode", SWITCH_MODES)
 NIGHT_MODE_POLICY: Final = _mode("nightSwitchMode", SWITCH_MODES)
 # Firmware 4.2.0 and later advertise the modes, sometimes with an empty one;
-# a single offered mode (#122) leaves the reading only.
+# a single offered mode (#122) leaves the reading only, and so does a
+# current mode that is not among the offered ones.
 SEASON_MODE_POLICY: Final = EnumWritePolicy(
     leaf("seasonOptMode"),
     _STRING,
@@ -281,7 +287,7 @@ SEASON_MODE_POLICY: Final = EnumWritePolicy(
     known_only=True,
     ignored_options=frozenset({""}),
     min_options=2,
-    unused_writable=_UNUSED_WRITABLE,
+    current_required=True,
 )
 SETPOINT_OPTIMIZATION_POLICY: Final = EnumWritePolicy(
     leaf("setpointOptimization"),
@@ -291,7 +297,6 @@ SETPOINT_OPTIMIZATION_POLICY: Final = EnumWritePolicy(
     fallback_options=("on", "off"),
     on_value="on",
     off_value="off",
-    unused_writable=_UNUSED_WRITABLE,
 )
 ENUM_POLICIES: Final = (
     SUMMER_WINTER_MODE_POLICY,

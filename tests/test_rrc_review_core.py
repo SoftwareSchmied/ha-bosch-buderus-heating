@@ -203,22 +203,24 @@ def test_unused_numbers_are_refused_too() -> None:
 
 
 def test_the_heating_circuit_keeps_the_earlier_rule() -> None:
-    """CIRCUIT-05: the circuit settings do not depend on ``used``."""
-    assert rrc_contract_circuit.SETPOINT_OPTIMIZATION_POLICY.unused_writable
-    assert all(
-        policy.unused_writable
-        for policy in (
-            *rrc_contract_circuit.ENUM_POLICIES,
-            *rrc_contract_circuit.NUMBER_POLICIES,
-        )
-    )
+    """CIRCUIT-05: the circuit settings do not depend on ``used``, except
+    the season mode and the setpoint optimization (E3), which follow the
+    general rule."""
+    general = {
+        rrc_contract_circuit.SEASON_MODE_POLICY,
+        rrc_contract_circuit.SETPOINT_OPTIMIZATION_POLICY,
+    }
+    for policy in (
+        *rrc_contract_circuit.ENUM_POLICIES,
+        *rrc_contract_circuit.NUMBER_POLICIES,
+    ):
+        assert policy.unused_writable is (policy not in general), policy
     unused = flagged(SETPOINT_OPTIMIZATION, "off", used="false")
-    validate_control_value(unused, "on", RRC_CONTEXT)
-    locked = flagged(SETPOINT_OPTIMIZATION, "off", used="true", available="false")
-    assert assess_control(locked, RRC_CONTEXT).eligible
-    with pytest.raises(ControlLocked) as raised:
-        validate_control_value(locked, "on", RRC_CONTEXT)
-    assert not isinstance(raised.value, ControlUnused)
+    assert assess_control(unused, RRC_CONTEXT).eligible
+    with pytest.raises(ControlUnused):
+        validate_control_value(unused, "on", RRC_CONTEXT)
+    hidden = flagged(SETPOINT_OPTIMIZATION, "off", used="true", available="false")
+    assert assess_control(hidden, RRC_CONTEXT).rejection_reason == "rrc_unavailable"
     hidden = flagged(SETPOINT_OPTIMIZATION, "off", used="false", available="false")
     assert assess_control(hidden, RRC_CONTEXT).rejection_reason == "rrc_unavailable"
 

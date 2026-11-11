@@ -908,9 +908,12 @@ def assess_control(
     if policy is not None:
         schema_issue = schema_issue or _contract_availability_issue(resource, policy)
     if isinstance(policy, EnumWritePolicy):
+        current_issue = _enum_current_value_issue(resource, policy)
         return ControlAssessment(
             policy,
-            schema_issue or _enum_rejection_reason(resource, policy),
+            schema_issue
+            or _enum_rejection_reason(resource, policy)
+            or (current_issue if policy.current_required else None),
             writable=resource.metadata.writable,
             options=tuple(
                 dict.fromkeys(
@@ -922,7 +925,7 @@ def assess_control(
                     and (not policy.known_only or value in policy.known_values)
                 )
             ),
-            current_value_issue=_enum_current_value_issue(resource, policy),
+            current_value_issue=current_issue,
         )
     if isinstance(policy, NumberWritePolicy):
         number_policy = policy

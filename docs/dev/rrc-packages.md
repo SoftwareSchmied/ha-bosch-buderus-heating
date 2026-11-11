@@ -106,8 +106,12 @@ come from `rrc.flag_state`):
   every write is refused unsent (`ControlUnused`, a `ControlLocked`; the
   message comes from `control.unused_translation_key`).
 - `unused_writable=True` on a policy keeps the earlier rule for settings
-  that do not depend on `used` (the heating circuit): `used` false stays
-  writable, used but unavailable is shown and locked (S8, `ControlLocked`).
+  that do not depend on `used` (the heating circuit, except the season mode
+  and the setpoint optimization): `used` false stays writable, used but
+  unavailable is shown and locked (S8, `ControlLocked`).
+- `current_required=True` on an enum policy gives no control while the
+  current value is not among the offered options
+  (`current_option_not_advertised`), for example the season mode.
 
 Readings decide on their own whether a flag matters to them. Writing needs
 `writeable` (S1) and limits from the metadata (S3).

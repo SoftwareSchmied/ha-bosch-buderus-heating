@@ -51,8 +51,11 @@ from custom_components.bosch_buderus_heating.writes import (
     GENERIC_CONTEXT,
     RRC_CONTEXT,
     ContractRejected,
+    ControlLocked,
+    ControlUnused,
     WriteService,
     assess_control,
+    validate_control_value,
 )
 from tests.helpers.rrc_cloud import Clock, RrcCloud, cloud_patches, load_tree
 from tests.test_entry import _entry
@@ -220,10 +223,113 @@ def test_room_influence_in_the_unit_other_is_a_whole_number_without_unit() -> No
     assert assess_control(celsius, RRC_CONTEXT).rejection_reason == ("unsupported_unit")
 
 
-def test_used_but_unavailable_switch_is_shown_and_locked() -> None:
-    """S8: ``hc2/setpointOptimization`` stays a control and refuses writes."""
-    resource = circuit_tree()[f"{HC2}/setpointOptimization"]
-    assert assess_control(resource, RRC_CONTEXT).eligible
+def _flagged(resource: Resource, **flags: bool) -> Resource:
+    """The resource with valid ``used``/``available`` flags."""
+    return replace(
+        resource,
+        metadata=replace(resource.metadata, availability_flags_valid=True, **flags),
+    )
+
+
+@pytest.mark.parametrize("path", [OPTIMIZATION, SEASON_MODE])
+@pytest.mark.parametrize(
+    ("used", "available", "reason", "refused"),
+    [
+        (True, True, None, None),
+        # Shown and locked before; now no control, as for every setting that
+        # is not available.
+        (True, False, "rrc_unavailable", None),
+        (False, False, "rrc_unavailable", None),
+        # Shown with its value, every write refused unsent (it stayed
+        # writable before).
+        (False, True, None, ControlUnused),
+    ],
+)
+def test_season_mode_and_setpoint_optimization_follow_the_flags(
+    path: str,
+    used: bool,
+    available: bool,
+    reason: str | None,
+    refused: type[Exception] | None,
+) -> None:
+    """E3: both settings depend on ``used`` and ``available``: the general
+    rule of the contract settings, without ``unused_writable``."""
+    resource = _flagged(circuit_tree()[path], used=used, available=available)
+    assessment = assess_control(resource, RRC_CONTEXT)
+    assert assessment.rejection_reason == reason
+    assert not assessment.policy.unused_writable
+    assert assessment.enabled_by_default  # end-user settings (E3)
+    if reason is not None:
+        return
+    value = "on" if path == OPTIMIZATION else "always_heating"
+    if refused is None:
+        validate_control_value(resource, value, RRC_CONTEXT)
+    else:
+        with pytest.raises(refused) as raised:
+            validate_control_value(resource, value, RRC_CONTEXT)
+        assert raised.type is refused
+
+
+@pytest.mark.parametrize(
+    ("value", "eligible"),
+    [
+        ("automatic", True),
+        ("always_cooling", True),
+        # Known, but not among the offered modes.
+        ("always_heating", False),
+        # The empty mode is never offered.
+        ("", False),
+        ("unknown_mode", False),
+    ],
+)
+def test_season_mode_needs_its_current_mode_among_the_offered_ones(
+    value: str, eligible: bool
+) -> None:
+    """E3: no selection while the current mode is not offered, instead of a
+    selection without a current option."""
+    base = circuit_tree()[SEASON_MODE]
+    resource = replace(
+        base,
+        value=value,
+        metadata=replace(
+            base.metadata, allowed_values=("always_cooling", "automatic", "")
+        ),
+    )
+    assessment = assess_control(resource, RRC_CONTEXT)
+    assert assessment.eligible is eligible
+    if not eligible:
+        assert assessment.rejection_reason == "current_option_not_advertised"
+    # Only the season mode needs it.
+    assert [
+        policy
+        for policy in rrc_contract_circuit.ENUM_POLICIES
+        if policy.current_required
+    ] == [rrc_contract_circuit.SEASON_MODE_POLICY]
+
+
+@pytest.mark.parametrize(
+    ("used", "available", "refused"),
+    [
+        (False, True, None),  # not used: still writable
+        (True, False, ControlLocked),  # used, not available: shown and locked
+        (True, True, None),
+    ],
+)
+def test_the_other_circuit_settings_keep_their_rule(
+    used: bool, available: bool, refused: type[Exception] | None
+) -> None:
+    """``unused_writable`` stays on the curve, the limits and the switching."""
+    resource = _flagged(
+        circuit_tree()[f"{HC2}/roomInfluence"], used=used, available=available
+    )
+    assessment = assess_control(resource, RRC_CONTEXT)
+    assert assessment.eligible, assessment.rejection_reason
+    assert assessment.policy is rrc_contract_circuit.ROOM_INFLUENCE_POLICY
+    assert assessment.policy.unused_writable
+    if refused is not None:
+        with pytest.raises(refused) as raised:
+            validate_control_value(resource, 1, RRC_CONTEXT)
+        assert raised.type is refused  # locked, not "not used"
 
 
 def test_counterparts() -> None:
@@ -569,7 +675,6 @@ async def test_entities_on_a_controller(hass: HomeAssistant) -> None:
             ("select", uid(NIGHT_MODE)): True,
             ("select", uid(SEASON_MODE)): False,
             ("switch", uid(OPTIMIZATION)): False,
-            ("switch", uid(f"{HC2}/setpointOptimization")): False,
         }
         for (domain, unique_id), disabled in expected.items():
             entity = registry.async_get(_entity_id(hass, domain, unique_id))
@@ -578,6 +683,8 @@ async def test_entities_on_a_controller(hass: HomeAssistant) -> None:
             assert entity.entity_category is EntityCategory.CONFIG, unique_id
             assert entity.translation_key is not None, unique_id
         for domain, path in (
+            # E3: used but not available, as every unavailable setting.
+            ("switch", f"{HC2}/setpointOptimization"),
             ("select", f"{HC2}/seasonOptMode"),
             ("number", f"{HC2}/maxSupply"),
             ("number", f"{HC2}/minSupply"),
@@ -612,10 +719,6 @@ async def test_entities_on_a_controller(hass: HomeAssistant) -> None:
         assert season_mode.state == "automatic"
         switch = hass.states.get(_entity_id(hass, "switch", uid(OPTIMIZATION)))
         assert switch.state == "off"
-        locked = hass.states.get(
-            _entity_id(hass, "switch", uid(f"{HC2}/setpointOptimization"))
-        )
-        assert locked.state == "on"
 
         # The operating season: an enum sensor, unknown for other readings.
         sensor_id = _entity_id(hass, "sensor", uid(SEASON, "season"))
@@ -859,9 +962,18 @@ async def test_room_influence_and_thresholds_through_the_setup(
 async def test_selections_and_switch_write_once_with_read_back(
     hass: HomeAssistant,
 ) -> None:
-    cloud = CircuitCloud(plant())
+    tree = plant()
+    # Used but not available: a setting with ``unused_writable`` is locked.
+    tree[INFLUENCE] = _flagged(tree[INFLUENCE], used=True, available=False)
+    cloud = CircuitCloud(tree)
     entry, _coordinator, sleeps, stack, _clock = await _setup(
-        hass, cloud, enabled=(("select", uid(SUWI_MODE)), ("select", uid(NIGHT_MODE)))
+        hass,
+        cloud,
+        enabled=(
+            ("select", uid(SUWI_MODE)),
+            ("select", uid(NIGHT_MODE)),
+            uid(INFLUENCE),
+        ),
     )
     try:
         suwi = hass.states.get(_entity_id(hass, "select", uid(SUWI_MODE)))
@@ -892,18 +1004,24 @@ async def test_selections_and_switch_write_once_with_read_back(
         # The empty season mode is never offered.
         with pytest.raises(ServiceValidationError):
             await _select(hass, _entity_id(hass, "select", uid(SEASON_MODE)), "")
-        # S8: used but unavailable: shown, locked, nothing sent.
-        with pytest.raises(ServiceValidationError) as locked:
+        # E3: the controller stops using the setpoint optimization; the
+        # fresh read before the write finds it: shown, refused, not sent.
+        switch_id = _entity_id(hass, "switch", uid(OPTIMIZATION))
+        cloud.tree[OPTIMIZATION] = _flagged(
+            cloud.tree[OPTIMIZATION], used=False, available=True
+        )
+        with pytest.raises(ServiceValidationError) as unused:
             await hass.services.async_call(
-                "switch",
-                "turn_off",
-                {
-                    "entity_id": _entity_id(
-                        hass, "switch", uid(f"{HC2}/setpointOptimization")
-                    )
-                },
-                blocking=True,
+                "switch", "turn_off", {"entity_id": switch_id}, blocking=True
             )
+        assert unused.value.translation_key == "rrc_setting_unused"
+        assert hass.states.get(switch_id).state == "on"
+        # S8 for a setting that keeps ``unused_writable``: used but
+        # unavailable is shown, locked, nothing sent.
+        influence = _entity_id(hass, "number", uid(INFLUENCE))
+        assert hass.states.get(influence).state == "1.0"  # shown
+        with pytest.raises(ServiceValidationError) as locked:
+            await _set_number(hass, influence, 2)
         assert locked.value.translation_key == "rrc_circuit_setting_locked"
         assert len(cloud.written("PUT")) == 4
     finally:
@@ -1191,8 +1309,8 @@ async def test_dialog_refuses_a_draft_out_of_order_unsent(
         assert result["errors"] == {"base": "controls_curve_order"}
         assert _dialog_config(result)["invalid"] == [CURVE_MIN]
         assert cloud.written() == []
-        # Locked (used, not available): not offered in the dialog; a lock
-        # found only while writing has its own message
+        # Not available (E3: also when used): not offered in the dialog; a
+        # lock found only while writing has its own message
         # (test_heating_controls::test_dialog_partial_write_failure_is_explicit).
         _flow, opened = await _dialog(hass, entry)
         keys = {row["key"] for row in _dialog_config(opened)["rows"]}

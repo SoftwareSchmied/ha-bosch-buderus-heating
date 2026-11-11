@@ -118,6 +118,10 @@ class EnumWritePolicy:
     # writable, ``available`` false with ``used`` true is shown and locked
     # (S8, ``ControlLocked``).
     unused_writable: bool = False
+    # No control while the current value is not one of the offered options
+    # (``current_option_not_advertised``), instead of a selection without a
+    # current option.
+    current_required: bool = False
 
     @property
     def switch_values(self) -> tuple[str, str] | None:
