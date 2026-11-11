@@ -874,17 +874,21 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         TEMPERATURE,
         ("Luftansaugtemperatur (TL2)", "Air intake temperature (TL2)"),
     ),
+    # Enabled since 0.9.0-alpha.6: the fan and the primary heating pump
+    # speeds; the compressor speed waits for the entity review.
     _define(
         HS + "/oduFanSpeed",
         "outdoor_fan_speed",
         PERCENT,
         ("Lüfterdrehzahl Außeneinheit (PL3)", "Outdoor unit fan speed (PL3)"),
+        enabled=True,
     ),
     _define(
         REFRIGERANT + "/heatCarrierPumpSpeed",
         "heat_carrier_pump_speed",
         PERCENT,
         ("Drehzahl primäre Heizungspumpe (PC0)", "Primary heating pump speed (PC0)"),
+        enabled=True,
     ),
     _define(
         REFRIGERANT + "/compressorActualSpeed",

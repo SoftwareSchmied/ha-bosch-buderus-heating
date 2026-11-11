@@ -7,6 +7,16 @@ Versioning after its first tagged preview.
 
 ### What changed since alpha.5
 
+#### Entities
+
+- **Fan and pump speeds enabled:** the readings of the local access for the
+  outdoor unit fan speed (PL3) and the primary heating pump speed (PC0), in
+  %, are now enabled by default, as promised in
+  [#106](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/106).
+  On an existing installation they are enabled at the next start, unless
+  you disabled them yourself. The compressor speed and the controller
+  signals that repeat these readings stay disabled.
+
 #### Room controllers (TC100.2)
 
 Newly confirmed on a real controller, a TC100.2 with firmware 05.04.00 and

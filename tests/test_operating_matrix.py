@@ -1057,3 +1057,70 @@ async def test_promotion_keeps_new_entities_disabled_when_the_entry_says_so(
         assert registry.async_get(vr0).disabled_by is integration
         assert all(item.disabled_by is integration for item in added_by_setup())
         assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+# alpha.6: the outdoor unit fan (PL3) and the primary heating pump (PC0)
+# speeds are enabled by default; the compressor speed and the signal
+# duplicates stay disabled.
+FAN_SPEED = "/heatSources/hs1/oduFanSpeed"
+PUMP_SPEED = "/heatSources/hs1/refrigerant/heatCarrierPumpSpeed"
+COMPRESSOR_SPEED = "/heatSources/hs1/refrigerant/compressorActualSpeed"
+PUMP_SPEED_SIGNAL = "/signals/SRC.CUHP.HP1.CHPumpSpeed"
+PRIMARY_FLOW_SIGNAL = "/signals/SRC.SystemPumpVolumeFlow"
+PUMP_MODULATION_SIGNAL = "/signals/SRC.CHPumpModulation"
+
+
+async def test_an_update_enables_the_fan_and_pump_speeds(hass) -> None:
+    """Existing installations: the two speeds registered disabled by the
+    integration are enabled; a user's choice, the compressor speed and the
+    signal duplicates stay disabled."""
+    entry, _, _ = entry_for(hass)
+    data, options = deepcopy(dict(entry.data)), deepcopy(dict(entry.options))
+    for connection in data["connections"].values():
+        if connection["kind"] == "singlekey_cloud":
+            connection["credentials"]["expires_at"] = 10**12
+    for key, binding in data["bindings"].items():
+        if binding["adapter"] == "bacon":
+            options["bindings"][key]["enabled"] = False
+    paired_target(data, options)
+    options["bindings"]["local"]["enabled"] = False
+    hass.config_entries.async_update_entry(entry, data=data, options=options)
+    registry = er.async_get(hass)
+    integration = er.RegistryEntryDisabler.INTEGRATION
+
+    def existing(path, disabled_by=integration):
+        return registry.async_get_or_create(
+            "sensor",
+            DOMAIN,
+            local_only_unique_id(HEAT, path),
+            config_entry=entry,
+            disabled_by=disabled_by,
+        ).entity_id
+
+    fan = existing(FAN_SPEED)
+    pump = existing(PUMP_SPEED)
+    compressor = existing(COMPRESSOR_SPEED)
+    duplicates = [
+        existing(path)
+        for path in (PUMP_SPEED_SIGNAL, PRIMARY_FLOW_SIGNAL, PUMP_MODULATION_SIGNAL)
+    ]
+    async with loopback(ReadingBackend()):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        owner = entry.runtime_data
+        await eventually(lambda: available(owner, "sensor", SENSOR))
+        await settle(hass)
+        assert registry.async_get(fan).disabled_by is None
+        assert registry.async_get(pump).disabled_by is None
+        assert registry.async_get(compressor).disabled_by is integration
+        for entity_id in duplicates:
+            assert registry.async_get(entity_id).disabled_by is integration
+        assert await hass.config_entries.async_unload(entry.entry_id)
+    # A speed the user disabled stays disabled after the next start.
+    registry.async_update_entity(fan, disabled_by=er.RegistryEntryDisabler.USER)
+    async with loopback(ReadingBackend()):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        owner = entry.runtime_data
+        await eventually(lambda: available(owner, "sensor", SENSOR))
+        await settle(hass)
+        assert registry.async_get(fan).disabled_by is er.RegistryEntryDisabler.USER
+        assert await hass.config_entries.async_unload(entry.entry_id)

@@ -362,8 +362,13 @@ def test_every_other_readable_reading_becomes_a_local_sensor() -> None:
     }
     for path, item in sensors.items():
         assert f"{GATEWAY}:{item.unique_suffix}" == local_only_unique_id(GATEWAY, path)
-    # Everyday values enabled, technical values and signals disabled.
-    assert {path for path, item in sensors.items() if item.enabled} == {SETPOINT, ROOM}
+    # Everyday values and the fan speed enabled, technical values and signals
+    # disabled.
+    assert {path for path, item in sensors.items() if item.enabled} == {
+        SETPOINT,
+        ROOM,
+        "/heatSources/hs1/oduFanSpeed",
+    }
     assert sensors[SETPOINT].reviewed and not sensors[ROOM].reviewed
     shapes = view.entity_shapes()
     setpoint = shapes[("sensor", sensors[SETPOINT].unique_suffix)]

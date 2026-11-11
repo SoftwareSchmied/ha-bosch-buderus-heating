@@ -263,9 +263,10 @@ def test_the_local_plant_view_builds_from_the_capture() -> None:
     shapes = view.entity_shapes()
     # C4 (revised): the pool start counter again (disabled); C3: the
     # cylinder temperature disabled; C7: 25 signals enabled
-    # (with the second expansion valve VR0).
+    # (with the second expansion valve VR0); since alpha.6 the outdoor unit
+    # fan (PL3) and the primary heating pump (PC0) speeds.
     assert Counter(platform for platform, _ in shapes) == {"sensor": 191}
-    assert sum(bool(shape.enabled) for shape in shapes.values()) == 78
+    assert sum(bool(shape.enabled) for shape in shapes.values()) == 80
 
 
 async def test_with_the_cloud_the_same_signals_become_entities(hass) -> None:
