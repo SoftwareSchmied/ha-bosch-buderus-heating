@@ -1065,7 +1065,7 @@
       "message": "Skriv inn et navn på 1 til 32 byte med skrivbar tekst (færre tegn med æ, ø, å eller emoji)."
     },
     "rrc_event_invalid_dates": {
-      "message": "Hendelsen krever hele dager: en start på eller før slutten og en slutt som ikke ligger i fortiden."
+      "message": "Hendelsen krever hele dager fra 2016 til 2099: en start på eller før slutten og en slutt som ikke ligger i fortiden."
     },
     "rrc_event_overlap": {
       "message": "Hendelsen deler en dag med en annen hendelse i romregulatoren. Hendelser kan ikke overlappe, heller ikke på første eller siste dag."
@@ -1090,6 +1090,9 @@
     },
     "rrc_boost_locked": {
       "message": "Romregulatoren sperrer for øyeblikket boosten. Prøv igjen senere."
+    },
+    "rrc_boost_running": {
+      "message": "Boosten er i gang. Temperaturen og varigheten kan bare endres mens den er av; de gjelder da fra neste start. Ingenting ble endret."
     }
   },
   "selector": {
@@ -2228,7 +2231,12 @@
         "name": "Ferieperioder"
       },
       "rrc_events": {
-        "name": "Fravær og spesialdager"
+        "name": "Fravær og spesialdager",
+        "state_attributes": {
+          "stale": {
+            "name": "Hendelser kan være utdaterte"
+          }
+        }
       }
     },
     "event": {

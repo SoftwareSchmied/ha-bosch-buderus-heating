@@ -1065,7 +1065,7 @@
       "message": "Gib einen Namen mit 1 bis 32 Byte druckbarem Text ein (mit Umlauten oder Emojis entsprechend weniger Zeichen)."
     },
     "rrc_event_invalid_dates": {
-      "message": "Der Termin braucht ganze Tage: einen Beginn am oder vor dem Ende und ein Ende, das nicht in der Vergangenheit liegt."
+      "message": "Der Termin braucht ganze Tage von 2016 bis 2099: einen Beginn am oder vor dem Ende und ein Ende, das nicht in der Vergangenheit liegt."
     },
     "rrc_event_overlap": {
       "message": "Der Termin teilt einen Tag mit einem anderen Termin des Raumreglers. Termine dürfen sich nicht überschneiden, auch nicht am ersten oder letzten Tag."
@@ -1090,6 +1090,9 @@
     },
     "rrc_boost_locked": {
       "message": "Der Raumregler sperrt den Boost gerade. Versuche es später erneut."
+    },
+    "rrc_boost_running": {
+      "message": "Der Boost läuft. Temperatur und Dauer lassen sich nur ändern, solange er aus ist; sie gelten dann ab dem nächsten Start. Es wurde nichts geändert."
     }
   },
   "selector": {
@@ -2228,7 +2231,12 @@
         "name": "Urlaubszeiten"
       },
       "rrc_events": {
-        "name": "Abwesenheiten und Sondertage"
+        "name": "Abwesenheiten und Sondertage",
+        "state_attributes": {
+          "stale": {
+            "name": "Termine möglicherweise veraltet"
+          }
+        }
       }
     },
     "event": {

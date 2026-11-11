@@ -1065,7 +1065,7 @@
       "message": "Wpisz nazwę o długości od 1 do 32 bajtów drukowalnego tekstu (mniej znaków przy polskich znakach diakrytycznych lub emoji)."
     },
     "rrc_event_invalid_dates": {
-      "message": "Wydarzenie wymaga pełnych dni: początek w dniu zakończenia lub wcześniej oraz koniec, który nie jest w przeszłości."
+      "message": "Wydarzenie wymaga pełnych dni z lat 2016–2099: początek w dniu zakończenia lub wcześniej oraz koniec, który nie jest w przeszłości."
     },
     "rrc_event_overlap": {
       "message": "Wydarzenie ma wspólny dzień z innym wydarzeniem regulatora pokojowego. Wydarzenia nie mogą się nakładać, nawet w pierwszym lub ostatnim dniu."
@@ -1090,6 +1090,9 @@
     },
     "rrc_boost_locked": {
       "message": "Regulator pokojowy blokuje w tej chwili funkcję Boost. Spróbuj ponownie później."
+    },
+    "rrc_boost_running": {
+      "message": "Funkcja Boost jest aktywna. Jej temperaturę i czas trwania można zmienić tylko wtedy, gdy jest wyłączona; obowiązują one wtedy od następnego uruchomienia. Nic nie zostało zmienione."
     }
   },
   "selector": {
@@ -2228,7 +2231,12 @@
         "name": "Okresy urlopu"
       },
       "rrc_events": {
-        "name": "Nieobecności i dni specjalne"
+        "name": "Nieobecności i dni specjalne",
+        "state_attributes": {
+          "stale": {
+            "name": "Wydarzenia mogą być nieaktualne"
+          }
+        }
       }
     },
     "event": {

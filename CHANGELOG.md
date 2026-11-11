@@ -58,14 +58,23 @@ Expected, untested on a real controller:
   the away temperature a number. The controller's events appear as a
   calendar of whole days in the controller's time zone; absences can be
   created, changed and deleted there, days that run like another weekday
-  only deleted. Names have at most 32 bytes and events may not overlap, not
-  even on their first or last day. Every change reads the lists first and is
-  sent once; until an unconfirmed change shows, the next one is refused, so
-  an event is never created twice.
-- **Boost and fireplace function:** a switch and the boost temperature and
-  duration write the controller's boost settings as a whole; the rooms of a
-  boost stay as set on the controller, and without a room the boost is
-  refused. The fireplace function is a switch, disabled by default.
+  only deleted. Names have at most 32 bytes, events lie between 2016 and
+  2099 and may not overlap, not even on their first or last day. Every
+  change reads the lists first and is sent once; until an unconfirmed change
+  shows, the next one is refused, so an event is never created twice. A new
+  event is recognised by its name, dates and type, also if the controller
+  numbers its events anew, and a list that cannot be read for a moment no
+  longer leaves a change of another list unconfirmed. If a list cannot be
+  read for a moment, its events stay in the calendar from the last valid
+  reading, so a running absence does not end in Home Assistant; the
+  attribute `stale` shows it.
+- **Boost and fireplace function:** the switch writes the controller's
+  boost settings as a whole. I send the boost temperature and duration only
+  together with the start: while the boost is off, a new value is kept for
+  the next start (also across a restart); while it runs, a change is refused.
+  A start heats only the rooms set on the controller that still exist and
+  that the boost may heat; without such a room the boost is refused. The
+  fireplace function is a switch, disabled by default.
 - **Hot water:** the operating mode as a select and a water heater entity,
   the comfort temperature, extra hot water with its duration, the thermal
   disinfection (switch, weekday, start time and last result, disabled by

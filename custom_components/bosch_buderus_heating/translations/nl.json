@@ -1065,7 +1065,7 @@
       "message": "Voer een naam in van 1 tot 32 bytes afdrukbare tekst (minder tekens bij letters met accenten of emoji)."
     },
     "rrc_event_invalid_dates": {
-      "message": "De gebeurtenis heeft hele dagen nodig: een begin op of vóór het einde en een einde dat niet in het verleden ligt."
+      "message": "De gebeurtenis heeft hele dagen tussen 2016 en 2099 nodig: een begin op of vóór het einde en een einde dat niet in het verleden ligt."
     },
     "rrc_event_overlap": {
       "message": "De gebeurtenis deelt een dag met een andere gebeurtenis van de kamerregelaar. Gebeurtenissen mogen elkaar niet overlappen, ook niet op hun eerste of laatste dag."
@@ -1090,6 +1090,9 @@
     },
     "rrc_boost_locked": {
       "message": "De kamerregelaar blokkeert de boost momenteel. Probeer het later opnieuw."
+    },
+    "rrc_boost_running": {
+      "message": "De boost is actief. De temperatuur en duur kunnen alleen worden gewijzigd terwijl hij uit is; ze gelden dan vanaf de volgende start. Er is niets gewijzigd."
     }
   },
   "selector": {
@@ -2228,7 +2231,12 @@
         "name": "Vakantieperiodes"
       },
       "rrc_events": {
-        "name": "Afwezigheden en bijzondere dagen"
+        "name": "Afwezigheden en bijzondere dagen",
+        "state_attributes": {
+          "stale": {
+            "name": "Gebeurtenissen mogelijk verouderd"
+          }
+        }
       }
     },
     "event": {

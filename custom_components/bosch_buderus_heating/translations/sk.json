@@ -1065,7 +1065,7 @@
       "message": "Zadajte názov s dĺžkou 1 až 32 bajtov tlačiteľného textu (menej znakov pri znakoch s diakritikou alebo emoji)."
     },
     "rrc_event_invalid_dates": {
-      "message": "Udalosť vyžaduje celé dni: začiatok v deň konca alebo skôr a koniec, ktorý nie je v minulosti."
+      "message": "Udalosť vyžaduje celé dni v rokoch 2016 až 2099: začiatok v deň konca alebo skôr a koniec, ktorý nie je v minulosti."
     },
     "rrc_event_overlap": {
       "message": "Udalosť zdieľa deň s inou udalosťou izbového regulátora. Udalosti sa nesmú prekrývať, ani v prvý alebo posledný deň."
@@ -1090,6 +1090,9 @@
     },
     "rrc_boost_locked": {
       "message": "Izbový regulátor funkciu Boost momentálne blokuje. Skúste to znova neskôr."
+    },
+    "rrc_boost_running": {
+      "message": "Funkcia Boost je aktívna. Jej teplotu a dobu trvania možno zmeniť, len keď je vypnutá; platia potom od jej najbližšieho spustenia. Nič sa nezmenilo."
     }
   },
   "selector": {
@@ -2228,7 +2231,12 @@
         "name": "Obdobia dovolenky"
       },
       "rrc_events": {
-        "name": "Neprítomnosti a osobitné dni"
+        "name": "Neprítomnosti a osobitné dni",
+        "state_attributes": {
+          "stale": {
+            "name": "Udalosti môžu byť zastarané"
+          }
+        }
       }
     },
     "event": {

@@ -1065,7 +1065,7 @@
       "message": "Saisissez un nom de 1 à 32 octets de texte imprimable (moins de caractères avec des caractères accentués ou des emojis)."
     },
     "rrc_event_invalid_dates": {
-      "message": "L'événement nécessite des jours entiers : un début au plus tard à la date de fin, et une fin qui n'est pas dans le passé."
+      "message": "L'événement nécessite des jours entiers entre 2016 et 2099 : un début au plus tard à la date de fin, et une fin qui n'est pas dans le passé."
     },
     "rrc_event_overlap": {
       "message": "L'événement partage un jour avec un autre événement du régulateur d'ambiance. Les événements ne doivent pas se chevaucher, pas même le premier ou le dernier jour."
@@ -1090,6 +1090,9 @@
     },
     "rrc_boost_locked": {
       "message": "Le régulateur d'ambiance verrouille actuellement le boost. Réessayez plus tard."
+    },
+    "rrc_boost_running": {
+      "message": "Le boost est en cours. Sa température et sa durée ne peuvent être modifiées que lorsqu'il est arrêté ; elles s'appliquent alors à partir de son prochain démarrage. Rien n'a été modifié."
     }
   },
   "selector": {
@@ -2228,7 +2231,12 @@
         "name": "Périodes de vacances"
       },
       "rrc_events": {
-        "name": "Absences et jours spéciaux"
+        "name": "Absences et jours spéciaux",
+        "state_attributes": {
+          "stale": {
+            "name": "Événements peut-être obsolètes"
+          }
+        }
       }
     },
     "event": {

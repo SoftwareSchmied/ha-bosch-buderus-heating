@@ -1065,7 +1065,7 @@
       "message": "Anna nimi, jossa on 1–32 tavua tulostettavaa tekstiä (vähemmän merkkejä, jos käytät ä:tä, ö:tä tai emojeja)."
     },
     "rrc_event_invalid_dates": {
-      "message": "Tapahtuma vaatii kokonaisia päiviä: alkamisen on oltava päättymispäivänä tai sitä ennen, eikä päättyminen saa olla menneisyydessä."
+      "message": "Tapahtuma vaatii kokonaisia päiviä vuosilta 2016–2099: alkamisen on oltava päättymispäivänä tai sitä ennen, eikä päättyminen saa olla menneisyydessä."
     },
     "rrc_event_overlap": {
       "message": "Tapahtuma jakaa päivän huonesäätimen toisen tapahtuman kanssa. Tapahtumat eivät saa mennä päällekkäin, ei edes ensimmäisenä tai viimeisenä päivänä."
@@ -1090,6 +1090,9 @@
     },
     "rrc_boost_locked": {
       "message": "Huonesäädin estää tällä hetkellä boostin. Yritä myöhemmin uudelleen."
+    },
+    "rrc_boost_running": {
+      "message": "Boost on käynnissä. Sen lämpötilaa ja kestoa voi muuttaa vain, kun se on pois päältä; ne ovat silloin voimassa seuraavasta käynnistyksestä alkaen. Mitään ei muutettu."
     }
   },
   "selector": {
@@ -2228,7 +2231,12 @@
         "name": "Lomajaksot"
       },
       "rrc_events": {
-        "name": "Poissaolot ja erikoispäivät"
+        "name": "Poissaolot ja erikoispäivät",
+        "state_attributes": {
+          "stale": {
+            "name": "Tapahtumat voivat olla vanhentuneita"
+          }
+        }
       }
     },
     "event": {

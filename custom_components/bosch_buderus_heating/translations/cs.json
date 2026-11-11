@@ -1065,7 +1065,7 @@
       "message": "Zadejte název dlouhý 1 až 32 bajtů tisknutelného textu (méně znaků v případě znaků s diakritikou nebo emoji)."
     },
     "rrc_event_invalid_dates": {
-      "message": "Událost vyžaduje celé dny: začátek v den konce nebo dříve a konec, který není v minulosti."
+      "message": "Událost vyžaduje celé dny v letech 2016 až 2099: začátek v den konce nebo dříve a konec, který není v minulosti."
     },
     "rrc_event_overlap": {
       "message": "Událost sdílí den s jinou událostí prostorového regulátoru. Události se nesmějí překrývat, ani v první či poslední den."
@@ -1090,6 +1090,9 @@
     },
     "rrc_boost_locked": {
       "message": "Prostorový regulátor funkci Boost momentálně blokuje. Zkuste to znovu později."
+    },
+    "rrc_boost_running": {
+      "message": "Funkce Boost je aktivní. Její teplotu a dobu trvání lze změnit, jen když je vypnutá; platí pak od jejího příštího spuštění. Nic nebylo změněno."
     }
   },
   "selector": {
@@ -2228,7 +2231,12 @@
         "name": "Období dovolené"
       },
       "rrc_events": {
-        "name": "Nepřítomnosti a zvláštní dny"
+        "name": "Nepřítomnosti a zvláštní dny",
+        "state_attributes": {
+          "stale": {
+            "name": "Události mohou být zastaralé"
+          }
+        }
       }
     },
     "event": {

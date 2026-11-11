@@ -1065,7 +1065,7 @@
       "message": "Enter a name with 1 to 32 bytes of printable text (fewer characters with umlauts or emoji)."
     },
     "rrc_event_invalid_dates": {
-      "message": "The event needs whole days: a start on or before the end, and an end not in the past."
+      "message": "The event needs whole days from 2016 to 2099: a start on or before the end, and an end not in the past."
     },
     "rrc_event_overlap": {
       "message": "The event shares a day with another event of the room controller. Events may not overlap, not even on their first or last day."
@@ -1090,6 +1090,9 @@
     },
     "rrc_boost_locked": {
       "message": "The room controller currently locks the boost. Try again later."
+    },
+    "rrc_boost_running": {
+      "message": "The boost is running. Its temperature and duration can be changed only while it is off; they then apply from its next start. Nothing was changed."
     }
   },
   "selector": {
@@ -2228,7 +2231,12 @@
         "name": "Holiday periods"
       },
       "rrc_events": {
-        "name": "Absences and special days"
+        "name": "Absences and special days",
+        "state_attributes": {
+          "stale": {
+            "name": "Events possibly outdated"
+          }
+        }
       }
     },
     "event": {

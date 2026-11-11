@@ -78,10 +78,9 @@ regular cycle (within a minute) instead of with its own, slower group, so a
 zone's target control is back quickly. If the controller ends a replaced
 temporary setpoint at once, its reading of 0 stays valid and is shown.
 
-For the boost, only what a change depends on must still be as shown:
-switching depends on the mode and the rooms, a new temperature or duration
-on the mode. Otherwise the change is refused with a message that the boost
-changed on the controller.
+For the boost, only what a change depends on must still be as shown: the
+mode and the rooms. Otherwise the change is refused with a message that the
+boost changed on the controller.
 
 ## Zones
 
@@ -139,20 +138,41 @@ circuit as well.
   A day that runs like another weekday ("Like Monday") can only be deleted.
   A name has at most 32 bytes (fewer characters with umlauts or emoji),
   events may not overlap, not even on their first or last day, and the end
-  may not be in the past. Recurring events, descriptions and locations are
-  not supported.
-- A change of the events is sent once. If the controller does not confirm it
-  in time, the next change is refused for up to ten minutes until the first
-  one shows, so an event is never created twice.
+  may not be in the past. Events lie between 2016 and 2099. Recurring
+  events, descriptions and locations are not supported.
+- If one event list cannot be read for a moment (the controller answers 500
+  at times), its events stay in the calendar from the last valid reading as
+  long as any reading stays valid (three poll intervals), so a running
+  absence does not end in Home Assistant. The attribute `stale` is `true`
+  meanwhile, and the calendar cannot be changed until every list reads
+  again.
+- A change of the events is sent once. A new event is recognised by its
+  name, dates and type, also if the controller gives it the number of an
+  older event. A change only needs the lists it can show in; another list
+  that cannot be read for a moment does not leave it unconfirmed. If the
+  controller does not confirm it in time, the next change is refused for up
+  to ten minutes until the first one shows, so an event is never created
+  twice.
 
 ## Boost and fireplace function
 
 *Expected, untested.*
 
-- **Boost:** a switch, the boost temperature and the boost duration. They
-  write the controller's boost settings as a whole. The rooms of a boost are
-  chosen on the controller; without a room the boost is refused. A boost in a
-  form the integration does not know completely is shown but not changed.
+- **Boost:** a switch, the boost temperature and the boost duration. The
+  switch writes the controller's boost settings as a whole: a start sends
+  the temperature, the duration and the rooms together with "on", a stop the
+  same with "off". The temperature and duration numbers send nothing by
+  themselves: while the boost is off, a new value is kept (also across a
+  restart), shown, and sent with the next start; while the boost runs, a
+  change is refused with a message of its own. Turning it on while it runs
+  sends nothing. *Expected, untested:* whether the controller would also
+  take a new temperature or duration alone is not known, so it is never
+  sent alone.
+- **Rooms of a boost:** chosen on the controller. A start heats only the
+  chosen rooms that still exist and that the controller allows for the
+  boost; without such a room, or if the controller names no allowed rooms,
+  the boost is refused. A boost in a form the integration does not know
+  completely is shown but not changed.
 - **Fireplace function:** a switch, disabled by default.
 
 ## Hot water
@@ -348,9 +368,15 @@ ebenso der CT200 insgesamt:
 - **Zeitprogramme:** Programmauswahl je Zone und Ändern vorhandener
   Schaltpunkte unter **Konfigurieren → RRC-Zeitprogramme**.
 - **Abwesenheit:** Schalter und Abwesenheitstemperatur; Kalender
-  „Abwesenheiten und Sondertage“ mit ganzen Tagen, Abwesenheiten anlegen,
-  ändern und löschen, Wochentagstermine nur löschen; Boost (Schalter,
-  Temperatur, Dauer; Räume am Regler) und Kaminfunktion.
+  „Abwesenheiten und Sondertage“ mit ganzen Tagen zwischen 2016 und 2099,
+  Abwesenheiten anlegen, ändern und löschen, Wochentagstermine nur löschen;
+  ist eine Terminliste kurz nicht lesbar, bleiben ihre Termine aus der
+  letzten gültigen Lesung sichtbar (Attribut `stale`), geändert wird dann
+  nichts; Boost (Schalter, Temperatur, Dauer; Räume am Regler): Temperatur
+  und Dauer gehen nur zusammen mit dem Start hinaus, bei ausgeschaltetem
+  Boost merke ich sie als Vorgabe für den nächsten Start, bei laufendem
+  Boost wird eine Änderung abgelehnt; ein Start heizt nur Räume, die es noch
+  gibt und die der Regler für den Boost erlaubt; Kaminfunktion.
 - **Warmwasser:** Betriebsart, Komforttemperatur, Extra-Warmwasser mit
   Dauer, thermische Desinfektion, aktuelle Programmstufe.
 - **Heizkreis:** Sommer-/Winterumschaltung, Nachtabsenkung, Saisonbetrieb,
