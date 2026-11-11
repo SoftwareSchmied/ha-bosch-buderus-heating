@@ -69,6 +69,11 @@ All new fields default to today's behaviour.
 - `EnumWritePolicy.fallback_options`: offered only when the resource has no
   `allowedValues` key at all and its current value is one of them (or an
   equivalent read of one).
+- `EnumWritePolicy.fallback_current_options`: under the same condition,
+  offered together with the fallback options only while the current value
+  is one of them (the hot water's "low" and "eco").
+- `option_keys` that give two codes the same key (for example "Off" and
+  "off") offer only the first of them.
 - `EnumWritePolicy.on_value` / `off_value`: a switch with these exact wire
   values (S2), for example `"true"`/`"false"`.
 - `EnumWritePolicy.equivalent_reads`: readings that confirm a written value,
