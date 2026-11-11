@@ -106,8 +106,8 @@ async def async_last_rows(
     hass: HomeAssistant, gateway_id: str, zone: tzinfo
 ) -> dict[str, tuple[date, float | None]]:
     """The last recorded row of every history statistic: its day and sum."""
-    from homeassistant.components.recorder import get_instance
     from homeassistant.components.recorder.statistics import get_last_statistics
+    from homeassistant.helpers.recorder import get_instance
 
     instance = get_instance(hass)
     found: dict[str, tuple[date, float | None]] = {}

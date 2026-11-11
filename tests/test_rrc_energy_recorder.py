@@ -63,6 +63,8 @@ async def test_the_history_becomes_sums_and_means_in_the_recorder(
     entry, stack = await start(hass, cloud)
     try:
         await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+        # The cycle is a background task; it reads the recorder first.
+        await hass.async_block_till_done(wait_background_tasks=True)
         await async_wait_recording_done(hass)
         heating = statistic_id(GW, "heat_pump_electricity_heating")
         gas = statistic_id(GW, "gas_heating")
@@ -156,6 +158,8 @@ async def test_an_empty_import_state_continues_the_recorded_sums(
     entry, stack = await start(hass, cloud)
     try:
         await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+        # The cycle is a background task; it reads the recorder first.
+        await hass.async_block_till_done(wait_background_tasks=True)
         await async_wait_recording_done(hass)
         rows = await get_instance(hass).async_add_executor_job(
             statistics_during_period,
