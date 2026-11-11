@@ -29,6 +29,7 @@
 > - **Fewer cloud requests:** since 0.9.0-alpha.3, readings the local access delivers are read from the cloud less often.
 > - **Less load on Home Assistant, without losing any functionality:** on my system, CPU load dropped by about three quarters, memory use by about 80 MB, and the database writes about 75 % fewer rows.
 > - **More robust:** since 0.9.0-alpha.4, many rare error and outage situations are handled better, the zones of the TC100.2 room controller are read, and unexpected errors are logged more clearly.
+> - **Room controllers and languages:** since 0.9.0-alpha.5, room controllers of the RRC 2.0 platform (TC100.2, CT200) get their zone climates, programs, absences, hot water, heating circuit and radio devices, fault and maintenance notifications are clearer, and the texts come in 19 languages. Beyond the zone readings, mode and manual setpoint, the room controller functions are expected to work but untested on a real controller.
 >
 > **Tested on:** my own heat pump (Logamatic BC400 controller, MX400 internet module reported as K40RF gateway, firmware 15.00.01), where it runs without problems.
 >
@@ -37,10 +38,10 @@
 > **How to test:** make a backup, show pre-releases for this repository in HACS and install the latest alpha from the [releases](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases). Please share your experience in the [0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) and report bugs as [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new?template=bug.yml).
 
 > [!NOTE]
-> **0.9.0-alpha.4 is the current pre-release.** It needs Home Assistant
+> **0.9.0-alpha.5 is the current pre-release.** It needs Home Assistant
 > 2026.5.0 or newer, and 0.8.x cannot load its storage format, so make a full
 > backup first. See the
-> [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.4).
+> [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.5).
 
 Bosch/Buderus Home Comfort (formerly Bosch/Buderus Heating) is an unofficial Home Assistant custom integration.
 It discovers PointT heating-system resources and uses separate cloud adapters

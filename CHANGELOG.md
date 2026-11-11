@@ -5,6 +5,13 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.0-alpha.5] - 2026-11-11
+
+> [!IMPORTANT]
+> **Alpha pre-release for testing.** Make a full Home Assistant backup first.
+> From alpha.1 to alpha.4 no new setup is needed; from 0.8.x, the notes of
+> alpha.1 below apply as well.
+
 Alpha.5 brings the functions of the room controllers of the RRC 2.0 platform
 (TC100.2 and CT200) beyond the zone readings, clearer fault and maintenance
 notifications, and texts in 19 languages. On a real room controller, a
@@ -14,8 +21,10 @@ else for room controllers I have tested only with simulated data, in the
 shapes of the observed TC100.2 answers and of a constructed controller with
 11 zones, 12 radio devices and 24 programs. It is expected to work but
 untested on a real controller; I would be glad about reports from owners.
-The new [room controller page](docs/room-controllers.md) lists every
+The new [room controller page](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/room-controllers.md) lists every
 function with its status.
+
+### What changed since alpha.4
 
 #### Room controllers (TC100.2, CT200)
 
@@ -30,7 +39,7 @@ Confirmed on a real controller:
   confirmed on a TC100.2 with alpha.4; the climate entity itself is new.
 - **Confirmed installations:** the Logano plus GB212 with a Logamatic TC100.2
   is listed in the README and on a
-  [separate page](docs/confirmed-installations.md) with the zones confirmed
+  [separate page](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/confirmed-installations.md) with the zones confirmed
   with 0.9.0-alpha.4 without a local patch: room temperature, active
   setpoint, zone names, operating mode and manual setpoint changes from Home
   Assistant. Thank you, @obvius1, for testing this on your system and
@@ -169,7 +178,7 @@ Expected, untested on a real controller:
   as a room controller, never by a model name. A controller without a name
   is called "Room controller" and shows the reported product type as its
   model. The CT200 is listed as expected but untested on the
-  [compatibility](docs/compatibility.md) page.
+  [compatibility](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/compatibility.md) page.
 - **Privacy:** the device arrays with the radio key (`dlk`) and radio
   identifier (`sgtin`) of each device, the product lookup, the user,
   installer, password, location and phone resources are never requested,
@@ -187,7 +196,7 @@ Expected, untested on a real controller:
   (`some_paths_forbidden`) from a sign-in without the rights for the
   controller (`scope_or_permission_denied`) and count the paths deliberately
   not read. None of this contains names or values, and everything is marked
-  `unconfirmed`. The [diagnostics guide](docs/diagnostics.md) describes them.
+  `unconfirmed`. The [diagnostics guide](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/diagnostics.md) describes them.
   The diagnostics schema stays 44.
 
 #### Faults and notifications
@@ -223,7 +232,7 @@ Expected, untested on a real controller:
   another zone setting, a heating circuit, hot water or a radio device
   setting) instead of always speaking of the zone's heating mode.
 - **Where do I find faults?** A new section in the
-  [fault documentation](docs/faults.md#where-do-i-find-faults) and a short
+  [fault documentation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/faults.md#where-do-i-find-faults) and a short
   pointer in the README explain where current faults are (the `faults`
   attribute of Active faults) and where past ones are (history and logbook
   of the System notifications event entity). It includes an automation that
@@ -268,7 +277,7 @@ Expected, untested on a real controller:
   run 15 minutes after the start; a first filling reaches back at most 400
   days.
 - **No local access for room controllers:** they have no local interface;
-  the [room controller page](docs/room-controllers.md#sign-in-local-access-and-older-firmware)
+  the [room controller page](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/room-controllers.md#sign-in-local-access-and-older-firmware)
   explains this. A K40 gateway next to them keeps its own local access.
 - The README now names the K40/K40RF gateways that the local access
   recognises for IVT, Worcester and Vulcano. Systems of these brands should
@@ -298,7 +307,7 @@ Expected, untested on a real controller:
   checked them yet. The room controller texts added in alpha.5 are drafts in
   every language, Czech and Slovak included; I will review those two
   separately. Corrections are very welcome, see
-  [translations](docs/translations.md).
+  [translations](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/translations.md).
 - Names and texts that the integration builds itself (for example
   "Heating circuit 1 – Supply temperature") follow the Home Assistant system
   language; any other language still shows English. German and English
