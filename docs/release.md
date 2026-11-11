@@ -4,6 +4,30 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.0-alpha.5 verification
+
+I am publishing **0.9.0-alpha.5 as a pre-release** for testing from the commit
+tagged `v0.9.0-alpha.5`. Updating from alpha.1 to alpha.4 needs no new setup;
+the storage format stays 4.
+
+Automated checks on the release state (2026-11-11, run locally):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite with coverage, current version | Home Assistant 2026.11.0, local | 9488 passed; coverage 95.89 % |
+| Full suite | Home Assistant 2026.10.4, local | 9488 passed; coverage 95.89 % |
+| Full suite, compatibility version | Home Assistant 2026.9.2, same test packages as the workflow, local | 9488 passed; coverage 95.90 % |
+| Full suite, minimum version | Home Assistant 2026.5.4, local | 9486 passed, 2 skipped (version-dependent); coverage 95.89 % |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 200 files (2026.10.4 and 2026.11.0); Ruff clean; 554 files formatted |
+| Browser tests of the dialogs | Chromium, local | `npm test` passed; the 12 Home Assistant frontend tests passed in two runs in a row on the release state |
+| Release archive, SHA-256 and release notes | local build | built for version 0.9.0-alpha.5 with 249 files, without tests or bytecode; the release notes come from this version's CHANGELOG section |
+| GitHub checks | release workflow | the release workflow publishes only after the browser tests, both older Home Assistant versions, its Python checks, hassfest and HACS pass |
+
+On a real room controller, a TC100.2 has confirmed the zone readings,
+switching a zone between manual mode and the schedule, and changing the
+manual setpoint. Every other room controller function was tested with
+simulated data only; the CHANGELOG and the room controller page name them.
+
 ## 0.9.0-alpha.4 verification
 
 I am publishing **0.9.0-alpha.4 as a pre-release** for testing from the commit
