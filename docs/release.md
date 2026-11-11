@@ -23,6 +23,24 @@ Automated checks on the release state (2026-11-11, run locally):
 | Release archive, SHA-256 and release notes | local build | built for version 0.9.0-alpha.5 with 249 files, without tests or bytecode; the release notes come from this version's CHANGELOG section |
 | GitHub checks | release workflow | the release workflow publishes only after the browser tests, both older Home Assistant versions, its Python checks, hassfest and HACS pass |
 
+After these checks I made three last changes for this release: the energy
+history statistic IDs and their stored import state are named by a token
+keyed with the Home Assistant instance ID; days with the older energy keys
+wait up to 24 hours for an unreadable heat source type; and the season mode
+and the setpoint optimization stay enabled by default and follow the
+general rule for settings that are not available or not used. I checked the
+changed state again (2026-11-11, run locally):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite with coverage | Home Assistant 2026.11.0, local | 9515 passed; coverage 95.90 % |
+| Changed test files with the release, repository and translation tests | Home Assistant 2026.10.4, 2026.9.2 and 2026.5.4, local | 321 passed on each version |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 200 files (2026.10.4 and 2026.11.0); Ruff clean; 554 files formatted |
+| Mutation check of these changes | Home Assistant 2026.11.0, private copy | 15 of 15 mutations found by the tests |
+| Release archive, SHA-256 and release notes | local build | rebuilt for version 0.9.0-alpha.5 with 249 files, without tests or bytecode; the release notes come from this version's CHANGELOG section |
+
+The dialogs did not change, so the browser test results above still apply.
+
 On a real room controller, a TC100.2 has confirmed the zone readings,
 switching a zone between manual mode and the schedule, and changing the
 manual setpoint. Every other room controller function was tested with
