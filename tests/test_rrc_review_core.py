@@ -419,20 +419,24 @@ async def test_boost_compares_only_what_the_write_depends_on(
             await _switch(hass, BOOST_SWITCH, False)
         assert changed.value.translation_key == "rrc_boost_changed"
         assert len(cloud.written()) == 1
-        # A number keeps the mode: other fields may have changed.
+        # Stopping depends on the mode and the zones only: a duration changed
+        # on the controller goes along as read.
         set_value(cloud, BOOST, [{**shown[0], "mode": "on", "duration": 5}])
+        await _switch(hass, BOOST_SWITCH, False)
+        assert cloud.written()[-1][2][0] == {
+            "temperature": 20,
+            "duration": 5,
+            "mode": "off",
+            "zones": [1, 2],
+        }
+        # AWAY-06: the numbers send nothing themselves.
         await hass.services.async_call(
             "number",
             "set_value",
             {"entity_id": entity_id(hass, "number", BOOST_TEMPERATURE), "value": 21},
             blocking=True,
         )
-        assert cloud.written()[-1][2][0] == {
-            "temperature": 21.0,
-            "duration": 5,
-            "mode": "on",
-            "zones": [1, 2],
-        }
+        assert len(cloud.written()) == 2
         assert variants()  # the fixture variants stay as they were
     finally:
         await teardown(hass, entry, stack)
