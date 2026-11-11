@@ -5,6 +5,23 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.0-alpha.6] - 2026-11-12
+
+> [!IMPORTANT]
+> **Alpha pre-release for testing.** Make a full Home Assistant backup first.
+> From alpha.1 to alpha.5 no new setup is needed; from 0.8.x, the notes of
+> alpha.1 below apply as well.
+
+Alpha.6 confirms most room controller functions on a real TC100.2, adds an
+editor for the weekly heating and hot water schedules of EMS and iCom
+gateways, a load profile for the slower iCom gateways, a read-only firmware
+entity and a way back in the menus of the Configure dialog, and enables more
+readings of the local access by default. It also brings the fixes of a review
+of the whole 0.9 code. What a TC100.2 confirmed is marked as confirmed below.
+The schedule editor, the iCom changes, the firmware entity and most fixes I
+have tested only with simulated data; they are expected to work but untested
+on a real device, and I would be glad about reports.
+
 ### What changed since alpha.5
 
 #### Entities
@@ -274,9 +291,10 @@ device.
 
 - **New texts are drafts:** the texts added in this version (the schedule
   editor and the active schedule select, the advance button, the firmware
-  entity and the dialog status texts) are written in English and German; in
-  all other languages, Czech and Slovak included, they are drafts and not
-  yet reviewed.
+  entity, the dialog status texts and the back entries and result notes of
+  the Configure dialog) are written in English and German; in all other
+  languages, Czech and Slovak included, they are drafts and not yet
+  reviewed.
 
 #### Fixes
 
