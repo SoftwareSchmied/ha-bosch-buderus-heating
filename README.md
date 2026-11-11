@@ -170,10 +170,12 @@ back, it takes over the same entities with their history. See [operation without
 - Privacy-preserving Home Assistant diagnostics with capability counters,
   rolling 60-minute request and latency metrics, and a bounded sanitized log
   of individual HTTP attempts
-- German and English entity names and state translations, plus Swedish,
-  Norwegian Bokmål, Finnish, Danish, French, Spanish, Italian, Portuguese,
-  Dutch, Polish, Czech, Slovak, Greek, Bulgarian, Croatian, Slovenian and
-  Irish as drafts awaiting review by native speakers; the
+- German and English entity names and state translations, plus Czech and
+  Slovak reviewed by a native speaker (their room controller texts of
+  alpha.5 are still drafts), and Swedish, Norwegian Bokmål, Finnish, Danish,
+  French, Spanish, Italian, Portuguese, Dutch, Polish, Greek, Bulgarian,
+  Croatian, Slovenian and Irish as drafts awaiting review by native
+  speakers; the
   [translation guide](docs/translations.md) lists the languages with their
   glossaries and explains how to correct or add one
 
