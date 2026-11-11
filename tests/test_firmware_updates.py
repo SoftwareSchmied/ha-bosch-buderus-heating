@@ -1,13 +1,17 @@
 """F1: the read-only firmware update list and its update entity.
 
-All answers are synthetic; they follow the shape of the app's firmware update
-model (gateway, installed version, offered update, automatic update setting).
+All answers are synthetic; they follow the shape of the cloud's firmware
+update list (gateway, installed version, offered update, automatic update
+setting).
 """
 
 from __future__ import annotations
 
 import asyncio
+import gc
 import json
+import time
+import weakref
 from datetime import timedelta
 from types import SimpleNamespace
 from typing import Any
@@ -57,10 +61,15 @@ from custom_components.bosch_buderus_heating.pointt.firmware_updates import (
     ReleaseNote,
     parse_firmware_updates,
     release_url,
+    restored_updates,
+    stored_entry,
 )
 from custom_components.bosch_buderus_heating.pointt.metrics import request_category
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
-from tests.ha_test_helpers import async_fire_time_changed
+from tests.ha_test_helpers import (
+    async_fire_time_changed,
+    mock_restore_cache_with_extra_data,
+)
 
 GATEWAY_ID = "gateway-one"
 NOTES = [
@@ -113,9 +122,12 @@ def test_no_update_shows_the_installed_version_as_current() -> None:
         ("WAITING", "2.0.0", "waiting"),
         ("DENIED", "2.0.0", "denied"),
         ("APPROVED", "2.0.0", "approved"),
-        ("NONE", "2.0.0", "none"),
+        # NONE is neutral: no offered update, nothing being installed; it is
+        # only shown as the reported state.
+        ("NONE", None, "none"),
+        ("none", None, "none"),
         ("waiting", "2.0.0", "waiting"),
-        # The app treats UNKNOWN as current; an unknown value is shown, never
+        # UNKNOWN keeps the gateway current; an unknown value is shown, never
         # interpreted.
         ("UNKNOWN", None, "unknown"),
         ("SCHEDULED_LATER", None, "scheduled_later"),
@@ -127,6 +139,25 @@ def test_update_states(state: str, offered_version: str | None, token: str) -> N
     assert parsed is not None
     assert parsed.offered_version == offered_version
     assert parsed.update_state == token
+
+
+@pytest.mark.parametrize("state", ["WAITING", "DENIED", "APPROVED", "NONE"])
+def test_an_update_to_the_installed_version_offers_nothing(state: str) -> None:
+    parsed = parse_firmware_updates(
+        [entry(updateInformation={"version": "1.5.2", "state": state})], GATEWAY_ID
+    )
+    assert parsed is not None
+    assert parsed.offered_version is None
+    assert parsed.update_state == state.lower()
+
+
+def test_none_without_a_version_is_no_shape_problem() -> None:
+    parsed = parse_firmware_updates(
+        [entry(updateInformation={"state": "NONE"})], GATEWAY_ID
+    )
+    assert parsed is not None
+    assert parsed.offered_version is None
+    assert parsed.update_state == "none"
 
 
 def test_missing_fields_stay_unknown_without_a_shape_problem() -> None:
@@ -175,6 +206,7 @@ def test_the_own_entry_is_found_among_others() -> None:
         [entry(currentVersion={"version": "1" * 65})],
         [entry(updateInformation={"version": "2.0", "state": 3})],
         [entry(updateInformation={"state": "WAITING"})],
+        [entry(updateInformation={"state": "APPROVED"})],
         [entry(autoUpdateInformation=[True])],
         [entry()] * 33,
     ],
@@ -602,6 +634,7 @@ async def test_diagnostics_show_versions_and_classes_without_identifiers(
         "last_answer_age_seconds": 0,
         "next_read_in_seconds": int(READ_INTERVAL.total_seconds()),
         "shown": True,
+        "restored": False,
         "installed_version": "1.5.2",
         "update_version": "2.0.0",
         "update_offered": True,
@@ -624,7 +657,13 @@ def test_the_update_platform_is_set_up() -> None:
     assert Platform.UPDATE in PLATFORMS
 
 
-async def _setup(hass: HomeAssistant, answer: Any, *, firmware: str | None = None):
+async def _setup(
+    hass: HomeAssistant,
+    answer: Any,
+    *,
+    firmware: str | None = None,
+    prepare: Any = None,
+):
     """A real entry (migrated to the managed format) against the fake cloud."""
     from custom_components.bosch_buderus_heating.coordinator import (
         BoschBuderusDataUpdateCoordinator,
@@ -657,6 +696,8 @@ async def _setup(hass: HomeAssistant, answer: Any, *, firmware: str | None = Non
     stack.__enter__()
     stack.enter_context(patch.object(PointTClient, "get_firmware_updates", reads))
     entry = _entry(hass)
+    if prepare is not None:
+        prepare(entry)
     assert await hass.config_entries.async_setup(entry.entry_id)
     await settle(hass)
     await wait_for_sources(hass, entry, 1)
@@ -806,3 +847,289 @@ async def test_unloading_the_entry_stops_the_reads(hass: HomeAssistant) -> None:
     async_fire_time_changed(hass, dt_util.utcnow() + first_read())
     await settle(hass)
     reads.assert_not_awaited()
+
+
+# Restart ------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        [offered()],
+        [offered("APPROVED")],
+        [offered("NONE")],
+        [offered("SCHEDULED_LATER")],
+        [offered("not a token!")],
+        [entry()],
+        [entry(autoUpdateInformation=None)],
+        [{"gatewayId": GATEWAY_ID}],
+        [
+            entry(
+                currentVersion={
+                    "version": "1.5.2",
+                    "releaseNotes": [
+                        {"language": "en_GB", "url": "https://notes.example.test/en"}
+                    ],
+                }
+            )
+        ],
+    ],
+)
+def test_a_stored_answer_reads_back_the_same(answer: Any) -> None:
+    parsed = parse_firmware_updates(answer, GATEWAY_ID)
+    assert parsed is not None
+    stored = stored_entry(parsed)
+    assert GATEWAY_ID not in json.dumps(stored)
+    assert restored_updates(json.loads(json.dumps(stored))) == parsed
+
+
+@pytest.mark.parametrize(
+    "stored",
+    [
+        None,
+        "text",
+        [offered()],
+        {"gatewayId": GATEWAY_ID},
+        {"currentVersion": "1.5.2"},
+        {"updateInformation": {"state": "WAITING"}},
+    ],
+)
+def test_an_invalid_stored_answer_is_not_restored(stored: Any) -> None:
+    assert restored_updates(stored) is None
+
+
+async def test_a_restored_answer_is_shown_until_the_first_read(
+    hass: HomeAssistant, clock: Clock
+) -> None:
+    coordinator = fake_coordinator(hass, parse_firmware_updates([entry()], GATEWAY_ID))
+    tracker = FirmwareUpdateTracker(coordinator)  # type: ignore[arg-type]
+    release = tracker.attach()
+    kept = parse_firmware_updates([offered()], GATEWAY_ID)
+    assert kept is not None
+    age = 3600.0
+    read_at = time.time() - age
+    assert tracker.restore(kept, read_at) is True
+    assert tracker.shown() is kept
+    assert tracker.answered_at_time == read_at
+    report = tracker.diagnostics()
+    assert report["restored"] is True and report["shown"] is True
+    assert report["last_answer_age_seconds"] in (int(age), int(age) + 1)
+    # The kept age counts: the answer ends 13 hours after it was read.
+    clock.now += VALIDITY.total_seconds() - age - 10
+    assert tracker.shown() is kept
+    clock.now -= VALIDITY.total_seconds() - age - 10
+    # The first read replaces it; a second restore changes nothing.
+    await advance(hass, clock, first_read())
+    assert tracker.shown() is not kept
+    assert tracker.shown() == parse_firmware_updates([entry()], GATEWAY_ID)
+    assert tracker.diagnostics()["restored"] is False
+    assert tracker.restore(kept, time.time()) is False
+    assert tracker.shown() is not kept
+    release()
+
+
+async def test_a_restored_answer_ends_with_its_validity(
+    hass: HomeAssistant, clock: Clock
+) -> None:
+    coordinator = fake_coordinator(hass, None)
+    tracker = FirmwareUpdateTracker(coordinator)  # type: ignore[arg-type]
+    kept = parse_firmware_updates([offered()], GATEWAY_ID)
+    assert kept is not None
+    age = 3600.0
+    assert tracker.restore(kept, time.time() - age) is True
+    clock.now += VALIDITY.total_seconds() - age + 10
+    assert tracker.shown() is None
+
+
+@pytest.mark.parametrize(
+    "age", [VALIDITY.total_seconds() + 60, -600.0], ids=["too_old", "future"]
+)
+async def test_a_stored_answer_outside_its_validity_is_not_restored(
+    hass: HomeAssistant, clock: Clock, age: float
+) -> None:
+    coordinator = fake_coordinator(hass, None)
+    tracker = FirmwareUpdateTracker(coordinator)  # type: ignore[arg-type]
+    kept = parse_firmware_updates([offered()], GATEWAY_ID)
+    assert kept is not None
+    assert tracker.restore(kept, time.time() - age) is False
+    assert tracker.shown() is None
+    assert tracker.diagnostics()["restored"] is False
+
+
+async def test_a_restored_answer_survives_a_round_without_an_answer(
+    hass: HomeAssistant, clock: Clock
+) -> None:
+    coordinator = fake_coordinator(hass, RequestTimeout("timeout"))
+    tracker = FirmwareUpdateTracker(coordinator)  # type: ignore[arg-type]
+    release = tracker.attach()
+    kept = parse_firmware_updates([offered()], GATEWAY_ID)
+    assert kept is not None
+    assert tracker.restore(kept, time.time() - 60) is True
+    await advance(hass, clock, first_read())
+    assert tracker.outcome is Outcome.NO_ANSWER
+    assert tracker.shown() is kept
+    assert tracker.diagnostics()["restored"] is True
+    # A refusal ends it at once, as in operation.
+    coordinator.client.get_firmware_updates.side_effect = ResourceForbidden("/", 403)
+    await advance(hass, clock, READ_INTERVAL + timedelta(minutes=1))
+    assert tracker.shown() is None
+    assert tracker.diagnostics()["restored"] is False
+    release()
+
+
+async def test_an_unloaded_coordinator_and_its_tracker_are_freed(
+    hass: HomeAssistant, clock: Clock
+) -> None:
+    coordinator = fake_coordinator(hass, parse_firmware_updates([entry()], GATEWAY_ID))
+    tracker = module.firmware_update_tracker(coordinator)  # type: ignore[arg-type]
+    release = tracker.attach()
+    await advance(hass, clock, first_read())
+    assert module.existing_tracker(coordinator) is tracker  # type: ignore[arg-type]
+    release()
+    coordinator_ref = weakref.ref(coordinator)
+    tracker_ref = weakref.ref(tracker)
+    count = len(module._TRACKERS)
+    del coordinator, tracker, release
+    gc.collect()
+    assert coordinator_ref() is None
+    assert tracker_ref() is None
+    assert len(module._TRACKERS) == count - 1
+
+
+async def test_a_tracker_without_its_coordinator_starts_no_read(
+    hass: HomeAssistant, clock: Clock
+) -> None:
+    coordinator = fake_coordinator(hass, None)
+    tracker = FirmwareUpdateTracker(coordinator)  # type: ignore[arg-type]
+    tracker._users = 1
+    del coordinator
+    gc.collect()
+    tracker._fire(None)
+    assert tracker._task is None
+    with pytest.raises(RuntimeError):
+        _ = tracker.coordinator
+
+
+def _register_entity(hass: HomeAssistant, extra: Any) -> Any:
+    """Register the entity of an earlier run for the entry and keep ``extra``
+    as its stored data."""
+    from homeassistant.core import State
+
+    def prepare(config_entry: Any) -> None:
+        entity_id = (
+            er.async_get(hass)
+            .async_get_or_create(
+                "update",
+                DOMAIN,
+                f"{GATEWAY_ID}:firmware_update",
+                config_entry=config_entry,
+            )
+            .entity_id
+        )
+        if extra is not None:
+            mock_restore_cache_with_extra_data(hass, [(State(entity_id, "on"), extra)])
+
+    return prepare
+
+
+def _kept(answer: Any, age: float) -> dict[str, Any]:
+    parsed = parse_firmware_updates(answer, GATEWAY_ID)
+    assert parsed is not None
+    return {"answer": stored_entry(parsed), "answered_at": time.time() - age}
+
+
+async def test_the_entity_shows_the_kept_answer_after_a_restart(
+    hass: HomeAssistant,
+) -> None:
+    from tests.helpers.rrc_absence import teardown
+
+    entry_, _coordinator, stack, reads = await _setup(
+        hass,
+        parse_firmware_updates([entry()], GATEWAY_ID),
+        prepare=_register_entity(hass, _kept([offered()], 3600)),
+    )
+    entity_id = _entity_id(hass)
+    assert entity_id is not None
+    try:
+        # Shown at once, before the first read of this run.
+        reads.assert_not_awaited()
+        state = hass.states.get(entity_id)
+        assert state is not None
+        assert state.state == "on"
+        assert state.attributes["installed_version"] == "1.5.2"
+        assert state.attributes["latest_version"] == "2.0.0"
+        assert state.attributes["update_state"] == "waiting"
+        # The first read replaces it.
+        async_fire_time_changed(hass, dt_util.utcnow() + first_read())
+        await settle(hass)
+        reads.assert_awaited_once()
+        state = hass.states.get(entity_id)
+        assert state is not None and state.state == "off"
+        assert state.attributes["latest_version"] == "1.5.2"
+    finally:
+        await teardown(hass, entry_, stack)
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        None,
+        "too_old",
+        {"answer": "1.5.2", "answered_at": 0},
+        {"answer": {}, "answered_at": True},
+        {"answered_at": 5},
+    ],
+)
+async def test_the_entity_waits_without_a_usable_kept_answer(
+    hass: HomeAssistant, extra: Any
+) -> None:
+    from tests.helpers.rrc_absence import teardown
+
+    if extra == "too_old":
+        extra = _kept([offered()], VALIDITY.total_seconds() + 60)
+    entry_, _coordinator, stack, reads = await _setup(
+        hass,
+        parse_firmware_updates([offered()], GATEWAY_ID),
+        prepare=_register_entity(hass, extra),
+    )
+    entity_id = _entity_id(hass)
+    assert entity_id is not None
+    try:
+        state = hass.states.get(entity_id)
+        assert state is not None and state.state == "unavailable"
+        async_fire_time_changed(hass, dt_util.utcnow() + first_read())
+        await settle(hass)
+        reads.assert_awaited_once()
+        state = hass.states.get(entity_id)
+        assert state is not None and state.state == "on"
+    finally:
+        await teardown(hass, entry_, stack)
+
+
+async def test_the_entity_keeps_the_answer_for_the_next_restart(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.helpers.restore_state import async_get as restore_data
+
+    from tests.helpers.rrc_absence import teardown
+
+    answer = parse_firmware_updates([offered()], GATEWAY_ID)
+    assert answer is not None
+    entry_, _coordinator, stack, _reads = await _setup(hass, answer)
+    try:
+        async_fire_time_changed(hass, dt_util.utcnow() + first_read())
+        await settle(hass)
+        entity_id = _entity_id(hass)
+        assert entity_id is not None
+        before = time.time()
+        stored = {
+            state.state.entity_id: state
+            for state in restore_data(hass).async_get_stored_states()
+        }[entity_id]
+        assert stored.extra_data is not None
+        kept = stored.extra_data.as_dict()
+        assert restored_updates(kept["answer"]) == answer
+        assert before - 60 <= kept["answered_at"] <= before
+        assert GATEWAY_ID not in json.dumps(kept)
+    finally:
+        await teardown(hass, entry_, stack)

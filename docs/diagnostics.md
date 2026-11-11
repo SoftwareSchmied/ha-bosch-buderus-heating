@@ -282,7 +282,8 @@ them: `active`, `result` and `results` (counts per class: `ok`,
 `rate_limited`, `no_answer`, `unexpected_status`, `sign_in_required`,
 `error`), `attempts`, `held_rounds` (rounds the cloud state held back without
 a request), `last_attempt_age_seconds`, `last_answer_age_seconds`,
-`next_read_in_seconds`, `shown`, `installed_version`, `update_version`,
+`next_read_in_seconds`, `shown`, `restored` (the shown answer is the one kept
+from before the last restart), `installed_version`, `update_version`,
 `update_offered`, `update_state`, the number of `release_notes_links` and
 `auto_update_enabled`/`auto_update_changeable`. It never contains the gateway
 ID or a link; a version that does not look like one shows as `other`. The

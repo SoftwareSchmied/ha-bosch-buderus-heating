@@ -373,10 +373,11 @@ setting. The attributes are `auto_update_enabled` and
 `auto_update_changeable` (the gateway's own automatic update) and
 `update_state`, the state the cloud reports for the update (`waiting`,
 `denied`, `approved`, `none`, `unknown`, or another reported value as it
-is). `waiting` and `denied` count as an offered update and `approved` and
-`none` as an update being installed (expected, untested); any other
-state keeps the entity current. Without a version in the list, the entity
-shows the firmware version the gateway reports.
+is). `waiting` and `denied` count as an offered update and `approved` as an
+update being installed, each only with a version other than the installed
+one (expected, untested). `none`, `unknown` and any other state keep the
+entity current and are only shown in `update_state`. Without a version in the
+list, the entity shows the firmware version the gateway reports.
 
 The list is not a resource path. It is read once about ten minutes after the
 start (spread over three minutes per gateway), then every six hours, without
@@ -385,8 +386,11 @@ and a round while the cloud is paused or unreachable sends nothing and looks
 again after an hour. A gateway the list refuses (HTTP 403, 404 or 405) or does
 not name gets no entity, or an existing one becomes unavailable; it is then
 read once a day. An answer of an unexpected shape also makes the entity
-unavailable. The last answer is shown for 13 hours. The function is tested
-with simulated answers only and is expected, untested on a real device.
+unavailable. The last answer is shown for 13 hours after it was read. After a
+restart of Home Assistant, the entity shows the answer it kept from before
+until the first new read, again only within these 13 hours; an older or
+missing answer leaves it unavailable until then. The function is tested with
+simulated answers only and is expected, untested on a real device.
 
 Some K40 gateways serve the status paths above without listing them in the
 PointT reference tree. The integration probes only this bounded, documented

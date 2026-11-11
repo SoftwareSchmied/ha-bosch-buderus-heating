@@ -145,8 +145,12 @@ gateway they are expected, untested.
   gateway's automatic update, so nothing can start a firmware update from
   Home Assistant. The list is read about ten minutes after the start and then
   every six hours; a gateway the list refuses or does not name gets no
-  entity. I tested it with simulated answers of the cloud's firmware update
-  list only; it is expected, untested on a real gateway.
+  entity. An update counts as offered only with a version other than the
+  installed one; the state `none` offers nothing and shows only in the
+  `update_state` attribute. After a restart, the entity shows the last
+  answer it kept, at most 13 hours old, until the first new read instead of
+  being unavailable. I tested it with simulated answers of the cloud's
+  firmware update list only; it is expected, untested on a real gateway.
 - **Diagnostics:** the new section `firmware_updates` shows the result of the
   last reads, the state and the versions, without the gateway ID or links.
 

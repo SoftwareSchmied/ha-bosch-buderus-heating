@@ -2,11 +2,12 @@
 
 ``GET firmwareUpdates?gatewayId=<id>`` is no resource path. The answer is a
 list with one entry per gateway: the installed version, an offered update and
-the gateway's own automatic update setting. The official app derives its
-device state from the update's ``state``: none or ``UNKNOWN`` is up to date,
-``WAITING`` and ``DENIED`` offer an update, ``APPROVED`` and ``NONE`` mean the
-update is being installed. The integration only shows this; it never confirms
-an update or changes the automatic setting.
+the gateway's own automatic update setting. The update's ``state`` decides
+what is shown: ``WAITING`` and ``DENIED`` offer an update and ``APPROVED``
+means it is being installed, each only with a version other than the installed
+one. ``NONE``, ``UNKNOWN``, no state or any other value keep the gateway
+current; the state is then only shown as reported. The integration never
+confirms an update or changes the automatic setting.
 """
 
 from __future__ import annotations
@@ -18,11 +19,13 @@ from typing import Final
 from .exceptions import InvalidPayload
 from .models import JsonValue
 
-# The update states the official app knows; any other value is shown, never
-# interpreted (F1: "unknown state stays current").
+# The known update states; any other value is shown, never interpreted
+# (F1: "unknown state stays current"). ``NONE`` is neutral: it neither offers
+# nor installs anything and is only shown as the reported state.
 OFFERED_STATES: Final = frozenset({"WAITING", "DENIED"})
-INSTALLING_STATES: Final = frozenset({"APPROVED", "NONE"})
-KNOWN_STATES: Final = OFFERED_STATES | INSTALLING_STATES | {"UNKNOWN"}
+INSTALLING_STATES: Final = frozenset({"APPROVED"})
+SHOWING_STATES: Final = OFFERED_STATES | INSTALLING_STATES
+KNOWN_STATES: Final = SHOWING_STATES | {"NONE", "UNKNOWN"}
 _MAX_ENTRIES = 32
 _MAX_NOTES = 32
 _MAX_VERSION_LENGTH = 64
@@ -77,15 +80,20 @@ class FirmwareUpdates:
     def offered_version(self) -> str | None:
         """The version an update offers or installs; ``None`` when current.
 
-        Only the known states count; an unknown state or one without a
-        version keeps the installed version (nothing is guessed).
+        Only ``WAITING``, ``DENIED`` and ``APPROVED`` count, and only with a
+        version other than the installed one. ``NONE``, an unknown state or
+        an update without a version keep the installed version (nothing is
+        guessed).
         """
         update = self.update
         if (
             update is None
-            or update.state not in OFFERED_STATES | INSTALLING_STATES
+            or update.state not in SHOWING_STATES
             or update.version is None
         ):
+            return None
+        current = self.current
+        if current is not None and current.version == update.version:
             return None
         return update.version
 
@@ -125,7 +133,7 @@ def parse_firmware_updates(
     if (
         found is not None
         and found.update is not None
-        and found.update.state in OFFERED_STATES | INSTALLING_STATES
+        and found.update.state in SHOWING_STATES
         and found.update.version is None
     ):
         # An offered update without a version cannot be shown.
@@ -217,3 +225,52 @@ def release_url(updates: FirmwareUpdates, language: str | None) -> str | None:
 
 def _primary(note: ReleaseNote) -> str:
     return note.language.split("-", 1)[0]
+
+
+# The stored entry carries no gateway ID; it is read back under this name.
+_STORED_GATEWAY: Final = "stored"
+
+
+def stored_entry(updates: FirmwareUpdates) -> dict[str, JsonValue]:
+    """``updates`` in the shape of a list entry, without the gateway ID.
+
+    It keeps the last answer across a restart; ``restored_updates`` reads it
+    back with the same checks as an answer of the cloud.
+    """
+    entry: dict[str, JsonValue] = {}
+    if updates.current is not None:
+        entry["currentVersion"] = _stored_version(updates.current)
+    if updates.update is not None:
+        entry["updateInformation"] = _stored_version(updates.update)
+    if (
+        updates.auto_update_enabled is not None
+        or updates.auto_update_changeable is not None
+    ):
+        entry["autoUpdateInformation"] = {
+            "enabled": updates.auto_update_enabled,
+            "changeable": updates.auto_update_changeable,
+        }
+    return entry
+
+
+def _stored_version(version: FirmwareVersion) -> dict[str, JsonValue]:
+    return {
+        "version": version.version,
+        "state": version.state,
+        "releaseNotes": [
+            {"language": note.language, "url": note.url}
+            for note in version.release_notes
+        ],
+    }
+
+
+def restored_updates(value: object) -> FirmwareUpdates | None:
+    """A stored entry read back; ``None`` if it is missing or not valid."""
+    if not isinstance(value, dict) or "gatewayId" in value:
+        return None
+    try:
+        return parse_firmware_updates(
+            [{**value, "gatewayId": _STORED_GATEWAY}], _STORED_GATEWAY
+        )
+    except InvalidPayload:
+        return None

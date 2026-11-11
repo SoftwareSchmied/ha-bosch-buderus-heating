@@ -8,6 +8,10 @@ day. There is no retry of its own: a failed read waits for the next round,
 and the account pause (429/Retry-After) holds the read like any other
 request. Nothing is ever sent to confirm an update or to change the gateway's
 automatic update setting.
+
+The update entity keeps the last answer across a restart and hands it back
+with ``restore``; it is shown until the first new read, within the same
+validity as in operation, and never made newer than it was.
 """
 
 from __future__ import annotations
@@ -20,9 +24,9 @@ from collections import Counter
 from collections.abc import Callable
 from datetime import timedelta
 from enum import StrEnum
-from time import monotonic
+from time import monotonic, time
 from typing import TYPE_CHECKING, Final
-from weakref import WeakKeyDictionary
+from weakref import WeakKeyDictionary, ref
 
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import CALLBACK_TYPE, Event, callback
@@ -77,6 +81,8 @@ class Outcome(StrEnum):
 _ENDING: Final = frozenset(
     {Outcome.ENDPOINT_REFUSED, Outcome.NOT_LISTED, Outcome.SCHEMA_ISSUE}
 )
+# The tracker holds its coordinator only weakly, so an unloaded coordinator
+# and its entry in this mapping are freed.
 _TRACKERS: WeakKeyDictionary[BoschBuderusDataUpdateCoordinator, FirmwareUpdateTracker]
 _TRACKERS = WeakKeyDictionary()
 
@@ -121,10 +127,13 @@ class FirmwareUpdateTracker:
     """Schedule, result and diagnostics of the firmware update reads."""
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
-        self.coordinator = coordinator
+        self._coordinator = ref(coordinator)
         self.updates: FirmwareUpdates | None = None
         self.outcome: Outcome | None = None
+        self.restored = False
         self._answered_at: float | None = None
+        # The wall clock time of the shown answer, kept across a restart.
+        self.answered_at_time: float | None = None
         self._attempted_at: float | None = None
         self._due: float | None = None
         self.attempts = 0
@@ -136,6 +145,13 @@ class FirmwareUpdateTracker:
         self._task: asyncio.Task[None] | None = None
         self._listeners: list[Callable[[], None]] = []
         self._error_logged = False
+
+    @property
+    def coordinator(self) -> BoschBuderusDataUpdateCoordinator:
+        coordinator = self._coordinator()
+        if coordinator is None:
+            raise RuntimeError("The coordinator of the firmware tracker is gone")
+        return coordinator
 
     # Lifecycle -------------------------------------------------------------
 
@@ -219,7 +235,7 @@ class FirmwareUpdateTracker:
     @callback
     def _fire(self, _now: object) -> None:
         self._timer = None
-        if self._users == 0:
+        if self._users == 0 or self._coordinator() is None:
             return
         if self._task is not None and not self._task.done():
             return
@@ -285,10 +301,14 @@ class FirmwareUpdateTracker:
         self.outcomes[outcome.value] += 1
         if outcome is Outcome.OK:
             self.updates = updates
+            self.restored = False
             self._answered_at = monotonic()
+            self.answered_at_time = time()
         elif outcome in _ENDING:
             self.updates = None
+            self.restored = False
             self._answered_at = None
+            self.answered_at_time = None
         refused = outcome in (Outcome.ENDPOINT_REFUSED, Outcome.NOT_LISTED)
         self._next(REFUSED_INTERVAL if refused else READ_INTERVAL)
         for listener in tuple(self._listeners):
@@ -297,6 +317,24 @@ class FirmwareUpdateTracker:
     def _next(self, interval: timedelta) -> None:
         if self._users:
             self._schedule(interval.total_seconds())
+
+    @callback
+    def restore(self, updates: FirmwareUpdates, answered_at_time: float) -> bool:
+        """Show the answer kept from before a restart until the first read.
+
+        Only before this run read anything, and only within the validity of
+        the answer at the time it was read; its age is kept.
+        """
+        if self.outcome is not None or self._answered_at is not None:
+            return False
+        age = time() - answered_at_time
+        if not 0 <= age <= VALIDITY.total_seconds():
+            return False
+        self.updates = updates
+        self._answered_at = monotonic() - age
+        self.answered_at_time = answered_at_time
+        self.restored = True
+        return True
 
     # State -----------------------------------------------------------------
 
@@ -330,6 +368,7 @@ class FirmwareUpdateTracker:
                 else None
             ),
             "shown": self.shown() is not None,
+            "restored": self.restored,
             "installed_version": _version_token(current.version if current else None),
             "update_version": _version_token(update.version if update else None),
             "update_offered": (

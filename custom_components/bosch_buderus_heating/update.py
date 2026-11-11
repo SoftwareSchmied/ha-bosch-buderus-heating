@@ -5,12 +5,15 @@ offers, with a link to its release notes. It never installs: there is no
 install feature, and no request confirms an update or changes the gateway's
 automatic update setting. It is created with the first usable answer of the
 firmware update list (``firmware_updates``); a gateway the list refuses or
-does not name gets no entity.
+does not name gets no entity. An entity that already exists is added at the
+start and shows the answer it kept from before the restart until the first
+new read, within the same 13 hours as in operation.
 """
 
 from __future__ import annotations
 
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, Self
 
 from homeassistant.components.update import (
     UpdateDeviceClass,
@@ -19,17 +22,25 @@ from homeassistant.components.update import (
 )
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.restore_state import ExtraStoredData
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import BoschBuderusConfigEntry
+from .const import DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .device import device_info_for_resource
 from .firmware_updates import FirmwareUpdateTracker, firmware_update_tracker
 from .firmware_watch import firmware_values
 from .platform_scope import DiscoveryLifecycle, PlatformScope, setup_platform
-from .pointt.firmware_updates import FirmwareUpdates, release_url
+from .pointt.firmware_updates import (
+    FirmwareUpdates,
+    release_url,
+    restored_updates,
+    stored_entry,
+)
 from .resource_catalog import FIRMWARE_PATHS
 
 
@@ -55,9 +66,17 @@ def _track_firmware_update(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Read the list while the gateway is shown; add the entity once the
-    first usable answer arrives."""
+    first usable answer arrives, or at once if it exists from before."""
     tracker = firmware_update_tracker(coordinator)
     entry.async_on_unload(tracker.attach())
+    if (
+        er.async_get(coordinator.hass).async_get_entity_id(
+            Platform.UPDATE, DOMAIN, _unique_id(coordinator)
+        )
+        is not None
+    ):
+        async_add_entities([BoschBuderusFirmwareUpdate(coordinator, tracker)])
+        return
     added = False
 
     @callback
@@ -71,6 +90,30 @@ def _track_firmware_update(
     discover()
     if not added:
         entry.async_on_unload(tracker.add_listener(discover))
+
+
+def _unique_id(coordinator: BoschBuderusDataUpdateCoordinator) -> str:
+    return f"{coordinator.gateway.gateway_id}:firmware_update"
+
+
+@dataclass(frozen=True, slots=True)
+class _StoredAnswer(ExtraStoredData):
+    """The last answer and the wall clock time it was read."""
+
+    answer: dict[str, Any]
+    answered_at: float
+
+    def as_dict(self) -> dict[str, Any]:
+        return {"answer": self.answer, "answered_at": self.answered_at}
+
+    @classmethod
+    def from_dict(cls, value: dict[str, Any]) -> Self | None:
+        answer, answered_at = value.get("answer"), value.get("answered_at")
+        if not isinstance(answer, dict) or not isinstance(answered_at, int | float):
+            return None
+        if isinstance(answered_at, bool):
+            return None
+        return cls(answer, float(answered_at))
 
 
 class BoschBuderusFirmwareUpdate(
@@ -92,11 +135,32 @@ class BoschBuderusFirmwareUpdate(
     ) -> None:
         super().__init__(coordinator)
         self._tracker = tracker
-        self._attr_unique_id = f"{coordinator.gateway.gateway_id}:firmware_update"
+        self._attr_unique_id = _unique_id(coordinator)
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
+        await self._async_restore()
         self.async_on_remove(self._tracker.add_listener(self._tracker_updated))
+
+    async def _async_restore(self) -> None:
+        """Hand the answer kept from before the restart to the tracker."""
+        extra = await self.async_get_last_extra_data()
+        if extra is None:
+            return
+        stored = _StoredAnswer.from_dict(extra.as_dict())
+        if stored is None:
+            return
+        updates = restored_updates(stored.answer)
+        if updates is not None:
+            self._tracker.restore(updates, stored.answered_at)
+
+    @property
+    def extra_restore_state_data(self) -> _StoredAnswer | None:
+        tracker = self._tracker
+        shown = tracker.shown()
+        if shown is None or tracker.answered_at_time is None:
+            return None
+        return _StoredAnswer(stored_entry(shown), tracker.answered_at_time)
 
     @callback
     def _tracker_updated(self) -> None:

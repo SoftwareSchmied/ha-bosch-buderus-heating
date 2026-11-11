@@ -20,6 +20,7 @@ if find_spec("pytest_homeassistant") is not None:
         async_fire_time_changed,
         flush_store,
         mock_restore_cache,
+        mock_restore_cache_with_extra_data,
     )
 else:  # Home Assistant before 2026.11
     from pytest_homeassistant_custom_component.common import (  # type: ignore[no-redef]
@@ -27,6 +28,7 @@ else:  # Home Assistant before 2026.11
         async_fire_time_changed,
         flush_store,
         mock_restore_cache,
+        mock_restore_cache_with_extra_data,
     )
 
 __all__ = [
@@ -35,6 +37,7 @@ __all__ = [
     "async_fire_time_changed",
     "flush_store",
     "mock_restore_cache",
+    "mock_restore_cache_with_extra_data",
 ]
 
 
