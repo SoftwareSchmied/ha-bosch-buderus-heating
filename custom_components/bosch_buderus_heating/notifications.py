@@ -7,7 +7,7 @@ import hashlib
 import html
 import logging
 import re
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
@@ -60,6 +60,18 @@ _TEXT = {
             "Last reported faults. Their current status has not yet been confirmed."
         ),
         "resolved": "The previously reported faults are no longer active.",
+        # SYSTEM-07: the same with warnings or maintenance among them.
+        "resolved_notices_title": "{name}: notifications cleared",
+        "unconfirmed_notices": (
+            "Last reported notifications. "
+            "Their current status has not yet been confirmed."
+        ),
+        "resolved_notices": (
+            "The previously reported notifications are no longer active."
+        ),
+        "more_resolved_notices": (
+            "{count} older cleared notifications are no longer listed."
+        ),
         "more": "{count} additional active faults.",
         "active_notices": "Active notifications: {count}",
         "more_notices": "{count} additional active notifications.",
@@ -89,6 +101,15 @@ _TEXT = {
             "Ihr aktueller Status ist noch nicht bestätigt."
         ),
         "resolved": "Die zuvor gemeldeten Störungen sind nicht mehr aktiv.",
+        "resolved_notices_title": "{name}: Meldungen erledigt",
+        "unconfirmed_notices": (
+            "Zuletzt gemeldete Anlagenmeldungen. "
+            "Ihr aktueller Status ist noch nicht bestätigt."
+        ),
+        "resolved_notices": "Die zuvor gemeldeten Meldungen sind nicht mehr aktiv.",
+        "more_resolved_notices": (
+            "{count} ältere erledigte Meldungen werden nicht mehr aufgelistet."
+        ),
         "more": "{count} weitere aktive Störungen.",
         "active_notices": "Aktive Meldungen: {count}",
         "more_notices": "{count} weitere aktive Meldungen.",
@@ -194,6 +215,11 @@ def _incident_key(fault: ActiveFault) -> str:
     ).hexdigest()
 
 
+def _has_notices(faults: Iterable[ActiveFault]) -> bool:
+    """Whether a warning or a maintenance message is among these entries."""
+    return any(fault.severity in _NOTICE_RANK for fault in faults)
+
+
 def _safe_text(value: str) -> str:
     """Render bounded manufacturer text as text rather than Markdown or HTML."""
     value = " ".join(value.split())[:240]
@@ -240,11 +266,15 @@ class FaultNotifications:
         self._visible = False
         self._last_content: tuple[str, str] | None = None
         self._reported: dict[str, ActiveFault] = {}
+        # SYSTEM-07: whether the visible notification has listed a warning or
+        # a maintenance message; then its texts speak of notifications.
+        self._reported_notices = False
         if coordinator is None:
             self._reported = {
                 _incident_key(fault): fault
                 for fault in self._shown(self._tracker.active)
             }
+            self._reported_notices = _has_notices(self._reported.values())
         self._resolved: dict[str, FaultLifecycleEvent] = {}
         self._omitted_resolved = 0
         self._remove_callbacks: list[Callable[[], None]] = []
@@ -394,8 +424,19 @@ class FaultNotifications:
         # Only discard obsolete suppression after the tracker has confirmed absence.
         # A retained fault remains in "current" during partial/failed reads.
         if active or self._confirmed:
+            # SYSTEM-13: every incident still reported keeps its dismissal,
+            # also one the notification does not show right now (a warning
+            # while the option is off).
+            known = set(current) | {
+                _incident_key(fault)
+                for fault in (
+                    self._tracker.active
+                    if self._source_current()
+                    else self._retained_faults
+                )
+            }
             retained = {
-                key: rank for key, rank in self._dismissed.items() if key in current
+                key: rank for key, rank in self._dismissed.items() if key in known
             }
             if retained != self._dismissed:
                 self._dismissed = retained
@@ -418,6 +459,7 @@ class FaultNotifications:
             if not self._visible:
                 self._clear_details()
             self._reported.update({_incident_key(fault): fault for fault in active})
+            self._reported_notices |= _has_notices(active)
             self._show(*self._content(active))
         elif self._visible and (self._reported or self._confirmed):
             self._show(*self._content(()))
@@ -496,6 +538,9 @@ class FaultNotifications:
         )
         # Warnings and maintenance (option on) count as notifications.
         faults_only = all(fault.severity in _RANK for fault in active)
+        # SYSTEM-07: the texts about the reported entries follow what the
+        # notification has listed.
+        reported = "_notices" if self._reported_notices else ""
         if active:
             title = texts["title" if faults_only else "changed_title"].format(name=name)
             lines = [
@@ -504,7 +549,8 @@ class FaultNotifications:
                 )
             ]
             if not self._confirmed:
-                lines += ["", texts["unconfirmed"]]
+                unconfirmed = "unconfirmed" if faults_only else "unconfirmed_notices"
+                lines += ["", texts[unconfirmed]]
             ordered = sorted(
                 active,
                 key=lambda fault: (
@@ -522,7 +568,10 @@ class FaultNotifications:
             title = texts["changed_title"].format(name=name)
             lines = []
             if not self._confirmed:
-                lines.append(texts["unconfirmed"])
+                lines.append(texts[f"unconfirmed{reported}"])
+        elif reported:
+            title = texts["resolved_notices_title"].format(name=name)
+            lines = [texts["resolved_notices"]]
         else:
             title = texts["resolved_title"].format(name=name)
             lines = [texts["resolved"]]
@@ -551,7 +600,9 @@ class FaultNotifications:
             if self._omitted_resolved:
                 lines += [
                     "",
-                    texts["more_resolved"].format(count=self._omitted_resolved),
+                    texts[f"more_resolved{reported}"].format(
+                        count=self._omitted_resolved
+                    ),
                 ]
         lines += [
             "",
@@ -583,10 +634,14 @@ class FaultNotifications:
         ):
             return
         if self._visible:
-            self._dismissed = {
-                _incident_key(fault): self._ranks[fault.severity]
-                for fault in self._active_faults
-            }
+            # SYSTEM-13: added to the earlier dismissals; those of incidents
+            # that are no longer reported are dropped by the next update.
+            self._dismissed.update(
+                {
+                    _incident_key(fault): self._ranks[fault.severity]
+                    for fault in self._active_faults
+                }
+            )
             self._schedule_save()
         self._visible = False
         self._last_content = None
@@ -594,6 +649,7 @@ class FaultNotifications:
 
     def _clear_details(self) -> None:
         self._reported.clear()
+        self._reported_notices = False
         self._resolved.clear()
         self._omitted_resolved = 0
 

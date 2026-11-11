@@ -257,6 +257,7 @@
     "Indoor air quality": "Качество на въздуха в помещението",
     "Indoor humidity": "Влажност в помещението",
     "Information": "Информация",
+    "Information (code {code})": "Информация (код {code})",
     "Inlet temperature": "Температура на входа",
     "Installation date": "Дата на инсталиране",
     "Installation date (day)": "Дата на инсталиране (ден)",
@@ -267,6 +268,7 @@
     "iSRC support": "Поддръжка на iSRC",
     "Last local answer: {time}.": "Последен локален отговор: {time}.",
     "Last reported faults. Their current status has not yet been confirmed.": "Последно съобщени повреди. Текущото им състояние все още не е потвърдено.",
+    "Last reported notifications. Their current status has not yet been confirmed.": "Последно съобщени известия. Текущото им състояние все още не е потвърдено.",
     "Last successful cloud request: {time}.": "Последна успешна облачна заявка: {time}.",
     "Learning week": "Седмица на обучение",
     "Like Friday": "Като в петък",
@@ -288,6 +290,7 @@
     "Low-price setpoint delta": "Промяна на зададената стойност при ниска цена",
     "Lower pressure limit": "Долна граница на налягането",
     "Maintenance": "Поддръжка",
+    "Maintenance message (code {code})": "Съобщение за поддръжка (код {code})",
     "Manual heating setpoint": "Ръчна зададена стойност за отопление",
     "Manual setpoint": "Ръчна зададена стойност",
     "Maximum cylinder temperature": "Максимална температура на бойлера",
@@ -510,6 +513,7 @@
     "The day is controlled like a Wednesday": "Денят се управлява като сряда",
     "The device certificate has changed: please set up the local access again via “Change local access”.": "Сертификатът на устройството се е променил: моля, настройте локалния достъп отново чрез „Промяна на локалния достъп“.",
     "The previously reported faults are no longer active.": "Съобщените преди това повреди вече не са активни.",
+    "The previously reported notifications are no longer active.": "Съобщените преди това известия вече не са активни.",
     "Thermal disinfection": "Термична дезинфекция",
     "Thermal disinfection day": "Ден на термичната дезинфекция",
     "Thermal disinfection result": "Резултат от термичната дезинфекция",
@@ -551,6 +555,7 @@
     "Ventilation zone": "Вентилационна зона",
     "Volume flow": "Обемен дебит",
     "Warning": "Предупреждение",
+    "Warning (code {code})": "Предупреждение (код {code})",
     "Water flow": "Воден дебит",
     "Water pressure too low": "Твърде ниско налягане на водата",
     "Water softener": "Омекотител за вода",
@@ -562,9 +567,11 @@
     "{count} additional active faults.": "Допълнителни активни повреди: {count}.",
     "{count} additional active notifications.": "Допълнителни активни известия: {count}.",
     "{count} additional notifications with changed classification.": "Допълнителни известия с променена класификация: {count}.",
+    "{count} older cleared notifications are no longer listed.": "По-стари приключени известия, които вече не се изброяват: {count}.",
     "{count} older resolved faults are no longer listed.": "По-стари отстранени повреди, които вече не се изброяват: {count}.",
     "{name}: faults resolved": "{name}: повредите са отстранени",
     "{name}: heating system fault": "{name}: повреда на отоплителната система",
-    "{name}: heating system notifications": "{name}: известия на отоплителната система"
+    "{name}: heating system notifications": "{name}: известия на отоплителната система",
+    "{name}: notifications cleared": "{name}: известията са приключени"
   }
 }

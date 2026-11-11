@@ -257,6 +257,7 @@
     "Indoor air quality": "Ποιότητα εσωτερικού αέρα",
     "Indoor humidity": "Εσωτερική υγρασία",
     "Information": "Πληροφορίες",
+    "Information (code {code})": "Πληροφορία (κωδικός {code})",
     "Inlet temperature": "Θερμοκρασία εισόδου",
     "Installation date": "Ημερομηνία εγκατάστασης",
     "Installation date (day)": "Ημερομηνία εγκατάστασης (ημέρα)",
@@ -267,6 +268,7 @@
     "iSRC support": "Υποστήριξη iSRC",
     "Last local answer: {time}.": "Τελευταία τοπική απάντηση: {time}.",
     "Last reported faults. Their current status has not yet been confirmed.": "Τελευταίες αναφερθείσες βλάβες. Η τρέχουσα κατάστασή τους δεν έχει ακόμη επιβεβαιωθεί.",
+    "Last reported notifications. Their current status has not yet been confirmed.": "Τελευταία αναφερθέντα μηνύματα. Η τρέχουσα κατάστασή τους δεν έχει ακόμη επιβεβαιωθεί.",
     "Last successful cloud request: {time}.": "Τελευταίο επιτυχές αίτημα cloud: {time}.",
     "Learning week": "Εβδομάδα εκμάθησης",
     "Like Friday": "Όπως την Παρασκευή",
@@ -288,6 +290,7 @@
     "Low-price setpoint delta": "Διαφορά τιμής ρύθμισης σε χαμηλή τιμή",
     "Lower pressure limit": "Κατώτερο όριο πίεσης",
     "Maintenance": "Συντήρηση",
+    "Maintenance message (code {code})": "Μήνυμα συντήρησης (κωδικός {code})",
     "Manual heating setpoint": "Χειροκίνητη τιμή ρύθμισης θέρμανσης",
     "Manual setpoint": "Χειροκίνητη τιμή ρύθμισης",
     "Maximum cylinder temperature": "Μέγιστη θερμοκρασία δοχείου",
@@ -510,6 +513,7 @@
     "The day is controlled like a Wednesday": "Η ημέρα ρυθμίζεται όπως η Τετάρτη",
     "The device certificate has changed: please set up the local access again via “Change local access”.": "Το πιστοποιητικό της συσκευής άλλαξε: ρυθμίστε ξανά την τοπική πρόσβαση μέσω της επιλογής «Αλλαγή τοπικής πρόσβασης».",
     "The previously reported faults are no longer active.": "Οι βλάβες που είχαν αναφερθεί προηγουμένως δεν είναι πλέον ενεργές.",
+    "The previously reported notifications are no longer active.": "Τα μηνύματα που είχαν αναφερθεί προηγουμένως δεν είναι πλέον ενεργά.",
     "Thermal disinfection": "Θερμική απολύμανση",
     "Thermal disinfection day": "Ημέρα θερμικής απολύμανσης",
     "Thermal disinfection result": "Αποτέλεσμα θερμικής απολύμανσης",
@@ -551,6 +555,7 @@
     "Ventilation zone": "Ζώνη αερισμού",
     "Volume flow": "Παροχή όγκου",
     "Warning": "Προειδοποίηση",
+    "Warning (code {code})": "Προειδοποίηση (κωδικός {code})",
     "Water flow": "Παροχή νερού",
     "Water pressure too low": "Πολύ χαμηλή πίεση νερού",
     "Water softener": "Αποσκληρυντής νερού",
@@ -562,9 +567,11 @@
     "{count} additional active faults.": "Πρόσθετες ενεργές βλάβες: {count}.",
     "{count} additional active notifications.": "Πρόσθετα ενεργά μηνύματα: {count}.",
     "{count} additional notifications with changed classification.": "Πρόσθετα μηνύματα με αλλαγμένη ταξινόμηση: {count}.",
+    "{count} older cleared notifications are no longer listed.": "Παλαιότερα μηνύματα που έληξαν και δεν εμφανίζονται πλέον: {count}.",
     "{count} older resolved faults are no longer listed.": "Παλαιότερες επιλυμένες βλάβες που δεν εμφανίζονται πλέον: {count}.",
     "{name}: faults resolved": "{name}: βλάβες επιλύθηκαν",
     "{name}: heating system fault": "{name}: βλάβη συστήματος θέρμανσης",
-    "{name}: heating system notifications": "{name}: μηνύματα συστήματος θέρμανσης"
+    "{name}: heating system notifications": "{name}: μηνύματα συστήματος θέρμανσης",
+    "{name}: notifications cleared": "{name}: τα μηνύματα έληξαν"
   }
 }

@@ -539,9 +539,15 @@ def test_unknown_summaries_and_numeric_timestamps() -> None:
     assert parsed.faults[0].occurred_at == parsed.faults[1].occurred_at
     assert fault_summary(parsed.faults[0], "de") == "Unbekannte Störung (Code X1)"
     assert fault_summary(parsed.faults[0], "en") == "Unknown fault (code X1)"
+    # SYSTEM-06: information without a code is named by its severity.
     no_code = parsed.faults[2]
-    assert fault_summary(no_code, "de") == "Unbekannte Störung"
-    assert fault_summary(no_code, None) == "Unknown fault"
+    assert fault_summary(no_code, "de") == "Information"
+    assert fault_summary(no_code, None) == "Information"
+    unknown = parse_fault_resource(
+        _notifications({"occurrenceId": "o1"}), observed_at=NOW
+    ).faults[0]
+    assert fault_summary(unknown, "de") == "Unbekannte Störung"
+    assert fault_summary(unknown, None) == "Unknown fault"
     assert fault_severity_label(FaultSeverity.WARNING, "de") == "Warnung"
     assert fault_severity_label(FaultSeverity.CRITICAL, "en") == "Critical fault"
     assert no_active_faults_label("de") == "Keine aktiven Störungen"

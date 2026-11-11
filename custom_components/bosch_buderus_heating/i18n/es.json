@@ -257,6 +257,7 @@
     "Indoor air quality": "Calidad del aire interior",
     "Indoor humidity": "Humedad interior",
     "Information": "Información",
+    "Information (code {code})": "Información (código {code})",
     "Inlet temperature": "Temperatura de entrada",
     "Installation date": "Fecha de instalación",
     "Installation date (day)": "Fecha de instalación (día)",
@@ -267,6 +268,7 @@
     "iSRC support": "Compatibilidad con iSRC",
     "Last local answer: {time}.": "Última respuesta local: {time}.",
     "Last reported faults. Their current status has not yet been confirmed.": "Últimas averías notificadas. Su estado actual aún no se ha confirmado.",
+    "Last reported notifications. Their current status has not yet been confirmed.": "Últimos mensajes notificados. Su estado actual aún no se ha confirmado.",
     "Last successful cloud request: {time}.": "Última consulta correcta a la nube: {time}.",
     "Learning week": "Semana de aprendizaje",
     "Like Friday": "Como el viernes",
@@ -288,6 +290,7 @@
     "Low-price setpoint delta": "Diferencia de consigna con precio bajo",
     "Lower pressure limit": "Límite inferior de presión",
     "Maintenance": "Mantenimiento",
+    "Maintenance message (code {code})": "Mensaje de mantenimiento (código {code})",
     "Manual heating setpoint": "Consigna de calefacción manual",
     "Manual setpoint": "Consigna manual",
     "Maximum cylinder temperature": "Temperatura máxima del depósito",
@@ -510,6 +513,7 @@
     "The day is controlled like a Wednesday": "El día se regula como un miércoles",
     "The device certificate has changed: please set up the local access again via “Change local access”.": "El certificado del dispositivo ha cambiado: vuelve a configurar el acceso local mediante «Cambiar el acceso local».",
     "The previously reported faults are no longer active.": "Las averías notificadas anteriormente ya no están activas.",
+    "The previously reported notifications are no longer active.": "Los mensajes notificados anteriormente ya no están activos.",
     "Thermal disinfection": "Desinfección térmica",
     "Thermal disinfection day": "Día de la desinfección térmica",
     "Thermal disinfection result": "Resultado de la desinfección térmica",
@@ -551,6 +555,7 @@
     "Ventilation zone": "Zona de ventilación",
     "Volume flow": "Caudal",
     "Warning": "Advertencia",
+    "Warning (code {code})": "Advertencia (código {code})",
     "Water flow": "Caudal de agua",
     "Water pressure too low": "Presión de agua demasiado baja",
     "Water softener": "Descalcificador",
@@ -562,9 +567,11 @@
     "{count} additional active faults.": "{count} averías activas adicionales.",
     "{count} additional active notifications.": "{count} mensajes activos adicionales.",
     "{count} additional notifications with changed classification.": "{count} mensajes adicionales con clasificación modificada.",
+    "{count} older cleared notifications are no longer listed.": "{count} mensajes finalizados más antiguos ya no se muestran.",
     "{count} older resolved faults are no longer listed.": "{count} averías resueltas más antiguas ya no se muestran.",
     "{name}: faults resolved": "{name}: averías resueltas",
     "{name}: heating system fault": "{name}: avería de la instalación de calefacción",
-    "{name}: heating system notifications": "{name}: mensajes de la instalación de calefacción"
+    "{name}: heating system notifications": "{name}: mensajes de la instalación de calefacción",
+    "{name}: notifications cleared": "{name}: mensajes finalizados"
   }
 }

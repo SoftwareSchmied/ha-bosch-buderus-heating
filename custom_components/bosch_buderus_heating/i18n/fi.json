@@ -257,6 +257,7 @@
     "Indoor air quality": "Sisäilmanlaatu",
     "Indoor humidity": "Sisäilman kosteus",
     "Information": "Tiedot",
+    "Information (code {code})": "Tiedote (koodi {code})",
     "Inlet temperature": "Tulolämpötila",
     "Installation date": "Asennuspäivä",
     "Installation date (day)": "Asennuspäivä (päivä)",
@@ -267,6 +268,7 @@
     "iSRC support": "iSRC-tuki",
     "Last local answer: {time}.": "Viimeisin paikallinen vastaus: {time}.",
     "Last reported faults. Their current status has not yet been confirmed.": "Viimeksi ilmoitetut viat. Niiden nykyistä tilaa ei ole vielä vahvistettu.",
+    "Last reported notifications. Their current status has not yet been confirmed.": "Viimeisimmät ilmoitukset. Niiden nykyistä tilaa ei ole vielä vahvistettu.",
     "Last successful cloud request: {time}.": "Viimeisin onnistunut pilvikysely: {time}.",
     "Learning week": "Oppimisviikko",
     "Like Friday": "Kuten perjantai",
@@ -288,6 +290,7 @@
     "Low-price setpoint delta": "Matalan hinnan asetusarvon muutos",
     "Lower pressure limit": "Alempi paineraja",
     "Maintenance": "Huolto",
+    "Maintenance message (code {code})": "Huoltoilmoitus (koodi {code})",
     "Manual heating setpoint": "Manuaalinen lämmityksen asetusarvo",
     "Manual setpoint": "Manuaalinen asetusarvo",
     "Maximum cylinder temperature": "Varaajan suurin lämpötila",
@@ -510,6 +513,7 @@
     "The day is controlled like a Wednesday": "Päivää ohjataan kuten keskiviikkoa",
     "The device certificate has changed: please set up the local access again via “Change local access”.": "Laitteen varmenne on muuttunut: määritä paikallinen yhteys uudelleen valinnalla “Muuta paikallista yhteyttä”.",
     "The previously reported faults are no longer active.": "Aiemmin ilmoitetut viat eivät ole enää aktiivisia.",
+    "The previously reported notifications are no longer active.": "Aiemmin ilmoitetut ilmoitukset eivät ole enää aktiivisia.",
     "Thermal disinfection": "Lämpödesinfiointi",
     "Thermal disinfection day": "Lämpödesinfioinnin päivä",
     "Thermal disinfection result": "Lämpödesinfioinnin tulos",
@@ -551,6 +555,7 @@
     "Ventilation zone": "Ilmanvaihtovyöhyke",
     "Volume flow": "Tilavuusvirta",
     "Warning": "Varoitus",
+    "Warning (code {code})": "Varoitus (koodi {code})",
     "Water flow": "Vesivirtaus",
     "Water pressure too low": "Veden paine on liian matala",
     "Water softener": "Vedenpehmennin",
@@ -562,9 +567,11 @@
     "{count} additional active faults.": "Lisäksi aktiivisia vikoja: {count}.",
     "{count} additional active notifications.": "Muita aktiivisia ilmoituksia: {count}.",
     "{count} additional notifications with changed classification.": "Lisäksi ilmoituksia muuttuneella luokituksella: {count}.",
+    "{count} older cleared notifications are no longer listed.": "Vanhempia päättyneitä ilmoituksia, joita ei enää luetella: {count}.",
     "{count} older resolved faults are no longer listed.": "Vanhempia ratkaistuja vikoja, joita ei enää luetella: {count}.",
     "{name}: faults resolved": "{name}: viat ratkaistu",
     "{name}: heating system fault": "{name}: lämmitysjärjestelmän vika",
-    "{name}: heating system notifications": "{name}: lämmitysjärjestelmän ilmoitukset"
+    "{name}: heating system notifications": "{name}: lämmitysjärjestelmän ilmoitukset",
+    "{name}: notifications cleared": "{name}: ilmoitukset päättyneet"
   }
 }

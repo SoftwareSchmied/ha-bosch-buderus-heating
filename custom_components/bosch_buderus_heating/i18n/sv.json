@@ -257,6 +257,7 @@
     "Indoor air quality": "Inomhusluftkvalitet",
     "Indoor humidity": "Inomhusluftfuktighet",
     "Information": "Information",
+    "Information (code {code})": "Information (kod {code})",
     "Inlet temperature": "Inloppstemperatur",
     "Installation date": "Installationsdatum",
     "Installation date (day)": "Installationsdatum (dag)",
@@ -267,6 +268,7 @@
     "iSRC support": "iSRC-stöd",
     "Last local answer: {time}.": "Senaste lokala svar: {time}.",
     "Last reported faults. Their current status has not yet been confirmed.": "Senast rapporterade fel. Deras aktuella status har ännu inte bekräftats.",
+    "Last reported notifications. Their current status has not yet been confirmed.": "Senast rapporterade meddelanden. Deras aktuella status har ännu inte bekräftats.",
     "Last successful cloud request: {time}.": "Senaste lyckade molnförfrågan: {time}.",
     "Learning week": "Inlärningsvecka",
     "Like Friday": "Som fredag",
@@ -288,6 +290,7 @@
     "Low-price setpoint delta": "Börvärdesskillnad vid lågt pris",
     "Lower pressure limit": "Nedre tryckgräns",
     "Maintenance": "Underhåll",
+    "Maintenance message (code {code})": "Underhållsmeddelande (kod {code})",
     "Manual heating setpoint": "Manuellt värmebörvärde",
     "Manual setpoint": "Manuellt börvärde",
     "Maximum cylinder temperature": "Maximal beredartemperatur",
@@ -510,6 +513,7 @@
     "The day is controlled like a Wednesday": "Dagen styrs som en onsdag",
     "The device certificate has changed: please set up the local access again via “Change local access”.": "Enhetens certifikat har ändrats: konfigurera den lokala åtkomsten igen via “Ändra lokal åtkomst”.",
     "The previously reported faults are no longer active.": "De tidigare rapporterade felen är inte längre aktiva.",
+    "The previously reported notifications are no longer active.": "De tidigare rapporterade meddelandena är inte längre aktiva.",
     "Thermal disinfection": "Termisk desinfektion",
     "Thermal disinfection day": "Dag för termisk desinfektion",
     "Thermal disinfection result": "Resultat av termisk desinfektion",
@@ -551,6 +555,7 @@
     "Ventilation zone": "Ventilationszon",
     "Volume flow": "Volymflöde",
     "Warning": "Varning",
+    "Warning (code {code})": "Varning (kod {code})",
     "Water flow": "Vattenflöde",
     "Water pressure too low": "Vattentrycket är för lågt",
     "Water softener": "Avhärdare",
@@ -562,9 +567,11 @@
     "{count} additional active faults.": "{count} ytterligare aktiva fel.",
     "{count} additional active notifications.": "{count} ytterligare aktiva meddelanden.",
     "{count} additional notifications with changed classification.": "{count} ytterligare meddelanden med ändrad klassificering.",
+    "{count} older cleared notifications are no longer listed.": "{count} äldre avslutade meddelanden visas inte längre.",
     "{count} older resolved faults are no longer listed.": "{count} äldre åtgärdade fel visas inte längre.",
     "{name}: faults resolved": "{name}: fel åtgärdade",
     "{name}: heating system fault": "{name}: fel i värmesystemet",
-    "{name}: heating system notifications": "{name}: meddelanden från värmesystemet"
+    "{name}: heating system notifications": "{name}: meddelanden från värmesystemet",
+    "{name}: notifications cleared": "{name}: meddelanden avslutade"
   }
 }

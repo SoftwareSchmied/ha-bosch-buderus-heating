@@ -539,8 +539,12 @@ def test_fault_texts_in_a_new_language() -> None:
     fault = faults.ActiveFault.__new__(faults.ActiveFault)
     object.__setattr__(fault, "code", "4711")
     object.__setattr__(fault, "subcode", None)
+    object.__setattr__(fault, "severity", faults.FaultSeverity.UNKNOWN)
     unknown = i18n.CATALOGS["da"]["Unknown fault (code {code})"]
     assert faults.fault_summary(fault, "da") == unknown.format(code="4711")
+    object.__setattr__(fault, "severity", faults.FaultSeverity.MAINTENANCE)
+    maintenance = i18n.CATALOGS["da"]["Maintenance message (code {code})"]
+    assert faults.fault_summary(fault, "da") == maintenance.format(code="4711")
     assert (
         faults.fault_severity_label(faults.FaultSeverity.WARNING, "nb")
         == (i18n.CATALOGS["nb"]["Warning"])

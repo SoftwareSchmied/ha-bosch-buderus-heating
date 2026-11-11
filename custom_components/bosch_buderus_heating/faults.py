@@ -145,6 +145,12 @@ RADIO_DISPLAY_CODE = "A84"
 _FAULT_DISPLAY_LEVEL = 8
 _FAULT_CLASS_LIMIT = 18
 _MAINTENANCE_CLASSES = frozenset({18, 20})
+# SYSTEM-08: display levels below the user's (0 not displayed, 2 expert,
+# 4 installer). On a room controller a notification with such a level and a
+# numeric class below 18 is information for the installer: it stays listed,
+# but is no problem (expected, untested). Other gateways keep the classes as
+# they are: the real K40 fault 6249 came with display level 4.
+_HIDDEN_DISPLAY_LEVELS = frozenset({0, 2, 4})
 
 
 class FaultSeverity(StrEnum):
@@ -174,6 +180,11 @@ class FaultEventType(StrEnum):
     RESOLVED = "resolved"
 
 
+# SYSTEM-06: severities whose summary without a text of its own names the
+# kind of message rather than an unknown fault.
+_NOTICE_SEVERITIES = frozenset(
+    {FaultSeverity.INFO, FaultSeverity.MAINTENANCE, FaultSeverity.WARNING}
+)
 _SEVERITY_LABELS = {
     FaultSeverity.INFO: {"en": "Information", "de": "Information"},
     FaultSeverity.MAINTENANCE: {"en": "Maintenance", "de": "Wartung"},
@@ -327,9 +338,16 @@ def discovery_fully_answered(diagnostics: DiscoveryDiagnostics) -> bool:
 
 
 def parse_fault_resource(
-    resource: Resource, *, observed_at: datetime | None = None
+    resource: Resource,
+    *,
+    observed_at: datetime | None = None,
+    room_controller: bool = False,
 ) -> FaultParseResult:
-    """Parse known fault fields while ignoring unknown vendor extensions."""
+    """Parse known fault fields while ignoring unknown vendor extensions.
+
+    ``room_controller`` reads the display levels of an RRC 2.0 room
+    controller (SYSTEM-08).
+    """
     now = observed_at or datetime.now(UTC)
     if not is_fault_resource_path(resource.path):
         return FaultParseResult(())
@@ -373,7 +391,7 @@ def parse_fault_resource(
             continue
         if _is_explicitly_inactive(raw):
             continue
-        parsed = _parse_fault_item(resource.path, raw, now)
+        parsed = _parse_fault_item(resource.path, raw, now, room_controller)
         if parsed is None:
             invalid += 1
             continue
@@ -476,6 +494,23 @@ def fault_summary(fault: ActiveFault, language: str | None) -> str:
     generic = _KNOWN_SUMMARIES.get((fault.code or "", None))
     if summary := exact or generic:
         return localize(language, summary["de"], summary["en"])
+    # SYSTEM-06: a message that is no fault is never called one.
+    if fault.severity in _NOTICE_SEVERITIES:
+        if not fault.code:
+            return fault_severity_label(fault.severity, language)
+        if fault.severity is FaultSeverity.MAINTENANCE:
+            text = localize(
+                language,
+                "Wartungsmeldung (Code {code})",
+                "Maintenance message (code {code})",
+            )
+        elif fault.severity is FaultSeverity.WARNING:
+            text = localize(language, "Warnung (Code {code})", "Warning (code {code})")
+        else:
+            text = localize(
+                language, "Information (Code {code})", "Information (code {code})"
+            )
+        return text.format(code=fault.code)
     if normalized_subcode == RADIO_DISPLAY_CODE and fault.code:
         return localize(
             language,
@@ -597,6 +632,11 @@ class FaultTracker:
         # error incident stored by 0.9.0-alpha.3 or earlier. It keeps its
         # stored identity until it ends, so it is never announced again.
         self._aliases: dict[str, str] = {}
+        # SYSTEM-08: the gateway is an RRC 2.0 room controller, by the same
+        # resource evidence as ``rrc.profile_evidence``. Learnt from the
+        # readings, kept once seen and stored with the baseline, so a restart
+        # reads the display levels the same way from its first list.
+        self.room_controller = False
 
     @property
     def device_errors(self) -> tuple[DeviceError, ...]:
@@ -743,7 +783,11 @@ class FaultTracker:
             return
         # Read (perhaps empty): a later first list is a real first baseline.
         self._store_read = True
-        if not isinstance(data, dict) or not isinstance(data.get("active"), list):
+        if not isinstance(data, dict):
+            return
+        if data.get("room_controller") is True:
+            self.room_controller = True  # SYSTEM-08
+        if not isinstance(data.get("active"), list):
             return
         restored: dict[str, ActiveFault] = {}
         for item in data["active"]:
@@ -875,7 +919,10 @@ class FaultTracker:
     ) -> None:
         """Record bounded capability outcomes without response bodies."""
         now = observed_at or datetime.now(UTC)
-        changed = False
+        results = tuple(results)
+        changed = self._learn_profile(
+            (result.path, result.resource) for result in results
+        )
         gone: set[str] = set()
         for result in results:
             if not is_fault_resource_path(result.path):
@@ -939,7 +986,7 @@ class FaultTracker:
             for path in (*resources, *fault_resource_candidates(resources))
             if is_active_fault_resource_path(path)
         }
-        changed = False
+        changed = self._learn_profile(resources.items())
         for path in resources:
             if is_active_fault_resource_path(path):
                 # Discovered again: the source exists.
@@ -959,6 +1006,25 @@ class FaultTracker:
             self._retire_sources(gone, "not_discovered")
         elif changed:
             self._schedule_save()
+
+    def _learn_profile(self, readings: Iterable[tuple[str, Resource | None]]) -> bool:
+        """SYSTEM-08: note a room controller in these readings; True if new."""
+        if self.room_controller:
+            return False
+        evidence = {
+            path: resource
+            for path, resource in readings
+            if resource is not None
+            and path.startswith(("/gateway/", "/zones/"))
+            and (
+                path in (rrc.PRODUCT_TYPE_PATH, rrc.ZONE_LIST)
+                or rrc.ZONE.match(path) is not None
+            )
+        }
+        if not evidence or not rrc.profile_evidence(None, evidence):
+            return False
+        self.room_controller = True
+        return True
 
     def _end_not_found_run(self, path: str) -> bool:
         """The run of 404 answers of a source ends. True if it had one."""
@@ -1042,7 +1108,9 @@ class FaultTracker:
                 continue
             parsed_resources += 1
             self._required_source_keys.add(_source_key(path))
-            parsed = parse_fault_resource(resource, observed_at=now)
+            parsed = parse_fault_resource(
+                resource, observed_at=now, room_controller=self.room_controller
+            )
             invalid_entries += parsed.invalid_entries
             earlier = dict(parsed.legacy_fingerprints)
             seen.extend(
@@ -1324,7 +1392,9 @@ class FaultTracker:
             LOCAL_FAULT_MAX_AGE.total_seconds(),
             LOCAL_FAULT_MISSED_READINGS * (interval or 0),
         )
-        parsed = parse_fault_resource(resource, observed_at=now)
+        parsed = parse_fault_resource(
+            resource, observed_at=now, room_controller=self.room_controller
+        )
         faults: dict[str, ActiveFault] = {}
         for fault in parsed.faults:
             existing = faults.get(fault.fingerprint)
@@ -1433,6 +1503,12 @@ class FaultTracker:
             "active_notifications": len(self.active),
             "active_faults": len(self.active_faults),
             "severity_counts": dict(sorted(severity_counts.items())),
+            # SYSTEM-08: listed, but below the user's display level.
+            **(
+                {"below_user_display_level": self._below_user_display_level}
+                if self.room_controller
+                else {}
+            ),
             "codes": tuple(codes[:MAX_FAULT_ATTRIBUTES]),
             "codes_truncated": len(codes) > MAX_FAULT_ATTRIBUTES,
             "last_successful_update": (
@@ -1464,6 +1540,14 @@ class FaultTracker:
                 },
             },
         }
+
+    @property
+    def _below_user_display_level(self) -> int:
+        return sum(
+            item.severity is FaultSeverity.INFO
+            and _whole_number(item.display_level_raw) in _HIDDEN_DISPLAY_LEVELS
+            for item in self.active
+        )
 
     def _supported_active_paths(self) -> set[str]:
         return {
@@ -1525,6 +1609,8 @@ class FaultTracker:
         if self._local_current:
             # Which faults the local list reported (P42), for a restart.
             data["local_faults"] = sorted(set(self._local_faults) & set(self._active))
+        if self.room_controller:
+            data["room_controller"] = True  # SYSTEM-08
         return data
 
 
@@ -1587,7 +1673,10 @@ def _restore_aging(value: object, allowed: set[str]) -> dict[str, tuple[datetime
 
 
 def _parse_fault_item(
-    path: str, data: Mapping[str, JsonValue], now: datetime
+    path: str,
+    data: Mapping[str, JsonValue],
+    now: datetime,
+    room_controller: bool = False,
 ) -> ActiveFault | None:
     code = _token(data.get("ccd", data.get("code", data.get("value"))))
     subcode = _token(data.get("dcd", data.get("subcode")))
@@ -1595,7 +1684,9 @@ def _parse_fault_item(
     class_raw = _token(data.get("fc", data.get("errorType", data.get("cat"))))
     origin = _token(data.get("orig", data.get("origin")))
     display_level = _token(data.get("dlv", data.get("displayLevel")))
-    pointt_class, severity = _classify_notification(class_raw, display_level)
+    pointt_class, severity = _classify_notification(
+        class_raw, display_level, room_controller=room_controller
+    )
     component_type, component_id = _component_from_path(path)
     occurred_at = _parse_timestamp(data.get("t"), now)
     time_source = (
@@ -1835,13 +1926,18 @@ def _classify(value: str | None) -> tuple[str | None, FaultSeverity]:
 
 
 def _classify_notification(
-    value: str | None, display_level: str | None
+    value: str | None,
+    display_level: str | None,
+    *,
+    room_controller: bool = False,
 ) -> tuple[str | None, FaultSeverity]:
     """``_classify`` plus the numeric classes of a notification (CT-F01).
 
     Only a class ``_classify`` leaves unknown is read as a number: 18 and 20
-    are maintenance, a class below 18 at display level 8 is a fault. Anything
-    else stays unknown, so it still counts as a problem.
+    are maintenance, a class below 18 at display level 8 is a fault. On a
+    room controller, such a class at a display level below the user's is
+    information (SYSTEM-08). Anything else stays unknown, so it still counts
+    as a problem; a missing display level as well.
     """
     pointt_class, severity = _classify(value)
     number = _whole_number(value)
@@ -1849,10 +1945,15 @@ def _classify_notification(
         return pointt_class, severity
     if number in _MAINTENANCE_CLASSES:
         return "maintenance", FaultSeverity.MAINTENANCE
-    if 0 <= number < _FAULT_CLASS_LIMIT and (
-        _whole_number(display_level) == _FAULT_DISPLAY_LEVEL
-    ):
+    level = _whole_number(display_level)
+    if 0 <= number < _FAULT_CLASS_LIMIT and level == _FAULT_DISPLAY_LEVEL:
         return "fault", FaultSeverity.FAULT
+    if (
+        room_controller
+        and 0 <= number < _FAULT_CLASS_LIMIT
+        and level in _HIDDEN_DISPLAY_LEVELS
+    ):
+        return pointt_class, FaultSeverity.INFO
     return pointt_class, severity
 
 
