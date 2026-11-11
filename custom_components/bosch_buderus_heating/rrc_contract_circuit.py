@@ -20,7 +20,7 @@ controller yet ("expected, untested").
   (``rrc_weather_control_off``).
 - ``control``, ``type`` and ``typeRoomControl`` are installer settings that
   change the control strategy: shown at most, never written. The heat-up
-  speed (``buildingHeatup``) is switched off in the manufacturer's own app
+  speed (``buildingHeatup``) is not offered for changing by the manufacturer
   and its effect is unknown: a disabled reading, never written.
 
 See ``docs/dev/rrc-packages.md`` for what each table does.
@@ -305,8 +305,8 @@ OPERATING_SEASONS: Final = ("heating", "cooling", "idle")
 # Installer settings that change the control strategy; no policy, so they
 # are never written (at most read).
 INSTALLER_SETTINGS: Final = ("control", "type", "typeRoomControl")
-# Switched off in the manufacturer's own app, which neither reads nor writes
-# it; its effect is unknown. No policy: a disabled reading at most.
+# Not offered for reading or changing by the manufacturer; its effect is
+# unknown. No policy: a disabled reading at most.
 READ_ONLY_SETTINGS: Final = ("buildingHeatup",)
 
 # Leaf -> (German, English) name, translation key, icon.

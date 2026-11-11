@@ -78,8 +78,8 @@ ZONE_OPERATION_MODE_POLICY = EnumWritePolicy(
     ZONE_MODES,
     known_only=True,
 )
-# #113: the TC100.2 advertises no allowedValues for userMode; its app offers
-# exactly the two fallback modes.
+# #113: the TC100.2 advertises no allowedValues for userMode; the controller
+# has exactly the two fallback modes.
 RRC_OPERATION_MODE_POLICY = EnumWritePolicy(
     rrc.MODE_PATTERN,
     frozenset({"stringValue"}),

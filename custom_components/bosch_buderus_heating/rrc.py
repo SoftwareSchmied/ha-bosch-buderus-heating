@@ -37,8 +37,8 @@ GATEWAY_DEVICE_TYPE = "rrc2"
 MODE_PATTERN = rf"^/zones/zn{RRC_ID}/userMode$"
 MANUAL_PATTERN = rf"^/zones/zn{RRC_ID}/manualTemperatureHeating$"
 MODES = frozenset({"manual", "clock"})
-# #113: the TC100.2 advertises no allowedValues for userMode; its app offers
-# exactly these two modes.
+# #113: the TC100.2 advertises no allowedValues for userMode; the controller
+# has exactly these two modes.
 FALLBACK_MODES: tuple[JsonScalar, ...] = ("manual", "clock")
 TEMPERATURES = (
     "temperatureActual",
@@ -128,7 +128,8 @@ def is_unread_event_entry(path: str) -> bool:
 def mode_locked(resource: Resource) -> bool:
     """#113: a used but unavailable mode keeps its value and is not writable.
 
-    The app shows such a mode as locked, for example while the system cools.
+    Such a mode is locked on the controller, for example while the system
+    cools.
     Only ``userMode`` is read this way; other fields stay unavailable.
     """
     metadata = resource.metadata

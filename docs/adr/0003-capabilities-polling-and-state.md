@@ -112,8 +112,8 @@ Resource failures remain local. A `404` on a previously discovered resource
 marks its snapshot stale and unavailable, but it remains eligible for the next
 regular poll of its group. There is no immediate individual retry or 24-hour
 pause for that resource. A valid response restores the same entity without a
-restart. This follows the inspected app behavior, where cache age suppresses
-successful repeat reads but an error permits the next requested read. Home
+restart. A fresh value thus suppresses repeat reads until it ages, while an
+error permits the next requested read. Home
 Assistant retains its existing background polling intervals and global backoff.
 
 Paths that never returned a resource are not added to regular polling by the
