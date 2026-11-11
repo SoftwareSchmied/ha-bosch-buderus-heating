@@ -11,7 +11,12 @@ from dataclasses import dataclass
 from time import monotonic, time
 
 import aiohttp
-from aiohttp import ClientHandlerType, ClientRequest, ClientResponse
+from aiohttp import (
+    ClientHandlerType,
+    ClientMiddlewareType,
+    ClientRequest,
+    ClientResponse,
+)
 
 from .const import (
     DEFAULT_CONCURRENCY,
@@ -30,6 +35,7 @@ from .exceptions import (
     ResourceNotAcceptable,
     ResourceNotFound,
     ServiceUnavailable,
+    TransportError,
     UnexpectedHttpStatus,
 )
 from .metrics import RequestMetrics, bulk_resource_count, request_category
@@ -51,6 +57,26 @@ async def _single_http_attempt(
         # aiohttp otherwise retries these errors internally, including PUT and
         # DELETE after the server may already have applied the operation.
         raise ServiceUnavailable() from err
+
+
+def _session_middlewares(
+    session: aiohttp.ClientSession,
+) -> tuple[ClientMiddlewareType, ...]:
+    """Return the shared session's own middleware chain (D14).
+
+    Per-request middleware replaces the chain of the session, so the chain is
+    carried over; it holds Home Assistant's URL checks. aiohttp offers no
+    public accessor, and dropping the chain silently would drop those checks.
+    A renamed attribute therefore stops the request with a clear error.
+    """
+    try:
+        chain = session._middlewares
+    except AttributeError as err:
+        raise TransportError(
+            "The HTTP session has no readable middleware chain; the cloud "
+            "request is not sent without the session's own URL checks"
+        ) from err
+    return tuple(chain)
 
 
 class RateLimitBackoff:
@@ -298,7 +324,10 @@ class PointTTransport:
                         # Per-request middleware replaces the session chain.
                         # Preserve HA's middleware, including its URL checks,
                         # without changing the shared session's retry settings.
-                        middlewares=(*self._session._middlewares, _single_http_attempt),
+                        middlewares=(
+                            *_session_middlewares(self._session),
+                            _single_http_attempt,
+                        ),
                     ) as response,
                 ):
                     status = response.status
