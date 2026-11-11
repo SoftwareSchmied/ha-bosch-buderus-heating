@@ -364,7 +364,10 @@ Schema 19 adds holiday format flags for modern, ICOM and WDDW2 resources.
 They report available contracts without dates, names, assignments, current
 modes or temperatures. Calendar write availability includes editable ICOM
 slots even when there is no free slot. Unknown holiday slot identifiers are
-redacted. See [older holiday formats](legacy-holidays.md).
+redacted. See [older holiday formats](legacy-holidays.md). On a room
+controller the block also has `room_controller_absence`: its calendar, away
+mode and boost are reported under `rrc_features.contracts.absence`, not
+here.
 
 Schema 18 added `duration_contract` and `collection_contract`. Duration
 diagnostics expose schema eligibility, a canonical source unit, the source
@@ -454,6 +457,12 @@ Reading statuses include `valid`, `missing_value`, `not_numeric`, `not_integer`,
 `not_finite`, `out_of_range`, `device_error_value`, `invalid_error_metadata`,
 `invalid_structure`, `conflicting_values`, `not_read` and `unavailable`.
 No current counts, raw marker numbers or unknown field names are included.
+When a part reads as `invalid_structure`, `structure` describes the form of
+the reading without values: `reason` (`item_not_object`), `value` and
+`values` as types, list lengths and key names (for example
+`list[2]<dict{ch:int,total:int}>`; a key that does not look like a plain
+name shows as `?`), and `values_count`. It helps to learn a counter form
+that the integration does not read yet.
 
 The per-gateway `start_counter_recovery` section reports registered-path count,
 paths waiting for their first response and whether the shared path budget
@@ -618,8 +627,13 @@ and metadata flags only, never values, names, dates, zone or device numbers.
 The schema stays 44. The functions are described in
 [room controllers](room-controllers.md).
 
-- `confirmation`: `unconfirmed`, as are the reports of every function below,
-  until a test on a real controller confirms them;
+- `confirmation`: `partly_confirmed` while some functions are confirmed on a
+  real controller. Each entry of `contracts` has its own `confirmation`:
+  `partly_confirmed` with `confirmed_functions` (fixed tokens such as
+  `temporary_setpoint`, `away_mode` or `operation_mode`) and
+  `confirmed_on` (`tc100_2`) for a group with confirmed functions,
+  otherwise `unconfirmed`. A function not named there is expected,
+  untested;
 - `read_back_delays`: the read-back after a change, `[1, 2, 4, 8]` seconds;
 - `awaiting_late_confirmation`: changes sent but not confirmed yet that a
   later regular reading may still confirm;
@@ -642,8 +656,8 @@ The schema stays 44. The functions are described in
 
 | Entry | Counts |
 | --- | --- |
-| `zone` | `zones`, `override_paths`, `overrides_active`, `next_setpoint_none`, `status_unknown`, `window_status_unknown`, `window_detection_paths` |
-| `absence` | `events` (`lists`, `lists_readable`, `events_away`, `events_weekday`, `entries_skipped`, `write_issue`), `boost` (`writable`, `missing` or why it cannot be written) and the boost limits |
+| `zone` | `zones`, `override_paths`, `overrides_active` (only zones in the schedule mode, where a temporary setpoint acts), `next_setpoint_none`, `status_unknown`, `window_status_unknown`, `window_detection_paths` |
+| `absence` | `events` (`lists`, `lists_readable`, `events_away`, `events_weekday`, `entries_skipped`, `write_issue`), `boost` (`writable`, `missing` or why it cannot be written), the boost limits and, for each, why there are none (`boost_temperature_limits_issue`, `boost_duration_limits_issue`: `missing`, `type`, `flags`, `unit`, `range`, `step` or `null`) |
 | `dhw` | hot water circuits, offered options, extra hot water states, time types, programs and unknown levels |
 | `circuit` | `circuits` and per setting `present`, `writable`, `unavailable`, `with_limits` (and `offered_modes` for the season mode) |
 | `system` | no counts of its own, only `confirmation` and `writes` |
