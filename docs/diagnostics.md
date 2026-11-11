@@ -625,9 +625,13 @@ The schema stays 44. The functions are described in
   later regular reading may still confirm;
 - `energy_history`: the state of the energy history import, for example
   `waiting`, `mode` (`date` or `entry` requests), `reason` (for example
-  `gas_unit_unconfirmed`, `history_change_outside_window` or
-  `legacy_keys_ambiguous`, when the plant type could not be read and the
-  older keys were left out), `cycles`,
+  `gas_unit_unconfirmed`, `history_change_outside_window`,
+  `heat_source_type_unavailable`, while days with the older keys wait for
+  the plant type, or `legacy_keys_ambiguous`, when the plant type could not
+  be read for 24 hours and the older keys were left out),
+  `heat_source_type_unreadable_seconds` (how long the plant type has been
+  answered with a server error, a duration, no date) and
+  `heat_source_type_failed_cycles`, `cycles`,
   `last_cycle_requests`, `imported_days`, `days_behind`, the imported
   `statistics`, `gas_unit_confirmed` and `next_cycle_in_seconds`;
 - `contracts`: one entry per function group, each with `writes`:

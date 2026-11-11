@@ -66,6 +66,13 @@ are marker values, and a test checks that no marker reaches a log or the
 diagnostics. The `rrc_features` diagnostics count these functions without
 values, names, dates or device numbers.
 
+The energy history statistics and their stored import state are named by a
+token of the gateway instead of its ID: an HMAC-SHA256 of the gateway ID,
+keyed with the Home Assistant instance ID and cut to 16 hex digits (12 in the
+statistic ID). A plain hash could be found back by hashing candidate IDs; the
+keyed token cannot without the instance ID. Neither the gateway ID nor the
+instance ID nor the token appears in the diagnostics.
+
 Some resources are never requested at all, on any gateway: the radio device
 arrays `/devices/devN` of room controllers (they carry the radio key `dlk` and
 the radio identifier `sgtin`), `/devices/productLookup`, every `homematicip`

@@ -9,6 +9,8 @@ a confirmed unit, nothing as the state of an entity (P39).
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
@@ -18,6 +20,7 @@ import pytest
 from freezegun.api import FrozenDateTimeFactory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import instance_id
 from homeassistant.util import dt as dt_util
 
 from custom_components.bosch_buderus_heating import rrc_energy_statistics
@@ -29,6 +32,7 @@ from custom_components.bosch_buderus_heating.pointt import (
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from custom_components.bosch_buderus_heating.rrc_energy import (
     HEAT_SOURCE_TYPE_PATH,
+    HEAT_SOURCE_WAIT,
     MAX_REQUESTS,
     parse_day,
 )
@@ -36,8 +40,10 @@ from custom_components.bosch_buderus_heating.rrc_energy_statistics import (
     CADENCE,
     RETRY_DELAY,
     START_DELAY,
+    async_gateway_digest,
     day_start,
     energy_store_key,
+    gateway_digest,
     history_of,
     row_day,
     statistic_id,
@@ -68,6 +74,16 @@ pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
 def legacy_setup_path():
     with patch(f"{PACKAGE}.async_migrate_entry", AsyncMock(return_value=True)):
         yield
+
+
+async def sid(hass: HomeAssistant, slug: str, gateway: str = GW) -> str:
+    """The statistic ID of a gateway on this installation."""
+    return statistic_id(await async_gateway_digest(hass, gateway), slug)
+
+
+async def store_key(hass: HomeAssistant, entry_id: str, gateway: str = GW) -> str:
+    """The name of the import state of a gateway on this installation."""
+    return energy_store_key(entry_id, await async_gateway_digest(hass, gateway))
 
 
 def records() -> list[dict[str, object]]:
@@ -307,7 +323,7 @@ async def test_a_restart_continues_where_the_import_stopped(
     last_day = history.state.last_day
     due = history.state.next_due
     await stop(hass, entry, stack)
-    key = energy_store_key(entry.entry_id, GW)
+    key = await store_key(hass, entry.entry_id)
     stored = json.dumps(hass_storage[key])
     assert GW not in stored and "MARKER" not in stored
 
@@ -340,7 +356,7 @@ async def test_removing_the_entry_removes_the_import_state(
     entry, stack = await start(hass, cloud)
     await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
     await stop(hass, entry, stack)
-    key = energy_store_key(entry.entry_id, GW)
+    key = await store_key(hass, entry.entry_id)
     assert key in hass_storage
     await hass.config_entries.async_remove(entry.entry_id)
     await hass.async_block_till_done()
@@ -363,8 +379,7 @@ def test_day_starts_are_local_midnight_at_the_top_of_an_hour() -> None:
     for zone in (berlin, kolkata, dt_util.get_time_zone("America/St_Johns")):
         for day in (date(2026, 3, 29), date(2026, 10, 25), date(2026, 10, 26)):
             assert row_day(day_start(day, zone).timestamp(), zone) == day
-    assert statistic_id(GW, "gas_heating") == statistic_id(GW, "gas_heating")
-    assert GW not in statistic_id(GW, "gas_heating")
+    assert GW not in statistic_id(gateway_digest("key", GW), "gas_heating")
 
 
 async def test_gas_in_another_unit_stays_out_of_the_recorder(
@@ -378,8 +393,8 @@ async def test_gas_in_another_unit_stays_out_of_the_recorder(
         written = {
             call.args[1]["statistic_id"] for call in recorder_loaded.call_args_list
         }
-        assert statistic_id(GW, "heat_pump_electricity_heating") in written
-        assert statistic_id(GW, "gas_heating") not in written
+        assert await sid(hass, "heat_pump_electricity_heating") in written
+        assert await sid(hass, "gas_heating") not in written
         history = history_of(entry.runtime_data.coordinators[0])
         assert history.state.reason == "gas_unit_unconfirmed"
         report = rrc_energy_statistics.diagnostics(entry.runtime_data.coordinators[0])
@@ -435,7 +450,7 @@ async def test_a_boiler_never_records_older_keys_as_heat_pump_electricity(
         written = {
             call.args[1]["statistic_id"] for call in recorder_loaded.call_args_list
         }
-        assert written == {statistic_id(GW, "outdoor_temperature")}
+        assert written == {await sid(hass, "outdoor_temperature")}
         history = history_of(entry.runtime_data.coordinators[0])
         assert history.state.heat_source == "gas"
         assert history.state.reason == "gas_unit_unconfirmed"
@@ -474,7 +489,7 @@ async def test_an_unreadable_recorder_holds_the_first_import_back(
 async def test_t2_the_energy_history_stays_within_its_budget(
     hass: HomeAssistant, freezer: FrozenDateTimeFactory, recorder_loaded, plant
 ) -> None:
-    """SYSTEM-14: T2 with the energy history. A day of cycles on both
+    """SYSTEM-14: T2 with the energy history. Thirty hours of cycles on both
     room controller trees: every cycle at most eight requests (the plant
     type read for older keys included), none between the cycles."""
     build, gateway, *_ = PLANTS[plant]
@@ -496,20 +511,30 @@ async def test_t2_the_energy_history_stays_within_its_budget(
         per_cycle: list[int] = []
         days: list[date | None] = []
         await advance(hass, freezer, timedelta(minutes=2))
-        for _cycle in range(8):
+        first_cycle = dt_util.utcnow()
+        held: list[bool] = []
+        for _cycle in range(10):
             per_cycle.append(history_requests(cloud) - reads)
             reads = history_requests(cloud)
             days.append(history.state.last_day)
+            held.append(history.state.reason == "heat_source_type_unavailable")
+            # E2: the older keys hold the import for a day at most.
+            assert held[-1] is (dt_util.utcnow() - first_cycle < HEAT_SOURCE_WAIT), (
+                _cycle
+            )
             assert history.state.last_requests == per_cycle[-1]
             # Nothing between two cycles.
             await advance(hass, freezer, CADENCE - timedelta(minutes=5))
             assert history_requests(cloud) == reads
             await advance(hass, freezer, timedelta(minutes=6))
         assert all(0 < count <= MAX_REQUESTS for count in per_cycle), per_cycle
-        assert sum(per_cycle) <= 8 * MAX_REQUESTS
-        # The import goes on: the older keys wait for the plant type; while
-        # it stays unreadable they are left out (VER-04), never filed as gas
-        # or as heat pump electricity, and the type is read again.
+        assert sum(per_cycle) <= 10 * MAX_REQUESTS
+        # The first answer has older keys: held for a day, nothing passed.
+        assert held == [True] * 8 + [False] * 2
+        assert days[:8] == [None] * 8
+        # Then the import goes on: while the type stays unreadable the older
+        # keys are left out (VER-04), never filed as gas or as heat pump
+        # electricity, and the type is read again.
         assert history.state.heat_source is None
         assert [day for day in days if day is not None] == sorted(
             day for day in days if day is not None
@@ -518,7 +543,263 @@ async def test_t2_the_energy_history_stays_within_its_budget(
         written = {
             call.args[1]["statistic_id"] for call in recorder_loaded.call_args_list
         }
-        assert statistic_id(GW, "heat_pump_electricity_heating") in written
-        assert statistic_id(GW, "gas_heating") not in written
+        assert await sid(hass, "heat_pump_electricity_heating") in written
+        assert await sid(hass, "gas_heating") not in written
+    finally:
+        await stop(hass, entry, stack)
+
+
+# ------------------------------------------------- E1: keyed statistic IDs
+def test_the_digest_is_keyed_and_cannot_be_found_back_by_hashing() -> None:
+    key = "0123456789abcdef0123456789abcdef"
+    digest = gateway_digest(key, GW)
+    assert (
+        digest == hmac.new(key.encode(), GW.encode(), hashlib.sha256).hexdigest()[:16]
+    )
+    assert len(digest) == 16
+    # Not the plain hash of the identifier, which anybody can compute.
+    assert digest != hashlib.sha256(GW.encode()).hexdigest()[:16]
+    assert gateway_digest(key, GW) == digest  # stable
+    assert gateway_digest("another installation", GW) != digest
+    assert gateway_digest(key, "gateway-two") != digest
+    assert statistic_id(digest, "gas_heating") == (
+        f"bosch_buderus_heating:rrc_{digest[:12]}_gas_heating"
+    )
+    assert energy_store_key("entry", digest) == (
+        f"bosch_buderus_heating.rrc_energy.entry.{digest}"
+    )
+
+
+async def _written_ids(hass, freezer, cloud, recorder_loaded, entry=None):
+    entry, stack = await start(hass, cloud, entry)
+    try:
+        await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+        return entry, {
+            call.args[1]["statistic_id"] for call in recorder_loaded.call_args_list
+        }
+    finally:
+        await stop(hass, entry, stack)
+
+
+async def test_statistic_ids_follow_the_instance_and_survive_a_new_entry(
+    hass: HomeAssistant,
+    freezer: FrozenDateTimeFactory,
+    hass_storage,
+    recorder_loaded,
+) -> None:
+    """E1: the IDs are stable when the entry is added again and after a
+    restored backup (the same instance ID), and the import state is named
+    by the same keyed digest."""
+    freezer.move_to(START)
+    key = await instance_id.async_get(hass)
+    digest = gateway_digest(key, GW)
+    entry, first = await _written_ids(
+        hass, freezer, history_cloud(records()), recorder_loaded
+    )
+    assert first
+    assert statistic_id(digest, "heat_pump_electricity_heating") in first
+    unkeyed = hashlib.sha256(GW.encode()).hexdigest()[:16]
+    assert not [item for item in first if unkeyed[:12] in item]
+    # The store name follows the digest.
+    assert energy_store_key(entry.entry_id, digest) in hass_storage
+    assert energy_store_key(entry.entry_id, unkeyed) not in hass_storage
+    # Removing the entry removes its state; a new entry for the same
+    # gateway writes the same statistics again.
+    await hass.config_entries.async_remove(entry.entry_id)
+    await hass.async_block_till_done()
+    assert energy_store_key(entry.entry_id, digest) not in hass_storage
+    recorder_loaded.reset_mock()
+    freezer.tick(CADENCE)
+    entry, second = await _written_ids(
+        hass, freezer, history_cloud(records()), recorder_loaded
+    )
+    assert second == first
+    assert energy_store_key(entry.entry_id, digest) in hass_storage
+
+
+async def test_another_installation_gets_other_statistic_ids(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, recorder_loaded
+) -> None:
+    freezer.move_to(START)
+    with patch(
+        "homeassistant.helpers.instance_id.async_get",
+        AsyncMock(return_value="installation-b"),
+    ):
+        _entry_b, written = await _written_ids(
+            hass, freezer, history_cloud(records()), recorder_loaded
+        )
+    assert written
+    digest_b = gateway_digest("installation-b", GW)
+    assert all(
+        item.startswith(f"bosch_buderus_heating:rrc_{digest_b[:12]}_")
+        for item in written
+    )
+    own = gateway_digest(await instance_id.async_get(hass), GW)
+    assert own != digest_b
+    assert not [item for item in written if own[:12] in item]
+
+
+async def test_the_restored_instance_id_keeps_the_statistic_ids(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, hass_storage, recorder_loaded
+) -> None:
+    """A backup brings the instance ID back (``core.uuid``)."""
+    restored = "f" * 32
+    hass_storage["core.uuid"] = {
+        "version": 1,
+        "minor_version": 1,
+        "key": "core.uuid",
+        "data": {"uuid": restored},
+    }
+    hass.data.pop("core.uuid", None)  # nothing read yet in this process
+    freezer.move_to(START)
+    _entry_r, written = await _written_ids(
+        hass, freezer, history_cloud(records()), recorder_loaded
+    )
+    digest = gateway_digest(restored, GW)
+    assert statistic_id(digest, "heat_pump_electricity_heating") in written
+
+
+async def test_files_of_the_unkeyed_digest_are_removed(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, hass_storage, recorder_loaded
+) -> None:
+    """Earlier test builds named the state by the plain digest: it is
+    removed at the start and with the entry, never read."""
+    freezer.move_to(START)
+    entry = _entry(hass)
+    unkeyed = hashlib.sha256(GW.encode()).hexdigest()[:16]
+    old = energy_store_key(entry.entry_id, unkeyed)
+    hass_storage[old] = {
+        "version": 1,
+        "minor_version": 1,
+        "key": old,
+        "data": {"version": 1, "last_day": "2026-10-19", "cycles": 7},
+    }
+    entry, stack = await start(hass, history_cloud(records()), entry)
+    try:
+        history = history_of(entry.runtime_data.coordinators[0])
+        assert old not in hass_storage
+        assert history.state.cycles == 0  # not taken over
+    finally:
+        await stop(hass, entry, stack)
+    hass_storage[old] = {"version": 1, "minor_version": 1, "key": old, "data": {}}
+    await hass.config_entries.async_remove(entry.entry_id)
+    await hass.async_block_till_done()
+    assert old not in hass_storage
+    assert await store_key(hass, entry.entry_id) not in hass_storage
+
+
+async def test_diagnostics_name_neither_the_gateway_nor_the_key(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, recorder_loaded
+) -> None:
+    from custom_components.bosch_buderus_heating.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
+
+    freezer.move_to(START)
+    entry, stack = await start(hass, history_cloud(records()))
+    try:
+        await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+        key = await instance_id.async_get(hass)
+        digest = gateway_digest(key, GW)
+        report = json.dumps(
+            await async_get_config_entry_diagnostics(hass, entry), default=str
+        )
+        energy = json.dumps(
+            rrc_energy_statistics.diagnostics(entry.runtime_data.coordinators[0])
+        )
+        assert "energy_history" in report
+        for secret in (key, digest, digest[:12]):
+            assert secret not in report
+        assert GW not in energy
+    finally:
+        await stop(hass, entry, stack)
+
+
+# ------------------------------------- E2: an unreadable plant type for a day
+async def test_an_unreadable_plant_type_holds_the_days_and_loses_nothing(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory, recorder_loaded
+) -> None:
+    freezer.move_to(START)
+    first = date(2026, 10, 15)
+    items = [legacy_record(first + timedelta(days=n)) for n in range(4)]
+    cloud = history_cloud(items, page=10, heat_source=None)  # 500: missing
+    entry, stack = await start(hass, cloud)
+    try:
+        coordinator = entry.runtime_data.coordinators[0]
+        history = history_of(coordinator)
+        await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+        assert history.state.reason == "heat_source_type_unavailable"
+        assert recorder_loaded.call_count == 0
+        report = rrc_energy_statistics.diagnostics(coordinator)
+        assert report["reason"] == "heat_source_type_unavailable"
+        assert report["heat_source_type_unreadable_seconds"] == 0
+        assert report["heat_source_type_failed_cycles"] == 1
+        await advance(hass, freezer, CADENCE + timedelta(minutes=1))
+        report = rrc_energy_statistics.diagnostics(coordinator)
+        assert (
+            report["heat_source_type_unreadable_seconds"]
+            == (CADENCE + timedelta(minutes=1)).total_seconds()
+        )
+        assert report["heat_source_type_failed_cycles"] == 2
+        assert recorder_loaded.call_count == 0
+        # The type answers within the day: every day comes in.
+        cloud.tree[HEAT_SOURCE_TYPE_PATH] = parse_resource(
+            {"id": HEAT_SOURCE_TYPE_PATH, "type": "stringValue", "value": "Heatpump"}
+        )
+        await advance(hass, freezer, CADENCE + timedelta(minutes=1))
+        assert history.state.reason is None
+        assert history.state.heat_source == "electricity"
+        report = rrc_energy_statistics.diagnostics(coordinator)
+        assert report["heat_source_type_unreadable_seconds"] is None
+        heating = await sid(hass, "heat_pump_electricity_heating")
+        rows = [
+            call.args[2]
+            for call in recorder_loaded.call_args_list
+            if call.args[1]["statistic_id"] == heating
+        ]
+        assert [row["sum"] for row in rows[0]] == [3.0, 6.0, 9.0, 12.0]
+        assert await sid(hass, "gas_heating") not in {
+            call.args[1]["statistic_id"] for call in recorder_loaded.call_args_list
+        }
+    finally:
+        await stop(hass, entry, stack)
+
+
+async def test_the_wait_for_the_plant_type_survives_a_restart(
+    hass: HomeAssistant,
+    freezer: FrozenDateTimeFactory,
+    hass_storage,
+    recorder_loaded,
+) -> None:
+    """E2: a restart keeps when the wait began; the day is over 24 hours
+    after the first server error, not after the restart."""
+    freezer.move_to(START)
+    first = date(2026, 10, 15)
+    items = [legacy_record(first + timedelta(days=n)) for n in range(4)]
+    cloud = history_cloud(items, page=10, heat_source=None)
+    entry, stack = await start(hass, cloud)
+    await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+    began = dt_util.utcnow()
+    history = history_of(entry.runtime_data.coordinators[0])
+    assert history.state.heat_source_unreadable_since == began
+    await stop(hass, entry, stack)
+    stored = hass_storage[await store_key(hass, entry.entry_id)]["data"]
+    assert stored["heat_source_unreadable_since"] == began.isoformat()
+
+    freezer.tick(timedelta(hours=22))
+    entry, stack = await start(hass, cloud, entry)
+    try:
+        history = history_of(entry.runtime_data.coordinators[0])
+        assert history.state.heat_source_unreadable_since == began
+        await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+        assert history.state.reason == "heat_source_type_unavailable"
+        assert recorder_loaded.call_count == 0
+        await advance(hass, freezer, CADENCE + timedelta(minutes=1))
+        assert dt_util.utcnow() - began >= HEAT_SOURCE_WAIT
+        assert history.state.reason == "legacy_keys_ambiguous"
+        written = {
+            call.args[1]["statistic_id"] for call in recorder_loaded.call_args_list
+        }
+        assert written == {await sid(hass, "outdoor_temperature")}
     finally:
         await stop(hass, entry, stack)

@@ -54,6 +54,9 @@ STATE_VERSION: Final = 1
 # After this many cycles in a row ending in 5xx the query form counts as
 # refused, so a plant without a history is not asked every cycle.
 MAX_SERVER_ERROR_CYCLES: Final = 3
+# A heat source type answered with 5xx holds the days with older keys for
+# this long; only then are they taken without those keys.
+HEAT_SOURCE_WAIT: Final = timedelta(hours=24)
 
 type Mode = Literal["date", "entry"]
 type Kind = Literal["energy", "gas", "temperature"]
@@ -410,7 +413,9 @@ class HistoryState:
     statistics_checked: bool = False
     # What the older keys eCH/eHW measure on this plant, once known.
     heat_source: Legacy | None = None
+    # Cycles in a row whose type read ended in 5xx, and when the first did.
     heat_source_errors: int = 0
+    heat_source_unreadable_since: datetime | None = None
     base: dict[str, float] = field(default_factory=dict)
     recent: dict[date, dict[str, float]] = field(default_factory=dict)
     # Statistics with at least one value above zero, and their offsets.
@@ -446,6 +451,11 @@ class HistoryState:
             "statistics_checked": self.statistics_checked,
             "heat_source": self.heat_source,
             "heat_source_errors": self.heat_source_errors,
+            "heat_source_unreadable_since": (
+                self.heat_source_unreadable_since.isoformat()
+                if self.heat_source_unreadable_since
+                else None
+            ),
             "base": dict(self.base),
             "recent": {
                 day.isoformat(): dict(values)
@@ -516,6 +526,9 @@ class HistoryState:
                 heat_source if heat_source in ("electricity", "gas") else None
             ),
             heat_source_errors=integer("heat_source_errors") or 0,
+            heat_source_unreadable_since=_when(
+                data.get("heat_source_unreadable_since")
+            ),
             base=_float_map(data.get("base")),
             recent=recent,
             active=_float_map(data.get("active")),
@@ -735,7 +748,8 @@ async def run_cycle(
     ``heat_source_type`` is the plant type if already read; otherwise it is
     read once the first answer has an older key. An answer is only taken
     once the meaning of its older keys is known, so no value is lost or
-    filed under the wrong statistic.
+    filed under the wrong statistic; a type answered with 5xx holds it for
+    up to ``HEAT_SOURCE_WAIT``.
     """
     result = CycleResult()
 
@@ -754,6 +768,8 @@ async def run_cycle(
             return None
         if heat_source_type is not None:
             state.heat_source = legacy_meaning(heat_source_type)
+            state.heat_source_errors = 0
+            state.heat_source_unreadable_since = None
         elif state.heat_source is None:
             if unknown_type:
                 return None
@@ -762,17 +778,23 @@ async def run_cycle(
             except ResourceError:
                 value = None  # refused or missing: an unknown type
             except ServiceUnavailable, UnexpectedHttpStatus:
-                # A 5xx may also mean a missing path (P31): for two cycles
-                # the answer waits on the controller. From the third on,
-                # VER-04: the answers are taken without their older keys,
-                # which are then never guessed, and nothing is stored, so
-                # the next cycle reads the type again.
+                # A 5xx may be a passing fault or a missing path (P31): the
+                # answer waits on the controller, nothing of it is taken and
+                # neither position nor cursor moves, and every cycle reads
+                # the type again. Only after ``HEAT_SOURCE_WAIT`` (VER-04)
+                # are the answers taken without their older keys, which are
+                # then never guessed, and no type is stored, so the next
+                # cycle still reads it again.
                 state.heat_source_errors += 1
-                if state.heat_source_errors < MAX_SERVER_ERROR_CYCLES:
+                since = state.heat_source_unreadable_since
+                if since is None:
+                    since = state.heat_source_unreadable_since = now
+                if now - since < HEAT_SOURCE_WAIT:
                     raise _HeatSourceUnknown from None
                 unknown_type = True
                 return None
             state.heat_source_errors = 0
+            state.heat_source_unreadable_since = None
             state.heat_source = legacy_meaning(value)
         return state.heat_source
 
@@ -784,6 +806,7 @@ async def run_cycle(
         state.unsupported = False
         state.heat_source = None
         state.heat_source_errors = 0
+        state.heat_source_unreadable_since = None
     if state.mode is None:
         state.mode = preferred_mode(firmware)
     mode: Mode = state.mode

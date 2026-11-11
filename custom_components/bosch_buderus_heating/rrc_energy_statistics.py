@@ -14,6 +14,8 @@ attempts. A cycle waits while the coordinator has no cloud (sign-in,
 pause, rate limit, outage); a rate limit answered to the history pauses
 the whole cloud access like any other. Where the import stands is stored
 privately per gateway, so a restart neither reads again nor waits less.
+The statistic IDs and the name of that store carry a keyed digest of the
+gateway (``async_gateway_digest``), never its identifier.
 An empty import state (a new entry, an unreadable store) first reads the
 last recorded row of every statistic and continues from there.
 
@@ -23,6 +25,7 @@ Everything is expected, untested on real hardware (W5-E1).
 from __future__ import annotations
 
 import hashlib
+import hmac
 import logging
 from collections.abc import Callable, Mapping
 from datetime import date, datetime, time, timedelta, tzinfo
@@ -30,6 +33,7 @@ from typing import TYPE_CHECKING, Any, Final
 from weakref import WeakKeyDictionary
 
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
+from homeassistant.helpers import instance_id
 from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
@@ -71,28 +75,52 @@ _HISTORIES: WeakKeyDictionary[BoschBuderusDataUpdateCoordinator, EnergyHistory] 
 )
 
 
-def gateway_digest(gateway_id: str) -> str:
-    """A stable token of a gateway that names no identifier."""
+def gateway_digest(key: str, gateway_id: str) -> str:
+    """A stable token of a gateway that names no identifier.
+
+    HMAC-SHA256 of the gateway ID keyed with ``key``, the instance ID of this
+    Home Assistant: without it the ID cannot be found back from the
+    database or an export alone by hashing candidate IDs.
+    """
+    return hmac.new(key.encode(), gateway_id.encode(), hashlib.sha256).hexdigest()[:16]
+
+
+async def async_gateway_digest(hass: HomeAssistant, gateway_id: str) -> str:
+    """``gateway_digest`` with this installation's key.
+
+    The instance ID stays the same when the entry is added again and comes
+    back with a restored backup, so the statistics go on.
+    """
+    return gateway_digest(await instance_id.async_get(hass), gateway_id)
+
+
+def _unkeyed_digest(gateway_id: str) -> str:
+    """The plain digest of earlier test builds; only to remove their files."""
     return hashlib.sha256(gateway_id.encode()).hexdigest()[:16]
 
 
-def energy_store_key(entry_id: str, gateway_id: str) -> str:
-    """The private import state of one gateway, without its identifier."""
-    return f"{DOMAIN}.rrc_energy.{entry_id}.{gateway_digest(gateway_id)}"
+def energy_store_key(entry_id: str, digest: str) -> str:
+    """The private import state of one gateway, by its ``gateway_digest``."""
+    return f"{DOMAIN}.rrc_energy.{entry_id}.{digest}"
 
 
-def statistic_id(gateway_id: str, slug: str) -> str:
-    """``bosch_buderus_heating:rrc_<digest>_<slug>``, without the identifier."""
-    return f"{DOMAIN}:rrc_{gateway_digest(gateway_id)[:12]}_{slug}"
+def statistic_id(digest: str, slug: str) -> str:
+    """``bosch_buderus_heating:rrc_<digest>_<slug>``, by its ``gateway_digest``."""
+    return f"{DOMAIN}:rrc_{digest[:12]}_{slug}"
+
+
+def _store(hass: HomeAssistant, key: str) -> Store[dict[str, Any]]:
+    return Store[dict[str, Any]](hass, STORE_VERSION, key, private=True)
 
 
 async def async_remove_energy_store(
     hass: HomeAssistant, entry_id: str, gateway_id: str
 ) -> None:
-    """Delete the import state of one gateway of a removed entry (STORE-5)."""
-    await Store[dict[str, Any]](
-        hass, STORE_VERSION, energy_store_key(entry_id, gateway_id), private=True
-    ).async_remove()
+    """Delete the import state of one gateway of a removed entry (STORE-5),
+    also one named by the plain digest of earlier test builds."""
+    digest = await async_gateway_digest(hass, gateway_id)
+    for name in (digest, _unkeyed_digest(gateway_id)):
+        await _store(hass, energy_store_key(entry_id, name)).async_remove()
 
 
 def row_day(start: float, zone: tzinfo) -> date:
@@ -103,7 +131,7 @@ def row_day(start: float, zone: tzinfo) -> date:
 
 
 async def async_last_rows(
-    hass: HomeAssistant, gateway_id: str, zone: tzinfo
+    hass: HomeAssistant, digest: str, zone: tzinfo
 ) -> dict[str, tuple[date, float | None]]:
     """The last recorded row of every history statistic: its day and sum."""
     from homeassistant.components.recorder.statistics import get_last_statistics
@@ -112,7 +140,7 @@ async def async_last_rows(
     instance = get_instance(hass)
     found: dict[str, tuple[date, float | None]] = {}
     for key in KEYS:
-        wanted = statistic_id(gateway_id, key.slug)
+        wanted = statistic_id(digest, key.slug)
         rows = await instance.async_add_executor_job(
             get_last_statistics,
             hass,
@@ -201,15 +229,11 @@ class EnergyHistory:
         self._coordinator = coordinator
         self._hass: HomeAssistant = coordinator.hass
         entry = coordinator.config_entry
-        entry_id = entry.entry_id if entry is not None else "none"
-        gateway_id = coordinator.gateway.gateway_id
-        self._gateway_id = gateway_id
-        self._store: Store[dict[str, Any]] = Store(
-            self._hass,
-            STORE_VERSION,
-            energy_store_key(entry_id, gateway_id),
-            private=True,
-        )
+        self._entry_id = entry.entry_id if entry is not None else "none"
+        self._gateway_id = coordinator.gateway.gateway_id
+        # Both follow from the keyed digest, known once started.
+        self._digest = ""
+        self._store: Store[dict[str, Any]] | None = None
         self._now = now
         self.state = HistoryState()
         self._loaded = False
@@ -220,6 +244,14 @@ class EnergyHistory:
 
     # ------------------------------------------------------------ lifecycle
     async def async_start(self) -> None:
+        self._digest = await async_gateway_digest(self._hass, self._gateway_id)
+        self._store = _store(self._hass, energy_store_key(self._entry_id, self._digest))
+        legacy = energy_store_key(self._entry_id, _unkeyed_digest(self._gateway_id))
+        try:
+            # A state named by the plain digest of an earlier test build.
+            await _store(self._hass, legacy).async_remove()
+        except OSError:  # pragma: no cover - left for the next start
+            _LOGGER.debug("An earlier energy import state could not be removed")
         try:
             self.state = HistoryState.from_dict(await self._store.async_load())
         except Exception as err:
@@ -298,9 +330,7 @@ class EnergyHistory:
             if state.last_day is None and not state.statistics_checked:
                 # SYSTEM-05: the statistics may be older than this state.
                 try:
-                    last_rows = await async_last_rows(
-                        self._hass, self._gateway_id, zone
-                    )
+                    last_rows = await async_last_rows(self._hass, self._digest, zone)
                 except Exception as err:
                     log_failure(
                         _LOGGER,
@@ -353,6 +383,8 @@ class EnergyHistory:
         return resource.value
 
     async def _save(self) -> None:
+        if self._store is None:  # pragma: no cover - a cycle runs once started
+            return
         try:
             await self._store.async_save(self.state.to_dict())
         except Exception as err:
@@ -389,7 +421,7 @@ class EnergyHistory:
                 has_sum=not temperature,
                 name=localize(language, *key.names),
                 source=DOMAIN,
-                statistic_id=statistic_id(self._gateway_id, slug),
+                statistic_id=statistic_id(self._digest, slug),
                 unit_class="temperature" if temperature else "energy",
                 unit_of_measurement="°C" if temperature else "kWh",
             )
@@ -411,6 +443,7 @@ class EnergyHistory:
         """S12: where the import stands, without values, dates or names."""
         state = self.state
         today = dt_util.as_local(self._now()).date()
+        since = state.heat_source_unreadable_since
         return {
             "confirmation": "unconfirmed",
             "waiting": self.waiting,
@@ -425,6 +458,14 @@ class EnergyHistory:
             "statistics": sorted(
                 slug for slug in state.active if importable(KEY_BY_SLUG[slug], state)
             ),
+            # Days with older keys wait for the plant type: since how long
+            # it has been answered with 5xx (a duration, never a date).
+            "heat_source_type_unreadable_seconds": (
+                max(0, int((self._now() - since).total_seconds()))
+                if since is not None
+                else None
+            ),
+            "heat_source_type_failed_cycles": state.heat_source_errors,
             "gas_unit_confirmed": state.gas_unit_confirmed,
             "invalid_records": state.invalid_records,
             "changes_outside_window": state.old_changes,

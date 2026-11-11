@@ -19,7 +19,6 @@ from custom_components.bosch_buderus_heating.rrc_energy_statistics import (
     START_DELAY,
     day_start,
     history_of,
-    statistic_id,
 )
 from tests.test_rrc_energy_statistics import (
     GW,
@@ -27,6 +26,7 @@ from tests.test_rrc_energy_statistics import (
     day_record,
     history_cloud,
     legacy_setup_path,  # noqa: F401 - fixture
+    sid,
     start,
     stop,
 )
@@ -66,9 +66,9 @@ async def test_the_history_becomes_sums_and_means_in_the_recorder(
         # The cycle is a background task; it reads the recorder first.
         await hass.async_block_till_done(wait_background_tasks=True)
         await async_wait_recording_done(hass)
-        heating = statistic_id(GW, "heat_pump_electricity_heating")
-        gas = statistic_id(GW, "gas_heating")
-        temperature = statistic_id(GW, "outdoor_temperature")
+        heating = await sid(hass, "heat_pump_electricity_heating")
+        gas = await sid(hass, "gas_heating")
+        temperature = await sid(hass, "outdoor_temperature")
         rows = await get_instance(hass).async_add_executor_job(
             statistics_during_period,
             hass,
@@ -129,8 +129,8 @@ async def test_an_empty_import_state_continues_the_recorded_sums(
     await hass.config.async_update(time_zone="Europe/Berlin")
     freezer.move_to(datetime(2026, 10, 28, 7, 0, tzinfo=UTC))
     zone = dt_util.get_default_time_zone()
-    heating = statistic_id(GW, "heat_pump_electricity_heating")
-    temperature = statistic_id(GW, "outdoor_temperature")
+    heating = await sid(hass, "heat_pump_electricity_heating")
+    temperature = await sid(hass, "outdoor_temperature")
     async_add_external_statistics(
         hass,
         StatisticMetaData(

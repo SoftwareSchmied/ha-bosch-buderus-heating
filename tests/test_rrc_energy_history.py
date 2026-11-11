@@ -26,6 +26,7 @@ from custom_components.bosch_buderus_heating.pointt import (
 from custom_components.bosch_buderus_heating.rrc_energy import (
     FIRST_FILL_DAYS,
     HEAT_SOURCE_TYPE_PATH,
+    HEAT_SOURCE_WAIT,
     MAX_REQUESTS,
     HistoryRefused,
     HistoryState,
@@ -304,6 +305,7 @@ def test_the_stored_state_survives_and_bad_data_starts_over() -> None:
         statistics_checked=True,
         heat_source="gas",
         heat_source_errors=1,
+        heat_source_unreadable_since=NOW - timedelta(hours=5),
     )
     merge(state, parsed(), TODAY)
     stored = json.loads(json.dumps(state.to_dict()))
@@ -318,6 +320,7 @@ def test_the_stored_state_survives_and_bad_data_starts_over() -> None:
         "cursor": "x",
         "heat_source": "oil",
         "statistics_checked": "yes",
+        "heat_source_unreadable_since": "yesterday",
     }
     restored = HistoryState.from_dict(values)
     assert restored.position is None
@@ -326,12 +329,14 @@ def test_the_stored_state_survives_and_bad_data_starts_over() -> None:
     assert restored.cursor is None
     assert restored.heat_source is None
     assert restored.statistics_checked is False
+    assert restored.heat_source_unreadable_since is None
     # A state stored before these fields existed is read as it was.
     added = ("cursor", "floor", "statistics_checked", "heat_source")
     older = {
         key: value
         for key, value in stored.items()
-        if key not in added and key != "heat_source_errors"
+        if key not in added
+        and key not in ("heat_source_errors", "heat_source_unreadable_since")
     }
     assert HistoryState.from_dict(older).last_day == state.last_day
     # Values without their last day cannot be continued.
@@ -701,40 +706,142 @@ async def test_the_heat_source_type_is_read_only_for_older_keys() -> None:
 
 
 async def test_an_unreadable_heat_source_type_keeps_the_answer_for_later() -> None:
+    """E2: a type answered with 5xx holds the days with older keys for up to
+    ``HEAT_SOURCE_WAIT``; the type is read again in every cycle."""
+    assert timedelta(hours=24) == HEAT_SOURCE_WAIT
     first = TODAY - timedelta(days=3)
     items = [legacy_record(first + timedelta(days=n)) for n in range(3)]
     source = Source(items)
     source.type_error = ServiceUnavailable(500)
     state, sink = HistoryState(), Sink()
-    for _ in range(2):
-        result = await cycle(state, source, sink)
-        assert result.reason == "heat_source_type_unavailable"
+    # Every three hours for just under a day: held, nothing lost.
+    for hours in range(0, 24, 3):
+        when = NOW + timedelta(hours=hours)
+        result = await cycle(state, source, sink, now=when)
+        assert result.reason == "heat_source_type_unavailable", hours
         # Nothing taken and nothing passed: the page is read again.
         assert sink.rows == {}
         assert state.last_day is None and state.position is None
+        assert state.cursor is None
         assert state.server_errors == 0 and not state.switched
-    # VER-04: from the third 5xx in a row the answers are taken without
-    # their older keys, never as gas or heat pump electricity, and no type
-    # is stored; one read of the type per cycle, not per page.
+        assert state.heat_source_unreadable_since == NOW
+        assert result.requests <= MAX_REQUESTS
+    assert state.heat_source_errors == 8
+    held = HistoryState.from_dict(json.loads(json.dumps(state.to_dict())))
+    assert held.heat_source_unreadable_since == NOW  # stored for a restart
+    # One second before the day is over: still held.
+    result = await cycle(
+        state, source, sink, now=NOW + HEAT_SOURCE_WAIT - timedelta(seconds=1)
+    )
+    assert result.reason == "heat_source_type_unavailable"
+    # VER-04: after the day the answers are taken without their older keys,
+    # never as gas or heat pump electricity, and no type is stored; one read
+    # of the type per cycle, not per page.
     source.page_size = 1
-    result = await cycle(state, source, sink)
+    reads = [name for name, _ in source.calls].count("heat_source_type")
+    result = await cycle(state, source, sink, now=NOW + HEAT_SOURCE_WAIT)
     assert result.reason == "legacy_keys_ambiguous"
     assert state.heat_source is None
     assert set(sink.rows) == {"outdoor_temperature"}
     assert state.last_day == TODAY - timedelta(days=1)
-    assert [name for name, _ in source.calls].count("heat_source_type") == 3
+    assert [name for name, _ in source.calls].count("heat_source_type") == reads + 1
     # The next cycle reads the type again; once it answers, it is stored
     # and the older keys follow it from the last known day on (read again).
     source.items.append(legacy_record(TODAY))
     source.type_error = None
-    await cycle(state, source, sink, today=TODAY + timedelta(days=1))
-    assert [name for name, _ in source.calls].count("heat_source_type") == 4
+    await cycle(
+        state,
+        source,
+        sink,
+        today=TODAY + timedelta(days=1),
+        now=NOW + timedelta(days=1, hours=3),
+    )
+    assert [name for name, _ in source.calls].count("heat_source_type") == reads + 2
     assert state.heat_source == "electricity" and state.heat_source_errors == 0
+    assert state.heat_source_unreadable_since is None
     assert sink.rows["heat_pump_electricity_heating"] == {
         TODAY - timedelta(days=1): 3.0,
         TODAY: 6.0,
     }
     assert "gas_heating" not in sink.rows
+
+
+async def test_a_type_readable_within_the_day_loses_no_value() -> None:
+    """E2: the held days are imported with their older keys once the type
+    answers, here 21 hours after the first server error."""
+    first = TODAY - timedelta(days=3)
+    items = [legacy_record(first + timedelta(days=n)) for n in range(3)]
+    source = Source(items, heat_source="Boiler", gas_unit="kWh")
+    source.type_error = ServiceUnavailable(503)
+    state, sink = HistoryState(), Sink()
+    for hours in range(0, 21, 3):
+        result = await cycle(state, source, sink, now=NOW + timedelta(hours=hours))
+        assert result.reason == "heat_source_type_unavailable"
+    assert sink.rows == {}
+    source.type_error = None
+    result = await cycle(state, source, sink, now=NOW + timedelta(hours=21))
+    assert result.reason is None
+    assert state.heat_source == "gas"
+    assert state.heat_source_unreadable_since is None
+    # Every day, with both older values as gas (its unit is confirmed),
+    # never as heat pump electricity.
+    assert sink.rows["gas_heating"] == {
+        first: 3.0,
+        first + timedelta(days=1): 6.0,
+        first + timedelta(days=2): 9.0,
+    }
+    assert sink.rows["gas_hot_water"][TODAY - timedelta(days=1)] == 3.0
+    assert not [slug for slug in sink.rows if slug.startswith("heat_pump")]
+    # A refused type (4xx) is an unknown type at once: gas, no waiting.
+    refused = Source(items, gas_unit="m3")
+    refused.type_error = ResourceNotFound(HEAT_SOURCE_TYPE_PATH, 404)
+    state, sink = HistoryState(), Sink()
+    result = await cycle(state, refused, sink)
+    assert state.heat_source == "gas"
+    assert state.heat_source_unreadable_since is None
+    assert result.reason == "gas_unit_unconfirmed"
+    assert set(sink.rows) == {"outdoor_temperature"}
+
+
+async def test_a_firmware_update_ends_the_wait_for_the_type() -> None:
+    items = [legacy_record(TODAY - timedelta(days=1))]
+    source = Source(items)
+    source.type_error = ServiceUnavailable(500)
+    state = HistoryState()
+    await cycle(state, source, Sink())
+    assert state.heat_source_unreadable_since == NOW
+    # The day starts again with another firmware.
+    later = NOW + timedelta(hours=23)
+    result = await cycle(state, source, Sink(), firmware="05.02.08", now=later)
+    assert result.reason == "heat_source_type_unavailable"
+    assert state.heat_source_unreadable_since == later
+    assert state.heat_source_errors == 1
+    # A type known from the readings ends the wait as well.
+    await cycle(state, source, Sink(), firmware="05.02.08", heat_source_type="Boiler")
+    assert state.heat_source_unreadable_since is None
+    assert state.heat_source_errors == 0
+
+
+async def test_the_wait_for_the_type_survives_a_restart() -> None:
+    """E2: the start of the wait is stored; a restart neither starts the day
+    again nor ends it early."""
+    items = [legacy_record(TODAY - timedelta(days=1))]
+    source = Source(items)
+    source.type_error = ServiceUnavailable(500)
+    state = HistoryState()
+    await cycle(state, source, Sink())
+    restored = HistoryState.from_dict(json.loads(json.dumps(state.to_dict())))
+    result = await cycle(restored, source, Sink(), now=NOW + timedelta(hours=12))
+    assert result.reason == "heat_source_type_unavailable"
+    assert restored.heat_source_unreadable_since == NOW
+    restored = HistoryState.from_dict(json.loads(json.dumps(restored.to_dict())))
+    result = await cycle(restored, source, Sink(), now=NOW + HEAT_SOURCE_WAIT)
+    assert result.reason == "legacy_keys_ambiguous"
+
+
+async def test_other_answers_to_the_type_read() -> None:
+    first = TODAY - timedelta(days=3)
+    items = [legacy_record(first + timedelta(days=n)) for n in range(3)]
     # A refused path is an unknown type at once.
     source = Source(items)
     source.type_error = ResourceNotFound(HEAT_SOURCE_TYPE_PATH, 404)
