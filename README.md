@@ -202,7 +202,7 @@ on Home Assistant 2026.5.4, 2026.9.2 and the current release.
 | Tested on my system | Buderus heat pump with a Logamatic BC400 controller and an MX400 internet module (K40/K40RF gateway), cloud and local access |
 | Designed for | Systems with an MX300 or MX400 internet module or a K30 RF/K40 RF Connect-Key, reported by PointT as K30/K30RF or K40/K40RF gateways |
 | Optional when reported | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
-| Room controllers (RRC 2.0) | TC100.2: zones read with 0.9.0-alpha.4. CT200: expected, untested. Cloud only, no local access; radio devices read only. See [room controllers](docs/rrc-zones-and-schedules.md#room-controllers-of-the-rrc-20-platform) |
+| Room controllers (RRC 2.0) | TC100.2: zone readings, manual/schedule mode and manual setpoint confirmed with 0.9.0-alpha.4. Temporary setpoint, programs, absences, boost, hot water, heating circuit, system, energy history and radio devices: expected, untested. CT200: expected, untested. Cloud only, no local access. See [room controllers](docs/room-controllers.md) |
 | Additional device families | Midea/RWH water heaters, Midea Climate Series, seven air purifier families, Dry 4000i/6000i/8000i and read-only wallboxes |
 | Optional local access | K40/K40RF gateways with firmware 15.00.01 or newer, read-only over the local network next to the cloud access; only the heating system, not air conditioners, wallboxes or other devices of the account. See [compatibility](docs/compatibility.md) |
 | Not covered | Matter devices, arbitrary MQTT devices and gateway network administration |
@@ -557,6 +557,8 @@ gateway IDs, serial numbers, network identifiers, or unredacted API responses.
 | [WE800i validation](docs/water-softener-validation.md) | Field checks for the WE800i; its controls stay disabled by default |
 | [Device families](docs/device-support-plan.md) | Supported device families, what they show and operate |
 | [Zone and DHW additions](docs/zone-and-dhw-fields.md) | Additional heating/cooling zone readings and DHW device types |
+| [Room controllers](docs/room-controllers.md) | TC100.2 and CT200: zones, programs, absences, boost, hot water, heating circuit, faults, energy history, radio devices, what is confirmed and the request budget |
+| [RRC zones and schedules](docs/rrc-zones-and-schedules.md) | RRC zone readings, the switch point editor and the discovery of room controllers |
 | [Zone controls](docs/zone-controls.md) | Heating/cooling modes and manual temperatures, temporary-override limits and outstanding physical checks |
 | [Resource inventory](docs/resource-inventory.md) | Path models, unresolved formats and adapter boundaries |
 | [Reconfiguration](docs/reconfiguration.md) | Gateway selection, rediscovery, and polling profiles |

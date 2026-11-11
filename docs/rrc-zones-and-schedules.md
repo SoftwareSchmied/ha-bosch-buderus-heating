@@ -62,8 +62,10 @@ target uses this resource's current bounds and advertised step. An absent
 step uses a 0.5 °C UI increment; it does not prove an additional API rule.
 Changing a manual target does not also change the operating mode.
 Changing the selected program does not switch the zone into scheduled mode.
-Temporary overrides remain read-only because expiry and cancellation are
-not yet sufficiently established.
+On room controllers of the RRC 2.0 platform the zone climate also sets and
+clears a temporary setpoint until the next switch point; see
+[room controllers](room-controllers.md#zones) for these functions and what
+is confirmed.
 
 ## Editing an existing weekly program
 
@@ -134,11 +136,13 @@ On such a controller the discovery behaves as follows:
 
 - **Lists first.** `/zones/list`, `/programs/list` and `/devices/list` are
   read before every other pending path, within the same limits.
-- **Device tree.** Of the `/devices` tree only the device list and, for each
-  listed device, its `versionFirmware` are read (at most 64 devices). The
-  probes of other device families, the device settings and the valve
-  details are not requested. On a TC100.2 with nine radio devices the device
-  tree used 206 of the 512 reads before; it now needs eleven.
+- **Device tree.** Of the `/devices` tree only the device list, for each
+  listed device its `versionFirmware` (at most 64 devices) and the known
+  setting leaves of its type are read. The probes of other device families
+  are not requested. The setting leaves come last, leaf by leaf over all
+  devices, and have a cap of their own of 192 paths outside the 512. On a
+  TC100.2 with nine radio devices the device tree used 206 of the 512 reads
+  before alpha.5.
 - **Missing paths.** These controllers answer HTTP 500 for a path they do not
   have. A 500 answer to a catalog or optional probe is taken as "missing"
   and does not count towards the three 5xx answers in a row that end the
@@ -173,10 +177,12 @@ type.
 
 An entity exists only for a value the device reports. The list is read
 hourly. A temporary failure keeps the last state within its validity; a
-list that is no longer answered makes the devices unavailable. Nothing is
-written to a radio device; adding, removing and configuring devices stays in
-the manufacturer's app. Valve position, valve state, child lock and the
-other device settings are not read yet.
+list that is no longer answered makes the devices unavailable. Adding,
+removing and pairing devices stays on the controller. The valve readings,
+the valve problem sensor and the device settings (child lock, temperature
+offset, open window sensitivity) are described in
+[room controllers](room-controllers.md#radio-devices); they are expected,
+untested.
 
 ### Sign-in
 
@@ -201,8 +207,10 @@ SingleKey ID; the setup's "no devices" message says so.
 
 ### What is confirmed
 
-The zones of a TC100.2 have been read with this integration (issue 113). The
-radio devices, the device list and every CT200 are untested: they are built
+The zones of a TC100.2 have been read with this integration (issue 113), and
+its manual/schedule mode and manual setpoint have been changed with it. The
+radio devices, the device list, the functions of alpha.5 listed in
+[room controllers](room-controllers.md) and every CT200 are untested: they are built
 on constructed data and the anonymized device tree of a TC100.2, and the
 diagnostics report `rrc_profile.confirmation: unconfirmed`. A synthetic
 fixture with 11 zones, 12 radio devices and 24 programs
@@ -257,7 +265,9 @@ und die gemeldete Schrittweite. Ohne Schrittweite nutzt die Oberfläche
 0,5 °C, ohne daraus eine zusätzliche API-Einschränkung abzuleiten.
 Das Ändern des Sollwerts schaltet die Betriebsart nicht um. Auch eine
 Programmauswahl aktiviert nicht gleichzeitig den Zeitbetrieb.
-Vorübergehende Sollwerte bleiben lesend, bis Ablauf und Aufhebung geklärt sind.
+Auf Raumreglern der Plattform RRC 2.0 setzt und hebt das Zonen-Climate
+zusätzlich einen vorübergehenden Sollwert bis zum nächsten Schaltpunkt auf;
+siehe [Raumregler](room-controllers.md#deutsch).
 
 Unter **Konfigurieren**, **RRC-Zeitprogramme** lassen sich Programm,
 Wochentag und vorhandener Schaltpunkt auswählen. Uhrzeiten haben kein
@@ -304,8 +314,9 @@ Raumregler wie der CT200 gehören zur selben Plattform wie der TC100.2
 `rrc2`, Produkttyp `RRC 2.0` oder RRC-Zonen, nie an einem Modellnamen. Ein
 Gateway ohne Namen heißt „Raumregler“. Auf einem solchen Regler liest die
 Discovery zuerst Zonen-, Programm- und Geräteliste. Vom Gerätebaum liest sie
-nur die Geräteliste und je gelistetem Gerät dessen Firmwareversion (höchstens
-64 Geräte); Geräteschlüssel (`/devices/devN` mit `dlk` und `sgtin`),
+nur die Geräteliste, je gelistetem Gerät dessen Firmwareversion (höchstens
+64 Geräte) und die bekannten Einstellungsblätter seines Typs (eigener Deckel
+von 192 Pfaden außerhalb der 512); Geräteschlüssel (`/devices/devN` mit `dlk` und `sgtin`),
 `homematicip`, Benutzer-, Installateur-, Passwort-, Standort- und
 Telefondaten werden nie abgefragt, gespeichert oder ausgegeben. Eine
 HTTP-500-Antwort auf eine Katalog- oder Zusatzabfrage gilt als „fehlt“ und
@@ -315,7 +326,10 @@ Jedes Funkgerät der Liste außer dem Regler selbst wird ein eigenes Gerät
 unter dem Raumregler, benannt nach seinem Typ und seiner Listennummer, etwa
 „Heizkörperthermostat 2“, mit dem Zonennamen als vorgeschlagenem Bereich.
 „Batterie schwach“ ist aktiviert, „Funksignal“ standardmäßig deaktiviert;
-beide sind Diagnosewerte. Es wird nichts an Funkgeräte geschrieben.
+beide sind Diagnosewerte. Ventilwerte, Ventilproblem und die Einstellungen
+der Funkgeräte (Kindersicherung, Temperatur-Offset, Empfindlichkeit der
+Fenster-offen-Erkennung) beschreibt [Raumregler](room-controllers.md#deutsch);
+sie sind erwartet, ungetestet.
 
 Für diese Raumregler gibt es keinen lokalen Zugang. Ein Regler mit älterer
 Firmware erscheint erst nach dem Firmware-Update und der Einrichtung in der

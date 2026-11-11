@@ -22,6 +22,16 @@ Details can include the code, subcode, normalized severity, component class,
 summary, and first Home Assistant observation. At most 25 entries are attached
 to an entity state; `truncated: true` indicates additional entries.
 
+Room controllers of the RRC 2.0 platform report the faults of their radio
+devices with display code A84; known cause codes get their own summary (for
+example "Battery of a radio device low" or "Valve of a radiator thermostat
+moves too stiffly"), other ones "Radio device fault (code …)". Cause codes
+for a too low water pressure read "Water pressure too low". These
+controllers also get the binary sensors Locking fault, Blocking fault,
+Maintenance due and Refill needed; see
+[room controllers](room-controllers.md#system-faults-and-maintenance). The
+texts are expected, untested on a real controller.
+
 ## Where do I find faults?
 
 The bell notification is not an archive: once it is dismissed, or after a

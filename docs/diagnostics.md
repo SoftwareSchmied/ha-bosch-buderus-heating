@@ -610,6 +610,39 @@ deliberately not read: `never_read_private` (keys and personal data),
 and `rrc_5xx_assumed_missing` (probes answered with HTTP 500). The device
 profile is `rrc2` for these controllers.
 
+## RRC room controller functions
+
+`gateways[].rrc_features` appears only for a room controller of the RRC 2.0
+platform; other gateways keep their report. It contains counts, fixed codes
+and metadata flags only, never values, names, dates, zone or device numbers.
+The schema stays 44. The functions are described in
+[room controllers](room-controllers.md).
+
+- `confirmation`: `unconfirmed`, as are the reports of every function below,
+  until a test on a real controller confirms them;
+- `read_back_delays`: the read-back after a change, `[1, 2, 4, 8]` seconds;
+- `awaiting_late_confirmation`: changes sent but not confirmed yet that a
+  later regular reading may still confirm;
+- `energy_history`: the state of the energy history import, for example
+  `waiting`, `mode` (`date` or `entry` requests), `reason` (for example
+  `gas_unit_unconfirmed` or `history_change_outside_window`), `cycles`,
+  `last_cycle_requests`, `imported_days`, `days_behind`, the imported
+  `statistics`, `gas_unit_confirmed` and `next_cycle_in_seconds`;
+- `contracts`: one entry per function group, each with `writes`:
+  `writes_sent`, `writes_confirmed`, `writes_unconfirmed`, `late_confirmed`,
+  `writes_rejected`, `awaiting_late_confirmation` and `rejection_reasons`
+  (fixed message keys). `core` counts the zone mode, manual setpoint and
+  program changes.
+
+| Entry | Counts |
+| --- | --- |
+| `zone` | `zones`, `override_paths`, `overrides_active`, `next_setpoint_none`, `status_unknown`, `window_status_unknown`, `window_detection_paths` |
+| `absence` | `events` (`lists`, `lists_readable`, `events_away`, `events_weekday`, `entries_skipped`, `write_issue`), `boost` (`writable`, `missing` or why it cannot be written) and the boost limits |
+| `dhw` | hot water circuits, offered options, extra hot water states, time types, programs and unknown levels |
+| `circuit` | `circuits` and per setting `present`, `writable`, `unavailable`, `with_limits` (and `offered_modes` for the season mode) |
+| `system` | no counts of its own, only `confirmation` and `writes` |
+| `devices` | `device_settings_read`, `leaves`, `settings_not_offered`, `valve_status_shapes`, `valves_with_problem`, `unknown_valve_states`, `window_sensitivity_levels` |
+
 ## Fault parser status
 
 `faults.parser_status` describes the last actual parsing attempt for a current

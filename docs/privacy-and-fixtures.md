@@ -57,6 +57,14 @@ Canonical RRC IDs such as `zn2` and `pg3` remain visible; other dynamic
 identifiers are redacted. The contract fixtures and browser data are synthetic,
 except an anonymized TC100.2 read structure with constructed values.
 See [RRC zones and schedules](rrc-zones-and-schedules.md) for their scope.
+The room controller functions of 0.9.0-alpha.5 have one synthetic fixture
+each in `tests/fixtures/contracts/rrc/` (`zone_climate.json`, `absence.json`,
+`dhw.json`, `circuit.json`, `system.json`, `energy.json`,
+`device_settings.json`), built from constructed values in the shapes of the
+TC100.2 diagnostics, never from copied answers. Event names in `absence.json`
+are marker values, and a test checks that no marker reaches a log or the
+diagnostics. The `rrc_features` diagnostics count these functions without
+values, names, dates or device numbers.
 
 Some resources are never requested at all, on any gateway: the radio device
 arrays `/devices/devN` of room controllers (they carry the radio key `dlk` and
