@@ -451,7 +451,7 @@ async def test_diagnostics_describe_views_without_a_cloud(hass) -> None:
     ):
         await started(hass, owner)
         result = await async_get_config_entry_diagnostics(hass, entry)
-        assert result["diagnostics_schema"] == 44
+        assert result["diagnostics_schema"] == 45
         assert result["views_without_cloud"] == []  # the cloud runs
         await switched_off(hass, owner, cloud, start=False)
         await eventually(lambda: entity_state(hass, owner, "sensor", FAULTS) == "2")

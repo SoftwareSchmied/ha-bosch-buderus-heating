@@ -488,7 +488,7 @@ async def test_native_setup_translation_privacy_and_registry_recovery(
         )
         diagnostics = await async_get_config_entry_diagnostics(hass, config)
         assert (
-            diagnostics["diagnostics_schema"] == 44
+            diagnostics["diagnostics_schema"] == 45
             and len(diagnostics["wallboxes"]) == 1
         )
         serialized = json.dumps(diagnostics)

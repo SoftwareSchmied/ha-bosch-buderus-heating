@@ -4,6 +4,38 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 45 (0.9.0-alpha.6) adds sections and fields, again without values,
+names, times or identifiers:
+
+- `gateways[].firmware_updates`: the reads of the firmware update list (see
+  below);
+- `gateways[].icom`: only for a gateway with the device type `icom`, the
+  load profile, the component types of `/system/info`, the bus and the
+  holiday rules (see [iCom gateways](#icom-gateways));
+- `gateways[].switch_program_writes`: the writes of the weekly heating and
+  hot water programs. `heating` and `dhw` count `writes_sent`,
+  `writes_confirmed`, `writes_unconfirmed`, `writes_rejected` and
+  `late_confirmed`; `read_back_delays` is the read-back schedule of a write
+  and `last_read_back_seconds` the duration of the last confirmed read-back.
+  `programs` has per program path `editable`, `edit_issue` (a fixed token
+  such as `not_writable`, `unavailable`, `level_not_listed` or
+  `no_current_reading`, otherwise `null`) and `points_per_day`, the number of
+  switch points of each weekday;
+- on a room controller: the reasons why a program stays read-only
+  (`rrc_contract.schedule_issues`, `rrc_programs.schedules`, see
+  [RRC program selection](#rrc-program-selection)), the confirmation per
+  function group (`partly_confirmed` with `confirmed_functions`, see
+  [RRC room controller functions](#rrc-room-controller-functions)), why the
+  boost settings have no limits (`boost_temperature_limits_issue`,
+  `boost_duration_limits_issue`), `room_controller_absence` in the holiday
+  block, and `overrides_active` counts only zones in the schedule mode;
+- `start_counter.structure` describes the form of a start counter that
+  reads as `invalid_structure` (see [Start counters](#start-counters)).
+
+The p95 of the request metrics never exceeds the measured maximum, and the
+stored discovery inventory keeps no values of private or identifier
+resources.
+
 Schema 44 adds `failures` to each entry under `connections[]` and `sources[]`.
 It counts the failed attempts to connect an access or to start and run a
 source since the integration started (after a restart or reload it starts
@@ -589,8 +621,8 @@ tokens and component type numbers only:
 
 `gateways[].rrc_programs` explains for the zones of an RRC room controller,
 such as the TC100.2, why the heating schedule selection is offered or not.
-The schema stays 44. The section contains counts and fixed codes only, never
-program names or current values:
+It was added in 0.9.0-alpha.5 within schema 44. The section contains counts
+and fixed codes only, never program names or current values:
 
 - `program_selections`: zones with a selected program (`clockProgram`);
 - `program_selections_offered`: how many of them offer the selection;
@@ -693,7 +725,7 @@ profile is `rrc2` for these controllers.
 `gateways[].rrc_features` appears only for a room controller of the RRC 2.0
 platform; other gateways keep their report. It contains counts, fixed codes
 and metadata flags only, never values, names, dates, zone or device numbers.
-The schema stays 44. The functions are described in
+It was added in 0.9.0-alpha.5 within schema 44. The functions are described in
 [room controllers](room-controllers.md).
 
 - `confirmation`: `partly_confirmed` while some functions are confirmed on a
