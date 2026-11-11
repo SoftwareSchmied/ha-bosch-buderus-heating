@@ -196,7 +196,9 @@ circuit as well.
   heating schedules** you can change the time and temperature of an existing
   switch point of a week or day program. A change affects every zone that
   uses the program. New programs and added or deleted switch points are not
-  supported.
+  supported. If the editor shows a program read-only, the diagnostics name
+  the reason per program (`rrc_programs.schedules` and
+  `rrc_contract.schedule_issues`, see [diagnostics](diagnostics.md)).
 
 ## Away mode, absences and special days
 

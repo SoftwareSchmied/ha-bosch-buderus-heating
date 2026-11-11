@@ -2412,6 +2412,29 @@
       "rrc_thermal_disinfection_time": {
         "name": "Vrijeme početka termičke dezinfekcije"
       }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Firmver",
+        "state_attributes": {
+          "auto_update_enabled": {
+            "name": "Automatsko ažuriranje uključeno"
+          },
+          "auto_update_changeable": {
+            "name": "Automatsko ažuriranje može se promijeniti"
+          },
+          "update_state": {
+            "name": "Stanje ažuriranja",
+            "state": {
+              "waiting": "Čeka odobrenje",
+              "denied": "Odbijeno",
+              "approved": "Odobreno",
+              "none": "Bez stanja odobrenja",
+              "unknown": "Nepoznato"
+            }
+          }
+        }
+      }
     }
   }
 }

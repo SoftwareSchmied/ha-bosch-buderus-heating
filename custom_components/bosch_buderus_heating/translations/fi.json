@@ -2412,6 +2412,29 @@
       "rrc_thermal_disinfection_time": {
         "name": "Lämpödesinfioinnin aloitusaika"
       }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Laiteohjelmisto",
+        "state_attributes": {
+          "auto_update_enabled": {
+            "name": "Automaattinen päivitys käytössä"
+          },
+          "auto_update_changeable": {
+            "name": "Automaattista päivitystä voi muuttaa"
+          },
+          "update_state": {
+            "name": "Päivityksen tila",
+            "state": {
+              "waiting": "Odottaa hyväksyntää",
+              "denied": "Hylätty",
+              "approved": "Hyväksytty",
+              "none": "Ei hyväksynnän tilaa",
+              "unknown": "Tuntematon"
+            }
+          }
+        }
+      }
     }
   }
 }

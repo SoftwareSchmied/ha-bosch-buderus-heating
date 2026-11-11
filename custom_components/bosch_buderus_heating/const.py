@@ -64,5 +64,7 @@ PLATFORMS: Final = (
     Platform.SWITCH,
     # W3 (RRC): the disinfection time; no entity on other gateways.
     Platform.TIME,
+    # F1: the read-only gateway firmware entity.
+    Platform.UPDATE,
     Platform.WATER_HEATER,
 )

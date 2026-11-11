@@ -2412,6 +2412,29 @@
       "rrc_thermal_disinfection_time": {
         "name": "Начален час на термичната дезинфекция"
       }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Фърмуер",
+        "state_attributes": {
+          "auto_update_enabled": {
+            "name": "Автоматично обновяване включено"
+          },
+          "auto_update_changeable": {
+            "name": "Автоматичното обновяване може да се променя"
+          },
+          "update_state": {
+            "name": "Състояние на обновяването",
+            "state": {
+              "waiting": "Чака одобрение",
+              "denied": "Отказано",
+              "approved": "Одобрено",
+              "none": "Без състояние на одобрение",
+              "unknown": "Неизвестно"
+            }
+          }
+        }
+      }
     }
   }
 }

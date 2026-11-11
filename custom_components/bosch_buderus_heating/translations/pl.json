@@ -2412,6 +2412,29 @@
       "rrc_thermal_disinfection_time": {
         "name": "Godzina rozpoczęcia dezynfekcji termicznej"
       }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Oprogramowanie układowe",
+        "state_attributes": {
+          "auto_update_enabled": {
+            "name": "Automatyczna aktualizacja włączona"
+          },
+          "auto_update_changeable": {
+            "name": "Automatyczną aktualizację można zmienić"
+          },
+          "update_state": {
+            "name": "Stan aktualizacji",
+            "state": {
+              "waiting": "Oczekuje na zatwierdzenie",
+              "denied": "Odrzucona",
+              "approved": "Zatwierdzona",
+              "none": "Bez stanu zatwierdzenia",
+              "unknown": "Nieznany"
+            }
+          }
+        }
+      }
     }
   }
 }

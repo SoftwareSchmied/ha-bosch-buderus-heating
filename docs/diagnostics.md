@@ -243,6 +243,19 @@ triggers (`discovery_attempts`, `discovery_postponed`, `discovery_result`,
 `changed_contracts_detected`, the number of known readings that changed their
 value type (for example text instead of a number) since discovery. See [compatibility](compatibility.md).
 
+`firmware_updates` shows the reads of the firmware update list (see
+[entities](entities.md#firmware-update)) once the update platform started
+them: `active`, `result` and `results` (counts per class: `ok`,
+`endpoint_refused` for HTTP 403, 404 or 405, `not_listed`, `schema_issue`,
+`rate_limited`, `no_answer`, `unexpected_status`, `sign_in_required`,
+`error`), `attempts`, `held_rounds` (rounds the cloud state held back without
+a request), `last_attempt_age_seconds`, `last_answer_age_seconds`,
+`next_read_in_seconds`, `shown`, `installed_version`, `update_version`,
+`update_offered`, `update_state`, the number of `release_notes_links` and
+`auto_update_enabled`/`auto_update_changeable`. It never contains the gateway
+ID or a link; a version that does not look like one shows as `other`. The
+request metrics count these reads as `firmware_updates`.
+
 The discovered resources are kept per gateway in
 `.storage/bosch_buderus_heating.discovery_inventory.<entry>`, only on the Home
 Assistant host and deleted together with the integration entry. The file is
@@ -570,6 +583,37 @@ program names or current values:
 | `program_list_invalid_value` | The program list has no list value, or more than 128 entries. |
 | `program_list_invalid_ids` | An entry has no valid, unique program number from 0 to 9999. |
 | `program_list_empty` | The program list is valid but contains no programs. |
+
+`schedules` counts the week and day programs (`week`, `day`): `count`,
+`readable` (the integration understands the form), `editable` and `issues`,
+how often each reason below occurs. Each program's capability entry adds
+`rrc_contract.schedule_issues`, its reasons in a fixed order. A program
+without a reason can be edited; the form is never changed on a guess.
+
+| Code | Meaning |
+| --- | --- |
+| `type_unexpected` | The resource type is not `weekProgram` (a day may also be `dayProgram`). |
+| `not_available` | The controller marks the program as not used or not available. |
+| `has_references`, `has_values`, `no_value`, `not_a_list` | The program has no list of switch points. |
+| `too_many_points` | More than 512 switch points. |
+| `point_not_object` | A switch point is not an object. |
+| `day_missing_d` | A switch point has no day (`d`). |
+| `day_invalid` | A switch point names no known day. |
+| `day_mismatch` | A point of a day program names another day. |
+| `minute_invalid` | The time (`t`) is no whole minute of the day. |
+| `temperature_invalid` | The temperature (`Th`) is no number from 0 to 30 °C. |
+| `not_writable` | Read-only: the controller does not allow changing the program. |
+| `unknown_fields` | Read-only: the program carries fields the integration does not know. |
+| `extra_key` | Read-only: a switch point has a key besides `d`, `t` and `Th`. |
+| `unsorted` | Read-only: the points of a day are not in ascending time order. |
+| `off_grid_minute` | Read-only: a time is not on the 5-minute grid. |
+| `temperature_range` | Read-only: a temperature is outside 5 to 30 °C. |
+| `temperature_grid` | Read-only: a temperature is not on the 0.5 °C grid. |
+
+The codes up to `temperature_invalid` mean the form is not read. The check
+stops at the first of them, so only that one is named, after the read-only
+reasons found until then. A read-only code keeps the program readable but
+not editable; all of them are named.
 
 If zones select a program but the program list has not been found, the
 integration searches for it again on its own, at most seven times within a

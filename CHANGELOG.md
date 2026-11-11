@@ -44,6 +44,29 @@ settings of the radio devices and the CT200 stay expected, untested. Thank you, 
 testing all of this on your TC100.2, checking every change in the app and
 reporting it in #122.
 
+#### Firmware update
+
+- **Firmware entity:** each cloud gateway gets an update entity
+  **Firmware**. It shows the installed gateway firmware and an update the
+  cloud offers, with a link to its release notes in the language of Home
+  Assistant. It only shows: I left out installing an update and changing the
+  gateway's automatic update, so nothing can start a firmware update from
+  Home Assistant. The list is read about ten minutes after the start and then
+  every six hours; a gateway the list refuses or does not name gets no
+  entity. I built it from the app's firmware update model and tested it with
+  simulated answers only; it is expected, untested on a real gateway.
+- **Diagnostics:** the new section `firmware_updates` shows the result of the
+  last reads, the state and the versions, without the gateway ID or links.
+
+#### Room controller programs
+
+- **Why a program is read-only:** on a real TC100.2 the program editor showed
+  every program read-only, without saying why. The diagnostics now name the
+  reason per week and day program, for example a switch point without a day
+  or with an additional key, as fixed codes without values. The editor still
+  accepts only the form it knows; I will adjust it once a diagnostics file
+  shows the real form.
+
 #### Fixes
 
 - **Warning after a restart:** Home Assistant no longer logs "Detected

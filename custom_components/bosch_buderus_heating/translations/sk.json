@@ -2412,6 +2412,29 @@
       "rrc_thermal_disinfection_time": {
         "name": "Čas spustenia tepelnej dezinfekcie"
       }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Firmvér",
+        "state_attributes": {
+          "auto_update_enabled": {
+            "name": "Automatická aktualizácia zapnutá"
+          },
+          "auto_update_changeable": {
+            "name": "Automatickú aktualizáciu možno zmeniť"
+          },
+          "update_state": {
+            "name": "Stav aktualizácie",
+            "state": {
+              "waiting": "Čaká na schválenie",
+              "denied": "Odmietnuté",
+              "approved": "Schválené",
+              "none": "Bez stavu schválenia",
+              "unknown": "Neznámy"
+            }
+          }
+        }
+      }
     }
   }
 }

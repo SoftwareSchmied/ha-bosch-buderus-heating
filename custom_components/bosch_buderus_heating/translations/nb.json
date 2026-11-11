@@ -2412,6 +2412,29 @@
       "rrc_thermal_disinfection_time": {
         "name": "Starttidspunkt for termisk desinfeksjon"
       }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Fastvare",
+        "state_attributes": {
+          "auto_update_enabled": {
+            "name": "Automatisk oppdatering aktivert"
+          },
+          "auto_update_changeable": {
+            "name": "Automatisk oppdatering kan endres"
+          },
+          "update_state": {
+            "name": "Oppdateringsstatus",
+            "state": {
+              "waiting": "Venter på godkjenning",
+              "denied": "Avslått",
+              "approved": "Godkjent",
+              "none": "Ingen godkjenningsstatus",
+              "unknown": "Ukjent"
+            }
+          }
+        }
+      }
     }
   }
 }

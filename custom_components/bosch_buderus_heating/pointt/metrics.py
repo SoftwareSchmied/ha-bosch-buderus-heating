@@ -477,6 +477,8 @@ def request_category(path: str) -> str:
         return "bulk"
     if "/resource/" in normalized:
         return "resource"
+    if normalized.split("?", 1)[0] == "firmwareUpdates":
+        return "firmware_updates"
     if normalized.endswith("/partnumber"):
         return "gateway_metadata"
     if normalized == "gateways":
