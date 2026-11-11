@@ -38,6 +38,20 @@ async def _hang(*_args, **_kwargs):
     await asyncio.Event().wait()
 
 
+@pytest.fixture(autouse=True)
+def no_floor():
+    """The tests shorten the deadlines; no read-back floor may lengthen them."""
+    with (
+        patch.object(coordinator_module, "WRITE_STEP_MARGIN_SECONDS", 0.0),
+        patch.object(
+            coordinator_module.BoschBuderusDataUpdateCoordinator,
+            "write_read_back_delays",
+            return_value=(0.0,),
+        ),
+    ):
+        yield
+
+
 @pytest.fixture
 def environment(hass, enable_custom_integrations):
     yield from test_dynamic_controls.environment.__wrapped__(hass)
@@ -47,7 +61,33 @@ def test_the_deadlines_leave_room_for_a_healthy_write() -> None:
     # RRC read-back waits 15 s in all; a legacy holiday sends up to five steps.
     assert coordinator_module.WRITE_TRANSACTION_DEADLINE.total_seconds() == 60
     assert coordinator_module.HOLIDAY_WRITE_DEADLINE.total_seconds() == 180
+    assert coordinator_module.HOLIDAY_WRITE_STEPS == 5
     assert issubclass(WriteDeadlineExceeded, WriteNotConfirmed)
+
+
+@pytest.mark.parametrize(
+    ("delays", "steps", "seconds"),
+    [
+        # The schedule of most gateways: the constants stand.
+        ((0.5, 1.0, 2.0), 1, 60),
+        ((0.5, 1.0, 2.0), 5, 180),
+        # An iCom gateway reads back after 1, 2, 3 and 4 s (10 s per step).
+        ((1.0, 2.0, 3.0, 4.0), 1, 60),
+        ((1.0, 2.0, 3.0, 4.0), 5, 200),
+        # A slower schedule lengthens the deadline instead of cutting it.
+        ((10.0, 20.0, 40.0), 1, 100),
+    ],
+)
+def test_the_deadline_follows_the_read_back_schedule(
+    environment, delays, steps, seconds
+):
+    coordinator, _client, _ = environment
+    with (
+        patch.object(coordinator_module, "WRITE_STEP_MARGIN_SECONDS", 30.0),
+        patch.object(coordinator, "write_read_back_delays", return_value=delays),
+    ):
+        deadline = coordinator_module.HOLIDAY_WRITE_DEADLINE if steps > 1 else None
+        assert coordinator._write_deadline(deadline, steps).total_seconds() == (seconds)
 
 
 async def test_hanging_read_back_ends_unconfirmed_after_one_put(hass):

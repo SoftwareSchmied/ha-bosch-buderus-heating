@@ -201,7 +201,10 @@ and read-back confirmation and are never blindly retried.
 A write waits at most 60 seconds for a running poll or another write of its
 gateway; after that it sends nothing and says so. Since 0.9.0-alpha.6 a write
 that has started also has an overall deadline of 60 seconds (180 seconds for a
-holiday change) for its fresh reads, its one request and the read-back. With a
+holiday change, which may send up to five values) for its fresh reads, its
+requests and the read-backs. A gateway that is read back more slowly gets
+correspondingly longer, at least its read-back waits plus 30 seconds per step,
+so a healthy change is never cut short. With a
 slow cloud it then no longer holds the polling of its gateway and the calling
 automation for minutes. At the deadline it ends as not confirmed: the request
 may already have been sent, so the reading involved is no longer shown as
@@ -358,8 +361,10 @@ ausdrücklich von dieser fortgesetzten Wiederholung ausgenommen.
 
 Ein Schreibvorgang wartet höchstens 60 Sekunden auf eine laufende Abfrage und
 sendet sonst nichts. Seit 0.9.0-alpha.6 hat ein begonnener Schreibvorgang
-außerdem eine Gesamtfrist von 60 Sekunden (Urlaubsänderungen 180 Sekunden) für
-die frische Prüfung, die eine Anfrage und das Zurücklesen. Danach gilt er als
+außerdem eine Gesamtfrist von 60 Sekunden (Urlaubsänderungen mit bis zu fünf
+Werten 180 Sekunden) für die frische Prüfung, die Anfragen und das
+Zurücklesen. Bei einem Gateway mit längeren Rücklesezeiten verlängert sie sich
+auf mindestens diese Wartezeiten plus 30 Sekunden je Schritt. Danach gilt er als
 nicht bestätigt; der betroffene Wert gilt bis zum nächsten Lesen nicht mehr
 als aktuell, und nichts wird ein zweites Mal gesendet.
 

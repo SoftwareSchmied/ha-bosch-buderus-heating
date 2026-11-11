@@ -299,6 +299,12 @@ WRITE_TRANSACTION_DEADLINE = timedelta(seconds=60)
 # A holiday change on a legacy slot sends up to five values one after the
 # other, each read back over several paths.
 HOLIDAY_WRITE_DEADLINE = timedelta(seconds=180)
+HOLIDAY_WRITE_STEPS = 5
+# D25: what each step needs beyond the waits of its read-back schedule
+# (fresh reads, the request, the read-backs themselves). A slower read-back
+# schedule (an iCom gateway: 1, 2, 3 and 4 s) lengthens the deadline rather
+# than cutting a healthy transaction.
+WRITE_STEP_MARGIN_SECONDS = 30.0
 # HA rounds scheduled callbacks to whole seconds plus a fixed offset. A callback
 # just before our exact deadline must not postpone a group by another minute.
 # This tolerance applies to group cadence only, never to error/backoff deadlines.
@@ -927,18 +933,20 @@ class BoschBuderusDataUpdateCoordinator(
 
     @asynccontextmanager
     async def _write_transaction(
-        self, deadline: timedelta | None = None
+        self, deadline: timedelta | None = None, *, steps: int = 1
     ) -> AsyncIterator[None]:
         """C58: hold the polling/write lock, but wait for it only so long.
 
         A write that cannot start sends nothing and is reported at once
         instead of being sent much later. D25: once it holds the lock, the
-        transaction has ``deadline`` (``WRITE_TRANSACTION_DEADLINE``) for its
-        reads, its request and its read-back. At the deadline it is cancelled
+        transaction has ``deadline`` (``WRITE_TRANSACTION_DEADLINE``), but at
+        least what ``steps`` read-backs of this gateway need, for its reads,
+        its requests and its read-backs. At the deadline it is cancelled
         like any cancelled write (its reading is no longer current) and ends
         with ``WriteDeadlineExceeded``: the request may have been sent, it is
         never sent again.
         """
+        limit = self._write_deadline(deadline, steps)
         try:
             async with asyncio.timeout(WRITE_LOCK_TIMEOUT.total_seconds()):
                 await self._update_lock.acquire()
@@ -946,7 +954,6 @@ class BoschBuderusDataUpdateCoordinator(
             raise WriteBusy(
                 "Another request held the gateway; the change was not sent"
             ) from err
-        limit = deadline if deadline is not None else WRITE_TRANSACTION_DEADLINE
         try:
             async with asyncio.timeout(limit.total_seconds()) as scope:
                 yield
@@ -959,6 +966,14 @@ class BoschBuderusDataUpdateCoordinator(
             ) from err
         finally:
             self._update_lock.release()
+
+    def _write_deadline(self, deadline: timedelta | None, steps: int) -> timedelta:
+        """D25: the overall deadline, never shorter than ``steps`` read-backs
+        with the read-back schedule of this gateway need."""
+        limit = deadline if deadline is not None else WRITE_TRANSACTION_DEADLINE
+        waits = sum(self.write_read_back_delays())
+        needed = timedelta(seconds=steps * (waits + WRITE_STEP_MARGIN_SECONDS))
+        return max(limit, needed)
 
     async def _async_read_write_guards(
         self, expected: tuple[Resource, ...]
@@ -1469,7 +1484,9 @@ class BoschBuderusDataUpdateCoordinator(
         expected: HolidayWriteValues | None = None,
     ) -> Resource:
         """Run one capability-gated holiday mutation and confirm it."""
-        async with self._write_transaction(HOLIDAY_WRITE_DEADLINE):
+        async with self._write_transaction(
+            HOLIDAY_WRITE_DEADLINE, steps=HOLIDAY_WRITE_STEPS
+        ):
             now_monotonic = monotonic()
             if now_monotonic < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now_monotonic)
