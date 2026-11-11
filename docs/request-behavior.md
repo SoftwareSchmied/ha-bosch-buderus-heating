@@ -298,7 +298,8 @@ only; every other gateway keeps the behaviour described above:
   outage starts again at 5 minutes.
 - **Longer read-back:** a write is read back after 1, 2, 3 and 4 seconds
   (10 s in all) instead of 0.5, 1 and 2 seconds. A write is still sent only
-  once.
+  once. The overall deadline of a write stays 60 seconds; a holiday change
+  gets 200 seconds instead of 180 (five steps of 10 s waits plus 30 s).
 
 I tested this with simulated outages of this shape (timeouts, a rate limit
 after four failed cycles, recovery). It is expected, untested on a real iCom
@@ -436,7 +437,8 @@ mindestens 10 Pfade; nach drei fehlerfreien Zyklen in Folge verdoppelt sich
 die Größe schrittweise wieder bis 30. Der Schutzschalter pausiert während
 eines Ausfalls 5, 10, 20 und höchstens 30 Minuten und beginnt nach dem ersten
 brauchbaren Zyklus wieder bei 5 Minuten. Schreibvorgänge werden nach 1, 2, 3
-und 4 Sekunden zurückgelesen. Ich habe das mit simulierten Ausfällen geprüft;
+und 4 Sekunden zurückgelesen; die Gesamtfrist einer Urlaubsänderung beträgt
+dort 200 statt 180 Sekunden. Ich habe das mit simulierten Ausfällen geprüft;
 an einem echten iCom-Gateway ist es erwartet, aber ungetestet.
 
 Für einen fehlenden manuellen Heizkreis-Sollwert gibt es zusätzlich höchstens
