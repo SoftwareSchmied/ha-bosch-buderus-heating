@@ -211,10 +211,19 @@ thermostat 2"), with its zone as the suggested area.
   (disabled by default) and the firmware version; for radiator thermostats
   also the valve opening, the maximum valve opening, the temperature at the
   valve, the valve state and the whisper mode (quiet valve motor operation),
-  all disabled by default, and a binary sensor "Valve problem" (enabled).
+  all disabled by default, and a binary sensor "Valve problem" (enabled). It
+  is on while the valve reports that it is too tight, that its adjustment
+  range is too big or too small, that it is in an error position, or that
+  its adaption waits (for example because the thermostat is not mounted
+  correctly); its attribute `valve_problems` names the states.
 - **Settings** *(expected, untested, disabled by default):* the child lock,
   the temperature offset (only while the device uses it) and the
-  sensitivity of the open window detection (high, medium, low).
+  sensitivity of the open window detection (high, medium, low). The
+  sensitivity offers only the levels that lie within the limits and on the
+  step the device reports; with limits that leave fewer than two levels
+  there is no selection, and the diagnostics count it as
+  `window_sensitivity_too_few_options`. The real limits are not confirmed
+  yet.
 - **Never written:** the valve calibration and the whisper mode. Adding,
   removing and pairing radio devices stays on the controller.
 
@@ -296,10 +305,11 @@ ebenso der CT200 insgesamt:
   **Entwicklerwerkzeuge → Statistiken**; alle drei Stunden höchstens acht
   Anfragen.
 - **Funkgeräte:** Batterie, Funksignal, Firmware, Ventilwerte und
-  Flüstermodus (nur lesen), Ventilproblem; Kindersicherung,
-  Temperatur-Offset und Empfindlichkeit der Fenster-offen-Erkennung
-  (standardmäßig deaktiviert). Ventilkalibrierung und Flüstermodus werden nie
-  geschrieben.
+  Flüstermodus (nur lesen), Ventilproblem (auch bei wartender
+  Ventiladaption); Kindersicherung, Temperatur-Offset und Empfindlichkeit der
+  Fenster-offen-Erkennung (standardmäßig deaktiviert; nur die Stufen, die
+  Grenzen und Schrittweite des Geräts erlauben). Ventilkalibrierung und
+  Flüstermodus werden nie geschrieben.
 
 Jede Änderung wird genau einmal gesendet und nach 1, 2, 4 und 8 Sekunden
 zurückgelesen. Die Discovery liest höchstens 512 Pfade, die Einstellungen

@@ -97,7 +97,8 @@ Expected, untested on a real controller:
   default) and a "Valve problem" binary sensor. The child lock, the
   temperature offset and the open window sensitivity can be changed and are
   disabled by default. The valve calibration and the whisper mode are never
-  written.
+  written. "Valve problem" also turns on while a valve adaption waits, and
+  the sensitivity offers only the levels its limits and step allow.
 - **Recognised by their resources:** a gateway the cloud reports as device
   type `rrc2`, with the product type `RRC 2.0` or with RRC zones is handled
   as a room controller, never by a model name. A controller without a name

@@ -7,7 +7,8 @@ platform listed in ``TRACKERS`` once per coordinator; see
 The child lock and the read-only valve readings are generic entities of the
 contract (``rrc_contract_devices``). This module adds what the generic
 platforms cannot show: the temperature offset only while the device uses
-it, the open window sensitivity as three levels, and the valve problem.
+it, the open window sensitivity as the levels its limits allow, and the
+valve problem.
 Every entity sits on its radio device (E07); the controller's own settings
 on the controller. Writes go through the shared write path (metadata
 checks, one PUT, read-back); everything is expected, untested on hardware.
@@ -41,6 +42,7 @@ from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
 from .rrc_contract_devices import OFFSET_POLICY, SENSITIVITY_POLICY
 from .rrc_device_settings import (
+    MIN_SENSITIVITY_OPTIONS,
     OFFSET,
     SENSITIVITY,
     SENSITIVITY_LEVELS,
@@ -48,6 +50,7 @@ from .rrc_device_settings import (
     SUBFOLDERS,
     VALVE,
     offered,
+    resource_sensitivity_options,
     sensitivity_level,
     split,
     valve_status,
@@ -201,9 +204,10 @@ class WindowSensitivitySelect(
 ):
     """CT-E05: the sensitivity of the open window detection of a valve.
 
-    Three levels with exact values (high 0.5, medium 1.5, low 2.5); a level
-    outside the advertised limits or step is refused before sending. Only
-    a reading of exactly the written value confirms the change.
+    Levels with exact values (high 0.5, medium 1.5, low 2.5); only those
+    within the advertised limits and on the step are offered (SYSTEM-10),
+    and the write path refuses any other before sending. Only a reading of
+    exactly the written value confirms the change.
     """
 
     _attr_has_entity_name = True
@@ -217,7 +221,7 @@ class WindowSensitivitySelect(
         super().__init__(coordinator)
         self.entity_description = description
         self.resource_path = description.resource_path
-        self._attr_options = list(SENSITIVITY_LEVELS)
+        self._attr_options = list(description.options or ())
         self._attr_name = control_name(
             coordinator,
             description.resource_path,
@@ -241,8 +245,18 @@ class WindowSensitivitySelect(
         return (
             assessment.policy is SENSITIVITY_POLICY
             and assessment.eligible
+            and len(resource_sensitivity_options(resource)) >= MIN_SENSITIVITY_OPTIONS
             and _listed(_displayed_list(self.coordinator), self.resource_path)
         )
+
+    @property
+    def options(self) -> list[str]:
+        """The levels the current limits allow; without a current reading
+        those of the discovery."""
+        resource = self._resource
+        if resource is not None:
+            return list(resource_sensitivity_options(resource))
+        return self._attr_options
 
     @property
     def current_option(self) -> str | None:
@@ -269,10 +283,15 @@ def build_sensitivities(
         assessment = assess_control(resource, context)
         if assessment.policy is not SENSITIVITY_POLICY or not assessment.eligible:
             continue
+        options = resource_sensitivity_options(resource)
+        if len(options) < MIN_SENSITIVITY_OPTIONS:
+            # SYSTEM-10: no selection that offers one level or none.
+            continue
         descriptions.append(
             SettingDescription(
                 key=_semantic_key(path, None),
                 resource_path=path,
+                options=list(options),
                 translation_key=rrc_contracts.entity_key(path, Platform.SELECT.value),
                 icon=rrc_contracts.icon(path),
                 entity_category=EntityCategory.CONFIG,
@@ -312,8 +331,9 @@ class ValveDescription(BinarySensorEntityDescription):
 class ValveProblemBinarySensor(
     CoordinatorEntity[BoschBuderusDataUpdateCoordinator], BinarySensorEntity
 ):
-    """CT-E09: on while the valve reports a problem (too tight, adjustment
-    range too big or too small, error position); enabled by default.
+    """CT-E09: on while the valve reports a problem (adaption waiting, too
+    tight, adjustment range too big or too small, error position); enabled
+    by default.
 
     ``etrv/status`` arrives as a string array (TC100.2) or as a list of
     objects with a ``valve`` state; both are read.
