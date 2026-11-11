@@ -190,9 +190,11 @@ device.
 - **Local setup messages:** more failure causes of the local setup are named
   instead of "unexpected error", for example a system that already has a
   local access, an unverified identity or a full setup journal.
-- **Deleting old devices:** a device without any provided entity, for
-  example a heating circuit removed at the controller, can now be deleted on
-  its device page.
+- **Deleting old devices:** a device without any entity, for example a
+  heating circuit removed at the controller, can now be deleted on its
+  device page. A device that still has an entity, also a disabled one or
+  one that is no longer provided, stays until its entities are deleted, so
+  no setting of an entity gets lost.
 - **Status in the dialogs:** the controls dialog shows "1 unsaved change"
   in the singular, says "No changes, nothing was written." when Apply had
   nothing to write, and asks to close and reopen the dialog when Home

@@ -336,10 +336,13 @@ each gateway.
 ### A device that no longer exists
 
 Since 0.9.0-alpha.6 a device of the integration can be deleted on its device
-page (**⋮ > Delete**) once none of its entities is provided any more, for
-example a heating circuit removed at the controller. While one of its entities
-or a device connected through it is still provided, Home Assistant offers no
-Delete. If the system reports the device again, the next start creates it anew.
+page (**⋮ > Delete**) once it has no entity left, for example a heating circuit
+removed at the controller. A disabled entity and an entity that is no longer
+provided count as well: delete those entities first (on the entity page or in
+**Settings > Devices & services > Entities**), then the device. While the
+device or a device connected through it still has an entity, Home Assistant
+offers no Delete, so no entity setting gets lost. If the system reports the
+device again, the next start creates it anew.
 
 ### Chrome Console is empty or the redirect address is missing
 

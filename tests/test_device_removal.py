@@ -29,13 +29,14 @@ def _setup(hass: HomeAssistant):
     return entry, other, gateway, circuit
 
 
-def _entity(hass, entry, device, key, *, state=None, restored=False):
+def _entity(hass, entry, device, key, *, state=None, restored=False, disabled=False):
     entity = er.async_get(hass).async_get_or_create(
         "sensor",
         DOMAIN,
         key,
         config_entry=entry,
         device_id=device.id,
+        disabled_by=er.RegistryEntryDisabler.USER if disabled else None,
     )
     if state is not None:
         hass.states.async_set(
@@ -51,25 +52,51 @@ async def test_a_device_with_a_live_entity_is_kept(hass: HomeAssistant) -> None:
     assert not await async_remove_config_entry_device(hass, entry, circuit)
 
 
-async def test_a_device_with_only_restored_or_missing_entities_can_go(
+async def test_a_device_without_any_registered_entity_can_go(
     hass: HomeAssistant,
 ) -> None:
     entry, _other, _gateway, circuit = _setup(hass)
     assert await async_remove_config_entry_device(hass, entry, circuit)
-    _entity(hass, entry, circuit, "gw:hc2:flow", state=STATE_UNAVAILABLE, restored=True)
-    _entity(hass, entry, circuit, "gw:hc2:disabled")  # no state at all
+
+
+async def test_a_disabled_entity_keeps_the_device(hass: HomeAssistant) -> None:
+    entry, _other, _gateway, circuit = _setup(hass)
+    entity = _entity(hass, entry, circuit, "gw:hc2:disabled", disabled=True)
+    # Disabled: no state at all, but its setting must not be lost.
+    assert hass.states.get(entity.entity_id) is None
+    assert not await async_remove_config_entry_device(hass, entry, circuit)
+    er.async_get(hass).async_remove(entity.entity_id)
     assert await async_remove_config_entry_device(hass, entry, circuit)
 
 
-async def test_a_parent_of_a_current_device_is_kept(hass: HomeAssistant) -> None:
-    entry, _other, gateway, circuit = _setup(hass)
-    _entity(hass, entry, circuit, "gw:hc2:flow", state="21.5")
-    assert not await async_remove_config_entry_device(hass, entry, gateway)
-    hass.states.async_set(
-        er.async_get(hass).async_get_entity_id("sensor", DOMAIN, "gw:hc2:flow"),
-        STATE_UNAVAILABLE,
-        {ATTR_RESTORED: True},
+async def test_a_restored_or_stateless_entity_keeps_the_device(
+    hass: HomeAssistant,
+) -> None:
+    entry, _other, _gateway, circuit = _setup(hass)
+    restored = _entity(
+        hass, entry, circuit, "gw:hc2:flow", state=STATE_UNAVAILABLE, restored=True
     )
+    assert not await async_remove_config_entry_device(hass, entry, circuit)
+    er.async_get(hass).async_remove(restored.entity_id)
+    stateless = _entity(hass, entry, circuit, "gw:hc2:other")
+    assert not await async_remove_config_entry_device(hass, entry, circuit)
+    er.async_get(hass).async_remove(stateless.entity_id)
+    assert await async_remove_config_entry_device(hass, entry, circuit)
+
+
+async def test_a_parent_of_a_device_with_entities_is_kept(
+    hass: HomeAssistant,
+) -> None:
+    entry, _other, gateway, circuit = _setup(hass)
+    child = _entity(hass, entry, circuit, "gw:hc2:flow", state="21.5")
+    assert not await async_remove_config_entry_device(hass, entry, gateway)
+    hass.states.async_set(child.entity_id, STATE_UNAVAILABLE, {ATTR_RESTORED: True})
+    assert not await async_remove_config_entry_device(hass, entry, gateway)
+    er.async_get(hass).async_update_entity(
+        child.entity_id, disabled_by=er.RegistryEntryDisabler.USER
+    )
+    assert not await async_remove_config_entry_device(hass, entry, gateway)
+    er.async_get(hass).async_remove(child.entity_id)
     assert await async_remove_config_entry_device(hass, entry, gateway)
 
 
