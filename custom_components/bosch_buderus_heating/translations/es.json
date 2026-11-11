@@ -618,6 +618,12 @@
       "controls_unconfirmed": "No se pudo confirmar el último cambio. Puede que ya haya surtido efecto en el equipo. Los cambios confirmados anteriormente siguen aplicados. Vuelve a cargar los valores antes de volver a intentarlo.",
       "controls_failed": "Falló la comunicación con el equipo. Puede que el último cambio ya haya surtido efecto. Los cambios confirmados anteriormente siguen aplicados. Vuelve a cargar los valores antes de volver a intentarlo.",
       "controls_busy": "Se está leyendo el equipo o todavía hay otro cambio en curso. Este cambio no se envió. Los cambios confirmados anteriormente siguen aplicados. Inténtalo de nuevo dentro de un momento.",
+      "controls_locked": "El equipo bloquea actualmente este ajuste. Este cambio no se envió. Los cambios confirmados anteriormente siguen aplicados. Inténtalo de nuevo más tarde.",
+      "controls_unused": "El equipo no utiliza este ajuste en este momento. Este cambio no se envió. Los cambios confirmados anteriormente siguen aplicados.",
+      "controls_curve_order": "La curva de calefacción y los límites de impulsión deben mantener su orden: el punto base y la temperatura de impulsión mínima no por encima del punto final ni de la temperatura de impulsión máxima. Este cambio no se envió. Los cambios confirmados anteriormente siguen aplicados.",
+      "controls_weather_control_off": "Este ajuste del circuito de calefacción solo funciona con la regulación en función de la temperatura exterior, y el circuito usa ahora otra regulación. Este cambio no se envió. Los cambios confirmados anteriormente siguen aplicados.",
+      "controls_extra_dhw_duration_zero": "El agua caliente extra necesita una duración de más de 0 minutos. Ajusta primero la duración. Este cambio no se envió. Los cambios confirmados anteriormente siguen aplicados.",
+      "controls_rejected": "El equipo no acepta este valor en este momento. Este cambio no se envió. Los cambios confirmados anteriormente siguen aplicados. Comprueba el valor o vuelve a cargar los valores.",
       "cloud_already_connected": "Ya hay una conexión a la nube configurada. Usa sus ajustes de conexión para seleccionar más dispositivos o volver a iniciar sesión. Todavía no se admite un segundo inicio de sesión paralelo en la nube.",
       "cloud_setup_in_progress": "Ya hay otra configuración de la nube abierta. Termina o cierra primero ese cuadro de diálogo.",
       "cloud_target_owned": "Una instalación o un dispositivo seleccionado pertenece a otra entrada configurada o a otra conexión a la nube. Vuelve a conectarlo a través de su entrada existente.",
@@ -1058,8 +1064,17 @@
     "rrc_time_of_day_invalid": {
       "message": "La hora de inicio debe ser una hora del día entre las 00:00 y las 23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Elige una hora de inicio en pasos de {step} minutos."
+    },
     "rrc_curve_order": {
-      "message": "La curva de calefacción y los límites de impulsión deben mantener su orden: el punto base por debajo del punto final y la temperatura de impulsión mínima no por encima de la máxima. No se envió nada; cambia primero el otro límite."
+      "message": "La curva de calefacción y los límites de impulsión deben mantener su orden: el punto base y la temperatura de impulsión mínima no por encima del punto final ni de la temperatura de impulsión máxima. No se envió nada; cambia primero el otro límite."
+    },
+    "rrc_weather_control_off": {
+      "message": "Este ajuste del circuito de calefacción solo funciona con la regulación en función de la temperatura exterior, y el circuito usa ahora otra regulación. No se envió nada."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "El agua caliente extra necesita una duración de más de 0 minutos. Ajusta primero la duración. No se envió nada."
     },
     "rrc_event_invalid_name": {
       "message": "Introduce un nombre de 1 a 32 bytes de texto imprimible (menos caracteres si hay tildes o emojis)."
@@ -1384,14 +1399,6 @@
           "always_heating": "Siempre calentar",
           "always_cooling": "Siempre refrigerar",
           "automatic": "Automático"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Velocidad de calentamiento",
-        "state": {
-          "slow": "Lenta",
-          "normal": "Normal",
-          "fast": "Rápida"
         }
       }
     },

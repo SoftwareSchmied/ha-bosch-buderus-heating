@@ -618,6 +618,12 @@
       "controls_unconfirmed": "Den siste endringen kunne ikke bekreftes. Den kan allerede ha trådt i kraft på apparatet. Tidligere bekreftede endringer forblir brukt. Last verdiene på nytt før du prøver igjen.",
       "controls_failed": "Kommunikasjonen med apparatet mislyktes. Den siste endringen kan allerede ha trådt i kraft. Tidligere bekreftede endringer forblir brukt. Last verdiene på nytt før du prøver igjen.",
       "controls_busy": "Apparatet leses av, eller en annen endring pågår fortsatt. Denne endringen ble ikke sendt. Tidligere bekreftede endringer forblir brukt. Prøv igjen om et øyeblikk.",
+      "controls_locked": "Apparatet låser for øyeblikket denne innstillingen. Denne endringen ble ikke sendt. Tidligere bekreftede endringer forblir brukt. Prøv igjen senere.",
+      "controls_unused": "Apparatet bruker ikke denne innstillingen for øyeblikket. Denne endringen ble ikke sendt. Tidligere bekreftede endringer forblir brukt.",
+      "controls_curve_order": "Varmekurven og turgrensene må forbli i riktig rekkefølge: startpunktet og minimal turtemperatur ikke over sluttpunktet og maksimal turtemperatur. Denne endringen ble ikke sendt. Tidligere bekreftede endringer forblir brukt.",
+      "controls_weather_control_off": "Denne innstillingen for varmekretsen virker bare med utetemperaturstyrt regulering, og kretsen bruker for øyeblikket en annen regulering. Denne endringen ble ikke sendt. Tidligere bekreftede endringer forblir brukt.",
+      "controls_extra_dhw_duration_zero": "Ekstra varmtvann trenger en varighet på mer enn 0 minutter. Still inn varigheten først. Denne endringen ble ikke sendt. Tidligere bekreftede endringer forblir brukt.",
+      "controls_rejected": "Apparatet godtar ikke denne verdien for øyeblikket. Denne endringen ble ikke sendt. Tidligere bekreftede endringer forblir brukt. Kontroller verdien eller last verdiene på nytt.",
       "cloud_already_connected": "Det er allerede konfigurert en skytilkobling. Bruk tilkoblingsinnstillingene til å velge flere enheter eller logge på igjen. En andre parallell skypålogging støttes ikke ennå.",
       "cloud_setup_in_progress": "Et annet skyoppsett er allerede åpent. Fullfør eller lukk den dialogen først.",
       "cloud_target_owned": "Et valgt anlegg eller en valgt enhet hører til en annen konfigurert oppføring eller skytilkobling. Koble det til på nytt via den eksisterende oppføringen.",
@@ -1058,8 +1064,17 @@
     "rrc_time_of_day_invalid": {
       "message": "Starttidspunktet må være et klokkeslett mellom 00:00 og 23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Velg et starttidspunkt i trinn på {step} minutter."
+    },
     "rrc_curve_order": {
-      "message": "Varmekurven og turgrensene må forbli i riktig rekkefølge: startpunktet under sluttpunktet, minimal turtemperatur ikke over maksimal. Ingenting ble sendt; endre den andre grensen først."
+      "message": "Varmekurven og turgrensene må forbli i riktig rekkefølge: startpunktet og minimal turtemperatur ikke over sluttpunktet og maksimal turtemperatur. Ingenting ble sendt; endre den andre grensen først."
+    },
+    "rrc_weather_control_off": {
+      "message": "Denne innstillingen for varmekretsen virker bare med utetemperaturstyrt regulering, og kretsen bruker for øyeblikket en annen regulering. Ingenting ble sendt."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Ekstra varmtvann trenger en varighet på mer enn 0 minutter. Still inn varigheten først. Ingenting ble sendt."
     },
     "rrc_event_invalid_name": {
       "message": "Skriv inn et navn på 1 til 32 byte med skrivbar tekst (færre tegn med æ, ø, å eller emoji)."
@@ -1384,14 +1399,6 @@
           "always_heating": "Alltid oppvarming",
           "always_cooling": "Alltid kjøling",
           "automatic": "Automatisk"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Oppvarmingshastighet",
-        "state": {
-          "slow": "Langsom",
-          "normal": "Normal",
-          "fast": "Rask"
         }
       }
     },

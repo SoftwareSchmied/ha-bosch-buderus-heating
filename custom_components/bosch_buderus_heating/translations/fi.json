@@ -618,6 +618,12 @@
       "controls_unconfirmed": "Viimeisintä muutosta ei voitu vahvistaa. Se on voinut jo tulla voimaan laitteessa. Aiemmin vahvistetut muutokset pysyvät voimassa. Lataa arvot uudelleen ennen uutta yritystä.",
       "controls_failed": "Yhteys laitteeseen epäonnistui. Viimeisin muutos on voinut jo tulla voimaan. Aiemmin vahvistetut muutokset pysyvät voimassa. Lataa arvot uudelleen ennen uutta yritystä.",
       "controls_busy": "Laitetta luetaan tai toinen muutos on vielä käynnissä. Tätä muutosta ei lähetetty. Aiemmin vahvistetut muutokset pysyvät voimassa. Yritä hetken kuluttua uudelleen.",
+      "controls_locked": "Laite lukitsee tämän asetuksen tällä hetkellä. Tätä muutosta ei lähetetty. Aiemmin vahvistetut muutokset pysyvät voimassa. Yritä myöhemmin uudelleen.",
+      "controls_unused": "Laite ei käytä tätä asetusta tällä hetkellä. Tätä muutosta ei lähetetty. Aiemmin vahvistetut muutokset pysyvät voimassa.",
+      "controls_curve_order": "Lämmityskäyrän ja menolämpötilarajojen on pysyttävä oikeassa järjestyksessä: alkupiste ja pienin menolämpötila eivät saa olla loppupistettä eivätkä suurinta menolämpötilaa korkeammalla. Tätä muutosta ei lähetetty. Aiemmin vahvistetut muutokset pysyvät voimassa.",
+      "controls_weather_control_off": "Tämä lämmityspiirin asetus toimii vain ulkolämpötilan mukaisessa säädössä, ja piiri käyttää tällä hetkellä toista säätötapaa. Tätä muutosta ei lähetetty. Aiemmin vahvistetut muutokset pysyvät voimassa.",
+      "controls_extra_dhw_duration_zero": "Lisälämmin käyttövesi tarvitsee yli 0 minuutin keston. Aseta ensin kesto. Tätä muutosta ei lähetetty. Aiemmin vahvistetut muutokset pysyvät voimassa.",
+      "controls_rejected": "Laite ei hyväksy tätä arvoa tällä hetkellä. Tätä muutosta ei lähetetty. Aiemmin vahvistetut muutokset pysyvät voimassa. Tarkista arvo tai lataa arvot uudelleen.",
       "cloud_already_connected": "Pilviyhteys on jo määritetty. Käytä sen yhteysasetuksia valitaksesi lisää laitteita tai kirjautuaksesi uudelleen. Toista rinnakkaista pilvikirjautumista ei vielä tueta.",
       "cloud_setup_in_progress": "Toinen pilviasennus on jo auki. Viimeistele tai sulje se ikkuna ensin.",
       "cloud_target_owned": "Valittu järjestelmä tai laite kuuluu toiselle määritetylle merkinnälle tai pilviyhteydelle. Yhdistä se uudelleen sen olemassa olevan merkinnän kautta.",
@@ -1058,8 +1064,17 @@
     "rrc_time_of_day_invalid": {
       "message": "Aloitusajan on oltava kellonaika välillä 00:00–23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Valitse aloitusaika {step} minuutin välein."
+    },
     "rrc_curve_order": {
-      "message": "Lämmityskäyrän ja menolämpötilarajojen on pysyttävä oikeassa järjestyksessä: alkupisteen on oltava loppupistettä alempana, eikä pienin menolämpötila saa olla suurinta korkeampi. Mitään ei lähetetty; muuta ensin toista rajaa."
+      "message": "Lämmityskäyrän ja menolämpötilarajojen on pysyttävä oikeassa järjestyksessä: alkupiste ja pienin menolämpötila eivät saa olla loppupistettä eivätkä suurinta menolämpötilaa korkeammalla. Mitään ei lähetetty; muuta ensin toista rajaa."
+    },
+    "rrc_weather_control_off": {
+      "message": "Tämä lämmityspiirin asetus toimii vain ulkolämpötilan mukaisessa säädössä, ja piiri käyttää tällä hetkellä toista säätötapaa. Mitään ei lähetetty."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Lisälämmin käyttövesi tarvitsee yli 0 minuutin keston. Aseta ensin kesto. Mitään ei lähetetty."
     },
     "rrc_event_invalid_name": {
       "message": "Anna nimi, jossa on 1–32 tavua tulostettavaa tekstiä (vähemmän merkkejä, jos käytät ä:tä, ö:tä tai emojeja)."
@@ -1384,14 +1399,6 @@
           "always_heating": "Aina lämmitys",
           "always_cooling": "Aina jäähdytys",
           "automatic": "Automaattinen"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Lämmitysnopeus",
-        "state": {
-          "slow": "Hidas",
-          "normal": "Normaali",
-          "fast": "Nopea"
         }
       }
     },

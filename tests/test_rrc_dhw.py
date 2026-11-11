@@ -118,23 +118,37 @@ def test_mode_without_options_falls_back_only_on_a_room_controller() -> None:
     assert generic.rejection_reason == "missing_options"
 
 
+HEAT_PUMP_MODES = ("Off", "high", "ownprogram", "low", "eco")
+
+
 @pytest.mark.parametrize(
-    ("value", "eligible"),
+    ("value", "options"),
     [
-        ("off", True),
-        ("Off", True),
-        ("ownprogram", True),
-        ("low", False),
-        ("eco", False),
+        ("off", ("Off", "high", "ownprogram")),
+        ("Off", ("Off", "high", "ownprogram")),
+        ("high", ("Off", "high", "ownprogram")),
+        ("ownprogram", ("Off", "high", "ownprogram")),
+        # CIRCUIT-02: a controller in an eco level keeps its control, with
+        # the modes of a heat pump.
+        ("low", HEAT_PUMP_MODES),
+        ("eco", HEAT_PUMP_MODES),
     ],
 )
-def test_low_and_eco_are_offered_only_when_advertised(value: str, eligible) -> None:
+def test_low_and_eco_are_offered_when_advertised_or_current(
+    value: str, options: tuple[str, ...]
+) -> None:
     """Heat pump and boiler mean different things by low and eco: without
-    advertised options a controller in such a mode gets no control."""
+    advertised options they are offered only while the controller reads one
+    of them."""
     mode = replace(fixture(MODE), value=value)
     assessment = assess_control(mode, RRC_CONTEXT)
-    assert assessment.eligible is eligible
-    assert ("low" in assessment.options) is False
+    assert assessment.eligible, assessment.rejection_reason
+    assert assessment.current_value_issue is None
+    assert assessment.options == options
+    validate_control_value(mode, "high", RRC_CONTEXT)
+    if "low" not in options:
+        with pytest.raises(WriteValidationError):
+            validate_control_value(mode, "low", RRC_CONTEXT)
     advertised = fixture("/dhwCircuits/dhw4/operationMode")
     assert set(assess_control(advertised, RRC_CONTEXT).options) == {
         "Off",
@@ -143,6 +157,47 @@ def test_low_and_eco_are_offered_only_when_advertised(value: str, eligible) -> N
         "ownprogram",
         "eco",
     }
+
+
+@pytest.mark.parametrize("value", ["high", "low", "Off"])
+def test_an_empty_list_of_modes_leaves_a_reading(value: str) -> None:
+    """An advertised empty list is no missing key: no control, nothing is
+    guessed (the water heater shows the mode without a list)."""
+    mode = parse_resource(
+        {
+            "id": MODE,
+            "type": "stringValue",
+            "writeable": 1,
+            "value": value,
+            "allowedValues": [],
+        }
+    )
+    assert not mode.metadata.allowed_values_missing
+    assessment = assess_control(mode, RRC_CONTEXT)
+    assert assessment.rejection_reason == "missing_options"
+    assert assessment.options == ()
+
+
+def test_both_spellings_of_off_are_offered_once() -> None:
+    """CIRCUIT-14: "Off" and "off" advertised together are one option."""
+    from custom_components.bosch_buderus_heating.select import _option_map
+
+    mode = parse_resource(
+        {
+            "id": MODE,
+            "type": "stringValue",
+            "writeable": 1,
+            "value": "off",
+            "allowedValues": ["Off", "off", "high"],
+        }
+    )
+    options = _option_map(
+        mode,
+        "hot_water_operation_mode",
+        rrc_contract_dhw.OPERATION_MODE_POLICY,
+        RRC_CONTEXT,
+    )
+    assert options == {"off": "Off", "high": "high"}
 
 
 def test_off_is_confirmed_by_either_spelling() -> None:
@@ -248,6 +303,40 @@ def test_disinfection_time_needs_a_float_value_in_minutes() -> None:
     with pytest.raises(WriteValidationError):
         validate_control_value(stepped, 220, RRC_CONTEXT)
     validate_control_value(stepped, 225, RRC_CONTEXT)
+    # CIRCUIT-11: without an advertised step, five-minute steps.
+    assert assessment.ui_step == 5.0
+    validate_control_value(good, 215, RRC_CONTEXT)
+    with pytest.raises(WriteValidationError):
+        validate_control_value(good, 213, RRC_CONTEXT)
+
+
+def _duration(value: object) -> dict[str, Resource]:
+    return {DURATION: replace(fixture(DURATION), value=value)}
+
+
+@pytest.mark.parametrize(
+    ("related", "value", "result"),
+    [
+        (_duration(60), "on", None),
+        (_duration(0), "on", "rrc_extra_dhw_duration_zero"),
+        (_duration(-15), "on", "rrc_extra_dhw_duration_zero"),
+        (_duration("60"), "on", "rrc_extra_dhw_duration_zero"),
+        (_duration(True), "on", "rrc_extra_dhw_duration_zero"),
+        (_duration(float("nan")), "on", "rrc_extra_dhw_duration_zero"),
+        # Turning it off is never refused.
+        (_duration(0), "off", None),
+        # A circuit without a current duration reading keeps the switch.
+        ({}, "on", None),
+    ],
+)
+def test_extra_hot_water_needs_a_duration(
+    related: dict[str, Resource], value: str, result: str | None
+) -> None:
+    """CIRCUIT-07: extra hot water is not turned on with a duration of 0."""
+    policy = rrc_contract_dhw.EXTRA_DHW_POLICY
+    assert policy.value_check is not None
+    assert policy.value_check(fixture(EXTRA), value, related) == result
+    assert rrc_contract_dhw.duration_path(EXTRA) == DURATION
 
 
 def test_weekday_offers_the_known_days_only() -> None:
@@ -394,6 +483,7 @@ def test_diagnostics_count_without_values() -> None:
     assert report == {
         "circuits": 4,
         "operation_mode_options_advertised": 1,
+        "operation_mode_options_empty": 0,
         "extra_dhw": {"available": 2, "locked": 1, "unavailable": 1},
         "thermal_disinfection_time_types": {"float": 1, "floatValue": 3},
         "programs": {
@@ -768,9 +858,16 @@ async def test_malformed_metadata_leaves_no_control(hass: HomeAssistant) -> None
         heater = hass.states.get(
             _entity_id(hass, "water_heater", _uid(DHW1, "water_heater"))
         )
-        # eco without advertised options: shown, but not offered or written.
+        # eco without advertised options (CIRCUIT-02): shown and offered with
+        # the modes of a heat pump; nothing written.
         assert heater.state == "eco"
-        assert "operation_list" not in heater.attributes
+        assert heater.attributes["operation_list"] == [
+            "off",
+            "low",
+            "high",
+            "ownprogram",
+            "eco",
+        ]
         assert not cloud.writes
     finally:
         await _teardown(hass, entry, stack)
@@ -859,5 +956,265 @@ async def test_controls_dialog_lists_the_usable_hot_water_settings(
             PROGRAM,
         ):
             assert path not in shown, path
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+# ------------------------------------------------- deep review CIRCUIT
+
+
+async def _dialog(hass: HomeAssistant, entry):
+    from custom_components.bosch_buderus_heating.config_flow import (
+        BoschBuderusOptionsFlow,
+    )
+
+    flow = BoschBuderusOptionsFlow(entry)
+    flow.hass = hass
+    opened = await flow.async_step_controls()
+    assert opened["step_id"] == "operate"
+    return flow
+
+
+def _dialog_config(result) -> dict[str, Any]:
+    schema = result["data_schema"].schema
+    selector = next(iter(schema.values()))
+    config: dict[str, Any] = selector.serialize()["selector"]["bosch-buderus-controls"]
+    return config
+
+
+async def test_eco_levels_keep_their_control_in_real_cycles(
+    hass: HomeAssistant,
+) -> None:
+    """CIRCUIT-02: a controller switched to eco elsewhere keeps the mode
+    control with the modes of a heat pump; once it leaves the eco levels,
+    only off, comfort and own program are offered."""
+    resources = tree()
+    resources[MODE] = replace(resources[MODE], value="eco")
+    cloud, clock_ = RrcCloud(resources), Clock()
+    entry, coordinator, _sleeps, stack = await _setup(hass, cloud, clock_)
+    try:
+        heater = _entity_id(hass, "water_heater", _uid(DHW1, "water_heater"))
+        select = _entity_id(hass, "select", _uid(MODE))
+        state = hass.states.get(heater)
+        assert state.state == "eco"
+        assert state.attributes["operation_list"] == [
+            "off",
+            "low",
+            "high",
+            "ownprogram",
+            "eco",
+        ]
+        assert hass.states.get(select).attributes["options"] == [
+            "off",
+            "low",
+            "high",
+            "ownprogram",
+            "eco",
+        ]
+        await _call(
+            hass, "water_heater", "set_operation_mode", heater, operation_mode="low"
+        )
+        assert cloud.written("PUT") == [("PUT", MODE, "low")]
+        await _call(hass, "select", "select_option", select, option="high")
+        assert cloud.written("PUT")[-1] == ("PUT", MODE, "high")
+        assert hass.states.get(heater).attributes["operation_list"] == [
+            "off",
+            "high",
+            "ownprogram",
+        ]
+        with pytest.raises(ServiceValidationError):
+            await _call(
+                hass, "water_heater", "set_operation_mode", heater, operation_mode="eco"
+            )
+        assert len(cloud.written("PUT")) == 2
+        assert coordinator.rrc_write_stats.snapshot("dhw")["writes_confirmed"] == 2
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+async def test_an_unavailable_hot_water_mode_has_no_water_heater(
+    hass: HomeAssistant,
+) -> None:
+    """CIRCUIT-10: not available, or malformed flags: no water heater; not
+    used: shown, and a change is refused unsent."""
+    resources = tree()
+    for name, flags in (
+        ("dhw2", {"available": False}),
+        ("dhw3", {"available": None}),
+        ("dhw4", {"used": False}),
+    ):
+        path = f"/dhwCircuits/{name}/operationMode"
+        payload: dict[str, Any] = {
+            "id": path,
+            "type": "stringValue",
+            "writeable": 1,
+            "value": resources[path].value,
+            "used": "true",
+            "available": "true",
+        }
+        for key, value in flags.items():
+            payload[key] = "maybe" if value is None else str(value).lower()
+        resources[path] = parse_resource(payload)
+    cloud, clock_ = RrcCloud(resources), Clock()
+    entry, _coordinator, _sleeps, stack = await _setup(hass, cloud, clock_)
+    try:
+
+        def heater(name: str) -> str | None:
+            return _entity_id(
+                hass, "water_heater", _uid(f"/dhwCircuits/{name}", "water_heater")
+            )
+
+        assert heater("dhw1") is not None
+        assert heater("dhw2") is None
+        assert heater("dhw3") is None
+        unused = heater("dhw4")
+        assert unused is not None
+        assert hass.states.get(unused).state == "ownprogram"
+        with pytest.raises(ServiceValidationError) as refused:
+            await _call(
+                hass,
+                "water_heater",
+                "set_operation_mode",
+                unused,
+                operation_mode="high",
+            )
+        assert refused.value.translation_key == "rrc_dhw_setting_unused"
+        assert cloud.written() == []
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+async def test_extra_hot_water_is_not_turned_on_without_a_duration(
+    hass: HomeAssistant,
+) -> None:
+    """CIRCUIT-07 in real cycles: a duration of 0 refuses unsent; after a
+    duration is set, the switch turns on; turning off always works."""
+    resources = tree()
+    resources[DURATION] = parse_resource(
+        {
+            "id": DURATION,
+            "type": "floatValue",
+            "writeable": 1,
+            "value": 0,
+            "unitOfMeasure": "mins",
+            "minValue": 0,
+            "maxValue": 2880,
+            "stepSize": 15,
+            "used": "true",
+            "available": "true",
+        }
+    )
+    cloud, clock_ = RrcCloud(resources), Clock()
+    entry, coordinator, _sleeps, stack = await _setup(hass, cloud, clock_)
+    try:
+        extra = _entity_id(hass, "switch", _uid(EXTRA))
+        with pytest.raises(ServiceValidationError) as refused:
+            await _call(hass, "switch", "turn_on", extra)
+        assert refused.value.translation_key == "rrc_extra_dhw_duration_zero"
+        assert cloud.written() == []
+        assert coordinator.rrc_write_stats.snapshot("dhw")["rejection_reasons"] == {
+            "rrc_extra_dhw_duration_zero": 1
+        }
+        duration = _entity_id(hass, "number", _uid(DURATION))
+        await _call(hass, "number", "set_value", duration, value=30)
+        await _call(hass, "switch", "turn_on", extra)
+        assert cloud.written("PUT") == [("PUT", DURATION, 30), ("PUT", EXTRA, "on")]
+        await _call(hass, "number", "set_value", duration, value=0)
+        await _call(hass, "switch", "turn_off", extra)
+        assert cloud.written("PUT")[-1] == ("PUT", EXTRA, "off")
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+async def test_dialog_writes_the_duration_before_extra_hot_water(
+    hass: HomeAssistant,
+) -> None:
+    """CIRCUIT-07/08: in the dialog the duration goes out first; a draft
+    that turns extra hot water on with 0 minutes sends nothing and says so."""
+    resources = tree()
+    resources[DURATION] = parse_resource(
+        {
+            "id": DURATION,
+            "type": "floatValue",
+            "writeable": 1,
+            "value": 0,
+            "unitOfMeasure": "mins",
+            "minValue": 0,
+            "maxValue": 2880,
+            "stepSize": 15,
+        }
+    )
+    cloud, clock_ = RrcCloud(resources), Clock()
+    entry, _coordinator, _sleeps, stack = await _setup(hass, cloud, clock_)
+    try:
+        flow = await _dialog(hass, entry)
+        refused = await flow.async_step_operate(
+            {"controls": {"changes": {EXTRA: "on"}}}
+        )
+        assert refused["errors"] == {"base": "controls_extra_dhw_duration_zero"}
+        assert cloud.written() == []
+        flow = await _dialog(hass, entry)
+        saved = await flow.async_step_operate(
+            {"controls": {"changes": {EXTRA: "on", DURATION: 45}}}
+        )
+        assert not saved["errors"]
+        assert cloud.written("PUT") == [("PUT", DURATION, 45), ("PUT", EXTRA, "on")]
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+async def test_dialog_offers_off_once_and_selects_it_for_off(
+    hass: HomeAssistant,
+) -> None:
+    """CIRCUIT-14: both spellings of off are one option, and a reading of
+    "off" selects "Off"; a setting the controller does not use is not
+    offered in the dialog."""
+    resources = tree()
+    high = resources[HIGH]
+    resources[HIGH] = replace(high, metadata=replace(high.metadata, used=False))
+    resources[MODE] = parse_resource(
+        {
+            "id": MODE,
+            "type": "stringValue",
+            "writeable": 1,
+            "value": "off",
+            "allowedValues": ["Off", "off", "high", "ownprogram"],
+        }
+    )
+    cloud, clock_ = RrcCloud(resources), Clock()
+    entry, _coordinator, _sleeps, stack = await _setup(hass, cloud, clock_)
+    try:
+        flow = await _dialog(hass, entry)
+        result = await flow.async_step_operate({"controls": {"action": "refresh"}})
+        assert not result["errors"]
+        config = _dialog_config(result)
+        assert HIGH not in {row["key"] for row in config["rows"]}
+        mode = next(row for row in config["rows"] if row["key"] == MODE)
+        assert [option["value"] for option in mode["options"]] == [
+            "Off",
+            "high",
+            "ownprogram",
+        ]
+        assert mode["value"] == "Off"
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+async def test_disinfection_time_in_five_minute_steps(hass: HomeAssistant) -> None:
+    """CIRCUIT-11: a time off the five-minute grid is refused unsent with a
+    message that names the step."""
+    cloud, clock_ = RrcCloud(tree()), Clock()
+    entry, _coordinator, _sleeps, stack = await _setup(
+        hass, cloud, clock_, enable=DISABLED
+    )
+    try:
+        start = _entity_id(hass, "time", _uid(TIME))
+        with pytest.raises(ServiceValidationError) as refused:
+            await _call(hass, "time", "set_value", start, time="06:03:00")
+        assert refused.value.translation_key == "rrc_time_of_day_step"
+        assert refused.value.translation_placeholders == {"step": "5"}
+        assert cloud.written() == []
+        await _call(hass, "time", "set_value", start, time="06:05:00")
+        assert cloud.written("PUT") == [("PUT", TIME, 365)]
     finally:
         await _teardown(hass, entry, stack)

@@ -618,6 +618,12 @@
       "controls_unconfirmed": "Poslednú zmenu sa nepodarilo potvrdiť. Na zariadení sa mohla už prejaviť. Predtým potvrdené zmeny zostávajú použité. Pred ďalším pokusom hodnoty znova načítajte.",
       "controls_failed": "Komunikácia so zariadením zlyhala. Posledná zmena sa mohla už prejaviť. Predtým potvrdené zmeny zostávajú použité. Pred ďalším pokusom hodnoty znova načítajte.",
       "controls_busy": "Zariadenie sa práve číta alebo ešte prebieha iná zmena. Táto zmena sa neodoslala. Predtým potvrdené zmeny zostávajú použité. Skúste to o chvíľu znova.",
+      "controls_locked": "Zariadenie momentálne zamyká toto nastavenie. Táto zmena sa neodoslala. Predtým potvrdené zmeny zostávajú použité. Skúste to neskôr.",
+      "controls_unused": "Zariadenie toto nastavenie momentálne nepoužíva. Táto zmena sa neodoslala. Predtým potvrdené zmeny zostávajú použité.",
+      "controls_curve_order": "Vykurovacia krivka a limity výstupnej teploty musia zostať v správnom poradí: počiatočný bod a minimálna výstupná teplota nie nad koncovým bodom ani nad maximálnou výstupnou teplotou. Táto zmena sa neodoslala. Predtým potvrdené zmeny zostávajú použité.",
+      "controls_weather_control_off": "Toto nastavenie vykurovacieho okruhu funguje len pri ekvitermickej regulácii a okruh momentálne používa iný spôsob regulácie. Táto zmena sa neodoslala. Predtým potvrdené zmeny zostávajú použité.",
+      "controls_extra_dhw_duration_zero": "Extra ohrev potrebuje trvanie dlhšie ako 0 minút. Najprv nastavte trvanie. Táto zmena sa neodoslala. Predtým potvrdené zmeny zostávajú použité.",
+      "controls_rejected": "Zariadenie túto hodnotu momentálne neprijíma. Táto zmena sa neodoslala. Predtým potvrdené zmeny zostávajú použité. Skontrolujte hodnotu alebo hodnoty znova načítajte.",
       "cloud_already_connected": "Cloudové pripojenie je už nakonfigurované. Na výber ďalších zariadení alebo na opätovné prihlásenie použite jeho nastavenia pripojenia. Druhé paralelné cloudové prihlásenie zatiaľ nie je podporované.",
       "cloud_setup_in_progress": "Iné nastavenie cloudu je už otvorené. Najprv dokončite alebo zatvorte toto okno.",
       "cloud_target_owned": "Vybraný systém alebo zariadenie patrí inému nakonfigurovanému záznamu alebo cloudovému pripojeniu. Pripojte ho znova cez jeho existujúci záznam.",
@@ -1058,8 +1064,17 @@
     "rrc_time_of_day_invalid": {
       "message": "Čas spustenia musí byť denný čas medzi 00:00 a 23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Zvoľte čas spustenia v krokoch po {step} minútach."
+    },
     "rrc_curve_order": {
-      "message": "Vykurovacia krivka a limity výstupnej teploty musia zostať v správnom poradí: počiatočný bod pod koncovým bodom, minimálna výstupná teplota nie nad maximálnou. Nič nebolo odoslané; najprv zmeňte druhý limit."
+      "message": "Vykurovacia krivka a limity výstupnej teploty musia zostať v správnom poradí: počiatočný bod a minimálna výstupná teplota nie nad koncovým bodom ani nad maximálnou výstupnou teplotou. Nič nebolo odoslané; najprv zmeňte druhý limit."
+    },
+    "rrc_weather_control_off": {
+      "message": "Toto nastavenie vykurovacieho okruhu funguje len pri ekvitermickej regulácii a okruh momentálne používa iný spôsob regulácie. Nič nebolo odoslané."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Extra ohrev potrebuje trvanie dlhšie ako 0 minút. Najprv nastavte trvanie. Nič nebolo odoslané."
     },
     "rrc_event_invalid_name": {
       "message": "Zadajte názov s dĺžkou 1 až 32 bajtov tlačiteľného textu (menej znakov pri znakoch s diakritikou alebo emoji)."
@@ -1384,14 +1399,6 @@
           "always_heating": "Vždy vykurovanie",
           "always_cooling": "Vždy chladenie",
           "automatic": "Automaticky"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Rýchlosť ohrevu",
-        "state": {
-          "slow": "Pomaly",
-          "normal": "Normálne",
-          "fast": "Rýchlo"
         }
       }
     },

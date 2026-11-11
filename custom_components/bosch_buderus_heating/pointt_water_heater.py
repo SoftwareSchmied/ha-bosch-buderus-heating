@@ -14,9 +14,10 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from . import rrc
 from .const import DOMAIN
 from .control import HeldCapabilities, async_set_control
-from .coordinator import BoschBuderusDataUpdateCoordinator, SnapshotSource
+from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness, SnapshotSource
 from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource, temperature
 from .ha_compat import temperature_members
@@ -135,9 +136,28 @@ class PointTWaterHeater(
             return _RRC_OPERATIONS
         return _OPERATIONS
 
+    def _mode_reading(self) -> Resource | None:
+        """The mode reading; on a room controller also one it does not use
+        now (``used`` false), which stays shown and refuses every change."""
+        resource = self._resource("operationMode")
+        if resource is not None or not context_of(self.coordinator).rrc_plant:
+            return resource
+        snapshot = (self.coordinator.data or {}).get(self.root + "/operationMode")
+        if (
+            not self.coordinator.last_update_success
+            or snapshot is None
+            or not snapshot.available
+            or snapshot.freshness is not Freshness.FRESH
+            or snapshot.resource.references
+            or not snapshot.resource.has_value
+            or rrc.flag_state(snapshot.resource) != "unused"
+        ):
+            return None
+        return snapshot.resource
+
     @property
     def _mode(self) -> Resource | None:
-        resource = self._resource("operationMode")
+        resource = self._mode_reading()
         if (
             resource is None
             or resource.metadata.resource_type != "stringValue"
@@ -145,6 +165,14 @@ class PointTWaterHeater(
             or not isinstance(resource.value, str)
             or resource.value not in self._operations
         ):
+            return None
+        if context_of(self.coordinator).rrc_plant and rrc.flag_state(resource) in (
+            "unavailable",
+            "invalid",
+        ):
+            # A room controller that does not offer the hot water mode, or
+            # reports malformed flags: no water heater (S11 keeps the other
+            # gateways as they were).
             return None
         return resource
 

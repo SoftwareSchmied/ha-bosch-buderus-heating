@@ -618,6 +618,12 @@
       "controls_unconfirmed": "Die letzte Änderung konnte nicht bestätigt werden. Sie kann an der Anlage bereits wirksam sein. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
       "controls_failed": "Die Verbindung zur Anlage ist fehlgeschlagen. Die letzte Änderung kann bereits wirksam sein. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
       "controls_busy": "Die Anlage wird gerade abgefragt oder eine andere Änderung läuft noch. Diese Änderung wurde nicht gesendet. Bereits bestätigte Änderungen bleiben bestehen. Versuche es gleich noch einmal.",
+      "controls_locked": "Die Anlage sperrt diese Einstellung gerade. Diese Änderung wurde nicht gesendet. Bereits bestätigte Änderungen bleiben bestehen. Versuche es später erneut.",
+      "controls_unused": "Die Anlage nutzt diese Einstellung gerade nicht. Diese Änderung wurde nicht gesendet. Bereits bestätigte Änderungen bleiben bestehen.",
+      "controls_curve_order": "Heizkurve und Vorlaufgrenzen müssen in der richtigen Reihenfolge bleiben: Fußpunkt und minimale Vorlauftemperatur nicht über dem Endpunkt und der maximalen Vorlauftemperatur. Diese Änderung wurde nicht gesendet. Bereits bestätigte Änderungen bleiben bestehen.",
+      "controls_weather_control_off": "Diese Einstellung des Heizkreises wirkt nur bei witterungsgeführter Regelung, und der Heizkreis nutzt gerade eine andere Regelung. Diese Änderung wurde nicht gesendet. Bereits bestätigte Änderungen bleiben bestehen.",
+      "controls_extra_dhw_duration_zero": "Extra-Warmwasser braucht eine Dauer von mehr als 0 Minuten. Stelle zuerst die Dauer ein. Diese Änderung wurde nicht gesendet. Bereits bestätigte Änderungen bleiben bestehen.",
+      "controls_rejected": "Die Anlage nimmt diesen Wert gerade nicht an. Diese Änderung wurde nicht gesendet. Bereits bestätigte Änderungen bleiben bestehen. Prüfe den Wert oder lade die Werte neu.",
       "cloud_already_connected": "Es ist bereits ein Cloud-Zugang eingerichtet. Über dessen Einstellungen kannst du weitere Geräte auswählen oder dich erneut anmelden. Eine zweite parallele Cloud-Anmeldung wird vorerst nicht unterstützt.",
       "cloud_setup_in_progress": "Eine andere Cloud-Einrichtung ist bereits geöffnet. Bitte beende oder schließe zuerst diesen Dialog.",
       "cloud_target_owned": "Eine ausgewählte Anlage oder ein Gerät gehört bereits zu einem anderen Eintrag oder Cloud-Zugang. Verbinde es über den vorhandenen Eintrag erneut.",
@@ -1058,8 +1064,17 @@
     "rrc_time_of_day_invalid": {
       "message": "Die Startzeit muss eine Uhrzeit zwischen 00:00 und 23:59 sein."
     },
+    "rrc_time_of_day_step": {
+      "message": "Wähle eine Startzeit in Schritten von {step} Minuten."
+    },
     "rrc_curve_order": {
-      "message": "Heizkurve und Vorlaufgrenzen müssen in der richtigen Reihenfolge bleiben: der Fußpunkt unter dem Endpunkt, die minimale Vorlauftemperatur nicht über der maximalen. Es wurde nichts gesendet; ändere zuerst die andere Grenze."
+      "message": "Heizkurve und Vorlaufgrenzen müssen in der richtigen Reihenfolge bleiben: Fußpunkt und minimale Vorlauftemperatur nicht über dem Endpunkt und der maximalen Vorlauftemperatur. Es wurde nichts gesendet; ändere zuerst die andere Grenze."
+    },
+    "rrc_weather_control_off": {
+      "message": "Diese Einstellung des Heizkreises wirkt nur bei witterungsgeführter Regelung, und der Heizkreis nutzt gerade eine andere Regelung. Es wurde nichts gesendet."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Extra-Warmwasser braucht eine Dauer von mehr als 0 Minuten. Stelle zuerst die Dauer ein. Es wurde nichts gesendet."
     },
     "rrc_event_invalid_name": {
       "message": "Gib einen Namen mit 1 bis 32 Byte druckbarem Text ein (mit Umlauten oder Emojis entsprechend weniger Zeichen)."
@@ -1384,14 +1399,6 @@
           "always_heating": "Immer heizen",
           "always_cooling": "Immer kühlen",
           "automatic": "Automatisch"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Aufheizgeschwindigkeit",
-        "state": {
-          "slow": "Langsam",
-          "normal": "Normal",
-          "fast": "Schnell"
         }
       }
     },

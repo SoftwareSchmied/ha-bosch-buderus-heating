@@ -213,6 +213,9 @@ def diagnostics(resources: Mapping[str, Resource]) -> dict[str, object]:
     """S12: counts and resource types of the hot water resources, no values."""
     circuits = 0
     advertised = 0
+    # An advertised empty list leaves the mode a reading; a missing key
+    # gives the fallback modes.
+    empty = 0
     extra: dict[str, int] = {}
     time_types: dict[str, int] = {}
     programs = {"count": 0, "valid": 0, "points": 0, "unknown_fields": 0}
@@ -221,6 +224,10 @@ def diagnostics(resources: Mapping[str, Resource]) -> dict[str, object]:
         if OPERATION_MODE.fullmatch(path):
             circuits += 1
             advertised += not resource.metadata.allowed_values_missing
+            empty += (
+                not resource.metadata.allowed_values_missing
+                and not resource.metadata.allowed_values
+            )
         elif EXTRA_DHW.fullmatch(path):
             metadata = resource.metadata
             state = (
@@ -249,6 +256,7 @@ def diagnostics(resources: Mapping[str, Resource]) -> dict[str, object]:
     return {
         "circuits": circuits,
         "operation_mode_options_advertised": advertised,
+        "operation_mode_options_empty": empty,
         "extra_dhw": dict(sorted(extra.items())),
         "thermal_disinfection_time_types": dict(sorted(time_types.items())),
         "programs": {**programs, "unknown_levels": unknown_levels},

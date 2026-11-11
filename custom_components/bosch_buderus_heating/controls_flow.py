@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
+from dataclasses import replace
 from datetime import datetime
 from typing import Any, override
 
@@ -35,9 +37,18 @@ from .pointt import (
     WriteValidationError,
 )
 from .resource_catalog import resource_name
+from .rrc_contract_circuit import (
+    control_path,
+    guard_paths,
+    limit_role,
+    weather_control_off,
+)
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
 from .writes import (
+    ContractRejected,
     ControlContext,
+    ControlLocked,
+    ControlUnused,
     EnumWritePolicy,
     NumberWritePolicy,
     WriteBusy,
@@ -116,6 +127,9 @@ def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resour
     context = context_of(coordinator)
     result = {}
     for path in coordinator.data or {}:
+        if context.rrc_plant and _weather_control_off(coordinator, path):
+            # Offered only while the circuit uses weather-compensated control.
+            continue
         if not (
             path.startswith(("/heatingCircuits/", "/dhwCircuits/"))
             or path
@@ -139,6 +153,115 @@ def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resour
         ):
             result[path] = resource
     return result
+
+
+def _weather_control_off(
+    coordinator: BoschBuderusDataUpdateCoordinator, path: str
+) -> bool:
+    control = control_path(path)
+    return control is not None and weather_control_off(
+        path, fresh_resource(coordinator, control)
+    )
+
+
+# Settings precede activation: a mode, a charge, extra hot water (after its
+# duration).
+_ACTIVATIONS = ("/operationMode", "/charge", "/extraDhw")
+# A heating curve point or supply limit: lowered lower limits first, then
+# raised upper ones, lowered upper ones and raised lower ones, so that each
+# write keeps every lower limit at or below every upper one.
+_LIMIT_PHASES = {
+    ("lower", True): 0,
+    ("upper", False): 1,
+    ("upper", True): 2,
+    ("lower", False): 3,
+}
+
+
+def _write_order(path: str, value: object, before: Resource) -> tuple[bool, int, str]:
+    """The position of a draft entry among the writes."""
+    role = limit_role(path)
+    phase = 0
+    if (
+        role is not None
+        and isinstance(value, int | float)
+        and isinstance(before.value, int | float)
+    ):
+        phase = _LIMIT_PHASES[role, value < before.value]
+    return path.endswith(_ACTIVATIONS), phase, path
+
+
+# The contracts whose rules are checked against the whole draft first.
+_DRAFT_CHECKED = frozenset({"circuit", "dhw"})
+# A contract refusal -> the message of the dialog; others get a general one.
+_REJECTED_ERRORS = {
+    "rrc_curve_order": "controls_curve_order",
+    "rrc_weather_control_off": "controls_weather_control_off",
+    "rrc_extra_dhw_duration_zero": "controls_extra_dhw_duration_zero",
+}
+
+
+def _refusal_error(err: WriteValidationError) -> str | None:
+    """The message of the dialog for a refusal that names its reason."""
+    if isinstance(err, ControlUnused):
+        return "controls_unused"
+    if isinstance(err, ControlLocked):
+        return "controls_locked"
+    if isinstance(err, ContractRejected):
+        return _REJECTED_ERRORS.get(err.reason, "controls_rejected")
+    return None
+
+
+def _guards(
+    coordinator: BoschBuderusDataUpdateCoordinator, path: str
+) -> tuple[Resource, ...]:
+    """S5: the readings a heating circuit setting is checked against (the
+    limits it is ordered against, the control strategy), read again with it
+    before the write; a change there sends nothing."""
+    if not context_of(coordinator).rrc_plant:
+        return ()
+    return tuple(
+        resource
+        for item in guard_paths(path)
+        if (resource := fresh_resource(coordinator, item)) is not None
+    )
+
+
+def _draft_readings(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    displayed: Mapping[str, Resource],
+    draft: Mapping[str, Any],
+) -> dict[str, Resource]:
+    """The current readings with the draft applied: the state after every
+    write, for the contract rules that compare settings."""
+    readings = {
+        path: resource
+        for path in coordinator.data or {}
+        if (resource := fresh_resource(coordinator, path)) is not None
+    }
+    for path, value in draft.items():
+        if path in displayed:
+            readings[path] = replace(displayed[path], value=value, has_value=True)
+    return readings
+
+
+def _offered_options(
+    path: str, options: tuple[str, ...], *, contract: bool
+) -> tuple[str, ...]:
+    """The options of a row; of two spellings a contract gives one option key
+    ("Off" and "off"), only the first."""
+    if not contract:
+        return options
+    keys: set[str] = set()
+    offered: list[str] = []
+    for raw in options:
+        key = rrc_contracts.option_key(path, raw)
+        if key is not None and key in keys:
+            continue
+        if key is not None:
+            keys.add(key)
+        offered.append(raw)
+    return tuple(offered)
 
 
 def _until_text(until: datetime | None) -> str:
@@ -312,17 +435,38 @@ class ControlsOptionsFlow(OptionsFlow):
                         continue
                     try:
                         validate_control_value(before, value, context_of(coordinator))
-                    except WriteValidationError:
-                        errors["base"] = "controls_invalid"
+                    except WriteValidationError as err:
+                        errors["base"] = _refusal_error(err) or "controls_invalid"
                         invalid.append(path)
                 if not errors:
-                    # Settings precede activation. Each write is individually
-                    # confirmed; the appliance API has no multi-setting commit.
+                    # The heating circuit and hot water rules that compare
+                    # settings, against the state after the whole draft:
+                    # nothing is written when the draft as a whole breaks
+                    # one (the write order keeps every step in order).
+                    readings = _draft_readings(
+                        coordinator, self._control_displayed, draft
+                    )
+                    for path, value in draft.items():
+                        if rrc_contracts.contract_for(path) not in _DRAFT_CHECKED:
+                            continue
+                        before = self._control_displayed[path]
+                        policy = assess_control(before, context_of(coordinator)).policy
+                        check = policy.value_check if policy is not None else None
+                        if check is not None and (
+                            reason := check(before, value, readings)
+                        ):
+                            errors["base"] = _REJECTED_ERRORS.get(
+                                reason, "controls_rejected"
+                            )
+                            invalid.append(path)
+                if not errors:
+                    # Each write is individually confirmed; the appliance API
+                    # has no multi-setting commit.
+                    shown_before = self._control_displayed
                     for path in sorted(
                         draft,
-                        key=lambda item: (
-                            item.endswith(("/operationMode", "/charge")),
-                            item,
+                        key=lambda item: _write_order(
+                            item, draft[item], shown_before[item]
                         ),
                     ):
                         before = self._control_displayed[path]
@@ -334,7 +478,10 @@ class ControlsOptionsFlow(OptionsFlow):
                         assert isinstance(policy, (EnumWritePolicy, NumberWritePolicy))
                         try:
                             confirmed = await coordinator.async_write_control(
-                                path, value, policy, expected=(before,)
+                                path,
+                                value,
+                                policy,
+                                expected=(before, *_guards(coordinator, path)),
                             )
                         except AuthenticationError:
                             errors["base"] = "controls_auth"
@@ -342,8 +489,10 @@ class ControlsOptionsFlow(OptionsFlow):
                             errors["base"] = "controls_rate_limit"
                         except WriteNotConfirmed:
                             errors["base"] = "controls_unconfirmed"
-                        except WriteValidationError:
-                            errors["base"] = "controls_changed"
+                        except WriteValidationError as err:
+                            # A lock or a contract rule says why; anything
+                            # else changed since it was shown.
+                            errors["base"] = _refusal_error(err) or "controls_changed"
                         except WriteBusy:
                             # Nothing was sent; the change can be tried again.
                             errors["base"] = "controls_busy"
@@ -423,6 +572,18 @@ class ControlsOptionsFlow(OptionsFlow):
                 )
                 for lang in translations
             }
+            offered = _offered_options(path, assessment.options, contract=contract)
+            value = resource.value
+            if (
+                contract
+                and isinstance(assessment.policy, EnumWritePolicy)
+                and value not in offered
+            ):
+                # A reading that confirms an option ("off" for "Off") selects it.
+                value = next(
+                    (raw for raw in offered if assessment.policy.confirms(value, raw)),
+                    value,
+                )
             options = [
                 {
                     "value": raw,
@@ -438,7 +599,7 @@ class ControlsOptionsFlow(OptionsFlow):
                         for lang in translations
                     },
                 }
-                for raw in assessment.options
+                for raw in offered
             ]
             rows.append(
                 {
@@ -448,7 +609,7 @@ class ControlsOptionsFlow(OptionsFlow):
                     "kind": "select"
                     if assessment.supports_select
                     else assessment.platform,
-                    "value": resource.value,
+                    "value": value,
                     "options": options,
                     "minimum": assessment.minimum,
                     "maximum": assessment.maximum,

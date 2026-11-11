@@ -127,8 +127,17 @@ async def test_unconfirmed_mode_is_reported_and_not_sent_again(hass) -> None:
     assert coordinator.client.put_resource_value.await_count == 1
 
 
-def test_low_without_options_is_shown_but_not_offered(hass) -> None:
+def test_low_without_options_offers_the_heat_pump_modes(hass) -> None:
+    """CIRCUIT-02: a controller in an eco level keeps its mode control."""
     _, _coordinator, heater, _ = _room_controller(hass, mode="low")
     assert heater.current_operation == "low"
-    assert heater.operation_list == []
+    assert heater.operation_list == ["off", "low", "high", "ownprogram", "eco"]
     assert DHW_OPERATION_MODE_POLICY is not OPERATION_MODE_POLICY
+
+
+def test_an_empty_list_of_modes_is_shown_but_not_offered(hass) -> None:
+    """An advertised empty list is no missing key: the mode stays a reading."""
+    _, _coordinator, heater, _ = _room_controller(hass, mode="low", missing=False)
+    assert heater.available
+    assert heater.current_operation == "low"
+    assert heater.operation_list == []

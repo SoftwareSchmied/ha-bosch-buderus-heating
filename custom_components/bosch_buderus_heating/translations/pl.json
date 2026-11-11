@@ -618,6 +618,12 @@
       "controls_unconfirmed": "Nie udało się potwierdzić ostatniej zmiany. Mogła już zacząć obowiązywać na urządzeniu. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
       "controls_failed": "Komunikacja z urządzeniem nie powiodła się. Ostatnia zmiana mogła już zacząć obowiązywać. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
       "controls_busy": "Urządzenie jest odczytywane albo trwa jeszcze inna zmiana. Ta zmiana nie została wysłana. Wcześniej potwierdzone zmiany pozostają zastosowane. Spróbuj ponownie za chwilę.",
+      "controls_locked": "Urządzenie obecnie blokuje to ustawienie. Ta zmiana nie została wysłana. Wcześniej potwierdzone zmiany pozostają zastosowane. Spróbuj ponownie później.",
+      "controls_unused": "Urządzenie w tej chwili nie korzysta z tego ustawienia. Ta zmiana nie została wysłana. Wcześniej potwierdzone zmiany pozostają zastosowane.",
+      "controls_curve_order": "Krzywa grzewcza i limity zasilania muszą zachować właściwą kolejność: punkt początkowy i minimalna temperatura zasilania nie wyżej niż punkt końcowy i maksymalna temperatura zasilania. Ta zmiana nie została wysłana. Wcześniej potwierdzone zmiany pozostają zastosowane.",
+      "controls_weather_control_off": "To ustawienie obiegu grzewczego działa tylko przy regulacji pogodowej, a obieg używa obecnie innego sposobu regulacji. Ta zmiana nie została wysłana. Wcześniej potwierdzone zmiany pozostają zastosowane.",
+      "controls_extra_dhw_duration_zero": "Dodatkowa ciepła woda wymaga czasu trwania dłuższego niż 0 minut. Najpierw ustaw czas trwania. Ta zmiana nie została wysłana. Wcześniej potwierdzone zmiany pozostają zastosowane.",
+      "controls_rejected": "Urządzenie w tej chwili nie przyjmuje tej wartości. Ta zmiana nie została wysłana. Wcześniej potwierdzone zmiany pozostają zastosowane. Sprawdź wartość lub wczytaj wartości ponownie.",
       "cloud_already_connected": "Połączenie z chmurą jest już skonfigurowane. Użyj jego ustawień połączenia, aby wybrać więcej urządzeń lub zalogować się ponownie. Drugie równoległe logowanie do chmury nie jest jeszcze obsługiwane.",
       "cloud_setup_in_progress": "Otwarta jest już inna konfiguracja chmury. Najpierw zakończ lub zamknij to okno.",
       "cloud_target_owned": "Wybrana instalacja lub urządzenie należy do innego skonfigurowanego wpisu albo połączenia z chmurą. Połącz je ponownie przez istniejący wpis.",
@@ -1058,8 +1064,17 @@
     "rrc_time_of_day_invalid": {
       "message": "Czas rozpoczęcia musi być godziną z przedziału od 00:00 do 23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Wybierz czas rozpoczęcia w krokach co {step} min."
+    },
     "rrc_curve_order": {
-      "message": "Krzywa grzewcza i limity zasilania muszą zachować właściwą kolejność: punkt początkowy poniżej punktu końcowego, minimalna temperatura zasilania nie wyższa niż maksymalna. Nic nie wysłano; najpierw zmień drugi limit."
+      "message": "Krzywa grzewcza i limity zasilania muszą zachować właściwą kolejność: punkt początkowy i minimalna temperatura zasilania nie wyżej niż punkt końcowy i maksymalna temperatura zasilania. Nic nie wysłano; najpierw zmień drugi limit."
+    },
+    "rrc_weather_control_off": {
+      "message": "To ustawienie obiegu grzewczego działa tylko przy regulacji pogodowej, a obieg używa obecnie innego sposobu regulacji. Nic nie wysłano."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Dodatkowa ciepła woda wymaga czasu trwania dłuższego niż 0 minut. Najpierw ustaw czas trwania. Nic nie wysłano."
     },
     "rrc_event_invalid_name": {
       "message": "Wpisz nazwę o długości od 1 do 32 bajtów drukowalnego tekstu (mniej znaków przy polskich znakach diakrytycznych lub emoji)."
@@ -1384,14 +1399,6 @@
           "always_heating": "Zawsze grzanie",
           "always_cooling": "Zawsze chłodzenie",
           "automatic": "Automatyczne"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Prędkość nagrzewania",
-        "state": {
-          "slow": "Wolna",
-          "normal": "Normalna",
-          "fast": "Szybka"
         }
       }
     },

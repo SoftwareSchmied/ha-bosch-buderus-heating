@@ -1,9 +1,11 @@
 """RRC 2.0 entities: heating circuit settings (W4, CT-G01, CT-G02).
 
 The selections and the switch of ``rrc_contract_circuit`` are generic
-controls. The numbers are added here: before a write they read the setting
-and, for a limit, its other limit freshly (S5) and send nothing when either
-changed; the contract then keeps the limits in order. ``operatingSeason``
+controls. The numbers are added here: before a write they read the setting,
+the circuit's control strategy and, for a limit, the limits it is ordered
+against freshly (S5) and send nothing when one of those changed; the
+contract then keeps the limits in order and refuses outside
+weather-compensated control. ``operatingSeason``
 becomes an enum sensor. Nothing is confirmed on a real controller yet.
 
 ``rrc_platforms.track`` calls the tracker of each platform listed in
@@ -48,7 +50,7 @@ from .rrc_contract_circuit import (
     OPERATING_SEASON,
     OPERATING_SEASON_NAMES,
     OPERATING_SEASONS,
-    counterpart,
+    guard_paths,
 )
 from .rrc_platforms import Tracker
 from .sensor import _semantic_key
@@ -100,8 +102,9 @@ def build_number_descriptions(
 
 
 class RrcCircuitNumber(BoschBuderusNumber):
-    """A circuit setting written after a fresh read of itself and, for a
-    heating curve or supply limit, of its other limit (S5)."""
+    """A circuit setting written after a fresh read of itself, of the
+    circuit's control strategy and, for a heating curve or supply limit, of
+    the limits it is ordered against (S5)."""
 
     def __init__(
         self,
@@ -109,17 +112,16 @@ class RrcCircuitNumber(BoschBuderusNumber):
         description: BoschBuderusNumberEntityDescription,
     ) -> None:
         super().__init__(coordinator, description)
-        other = counterpart(description.resource_path)
-        # O51: the other limit stays read as usual while this one is shown.
-        self.extra_resource_paths: tuple[str, ...] = (
-            (other,) if other is not None else ()
+        # O51: these stay read as usual while this setting is shown.
+        self.extra_resource_paths: tuple[str, ...] = guard_paths(
+            description.resource_path
         )
 
     async def async_set_native_value(self, value: float) -> None:
         path = self.entity_description.resource_path
         snapshots = self.coordinator.data or {}
         # The coordinator compares these with its readings and the gateway's
-        # before it writes; a limit the plant does not have is left out.
+        # before it writes; a reading the plant does not have is left out.
         expected = tuple(
             snapshots[item].resource
             for item in (path, *self.extra_resource_paths)

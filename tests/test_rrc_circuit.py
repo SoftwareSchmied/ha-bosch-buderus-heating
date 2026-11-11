@@ -43,7 +43,9 @@ from custom_components.bosch_buderus_heating.pointt import (
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from custom_components.bosch_buderus_heating.rrc_contract_circuit import (
     check_order,
-    counterpart,
+    check_weather_control,
+    counterparts,
+    guard_paths,
 )
 from custom_components.bosch_buderus_heating.writes import (
     GENERIC_CONTEXT,
@@ -133,17 +135,18 @@ def test_fixture_is_synthetic() -> None:
         (SUPPLY_MIN, "number", False, {"ui_step": 1.0}),
         (SUPPLY_MAX, "number", False, {"ui_step": 1.0}),
         (INFLUENCE, "number", False, {"ui_step": 1.0}),
-        (SUWI_THRESHOLD, "number", True, {"ui_step": 0.5}),
-        (NIGHT_THRESHOLD, "number", True, {"ui_step": 0.5}),
-        (SUWI_MODE, "select", True, {"options": ("off", "automatic")}),
-        (NIGHT_MODE, "select", True, {"options": ("off", "automatic")}),
+        # CIRCUIT-03: the summer/winter and night settings act only with
+        # weather-compensated control; disabled by default like the curve.
+        (SUWI_THRESHOLD, "number", False, {"ui_step": 0.5}),
+        (NIGHT_THRESHOLD, "number", False, {"ui_step": 0.5}),
+        (SUWI_MODE, "select", False, {"options": ("off", "automatic")}),
+        (NIGHT_MODE, "select", False, {"options": ("off", "automatic")}),
         (
             SEASON_MODE,
             "select",
             True,
             {"options": ("always_heating", "always_cooling", "automatic")},
         ),
-        (HEATUP, "select", True, {"options": ("slow", "normal", "fast")}),
         (OPTIMIZATION, "switch", True, {"options": ("on", "off")}),
     ],
 )
@@ -175,8 +178,10 @@ def test_settings_become_controls_only_on_an_rrc_plant(
         # S3: limits only from metadata.
         (f"{HC2}/maxSupply", "missing_bounds"),
         # P41: unavailable without used, or malformed flags.
-        (f"{HC2}/buildingHeatup", "rrc_unavailable"),
         (f"{HC2}/minSupply", "rrc_unavailable"),
+        # CIRCUIT-01: switched off by the manufacturer, never a control.
+        (HEATUP, "no_scalar_control_policy"),
+        (f"{HC2}/buildingHeatup", "no_scalar_control_policy"),
         # An advertised empty list keeps the strict rules (no fallback).
         (f"{HC2}/nightSwitchMode", "missing_options"),
         # S1: only writeable settings.
@@ -222,12 +227,22 @@ def test_used_but_unavailable_switch_is_shown_and_locked() -> None:
 
 
 def test_counterparts() -> None:
-    assert counterpart(CURVE_MIN) == CURVE_MAX
-    assert counterpart(CURVE_MAX) == CURVE_MIN
-    assert counterpart(SUPPLY_MIN) == SUPPLY_MAX
-    assert counterpart(f"{HC2}/maxSupply") == f"{HC2}/minSupply"
+    """CIRCUIT-04: each lower limit against both upper limits and back."""
+    assert counterparts(CURVE_MIN) == (CURVE_MAX, SUPPLY_MAX)
+    assert counterparts(SUPPLY_MIN) == (CURVE_MAX, SUPPLY_MAX)
+    assert counterparts(CURVE_MAX) == (CURVE_MIN, SUPPLY_MIN)
+    assert counterparts(f"{HC2}/maxSupply") == (
+        f"{HC2}/heatCurveMin",
+        f"{HC2}/minSupply",
+    )
     for path in (INFLUENCE, SUWI_THRESHOLD, "/heatingCircuits/hc0/heatCurveMin"):
-        assert counterpart(path) is None
+        assert counterparts(path) == ()
+    # The fresh reads before a write: the limits and the control strategy.
+    assert guard_paths(CURVE_MIN) == (CURVE_MAX, SUPPLY_MAX, f"{HC1}/control")
+    assert guard_paths(INFLUENCE) == (f"{HC1}/control",)
+    assert guard_paths(NIGHT_MODE) == (f"{HC1}/control",)
+    for path in (SEASON_MODE, OPTIMIZATION, HEATUP, SEASON):
+        assert guard_paths(path) == ()
 
 
 def _reading(path: str, value: object) -> Resource:
@@ -237,27 +252,99 @@ def _reading(path: str, value: object) -> Resource:
     return parse_resource(data)
 
 
+def _limits(**values: object) -> dict[str, Resource]:
+    names = {
+        "curve_min": CURVE_MIN,
+        "curve_max": CURVE_MAX,
+        "supply_min": SUPPLY_MIN,
+        "supply_max": SUPPLY_MAX,
+    }
+    return {names[key]: _reading(names[key], value) for key, value in values.items()}
+
+
 @pytest.mark.parametrize(
-    ("path", "value", "other", "result"),
+    ("path", "value", "related", "result"),
     [
-        (CURVE_MIN, 59.0, 60.0, None),
-        (CURVE_MIN, 60.0, 60.0, "rrc_curve_order"),  # strictly below
-        (CURVE_MIN, 61.0, 60.0, "rrc_curve_order"),
-        (CURVE_MAX, 26.0, 25.0, None),
-        (CURVE_MAX, 25.0, 25.0, "rrc_curve_order"),
-        (SUPPLY_MIN, 75.0, 75.0, None),  # not above
-        (SUPPLY_MIN, 76.0, 75.0, "rrc_curve_order"),
-        (SUPPLY_MAX, 20.0, 20.0, None),
-        (SUPPLY_MAX, 19.0, 20.0, "rrc_curve_order"),
-        (CURVE_MIN, 30.0, "high", "rrc_curve_order"),  # unknown other limit
-        (CURVE_MIN, 30.0, None, "rrc_curve_order"),  # no reading
-        (CURVE_MIN, 30.0, True, "rrc_curve_order"),
+        # Equal is allowed for every pair.
+        (CURVE_MIN, 60.0, _limits(curve_max=60.0, supply_max=75.0), None),
+        (CURVE_MIN, 61.0, _limits(curve_max=60.0, supply_max=75.0), "rrc_curve_order"),
+        (CURVE_MAX, 25.0, _limits(curve_min=25.0, supply_min=20.0), None),
+        (CURVE_MAX, 24.0, _limits(curve_min=25.0, supply_min=20.0), "rrc_curve_order"),
+        (SUPPLY_MIN, 60.0, _limits(curve_max=60.0, supply_max=75.0), None),
+        (SUPPLY_MAX, 25.0, _limits(curve_min=25.0, supply_min=20.0), None),
+        (SUPPLY_MAX, 19.0, _limits(curve_min=25.0, supply_min=20.0), "rrc_curve_order"),
+        # Cross limits: the base point not above the maximum supply
+        # temperature, the minimum supply temperature not above the end point.
+        (CURVE_MIN, 60.0, _limits(curve_max=75.0, supply_max=50.0), "rrc_curve_order"),
+        (SUPPLY_MIN, 40.0, _limits(curve_max=30.0, supply_max=75.0), "rrc_curve_order"),
+        (CURVE_MAX, 30.0, _limits(curve_min=25.0, supply_min=40.0), "rrc_curve_order"),
+        (SUPPLY_MAX, 30.0, _limits(curve_min=35.0, supply_min=20.0), "rrc_curve_order"),
+        # The two lower (and the two upper) limits do not depend on each other.
+        (
+            CURVE_MIN,
+            60.0,
+            _limits(curve_max=70.0, supply_max=70.0, supply_min=65.0),
+            None,
+        ),
+        # An unknown or missing reading of a present limit refuses.
+        (CURVE_MIN, 30.0, _limits(curve_max="high"), "rrc_curve_order"),
+        (CURVE_MIN, 30.0, _limits(curve_max=None), "rrc_curve_order"),
+        (CURVE_MIN, 30.0, _limits(supply_max=True), "rrc_curve_order"),
     ],
 )
-def test_order_check(path: str, value: float, other: object, result) -> None:
-    resource = circuit_tree()[path]
-    related = {counterpart(path): _reading(counterpart(path), other)}
-    assert check_order(resource, value, related) == result
+def test_order_check(
+    path: str, value: float, related: dict[str, Resource], result
+) -> None:
+    assert check_order(circuit_tree()[path], value, related) == result
+
+
+def _control(value: object, **extra: object) -> Resource:
+    data: dict[str, object] = {"id": f"{HC1}/control", "type": "stringValue"}
+    if value is not None:
+        data["value"] = value
+    return parse_resource({**data, **extra})
+
+
+@pytest.mark.parametrize(
+    ("control", "result"),
+    [
+        (_control("weather"), None),
+        (_control("room"), "rrc_weather_control_off"),
+        (_control("none"), "rrc_weather_control_off"),
+        (_control(None), "rrc_weather_control_off"),
+        (_control(1), "rrc_weather_control_off"),
+        # A circuit without a current reading keeps the setting.
+        (None, None),
+    ],
+)
+@pytest.mark.parametrize("path", [CURVE_MIN, INFLUENCE, SUWI_MODE, NIGHT_THRESHOLD])
+def test_weather_settings_need_weather_compensated_control(
+    path: str, control: Resource | None, result: str | None
+) -> None:
+    """CIRCUIT-03: only with ``control`` "weather"."""
+    related = {} if control is None else {control.path: control}
+    assert check_weather_control(circuit_tree()[path], 1.0, related) == result
+    policy = assess_control(circuit_tree()[path], RRC_CONTEXT).policy
+    assert policy is not None and policy.value_check is not None
+    reason = policy.value_check(circuit_tree()[path], 30.0, related)
+    assert reason == result
+
+
+def test_other_settings_do_not_depend_on_the_control_strategy() -> None:
+    for path in (SEASON_MODE, OPTIMIZATION):
+        policy = assess_control(circuit_tree()[path], RRC_CONTEXT).policy
+        assert policy is not None and policy.value_check is None
+    assert set(rrc_contract_circuit.WEATHER_SETTINGS) == {
+        "heatCurveMin",
+        "heatCurveMax",
+        "minSupply",
+        "maxSupply",
+        "roomInfluence",
+        "suWiSwitchMode",
+        "suWiThreshold",
+        "nightSwitchMode",
+        "nightThreshold",
+    }
 
 
 def test_order_check_without_the_other_limit_keeps_the_metadata_limits() -> None:
@@ -322,16 +409,24 @@ async def test_order_is_checked_before_sending() -> None:
     resource = circuit_tree()[CURVE_MIN]
     client = _Client(resource)
     service = WriteService(client, sleep=_no_sleep)  # type: ignore[arg-type]
-    with pytest.raises(ContractRejected) as refused:
-        await service.async_write_number(
-            "gw",
-            resource,
-            60.0,
-            rrc_contract_circuit.HEAT_CURVE_MIN_POLICY,
-            context=RRC_CONTEXT,
-            related={CURVE_MAX: circuit_tree()[CURVE_MAX]},
-        )
-    assert refused.value.translation_key == "rrc_curve_order"
+    for value, related, reason in (
+        (61.0, {CURVE_MAX: circuit_tree()[CURVE_MAX]}, "rrc_curve_order"),
+        (
+            30.0,
+            {f"{HC1}/control": _control("room")},
+            "rrc_weather_control_off",
+        ),
+    ):
+        with pytest.raises(ContractRejected) as refused:
+            await service.async_write_number(
+                "gw",
+                resource,
+                value,
+                rrc_contract_circuit.HEAT_CURVE_MIN_POLICY,
+                context=RRC_CONTEXT,
+                related=related,
+            )
+        assert refused.value.translation_key == reason
     assert client.puts == []
 
 
@@ -349,7 +444,18 @@ def test_translation_keys_exist_for_every_entity_and_option() -> None:
                 assert entry["state"][option]
     for season in rrc_contract_circuit.OPERATING_SEASONS:
         assert strings["entity"]["sensor"]["rrc_operating_season"]["state"][season]
-    assert strings["exceptions"]["rrc_curve_order"]["message"]
+    for key in ("rrc_curve_order", "rrc_weather_control_off"):
+        assert strings["exceptions"][key]["message"]
+    for key in (
+        "controls_curve_order",
+        "controls_weather_control_off",
+        "controls_locked",
+        "controls_unused",
+        "controls_rejected",
+    ):
+        assert strings["options"]["error"][key]
+    # CIRCUIT-01: the heat-up speed has no selection any more.
+    assert "rrc_building_heatup" not in strings["entity"]["select"]
 
 
 def test_diagnostics_are_value_free() -> None:
@@ -383,15 +489,17 @@ async def _setup(
     hass: HomeAssistant,
     cloud: RrcCloud,
     *,
-    enabled: tuple[str, ...] = (),
+    enabled: tuple[str | tuple[str, str], ...] = (),
     gateway: Gateway = RRC_GATEWAY,
 ):
     entry = _entry(hass)
     registry = er.async_get(hass)
-    for unique_id in enabled:
-        # The user enabled these entities (they are disabled by default).
+    for item in enabled:
+        # The user enabled these entities (they are disabled by default); a
+        # bare unique ID is a number.
+        domain, unique_id = item if isinstance(item, tuple) else ("number", item)
         registry.async_get_or_create(
-            "number", DOMAIN, unique_id, config_entry=entry, disabled_by=None
+            domain, DOMAIN, unique_id, config_entry=entry, disabled_by=None
         )
     clock = Clock()
     stack = cloud_patches(cloud, clock, gateway)
@@ -439,8 +547,10 @@ ALL_LIMITS = (uid(CURVE_MIN), uid(CURVE_MAX), uid(SUPPLY_MIN), uid(SUPPLY_MAX))
 
 
 async def test_entities_on_a_controller(hass: HomeAssistant) -> None:
-    """Numbers disabled by default (W4-E1), selections and the switch
-    enabled, all configuration; mirrors disabled; nothing for refusals."""
+    """Numbers disabled by default (W4-E1), as are the summer/winter and
+    night settings (CIRCUIT-03); the season mode and the switch enabled, all
+    configuration; mirrors disabled; nothing for refusals or the heat-up
+    speed (CIRCUIT-01)."""
     cloud = CircuitCloud(plant())
     entry, _coordinator, _sleeps, stack, _clock = await _setup(hass, cloud)
     registry = er.async_get(hass)
@@ -453,12 +563,11 @@ async def test_entities_on_a_controller(hass: HomeAssistant) -> None:
             ("number", uid(INFLUENCE)): True,
             ("number", uid(f"{HC2}/roomInfluence")): True,
             ("number", uid(f"{HC2}/heatCurveMin")): True,
-            ("number", uid(SUWI_THRESHOLD)): False,
-            ("number", uid(NIGHT_THRESHOLD)): False,
-            ("select", uid(SUWI_MODE)): False,
-            ("select", uid(NIGHT_MODE)): False,
+            ("number", uid(SUWI_THRESHOLD)): True,
+            ("number", uid(NIGHT_THRESHOLD)): True,
+            ("select", uid(SUWI_MODE)): True,
+            ("select", uid(NIGHT_MODE)): True,
             ("select", uid(SEASON_MODE)): False,
-            ("select", uid(HEATUP)): False,
             ("switch", uid(OPTIMIZATION)): False,
             ("switch", uid(f"{HC2}/setpointOptimization")): False,
         }
@@ -472,6 +581,7 @@ async def test_entities_on_a_controller(hass: HomeAssistant) -> None:
             ("select", f"{HC2}/seasonOptMode"),
             ("number", f"{HC2}/maxSupply"),
             ("number", f"{HC2}/minSupply"),
+            ("select", HEATUP),
             ("select", f"{HC2}/buildingHeatup"),
             ("select", f"{HC2}/nightSwitchMode"),
             ("number", f"{HC2}/suWiThreshold"),
@@ -500,9 +610,6 @@ async def test_entities_on_a_controller(hass: HomeAssistant) -> None:
             "automatic",
         ]
         assert season_mode.state == "automatic"
-        suwi = hass.states.get(_entity_id(hass, "select", uid(SUWI_MODE)))
-        assert suwi.state == "automatic"
-        assert suwi.attributes["options"] == ["off", "automatic"]
         switch = hass.states.get(_entity_id(hass, "switch", uid(OPTIMIZATION)))
         assert switch.state == "off"
         locked = hass.states.get(
@@ -522,8 +629,9 @@ async def test_entities_on_a_controller(hass: HomeAssistant) -> None:
             ).state
             == "idle"
         )
-        # Read-only mirrors of the controls: disabled diagnostic sensors.
-        for path in (SUWI_MODE, SUWI_THRESHOLD, CURVE_MIN):
+        # Read-only mirrors of the controls, and the heat-up speed that is
+        # only read: disabled diagnostic sensors.
+        for path in (SUWI_MODE, SUWI_THRESHOLD, CURVE_MIN, HEATUP):
             mirror_id = registry.async_get_entity_id(
                 "sensor", DOMAIN, f"gateway-one:{path.strip('/').replace('/', ':')}"
             )
@@ -538,6 +646,8 @@ async def test_entities_on_a_controller(hass: HomeAssistant) -> None:
 async def test_curve_writes_read_both_limits_and_keep_the_order(
     hass: HomeAssistant,
 ) -> None:
+    """CIRCUIT-04: each lower limit at or below each upper limit, equal
+    allowed; the limits and the control strategy are read first (S5)."""
     cloud = CircuitCloud(plant())
     entry, coordinator, sleeps, stack, _clock = await _setup(
         hass, cloud, enabled=ALL_LIMITS
@@ -546,44 +656,50 @@ async def test_curve_writes_read_both_limits_and_keep_the_order(
     curve_max = _entity_id(hass, "number", uid(CURVE_MAX))
     supply_min = _entity_id(hass, "number", uid(SUPPLY_MIN))
     supply_max = _entity_id(hass, "number", uid(SUPPLY_MAX))
+    control = f"{HC1}/control"
     try:
         assert hass.states.get(curve_max).state == "60.0"
         before = cloud.calls.copy()
         await _set_number(hass, curve_max, 65)
-        # S5: both limits read freshly, then exactly one PUT as a float.
-        assert cloud.calls["BULK", CURVE_MAX] == before["BULK", CURVE_MAX] + 1
-        assert cloud.calls["BULK", CURVE_MIN] == before["BULK", CURVE_MIN] + 1
+        # S5: the lower limits and the control strategy read freshly in the
+        # same request, then exactly one PUT as a float.
+        for path in (CURVE_MAX, CURVE_MIN, SUPPLY_MIN, control):
+            assert cloud.calls["BULK", path] == before["BULK", path] + 1, path
+        assert cloud.calls["BULK", SUPPLY_MAX] == before["BULK", SUPPLY_MAX]
         assert cloud.written("PUT") == [("PUT", CURVE_MAX, 65.0)]
         assert type(cloud.written("PUT")[0][2]) is float
         assert sleeps == [1.0]
         assert hass.states.get(curve_max).state == "65.0"
 
-        # The order: refused before sending.
+        # The order, with the cross limits: refused before sending.
         for entity_id, value in (
-            (curve_min, 65),
-            (curve_min, 70),
-            (curve_max, 25),
-            (supply_min, 76),
+            (curve_min, 66),  # above the end point
+            (curve_min, 76),  # above both upper limits
+            (supply_min, 66),  # above the end point (cross)
         ):
             with pytest.raises(ServiceValidationError) as refused:
                 await _set_number(hass, entity_id, value)
-            assert refused.value.translation_key == "rrc_curve_order"
+            assert refused.value.translation_key == "rrc_curve_order", entity_id
         assert len(cloud.written("PUT")) == 1
-        # Equal supply limits are allowed.
-        await _set_number(hass, supply_min, 75)
-        assert cloud.written("PUT")[-1] == ("PUT", SUPPLY_MIN, 75.0)
-        with pytest.raises(ServiceValidationError) as below:
-            await _set_number(hass, supply_max, 74)
-        assert below.value.translation_key == "rrc_curve_order"
-        assert len(cloud.written("PUT")) == 2
+        # Equal limits are allowed, also base point and end point.
+        await _set_number(hass, curve_min, 65)
+        assert cloud.written("PUT")[-1] == ("PUT", CURVE_MIN, 65.0)
+        for entity_id in (curve_max, supply_max):
+            # Below the base point, also for the maximum supply temperature.
+            with pytest.raises(ServiceValidationError) as below:
+                await _set_number(hass, entity_id, 64)
+            assert below.value.translation_key == "rrc_curve_order", entity_id
+        await _set_number(hass, supply_min, 65)
+        assert cloud.written("PUT")[-1] == ("PUT", SUPPLY_MIN, 65.0)
+        assert len(cloud.written("PUT")) == 3
 
         # The other limit changed on the gateway: nothing is sent, and the
         # new reading is taken over.
         cloud.tree[CURVE_MAX] = replace(cloud.tree[CURVE_MAX], value=50.0)
         with pytest.raises(ServiceValidationError) as changed:
-            await _set_number(hass, curve_min, 55)
+            await _set_number(hass, curve_min, 45)
         assert changed.value.translation_key == "write_validation_failed"
-        assert len(cloud.written("PUT")) == 2
+        assert len(cloud.written("PUT")) == 3
         await hass.async_block_till_done()
         assert coordinator.data[CURVE_MAX].resource.value == 50.0
         with pytest.raises(ServiceValidationError) as order:
@@ -592,18 +708,102 @@ async def test_curve_writes_read_both_limits_and_keep_the_order(
         await _set_number(hass, curve_min, 30)
         assert cloud.written("PUT")[-1] == ("PUT", CURVE_MIN, 30.0)
 
-        # A plant without the other limit keeps the metadata limits.
+        # A plant without one limit keeps the others and the metadata limits.
         del cloud.tree[SUPPLY_MAX]
         snapshots = dict(coordinator.data)
         del snapshots[SUPPLY_MAX]
         coordinator.async_set_updated_data(snapshots)
-        await _set_number(hass, supply_min, 90)
-        assert cloud.written("PUT")[-1] == ("PUT", SUPPLY_MIN, 90.0)
+        with pytest.raises(ServiceValidationError):
+            await _set_number(hass, supply_min, 51)
+        await _set_number(hass, supply_min, 50)
+        assert cloud.written("PUT")[-1] == ("PUT", SUPPLY_MIN, 50.0)
 
         stats = coordinator.rrc_write_stats.snapshot("circuit")
-        assert stats["writes_sent"] == 4
-        assert stats["writes_confirmed"] == 4
-        assert stats["rejection_reasons"]["rrc_curve_order"] == 6
+        assert stats["writes_sent"] == 5
+        assert stats["writes_confirmed"] == 5
+        assert stats["rejection_reasons"]["rrc_curve_order"] == 7
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+WEATHER_ENTITIES = (
+    *ALL_LIMITS,
+    uid(INFLUENCE),
+    uid(SUWI_THRESHOLD),
+    uid(NIGHT_THRESHOLD),
+    ("select", uid(SUWI_MODE)),
+    ("select", uid(NIGHT_MODE)),
+)
+
+
+async def test_weather_settings_only_with_weather_compensated_control(
+    hass: HomeAssistant,
+) -> None:
+    """CIRCUIT-03 in real cycles: in room control every setting of
+    weather-compensated control refuses unsent; the others stay."""
+    tree = plant()
+    control = f"{HC1}/control"
+    tree[control] = replace(tree[control], value="room")
+    cloud = CircuitCloud(tree)
+    entry, coordinator, _sleeps, stack, _clock = await _setup(
+        hass, cloud, enabled=WEATHER_ENTITIES
+    )
+    try:
+        for domain, path, value in (
+            ("number", CURVE_MIN, 26),
+            ("number", CURVE_MAX, 61),
+            ("number", SUPPLY_MIN, 21),
+            ("number", SUPPLY_MAX, 74),
+            ("number", INFLUENCE, 2),
+            ("number", SUWI_THRESHOLD, 17.5),
+            ("number", NIGHT_THRESHOLD, 10.5),
+            ("select", SUWI_MODE, "off"),
+            ("select", NIGHT_MODE, "automatic"),
+        ):
+            entity_id = _entity_id(hass, domain, uid(path))
+            with pytest.raises(ServiceValidationError) as refused:
+                if domain == "number":
+                    await _set_number(hass, entity_id, value)
+                else:
+                    await _select(hass, entity_id, value)
+            assert refused.value.translation_key == "rrc_weather_control_off", path
+        assert cloud.written() == []
+        # Settings outside weather-compensated control are not affected.
+        await _select(
+            hass, _entity_id(hass, "select", uid(SEASON_MODE)), "always_heating"
+        )
+        assert cloud.written("PUT") == [("PUT", SEASON_MODE, "always_heating")]
+        stats = coordinator.rrc_write_stats.snapshot("circuit")
+        assert stats["rejection_reasons"]["rrc_weather_control_off"] == 9
+
+        # Weather-compensated control again: the change is read before the
+        # write (S5), so the first write after it sends nothing and the
+        # next one goes out.
+        cloud.tree[control] = replace(cloud.tree[control], value="weather")
+        curve_max = _entity_id(hass, "number", uid(CURVE_MAX))
+        with pytest.raises(ServiceValidationError) as changed:
+            await _set_number(hass, curve_max, 61)
+        assert changed.value.translation_key == "write_validation_failed"
+        await hass.async_block_till_done()
+        await _set_number(hass, curve_max, 61)
+        await _select(hass, _entity_id(hass, "select", uid(SUWI_MODE)), "off")
+        assert cloud.written("PUT")[1:] == [
+            ("PUT", CURVE_MAX, 61.0),
+            ("PUT", SUWI_MODE, "off"),
+        ]
+
+        # Room control again, set after the last poll: the number reads it
+        # freshly and sends nothing; a later write is refused with the
+        # message.
+        cloud.tree[control] = replace(cloud.tree[control], value="room")
+        with pytest.raises(ServiceValidationError) as changed_again:
+            await _set_number(hass, curve_max, 62)
+        assert changed_again.value.translation_key == "write_validation_failed"
+        await hass.async_block_till_done()
+        with pytest.raises(ServiceValidationError) as off:
+            await _set_number(hass, curve_max, 62)
+        assert off.value.translation_key == "rrc_weather_control_off"
+        assert len(cloud.written("PUT")) == 3
     finally:
         await _teardown(hass, entry, stack)
 
@@ -635,7 +835,7 @@ async def test_room_influence_and_thresholds_through_the_setup(
 ) -> None:
     cloud = CircuitCloud(plant())
     entry, _coordinator, _sleeps, stack, _clock = await _setup(
-        hass, cloud, enabled=(uid(INFLUENCE),)
+        hass, cloud, enabled=(uid(INFLUENCE), uid(SUWI_THRESHOLD))
     )
     try:
         influence = _entity_id(hass, "number", uid(INFLUENCE))
@@ -660,14 +860,18 @@ async def test_selections_and_switch_write_once_with_read_back(
     hass: HomeAssistant,
 ) -> None:
     cloud = CircuitCloud(plant())
-    entry, _coordinator, sleeps, stack, _clock = await _setup(hass, cloud)
+    entry, _coordinator, sleeps, stack, _clock = await _setup(
+        hass, cloud, enabled=(("select", uid(SUWI_MODE)), ("select", uid(NIGHT_MODE)))
+    )
     try:
+        suwi = hass.states.get(_entity_id(hass, "select", uid(SUWI_MODE)))
+        assert suwi.state == "automatic"
+        assert suwi.attributes["options"] == ["off", "automatic"]
         await _select(hass, _entity_id(hass, "select", uid(SUWI_MODE)), "off")
         await _select(hass, _entity_id(hass, "select", uid(NIGHT_MODE)), "automatic")
         await _select(
             hass, _entity_id(hass, "select", uid(SEASON_MODE)), "always_heating"
         )
-        await _select(hass, _entity_id(hass, "select", uid(HEATUP)), "fast")
         await hass.services.async_call(
             "switch",
             "turn_on",
@@ -678,11 +882,13 @@ async def test_selections_and_switch_write_once_with_read_back(
             ("PUT", SUWI_MODE, "off"),
             ("PUT", NIGHT_MODE, "automatic"),
             ("PUT", SEASON_MODE, "always_heating"),
-            ("PUT", HEATUP, "fast"),
             ("PUT", OPTIMIZATION, "on"),
         ]
-        assert sleeps == [1.0] * 5
-        assert hass.states.get(_entity_id(hass, "select", uid(HEATUP))).state == "fast"
+        assert sleeps == [1.0] * 4
+        assert (
+            hass.states.get(_entity_id(hass, "select", uid(NIGHT_MODE))).state
+            == "automatic"
+        )
         # The empty season mode is never offered.
         with pytest.raises(ServiceValidationError):
             await _select(hass, _entity_id(hass, "select", uid(SEASON_MODE)), "")
@@ -699,7 +905,7 @@ async def test_selections_and_switch_write_once_with_read_back(
                 blocking=True,
             )
         assert locked.value.translation_key == "rrc_circuit_setting_locked"
-        assert len(cloud.written("PUT")) == 5
+        assert len(cloud.written("PUT")) == 4
     finally:
         await _teardown(hass, entry, stack)
 
@@ -712,7 +918,7 @@ async def test_write_failure_paths_in_real_cycles(hass: HomeAssistant) -> None:
         hass, cloud, enabled=ALL_LIMITS
     )
     curve_max = _entity_id(hass, "number", uid(CURVE_MAX))
-    heatup = _entity_id(hass, "select", uid(HEATUP))
+    season_mode = _entity_id(hass, "select", uid(SEASON_MODE))
 
     async def poll() -> None:
         clock.now += 3600
@@ -742,18 +948,18 @@ async def test_write_failure_paths_in_real_cycles(hass: HomeAssistant) -> None:
         del cloud.adopt_after[CURVE_MAX]
 
         # A timeout after an applied PUT: confirmed by reading alone.
-        cloud.timeout_after_write[HEATUP] = True
-        await _select(hass, heatup, "slow")
-        del cloud.timeout_after_write[HEATUP]
+        cloud.timeout_after_write[SEASON_MODE] = True
+        await _select(hass, season_mode, "always_cooling")
+        del cloud.timeout_after_write[SEASON_MODE]
 
         # A server error after the PUT, not applied: unconfirmed.
-        cloud.server_error_after_write[HEATUP] = False
+        cloud.server_error_after_write[SEASON_MODE] = False
         with pytest.raises(HomeAssistantError) as server:
-            await _select(hass, heatup, "fast")
+            await _select(hass, season_mode, "always_heating")
         assert server.value.translation_key == "rrc_write_pending_confirmation"
-        del cloud.server_error_after_write[HEATUP]
+        del cloud.server_error_after_write[SEASON_MODE]
         await poll()
-        assert hass.states.get(heatup).state == "slow"
+        assert hass.states.get(season_mode).state == "always_cooling"
 
         # 204 without effect: unconfirmed and never sent again.
         cloud.ignore_writes.add(CURVE_MAX)
@@ -765,11 +971,11 @@ async def test_write_failure_paths_in_real_cycles(hass: HomeAssistant) -> None:
         assert hass.states.get(curve_max).state == "72.0"
 
         # 403 on the PUT: refused, not repeated.
-        cloud.forbidden.add(HEATUP)
+        cloud.forbidden.add(SEASON_MODE)
         with pytest.raises(HomeAssistantError) as forbidden:
-            await _select(hass, heatup, "normal")
+            await _select(hass, season_mode, "automatic")
         assert forbidden.value.translation_key == "write_failed"
-        cloud.forbidden.discard(HEATUP)
+        cloud.forbidden.discard(SEASON_MODE)
         await poll()
 
         # 429 on the PUT: the brake stops the next write before sending.
@@ -784,7 +990,7 @@ async def test_write_failure_paths_in_real_cycles(hass: HomeAssistant) -> None:
 
         puts = [item[1] for item in cloud.written("PUT")]
         assert puts.count(CURVE_MAX) == 4
-        assert puts.count(HEATUP) == 3
+        assert puts.count(SEASON_MODE) == 3
         stats = coordinator.rrc_write_stats.snapshot("circuit")
         assert stats["writes_sent"] == 7
         assert stats["writes_confirmed"] == 2
@@ -879,8 +1085,15 @@ def test_generic_number_builder_leaves_the_circuit_numbers_out() -> None:
     assert rrc_circuit_entities.build_number_descriptions(tree, GENERIC_CONTEXT) == ()
 
 
-@pytest.mark.parametrize("name", rrc_contract_circuit.INSTALLER_SETTINGS)
+@pytest.mark.parametrize(
+    "name",
+    [
+        *rrc_contract_circuit.INSTALLER_SETTINGS,
+        *rrc_contract_circuit.READ_ONLY_SETTINGS,
+    ],
+)
 def test_installer_settings_have_no_policy(name: str) -> None:
+    """Also the heat-up speed (CIRCUIT-01), switched off by the maker."""
     resource = circuit_tree()[f"{HC1}/{name}"]
     assert resource.metadata.writable  # writeable on the wire, still refused
     assert assess_control(resource, RRC_CONTEXT).policy is None
@@ -905,3 +1118,107 @@ def test_operating_season_sensor_follows_p41(
         {SEASON: season}, RRC_CONTEXT
     )
     assert bool(built) is created
+
+
+# ------------------------------------------------------- controls dialog
+
+
+async def _dialog(hass: HomeAssistant, entry):
+    from custom_components.bosch_buderus_heating.config_flow import (
+        BoschBuderusOptionsFlow,
+    )
+
+    flow = BoschBuderusOptionsFlow(entry)
+    flow.hass = hass
+    opened = await flow.async_step_controls()
+    assert opened["step_id"] == "operate"
+    return flow, opened
+
+
+def _dialog_config(result) -> dict[str, Any]:
+    selector = next(iter(result["data_schema"].schema.values()))
+    config: dict[str, Any] = selector.serialize()["selector"]["bosch-buderus-controls"]
+    return config
+
+
+async def test_dialog_changes_several_limits_in_a_safe_order(
+    hass: HomeAssistant,
+) -> None:
+    """CIRCUIT-08: lowering base and end point in one step writes the base
+    point first; raising them writes the end point first."""
+    tree = plant()
+    tree[CURVE_MIN] = replace(tree[CURVE_MIN], value=40.0)
+    cloud = CircuitCloud(tree)
+    entry, _coordinator, _sleeps, stack, _clock = await _setup(hass, cloud)
+    try:
+        flow, _ = await _dialog(hass, entry)
+        # The end point below the current base point: in name order the end
+        # point would go first and be refused.
+        lowered = await flow.async_step_operate(
+            {"controls": {"changes": {CURVE_MAX: 35, CURVE_MIN: 30}}}
+        )
+        assert not lowered["errors"]
+        assert cloud.written("PUT") == [
+            ("PUT", CURVE_MIN, 30.0),
+            ("PUT", CURVE_MAX, 35.0),
+        ]
+        flow, _ = await _dialog(hass, entry)
+        raised = await flow.async_step_operate(
+            {"controls": {"changes": {CURVE_MIN: 70, SUPPLY_MIN: 70, CURVE_MAX: 80}}}
+        )
+        assert not raised["errors"]
+        assert cloud.written("PUT")[2:] == [
+            ("PUT", CURVE_MAX, 80.0),
+            ("PUT", CURVE_MIN, 70.0),
+            ("PUT", SUPPLY_MIN, 70.0),
+        ]
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+async def test_dialog_refuses_a_draft_out_of_order_unsent(
+    hass: HomeAssistant,
+) -> None:
+    """CIRCUIT-08: the order of the whole draft is checked before anything
+    is written, with its own message and the field marked."""
+    cloud = CircuitCloud(plant())
+    entry, _coordinator, _sleeps, stack, _clock = await _setup(hass, cloud)
+    try:
+        flow, _ = await _dialog(hass, entry)
+        result = await flow.async_step_operate(
+            {"controls": {"changes": {SEASON_MODE: "always_heating", CURVE_MIN: 70}}}
+        )
+        assert result["errors"] == {"base": "controls_curve_order"}
+        assert _dialog_config(result)["invalid"] == [CURVE_MIN]
+        assert cloud.written() == []
+        # Locked (used, not available): not offered in the dialog; a lock
+        # found only while writing has its own message
+        # (test_heating_controls::test_dialog_partial_write_failure_is_explicit).
+        _flow, opened = await _dialog(hass, entry)
+        keys = {row["key"] for row in _dialog_config(opened)["rows"]}
+        assert f"{HC2}/setpointOptimization" not in keys
+        assert cloud.written() == []
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+async def test_dialog_offers_weather_settings_only_with_weather_control(
+    hass: HomeAssistant,
+) -> None:
+    """CIRCUIT-03: in room control the dialog leaves the settings of
+    weather-compensated control out; the others stay."""
+    tree = plant()
+    control = f"{HC1}/control"
+    tree[control] = replace(tree[control], value="room")
+    cloud = CircuitCloud(tree)
+    entry, _coordinator, _sleeps, stack, _clock = await _setup(hass, cloud)
+    try:
+        _flow, opened = await _dialog(hass, entry)
+        keys = {row["key"] for row in _dialog_config(opened)["rows"]}
+        for name in rrc_contract_circuit.WEATHER_SETTINGS:
+            assert f"{HC1}/{name}" not in keys, name
+        assert {SEASON_MODE, OPTIMIZATION} <= keys
+        # hc2 reports no control strategy: its settings stay.
+        assert f"{HC2}/heatCurveMin" in keys
+    finally:
+        await _teardown(hass, entry, stack)

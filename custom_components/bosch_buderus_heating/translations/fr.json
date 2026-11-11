@@ -618,6 +618,12 @@
       "controls_unconfirmed": "La dernière modification n'a pas pu être confirmée. Elle a peut-être déjà pris effet sur l'appareil. Les modifications précédemment confirmées restent appliquées. Rechargez les valeurs avant de réessayer.",
       "controls_failed": "La communication avec l'appareil a échoué. La dernière modification a peut-être déjà pris effet. Les modifications précédemment confirmées restent appliquées. Rechargez les valeurs avant de réessayer.",
       "controls_busy": "L'appareil est en cours de lecture ou une autre modification est encore en cours. Cette modification n'a pas été envoyée. Les modifications précédemment confirmées restent appliquées. Réessayez dans un instant.",
+      "controls_locked": "L'appareil verrouille actuellement ce réglage. Cette modification n'a pas été envoyée. Les modifications précédemment confirmées restent appliquées. Réessayez plus tard.",
+      "controls_unused": "L'appareil n'utilise actuellement pas ce réglage. Cette modification n'a pas été envoyée. Les modifications précédemment confirmées restent appliquées.",
+      "controls_curve_order": "La courbe de chauffe et les limites de départ doivent rester dans l'ordre : le point de base et la température de départ minimale pas au-dessus du point final ni de la température de départ maximale. Cette modification n'a pas été envoyée. Les modifications précédemment confirmées restent appliquées.",
+      "controls_weather_control_off": "Ce réglage du circuit de chauffage n'agit qu'en régulation en fonction de la température extérieure, et le circuit utilise actuellement une autre régulation. Cette modification n'a pas été envoyée. Les modifications précédemment confirmées restent appliquées.",
+      "controls_extra_dhw_duration_zero": "L'eau chaude supplémentaire nécessite une durée de plus de 0 minute. Réglez d'abord la durée. Cette modification n'a pas été envoyée. Les modifications précédemment confirmées restent appliquées.",
+      "controls_rejected": "L'appareil n'accepte pas cette valeur pour le moment. Cette modification n'a pas été envoyée. Les modifications précédemment confirmées restent appliquées. Vérifiez la valeur ou rechargez les valeurs.",
       "cloud_already_connected": "Une connexion cloud est déjà configurée. Utilisez ses paramètres de connexion pour sélectionner d'autres appareils ou vous reconnecter. Une seconde connexion cloud en parallèle n'est pas encore prise en charge.",
       "cloud_setup_in_progress": "Une autre configuration cloud est déjà ouverte. Terminez ou fermez d'abord cette boîte de dialogue.",
       "cloud_target_owned": "Une installation ou un appareil sélectionné appartient à une autre entrée configurée ou à une autre connexion cloud. Reconnectez-le via son entrée existante.",
@@ -1058,8 +1064,17 @@
     "rrc_time_of_day_invalid": {
       "message": "L'heure de début doit être une heure de la journée comprise entre 00:00 et 23:59."
     },
+    "rrc_time_of_day_step": {
+      "message": "Choisissez une heure de début par pas de {step} minutes."
+    },
     "rrc_curve_order": {
-      "message": "La courbe de chauffe et les limites de départ doivent rester dans l'ordre : le point de base sous le point final, la température de départ minimale pas au-dessus de la maximale. Rien n'a été envoyé ; modifiez d'abord l'autre limite."
+      "message": "La courbe de chauffe et les limites de départ doivent rester dans l'ordre : le point de base et la température de départ minimale pas au-dessus du point final ni de la température de départ maximale. Rien n'a été envoyé ; modifiez d'abord l'autre limite."
+    },
+    "rrc_weather_control_off": {
+      "message": "Ce réglage du circuit de chauffage n'agit qu'en régulation en fonction de la température extérieure, et le circuit utilise actuellement une autre régulation. Rien n'a été envoyé."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "L'eau chaude supplémentaire nécessite une durée de plus de 0 minute. Réglez d'abord la durée. Rien n'a été envoyé."
     },
     "rrc_event_invalid_name": {
       "message": "Saisissez un nom de 1 à 32 octets de texte imprimable (moins de caractères avec des caractères accentués ou des emojis)."
@@ -1384,14 +1399,6 @@
           "always_heating": "Toujours chauffer",
           "always_cooling": "Toujours rafraîchir",
           "automatic": "Automatique"
-        }
-      },
-      "rrc_building_heatup": {
-        "name": "Vitesse de chauffe",
-        "state": {
-          "slow": "Lente",
-          "normal": "Normale",
-          "fast": "Rapide"
         }
       }
     },

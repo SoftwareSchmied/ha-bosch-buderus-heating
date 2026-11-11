@@ -5,20 +5,27 @@ table does. Everything here applies only to a recognised RRC controller
 (S11) and is expected from the controller's data shapes, still untested on
 a real one (CT-G03, CT-D06):
 
-- ``operationMode`` without ``allowedValues`` offers "Off", "high" and
-  "ownprogram"; "low" and "eco" mean different things depending on the heat
-  source and are offered only when the controller advertises them. "Off" is
-  written as such; a reading of "off" confirms it.
+- ``operationMode`` without an ``allowedValues`` key offers "Off", "high"
+  and "ownprogram"; "low" and "eco" mean different things depending on the
+  heat source and are offered only when the controller advertises them or
+  reads one of them now (then all five, the modes of a heat pump). An
+  advertised empty list leaves the mode a reading. "Off" is written as
+  such; a reading of "off" confirms it.
 - ``temperatureLevels/high`` uses the advertised step (S4), so that a value
   the controller would round is refused rather than never confirmed.
 - Extra hot water: a switch and an integer duration, each its own write.
+  The switch is not turned on while the duration is 0 or unknown
+  (``rrc_extra_dhw_duration_zero``); the controls dialog writes the
+  duration first.
 - Thermal disinfection: a switch, a weekday and a start time (integer
-  minutes after midnight, a time entity), disabled by default.
+  minutes after midnight in five-minute steps unless the controller
+  advertises a step, a time entity), disabled by default.
 - The hot water program is only read (``rrc_dhw``).
 """
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from types import MappingProxyType
 from typing import Final
@@ -57,6 +64,9 @@ _WEEKDAY_KEYS: Final = MappingProxyType(
     }
 )
 TIME_OF_DAY_INVALID: Final = "rrc_time_of_day_invalid"
+EXTRA_DURATION_ZERO: Final = "rrc_extra_dhw_duration_zero"
+_EXTRA_LEAF: Final = "/extraDhw"
+_DURATION_LEAF: Final = "/extraDhwDuration"
 
 
 def _time_of_day(
@@ -72,11 +82,43 @@ def _time_of_day(
     return None
 
 
+def duration_path(path: str) -> str:
+    """The duration that belongs to an extra hot water switch."""
+    return path.removesuffix(_EXTRA_LEAF) + _DURATION_LEAF
+
+
+def _extra_duration_set(
+    resource: Resource, value: JsonScalar, related: Mapping[str, Resource]
+) -> str | None:
+    """Extra hot water is turned on only with a duration above 0 minutes.
+
+    ``related`` holds the current readings; a circuit without a current
+    duration reading keeps the switch, a duration without a valid number
+    refuses as well. Turning it off is never refused.
+    """
+    if value != "on":
+        return None
+    duration = related.get(duration_path(resource.path))
+    if duration is None:
+        return None
+    minutes = duration.value if duration.has_value else None
+    if (
+        isinstance(minutes, bool)
+        or not isinstance(minutes, int | float)
+        or not math.isfinite(minutes)
+        or minutes <= 0
+    ):
+        return EXTRA_DURATION_ZERO
+    return None
+
+
 OPERATION_MODE_POLICY: Final = EnumWritePolicy(
     MODE,
     frozenset({"stringValue"}),
     frozenset({"Off", "off", "low", "high", "ownprogram", "eco"}),
     fallback_options=("Off", "high", "ownprogram"),
+    # The eco levels of a heat pump, while the controller reads one of them.
+    fallback_current_options=("low", "eco"),
     equivalent_reads=MappingProxyType(
         {"Off": frozenset({"off"}), "off": frozenset({"Off"})}
     ),
@@ -89,6 +131,7 @@ EXTRA_DHW_POLICY: Final = EnumWritePolicy(
     fallback_options=("on", "off"),
     on_value="on",
     off_value="off",
+    value_check=_extra_duration_set,
 )
 DISINFECTION_POLICY: Final = EnumWritePolicy(
     DISINFECTION,
@@ -117,11 +160,12 @@ EXTRA_DURATION_POLICY: Final = NumberWritePolicy(
     strict_grid=True,
     accepted_units=_MINUTES,
 )
-# Written by the time entity of ``rrc_dhw_entities``, not as a number.
+# Written by the time entity of ``rrc_dhw_entities``, not as a number; five
+# minute steps unless the controller advertises another step.
 DISINFECTION_TIME_POLICY: Final = NumberWritePolicy(
     DISINFECTION_TIME,
     "mins",
-    1.0,
+    5.0,
     enabled_by_default=False,
     wire_integer=True,
     strict_grid=True,

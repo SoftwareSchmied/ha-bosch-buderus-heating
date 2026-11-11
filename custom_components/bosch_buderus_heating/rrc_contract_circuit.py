@@ -6,13 +6,22 @@ exactly one write and a read-back. Nothing here is confirmed on a real
 controller yet ("expected, untested").
 
 - Heating curve, supply limits and room influence: numbers, configuration,
-  disabled by default (W4-E1). The lower limit stays below the upper one
-  (``rrc_curve_order``); the entities read both limits freshly first.
-- Summer/winter and night switching, season mode, heat-up speed: selections;
-  the season mode only with at least two offered modes, the empty one left
-  out. Setpoint optimization: a switch.
+  disabled by default (W4-E1). The base point and the minimum supply
+  temperature stay at or below the end point and the maximum supply
+  temperature (``rrc_curve_order``); the entities read these limits freshly
+  first.
+- Summer/winter and night switching with their thresholds: selections and
+  numbers, disabled by default. The season mode: a selection, only with at
+  least two offered modes, the empty one left out. Setpoint optimization: a
+  switch.
+- The heating curve, the supply limits, the room influence and the
+  summer/winter and night settings act only in weather-compensated control
+  (``control`` "weather"); in any other control a write is refused unsent
+  (``rrc_weather_control_off``).
 - ``control``, ``type`` and ``typeRoomControl`` are installer settings that
-  change the control strategy: shown at most, never written.
+  change the control strategy: shown at most, never written. The heat-up
+  speed (``buildingHeatup``) is switched off in the manufacturer's own app
+  and its effect is unknown: a disabled reading, never written.
 
 See ``docs/dev/rrc-packages.md`` for what each table does.
 """
@@ -41,27 +50,46 @@ def leaf(name: str) -> str:
     return rf"^{CIRCUIT}/{name}$"
 
 
-# Lower limit -> (upper limit, whether the lower one must stay strictly below).
-LIMIT_PAIRS: Final[Mapping[str, tuple[str, bool]]] = MappingProxyType(
-    {"heatCurveMin": ("heatCurveMax", True), "minSupply": ("maxSupply", False)}
-)
-_UPPER: Final = MappingProxyType(
-    {upper: (lower, strict) for lower, (upper, strict) in LIMIT_PAIRS.items()}
-)
+# Each lower limit stays at or below each upper limit: the base point and the
+# minimum supply temperature at or below the end point and the maximum supply
+# temperature. The two lower limits, and the two upper ones, do not depend on
+# each other.
+LOWER_LIMITS: Final = ("heatCurveMin", "minSupply")
+UPPER_LIMITS: Final = ("heatCurveMax", "maxSupply")
 CURVE_ORDER: Final = "rrc_curve_order"
+# The control strategy of a circuit; only "weather" (weather-compensated
+# control) uses the heating curve and the outdoor temperature settings.
+CONTROL_LEAF: Final = "control"
+WEATHER_CONTROL: Final = "weather"
+WEATHER_CONTROL_OFF: Final = "rrc_weather_control_off"
 
 
-def counterpart(path: str) -> str | None:
-    """The other limit of a heating curve or supply limit path."""
+def limit_role(path: str) -> str | None:
+    """``"lower"`` or ``"upper"`` for a heating curve point or supply limit."""
     match = _CIRCUIT_LEAF.fullmatch(path)
     if match is None:
         return None
-    base, name = match.groups()
-    if name in LIMIT_PAIRS:
-        return f"{base}/{LIMIT_PAIRS[name][0]}"
-    if name in _UPPER:
-        return f"{base}/{_UPPER[name][0]}"
+    if match[2] in LOWER_LIMITS:
+        return "lower"
+    if match[2] in UPPER_LIMITS:
+        return "upper"
     return None
+
+
+def counterparts(path: str) -> tuple[str, ...]:
+    """The limits a heating curve point or supply limit is ordered against."""
+    match = _CIRCUIT_LEAF.fullmatch(path)
+    role = limit_role(path)
+    if match is None or role is None:
+        return ()
+    others = UPPER_LIMITS if role == "lower" else LOWER_LIMITS
+    return tuple(f"{match[1]}/{name}" for name in others)
+
+
+def control_path(path: str) -> str | None:
+    """The control strategy of the circuit a setting belongs to."""
+    match = _CIRCUIT_LEAF.fullmatch(path)
+    return f"{match[1]}/{CONTROL_LEAF}" if match is not None else None
 
 
 def _number(resource: Resource) -> float | None:
@@ -79,34 +107,72 @@ def _number(resource: Resource) -> float | None:
 def check_order(
     resource: Resource, value: JsonScalar, related: Mapping[str, Resource]
 ) -> str | None:
-    """``heatCurveMin < heatCurveMax`` and ``minSupply <= maxSupply``.
+    """Each lower limit at or below each upper limit; equal is allowed.
 
     ``related`` holds the current readings, with the fresh reads of the
-    entity's ``expected`` (both limits). A plant without the other limit
-    keeps only the metadata limits; one whose other limit has no valid
-    number refuses, as the order cannot be checked.
+    entity's ``expected`` (all limits). A limit the plant does not have
+    leaves only the metadata limits; one without a valid number refuses, as
+    the order cannot be checked.
     """
-    other_path = counterpart(resource.path)
-    if (
-        other_path is None
-        or isinstance(value, bool)
-        or not isinstance(value, int | float)
-    ):
+    role = limit_role(resource.path)
+    if role is None or isinstance(value, bool) or not isinstance(value, int | float):
         return None
-    other = related.get(other_path)
-    if other is None:
+    for other_path in counterparts(resource.path):
+        other = related.get(other_path)
+        if other is None:
+            continue
+        bound = _number(other)
+        if bound is None:
+            return CURVE_ORDER
+        if (value > bound) if role == "lower" else (value < bound):
+            return CURVE_ORDER
+    return None
+
+
+def check_weather_control(
+    resource: Resource, _value: JsonScalar, related: Mapping[str, Resource]
+) -> str | None:
+    """A setting of weather-compensated control is written only while the
+    circuit uses it (``control`` "weather").
+
+    A circuit without a current ``control`` reading keeps the setting; any
+    other reading, also one without a value, refuses.
+    """
+    path = control_path(resource.path)
+    control = related.get(path) if path is not None else None
+    if control is None:
         return None
-    bound = _number(other)
-    if bound is None:
-        return CURVE_ORDER
-    name = resource.path.rsplit("/", 1)[-1]
-    if name in LIMIT_PAIRS:
-        strict = LIMIT_PAIRS[name][1]
-        ordered = value < bound if strict else value <= bound
-    else:
-        strict = _UPPER[name][1]
-        ordered = bound < value if strict else bound <= value
-    return None if ordered else CURVE_ORDER
+    if control.has_value and control.value == WEATHER_CONTROL:
+        return None
+    return WEATHER_CONTROL_OFF
+
+
+def weather_control_off(path: str, control: Resource | None) -> bool:
+    """Whether ``path`` is a setting of weather-compensated control that its
+    circuit does not use now (``control`` is the circuit's current reading)."""
+    match = _CIRCUIT_LEAF.fullmatch(path)
+    if match is None or match[2] not in WEATHER_SETTINGS or control is None:
+        return False
+    return check_weather_control(control, None, {control.path: control}) is not None
+
+
+def guard_paths(path: str) -> tuple[str, ...]:
+    """What a write of ``path`` is checked against and reads again first
+    (S5): the limits it is ordered against and, for a setting of
+    weather-compensated control, the circuit's control strategy."""
+    match = _CIRCUIT_LEAF.fullmatch(path)
+    if match is None or match[2] not in WEATHER_SETTINGS:
+        return ()
+    return (*counterparts(path), f"{match[1]}/{CONTROL_LEAF}")
+
+
+def check_limit(
+    resource: Resource, value: JsonScalar, related: Mapping[str, Resource]
+) -> str | None:
+    """Weather-compensated control first, then the order of the limits."""
+    return check_weather_control(resource, value, related) or check_order(
+        resource, value, related
+    )
 
 
 _STRING = frozenset({"stringValue"})
@@ -116,7 +182,16 @@ _STRING = frozenset({"stringValue"})
 _UNUSED_WRITABLE: Final = True
 SWITCH_MODES: Final = ("off", "automatic")
 SEASON_MODES: Final = ("always_heating", "always_cooling", "automatic")
-HEATUP_SPEEDS: Final = ("slow", "normal", "fast")
+# The settings of weather-compensated control (``check_weather_control``).
+WEATHER_SETTINGS: Final = (
+    *LOWER_LIMITS,
+    *UPPER_LIMITS,
+    "roomInfluence",
+    "suWiSwitchMode",
+    "suWiThreshold",
+    "nightSwitchMode",
+    "nightThreshold",
+)
 
 
 def _limit(name: str) -> NumberWritePolicy:
@@ -128,32 +203,39 @@ def _limit(name: str) -> NumberWritePolicy:
         enabled_by_default=False,
         strict_grid=True,
         create_entity=False,
-        value_check=check_order,
+        value_check=check_limit,
         unused_writable=_UNUSED_WRITABLE,
     )
 
 
 def _threshold(name: str) -> NumberWritePolicy:
-    """An outdoor temperature threshold: 0.5 K steps."""
+    """An outdoor temperature threshold: 0.5 K steps, disabled by default."""
     return NumberWritePolicy(
         leaf(name),
         "C",
         0.5,
+        enabled_by_default=False,
         strict_grid=True,
         create_entity=False,
+        value_check=check_weather_control,
         unused_writable=_UNUSED_WRITABLE,
     )
 
 
 def _mode(name: str, values: tuple[str, ...]) -> EnumWritePolicy:
-    """A selection of known modes; the expected shapes and #122 advertise
-    none, so the known modes are offered for a current known value."""
+    """A switching mode of weather-compensated control, disabled by default.
+
+    The expected shapes and #122 advertise no modes, so the known modes are
+    offered for a current known value.
+    """
     return EnumWritePolicy(
         leaf(name),
         _STRING,
         frozenset(values),
         known_only=True,
+        enabled_by_default=False,
         fallback_options=values,
+        value_check=check_weather_control,
         unused_writable=_UNUSED_WRITABLE,
     )
 
@@ -173,6 +255,7 @@ ROOM_INFLUENCE_POLICY: Final = NumberWritePolicy(
     accepted_units=frozenset({"", "other"}),
     ui_unit_override="",
     create_entity=False,
+    value_check=check_weather_control,
     unused_writable=_UNUSED_WRITABLE,
 )
 SUMMER_WINTER_THRESHOLD_POLICY: Final = _threshold("suWiThreshold")
@@ -189,7 +272,6 @@ NUMBER_POLICIES: Final = (
 
 SUMMER_WINTER_MODE_POLICY: Final = _mode("suWiSwitchMode", SWITCH_MODES)
 NIGHT_MODE_POLICY: Final = _mode("nightSwitchMode", SWITCH_MODES)
-BUILDING_HEATUP_POLICY: Final = _mode("buildingHeatup", HEATUP_SPEEDS)
 # Firmware 4.2.0 and later advertise the modes, sometimes with an empty one;
 # a single offered mode (#122) leaves the reading only.
 SEASON_MODE_POLICY: Final = EnumWritePolicy(
@@ -215,7 +297,6 @@ ENUM_POLICIES: Final = (
     SUMMER_WINTER_MODE_POLICY,
     NIGHT_MODE_POLICY,
     SEASON_MODE_POLICY,
-    BUILDING_HEATUP_POLICY,
     SETPOINT_OPTIMIZATION_POLICY,
 )
 
@@ -224,6 +305,9 @@ OPERATING_SEASONS: Final = ("heating", "cooling", "idle")
 # Installer settings that change the control strategy; no policy, so they
 # are never written (at most read).
 INSTALLER_SETTINGS: Final = ("control", "type", "typeRoomControl")
+# Switched off in the manufacturer's own app, which neither reads nor writes
+# it; its effect is unknown. No policy: a disabled reading at most.
+READ_ONLY_SETTINGS: Final = ("buildingHeatup",)
 
 # Leaf -> (German, English) name, translation key, icon.
 _SETTINGS: Final[Mapping[str, tuple[tuple[str, str], str, str]]] = MappingProxyType(
@@ -314,8 +398,7 @@ _PLATFORMS: Final = MappingProxyType(
             "number",
         ),
         **dict.fromkeys(
-            ("suWiSwitchMode", "nightSwitchMode", "seasonOptMode", "buildingHeatup"),
-            "select",
+            ("suWiSwitchMode", "nightSwitchMode", "seasonOptMode"), "select"
         ),
         "setpointOptimization": "switch",
     }
@@ -325,7 +408,6 @@ _OPTIONS: Final = MappingProxyType(
         "suWiSwitchMode": SWITCH_MODES,
         "nightSwitchMode": SWITCH_MODES,
         "seasonOptMode": SEASON_MODES,
-        "buildingHeatup": HEATUP_SPEEDS,
     }
 )
 SETTING_NAMES: Final = tuple(_SETTINGS)
@@ -387,6 +469,7 @@ CONTRACT = RrcContract(
             **{
                 leaf(name): MappingProxyType({_PLATFORMS[name]: key})
                 for name, (_, key, _) in _SETTINGS.items()
+                if name in _PLATFORMS
             },
             OPERATING_SEASON: MappingProxyType({"sensor": "rrc_operating_season"}),
         }
@@ -398,6 +481,9 @@ CONTRACT = RrcContract(
         }
     ),
     read_only_mirrors=tuple(leaf(name) for name in _SETTINGS),
+    # Without a policy the heat-up speed is still a known reading: its
+    # generic sensor (a disabled diagnostic mirror) stays.
+    understood=tuple(leaf(name) for name in READ_ONLY_SETTINGS),
     categories=_CATEGORIES,
     icons=MappingProxyType(
         {
