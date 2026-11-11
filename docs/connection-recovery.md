@@ -70,8 +70,8 @@ this is not a claim of complete compatibility with an unreleased HA version.
   `openid`, `offline_access`, `pointt.gateway.list`,
   `pointt.gateway.resource.dashapp` and `bacon`. If the sign-in service
   rejects this set (`invalid_scope`), the dialog shows a new link with the full
-  set of the official app, and later sign-ins of the running Home Assistant
-  use it at once. Existing sign-ins keep their permissions until the next
+  set of permissions, and later sign-ins of the running Home Assistant use it
+  at once. Existing sign-ins keep their permissions until the next
   sign-in. I have not yet confirmed the reduced set with a real sign-in; this
   must be tested manually before the release.
 - One unreadable entry of the gateway list, for example a new device without
@@ -207,7 +207,7 @@ Home-Assistant-Version.
   Integration nutzt: `openid`, `offline_access`, `pointt.gateway.list`,
   `pointt.gateway.resource.dashapp` und `bacon`. Lehnt der Anmeldedienst diese
   Auswahl ab (`invalid_scope`), zeigt der Dialog einen neuen Link mit dem
-  vollen Umfang der offiziellen App, und spätere Anmeldungen des laufenden Home
+  vollen Umfang der Berechtigungen, und spätere Anmeldungen des laufenden Home
   Assistant verwenden ihn sofort. Bestehende Anmeldungen behalten ihre
   Berechtigungen bis zur nächsten Anmeldung. Mit einer echten Anmeldung habe
   ich den reduzierten Umfang noch nicht bestätigt; das muss vor dem Release

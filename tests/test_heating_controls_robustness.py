@@ -125,7 +125,7 @@ async def test_cancelled_put_invalidates_only_affected_setting(hass):
 
 
 async def test_cancelled_write_before_its_put_keeps_the_setting(hass):
-    """M2: a cancellation before the PUT went out changes nothing."""
+    """A cancellation before the PUT went out changes nothing."""
     _, coordinator, entity = setup(hass)
     coordinator._write_service.async_write_number.side_effect = asyncio.CancelledError()
     with pytest.raises(asyncio.CancelledError):

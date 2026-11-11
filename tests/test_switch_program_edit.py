@@ -504,7 +504,7 @@ async def test_the_client_sends_a_raw_array_once() -> None:
 
 
 async def test_a_slow_check_before_the_program_write_sends_nothing(gateway):
-    """D25/M1: the fresh read leaves too little time for the PUT and its
+    """D25: the fresh read leaves too little time for the PUT and its
     read-back; nothing is sent, nothing is stale, nothing is counted."""
     from custom_components.bosch_buderus_heating.writes import WriteBusy
 
@@ -529,11 +529,11 @@ async def test_a_slow_check_before_the_program_write_sends_nothing(gateway):
     assert not coordinator._update_lock.locked()
 
 
-# Review of alpha.6 (N2, N3, N5) --------------------------------------------
+# Program type, use and unreadable answers ----------------------------------
 
 
 def test_a_program_whose_type_is_not_current_is_not_offered():
-    """N2: the circuit reports its program type; without a current reading
+    """The circuit reports its program type; without a current reading
     of it the program is not offered (no longer fail-open)."""
     assert MODE in READINGS
     assert edit_issue(HEATING, READINGS) == "program_mode_unknown"
@@ -551,7 +551,7 @@ def test_a_program_whose_type_is_not_current_is_not_offered():
 
 
 def test_a_program_the_gateway_does_not_use_is_not_offered():
-    """N3: consistent with the write, which refuses ``used: false``."""
+    """Consistent with the write, which refuses ``used: false``."""
     item = payload(PROGRAM_A) | {"used": "false"}
     assert edit_issue(resource(item), READINGS, program_mode=READINGS[MODE]) == (
         "not_used"
@@ -568,7 +568,7 @@ def test_a_program_the_gateway_does_not_use_is_not_offered():
     ],
 )
 async def test_the_program_type_is_read_again_before_the_put(gateway, mode, reason):
-    """N2: an absolute program, or one whose type cannot be read now, is
+    """An absolute program, or one whose type cannot be read now, is
     refused before sending, also when it changed after it was shown."""
     original = gateway.get
 
@@ -616,7 +616,7 @@ async def test_a_program_type_read_keeps_a_pause_or_sign_in(gateway, error):
     ],
 )
 async def test_an_unreadable_answer_to_the_put_is_resolved_by_reading(gateway, error):
-    """N5: a 2xx answer that cannot be read is no refusal; the week may be
+    """A 2xx answer that cannot be read is no refusal; the week may be
     stored, so only reading decides, and nothing is sent again."""
     original = gateway.put_raw
 

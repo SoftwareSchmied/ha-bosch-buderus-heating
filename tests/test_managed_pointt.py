@@ -647,7 +647,7 @@ def _started(owner, gateway="000123"):
 async def test_an_existing_icom_connection_switches_once_to_cloud_friendly(
     hass, caplog
 ):
-    """I1 (option B): once per connection, kept across restarts."""
+    """I1: once per connection, kept across restarts."""
     caplog.set_level("INFO", logger=MODULE)
     backend = Backend()
     backend.device_types = {"000123": "icom"}

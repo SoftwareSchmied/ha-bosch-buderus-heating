@@ -560,7 +560,7 @@ def icom_write_configuration(
             not options or mode not in options
         ):
             return None
-    # I2 (expected, untested): the rules of the manufacturer's app for the
+    # I2 (expected, untested on a real device): the rules for the
     # components of ``/system/info``. They only remove choices.
     components = icom_components(resources.get(SYSTEM_INFO_PATH))
     if hidden := components.hidden_circuits:

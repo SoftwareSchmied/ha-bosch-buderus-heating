@@ -365,7 +365,7 @@ async def test_a_program_name_cannot_add_markup_to_the_dialogs(hass, environment
     assert "![" not in active and "](" not in active and "://" not in active
 
 
-# Review of alpha.6 (N1, N3, N6, N9) ----------------------------------------
+# Refusals, level names and plain text -------------------------------------
 
 
 async def _to_confirm(flow):
@@ -396,7 +396,7 @@ async def _to_confirm(flow):
     ],
 )
 async def test_a_refusal_before_sending_names_its_cause(hass, environment, error, key):
-    """N6: the breaker, the program type and an invalid draft each have
+    """The breaker, the program type and an invalid draft each have
     their own text instead of "changed in the meantime"."""
     flow, gateway = make_flow(hass, environment)
     await _to_confirm(flow)
@@ -418,7 +418,7 @@ async def test_the_refusal_texts_exist(hass, enable_custom_integrations, languag
 
 
 async def test_hot_water_level_comfort_has_a_name(hass, environment):
-    """N9: a hot water level the program may use is shown translated, not
+    """A hot water level the program may use is shown translated, not
     as its key. (``eco_plus`` has a name as well; the strict program check
     accepts only level keys without an underscore.)"""
     from tests.switch_program_helpers import payload
@@ -436,7 +436,7 @@ async def test_hot_water_level_comfort_has_a_name(hass, environment):
 
 
 async def test_level_names_and_the_saved_program_are_plain_text(hass, environment):
-    """N1/D43: a program name in the success message and a level name from
+    """D43: a program name in the success message and a level name from
     the cloud in the dialog descriptions cannot add markup; the selection
     labels stay plain text."""
     from tests.switch_program_helpers import HC, payload
@@ -466,7 +466,7 @@ async def test_level_names_and_the_saved_program_are_plain_text(hass, environmen
 async def test_unused_programs_and_an_unknown_program_type_are_not_offered(
     hass, environment
 ):
-    """N2/N3 in the dialog: ``used: false`` and a program type without a
+    """In the dialog: ``used: false`` and a program type without a
     current reading keep the heating programs out of the list."""
     from tests.switch_program_helpers import MODE, payload
 

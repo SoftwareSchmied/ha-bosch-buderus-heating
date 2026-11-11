@@ -1456,7 +1456,7 @@
   "variants": {
     "hmi800_hp_light": {
       "observed": false,
-      "note": "Not observed on any system. Only the rule of the manufacturer's app: a component with Id 240 (HMI800 HP Light) keeps hcMode and assignedTo of a holiday unwritten.",
+      "note": "Not observed on any system. Expected rule, untested: a component with Id 240 (HMI800 HP Light) keeps hcMode and assignedTo of a holiday unwritten.",
       "system_info": {
         "id": "/system/info",
         "type": "systeminfo",
@@ -1474,7 +1474,7 @@
     },
     "circuit_token_16": {
       "observed": false,
-      "note": "Not observed. Rule of the manufacturer's app: with token 16, the heating circuits of the tokens 24-27 are not offered for a holiday.",
+      "note": "Not observed. Expected rule, untested: with token 16, the heating circuits of the tokens 24-27 are not offered for a holiday.",
       "system_info": {
         "id": "/system/info",
         "type": "systeminfo",

@@ -154,7 +154,7 @@ def edit_issue(
     if metadata.available is False:
         return "unavailable"
     if metadata.used is False:
-        # Consistent with the write, which refuses such a program (N3).
+        # Consistent with the write, which refuses such a program.
         return "not_used"
     mode_path = program_mode_path(resource.path)
     if mode_path is not None and (program_mode is not None or mode_path in resources):

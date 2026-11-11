@@ -22,18 +22,18 @@ ICOM_ACTIVE_PATTERN = re.compile(
     r"/(?:heatingCircuits/hc[1-9][0-9]*|dhwCircuits/dhw[1-9][0-9]*)/holidayMode/activated"
 )
 _CIRCUIT = re.compile(r"(?:hc|dhw)[1-9][0-9]*")
-# Units an iCom ``fixTemperature`` reports for degrees Celsius (APP-12).
+# Units an iCom ``fixTemperature`` reports for degrees Celsius.
 _CELSIUS_UNITS = frozenset({"C", "°C"})
 
 # I2: the component list of the system. Only the component type (``Id``) and
 # the token (``Tok``) are read, never a serial number, name or version.
 SYSTEM_INFO_PATH = "/system/info"
-# The manufacturer's app writes neither ``hcMode`` nor ``assignedTo`` of a
-# holiday when the system has this controller (HMI800 HP Light). Taken from
-# the app; no such system has been observed (expected, untested).
+# With this controller (HMI800 HP Light), neither ``hcMode`` nor
+# ``assignedTo`` of a holiday is expected to be changeable through the cloud;
+# no such system has been observed (expected, untested).
 HMI800_HP_LIGHT_ID = "240"
-# With token 16, the app hides the heating circuits of the tokens 24-27 from
-# the holiday circuits (expected, untested).
+# With token 16, the heating circuits of the tokens 24-27 are expected not
+# to be available for a holiday (expected, untested).
 CIRCUIT_REMOVAL_TOKEN = "16"
 CIRCUIT_TOKENS: Mapping[str, str] = {
     "24": "hc1",
@@ -59,7 +59,7 @@ class IcomComponents:
 
     @property
     def hidden_circuits(self) -> frozenset[str]:
-        """Heating circuits the app does not offer for a holiday."""
+        """Heating circuits not offered for a holiday (token 16)."""
         tokens = {token for _item, token in self.items if token is not None}
         if CIRCUIT_REMOVAL_TOKEN not in tokens:
             return frozenset()
@@ -218,7 +218,7 @@ def icom_modes(resource: Resource | None) -> tuple[str, ...]:
 def icom_temperature(resource: Resource | None) -> float | None:
     """ICOM fixTemperature is already expressed in degrees Celsius.
 
-    APP-12: ``°C`` is accepted like ``C``; a missing or other unit is not.
+    ``°C`` is accepted like ``C``; a missing or other unit is not.
     """
     if (
         resource is None

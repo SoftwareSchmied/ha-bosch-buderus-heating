@@ -82,5 +82,5 @@ class Gateway:
         self.payloads[path]["value"] = value
 
     def change(self, path: str, **fields: Any) -> None:
-        """A change made elsewhere (for example in the app)."""
+        """A change made elsewhere, outside Home Assistant."""
         self.payloads[path].update(fields)

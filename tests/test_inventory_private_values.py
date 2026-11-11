@@ -146,7 +146,7 @@ async def test_an_inventory_start_keeps_the_registered_serial_number(
 async def test_an_inventory_start_keeps_the_registered_model_and_versions(
     hass: HomeAssistant,
 ) -> None:
-    """N2 (review of alpha.6): the stored inventory keeps no values of
+    """The stored inventory keeps no values of
     ``/system/info``; a known device keeps its model and versions."""
     from homeassistant.helpers import device_registry as dr
 

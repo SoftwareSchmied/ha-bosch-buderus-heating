@@ -19,8 +19,8 @@ OAUTH_SCOPES_REDUCED: Final = (
     "pointt.gateway.resource.dashapp",
     "bacon",
 )
-# The full set of the official app. It is requested only once the sign-in
-# service rejects the reduced set (``invalid_scope``) in this process.
+# The full scope set. It is requested only once the sign-in service
+# rejects the reduced set (``invalid_scope``) in this process.
 OAUTH_SCOPES: Final = (
     "openid",
     "email",

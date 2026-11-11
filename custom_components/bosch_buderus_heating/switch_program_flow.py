@@ -74,7 +74,7 @@ _ISSUE_ERRORS = {
     "level_not_allowed": "switch_program_level",
 }
 _ACTIONS = ("edit", "copy", "review")
-# N6: the dialog error of a refusal before sending, by its token.
+# The dialog error of a refusal before sending, by its token.
 _REFUSAL_ERRORS = {
     "circuit_breaker": "switch_program_paused",
     "program_mode_unknown": "switch_program_mode",

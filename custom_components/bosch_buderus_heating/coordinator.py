@@ -1272,7 +1272,7 @@ class BoschBuderusDataUpdateCoordinator(
                 if isinstance(err, asyncio.CancelledError) and not (
                     window.sent or sent
                 ):
-                    # M2: stopped before the request went out (a slow guard
+                    # Stopped before the request went out (a slow guard
                     # read at the deadline, or a shutdown): nothing changed
                     # on the gateway, so the reading stays as it is.
                     raise
@@ -1509,7 +1509,7 @@ class BoschBuderusDataUpdateCoordinator(
                     window.sent
                     or self.rrc_write_stats.sent_count(contract) > sent_before
                 ):
-                    # M2: stopped before the request went out; nothing was
+                    # Stopped before the request went out; nothing was
                     # sent, nothing is unconfirmed, the reading stays.
                     raise
                 if isinstance(err, RateLimited):
@@ -1697,7 +1697,7 @@ class BoschBuderusDataUpdateCoordinator(
                 raise
             except asyncio.CancelledError:
                 if not window.sent:
-                    raise  # M2: stopped before the request went out
+                    raise  # Stopped before the request went out
                 # D25: stopped at the deadline (or on shutdown); the request
                 # may have been sent. Read the list with the next cycle.
                 self._record_capability(
@@ -1832,7 +1832,7 @@ class BoschBuderusDataUpdateCoordinator(
             if now < self._cloud_backoff_until:
                 raise RateLimited(self._cloud_backoff_until - now)
             if now < self._circuit_open_until:
-                # N6: its own token, so the dialog says writing is paused.
+                # Its own token, so the dialog says writing is paused.
                 raise ContractRejected("circuit_breaker")
             snapshot = (self.data or {}).get(path)
             if snapshot is None or not _snapshot_is_fresh(snapshot):

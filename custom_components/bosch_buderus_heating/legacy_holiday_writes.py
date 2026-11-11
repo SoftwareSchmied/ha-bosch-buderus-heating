@@ -178,7 +178,7 @@ class IcomHolidayWriteService:
         if components.hmi800_hp_light and any(
             field in HMI800_FIXED_FIELDS for field, _path, _value in steps
         ):
-            # Expected, untested: the app never writes these fields there.
+            # Expected, untested: these fields are not changeable there.
             raise WriteValidationError(
                 "This controller keeps the holiday circuits and heating mode"
             )

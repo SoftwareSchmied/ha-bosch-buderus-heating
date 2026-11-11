@@ -405,7 +405,7 @@ their IDs. The differences are listed here, and the synthetic fixture
 [`icom/gateway-shapes.json`](../tests/fixtures/contracts/icom/gateway-shapes.json)
 holds these shapes with constructed values.
 
-**Present on the real gateway, missing from R199 to R243 (I4):**
+**Present on the real gateway, missing from R199 to R243:**
 
 | Path | Shape on that gateway | Note |
 |---|---|---|
@@ -424,7 +424,7 @@ holds these shapes with constructed values.
 | `/heatingCircuits/hc1/suWiThreshold` | float, °C, writable with limits | like R104 (connectkey) |
 | `/heatingCircuits/hc1/supplyTemperatureSetpoint` | float, °C, read-only | no entity |
 
-**In R199 to R243, but not answered by that gateway (I5):**
+**In R199 to R243, but not answered by that gateway:**
 
 | Row | Path | Answer |
 |---|---|---|

@@ -290,7 +290,7 @@ async def test_holiday_list_at_its_deadline_is_read_with_the_next_cycle(hass):
     assert not coordinator._update_lock.locked()
 
 
-# M1/M2 (review of alpha.6): the time left is checked before the request.
+# D25: the time left is checked before the request.
 
 
 class _Clock:
@@ -360,7 +360,7 @@ async def test_a_slow_check_before_a_write_sends_nothing(
 
 
 async def test_a_write_stopped_before_its_request_keeps_the_reading(hass):
-    """M2: the deadline ends the transaction before the PUT went out."""
+    """The deadline ends the transaction before the PUT went out."""
     _, coordinator, entity = setup(hass)
     cloud = Cloud(coordinator)
     service = coordinator._write_service
@@ -410,7 +410,7 @@ async def test_a_slow_rrc_preflight_sends_nothing(environment, window_clock):
 async def test_an_rrc_operation_stopped_before_its_request_counts_nothing(
     environment,
 ):
-    """M2: no stale reading and no unconfirmed write without a send."""
+    """No stale reading and no unconfirmed write without a send."""
     coordinator, client, _ = environment
     wire_rrc(environment)
     original = client.get_resource.side_effect
@@ -502,7 +502,7 @@ async def test_a_slow_holiday_check_sends_nothing(hass, window_clock, operation)
 
 
 async def test_a_holiday_stopped_before_its_request_is_not_read_again(hass):
-    """M2: the deadline ends the holiday change before its request."""
+    """The deadline ends the holiday change before its request."""
     from custom_components.bosch_buderus_heating.calendar import (
         BoschBuderusHolidayCalendar,
     )

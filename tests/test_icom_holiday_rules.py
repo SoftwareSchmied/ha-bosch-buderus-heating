@@ -1,7 +1,7 @@
 """I2: iCom safeguards; holiday pre-check, component rules, units, climate.
 
-The component rules come from the manufacturer's app; no system with a
-HMI800 HP Light or with token 16 has been observed (expected, untested).
+No system with a HMI800 HP Light or with token 16 has been observed; the
+component rules are expected, untested on a real device.
 """
 
 from __future__ import annotations
@@ -389,7 +389,7 @@ async def test_other_control_types_keep_the_climate_controls(
 
 
 async def test_the_read_only_lock_needs_a_reading_to_end(hass: HomeAssistant) -> None:
-    """Decision 6: a stale or failed ``controlType`` reading never lifts the
+    """A stale or failed ``controlType`` reading never lifts the
     lock silently; only a current reading of another control type does."""
     from dataclasses import replace
 

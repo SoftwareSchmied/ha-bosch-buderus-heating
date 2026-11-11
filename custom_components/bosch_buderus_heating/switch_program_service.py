@@ -127,7 +127,7 @@ class SwitchProgramService:
                 raise ControlUnused("The gateway does not use this program now")
             mode = program_mode
             if reads_mode and mode_path is not None:
-                # N2: the program type is read again with the program; an
+                # The program type is read again with the program; an
                 # absolute program or one whose type cannot be read is never
                 # written as a level program.
                 mode = await self._read_mode(gateway_id, mode_path)
@@ -162,7 +162,7 @@ class SwitchProgramService:
             except ProtocolError:
                 # The gateway accepted the request (2xx) but its answer could
                 # not be read (not JSON, too large, an unexpected envelope):
-                # only reading tells whether the week was stored (N5).
+                # only reading tells whether the week was stored.
                 return
 
         async def confirm(_current: Resource) -> Resource | None:
