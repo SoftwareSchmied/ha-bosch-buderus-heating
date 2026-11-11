@@ -13,6 +13,7 @@ from dataclasses import replace
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
+import pytest
 from homeassistant.helpers import entity_registry as er
 from homeassistant.setup import async_setup_component
 
@@ -22,6 +23,10 @@ from tests.test_entry import _entry
 from tests.test_rrc_zone_climate import GATEWAY, OVERRIDE, path, zone_cloud
 
 PACKAGE = "custom_components.bosch_buderus_heating"
+
+# The browser part runs up to 120 s on its own; with the Home Assistant start
+# and the frontend this test needs more than the suite's 120 s limit (D49).
+pytestmark = pytest.mark.timeout(300)
 
 
 async def test_zone_climate_frontend(

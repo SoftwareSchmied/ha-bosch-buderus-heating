@@ -94,7 +94,18 @@ async function openMoreInfo(page, index) {
 
     // A new target in the mode auto: the temporary setpoint, via the dialog.
     dialog = await openMoreInfo(page, 1);
-    const minus = dialog.getByRole("button", { name: /decrease/i });
+    // The minus button of the target: by its name where the frontend gives
+    // it one, else as the first of the two target buttons (minus, plus).
+    const minus = dialog
+      .getByRole("button", { name: /decrease/i })
+      .or(
+        dialog
+          .locator(
+            "ha-state-control-climate-temperature .buttons ha-outlined-icon-button",
+          )
+          .first(),
+      )
+      .first();
     for (let step = 0; step < 8; step += 1) {
       await minus.click();
     }

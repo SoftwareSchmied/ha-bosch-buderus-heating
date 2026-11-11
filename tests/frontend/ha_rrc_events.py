@@ -11,11 +11,16 @@ import os
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
+import pytest
 from homeassistant.setup import async_setup_component
 
 from tests.helpers.rrc_absence import EventCloud, entity_id, setup, teardown
 
 CALENDAR = "gateway-one:events:calendar"
+
+# The browser part runs up to 120 s on its own; with the Home Assistant start
+# and the frontend this test needs more than the suite's 120 s limit (D49).
+pytestmark = pytest.mark.timeout(300)
 
 
 async def test_events_through_the_frontend(
