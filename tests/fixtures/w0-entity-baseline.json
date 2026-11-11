@@ -673,7 +673,10 @@
     },
     {
      "capabilities": {
-      "hvac_modes": [],
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
       "max_temp": 30.0,
       "min_temp": 5.0,
       "target_temp_step": 0.5
@@ -730,7 +733,10 @@
     },
     {
      "capabilities": {
-      "hvac_modes": [],
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
       "max_temp": 30.0,
       "min_temp": 5.0,
       "target_temp_step": 0.5
@@ -787,7 +793,10 @@
     },
     {
      "capabilities": {
-      "hvac_modes": [],
+      "hvac_modes": [
+       "heat",
+       "auto"
+      ],
       "max_temp": 30.0,
       "min_temp": 5.0,
       "target_temp_step": 0.5
