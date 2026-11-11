@@ -16,8 +16,8 @@
 | Portuguese (Portugal) | `pt` | Draft, awaiting review by a native speaker | [`glossary/pt.md`](glossary/pt.md) |
 | Dutch | `nl` | Draft, awaiting review by a native speaker | [`glossary/nl.md`](glossary/nl.md) |
 | Polish | `pl` | Draft, awaiting review by a native speaker | [`glossary/pl.md`](glossary/pl.md) |
-| Czech | `cs` | Reviewed (2026-11-10); room controller texts of 0.9.0-alpha.5 are drafts awaiting review | [`glossary/cs.md`](glossary/cs.md) |
-| Slovak | `sk` | Reviewed (2026-11-10); room controller texts of 0.9.0-alpha.5 are drafts awaiting review | [`glossary/sk.md`](glossary/sk.md) |
+| Czech | `cs` | Reviewed (2026-11-10); the texts added in 0.9.0-alpha.5 and 0.9.0-alpha.6 are drafts awaiting review | [`glossary/cs.md`](glossary/cs.md) |
+| Slovak | `sk` | Reviewed (2026-11-10); the texts added in 0.9.0-alpha.5 and 0.9.0-alpha.6 are drafts awaiting review | [`glossary/sk.md`](glossary/sk.md) |
 | Greek | `el` | Draft, awaiting review by a native speaker | [`glossary/el.md`](glossary/el.md) |
 | Bulgarian | `bg` | Draft, awaiting review by a native speaker | [`glossary/bg.md`](glossary/bg.md) |
 | Croatian | `hr` | Draft, awaiting review by a native speaker | [`glossary/hr.md`](glossary/hr.md) |
@@ -28,9 +28,12 @@ Czech and Slovak were reviewed on 2026-11-10. That review
 covers the texts up to then; the room controller texts added in
 0.9.0-alpha.5 (zones, programs, absences, hot water, heating circuit,
 system, faults, energy history and radio devices) are drafts in Czech and
-Slovak too and still await that review. All other languages except English
-and German are a careful first draft. They follow
-the glossary of their language, but nobody who speaks them as a mother
+Slovak too and still await that review. The texts added in
+0.9.0-alpha.6 (the weekly program editor and the active program select,
+the button that advances the next switch point, the firmware entity and the
+dialog status messages) are drafts in every language except English and
+German, Czech and Slovak included. All other languages except English and
+German are a careful first draft. They follow the glossary of their language, but nobody who speaks them as a mother
 tongue has checked them yet. Corrections are very welcome (see
 [Contributing corrections](#contributing-corrections)). The glossary below
 covers Swedish, Norwegian Bokmål, Finnish and Danish; every other draft has

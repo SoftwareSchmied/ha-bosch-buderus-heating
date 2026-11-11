@@ -179,9 +179,9 @@ device.
   stored discovery inventory keeps no serial numbers, UUIDs or module data,
   also from older files; a device keeps its known serial number after a
   start from that inventory.
-- **Dialog texts:** holiday names, the local address and the gateway ID in
-  dialog descriptions are shown as plain text, so a name can no longer add
-  an image or a link. Gateway IDs `.` and `..` are rejected before any
+- **Dialog texts:** holiday names, program names, the gateway model, the
+  local address and the gateway ID in dialog descriptions are shown as plain
+  text, so a name can no longer add an image or a link. Gateway IDs `.` and `..` are rejected before any
   request.
 - **Local setup messages:** more failure causes of the local setup are named
   instead of "unexpected error", for example a system that already has a
@@ -204,12 +204,21 @@ device.
   has a time limit of 120 seconds (`pytest-timeout` is now a test
   requirement).
 
+#### Diagnostics
+
+- **Diagnostics schema 45** gathers the new sections of this version:
+  `firmware_updates`, `icom` (only for iCom gateways), `switch_program_writes`,
+  the reasons why a room controller program stays read-only and the
+  confirmation per function group, without values, names or identifiers. See
+  [diagnostics](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.6/docs/diagnostics.md).
+
 #### Translations
 
 - **New texts are drafts:** the texts added in this version (the schedule
-  editor, the advance button, the firmware entity and the dialog status
-  texts) are written in English and German; in all other languages, Czech
-  and Slovak included, they are drafts and not yet reviewed.
+  editor and the active schedule select, the advance button, the firmware
+  entity and the dialog status texts) are written in English and German; in
+  all other languages, Czech and Slovak included, they are drafts and not
+  yet reviewed.
 
 #### Fixes
 

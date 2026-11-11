@@ -8,7 +8,7 @@ mapping. `physical_device_verified: false`, `firmware: null` and
 
 | Folder | Examples |
 |---|---|
-| connectkey | Temperature, global and structured duration, structured energy, independent heating/cooling zone commands, read-only heating and hot-water switch programs (anonymized structure, constructed times) |
+| connectkey | Temperature, global and structured duration, structured energy, independent heating/cooling zone commands, read-only heating and hot-water switch programs (anonymized structure, constructed times); `switch-programs-ab.json`: a synthetic gateway with weekly programs A and B of a heating circuit and program A of the hot water, writable, with constructed times, levels and names |
 | icom | Heating and DHW temperatures; `gateway-shapes.json`: a synthetic iCom gateway with a boiler controller (91 resources, the 403/404 sets, five holiday slots, hot water charge, faults only through `/notifications`, a transport profile and two marked, not observed `/system/info` variants), built from the shapes of a real diagnostic with constructed values |
 | rrc | DHW and away-mode temperature, independent zn zones, program selection and existing weekly switch points; string `used` flags and a mode without advertised options (anonymized TC100.2 structure, constructed values); `ct200-shapes.json`: a synthetic RRC 2.0 controller with 11 zones, 12 radio devices and 24 programs, built from constructed values and the anonymized TC100.2 device tree, with marker values for the privacy tests |
 | wddw2 | Unitless hours, explicit minutes, starts, DHW temperature and collection |
