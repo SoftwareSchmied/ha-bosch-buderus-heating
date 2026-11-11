@@ -130,7 +130,7 @@ class TokenManager:
             rejected_token is not None and self._tokens.access_token != rejected_token
         )
         if (not force_refresh or already_refreshed) and not self._tokens.is_expired(
-            now=self._clock(), margin=self._refresh_margin
+            now=self._clock(), margin=self._margin()
         ):
             return self._tokens.access_token
         self._backoff.raise_if_active()
@@ -143,6 +143,18 @@ class TokenManager:
         )
         self._refresh_task.add_done_callback(self._refresh_finished)
         return await self._wait_for_refresh(self._refresh_task)
+
+    def _margin(self) -> float:
+        """The refresh margin, at most half of a known token lifetime (D15).
+
+        A lifetime shorter than the margin would make every new token count
+        as expired at once, so each request would start another refresh.
+        """
+        issued_at = self._tokens.issued_at
+        if issued_at is None:
+            return self._refresh_margin
+        lifetime = self._tokens.expires_at - issued_at
+        return min(self._refresh_margin, max(0.0, lifetime / 2))
 
     def _raise_if_retry_pending(self) -> None:
         """Repeat a recent temporary failure without another token request."""
