@@ -902,3 +902,53 @@ async def test_real_ha_registry_and_entities_recover_during_a_refresh(hass):
         if registered_product.disabled_by is None:
             assert hass.states.get(product_entity_id).state == "MX400"
         assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+@pytest.mark.parametrize("status", [403, 404, 406])
+@pytest.mark.parametrize("advertised,registered", [(True, False), (False, True)])
+def test_a_value_answered_as_missing_is_given_up_after_five_answers(
+    status, advertised, registered
+):
+    """D33: no endless read every 30 minutes for a replaced device."""
+    from custom_components.bosch_buderus_heating.startup_data import (
+        MAX_MISSING_ANSWERS,
+    )
+
+    assert MAX_MISSING_ANSWERS == 5
+    state = StartupGatewayData()
+    state.schedule(PRODUCT, 2, advertised=advertised, registered=registered)
+    now = 100.0
+    for _ in range(MAX_MISSING_ANSWERS - 1):
+        paths = state.due(now)
+        assert paths == (PRODUCT,)
+        state.start(paths, STAMP)
+        state.fail(paths, f"http_{status}", now)
+        assert state.reads[PRODUCT].pending
+        now += 1800
+    paths = state.due(now)
+    state.start(paths, STAMP)
+    state.fail(paths, f"http_{status}", now)
+    read = state.reads[PRODUCT]
+    assert read.result == "unsupported" and not read.pending
+    assert not state.due(now + 7 * 86400)
+    assert read.attempts == MAX_MISSING_ANSWERS
+    # The next discovery asks once more, with a fresh count.
+    state.begin_discovery()
+    state.schedule(PRODUCT, 2, advertised=advertised, registered=registered)
+    assert state.due(now) == (PRODUCT,)
+    assert state.reads[PRODUCT].missing_answers == 0
+
+
+def test_other_failures_and_a_success_do_not_use_up_the_missing_answers():
+    state = StartupGatewayData()
+    state.schedule(PRODUCT, 2, registered=True)
+    now = 100.0
+    for category in ("http_404",) * 4 + ("service_unavailable",) * 3:
+        paths = state.due(now)
+        state.start(paths, STAMP)
+        state.fail(paths, category, now)
+        now += 1800
+    assert state.reads[PRODUCT].pending
+    assert state.reads[PRODUCT].missing_answers == 4
+    assert state.receive(scalar(), now, STAMP)
+    assert state.reads[PRODUCT].missing_answers == 0

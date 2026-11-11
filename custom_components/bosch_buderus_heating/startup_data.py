@@ -16,6 +16,11 @@ CIRCUIT_COUNT_PATH = "/heatSources/numberOfRefrigerantCircuitsInstalled"
 STARTUP_BUDGET_SECONDS = 30.0
 RECOVERY_INTERVAL_SECONDS = 60.0
 RETRY_DELAYS = (60.0, 120.0, 300.0, 900.0, 1800.0)
+# D33: a registered or announced value that the gateway keeps answering as
+# missing (403/404/406) is given up after this many answers, until the next
+# discovery. Without a limit it was read every 30 minutes for good.
+MAX_MISSING_ANSWERS = 5
+_MISSING_CATEGORIES = frozenset({"http_403", "http_404", "http_406"})
 MAX_STARTUP_PATHS = 512
 _DIAGNOSTIC_PATHS = frozenset(
     {"/gateway/tosAccepted", "/system/dateTime", "/gateway/wifi/mac"}
@@ -126,6 +131,7 @@ class StartupRead:
     active: bool = True
     attempts: int = 0
     failures: int = 0
+    missing_answers: int = 0
     result: str = "pending"
     next_attempt: float = 0.0
     last_attempt: datetime | None = None
@@ -150,14 +156,26 @@ class StartupRead:
     def failed(self, category: str, now: float) -> StartupRead:
         """Retain temporary failures without exhausting a lifetime retry budget."""
         failures = self.failures + 1
-        if category in {"http_403", "http_404", "http_406"}:
-            if not self.registered and not (
-                self.advertised and is_startup_entity_path(self.path)
+        if category in _MISSING_CATEGORIES:
+            missing = self.missing_answers + 1
+            if missing >= MAX_MISSING_ANSWERS or (
+                not self.registered
+                and not (self.advertised and is_startup_entity_path(self.path))
             ):
-                return replace(self, failures=failures, result="unsupported")
-            delay = RETRY_DELAYS[-1]
-        else:
-            delay = RETRY_DELAYS[min(failures - 1, len(RETRY_DELAYS) - 1)]
+                return replace(
+                    self,
+                    failures=failures,
+                    missing_answers=missing,
+                    result="unsupported",
+                )
+            return replace(
+                self,
+                failures=failures,
+                missing_answers=missing,
+                result=category,
+                next_attempt=now + RETRY_DELAYS[-1],
+            )
+        delay = RETRY_DELAYS[min(failures - 1, len(RETRY_DELAYS) - 1)]
         return replace(
             self, failures=failures, result=category, next_attempt=now + delay
         )
@@ -182,6 +200,7 @@ class StartupRead:
             resource=resource,
             last_success=timestamp,
             failures=0,
+            missing_answers=0,
             next_attempt=0.0,
         )
 
@@ -247,6 +266,13 @@ class StartupGatewayData:
         self._healthy = False
         for path, previous in self._reads.items():
             read = replace(previous, active=previous.registered)
+            if read.result == "unsupported" and read.missing_answers >= (
+                MAX_MISSING_ANSWERS
+            ):
+                # D33: a new discovery asks once more for a value given up.
+                read = replace(
+                    read, result="pending", missing_answers=0, next_attempt=0.0
+                )
             if read.result == "normal_resource":
                 # A writable or structural surprise follows normal discovery on
                 # the next setup attempt, rather than reusing an old live value.
