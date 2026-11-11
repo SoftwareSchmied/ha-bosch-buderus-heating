@@ -20,10 +20,27 @@ from tests.test_rrc_w0_baseline import PACKAGE, PLANTS
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
 
 
+@pytest.fixture
+def all_enabled():
+    """Every entity enabled, also the ones disabled by default (the fixture
+    of the same purpose is missing in older test packages)."""
+    from unittest.mock import PropertyMock, patch
+
+    from homeassistant.helpers.entity import Entity
+
+    with patch.object(
+        Entity,
+        "entity_registry_enabled_default",
+        new_callable=PropertyMock,
+        return_value=True,
+    ):
+        yield
+
+
 @pytest.mark.parametrize("language", ["en", "de"])
 @pytest.mark.parametrize("plant", sorted(PLANTS))
 async def test_every_entity_resolves_to_a_name_of_its_own(
-    hass: HomeAssistant, entity_registry_enabled_by_default, plant, language
+    hass: HomeAssistant, all_enabled, plant, language
 ) -> None:
     from contextlib import nullcontext
     from unittest.mock import patch
