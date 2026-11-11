@@ -141,3 +141,63 @@ async def test_an_inventory_start_keeps_the_registered_serial_number(
         ),
     )
     assert device_info_for_resource(live, "/system/brand")["serial_number"] == SERIAL
+
+
+async def test_an_inventory_start_keeps_the_registered_model_and_versions(
+    hass: HomeAssistant,
+) -> None:
+    """N2 (review of alpha.6): the stored inventory keeps no values of
+    ``/system/info``; a known device keeps its model and versions."""
+    from homeassistant.helpers import device_registry as dr
+
+    from custom_components.bosch_buderus_heating.device import (
+        device_info_for_resource,
+    )
+    from tests.test_device import _coordinator
+
+    info_values = Resource(
+        "/system/info",
+        values=(
+            {
+                "Id": 1,
+                "ProductName": "MX400",
+                "Ver": "05.04.00",
+                "HwVersion": "02.01",
+            },
+        ),
+        has_values=True,
+        metadata=ResourceMetadata(resource_type="arrayData"),
+    )
+    brand = Resource("/system/brand", "Buderus", True)
+    gateway = Gateway(GATEWAY, device_type="k40")
+    live = _coordinator(hass, gateway=gateway, resources=(brand, info_values))
+    first = device_info_for_resource(live, "/system/brand")
+    assert (first["model"], first["sw_version"], first["hw_version"]) == (
+        "MX400",
+        "05.04.00",
+        "02.01",
+    )
+    registry = dr.async_get(hass)
+    entry_id = live.config_entry.entry_id
+    registry.async_get_or_create(config_entry_id=entry_id, **first)
+    start = _coordinator(
+        hass, gateway=gateway, resources=(brand, stored_resource(info_values))
+    )
+    start.config_entry = live.config_entry
+    info = device_info_for_resource(start, "/system/brand")
+    for key in ("model", "model_id", "sw_version", "hw_version"):
+        assert key not in info
+    device = registry.async_get_or_create(config_entry_id=entry_id, **info)
+    assert (device.model, device.sw_version, device.hw_version) == (
+        "MX400",
+        "05.04.00",
+        "02.01",
+    )
+    # A new device still gets what can be derived.
+    other = _coordinator(
+        hass,
+        gateway=Gateway("other-gateway", device_type="k40"),
+        resources=(brand, stored_resource(info_values)),
+    )
+    created = device_info_for_resource(other, "/system/brand")
+    assert "model" in created and "sw_version" in created

@@ -296,7 +296,9 @@ Assistant host and deleted together with the integration entry. The file is
 not part of diagnostics. Since 0.9.0-alpha.6 it keeps no values of private or
 identifier resources (for example the gateway serial number, the UUID or the
 module serial numbers of `/system/info`), only their description; an older
-file loses those values the next time it is saved.
+file loses those values the next time it is saved. After a start from this
+file, a known device keeps the serial number, model and versions its device
+page shows until the values are read again.
 
 Schema 38 adds `update_load` with process-wide counts and whole milliseconds
 since Home Assistant started: garbage collections per generation, their total

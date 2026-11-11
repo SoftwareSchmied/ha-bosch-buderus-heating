@@ -77,17 +77,27 @@ def device_info_for_resource(
     serial_number = _clean_serial(
         _resource_string(coordinator, "/gateway/serialId")
     ) or _first_serial(system_info, "ProductSerialNumber", "ModuleSerialNumber")
-    info = DeviceInfo(
-        identifiers=identifiers,
-        manufacturer=manufacturer,
-        model=model,
-        model_id=model_id,
-        sw_version=_resource_string(coordinator, "/gateway/versionFirmware")
+    info = DeviceInfo(identifiers=identifiers, manufacturer=manufacturer)
+    if not (known and _system_info_unread(coordinator, system_info)):
+        # D34: a start from the stored inventory has no values of
+        # ``/system/info``; a known device then keeps the model the registry
+        # holds instead of a fallback from the gateway listing.
+        info["model"] = model
+        info["model_id"] = model_id
+    sw_version = (
+        _resource_string(coordinator, "/gateway/versionFirmware")
         or gateway.firmware_version
-        or _first_value(system_info, "Ver", "SwIdenStr"),
-        hw_version=_resource_string(coordinator, "/gateway/versionHardware")
-        or _first_value(system_info, "HwVersion", "ModuleHwIdentStr"),
+        or _first_value(system_info, "Ver", "SwIdenStr")
     )
+    hw_version = _resource_string(
+        coordinator, "/gateway/versionHardware"
+    ) or _first_value(system_info, "HwVersion", "ModuleHwIdentStr")
+    # Without a reading the key is left out for a known device, so the
+    # registry keeps the last known version (as for the serial number).
+    if sw_version is not None or not known:
+        info["sw_version"] = sw_version
+    if hw_version is not None or not known:
+        info["hw_version"] = hw_version
     if serial_number:
         # D34: without a reading (the stored inventory keeps no serial
         # number) the key is left out, so the registry keeps the known one.
@@ -466,6 +476,18 @@ def _resource_string(
         return None
     value = snapshot.resource.value.strip()
     return value or None
+
+
+def _system_info_unread(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    system_info: tuple[dict[str, str], ...],
+) -> bool:
+    """``/system/info`` is known but holds no values now (for example a start
+    from the stored inventory, which keeps no values of it)."""
+    path = "/system/info"
+    return not system_info and (
+        path in (coordinator.data or {}) or path in coordinator.resources
+    )
 
 
 def _system_info_values(

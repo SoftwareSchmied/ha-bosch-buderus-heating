@@ -194,8 +194,8 @@ device.
   instead of an unexpected one, and a test notices it early.
 - **Privacy:** log lines hide every identifier the diagnostics hide; the
   stored discovery inventory keeps no serial numbers, UUIDs or module data,
-  also from older files; a device keeps its known serial number after a
-  start from that inventory.
+  also from older files; a device keeps its known serial number, model and
+  software and hardware versions after a start from that inventory.
 - **Dialog texts:** holiday names, program names, the gateway model, the
   local address and the gateway ID in dialog descriptions are shown as plain
   text, so a name can no longer add an image or a link. Gateway IDs `.` and `..` are rejected before any
