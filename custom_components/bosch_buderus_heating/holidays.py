@@ -50,45 +50,45 @@ _MAX_HOLIDAY_ID = 2_147_483_647
 _MAX_NAME_LENGTH = 80
 _CIRCUIT_PATTERN = re.compile(r"(?:hc|dhw|vent)\d+", re.IGNORECASE)
 
-_START_KEYS = frozenset(
-    {
-        "begin",
-        "begindate",
-        "begindatetime",
-        "from",
-        "fromdate",
-        "start",
-        "startdate",
-        "startdatetime",
-        "starttime",
-        "starttimestamp",
-        "fromdatetime",
-        "validfrom",
-    }
+# Synonyms in a fixed priority, so a row with several of them is always read
+# the same way (D28): full date-times first, then dates, then the bare words;
+# a separate time of day comes last.
+_START_KEYS = (
+    "startdatetime",
+    "begindatetime",
+    "fromdatetime",
+    "starttimestamp",
+    "startdate",
+    "begindate",
+    "fromdate",
+    "start",
+    "begin",
+    "from",
+    "validfrom",
+    "starttime",
 )
-_END_KEYS = frozenset(
-    {
-        "end",
-        "enddate",
-        "enddatetime",
-        "endtime",
-        "endtimestamp",
-        "to",
-        "todate",
-        "todatetime",
-        "until",
-        "validto",
-    }
+_END_KEYS = (
+    "enddatetime",
+    "todatetime",
+    "endtimestamp",
+    "enddate",
+    "todate",
+    "end",
+    "to",
+    "until",
+    "validto",
+    "endtime",
 )
 _ID_KEYS = ("id", "holidayid", "holidaymodeid", "identifier", "uuid")
 _NAME_KEYS = ("name", "title", "label")
+# A named zone (with its daylight saving time) before a fixed offset.
 _TIME_ZONE_KEYS = (
-    "offset",
     "timezone",
     "timezoneid",
-    "timezoneoffset",
     "tz",
+    "timezoneoffset",
     "utcoffset",
+    "offset",
 )
 _FALSE_TOKENS = frozenset(
     {
@@ -693,8 +693,8 @@ def _parse_period(
     if not (_MIN_YEAR <= end.year <= _MAX_YEAR) or end <= start:
         return None
 
-    identifier = _identifier_text(_find_value(normalized, frozenset(_ID_KEYS)))
-    raw_name = _safe_text(_find_value(normalized, frozenset(_NAME_KEYS)), 512)
+    identifier = _identifier_text(_find_value(normalized, _ID_KEYS))
+    raw_name = _safe_text(_find_value(normalized, _NAME_KEYS), 512)
     period_name_codec = _name_codec(normalized.get("nameconfig")) or name_codec
     # C39: an exclusive end at midnight (T00:00:00), as written for an all-day
     # calendar event, is as much a whole day as the legacy T24:00:00 form.
@@ -1052,7 +1052,7 @@ def _select_timezone(
 
 
 def _timezone_name_from_mapping(values: Mapping[str, JsonValue]) -> str | None:
-    value = _find_value(values, frozenset(_TIME_ZONE_KEYS))
+    value = _find_value(values, _TIME_ZONE_KEYS)
     return value.strip() if isinstance(value, str) else None
 
 
@@ -1093,8 +1093,9 @@ def holiday_timezone_names(resources: Mapping[str, Resource]) -> frozenset[str]:
 
 
 def _find_value(
-    values: Mapping[str, JsonValue], keys: frozenset[str]
+    values: Mapping[str, JsonValue], keys: tuple[str, ...]
 ) -> JsonValue | None:
+    """The value of the first synonym present, in the order of ``keys``."""
     return next((values[key] for key in keys if key in values), None)
 
 

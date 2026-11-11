@@ -10,7 +10,9 @@
       "discard": "Descartar",
       "reload": "Volver a cargar los valores",
       "unsaved": "{count} cambios sin guardar",
+      "unsavedOne": "{count} cambio sin guardar",
       "saved": "Cambios confirmados.",
+      "unchanged": "Sin cambios, no se ha escrito nada.",
       "empty": "Ahora mismo no hay controles disponibles.",
       "pending": "Los cambios solo se escriben cuando seleccionas Aplicar.",
       "reopen": "Cierra y vuelve a abrir el cuadro de diálogo.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Fecha",
       "time": "Hora",
-      "deleteFailed": "No se pudo abrir la confirmación de eliminación. Recarga la página e inténtalo de nuevo."
+      "deleteFailed": "No se pudo abrir la confirmación de eliminación. Recarga la página e inténtalo de nuevo.",
+      "reopen": "Cierra y vuelve a abrir el cuadro de diálogo."
     }
   },
   "texts": {

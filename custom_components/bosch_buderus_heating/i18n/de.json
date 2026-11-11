@@ -10,7 +10,9 @@
       "discard": "Verwerfen",
       "reload": "Werte neu laden",
       "unsaved": "{count} ungespeicherte Änderungen",
+      "unsavedOne": "{count} ungespeicherte Änderung",
       "saved": "Änderungen bestätigt.",
+      "unchanged": "Keine Änderungen, nichts wurde geschrieben.",
       "empty": "Zurzeit sind keine bedienbaren Einstellungen verfügbar.",
       "pending": "Änderungen werden erst mit Übernehmen geschrieben.",
       "reopen": "Bitte schließe den Dialog und öffne ihn erneut.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Datum",
       "time": "Uhrzeit",
-      "deleteFailed": "Die Löschbestätigung konnte nicht geöffnet werden. Bitte lade die Seite neu und versuche es erneut."
+      "deleteFailed": "Die Löschbestätigung konnte nicht geöffnet werden. Bitte lade die Seite neu und versuche es erneut.",
+      "reopen": "Bitte schließe den Dialog und öffne ihn erneut."
     }
   }
 }

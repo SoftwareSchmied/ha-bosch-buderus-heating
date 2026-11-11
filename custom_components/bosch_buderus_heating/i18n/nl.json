@@ -10,7 +10,9 @@
       "discard": "Verwerpen",
       "reload": "Waarden opnieuw laden",
       "unsaved": "{count} niet-opgeslagen wijzigingen",
+      "unsavedOne": "{count} niet-opgeslagen wijziging",
       "saved": "Wijzigingen bevestigd.",
+      "unchanged": "Geen wijzigingen, er is niets geschreven.",
       "empty": "Er is momenteel geen bediening beschikbaar.",
       "pending": "Wijzigingen worden pas geschreven wanneer je Toepassen selecteert.",
       "reopen": "Sluit het dialoogvenster en open het opnieuw.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Datum",
       "time": "Tijd",
-      "deleteFailed": "De bevestiging voor het verwijderen kon niet worden geopend. Laad de pagina opnieuw en probeer het nog eens."
+      "deleteFailed": "De bevestiging voor het verwijderen kon niet worden geopend. Laad de pagina opnieuw en probeer het nog eens.",
+      "reopen": "Sluit het dialoogvenster en open het opnieuw."
     }
   },
   "texts": {

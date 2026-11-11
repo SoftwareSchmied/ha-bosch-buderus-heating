@@ -220,7 +220,8 @@ def test_rolling_metrics_expire_old_minutes_and_exclude_failed_latency() -> None
     assert rolling["requests_total"] == 1
     assert rolling["requests_successful"] == 1
     assert rolling["average_successful_response_time_ms"] == 275.0
-    assert rolling["p95_successful_response_time_ms"] == 500.0
+    # One sample: the bucket bound 500 ms is capped at the measured maximum.
+    assert rolling["p95_successful_response_time_ms"] == 275.0
     assert rolling["requests_by_type"] == {"bulk": 1}
     assert len(snapshot["recent_requests"]) == 1
 
@@ -284,3 +285,44 @@ def test_slot_waits_are_bounded_aggregates() -> None:
         "maximum_ms": 12000.0,
         "last_ms": 0.0,
     }
+
+
+def _rolling_p95(durations: list[float]) -> tuple[object, object]:
+    metrics = RequestMetrics()
+    for duration in durations:
+        metrics.record_request(
+            category="bulk",
+            method="POST",
+            status=200,
+            outcome="success",
+            duration_ms=duration,
+        )
+    rolling = metrics.snapshot()["rolling_60_minutes"]
+    return (
+        rolling["p95_successful_response_time_ms"],
+        rolling["maximum_successful_response_time_ms"],
+    )
+
+
+def test_p95_is_never_above_the_measured_maximum() -> None:
+    """D16: answers up to 3054 ms no longer show a p95 of 5000 ms."""
+    p95, maximum = _rolling_p95([700.0] * 10 + [3054.0] * 10)
+    assert maximum == 3054.0
+    assert p95 == 3054.0
+
+
+def test_slow_phases_beyond_ten_seconds_keep_their_size() -> None:
+    """D16: 20 to 30 s answers are not reported as exactly 10000 ms."""
+    p95, maximum = _rolling_p95([25000.0] * 20)
+    assert p95 == maximum == 25000.0
+    p95, _maximum = _rolling_p95([100.0] * 10 + [12000.0, 15000.0] * 5)
+    assert p95 == 15000.0
+    # Above the request timeout, the measured maximum is shown, not a bound.
+    p95, maximum = _rolling_p95([45000.0] * 3)
+    assert p95 == maximum == 45000.0
+
+
+def test_p95_still_uses_the_bucket_bound_below_the_maximum() -> None:
+    p95, maximum = _rolling_p95([80.0] * 19 + [900.0, 4000.0])
+    assert maximum == 4000.0
+    assert p95 == 1000.0

@@ -51,6 +51,61 @@ reporting it in #122.
   controller functions. I now load their modules in the background before
   the entity platforms start. The warning was reported in #122.
 
+#### Robustness, privacy and texts from the review of 0.9
+
+All of the following is tested with synthetic data only, not on a real
+device.
+
+- **Newer firmware:** an added field in the rows of the local signal list,
+  the system information or a fault list no longer makes the whole answer
+  invalid; required fields and types stay strict.
+- **On/off signals as 1.0/0.0:** an on/off signal reported as a float value
+  now shows on or off instead of unknown.
+- **p95 response time:** the value never exceeds the measured maximum and
+  no longer stops at exactly 10000 ms; answers up to the 30-second timeout
+  keep their size.
+- **Short token lifetimes:** a token answer with a lifetime of 0 or less is
+  rejected, and a short lifetime no longer starts a token renewal before
+  every request.
+- **Start values answered as missing:** a registered value that keeps
+  answering 403, 404 or 406, for example of a replaced room device, is
+  given up after five answers until the next discovery instead of being read
+  every 30 minutes for good.
+- **Holiday fields:** of several synonyms in a holiday row, the same one is
+  now always used, also after a restart.
+- **Cloud session:** if a Home Assistant update ever hides the middleware
+  chain of the shared HTTP session, cloud requests stop with a clear error
+  instead of an unexpected one, and a test notices it early.
+- **Privacy:** log lines hide every identifier the diagnostics hide; the
+  stored discovery inventory keeps no serial numbers, UUIDs or module data,
+  also from older files; a device keeps its known serial number after a
+  start from that inventory.
+- **Dialog texts:** holiday names, the local address and the gateway ID in
+  dialog descriptions are shown as plain text, so a name can no longer add
+  an image or a link. Gateway IDs `.` and `..` are rejected before any
+  request.
+- **Local setup messages:** more failure causes of the local setup are named
+  instead of "unexpected error", for example a system that already has a
+  local access, an unverified identity or a full setup journal.
+- **Deleting old devices:** a device without any provided entity, for
+  example a heating circuit removed at the controller, can now be deleted on
+  its device page.
+- **Status in the dialogs:** the controls dialog shows "1 unsaved change"
+  in the singular, says "No changes, nothing was written." when Apply had
+  nothing to write, and asks to close and reopen the dialog when Home
+  Assistant no longer knows it (for example after a restart); the holiday
+  delete button does the same. The new texts are drafts in all languages
+  except English and German, also in Czech and Slovak.
+- **Documentation:** the entity page uses the current names of the local
+  readings and lists VR0, the valve positions, the compressor start delay
+  and the signal entities; it explains that on/off signals are enum sensors
+  and that signals no longer listed keep their entity. The pause limits,
+  the climate validity, the active entry version 4.2, the version notes and
+  the load of the energy history are now described as the code behaves.
+- **Tests:** three date-dependent tests run at a fixed time, and every test
+  has a time limit of 120 seconds (`pytest-timeout` is now a test
+  requirement).
+
 ## [0.9.0-alpha.5] - 2026-11-11
 
 > [!IMPORTANT]

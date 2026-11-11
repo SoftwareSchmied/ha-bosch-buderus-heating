@@ -101,8 +101,9 @@ for the display, with the reason `gateway_not_listed`; without a usable
 inventory the local readings are shown, and the gateway-exchange question is
 decided from the list as before. A rejected sign-in still starts
 reauthentication; without a usable inventory setup is retried as before. `429` pauses all cloud
-polling according to `Retry-After`, bounded to one hour; if the server omits the
-header, the default pause is five minutes. A failed batch preserves last-good
+polling according to `Retry-After`, honored in full with a minimum of 60 seconds
+and a safety bound of 24 hours (see [cloud pauses](../cloud-pauses.md)); if the
+server omits the header, the default pause is five minutes. A failed batch preserves last-good
 values, and a partial cycle keeps successful earlier batches. After one failed
 batch, at most five central operating paths are read individually; `429` never
 triggers this fallback. Three consecutive complete gateway failures open a

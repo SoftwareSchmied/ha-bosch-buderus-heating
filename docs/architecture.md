@@ -280,7 +280,8 @@ the values pass unchanged. A counter still below its recorded value when the
 
 I added a separate [storage contract and legacy converter](configuration-storage.md)
 for independent connections, durable targets and explicit source bindings. It
-prepares a version 4.1 proposal for the active entry format. The
+prepares a version 4 proposal for the active entry format (4.2 since
+0.9.0-alpha.1). The
 converter preserves the existing cloud selection, credentials, compatibility
 identities and user options without saving an entry or touching the registries.
 Existing cloud readers and token persistence now use a central access layer.

@@ -7,7 +7,11 @@ import pytest
 
 from custom_components.bosch_buderus_heating.local_api.errors import LocalResourceError
 from custom_components.bosch_buderus_heating.local_api.models import (
+    DeviceFaultList,
+    FaultList,
+    ReferenceList,
     ScalarValue,
+    SystemInfo,
     UpdateReport,
 )
 from tests.test_local_api import example, read, scalar
@@ -114,6 +118,46 @@ def test_missing_invalid_or_conflicting_module_identity_is_never_invented(identi
     raw["values"] = [{"status": "SUCCESS", "timeStamp": "1700000000", **identity}]
     with pytest.raises(LocalResourceError):
         read(raw)
+
+
+_ROW_LISTS = [
+    ("/signals", "references", ReferenceList),
+    ("/system/basicInfo", "values", SystemInfo),
+    ("/notifications", "values", FaultList),
+    ("/devices/device1/errors", "values", DeviceFaultList),
+]
+
+
+@pytest.mark.parametrize(("path", "field", "kind"), _ROW_LISTS)
+def test_added_row_fields_from_newer_firmware_do_not_reject_the_resource(
+    path, field, kind
+):
+    raw = example(path)
+    plain = read(example(path)).data
+    for row in raw[field]:
+        row["newFirmwareField"] = {"nested": [1, 2]}
+    before = json.dumps(raw)
+    observation = read(raw)
+    assert isinstance(observation.data, kind)
+    assert observation.data == plain
+    assert json.dumps(raw) == before
+    assert all("newFirmwareField" in row for row in observation.document[field])
+
+
+@pytest.mark.parametrize(("path", "field", "kind"), _ROW_LISTS)
+def test_tolerated_rows_keep_required_fields_and_types_strict(path, field, kind):
+    raw = example(path)
+    required = sorted(raw[field][0])[0]
+    missing = example(path)
+    del missing[field][0][required]
+    with pytest.raises(LocalResourceError):
+        read(missing)
+    wrong = example(path)
+    wrong[field][0][required] = (
+        [] if not isinstance(raw[field][0][required], list) else 1
+    )
+    with pytest.raises(LocalResourceError):
+        read(wrong)
 
 
 @pytest.mark.parametrize(

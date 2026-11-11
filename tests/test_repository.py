@@ -261,3 +261,14 @@ def test_fixable_issue_translations_use_only_fix_flow(path: Path) -> None:
     for issue in issues.values():
         assert isinstance(issue, dict)
         assert not ({"description", "fix_flow"} <= issue.keys())
+
+
+def test_every_test_has_a_time_limit(request: pytest.FixtureRequest) -> None:
+    """D49: a hanging test is stopped and named, not the whole CI job."""
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert project["tool"]["pytest"]["ini_options"]["timeout"] == 120
+    test_extras = project["project"]["optional-dependencies"]["test"]
+    assert "pytest-timeout==2.4.0" in test_extras
+    # Where the plugin is installed (every CI job), the option is applied.
+    if request.config.pluginmanager.hasplugin("timeout"):
+        assert request.config.getini("timeout") == "120"

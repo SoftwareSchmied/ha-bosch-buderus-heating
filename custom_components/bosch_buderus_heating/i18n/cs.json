@@ -10,7 +10,9 @@
       "discard": "Zahodit",
       "reload": "Znovu načíst hodnoty",
       "unsaved": "Neuložené změny: {count}",
+      "unsavedOne": "Neuložené změny: {count}",
       "saved": "Změny byly potvrzeny.",
+      "unchanged": "Žádné změny, nic nebylo zapsáno.",
       "empty": "Momentálně není k dispozici žádné ovládání.",
       "pending": "Změny se zapíší až po výběru možnosti Použít.",
       "reopen": "Zavřete prosím dialog a znovu jej otevřete.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Datum",
       "time": "Čas",
-      "deleteFailed": "Potvrzení odstranění se nepodařilo otevřít. Obnovte prosím stránku a zkuste to znovu."
+      "deleteFailed": "Potvrzení odstranění se nepodařilo otevřít. Obnovte prosím stránku a zkuste to znovu.",
+      "reopen": "Zavřete prosím dialog a znovu jej otevřete."
     }
   },
   "texts": {

@@ -26,7 +26,7 @@ from .const import DOMAIN
 from .log_helpers import log_failure
 from .pointt import Gateway, Resource, ResourceMetadata, ResourceReference
 from .pointt.redaction import resource_path_template
-from .resource_catalog import is_never_read
+from .resource_catalog import is_identifier_path, is_never_read, is_private_resource
 from .rrc import (
     DEVICE_LIST,
     in_device_scope,
@@ -70,6 +70,18 @@ def metadata_only(resource: Resource) -> Resource:
     """The description of a resource without any value (1A, P49b): type,
     unit, allowed values, limits, step and writable flag."""
     return Resource(path=resource.path, metadata=resource.metadata)
+
+
+def stored_resource(resource: Resource) -> Resource:
+    """What the inventory keeps of one discovered resource (D34).
+
+    Serial numbers, UUIDs, module data and other private or identifier
+    values are never needed to rebuild an entity; only their description is
+    kept, so a shared backup does not carry them in plain text.
+    """
+    if is_private_resource(resource.path) or is_identifier_path(resource.path):
+        return metadata_only(resource)
+    return resource
 
 
 def resource_to_data(resource: Resource) -> dict[str, Any]:
@@ -435,7 +447,7 @@ class DiscoveryInventory:
         if not resources:
             return
         resources = {
-            path: resource
+            path: stored_resource(resource)
             for path, resource in resources.items()
             if not is_never_read(path)
         }
@@ -551,7 +563,9 @@ def _gateways(stored: object, now: datetime) -> Iterable[tuple[str, GatewayInven
                 continue
             described[path] = metadata_only(resource)
             if seen >= cutoff:
-                resources[path] = _Seen(resource, seen)
+                # D34: private values an earlier release stored are not
+                # loaded; the next save no longer contains them.
+                resources[path] = _Seen(stored_resource(resource), seen)
         # C8: device keys and personal data an earlier release stored, and
         # on an RRC controller the device parts it no longer reads, are not
         # loaded; the next save no longer contains them.

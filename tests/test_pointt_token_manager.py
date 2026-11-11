@@ -420,3 +420,74 @@ async def test_failed_saving_after_a_refresh_starts_no_pause() -> None:
     assert manager.tokens.access_token == "fresh-1"
     assert manager._last_failure is None
     assert await manager.get_access_token() == "fresh-1"
+
+
+class _ShortLivedOAuth:
+    """Answers each refresh with a token valid for ``lifetime`` seconds."""
+
+    def __init__(self, clock: list[float], lifetime: float) -> None:
+        self.calls = 0
+        self._clock = clock
+        self._lifetime = lifetime
+
+    async def refresh(self, refresh_token: str) -> AuthTokens:
+        self.calls += 1
+        now = self._clock[0]
+        return AuthTokens(
+            f"access-{self.calls}",
+            "rotated",
+            expires_at=now + self._lifetime,
+            issued_at=now,
+        )
+
+
+@pytest.mark.parametrize("lifetime", [1.0, 60.0, 119.0])
+async def test_a_short_token_lifetime_never_refreshes_before_every_request(
+    lifetime: float,
+) -> None:
+    """D15: below the 120 s margin, the margin shrinks to half the lifetime."""
+    clock = [1000.0]
+    oauth = _ShortLivedOAuth(clock, lifetime)
+    manager = TokenManager(
+        oauth,
+        AuthTokens("old", "refresh", expires_at=0.0),
+        lambda _tokens: None,
+        clock=lambda: clock[0],
+    )
+    assert await manager.get_access_token() == "access-1"
+    for _ in range(5):
+        assert await manager.get_access_token() == "access-1"
+    assert oauth.calls == 1
+    # Within the second half of the lifetime the token is renewed once.
+    clock[0] += lifetime / 2
+    assert await manager.get_access_token() == "access-2"
+    assert await manager.get_access_token() == "access-2"
+    assert oauth.calls == 2
+
+
+async def test_a_long_token_lifetime_keeps_the_full_margin() -> None:
+    clock = [1000.0]
+    oauth = _ShortLivedOAuth(clock, 3600.0)
+    manager = TokenManager(
+        oauth,
+        AuthTokens("old", "refresh", expires_at=0.0),
+        lambda _tokens: None,
+        clock=lambda: clock[0],
+    )
+    assert await manager.get_access_token() == "access-1"
+    clock[0] += 3600.0 - 121.0
+    assert await manager.get_access_token() == "access-1"
+    clock[0] += 2.0
+    assert await manager.get_access_token() == "access-2"
+
+
+async def test_stored_tokens_without_issue_time_keep_the_full_margin() -> None:
+    oauth = FakeOAuthClient()
+    manager = TokenManager(
+        oauth,
+        AuthTokens("current", "refresh", expires_at=1100.0),
+        lambda _tokens: None,
+        clock=lambda: 1000.0,
+    )
+    assert await manager.get_access_token() == "fresh"
+    assert oauth.calls == ["refresh"]

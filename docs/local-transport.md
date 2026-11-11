@@ -1,5 +1,10 @@
 # Local setup transport
 
+> Development record: the status sentences on this page describe the state
+> before 0.9.0-alpha.1. Since then local setup and regular local polling are
+> active; see [local setup completion](local-completion.md) and
+> [managed local access](local-runtime.md).
+
 The local transport is a callable foundation for K40/MX400 setup. It is not yet
 connected to the setup dialog, credential storage or polling. It reads only
 `/gateway/brand`, `/gateway/versionFirmware` and `/system/basicInfo`, then passes

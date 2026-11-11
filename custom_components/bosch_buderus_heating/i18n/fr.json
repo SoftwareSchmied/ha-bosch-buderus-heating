@@ -10,7 +10,9 @@
       "discard": "Ignorer",
       "reload": "Recharger les valeurs",
       "unsaved": "{count} modifications non enregistrées",
+      "unsavedOne": "{count} modification non enregistrée",
       "saved": "Modifications confirmées.",
+      "unchanged": "Aucune modification, rien n'a été écrit.",
       "empty": "Aucune commande n'est disponible actuellement.",
       "pending": "Les modifications ne sont écrites que lorsque vous sélectionnez Appliquer.",
       "reopen": "Veuillez fermer puis rouvrir la boîte de dialogue.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Date",
       "time": "Heure",
-      "deleteFailed": "Impossible d'ouvrir la confirmation de suppression. Veuillez recharger la page et réessayer."
+      "deleteFailed": "Impossible d'ouvrir la confirmation de suppression. Veuillez recharger la page et réessayer.",
+      "reopen": "Veuillez fermer puis rouvrir la boîte de dialogue."
     }
   },
   "texts": {

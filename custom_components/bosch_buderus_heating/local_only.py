@@ -16,6 +16,7 @@ they get no statistics, and identifiers are never offered.
 
 from __future__ import annotations
 
+import math
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass, replace
@@ -1418,6 +1419,15 @@ def flag_state(value: object) -> str | None:
 def _flag(value: object) -> str | None:
     if isinstance(value, bool):
         return "on" if value else "off"
+    if isinstance(value, float):
+        value = Decimal(value) if math.isfinite(value) else None
+    if (
+        isinstance(value, Decimal)
+        and value.is_finite()
+        and value == value.to_integral()
+    ):
+        # A float answer 1.0/0.0 means the same as 1/0 (D12); 0.5 stays None.
+        value = int(value)
     raw = str(value) if isinstance(value, str | int | Decimal) else ""
     text = state_key(raw) or ""
     if text in ("true", "on", "1", "active", "yes"):

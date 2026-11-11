@@ -63,6 +63,7 @@ from .local_transport import (
     PortRole,
     inspect_local_certificate,
 )
+from .markdown_text import markdown_literal
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -144,6 +145,31 @@ def local_error(error: object) -> str:
         "local_enrollment_storage_failed": "local_storage_failed",
         "local_save_outcome_uncertain": "local_completion_uncertain",
         "local_runtime_restart_failed": "local_completion_uncertain",
+        # D21: codes real states can reach, each shown with the nearest text
+        # instead of "unexpected".
+        "local_already_connected": "local_identity_conflict",
+        "local_stale_observation": "local_identity_unverified",
+        "local_target_missing": "local_identity_unverified",
+        "local_unverified_namespace": "local_identity_unverified",
+        "local_target_unavailable": "local_configuration_changed",
+        "local_target_changed": "local_configuration_changed",
+        "unsupported_connection": "local_configuration_changed",
+        "local_storage_upgrade_requires_stop": "local_busy",
+        "authentication_in_progress": "local_busy",
+        "unsupported_version": "local_storage_failed",
+        "unsupported_minor_version": "local_storage_failed",
+        "enrollment_journal_full": "local_storage_failed",
+        "enrollment_storage_unconfirmed": "local_storage_failed",
+        "invalid_enrollment_journal": "local_storage_failed",
+        "response_too_large": "local_invalid_response",
+        "duplicate_response": "local_invalid_response",
+        "missing_response": "local_invalid_response",
+        "wrong_resource": "local_invalid_response",
+        "wrong_source": "local_invalid_response",
+        "invalid_discovery": "local_invalid_response",
+        "unsupported_discovery_port": "local_invalid_address",
+        "no_usable_address": "local_invalid_address",
+        "stale_observation": "local_configuration_changed",
     }.get(str(error), "local_unexpected")
 
 
@@ -685,7 +711,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             "local_certificate",
             vol.Schema({vol.Required("confirm", default=False): BooleanSelector()}),
             placeholders={
-                "host": self._local_address,
+                "host": markdown_literal(self._local_address),
                 "port": str(observation.role.port),
                 "fingerprint": observation.sha256.hex(),
                 "previous": self._local_previous_pin(observation.role) or "?",
@@ -994,7 +1020,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         return self._local_form(
             "local_result",
             vol.Schema({vol.Required("confirm", default=False): BooleanSelector()}),
-            placeholders={"host": self._local_address, "gateway": self._local_gateway},
+            placeholders={
+                "host": markdown_literal(self._local_address),
+                "gateway": markdown_literal(self._local_gateway),
+            },
         )
 
     async def async_step_local_retry(

@@ -2,15 +2,16 @@
 
 I added a pure storage model and a converter for the existing cloud configuration.
 They support independent connections within the existing configuration owner.
-The active Home Assistant entry version is **4**, with minor version **1**.
-Normal HA setup migrates existing entries before starting the managed runtime;
-new configuration writes the new format directly. Migration, cloud dialogs and
-lifecycle tests run without a version override. This is the current local
-unreleased implementation, not a claim that an installation has been updated.
+The active Home Assistant entry version is **4**, with minor version **2**
+(since 0.9.0-alpha.1). Normal HA setup migrates existing entries, including
+version 4.1, before starting the managed runtime; new configuration writes the
+new format directly. Minor version 2 adds the
+[local credential contract](local-credentials.md). Migration, cloud dialogs and
+lifecycle tests run without a version override.
 
 ## Contracts
 
-`configuration.load_configuration` validates a proposed version **4.1** snapshot.
+`configuration.load_configuration` validates a version **4.1** or **4.2** snapshot.
 It returns immutable views of connections, targets and bindings, plus detached
 JSON exports for later persistence. A target can represent a PointT object, an
 independent cloud device or a local installation. A target does not establish
@@ -35,9 +36,10 @@ state; the managed lifecycle removes access and retains unavailable entities.
 
 Unknown JSON fields and adapter records survive explicit serialization. They
 do not authorize transport, establish account identity or enable writes. A future
-runtime must select only supported adapter and identity contracts. This first
-loader accepts exactly version 4.1; a new version needs an explicit compatibility
-decision before it can be read or rewritten.
+runtime must select only supported adapter and identity contracts. The loader
+accepts exactly versions 4.1 and 4.2; a new version needs an explicit
+compatibility decision before it can be read or rewritten. An entry saved by a
+newer minor version is not loaded.
 
 ## Preparing an existing entry
 
@@ -619,12 +621,12 @@ split or appliance write is enabled by these dialogs.
 
 ## Activation and rollback
 
-The prepared [local credential contract](local-credentials.md) adds readers for
-minor version 2. The normal flow still advertises 4.1, and local commits remain
-gated. New local records distinguish reported token scope from verified read
-access and require explicit certificate evidence. Their initial version update
-requires a stopped owner with no pending credential refresh. Native HA tests
-enable the new version only in isolation; this does not activate local setup.
+The [local credential contract](local-credentials.md) adds minor version 2,
+which the normal flow advertises since 0.9.0-alpha.1. New local records
+distinguish reported token scope from verified read access and require explicit
+certificate evidence. The transition of a 4.1 entry to 4.2 requires a stopped
+owner with no pending credential refresh. Returning to a release before
+0.9.0-alpha.1 requires the matching configuration backup.
 
 Entry version 4 is now advertised by the setup flow. Existing version 3 entries
 are converted before managed setup. Valid earlier previews first complete their

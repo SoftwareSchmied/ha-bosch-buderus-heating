@@ -580,6 +580,7 @@ The development toolchain requires Python 3.14.2 or newer.
 
 ```bash
 python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 python -m pip install -e ".[test]"
 ruff format --check .
 ruff check .

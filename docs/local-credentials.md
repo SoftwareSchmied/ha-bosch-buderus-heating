@@ -1,9 +1,10 @@
 # Local credentials and verified handover
 
 This foundation prepares local access for an explicitly selected, retained
-installation. It does not discover new devices or enable local polling. The
-normal setup flow still advertises entry version 4.1. Writing the new local
-format is gated until the flow explicitly enables version 4.2.
+installation. The normal setup flow advertises entry version 4.2 since
+0.9.0-alpha.1 and writes the local format described here; discovery and
+polling are described in [local setup completion](local-completion.md) and the
+[managed local runtime](local-runtime.md).
 
 ## Stored data and provenance
 
@@ -57,15 +58,14 @@ to the later local/cloud resource policy.
 
 ## Version transition and HA persistence
 
-Readers support the existing 4.1 contract and the prepared 4.2 contract. The
-active version remains 4.1. A new provenance record is rejected when presented
-as 4.1 data. Legacy local preview records remain readable without inventing
+Readers support the earlier 4.1 contract and the active 4.2 contract. A new
+provenance record is rejected when presented as 4.1 data. Legacy local preview records remain readable without inventing
 certificate trust or fresh read evidence; they need verification before reuse.
 Returning to older software requires the matching configuration backup.
 
 The initial 4.1 to 4.2 transition requires a stopped entry and no pending cloud
-credential refresh. A future setup flow must arrange this transition and resume
-the entry afterwards. Subsequent local replacements within 4.2 use the scoped
+credential refresh. The setup flow arranges this transition and resumes the
+entry afterwards. Subsequent local replacements within 4.2 use the scoped
 update. The cloud authentication context includes the minor storage version so
 a restarted owner cannot reuse an old token-persistence callback. Existing
 account backoff is retained when the manager is rebuilt.

@@ -147,8 +147,9 @@ week); a changed answer schema keeps that pause. Invalid
 responses use 15 minutes, one hour and 24 hours. Timeouts use five, 15, 60 minutes
 and then a day. These retries still need a discovery slot. Access failures use
 60, 120, 300 and then 600 seconds through the shared persistent budget, also
-after a 429. A longer Retry-After is retained in full; a short or zero one does
-not stop the growing pause. When both running reads fail together (an
+after a 429. A longer Retry-After is kept up to 24 hours (see
+[cloud pauses](cloud-pauses.md)); a short or zero one does not stop the
+growing pause. When both running reads fail together (an
 unreachable gateway), the read that started before the pause counts as the
 same failure. An unexpected problem of the local reads pauses them for 60 to
 900 seconds; the same problem is logged as a warning at most once an hour.

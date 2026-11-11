@@ -238,3 +238,72 @@ def test_only_own_errors_carry_a_code(caplog) -> None:
     caplog.clear()
     assert flow.reported_local_error(ConfigurationError("timeout")) == "local_timeout"
     assert not caplog.records
+
+
+# --------------------------------------------- D21: reachable codes
+
+
+_REACHABLE = {
+    "local_already_connected": "local_identity_conflict",
+    "local_stale_observation": "local_identity_unverified",
+    "local_target_missing": "local_identity_unverified",
+    "local_unverified_namespace": "local_identity_unverified",
+    "local_target_unavailable": "local_configuration_changed",
+    "local_target_changed": "local_configuration_changed",
+    "unsupported_connection": "local_configuration_changed",
+    "local_storage_upgrade_requires_stop": "local_busy",
+    "authentication_in_progress": "local_busy",
+    "unsupported_version": "local_storage_failed",
+    "unsupported_minor_version": "local_storage_failed",
+    "enrollment_journal_full": "local_storage_failed",
+    "enrollment_storage_unconfirmed": "local_storage_failed",
+    "invalid_enrollment_journal": "local_storage_failed",
+    "response_too_large": "local_invalid_response",
+    "duplicate_response": "local_invalid_response",
+    "missing_response": "local_invalid_response",
+    "wrong_resource": "local_invalid_response",
+    "wrong_source": "local_invalid_response",
+    "invalid_discovery": "local_invalid_response",
+    "unsupported_discovery_port": "local_invalid_address",
+    "no_usable_address": "local_invalid_address",
+    "stale_observation": "local_configuration_changed",
+}
+
+
+@pytest.mark.parametrize(("code", "key"), sorted(_REACHABLE.items()))
+def test_reachable_codes_get_a_text_instead_of_unexpected(code, key) -> None:
+    """D21: a newer entry, a taken target or a full journal is named."""
+    from custom_components.bosch_buderus_heating.configuration import (
+        ConfigurationError,
+    )
+
+    assert flow.local_error(code) == key
+    assert flow.local_error(ConfigurationError(code)) == key
+    assert flow.reported_local_error(ConfigurationError(code)) == key
+
+
+def test_identity_reasons_and_probe_problems_all_have_a_text() -> None:
+    """Every reason a mismatch reports and every probe problem is mapped."""
+    from typing import get_args
+
+    from custom_components.bosch_buderus_heating.gateway_identity import (
+        MatchReason,
+    )
+    from custom_components.bosch_buderus_heating.local_probe import (
+        LocalProbeError,
+        ProbeProblem,
+    )
+
+    reasons = set(get_args(MatchReason.__value__)) - {"matched"}
+    for reason in reasons:
+        assert flow.local_error("local_" + reason) != "local_unexpected", reason
+    for problem in ProbeProblem:
+        assert flow.local_error(LocalProbeError(problem)) != "local_unexpected", problem
+
+
+def test_the_texts_of_the_reachable_codes_exist() -> None:
+    keys = set(_REACHABLE.values())
+    for name in ("strings.json", "translations/en.json", "translations/de.json"):
+        data = json.loads((INTEGRATION / name).read_text(encoding="utf-8"))
+        for section in ("config", "options"):
+            assert keys <= set(data[section]["error"]), (name, section)

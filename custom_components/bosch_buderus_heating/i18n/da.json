@@ -10,7 +10,9 @@
       "discard": "Kassér",
       "reload": "Indlæs værdier igen",
       "unsaved": "{count} ikke gemte ændringer",
+      "unsavedOne": "{count} ikke gemt ændring",
       "saved": "Ændringerne er bekræftet.",
+      "unchanged": "Ingen ændringer, intet blev skrevet.",
       "empty": "Der er ingen tilgængelig styring lige nu.",
       "pending": "Ændringer skrives først, når du vælger Anvend.",
       "reopen": "Luk dialogen, og åbn den igen.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Dato",
       "time": "Tid",
-      "deleteFailed": "Bekræftelsen af sletning kunne ikke åbnes. Genindlæs siden, og prøv igen."
+      "deleteFailed": "Bekræftelsen af sletning kunne ikke åbnes. Genindlæs siden, og prøv igen.",
+      "reopen": "Luk dialogen, og åbn den igen."
     }
   },
   "texts": {

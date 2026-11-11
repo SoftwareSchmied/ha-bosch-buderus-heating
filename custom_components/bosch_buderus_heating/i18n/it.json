@@ -10,7 +10,9 @@
       "discard": "Scarta",
       "reload": "Ricarica i valori",
       "unsaved": "{count} modifiche non salvate",
+      "unsavedOne": "{count} modifica non salvata",
       "saved": "Modifiche confermate.",
+      "unchanged": "Nessuna modifica, non è stato scritto nulla.",
       "empty": "Al momento non sono disponibili comandi.",
       "pending": "Le modifiche vengono scritte solo quando selezioni Applica.",
       "reopen": "Chiudi e riapri la finestra di dialogo.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Data",
       "time": "Ora",
-      "deleteFailed": "Non è stato possibile aprire la conferma di eliminazione. Ricarica la pagina e riprova."
+      "deleteFailed": "Non è stato possibile aprire la conferma di eliminazione. Ricarica la pagina e riprova.",
+      "reopen": "Chiudi e riapri la finestra di dialogo."
     }
   },
   "texts": {

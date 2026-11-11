@@ -109,6 +109,7 @@ from .i18n import localize
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
 from .local_credentials import LOCAL_STORAGE_MINOR_VERSION
 from .local_flow import LocalSetupFlow
+from .markdown_text import markdown_literal
 from .notifications import (
     gateway_notification_key,
     installation_name,
@@ -1234,7 +1235,7 @@ class BoschBuderusOptionsFlow(
             data_schema=vol.Schema(
                 {vol.Required("confirm_delete", default=False): BooleanSelector()}
             ),
-            description_placeholders={"holiday": choice.label},
+            description_placeholders={"holiday": markdown_literal(choice.label)},
             errors=errors,
             last_step=True,
         )
@@ -1820,7 +1821,9 @@ class BoschBuderusOptionsFlow(
             if configuration.source_path != HOLIDAY_CREATE_PATH
             else ("new_holiday" if creating else "holiday"),
             data_schema=HolidayFormSchema(schema.schema),
-            description_placeholders=None if creating else {"holiday": choice.label},
+            description_placeholders=(
+                None if creating else {"holiday": markdown_literal(choice.label)}
+            ),
             errors=errors,
             last_step=True,
         )

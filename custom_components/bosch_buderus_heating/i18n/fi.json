@@ -10,7 +10,9 @@
       "discard": "Hylkää",
       "reload": "Lataa arvot uudelleen",
       "unsaved": "Tallentamattomia muutoksia: {count}",
+      "unsavedOne": "Tallentamattomia muutoksia: {count}",
       "saved": "Muutokset vahvistettu.",
+      "unchanged": "Ei muutoksia, mitään ei kirjoitettu.",
       "empty": "Ohjauksia ei ole tällä hetkellä saatavilla.",
       "pending": "Muutokset kirjoitetaan vasta, kun valitset Käytä.",
       "reopen": "Sulje ikkuna ja avaa se uudelleen.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Päivämäärä",
       "time": "Aika",
-      "deleteFailed": "Poiston vahvistusta ei voitu avata. Lataa sivu uudelleen ja yritä uudelleen."
+      "deleteFailed": "Poiston vahvistusta ei voitu avata. Lataa sivu uudelleen ja yritä uudelleen.",
+      "reopen": "Sulje ikkuna ja avaa se uudelleen."
     }
   },
   "texts": {

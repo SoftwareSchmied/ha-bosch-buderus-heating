@@ -532,3 +532,62 @@ async def test_a_current_number_without_a_unit_shows_none(hass) -> None:
     assert sensor.state_class is None  # no statistics under the old unit
     sensor.coordinator = coordinator_with(hass, [])
     assert sensor.native_unit_of_measurement == "°C"  # held while there is none
+
+
+# ----------------------------------------------------------------- review D11/D12
+
+
+def test_every_named_generic_controller_signal_keeps_its_statistics() -> None:
+    """D11: statistics of a named signal must not hinge on its key spelling.
+
+    Every generic controller signal except the installation date parts is a
+    second source of a measurement; each one must be in the statistics set,
+    so a renamed key can never silently drop the state class.
+    """
+    from custom_components.bosch_buderus_heating.local_only import (
+        _SIGNAL_KEYS,
+        CONTROLLER_SIGNALS,
+    )
+
+    named = {
+        definition.key
+        for definition in CONTROLLER_SIGNALS
+        if definition.kind == GENERIC
+        and not definition.key.startswith("installation_date_")
+    }
+    assert named
+    assert named <= _SIGNAL_KEYS
+    assert not {k for k in _SIGNAL_KEYS if k.startswith("installation_date_")}
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (1.0, "on"),
+        (0.0, "off"),
+        (-0.0, "off"),
+        (0.5, None),
+        (2.0, None),
+        (float("nan"), None),
+        (float("inf"), None),
+    ],
+)
+def test_float_on_off_values_are_states_like_integers(value, expected) -> None:
+    """D12: an on/off signal answered as 1.0/0.0 is on/off, not unknown."""
+    from decimal import Decimal
+
+    from custom_components.bosch_buderus_heating.local_only import flag_state
+
+    assert flag_state(value) == expected
+    if value == value and abs(value) != float("inf"):
+        assert flag_state(Decimal(str(value))) == expected
+
+
+def test_a_float_flag_answer_is_shown_as_on_off() -> None:
+    """D12: the same through a decoded local answer of type floatValue."""
+    name = "SRC.CUHP.HMI.CompressorActive"
+    sensor, value = shown(signal(name, 1.0))
+    assert sensor.definition.kind == FLAG
+    assert value == "on"
+    assert shown(signal(name, 0.0))[1] == "off"
+    assert shown(signal(name, 0.5))[1] is None

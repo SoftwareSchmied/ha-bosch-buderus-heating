@@ -112,7 +112,7 @@ postpone recovery. Missed deadlines do not cause a burst of catch-up batches.
 | --- | --- |
 | Valid read-only scalar with the reviewed schema | Cache it with the actual read time. Stop periodic reads for the rest of this load. |
 | Timeout, connection/service failure, malformed response, missing requested item or unusable value, including an empty HTTP 200 | Keep the affected paths pending. The delay after successive failures is **60, 120, 300, 900, then 1800 seconds**. Further failures keep the 1800-second delay; there is no lifetime attempt limit. |
-| HTTP 403, 404 or 406 for an advertised metadata sensor or an existing registered metadata sensor | Retain it as expected and retry no earlier than **1800 seconds** later. These local errors do not fail the complete integration. |
+| HTTP 403, 404 or 406 for an advertised metadata sensor or an existing registered metadata sensor | Retain it as expected and retry no earlier than **1800 seconds** later. After the fifth such answer (since 0.9.0-alpha.6) it counts as unsupported until the next discovery, so a replaced device is not read every 30 minutes for good. These local errors do not fail the complete integration. |
 | HTTP 403, 404 or 406 for diagnostic-only data or an unconfirmed optional candidate | Mark it unsupported for this load. Do not keep requesting an unsupported informational path. A new explicit discovery can reconsider it. |
 | HTTP 429, including a rate-limited item inside a successful bulk envelope | Respect the account-wide pause before any further PointT read. Use `Retry-After` where supplied, bounded to 60 through 3600 seconds; otherwise pause for 300 seconds. Per-path deadlines still apply afterward. |
 | An expired access token that can be refreshed | Keep the existing single token refresh and repeat the PointT request once. This is distinct from a transport retry. |
@@ -281,6 +281,20 @@ cloud limits. Large accounts may therefore prefer the cloud-friendly profile.
 Diagnostics report the longest cycle per gateway, how often a cycle exceeded
 its interval and how long requests waited for a free slot.
 
+## Energy history of room controllers
+
+On a room controller (RRC 2.0, for example a TC100.2), the integration reads
+the daily energy history and imports it as long-term statistics. This comes on
+top of the regular polling. The first cycle runs 15 minutes after the start,
+later cycles at most every 3 hours. A cycle sends at most 8 requests; the
+shared transport may repeat one of them once after a 5xx answer or a timeout,
+so a cycle makes at most 16 HTTP attempts. A first filling reaches back at most
+400 days. While the cloud cannot be used (sign-in, pause, rate limit, outage)
+a cycle waits and is tried again after one hour; a rate limit answered to the
+history pauses the whole cloud access like any other. The import position is
+stored, so a restart neither reads the history again nor waits less. The
+energy history is expected, untested on a real controller.
+
 ## Manual heating-circuit setpoint recovery
 
 When a reported heating circuit is confirmed to be in Manual and its
@@ -343,7 +357,9 @@ gelesene Zusatzdaten, sofern die Konfiguration und Anmeldung unverändert sind.
 Vorübergehend fehlende Zusatzdaten werden ohne Neustart nachgeladen. Bestehende
 Sensoren behalten ihre Identität und werden nach erfolgreichem Lesen wieder
 verfügbar. Die Wartezeiten steigen nach Fehlern von 1 auf 2, 5, 15 und 30 Minuten
-und bleiben danach bei 30 Minuten. Cloud-Sperrzeiten und reguläre Anlagenabfragen
+und bleiben danach bei 30 Minuten. Ein Wert, der fünfmal als nicht vorhanden
+(403, 404 oder 406) beantwortet wurde, wird bis zur nächsten Discovery nicht
+mehr gelesen. Cloud-Sperrzeiten und reguläre Anlagenabfragen
 haben Vorrang. Nicht unterstützte reine Zusatzpfade und Sicherheitsgrenzen sind
 ausdrücklich von dieser fortgesetzten Wiederholung ausgenommen.
 

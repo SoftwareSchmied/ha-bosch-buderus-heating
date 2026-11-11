@@ -476,6 +476,15 @@ async def async_remove_entry(
     await async_remove_entry_stores(hass, entry)
 
 
+async def async_remove_config_entry_device(
+    hass: HomeAssistant, entry: BoschBuderusConfigEntry, device: dr.DeviceEntry
+) -> bool:
+    """Offer "Delete" for a device the integration no longer provides (D42)."""
+    from .device_removal import async_remove_config_entry_device as allowed
+
+    return await allowed(hass, entry, device)
+
+
 def _clear_entry_issues(hass: HomeAssistant, entry_id: str) -> None:
     """Every repair note of a removed entry, loaded or not (STORE-4).
 

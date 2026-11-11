@@ -616,3 +616,75 @@ def test_all_day_calendar_holiday_reads_back_as_all_day() -> None:
         date(2030, 9, 1),
         date(2030, 9, 8),
     )
+
+
+def test_rows_with_several_synonyms_are_always_read_the_same_way() -> None:
+    """D28: the documented priority decides, never the hash seed.
+
+    A row with a separate date and time of day is read by its date, a named
+    zone wins over a fixed offset, and ``id`` and ``name`` win over their
+    synonyms. Before, the choice changed with each Home Assistant start.
+    """
+    from custom_components.bosch_buderus_heating import holidays
+
+    for keys in (
+        holidays._START_KEYS,
+        holidays._END_KEYS,
+        holidays._ID_KEYS,
+        holidays._NAME_KEYS,
+        holidays._TIME_ZONE_KEYS,
+    ):
+        assert isinstance(keys, tuple) and len(set(keys)) == len(keys)
+    resource = Resource(
+        path=HOLIDAY_LIST_PATH,
+        values=(
+            {
+                "id": "7",
+                "uuid": "other",
+                "name": "Winter",
+                "title": "Other",
+                "startDate": "2026-12-24",
+                "startTime": "2026-12-24T10:00:00",
+                "endDate": "2026-12-26",
+                "endTime": "2026-12-26T18:00:00",
+                "timeZone": "Europe/Berlin",
+                "offset": "+05:00",
+            },
+        ),
+    )
+    state = parse_holiday_state(
+        {resource.path: resource},
+        fallback_timezone=UTC,
+        timezones={"Europe/Berlin": ZoneInfo("Europe/Berlin")},
+    )
+    period = state.periods[0]
+    assert period.all_day
+    assert period.start.isoformat() == "2026-12-24T00:00:00+01:00"
+    assert period.end.isoformat() == "2026-12-27T00:00:00+01:00"
+    assert period.name == "Winter"
+    assert period.identifier == "7"
+
+
+def test_the_synonym_priority_does_not_depend_on_the_hash_seed() -> None:
+    """D28: the same row gives the same period under different hash seeds."""
+    import os
+    import subprocess
+    import sys
+
+    script = (
+        "from custom_components.bosch_buderus_heating import holidays as h\n"
+        "row = {k: str(i) for i, k in enumerate(h._START_KEYS + h._END_KEYS)}\n"
+        "print(h._find_value(row, h._START_KEYS), h._find_value(row, h._END_KEYS))\n"
+    )
+    seen = set()
+    for seed in ("1", "2", "3", "4"):
+        result = subprocess.run(
+            [sys.executable, "-c", script],
+            capture_output=True,
+            check=True,
+            text=True,
+            env={**os.environ, "PYTHONHASHSEED": seed},
+            timeout=60,
+        )
+        seen.add(result.stdout.strip())
+    assert seen == {"0 12"}

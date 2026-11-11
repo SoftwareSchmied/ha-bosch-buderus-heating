@@ -10,7 +10,9 @@
       "discard": "Förkasta",
       "reload": "Läs in värdena igen",
       "unsaved": "{count} osparade ändringar",
+      "unsavedOne": "{count} osparad ändring",
       "saved": "Ändringarna bekräftades.",
+      "unchanged": "Inga ändringar, inget skrevs.",
       "empty": "Ingen styrning är tillgänglig just nu.",
       "pending": "Ändringar skrivs först när du väljer Tillämpa.",
       "reopen": "Stäng och öppna dialogrutan igen.",
@@ -19,7 +21,8 @@
     "holiday": {
       "date": "Datum",
       "time": "Tid",
-      "deleteFailed": "Bekräftelsen av borttagningen kunde inte öppnas. Läs in sidan igen och försök på nytt."
+      "deleteFailed": "Bekräftelsen av borttagningen kunde inte öppnas. Läs in sidan igen och försök på nytt.",
+      "reopen": "Stäng och öppna dialogrutan igen."
     }
   },
   "texts": {

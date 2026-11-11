@@ -9,7 +9,8 @@ This change provides regular local data to the managed source. Existing normal
 entities use their cloud adapters unless **local values for existing entities**
 are enabled or the cloud cannot be used; then verified [observation pairs](observation-pairs.md) prefer the
 current local reading and fall back to the cloud. Local paths do not create additional Home Assistant devices.
-A first installation using only local access remains outside this step.
+A system can also be set up with its local access only and get its cloud
+access later in the same entry (see [operation without the cloud](operation-without-cloud.md)).
 
 ## First link and subsequent starts
 

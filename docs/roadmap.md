@@ -2,6 +2,10 @@
 
 ## Published releases
 
+Since 2026-11-08 the 0.9.0 line is in pre-release testing (versions
+0.9.0-alpha.N, see the [CHANGELOG](../CHANGELOG.md)); the stable line is
+described below.
+
 As of 2026-11-02, **0.8.3 is Stable/Latest** and includes the work from all
 0.8.2 betas plus the compatible maintenance updates and sign-in guide changes.
 It fixes platform imports on Home Assistant 2026.9.2, includes compatible

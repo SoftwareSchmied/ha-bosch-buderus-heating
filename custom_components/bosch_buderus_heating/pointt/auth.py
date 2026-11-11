@@ -329,6 +329,10 @@ class OAuthClient:
             raise InvalidPayload("OAuth token response did not contain expires_in")
         if not math.isfinite(float(expires_in)):
             raise InvalidPayload("OAuth token expiry must be finite")
+        if float(expires_in) <= 0:
+            # An already expired token would be refreshed before every
+            # request (D15).
+            raise InvalidPayload("OAuth token expiry must be positive")
         token_type = payload.get("token_type", "Bearer")
         if not isinstance(token_type, str):
             raise InvalidPayload("OAuth token type must be a string")
