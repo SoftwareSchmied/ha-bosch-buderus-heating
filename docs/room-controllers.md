@@ -207,6 +207,11 @@ circuit as well.
   counts as maintenance on every gateway, not as a fault. Under **Configure →
   Notifications** an option, off by default, also shows warnings and
   maintenance in the bell notification. See [faults](faults.md).
+- **Display levels:** a notification that the controller marks for experts
+  or installers (display level 0, 2 or 4, numeric class below 18) stays
+  listed under Active notifications, but does not turn on System fault and
+  does not show in the bell. See
+  [display levels on room controllers](faults.md#display-levels-on-room-controllers).
 
 ## Energy history
 
@@ -356,7 +361,9 @@ ebenso der CT200 insgesamt:
   verriegelnde Störung (bis zum manuellen Reset), blockierende Störung,
   Wartung fällig, Nachfüllen erforderlich; eigene Texte für
   Funkgerätestörungen; Klasse 18/20 als Wartung; Warnungen und Wartung
-  optional in der Glocken-Benachrichtigung.
+  optional in der Glocken-Benachrichtigung; Meldungen für Fachleute oder
+  Installateure (Anzeigeebene 0, 2 oder 4) nur unter „Aktive Meldungen“,
+  siehe [Störungen](faults.md#display-levels-on-room-controllers).
 - **Energiehistorie:** Tageswerte als Statistiken mit dem Zusatz
   „(kWh erwartet)“, weil die Einheit nicht bestätigt ist; Gas nur mit
   bestätigter Einheit; die älteren Schlüssel `eCH`/`eHW` je nach
