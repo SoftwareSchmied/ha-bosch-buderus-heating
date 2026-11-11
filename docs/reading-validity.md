@@ -73,8 +73,12 @@ as described above.
 
 ## What keeps the strict rule
 
-Controls, climate and hot-water entities and every write require a successful
-current cloud cycle. Sensors that combine several readings or show other state,
+The climate entity of a heating circuit shows its mode, target and room
+temperature like the sensors, as long as each reading is within its validity
+limit, so a failed or older cloud cycle alone does not make it unavailable.
+Changing it still requires current readings of a ready cloud. Controls,
+hot-water entities and every write require a successful current cloud cycle.
+Sensors that combine several readings or show other state,
 such as the dew point, the pressure status, the low-salt warning, fault
 counters, the system fault and holiday sensors, keep following the last cloud
 cycle and their stored readings as before, without local values. Nothing is

@@ -1,5 +1,10 @@
 # Shared local budgets and source health
 
+> Development record: the status sentences on this page describe the state
+> before 0.9.0-alpha.1. Since then local setup and regular local polling are
+> active; see [local setup completion](local-completion.md) and
+> [managed local access](local-runtime.md).
+
 I added the shared foundation for local setup and the read scheduler.
 It does not enable public local setup or regular local polling.
 
@@ -65,7 +70,8 @@ every hardware failure.
 
 Deadlines use monotonic time. HTTP-date Retry-After is converted once to a
 duration, and later shorter delays never shorten an existing pause. Long delays
-are retained in full. While a pause exists, remaining time is checkpointed every
+are kept up to 24 hours; a longer one is cut to 24 hours, as for the cloud
+(see [cloud pauses](cloud-pauses.md)). While a pause exists, remaining time is checkpointed every
 60 seconds and on clean shutdown. A restart restores the entire saved duration,
 without subtracting wall-clock downtime. A crash or repeated restart can extend
 a pause, but a clock jump cannot make it expire early. Expired pauses disappear
