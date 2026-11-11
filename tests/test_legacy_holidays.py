@@ -51,13 +51,13 @@ from custom_components.bosch_buderus_heating.switch import (
 )
 from custom_components.bosch_buderus_heating.writes import assess_control
 from tests import test_dynamic_controls
+from tests.helpers.options_menu import outcome
 from tests.test_config_flow import (
     _entry_with_writable_holiday,
     _holiday_form_input,
     _start_holiday_options,
 )
 from tests.test_dynamic_controls import snapshots
-from tests.helpers.options_menu import outcome
 
 PAYLOADS = json.loads(
     (Path(__file__).parent / "fixtures/contracts/holidays/legacy.json").read_text()
