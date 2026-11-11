@@ -282,9 +282,12 @@ cloud then answered with a rate limit after a few failed cycles. Since
 only; every other gateway keeps the behaviour described above:
 
 - **Cloud-friendly from the start:** a new cloud connection with an iCom
-  gateway starts with the cloud-friendly profile. It can be changed in the
-  options of the connection like any other profile. Existing connections keep
-  their profile.
+  gateway starts with the cloud-friendly profile. An existing connection with
+  an iCom gateway is switched to it once, at the first start of 0.9.0-alpha.6
+  or later; the log notes this once at info level, and the connection
+  restarts once with the new profile. The profile can be changed in the
+  options of the connection like any other profile; a choice made there is
+  kept and never switched again.
 - **Smaller batches after a timeout:** after a cycle with a timeout, the next
   cycle reads batches of half the size, at least 10 paths (30, 15, 10). After
   three cycles in a row in which every batch answered, the size doubles again
@@ -431,7 +434,11 @@ bisher unbekannte Anlagenbestandteile benötigen weiterhin eine neue Discovery.
 Für iCom-Gateways (Gerätetyp `icom`) gilt seit 0.9.0-alpha.6 ein eigenes
 Lastprofil, alle anderen Gateways bleiben unverändert: Eine neue
 Cloud-Verbindung mit einem iCom-Gateway beginnt mit dem cloudschonenden
-Profil, das sich in den Optionen wie bisher ändern lässt. Nach einem Zyklus
+Profil. Eine bestehende Verbindung mit einem iCom-Gateway stellt die
+Integration beim ersten Start ab 0.9.0-alpha.6 einmalig darauf um; das Log
+vermerkt das einmal auf Info-Ebene, und die Verbindung startet dafür einmal
+neu. Das Profil lässt sich in den Optionen wie bisher ändern; eine dort
+getroffene Wahl bleibt erhalten und wird nie wieder umgestellt. Nach einem Zyklus
 mit Zeitüberschreitung liest der nächste Zyklus halb so große Pakete,
 mindestens 10 Pfade; nach drei fehlerfreien Zyklen in Folge verdoppelt sich
 die Größe schrittweise wieder bis 30. Der Schutzschalter pausiert während

@@ -53,6 +53,7 @@ class Backend:
         self.gates = {}
         self.entered = {}
         self.wallbox = None
+        self.device_types = {}
 
     def resource(self, gateway, path):
         if path == "/heatingCircuits":
@@ -86,7 +87,9 @@ class Backend:
             [
                 {
                     "id": key,
-                    "deviceType": "Commodule2" if key == self.wallbox else "MX400",
+                    "deviceType": self.device_types.get(
+                        key, "Commodule2" if key == self.wallbox else "MX400"
+                    ),
                 }
                 for key in self.gateways
             ]
@@ -147,22 +150,38 @@ async def eventually(predicate, *, timeout=30):  # noqa: ASYNC109
 
 @asynccontextmanager
 async def running(
-    hass, backend, *, friendly=False, second_cloud=False, defaults=False, configure=None
+    hass,
+    backend,
+    *,
+    friendly=False,
+    second_cloud=False,
+    defaults=False,
+    configure=None,
+    restart=None,
 ):
-    entry, cloud, _ = entry_for(hass, second_cloud=second_cloud)
-    data, options = deepcopy(dict(entry.data)), deepcopy(dict(entry.options))
-    for key, connection in data["connections"].items():
-        if connection["kind"] == "singlekey_cloud":
-            connection["credentials"]["expires_at"] = 10**12
-            options["connections"][key]["polling_profile"] = (
-                "cloud_friendly" if friendly else "standard"
-            )
-    for key, binding in data["bindings"].items():
-        if binding["adapter"] == "bacon":
-            options["bindings"][key]["enabled"] = False
-    if configure is not None:
-        configure(data, options)
-    hass.config_entries.async_update_entry(entry, data=data, options=options)
+    """``restart``: the entry of an earlier run, started again as it is."""
+    if restart is not None:
+        entry = restart
+        cloud = next(
+            key
+            for key, connection in entry.data["connections"].items()
+            if connection["kind"] == "singlekey_cloud"
+        )
+    else:
+        entry, cloud, _ = entry_for(hass, second_cloud=second_cloud)
+        data, options = deepcopy(dict(entry.data)), deepcopy(dict(entry.options))
+        for key, connection in data["connections"].items():
+            if connection["kind"] == "singlekey_cloud":
+                connection["credentials"]["expires_at"] = 10**12
+                options["connections"][key]["polling_profile"] = (
+                    "cloud_friendly" if friendly else "standard"
+                )
+        for key, binding in data["bindings"].items():
+            if binding["adapter"] == "bacon":
+                options["bindings"][key]["enabled"] = False
+        if configure is not None:
+            configure(data, options)
+        hass.config_entries.async_update_entry(entry, data=data, options=options)
     harness = Harness()
     factory = CloudDriverFactory(hass, entry, lambda: owner.connections)
     owner = ManagedEntry(
@@ -608,3 +627,130 @@ async def test_replacement_waits_for_fault_baseline_flush(hass):
         assert current is not previous
         assert current.faults.active[0].fingerprint == fingerprint
         assert not current.faults.current_state_confirmed
+
+
+ICOM_SWITCH_LOG = "now uses the cloud-friendly polling profile"
+
+
+def _switch_logs(caplog):
+    return [
+        record
+        for record in caplog.records
+        if ICOM_SWITCH_LOG in record.getMessage() and record.levelname == "INFO"
+    ]
+
+
+def _started(owner, gateway="000123"):
+    return isinstance(source_for(owner, gateway), ManagedPointTCoordinator)
+
+
+async def test_an_existing_icom_connection_switches_once_to_cloud_friendly(
+    hass, caplog
+):
+    """I1 (option B): once per connection, kept across restarts."""
+    caplog.set_level("INFO", logger=MODULE)
+    backend = Backend()
+    backend.device_types = {"000123": "icom"}
+    async with running(hass, backend) as (entry, cloud, owner, _):
+        await eventually(
+            lambda: (
+                _started(owner)
+                and source_for(owner, "000123")._poll_intervals
+                == POLL_INTERVALS_CLOUD_FRIENDLY
+            )
+        )
+        settings = entry.options["connections"][cloud]
+        assert settings["polling_profile"] == "cloud_friendly"
+        assert settings["icom_profile_revision"] == 1
+        # The connection restarted once with the new profile; the first run
+        # read nothing of its gateways.
+        assert sum(call == ("gateways",) for call in backend.calls) == 2
+        assert not any(call[0] == "bulk" for call in backend.calls[:2])
+        assert len(_switch_logs(caplog)) == 1
+        # A second check changes nothing.
+        assert not owner.connections.management.switch_icom_profile(cloud)
+    # A restart keeps the profile and logs nothing more.
+    backend.calls.clear()
+    async with running(hass, backend, restart=entry) as (_, _, owner, _):
+        await eventually(lambda: _started(owner))
+        assert source_for(owner, "000123")._poll_intervals == (
+            POLL_INTERVALS_CLOUD_FRIENDLY
+        )
+        assert sum(call == ("gateways",) for call in backend.calls) == 1
+    assert entry.options["connections"][cloud]["polling_profile"] == "cloud_friendly"
+    assert len(_switch_logs(caplog)) == 1
+
+
+async def test_the_user_choice_after_the_icom_switch_is_kept(hass, caplog):
+    from custom_components.bosch_buderus_heating.const import PollingProfile
+
+    caplog.set_level("INFO", logger=MODULE)
+    backend = Backend()
+    backend.device_types = {"000123": "icom"}
+    async with running(hass, backend) as (entry, cloud, owner, _):
+        await eventually(
+            lambda: (
+                _started(owner)
+                and source_for(owner, "000123")._poll_intervals
+                == POLL_INTERVALS_CLOUD_FRIENDLY
+            )
+        )
+        management = owner.connections.management
+        management.set_polling_profile(management.edit(cloud), PollingProfile.STANDARD)
+        await eventually(
+            lambda: (
+                _started(owner)
+                and source_for(owner, "000123")._poll_intervals == POLL_INTERVALS
+            )
+        )
+        await settle(hass)
+        settings = entry.options["connections"][cloud]
+        assert settings["polling_profile"] == "standard"
+        assert settings["icom_profile_revision"] == 1
+    async with running(hass, backend, restart=entry) as (_, _, owner, _):
+        await eventually(lambda: _started(owner))
+        assert source_for(owner, "000123")._poll_intervals == POLL_INTERVALS
+    assert entry.options["connections"][cloud]["polling_profile"] == "standard"
+    assert len(_switch_logs(caplog)) == 1
+
+
+@pytest.mark.parametrize("revision", [None, 1])
+async def test_a_profile_set_before_the_first_start_is_kept(hass, caplog, revision):
+    """A connection already on the profile is not saved again; a marked
+    standard choice (from the options or a repair) stays."""
+    caplog.set_level("INFO", logger=MODULE)
+    backend = Backend()
+    backend.device_types = {"000123": "icom"}
+
+    def configure(_data, options):
+        for settings in options["connections"].values():
+            if "polling_profile" in settings:
+                settings["polling_profile"] = (
+                    "cloud_friendly" if revision is None else "standard"
+                )
+                if revision is not None:
+                    settings["icom_profile_revision"] = revision
+
+    async with running(hass, backend, configure=configure) as (entry, cloud, owner, _):
+        await eventually(lambda: _started(owner))
+        settings = entry.options["connections"][cloud]
+        assert settings["polling_profile"] == (
+            "cloud_friendly" if revision is None else "standard"
+        )
+        assert settings.get("icom_profile_revision") == revision
+        assert sum(call == ("gateways",) for call in backend.calls) == 1
+    assert _switch_logs(caplog) == []
+
+
+async def test_a_connection_without_an_icom_gateway_keeps_its_profile(hass, caplog):
+    caplog.set_level("INFO", logger=MODULE)
+    backend = Backend()
+    backend.device_types = {"000123": "rrc2", "gateway-b": "icombox"}
+    async with running(hass, backend) as (entry, cloud, owner, _):
+        await eventually(lambda: _started(owner) and _started(owner, "gateway-b"))
+        settings = entry.options["connections"][cloud]
+        assert settings["polling_profile"] == "standard"
+        assert "icom_profile_revision" not in settings
+        assert source_for(owner, "000123")._poll_intervals == POLL_INTERVALS
+        assert sum(call == ("gateways",) for call in backend.calls) == 1
+    assert _switch_logs(caplog) == []

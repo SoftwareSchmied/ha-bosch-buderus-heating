@@ -507,3 +507,44 @@ async def test_setup_rejects_invalid_auth_epoch_as_authentication_failure(hass):
     hass.config_entries.async_update_entry(entry, data={**entry.data, AUTH_EPOCH: -1})
     with pytest.raises(ConfigEntryAuthFailed):
         await async_setup_entry(hass, entry)
+
+
+async def test_a_profile_choice_marks_the_icom_switch_as_done(hass):
+    """I1: a profile set by the user (options or repair) is never switched."""
+    from custom_components.bosch_buderus_heating.configuration import (
+        load_configuration,
+    )
+
+    entry, configuration = configured(hass, 4)
+    options = configuration.polling_options(PollingProfile.STANDARD)
+    connection = options["connections"][legacy_cloud_connection_id(OWNER)]
+    assert connection["icom_profile_revision"] == 1
+    connection["icom_profile_revision"] = 7
+    hass.config_entries.async_update_entry(entry, options=options)
+    options = configuration.polling_options(PollingProfile.CLOUD_FRIENDLY)
+    connection = options["connections"][legacy_cloud_connection_id(OWNER)]
+    assert connection["icom_profile_revision"] == 7
+    for invalid in (True, -1, "1", 1.0):
+        connection["icom_profile_revision"] = invalid
+        with pytest.raises(ConfigurationError, match="invalid_polling_profile"):
+            load_configuration(OWNER, entry.data, options)
+
+
+async def test_a_profile_set_in_the_options_marks_the_icom_switch_as_done(hass):
+    from custom_components.bosch_buderus_heating.configuration_management import (
+        ConfigurationManagement,
+    )
+
+    entry, _configuration = configured(hass, 4)
+    cloud = legacy_cloud_connection_id(OWNER)
+    management = ConfigurationManagement(hass, entry)
+    assert "icom_profile_revision" not in entry.options["connections"][cloud]
+    management.set_polling_profile(management.edit(cloud), PollingProfile.STANDARD)
+    assert entry.options["connections"][cloud] == {
+        "enabled": True,
+        "polling_profile": "standard",
+        "icom_profile_revision": 1,
+    }
+    assert not management.switch_icom_profile(cloud)
+    assert entry.options["connections"][cloud]["polling_profile"] == "standard"
+    assert not management.switch_icom_profile("local")

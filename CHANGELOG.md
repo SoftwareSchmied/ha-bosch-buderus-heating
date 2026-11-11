@@ -108,7 +108,10 @@ the shapes of a real iCom gateway with a boiler controller. On a real iCom
 gateway they are expected, untested.
 
 - **Load profile:** a new cloud connection with an iCom gateway starts with
-  the cloud-friendly profile; it can be changed in the connection options.
+  the cloud-friendly profile. An existing connection with an iCom gateway
+  is switched to it once at the first start of this version, noted once in
+  the log at info level. It can be changed in the connection options, and
+  a choice made there is never switched again.
   After a cycle with a timeout the next one reads batches of half the size,
   at least 10 paths, and after three good cycles in a row the size doubles
   back step by step to 30. During a long outage the breaker pauses 5, 10, 20

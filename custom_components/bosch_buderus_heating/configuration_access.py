@@ -23,6 +23,7 @@ from .configuration import (
 from .configuration_migration import legacy_cloud_connection_id
 from .const import PollingProfile, polling_profile_from_options
 from .data import tokens_from_data, tokens_to_data
+from .icom_profile import ICOM_PROFILE_KEY, ICOM_PROFILE_REVISION
 from .pointt import AuthTokens
 
 TOKEN_KEYS = frozenset(
@@ -207,6 +208,13 @@ class EntryConfiguration:
             connections[self.connection_id] = {
                 **selected,
                 "polling_profile": profile.value,
+                # I1: a choice of the user is never switched again.
+                ICOM_PROFILE_KEY: max(
+                    ICOM_PROFILE_REVISION,
+                    revision
+                    if type(revision := selected.get(ICOM_PROFILE_KEY)) is int
+                    else 0,
+                ),
             }
             options["connections"] = connections
         return options

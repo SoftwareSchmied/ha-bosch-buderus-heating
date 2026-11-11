@@ -361,6 +361,11 @@ def _options(
                 profile = option.get("polling_profile")
                 if not isinstance(profile, str) or profile not in POLLING_PROFILES:
                     raise ConfigurationError("invalid_polling_profile")
+                # I1: the one-time switch of an iCom connection; ignored by
+                # older versions.
+                revision = option.get("icom_profile_revision", 0)
+                if type(revision) is not int or revision < 0:
+                    raise ConfigurationError("invalid_polling_profile")
             if key == "connections" and connections[identifier].kind == LOCAL_KIND:
                 interval = option.get("local_interval", 60)
                 if (

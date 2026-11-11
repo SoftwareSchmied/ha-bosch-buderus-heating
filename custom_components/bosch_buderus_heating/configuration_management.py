@@ -32,6 +32,7 @@ from .configuration import (
 from .configuration_access import EntryConfiguration
 from .const import DOMAIN, PollingProfile
 from .data import tokens_to_data
+from .icom_profile import ICOM_PROFILE_KEY, ICOM_PROFILE_REVISION
 from .pointt import AuthTokens, PointTClient
 from .repair_scope import repair_data, repair_id
 
@@ -377,10 +378,36 @@ class ConfigurationManagement:
         if before.connections[edit.connection_id].kind != CLOUD_KIND:
             raise ConfigurationError("unsupported_connection")
         data, options = before.to_data(), before.to_options()
-        section(options, "connections")[edit.connection_id]["polling_profile"] = (
-            profile.value
+        settings = section(options, "connections")[edit.connection_id]
+        settings["polling_profile"] = profile.value
+        # I1: the user's choice is never switched again.
+        settings[ICOM_PROFILE_KEY] = max(
+            ICOM_PROFILE_REVISION, _revision(settings.get(ICOM_PROFILE_KEY))
         )
         return self._save(data, options)
+
+    @callback
+    def switch_icom_profile(self, connection_id: str) -> bool:
+        """I1: switch an existing connection with an iCom gateway once to the
+        cloud-friendly profile; True if it was switched.
+
+        The revision is saved with it, so a later choice of the user (or a
+        connection already on the profile) is never switched again.
+        """
+        before = self.current()
+        connection = before.connections.get(connection_id)
+        if connection is None or connection.kind != CLOUD_KIND:
+            return False
+        data, options = before.to_data(), before.to_options()
+        settings = section(options, "connections")[connection_id]
+        if _revision(settings.get(ICOM_PROFILE_KEY)) >= ICOM_PROFILE_REVISION:
+            return False
+        if settings.get("polling_profile") == PollingProfile.CLOUD_FRIENDLY.value:
+            return False  # nothing to switch; a later choice is marked then
+        settings["polling_profile"] = PollingProfile.CLOUD_FRIENDLY.value
+        settings[ICOM_PROFILE_KEY] = ICOM_PROFILE_REVISION
+        self._save(data, options)
+        return True
 
     @callback
     def set_local_interval(
@@ -725,3 +752,7 @@ class ConfigurationManagement:
         result = self._save(data, options)
         set_not_found_issue(self.hass, self.entry, result, edit.connection_id, missing)
         return result
+
+
+def _revision(value: object) -> int:
+    return value if type(value) is int else 0

@@ -32,6 +32,7 @@ from .coordinator import (
 from .counter_selection import CounterGuard, counter_source_store
 from .discovery import error_category
 from .discovery_inventory import DiscoveryInventory, discovery_inventory
+from .icom_profile import is_icom_gateway
 from .local_selection import LocalSelection
 from .log_helpers import log_failure
 from .managed_updates import SourceUpdates
@@ -177,6 +178,7 @@ class PointTSource:
                 )
             if gateway is None:
                 raise SourceFailure()
+            self._switch_icom_profile(gateway)
             if inventory_reason is None:
                 inventory.remember_gateways((gateway,))
                 from .gateway_exchange import clear_exchange_issue
@@ -516,6 +518,32 @@ class PointTSource:
                 "A fault baseline could not be taken back",
                 error=err,
             )
+
+    def _switch_icom_profile(self, gateway: Gateway) -> None:
+        """I1: an existing connection with an iCom gateway changes once to the
+        cloud-friendly profile; a later choice of the user is kept.
+
+        Saving restarts the connection with the new profile, so this source
+        stops here before it sends anything else.
+        """
+        connection = self.connection
+        if connection.dormant or not is_icom_gateway(gateway):
+            return
+        try:
+            switched = connection.runtime.management.switch_icom_profile(
+                connection.connection_id
+            )
+        except ConfigurationError as error:
+            _LOGGER.debug("The iCom polling profile was not switched (%s)", error)
+            return
+        if not switched:
+            return
+        _LOGGER.info(
+            "A cloud access with an iCom gateway now uses the cloud-friendly "
+            "polling profile; this is done once, and the profile can be "
+            "changed in the options of the access"
+        )
+        self.ensure_current()
 
     async def _stop(self) -> None:
         self._closed = True

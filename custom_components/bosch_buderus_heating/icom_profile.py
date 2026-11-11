@@ -8,7 +8,9 @@ whose reported device type is ``icom``; every other gateway keeps its
 behaviour:
 
 * a new cloud connection with an iCom gateway starts with the cloud-friendly
-  polling profile (the user can change it in the options);
+  polling profile (the user can change it in the options); an existing one
+  is switched to it once, and a later choice of the user is kept
+  (``ICOM_PROFILE_KEY``);
 * after a cycle with a timeout the next cycle uses half the bulk size (at
   least 10 paths); after three cycles in a row without a failed batch the
   size doubles again, step by step, back to the normal 30;
@@ -34,6 +36,11 @@ ICOM_BULK_RECOVERY_CYCLES: Final = 3
 # Minutes of each further opening of the breaker within one outage.
 ICOM_CIRCUIT_OPEN_MINUTES: Final[tuple[int, ...]] = (5, 10, 20, 30)
 ICOM_READ_BACK_DELAYS: Final[tuple[float, ...]] = (1.0, 2.0, 3.0, 4.0)
+# The option of a cloud connection that records the one-time switch of an
+# existing connection with an iCom gateway to the cloud-friendly profile, or
+# a later choice of the user. A higher revision would switch once more.
+ICOM_PROFILE_KEY: Final = "icom_profile_revision"
+ICOM_PROFILE_REVISION: Final = 1
 
 
 def is_icom_device_type(device_type: object) -> bool:
