@@ -68,16 +68,31 @@ Expected, untested on a real controller:
   refused. The fireplace function is a switch, disabled by default.
 - **Hot water:** the operating mode as a select and a water heater entity,
   the comfort temperature, extra hot water with its duration, the thermal
-  disinfection (switch, weekday, start time and last result, disabled by
-  default) and the current level of the hot water program (disabled by
-  default).
+  disinfection (switch, weekday, start time in five-minute steps and last
+  result, disabled by default) and the current level of the hot water
+  program (disabled by default). Without a list of modes from the
+  controller I offer off, comfort and own program, and eco and eco+ as well
+  while the controller reports one of them, so a hot water mode set to eco
+  elsewhere keeps its control; an empty list leaves the mode a reading.
+  Extra hot water does not turn on with a duration of 0, and in Operate
+  appliance the duration is written first. A hot water mode the controller
+  reports as not available gets no water heater entity.
 - **Heating circuit:** summer/winter switching and night setback by outdoor
-  temperature with their thresholds, the season mode (only with at least two
-  offered modes), the heat-up speed, the setpoint optimization and a sensor
-  for the operating season. The heating curve, the supply temperature limits
-  and the room influence are disabled by default; enable them only if you
-  know these settings. Before such a change I read both limits again and
-  send nothing if one of them changed. Installer settings are never written.
+  temperature with their thresholds (disabled by default), the season mode
+  (only with at least two offered modes), the setpoint optimization and a
+  sensor for the operating season. The heating curve, the supply
+  temperature limits and the room influence are disabled by default; enable
+  them only if you know these settings. The base point and the minimum
+  supply temperature stay at or below the end point and the maximum supply
+  temperature; before such a change I read these limits again and send
+  nothing if one of them changed. In Operate appliance several limits can be
+  changed in one step. All of these settings act only with
+  weather-compensated control; with another control a change is refused
+  with its own message. The heat-up speed is switched off by the
+  manufacturer and never written. Installer settings are never written.
+- **Operate appliance:** a locked or unused room controller setting and a
+  refused value now get their own message instead of "A setting has
+  changed".
 - **System readings:** display code, cause code, system pressure and its
   status, indoor humidity, and binary sensors for a locking fault (locked
   out until a manual reset), a blocking fault, maintenance due and refill

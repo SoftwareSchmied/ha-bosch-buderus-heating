@@ -159,33 +159,57 @@ circuit as well.
 
 *Expected, untested.*
 
-- The operating mode (off, comfort, own program, and eco levels only where
-  the controller offers them) as a select and as a water heater entity.
+- The operating mode as a select and as a water heater entity. A controller
+  that lists its modes offers exactly those. One that lists none offers
+  off, comfort and own program; while it reports one of the eco levels
+  (eco or eco+, the levels of a heat pump), it offers these two as well.
+  After you switch away from an eco level, it is offered again only once the
+  controller reports it. A controller that sends an empty list of modes
+  keeps the mode as a reading only, so nothing is guessed; the diagnostics
+  count such lists (`operation_mode_options_empty`). Both cases are expected,
+  untested. If the controller reports the hot water mode as not available,
+  there is no water heater entity.
 - The comfort temperature as a number.
-- **Extra hot water:** a switch and its duration in minutes.
+- **Extra hot water:** a switch and its duration in minutes. The switch does
+  not turn on while the duration is 0; set the duration first. In
+  **Operate appliance** the duration is written before the switch.
 - **Thermal disinfection** (disabled by default): a switch, the weekday or
-  every day, the start time and the result of the last run.
+  every day, the start time (in five-minute steps, unless the controller
+  reports another step) and the result of the last run.
 - **Current hot water schedule level** (disabled by default): the level of
   the hot water program right now, calculated from its switch points and the
-  controller's clock.
+  controller's clock. It shows the levels as the program names them; with a
+  boiler, eco and eco+ may mean off.
 
 ## Heating circuit
 
 *Expected, untested.*
 
 - Summer/winter switching and night setback by outdoor temperature (off or
-  automatic), with their outdoor temperature thresholds.
-- The season mode, only when the controller offers at least two modes, the
-  heat-up speed (slow, normal, fast) and the setpoint optimization.
+  automatic), with their outdoor temperature thresholds, disabled by
+  default.
+- The season mode, only when the controller offers at least two modes, and
+  the setpoint optimization. The setpoint optimization is a switch for the
+  values `on` and `off`; a controller that reports `true` or `false` instead
+  shows the value without a switch.
 - A sensor for the operating season (heating, cooling, idle).
 - **For specialists, disabled by default:** the heating curve (base and end
   point), the minimum and maximum supply temperature and the room influence.
-  Enable them only if you know these settings. The base point stays below
-  the end point and the minimum supply temperature not above the maximum;
-  before a change both limits are read again, and nothing is sent if one of
-  them changed.
+  Enable them only if you know these settings. The base point and the
+  minimum supply temperature stay at or below the end point and the maximum
+  supply temperature; before a change these limits are read again, and
+  nothing is sent if one of them changed. In **Operate appliance** several
+  limits can be changed in one step: the order of the writes keeps them in
+  order, and a step that would break it sends nothing.
+- The heating curve, the supply limits, the room influence and the
+  summer/winter and night settings only act with weather-compensated
+  control. While the circuit uses another control (control strategy other
+  than `weather`), a change is refused with a message, and **Operate
+  appliance** does not show these settings.
 - Installer settings (control strategy, heating system type, room control
   type) are never written.
+- The heat-up speed is switched off by the manufacturer and is never
+  written; it is at most a disabled reading.
 
 ## System, faults and maintenance
 
@@ -352,11 +376,19 @@ ebenso der CT200 insgesamt:
   ändern und löschen, Wochentagstermine nur löschen; Boost (Schalter,
   Temperatur, Dauer; Räume am Regler) und Kaminfunktion.
 - **Warmwasser:** Betriebsart, Komforttemperatur, Extra-Warmwasser mit
-  Dauer, thermische Desinfektion, aktuelle Programmstufe.
-- **Heizkreis:** Sommer-/Winterumschaltung, Nachtabsenkung, Saisonbetrieb,
-  Aufheizgeschwindigkeit, Sollwertoptimierung, Betriebssaison; Heizkurve,
-  Vorlaufgrenzen und Raumeinfluss nur für Fachkundige und standardmäßig
-  deaktiviert.
+  Dauer, thermische Desinfektion (Startzeit in 5-Minuten-Schritten),
+  aktuelle Programmstufe. Ohne angebotene Liste biete ich Aus, Komfort und
+  Eigenes Programm an, solange der Regler Eco oder Eco+ meldet auch diese
+  beiden; eine leere Liste lässt die Betriebsart nur lesbar. Extra-Warmwasser
+  schaltet nicht mit der Dauer 0 ein.
+- **Heizkreis:** Sommer-/Winterumschaltung und Nachtabsenkung mit ihren
+  Schwellen (standardmäßig deaktiviert), Saisonbetrieb, Sollwertoptimierung,
+  Betriebssaison; Heizkurve, Vorlaufgrenzen und Raumeinfluss nur für
+  Fachkundige und standardmäßig deaktiviert. Fußpunkt und minimale
+  Vorlauftemperatur bleiben nicht über Endpunkt und maximaler
+  Vorlauftemperatur. Diese Einstellungen wirken nur bei witterungsgeführter
+  Regelung; sonst wird eine Änderung abgelehnt. Die Aufheizgeschwindigkeit
+  ist vom Hersteller abgeschaltet und wird nie geschrieben.
 - **System:** Anzeige- und Ursachencode, Anlagendruck, Raumluftfeuchte,
   verriegelnde Störung (bis zum manuellen Reset), blockierende Störung,
   Wartung fällig, Nachfüllen erforderlich; eigene Texte für
