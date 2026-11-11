@@ -63,6 +63,7 @@ from .local_transport import (
     PortRole,
     inspect_local_certificate,
 )
+from .markdown_text import markdown_literal
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -685,7 +686,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             "local_certificate",
             vol.Schema({vol.Required("confirm", default=False): BooleanSelector()}),
             placeholders={
-                "host": self._local_address,
+                "host": markdown_literal(self._local_address),
                 "port": str(observation.role.port),
                 "fingerprint": observation.sha256.hex(),
                 "previous": self._local_previous_pin(observation.role) or "?",
@@ -994,7 +995,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         return self._local_form(
             "local_result",
             vol.Schema({vol.Required("confirm", default=False): BooleanSelector()}),
-            placeholders={"host": self._local_address, "gateway": self._local_gateway},
+            placeholders={
+                "host": markdown_literal(self._local_address),
+                "gateway": markdown_literal(self._local_gateway),
+            },
         )
 
     async def async_step_local_retry(
