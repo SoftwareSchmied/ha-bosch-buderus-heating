@@ -41,8 +41,8 @@ from .writes import (
 
 _MODE_PATH = re.compile(r"^(/heatingCircuits/[^/]+)/operationMode$")
 _MODES = {"off": HVACMode.OFF, "manual": HVACMode.HEAT, "auto": HVACMode.AUTO}
-# APP-15: with this control type the manufacturer's app offers no control of
-# the circuit; the climate then only shows it (expected, untested).
+# A circuit with this control type is not controlled here; the climate then
+# only shows it (expected, untested on a real device).
 _READ_ONLY_CONTROL_TYPES = frozenset({"constants"})
 
 
@@ -206,9 +206,27 @@ class HeatingCircuitClimate(
         return _MODES.get(str(mode.value)) if self.available and mode else None
 
     def _read_only_control(self, *, strict: bool = False) -> bool:
-        """APP-15: the circuit reports a control type without control."""
+        """The circuit reports a control type without control.
+
+        Without a current reading the last known value decides, so the lock
+        never ends without a reading that ends it (a stale or failed reading
+        of ``controlType`` keeps a circuit read-only).
+        """
         resource = self._resource("controlType", strict=strict)
-        return resource is not None and resource.value in _READ_ONLY_CONTROL_TYPES
+        if resource is not None:
+            return resource.value in _READ_ONLY_CONTROL_TYPES
+        path = self.root + "/controlType"
+        snapshot = (self.coordinator.data or {}).get(path)
+        last = (
+            snapshot.resource
+            if snapshot is not None
+            else self.coordinator.resources.get(path)
+        )
+        return (
+            last is not None
+            and last.has_value
+            and last.value in _READ_ONLY_CONTROL_TYPES
+        )
 
     @property
     def hvac_modes(self) -> list[HVACMode]:

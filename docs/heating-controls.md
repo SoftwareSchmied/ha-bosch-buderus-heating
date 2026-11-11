@@ -102,7 +102,10 @@ When the circuit reports the control type `constants` (`controlType`), I
 treat it as a circuit that cannot be controlled. Since 0.9.0-alpha.6 the
 climate then only shows the circuit: it offers no target, no other mode and
 no off command, and a mode or temperature call is refused before any request.
-The individual entities of the circuit keep their own rules. This is expected,
+This applies to every gateway that reports this control type. Without a
+current reading of `controlType` the last known value applies, so the climate
+becomes controllable again only after a reading of another control type. The
+individual entities of the circuit keep their own rules. This is expected,
 untested on a real device.
 
 I show room temperature only from that circuit's valid `roomtemperature`
@@ -280,7 +283,10 @@ und im bestehenden Sensor für den aktuellen Sollwert zur Verfügung.
 Meldet der Heizkreis die Regelungsart `constants` (`controlType`), behandle
 ich ihn als nicht bedienbaren Kreis. Seit 0.9.0-alpha.6 zeigt die
 Klimaentität den Kreis dann nur an: kein Sollwert, keine andere Betriebsart,
-kein Ausschalten; ein Befehl wird vor jeder Anfrage abgewiesen. Die
+kein Ausschalten; ein Befehl wird vor jeder Anfrage abgewiesen. Das gilt für
+jedes Gateway, das diese Regelungsart meldet. Ohne aktuelle Lesung von
+`controlType` gilt der zuletzt bekannte Wert; bedienbar wird die
+Klimaentität erst wieder nach einer Lesung einer anderen Regelungsart. Die
 Einzelentitäten folgen weiter ihren eigenen Regeln. Erwartet, aber an einem
 echten Gerät ungetestet.
 

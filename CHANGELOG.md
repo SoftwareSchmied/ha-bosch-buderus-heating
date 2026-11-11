@@ -136,7 +136,9 @@ gateway they are expected, untested.
   heating circuits of the tokens 24 to 27 are not offered. I have not seen
   either case on a system; both are expected, untested.
 - **Control type `constants`:** the heating circuit climate then only shows
-  the circuit and sends no command. Expected, untested on a real device.
+  the circuit and sends no command, on every gateway that reports it. A
+  missing or old reading keeps it so until a reading shows another control
+  type. Expected, untested on a real device.
 - **Diagnostics:** a new `icom` section shows the state of the load profile,
   the component type numbers of `/system/info` (no serial numbers or names),
   the reported bus with a hint for `EMS1_0`, `CAN` and `No_Bus`, and whether a

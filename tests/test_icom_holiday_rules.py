@@ -386,3 +386,34 @@ async def test_other_control_types_keep_the_climate_controls(
     climate.hass = hass
     assert set(climate.hvac_modes) == {HVACMode.HEAT, HVACMode.AUTO, HVACMode.OFF}
     assert climate.supported_features & ClimateEntityFeature.TARGET_TEMPERATURE
+
+
+async def test_the_read_only_lock_needs_a_reading_to_end(hass: HomeAssistant) -> None:
+    """Decision 6: a stale or failed ``controlType`` reading never lifts the
+    lock silently; only a current reading of another control type does."""
+    from dataclasses import replace
+
+    from custom_components.bosch_buderus_heating.coordinator import Freshness
+
+    coordinator = _icom_coordinator(hass, "icom", *_climate_resources("constants"))
+    coordinator.last_update_success = True
+    climate = HeatingCircuitClimate(coordinator, "/heatingCircuits/hc1")
+    climate.hass = hass
+    path = "/heatingCircuits/hc1/controlType"
+    coordinator.data[path] = replace(
+        coordinator.data[path], freshness=Freshness.STALE, available=False
+    )
+    assert climate.supported_features == ClimateEntityFeature(0)
+    with pytest.raises(ServiceValidationError):
+        await climate.async_set_temperature(temperature=22)
+    # Only known from discovery (no snapshot): the stored value decides.
+    del coordinator.data[path]
+    assert climate.supported_features == ClimateEntityFeature(0)
+    # A current reading of another control type ends the lock.
+    other = _climate_resources("outdoorTemperature")[2]
+    coordinator.resources[path] = other
+    coordinator.data[path] = replace(
+        coordinator.data["/heatingCircuits/hc1/operationMode"], resource=other
+    )
+    assert climate.supported_features & ClimateEntityFeature.TARGET_TEMPERATURE
+    coordinator.client.put_resource_value.assert_not_awaited()
