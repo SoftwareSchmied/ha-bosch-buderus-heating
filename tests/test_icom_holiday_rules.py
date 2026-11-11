@@ -296,6 +296,22 @@ def test_icom_diagnostics_show_components_bus_and_profile(
         assert private not in rendered
 
 
+@pytest.mark.parametrize("bus", [["EMS1_0"], {"bus": "CAN"}, 3])
+def test_icom_diagnostics_survive_a_bus_that_is_no_string(
+    hass: HomeAssistant, bus
+) -> None:
+    bus_resource = Resource(path="/system/bus", value=bus, has_value=True)
+    coordinator = _icom_coordinator(hass, "icom", HMI800, bus_resource)
+    report = _gateway_diagnostics(1, coordinator)["icom"]
+    assert report["bus"] == "other"
+    assert report["bus_hint"] is None
+
+
+def test_the_bus_hint_names_no_app() -> None:
+    assert "app" not in BUS_HINT.split("_")
+    assert BUS_HINT == "bus_possibly_unsupported_reported_values_only"
+
+
 def test_other_gateways_keep_their_diagnostics(hass: HomeAssistant) -> None:
     coordinator = _icom_coordinator(hass, "MX300", HMI800)
     assert "icom" not in _gateway_diagnostics(1, coordinator)

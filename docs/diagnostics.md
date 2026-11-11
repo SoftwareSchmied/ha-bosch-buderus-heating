@@ -610,9 +610,10 @@ tokens and component type numbers only:
   token (`token`) of each entry of `/system/info`. Serial numbers, product
   names and versions are never included;
 - `bus`: `EMS2_0`, `EMS1_0`, `CAN`, `MODBUS`, `No_Bus`, `other` or `null`.
-  With `EMS1_0`, `CAN` or `No_Bus`, `bus_hint` marks the bus as possibly not
+  With `EMS1_0`, `CAN` or `No_Bus`, `bus_hint` is
+  `bus_possibly_unsupported_reported_values_only`: the bus is possibly not
   supported by the cloud access (expected, untested), and the integration
-  shows only the values the cloud reports;
+  shows only the values the cloud reports. Otherwise `bus_hint` is `null`;
 - `holiday_rules`: whether the HMI800 HP Light rule applies and which heating
   circuits token 16 hides, with `status: expected_untested`
   (see [older holiday formats](legacy-holidays.md)).

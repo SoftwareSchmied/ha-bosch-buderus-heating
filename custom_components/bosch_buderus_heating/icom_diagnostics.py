@@ -13,11 +13,11 @@ from typing import Any, Final
 from .legacy_holidays import SYSTEM_INFO_PATH, icom_components
 
 BUS_PATH: Final = "/system/bus"
-# The bus values of the manufacturer's app. With these three, the app shows
-# the system as not supported or not detected (APP-22).
+# The known bus values. With the last three, the system is expected to be
+# possibly not supported by the cloud access (expected, untested).
 KNOWN_BUSES: Final = frozenset({"EMS2_0", "EMS1_0", "CAN", "MODBUS", "No_Bus"})
-APP_UNSUPPORTED_BUSES: Final = frozenset({"EMS1_0", "CAN", "No_Bus"})
-BUS_HINT: Final = "manufacturer_app_shows_not_supported_reported_values_only"
+POSSIBLY_UNSUPPORTED_BUSES: Final = frozenset({"EMS1_0", "CAN", "No_Bus"})
+BUS_HINT: Final = "bus_possibly_unsupported_reported_values_only"
 
 
 def _reading(snapshots: Mapping[str, Any], path: str) -> Any:
@@ -54,7 +54,11 @@ def icom_diagnostics(
             if isinstance(bus, str) and bus in KNOWN_BUSES
             else "other"
         ),
-        "bus_hint": BUS_HINT if bus in APP_UNSUPPORTED_BUSES else None,
+        "bus_hint": (
+            BUS_HINT
+            if isinstance(bus, str) and bus in POSSIBLY_UNSUPPORTED_BUSES
+            else None
+        ),
         "holiday_rules": {
             "status": "expected_untested",
             "hmi800_hp_light": components.hmi800_hp_light,
