@@ -9,9 +9,9 @@ import re
 from collections.abc import Iterable, Mapping
 from itertools import zip_longest
 from types import MappingProxyType
-from typing import Final
+from typing import Final, Literal
 
-from . import rrc_contract_zone, rrc_contracts
+from . import rrc_contract_absence, rrc_contract_zone, rrc_contracts
 from .i18n import localize
 from .pointt import Resource
 from .pointt.models import JsonScalar
@@ -22,6 +22,9 @@ ZONE = re.compile(rf"^/zones/zn({RRC_ID})(?:/|$)")
 PROGRAM = re.compile(rf"^/programs/pg({RRC_ID})(?:/|$)")
 ZONE_LIST = "/zones/list"
 PROGRAM_LIST = "/programs/list"
+# AWAY-01: the single event entries and the active event are write targets
+# only; their content comes from the event lists. They are never read.
+_EVENT_ENTRY = re.compile(rrc_contract_absence.EVENT_ENTRIES)
 # C8 (CT-B02, CT-E01): the radio devices of an RRC controller, one list.
 DEVICE_LIST = "/devices/list"
 RADIO_DEVICE = re.compile(rf"^/devices/device({RRC_ID})(?:/|$)")
@@ -83,6 +86,43 @@ def available(resource: Resource) -> bool:
         and metadata.used is not False
         and metadata.available is not False
     )
+
+
+type FlagState = Literal["usable", "unused", "unavailable", "invalid"]
+
+
+def flag_state(resource: Resource) -> FlagState:
+    """What the ``used`` and ``available`` flags say about a setting.
+
+    - ``unavailable``: ``available`` false (with any ``used``); the setting
+      is not offered.
+    - ``unused``: ``available`` not false and ``used`` false; the setting is
+      shown, but the controller does not use it now.
+    - ``invalid``: a flag that is neither true nor false.
+    - ``usable``: everything else; a missing flag counts as true.
+
+    The write rules of the contract settings build on it
+    (``writes._contract_availability_issue``). Readings decide on their own
+    whether a flag matters to them.
+    """
+    metadata = resource.metadata
+    if not metadata.availability_flags_valid:
+        return "invalid"
+    if metadata.available is False:
+        return "unavailable"
+    if metadata.used is False:
+        return "unused"
+    return "usable"
+
+
+def is_unread_event_entry(path: str) -> bool:
+    """AWAY-01: an event entry (``/events/evN``) or ``/events/activeEvent``.
+
+    An RRC controller lists its events in ``/events/list1`` to ``list3``;
+    single entries are only written. Reading them costs a path each and may
+    answer HTTP 500, so they are never read.
+    """
+    return _EVENT_ENTRY.fullmatch(path) is not None
 
 
 def mode_locked(resource: Resource) -> bool:

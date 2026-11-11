@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Rádiové zariadenie toto nastavenie momentálne nepoužíva, preto nebolo zmenené."
     },
+    "rrc_setting_unused": {
+      "message": "Izbový regulátor toto nastavenie momentálne nepoužíva, preto nebolo zmenené."
+    },
+    "rrc_away_unused": {
+      "message": "Režim neprítomnosti nie je v aktuálnom prevádzkovom režime izbového regulátora možný, preto nebol zmenený."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Izbový regulátor tu detekciu otvoreného okna momentálne neponúka, preto nebola zmenená."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Izbový regulátor toto nastavenie teplej vody momentálne nepoužíva, preto nebolo zmenené."
+    },
+    "rrc_boost_changed": {
+      "message": "Funkcia Boost bola na izbovom regulátore zmenená po tom, ako bola zobrazená, preto sa nič neodoslalo. Skontrolujte aktuálne nastavenie funkcie Boost a skúste to znova."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Pre detekciu otvoreného okna možno nastaviť iba úrovne vysoká, stredná a nízka."
     },

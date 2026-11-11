@@ -232,19 +232,25 @@ async def test_a_heat_pump_keeps_its_on_off_away_switch(hass: HomeAssistant) -> 
         await teardown(hass, entry, stack)
 
 
-def test_a_used_but_unavailable_flag_is_shown_and_locked() -> None:
-    resource = parse_resource(
-        {
-            "id": AWAY,
-            "type": "stringValue",
-            "writeable": 1,
-            "recordable": 0,
-            "value": "false",
-            "used": "true",
-            "available": "false",
-        }
-    )
-    # S8: shown and locked.
-    assert assess_control(resource, RRC_CONTEXT).supports_switch
+def test_unavailable_flags_are_hidden_and_unused_ones_locked() -> None:
+    """AWAY-02: not available (used or not), no control; available but not
+    used, shown and never written."""
+
+    def flag(**flags: str):
+        return parse_resource(
+            {
+                "id": AWAY,
+                "type": "stringValue",
+                "writeable": 1,
+                "recordable": 0,
+                "value": "false",
+                **flags,
+            }
+        )
+
+    hidden = flag(used="true", available="false")
+    assert assess_control(hidden, RRC_CONTEXT).rejection_reason == "rrc_unavailable"
+    unused = flag(used="false", available="true")
+    assert assess_control(unused, RRC_CONTEXT).supports_switch
     with pytest.raises(ControlLocked):
-        validate_control_value(resource, "true", RRC_CONTEXT)
+        validate_control_value(unused, "true", RRC_CONTEXT)

@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Radioenheten använder inte den här inställningen just nu, så den ändrades inte."
     },
+    "rrc_setting_unused": {
+      "message": "Rumsregulatorn använder inte den här inställningen just nu, så den ändrades inte."
+    },
+    "rrc_away_unused": {
+      "message": "Bortaläget är inte möjligt i rumsregulatorns nuvarande driftläge, så det ändrades inte."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Rumsregulatorn erbjuder inte detektering av öppet fönster här just nu, så den ändrades inte."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Rumsregulatorn använder inte den här varmvatteninställningen just nu, så den ändrades inte."
+    },
+    "rrc_boost_changed": {
+      "message": "Boosten ändrades på rumsregulatorn efter att den visades, så ingenting skickades. Kontrollera den aktuella boosten och försök igen."
+    },
     "rrc_window_sensitivity_level": {
       "message": "För detekteringen av öppet fönster kan bara nivåerna hög, medel och låg ställas in."
     },

@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Il dispositivo radio al momento non utilizza questa impostazione, quindi non è stata modificata."
     },
+    "rrc_setting_unused": {
+      "message": "Il regolatore ambiente al momento non utilizza questa impostazione, quindi non è stata modificata."
+    },
+    "rrc_away_unused": {
+      "message": "La modalità fuori casa non è possibile nella modalità di funzionamento attuale del regolatore ambiente, quindi non è stata modificata."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Il regolatore ambiente al momento non offre qui il rilevamento finestra aperta, quindi non è stato modificato."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Il regolatore ambiente al momento non utilizza questa impostazione dell'acqua calda, quindi non è stata modificata."
+    },
+    "rrc_boost_changed": {
+      "message": "Il boost è stato modificato sul regolatore ambiente dopo essere stato mostrato, quindi non è stato inviato nulla. Controlla il boost attuale e riprova."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Per il rilevamento finestra aperta si possono impostare solo i livelli alto, medio e basso."
     },

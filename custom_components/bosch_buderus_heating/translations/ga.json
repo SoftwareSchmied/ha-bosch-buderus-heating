@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Ní úsáideann an gléas raidió an socrú seo faoi láthair, mar sin níor athraíodh é."
     },
+    "rrc_setting_unused": {
+      "message": "Ní úsáideann an rialaitheoir seomra an socrú seo faoi láthair, mar sin níor athraíodh é."
+    },
+    "rrc_away_unused": {
+      "message": "Níl an mód as baile indéanta i mód oibríochta reatha an rialaitheora seomra, mar sin níor athraíodh é."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Ní thairgeann an rialaitheoir seomra brath fuinneoige oscailte anseo faoi láthair, mar sin níor athraíodh é."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Ní úsáideann an rialaitheoir seomra an socrú uisce te seo faoi láthair, mar sin níor athraíodh é."
+    },
+    "rrc_boost_changed": {
+      "message": "Athraíodh Boost ar an rialaitheoir seomra tar éis é a thaispeáint, mar sin níor seoladh aon rud. Seiceáil an Boost reatha agus bain triail eile as."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Ní féidir ach na leibhéil ard, meánach agus íseal a shocrú do bhrath fuinneoige oscailte."
     },

@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Radijski uređaj trenutačno ne koristi ovu postavku, pa nije promijenjena."
     },
+    "rrc_setting_unused": {
+      "message": "Sobni regulator trenutačno ne koristi ovu postavku, pa nije promijenjena."
+    },
+    "rrc_away_unused": {
+      "message": "Način odsutnosti nije moguć u trenutačnom načinu rada sobnog regulatora, pa nije promijenjen."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Sobni regulator ovdje trenutačno ne nudi prepoznavanje otvorenog prozora, pa nije promijenjeno."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Sobni regulator trenutačno ne koristi ovu postavku tople vode, pa nije promijenjena."
+    },
+    "rrc_boost_changed": {
+      "message": "Funkcija Boost promijenjena je na sobnom regulatoru nakon što je prikazana, pa ništa nije poslano. Provjerite trenutačne postavke funkcije Boost i pokušajte ponovno."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Za prepoznavanje otvorenog prozora mogu se postaviti samo razine visoka, srednja i niska."
     },

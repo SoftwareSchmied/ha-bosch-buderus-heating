@@ -265,11 +265,11 @@ async def test_refusals_send_nothing(hass: HomeAssistant) -> None:
         with pytest.raises(ServiceValidationError) as no_zones:
             await _turn(hass, True)
         assert no_zones.value.translation_key == "rrc_boost_no_zones"
-        # Another change seen only by the fresh read (S5).
-        set_value(cloud, BOOST, [{**variants()["boost_on"][0], "mode": "off"}])
+        # The mode changed, seen only by the fresh read (S5, AWAY-09).
+        set_value(cloud, BOOST, variants()["boost_on"])
         with pytest.raises(ServiceValidationError) as changed:
             await _number(hass, DURATION, 4)
-        assert changed.value.translation_key == "write_validation_failed"
+        assert changed.value.translation_key == "rrc_boost_changed"
         # Unknown fields: shown, never written.
         set_value(cloud, BOOST, variants()["boost_extra_field"])
         clock.now += 3600
@@ -289,7 +289,8 @@ async def test_refusals_send_nothing(hass: HomeAssistant) -> None:
         assert cloud.written() == []
         reasons = coordinator.rrc_write_stats.snapshot("absence")["rejection_reasons"]
         assert reasons == {
-            "validation": 2,
+            "validation": 1,
+            "rrc_boost_changed": 1,
             "rrc_boost_no_zones": 1,
             "rrc_boost_unsupported_shape": 1,
             "locked": 1,

@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "L'appareil radio n'utilise actuellement pas ce réglage, il n'a donc pas été modifié."
     },
+    "rrc_setting_unused": {
+      "message": "Le régulateur d'ambiance n'utilise actuellement pas ce réglage, il n'a donc pas été modifié."
+    },
+    "rrc_away_unused": {
+      "message": "Le mode absent n'est pas possible dans le mode de fonctionnement actuel du régulateur d'ambiance, il n'a donc pas été modifié."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Le régulateur d'ambiance ne propose actuellement pas la détection de fenêtre ouverte ici, elle n'a donc pas été modifiée."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Le régulateur d'ambiance n'utilise actuellement pas ce réglage d'eau chaude, il n'a donc pas été modifié."
+    },
+    "rrc_boost_changed": {
+      "message": "Le boost a été modifié sur le régulateur d'ambiance après son affichage, rien n'a donc été envoyé. Vérifiez le boost actuel et réessayez."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Pour la détection de fenêtre ouverte, seuls les niveaux élevé, moyen et faible peuvent être réglés."
     },

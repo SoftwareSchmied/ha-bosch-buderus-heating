@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Radiolaite ei käytä tätä asetusta tällä hetkellä, joten sitä ei muutettu."
     },
+    "rrc_setting_unused": {
+      "message": "Huonesäädin ei käytä tätä asetusta tällä hetkellä, joten sitä ei muutettu."
+    },
+    "rrc_away_unused": {
+      "message": "Poissa-tila ei ole mahdollinen huonesäätimen nykyisessä käyttötilassa, joten sitä ei muutettu."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Huonesäädin ei tarjoa avoimen ikkunan tunnistusta tässä tällä hetkellä, joten sitä ei muutettu."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Huonesäädin ei käytä tätä lämpimän käyttöveden asetusta tällä hetkellä, joten sitä ei muutettu."
+    },
+    "rrc_boost_changed": {
+      "message": "Boostia muutettiin huonesäätimessä sen näyttämisen jälkeen, joten mitään ei lähetetty. Tarkista nykyinen boost ja yritä uudelleen."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Avoimen ikkunan tunnistukselle voi asettaa vain tasot korkea, keskitaso ja matala."
     },

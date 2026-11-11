@@ -81,6 +81,11 @@ def never_sent(err: BaseException) -> bool:
     )
 
 
+def _never_left(err: BaseException) -> bool:
+    """A failed send whose request did not leave (no connection)."""
+    return isinstance(err, RequestTimeout | ServiceUnavailable) and never_sent(err)
+
+
 class RrcStructWrite:
     """Fresh preflight, exactly one write, read-back with RRC patience."""
 
@@ -137,29 +142,18 @@ class RrcStructWrite:
             # Recorded before sending: a lost answer or a cancellation must
             # not allow a second non-idempotent write.
             self._pending[guard] = _Pending(lambda: confirm(state), self._clock())
-        if on_sent is not None:
-            on_sent()
         try:
             await send(state)
-        except RateLimited:
-            self._release(guard)
-            raise
-        except (RequestTimeout, ServiceUnavailable) as err:
-            # Without a connection nothing was sent; otherwise the outcome is
-            # unknown and only reading resolves it, never a second request.
-            if never_sent(err):
-                self._release(guard)
+        except BaseException as err:
+            # S12: a request that never left (no connection) is not counted
+            # as sent; any other outcome, a cancellation included, is.
+            if on_sent is not None and not _never_left(err):
+                on_sent()
+            if not self._read_after(err, guard):
                 raise
-        except UnexpectedHttpStatus as err:
-            if 400 <= err.status < 500:
-                # The server's final refusal: nothing changed.
-                self._release(guard)
-                raise
-        except AuthenticationError, ResourceError, ProtocolError:
-            self._release(guard)
-            raise
-        except TransportError:
-            pass
+        else:
+            if on_sent is not None:
+                on_sent()
         last_temporary: PointTError | None = None
         for delay in self._delays:
             await self._sleep(delay)
@@ -180,6 +174,30 @@ class RrcStructWrite:
                 "RRC read-back could not be completed"
             ) from last_temporary
         raise RrcWriteNotConfirmed("RRC read-back did not confirm the write")
+
+    def _read_after(self, err: BaseException, guard: str | None) -> bool:
+        """Whether reading resolves the outcome of a failed send; otherwise
+        the error stands, and a final refusal releases the guard."""
+        if isinstance(err, RateLimited):
+            self._release(guard)
+            return False
+        if isinstance(err, RequestTimeout | ServiceUnavailable):
+            # Without a connection nothing was sent; otherwise the outcome is
+            # unknown and only reading resolves it, never a second request.
+            if never_sent(err):
+                self._release(guard)
+                return False
+            return True
+        if isinstance(err, UnexpectedHttpStatus):
+            if 400 <= err.status < 500:
+                # The server's final refusal: nothing changed.
+                self._release(guard)
+                return False
+            return True
+        if isinstance(err, AuthenticationError | ResourceError | ProtocolError):
+            self._release(guard)
+            return False
+        return isinstance(err, TransportError)
 
     def _release(self, guard: str | None) -> None:
         if guard is not None:

@@ -153,17 +153,22 @@ def test_off_is_confirmed_by_either_spelling() -> None:
     assert not DHW_OPERATION_MODE_POLICY.confirms("off", "Off")
 
 
-def test_unavailable_extra_hot_water_has_no_control_and_used_one_is_locked() -> None:
-    """S8/P41: unavailable without being used, no control; used but
-    unavailable, a control that refuses to write; malformed flags, none."""
+def test_unavailable_extra_hot_water_has_no_control_and_unused_one_is_locked() -> None:
+    """P41 (CIRCUIT-05): not available, used or not, no control; available
+    but not used, a control that refuses to write; malformed flags, none."""
     absent = fixture("/dhwCircuits/dhw2/extraDhw")
     assert assess_control(absent, RRC_CONTEXT).rejection_reason == "rrc_unavailable"
     duration = fixture("/dhwCircuits/dhw2/extraDhwDuration")
     assert assess_control(duration, RRC_CONTEXT).rejection_reason == "rrc_unavailable"
-    locked = fixture("/dhwCircuits/dhw3/extraDhw")
-    assert assess_control(locked, RRC_CONTEXT).eligible
+    hidden = fixture("/dhwCircuits/dhw3/extraDhw")
+    assert assess_control(hidden, RRC_CONTEXT).rejection_reason == "rrc_unavailable"
+    unused = replace(
+        fixture(MODE),
+        metadata=replace(fixture(MODE).metadata, used=False, available=True),
+    )
+    assert assess_control(unused, RRC_CONTEXT).eligible
     with pytest.raises(ControlLocked):
-        validate_control_value(locked, "on", RRC_CONTEXT)
+        validate_control_value(unused, "high", RRC_CONTEXT)
     malformed = item(
         id=EXTRA, type="stringValue", writeable=1, value="off", available="no"
     )
@@ -490,8 +495,8 @@ async def test_entities_follow_the_controller_flags(hass: HomeAssistant) -> None
         assert ("switch", _uid("/dhwCircuits/dhw2/extraDhw")) not in entries
         assert ("number", _uid("/dhwCircuits/dhw2/extraDhwDuration")) not in entries
         assert ("time", _uid("/dhwCircuits/dhw2/thermalDisinfect/time")) not in entries
-        # dhw3: used but unavailable: the switch stays, locked.
-        assert ("switch", _uid("/dhwCircuits/dhw3/extraDhw")) in entries
+        # dhw3: used but not available: no control either.
+        assert ("switch", _uid("/dhwCircuits/dhw3/extraDhw")) not in entries
         heaters = {
             name: hass.states.get(
                 _entity_id(
@@ -582,17 +587,15 @@ async def test_writes_send_the_exact_wire_values_once(hass: HomeAssistant) -> No
         await _call(hass, "switch", "turn_off", disinfection)
         assert cloud.written("PUT")[-1] == ("PUT", DISINFECTION, "off")
 
-        locked = _entity_id(hass, "switch", _uid("/dhwCircuits/dhw3/extraDhw"))
-        with pytest.raises(ServiceValidationError) as refused:
-            await _call(hass, "switch", "turn_on", locked)
-        assert refused.value.translation_key == "rrc_dhw_setting_locked"
+        # Not available (even though used): no control at all.
+        assert _entity_id(hass, "switch", _uid("/dhwCircuits/dhw3/extraDhw")) is None
         assert cloud.calls["PUT", "/dhwCircuits/dhw3/extraDhw"] == 0
         # Each write confirmed at the first RRC read-back.
         assert set(sleeps) == {1.0}
         writes = coordinator.rrc_write_stats.snapshot("dhw")
         assert writes["writes_sent"] == writes["writes_confirmed"] == 6
-        # Off the grid, a fraction and the lock: refused before sending.
-        assert writes["writes_rejected"] == 4, writes
+        # Off the grid and a fraction: refused before sending.
+        assert writes["writes_rejected"] == 3, writes
     finally:
         await _teardown(hass, entry, stack)
 

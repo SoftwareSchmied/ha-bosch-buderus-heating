@@ -105,10 +105,11 @@ from .rrc import (
     DEVICE_LIST,
     PROGRAM_LIST,
     in_device_scope,
+    is_control,
     profile_evidence,
     program_list_expected,
 )
-from .rrc_contracts import contract_for
+from .rrc_contracts import contract_for, owns
 from .rrc_programs import WEEK, RrcProgramService
 from .rrc_write import (
     CORE_CONTRACT,
@@ -132,8 +133,10 @@ from .writes import (
     ContractRejected,
     ControlContext,
     ControlLocked,
+    ControlUnused,
     EnumWritePolicy,
     NumberWritePolicy,
+    RrcWriteNotConfirmed,
     WriteBusy,
     WriteService,
     confirms_value,
@@ -1075,14 +1078,25 @@ class BoschBuderusDataUpdateCoordinator(
                     or current.resource != before
                 ):
                     raise WriteValidationError("Control changed since it was shown")
+            # S5: an RRC contract setting is checked against the controller's
+            # current flags, limits and value, read in the same request as
+            # the guards; a change there does not refuse the write by itself.
+            reads = expected
+            if (
+                context.rrc_plant
+                and owns(policy)
+                and not is_control(path)
+                and all(before.path != path for before in expected)
+            ):
+                reads = (*expected, snapshot.resource)
             live: dict[str, Resource] = {}
-            if expected:
+            if reads:
                 try:
-                    live = await self._async_read_write_guards(expected)
+                    live = await self._async_read_write_guards(reads)
                 except PointTError as err:
                     # C33: nothing was written. Like any failed read, this
                     # leaves the readings as they are until the next poll.
-                    for before in expected:
+                    for before in reads:
                         self._record_capability(
                             before.path, _pointt_result(err), SnapshotSource.BATCH
                         )
@@ -1092,7 +1106,7 @@ class BoschBuderusDataUpdateCoordinator(
                         self._request_reauthentication()
                     raise
                 changed = dict(self.data or {})
-                for before in expected:
+                for before in reads:
                     refreshed = live[before.path]
                     if refreshed != before and refreshed.path == before.path:
                         changed[before.path] = ResourceSnapshot(
@@ -1102,6 +1116,9 @@ class BoschBuderusDataUpdateCoordinator(
                 if any(live[before.path] != before for before in expected):
                     self.async_set_updated_data(changed)
                     raise WriteValidationError("Control changed on the gateway")
+                if any(live[before.path] != before for before in reads):
+                    # The setting itself changed: shown at once, checked below.
+                    self.async_set_updated_data(changed)
             related: dict[str, Resource] = {}
             if policy.value_check is not None:
                 # A contract rule compares with the other current readings.
@@ -1168,7 +1185,12 @@ class BoschBuderusDataUpdateCoordinator(
                 # never let reload or another write reuse it as fresh. A
                 # brake, a refusal or a failed read before the PUT changes
                 # nothing on the gateway and leaves the reading as it is.
-                if isinstance(
+                reading = err.reading if isinstance(err, RrcWriteNotConfirmed) else None
+                if reading is not None and reading.path == path:
+                    # A valid reading ended the wait (for example a temporary
+                    # setpoint the controller ended): it is current.
+                    self._publish_write_reading(reading)
+                elif isinstance(
                     err, (WriteNotConfirmed, WriteRejected, asyncio.CancelledError)
                 ):
                     updated = dict(self.data or {})
@@ -1182,6 +1204,10 @@ class BoschBuderusDataUpdateCoordinator(
                         ended=True,
                     )
                     self.async_set_updated_data(updated)
+                    if contract is not None and sent:
+                        # An RRC controller often applies a change late: its
+                        # reading comes with the next cycle, not its group's.
+                        self._read_soon_after_write(path)
                 raise
 
             confirmed_at = datetime.now(UTC)
@@ -1215,6 +1241,30 @@ class BoschBuderusDataUpdateCoordinator(
             if (mode_path := _manual_setpoint_mode_path(path)) is not None:
                 self._queue_manual_setpoint_recovery(mode_path, snapshots)
             return confirmed
+
+    def _publish_write_reading(self, resource: Resource) -> None:
+        """Publish a current reading that a write transaction received."""
+        received_at = datetime.now(UTC)
+        snapshots = dict(self.data or {})
+        snapshots[resource.path] = ResourceSnapshot(
+            resource=resource,
+            available=True,
+            last_success=received_at,
+            last_attempt=received_at,
+            source=SnapshotSource.WRITE,
+        )
+        self.resources[resource.path] = resource
+        self._negative_until.pop(resource.path, None)
+        self._record_capability(resource.path, "success", SnapshotSource.WRITE)
+        self.async_set_updated_data(snapshots)
+
+    def _read_soon_after_write(self, path: str) -> None:
+        """ZONE-03: read a path that an unconfirmed RRC write concerns with
+        the next regular cycle (at most a minute later) rather than with its
+        group, which may be due only in five or ten minutes. Nothing is
+        written again."""
+        if path in self.resources:
+            self._urgent_reads.add(path)
 
     async def async_select_rrc_program(self, path: str, program: int) -> None:
         await self.async_run_rrc_operation(
@@ -1311,11 +1361,16 @@ class BoschBuderusDataUpdateCoordinator(
                     else _pointt_result(err),
                     SnapshotSource.WRITE,
                 )
-                if isinstance(err, WriteNotConfirmed | asyncio.CancelledError):
+                unresolved = isinstance(err, WriteNotConfirmed | asyncio.CancelledError)
+                if unresolved:
                     self.rrc_write_stats.unconfirmed(
                         contract, path, late_check, monotonic()
                     )
-                if snapshot is not None:
+                # C33 (SYSTEM-11): only a write whose outcome is unknown ends
+                # the reading. A failed preflight read sent nothing, and a
+                # refusal (4xx, 429, sign-in) changed nothing; the reading
+                # stays as it is.
+                if snapshot is not None and unresolved:
                     updated = dict(self.data or {})
                     updated[path] = replace(
                         snapshot,
@@ -1325,6 +1380,7 @@ class BoschBuderusDataUpdateCoordinator(
                         ended=True,
                     )
                     self.async_set_updated_data(updated)
+                    self._read_soon_after_write(path)
                 raise
             updated = dict(self.data or {})
             received_at = datetime.now(UTC)
@@ -3942,6 +3998,8 @@ def _rejection_token(err: WriteValidationError) -> str:
     """S12: a value-free token of why a write was refused before sending."""
     if isinstance(err, ContractRejected):
         return err.reason
+    if isinstance(err, ControlUnused):
+        return "unused"
     if isinstance(err, ControlLocked):
         return "locked"
     if isinstance(err, RrcWritePending):

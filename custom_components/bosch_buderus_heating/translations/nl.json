@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Het radioapparaat gebruikt deze instelling op dit moment niet, daarom is ze niet gewijzigd."
     },
+    "rrc_setting_unused": {
+      "message": "De kamerregelaar gebruikt deze instelling op dit moment niet, daarom is ze niet gewijzigd."
+    },
+    "rrc_away_unused": {
+      "message": "De afwezigheidsmodus is in de huidige bedrijfsmodus van de kamerregelaar niet mogelijk, daarom is hij niet gewijzigd."
+    },
+    "rrc_window_detection_unused": {
+      "message": "De kamerregelaar biedt detectie open raam hier op dit moment niet aan, daarom is ze niet gewijzigd."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "De kamerregelaar gebruikt deze warmwaterinstelling op dit moment niet, daarom is ze niet gewijzigd."
+    },
+    "rrc_boost_changed": {
+      "message": "De boost is op de kamerregelaar gewijzigd nadat hij werd weergegeven, daarom is er niets verzonden. Controleer de huidige boost en probeer het opnieuw."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Voor de detectie van open ramen kunnen alleen de niveaus hoog, gemiddeld en laag worden ingesteld."
     },

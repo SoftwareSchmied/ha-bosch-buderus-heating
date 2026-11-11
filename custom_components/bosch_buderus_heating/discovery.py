@@ -47,6 +47,7 @@ from .rrc import (
     device_setting_paths,
     in_device_scope,
     is_product_type,
+    is_unread_event_entry,
     listed_ids,
     listed_paths,
     profile_evidence,
@@ -275,6 +276,7 @@ _NOT_READ_POLICIES = frozenset(
         "outside_rrc_device_scope",
         "rrc_5xx_assumed_missing",
         "rrc_device_setting_limit",
+        "rrc_event_entry",
     }
 )
 
@@ -610,6 +612,10 @@ async def async_discover_resources(
         if rrc_profile and outside_device_scope(path):
             report.paths[path].read_policy = "outside_rrc_device_scope"
             return
+        if rrc_profile and is_unread_event_entry(path):
+            # AWAY-01: the event lists are the only source of the events.
+            report.paths[path].read_policy = "rrc_event_entry"
+            return
         if path == LICENSE_PATH:
             report.paths[path].read_policy = "omitted_license"
             if startup_data is not None:
@@ -670,6 +676,10 @@ async def async_discover_resources(
                     del queue[pending_path]
                     report.paths[pending_path].read_policy = "outside_rrc_device_scope"
                     depth_limited.discard(pending_path)
+                elif is_unread_event_entry(pending_path):
+                    del queue[pending_path]
+                    report.paths[pending_path].read_policy = "rrc_event_entry"
+                    depth_limited.discard(pending_path)
         report.depth_limit_reached = bool(depth_limited)
         if startup_data is not None:
             for withdrawn in startup_data.withdraw(_outside_rrc_device_scope):
@@ -703,7 +713,11 @@ async def async_discover_resources(
                 schedule(child, depth + 1, DiscoveryPathSource.OPTIONAL)
 
     def schedule_children(path: str, depth: int) -> None:
-        if is_never_read(path) or (rrc_profile and _outside_rrc_device_scope(path)):
+        if (
+            is_never_read(path)
+            or (rrc_profile and _outside_rrc_device_scope(path))
+            or (rrc_profile and is_unread_event_entry(path))
+        ):
             return  # nothing below a path that is not read is probed either
         if ZONE.match(path):
             enable_rrc_profile("zones", depth + 1)
@@ -774,6 +788,21 @@ async def async_discover_resources(
             )
         elif device_frontier:
             frontier_entries = dict(islice(device_pending.items(), capacity))
+        # SYSTEM-12: a batch of probes that the 5xx rule may take as missing
+        # carries one path read before. Its answer shows whether the cloud
+        # answers at all; a path left out for it stays queued.
+        sentinel = (
+            _sentinel_path(discovered)
+            if rrc_profile
+            and frontier_entries
+            and all(
+                _rrc_may_be_missing(path, report.paths[path].source)
+                for path in frontier_entries
+            )
+            else None
+        )
+        if sentinel is not None and len(frontier_entries) >= MAX_BULK_PATHS:
+            del frontier_entries[next(reversed(frontier_entries))]
         if device_frontier:
             # Not charged to the shared distinct-path budget either.
             device_reads += len(frontier_entries)
@@ -792,7 +821,9 @@ async def async_discover_resources(
         processed.update(frontier)
         report.bulk_started(frontier)
         try:
-            results = await client.get_resources_bulk(gateway_id, frontier)
+            results = await client.get_resources_bulk(
+                gateway_id, frontier if sentinel is None else (*frontier, sentinel)
+            )
         except ProtocolError as err:
             _LOGGER.debug(
                 "PointT discovery bulk envelope was unusable for %d paths: %s",
@@ -816,6 +847,13 @@ async def async_discover_resources(
         if any(result.status == 429 for result in results):
             report.stop_reason = "rate_limited"
             raise RateLimited(retry_after=None)
+        answering: bool | None = None
+        if sentinel is not None:
+            answering = any(
+                result.path == sentinel and result.resource is not None
+                for result in results
+            )
+            results = tuple(result for result in results if result.path != sentinel)
         if any(result.resource is not None for result in results):
             # A bulk answer with resources shows that the cloud is answering.
             consecutive_5xx = 0
@@ -826,6 +864,7 @@ async def async_discover_resources(
             diagnostics=report,
             consecutive_5xx=consecutive_5xx,
             rrc_profile=rrc_profile,
+            answering=answering,
         )
         for result in results:
             depth = frontier_entries[result.path]
@@ -891,6 +930,7 @@ async def _recover_invalid_bulk_results(
     diagnostics: DiscoveryDiagnostics,
     consecutive_5xx: int = 0,
     rrc_profile: bool = False,
+    answering: bool | None = None,
 ) -> tuple[tuple[BatchItemResult, ...], int]:
     """Retry every recoverable discovery item once with an individual read.
 
@@ -906,7 +946,16 @@ async def _recover_invalid_bulk_results(
     the bulk answer to an optional probe or a contract zone detail leaf is
     taken as missing at once, without an individual read: such leaves are
     often absent, and the next discovery probes them again.
+
+    SYSTEM-12: that rule needs a cloud that answers. A batch of nothing but
+    such probes carries a path read before; ``answering`` is whether it
+    answered (``None`` without one). If it did not and the batch brought no
+    resource either, the parts are read one by one and their 5xx answers
+    count: three in a row end the discovery as an outage, instead of every
+    part being taken as missing.
     """
+    if any(result.resource is not None for result in results):
+        answering = True
     recovered: list[BatchItemResult] = []
     for result in results:
         fallback_reason = result.fallback_reason
@@ -915,6 +964,7 @@ async def _recover_invalid_bulk_results(
             continue
         if (
             rrc_profile
+            and answering is not False
             and fallback_reason == "item_5xx"
             and _rrc_missing_without_retry(
                 result.path, diagnostics.paths[result.path].source
@@ -951,8 +1001,10 @@ async def _recover_invalid_bulk_results(
             if (
                 status >= 500
                 and rrc_profile
-                and diagnostics.paths[result.path].source
-                in (DiscoveryPathSource.CATALOG, DiscoveryPathSource.OPTIONAL)
+                and answering is not False
+                and _rrc_may_be_missing(
+                    result.path, diagnostics.paths[result.path].source
+                )
             ):
                 diagnostics.paths[result.path].read_policy = "rrc_5xx_assumed_missing"
                 recovered.append(
@@ -995,6 +1047,30 @@ async def _recover_invalid_bulk_results(
         # Any other answer ends a series of 5xx answers.
         consecutive_5xx = 0
     return tuple(recovered), consecutive_5xx
+
+
+def _sentinel_path(discovered: dict[str, Resource]) -> str | None:
+    """SYSTEM-12: a path this discovery has read, preferably a value."""
+    return next(
+        (path for path, resource in discovered.items() if resource.has_value),
+        next(iter(discovered), None),
+    )
+
+
+def _rrc_may_be_missing(path: str, source: DiscoveryPathSource) -> bool:
+    """CT-B06: a path whose HTTP 5xx answer an RRC controller gives when it
+    does not have it: a catalog or optional probe, or a path below a root
+    the contracts add."""
+    return source in (
+        DiscoveryPathSource.CATALOG,
+        DiscoveryPathSource.OPTIONAL,
+    ) or _below_rrc_extra_root(path)
+
+
+def _below_rrc_extra_root(path: str) -> bool:
+    """AWAY-01: a path below a root the RRC contracts add (``/events``,
+    ``/energy``); an HTTP 5xx there never ends the discovery."""
+    return any(path.startswith(f"{root}/") for root in rrc_contracts.extra_roots())
 
 
 def _rrc_missing_without_retry(path: str, source: DiscoveryPathSource) -> bool:

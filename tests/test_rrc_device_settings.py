@@ -28,6 +28,7 @@ from custom_components.bosch_buderus_heating import (
     rrc_contracts,
 )
 from custom_components.bosch_buderus_heating.const import DOMAIN
+from custom_components.bosch_buderus_heating.control import unused_translation_key
 from custom_components.bosch_buderus_heating.coordinator import Freshness
 from custom_components.bosch_buderus_heating.diagnostics import (
     async_get_config_entry_diagnostics,
@@ -42,6 +43,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     Gateway,
     Resource,
     ServiceUnavailable,
+    WriteValidationError,
 )
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
 from custom_components.bosch_buderus_heating.rrc_device_settings import (
@@ -55,7 +57,7 @@ from custom_components.bosch_buderus_heating.rrc_device_settings import (
 from custom_components.bosch_buderus_heating.writes import (
     GENERIC_CONTEXT,
     RRC_CONTEXT,
-    ContractRejected,
+    ControlUnused,
     assess_control,
 )
 from tests.helpers.rrc_cloud import (
@@ -440,9 +442,11 @@ async def test_24_valves_stay_within_the_device_cap_and_come_last() -> None:
     # The lists come first; no other path shares a request with a leaf.
     first = next(index for index, path in enumerate(order) if split(path))
     assert {"/zones/list", "/devices/list"} <= set(order[:first])
+    # SYSTEM-12: each such batch carries one path read before, last.
     for paths in cloud.requests:
         if any(split(path) for path in paths):
-            assert all(split(path) for path in paths)
+            assert all(split(path) for path in paths[:-1])
+            assert split(paths[-1]) is None or paths[-1] in found
 
 
 async def test_the_device_leaves_have_their_own_cap_beyond_the_budget() -> None:
@@ -966,7 +970,8 @@ async def test_write_failure_paths_in_real_cycles(hass: HomeAssistant) -> None:
 
 async def test_unused_and_locked_settings(hass: HomeAssistant) -> None:
     """An offset the device stops using goes unavailable and is refused
-    unsent; a used but unavailable one is locked (S8)."""
+    unsent; a used but not available one goes unavailable as well and is
+    refused unsent (the contract flag rule)."""
     cloud, clock = RrcCloud(tree()), Clock()
     entry, stack = await _setup(hass, cloud, clock)
     try:
@@ -979,24 +984,23 @@ async def test_unused_and_locked_settings(hass: HomeAssistant) -> None:
         await coordinator.async_refresh()
         await hass.async_block_till_done()
         assert hass.states.get(number).state == "unavailable"
-        with pytest.raises(ContractRejected) as unused:
+        # The shared flag rule refuses it before the contract's own check;
+        # the message is the same.
+        with pytest.raises(ControlUnused):
             await coordinator.async_write_control(
                 OFFSET, 1.0, rrc_contract_devices.OFFSET_POLICY
             )
-        assert unused.value.translation_key == "rrc_device_setting_unused"
+        assert unused_translation_key(OFFSET) == "rrc_device_setting_unused"
 
         cloud.tree[OFFSET] = _offset(used="true", available="false")
         clock.now += 3600
         await coordinator.async_refresh()
         await hass.async_block_till_done()
-        with pytest.raises(ServiceValidationError) as locked:
-            await hass.services.async_call(
-                "number",
-                "set_value",
-                {"entity_id": number, "value": 1.0},
-                blocking=True,
+        assert hass.states.get(number).state == "unavailable"
+        with pytest.raises(WriteValidationError):
+            await coordinator.async_write_control(
+                OFFSET, 1.0, rrc_contract_devices.OFFSET_POLICY
             )
-        assert locked.value.translation_key == "rrc_device_setting_locked"
         assert cloud.written() == []
     finally:
         await _teardown(hass, entry, stack)

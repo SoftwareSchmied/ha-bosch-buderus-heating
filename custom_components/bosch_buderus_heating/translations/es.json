@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "El dispositivo de radio no utiliza este ajuste en este momento, por lo que no se cambió."
     },
+    "rrc_setting_unused": {
+      "message": "El regulador de ambiente no utiliza este ajuste en este momento, por lo que no se cambió."
+    },
+    "rrc_away_unused": {
+      "message": "El modo ausente no es posible en el modo de funcionamiento actual del regulador de ambiente, por lo que no se cambió."
+    },
+    "rrc_window_detection_unused": {
+      "message": "El regulador de ambiente no ofrece aquí la detección de ventana abierta en este momento, por lo que no se cambió."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "El regulador de ambiente no utiliza este ajuste de agua caliente en este momento, por lo que no se cambió."
+    },
+    "rrc_boost_changed": {
+      "message": "El boost cambió en el regulador de ambiente después de mostrarse, por lo que no se envió nada. Comprueba el boost actual e inténtalo de nuevo."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Para la detección de ventana abierta solo se pueden ajustar los niveles alto, medio y bajo."
     },

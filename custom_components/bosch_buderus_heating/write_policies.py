@@ -104,6 +104,16 @@ class EnumWritePolicy:
     )
     value_check: ValueCheck | None = None
     read_back_check: ReadBackCheck | None = None
+    # The flags of a contract setting (``writes._contract_availability_issue``):
+    # ``available`` false gives no control (an existing entity goes
+    # unavailable); ``available`` true with ``used`` false keeps the control
+    # and refuses every write unsent (``ControlUnused``); missing flags count
+    # as true, malformed ones give no control. ``unused_writable`` keeps the
+    # earlier rule for settings whose ``used`` flag the controller does not
+    # tie to the control (the heating circuit): ``used`` false stays
+    # writable, ``available`` false with ``used`` true is shown and locked
+    # (S8, ``ControlLocked``).
+    unused_writable: bool = False
 
     @property
     def switch_values(self) -> tuple[str, str] | None:
@@ -150,6 +160,8 @@ class NumberWritePolicy:
     strict_grid: bool = False
     value_check: ValueCheck | None = None
     read_back_check: ReadBackCheck | None = None
+    # As ``EnumWritePolicy.unused_writable``.
+    unused_writable: bool = False
 
 
 type WritePolicy = EnumWritePolicy | NumberWritePolicy
@@ -175,8 +187,15 @@ class RrcWriteNotConfirmed(WriteNotConfirmed):
     """
 
     def __init__(
-        self, message: str, *, reason: str = "rrc_write_pending_confirmation"
+        self,
+        message: str,
+        *,
+        reason: str = "rrc_write_pending_confirmation",
+        reading: Resource | None = None,
     ) -> None:
         self.reason = reason
         self.translation_key = reason
+        # ZONE-03: a valid reading that ended the wait (``read_back_check``);
+        # it is current and is published as such.
+        self.reading = reading
         super().__init__(message)

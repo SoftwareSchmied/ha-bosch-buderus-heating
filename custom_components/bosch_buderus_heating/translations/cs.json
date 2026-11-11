@@ -1037,6 +1037,21 @@
     "rrc_device_setting_unused": {
       "message": "Rádiové zařízení toto nastavení momentálně nepoužívá, proto nebylo změněno."
     },
+    "rrc_setting_unused": {
+      "message": "Prostorový regulátor toto nastavení momentálně nepoužívá, proto nebylo změněno."
+    },
+    "rrc_away_unused": {
+      "message": "Režim nepřítomnosti není v aktuálním provozním režimu prostorového regulátoru možný, proto nebyl změněn."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Prostorový regulátor zde detekci otevřeného okna momentálně nenabízí, proto nebyla změněna."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Prostorový regulátor toto nastavení teplé vody momentálně nepoužívá, proto nebylo změněno."
+    },
+    "rrc_boost_changed": {
+      "message": "Funkce Boost byla na prostorovém regulátoru změněna poté, co byla zobrazena, proto nebylo nic odesláno. Zkontrolujte aktuální nastavení funkce Boost a zkuste to znovu."
+    },
     "rrc_window_sensitivity_level": {
       "message": "Pro detekci otevřeného okna lze nastavit pouze úrovně vysoká, střední a nízká."
     },
