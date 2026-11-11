@@ -172,7 +172,7 @@ back, it takes over the same entities with their history. See [operation without
   rolling 60-minute request and latency metrics, and a bounded sanitized log
   of individual HTTP attempts
 - German and English entity names and state translations, plus Czech and
-  Slovak reviewed by a native speaker (their room controller texts of
+  Slovak reviewed (their room controller texts of
   alpha.5 are still drafts), and Swedish, Norwegian Bokmål, Finnish, Danish,
   French, Spanish, Italian, Portuguese, Dutch, Polish, Greek, Bulgarian,
   Croatian, Slovenian and Irish as drafts awaiting review by native

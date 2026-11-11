@@ -16,15 +16,15 @@
 | Portuguese (Portugal) | `pt` | Draft, awaiting review by a native speaker | [`glossary/pt.md`](glossary/pt.md) |
 | Dutch | `nl` | Draft, awaiting review by a native speaker | [`glossary/nl.md`](glossary/nl.md) |
 | Polish | `pl` | Draft, awaiting review by a native speaker | [`glossary/pl.md`](glossary/pl.md) |
-| Czech | `cs` | Reviewed by a native speaker (2026-11-10); room controller texts of 0.9.0-alpha.5 are drafts awaiting review | [`glossary/cs.md`](glossary/cs.md) |
-| Slovak | `sk` | Reviewed by a native speaker (2026-11-10); room controller texts of 0.9.0-alpha.5 are drafts awaiting review | [`glossary/sk.md`](glossary/sk.md) |
+| Czech | `cs` | Reviewed (2026-11-10); room controller texts of 0.9.0-alpha.5 are drafts awaiting review | [`glossary/cs.md`](glossary/cs.md) |
+| Slovak | `sk` | Reviewed (2026-11-10); room controller texts of 0.9.0-alpha.5 are drafts awaiting review | [`glossary/sk.md`](glossary/sk.md) |
 | Greek | `el` | Draft, awaiting review by a native speaker | [`glossary/el.md`](glossary/el.md) |
 | Bulgarian | `bg` | Draft, awaiting review by a native speaker | [`glossary/bg.md`](glossary/bg.md) |
 | Croatian | `hr` | Draft, awaiting review by a native speaker | [`glossary/hr.md`](glossary/hr.md) |
 | Slovenian | `sl` | Draft, awaiting review by a native speaker | [`glossary/sl.md`](glossary/sl.md) |
 | Irish | `ga` | Draft, awaiting review by a native speaker | [`glossary/ga.md`](glossary/ga.md) |
 
-A native speaker reviewed Czech and Slovak on 2026-11-10. That review
+Czech and Slovak were reviewed on 2026-11-10. That review
 covers the texts up to then; the room controller texts added in
 0.9.0-alpha.5 (zones, programs, absences, hot water, heating circuit,
 system, faults, energy history and radio devices) are drafts in Czech and

@@ -1,6 +1,6 @@
 # Slovak glossary (sk)
 
-Reviewed by a native speaker (2026-11-10). The Slovak texts in
+Reviewed (2026-11-10). The Slovak texts in
 `translations/sk.json` and `i18n/sk.json` use these terms consistently; a
 correction to one term usually applies to every text that uses it.
 

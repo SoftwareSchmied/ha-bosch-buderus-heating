@@ -303,8 +303,8 @@ Expected, untested on a real controller:
   device names, notifications and the controls and holiday dialogs. Brazilian
   Portuguese shows the Portuguese texts and Norwegian Nynorsk the Bokmål
   ones.
-- **Czech and Slovak reviewed by me:** I reviewed the Czech and Slovak
-  translations myself as a native speaker on 2026-11-10. Generated names
+- **Czech and Slovak reviewed:** the Czech and Slovak translations were
+  reviewed on 2026-11-10. Generated names
   write the group out instead of abbreviating it, for example
   "Okruh 1: Provozní režim" or "Teplá voda 1: Teplota". Slovak uses
   "nemrznúca zmes" for the brine of a heat pump, "prídavný ohrev" for the
@@ -315,7 +315,7 @@ Expected, untested on a real controller:
   (`docs/glossary/<code>.md`, and a shared one for the Nordic languages in
   `docs/translations.md`), but nobody who speaks them as a mother tongue has
   checked them yet. The room controller texts added in alpha.5 are drafts in
-  every language, Czech and Slovak included; I will review those two
+  every language, Czech and Slovak included; those two will be reviewed
   separately. Corrections are very welcome, see
   [translations](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/translations.md).
 - Names and texts that the integration builds itself (for example

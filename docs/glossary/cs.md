@@ -1,6 +1,6 @@
 # Glossary: Czech (cs)
 
-Reviewed by a native speaker (2026-11-10). The Czech texts in
+Reviewed (2026-11-10). The Czech texts in
 `translations/cs.json` and `i18n/cs.json` use these terms consistently.
 
 Style: sentence case; the user is addressed formally in the plural
