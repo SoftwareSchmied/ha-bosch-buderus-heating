@@ -1113,6 +1113,9 @@
     "rrc_override_not_active": {
       "message": "Denne sonen har for øyeblikket ikke noe midlertidig settpunkt som kan oppheves."
     },
+    "rrc_advance_not_offered": {
+      "message": "Det neste koblingspunktet for denne sonen kan ikke fremskyndes akkurat nå. Det krever driftsmodusen tidsprogram og et neste settpunkt som det midlertidige settpunktet kan ta."
+    },
     "rrc_zone_climate_command": {
       "message": "Denne sonekommandoen er ikke tilgjengelig for øyeblikket. Sjekk at sonen melder aktuelle verdier og at temperaturen ligger innenfor det tilbudte området; et midlertidig settpunkt krever driftsmodusen tidsprogram."
     },
@@ -2368,6 +2371,9 @@
       },
       "rrc_override_clear": {
         "name": "Opphev midlertidig settpunkt"
+      },
+      "rrc_override_advance": {
+        "name": "Fremskynd neste koblingspunkt"
       }
     },
     "water_heater": {

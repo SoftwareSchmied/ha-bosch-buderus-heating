@@ -28,7 +28,7 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import issue_registry as ir
-from homeassistant.helpers.event import async_track_point_in_utc_time
+from homeassistant.helpers.event import async_call_later, async_track_point_in_utc_time
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -115,6 +115,7 @@ from .rrc import (
     profile_evidence,
     program_list_expected,
 )
+from .rrc_contract_zone import FOLLOW_UP_DELAY, follow_up_paths
 from .rrc_contracts import contract_for, owns
 from .rrc_events import LIST_PATHS as EVENT_LIST_PATHS
 from .rrc_programs import WEEK, RrcProgramService, edit_shows, selection_shows
@@ -137,7 +138,7 @@ from .switch_program_edit import contract_of as switch_program_contract
 from .switch_program_service import SwitchProgramService, program_shows
 from .switch_programs import SwitchPoint, is_switch_program_path
 from .update_load import update_load
-from .write_policies import rrc_kwargs
+from .write_policies import RRC_HEAT_PUMP_CONTEXT, rrc_kwargs
 from .writes import (
     GENERIC_CONTEXT,
     RRC_CONTEXT,
@@ -610,6 +611,10 @@ class BoschBuderusDataUpdateCoordinator(
         self._local_served: dict[str, float] = {}
         self._served_left: dict[str, datetime] = {}
         self._urgent_reads: set[str] = set()
+        # T2: readings to read once a few seconds after confirmed zone writes,
+        # one timer for a series of writes.
+        self._zone_follow_up: set[str] = set()
+        self._zone_follow_up_unsub: CALLBACK_TYPE | None = None
         # Readings kept after a firmware rediscovery; a 404 drops them.
         self._kept_after_firmware: set[str] = set()
         # Managed setups attach a per-target view; legacy setups keep None.
@@ -715,7 +720,7 @@ class BoschBuderusDataUpdateCoordinator(
             from .device import is_rrc_plant
 
             self._control_context = (
-                RRC_CONTEXT if is_rrc_plant(self) else GENERIC_CONTEXT
+                self._rrc_control_context() if is_rrc_plant(self) else GENERIC_CONTEXT
             )
             self._control_context_key = (
                 data,
@@ -724,6 +729,25 @@ class BoschBuderusDataUpdateCoordinator(
                 self.gateway.device_type,
             )
         return self._control_context
+
+    def _rrc_control_context(self) -> ControlContext:
+        """VER-03: an RRC plant whose heat source type reads as a heat pump
+        or a hybrid plant; any other or no reading keeps the plain one."""
+        from .rrc_energy import HEAT_SOURCE_TYPE_PATH, legacy_meaning
+
+        snapshot = (self.data or {}).get(HEAT_SOURCE_TYPE_PATH)
+        resource = (
+            snapshot.resource
+            if snapshot is not None
+            else self.resources.get(HEAT_SOURCE_TYPE_PATH)
+        )
+        if (
+            resource is not None
+            and resource.has_value
+            and legacy_meaning(resource.value) == "electricity"
+        ):
+            return RRC_HEAT_PUMP_CONTEXT
+        return RRC_CONTEXT
 
     @callback
     def _entity_use_changed(self) -> None:
@@ -1295,6 +1319,7 @@ class BoschBuderusDataUpdateCoordinator(
             self._record_capability(path, "success", SnapshotSource.WRITE)
             if contract is not None and sent:
                 self.rrc_write_stats.confirmed(contract, path)
+                self._follow_up_zone_write(path)
             self._read_circuit_soon(path)
             if self.local_selection is not None:
                 # Local readings of this circuit from before the confirmation
@@ -1335,6 +1360,37 @@ class BoschBuderusDataUpdateCoordinator(
         written again."""
         if path in self.resources:
             self._urgent_reads.add(path)
+
+    def _follow_up_zone_write(self, path: str) -> None:
+        """T2: a confirmed RRC write of a zone changes readings the
+        controller derives from it (active setpoint, status, next switch
+        point, zone list); read them once about five seconds later instead
+        of with the next cycle. Each write of a series moves the one timer;
+        the read goes through the urgent reads of a regular cycle, so the
+        lock, the backoff, the breaker and the pauses apply."""
+        paths = [item for item in follow_up_paths(path) if item in self.resources]
+        if not paths or self.hass.is_stopping:
+            return
+        self._zone_follow_up.update(paths)
+        self._cancel_zone_follow_up()
+        self._zone_follow_up_unsub = async_call_later(
+            self.hass, FOLLOW_UP_DELAY, self._zone_follow_up_due
+        )
+
+    @callback
+    def _zone_follow_up_due(self, _now: datetime) -> None:
+        self._zone_follow_up_unsub = None
+        self._urgent_reads.update(
+            path for path in self._zone_follow_up if path in self.resources
+        )
+        self._zone_follow_up.clear()
+        self._request_switch_read()
+
+    @callback
+    def _cancel_zone_follow_up(self) -> None:
+        if self._zone_follow_up_unsub is not None:
+            self._zone_follow_up_unsub()
+            self._zone_follow_up_unsub = None
 
     async def async_select_rrc_program(self, path: str, program: int) -> None:
         # ZONE-13: the send is counted, a later reading may confirm it.
@@ -1479,6 +1535,7 @@ class BoschBuderusDataUpdateCoordinator(
             if self.rrc_write_stats.sent_count(contract) > sent_before:
                 # Counted only for a write that went out (``note_rrc_write_sent``).
                 self.rrc_write_stats.confirmed(contract, path)
+                self._follow_up_zone_write(path)
             self.async_set_updated_data(updated)
 
     async def async_create_holiday(self, values: HolidayWriteValues) -> Resource:
@@ -2386,12 +2443,15 @@ class BoschBuderusDataUpdateCoordinator(
     def _validity_stopped(self, _event: Event) -> None:
         self._validity_stop_unsub = None
         self._cancel_validity_timer()
+        self._cancel_zone_follow_up()
 
     async def async_shutdown(self) -> None:
         if self._remove_use_listener is not None:
             self._remove_use_listener()
             self._remove_use_listener = None
         self._cancel_validity_timer()
+        self._cancel_zone_follow_up()
+        self._zone_follow_up.clear()
         if self._validity_stop_unsub is not None:
             self._validity_stop_unsub()
             self._validity_stop_unsub = None

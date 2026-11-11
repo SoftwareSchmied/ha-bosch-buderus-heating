@@ -39,6 +39,10 @@ from custom_components.bosch_buderus_heating.pointt import (
     WriteValidationError,
 )
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
+from custom_components.bosch_buderus_heating.rrc_energy import legacy_meaning
+from custom_components.bosch_buderus_heating.write_policies import (
+    RRC_HEAT_PUMP_CONTEXT,
+)
 from custom_components.bosch_buderus_heating.writes import (
     DHW_OPERATION_MODE_POLICY,
     GENERIC_CONTEXT,
@@ -824,7 +828,9 @@ async def test_failure_paths_in_real_cycles(hass: HomeAssistant) -> None:
         assert stats["rejection_reasons"] == {"rate_limited": 1, "request_failed": 1}
         diagnostics = await async_get_config_entry_diagnostics(hass, entry)
         dhw = diagnostics["gateways"][0]["rrc_features"]["contracts"]["dhw"]
-        assert dhw["confirmation"] == "unconfirmed"
+        # E17: the hot water mode was confirmed on a TC100.2.
+        assert dhw["confirmation"] == "partly_confirmed"
+        assert dhw["confirmed_functions"] == ["operation_mode"]
         assert dhw["circuits"] == 4
         assert dhw["writes"]["late_confirmed"] == 1
         assert MARKER not in json.dumps(dhw)
@@ -1030,6 +1036,78 @@ async def test_eco_levels_keep_their_control_in_real_cycles(
         assert coordinator.rrc_write_stats.snapshot("dhw")["writes_confirmed"] == 2
     finally:
         await _teardown(hass, entry, stack)
+
+
+async def test_a_heat_pump_always_offers_the_eco_levels(
+    hass: HomeAssistant,
+) -> None:
+    """VER-03: on a heat pump or hybrid plant (``/heatSources/type``) Eco
+    and Eco+ stay offered after Comfort, so Eco can be chosen again; the
+    mode is then written once as usual. Expected, untested on hardware."""
+    resources = tree()
+    resources["/heatSources/type"] = item(
+        id="/heatSources/type", type="stringValue", writeable=0, value="Heatpump"
+    )
+    sources = resources["/heatSources"]
+    resources["/heatSources"] = replace(
+        sources,
+        references=(*sources.references, ResourceReference("/heatSources/type")),
+    )
+    cloud, clock_ = RrcCloud(resources), Clock()
+    entry, coordinator, _sleeps, stack = await _setup(hass, cloud, clock_)
+    five = ["off", "low", "high", "ownprogram", "eco"]
+    try:
+        assert coordinator.control_context().heat_pump
+        heater = _entity_id(hass, "water_heater", _uid(DHW1, "water_heater"))
+        select = _entity_id(hass, "select", _uid(MODE))
+        assert hass.states.get(heater).state == "high"
+        assert hass.states.get(heater).attributes["operation_list"] == five
+        assert hass.states.get(select).attributes["options"] == five
+        await _call(
+            hass, "water_heater", "set_operation_mode", heater, operation_mode="eco"
+        )
+        await _call(hass, "select", "select_option", select, option="high")
+        await _call(hass, "select", "select_option", select, option="low")
+        assert cloud.written("PUT") == [
+            ("PUT", MODE, "eco"),
+            ("PUT", MODE, "high"),
+            ("PUT", MODE, "low"),
+        ]
+        assert hass.states.get(heater).attributes["operation_list"] == five
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+@pytest.mark.parametrize(
+    ("value", "heat_pump"),
+    [
+        ("Heatpump", True),
+        ("Hybrid", True),
+        ("Hybrid_Gas", True),
+        ("Hybrid_Oil", True),
+        ("Boiler", False),
+        ("NoAppliance", False),
+        (None, False),
+    ],
+)
+def test_the_eco_levels_follow_the_heat_source_type(
+    value: str | None, heat_pump: bool
+) -> None:
+    """VER-03: only a heat pump context adds the eco levels; a boiler or an
+    unknown type keeps the rule of CIRCUIT-02."""
+    mode = fixture(MODE)
+    context = RRC_HEAT_PUMP_CONTEXT if heat_pump else RRC_CONTEXT
+    assert legacy_meaning(value) == ("electricity" if heat_pump else "gas")
+    assessment = assess_control(mode, context)
+    assert assessment.eligible
+    assert assessment.options == (
+        ("Off", "high", "ownprogram", "low", "eco")
+        if heat_pump
+        else ("Off", "high", "ownprogram")
+    )
+    # Another policy without heat pump options is not affected.
+    generic = assess_control(mode, replace(GENERIC_CONTEXT, heat_pump=True))
+    assert generic.rejection_reason == "missing_options"
 
 
 async def test_an_unavailable_hot_water_mode_has_no_water_heater(

@@ -41,9 +41,12 @@ So far a TC100.2 has confirmed with this integration:
 Everything else on this page is **expected, untested**: it is built and
 tested with simulated data in the shapes of the observed TC100.2 answers and
 of constructed controller data, but nobody has tried it on a real controller
-yet. The CT200 as a whole is expected, untested. The diagnostics mark every
-room controller function as `confirmation: unconfirmed`, also the ones
-confirmed above. I would be glad about reports from owners, ideally with a
+yet. The CT200 as a whole is expected, untested. The diagnostics name the
+changes confirmed above for their function group
+(`confirmation: partly_confirmed`, `confirmed_functions`,
+`confirmed_on: tc100_2`); every other group stays
+`confirmation: unconfirmed`. A confirmation on the TC100.2 does not confirm
+a CT200. I would be glad about reports from owners, ideally with a
 diagnostics download (see [diagnostics](diagnostics.md)).
 
 | Function | Status |
@@ -51,6 +54,8 @@ diagnostics download (see [diagnostics](diagnostics.md)).
 | Zone readings, manual/schedule mode, manual setpoint | Confirmed on a TC100.2 |
 | Mode together with a target (`heat` with a target, back to `auto`) | Confirmed on a TC100.2 |
 | Temporary setpoint and its clear button | Confirmed on a TC100.2 |
+| Advance next switch point | Expected, untested |
+| Reading the follow-up values about five seconds after a zone change | Expected, untested |
 | Zone details: next setpoint, zone status, window sensor | Readings look right on a TC100.2 |
 | Zone details: minutes until the next setpoint, valve opening, optimum start | Expected, untested |
 | Open window detection of a zone | Off and on confirmed on a TC100.2 |
@@ -114,6 +119,18 @@ regular cycle (within a minute) instead of with its own, slower group, so a
 zone's target control is back quickly. If the controller ends a replaced
 temporary setpoint at once, its reading of 0 stays valid and is shown.
 
+A confirmed change of a zone (its target, temporary setpoint, mode, program
+or open window detection) also changes values the controller works out
+from it: the active setpoint, the zone status, the next setpoint, the
+minutes until it and the zone list. They are read once about five seconds
+after the change instead of only with the next regular cycle about a minute
+later. Several changes in a row share this one read, which follows the last
+of them. It runs as part of a regular cycle, so a pause after a rate limit
+or the protection pause holds it back until the cloud can be read again;
+nothing is written again. *Expected, untested:* whether a controller has
+taken over the new values after five seconds; if not, the next regular
+cycle shows them.
+
 For the boost, only what a change depends on must still be as shown: the
 mode and the rooms. Otherwise the change is refused with a message that the
 boost changed on the controller.
@@ -135,9 +152,28 @@ unknown and the zone can still be controlled.
   the lowest manual setpoint of the zone. If the controller ends it at once,
   for example because a switch point was reached, a message of its own says
   so. *Confirmed on a TC100.2*; the case of a setpoint the controller ends at
-  once is expected, untested.
+  once is expected, untested. Like every room controller setting, the
+  temporary setpoint follows the used and available flags: reported as not
+  used, a change is refused unsent; reported as not available, the zone
+  takes no target in the schedule mode. *Expected, untested:* the TC100.2
+  sends no such flags for it, so whether a controller reports it as not used
+  in the schedule mode is not known. If a temporary setpoint is refused with
+  the message that the controller does not use it, I would be glad about a
+  report with a diagnostics download.
 - **Clear temporary setpoint.** A button per zone ends an active temporary
   setpoint while the zone follows its schedule. *Confirmed on a TC100.2.*
+- **Advance next switch point** *(expected, untested)*. A button per zone
+  that reports its next setpoint sets the temporary setpoint to that next
+  setpoint, so the zone heats up or lowers its temperature now instead of at
+  the next switch point. It lasts until that switch point. The button is
+  available only while the zone follows its schedule and reports a next
+  setpoint that the temporary setpoint can take (not "none", within its
+  limits and steps, at least the lowest manual setpoint). The mode and the
+  next setpoint are read again right before the change; if the next setpoint
+  changed on the controller since the last reading, nothing is sent. The
+  attribute `next_setpoint_advanced` (on the button, and on the zone climate
+  while a temporary setpoint is active) is `true` while the temporary
+  setpoint equals the next setpoint. The clear button ends it early.
 - A mode together with a temperature changes the mode first and the target
   only after the controller has confirmed the mode. *Confirmed on a
   TC100.2.*
@@ -265,8 +301,11 @@ is expected, untested.*
   that lists its modes offers exactly those. One that lists none offers
   off, comfort and own program; while it reports one of the eco levels
   (eco or eco+, the levels of a heat pump), it offers these two as well.
-  After you switch away from an eco level, it is offered again only once the
-  controller reports it. A controller that sends an empty list of modes
+  If the controller reports its heat source as a heat pump or a hybrid
+  system (`/heatSources/type`), all five modes are always offered, so eco
+  can be chosen again after comfort. On other systems, after you switch away
+  from an eco level, it is offered again only once the controller reports
+  it. A controller that sends an empty list of modes
   keeps the mode as a reading only, so nothing is guessed; the diagnostics
   count such lists (`operation_mode_options_empty`). Both cases are expected,
   untested. If the controller reports the hot water mode as not available,
@@ -331,6 +370,9 @@ on a TC100.2; everything else is expected, untested.*
   travel too large or too small, valve in a wrong position), other radio
   device faults the text "Radio device fault (code …)". Cause codes for a
   too low water pressure read "Water pressure too low".
+- **Fault times:** a time the controller sends without a time zone is read
+  as local time in Home Assistant's time zone, as the controller shows it;
+  a time with a zone keeps it. *Expected, untested.*
 - **Maintenance messages:** a notification with the numeric class 18 or 20
   counts as maintenance on every gateway, not as a fault. Under **Configure →
   Notifications** an option, off by default, also shows warnings and
@@ -516,7 +558,18 @@ ist erwartet, ungetestet**, ebenso der CT200 insgesamt:
   Ventilöffnung, optimierter Start, Fenster offen (aus der Sonderfunktion
   der Zonenliste, sonst aus dem Fensterstatus der Zone),
   Fenster-offen-Erkennung (der Zonenschalter nur, solange der Regler die
-  Erkennung des Systems anbietet). Bei aktiver Abwesenheit lehne ich einen
+  Erkennung des Systems anbietet). Die Taste **Nächsten Schaltpunkt
+  vorziehen** setzt den vorübergehenden Sollwert auf den nächsten Sollwert,
+  nur im Zeitprogramm und nur mit einem nächsten Sollwert, den der
+  vorübergehende Sollwert annehmen kann; das Attribut
+  `next_setpoint_advanced` zeigt das an. Nach einer bestätigten Änderung
+  einer Zone lese ich aktiven Sollwert, Zonenstatus, nächsten Sollwert, die
+  Minuten bis dahin und die Zonenliste etwa fünf Sekunden später einmal
+  nach, mehrere Änderungen hintereinander teilen sich diese eine Lesung.
+  Auch der vorübergehende Sollwert folgt den Kennzeichen „genutzt“ und
+  „verfügbar“; ob ein Regler ihn im Zeitprogramm als nicht genutzt meldet,
+  ist offen (der TC100.2 sendet dafür keine Kennzeichen). Bei aktiver
+  Abwesenheit lehne ich einen
   neuen Sollwert und das Aufheben ab, die Betriebsart bleibt änderbar; eine
   Zone mit Zonen- oder Kommunikationsfehler oder im Standby nimmt keine
   Änderung an. Das Attribut `control_lock` nennt die Sperre,
@@ -539,7 +592,9 @@ ist erwartet, ungetestet**, ebenso der CT200 insgesamt:
   Dauer, thermische Desinfektion (Startzeit in 5-Minuten-Schritten),
   aktuelle Programmstufe. Ohne angebotene Liste biete ich Aus, Komfort und
   Eigenes Programm an, solange der Regler Eco oder Eco+ meldet auch diese
-  beiden; eine leere Liste lässt die Betriebsart nur lesbar. Extra-Warmwasser
+  beiden; meldet der Regler als Wärmeerzeuger eine Wärmepumpe oder ein
+  Hybridsystem, immer alle fünf, sodass Eco nach Komfort wieder wählbar
+  ist; eine leere Liste lässt die Betriebsart nur lesbar. Extra-Warmwasser
   schaltet nicht mit der Dauer 0 ein.
 - **Heizkreis:** Sommer-/Winterumschaltung und Nachtabsenkung mit ihren
   Schwellen (standardmäßig deaktiviert), Saisonbetrieb (nur mit mindestens
@@ -555,7 +610,9 @@ ist erwartet, ungetestet**, ebenso der CT200 insgesamt:
   verriegelnde Störung (bis zum manuellen Reset), blockierende Störung,
   Wartung fällig, Nachfüllen erforderlich; eigene Texte für
   Funkgerätestörungen; Klasse 18/20 als Wartung; Warnungen und Wartung
-  optional in der Glocken-Benachrichtigung; Meldungen für Fachleute oder
+  optional in der Glocken-Benachrichtigung; eine Störungszeit ohne
+  Zeitzone gilt als Ortszeit in der Zeitzone von Home Assistant; Meldungen
+  für Fachleute oder
   Installateure (Anzeigeebene 0, 2 oder 4) nur unter „Aktive Meldungen“,
   siehe [Störungen](faults.md#display-levels-on-room-controllers).
 - **Energiehistorie:** Tageswerte als Statistiken mit dem Zusatz

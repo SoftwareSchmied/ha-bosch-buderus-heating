@@ -933,6 +933,29 @@ async def test_other_limit_without_a_current_reading_blocks_the_write(
         await _teardown(hass, entry, stack)
 
 
+async def test_a_stale_control_strategy_does_not_refuse_the_write(
+    hass: HomeAssistant,
+) -> None:
+    """VER-05: after a failed read of the control strategy the number sends
+    its write as the dialog does; it is not refused as "changed" until the
+    next poll. The limits are still read freshly with it."""
+    cloud = CircuitCloud(plant())
+    entry, coordinator, _sleeps, stack, _clock = await _setup(
+        hass, cloud, enabled=ALL_LIMITS
+    )
+    control = f"{HC1}/control"
+    try:
+        snapshots = dict(coordinator.data)
+        snapshots[control] = replace(snapshots[control], freshness=Freshness.STALE)
+        coordinator.async_set_updated_data(snapshots)
+        before = cloud.calls.copy()
+        await _set_number(hass, _entity_id(hass, "number", uid(CURVE_MAX)), 65)
+        assert cloud.written("PUT") == [("PUT", CURVE_MAX, 65.0)]
+        assert cloud.calls["BULK", CURVE_MIN] == before["BULK", CURVE_MIN] + 1
+    finally:
+        await _teardown(hass, entry, stack)
+
+
 async def test_room_influence_and_thresholds_through_the_setup(
     hass: HomeAssistant,
 ) -> None:

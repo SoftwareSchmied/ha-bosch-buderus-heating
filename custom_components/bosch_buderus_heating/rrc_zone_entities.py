@@ -7,7 +7,9 @@ platform listed in ``TRACKERS`` once per coordinator; see
 (``rrc_contract_zone``); this module adds:
 
 - climate: one ``RrcZoneClimate`` per zone with a mode and a room temperature;
-- button: "clear temporary setpoint" per zone with a temporary setpoint;
+- button: "clear temporary setpoint" per zone with a temporary setpoint, and
+  "advance next switch point" (ZONE-06) where the zone also reports its
+  next setpoint;
 - sensor: next setpoint, minutes to it, zone status, valve opening and the
   optimum start (CT-C06, CT-G07);
 - binary sensor: window open, from the zone list's ``functionIcons`` and,
@@ -335,6 +337,117 @@ class RrcOverrideClearButton(
         return device_info_for_resource(self.coordinator, self.root)
 
 
+class RrcAdvanceSwitchPointButton(
+    CoordinatorEntity[BoschBuderusDataUpdateCoordinator], ButtonEntity
+):
+    """ZONE-06: advance the next switch point of a zone, a quick action of
+    the room control: the temporary setpoint is set to the next setpoint,
+    until that switch point is reached (P33).
+
+    Offered only in the mode ``clock`` while the zone reports a next
+    setpoint (not 999, not unused or unavailable) that the temporary
+    setpoint can take (``advance_value``). It writes through the temporary
+    setpoint's contract; the mode and the next setpoint are read again
+    before the write, and a change there sends nothing. Expected, untested.
+    """
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "rrc_override_advance"
+    _attr_icon = "mdi:skip-next-outline"
+
+    def __init__(
+        self, coordinator: BoschBuderusDataUpdateCoordinator, root: str
+    ) -> None:
+        super().__init__(coordinator)
+        self.root = root
+        self.resource_path = f"{root}/{Z.OVERRIDE_LEAF}"
+        self.extra_resource_paths = (
+            f"{root}/userMode",
+            f"{root}/{Z.NEXT_SETPOINT}",
+            f"{root}/manualTemperatureHeating",
+            f"{root}/{Z.STATUS}",
+            Z.ZONE_LIST,
+            Z.AWAY_ENABLED,
+        )
+        self._attr_unique_id = (
+            f"{coordinator.gateway.gateway_id}:{_key(self.resource_path)}:advance"
+        )
+        self._attr_name = _leaf_name(
+            coordinator, self.resource_path, "advance_switch_point"
+        )
+
+    def _state(
+        self, *, strict: bool
+    ) -> tuple[Resource, Resource, Resource, float] | None:
+        """The temporary setpoint, the mode ``clock``, the next setpoint
+        reading and the value to write, if the action is offered now."""
+        override = zone_reading(self.coordinator, self.resource_path, strict=strict)
+        mode = zone_reading(self.coordinator, f"{self.root}/userMode", strict=strict)
+        upcoming = zone_reading(
+            self.coordinator, f"{self.root}/{Z.NEXT_SETPOINT}", strict=strict
+        )
+        if (
+            override is None
+            or mode is None
+            or upcoming is None
+            or rrc.scalar_value(mode) != "clock"
+            or number_policy_for_resource(override, context_of(self.coordinator))
+            is not Z.OVERRIDE_POLICY
+        ):
+            return None
+        detail = rrc.detail_value(upcoming)
+        manual = zone_reading(
+            self.coordinator, f"{self.root}/manualTemperatureHeating", strict=strict
+        )
+        value = Z.advance_value(
+            override,
+            detail if isinstance(detail, float) else None,
+            manual.metadata.minimum if manual is not None else None,
+        )
+        if value is None:
+            return None
+        return override, mode, upcoming, value
+
+    @property
+    def available(self) -> bool:
+        return self._state(strict=False) is not None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, bool]:
+        state = self._state(strict=False)
+        if state is None:
+            return {}
+        override, _mode, _upcoming, value = state
+        current = rrc.scalar_value(override)
+        return {
+            "next_setpoint_advanced": Z.advanced(
+                float(current) if isinstance(current, int | float) else None, value
+            )
+        }
+
+    async def async_press(self) -> None:
+        state = self._state(strict=True)
+        if state is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="rrc_advance_not_offered",
+            )
+        # ZONE-02, ZONE-05: no change while the zone is locked.
+        refuse_locked(self.coordinator, self.root, setpoint=True)
+        override, mode, upcoming, value = state
+        await async_set_control(
+            self.coordinator,
+            override.path,
+            value,
+            Z.OVERRIDE_POLICY,
+            expected=(mode, upcoming, *away_guard(self.coordinator)),
+        )
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return device_info_for_resource(self.coordinator, self.root)
+
+
 # ------------------------------------------------------------- builders
 def clears_to_zero(override: Resource) -> bool:
     """ZONE-09: 0 clears a temporary setpoint; it must lie within its
@@ -369,6 +482,29 @@ def button_descriptions(
             and rrc_contracts.policy_for(override, context) is Z.OVERRIDE_POLICY
         ):
             descriptions.append(ZoneEntityDescription(key=root, root=root))
+    return tuple(descriptions)
+
+
+def advance_descriptions(
+    resources: Mapping[str, Resource], context: ControlContext
+) -> tuple[ZoneEntityDescription, ...]:
+    """ZONE-06: a zone with a writable temporary setpoint and a next
+    setpoint gets the advance button."""
+    descriptions = []
+    for root in rrc.zone_roots(resources):
+        override = resources.get(f"{root}/{Z.OVERRIDE_LEAF}")
+        upcoming = resources.get(f"{root}/{Z.NEXT_SETPOINT}")
+        if (
+            override is not None
+            and upcoming is not None
+            and rrc.detail_shape(upcoming)
+            and override.metadata.writable
+            and override.metadata.resource_type == "floatValue"
+            and rrc_contracts.policy_for(override, context) is Z.OVERRIDE_POLICY
+        ):
+            descriptions.append(
+                ZoneEntityDescription(key=f"{root}/{Z.NEXT_SETPOINT}", root=root)
+            )
     return tuple(descriptions)
 
 
@@ -439,6 +575,12 @@ def _button(
     return RrcOverrideClearButton(coordinator, description.root)
 
 
+def _advance(
+    coordinator: BoschBuderusDataUpdateCoordinator, description: ZoneEntityDescription
+) -> Entity:
+    return RrcAdvanceSwitchPointButton(coordinator, description.root)
+
+
 def _sensor(
     coordinator: BoschBuderusDataUpdateCoordinator, description: ZoneSensorDescription
 ) -> Entity:
@@ -465,6 +607,7 @@ def track_buttons(
     add: AddConfigEntryEntitiesCallback,
 ) -> None:
     track_rrc_entities(entry, coordinator, add, button_descriptions, _button)
+    track_rrc_entities(entry, coordinator, add, advance_descriptions, _advance)
 
 
 def track_sensors(

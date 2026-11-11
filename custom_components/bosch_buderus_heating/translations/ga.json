@@ -1113,6 +1113,9 @@
     "rrc_override_not_active": {
       "message": "Níl aon socphointe sealadach ag an gcrios seo faoi láthair le glanadh."
     },
+    "rrc_advance_not_offered": {
+      "message": "Ní féidir an chéad phointe lasctha eile den chrios seo a thabhairt chun tosaigh faoi láthair. Tá mód an sceidil agus an chéad socphointe eile is féidir leis an socphointe sealadach a ghlacadh ag teastáil chuige sin."
+    },
     "rrc_zone_climate_command": {
       "message": "Níl an t-ordú crios seo ar fáil faoi láthair. Seiceáil go dtuairiscíonn an crios luachanna reatha agus go bhfuil an teocht laistigh den raon a thairgtear; teastaíonn mód an sceidil ó shocphointe sealadach."
     },
@@ -2368,6 +2371,9 @@
       },
       "rrc_override_clear": {
         "name": "Glan an socphointe sealadach"
+      },
+      "rrc_override_advance": {
+        "name": "Tabhair an chéad phointe lasctha eile chun tosaigh"
       }
     },
     "water_heater": {

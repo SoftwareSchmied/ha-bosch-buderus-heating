@@ -1113,6 +1113,9 @@
     "rrc_override_not_active": {
       "message": "Den här zonen har just nu inget tillfälligt börvärde som kan tas bort."
     },
+    "rrc_advance_not_offered": {
+      "message": "Nästa växlingspunkt för den här zonen kan inte tidigareläggas just nu. Det kräver driftläget tidsprogram och ett nästa börvärde som det tillfälliga börvärdet kan anta."
+    },
     "rrc_zone_climate_command": {
       "message": "Det här zonkommandot är inte tillgängligt just nu. Kontrollera att zonen rapporterar aktuella värden och att temperaturen ligger inom det erbjudna området; ett tillfälligt börvärde kräver driftläget tidsprogram."
     },
@@ -2368,6 +2371,9 @@
       },
       "rrc_override_clear": {
         "name": "Ta bort tillfälligt börvärde"
+      },
+      "rrc_override_advance": {
+        "name": "Tidigarelägg nästa växlingspunkt"
       }
     },
     "water_heater": {

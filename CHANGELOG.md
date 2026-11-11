@@ -97,6 +97,36 @@ gateway they are expected, untested.
   and the rows it does not answer, and a synthetic fixture holds these shapes
   with constructed values.
 
+#### Room controllers: new and changed
+
+Everything in this block is expected, untested on a real controller. I
+tested it with simulated controller data only.
+
+- **Advance next switch point:** a new button per zone sets the temporary
+  setpoint to the zone's next setpoint, so the zone heats up or lowers its
+  temperature now instead of at the next switch point. It is available only
+  in the schedule mode with a next setpoint that the temporary setpoint can
+  take. The mode and the next setpoint are read again before the change;
+  if the next setpoint changed on the controller, nothing is sent. The
+  attribute `next_setpoint_advanced` shows it.
+- **Values after a zone change:** after a confirmed change of a zone, the
+  active setpoint, the zone status, the next setpoint, the minutes until it
+  and the zone list are read once about five seconds later, not only with
+  the next cycle about a minute later. Several changes in a row share this
+  one read; pauses and the protection pause still apply.
+- **Hot water on a heat pump:** if the controller reports its heat source
+  as a heat pump or a hybrid system, the hot water mode always offers all
+  five modes, so eco can be chosen again after comfort.
+- **Diagnostics:** the functions confirmed on the TC100.2 are now named as
+  confirmed for their function group; everything else stays unconfirmed.
+  Start counters with a form the integration cannot read describe that
+  form without values, the boost settings say why they have no limits, the
+  active temporary setpoints count only zones in the schedule mode, and the
+  holiday block points to the room controller's absence report.
+- **Documentation:** the room controller page says that the temporary
+  setpoint follows the used and available flags like every other setting;
+  whether a controller reports such flags for it is still open.
+
 #### Fixes
 
 - **Writes with a slow cloud:** a change that has started now has an overall
@@ -111,6 +141,15 @@ gateway they are expected, untested.
   blocking call to import_module … inside the event loop" for the room
   controller functions. I now load their modules in the background before
   the entity platforms start. The warning was reported in #122.
+- **Room controller fault times:** a fault time without a time zone is now
+  read as local time in Home Assistant's time zone instead of as UTC, so
+  the fault no longer shows hours off. Expected, untested.
+- **Room controller heating circuit settings:** after a failed reading of
+  the circuit's control strategy, a change of a heating curve or supply
+  setting is no longer refused as "changed" until the next poll. The
+  limits it is ordered against are still checked with a current reading.
+- **Room controller absence calendar:** a changed event no longer counts as
+  confirmed while the list it came from cannot be read.
 
 #### Robustness, privacy and texts from the review of 0.9
 

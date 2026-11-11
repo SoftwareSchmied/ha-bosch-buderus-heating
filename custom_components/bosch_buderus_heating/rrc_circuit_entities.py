@@ -46,6 +46,7 @@ from .number import (
 from .platform_scope import DiscoveryLifecycle
 from .pointt import Resource
 from .rrc_contract_circuit import (
+    CONTROL_LEAF,
     NUMBER_POLICIES,
     OPERATING_SEASON,
     OPERATING_SEASON_NAMES,
@@ -117,15 +118,25 @@ class RrcCircuitNumber(BoschBuderusNumber):
             description.resource_path
         )
 
+    def _expected(self, path: str) -> Resource | None:
+        """VER-05: the control strategy counts only with a current reading,
+        as in the dialog; a stale one would refuse every write as "changed"
+        until the next poll, and the rule treats a missing one as no lock.
+        The setting and its limits stay strict: without a current reading
+        of the other limit the order cannot be checked and nothing is sent."""
+        if path.endswith(f"/{CONTROL_LEAF}"):
+            return fresh_resource(self.coordinator, path)
+        snapshot = (self.coordinator.data or {}).get(path)
+        return snapshot.resource if snapshot is not None else None
+
     async def async_set_native_value(self, value: float) -> None:
         path = self.entity_description.resource_path
-        snapshots = self.coordinator.data or {}
         # The coordinator compares these with its readings and the gateway's
         # before it writes; a reading the plant does not have is left out.
         expected = tuple(
-            snapshots[item].resource
+            resource
             for item in (path, *self.extra_resource_paths)
-            if item in snapshots
+            if (resource := self._expected(item)) is not None
         )
         await async_set_control(
             self.coordinator,

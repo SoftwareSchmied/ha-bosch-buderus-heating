@@ -1113,6 +1113,9 @@
     "rrc_override_not_active": {
       "message": "Ta cona trenutno nima začasne nastavljene vrednosti, ki bi jo bilo mogoče preklicati."
     },
+    "rrc_advance_not_offered": {
+      "message": "Naslednje preklopne točke te cone trenutno ni mogoče predčasno aktivirati. Za to sta potrebna način delovanja Časovni program in naslednja nastavljena vrednost, ki jo lahko prevzame začasna nastavljena vrednost."
+    },
     "rrc_zone_climate_command": {
       "message": "Ta ukaz cone trenutno ni na voljo. Preverite, ali cona sporoča trenutne vrednosti in ali je temperatura znotraj ponujenega razpona; začasna nastavljena vrednost zahteva način Časovni program."
     },
@@ -2368,6 +2371,9 @@
       },
       "rrc_override_clear": {
         "name": "Prekliči začasno nastavljeno vrednost"
+      },
+      "rrc_override_advance": {
+        "name": "Predčasno aktiviraj naslednjo preklopno točko"
       }
     },
     "water_heater": {

@@ -1113,6 +1113,9 @@
     "rrc_override_not_active": {
       "message": "Ta strefa nie ma w tej chwili tymczasowej wartości zadanej do usunięcia."
     },
+    "rrc_advance_not_offered": {
+      "message": "Następnego punktu przełączenia tej strefy nie można teraz przyspieszyć. Wymaga to trybu programu czasowego i następnej wartości zadanej, którą może przyjąć tymczasowa wartość zadana."
+    },
     "rrc_zone_climate_command": {
       "message": "To polecenie strefy jest w tej chwili niedostępne. Sprawdź, czy strefa podaje aktualne wartości i czy temperatura mieści się w oferowanym zakresie; tymczasowa wartość zadana wymaga trybu programu czasowego."
     },
@@ -2368,6 +2371,9 @@
       },
       "rrc_override_clear": {
         "name": "Usuń tymczasową wartość zadaną"
+      },
+      "rrc_override_advance": {
+        "name": "Przyspiesz następny punkt przełączenia"
       }
     },
     "water_heater": {

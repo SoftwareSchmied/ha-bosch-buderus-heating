@@ -4,9 +4,10 @@
 controller has no off mode. A target set in ``manual`` changes the manual
 setpoint (confirmed on a TC100.2). A target set in ``clock`` is a temporary
 setpoint (``clockOverride/temperatureHeating``) that lasts until the next
-switch point of the program (P23, P33); that write is expected, untested.
-A mode is never changed on the side: a temperature with a mode writes the
-mode first and, once it is confirmed, the target.
+switch point of the program (P23, P33); that write and the mode with a
+target are confirmed on a TC100.2 as well (``rrc_confirmations``). A mode is
+never changed on the side: a temperature with a mode writes the mode first
+and, once it is confirmed, the target.
 
 The entity is available while the mode is valid; the room temperature may be
 unknown (ZONE-07). A zone the controller reports with a zone or
@@ -183,6 +184,7 @@ class RrcZoneClimate(
             "minutes_to_next_setpoint",
             "zone_status",
             "active_setpoint",
+            "next_setpoint_advanced",
         }
     )
 
@@ -430,6 +432,11 @@ class RrcZoneClimate(
         if next_setpoint is not None:
             attributes["next_setpoint"] = display_temp(
                 self.hass, next_setpoint, unit, self.precision
+            )
+        if override and next_setpoint is not None:
+            # ZONE-06: the next switch point is advanced.
+            attributes["next_setpoint_advanced"] = rrc_contract_zone.advanced(
+                self._value(OVERRIDE), next_setpoint
             )
         minutes = _number(self._detail(rrc_contract_zone.MINUTES_TO_NEXT))
         if minutes is not None:

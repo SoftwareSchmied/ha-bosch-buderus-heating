@@ -8,8 +8,12 @@ worded independently and expected, untested on a CT200.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
+
 import pytest
 from homeassistant.core import HomeAssistant
+from homeassistant.util import dt as dt_util
 
 from custom_components.bosch_buderus_heating import i18n
 from custom_components.bosch_buderus_heating.faults import (
@@ -144,3 +148,26 @@ def test_a_maintenance_request_is_no_fault(hass: HomeAssistant) -> None:
     (fault,) = tracker.active_faults
     assert fault.code == "207"
     assert tracker.highest_severity is FaultSeverity.FAULT
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        # SYSTEM-18: without a zone the local time of Home Assistant's zone.
+        ("2026-08-18T10:15:00", datetime(2026, 8, 18, 8, 15, tzinfo=UTC)),
+        ("2026-01-18T10:15:00", datetime(2026, 1, 18, 9, 15, tzinfo=UTC)),
+        # A time with a zone keeps it.
+        ("2026-08-18T10:15:00Z", datetime(2026, 8, 18, 10, 15, tzinfo=UTC)),
+        ("2026-08-18T10:15:00+01:00", datetime(2026, 8, 18, 9, 15, tzinfo=UTC)),
+    ],
+)
+def test_a_time_without_a_zone_is_local_time(raw: str, expected: datetime) -> None:
+    previous = dt_util.get_default_time_zone()
+    dt_util.set_default_time_zone(ZoneInfo("Europe/Berlin"))
+    try:
+        fault = parse_fault_resource(
+            as_value({"ccd": 1038, "dcd": "A11", "t": raw}), observed_at=NOW
+        ).faults[0]
+    finally:
+        dt_util.set_default_time_zone(previous)
+    assert fault.occurred_at == expected

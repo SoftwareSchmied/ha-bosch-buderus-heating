@@ -225,7 +225,7 @@ async def test_every_zone_with_a_mode_and_a_room_temperature_gets_a_climate(
         # The value-free contract diagnostics.
         diagnostics = await async_get_config_entry_diagnostics(hass, entry)
         zone = diagnostics["gateways"][0]["rrc_features"]["contracts"]["zone"]
-        assert zone["confirmation"] == "unconfirmed"
+        assert zone["confirmation"] == "partly_confirmed"
         assert zone["zones"] == 6
         assert zone["override_paths"] == 5
         assert zone["overrides_active"] == 1

@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
+from homeassistant.util import dt as dt_util
 
 from . import rrc
 from .const import DOMAIN
@@ -2012,7 +2013,9 @@ def _parse_timestamp(value: JsonValue, now: datetime) -> datetime | None:
     if parsed is None:
         return None
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=UTC)
+        # SYSTEM-18: a time without a zone is the local time, as the
+        # controller shows it; Home Assistant's time zone stands for it.
+        parsed = parsed.replace(tzinfo=dt_util.get_default_time_zone())
     parsed = parsed.astimezone(UTC)
     minimum = datetime(2000, 1, 1, tzinfo=UTC)
     return parsed if minimum <= parsed <= now + timedelta(days=1) else None

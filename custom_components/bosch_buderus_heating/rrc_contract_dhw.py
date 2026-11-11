@@ -7,9 +7,11 @@ a real one (CT-G03, CT-D06):
 
 - ``operationMode`` without an ``allowedValues`` key offers "Off", "high"
   and "ownprogram"; "low" and "eco" mean different things depending on the
-  heat source and are offered only when the controller advertises them or
-  reads one of them now (then all five, the modes of a heat pump). An
-  advertised empty list leaves the mode a reading. "Off" is written as
+  heat source and are offered only when the controller advertises them,
+  reads one of them now (then all five, the modes of a heat pump) or its
+  heat source type reads as a heat pump or hybrid plant (VER-03: always
+  all five, so Eco can be chosen again after Comfort). An advertised empty
+  list leaves the mode a reading. "Off" is written as
   such; a reading of "off" confirms it.
 - ``temperatureLevels/high`` uses the advertised step (S4), so that a value
   the controller would round is refused rather than never confirmed.
@@ -117,8 +119,10 @@ OPERATION_MODE_POLICY: Final = EnumWritePolicy(
     frozenset({"stringValue"}),
     frozenset({"Off", "off", "low", "high", "ownprogram", "eco"}),
     fallback_options=("Off", "high", "ownprogram"),
-    # The eco levels of a heat pump, while the controller reads one of them.
+    # The eco levels of a heat pump, while the controller reads one of them,
+    # and always on a heat pump or hybrid plant (VER-03).
     fallback_current_options=("low", "eco"),
+    heat_pump_options=("low", "eco"),
     equivalent_reads=MappingProxyType(
         {"Off": frozenset({"off"}), "off": frozenset({"Off"})}
     ),

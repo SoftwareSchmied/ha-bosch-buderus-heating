@@ -1113,6 +1113,9 @@
     "rrc_override_not_active": {
       "message": "Esta zona no tiene ahora ninguna consigna temporal que anular."
     },
+    "rrc_advance_not_offered": {
+      "message": "Ahora mismo no se puede adelantar el próximo punto de conmutación de esta zona. Para ello se necesitan el modo programa horario y una próxima consigna que la consigna temporal pueda adoptar."
+    },
     "rrc_zone_climate_command": {
       "message": "Este comando de zona no está disponible ahora. Comprueba que la zona proporciona valores actuales y que la temperatura está dentro del rango ofrecido; una consigna temporal necesita el modo programa horario."
     },
@@ -2368,6 +2371,9 @@
       },
       "rrc_override_clear": {
         "name": "Anular la consigna temporal"
+      },
+      "rrc_override_advance": {
+        "name": "Adelantar el próximo punto de conmutación"
       }
     },
     "water_heater": {

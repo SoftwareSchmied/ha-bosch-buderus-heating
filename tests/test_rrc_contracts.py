@@ -321,7 +321,7 @@ def test_lookups_answer_per_path() -> None:
         assert ("Abwesend", "Away") in rrc_contracts.texts()
         report = rrc_contracts.diagnostics({AWAY: away()})
         assert report["lookups"] == {"confirmation": "unconfirmed", "lists": 1}
-        assert report["zone"]["confirmation"] == "unconfirmed"
+        assert report["zone"]["confirmation"] == "partly_confirmed"
         assert registry.contract_for(OVERRIDE) == "zone"
 
 

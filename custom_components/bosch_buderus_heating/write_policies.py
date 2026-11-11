@@ -49,10 +49,15 @@ class ControlContext:
     """
 
     rrc_plant: bool = False
+    # VER-03: on an RRC plant, the heat source type reads as a heat pump or
+    # a hybrid plant (``/heatSources/type``); a policy with
+    # ``heat_pump_options`` then always offers them.
+    heat_pump: bool = False
 
 
 GENERIC_CONTEXT: Final = ControlContext()
 RRC_CONTEXT: Final = ControlContext(rrc_plant=True)
+RRC_HEAT_PUMP_CONTEXT: Final = ControlContext(rrc_plant=True, heat_pump=True)
 
 
 class RrcFlag(TypedDict, total=False):
@@ -95,6 +100,10 @@ class EnumWritePolicy:
     # while the current value is one of them (for example modes that only
     # some heat sources have); the options are then both tuples together.
     fallback_current_options: tuple[str, ...] = ()
+    # Offered with ``fallback_options`` under the same condition on a plant
+    # whose context reads as a heat pump (VER-03), whatever the current
+    # value is.
+    heat_pump_options: tuple[str, ...] = ()
     # Advertised placeholders left out of the options, such as "" (never
     # written); fewer than ``min_options`` usable options leave no control.
     ignored_options: frozenset[str] = frozenset()

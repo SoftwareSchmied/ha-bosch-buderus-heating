@@ -156,3 +156,62 @@ def assess_start_counter(resource: Resource) -> StartCounterAssessment:
             reading = parts[0]
         readings.append((key, reading))
     return StartCounterAssessment(True, readings=tuple(readings))
+
+
+_KEY_TOKEN = re.compile(r"[A-Za-z][A-Za-z0-9_]{0,23}")
+_MAX_KEYS = 12
+_MAX_ITEMS = 5
+
+
+def _shape(value: object, depth: int = 0) -> str:
+    """A value-free form of one item: types, list lengths and key names
+    (an unusual key becomes ``?``), never a value."""
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "bool"
+    if isinstance(value, int):
+        return "int"
+    if isinstance(value, float):
+        return "float"
+    if isinstance(value, str):
+        return "str"
+    if isinstance(value, list | tuple):
+        if depth >= 2:
+            return f"list[{len(value)}]"
+        kinds = sorted({_shape(item, depth + 1) for item in value[:_MAX_ITEMS]})
+        return f"list[{len(value)}]<{'|'.join(kinds)}>"
+    if isinstance(value, dict):
+        keys = sorted(
+            key if isinstance(key, str) and _KEY_TOKEN.fullmatch(key) else "?"
+            for key in value
+        )
+        if depth >= 2:
+            return f"dict[{len(keys)}]"
+        fields = ",".join(
+            f"{key}:{_shape(value[key], depth + 1)}" if key != "?" else "?"
+            for key in keys[:_MAX_KEYS]
+        )
+        more = ",..." if len(keys) > _MAX_KEYS else ""
+        return f"dict{{{fields}{more}}}"
+    return "other"
+
+
+def structure_summary(resource: Resource) -> dict[str, object] | None:
+    """T3: the form of an ``emonValue`` counter whose parts read as
+    ``invalid_structure``, for the diagnostics; ``None`` otherwise.
+
+    Only types, list lengths and key names; no counts or other values, so
+    that the real form can be learned from a diagnostics download.
+    """
+    assessment = assess_start_counter(resource)
+    if not any(
+        reading.reason == "invalid_structure" for _key, reading in assessment.readings
+    ):
+        return None
+    return {
+        "reason": "item_not_object",
+        "value": _shape(resource.value),
+        "values_count": len(resource.values),
+        "values": [_shape(item) for item in resource.values[:_MAX_ITEMS]],
+    }
