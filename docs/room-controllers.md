@@ -398,7 +398,9 @@ The integration keeps the load on the cloud bounded:
 
 On the large synthetic test controller with all functions active, the setup
 needs 21 batch and 7 single requests, and one hour of regular polling about
-150 requests. See [request behavior](request-behavior.md) for the general
+150 requests (152 measured). The zone list read every five minutes joins
+batches that are sent anyway: it adds about 11 path reads per hour but no
+request. See [request behavior](request-behavior.md) for the general
 rules.
 
 ## Sign-in, local access and older firmware

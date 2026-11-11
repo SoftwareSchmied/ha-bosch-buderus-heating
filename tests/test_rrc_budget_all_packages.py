@@ -41,9 +41,12 @@ pytestmark = pytest.mark.usefixtures("enable_custom_integrations")
 # at most requests in one hour of regular cycles). Measured with all
 # packages on 2026-11-11, before them (a708ad7) in brackets:
 # CT200 fixture: setup 21 bulk + 7 single (16 + 113), 526 distinct paths
-#   (398), hour 152 requests with 4163 path reads (132, 3470);
+#   (398), hour 152 requests with 4173 path reads (132, 3470);
 # issue-122 tree: setup 24 bulk + 22 single (20 + 146), 570 distinct paths
-#   (452), hour 72 requests with 1451 path reads (72, 1451).
+#   (452), hour 72 requests with 1462 path reads (72, 1451).
+# Since the zone list polls with the controls (every five minutes instead of
+# hourly), it adds 11 path reads per hour but no request: it joins batches
+# that are sent anyway.
 # The single reads left are known catalog paths the trees lack (CT-B06).
 PLANTS: dict[str, tuple[Callable[[], dict[str, Resource]], Gateway, int, int, int]] = {
     "ct200": (ct200_tree, Gateway("gateway-one"), 10, 25, 160),

@@ -357,6 +357,8 @@ with the long-term values (15 minutes, 30 minutes with the cloud-friendly
 profile). Lists and containers
 that only reveal new devices, zones, solar circuits or ventilation zones and
 give no entity (for example `/devices/list` or `/zones/list`) are read hourly.
+On a room controller the zone list is read every five minutes, because it
+shows the open window and the standby of each zone.
 
 Some K40 gateways serve the status paths above without listing them in the
 PointT reference tree. The integration probes only this bounded, documented
