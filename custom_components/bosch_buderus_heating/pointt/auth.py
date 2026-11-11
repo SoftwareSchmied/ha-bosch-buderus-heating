@@ -329,10 +329,11 @@ class OAuthClient:
             raise InvalidPayload("OAuth token response did not contain expires_in")
         if not math.isfinite(float(expires_in)):
             raise InvalidPayload("OAuth token expiry must be finite")
-        if float(expires_in) <= 0:
-            # An already expired token would be refreshed before every
-            # request (D15).
-            raise InvalidPayload("OAuth token expiry must be positive")
+        # D15: a lifetime of 0 or less is kept as an access token that is
+        # expired on arrival. The answer may still rotate the refresh token,
+        # so it is not rejected; the token manager refreshes again within its
+        # retry limits.
+        lifetime = max(0.0, float(expires_in))
         token_type = payload.get("token_type", "Bearer")
         if not isinstance(token_type, str):
             raise InvalidPayload("OAuth token type must be a string")
@@ -349,7 +350,7 @@ class OAuthClient:
         return AuthTokens(
             access_token=access_token,
             refresh_token=refresh_token,
-            expires_at=issued_at + float(expires_in),
+            expires_at=issued_at + lifetime,
             token_type=token_type,
             scope=scope,
             issued_at=issued_at,

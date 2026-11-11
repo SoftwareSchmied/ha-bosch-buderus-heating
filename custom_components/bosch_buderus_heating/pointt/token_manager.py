@@ -11,6 +11,7 @@ from time import monotonic, time
 from typing import Protocol
 
 from .exceptions import (
+    InvalidPayload,
     PointTError,
     RateLimited,
     RefreshTokenRejected,
@@ -196,6 +197,26 @@ class TokenManager:
             task.exception()
 
     async def _refresh(self, trigger: str) -> str:
+        """Refresh; an access token expired on arrival is refreshed once more.
+
+        D15: such an answer may rotate the refresh token, so the new token
+        set is kept and saved. The next refresh uses it right away, once; if
+        that answer is expired as well, the attempt counts as a temporary
+        failure and the usual retry wait (30 s doubling up to 10 min) holds
+        every further refresh. There is never a tight refresh loop.
+        """
+        tokens = await self._refresh_once(trigger)
+        if not _expired_on_arrival(tokens):
+            return tokens.access_token
+        self._backoff.raise_if_active()
+        tokens = await self._refresh_once("expired_on_arrival")
+        if not _expired_on_arrival(tokens):
+            return tokens.access_token
+        raise self._temporary_failure(
+            InvalidPayload("OAuth access token was expired on arrival")
+        )
+
+    async def _refresh_once(self, trigger: str) -> AuthTokens:
         refresh_token = self._tokens.refresh_token
         started_at = self._clock()
         started = monotonic()
@@ -208,8 +229,10 @@ class TokenManager:
             # The old refresh token may already be invalid. Retain the new one
             # in memory even if the persistence callback itself fails.
             self._tokens = new_tokens
-            self._failures = 0
-            self._last_failure = None
+            if not _expired_on_arrival(new_tokens):
+                # An expired token ends no retry wait (D15).
+                self._failures = 0
+                self._last_failure = None
             self._report(
                 trigger,
                 "success",
@@ -222,7 +245,7 @@ class TokenManager:
             persisted = self._persist(new_tokens)
             if isawaitable(persisted):
                 await persisted
-            return new_tokens.access_token
+            return new_tokens
         except RefreshTokenRejected as err:
             self._refresh_rejected = True
             self._rejection = err.rejection
@@ -310,6 +333,11 @@ class TokenManager:
         except Exception:
             # Diagnostics must never change authentication behavior.
             _LOGGER.debug("Refresh diagnostics observer failed", exc_info=True)
+
+
+def _expired_on_arrival(tokens: AuthTokens) -> bool:
+    """The answer gave the access token no lifetime (D15)."""
+    return tokens.issued_at is not None and tokens.expires_at <= tokens.issued_at
 
 
 def _failure_reason(err: Exception) -> str:

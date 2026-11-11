@@ -205,9 +205,6 @@ async def test_oauth_client_maps_http_errors(
         {},
         {"access_token": "token", "expires_in": True},
         {"access_token": "token", "expires_in": float("inf")},
-        {"access_token": "token", "expires_in": 0},
-        {"access_token": "token", "expires_in": -60},
-        {"access_token": "token", "expires_in": -0.5},
         {"access_token": "token", "expires_in": 10, "refresh_token": 3},
         {"access_token": "token", "expires_in": 10, "token_type": 3},
         {"access_token": "token", "expires_in": 10, "scope": ["ok", 3]},
@@ -224,6 +221,35 @@ async def test_oauth_client_rejects_invalid_token_payloads(payload: object) -> N
                 await OAuthClient(session, token_url=url).refresh("secret")
     finally:
         await runner.cleanup()
+
+
+@pytest.mark.parametrize("expires_in", [0, -60, -0.5])
+async def test_a_token_without_lifetime_keeps_the_rotated_refresh_token(
+    expires_in: float,
+) -> None:
+    """D15: the answer is kept as an access token expired on arrival."""
+
+    async def handler(_request: web.Request) -> web.Response:
+        return web.json_response(
+            {
+                "access_token": "new-access",
+                "refresh_token": "rotated-refresh",
+                "expires_in": expires_in,
+            }
+        )
+
+    runner, url = await _serve(handler)
+    try:
+        async with aiohttp.ClientSession() as session:
+            client = OAuthClient(session, token_url=url, clock=lambda: 1000.0)
+            refreshed = await client.refresh("old-refresh")
+    finally:
+        await runner.cleanup()
+
+    assert refreshed.refresh_token == "rotated-refresh"
+    assert refreshed.issued_at == 1000.0
+    assert refreshed.expires_at == 1000.0
+    assert refreshed.is_expired(now=1000.0, margin=0.0)
 
 
 async def test_oauth_client_rejects_malformed_json() -> None:

@@ -491,3 +491,107 @@ async def test_stored_tokens_without_issue_time_keep_the_full_margin() -> None:
     )
     assert await manager.get_access_token() == "fresh"
     assert oauth.calls == ["refresh"]
+
+
+class _ExpiringOAuth:
+    """Rotates the refresh token on every answer; the first ``expired``
+    answers give the access token no lifetime (D15)."""
+
+    def __init__(self, clock: list[float], expired: int) -> None:
+        self.presented: list[str] = []
+        self._clock = clock
+        self.expired = expired
+
+    async def refresh(self, refresh_token: str) -> AuthTokens:
+        self.presented.append(refresh_token)
+        count = len(self.presented)
+        now = self._clock[0]
+        lifetime = 0.0 if count <= self.expired else 3600.0
+        return AuthTokens(
+            f"access-{count}",
+            f"rotated-{count}",
+            expires_at=now + lifetime,
+            issued_at=now,
+        )
+
+
+def _expiring_manager(
+    oauth: _ExpiringOAuth, clock: list[float], persisted: list[AuthTokens]
+) -> TokenManager:
+    return TokenManager(
+        oauth,
+        AuthTokens("old", "refresh", expires_at=0.0),
+        persisted.append,
+        clock=lambda: clock[0],
+        retry_clock=lambda: clock[0],
+    )
+
+
+async def test_an_expired_answer_keeps_the_rotation_and_refreshes_once_more() -> None:
+    clock = [1000.0]
+    oauth = _ExpiringOAuth(clock, expired=1)
+    persisted: list[AuthTokens] = []
+    manager = _expiring_manager(oauth, clock, persisted)
+    assert await manager.get_access_token() == "access-2"
+    # The second refresh presents the refresh token the first answer rotated.
+    assert oauth.presented == ["refresh", "rotated-1"]
+    assert [tokens.refresh_token for tokens in persisted] == ["rotated-1", "rotated-2"]
+    assert manager.tokens.refresh_token == "rotated-2"
+    assert await manager.get_access_token() == "access-2"
+    assert len(oauth.presented) == 2
+
+
+async def test_expired_answers_wait_like_every_temporary_failure() -> None:
+    clock = [1000.0]
+    oauth = _ExpiringOAuth(clock, expired=100)
+    persisted: list[AuthTokens] = []
+    manager = _expiring_manager(oauth, clock, persisted)
+    with pytest.raises(SignInUnavailable) as caught:
+        await manager.get_access_token()
+    assert caught.value.reason == "invalid_answer"
+    assert caught.value.retry_after == 30.0
+    # Two answers, each rotation kept and saved; never a tight loop.
+    assert oauth.presented == ["refresh", "rotated-1"]
+    assert manager.tokens.refresh_token == "rotated-2"
+    assert persisted[-1].refresh_token == "rotated-2"
+    for moment in (1.0, 29.0):
+        clock[0] = 1000.0 + moment
+        with pytest.raises(SignInUnavailable):
+            await manager.get_access_token()
+    assert len(oauth.presented) == 2
+    # After the wait, the next refresh uses the last rotated token; the wait
+    # doubles as after any temporary failure.
+    clock[0] = 1030.0
+    with pytest.raises(SignInUnavailable) as caught:
+        await manager.get_access_token()
+    assert caught.value.retry_after == 60.0
+    assert oauth.presented == ["refresh", "rotated-1", "rotated-2", "rotated-3"]
+    assert manager.refresh_rejected is False
+    # A token with a lifetime ends the wait.
+    oauth.expired = 0
+    clock[0] = 1090.0
+    assert await manager.get_access_token() == "access-5"
+    assert oauth.presented[-1] == "rotated-4"
+    oauth.expired = 100
+    manager._tokens = AuthTokens("access-5", "rotated-5", expires_at=0.0)
+    with pytest.raises(SignInUnavailable) as caught:
+        await manager.get_access_token()
+    assert caught.value.retry_after == 30.0
+
+
+async def test_an_expired_answer_respects_a_rate_limit_pause() -> None:
+    clock = [1000.0]
+    oauth = _ExpiringOAuth(clock, expired=1)
+    manager = _expiring_manager(oauth, clock, [])
+    original = oauth.refresh
+
+    async def refresh_then_pause(refresh_token: str) -> AuthTokens:
+        tokens = await original(refresh_token)
+        manager._backoff.activate(60.0)
+        return tokens
+
+    oauth.refresh = refresh_then_pause  # type: ignore[method-assign]
+    with pytest.raises(RateLimited):
+        await manager.get_access_token()
+    assert oauth.presented == ["refresh"]
+    assert manager.tokens.refresh_token == "rotated-1"

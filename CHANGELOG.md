@@ -167,9 +167,12 @@ device.
 - **p95 response time:** the value never exceeds the measured maximum and
   no longer stops at exactly 10000 ms; answers up to the 30-second timeout
   keep their size.
-- **Short token lifetimes:** a token answer with a lifetime of 0 or less is
-  rejected, and a short lifetime no longer starts a token renewal before
-  every request.
+- **Short token lifetimes:** a token answer with a lifetime of 0 or less
+  keeps its new refresh token, so the sign-in is not lost; its access token
+  counts as expired at once and is renewed once more right away. If that
+  answer has no lifetime either, the usual wait after a failed renewal
+  applies (30 seconds, doubling up to 10 minutes). A short lifetime no
+  longer starts a token renewal before every request.
 - **Start values answered as missing:** a registered value that keeps
   answering 403, 404 or 406, for example of a replaced room device, is
   given up after five answers until the next discovery instead of being read
