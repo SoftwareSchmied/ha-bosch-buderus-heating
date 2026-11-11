@@ -95,3 +95,31 @@ def test_diagnostic_paths_hide_unknown_ids_without_hiding_logical_circuits(
 )
 def test_diagnostic_paths_preserve_known_static_resources(path: str) -> None:
     assert diagnostic_resource_path(path) == path
+
+
+@pytest.mark.parametrize(
+    ("path", "logged"),
+    [
+        ("/zones/PRIVATE-ZONE/name", "/zones/{zone}/name"),
+        ("/zones/zn3/name", "/zones/{zn}/name"),
+        ("/zones/list", "/zones/list"),
+        ("/heatSources/PRIVATE-HS/x", "/heatSources/{hs}/x"),
+        ("/heatSources/hs1/x", "/heatSources/{hs}/x"),
+        ("/heatSources/emon/totalConsumption", "/heatSources/emon/totalConsumption"),
+        ("/solarCircuits/PRIVATE/x", "/solarCircuits/{solar}/x"),
+        ("/ventilation/PRIVATE/x", "/ventilation/{zone}/x"),
+        ("/system/holidayModes/hm1/startStop", "/system/holidayModes/{hm}/startStop"),
+        ("/programs/PRIVATE/days", "/programs/{pg}/days"),
+        ("/devices/PRIVATE/errors", "/devices/{device}/errors"),
+    ],
+)
+def test_log_templates_hide_at_least_what_the_diagnostics_hide(path, logged):
+    """D31: no identifier the diagnostics mask stays visible in a log line."""
+    from custom_components.bosch_buderus_heating.diagnostics import _path_template
+
+    assert resource_path_template(path) == logged
+    assert _path_template(path) == logged  # the diagnostics' template agrees
+    masked = diagnostic_resource_path(path)
+    for part in path.split("/"):
+        if part and part not in masked.split("/"):
+            assert part not in logged.split("/")

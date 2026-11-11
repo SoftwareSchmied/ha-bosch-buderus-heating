@@ -13,7 +13,17 @@ import re
 
 
 def resource_path_template(path: str) -> str:
-    """Remove installation-specific logical IDs from a PointT path."""
+    """Remove installation-specific logical IDs from a PointT path.
+
+    Logs use this template. It first hides every identifier the diagnostics
+    hide (D31): before, a zone, heat source, solar circuit or ventilation
+    child outside the canonical names stayed visible in the log only.
+    """
+    return _logical_template(diagnostic_resource_path(path))
+
+
+def _logical_template(path: str) -> str:
+    """Replace the canonical logical IDs by their placeholders."""
     path = re.sub(r"^/zones/zn[0-9]+(?=/|$)", "/zones/{zn}", path)
     path = re.sub(r"^/programs/(?!list(?:/|$))[^/]+", "/programs/{pg}", path)
     path = re.sub(r"^/system/holidayModes/[^/]+", "/system/holidayModes/{hm}", path)
