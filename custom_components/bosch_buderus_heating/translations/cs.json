@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "Předchozí změna událostí zatím není potvrzena. Nic nebylo odesláno; počkejte, až se projeví v kalendáři, nebo to zkuste znovu za deset minut."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "Ne všechny seznamy událostí prostorového regulátoru lze nyní přečíst, proto nelze události úplně zkontrolovat. Nic nebylo odesláno; zkuste to později znovu."
+    },
     "rrc_event_unsupported_fields": {
       "message": "Prostorový regulátor ukládá pouze název a celé dny. Opakující se události, popisy a místa nejsou podporovány."
     },

@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "Wcześniejsza zmiana wydarzeń nie została jeszcze potwierdzona. Nic nie wysłano; poczekaj, aż pojawi się w kalendarzu, lub spróbuj ponownie za dziesięć minut."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "Nie wszystkie listy wydarzeń regulatora pokojowego można teraz odczytać, więc wydarzeń nie da się w pełni sprawdzić. Nic nie wysłano; spróbuj ponownie później."
+    },
     "rrc_event_unsupported_fields": {
       "message": "Regulator pokojowy zapisuje tylko nazwę i pełne dni. Wydarzenia cykliczne, opisy i lokalizacje nie są obsługiwane."
     },

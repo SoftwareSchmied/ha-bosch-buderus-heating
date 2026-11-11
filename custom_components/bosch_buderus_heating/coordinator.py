@@ -110,6 +110,7 @@ from .rrc import (
     program_list_expected,
 )
 from .rrc_contracts import contract_for, owns
+from .rrc_events import LIST_PATHS as EVENT_LIST_PATHS
 from .rrc_programs import WEEK, RrcProgramService, edit_shows, selection_shows
 from .rrc_write import (
     CORE_CONTRACT,
@@ -3223,6 +3224,18 @@ class BoschBuderusDataUpdateCoordinator(
                 and is_transient_result(reason := self._missing_reason(DEVICE_LIST))
             ):
                 missing[DEVICE_LIST] = reason
+            # VER-01: so is an event list the controller names; until it
+            # reads, the calendar writes nothing.
+            for path in EVENT_LIST_PATHS:
+                listed = self.discovery_diagnostics.paths.get(path)
+                if (
+                    listed is not None
+                    and listed.source is DiscoveryPathSource.REFERENCE
+                    and path not in self.resources
+                    and path not in missing
+                    and is_transient_result(reason := self._missing_reason(path))
+                ):
+                    missing[path] = reason
         if self.inventory is not None:
             self.inventory.record(self.gateway, discovered)
         self.discovery_recovery.plan(

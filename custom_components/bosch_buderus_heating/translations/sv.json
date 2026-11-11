@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "En tidigare ändring av händelserna är ännu inte bekräftad. Inget skickades; vänta tills den syns i kalendern eller försök igen om tio minuter."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "Alla händelselistor i rumsregulatorn kan inte läsas just nu, så händelserna kan inte kontrolleras helt. Inget skickades; försök igen senare."
+    },
     "rrc_event_unsupported_fields": {
       "message": "Rumsregulatorn lagrar bara ett namn och hela dagar. Återkommande händelser, beskrivningar och platser stöds inte."
     },

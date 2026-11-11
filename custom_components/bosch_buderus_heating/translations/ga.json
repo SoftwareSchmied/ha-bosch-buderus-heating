@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "Níor deimhníodh athrú níos luaithe ar na himeachtaí go fóill. Níor seoladh aon rud; fan go dtaispeánfar sa fhéilire é nó bain triail eile as i gceann deich nóiméad."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "Ní féidir gach liosta imeachtaí den rialaitheoir seomra a léamh faoi láthair, mar sin ní féidir na himeachtaí a sheiceáil go hiomlán. Níor seoladh aon rud; bain triail eile as ar ball."
+    },
     "rrc_event_unsupported_fields": {
       "message": "Ní stórálann an rialaitheoir seomra ach ainm agus laethanta iomlána. Ní thacaítear le himeachtaí athfhillteacha, tuairiscí ná suímh."
     },

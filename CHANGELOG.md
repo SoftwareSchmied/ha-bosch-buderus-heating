@@ -84,7 +84,9 @@ Expected, untested on a real controller:
   longer leaves a change of another list unconfirmed. If a list cannot be
   read for a moment, its events stay in the calendar from the last valid
   reading, so a running absence does not end in Home Assistant; the
-  attribute `stale` shows it.
+  attribute `stale` shows it. An event list that got no answer at the start
+  no longer counts as missing: it is searched again, and until it reads, the
+  calendar changes nothing and says so with a message of its own.
 - **Boost and fireplace function:** the switch writes the controller's
   boost settings as a whole. I send the boost temperature and duration only
   together with the start: while the boost is off, a new value is kept for

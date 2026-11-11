@@ -25,6 +25,9 @@ from custom_components.bosch_buderus_heating import rrc_events
 from custom_components.bosch_buderus_heating.diagnostics import (
     async_get_config_entry_diagnostics,
 )
+from custom_components.bosch_buderus_heating.discovery_inventory import (
+    RECOVERY_SCHEDULE,
+)
 from custom_components.bosch_buderus_heating.pointt import (
     RateLimited,
     ResourceError,
@@ -950,3 +953,97 @@ async def test_dates_after_2099_are_refused_before_sending(
         assert cloud.written("POST")[-1][2][0]["end"] == "2099-12-31"
     finally:
         await teardown(hass, entry, stack)
+
+
+# ------------------------------------------------------------------ VER-01
+
+
+async def test_a_listed_event_list_without_an_answer_is_searched_again(
+    hass: HomeAssistant,
+) -> None:
+    """VER-01: ``/events`` names ``list2``, which answers 500 in the batch
+    and in its single read (P31). The setup completes, the list is not
+    taken as missing, the calendar writes nothing until the list reads, and
+    the search after the start finds it; its event then counts for the
+    overlap check."""
+    cloud = EventCloud()
+    saved = cloud.tree.pop("/events/list2")
+    entry, coordinator, clock, _sleeps, stack = await setup(hass, cloud)
+    entity = entity_id(hass, "calendar", CALENDAR)
+    try:
+        report = coordinator.discovery_diagnostics
+        assert report.stop_reason == "complete"
+        item = report.paths["/events/list2"]
+        assert item.source.value == "reference"
+        assert item.read_policy != "rrc_5xx_assumed_missing"
+        assert not item.discovered
+        assert "/events/list2" not in coordinator.resources
+        assert set(coordinator.discovery_recovery.missing) == {"/events/list2"}
+        assert coordinator.discovery_recovery.state == "pending"
+
+        state = hass.states.get(entity)
+        assert state.state != "unavailable"
+        assert state.attributes["supported_features"] == 0
+        assert state.attributes["stale"] is True
+        with pytest.raises(ServiceValidationError) as refused:
+            await _calendar(hass).async_create_event(
+                summary="Ski", dtstart=date(2026, 12, 25), dtend=date(2026, 12, 26)
+            )
+        assert refused.value.translation_key == "rrc_event_lists_unreadable"
+        assert cloud.written() == []
+
+        cloud.tree["/events/list2"] = saved
+        clock.now += RECOVERY_SCHEDULE[0]
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        assert coordinator.discovery_recovery.state == "recovered"
+        assert "/events/list2" in coordinator.resources
+        clock.now += 300
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        state = hass.states.get(entity)
+        assert state.attributes["supported_features"] == 7
+        assert state.attributes["stale"] is False
+        events = await _events(
+            hass, "2026-12-01T00:00:00+01:00", "2027-02-01T00:00:00+01:00"
+        )
+        assert ("2026-12-25", "2026-12-27") in [
+            (item["start"], item["end"]) for item in events
+        ]
+        with pytest.raises(ServiceValidationError) as overlap:
+            await _create(hass, "Ski", "2026-12-26", "2026-12-28")
+        assert overlap.value.translation_key == "rrc_event_overlap"
+        assert cloud.written() == []
+    finally:
+        await teardown(hass, entry, stack)
+
+
+async def test_event_lists_answering_500_never_end_the_discovery(
+    hass: HomeAssistant,
+) -> None:
+    """VER-01: three listed event lists answering 500 in a row are no
+    outage: the setup loads every other part and searches the lists again."""
+    cloud = EventCloud()
+    for path in LISTS:
+        del cloud.tree[path]
+    entry, coordinator, _clock, _sleeps, stack = await setup(hass, cloud)
+    try:
+        assert coordinator.discovery_diagnostics.stop_reason == "complete"
+        assert coordinator.last_update_success
+        assert "/system/awayMode/enabled" in coordinator.resources
+        assert set(coordinator.discovery_recovery.missing) == set(LISTS)
+        assert entity_id(hass, "calendar", CALENDAR) is None
+    finally:
+        await teardown(hass, entry, stack)
+
+
+def test_expected_lists_include_the_named_and_the_asked_ones() -> None:
+    """VER-01: a change reads every list ``/events`` names or the discovery
+    asked for, not only the ones it found."""
+    tree = absence_tree()
+    found = {path: tree[path] for path in ("/events", "/events/list1")}
+    assert rrc_events.known_lists(found) == ("/events/list1",)
+    assert rrc_events.expected_lists(found) == LISTS
+    assert rrc_events.expected_lists(
+        {"/events/list1": tree["/events/list1"]}, ("/events/list3",)
+    ) == ("/events/list1", "/events/list3")

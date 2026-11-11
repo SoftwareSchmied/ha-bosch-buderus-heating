@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "Une modification antérieure des événements n'est pas encore confirmée. Rien n'a été envoyé ; attendez qu'elle apparaisse dans le calendrier ou réessayez dans dix minutes."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "Toutes les listes d'événements du régulateur d'ambiance ne peuvent pas être lues pour le moment ; les événements ne peuvent donc pas être entièrement vérifiés. Rien n'a été envoyé ; réessayez plus tard."
+    },
     "rrc_event_unsupported_fields": {
       "message": "Le régulateur d'ambiance ne mémorise qu'un nom et des jours entiers. Les événements récurrents, les descriptions et les lieux ne sont pas pris en charge."
     },

@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "En tidligere ændring af begivenhederne er endnu ikke bekræftet. Der blev ikke sendt noget; vent, til den vises i kalenderen, eller prøv igen om ti minutter."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "Ikke alle begivenhedslister i rumregulatoren kan læses lige nu, så begivenhederne kan ikke kontrolleres fuldt ud. Der blev ikke sendt noget; prøv igen senere."
+    },
     "rrc_event_unsupported_fields": {
       "message": "Rumregulatoren gemmer kun et navn og hele dage. Tilbagevendende begivenheder, beskrivelser og placeringer understøttes ikke."
     },

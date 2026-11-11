@@ -50,6 +50,7 @@ OVERLAP: Final = "rrc_event_overlap"
 TYPE_READ_ONLY: Final = "rrc_event_type_read_only"
 REJECTED: Final = "rrc_event_rejected"
 PENDING: Final = "rrc_event_pending"
+LISTS_UNREADABLE: Final = "rrc_event_lists_unreadable"
 UNSUPPORTED_FIELDS: Final = "rrc_event_unsupported_fields"
 # The guard key shared by every event write (C36): while the outcome of one
 # is unknown, no other event is written.
@@ -232,6 +233,21 @@ def parse_state(
 def known_lists(paths: Iterable[str]) -> tuple[str, ...]:
     """The list paths among the discovered resources."""
     present = set(paths)
+    return tuple(path for path in LIST_PATHS if path in present)
+
+
+def expected_lists(
+    resources: Mapping[str, Resource], asked: Iterable[str] = ()
+) -> tuple[str, ...]:
+    """VER-01: the lists a change must read: the discovered ones, those that
+    ``/events`` names, and those the discovery asked for (``asked``) without
+    a reading. A list missing from the resources then has no reading, so
+    writing stops until it reads instead of checking only part of the
+    events."""
+    present = set(resources) | set(asked)
+    root = resources.get(EVENTS_ROOT)
+    if root is not None:
+        present.update(item.path for item in root.references)
     return tuple(path for path in LIST_PATHS if path in present)
 
 

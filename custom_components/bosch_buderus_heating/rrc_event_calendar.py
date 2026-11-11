@@ -173,7 +173,19 @@ class RrcEventCalendar(
     def _known(self) -> tuple[str, ...]:
         return rrc_events.known_lists(self.coordinator.resources)
 
-    def _readings(self, *, fresh: bool) -> dict[str, Resource | None]:
+    @property
+    def _expected(self) -> tuple[str, ...]:
+        """VER-01: the known lists and those the controller names or the
+        discovery asked for without a reading; all of them must read before
+        a change."""
+        coordinator = self.coordinator
+        return rrc_events.expected_lists(
+            coordinator.resources, coordinator.discovery_diagnostics.paths
+        )
+
+    def _readings(
+        self, paths: tuple[str, ...], *, fresh: bool
+    ) -> dict[str, Resource | None]:
         """The list readings; ``None`` for a list without one.
 
         With ``fresh`` only current readings count. Otherwise a list whose
@@ -184,7 +196,7 @@ class RrcEventCalendar(
         coordinator = self.coordinator
         data = coordinator.data or {}
         readings: dict[str, Resource | None] = {}
-        for path in self._known:
+        for path in paths:
             snapshot = data.get(path) if fresh else coordinator.display_snapshot(path)
             readings[path] = (
                 snapshot.resource
@@ -198,12 +210,15 @@ class RrcEventCalendar(
     @property
     def _state(self) -> EventState:
         """The events shown, from current or recent readings."""
-        return rrc_events.parse_state(self._readings(fresh=False), self._known)
+        known = self._known
+        return rrc_events.parse_state(self._readings(known, fresh=False), known)
 
     @property
     def _write_state(self) -> EventState:
-        """The events of current readings only, the base of writing."""
-        return rrc_events.parse_state(self._readings(fresh=True), self._known)
+        """The events of current readings of every expected list, the base
+        of writing."""
+        expected = self._expected
+        return rrc_events.parse_state(self._readings(expected, fresh=True), expected)
 
     @property
     def available(self) -> bool:
@@ -478,7 +493,7 @@ class RrcEventCalendar(
         ``rrc_event_rejected``.
         """
         coordinator = self.coordinator
-        known = self._known
+        known = self._expected
         refused: list[PointTError] = []
 
         async def read() -> tuple[dict[str, Resource | None], EventState]:
@@ -487,6 +502,9 @@ class RrcEventCalendar(
 
         async def preflight() -> tuple[T, EventState]:
             _readings, state = await read()
+            if state.issue in ("no_readable_list", "list_unreadable"):
+                # VER-01: a list without a reading could hide an event.
+                raise ContractRejected(rrc_events.LISTS_UNREADABLE)
             if not state.writable:
                 raise WriteValidationError("The events cannot be checked now")
             return check(state), state

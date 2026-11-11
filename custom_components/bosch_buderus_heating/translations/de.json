@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "Eine frühere Änderung der Termine ist noch nicht bestätigt. Es wurde nichts gesendet; warte, bis sie im Kalender erscheint, oder versuche es in zehn Minuten erneut."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "Nicht jede Terminliste des Raumreglers lässt sich gerade lesen, deshalb können die Termine nicht vollständig geprüft werden. Es wurde nichts gesendet; versuche es später erneut."
+    },
     "rrc_event_unsupported_fields": {
       "message": "Der Raumregler speichert nur einen Namen und ganze Tage. Wiederkehrende Termine, Beschreibungen und Orte werden nicht unterstützt."
     },

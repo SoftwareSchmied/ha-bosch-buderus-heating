@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "Prejšnja sprememba dogodkov še ni potrjena. Nič ni bilo poslano; počakajte, da se prikaže v koledarju, ali poskusite znova čez deset minut."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "Trenutno ni mogoče prebrati vseh seznamov dogodkov sobnega regulatorja, zato dogodkov ni mogoče v celoti preveriti. Nič ni bilo poslano; poskusite znova pozneje."
+    },
     "rrc_event_unsupported_fields": {
       "message": "Sobni regulator shranjuje samo ime in cele dneve. Ponavljajoči se dogodki, opisi in lokacije niso podprti."
     },

@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "Een eerdere wijziging van de gebeurtenissen is nog niet bevestigd. Er is niets verzonden; wacht tot die in de agenda verschijnt of probeer het over tien minuten opnieuw."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "Niet alle gebeurtenislijsten van de kamerregelaar kunnen nu worden gelezen, dus de gebeurtenissen kunnen niet volledig worden gecontroleerd. Er is niets verzonden; probeer het later opnieuw."
+    },
     "rrc_event_unsupported_fields": {
       "message": "De kamerregelaar slaat alleen een naam en hele dagen op. Terugkerende gebeurtenissen, beschrijvingen en locaties worden niet ondersteund."
     },

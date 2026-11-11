@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "Prethodna promjena događaja još nije potvrđena. Ništa nije poslano; pričekajte da se prikaže u kalendaru ili pokušajte ponovno za deset minuta."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "Trenutačno se ne mogu pročitati svi popisi događaja sobnog regulatora, pa se događaji ne mogu potpuno provjeriti. Ništa nije poslano; pokušajte ponovno kasnije."
+    },
     "rrc_event_unsupported_fields": {
       "message": "Sobni regulator pohranjuje samo naziv i cijele dane. Ponavljajući događaji, opisi i lokacije nisu podržani."
     },

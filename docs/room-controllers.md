@@ -173,6 +173,13 @@ circuit as well.
   absence does not end in Home Assistant. The attribute `stale` is `true`
   meanwhile, and the calendar cannot be changed until every list reads
   again.
+- An event list that the controller names but that got no answer at the
+  start (for example a sporadic 500) does not stop the setup. It is not
+  taken as missing: it is searched again after the start like other missing
+  parts, and until it reads the calendar cannot be changed, because an event
+  in it could overlap a new one. The same applies to a list that the
+  discovery asked for without an answer; a controller without one of the
+  three lists therefore shows its events but cannot change them.
 - A change of the events is sent once. A new event is recognised by its
   name, dates and type, also if the controller gives it the number of an
   older event. A change only needs the lists it can show in; another list
@@ -376,7 +383,9 @@ The integration keeps the load on the cloud bounded:
   but such probes (for example the radio device settings) carries one path
   read before; if neither that path nor any other answers, the 5xx answers
   count as an outage, not as missing parts. A 5xx
-  answer below `/events` or `/energy` never ends the discovery.
+  answer below `/events` or `/energy` never ends the discovery. An event
+  list the controller names is not taken as missing after a 5xx answer; it
+  is searched again after the start.
 - **Never read:** the radio key and radio identifier of each device, user,
   installer, password, location and phone data, and the single event
   entries (`/events/evN`, `/events/activeEvent`): the event lists hold the

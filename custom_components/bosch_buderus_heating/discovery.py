@@ -52,6 +52,7 @@ from .rrc import (
     listed_paths,
     profile_evidence,
 )
+from .rrc_contract_absence import EVENT_LISTS
 from .startup_data import LICENSE_PATH, StartupGatewayData, is_startup_path
 from .water_softener import (
     SOFTENER_CAPABILITIES,
@@ -1011,6 +1012,14 @@ async def _recover_invalid_bulk_results(
                     BatchItemResult(gateway_id, result.path, status, error=err)
                 )
                 continue
+            if status >= 500 and rrc_profile and _rrc_event_list(result.path):
+                # VER-01: a listed event list is not taken as missing; it
+                # stays unread, is searched again after the start and does
+                # not end the discovery (nor a series of other answers).
+                recovered.append(
+                    BatchItemResult(gateway_id, result.path, status, error=err)
+                )
+                continue
             if status >= 500:
                 consecutive_5xx += 1
                 if consecutive_5xx >= MAX_CONSECUTIVE_FALLBACK_5XX:
@@ -1068,11 +1077,19 @@ def _sentinel_path(discovered: dict[str, Resource]) -> str | None:
 def _rrc_may_be_missing(path: str, source: DiscoveryPathSource) -> bool:
     """CT-B06: a path whose HTTP 5xx answer an RRC controller gives when it
     does not have it: a catalog or optional probe, or a path below a root
-    the contracts add."""
-    return source in (
-        DiscoveryPathSource.CATALOG,
-        DiscoveryPathSource.OPTIONAL,
-    ) or _below_rrc_extra_root(path)
+    the contracts add.
+
+    VER-01: an event list the controller names is never taken as missing: a
+    sporadic 500 would hide its events from the calendar and from the
+    overlap check of a new event."""
+    if source in (DiscoveryPathSource.CATALOG, DiscoveryPathSource.OPTIONAL):
+        return True
+    return _below_rrc_extra_root(path) and not _rrc_event_list(path)
+
+
+def _rrc_event_list(path: str) -> bool:
+    """VER-01: one of the three event lists of a room controller."""
+    return re.fullmatch(EVENT_LISTS, path) is not None
 
 
 def _below_rrc_extra_root(path: str) -> bool:

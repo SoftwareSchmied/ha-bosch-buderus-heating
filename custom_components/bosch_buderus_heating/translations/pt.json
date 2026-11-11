@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "Uma alteração anterior dos eventos ainda não foi confirmada. Não foi enviado nada; aguarde até aparecer no calendário ou tente novamente dentro de dez minutos."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "De momento não é possível ler todas as listas de eventos do regulador de ambiente, pelo que os eventos não podem ser verificados por completo. Não foi enviado nada; tente novamente mais tarde."
+    },
     "rrc_event_unsupported_fields": {
       "message": "O regulador de ambiente guarda apenas um nome e dias inteiros. Eventos recorrentes, descrições e locais não são suportados."
     },

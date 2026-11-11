@@ -1103,6 +1103,9 @@
     "rrc_event_pending": {
       "message": "An earlier change of the events is not confirmed yet. Nothing was sent; wait until it shows in the calendar or try again in ten minutes."
     },
+    "rrc_event_lists_unreadable": {
+      "message": "Not every event list of the room controller can be read right now, so the events cannot be checked completely. Nothing was sent; try again later."
+    },
     "rrc_event_unsupported_fields": {
       "message": "The room controller stores only a name and whole days. Recurring events, descriptions and locations are not supported."
     },
