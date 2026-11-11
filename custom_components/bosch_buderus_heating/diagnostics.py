@@ -16,6 +16,7 @@ from homeassistant.util import dt as dt_util
 from . import (
     BoschBuderusConfigEntry,
     rrc,
+    rrc_confirmations,
     rrc_contracts,
     rrc_devices,
     rrc_energy_statistics,
@@ -62,7 +63,11 @@ from .resource_catalog import (
 from .rrc_programs import DAY, WEEK, parse_schedule, program_names, selection_issue
 from .rrc_write import CORE_CONTRACT
 from .runtime import BoschBuderusRuntimeData
-from .start_counters import assess_start_counter, is_start_counter_path
+from .start_counters import (
+    assess_start_counter,
+    is_start_counter_path,
+    structure_summary,
+)
 from .startup_data import LICENSE_PATH, STARTUP_BUDGET_SECONDS, safe_technical_value
 from .update_load import update_load_diagnostics
 from .wallbox import WallboxCoordinator
@@ -663,6 +668,13 @@ def _gateway_diagnostics(
                 is not None
                 for period in holiday_state.periods
             ),
+            # T8: a room controller's absence (calendar, away mode, boost)
+            # is reported in its own block, not here.
+            **(
+                {"room_controller_absence": "rrc_features.contracts.absence"}
+                if context.rrc_plant
+                else {}
+            ),
             "formats": {
                 "modern": any(
                     path.startswith("/holidayMode/")
@@ -762,7 +774,9 @@ def _rrc_feature_diagnostics(
     """S12/E04: each RRC contract's value-free report and write counters.
 
     ``core`` counts the RRC writes outside the contracts (zone mode, manual
-    temperature, program). Nothing is confirmed on a controller yet.
+    temperature, program). E17: ``confirmation`` is ``partly_confirmed``
+    only for a contract with functions confirmed on a real controller
+    (``rrc_confirmations``), otherwise ``unconfirmed``.
     """
     snapshots = coordinator.data or {}
     resources = dict(coordinator.resources)
@@ -777,11 +791,11 @@ def _rrc_feature_diagnostics(
     for name in (*reports, CORE_CONTRACT):
         report = reports.get(name)
         contracts[name] = {
-            **(report if isinstance(report, dict) else {"confirmation": "unconfirmed"}),
+            **(report if isinstance(report, dict) else rrc_confirmations.report(name)),
             "writes": stats.snapshot(name),
         }
     return {
-        "confirmation": "unconfirmed",
+        "confirmation": rrc_confirmations.overall(),
         "read_back_delays": list(coordinator.write_read_back_delays()),
         "awaiting_late_confirmation": stats.awaiting(),
         # W5: the energy history import, without values or dates.
@@ -1084,6 +1098,12 @@ def _start_counter_diagnostics(
             )
             for key, reading in assessment.readings
         },
+        # T3: the value-free form behind ``invalid_structure``.
+        **(
+            {"structure": structure}
+            if (structure := structure_summary(resource)) is not None
+            else {}
+        ),
     }
 
 

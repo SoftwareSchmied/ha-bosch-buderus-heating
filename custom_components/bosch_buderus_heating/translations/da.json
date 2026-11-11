@@ -1037,6 +1037,9 @@
     "rrc_override_not_active": {
       "message": "Denne zone har i øjeblikket intet midlertidigt sætpunkt, der kan ophæves."
     },
+    "rrc_advance_not_offered": {
+      "message": "Det næste koblingspunkt for denne zone kan ikke fremrykkes lige nu. Det kræver driftsformen tidsprogram og et næste sætpunkt, som det midlertidige sætpunkt kan antage."
+    },
     "rrc_zone_climate_command": {
       "message": "Denne zonekommando er ikke tilgængelig i øjeblikket. Kontrollér, at zonen rapporterer aktuelle værdier, og at temperaturen ligger inden for det tilbudte område; et midlertidigt sætpunkt kræver driftsformen tidsprogram."
     },
@@ -2269,6 +2272,9 @@
       },
       "rrc_override_clear": {
         "name": "Ophæv midlertidigt sætpunkt"
+      },
+      "rrc_override_advance": {
+        "name": "Fremryk næste koblingspunkt"
       }
     },
     "water_heater": {

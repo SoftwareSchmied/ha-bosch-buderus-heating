@@ -1037,6 +1037,9 @@
     "rrc_override_not_active": {
       "message": "Tällä vyöhykkeellä ei tällä hetkellä ole poistettavaa väliaikaista asetusarvoa."
     },
+    "rrc_advance_not_offered": {
+      "message": "Tämän vyöhykkeen seuraavaa kytkentäpistettä ei voi aikaistaa juuri nyt. Siihen tarvitaan käyttötila aikaohjelma ja seuraava asetusarvo, jonka väliaikainen asetusarvo voi saada."
+    },
     "rrc_zone_climate_command": {
       "message": "Tämä vyöhykekomento ei ole tällä hetkellä käytettävissä. Tarkista, että vyöhyke ilmoittaa ajantasaiset arvot ja että lämpötila on tarjotulla alueella; väliaikainen asetusarvo edellyttää käyttötilaa aikaohjelma."
     },
@@ -2269,6 +2272,9 @@
       },
       "rrc_override_clear": {
         "name": "Poista väliaikainen asetusarvo"
+      },
+      "rrc_override_advance": {
+        "name": "Aikaista seuraavaa kytkentäpistettä"
       }
     },
     "water_heater": {

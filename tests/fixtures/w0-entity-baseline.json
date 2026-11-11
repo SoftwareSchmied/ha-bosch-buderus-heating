@@ -465,10 +465,34 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
+     "original_icon": "mdi:skip-next-outline",
+     "original_name": "Raum 10 \u2013 Advance next switch point",
+     "translation_key": "rrc_override_advance",
+     "unique_id": "gateway-one:zones:zn10:clockOverride:temperatureHeating:advance",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
      "original_icon": "mdi:timer-off-outline",
      "original_name": "Raum 10 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn10:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:skip-next-outline",
+     "original_name": "Raum 11 \u2013 Advance next switch point",
+     "translation_key": "rrc_override_advance",
+     "unique_id": "gateway-one:zones:zn11:clockOverride:temperatureHeating:advance",
      "unit": null
     },
     {
@@ -489,10 +513,34 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
+     "original_icon": "mdi:skip-next-outline",
+     "original_name": "Raum 1 \u2013 Advance next switch point",
+     "translation_key": "rrc_override_advance",
+     "unique_id": "gateway-one:zones:zn1:clockOverride:temperatureHeating:advance",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
      "original_icon": "mdi:timer-off-outline",
      "original_name": "Raum 1 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn1:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:skip-next-outline",
+     "original_name": "Raum 2 \u2013 Advance next switch point",
+     "translation_key": "rrc_override_advance",
+     "unique_id": "gateway-one:zones:zn2:clockOverride:temperatureHeating:advance",
      "unit": null
     },
     {
@@ -513,10 +561,34 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
+     "original_icon": "mdi:skip-next-outline",
+     "original_name": "Raum 3 \u2013 Advance next switch point",
+     "translation_key": "rrc_override_advance",
+     "unique_id": "gateway-one:zones:zn3:clockOverride:temperatureHeating:advance",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
      "original_icon": "mdi:timer-off-outline",
      "original_name": "Raum 3 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn3:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:skip-next-outline",
+     "original_name": "Raum 4 \u2013 Advance next switch point",
+     "translation_key": "rrc_override_advance",
+     "unique_id": "gateway-one:zones:zn4:clockOverride:temperatureHeating:advance",
      "unit": null
     },
     {
@@ -537,10 +609,34 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
+     "original_icon": "mdi:skip-next-outline",
+     "original_name": "Raum 5 \u2013 Advance next switch point",
+     "translation_key": "rrc_override_advance",
+     "unique_id": "gateway-one:zones:zn5:clockOverride:temperatureHeating:advance",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
      "original_icon": "mdi:timer-off-outline",
      "original_name": "Raum 5 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn5:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:skip-next-outline",
+     "original_name": "Raum 6 \u2013 Advance next switch point",
+     "translation_key": "rrc_override_advance",
+     "unique_id": "gateway-one:zones:zn6:clockOverride:temperatureHeating:advance",
      "unit": null
     },
     {
@@ -561,6 +657,18 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
+     "original_icon": "mdi:skip-next-outline",
+     "original_name": "Raum 7 \u2013 Advance next switch point",
+     "translation_key": "rrc_override_advance",
+     "unique_id": "gateway-one:zones:zn7:clockOverride:temperatureHeating:advance",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
      "original_icon": "mdi:timer-off-outline",
      "original_name": "Raum 7 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
@@ -573,10 +681,34 @@
      "disabled_by": null,
      "domain": "button",
      "entity_category": null,
+     "original_icon": "mdi:skip-next-outline",
+     "original_name": "Raum 8 \u2013 Advance next switch point",
+     "translation_key": "rrc_override_advance",
+     "unique_id": "gateway-one:zones:zn8:clockOverride:temperatureHeating:advance",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
      "original_icon": "mdi:timer-off-outline",
      "original_name": "Raum 8 \u2013 Clear temporary setpoint",
      "translation_key": "rrc_override_clear",
      "unique_id": "gateway-one:zones:zn8:clockOverride:temperatureHeating:clear",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
+     "disabled_by": null,
+     "domain": "button",
+     "entity_category": null,
+     "original_icon": "mdi:skip-next-outline",
+     "original_name": "Raum 9 \u2013 Advance next switch point",
+     "translation_key": "rrc_override_advance",
+     "unique_id": "gateway-one:zones:zn9:clockOverride:temperatureHeating:advance",
      "unit": null
     },
     {

@@ -199,22 +199,34 @@ def write_issue(resource: Resource | None) -> str | None:
 def limits(resource: Resource | None, setting: Setting) -> Limits | None:
     """S3: the limits of a setting from its leaf, or ``None`` without
     valid ones (then the setting has no control)."""
+    return _limits(resource, setting)[0]
+
+
+def limits_issue(resource: Resource | None, setting: Setting) -> str | None:
+    """T5: why a setting has no valid limits, a token for the diagnostics
+    (``missing``, ``type``, ``flags``, ``unit``, ``range``, ``step``), or
+    ``None`` with valid ones. The check is the one of ``limits``."""
+    return _limits(resource, setting)[1]
+
+
+def _limits(
+    resource: Resource | None, setting: Setting
+) -> tuple[Limits | None, str | None]:
     path = BOOST_TEMPERATURE_PATH if setting == "temperature" else BOOST_DURATION_PATH
-    if (
-        resource is None
-        or resource.path != path
-        or resource.metadata.resource_type != "floatValue"
-        or not rrc.available(resource)
-    ):
-        return None
+    if resource is None or resource.path != path:
+        return None, "missing"
+    if resource.metadata.resource_type != "floatValue":
+        return None, "type"
+    if not rrc.available(resource):
+        return None, "flags"
     metadata = resource.metadata
     if setting == "temperature":
         if TEMPERATURE_UNITS.get(metadata.unit or "") != "°C":
-            return None
+            return None, "unit"
         low, high = _TEMPERATURE_RANGE
     else:
         if DURATION_UNITS.get(metadata.unit or "") != "h":
-            return None
+            return None, "unit"
         low, high = _DURATION_RANGE
     minimum, maximum = metadata.minimum, metadata.maximum
     if (
@@ -223,22 +235,23 @@ def limits(resource: Resource | None, setting: Setting) -> Limits | None:
         or not math.isfinite(minimum)
         or not math.isfinite(maximum)
         or not low <= minimum < maximum <= high
-        or not metadata.step_size_valid
     ):
-        return None
+        return None, "range"
+    if not metadata.step_size_valid:
+        return None, "step"
     step = metadata.step_size
     if step is None:
         step = 0.5 if setting == "temperature" else 1.0
     if isinstance(step, bool) or not math.isfinite(step) or step <= 0:
-        return None
+        return None, "step"
     if step > maximum - minimum:
-        return None
-    if setting == "duration" and (
-        step != int(step) or minimum != int(minimum) or maximum != int(maximum)
-    ):
-        # The duration is an integer of hours on the wire.
-        return None
-    return Limits(minimum, maximum, float(step))
+        return None, "step"
+    # The duration is an integer of hours on the wire.
+    if setting == "duration" and step != int(step):
+        return None, "step"
+    if setting == "duration" and (minimum != int(minimum) or maximum != int(maximum)):
+        return None, "range"
+    return Limits(minimum, maximum, float(step)), None
 
 
 @dataclass(frozen=True, slots=True)
@@ -299,4 +312,11 @@ def diagnostics(resources: Mapping[str, Resource]) -> dict[str, object]:
         is not None,
         "boost_duration_limits": limits(resources.get(BOOST_DURATION_PATH), "duration")
         is not None,
+        # T5: why there are no limits; the check itself is unchanged.
+        "boost_temperature_limits_issue": limits_issue(
+            resources.get(BOOST_TEMPERATURE_PATH), "temperature"
+        ),
+        "boost_duration_limits_issue": limits_issue(
+            resources.get(BOOST_DURATION_PATH), "duration"
+        ),
     }

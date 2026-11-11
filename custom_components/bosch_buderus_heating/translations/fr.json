@@ -1037,6 +1037,9 @@
     "rrc_override_not_active": {
       "message": "Cette zone n'a actuellement aucune consigne temporaire à annuler."
     },
+    "rrc_advance_not_offered": {
+      "message": "Le prochain point de commutation de cette zone ne peut pas être avancé pour le moment. Il faut pour cela le mode programme horaire et une prochaine consigne que la consigne temporaire peut prendre."
+    },
     "rrc_zone_climate_command": {
       "message": "Cette commande de zone n'est pas disponible actuellement. Vérifiez que la zone fournit des valeurs actuelles et que la température se situe dans la plage proposée ; une consigne temporaire nécessite le mode programme horaire."
     },
@@ -2269,6 +2272,9 @@
       },
       "rrc_override_clear": {
         "name": "Annuler la consigne temporaire"
+      },
+      "rrc_override_advance": {
+        "name": "Avancer le prochain point de commutation"
       }
     },
     "water_heater": {

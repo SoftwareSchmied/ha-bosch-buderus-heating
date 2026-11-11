@@ -1037,6 +1037,9 @@
     "rrc_override_not_active": {
       "message": "Deze zone heeft op dit moment geen tijdelijke instelwaarde die kan worden opgeheven."
     },
+    "rrc_advance_not_offered": {
+      "message": "Het volgende schakelpunt van deze zone kan op dit moment niet worden vervroegd. Daarvoor zijn de bedrijfsmodus tijdprogramma en een volgende instelwaarde nodig die de tijdelijke instelwaarde kan aannemen."
+    },
     "rrc_zone_climate_command": {
       "message": "Dit zonecommando is op dit moment niet beschikbaar. Controleer of de zone actuele waarden meldt en of de temperatuur binnen het aangeboden bereik ligt; een tijdelijke instelwaarde vraagt om de bedrijfsmodus tijdprogramma."
     },
@@ -2269,6 +2272,9 @@
       },
       "rrc_override_clear": {
         "name": "Tijdelijke instelwaarde opheffen"
+      },
+      "rrc_override_advance": {
+        "name": "Volgend schakelpunt vervroegen"
       }
     },
     "water_heater": {

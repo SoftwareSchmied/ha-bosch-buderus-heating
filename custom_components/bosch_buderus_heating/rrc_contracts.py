@@ -22,6 +22,7 @@ from functools import lru_cache
 from typing import Final
 
 from . import (
+    rrc_confirmations,
     rrc_contract_absence,
     rrc_contract_circuit,
     rrc_contract_devices,
@@ -327,7 +328,8 @@ class Registry:
         return tuple(dict.fromkeys(leaves))
 
     def diagnostics(self, resources: Mapping[str, Resource]) -> dict[str, object]:
-        """S12/E04: each contract's value-free report, never confirmed."""
+        """S12/E04: each contract's value-free report; ``confirmation`` names
+        only the functions confirmed on a real controller (E17)."""
         report: dict[str, object] = {}
         for contract in self.contracts:
             features = (
@@ -335,7 +337,10 @@ class Registry:
                 if contract.diagnostics is not None
                 else {}
             )
-            report[contract.name] = {"confirmation": "unconfirmed", **features}
+            report[contract.name] = {
+                **rrc_confirmations.report(contract.name),
+                **features,
+            }
         return report
 
     def texts(self) -> tuple[tuple[str, str], ...]:

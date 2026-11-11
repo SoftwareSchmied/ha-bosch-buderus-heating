@@ -2,7 +2,8 @@
 
 Owned by work package W1. See ``docs/dev/rrc-packages.md`` for what each
 table does. Everything here is "expected, untested" on a CT200; the TC100.2
-confirmed only the zone readings, ``userMode`` and the manual setpoint.
+confirmed the zone readings, ``userMode``, the manual and the temporary
+setpoint and the zone's open window detection (``rrc_confirmations``).
 
 - ``clockOverride/temperatureHeating`` (the temporary setpoint) is written
   only in the mode ``clock``. ``0.0`` clears it; any other value lies at or
@@ -127,6 +128,68 @@ def zone_root(path: str) -> str | None:
     """``/zones/znN`` of a zone leaf, or ``None``."""
     match = ZONE_ROOT.match(path)
     return match.group(1) if match else None
+
+
+# T2: what a confirmed change of a zone affects besides the written value:
+# the active setpoint, the status, the next switch point and the zone list.
+# They are read once shortly after the change, not with the next cycle only.
+FOLLOW_UP_LEAVES: Final = (
+    "temperatureHeatingSetpoint",
+    STATUS,
+    NEXT_SETPOINT,
+    MINUTES_TO_NEXT,
+)
+FOLLOW_UP_DELAY: Final = 5.0
+
+
+def follow_up_paths(path: str) -> tuple[str, ...]:
+    """T2: the readings to read again after a confirmed write of ``path``;
+    nothing for a path outside a zone."""
+    root = zone_root(path)
+    if root is None:
+        return ()
+    return (*(f"{root}/{leaf}" for leaf in FOLLOW_UP_LEAVES), ZONE_LIST)
+
+
+def advance_value(
+    override: Resource, next_setpoint: float | None, manual_minimum: float | None
+) -> float | None:
+    """ZONE-06: the temporary setpoint that advances the next switch point,
+    the next setpoint itself, if the temporary setpoint can take it: not 0
+    (that clears), within its limits, at or above the manual setpoint's
+    minimum and on its grid (the advertised step, else 0.5 from the
+    minimum). ``None`` otherwise."""
+    metadata = override.metadata
+    minimum, maximum = metadata.minimum, metadata.maximum
+    if (
+        next_setpoint is None
+        or not math.isfinite(next_setpoint)
+        or next_setpoint == 0
+        or minimum is None
+        or maximum is None
+        or not minimum <= next_setpoint <= maximum
+        or (manual_minimum is not None and next_setpoint < manual_minimum)
+        or not metadata.step_size_valid
+    ):
+        return None
+    step = metadata.step_size or OVERRIDE_POLICY.step
+    if isinstance(step, bool) or not math.isfinite(step) or step <= 0:
+        return None
+    ticks = (next_setpoint - minimum) / step
+    if not math.isclose(ticks, round(ticks), abs_tol=1e-7):
+        return None
+    return float(next_setpoint)
+
+
+def advanced(override: float | None, next_setpoint: float | None) -> bool:
+    """ZONE-06: the temporary setpoint is the next setpoint, as after the
+    quick action (``next_setpoint_advanced``)."""
+    return (
+        override is not None
+        and override != 0
+        and next_setpoint is not None
+        and math.isclose(override, next_setpoint, abs_tol=1e-7)
+    )
 
 
 def zone_number(root: str) -> int | None:
@@ -363,6 +426,10 @@ NAMES: Final[Mapping[str, tuple[str, str]]] = MappingProxyType(
             "Vorübergehenden Sollwert aufheben",
             "Clear temporary setpoint",
         ),
+        "advance_switch_point": (
+            "Nächsten Schaltpunkt vorziehen",
+            "Advance next switch point",
+        ),
     }
 )
 
@@ -394,7 +461,16 @@ def _diagnostics(resources: Mapping[str, Resource]) -> Mapping[str, object]:
         if leaf == OVERRIDE_LEAF:
             counts["override_paths"] += 1
             number = _number(resource)
-            counts["overrides_active"] += number is not None and number != 0
+            # T7: a temporary setpoint acts only in the mode clock, as the
+            # climate shows it (ZONE-10).
+            mode = resources.get(f"{root}/userMode")
+            counts["overrides_active"] += (
+                number is not None
+                and number != 0
+                and mode is not None
+                and mode.has_value
+                and mode.value == "clock"
+            )
             minimum = resource.metadata.minimum
             # ZONE-09: 0 clears it; a minimum above 0 leaves no clear button.
             counts["override_clear_unsupported"] += minimum is None or minimum > 0

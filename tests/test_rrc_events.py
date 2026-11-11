@@ -248,6 +248,14 @@ def test_read_back_rules_compare_fields_not_identifiers() -> None:
     assert rrc_events.changed(
         old, new, EventState(moved.events, ("/events/list1",), ("/events/list2",))
     )
+    # VER-07: the controller lists the new fields in another list while the
+    # old entry's own list does not read; the old entry may still be there.
+    elsewhere = EventState(
+        (rrc_events.RrcEvent(1, "/events/list2", new),),
+        ("/events/list2",),
+        ("/events/list1",),
+    )
+    assert not rrc_events.changed(old, new, elsewhere)
 
 
 # --------------------------------------------------------------- calendar

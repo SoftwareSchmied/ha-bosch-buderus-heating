@@ -323,12 +323,17 @@ def created(
 
 def changed(original: RrcEvent, fields: EventFields, state: EventState) -> bool:
     """Whether a change shows: the new fields are listed and the old entry
-    is gone from the readable lists (the ID may stay or change). Another
-    list without a reading does not matter (AWAY-11)."""
-    return any(same_fields(event.fields, fields) for event in state.events) and not any(
-        event.identifier == original.identifier
-        and same_fields(event.fields, original.fields)
-        for event in state.events
+    is gone from its own list, which must read validly (VER-07: without
+    that reading the old entry may still be there). Another list without a
+    reading does not matter (AWAY-11). The ID may stay or change."""
+    return (
+        original.source in state.lists
+        and any(same_fields(event.fields, fields) for event in state.events)
+        and not any(
+            event.identifier == original.identifier
+            and same_fields(event.fields, original.fields)
+            for event in state.events
+        )
     )
 
 

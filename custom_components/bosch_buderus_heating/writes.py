@@ -783,12 +783,16 @@ def _number_value_rejection_reason(resource: Resource, value: object) -> str | N
 
 
 def advertised_options(
-    resource: Resource, policy: EnumWritePolicy
+    resource: Resource,
+    policy: EnumWritePolicy,
+    context: ControlContext | None = None,
 ) -> tuple[JsonScalar, ...]:
     """The advertised values; without any ``allowedValues`` key, the policy's
     fallback options when the current value is one of them (or an equivalent
     read of one, such as "off" for "Off"), and the fallback options with
     ``fallback_current_options`` when the current value is one of those.
+    With a heat pump ``context`` (VER-03) the fallback options always come
+    with ``heat_pump_options``.
 
     An empty or different list stays as advertised, so it keeps the strict
     rules (#113, generalised from ``userMode``).
@@ -802,6 +806,14 @@ def advertised_options(
         and isinstance(resource.value, str)
     ):
         current = resource.value
+        heat_pump = (
+            policy.heat_pump_options
+            if context is not None and context.heat_pump
+            else ()
+        )
+        options = tuple(dict.fromkeys((*policy.fallback_options, *heat_pump)))
+        if heat_pump and any(policy.confirms(current, option) for option in options):
+            return options
         if any(policy.confirms(current, option) for option in policy.fallback_options):
             return policy.fallback_options
         if any(
@@ -818,7 +830,11 @@ def advertised_options(
     return metadata.allowed_values
 
 
-def _enum_rejection_reason(resource: Resource, policy: EnumWritePolicy) -> str | None:
+def _enum_rejection_reason(
+    resource: Resource,
+    policy: EnumWritePolicy,
+    context: ControlContext | None = None,
+) -> str | None:
     """Accept each advertised string code without a reference-device allowlist."""
     metadata = resource.metadata
     if not metadata.writable:
@@ -829,7 +845,7 @@ def _enum_rejection_reason(resource: Resource, policy: EnumWritePolicy) -> str |
         return "unknown_action_state"
     if metadata.resource_type not in policy.resource_types:
         return "unsupported_resource_type"
-    allowed = advertised_options(resource, policy)
+    allowed = advertised_options(resource, policy, context)
     if not allowed:
         return "missing_options"
     if any(
@@ -855,7 +871,9 @@ def _enum_rejection_reason(resource: Resource, policy: EnumWritePolicy) -> str |
 
 
 def _enum_current_value_issue(
-    resource: Resource, policy: EnumWritePolicy
+    resource: Resource,
+    policy: EnumWritePolicy,
+    context: ControlContext | None = None,
 ) -> str | None:
     if not resource.has_value or resource.value is None:
         return "missing_value"
@@ -863,7 +881,7 @@ def _enum_current_value_issue(
         return "invalid_value_type"
     if not any(
         isinstance(option, str) and policy.confirms(resource.value, option)
-        for option in advertised_options(resource, policy)
+        for option in advertised_options(resource, policy, context)
     ):
         return "current_option_not_advertised"
     return None
@@ -908,17 +926,17 @@ def assess_control(
     if policy is not None:
         schema_issue = schema_issue or _contract_availability_issue(resource, policy)
     if isinstance(policy, EnumWritePolicy):
-        current_issue = _enum_current_value_issue(resource, policy)
+        current_issue = _enum_current_value_issue(resource, policy, context)
         return ControlAssessment(
             policy,
             schema_issue
-            or _enum_rejection_reason(resource, policy)
+            or _enum_rejection_reason(resource, policy, context)
             or (current_issue if policy.current_required else None),
             writable=resource.metadata.writable,
             options=tuple(
                 dict.fromkeys(
                     value
-                    for value in advertised_options(resource, policy)
+                    for value in advertised_options(resource, policy, context)
                     if isinstance(value, str)
                     and value
                     and value.isprintable()

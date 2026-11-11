@@ -150,7 +150,7 @@ async def test_rrc_write_waits_longer_and_counts_a_late_confirmation(
 
         diagnostics = await async_get_config_entry_diagnostics(hass, entry)
         features = diagnostics["gateways"][0]["rrc_features"]
-        assert features["confirmation"] == "unconfirmed"
+        assert features["confirmation"] == "partly_confirmed"
         assert features["read_back_delays"] == [1.0, 2.0, 4.0, 8.0]
         assert features["awaiting_late_confirmation"] == 0
         assert set(features["contracts"]) == {
@@ -174,7 +174,7 @@ async def test_rrc_write_waits_longer_and_counts_a_late_confirmation(
         }
         # W1 adds value-free counts of its zones next to the counters.
         zone = features["contracts"]["zone"]
-        assert zone["confirmation"] == "unconfirmed"
+        assert zone["confirmation"] == "partly_confirmed"
         assert zone["writes"] == {
             **dict.fromkeys(writes, 0),
             "rejection_reasons": {},
