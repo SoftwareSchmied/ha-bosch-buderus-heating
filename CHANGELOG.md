@@ -116,8 +116,10 @@ Expected, untested on a real controller:
   reports as not available gets no water heater entity.
 - **Heating circuit:** summer/winter switching and night setback by outdoor
   temperature with their thresholds (disabled by default), the season mode
-  (only with at least two offered modes), the setpoint optimization and a
-  sensor for the operating season. The heating curve, the supply
+  (only with at least two offered modes and while the current mode is one
+  of them), the setpoint optimization and a sensor for the operating
+  season. The season mode and the setpoint optimization are everyday
+  settings and enabled by default. The heating curve, the supply
   temperature limits and the room influence are disabled by default; enable
   them only if you know these settings. The base point and the minimum
   supply temperature stay at or below the end point and the maximum supply
@@ -144,10 +146,16 @@ Expected, untested on a real controller:
   last day already read, so a running day, a day without a record or a full
   history on the controller costs no day. The older keys `eCH`/`eHW` count
   as heat pump electricity only on a heat pump or hybrid system, otherwise
-  as gas under the gas rule; while the controller does not answer its heat
-  source type, I leave them out instead of assuming gas and read the type
-  again in the next run. If the import starts over, the statistics
-  continue from their last recorded value instead of starting at zero.
+  as gas under the gas rule. While the controller answers its heat source
+  type with a server error, these days wait for up to 24 hours, also across
+  a restart, and every run reads the type again, so a short fault costs no
+  value; only after that do I import them without these two values instead
+  of assuming gas. If the import starts over, the statistics continue from
+  their last recorded value instead of starting at zero. The statistic IDs
+  contain a token of the gateway keyed with the instance ID of your Home
+  Assistant instead of its ID, so the ID cannot be found back from the
+  database or an export; the token stays the same when the integration is
+  added again or a backup is restored.
 - **Radio devices:** every device in the controller's device list becomes
   its own device below the controller, named after its type (for example
   "Radiator thermostat 2") with its zone as the suggested area. It shows
@@ -163,8 +171,10 @@ Expected, untested on a real controller:
   becomes unavailable. A setting that is available but not used, such as
   the open window detection of a zone, stays visible with its value; a
   change is refused before anything is sent, with a message that names it.
-  The heating circuit settings keep their earlier rule. Before every change
-  of a room controller setting I read it from the controller once more, so
+  The heating circuit settings keep their earlier rule, except the season
+  mode and the setpoint optimization, which follow this one. Before every
+  change of a room controller setting I read it from the controller once
+  more, so
   a lock that came after the last poll is found; a value changed in the
   meantime no longer blocks the change, and a failed read sends nothing and
   keeps the last reading. For the boost only the mode and the rooms must

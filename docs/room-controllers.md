@@ -66,8 +66,11 @@ The controller marks each setting as used and available:
 - The settings of the **heating circuit** do not depend on "used": a setting
   that is not used stays changeable, and one that is used but unavailable
   stays visible and is locked with a message that names the heating circuit.
-  The heating mode of a zone keeps its own rule (locked, for example while
-  the system cools).
+  The season mode and the setpoint optimization are the exception: they
+  follow the two rules above, so a setting that is not available has no
+  control and one that is not used stays visible and refuses a change
+  unsent. The heating mode of a zone keeps its own rule (locked, for example
+  while the system cools).
 
 Readings are not affected by these flags. All of this is expected,
 untested: which settings a real controller marks as not used, and when, is
@@ -242,10 +245,11 @@ circuit as well.
 - Summer/winter switching and night setback by outdoor temperature (off or
   automatic), with their outdoor temperature thresholds, disabled by
   default.
-- The season mode, only when the controller offers at least two modes, and
-  the setpoint optimization. The setpoint optimization is a switch for the
-  values `on` and `off`; a controller that reports `true` or `false` instead
-  shows the value without a switch.
+- The season mode, only when the controller offers at least two modes and
+  reports its current mode among them, and the setpoint optimization. Both
+  are everyday settings and enabled by default. The setpoint optimization is
+  a switch for the values `on` and `off`; a controller that reports `true` or
+  `false` instead shows the value without a switch.
 - A sensor for the operating season (heating, cooling, idle).
 - **For specialists, disabled by default:** the heating curve (base and end
   point), the minimum and maximum supply temperature and the room influence.
@@ -319,9 +323,12 @@ values are imported only when the controller confirms the unit kWh.
   count as gas and follow the gas rule: without the confirmed unit kWh they
   are not imported. The heat source type is read once, only when such keys
   appear; until it is known, these days wait on the controller. If the
-  controller answers its type with a server error three runs in a row, the
-  days are imported without these two values, nothing is assumed, and the
-  next run reads the type again.
+  controller answers its type with a server error, the days wait and every
+  run reads the type again, for up to 24 hours from the first error; the
+  waiting also continues across a restart. Only then are the days imported
+  without these two values, nothing is assumed, and the next run still reads
+  the type again. A refused type (for example HTTP 404) counts as an unknown
+  type at once.
 - If the import starts over, for example after the integration was added
   again or its stored import state could not be read, the statistics
   continue from their last recorded value; recorded days are not written
@@ -331,6 +338,13 @@ values are imported only when the controller confirms the unit kWh.
   of them once after a server error or a timeout.
 - To remove the statistics, delete them under **Developer tools →
   Statistics**.
+- The statistic IDs (`bosch_buderus_heating:rrc_<token>_<value>`) and the
+  name of the stored import state contain a token of the gateway, never its
+  identifier. The token is an HMAC-SHA256 of the gateway ID keyed with the
+  instance ID of your Home Assistant, so the ID cannot be found back from the
+  database or an export alone. It stays the same when the integration is
+  added again and after a restored backup; on another installation the same
+  gateway gets other statistic IDs.
 
 Expected, untested: whether the history lists the running day, whether a
 query by date answers from that day on or only for a day with a record,
@@ -458,7 +472,9 @@ ebenso der CT200 insgesamt:
   beiden; eine leere Liste lässt die Betriebsart nur lesbar. Extra-Warmwasser
   schaltet nicht mit der Dauer 0 ein.
 - **Heizkreis:** Sommer-/Winterumschaltung und Nachtabsenkung mit ihren
-  Schwellen (standardmäßig deaktiviert), Saisonbetrieb, Sollwertoptimierung,
+  Schwellen (standardmäßig deaktiviert), Saisonbetrieb (nur mit mindestens
+  zwei angebotenen Betriebsarten und wenn die aktuelle darunter ist) und
+  Sollwertoptimierung als alltägliche Einstellungen standardmäßig aktiviert,
   Betriebssaison; Heizkurve, Vorlaufgrenzen und Raumeinfluss nur für
   Fachkundige und standardmäßig deaktiviert. Fußpunkt und minimale
   Vorlauftemperatur bleiben nicht über Endpunkt und maximaler
@@ -475,7 +491,14 @@ ebenso der CT200 insgesamt:
 - **Energiehistorie:** Tageswerte als Statistiken mit dem Zusatz
   „(kWh erwartet)“, weil die Einheit nicht bestätigt ist; Gas nur mit
   bestätigter Einheit; die älteren Schlüssel `eCH`/`eHW` je nach
-  Wärmeerzeuger als Wärmepumpenstrom oder als Gas; jeder Lauf liest ab dem
+  Wärmeerzeuger als Wärmepumpenstrom oder als Gas; meldet der Regler seinen
+  Wärmeerzeugertyp mit einem Serverfehler, warten diese Tage bis zu 24 Stunden
+  ab dem ersten Fehler (auch über einen Neustart) und jeder Lauf liest den Typ
+  erneut, erst danach kommen sie ohne diese beiden Werte; die Statistik-IDs
+  enthalten statt der Gateway-ID ein Kürzel, das mit der Instanz-ID von Home
+  Assistant als Schlüssel gebildet wird (HMAC-SHA256) und nach erneutem
+  Hinzufügen und nach einer wiederhergestellten Sicherung gleich bleibt;
+  jeder Lauf liest ab dem
   zuletzt gelesenen Tag erneut; ein neu begonnener Import setzt vorhandene
   Statistiken fort; Auswahl im Energie-Dashboard selbst, Löschen unter
   **Entwicklerwerkzeuge → Statistiken**; alle drei Stunden höchstens acht
@@ -499,7 +522,9 @@ keine Steuerung (eine bestehende Entität wird nicht verfügbar). Eine
 **verfügbare, aber nicht genutzte** Einstellung bleibt mit ihrem Wert
 sichtbar; eine Änderung wird ohne Senden mit einer eigenen Meldung
 abgelehnt. Die Heizkreis-Einstellungen hängen nicht an „genutzt“; eine
-genutzte, aber nicht verfügbare bleibt sichtbar und gesperrt. Messwerte
+genutzte, aber nicht verfügbare bleibt sichtbar und gesperrt. Ausnahmen sind
+der Saisonbetrieb und die Sollwertoptimierung: Sie folgen den beiden Regeln
+davor. Messwerte
 betrifft das nicht. Auch das ist erwartet, ungetestet.
 
 Die Discovery liest höchstens 512 Pfade, die Einstellungen der Funkgeräte
