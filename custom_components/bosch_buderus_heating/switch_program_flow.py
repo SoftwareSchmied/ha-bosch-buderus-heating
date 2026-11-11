@@ -31,6 +31,7 @@ from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import grouped_entity_name
 from .entry_sources import pointt_coordinators
 from .ha_schema import validation as vol
+from .markdown_text import markdown_literal
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -206,7 +207,8 @@ class SwitchProgramOptionsFlow(OptionsFlow):
     def _sp_placeholders(self, choice: ProgramChoice) -> dict[str, str]:
         program = choice.program
         return {
-            "program": choice.label,
+            # D43: the label holds the program name from the cloud.
+            "program": markdown_literal(choice.label),
             "per_day": str(program.max_switch_points_per_day),
             "total": str(program.max_switch_points),
             "raster": str(program.time_raster),

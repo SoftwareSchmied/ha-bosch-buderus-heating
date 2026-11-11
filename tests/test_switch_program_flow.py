@@ -338,3 +338,23 @@ async def test_every_dialog_text_exists(hass, enable_custom_integrations, langua
         assert selectors[
             f"component.{DOMAIN}.selector.switch_program_action.options.{option}"
         ]
+
+
+async def test_a_program_name_cannot_add_markup_to_the_dialogs(hass, environment):
+    """D43: the program name the gateway reports is shown as plain text in
+    the dialog descriptions; the selection label stays plain text."""
+    from tests.switch_program_helpers import HC, payload
+    from tests.test_markdown_text import _rendered, _strip
+
+    name = "![](https://t.invalid/p)[a](b)"
+    item = payload(f"{HC}/switchPrograms/nameA")
+    item["value"] = name
+    flow, _ = make_flow(hass, environment, **{f"{HC}/switchPrograms/nameA": item})
+    first = await flow.async_step_switch_programs()
+    labels = {item["value"]: item["label"] for item in _options(first, "program")}
+    assert labels[f"1:{PROGRAM_A}"].endswith(f"({name})")
+    week, _ = await open_program(flow, PROGRAM_A)
+    shown = week["description_placeholders"]["program"]
+    assert _rendered(shown) == labels[f"1:{PROGRAM_A}"]
+    active = _strip(shown)
+    assert "![" not in active and "](" not in active and "://" not in active

@@ -23,6 +23,7 @@ from homeassistant.helpers.selector import (
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .entry_sources import pointt_coordinators
 from .ha_schema import validation as vol
+from .markdown_text import markdown_literal
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -163,7 +164,7 @@ class RrcScheduleOptionsFlow(OptionsFlow):
             step_id="rrc_schedule" if can_edit else "rrc_readonly",
             data_schema=schema,
             description_placeholders={
-                "program": choice.label,
+                "program": markdown_literal(choice.label),
                 **{
                     day.lower(): ", ".join(
                         _point_label(point)
@@ -211,7 +212,7 @@ class RrcScheduleOptionsFlow(OptionsFlow):
                     ),
                 }
             ),
-            description_placeholders={"program": choice.label},
+            description_placeholders={"program": markdown_literal(choice.label)},
         )
 
     async def async_step_rrc_readonly(
@@ -293,5 +294,5 @@ class RrcScheduleOptionsFlow(OptionsFlow):
             step_id="rrc_point",
             data_schema=self.add_suggested_values_to_schema(schema, user_input),
             errors=errors,
-            description_placeholders={"program": choice.label},
+            description_placeholders={"program": markdown_literal(choice.label)},
         )

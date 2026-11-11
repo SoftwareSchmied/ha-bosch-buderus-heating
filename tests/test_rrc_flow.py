@@ -190,3 +190,24 @@ async def test_all_rrc_flow_and_enum_translations_are_available(
             assert entities[
                 f"component.{DOMAIN}.entity.{platform}.rrc_user_mode.state.{value}"
             ]
+
+
+async def test_a_gateway_model_cannot_add_markup_to_the_program_dialogs(
+    hass, environment
+):
+    """D43: the program label (with the gateway model from the cloud on a
+    connection with several gateways) is shown as plain text."""
+    from tests.test_markdown_text import _rendered, _strip
+
+    flow, coordinator = make_flow(hass, environment)
+    model = "![](https://t.invalid/p)[a](b)"
+    coordinator.gateway = replace(coordinator.gateway, model=model)
+    flow._entry.runtime_data.coordinators = (coordinator, coordinator)
+    week = await flow.async_step_rrc_programs({"program": f"1:{WEEK}"})
+    day = await flow.async_step_rrc_schedule({"day": "mo"})
+    point = await flow.async_step_rrc_day({"point": "1"})
+    for result in (week, day, point):
+        shown = result["description_placeholders"]["program"]
+        assert _rendered(shown).startswith(f"{model} [1] / #")
+        active = _strip(shown)
+        assert "![" not in active and "](" not in active and "://" not in active
