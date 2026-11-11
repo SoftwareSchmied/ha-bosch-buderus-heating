@@ -36,6 +36,10 @@ TYPES: Final = frozenset({TYPE_AWAY, *WEEKDAYS})
 # The controller's limit of a name, in bytes of its UTF-8 text.
 MAX_NAME_BYTES: Final = 32
 MAX_LIST_ENTRIES: Final = 128
+# The days an event may cover (AWAY-10): the first and the last day the
+# controller's calendar offers.
+FIRST_DAY: Final = date(2016, 1, 1)
+LAST_DAY: Final = date(2099, 12, 31)
 _DATE: Final = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 _ENTRY_KEYS: Final = frozenset({"id", "name", "start", "end", "type"})
 
@@ -251,8 +255,9 @@ def encode_name(summary: object) -> str:
 
 
 def check_dates(start: date, end: date, today: date) -> None:
-    """Inclusive dates: the start not after the end, the end not before today."""
-    if end < start or end < today:
+    """Inclusive dates: the start not after the end, the end not before
+    today, both from 2016 to 2099 (AWAY-10)."""
+    if end < start or end < today or start < FIRST_DAY or end > LAST_DAY:
         raise ContractRejected(INVALID_DATES)
 
 
@@ -283,22 +288,27 @@ def same_fields(left: EventFields, right: EventFields) -> bool:
 
 
 def created(
-    before: frozenset[int], fields: EventFields, state: EventState
+    before: Iterable[EventFields], fields: EventFields, state: EventState
 ) -> RrcEvent | None:
-    """The new event of a creation: the written fields under a new ID."""
+    """The new event of a creation: an entry with the written fields that was
+    not listed before (AWAY-05).
+
+    The fields decide, not the ID: a controller may give the new event an ID
+    an older one had and renumber that one. The overlap check before the
+    request makes sure no event had these days.
+    """
+    if any(same_fields(old, fields) for old in before):
+        return None
     return next(
-        (
-            event
-            for event in state.events
-            if event.identifier not in before and same_fields(event.fields, fields)
-        ),
+        (event for event in state.events if same_fields(event.fields, fields)),
         None,
     )
 
 
 def changed(original: RrcEvent, fields: EventFields, state: EventState) -> bool:
     """Whether a change shows: the new fields are listed and the old entry
-    is gone (the ID may stay or change)."""
+    is gone from the readable lists (the ID may stay or change). Another
+    list without a reading does not matter (AWAY-11)."""
     return any(same_fields(event.fields, fields) for event in state.events) and not any(
         event.identifier == original.identifier
         and same_fields(event.fields, original.fields)
@@ -307,8 +317,9 @@ def changed(original: RrcEvent, fields: EventFields, state: EventState) -> bool:
 
 
 def deleted(original: RrcEvent, state: EventState) -> bool:
-    """Whether a deletion shows: the entry is no longer listed."""
-    return not any(
+    """Whether a deletion shows: its list reads validly and the entry is no
+    longer listed (AWAY-11: the other lists need no reading)."""
+    return original.source in state.lists and not any(
         event.identifier == original.identifier
         and same_fields(event.fields, original.fields)
         for event in state.events

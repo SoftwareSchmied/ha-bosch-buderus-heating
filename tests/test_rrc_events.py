@@ -100,6 +100,19 @@ def test_dates_need_an_end_not_before_the_start_or_today() -> None:
         assert refused.value.reason == "rrc_event_invalid_dates"
 
 
+def test_dates_stay_between_2016_and_2099() -> None:
+    """AWAY-10: the controller's calendar offers 2016-01-01 to 2099-12-31."""
+    rrc_events.check_dates(date(2016, 1, 1), date(2099, 12, 31), date(2016, 1, 1))
+    for start, end in (
+        (date(2015, 12, 31), date(2016, 1, 2)),
+        (date(2099, 12, 30), date(2100, 1, 1)),
+        (date(2200, 1, 1), date(2200, 1, 2)),
+    ):
+        with pytest.raises(ContractRejected) as refused:
+            rrc_events.check_dates(start, end, date(2015, 12, 1))
+        assert refused.value.reason == "rrc_event_invalid_dates"
+
+
 @pytest.mark.parametrize(
     ("start", "end", "overlaps"),
     [
@@ -210,8 +223,28 @@ def test_read_back_rules_compare_fields_not_identifiers() -> None:
     created = EventState(
         (old, rrc_events.RrcEvent(11, "/events/list1", new)), ("/events/list1",)
     )
-    assert rrc_events.created(frozenset({1}), new, created) is not None
-    assert rrc_events.created(frozenset({1, 11}), new, created) is None
+    assert rrc_events.created((old.fields,), new, created) is not None
+    assert rrc_events.created((old.fields, new), new, created) is None
+    # AWAY-05: the controller gives the new event the old one's ID and
+    # renumbers that one; the fields still confirm the creation.
+    renumbered = EventState(
+        (
+            rrc_events.RrcEvent(1, "/events/list1", new),
+            rrc_events.RrcEvent(2, "/events/list1", old.fields),
+        ),
+        ("/events/list1",),
+    )
+    found = rrc_events.created((old.fields,), new, renumbered)
+    assert found is not None and found.identifier == 1
+    # AWAY-11: a deletion needs only its own list, a change only the lists
+    # that can be read.
+    assert rrc_events.deleted(
+        old, EventState((), ("/events/list1",), ("/events/list2",))
+    )
+    assert not rrc_events.deleted(old, EventState((), ("/events/list2",)))
+    assert rrc_events.changed(
+        old, new, EventState(moved.events, ("/events/list1",), ("/events/list2",))
+    )
 
 
 # --------------------------------------------------------------- calendar
@@ -324,6 +357,11 @@ async def test_dates_count_in_the_controllers_time_zone(
         # "Today" is the controller's: 00:30 in Berlin is still the day
         # before in Home Assistant's zone.
         today.move_to("2027-03-28T23:30:00+00:00")
+        # Months later: the lists are read again (a reading three poll
+        # intervals old is no longer shown).
+        _clock.now += 3600
+        await _coordinator.async_refresh()
+        await hass.async_block_till_done()
         calendar = _calendar(hass)
         assert calendar._today == date(2027, 3, 29)
         with pytest.raises(ServiceValidationError) as refused:
@@ -758,5 +796,157 @@ async def test_no_calendar_and_no_event_reads_on_other_gateways(
         assert not {
             path for path in cloud.all_requested() if path.startswith("/events")
         }
+    finally:
+        await teardown(hass, entry, stack)
+
+
+# ----------------------------------------------------- review fixes (AWAY)
+class _RenumberingCloud(EventCloud):
+    """A controller that keeps list1 sorted by date and gives the IDs out
+    again in that order: a new, earlier event takes an older one's ID."""
+
+    def _create(self, value: Any) -> None:
+        entries = [*self._listed("/events/list1"), {**value[0], "id": self.next_id}]
+        identifiers = sorted(item["id"] for item in entries)
+        self.next_id += 1
+        ordered = sorted(entries, key=lambda item: item["start"])
+        self._settle(
+            "/events/list1",
+            [
+                {**item, "id": identifier}
+                for item, identifier in zip(ordered, identifiers, strict=True)
+            ],
+        )
+
+
+class _FlakyCloud(EventCloud):
+    """A list answers 500 from the first read after a write on (P31)."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.down_after_write: dict[str, int] = {}
+
+    def _write(self, method: str, path: str, value: Any) -> None:
+        super()._write(method, path, value)
+        self.down.update(self.down_after_write)
+
+
+async def test_a_creation_is_confirmed_by_its_fields(hass: HomeAssistant) -> None:
+    """AWAY-05: the new event takes ID 1, the old one moves to ID 10. The
+    creation is confirmed at once and the next write is not held."""
+    cloud = _RenumberingCloud()
+    entry, coordinator, _clock, sleeps, stack = await setup(hass, cloud)
+    try:
+        await _create(hass, "Neujahr", "2027-01-01", "2027-01-03")
+        assert sleeps[-1:] == [1.0]
+        listed = coordinator.data["/events/list1"].resource.value
+        assert [(item["id"], item["start"]) for item in listed] == [
+            (1, "2027-01-01"),
+            (10, "2027-01-10"),
+        ]
+        await _create(hass, "Ostern", "2027-04-01", "2027-04-03")
+        assert cloud.calls["POST", "/events"] == 2
+        stats = coordinator.rrc_write_stats.snapshot("absence")
+        assert stats["writes_confirmed"] == 2
+        assert stats.get("writes_unconfirmed", 0) == 0
+    finally:
+        await teardown(hass, entry, stack)
+
+
+async def test_one_failed_list_read_keeps_its_events_for_a_while(
+    hass: HomeAssistant, today
+) -> None:
+    """AWAY-04: a running absence stays on through a 500 of its list; the
+    attribute ``stale`` says so and writing stops. Once the reading is older
+    than three poll intervals, the list's events are no longer shown."""
+    tree = absence_tree()
+    tree["/events/list1"] = _list(
+        "/events/list1", [_event(1, "2026-11-29", "2026-12-06")]
+    )
+    cloud = EventCloud(tree)
+    entry, coordinator, clock, _sleeps, stack = await setup(hass, cloud)
+    entity = entity_id(hass, "calendar", CALENDAR)
+    try:
+        state = hass.states.get(entity)
+        assert state.state == "on" and state.attributes["stale"] is False
+        cloud.down["/events/list1"] = 500
+        clock.now += 3600
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        state = hass.states.get(entity)
+        assert state.state == "on"
+        assert state.attributes["message"] == "Skiurlaub"
+        assert state.attributes["stale"] is True
+        assert state.attributes["supported_features"] == 0
+        events = await _events(
+            hass, "2026-12-01T00:00:00+01:00", "2026-12-02T00:00:00+01:00"
+        )
+        assert [item["summary"] for item in events] == ["Skiurlaub"]
+        # Older than three poll intervals: no longer shown.
+        today.tick(timedelta(minutes=31))
+        clock.now += 3600
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        state = hass.states.get(entity)
+        assert state.state == "off" and state.attributes["stale"] is True
+        assert state.attributes["message"] == "Weihnachten"
+        # A valid reading ends it.
+        del cloud.down["/events/list1"]
+        clock.now += 3600
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        state = hass.states.get(entity)
+        assert state.state == "on" and state.attributes["stale"] is False
+        assert state.attributes["supported_features"] == 7
+        assert cloud.written() == []
+    finally:
+        await teardown(hass, entry, stack)
+
+
+async def test_a_read_back_needs_only_the_lists_it_looks_at(
+    hass: HomeAssistant,
+) -> None:
+    """AWAY-11: another list answering 500 after the request does not leave
+    a creation or deletion unconfirmed; the list of a deleted event must
+    read validly."""
+    cloud = _FlakyCloud()
+    entry, coordinator, _clock, _sleeps, stack = await setup(hass, cloud)
+    calendar = _calendar(hass)
+    from custom_components.bosch_buderus_heating.rrc_event_calendar import _uid
+
+    try:
+        cloud.down_after_write = {"/events/list2": 500}
+        await _create(hass, "Skiurlaub", "2027-02-01", "2027-02-03")
+        del cloud.down["/events/list2"]
+        cloud.down_after_write = {"/events/list3": 500}
+        away = next(item for item in calendar._state.events if item.identifier == 1)
+        await calendar.async_delete_event(_uid(away))
+        del cloud.down["/events/list3"]
+        stats = coordinator.rrc_write_stats.snapshot("absence")
+        assert stats["writes_confirmed"] == 2
+        # The deleted event's own list fails: unknown, so unconfirmed.
+        cloud.down_after_write = {"/events/list2": 500}
+        sunday = next(item for item in calendar._state.events if item.identifier == 2)
+        with pytest.raises(HomeAssistantError) as unconfirmed:
+            await calendar.async_delete_event(_uid(sunday))
+        assert unconfirmed.value.translation_key == "rrc_write_pending_confirmation"
+        assert cloud.calls["DELETE", "/events/ev2"] == 1
+    finally:
+        await teardown(hass, entry, stack)
+
+
+async def test_dates_after_2099_are_refused_before_sending(
+    hass: HomeAssistant,
+) -> None:
+    """AWAY-10 in a real cycle: the last day 2099-12-31 is allowed."""
+    cloud = EventCloud()
+    entry, _coordinator, _clock, _sleeps, stack = await setup(hass, cloud)
+    try:
+        with pytest.raises(ServiceValidationError) as refused:
+            await _create(hass, "Fern", "2099-12-30", "2100-01-02")
+        assert refused.value.translation_key == "rrc_event_invalid_dates"
+        assert cloud.written() == []
+        await _create(hass, "Fern", "2099-12-30", "2100-01-01")
+        assert cloud.written("POST")[-1][2][0]["end"] == "2099-12-31"
     finally:
         await teardown(hass, entry, stack)
