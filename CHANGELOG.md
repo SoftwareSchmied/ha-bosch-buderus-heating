@@ -16,6 +16,12 @@ Versioning after its first tagged preview.
   On an existing installation they are enabled at the next start, unless
   you disabled them yourself. The compressor speed and the controller
   signals that repeat these readings stay disabled.
+- **Confirmed installations:** the Logatherm WLW186i-12 E with the outdoor
+  unit WLW MB-5 AR, a Logamatic BC400 and an MX400 gateway now also lists
+  the local access as confirmed, in the README and on the
+  [separate page](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.6/docs/confirmed-installations.md).
+  Thank you, lanebe, for confirming it in
+  [#106](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/106).
 
 #### Room controllers (TC100.2)
 
