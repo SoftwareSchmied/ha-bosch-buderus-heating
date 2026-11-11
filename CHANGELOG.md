@@ -323,6 +323,10 @@ device.
   limits it is ordered against are still checked with a current reading.
 - **Room controller absence calendar:** a changed event no longer counts as
   confirmed while the list it came from cannot be read.
+- **Room controller program names in Configure:** the room controller
+  heating schedules in the Configure dialog are listed with the program
+  names from the controller, as in the zone program select, instead of only
+  their numbers.
 
 ## [0.9.0-alpha.5] - 2026-11-11
 

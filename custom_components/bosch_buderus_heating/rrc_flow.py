@@ -20,6 +20,7 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
 )
 
+from . import rrc
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .entry_sources import pointt_coordinators
 from .ha_schema import validation as vol
@@ -33,7 +34,15 @@ from .pointt import (
     WriteNotConfirmed,
     WriteValidationError,
 )
-from .rrc_programs import DAYS, WEEK, Schedule, SwitchPoint, edit_point, parse_schedule
+from .rrc_programs import (
+    DAYS,
+    WEEK,
+    Schedule,
+    SwitchPoint,
+    edit_point,
+    parse_schedule,
+    program_names,
+)
 from .writes import WriteBusy
 
 
@@ -66,6 +75,7 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
             return {}
         result: dict[str, ScheduleChoice] = {}
         for number, coordinator in enumerate(coordinators, 1):
+            names = _program_names(coordinator)
             for path, snapshot in (coordinator.data or {}).items():
                 match = WEEK.fullmatch(path)
                 if (
@@ -77,7 +87,11 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
                 schedule = parse_schedule(snapshot.resource)
                 if schedule is None:
                     continue
-                label = f"#{match[1]}"
+                # The controller's program name, as in the zone's program
+                # select; the number without one. Shown as plain text in
+                # the dialog descriptions (markdown_literal there).
+                name = names.get(int(match[1]))
+                label = f"{name} (#{match[1]})" if name else f"#{match[1]}"
                 if len(coordinators) > 1:
                     label = (
                         f"{coordinator.gateway.model or self._entry.title} "
@@ -300,3 +314,22 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
             errors=errors,
             description_placeholders={"program": markdown_literal(choice.label)},
         )
+
+
+_PROGRAM_NAME = re.compile(rf"^/programs/pg({rrc.RRC_ID})/name$")
+
+
+def _program_names(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[int, str]:
+    """The program names the zone program select shows (same source)."""
+    snapshots = coordinator.data or {}
+    programs = snapshots.get(rrc.PROGRAM_LIST)
+    names: dict[int, Resource | None] = {}
+    for path, snapshot in snapshots.items():
+        match = _PROGRAM_NAME.fullmatch(path)
+        if (
+            match is not None
+            and snapshot.available
+            and snapshot.freshness is Freshness.FRESH
+        ):
+            names[int(match[1])] = snapshot.resource
+    return program_names(programs.resource if programs is not None else None, names)

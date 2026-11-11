@@ -212,6 +212,32 @@ async def test_a_gateway_model_cannot_add_markup_to_the_program_dialogs(
     point = await flow.async_step_rrc_day({"point": "1"})
     for result in (week, day, point):
         shown = result["description_placeholders"]["program"]
-        assert _rendered(shown).startswith(f"{model} [1] / #")
+        assert _rendered(shown).startswith(f"{model} [1] / ")
+        assert _rendered(shown).endswith("(#3)")
         active = _strip(shown)
         assert "![" not in active and "](" not in active and "://" not in active
+
+
+async def test_the_program_dialog_shows_the_controller_program_names(hass, environment):
+    """The programs carry the names the zone program select shows (#122);
+    a program without a name keeps its number, and a name is plain text in
+    the dialog descriptions."""
+
+    from tests.test_markdown_text import _rendered, _strip
+    from tests.test_rrc_program_selection import program_list
+
+    flow, coordinator = make_flow(hass, environment)
+    labels = {choice.label for choice in flow._rrc_choices().values()}
+    assert labels == {"Program 3 (#3)"}  # the name the controller reports
+    markup = "![](https://t.invalid/p)"
+    listed = program_list(value=[{"id": 3, "name": markup}, {"id": 7, "name": "Bad"}])
+    saved = coordinator.data.pop(listed.path)
+    # Without a program list: the number.
+    assert {choice.label for choice in flow._rrc_choices().values()} == {"#3"}
+    coordinator.data[listed.path] = replace(saved, resource=listed)
+    (choice,) = flow._rrc_choices().values()
+    assert choice.label == f"{markup} (#3)"
+    week = await flow.async_step_rrc_programs({"program": f"1:{WEEK}"})
+    shown = week["description_placeholders"]["program"]
+    assert _rendered(shown) == f"{markup} (#3)"
+    assert "![" not in _strip(shown) and "://" not in _strip(shown)

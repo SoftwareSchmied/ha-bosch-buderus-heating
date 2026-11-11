@@ -202,7 +202,9 @@ unknown and the zone can still be controlled.
   list reports for the zone (`window_open`); only where the list does not
   say (an older controller, or another function such as a boost) it reads
   the zone's open window status, whose values `open` and `closed` are a
-  guess. The zone list is read every five minutes for this. *The next
+  guess. While the open window detection of a zone is switched off, the
+  zone reports its window status as "not used". The zone list is read every
+  five minutes for this. *The next
   setpoint, the zone status and the window sensor look right on a TC100.2;
   the other details are expected, untested.*
 - **Open window detection:** a switch per zone and one for the system, and
@@ -558,7 +560,9 @@ ist erwartet, ungetestet**, ebenso der CT200 insgesamt:
 - **Zonen:** vorübergehender Sollwert bis zum nächsten Schaltpunkt mit
   Aufheben-Taste, nächster Sollwert, Minuten bis dahin, Zonenstatus,
   Ventilöffnung, optimierter Start, Fenster offen (aus der Sonderfunktion
-  der Zonenliste, sonst aus dem Fensterstatus der Zone),
+  der Zonenliste, sonst aus dem Fensterstatus der Zone; solange die
+  Fenster-offen-Erkennung einer Zone ausgeschaltet ist, meldet die Zone
+  ihren Fensterstatus als „nicht verwendet“),
   Fenster-offen-Erkennung (der Zonenschalter nur, solange der Regler die
   Erkennung des Systems anbietet). Die Taste **Nächsten Schaltpunkt
   vorziehen** setzt den vorübergehenden Sollwert auf den nächsten Sollwert,
