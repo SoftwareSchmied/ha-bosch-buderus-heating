@@ -689,7 +689,9 @@ async def test_write_control_marks_the_circuit(hass: HomeAssistant) -> None:
     coordinator._write_service = SimpleNamespace(
         async_write_number=AsyncMock(
             return_value=SimpleNamespace(resource=snapshot.resource)
-        )
+        ),
+        # D25: the deadline reads the read-back schedule.
+        read_back_delays=lambda _context: (),
     )
     with patch.object(coordinator, "async_set_updated_data"):
         await coordinator.async_write_control(

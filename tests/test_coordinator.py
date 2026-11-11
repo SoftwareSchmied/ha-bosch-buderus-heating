@@ -415,6 +415,8 @@ async def test_confirmed_write_updates_coordinator_without_batch_refresh(
     coordinator.data = {path: _snapshot(current)}
     coordinator.last_update_success = True
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_enum.return_value = WriteResult(
         WriteRequest("gateway-one", path, "auto"), confirmed
     )
@@ -450,6 +452,8 @@ async def test_confirmed_number_write_updates_coordinator(
     coordinator.data = {path: _snapshot(current)}
     coordinator.last_update_success = True
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_number.return_value = WriteResult(
         WriteRequest("gateway-one", path, 20.5), confirmed
     )
@@ -705,6 +709,8 @@ async def test_number_policy_rejects_non_numeric_value(hass: HomeAssistant) -> N
     assert policy is not None
     coordinator.data = {path: _snapshot(resource)}
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
 
     with pytest.raises(WriteValidationError):
         await coordinator.async_write_control(path, True, policy)  # type: ignore[arg-type]
@@ -727,6 +733,8 @@ async def test_write_rejects_stale_resource_before_cloud_call(
         )
     }
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
 
     with pytest.raises(WriteValidationError):
         await coordinator.async_write_control(
@@ -744,6 +752,8 @@ async def test_write_rate_limit_activates_global_backoff(
     coordinator.resources = {path: resource}
     coordinator.data = {path: _snapshot(resource)}
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_enum.side_effect = RateLimited(30)
 
     with pytest.raises(RateLimited):
@@ -761,6 +771,8 @@ async def test_write_respects_existing_backoff_without_cloud_call(
     coordinator = _coordinator(hass, AsyncMock())
     coordinator._cloud_backoff_until = 10**20
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
 
     with pytest.raises(RateLimited):
         await coordinator.async_write_control(
@@ -789,6 +801,8 @@ async def test_write_auth_failure_starts_reauthentication(
     coordinator.resources = {path: resource}
     coordinator.data = {path: _snapshot(resource)}
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_enum.side_effect = AuthenticationError()
     coordinator._config_entry.async_start_reauth = Mock()
 
@@ -1548,6 +1562,8 @@ async def test_manual_setpoint_recovery_queued_after_confirmed_mode_write(
     }
     coordinator.last_update_success = True
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_enum.return_value = WriteResult(
         WriteRequest("gateway-one", mode_path, "manual"), new_mode
     )

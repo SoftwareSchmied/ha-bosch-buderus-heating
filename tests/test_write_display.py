@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from homeassistant.core import HomeAssistant
@@ -87,6 +87,8 @@ async def write(coordinator, path: str, value: float) -> Resource:
     current = coordinator.data[path].resource
     confirmed = replace(current, value=value)
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_number.return_value = WriteResult(
         WriteRequest("gateway-one", path, value), confirmed
     )
@@ -168,6 +170,8 @@ async def test_failed_write_changes_nothing_for_local_readings(
     coordinator, runtime = setup(hass)
     cloud_reads_again(coordinator, CURRENT, 20.0)
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_number.side_effect = PointTError("x")
     policy = number_policy_for_resource(coordinator.data[SETPOINT].resource)
     with pytest.raises(PointTError):
