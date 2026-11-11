@@ -75,20 +75,21 @@ or unavailable on/off options block its switch.
 
 ## Rules from the component list (expected, untested)
 
-The manufacturer's app reads the component list `/system/info` and applies two
-rules to holidays. I use only the component type (`Id`) and its token (`Tok`)
-of each entry, never a serial number, name or version, and the rules only
-remove choices:
+I read the component list `/system/info` and apply two rules to holidays. I
+use only the component type (`Id`) and its token (`Tok`) of each entry, never
+a serial number, name or version, and the rules only remove choices:
 
-- **HMI800 HP Light (`Id` 240):** the app never writes the heating mode
-  (`hcMode`) or the circuit assignment (`assignedTo`) of a holiday. With such a
-  component the dialog offers only the slot's current heating mode and
-  circuits, and the transaction refuses a change of either before the first
-  PUT. Dates, hot water mode and fixed temperature stay changeable. A free slot
-  without assigned circuits then offers no new holiday.
-- **Token 16:** when an entry has token 16, the app does not offer the heating
-  circuits of the tokens 24 to 27 (`hc1` to `hc4`). The dialog no longer offers
-  these circuits for a holiday; a circuit the slot already has stays.
+- **HMI800 HP Light (`Id` 240):** with such a controller, the heating mode
+  (`hcMode`) and the circuit assignment (`assignedTo`) of a holiday are
+  expected not to be changeable through the cloud. With such a component the
+  dialog offers only the slot's current heating mode and circuits, and the
+  transaction refuses a change of either before the first PUT. Dates, hot
+  water mode and fixed temperature stay changeable. A free slot without
+  assigned circuits then offers no new holiday.
+- **Token 16:** when an entry has token 16, the heating circuits of the
+  tokens 24 to 27 (`hc1` to `hc4`) are expected not to be available for a
+  holiday. The dialog no longer offers these circuits for a holiday; a circuit
+  the slot already has stays.
 
 No system with either case has been observed; both rules are expected,
 untested. The diagnostics of an iCom gateway list the `Id`/`Tok` pairs and
@@ -153,9 +154,9 @@ keine zusätzlichen Cloud-Abfragen. Echte Schreibtests an ICOM- und
 WDDW2-Geräten sowie die Bestätigung ihrer jeweiligen Metadaten stehen aus.
 
 Aus der Komponentenliste `/system/info` lese ich nur Typ (`Id`) und Token
-(`Tok`) und übernehme zwei Regeln der Hersteller-App, die nur Auswahl
-wegnehmen: Bei einem HMI800 HP Light (`Id` 240) bleiben Heizbetriebsart und
-Kreiszuordnung eines Urlaubs so, wie der Speicherplatz sie meldet; eine
-Änderung daran lehnt die Transaktion vor dem ersten Schreiben ab. Bei Token 16
-biete ich die Heizkreise der Tokens 24 bis 27 nicht neu an. Beide Fälle habe
-ich an keiner Anlage gesehen; sie sind erwartet, aber ungetestet.
+(`Tok`) und wende zwei Regeln an, die nur Auswahl wegnehmen: Bei einem
+HMI800 HP Light (`Id` 240) bleiben Heizbetriebsart und Kreiszuordnung eines
+Urlaubs so, wie der Speicherplatz sie meldet; eine Änderung daran lehnt die
+Transaktion vor dem ersten Schreiben ab. Bei Token 16 biete ich die Heizkreise
+der Tokens 24 bis 27 nicht neu an. Beide Fälle habe ich an keiner Anlage
+gesehen; sie sind erwartet, aber ungetestet.

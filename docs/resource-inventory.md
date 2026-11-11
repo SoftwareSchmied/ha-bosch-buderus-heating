@@ -397,10 +397,9 @@ No real device capture is claimed for these new examples.
 
 ## iCom rows R199 to R243 compared with a real gateway
 
-The iCom rows R199 to R243 follow the path list of an app module that the
-current manufacturer's app ships switched off; the app's active iCom code path
-reads and writes more. For 0.9.0-alpha.6 I compared the rows with the
-diagnostic of a real iCom gateway with a boiler controller (EMS 2), evaluated
+The iCom rows R199 to R243 are a model path list; an iCom gateway can offer
+and accept more paths than these rows. For 0.9.0-alpha.6 I compared the
+rows with the diagnostic of a real iCom gateway with a boiler controller (EMS 2), evaluated
 locally and only as shapes. The table above is unchanged; the model rows keep
 their IDs. The differences are listed here, and the synthetic fixture
 [`icom/gateway-shapes.json`](../tests/fixtures/contracts/icom/gateway-shapes.json)
@@ -440,7 +439,7 @@ are readable. Faults come only through `/notifications`; `hs1/activefailure`
 and `hs1/failurelist` answer 404. The diagnostic held no active notification,
 so the format of an iCom notification entry is still unconfirmed.
 
-**Used by the active app code path, not by R199 to R243 (APP-24):** writing
+**Further iCom paths, not in R199 to R243 (expected, untested):** writing
 `temporaryRoomSetpoint` (−1 clears it), `roomtemperature`, `charge`,
 `chargeDuration` and `singleChargeSetpoint`, the pool values below
 `/heatSources`, the energy histories below `/recordings`, `/gateway/serialId`,

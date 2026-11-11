@@ -98,8 +98,8 @@ automatic mode because this mode does not support temperature commands.
 The reported target remains available through the climate's `temperature`
 attribute and the existing current-target sensor.
 
-When the circuit reports the control type `constants` (`controlType`), the
-manufacturer's app offers no control of the circuit. Since 0.9.0-alpha.6 the
+When the circuit reports the control type `constants` (`controlType`), I
+treat it as a circuit that cannot be controlled. Since 0.9.0-alpha.6 the
 climate then only shows the circuit: it offers no target, no other mode and
 no off command, and a mode or temperature call is refused before any request.
 The individual entities of the circuit keep their own rules. This is expected,
@@ -156,9 +156,8 @@ The program type itself and the program names are never written.
 
 The program is read again just before sending. If it differs from what the
 dialog showed, nothing is sent. The whole week goes out once as a raw JSON
-array, the way the manufacturer's apps write it, and is read back; the
-confirmed program is shown at once. A refusal of the gateway changes
-nothing. After a lost answer or a server error the outcome is resolved only
+array and is read back; the confirmed program is shown at once. A refusal of
+the gateway changes nothing. After a lost answer or a server error the outcome is resolved only
 by reading, never by sending again; until then the program counts as not
 current. The success message repeats the previous switch points, so they
 can be set back by hand. Diagnostics count the writes and the switch points
@@ -274,8 +273,8 @@ Sollwertregler, weil dort keine Temperaturbefehle unterstützt werden.
 Der gemeldete Sollwert steht im Attribut `temperature` der Klimaentität
 und im bestehenden Sensor für den aktuellen Sollwert zur Verfügung.
 
-Meldet der Heizkreis die Regelungsart `constants` (`controlType`), bietet die
-Hersteller-App keine Bedienung des Kreises an. Seit 0.9.0-alpha.6 zeigt die
+Meldet der Heizkreis die Regelungsart `constants` (`controlType`), behandle
+ich ihn als nicht bedienbaren Kreis. Seit 0.9.0-alpha.6 zeigt die
 Klimaentität den Kreis dann nur an: kein Sollwert, keine andere Betriebsart,
 kein Ausschalten; ein Befehl wird vor jeder Anfrage abgewiesen. Die
 Einzelentitäten folgen weiter ihren eigenen Regeln. Erwartet, aber an einem
@@ -338,9 +337,8 @@ werden nie geschrieben.
 
 Direkt vor dem Senden wird das Programm erneut gelesen. Weicht es vom Stand
 im Dialog ab, wird nichts gesendet. Die ganze Woche geht einmal als rohes
-JSON-Array hinaus, so wie die Hersteller-Apps sie schreiben, und wird
-zurückgelesen; das bestätigte Programm erscheint sofort. Lehnt das Gateway
-ab, ändert sich nichts. Nach einer verlorenen Antwort oder einem
+JSON-Array hinaus und wird zurückgelesen; das bestätigte Programm erscheint
+sofort. Lehnt das Gateway ab, ändert sich nichts. Nach einer verlorenen Antwort oder einem
 Serverfehler klärt nur das Lesen den Ausgang, nie ein zweites Senden; bis
 dahin gilt das Programm als nicht aktuell. Die Erfolgsmeldung wiederholt die
 bisherigen Schaltpunkte, damit man sie von Hand zurückstellen kann. Die

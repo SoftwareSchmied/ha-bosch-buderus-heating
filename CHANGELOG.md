@@ -120,13 +120,13 @@ gateway they are expected, untested.
   thank you, [gejomo](https://github.com/gejomo), for them.
 - **Holidays:** before the first change I now check that every field to be
   changed is writable. A fixed temperature reported in `°C` is accepted like
-  `C`. Two rules of the manufacturer's app are taken over and only remove
-  choices: with a HMI800 HP Light controller the heating mode and the
-  circuits of a holiday stay as the slot reports them, and with token 16 in
-  the component list the heating circuits of the tokens 24 to 27 are not
-  offered. I have not seen either case on a system.
+  `C`. Two new rules from the component list only remove choices: with a
+  HMI800 HP Light controller the heating mode and the circuits of a holiday
+  stay as the slot reports them, and with token 16 in the component list the
+  heating circuits of the tokens 24 to 27 are not offered. I have not seen
+  either case on a system; both are expected, untested.
 - **Control type `constants`:** the heating circuit climate then only shows
-  the circuit and sends no command, like the manufacturer's app.
+  the circuit and sends no command. Expected, untested on a real device.
 - **Diagnostics:** a new `icom` section shows the state of the load profile,
   the component type numbers of `/system/info` (no serial numbers or names),
   the reported bus with a hint for `EMS1_0`, `CAN` and `No_Bus`, and whether a
@@ -145,8 +145,8 @@ gateway they are expected, untested.
   gateway's automatic update, so nothing can start a firmware update from
   Home Assistant. The list is read about ten minutes after the start and then
   every six hours; a gateway the list refuses or does not name gets no
-  entity. I built it from the app's firmware update model and tested it with
-  simulated answers only; it is expected, untested on a real gateway.
+  entity. I tested it with simulated answers of the cloud's firmware update
+  list only; it is expected, untested on a real gateway.
 - **Diagnostics:** the new section `firmware_updates` shows the result of the
   last reads, the state and the versions, without the gateway ID or links.
 
