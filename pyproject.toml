@@ -31,6 +31,7 @@ test = [
   "pytest-asyncio==1.4.0",
   "pytest-cov==7.1.0",
   "pytest-homeassistant==2026.11.0",
+  "pytest-timeout==2.4.0",
   "ruff==0.17.3",
 ]
 
@@ -49,6 +50,9 @@ addopts = "-p no:respx --strict-config --strict-markers --cov=custom_components/
 asyncio_mode = "auto"
 pythonpath = ["."]
 testpaths = ["tests"]
+# D49: a hanging test fails on its own and is named, instead of holding the
+# CI job until its 10-minute limit.
+timeout = 120
 
 [tool.coverage.run]
 source = ["custom_components/bosch_buderus_heating"]
