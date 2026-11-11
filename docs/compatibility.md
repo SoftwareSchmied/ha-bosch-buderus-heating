@@ -97,7 +97,7 @@ The examples are checked against their meaning, not only against the schema
 | System | Gateway firmware | Access | Evidence |
 | --- | --- | --- | --- |
 | K40 heat pump gateway (`K40RF_v1`) | 15.00.01 | cloud and local | anonymized cloud capture `tests/fixtures/contracts/captures/k40-cloud-2026-11-05.json`, practical checks on my own system |
-| Room controller TC100.2 (RRC 2.0) | 05.04.00 | cloud only, no local access | zone readings, manual/schedule mode and manual setpoint confirmed by a user with 0.9.0-alpha.4 (issue 113); the further room controller functions of alpha.5 and the radio devices expected, untested |
+| Room controller TC100.2 (RRC 2.0) | 05.04.00 | cloud only, no local access | zone readings, manual/schedule mode and manual setpoint confirmed by a user with 0.9.0-alpha.4 (issue 113); program selection, temporary setpoint with its clear button, open window detection of a zone, a one-day absence, hot water mode, boost and away mode confirmed by the same user with 0.9.0-alpha.5, and the radio devices with their battery and valve state look right (issue 122); the other room controller functions expected, untested, see [room controllers](room-controllers.md) |
 | Room controller CT200 (RRC 2.0) | – | cloud only, expected, untested, no local access | synthetic fixture `tests/fixtures/contracts/rrc/ct200-shapes.json`; no installation report yet |
 
 Room controllers of the RRC 2.0 platform have no local access: no local

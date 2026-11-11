@@ -12,30 +12,63 @@ discovery are in [RRC zones and schedules](rrc-zones-and-schedules.md).
 
 So far a TC100.2 has confirmed with this integration:
 
-- the zone readings (room temperature, active setpoint, zone names);
-- switching a zone between manual mode and the schedule (`userMode`
-  `manual`/`clock`);
-- changing the manual setpoint of a zone.
+- with 0.9.0-alpha.4: the zone readings (room temperature, active setpoint,
+  zone names), switching a zone between manual mode and the schedule
+  (`userMode` `manual`/`clock`) and changing the manual setpoint of a zone;
+- with 0.9.0-alpha.5 (controller firmware 05.04.00, a system with five
+  zones), the following changes, each checked in the manufacturer's app and
+  set back afterwards:
+  - switching the program of a zone and back;
+  - a temporary setpoint in the schedule mode, and its clear button; Home
+    Assistant showed the new target after about a minute;
+  - the climate to `heat` with a target and back to `auto`: the mode changed
+    first, then the target;
+  - turning the open window detection of a zone off and on;
+  - creating a one-day absence in the calendar and deleting it again;
+  - the hot water mode `ownprogram` → `high` → `ownprogram`;
+  - the boost on and off;
+  - the away mode on and off; while it was on, a new zone target was refused
+    with the message that the away mode is active;
+- with 0.9.0-alpha.5 as well: the discovery completes, and every zone gets
+  its program select with the program names from the controller;
+- readings that look right with 0.9.0-alpha.5: the climate of each zone with
+  its next setpoint and zone status, the window sensors, the system pressure,
+  the outdoor temperature, the humidity, the display and cause code, the
+  boost settings, the away temperature, and the hot water mode and
+  temperature. The eight radiator thermostats of that system appear as
+  separate devices in the right areas, with their battery and valve state.
 
 Everything else on this page is **expected, untested**: it is built and
 tested with simulated data in the shapes of the observed TC100.2 answers and
 of constructed controller data, but nobody has tried it on a real controller
 yet. The CT200 as a whole is expected, untested. The diagnostics mark every
-room controller function as `confirmation: unconfirmed` until a test on a
-real device confirms it. I would be glad about reports from owners, ideally
-with a diagnostics download (see [diagnostics](diagnostics.md)).
+room controller function as `confirmation: unconfirmed`, also the ones
+confirmed above. I would be glad about reports from owners, ideally with a
+diagnostics download (see [diagnostics](diagnostics.md)).
 
 | Function | Status |
 | --- | --- |
 | Zone readings, manual/schedule mode, manual setpoint | Confirmed on a TC100.2 |
-| Temporary setpoint, its clear button, zone details | Expected, untested |
-| Program selection and editing switch points | Expected, untested |
-| Away mode, absence calendar, boost, fireplace function | Expected, untested |
-| Hot water | Expected, untested |
+| Mode together with a target (`heat` with a target, back to `auto`) | Confirmed on a TC100.2 |
+| Temporary setpoint and its clear button | Confirmed on a TC100.2 |
+| Zone details: next setpoint, zone status, window sensor | Readings look right on a TC100.2 |
+| Zone details: minutes until the next setpoint, valve opening, optimum start | Expected, untested |
+| Open window detection of a zone | Off and on confirmed on a TC100.2 |
+| Open window detection of the system, its duration and temperature | Expected, untested |
+| Away mode | On and off confirmed on a TC100.2, also the refused zone target while it is on; the away temperature reading looks right |
+| Zone locks for standby, zone or communication errors | Expected, untested |
+| Program selection | Confirmed on a TC100.2, with the program names on every zone |
+| Editing switch points | Expected, untested |
+| Absence calendar | Creating and deleting a one-day absence confirmed on a TC100.2; changing an event and special days expected, untested |
+| Boost | On and off confirmed on a TC100.2; the boost settings readings look right |
+| Fireplace function | Expected, untested |
+| Hot water | Changing the mode (`ownprogram`, `high`) confirmed on a TC100.2; mode and temperature readings look right; the other hot water settings expected, untested |
 | Heating circuit settings | Expected, untested |
-| System readings, fault and maintenance sensors | Expected, untested |
+| System readings | Display and cause code, system pressure, humidity and outdoor temperature look right on a TC100.2 |
+| Fault and maintenance sensors | Expected, untested |
 | Energy history in the statistics | Expected, untested |
-| Radio devices and their settings | Expected, untested |
+| Radio devices | Devices, areas, battery and valve state look right on a TC100.2 |
+| Settings of the radio devices | Expected, untested |
 | CT200 (every function) | Expected, untested; no local access |
 
 ## How changes are written
@@ -101,14 +134,17 @@ unknown and the zone can still be controlled.
   attribute `override_until_next_switch_point` says so. It must be at least
   the lowest manual setpoint of the zone. If the controller ends it at once,
   for example because a switch point was reached, a message of its own says
-  so. *Expected, untested.*
+  so. *Confirmed on a TC100.2*; the case of a setpoint the controller ends at
+  once is expected, untested.
 - **Clear temporary setpoint.** A button per zone ends an active temporary
-  setpoint while the zone follows its schedule. *Expected, untested.*
+  setpoint while the zone follows its schedule. *Confirmed on a TC100.2.*
 - A mode together with a temperature changes the mode first and the target
-  only after the controller has confirmed the mode.
-- **Locked zones** *(expected, untested):* while the away mode is active, a
-  new target or clearing the temporary setpoint is refused with a message
-  that names the away mode; the mode can still be changed. A zone that the
+  only after the controller has confirmed the mode. *Confirmed on a
+  TC100.2.*
+- **Locked zones:** while the away mode is active, a new target or clearing
+  the temporary setpoint is refused with a message that names the away mode;
+  the mode can still be changed. *The refused target is confirmed on a
+  TC100.2; the rest is expected, untested.* A zone that the
   controller reports with a zone or communication error, or in standby,
   takes no change of its mode or its target at all; in standby its action
   is `off`. This also applies to the zone's own mode select and manual
@@ -122,54 +158,60 @@ unknown and the zone can still be controlled.
   stays unconfirmed, the zone keeps its target control and its limits until
   the value is read again within a minute; a further change waits for that
   reading.
-- **Zone details** *(expected, untested):* sensors for the next setpoint,
-  the minutes until it and the zone status (idle, heat request, zone error,
-  communication error or warning, low battery); the valve opening and the
+- **Zone details:** sensors for the next setpoint, the minutes until it and
+  the zone status (idle, heat request, zone error, communication error or
+  warning, low battery); the valve opening and the
   optimum start with its heat-up rate (disabled by default); a binary sensor
   "Window open". The window sensor follows the special function the zone
   list reports for the zone (`window_open`); only where the list does not
   say (an older controller, or another function such as a boost) it reads
   the zone's open window status, whose values `open` and `closed` are a
-  guess. The zone list is read every five minutes for this.
-- **Open window detection** *(expected, untested):* a switch per zone and one
-  for the system, and the system's open window duration and temperature
-  where the controller allows writing them (disabled by default). A zone
-  switch is refused while the controller does not offer the system's open
-  window detection (not available).
+  guess. The zone list is read every five minutes for this. *The next
+  setpoint, the zone status and the window sensor look right on a TC100.2;
+  the other details are expected, untested.*
+- **Open window detection:** a switch per zone and one for the system, and
+  the system's open window duration and temperature where the controller
+  allows writing them (disabled by default). A zone switch is refused while
+  the controller does not offer the system's open window detection (not
+  available). *Turning a zone's detection off and on is confirmed on a
+  TC100.2; the system's settings are expected, untested.*
 
 A room controller with zone climates gets no climate entity for its heating
 circuit as well.
 
 ## Programs (heating schedules)
 
-*Expected, untested.*
-
-- **Program selection.** A select per zone chooses the zone's program. Its
-  options are the program numbers, so automations keep working when a program
-  is renamed; the names are in the attributes `program_names` and
+- **Program selection** *(confirmed on a TC100.2: switching a program and
+  back, the select on every zone with the program names from the
+  controller)*. A select per zone chooses the zone's program. Its options
+  are the program numbers, so automations keep working when a program is
+  renamed; the names are in the attributes `program_names` and
   `program_name`. Changing the program does not switch the zone to the
   schedule. A selection and a changed switch point are read back like every
   other change (1, 2, 4 and 8 seconds); if the controller has not confirmed
   them by then, the message says that the change was sent but is not
   confirmed yet. On a large system the program list is read together with the
   zones and searched again if it is missing.
-- **Editing switch points.** Under **Configure → RRC heating schedules** you
-  can change the time and temperature of an existing switch point of a week
-  or day program. A change affects every zone that uses the program. New
-  programs and added or deleted switch points are not supported.
+- **Editing switch points** *(expected, untested)*. Under **Configure → RRC
+  heating schedules** you can change the time and temperature of an existing
+  switch point of a week or day program. A change affects every zone that
+  uses the program. New programs and added or deleted switch points are not
+  supported.
 
 ## Away mode, absences and special days
 
-*Expected, untested.*
-
-- **Away mode** is a switch, the **away temperature** a number.
-- **Absences and special days** appear as a calendar of whole days, in the
-  controller's time zone. You can create, change and delete absences there.
-  A day that runs like another weekday ("Like Monday") can only be deleted.
-  A name has at most 32 bytes (fewer characters with umlauts or emoji),
-  events may not overlap, not even on their first or last day, and the end
-  may not be in the past. Events lie between 2016 and 2099. Recurring
-  events, descriptions and locations are not supported.
+- **Away mode** is a switch, the **away temperature** a number. *Turning the
+  away mode on and off is confirmed on a TC100.2; the away temperature
+  reading looks right, changing it is expected, untested.*
+- **Absences and special days** *(creating and deleting a one-day absence
+  confirmed on a TC100.2; everything else expected, untested)* appear as a
+  calendar of whole days, in the controller's time zone. You can create,
+  change and delete absences there. A day that runs like another weekday
+  ("Like Monday") can only be deleted. A name has at most 32 bytes (fewer
+  characters with umlauts or emoji), events may not overlap, not even on
+  their first or last day, and the end may not be in the past. Events lie
+  between 2016 and 2099. Recurring events, descriptions and locations are
+  not supported.
 - If one event list cannot be read for a moment (the controller answers 500
   at times), its events stay in the calendar from the last valid reading as
   long as any reading stays valid (three poll intervals), so a running
@@ -193,7 +235,8 @@ circuit as well.
 
 ## Boost and fireplace function
 
-*Expected, untested.*
+*Turning the boost on and off is confirmed on a TC100.2, and the boost
+settings readings look right; everything else is expected, untested.*
 
 - **Boost:** a switch, the boost temperature and the boost duration. The
   switch writes the controller's boost settings as a whole: a start sends
@@ -214,7 +257,9 @@ circuit as well.
 
 ## Hot water
 
-*Expected, untested.*
+*Changing the mode (`ownprogram` → `high` → `ownprogram`) is confirmed on a
+TC100.2, and the mode and temperature readings look right; everything else
+is expected, untested.*
 
 - The operating mode as a select and as a water heater entity. A controller
   that lists its modes offers exactly those. One that lists none offers
@@ -271,7 +316,8 @@ circuit as well.
 
 ## System, faults and maintenance
 
-*Expected, untested.*
+*The display and cause code, the system pressure and the humidity look right
+on a TC100.2; everything else is expected, untested.*
 
 - Sensors for the display code, the cause code, the system pressure (only
   with the unit bar) and its status, and the indoor humidity. The
@@ -356,17 +402,20 @@ these cases.
 
 Every radio device in the controller's device list becomes its own device
 below the controller, named after its type (for example "Radiator
-thermostat 2"), with its zone as the suggested area.
+thermostat 2"), with its zone as the suggested area. *On a TC100.2 the
+eight radiator thermostats appear as separate devices in the right areas,
+and their battery and valve state look right.*
 
-- **Read** *(expected, untested):* "Battery low" (enabled), "Radio signal"
-  (disabled by default) and the firmware version; for radiator thermostats
-  also the valve opening, the maximum valve opening, the temperature at the
-  valve, the valve state and the whisper mode (quiet valve motor operation),
-  all disabled by default, and a binary sensor "Valve problem" (enabled). It
-  is on while the valve reports that it is too tight, that its adjustment
-  range is too big or too small, that it is in an error position, or that
-  its adaption waits (for example because the thermostat is not mounted
-  correctly); its attribute `valve_problems` names the states.
+- **Read** *(otherwise expected, untested):* "Battery low" (enabled),
+  "Radio signal" (disabled by default) and the firmware version; for
+  radiator thermostats also the valve opening, the maximum valve opening,
+  the temperature at the valve, the valve state and the whisper mode (quiet
+  valve motor operation), all disabled by default, and a binary sensor
+  "Valve problem" (enabled). It is on while the valve reports that it is too
+  tight, that its adjustment range is too big or too small, that it is in an
+  error position, or that its adaption waits (for example because the
+  thermostat is not mounted correctly); its attribute `valve_problems` names
+  the states.
 - **Settings** *(expected, untested, disabled by default):* the child lock,
   the temperature offset (only while the device uses it) and the
   sensitivity of the open window detection (high, medium, low). The
@@ -435,11 +484,32 @@ Raumregler der Plattform RRC 2.0 wie TC100.2 und CT200 sind nur über die
 Cloud angebunden; einen lokalen Zugang gibt es nicht. Ich erkenne sie an
 ihren Ressourcen, nie an einem Modellnamen.
 
-**Bestätigt** ist an einem TC100.2 bisher: das Lesen der Zonen
-(Raumtemperatur, aktiver Sollwert, Zonennamen), das Umschalten zwischen
-manuellem Betrieb und Zeitprogramm (`userMode` `manual`/`clock`) und das
-Ändern des manuellen Sollwerts. **Alles andere ist erwartet, ungetestet**,
-ebenso der CT200 insgesamt:
+**Bestätigt** ist an einem TC100.2 bisher:
+
+- mit 0.9.0-alpha.4: das Lesen der Zonen (Raumtemperatur, aktiver Sollwert,
+  Zonennamen), das Umschalten zwischen manuellem Betrieb und Zeitprogramm
+  (`userMode` `manual`/`clock`) und das Ändern des manuellen Sollwerts;
+- mit 0.9.0-alpha.5 (Reglerfirmware 05.04.00, fünf Zonen), jeweils in der
+  App des Herstellers geprüft und danach zurückgestellt: Programm wechseln
+  und zurück; vorübergehender Sollwert im Zeitprogramm samt Aufheben-Taste
+  (Home Assistant zeigte das neue Ziel nach etwa einer Minute); Klima auf
+  `heat` mit Ziel und zurück auf `auto` (erst die Betriebsart, dann das
+  Ziel); Fenster-offen-Erkennung einer Zone aus und ein; eintägige
+  Abwesenheit im Kalender anlegen und löschen; Warmwasser-Betriebsart
+  `ownprogram` → `high` → `ownprogram`; Boost ein und aus; Abwesenheit ein
+  und aus, dabei wurde ein neues Zonenziel mit der Meldung zur aktiven
+  Abwesenheit abgelehnt;
+- ebenfalls mit 0.9.0-alpha.5: Die Discovery läuft vollständig durch, und
+  jede Zone bekommt ihre Programmauswahl mit den Programmnamen des Reglers;
+- Messwerte, die stimmig aussehen: Klima je Zone mit nächstem Sollwert und
+  Zonenstatus, Fenstersensoren, Anlagendruck, Außentemperatur,
+  Luftfeuchte, Anzeige- und Ursachencode, Boost-Einstellungen,
+  Abwesenheitstemperatur, Warmwasser-Betriebsart und -Temperatur; die acht
+  Heizkörperthermostate erscheinen als eigene Geräte in den richtigen
+  Bereichen, mit Batterie- und Ventilzustand.
+
+Die Funktionen im Überblick; **was oben nicht als bestätigt genannt ist,
+ist erwartet, ungetestet**, ebenso der CT200 insgesamt:
 
 - **Zonen:** vorübergehender Sollwert bis zum nächsten Schaltpunkt mit
   Aufheben-Taste, nächster Sollwert, Minuten bis dahin, Zonenstatus,

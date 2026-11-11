@@ -120,7 +120,10 @@ The schema distinguishes editing existing points from adding new points.
 I test these contracts with synthetic multi-zone data, simulated errors,
 concurrent edits, native HA dialogs and an actual local HTTP endpoint.
 An anonymized fixture records the read structure observed on a
-TC100.2. Writes on a physical RRC device remain unverified.
+TC100.2. On a TC100.2, the mode, the manual setpoint, the temporary
+setpoint and the program selection have been written with 0.9.0-alpha.4 and
+0.9.0-alpha.5; editing switch points on a physical RRC device remains
+unverified.
 
 ## Room controllers of the RRC 2.0 platform
 
@@ -208,11 +211,16 @@ SingleKey ID; the setup's "no devices" message says so.
 ### What is confirmed
 
 The zones of a TC100.2 have been read with this integration (issue 113), and
-its manual/schedule mode and manual setpoint have been changed with it. The
-radio devices, the device list, the functions of alpha.5 listed in
-[room controllers](room-controllers.md) and every CT200 are untested: they are built
-on constructed data and the anonymized device tree of a TC100.2, and the
-diagnostics report `rrc_profile.confirmation: unconfirmed`. A synthetic
+its manual/schedule mode and manual setpoint have been changed with it. With
+0.9.0-alpha.5 the same TC100.2 also confirmed the program selection on every
+zone, the temporary setpoint with its clear button, the open window
+detection of a zone, a one-day absence, the hot water mode, the boost and the
+away mode, and its radio devices appear with their battery and valve state
+(issue 122); [room controllers](room-controllers.md) lists each function
+with its status. The other functions of alpha.5 and every CT200 are
+untested: they are built on constructed data and the anonymized device tree
+of a TC100.2, and the diagnostics report
+`rrc_profile.confirmation: unconfirmed`. A synthetic
 fixture with 11 zones, 12 radio devices and 24 programs
 (`tests/fixtures/contracts/rrc/ct200-shapes.json`) checks the discovery
 budget, the devices and the privacy rules from discovery to the entities.
@@ -224,7 +232,10 @@ vorhandene Schaltpunkte ergänzt. Voraussetzung sind passende Ressourcen am
 ausgewählten PointT-Gateway. Damit ist noch keine vollständige Unterstützung
 aller Geräte mit RRC-Regelung nachgewiesen. Die gelesene Struktur (Merkmale,
 Typen, Einheiten und Grenzen) wurde an einem TC100.2 mit reinen
-Leseanfragen beobachtet; Schreibzugriffe und andere Modelle stehen aus.
+Leseanfragen beobachtet. Am TC100.2 sind Betriebsart, manueller und
+vorübergehender Sollwert sowie die Programmauswahl mit 0.9.0-alpha.4 und
+0.9.0-alpha.5 geschrieben worden; das Ändern von Schaltpunkten und andere
+Modelle stehen aus.
 
 Die Zonenpfade `/zones/zn{id}` bleiben von ConnectKey-`zone{id}` getrennt.
 Zonen- und Programmnummern stammen aus gemeldeten Referenzen oder geprüften

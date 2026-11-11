@@ -5,6 +5,52 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### What changed since alpha.5
+
+#### Room controllers (TC100.2)
+
+Newly confirmed on a real controller, a TC100.2 with firmware 05.04.00 and
+five zones, tested with alpha.5. Each change was checked in the
+manufacturer's app and set back afterwards:
+
+- **Programs:** the discovery completes, and every zone gets its program
+  select with the program names from the controller. Switching the program
+  and back works.
+- **Temporary setpoint:** a new target in the schedule mode sets it, and the
+  clear button removes it again. In that test Home Assistant showed the new
+  target after about a minute.
+- **Mode with a target:** the climate to `heat` with a target and back to
+  `auto` works; the mode changes first, then the target.
+- **Open window detection:** turning it off and on for a zone works.
+- **Absence calendar:** creating a one-day absence and deleting it again
+  works.
+- **Hot water:** the mode `ownprogram` → `high` → `ownprogram` works.
+- **Boost:** on and off works.
+- **Away mode:** on and off works. While it was on, a new zone target was
+  refused with the message that the away mode is active.
+- **Readings that look right:** the climate of each zone with its next
+  setpoint and zone status, the window sensors, the system pressure, the
+  outdoor temperature, the humidity, the display and cause code, the boost
+  settings, the away temperature, and the hot water mode and temperature.
+  The eight radiator thermostats appear as separate devices in the right
+  areas, with their battery and valve state.
+
+The room controller page, the confirmed installations and the README now
+show this per function. Editing switch points, changing an absence,
+special days, the fireplace function, the system's open window detection,
+the zone locks other than the away mode, the other hot water settings, the
+heating circuit, the fault and maintenance sensors, the energy history, the
+settings of the radio devices and the CT200 stay expected, untested. Thank you, @obvius1, for
+testing all of this on your TC100.2, checking every change in the app and
+reporting it in #122.
+
+#### Fixes
+
+- **Warning after a restart:** Home Assistant no longer logs "Detected
+  blocking call to import_module … inside the event loop" for the room
+  controller functions. I now load their modules in the background before
+  the entity platforms start. The warning was reported in #122.
+
 ## [0.9.0-alpha.5] - 2026-11-11
 
 > [!IMPORTANT]
