@@ -257,6 +257,7 @@
     "Indoor air quality": "Jakość powietrza w pomieszczeniu",
     "Indoor humidity": "Wilgotność w pomieszczeniu",
     "Information": "Informacje",
+    "Information (code {code})": "Informacja (kod {code})",
     "Inlet temperature": "Temperatura wlotu",
     "Installation date": "Data instalacji",
     "Installation date (day)": "Data instalacji (dzień)",
@@ -267,6 +268,7 @@
     "iSRC support": "Obsługa iSRC",
     "Last local answer: {time}.": "Ostatnia odpowiedź lokalna: {time}.",
     "Last reported faults. Their current status has not yet been confirmed.": "Ostatnio zgłoszone usterki. Ich aktualny stan nie został jeszcze potwierdzony.",
+    "Last reported notifications. Their current status has not yet been confirmed.": "Ostatnio zgłoszone komunikaty. Ich aktualny stan nie został jeszcze potwierdzony.",
     "Last successful cloud request: {time}.": "Ostatnie udane żądanie do chmury: {time}.",
     "Learning week": "Tydzień uczenia",
     "Like Friday": "Jak w piątek",
@@ -288,6 +290,7 @@
     "Low-price setpoint delta": "Delta wartości zadanej przy niskiej cenie",
     "Lower pressure limit": "Dolna granica ciśnienia",
     "Maintenance": "Konserwacja",
+    "Maintenance message (code {code})": "Komunikat serwisowy (kod {code})",
     "Manual heating setpoint": "Ręczna wartość zadana grzania",
     "Manual setpoint": "Ręczna wartość zadana",
     "Maximum cylinder temperature": "Maksymalna temperatura zasobnika",
@@ -510,6 +513,7 @@
     "The day is controlled like a Wednesday": "Dzień jest regulowany jak środa",
     "The device certificate has changed: please set up the local access again via “Change local access”.": "Certyfikat urządzenia uległ zmianie: skonfiguruj dostęp lokalny ponownie przez „Zmień dostęp lokalny”.",
     "The previously reported faults are no longer active.": "Wcześniej zgłoszone usterki nie są już aktywne.",
+    "The previously reported notifications are no longer active.": "Wcześniej zgłoszone komunikaty nie są już aktywne.",
     "Thermal disinfection": "Dezynfekcja termiczna",
     "Thermal disinfection day": "Dzień dezynfekcji termicznej",
     "Thermal disinfection result": "Wynik dezynfekcji termicznej",
@@ -551,6 +555,7 @@
     "Ventilation zone": "Strefa wentylacji",
     "Volume flow": "Przepływ objętościowy",
     "Warning": "Ostrzeżenie",
+    "Warning (code {code})": "Ostrzeżenie (kod {code})",
     "Water flow": "Przepływ wody",
     "Water pressure too low": "Zbyt niskie ciśnienie wody",
     "Water softener": "Zmiękczacz wody",
@@ -562,9 +567,11 @@
     "{count} additional active faults.": "Dodatkowe aktywne usterki: {count}.",
     "{count} additional active notifications.": "Dodatkowe aktywne komunikaty: {count}.",
     "{count} additional notifications with changed classification.": "Dodatkowe komunikaty ze zmienioną klasyfikacją: {count}.",
+    "{count} older cleared notifications are no longer listed.": "Starsze zakończone komunikaty, które nie są już wyświetlane: {count}.",
     "{count} older resolved faults are no longer listed.": "Starsze rozwiązane usterki, które nie są już wyświetlane: {count}.",
     "{name}: faults resolved": "{name}: usterki rozwiązane",
     "{name}: heating system fault": "{name}: usterka instalacji grzewczej",
-    "{name}: heating system notifications": "{name}: komunikaty instalacji grzewczej"
+    "{name}: heating system notifications": "{name}: komunikaty instalacji grzewczej",
+    "{name}: notifications cleared": "{name}: komunikaty zakończone"
   }
 }

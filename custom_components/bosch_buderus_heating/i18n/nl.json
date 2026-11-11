@@ -257,6 +257,7 @@
     "Indoor air quality": "Binnenluchtkwaliteit",
     "Indoor humidity": "Binnenluchtvochtigheid",
     "Information": "Informatie",
+    "Information (code {code})": "Informatie (code {code})",
     "Inlet temperature": "Inlaattemperatuur",
     "Installation date": "Installatiedatum",
     "Installation date (day)": "Installatiedatum (dag)",
@@ -267,6 +268,7 @@
     "iSRC support": "iSRC-ondersteuning",
     "Last local answer: {time}.": "Laatste lokale antwoord: {time}.",
     "Last reported faults. Their current status has not yet been confirmed.": "Laatst gemelde storingen. Hun actuele status is nog niet bevestigd.",
+    "Last reported notifications. Their current status has not yet been confirmed.": "Laatst ontvangen meldingen. Hun actuele status is nog niet bevestigd.",
     "Last successful cloud request: {time}.": "Laatste geslaagde cloudverzoek: {time}.",
     "Learning week": "Leerweek",
     "Like Friday": "Zoals vrijdag",
@@ -288,6 +290,7 @@
     "Low-price setpoint delta": "Instelwaardeverschil bij lage prijs",
     "Lower pressure limit": "Onderste drukgrens",
     "Maintenance": "Onderhoud",
+    "Maintenance message (code {code})": "Onderhoudsmelding (code {code})",
     "Manual heating setpoint": "Handmatige instelwaarde verwarmen",
     "Manual setpoint": "Handmatige instelwaarde",
     "Maximum cylinder temperature": "Maximale boilertemperatuur",
@@ -510,6 +513,7 @@
     "The day is controlled like a Wednesday": "De dag wordt geregeld als een woensdag",
     "The device certificate has changed: please set up the local access again via “Change local access”.": "Het certificaat van het apparaat is gewijzigd: stel de lokale toegang opnieuw in via “Lokale toegang wijzigen”.",
     "The previously reported faults are no longer active.": "De eerder gemelde storingen zijn niet meer actief.",
+    "The previously reported notifications are no longer active.": "De eerder ontvangen meldingen zijn niet meer actief.",
     "Thermal disinfection": "Thermische desinfectie",
     "Thermal disinfection day": "Dag van thermische desinfectie",
     "Thermal disinfection result": "Resultaat thermische desinfectie",
@@ -551,6 +555,7 @@
     "Ventilation zone": "Ventilatiezone",
     "Volume flow": "Volumestroom",
     "Warning": "Waarschuwing",
+    "Warning (code {code})": "Waarschuwing (code {code})",
     "Water flow": "Waterdebiet",
     "Water pressure too low": "Waterdruk te laag",
     "Water softener": "Waterontharder",
@@ -562,9 +567,11 @@
     "{count} additional active faults.": "{count} extra actieve storingen.",
     "{count} additional active notifications.": "{count} extra actieve notificaties.",
     "{count} additional notifications with changed classification.": "{count} extra notificaties met gewijzigde indeling.",
+    "{count} older cleared notifications are no longer listed.": "{count} oudere beëindigde meldingen worden niet meer vermeld.",
     "{count} older resolved faults are no longer listed.": "{count} oudere opgeloste storingen worden niet meer vermeld.",
     "{name}: faults resolved": "{name}: storingen opgelost",
     "{name}: heating system fault": "{name}: storing van de verwarmingsinstallatie",
-    "{name}: heating system notifications": "{name}: meldingen van de verwarmingsinstallatie"
+    "{name}: heating system notifications": "{name}: meldingen van de verwarmingsinstallatie",
+    "{name}: notifications cleared": "{name}: meldingen beëindigd"
   }
 }

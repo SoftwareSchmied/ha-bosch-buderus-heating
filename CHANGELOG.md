@@ -97,7 +97,8 @@ Expected, untested on a real controller:
   default) and a "Valve problem" binary sensor. The child lock, the
   temperature offset and the open window sensitivity can be changed and are
   disabled by default. The valve calibration and the whisper mode are never
-  written.
+  written. "Valve problem" also turns on while a valve adaption waits, and
+  the sensitivity offers only the levels its limits and step allow.
 - **Settings the controller does not offer or use:** a setting the
   controller reports as not available gets no control, and an existing one
   becomes unavailable. A setting that is available but not used, such as
@@ -150,7 +151,19 @@ Expected, untested on a real controller:
   **Configure → Notifications** a new option also shows warnings and
   maintenance messages in the bell notification, with the same details,
   dismissal and resolution rules as faults. It is off by default, so nothing
-  changes unless you turn it on.
+  changes unless you turn it on. With it on, a notification that listed a
+  warning or a maintenance message ends with "notifications cleared"
+  instead of "faults resolved", and a dismissed warning stays dismissed when
+  the option is turned off and on again.
+- **No more "Unknown fault" for maintenance and warnings:** a maintenance
+  message, warning or information without a text of its own now reads, for
+  example, "Maintenance message (code 1234)" or "Warning (code 5000)", in the
+  bell, the events and the attributes, in all 19 languages.
+- **Notifications for the installer on room controllers:** a notification
+  that a room controller marks for experts or installers (display level 0, 2
+  or 4, numeric class below 18) is still listed under Active notifications,
+  but no longer turns on System fault, counts as an active fault or shows in
+  the bell. Expected, untested on a real controller.
 - **Faults of radio devices:** on room controllers, the faults of radio
   devices get their own texts (for example "Battery of a radio device low"),
   other ones "Radio device fault (code …)", and a too low water pressure

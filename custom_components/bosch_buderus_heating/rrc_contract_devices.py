@@ -8,7 +8,7 @@ Owned by work package W6 (CT-E04, CT-E05, CT-E09). See
 - Temperature offset and open window sensitivity: numbers within the
   advertised limits and step; their entities live in
   ``rrc_device_setting_entities`` (the offset only while the device uses it,
-  the sensitivity as a selection of three levels).
+  the sensitivity as a selection of the levels its limits allow).
 - Valve opening, its maximum, the temperature at the valve, the valve state
   and the whisper mode: read-only generic sensors, disabled by default.
 - Valve problem: a binary sensor from ``etrv/status``.

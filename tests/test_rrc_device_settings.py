@@ -49,8 +49,10 @@ from custom_components.bosch_buderus_heating.pointt.parsers import parse_resourc
 from custom_components.bosch_buderus_heating.rrc_device_settings import (
     DEVICE_LEAVES,
     offered,
+    resource_sensitivity_options,
     sensitivity_check,
     sensitivity_level,
+    sensitivity_options,
     split,
     valve_status,
 )
@@ -198,6 +200,22 @@ def test_only_the_package_leaves_are_split() -> None:
             0,
         ),
         (["VALVE_ERROR_POSITION", "VALVE_ERROR_POSITION"], "strings", None, 0),
+        # SYSTEM-09: a valve adaption that waits is a problem; one in
+        # progress or done is none.
+        (
+            ["VALVE_ADAPTION_IN_WAIT_STATE"],
+            "strings",
+            ("VALVE_ADAPTION_IN_WAIT_STATE",),
+            0,
+        ),
+        (
+            [{"id": 2, "valve": "valve_adaption_in_wait_state"}],
+            "objects",
+            ("VALVE_ADAPTION_IN_WAIT_STATE",),
+            0,
+        ),
+        (["VALVE_ADAPTION_IN_PROGRESS"], "strings", (), 0),
+        (["VALVE_RUN_TO_STARTING_POSITION", "NOT_AVAILABLE"], "strings", (), 0),
         (["SOMETHING_NEW"], "strings", (), 1),
         ([], "empty", (), 0),
     ],
@@ -799,7 +817,8 @@ async def test_settings_write_exact_wire_values_once(hass: HomeAssistant) -> Non
 async def test_a_level_outside_the_limits_is_refused_unsent(
     hass: HomeAssistant,
 ) -> None:
-    """S3: device 9 advertises up to 2.0, so "low" (2.5) is never sent."""
+    """S3: device 9 advertises up to 2.0, so "low" (2.5) is neither offered
+    (SYSTEM-10) nor sent."""
     cloud, clock = RrcCloud(tree()), Clock()
     entry, stack = await _setup(hass, cloud, clock)
     select_id = (
@@ -809,6 +828,10 @@ async def test_a_level_outside_the_limits_is_refused_unsent(
     try:
         await _enable(hass, entry, select_id)
         select = _state(hass, entry, *select_id).entity_id
+        assert _state(hass, entry, *select_id).attributes["options"] == [
+            "high",
+            "medium",
+        ]
         with pytest.raises(ServiceValidationError):
             await hass.services.async_call(
                 "select",
@@ -1104,3 +1127,165 @@ def test_contract_names_have_both_languages() -> None:
     )
     assert all(german and english for german, english in names.values())
     assert isinstance(rrc_contract_devices.CONTRACT.device_leaves, MappingProxyType)
+
+
+# ------------------------------------------------ deep review, SYSTEM-09/-10
+
+
+@pytest.mark.parametrize(
+    ("limits", "options"),
+    [
+        ((0.0, 3.0, 0.5), ("high", "medium", "low")),
+        ((-2.0, 2.0, 0.5), ("high", "medium")),
+        ((0.5, 2.5, 1.0), ("high", "medium", "low")),
+        # A step from minValue that misses the levels.
+        ((0.0, 3.0, 1.0), ()),
+        ((0.0, 3.0, 0.25), ("high", "medium", "low")),
+        ((1.0, 3.0, 0.5), ("medium", "low")),
+        ((0.0, 1.0, 0.5), ("high",)),
+        ((0.0, 3.0, None), ("high", "medium", "low")),
+        ((None, 3.0, 0.5), ()),
+        ((0.0, float("inf"), 0.5), ()),
+    ],
+)
+def test_sensitivity_options_follow_limits_and_step(
+    limits: tuple[float | None, float | None, float | None],
+    options: tuple[str, ...],
+) -> None:
+    assert sensitivity_options(*limits) == options
+
+
+def test_sensitivity_options_of_a_reading_use_the_contract_step() -> None:
+    reading = wire(
+        SENSITIVITY,
+        type="floatValue",
+        unitOfMeasure="C",
+        minValue=0.0,
+        maxValue=3.0,
+        value=1.0,
+    )
+    assert resource_sensitivity_options(reading) == ("high", "medium", "low")
+    shifted = wire(
+        SENSITIVITY,
+        type="floatValue",
+        unitOfMeasure="C",
+        minValue=0.25,
+        maxValue=3.0,
+        value=1.0,
+    )
+    # Counted from 0.25 in steps of 0.5: no level is on the grid.
+    assert resource_sensitivity_options(shifted) == ()
+
+
+def _sensitivity(path: str, **limits: float) -> Resource:
+    return wire(
+        path,
+        type="floatValue",
+        unitOfMeasure="C",
+        stepSize=0.5,
+        value=0.5,
+        **limits,
+    )
+
+
+async def test_too_few_levels_give_no_selection(hass: HomeAssistant) -> None:
+    """SYSTEM-10: limits that allow one level or none give no select entity,
+    counted in the diagnostics; the reading itself stays."""
+    resources = tree()
+    narrow = "/devices/device7/etrv/openWindowDetection/sensitivity"
+    resources[narrow] = _sensitivity(narrow, minValue=0.0, maxValue=1.0)
+    cloud, clock = RrcCloud(resources), Clock()
+    entry, stack = await _setup(hass, cloud, clock)
+    try:
+        entries = _entries(hass, entry)
+        selects = {
+            key[1]
+            for key in entries
+            if key[0] == "select" and ":sensitivity:" in key[1]
+        }
+        assert len(selects) == 7
+        assert (
+            "gateway-one:devices:device7:etrv:openWindowDetection:sensitivity:control"
+            not in selects
+        )
+        assert (
+            "sensor",
+            "gateway-one:devices:device7:etrv:openWindowDetection:sensitivity",
+        ) in entries
+        diagnostics = await async_get_config_entry_diagnostics(hass, entry)
+        features = diagnostics["gateways"][0]["rrc_features"]["contracts"]["devices"]
+        assert features["window_sensitivity_too_few_options"] == 1
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+async def test_the_offered_levels_follow_changed_limits(hass: HomeAssistant) -> None:
+    """SYSTEM-10 in real cycles: new limits change the options at once; with
+    fewer than two levels the selection goes unavailable and sends nothing."""
+    cloud, clock = RrcCloud(tree()), Clock()
+    entry, stack = await _setup(hass, cloud, clock)
+    try:
+        await _enable(hass, entry, SENSITIVITY_ID)
+        coordinator = entry.runtime_data.coordinators[0]
+        assert _state(hass, entry, *SENSITIVITY_ID).attributes["options"] == [
+            "high",
+            "medium",
+            "low",
+        ]
+        cloud.tree[SENSITIVITY] = _sensitivity(SENSITIVITY, minValue=0.0, maxValue=2.0)
+        clock.now += 15 * 60
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        state = _state(hass, entry, *SENSITIVITY_ID)
+        assert state.state == "high"
+        assert state.attributes["options"] == ["high", "medium"]
+        with pytest.raises(ServiceValidationError):
+            await hass.services.async_call(
+                "select",
+                "select_option",
+                {"entity_id": state.entity_id, "option": "low"},
+                blocking=True,
+            )
+        assert cloud.written() == []
+        cloud.tree[SENSITIVITY] = _sensitivity(SENSITIVITY, minValue=0.0, maxValue=1.0)
+        clock.now += 15 * 60
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        assert _state(hass, entry, *SENSITIVITY_ID).state == "unavailable"
+        assert cloud.written() == []
+    finally:
+        await _teardown(hass, entry, stack)
+
+
+async def test_a_waiting_valve_adaption_is_a_valve_problem(
+    hass: HomeAssistant,
+) -> None:
+    """SYSTEM-09 in real cycles: the binary sensor turns on and names the
+    state; once the adaption runs, it turns off again."""
+    cloud, clock = RrcCloud(tree()), Clock()
+    entry, stack = await _setup(hass, cloud, clock)
+    status = "/devices/device2/etrv/status"
+    unique_id = ("binary_sensor", "gateway-one:devices:device2:valve_problem")
+    try:
+        coordinator = entry.runtime_data.coordinators[0]
+        assert _state(hass, entry, *unique_id).state == "off"
+        cloud.tree[status] = wire(
+            status, writeable=0, value=["VALVE_ADAPTION_IN_WAIT_STATE"]
+        )
+        clock.now += 15 * 60
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        state = _state(hass, entry, *unique_id)
+        assert state.state == "on"
+        assert state.attributes["valve_problems"] == ["valve_adaption_in_wait_state"]
+        cloud.tree[status] = wire(
+            status, writeable=0, value=["VALVE_ADAPTION_IN_PROGRESS"]
+        )
+        clock.now += 15 * 60
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        state = _state(hass, entry, *unique_id)
+        assert state.state == "off"
+        assert state.attributes["valve_problems"] == []
+    finally:
+        await _teardown(hass, entry, stack)

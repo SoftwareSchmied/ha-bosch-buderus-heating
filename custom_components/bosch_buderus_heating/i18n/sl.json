@@ -257,6 +257,7 @@
     "Indoor air quality": "Kakovost zraka v prostoru",
     "Indoor humidity": "Vlažnost v prostoru",
     "Information": "Informacija",
+    "Information (code {code})": "Informacija (koda {code})",
     "Inlet temperature": "Vstopna temperatura",
     "Installation date": "Datum namestitve",
     "Installation date (day)": "Datum namestitve (dan)",
@@ -267,6 +268,7 @@
     "iSRC support": "Podpora iSRC",
     "Last local answer: {time}.": "Zadnji lokalni odgovor: {time}.",
     "Last reported faults. Their current status has not yet been confirmed.": "Nazadnje sporočene napake. Njihovo trenutno stanje še ni potrjeno.",
+    "Last reported notifications. Their current status has not yet been confirmed.": "Nazadnje prejeta sporočila. Njihovo trenutno stanje še ni potrjeno.",
     "Last successful cloud request: {time}.": "Zadnja uspešna zahteva v oblak: {time}.",
     "Learning week": "Učni teden",
     "Like Friday": "Kot petek",
@@ -288,6 +290,7 @@
     "Low-price setpoint delta": "Delta nastavljene vrednosti pri nizki ceni",
     "Lower pressure limit": "Spodnja meja tlaka",
     "Maintenance": "Vzdrževanje",
+    "Maintenance message (code {code})": "Sporočilo o vzdrževanju (koda {code})",
     "Manual heating setpoint": "Ročna nastavljena vrednost ogrevanja",
     "Manual setpoint": "Ročna nastavljena vrednost",
     "Maximum cylinder temperature": "Najvišja temperatura hranilnika",
@@ -510,6 +513,7 @@
     "The day is controlled like a Wednesday": "Dan se regulira kot sreda",
     "The device certificate has changed: please set up the local access again via “Change local access”.": "Certifikat naprave se je spremenil: znova nastavite lokalni dostop prek »Spremeni lokalni dostop«.",
     "The previously reported faults are no longer active.": "Prej sporočene napake niso več aktivne.",
+    "The previously reported notifications are no longer active.": "Prej prejeta sporočila niso več aktivna.",
     "Thermal disinfection": "Termična dezinfekcija",
     "Thermal disinfection day": "Dan termične dezinfekcije",
     "Thermal disinfection result": "Rezultat termične dezinfekcije",
@@ -551,6 +555,7 @@
     "Ventilation zone": "Prezračevalna cona",
     "Volume flow": "Volumski pretok",
     "Warning": "Opozorilo",
+    "Warning (code {code})": "Opozorilo (koda {code})",
     "Water flow": "Pretok vode",
     "Water pressure too low": "Prenizek tlak vode",
     "Water softener": "Mehčalec vode",
@@ -562,9 +567,11 @@
     "{count} additional active faults.": "Dodatne aktivne napake: {count}.",
     "{count} additional active notifications.": "Dodatna aktivna sporočila: {count}.",
     "{count} additional notifications with changed classification.": "Dodatna sporočila s spremenjeno klasifikacijo: {count}.",
+    "{count} older cleared notifications are no longer listed.": "Starejša zaključena sporočila niso več navedena: {count}.",
     "{count} older resolved faults are no longer listed.": "Starejše odpravljene napake niso več navedene: {count}.",
     "{name}: faults resolved": "{name}: napake odpravljene",
     "{name}: heating system fault": "{name}: napaka ogrevalnega sistema",
-    "{name}: heating system notifications": "{name}: sporočila ogrevalnega sistema"
+    "{name}: heating system notifications": "{name}: sporočila ogrevalnega sistema",
+    "{name}: notifications cleared": "{name}: sporočila zaključena"
   }
 }

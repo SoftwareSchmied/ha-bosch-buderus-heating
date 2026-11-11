@@ -257,6 +257,7 @@
     "Indoor air quality": "Kvalita vnitřního vzduchu",
     "Indoor humidity": "Vnitřní vlhkost",
     "Information": "Informace",
+    "Information (code {code})": "Informace (kód {code})",
     "Inlet temperature": "Vstupní teplota",
     "Installation date": "Datum instalace",
     "Installation date (day)": "Datum instalace (den)",
@@ -267,6 +268,7 @@
     "iSRC support": "Podpora iSRC",
     "Last local answer: {time}.": "Poslední místní odpověď: {time}.",
     "Last reported faults. Their current status has not yet been confirmed.": "Naposledy hlášené poruchy. Jejich aktuální stav zatím nebyl potvrzen.",
+    "Last reported notifications. Their current status has not yet been confirmed.": "Naposledy přijatá hlášení. Jejich aktuální stav zatím nebyl potvrzen.",
     "Last successful cloud request: {time}.": "Poslední úspěšný požadavek na cloud: {time}.",
     "Learning week": "Týden učení",
     "Like Friday": "Jako pátek",
@@ -288,6 +290,7 @@
     "Low-price setpoint delta": "Rozdíl požadované hodnoty při nízké ceně",
     "Lower pressure limit": "Dolní mez tlaku",
     "Maintenance": "Údržba",
+    "Maintenance message (code {code})": "Hlášení údržby (kód {code})",
     "Manual heating setpoint": "Ruční požadovaná hodnota topení",
     "Manual setpoint": "Ruční požadovaná hodnota",
     "Maximum cylinder temperature": "Maximální teplota zásobníku",
@@ -510,6 +513,7 @@
     "The day is controlled like a Wednesday": "Den je řízen jako středa",
     "The device certificate has changed: please set up the local access again via “Change local access”.": "Certifikát zařízení se změnil: nastavte prosím místní přístup znovu pomocí „Změna místního přístupu“.",
     "The previously reported faults are no longer active.": "Dříve hlášené poruchy již nejsou aktivní.",
+    "The previously reported notifications are no longer active.": "Dříve přijatá hlášení již nejsou aktivní.",
     "Thermal disinfection": "Termická dezinfekce",
     "Thermal disinfection day": "Den termické dezinfekce",
     "Thermal disinfection result": "Výsledek termické dezinfekce",
@@ -551,6 +555,7 @@
     "Ventilation zone": "Zóna větrání",
     "Volume flow": "Objemový průtok",
     "Warning": "Varování",
+    "Warning (code {code})": "Varování (kód {code})",
     "Water flow": "Průtok vody",
     "Water pressure too low": "Příliš nízký tlak vody",
     "Water softener": "Změkčovač vody",
@@ -562,9 +567,11 @@
     "{count} additional active faults.": "Další aktivní poruchy: {count}.",
     "{count} additional active notifications.": "Další aktivní hlášení: {count}.",
     "{count} additional notifications with changed classification.": "Další hlášení se změněnou klasifikací: {count}.",
+    "{count} older cleared notifications are no longer listed.": "Starší ukončená hlášení, která již nejsou uvedena: {count}.",
     "{count} older resolved faults are no longer listed.": "Starší vyřešené poruchy, které již nejsou uvedeny: {count}.",
     "{name}: faults resolved": "{name}: poruchy vyřešeny",
     "{name}: heating system fault": "{name}: porucha topné soustavy",
-    "{name}: heating system notifications": "{name}: hlášení topné soustavy"
+    "{name}: heating system notifications": "{name}: hlášení topné soustavy",
+    "{name}: notifications cleared": "{name}: hlášení ukončena"
   }
 }

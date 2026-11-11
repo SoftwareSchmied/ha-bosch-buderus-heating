@@ -8,7 +8,9 @@ remain authoritative.
 
 - **System fault** is on for a fault, critical fault, or notification whose
   class is unknown. Warnings and maintenance alone leave it off. A numeric
-  class 18 or 20 is a maintenance message on every gateway.
+  class 18 or 20 is a maintenance message on every gateway. On a room
+  controller, a notification meant for the installer also leaves it off (see
+  [display levels on room controllers](#display-levels-on-room-controllers)).
 - **Active faults** counts the notifications represented by System fault and
   exposes bounded details in its `faults` attribute.
 - **Active notifications** counts every current warning, maintenance message,
@@ -32,6 +34,27 @@ Maintenance due and Refill needed; see
 [room controllers](room-controllers.md#system-faults-and-maintenance). The
 texts are expected, untested on a real controller.
 
+A maintenance message, warning or information without a text of its own is
+named by its kind, for example "Maintenance message (code 1234)" or
+"Warning (code 5000)", never "Unknown fault". Only a fault or a notification
+of an unknown class reads "Unknown fault (code …)".
+
+### Display levels on room controllers
+
+*Expected, untested.* A notification carries a display level: 8 is meant for
+the user, 0 is not displayed, 2 is meant for experts and 4 for installers. On
+a room controller of the RRC 2.0 platform, a notification with a numeric
+class below 18 and an explicit level 0, 2 or 4 counts as **information**:
+**Active notifications** and the diagnostics still list it (the diagnostics
+count it as `below_user_display_level`), and System notifications reports
+it, but it does not turn on System fault, does not count as an active fault
+and does not show in the bell notification. A notification without a display
+level, or with another one, keeps counting as a problem. Known classes keep
+their meaning: class 12 stays a fault and 18 or 20 maintenance at any level.
+Other gateways do not read the display level this way; the real fault 6249
+of a K40 came with level 4. Which levels a TC100.2 or a CT200 sends still has
+to be confirmed on a real controller.
+
 ## Where do I find faults?
 
 The bell notification is not an archive: once it is dismissed, or after a
@@ -48,7 +71,7 @@ Open the **Active faults** entity (German: "Aktive Störungen") and expand
 | `code`, `subcode` | Fault code and subcode as reported by the system |
 | `severity`, `severity_label` | `fault`, `critical` or `unknown`, with a translated label |
 | `component` | Reporting component class, or `unknown` |
-| `summary` | Short description for verified codes; otherwise "Unknown fault (code …)", without an invented explanation |
+| `summary` | Short description for verified codes; otherwise the kind of message with its code, such as "Unknown fault (code …)" or "Maintenance message (code …)", without an invented explanation |
 | `first_seen` | When Home Assistant first saw the fault |
 | `occurred_at`, `time_source` | Time reported by the system, if any, and where the time comes from |
 
@@ -147,7 +170,13 @@ details, the same dismissal and the same confirmed resolution. Faults are
 listed first; with warnings or maintenance messages the title speaks of
 notifications instead of faults. A fault after a dismissed warning shows the
 notification again. Changing the option takes effect at once; turning it off
-removes a notification that only showed warnings or maintenance.
+removes a notification that only showed warnings or maintenance. A dismissed
+warning or maintenance message stays dismissed when the option is turned off
+and on again, as long as it is still reported. Once a notification has listed
+a warning or a maintenance message, its other texts speak of notifications
+as well: when everything has ended it reads "notifications cleared" instead
+of "faults resolved", and entries whose current status is not confirmed are
+"last reported notifications".
 Details include known descriptions and codes, with a link to the device page.
 Unknown codes are not given an invented explanation.
 
@@ -187,7 +216,8 @@ anything on the appliance.
 
 Bell notifications and dismissals are shared by all Home Assistant users.
 Their text uses the Home Assistant system language, while the configuration
-dialog follows the user's profile language. German and English are available.
+dialog follows the user's profile language. Every language of the integration
+is available.
 Mobile push notifications remain available through your own automations.
 
 Only opaque incident fingerprints, dismissed severities and the local option

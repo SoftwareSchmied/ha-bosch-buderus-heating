@@ -257,6 +257,7 @@
     "Indoor air quality": "Cáilíocht aeir istigh",
     "Indoor humidity": "Taise istigh",
     "Information": "Eolas",
+    "Information (code {code})": "Eolas (cód {code})",
     "Inlet temperature": "Teocht iontrála",
     "Installation date": "Dáta suiteála",
     "Installation date (day)": "Dáta suiteála (lá)",
@@ -267,6 +268,7 @@
     "iSRC support": "Tacaíocht iSRC",
     "Last local answer: {time}.": "An freagra áitiúil is déanaí: {time}.",
     "Last reported faults. Their current status has not yet been confirmed.": "Na lochtanna is déanaí a tuairiscíodh. Níl a stádas reatha deimhnithe go fóill.",
+    "Last reported notifications. Their current status has not yet been confirmed.": "Na teachtaireachtaí is déanaí a tuairiscíodh. Níl a stádas reatha deimhnithe go fóill.",
     "Last successful cloud request: {time}.": "An t-iarratas néil rathúil is déanaí: {time}.",
     "Learning week": "Seachtain foghlama",
     "Like Friday": "Cosúil le Dé hAoine",
@@ -288,6 +290,7 @@
     "Low-price setpoint delta": "Deilt socphointe ag praghas íseal",
     "Lower pressure limit": "Teorainn bhrú íochtarach",
     "Maintenance": "Cothabháil",
+    "Maintenance message (code {code})": "Teachtaireacht chothabhála (cód {code})",
     "Manual heating setpoint": "Socphointe téimh láimhe",
     "Manual setpoint": "Socphointe láimhe",
     "Maximum cylinder temperature": "Uasteocht an tsorcóra",
@@ -510,6 +513,7 @@
     "The day is controlled like a Wednesday": "Rialaítear an lá cosúil le Dé Céadaoin",
     "The device certificate has changed: please set up the local access again via “Change local access”.": "Tá deimhniú an ghléis athraithe: socraigh an rochtain áitiúil arís trí “Athraigh rochtain áitiúil”.",
     "The previously reported faults are no longer active.": "Níl na lochtanna a tuairiscíodh roimhe seo gníomhach a thuilleadh.",
+    "The previously reported notifications are no longer active.": "Níl na teachtaireachtaí a tuairiscíodh roimhe seo gníomhach a thuilleadh.",
     "Thermal disinfection": "Díghalrú teirmeach",
     "Thermal disinfection day": "Lá an díghalrúcháin theirmigh",
     "Thermal disinfection result": "Toradh an díghalrúcháin theirmigh",
@@ -551,6 +555,7 @@
     "Ventilation zone": "Crios aerála",
     "Volume flow": "Sreabhadh toirte",
     "Warning": "Rabhadh",
+    "Warning (code {code})": "Rabhadh (cód {code})",
     "Water flow": "Sreabhadh uisce",
     "Water pressure too low": "Brú uisce ró-íseal",
     "Water softener": "Bogthóir uisce",
@@ -562,9 +567,11 @@
     "{count} additional active faults.": "{count} locht gníomhach breise.",
     "{count} additional active notifications.": "{count} teachtaireacht ghníomhach bhreise.",
     "{count} additional notifications with changed classification.": "{count} teachtaireacht bhreise le haicmiú athraithe.",
+    "{count} older cleared notifications are no longer listed.": "Ní liostaítear {count} teachtaireacht chríochnaithe níos sine a thuilleadh.",
     "{count} older resolved faults are no longer listed.": "Ní liostaítear {count} locht réitithe níos sine a thuilleadh.",
     "{name}: faults resolved": "{name}: lochtanna réitithe",
     "{name}: heating system fault": "{name}: locht ar an gcóras téimh",
-    "{name}: heating system notifications": "{name}: teachtaireachtaí an chórais téimh"
+    "{name}: heating system notifications": "{name}: teachtaireachtaí an chórais téimh",
+    "{name}: notifications cleared": "{name}: teachtaireachtaí críochnaithe"
   }
 }

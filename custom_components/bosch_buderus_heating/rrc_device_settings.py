@@ -136,6 +136,50 @@ SENSITIVITY_LEVELS: Final[Mapping[str, float]] = MappingProxyType(
 )
 
 
+# SYSTEM-10: fewer offered levels than this give no selection at all.
+MIN_SENSITIVITY_OPTIONS: Final = 2
+# The contract's step when the reading advertises none (``SENSITIVITY_POLICY``).
+DEFAULT_SENSITIVITY_STEP: Final = 0.5
+
+
+def sensitivity_options(
+    minimum: float | None, maximum: float | None, step: float | None
+) -> tuple[str, ...]:
+    """SYSTEM-10: the levels whose value the limits and the step allow.
+
+    The same rules as before sending: within ``minValue`` and ``maxValue``,
+    and on the step counted from ``minValue``. Without both limits no level
+    is offered.
+    """
+    if (
+        minimum is None
+        or maximum is None
+        or not math.isfinite(minimum)
+        or not math.isfinite(maximum)
+    ):
+        return ()
+    grid = step if step is not None and math.isfinite(step) and step > 0 else None
+    options: list[str] = []
+    for name, value in SENSITIVITY_LEVELS.items():
+        if not minimum <= value <= maximum:
+            continue
+        if grid is not None:
+            ticks = (value - minimum) / grid
+            if not math.isclose(ticks, round(ticks), abs_tol=1e-7):
+                continue
+        options.append(name)
+    return tuple(options)
+
+
+def resource_sensitivity_options(resource: Resource) -> tuple[str, ...]:
+    """The offered levels of one sensitivity reading, by its metadata."""
+    metadata = resource.metadata
+    step = metadata.step_size
+    if step is None or not math.isfinite(step) or step <= 0:
+        step = DEFAULT_SENSITIVITY_STEP
+    return sensitivity_options(metadata.minimum, metadata.maximum, step)
+
+
 def sensitivity_level(resource: Resource | None) -> str | None:
     """The level of a reading: up to 1 high, up to 2 medium, above low.
 
@@ -179,11 +223,14 @@ def _number(resource: Resource | None) -> float | None:
     return float(resource.value)
 
 
-# Valve states that the controller reports as a problem with the valve. The
-# other known states (adaption waiting, running or done, not available) are
-# no problem; an unknown state is none either, but counted in diagnostics.
+# Valve states that the controller reports as a problem with the valve,
+# including a valve adaption that waits (SYSTEM-09: the valve cannot adapt,
+# for example because it is not mounted correctly). The other known states
+# (adaption running or done, start position, not available) are no problem;
+# an unknown state is none either, but counted in diagnostics.
 PROBLEM_STATES: Final = frozenset(
     {
+        "VALVE_ADAPTION_IN_WAIT_STATE",
         "VALVE_TOO_TIGHT",
         "VALVE_ADJUSTMENT_RANGE_TOO_BIG",
         "VALVE_ADJUSTMENT_RANGE_TOO_SMALL",
@@ -195,7 +242,6 @@ KNOWN_STATES: Final = frozenset(
         *PROBLEM_STATES,
         "NOT_AVAILABLE",
         "VALVE_RUN_TO_STARTING_POSITION",
-        "VALVE_ADAPTION_IN_WAIT_STATE",
         "VALVE_ADAPTION_IN_PROGRESS",
         # Both spellings: the shorter one is the documented wire token.
         "VALVE_ADAPTION_SUCESSFUL",
@@ -267,7 +313,7 @@ def diagnostics(resources: Mapping[str, Resource]) -> dict[str, object]:
     leaves: Counter[str] = Counter()
     shapes: Counter[str] = Counter()
     levels: Counter[str] = Counter()
-    problems = unknown = unused = 0
+    problems = unknown = unused = too_few = 0
     for path, resource in resources.items():
         if (parts := split(path)) is None:
             continue
@@ -282,6 +328,10 @@ def diagnostics(resources: Mapping[str, Resource]) -> dict[str, object]:
                 unknown += status.unknown
         elif parts.leaf == SENSITIVITY:
             levels[sensitivity_level(resource) or "unreadable"] += 1
+            # SYSTEM-10: limits that leave fewer than two levels: no selection.
+            too_few += (
+                len(resource_sensitivity_options(resource)) < MIN_SENSITIVITY_OPTIONS
+            )
     return {
         "device_settings_read": sum(leaves.values()),
         "leaves": dict(sorted(leaves.items())),
@@ -290,4 +340,5 @@ def diagnostics(resources: Mapping[str, Resource]) -> dict[str, object]:
         "valves_with_problem": problems,
         "unknown_valve_states": unknown,
         "window_sensitivity_levels": dict(sorted(levels.items())),
+        "window_sensitivity_too_few_options": too_few,
     }
