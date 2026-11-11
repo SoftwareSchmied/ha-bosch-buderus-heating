@@ -357,6 +357,9 @@ async def test_http_date_retry_after_is_kept_beyond_one_hour(gateways, clock):
         "999999999",
         format_datetime(datetime.now(UTC) + timedelta(days=30)),
     ],
+    # Stable IDs: the date changes between collections (pytest-xdist workers
+    # collect separately and must see the same test names).
+    ids=["seconds", "http_date"],
 )
 async def test_retry_after_longer_than_one_day_is_shortened(gateways, clock, header):
     async def reply(raw, writer):
