@@ -38,7 +38,7 @@ concrete path; use `rrc_contract_base.RRC_ID` for numeric IDs.
 |---|---|
 | `enum_policies`, `number_policies` | Write policies tried before the generic ones; they become generic switches, selects, numbers or buttons |
 | `blocked` | Pattern → refusal token; refuses writing on every gateway |
-| `poll_groups` | Pattern → `PollGroup` of the path |
+| `poll_groups` | Pattern → `PollGroup` of the path; it also keeps a list that is otherwise read hourly (W1 reads `/zones/list` with the modes) |
 | `names` | Pattern → (German, English) name of the entity or control |
 | `entity_keys` | Pattern → translation key, or platform → translation key |
 | `option_keys` | Pattern → wire value → option key of a select |
@@ -118,7 +118,14 @@ Readings decide on their own whether a flag matters to them. Writing needs
   Unconfirmed: `rrc_write_pending_confirmation`, and the path is read again
   with the next cycle; a later regular poll that shows the value counts as
   `late_confirmed`. A reading that a `read_back_check` ended the wait with
-  is published as current.
+  is published as current. A `value_check` gets the fresh snapshots and the
+  readings of `expected`; the zone mode and manual setpoint policies of the
+  core use the W1 checks `rrc_contract_zone.mode_value_check` and
+  `manual_value_check` (zone lock: error, standby, away mode).
+- Program selection and switch points (`rrc_programs.RrcProgramService`):
+  one PUT through `RrcStructWrite` on the RRC schedule, counted with
+  `note_rrc_write_sent`; `selection_shows` and `edit_shows` let a later poll
+  confirm it.
 - Structures (events, boost): `coordinator.async_run_rrc_operation(path,
   operation, require_snapshot=..., late_check=...)` around
   `coordinator.rrc_struct_writes.async_write(preflight=..., send=...,

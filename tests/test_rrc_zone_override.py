@@ -294,7 +294,9 @@ async def test_setpoint_shown_in_manual_mode_is_not_written(
     entry, _coordinator, _sleeps, stack, _clock = await setup(hass, cloud)
     try:
         state = hass.states.get(climate(hass, 1))
-        assert state.attributes["temporary_override"] is True
+        # ZONE-10: a temporary setpoint acts only in the schedule mode.
+        assert state.attributes["temporary_override"] is False
+        assert "override_until_next_switch_point" not in state.attributes
         assert state.attributes["temperature"] == 21.0  # the manual one
         assert hass.states.get(clear_button(hass, 1)).state == "unavailable"
         await set_temperature(hass, climate(hass, 1), temperature=22.0)

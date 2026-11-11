@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Denne sonekommandoen er ikke tilgjengelig for øyeblikket. Sjekk at sonen melder aktuelle verdier og at temperaturen ligger innenfor det tilbudte området; et midlertidig settpunkt krever driftsmodusen tidsprogram."
     },
+    "rrc_zone_locked_away": {
+      "message": "Bortemodus er aktiv. Slå den av for å endre settpunktet for denne sonen; ingenting ble sendt."
+    },
+    "rrc_zone_standby": {
+      "message": "Denne sonen er i standby på romregulatoren og kan ikke styres akkurat nå; ingenting ble sendt."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Romregulatoren melder en sone- eller kommunikasjonsfeil for denne sonen, så den kan ikke styres akkurat nå; ingenting ble sendt."
+    },
     "rrc_device_setting_unused": {
       "message": "Radioenheten bruker ikke denne innstillingen for øyeblikket, så den ble ikke endret."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Kommunikasjonsfeil",
               "comm_warning": "Kommunikasjonsvarsel",
               "low_battery": "Lavt batterinivå"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Bortemodus",
+              "standby": "Standby",
+              "unreachable": "Sone- eller kommunikasjonsfeil"
             }
           }
         }

@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Tämä vyöhykekomento ei ole tällä hetkellä käytettävissä. Tarkista, että vyöhyke ilmoittaa ajantasaiset arvot ja että lämpötila on tarjotulla alueella; väliaikainen asetusarvo edellyttää käyttötilaa aikaohjelma."
     },
+    "rrc_zone_locked_away": {
+      "message": "Poissa-tila on käytössä. Kytke se pois päältä muuttaaksesi tämän vyöhykkeen asetusarvoa; mitään ei lähetetty."
+    },
+    "rrc_zone_standby": {
+      "message": "Tämä vyöhyke on huonesäätimessä valmiustilassa, eikä sitä voi ohjata juuri nyt; mitään ei lähetetty."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Huonesäädin ilmoittaa tälle vyöhykkeelle vyöhykevian tai tiedonsiirtovirheen, joten sitä ei voi ohjata juuri nyt; mitään ei lähetetty."
+    },
     "rrc_device_setting_unused": {
       "message": "Radiolaite ei käytä tätä asetusta tällä hetkellä, joten sitä ei muutettu."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Tiedonsiirtovirhe",
               "comm_warning": "Tiedonsiirtovaroitus",
               "low_battery": "Akku vähissä"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Poissa-tila",
+              "standby": "Valmiustila",
+              "unreachable": "Vyöhykevika tai tiedonsiirtovirhe"
             }
           }
         }

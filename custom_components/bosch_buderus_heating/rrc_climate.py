@@ -7,6 +7,14 @@ setpoint (``clockOverride/temperatureHeating``) that lasts until the next
 switch point of the program (P23, P33); that write is expected, untested.
 A mode is never changed on the side: a temperature with a mode writes the
 mode first and, once it is confirmed, the target.
+
+The entity is available while the mode is valid; the room temperature may be
+unknown (ZONE-07). A zone the controller reports with a zone or
+communication error, or in standby, takes no change of the mode or the
+target; the active away mode locks the target (ZONE-02, ZONE-05). In these
+states, with an open window and with a boost, the target shown is the
+controller's active setpoint (ZONE-08). All of these locks are expected,
+untested.
 """
 
 from __future__ import annotations
@@ -27,7 +35,11 @@ from homeassistant.util.unit_conversion import TemperatureDeltaConverter
 from . import rrc, rrc_contract_zone
 from .const import DOMAIN
 from .control import HeldCapabilities, async_set_control
-from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
+from .coordinator import (
+    BoschBuderusDataUpdateCoordinator,
+    Freshness,
+    SnapshotSource,
+)
 from .device import device_info_for_resource, grouped_entity_name
 from .ha_compat import temperature_members, temperature_unit
 from .pointt import Resource
@@ -55,8 +67,19 @@ LEAVES: Final = (
     rrc_contract_zone.STATUS,
     rrc_contract_zone.NEXT_SETPOINT,
     rrc_contract_zone.MINUTES_TO_NEXT,
+    rrc_contract_zone.WINDOW_STATUS,
 )
+# The system and list readings the locks and the shown target depend on.
+CONTEXT_PATHS: Final = (rrc_contract_zone.ZONE_LIST, rrc_contract_zone.AWAY_ENABLED)
 _ACTIONS: Final = {"heat_request": HVACAction.HEATING, "idle": HVACAction.IDLE}
+# A special function of the zone after which the active setpoint is shown.
+_FOLLOWS_ACTIVE: Final = frozenset(
+    {
+        rrc_contract_zone.FUNCTION_BOOST,
+        rrc_contract_zone.FUNCTION_WINDOW_OPEN,
+        rrc_contract_zone.FUNCTION_STANDBY,
+    }
+)
 _SERVICE_KEYS: Final = frozenset(
     {
         ATTR_TEMPERATURE,
@@ -98,6 +121,40 @@ def zone_reading(
     return snapshot.resource
 
 
+def zone_lock_now(
+    coordinator: BoschBuderusDataUpdateCoordinator, root: str, *, setpoint: bool
+) -> str | None:
+    """The lock of a zone's room control from the current readings
+    (``rrc_contract_zone.zone_lock``): its status, the zone list and the
+    away mode."""
+    paths = (f"{root}/{rrc_contract_zone.STATUS}", *CONTEXT_PATHS)
+    readings = {path: zone_reading(coordinator, path) for path in paths}
+    return rrc_contract_zone.zone_lock(
+        root,
+        {path: resource for path, resource in readings.items() if resource},
+        setpoint=setpoint,
+    )
+
+
+def refuse_locked(
+    coordinator: BoschBuderusDataUpdateCoordinator, root: str, *, setpoint: bool
+) -> None:
+    """ZONE-02, ZONE-05: refuse a change of a locked zone, nothing sent."""
+    lock = zone_lock_now(coordinator, root, setpoint=setpoint)
+    if lock is not None:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key=rrc_contract_zone.LOCK_KEYS[lock],
+        )
+
+
+def away_guard(coordinator: BoschBuderusDataUpdateCoordinator) -> tuple[Resource, ...]:
+    """S5: the away reading, read again with the mode before a setpoint is
+    written; a change on the controller refuses the write."""
+    away = zone_reading(coordinator, rrc_contract_zone.AWAY_ENABLED, strict=True)
+    return (away,) if away is not None else ()
+
+
 def _number(value: object) -> float | None:
     if isinstance(value, bool) or not isinstance(value, int | float):
         return None
@@ -125,6 +182,7 @@ class RrcZoneClimate(
             "next_setpoint",
             "minutes_to_next_setpoint",
             "zone_status",
+            "active_setpoint",
         }
     )
 
@@ -138,7 +196,10 @@ class RrcZoneClimate(
         self._attr_name = grouped_entity_name(coordinator, f"{root}/{MODE}", "").rstrip(
             " \N{EN DASH}"
         )
-        self.extra_resource_paths = tuple(f"{root}/{leaf}" for leaf in LEAVES)
+        self.extra_resource_paths = (
+            *(f"{root}/{leaf}" for leaf in LEAVES),
+            *CONTEXT_PATHS,
+        )
 
     # ---------------------------------------------------------- readings
     def _reading(self, leaf: str, *, strict: bool = False) -> Resource | None:
@@ -162,8 +223,58 @@ class RrcZoneClimate(
         return _number(resource.value) if resource is not None else None
 
     def _override_active(self) -> bool:
+        """A temporary setpoint acts only in the mode ``clock`` (ZONE-10)."""
+        mode = self._mode()
         value = self._value(OVERRIDE)
-        return value is not None and value != 0
+        return (
+            mode is not None
+            and mode.value == "clock"
+            and value is not None
+            and value != 0
+        )
+
+    def _held(self, leaf: str) -> Resource | None:
+        """ZONE-03: the last reading of a target path that an unconfirmed
+        write made stale, until it is read again (within a minute). It keeps
+        the limits and the target control shown; a change still needs a
+        fresh reading."""
+        path = f"{self.root}/{leaf}"
+        snapshot = (self.coordinator.data or {}).get(path)
+        if (
+            snapshot is None
+            or snapshot.source is not SnapshotSource.WRITE
+            or snapshot.freshness is not Freshness.STALE
+            or snapshot.resource.path != path
+            or rrc.scalar_value(snapshot.resource) is None
+        ):
+            return None
+        return snapshot.resource
+
+    def _lock(self, *, setpoint: bool) -> str | None:
+        return zone_lock_now(self.coordinator, self.root, setpoint=setpoint)
+
+    def _function(self) -> str | None:
+        """The special function the zone list shows (open window, boost,
+        standby); ``None`` when unknown."""
+        return rrc_contract_zone.function_icon(
+            zone_reading(self.coordinator, rrc_contract_zone.ZONE_LIST), self.root
+        )
+
+    def _follows_active(self) -> bool:
+        """ZONE-08: whether the active setpoint differs from the written
+        target for a known reason (a lock, an open window, a boost)."""
+        if self._lock(setpoint=True) is not None:
+            return True
+        icon = self._function()
+        if icon in _FOLLOWS_ACTIVE:
+            return True
+        leaf = self._detail(rrc_contract_zone.WINDOW_STATUS)
+        return (
+            rrc_contract_zone.window_open(
+                icon, leaf if isinstance(leaf, bool) else None
+            )
+            is True
+        )
 
     def _detail(self, leaf: str) -> str | float | bool | None:
         resource = self._reading(leaf)
@@ -183,6 +294,8 @@ class RrcZoneClimate(
             return None
         leaf = MANUAL if mode.value == "manual" else OVERRIDE
         resource = self._scalar(leaf, strict=strict)
+        if resource is None and not strict:
+            resource = self._held(leaf)
         if resource is None:
             return None
         policy = number_policy_for_resource(resource, context_of(self.coordinator))
@@ -191,9 +304,13 @@ class RrcZoneClimate(
             return None
         minimum, maximum = metadata.minimum, metadata.maximum
         if leaf == OVERRIDE:
-            manual = self._scalar(MANUAL, strict=strict)
+            # ZONE-12: the manual setpoint's limits count whatever its flags
+            # say; in the mode clock it may be reported as not used.
+            manual = self._reading(MANUAL, strict=strict)
+            if manual is None and not strict:
+                manual = self._held(MANUAL)
             floor = manual.metadata.minimum if manual is not None else None
-            if floor is None:
+            if floor is None or not math.isfinite(floor):
                 if minimum <= 0:
                     return None
                 floor = minimum
@@ -207,7 +324,8 @@ class RrcZoneClimate(
     # ------------------------------------------------------ entity state
     @property
     def available(self) -> bool:
-        return self._mode() is not None and self._value(ACTUAL) is not None
+        # ZONE-07: the room temperature may be unknown (``used`` false).
+        return self._mode() is not None
 
     @property
     def hvac_mode(self) -> HVACMode | None:
@@ -228,7 +346,11 @@ class RrcZoneClimate(
 
     @property
     def hvac_action(self) -> HVACAction | None:
-        status = self._detail(rrc_contract_zone.STATUS) if self.available else None
+        if not self.available:
+            return None
+        if self._lock(setpoint=False) == "standby":
+            return HVACAction.OFF
+        status = self._detail(rrc_contract_zone.STATUS)
         return _ACTIONS.get(status) if isinstance(status, str) else None
 
     @property
@@ -240,13 +362,19 @@ class RrcZoneClimate(
         mode = self._mode()
         if not self.available or mode is None:
             return None
+        active = self._value(ACTIVE)
+        if active is not None and self._follows_active():
+            return active
         if mode.value == "manual":
-            return self._value(MANUAL)
+            manual = self._value(MANUAL)
+            # ZONE-03: while an unconfirmed write is read again, the active
+            # setpoint rather than none.
+            return manual if manual is not None else active
         # P06: a temporary setpoint of 0 means none; the program's applies.
         override = self._value(OVERRIDE)
         if override is not None and override != 0:
             return override
-        return self._value(ACTIVE)
+        return active
 
     @property
     def supported_features(self) -> Feature:
@@ -311,6 +439,18 @@ class RrcZoneClimate(
         status = self._detail(rrc_contract_zone.STATUS)
         if isinstance(status, str):
             attributes["zone_status"] = status
+        active = self._value(ACTIVE)
+        if active is not None:
+            attributes["active_setpoint"] = display_temp(
+                self.hass, active, unit, self.precision
+            )
+        away = rrc_contract_zone.away_active(
+            zone_reading(self.coordinator, rrc_contract_zone.AWAY_ENABLED)
+        )
+        if away is not None:
+            attributes["away_mode"] = away
+        if (lock := self._lock(setpoint=True)) is not None:
+            attributes["control_lock"] = lock
         return attributes
 
     @property
@@ -323,7 +463,13 @@ class RrcZoneClimate(
         if mode is None or hvac_mode not in self.hvac_modes:
             raise _invalid()
         raw = next(raw for raw, mapped in MODES.items() if mapped == hvac_mode)
-        # P04: a locked mode is refused by the write service (ControlLocked).
+        if rrc.mode_locked(mode):
+            # P04, ZONE-11: a locked mode is refused with its own message,
+            # also when the controller marks it as not writable.
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="rrc_mode_locked"
+            )
+        refuse_locked(self.coordinator, self.root, setpoint=False)
         await async_set_control(
             self.coordinator,
             mode.path,
@@ -341,6 +487,7 @@ class RrcZoneClimate(
             or not math.isfinite(value)
         ):
             raise _invalid()
+        refuse_locked(self.coordinator, self.root, setpoint=True)
         if "hvac_mode" in kwargs:
             requested = kwargs["hvac_mode"]
             if requested not in self.hvac_modes:
@@ -366,7 +513,11 @@ class RrcZoneClimate(
             # Never clear a temporary setpoint through a target of 0.
             raise _invalid()
         await async_set_control(
-            self.coordinator, resource.path, raw, policy, expected=(mode,)
+            self.coordinator,
+            resource.path,
+            raw,
+            policy,
+            expected=(mode, *away_guard(self.coordinator)),
         )
 
 

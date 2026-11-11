@@ -1,4 +1,12 @@
-"""Lossless RRC schedules and single-write transactions for existing programs."""
+"""Lossless RRC schedules and single-write transactions for existing programs.
+
+ZONE-13: a program selection and a switch point change go out exactly once
+and are read back on the RRC schedule (1, 2, 4 and 8 seconds,
+``rrc_write.RrcStructWrite``). A send that may have taken effect and is not
+confirmed by then raises ``RrcWriteNotConfirmed``; the caller counts the
+sends (``on_sent``) and a later regular reading may still confirm it
+(``selection_shows`` and ``edit_shows``).
+"""
 
 from __future__ import annotations
 
@@ -12,15 +20,12 @@ from dataclasses import dataclass
 from . import rrc
 from .pointt import (
     PointTClient,
-    RateLimited,
-    RequestTimeout,
     Resource,
-    ServiceUnavailable,
-    TransportError,
-    WriteNotConfirmed,
     WriteValidationError,
 )
 from .pointt.models import JsonValue
+from .rrc_write import RrcStructWrite
+from .write_policies import RRC_READ_BACK_DELAYS
 
 DAYS = ("Mo", "Tu", "We", "Th", "Fr", "Sa", "Su")
 DAY_PATHS = (
@@ -208,6 +213,46 @@ def program_names(
     return result
 
 
+def selection_shows(path: str, program: int) -> Callable[[Resource], bool]:
+    """Whether a later reading of ``path`` shows the selected program."""
+
+    def shows(resource: Resource) -> bool:
+        return resource.path == path and rrc.scalar_value(resource) == program
+
+    return shows
+
+
+def _day_of(resource: Resource, day: str) -> list[JsonValue] | None:
+    parsed = parse_schedule(resource)
+    if parsed is None:
+        return None
+    return [
+        item
+        for item in parsed.encode()
+        if isinstance(item, dict) and item.get("d") == day
+    ]
+
+
+def edit_shows(
+    expected: Resource, index: int, minute: int, temperature: float
+) -> Callable[[Resource], bool] | None:
+    """Whether a later reading of the week shows a switch point change;
+    ``None`` for a change that is refused anyway."""
+    original = parse_schedule(expected)
+    if original is None:
+        return None
+    try:
+        desired = edit_point(original, index, minute, temperature)
+    except WriteValidationError:
+        return None
+    day = original.points[index].day
+
+    def shows(resource: Resource) -> bool:
+        return resource.path == expected.path and _day_of(resource, day) == desired
+
+    return shows
+
+
 class RrcProgramService:
     """Fresh preflight, one PUT, bounded read-back, no guessed program IDs."""
 
@@ -216,12 +261,23 @@ class RrcProgramService:
         client: PointTClient,
         *,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+        delays: tuple[float, ...] = RRC_READ_BACK_DELAYS,
     ) -> None:
         self.client = client
         self.sleep = sleep
+        self.delays = delays
+
+    def _writer(self) -> RrcStructWrite:
+        # ``sleep`` may be replaced after construction (tests).
+        return RrcStructWrite(sleep=self.sleep, delays=self.delays)
 
     async def select(
-        self, gateway_id: str, path: str, program: int
+        self,
+        gateway_id: str,
+        path: str,
+        program: int,
+        *,
+        on_sent: Callable[[], None] | None = None,
     ) -> tuple[Resource, ...]:
         if rrc.scalar_field(path) != "clockProgram" or type(program) is not int:
             raise WriteValidationError("Invalid RRC program selection")
@@ -231,22 +287,23 @@ class RrcProgramService:
             raise WriteValidationError("RRC program is no longer offered")
         if rrc.scalar_value(current) == program:
             return programs, current
-        try:
-            await self.client.put_resource_value(gateway_id, path, program)
-        except RateLimited:
-            raise
-        except TransportError:
-            # A transport failure can follow an applied write. Never repeat it.
-            pass
-        for attempt in range(3):
-            await self.sleep(0.5 * 2**attempt)
-            try:
-                confirmed = await self.client.get_resource(gateway_id, path)
-            except RequestTimeout, ServiceUnavailable:
-                continue
-            if confirmed.path == path and rrc.scalar_value(confirmed) == program:
-                return programs, confirmed
-        raise WriteNotConfirmed("RRC program selection was not confirmed")
+        shows = selection_shows(path, program)
+
+        async def preflight() -> None:
+            return None
+
+        async def send(_state: None) -> None:
+            # The program number is a float on the wire, as the controller
+            # reports it (``floatValue``).
+            await self.client.put_resource_value(gateway_id, path, float(program))
+
+        async def confirm(_state: None) -> tuple[Resource, ...] | None:
+            confirmed = await self.client.get_resource(gateway_id, path)
+            return (programs, confirmed) if shows(confirmed) else None
+
+        return await self._writer().async_write(
+            preflight=preflight, send=send, confirm=confirm, on_sent=on_sent
+        )
 
     async def edit(
         self,
@@ -255,6 +312,8 @@ class RrcProgramService:
         index: int,
         minute: int,
         temperature: float,
+        *,
+        on_sent: Callable[[], None] | None = None,
     ) -> tuple[Resource, ...]:
         original = parse_schedule(expected)
         if original is None or WEEK.fullmatch(expected.path) is None:
@@ -287,27 +346,20 @@ class RrcProgramService:
             raise WriteValidationError("RRC day changed or is not writable")
         if desired == expected_day:
             return (current_week,)
-        try:
+
+        async def preflight() -> None:
+            return None
+
+        async def send(_state: None) -> None:
             await self.client.put_resource_value(gateway_id, day_path, desired)
-        except RateLimited:
-            raise
-        except TransportError:
-            pass
-        for attempt in range(3):
-            await self.sleep(0.5 * 2**attempt)
-            try:
-                confirmed = await self.client.get_resource(gateway_id, expected.path)
-            except RequestTimeout, ServiceUnavailable:
-                continue
-            parsed = parse_schedule(confirmed)
-            if parsed is None or confirmed.path != expected.path:
-                continue
-            read_day = [
-                item
-                for item in parsed.encode()
-                if isinstance(item, dict) and item.get("d") == day
-            ]
-            if read_day == desired:
-                # Other days may legitimately have changed in the app meanwhile.
+
+        async def confirm(_state: None) -> tuple[Resource, ...] | None:
+            confirmed = await self.client.get_resource(gateway_id, expected.path)
+            # Other days may legitimately have changed meanwhile.
+            if confirmed.path == expected.path and _day_of(confirmed, day) == desired:
                 return (confirmed,)
-        raise WriteNotConfirmed("RRC schedule change was not confirmed")
+            return None
+
+        return await self._writer().async_write(
+            preflight=preflight, send=send, confirm=confirm, on_sent=on_sent
+        )

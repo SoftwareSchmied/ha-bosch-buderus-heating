@@ -1372,6 +1372,9 @@ def poll_group(resource: Resource, *, rrc_plant: bool = False) -> PollGroup:
             or _HOURLY_CONTAINER_PATTERN.fullmatch(resource.path) is not None
         )
         and not supports_entity(resource, **rrc_kwargs(rrc_plant))
+        # An RRC contract that reads a list for its entities (the zone list
+        # for an open window and the standby, W1) keeps its own group.
+        and not (rrc_plant and rrc_contracts.poll_group(resource.path) is not None)
     ):
         return PollGroup.HOURLY
     return group

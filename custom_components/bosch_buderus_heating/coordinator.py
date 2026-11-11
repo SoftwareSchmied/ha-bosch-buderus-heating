@@ -110,7 +110,7 @@ from .rrc import (
     program_list_expected,
 )
 from .rrc_contracts import contract_for, owns
-from .rrc_programs import WEEK, RrcProgramService
+from .rrc_programs import WEEK, RrcProgramService, edit_shows, selection_shows
 from .rrc_write import (
     CORE_CONTRACT,
     RrcStructWrite,
@@ -1267,11 +1267,16 @@ class BoschBuderusDataUpdateCoordinator(
             self._urgent_reads.add(path)
 
     async def async_select_rrc_program(self, path: str, program: int) -> None:
+        # ZONE-13: the send is counted, a later reading may confirm it.
         await self.async_run_rrc_operation(
             path,
             lambda: self._rrc_program_service.select(
-                self.gateway.gateway_id, path, program
+                self.gateway.gateway_id,
+                path,
+                program,
+                on_sent=lambda: self.note_rrc_write_sent(path),
             ),
+            late_check=selection_shows(path, program),
         )
 
     async def async_edit_rrc_program(
@@ -1282,8 +1287,14 @@ class BoschBuderusDataUpdateCoordinator(
         await self.async_run_rrc_operation(
             expected.path,
             lambda: self._rrc_program_service.edit(
-                self.gateway.gateway_id, expected, index, minute, temperature
+                self.gateway.gateway_id,
+                expected,
+                index,
+                minute,
+                temperature,
+                on_sent=lambda: self.note_rrc_write_sent(expected.path),
             ),
+            late_check=edit_shows(expected, index, minute, temperature),
         )
 
     async def async_run_rrc_operation(

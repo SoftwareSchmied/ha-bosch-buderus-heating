@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, replace
 from functools import lru_cache
 
-from . import rrc, rrc_contracts
+from . import rrc, rrc_contract_zone, rrc_contracts
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
 from .pointt import (
     InvalidPayload,
@@ -86,6 +86,8 @@ RRC_OPERATION_MODE_POLICY = EnumWritePolicy(
     rrc.MODES,
     known_only=True,
     fallback_options=tuple(str(mode) for mode in rrc.FALLBACK_MODES),
+    # ZONE-05: no change while the zone is unreachable or in standby.
+    value_check=rrc_contract_zone.mode_value_check,
 )
 HEATING_CIRCUIT_OPERATION_MODE_POLICY = EnumWritePolicy(
     r"^/heatingCircuits/[^/]+/operationMode$",
@@ -175,7 +177,13 @@ POOL_SETPOINT_POLICY = NumberWritePolicy(
     r"^/pool/setpointTemp$", "C", 1.0, live_step=True
 )
 NUMBER_WRITE_POLICIES = (
-    NumberWritePolicy(rrc.MANUAL_PATTERN, "C", 0.5),
+    # ZONE-02, ZONE-05: no change while away or while the zone is locked.
+    NumberWritePolicy(
+        rrc.MANUAL_PATTERN,
+        "C",
+        0.5,
+        value_check=rrc_contract_zone.manual_value_check,
+    ),
     NumberWritePolicy(ZONE_MANUAL_PATTERN, "C", 0.5),
     NumberWritePolicy(
         r"^/swCircuits/[^/]+/sensor/saltLevelAlarm$", "%", 1.0, enabled_by_default=False

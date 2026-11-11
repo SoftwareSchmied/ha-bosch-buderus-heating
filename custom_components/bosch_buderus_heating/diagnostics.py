@@ -960,7 +960,12 @@ def _capability_diagnostics(
                     "availability_flags_valid": (
                         resource.metadata.availability_flags_valid
                     ),
-                    "reading_valid": rrc.scalar_value(resource) is not None
+                    # ZONE-14: a zone detail is valid by its own rules.
+                    "reading_valid": (
+                        rrc.detail_value(resource) is not None
+                        if rrc.detail_field(resource.path)
+                        else rrc.scalar_value(resource) is not None
+                    )
                     if rrc.scalar_field(resource.path)
                     else None,
                     "schedule_shape_supported": (schedule := parse_schedule(resource))

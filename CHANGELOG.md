@@ -42,16 +42,33 @@ Expected, untested on a real controller:
   setpoint until the next switch point of the schedule; the attribute
   `override_until_next_switch_point` says so. A button per zone clears it.
   If the controller ends a replaced temporary setpoint at once, for example
-  at a switch point, a message of its own says so.
+  at a switch point, a message of its own says so. In manual mode the
+  attributes no longer report a temporary setpoint, and the clear button is
+  only offered where the controller accepts 0.
+- **Locked zones:** while the away mode is active, I refuse a new target of
+  a zone with a message that names the away mode, instead of sending it. A
+  zone the controller reports with a zone or communication error, or in
+  standby, takes no change of its mode or target. The attributes
+  `control_lock`, `away_mode` and `active_setpoint` show why, and the target
+  shown is then the setpoint the controller applies, as also with an open
+  window or a boost.
+- **Zone climate:** a zone whose room temperature the controller does not
+  use stays available with an unknown current temperature. After an
+  unconfirmed change the target control stays until the value is read
+  again.
 - **Zone details:** sensors for the next setpoint (unknown instead of 999),
   the minutes until it, the zone status, the valve opening and the optimum
   start, a binary sensor for an open window, and switches and numbers for
   the open window detection of each zone and of the system. The valve
   opening, the optimum start and the system settings are disabled by
-  default.
+  default. The window sensor now follows the special function the zone list
+  reports for each zone, and a zone's open window detection is only changed
+  while the system's detection is offered.
 - **Programs:** the program selection keeps the program numbers as its
   options, so automations keep working when a program is renamed; the names
-  appear as the attributes `program_names` and `program_name`. A program day
+  appear as the attributes `program_names` and `program_name`. A selection
+  and a changed switch point are now read back with the same patience as
+  every other room controller change and are counted in the diagnostics. A program day
   reported as `dayProgram` is read, and its switch points can be edited like
   those of a week program.
 - **Away mode, absences and special days:** the away mode is a switch and

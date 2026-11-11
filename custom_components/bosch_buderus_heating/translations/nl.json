@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Dit zonecommando is op dit moment niet beschikbaar. Controleer of de zone actuele waarden meldt en of de temperatuur binnen het aangeboden bereik ligt; een tijdelijke instelwaarde vraagt om de bedrijfsmodus tijdprogramma."
     },
+    "rrc_zone_locked_away": {
+      "message": "De afwezigheidsmodus is actief. Schakel hem uit om de instelwaarde van deze zone te wijzigen; er is niets verzonden."
+    },
+    "rrc_zone_standby": {
+      "message": "Deze zone staat op de kamerregelaar in stand-by en kan op dit moment niet worden bediend; er is niets verzonden."
+    },
+    "rrc_zone_unreachable": {
+      "message": "De kamerregelaar meldt voor deze zone een zone- of communicatiefout, daarom kan ze op dit moment niet worden bediend; er is niets verzonden."
+    },
     "rrc_device_setting_unused": {
       "message": "Het radioapparaat gebruikt deze instelling op dit moment niet, daarom is ze niet gewijzigd."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Communicatiefout",
               "comm_warning": "Communicatiewaarschuwing",
               "low_battery": "Batterij bijna leeg"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Afwezigheidsmodus",
+              "standby": "Stand-by",
+              "unreachable": "Zone- of communicatiefout"
             }
           }
         }

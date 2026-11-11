@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Níl an t-ordú crios seo ar fáil faoi láthair. Seiceáil go dtuairiscíonn an crios luachanna reatha agus go bhfuil an teocht laistigh den raon a thairgtear; teastaíonn mód an sceidil ó shocphointe sealadach."
     },
+    "rrc_zone_locked_away": {
+      "message": "Tá an mód as baile gníomhach. Múch é chun socphointe an chriosa seo a athrú; níor seoladh aon rud."
+    },
+    "rrc_zone_standby": {
+      "message": "Tá an crios seo ar fuireachas ar an rialaitheoir seomra agus ní féidir é a rialú faoi láthair; níor seoladh aon rud."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Tuairiscíonn an rialaitheoir seomra earráid chriosa nó earráid cumarsáide don chrios seo, mar sin ní féidir é a rialú faoi láthair; níor seoladh aon rud."
+    },
     "rrc_device_setting_unused": {
       "message": "Ní úsáideann an gléas raidió an socrú seo faoi láthair, mar sin níor athraíodh é."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Earráid cumarsáide",
               "comm_warning": "Rabhadh cumarsáide",
               "low_battery": "Ceallra íseal"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Mód as baile",
+              "standby": "Fuireachas",
+              "unreachable": "Earráid chriosa nó cumarsáide"
             }
           }
         }

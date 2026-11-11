@@ -1034,6 +1034,15 @@
     "rrc_zone_climate_command": {
       "message": "Este comando de zona não está disponível de momento. Verifique se a zona fornece valores atuais e se a temperatura se encontra dentro do intervalo oferecido; um valor de referência temporário requer o modo programa horário."
     },
+    "rrc_zone_locked_away": {
+      "message": "O modo ausente está ativo. Desative-o para alterar o valor de referência desta zona; nada foi enviado."
+    },
+    "rrc_zone_standby": {
+      "message": "Esta zona está em espera no regulador de ambiente e não pode ser controlada de momento; nada foi enviado."
+    },
+    "rrc_zone_unreachable": {
+      "message": "O regulador de ambiente comunica um erro de zona ou de comunicação para esta zona, por isso não pode ser controlada de momento; nada foi enviado."
+    },
     "rrc_device_setting_unused": {
       "message": "O dispositivo de rádio não utiliza esta definição de momento, por isso não foi alterada."
     },
@@ -2341,6 +2350,13 @@
               "comm_error": "Erro de comunicação",
               "comm_warning": "Aviso de comunicação",
               "low_battery": "Bateria fraca"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Modo ausente",
+              "standby": "Em espera",
+              "unreachable": "Erro de zona ou de comunicação"
             }
           }
         }

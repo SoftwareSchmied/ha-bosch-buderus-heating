@@ -642,3 +642,84 @@ async def test_zones_without_a_program_selection_do_not_search_the_list(
     await coordinator.async_refresh()
     assert PROGRAMS not in coordinator.discovery_recovery.missing
     assert coordinator.discovery_recovery.state != "pending"
+
+
+# ------------------------------------------------------------- ZONE-13
+
+
+async def test_program_selection_uses_the_rrc_read_back_and_counts(environment):
+    """One PUT of a float, read back after 1, 2, 4 and 8 seconds; an
+    unconfirmed one names the pending confirmation and a later poll may
+    still confirm it."""
+    from time import monotonic
+
+    from homeassistant.exceptions import HomeAssistantError
+
+    coordinator, client, _ = environment
+    state = wire_coordinator(environment, program_list(), selection())
+    sleep = AsyncMock()
+    coordinator._rrc_program_service = RrcProgramService(client, sleep=sleep)
+    (description,) = descriptions(state)
+    entity = RrcProgramSelect(coordinator, description)
+
+    await entity.async_select_option("4")
+    value = client.put_resource_value.await_args.args[2]
+    assert value == 4.0 and isinstance(value, float)
+    assert [call.args[0] for call in sleep.await_args_list] == [1.0]
+    stats = coordinator.rrc_write_stats.snapshot("core")
+    assert (stats["writes_sent"], stats["writes_confirmed"]) == (1, 1)
+
+    # The controller takes the PUT but does not show it in time.
+    client.put_resource_value.side_effect = AsyncMock(return_value=None)
+    client.put_resource_value.reset_mock()
+    sleep.reset_mock()
+    with pytest.raises(HomeAssistantError) as pending:
+        await entity.async_select_option("3")
+    assert pending.value.translation_key == "rrc_write_pending_confirmation"
+    assert client.put_resource_value.await_count == 1
+    assert [call.args[0] for call in sleep.await_args_list] == [1.0, 2.0, 4.0, 8.0]
+    stats = coordinator.rrc_write_stats.snapshot("core")
+    assert (stats["writes_sent"], stats["writes_unconfirmed"]) == (2, 1)
+    assert coordinator.data[CLOCK].available is False
+    coordinator.rrc_write_stats.observe(replace(state[CLOCK], value=3.0), monotonic())
+    assert coordinator.rrc_write_stats.snapshot("core")["late_confirmed"] == 1
+
+
+async def test_program_no_longer_offered_is_a_validation_error(environment):
+    from homeassistant.exceptions import ServiceValidationError
+
+    coordinator, client, _ = environment
+    state = wire_coordinator(environment, program_list(), selection())
+    (description,) = descriptions(state)
+    entity = RrcProgramSelect(coordinator, description)
+    state[PROGRAMS] = program_list(value=[{"id": 1}, {"id": 2}])
+    with pytest.raises(ServiceValidationError) as refused:
+        await entity.async_select_option("4")
+    assert refused.value.translation_key == "write_validation_failed"
+    client.put_resource_value.assert_not_awaited()
+    assert coordinator.rrc_write_stats.snapshot("core")["writes_sent"] == 0
+
+
+async def test_switch_point_edit_is_counted_and_confirmed_late(environment):
+    from time import monotonic
+
+    from custom_components.bosch_buderus_heating.pointt import WriteNotConfirmed
+    from custom_components.bosch_buderus_heating.rrc_programs import edit_shows
+
+    coordinator, client, _ = environment
+    state = wire_coordinator(environment, week(), day())
+    sleep = AsyncMock()
+    coordinator._rrc_program_service = RrcProgramService(client, sleep=sleep)
+    client.put_resource_value.side_effect = AsyncMock(return_value=None)
+    with pytest.raises(WriteNotConfirmed):
+        await coordinator.async_edit_rrc_program(state[WEEK], 0, 430, 21)
+    assert client.put_resource_value.await_count == 1
+    assert [call.args[0] for call in sleep.await_args_list] == [1.0, 2.0, 4.0, 8.0]
+    stats = coordinator.rrc_write_stats.snapshot("core")
+    assert (stats["writes_sent"], stats["writes_unconfirmed"]) == (1, 1)
+    shown = [{"d": "Mo", "t": 430, "Th": 21}, *state[WEEK].value[1:]]
+    shows = edit_shows(state[WEEK], 0, 430, 21)
+    assert shows is not None and shows(replace(state[WEEK], value=shown))
+    assert not shows(state[WEEK])
+    coordinator.rrc_write_stats.observe(replace(state[WEEK], value=shown), monotonic())
+    assert coordinator.rrc_write_stats.snapshot("core")["late_confirmed"] == 1

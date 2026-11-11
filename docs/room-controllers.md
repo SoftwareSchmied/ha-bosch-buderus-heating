@@ -86,7 +86,9 @@ changed on the controller.
 ## Zones
 
 Every zone that reports a heating mode and a room temperature gets a climate
-entity.
+entity. It stays available while the mode is valid; if the controller does
+not use the room temperature at the moment, the current temperature is
+unknown and the zone can still be controlled.
 
 - `heat` is the manual mode, `auto` the schedule. Room controllers have no
   off mode. *Confirmed on a TC100.2.*
@@ -102,14 +104,36 @@ entity.
   setpoint while the zone follows its schedule. *Expected, untested.*
 - A mode together with a temperature changes the mode first and the target
   only after the controller has confirmed the mode.
+- **Locked zones** *(expected, untested):* while the away mode is active, a
+  new target or clearing the temporary setpoint is refused with a message
+  that names the away mode; the mode can still be changed. A zone that the
+  controller reports with a zone or communication error, or in standby,
+  takes no change of its mode or its target at all; in standby its action
+  is `off`. This also applies to the zone's own mode select and manual
+  setpoint number. Nothing is sent in these cases. The attribute
+  `control_lock` names the lock (`away`, `standby`, `unreachable`) and
+  `away_mode` the state of the away mode.
+- **Shown target** *(expected, untested):* the attribute `active_setpoint`
+  is the setpoint the controller applies. While the zone is locked, has an
+  open window or runs a boost, the target shown is this active setpoint;
+  otherwise it is the manual or temporary setpoint just set. If a change
+  stays unconfirmed, the zone keeps its target control and its limits until
+  the value is read again within a minute; a further change waits for that
+  reading.
 - **Zone details** *(expected, untested):* sensors for the next setpoint,
   the minutes until it and the zone status (idle, heat request, zone error,
   communication error or warning, low battery); the valve opening and the
   optimum start with its heat-up rate (disabled by default); a binary sensor
-  "Window open".
+  "Window open". The window sensor follows the special function the zone
+  list reports for the zone (`window_open`); only where the list does not
+  say (an older controller, or another function such as a boost) it reads
+  the zone's open window status, whose values `open` and `closed` are a
+  guess. The zone list is read every five minutes for this.
 - **Open window detection** *(expected, untested):* a switch per zone and one
   for the system, and the system's open window duration and temperature
-  where the controller allows writing them (disabled by default).
+  where the controller allows writing them (disabled by default). A zone
+  switch is refused while the controller does not offer the system's open
+  window detection (not available).
 
 A room controller with zone climates gets no climate entity for its heating
 circuit as well.
@@ -122,7 +146,10 @@ circuit as well.
   options are the program numbers, so automations keep working when a program
   is renamed; the names are in the attributes `program_names` and
   `program_name`. Changing the program does not switch the zone to the
-  schedule. On a large system the program list is read together with the
+  schedule. A selection and a changed switch point are read back like every
+  other change (1, 2, 4 and 8 seconds); if the controller has not confirmed
+  them by then, the message says that the change was sent but is not
+  confirmed yet. On a large system the program list is read together with the
   zones and searched again if it is missing.
 - **Editing switch points.** Under **Configure → RRC heating schedules** you
   can change the time and temperature of an existing switch point of a week
@@ -344,7 +371,16 @@ ebenso der CT200 insgesamt:
 
 - **Zonen:** vorübergehender Sollwert bis zum nächsten Schaltpunkt mit
   Aufheben-Taste, nächster Sollwert, Minuten bis dahin, Zonenstatus,
-  Ventilöffnung, optimierter Start, Fenster offen, Fenster-offen-Erkennung.
+  Ventilöffnung, optimierter Start, Fenster offen (aus der Sonderfunktion
+  der Zonenliste, sonst aus dem Fensterstatus der Zone),
+  Fenster-offen-Erkennung (der Zonenschalter nur, solange der Regler die
+  Erkennung des Systems anbietet). Bei aktiver Abwesenheit lehne ich einen
+  neuen Sollwert und das Aufheben ab, die Betriebsart bleibt änderbar; eine
+  Zone mit Zonen- oder Kommunikationsfehler oder im Standby nimmt keine
+  Änderung an. Das Attribut `control_lock` nennt die Sperre,
+  `active_setpoint` den Sollwert, den der Regler anwendet; bei Sperre,
+  offenem Fenster oder Boost zeigt die Zone ihn als Ziel. Ohne nutzbare
+  Raumtemperatur bleibt die Zone bedienbar.
 - **Zeitprogramme:** Programmauswahl je Zone und Ändern vorhandener
   Schaltpunkte unter **Konfigurieren → RRC-Zeitprogramme**.
 - **Abwesenheit:** Schalter und Abwesenheitstemperatur; Kalender
