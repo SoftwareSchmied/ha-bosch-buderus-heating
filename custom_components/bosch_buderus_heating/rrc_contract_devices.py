@@ -37,7 +37,6 @@ from .rrc_device_settings import (
     diagnostics,
     leaf_pattern,
     sensitivity_check,
-    unused_check,
 )
 from .write_policies import EnumWritePolicy, NumberWritePolicy
 
@@ -80,7 +79,6 @@ OFFSET_POLICY = NumberWritePolicy(
     enabled_by_default=False,
     create_entity=False,
     strict_grid=True,
-    value_check=unused_check,
 )
 SENSITIVITY_POLICY = NumberWritePolicy(
     SENSITIVITY_PATTERN,

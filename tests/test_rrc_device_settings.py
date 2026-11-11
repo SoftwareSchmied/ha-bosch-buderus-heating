@@ -289,7 +289,8 @@ def test_unreadable_sensitivity_has_no_level() -> None:
         ({"used": "true"}, True),
         ({"used": "false"}, False),
         ({"available": "false"}, False),
-        ({"used": "true", "available": "false"}, True),  # shown and locked (S8)
+        # Shown; the shared flag rule makes its control unavailable.
+        ({"used": "true", "available": "false"}, True),
         ({"used": "maybe"}, False),
     ],
 )

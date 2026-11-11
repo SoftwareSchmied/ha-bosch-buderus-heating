@@ -115,7 +115,10 @@ def offered(resource: Resource) -> bool:
     ``used`` false hides the setting (the temperature offset of a device
     that does not use one). A missing flag counts as used: the TC100.2 sends
     none for these leaves. ``available`` false without ``used`` true gives no
-    entity (P41); with ``used`` true the setting is shown and locked (S8).
+    entity (P41); with ``used`` true the setting is shown. Its control
+    follows the shared flag rule before every write
+    (``writes._contract_availability_issue``): not available means
+    unavailable and never written, not used means refused unsent.
     """
     metadata = resource.metadata
     return (
@@ -123,11 +126,6 @@ def offered(resource: Resource) -> bool:
         and metadata.used is not False
         and not (metadata.available is False and metadata.used is not True)
     )
-
-
-def unused_check(resource: Resource, _value: object, _related: object) -> str | None:
-    """S1/S8 before sending: a setting the device does not use is refused."""
-    return None if offered(resource) else "rrc_device_setting_unused"
 
 
 # Open window detection: the level names and the exact values written.
