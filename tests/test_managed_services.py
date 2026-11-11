@@ -223,8 +223,10 @@ async def test_offline_notification_option_remains_available_after_last_connecti
         form = await flow.async_step_notifications()
         assert form["type"] is FlowResultType.FORM
         result = await flow.async_step_notifications({CONF_FAULT_NOTIFICATIONS: []})
-        assert result["data"]["targets"] == entry.options["targets"]
-        assert not result["data"][CONF_FAULT_NOTIFICATIONS][
+        # Saved to the entry at once; the dialog returns to its menu.
+        assert result["step_id"] == "init"
+        assert "targets" in entry.options
+        assert not entry.options[CONF_FAULT_NOTIFICATIONS][
             gateway_notification_key(HEAT)
         ]["enabled"]
         assert not manager.current().connections
@@ -542,7 +544,7 @@ async def test_notification_preferences_can_hide_and_reshow_retained_offline_fau
                     else [],
                 }
             )
-            hass.config_entries.async_update_entry(entry, options=result["data"])
+            assert result["step_id"] == "init"
             await hass.async_block_till_done()
             assert (key in notices) == enabled
         assert "not yet been confirmed" in notices[key]["message"]

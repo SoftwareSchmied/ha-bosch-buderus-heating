@@ -23,6 +23,18 @@ Versioning after its first tagged preview.
   Thank you, lanebe, for confirming it in
   [#106](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/106).
 
+#### Configure dialog
+
+- **Back and stay in the dialog:** every menu below the main menu of
+  **Configure** now ends with "← Back" to the menu above it, and
+  **Connections** is a menu of its accesses. A finished action, for example
+  a saved connection setting, saved notifications, a saved holiday or
+  schedule or a planned search, returns to its menu with the result instead
+  of closing the dialog, so several things can be done in one session. The
+  settings are saved at once, as before. Signing in again, adding a cloud
+  access, the local setup and error messages end the dialog as before. In
+  all languages except German and English the new texts are drafts.
+
 #### Room controllers (TC100.2)
 
 Newly confirmed on a real controller, a TC100.2 with firmware 05.04.00 and

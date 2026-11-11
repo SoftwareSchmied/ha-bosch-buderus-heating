@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from typing import Any, cast
 
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlowContext,
     ConfigFlowResult,
-    OptionsFlow,
 )
 from homeassistant.helpers.selector import (
     BooleanSelector,
@@ -26,27 +26,51 @@ from .const import PollingProfile
 from .ha_schema import validation as vol
 from .local_enrollment import LocalEnrollmentError, enrollment_journal
 from .local_support import setup_support
+from .options_navigation import BACK, NavigatingOptionsFlow
+
+# The menu entry of the n-th connection (the menu lists them with their
+# labels; the entries name no identifier).
+_OPEN_PREFIX = "connection_open_"
 
 
-class ConnectionOptionsFlow(OptionsFlow):
+class ConnectionOptionsFlow(NavigatingOptionsFlow):
     """Edit the explicitly selected connection without replacing the owner."""
 
     _entry: ConfigEntry[Any]
     _connection_edit: ConnectionEdit | None = None
+    _connection_choices: dict[str, str] | None = None
 
     def _management(self) -> ConfigurationManagement:
         return ConfigurationManagement(self.hass, self._entry)
 
+    def __getattr__(self, name: str) -> Any:
+        """The step of one connection entry of the connections menu."""
+        step = name.removeprefix("async_step_")
+        choices = self.__dict__.get("_connection_choices") or {}
+        if name.startswith("async_step_" + _OPEN_PREFIX) and step in choices:
+            connection_id = choices[step]
+
+            async def open_connection(
+                user_input: dict[str, Any] | None = None,
+            ) -> ConfigFlowResult:
+                return await self._open_connection(connection_id)
+
+            step_method: Callable[..., Awaitable[ConfigFlowResult]] = open_connection
+            return step_method
+        raise AttributeError(name)
+
+    async def _open_connection(self, connection_id: str) -> ConfigFlowResult:
+        try:
+            self._connection_edit = self._management().edit(connection_id)
+        except ValueError, KeyError:
+            return self.async_abort(reason="configuration_changed")
+        return await self.async_step_connection()
+
     async def async_step_connections(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        """The accesses as a menu, with a way back to the main menu."""
         management = self._management()
-        if user_input is not None:
-            try:
-                self._connection_edit = management.edit(user_input["connection"])
-            except ValueError, KeyError:
-                return self.async_abort(reason="configuration_changed")
-            return await self.async_step_connection()
         try:
             snapshot = management.current()
         except ConfigurationError:
@@ -55,23 +79,35 @@ class ConnectionOptionsFlow(OptionsFlow):
             return self.async_abort(reason="no_connections")
         from .connection_status import connection_label
 
-        choices: list[SelectOptionDict] = []
-        for key, connection in snapshot.connections.items():
+        menu: dict[str, str] = {}
+        choices: dict[str, str] = {}
+        for number, (key, connection) in enumerate(snapshot.connections.items(), 1):
             # Kind, number and current state from existing data; never a brand.
-            label = connection_label(
-                self.hass, self._entry, key, connection, len(choices) + 1
+            step = f"{_OPEN_PREFIX}{number}"
+            choices[step] = key
+            menu[step] = connection_label(
+                self.hass, self._entry, key, connection, number
             )
-            choices.append(SelectOptionDict(value=key, label=label))
-        return self.async_show_form(
+        menu[BACK] = await self.back_label("connections")
+        self._connection_choices = choices
+        self._connection_edit = None
+        self._back_target = "init"
+        return self.async_show_menu(
             step_id="connections",
-            data_schema=vol.Schema(
-                {
-                    vol.Required("connection"): SelectSelector(
-                        SelectSelectorConfig(options=choices)
-                    )
-                }
-            ),
+            menu_options=menu,
+            description_placeholders={"result": self.take_result_note()},
         )
+
+    async def _connection_saved(self) -> ConfigFlowResult:
+        """Back to the connection's menu after a saved change."""
+        edit = self._connection_edit
+        try:
+            if edit is None:
+                raise ConfigurationError("configuration_changed")
+            self._connection_edit = self._management().edit(edit.connection_id)
+        except ConfigurationError, ValueError, KeyError:
+            return await self.async_return_to_menu("connections", "connection_saved")
+        return await self.async_return_to_menu("connection", "connection_saved")
 
     async def async_step_connection(
         self, user_input: dict[str, Any] | None = None
@@ -93,12 +129,14 @@ class ConnectionOptionsFlow(OptionsFlow):
         )
         from .connection_status import connection_description
 
+        self._back_target = "connections"
         return self.async_show_menu(
             step_id="connection",
             description_placeholders={
+                "result": self.take_result_note(),
                 "status": connection_description(
                     self.hass, self._entry, edit.connection_id
-                )
+                ),
             },
             menu_options=[
                 "connection_test",
@@ -128,6 +166,7 @@ class ConnectionOptionsFlow(OptionsFlow):
                     else []
                 ),
                 "connection_remove",
+                BACK,
             ],
         )
 
@@ -158,7 +197,7 @@ class ConnectionOptionsFlow(OptionsFlow):
         try:
             if user_input is not None:
                 self._management().set_enabled(edit, user_input["enabled"])
-                return self.async_create_entry(title="", data=dict(self._entry.options))
+                return await self._connection_saved()
             snapshot = self._management().current()
             enabled = section(snapshot.to_options(), "connections")[edit.connection_id][
                 "enabled"
@@ -208,7 +247,7 @@ class ConnectionOptionsFlow(OptionsFlow):
                 management.forget_bindings(edit, set(selected))
             except ConfigurationError:
                 return self.async_abort(reason="configuration_changed")
-            return self.async_create_entry(title="", data=dict(self._entry.options))
+            return await self._connection_saved()
         return self.async_show_form(
             step_id="connection_forget",
             data_schema=vol.Schema(
@@ -254,7 +293,7 @@ class ConnectionOptionsFlow(OptionsFlow):
                 management.set_targets_enabled(edit, set(selected))
             except ConfigurationError:
                 return self.async_abort(reason="configuration_changed")
-            return self.async_create_entry(title="", data=dict(self._entry.options))
+            return await self._connection_saved()
         options = section(snapshot.to_options(), "bindings")
         choices = [
             SelectOptionDict(
@@ -290,7 +329,7 @@ class ConnectionOptionsFlow(OptionsFlow):
             if user_input is not None:
                 profile = PollingProfile(user_input["polling_profile"])
                 self._management().set_polling_profile(edit, profile)
-                return self.async_create_entry(title="", data=dict(self._entry.options))
+                return await self._connection_saved()
             current = section(snapshot.to_options(), "connections")[edit.connection_id][
                 "polling_profile"
             ]
@@ -332,9 +371,7 @@ class ConnectionOptionsFlow(OptionsFlow):
                     self._management().set_local_interval(
                         edit, int(cast(int | float, value))
                     )
-                    return self.async_create_entry(
-                        title="", data=dict(self._entry.options)
-                    )
+                    return await self._connection_saved()
         except ConfigurationError:
             return self.async_abort(reason="configuration_changed")
         from .managed_entry import ManagedEntry
@@ -399,7 +436,7 @@ class ConnectionOptionsFlow(OptionsFlow):
                 self._management().set_local_values(
                     edit, bool(user_input.get("enabled", False))
                 )
-                return self.async_create_entry(title="", data=dict(self._entry.options))
+                return await self._connection_saved()
         except ConfigurationError:
             return self.async_abort(reason="configuration_changed")
         return self.async_show_form(
@@ -435,7 +472,10 @@ class ConnectionOptionsFlow(OptionsFlow):
                 return self.async_abort(reason="local_storage_failed")
             except ConfigurationError:
                 return self.async_abort(reason="configuration_changed")
-            return self.async_create_entry(title="", data=dict(self._entry.options))
+            self._connection_edit = None
+            if not self._management().current().connections:
+                return await self.async_return_to_menu("init", "connection_removed")
+            return await self.async_return_to_menu("connections", "connection_removed")
         stored = self._management().current().connections.get(edit.connection_id)
         return self.async_show_form(
             # A cloud access explains what stays after the removal (R1, P49b).

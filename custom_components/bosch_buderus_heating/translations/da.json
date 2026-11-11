@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Indstillinger",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Notifikationer",
           "holidays": "Administrer ferieperioder",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Forbindelser",
-        "description": "Vælg den adgang, du vil administrere.",
-        "data": {
-          "connection": "Forbindelse"
+        "description": "{result}Vælg den adgang, du vil administrere.",
+        "menu_options": {
+          "back": "← Tilbage"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Administrer forbindelse",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Test forbindelsen nu",
           "connection_enabled": "Aktivér eller deaktivér adgang",
@@ -470,7 +471,8 @@
           "connection_polling": "Forespørgselsfrekvens",
           "local_setup": "Skift lokal adgang",
           "local_polling": "Lokal forespørgselsfrekvens og status",
-          "local_values": "Brug lokale værdier til eksisterende entiteter"
+          "local_values": "Brug lokale værdier til eksisterende entiteter",
+          "back": "← Tilbage"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Søgningen blev ikke startet: forespørgsler er sat på pause lige nu (f.eks. efter at cloud'en har bedt om en pause). Prøv igen senere.",
       "rescan_running": "En søgning kører allerede eller er planlagt. Vent, til den er færdig.",
       "rescan_partial": "Søgningen er planlagt for de dele, der er klar, og kører ved næste almindelige opdatering. Dele, der er sat på pause lige nu, blev sprunget over; prøv igen senere for dem.",
-      "rescan_unavailable": "Søgningen blev ikke startet: ingen adgang til anlægget er klar lige nu."
+      "rescan_unavailable": "Søgningen blev ikke startet: ingen adgang til anlægget er klar lige nu.",
+      "connection_saved": "Ændringen blev gemt.",
+      "connection_removed": "Adgangen blev fjernet.",
+      "notifications_saved": "Indstillingerne for notifikationer blev gemt.",
+      "rrc_program_saved": "Skiftepunktet blev gemt og bekræftet ved tilbagelæsning."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale forbindelse. Vent venligst."

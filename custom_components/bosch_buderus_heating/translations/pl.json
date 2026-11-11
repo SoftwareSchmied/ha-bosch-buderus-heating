@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Ustawienia",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Powiadomienia",
           "holidays": "Zarządzaj okresami urlopu",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Połączenia",
-        "description": "Wybierz dostęp, którym chcesz zarządzać.",
-        "data": {
-          "connection": "Połączenie"
+        "description": "{result}Wybierz dostęp, którym chcesz zarządzać.",
+        "menu_options": {
+          "back": "← Wstecz"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Zarządzaj połączeniem",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Przetestuj połączenie teraz",
           "connection_enabled": "Włącz lub wyłącz dostęp",
@@ -470,7 +471,8 @@
           "connection_polling": "Częstotliwość odpytywania",
           "local_setup": "Zmień dostęp lokalny",
           "local_polling": "Częstotliwość odpytywania lokalnego i stan",
-          "local_values": "Używaj wartości lokalnych dla istniejących encji"
+          "local_values": "Używaj wartości lokalnych dla istniejących encji",
+          "back": "← Wstecz"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Wyszukiwanie nie zostało uruchomione: żądania są teraz wstrzymane (na przykład po tym, jak chmura zażądała przerwy). Spróbuj ponownie później.",
       "rescan_running": "Wyszukiwanie już trwa lub jest zaplanowane. Zaczekaj, aż się zakończy.",
       "rescan_partial": "Wyszukiwanie jest zaplanowane dla gotowych części i odbywa się przy następnej regularnej aktualizacji. Części, które są teraz wstrzymane, pominięto; spróbuj dla nich ponownie później.",
-      "rescan_unavailable": "Wyszukiwanie nie zostało uruchomione: żaden dostęp do instalacji nie jest teraz gotowy."
+      "rescan_unavailable": "Wyszukiwanie nie zostało uruchomione: żaden dostęp do instalacji nie jest teraz gotowy.",
+      "connection_saved": "Zmiana została zapisana.",
+      "connection_removed": "Dostęp został usunięty.",
+      "notifications_saved": "Ustawienia powiadomień zostały zapisane.",
+      "rrc_program_saved": "Punkt przełączenia został zapisany i potwierdzony ponownym odczytem."
     },
     "progress": {
       "local_work": "Sprawdzanie połączenia lokalnego. Proszę czekać."

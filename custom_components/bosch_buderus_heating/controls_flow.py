@@ -8,7 +8,7 @@ from dataclasses import replace
 from datetime import datetime
 from typing import Any, override
 
-from homeassistant.config_entries import ConfigEntry, ConfigFlowResult, OptionsFlow
+from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.helpers.selector import (
     ObjectSelector,
     SelectOptionDict,
@@ -28,6 +28,7 @@ from .enum_translation import enum_value_to_ha
 from .ha_schema import validation as vol
 from .i18n import LANGUAGES, dialog_config
 from .notifications import gateway_notification_key, installation_name
+from .options_navigation import NavigatingOptionsFlow
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -338,7 +339,7 @@ def _translation_key(path: str) -> str:
     return ""
 
 
-class ControlsOptionsFlow(OptionsFlow):
+class ControlsOptionsFlow(NavigatingOptionsFlow):
     """Keep drafts per flow and never store appliance values in entry options."""
 
     _entry: ConfigEntry

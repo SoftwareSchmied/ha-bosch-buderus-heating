@@ -273,6 +273,36 @@ Konfigurieren > Anlage bedienen**. The dialog follows the profile language.
 This is separate from **Reconfigure**, which changes gateway selection and
 polling and starts resource discovery again.
 
+### Moving around in Configure
+
+Since 0.9.0-alpha.6 every menu below the main menu of **Configure** ends with
+**← Back**, which leads to the menu above it: **Connections** back to the
+main menu, a single connection back to **Connections**. A finished action no
+longer closes the dialog: after a saved connection setting, a removed
+access, saved notification settings, a saved, changed or deleted holiday, a
+saved heating or hot water schedule, a saved room controller switch point or
+a planned search, the dialog returns to its menu and shows the result there,
+so several things can be done in one session. The settings are saved at once,
+as before; the dialog is closed with **X**. Input pages keep only their
+submit button and **X**. A dialog that hands over to another one (signing in
+again, adding a cloud access, setting up the local access) and every error
+message end as before.
+
+Seit 0.9.0-alpha.6 endet jedes Menü unterhalb des Hauptmenüs von
+**Konfigurieren** mit **← Zurück**, das zum übergeordneten Menü führt:
+**Verbindungen** zurück zum Hauptmenü, eine einzelne Verbindung zurück zu
+**Verbindungen**. Eine abgeschlossene Aktion schließt den Dialog nicht mehr:
+Nach einer gespeicherten Verbindungseinstellung, einem entfernten Zugang,
+gespeicherten Benachrichtigungen, einem gespeicherten, geänderten oder
+gelöschten Urlaub, einem gespeicherten Heiz- oder Warmwasserprogramm, einem
+gespeicherten Schaltpunkt eines Raumreglers oder einer geplanten Suche kehrt
+der Dialog zu seinem Menü zurück und zeigt dort das Ergebnis, sodass sich
+mehreres in einer Sitzung erledigen lässt. Die Einstellungen werden wie
+bisher sofort gespeichert; geschlossen wird der Dialog mit **X**.
+Eingabeseiten haben weiter nur ihre Bestätigen-Schaltfläche und **X**. Dialoge,
+die an einen anderen übergeben (erneut anmelden, Cloud-Zugang hinzufügen,
+lokalen Zugang einrichten), und alle Fehlermeldungen enden wie bisher.
+
 On the device page, tap the heating-circuit climate or hot-water entity to open
 Home Assistant's native controls. Those controls write immediately. The original
 controls for the heating mode, manual target and hot-water mode remain under

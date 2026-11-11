@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Inställningar",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Aviseringar",
           "holidays": "Hantera semesterperioder",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Anslutningar",
-        "description": "Välj den åtkomst du vill hantera.",
-        "data": {
-          "connection": "Anslutning"
+        "description": "{result}Välj den åtkomst du vill hantera.",
+        "menu_options": {
+          "back": "← Tillbaka"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Hantera anslutning",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Testa anslutningen nu",
           "connection_enabled": "Aktivera eller inaktivera åtkomst",
@@ -470,7 +471,8 @@
           "connection_polling": "Förfrågningsfrekvens",
           "local_setup": "Ändra lokal åtkomst",
           "local_polling": "Lokal förfrågningsfrekvens och status",
-          "local_values": "Använd lokala värden för befintliga entiteter"
+          "local_values": "Använd lokala värden för befintliga entiteter",
+          "back": "← Tillbaka"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Sökningen startades inte: förfrågningar är pausade just nu (till exempel efter att molnet begärt en paus). Försök igen senare.",
       "rescan_running": "En sökning pågår redan eller är planerad. Vänta tills den är klar.",
       "rescan_partial": "Sökningen är planerad för de delar som är redo och körs vid nästa regelbundna uppdatering. Delar som är pausade just nu hoppades över. Försök igen senare för dem.",
-      "rescan_unavailable": "Sökningen startades inte: ingen åtkomst till anläggningen är redo just nu."
+      "rescan_unavailable": "Sökningen startades inte: ingen åtkomst till anläggningen är redo just nu.",
+      "connection_saved": "Ändringen sparades.",
+      "connection_removed": "Åtkomsten togs bort.",
+      "notifications_saved": "Aviseringsinställningarna sparades.",
+      "rrc_program_saved": "Kopplingspunkten sparades och bekräftades genom återläsning."
     },
     "progress": {
       "local_work": "Kontrollerar den lokala anslutningen. Vänta."

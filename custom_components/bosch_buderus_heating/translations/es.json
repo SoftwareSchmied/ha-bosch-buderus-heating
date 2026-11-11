@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Ajustes",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Notificaciones",
           "holidays": "Gestionar períodos de vacaciones",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Conexiones",
-        "description": "Elige el acceso que quieres gestionar.",
-        "data": {
-          "connection": "Conexión"
+        "description": "{result}Elige el acceso que quieres gestionar.",
+        "menu_options": {
+          "back": "← Atrás"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Gestionar conexión",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Probar la conexión ahora",
           "connection_enabled": "Activar o desactivar el acceso",
@@ -470,7 +471,8 @@
           "connection_polling": "Frecuencia de consulta",
           "local_setup": "Cambiar el acceso local",
           "local_polling": "Frecuencia de consulta local y estado",
-          "local_values": "Usar valores locales para las entidades existentes"
+          "local_values": "Usar valores locales para las entidades existentes",
+          "back": "← Atrás"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "La búsqueda no se inició: las consultas están en pausa en este momento (por ejemplo, después de que la nube pidiera una pausa). Inténtalo de nuevo más tarde.",
       "rescan_running": "Ya hay una búsqueda en curso o planificada. Espera a que termine.",
       "rescan_partial": "La búsqueda está planificada para los componentes que están listos y se ejecuta con la siguiente actualización periódica. Se omitieron los componentes que están en pausa en este momento; inténtalo de nuevo más tarde para ellos.",
-      "rescan_unavailable": "La búsqueda no se inició: ningún acceso a la instalación está listo en este momento."
+      "rescan_unavailable": "La búsqueda no se inició: ningún acceso a la instalación está listo en este momento.",
+      "connection_saved": "El cambio se guardó.",
+      "connection_removed": "El acceso se eliminó.",
+      "notifications_saved": "Los ajustes de notificaciones se guardaron.",
+      "rrc_program_saved": "El punto de conmutación se guardó y se confirmó al volver a leerlo."
     },
     "progress": {
       "local_work": "Comprobando la conexión local. Espera, por favor."

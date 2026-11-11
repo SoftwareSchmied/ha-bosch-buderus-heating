@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Socruithe",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Fógraí",
           "holidays": "Bainistigh tréimhsí saoire",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Naisc",
-        "description": "Roghnaigh an rochtain ar mhaith leat a bhainistiú.",
-        "data": {
-          "connection": "Nasc"
+        "description": "{result}Roghnaigh an rochtain ar mhaith leat a bhainistiú.",
+        "menu_options": {
+          "back": "← Siar"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Bainistigh an nasc",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Tástáil an nasc anois",
           "connection_enabled": "Cumasaigh nó díchumasaigh rochtain",
@@ -470,7 +471,8 @@
           "connection_polling": "Minicíocht fiosraithe",
           "local_setup": "Athraigh rochtain áitiúil",
           "local_polling": "Minicíocht fiosraithe áitiúil agus stádas",
-          "local_values": "Úsáid luachanna áitiúla d'aonáin atá ann cheana"
+          "local_values": "Úsáid luachanna áitiúla d'aonáin atá ann cheana",
+          "back": "← Siar"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Níor tosaíodh an cuardach: tá iarratais curtha ar sos faoi láthair (mar shampla tar éis don néal sos a iarraidh). Déan iarracht arís níos déanaí.",
       "rescan_running": "Tá cuardach ar siúl nó pleanáilte cheana. Fan go mbeidh sé críochnaithe.",
       "rescan_partial": "Tá an cuardach pleanáilte do na páirteanna atá réidh agus ritheann sé leis an gcéad nuashonrú rialta eile. Seachnaíodh páirteanna atá curtha ar sos faoi láthair; déan iarracht arís níos déanaí dóibh siúd.",
-      "rescan_unavailable": "Níor tosaíodh an cuardach: níl aon rochtain ar an gcóras réidh faoi láthair."
+      "rescan_unavailable": "Níor tosaíodh an cuardach: níl aon rochtain ar an gcóras réidh faoi láthair.",
+      "connection_saved": "Sábháladh an t-athrú.",
+      "connection_removed": "Baineadh an rochtain.",
+      "notifications_saved": "Sábháladh na socruithe fógraí.",
+      "rrc_program_saved": "Sábháladh an pointe aistrithe agus deimhníodh é trína léamh ar ais."
     },
     "progress": {
       "local_work": "Ag seiceáil an naisc áitiúil. Fan, le do thoil."

@@ -69,6 +69,7 @@ from custom_components.bosch_buderus_heating.pointt import (
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 from custom_components.bosch_buderus_heating.writes import WriteBusy
 from tests.ha_test_helpers import MockConfigEntry
+from tests.helpers.options_menu import outcome as flow_outcome
 
 
 def _field_list(schema):
@@ -212,7 +213,7 @@ async def test_holiday_write_feedback_explains_actual_state_and_closes_creation(
     setattr(coordinator, f"async_{operation}_holiday", writer)
     result = await _configure_options(hass, result["flow_id"], values)
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == reason
+    assert await flow_outcome(hass, result) == reason
     writer.assert_awaited_once()
     assert not hass.config_entries.options.async_progress()
     if outcome == "adjusted":
@@ -347,7 +348,9 @@ async def test_common_form_saves_directly_without_an_action_menu(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], values
     )
-    assert result["reason"] == ("holiday_created" if creating else "holiday_updated")
+    assert await flow_outcome(hass, result) == (
+        "holiday_created" if creating else "holiday_updated"
+    )
     writer = (
         coordinator.async_create_holiday
         if creating
@@ -378,7 +381,7 @@ async def test_cancel_delete_keeps_the_original_baseline_after_polling(
     )
     assert _holiday_form_input(result) == draft
     result = await _configure_options(hass, result["flow_id"], draft)
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     call = coordinator.async_update_holiday.await_args
     baseline = call.kwargs["expected"]
     assert baseline.fix_temperature == 17.0
@@ -421,7 +424,7 @@ async def test_hiding_legacy_seconds_does_not_rewrite_an_unchanged_timestamp(
     assert draft["holiday_start"] == "2030-08-01T08:38"
     draft["holiday_fix_temperature"] = 18.5
     result = await _configure_options(hass, result["flow_id"], draft)
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     assert coordinator.async_update_holiday.await_args.args[1].start_date == original
 
 
@@ -654,7 +657,7 @@ async def test_flow_aborts_when_account_has_no_gateways(
         )
 
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "no_gateways"
+    assert await flow_outcome(hass, result) == "no_gateways"
 
 
 @pytest.mark.parametrize(
@@ -739,7 +742,7 @@ async def test_gateway_selection_validates_input_and_existing_entries(
         flow_id, {CONF_GATEWAY_IDS: ["gateway-one"]}
     )
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "cloud_already_connected"
+    assert await flow_outcome(hass, result) == "cloud_already_connected"
 
 
 @pytest.mark.parametrize(
@@ -822,10 +825,10 @@ async def test_reauthentication_updates_tokens(
 
     assert result["type"] is FlowResultType.ABORT
     if visible_gateway == "gateway-one":
-        assert result["reason"] == "reauth_successful"
+        assert await flow_outcome(hass, result) == "reauth_successful"
         assert entry.data[CONF_ACCESS_TOKEN] == "new-access"
     else:
-        assert result["reason"] == "reauth_wrong_account"
+        assert await flow_outcome(hass, result) == "reauth_wrong_account"
         assert entry.data[CONF_ACCESS_TOKEN] == "old-access"
 
 
@@ -961,7 +964,7 @@ async def test_existing_holiday_edits_name_dates_and_settings_together(
         holiday_fix_temperature=18.5,
     )
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     coordinator.async_update_holiday.assert_awaited_once()
     holiday_id, written = coordinator.async_update_holiday.await_args.args
     baseline = coordinator.async_update_holiday.await_args.kwargs["expected"]
@@ -993,7 +996,7 @@ async def test_existing_holiday_preserves_midnight_and_exclusive_end_dates(
     assert values["holiday_end"] == ("2030-08-09" if date_only else "2030-08-09T00:00")
     values[CONF_HOLIDAY_FIX_TEMPERATURE] = 18.0
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     written = coordinator.async_update_holiday.await_args.args[1]
     assert written.start_date == original["startDate"]
     assert written.end_date == original["endDate"]
@@ -1002,7 +1005,7 @@ async def test_existing_holiday_preserves_midnight_and_exclusive_end_dates(
     values = _holiday_form_input(result)
     values["holiday_end"] = "2030-08-10" if date_only else "2030-08-10T00:00"
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     written = coordinator.async_update_holiday.await_args.args[1]
     assert written.end_date == ("2030-08-09" if date_only else "2030-08-10T00:00:00")
 
@@ -1052,7 +1055,7 @@ async def test_existing_holiday_keeps_input_after_invalid_name_or_dates(
         holiday_end="2030-08-08T18:45",
     )
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     coordinator.async_update_holiday.assert_awaited_once()
 
 
@@ -1074,7 +1077,7 @@ async def test_existing_holiday_retry_keeps_baseline_and_unrelated_app_changes(
     assert result["errors"] == {"holiday_start": "holiday_time_step"}
     values = {**_holiday_form_input(result), "holiday_start": "2030-08-02T09:00"}
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     call = coordinator.async_update_holiday.await_args
     baseline = call.kwargs["expected"]
     assert baseline.fix_temperature == 17.0
@@ -1095,7 +1098,7 @@ async def test_settings_only_edit_preserves_an_existing_non_quarter_hour_time(
     result = await _open_existing_holiday(hass, entry)
     values = {**_holiday_form_input(result), "holiday_fix_temperature": 18.5}
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     written = coordinator.async_update_holiday.await_args.args[1]
     assert written.start_date == "2030-08-01T08:38:00"
     assert written.fix_temperature == 18.5
@@ -1113,7 +1116,7 @@ async def test_existing_holiday_offset_inputs_use_the_installation_timezone(
         "holiday_end": "2030-08-10T16:45:00+00:00",
     }
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     written = coordinator.async_update_holiday.await_args.args[1]
     assert written.start_date == "2030-08-02T09:15:00"
     assert written.end_date == "2030-08-10T18:45:00"
@@ -1130,7 +1133,7 @@ async def test_existing_holiday_without_name_storage_still_allows_date_changes(
     values["holiday_start"] = "2030-08-02"
     values["holiday_start"] = values["holiday_start"].split("T")[0] + "T" + "09:00:00"
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     call = coordinator.async_update_holiday.await_args
     assert call.args[1].name == call.kwargs["expected"].name
 
@@ -1185,7 +1188,7 @@ async def test_delete_from_edit_preserves_draft_on_cancel_and_never_saves_it_fir
     coordinator.async_update_holiday.assert_not_awaited()
     coordinator.async_delete_holiday.assert_not_awaited()
     result = await _configure_options(hass, result["flow_id"], draft)
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     call = coordinator.async_update_holiday.await_args
     assert call.args[1].end_date == "2030-08-10T09:15:00"
     assert call.args[1].fix_temperature == 18.5
@@ -1213,7 +1216,7 @@ async def test_delete_from_edit_confirms_saved_values_not_the_unsaved_draft(
     assert "2030-08-02 08:00" in result["description_placeholders"]["holiday"]
     assert "Unsent name" not in result["description_placeholders"]["holiday"]
     result = await _configure_options(hass, result["flow_id"], {"confirm_delete": True})
-    assert result["reason"] == "holiday_deleted"
+    assert await flow_outcome(hass, result) == "holiday_deleted"
     coordinator.async_update_holiday.assert_not_awaited()
     coordinator.async_delete_holiday.assert_awaited_once()
     assert coordinator.async_delete_holiday.await_args.kwargs[
@@ -1236,8 +1239,9 @@ async def test_new_holiday_has_no_delete_option(hass, enable_custom_integrations
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], values
     )
-    assert result["reason"] == "holiday_created"
-    assert "menu_options" not in result
+    assert await flow_outcome(hass, result) == "holiday_created"
+    # Back in the main menu, not in a menu of the holiday.
+    assert result["step_id"] == "init"
     coordinator.async_create_holiday.assert_awaited_once()
     coordinator.async_update_holiday.assert_not_awaited()
     coordinator.async_delete_holiday.assert_not_awaited()
@@ -1267,7 +1271,7 @@ async def test_existing_holiday_uses_the_selected_gateway(
         else {**_holiday_form_input(result), "holiday_name": "Second trip"}
     )
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == (
+    assert await flow_outcome(hass, result) == (
         "holiday_deleted" if action == "delete_holiday" else "holiday_updated"
     )
     write = (
@@ -1307,7 +1311,7 @@ async def test_delete_stops_when_confirmation_is_outdated(
             has_value=True,
         )
     result = await _configure_options(hass, result["flow_id"], {"confirm_delete": True})
-    assert result["reason"] == "holiday_changed"
+    assert await flow_outcome(hass, result) == "holiday_changed"
     coordinator.async_delete_holiday.assert_not_awaited()
 
 
@@ -1331,7 +1335,7 @@ async def test_holiday_delete_reports_failure_without_retrying(
     result = await _open_existing_holiday(hass, entry, action="delete_holiday")
     result = await _configure_options(hass, result["flow_id"], {"confirm_delete": True})
     if isinstance(error, HolidayChangedError):
-        assert result["reason"] == expected
+        assert await flow_outcome(hass, result) == expected
     else:
         assert result["step_id"] == "delete_holiday"
         assert result["errors"] == {"base": expected}
@@ -1367,8 +1371,8 @@ async def test_options_flow_configures_only_advertised_holiday_fields(
         },
     )
 
-    assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "holiday_updated"
+    assert result["type"] is FlowResultType.MENU
+    assert await flow_outcome(hass, result) == "holiday_updated"
     holiday_id, values = coordinator.async_update_holiday.await_args.args
     baseline = coordinator.async_update_holiday.await_args.kwargs["expected"]
     assert baseline is not None
@@ -1394,7 +1398,7 @@ async def test_options_flow_rejects_stale_or_missing_holidays(
     result = await _start_holiday_options(hass, entry)
 
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "no_writable_holidays"
+    assert await flow_outcome(hass, result) == "no_writable_holidays"
 
 
 async def test_options_flow_requires_a_loaded_entry(
@@ -1405,7 +1409,7 @@ async def test_options_flow_requires_a_loaded_entry(
     result = await _start_holiday_options(hass, entry)
 
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "not_loaded"
+    assert await flow_outcome(hass, result) == "not_loaded"
 
 
 async def test_options_flow_rejects_a_changed_selection(
@@ -1455,7 +1459,7 @@ async def test_options_flow_stops_if_selected_holiday_disappears(
     )
 
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "holiday_changed"
+    assert await flow_outcome(hass, result) == "holiday_changed"
 
 
 @pytest.mark.parametrize(
@@ -1508,8 +1512,8 @@ async def test_saving_the_holiday_as_shown_sends_nothing(
     result = await _configure_options(
         hass, result["flow_id"], _holiday_form_input(result)
     )
-    assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "holiday_unchanged"
+    assert result["type"] is FlowResultType.MENU
+    assert await flow_outcome(hass, result) == "holiday_unchanged"
     coordinator.async_update_holiday.assert_not_awaited()
     coordinator.async_delete_holiday.assert_not_awaited()
 
@@ -1551,7 +1555,7 @@ async def test_reconfigure_saves_profile_and_forces_rediscovery(
         )
 
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "reconfigure_successful"
+    assert await flow_outcome(hass, result) == "reconfigure_successful"
     assert entry.data[CONF_GATEWAY_IDS] == ["gateway-one", "gateway-two"]
     assert entry.options[CONF_POLLING_PROFILE] == PollingProfile.CLOUD_FRIENDLY.value
     reload_entry.assert_called_once_with(entry.entry_id)
@@ -1595,7 +1599,7 @@ async def test_reconfigure_discovery_errors(
     )
     if step is None:
         assert result["type"] is FlowResultType.ABORT
-        assert result["reason"] == expected
+        assert await flow_outcome(hass, result) == expected
     else:
         assert result["step_id"] == step
         assert result["errors"] == {"base": expected}
@@ -1628,7 +1632,7 @@ async def test_reconfigure_retry_and_no_gateways(
         hass, _reconfigure_entry(hass), AsyncMock(return_value=())
     )
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "no_gateways"
+    assert await flow_outcome(hass, result) == "no_gateways"
 
 
 async def test_reconfigure_brand_change_signs_in_and_updates_entry(
@@ -1670,7 +1674,7 @@ async def test_reconfigure_brand_change_signs_in_and_updates_entry(
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], {CONF_GATEWAY_IDS: ["bosch-gateway"]}
         )
-    assert result["reason"] == "reconfigure_successful"
+    assert await flow_outcome(hass, result) == "reconfigure_successful"
     assert entry.data[CONF_BRAND] == Brand.BOSCH.value
     assert entry.data[CONF_ACCESS_TOKEN] == "bosch-access"
     assert entry.data[CONF_GATEWAY_IDS] == ["bosch-gateway"]
@@ -1718,7 +1722,7 @@ async def test_holiday_form_preserves_its_original_baseline_during_polling(
             CONF_HOLIDAY_FIX_TEMPERATURE: 17.0,
         },
     )
-    assert result["reason"] == "holiday_updated"
+    assert await flow_outcome(hass, result) == "holiday_updated"
     call = coordinator.async_update_holiday.await_args
     baseline = call.kwargs["expected"]
     assert baseline.fix_temperature == 17.0
@@ -1755,7 +1759,7 @@ async def test_new_holiday_requires_explicit_offered_modes(
         holiday_fix_temperature=18.0,
     )
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_created"
+    assert await flow_outcome(hass, result) == "holiday_created"
     written = coordinator.async_create_holiday.await_args.args[0]
     assert written.heating_mode == "NewVendorMode"
     assert written.dhw_mode == "LOW"
@@ -1793,7 +1797,7 @@ async def test_new_holiday_time_error_can_be_corrected_without_losing_input(
     coordinator.async_create_holiday.assert_not_awaited()
     values[field] = values[field][:10] + "T22:45"
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_created"
+    assert await flow_outcome(hass, result) == "holiday_created"
     coordinator.async_create_holiday.assert_awaited_once()
     written = coordinator.async_create_holiday.await_args.args[0]
     assert written.start_date == values["holiday_start"] + ":00"
@@ -1885,7 +1889,7 @@ async def test_new_holiday_routes_to_explicit_gateway(
         result, holiday_assigned_to=["hc1"], holiday_heating_mode="eco"
     )
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_created"
+    assert await flow_outcome(hass, result) == "holiday_created"
     first.async_create_holiday.assert_not_awaited()
     second.async_create_holiday.assert_awaited_once()
 
@@ -1927,7 +1931,7 @@ async def test_new_holiday_dates_start_empty_and_remain_required(
         holiday_end="2026-09-24" if date_mode == "date" else "2026-09-24T08:00",
     )
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_created"
+    assert await flow_outcome(hass, result) == "holiday_created"
     coordinator.async_create_holiday.assert_awaited_once()
     written = coordinator.async_create_holiday.await_args.args[0]
     assert written.start_date == (
@@ -2003,7 +2007,7 @@ async def test_new_holiday_clock_override_is_not_replaced_by_eight(
         holiday_end="2030-08-08" + "T" + clock[:5],
     )
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_created"
+    assert await flow_outcome(hass, result) == "holiday_created"
     written = coordinator.async_create_holiday.await_args.args[0]
     assert written.start_date == "2030-08-01T" + clock
     assert written.end_date == "2030-08-08T" + clock
@@ -2056,7 +2060,7 @@ async def test_new_holiday_date_only_gateway_rejects_reversed_dates(
     coordinator.async_create_holiday.assert_not_awaited()
     values.update(holiday_start="2030-08-01", holiday_end="2030-08-03")
     result = await _configure_options(hass, result["flow_id"], values)
-    assert result["reason"] == "holiday_created"
+    assert await flow_outcome(hass, result) == "holiday_created"
     written = coordinator.async_create_holiday.await_args.args[0]
     assert written.start_date == "2030-08-01" and written.end_date == "2030-08-02"
     assert written.fix_temperature == 19.0

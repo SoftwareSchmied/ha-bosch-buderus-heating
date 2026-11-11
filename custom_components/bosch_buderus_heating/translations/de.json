@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Einstellungen",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Benachrichtigungen",
           "holidays": "Urlaubszeiten verwalten",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Verbindungen",
-        "description": "Wähle den Zugang, den du verwalten möchtest.",
-        "data": {
-          "connection": "Zugang"
+        "description": "{result}Wähle den Zugang, den du verwalten möchtest.",
+        "menu_options": {
+          "back": "← Zurück"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Zugang verwalten",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Verbindung jetzt testen",
           "connection_enabled": "Zugang aktivieren oder deaktivieren",
@@ -470,7 +471,8 @@
           "connection_polling": "Abfragehäufigkeit",
           "local_setup": "Lokalen Zugang ändern",
           "local_polling": "Lokale Abfragehäufigkeit und Status",
-          "local_values": "Lokale Werte für vorhandene Entitäten"
+          "local_values": "Lokale Werte für vorhandene Entitäten",
+          "back": "← Zurück"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Die Suche wurde nicht gestartet: Anfragen sind gerade pausiert (zum Beispiel, weil die Cloud um eine Pause gebeten hat). Bitte versuche es später erneut.",
       "rescan_running": "Eine Suche läuft bereits oder ist geplant. Bitte warte, bis sie abgeschlossen ist.",
       "rescan_partial": "Die Suche ist für die bereiten Teile geplant und läuft mit der nächsten regulären Aktualisierung. Gerade pausierte Teile wurden übersprungen; bitte versuche es für sie später erneut.",
-      "rescan_unavailable": "Die Suche wurde nicht gestartet: Gerade ist kein Zugang zur Anlage bereit."
+      "rescan_unavailable": "Die Suche wurde nicht gestartet: Gerade ist kein Zugang zur Anlage bereit.",
+      "connection_saved": "Die Änderung wurde gespeichert.",
+      "connection_removed": "Der Zugang wurde entfernt.",
+      "notifications_saved": "Die Benachrichtigungseinstellungen wurden gespeichert.",
+      "rrc_program_saved": "Der Schaltpunkt wurde gespeichert und durch Zurücklesen bestätigt."
     },
     "progress": {
       "local_work": "Die lokale Verbindung wird geprüft. Bitte warte einen Moment."

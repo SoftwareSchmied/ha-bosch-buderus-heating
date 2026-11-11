@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Definições",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Notificações",
           "holidays": "Gerir períodos de férias",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Ligações",
-        "description": "Escolha o acesso que pretende gerir.",
-        "data": {
-          "connection": "Ligação"
+        "description": "{result}Escolha o acesso que pretende gerir.",
+        "menu_options": {
+          "back": "← Voltar"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Gerir ligação",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Testar ligação agora",
           "connection_enabled": "Ativar ou desativar o acesso",
@@ -470,7 +471,8 @@
           "connection_polling": "Frequência de consulta",
           "local_setup": "Alterar acesso local",
           "local_polling": "Frequência de consulta local e estado",
-          "local_values": "Utilizar valores locais para entidades existentes"
+          "local_values": "Utilizar valores locais para entidades existentes",
+          "back": "← Voltar"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "A pesquisa não foi iniciada: os pedidos estão atualmente em pausa (por exemplo, depois de a cloud ter solicitado uma pausa). Tente novamente mais tarde.",
       "rescan_running": "Já está em curso ou planeada uma pesquisa. Aguarde até que termine.",
       "rescan_partial": "A pesquisa está planeada para os componentes que estão prontos e decorre na próxima atualização regular. Os componentes que estão atualmente em pausa foram ignorados; tente novamente mais tarde para esses.",
-      "rescan_unavailable": "A pesquisa não foi iniciada: não está pronto neste momento nenhum acesso à instalação."
+      "rescan_unavailable": "A pesquisa não foi iniciada: não está pronto neste momento nenhum acesso à instalação.",
+      "connection_saved": "A alteração foi guardada.",
+      "connection_removed": "O acesso foi removido.",
+      "notifications_saved": "As definições de notificações foram guardadas.",
+      "rrc_program_saved": "O ponto de comutação foi guardado e confirmado por releitura."
     },
     "progress": {
       "local_work": "A verificar a ligação local. Aguarde."

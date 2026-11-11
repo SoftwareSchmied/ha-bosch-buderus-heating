@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Instellingen",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Notificaties",
           "holidays": "Vakantieperiodes beheren",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Verbindingen",
-        "description": "Kies de toegang die je wilt beheren.",
-        "data": {
-          "connection": "Verbinding"
+        "description": "{result}Kies de toegang die je wilt beheren.",
+        "menu_options": {
+          "back": "← Terug"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Verbinding beheren",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Verbinding nu testen",
           "connection_enabled": "Toegang in- of uitschakelen",
@@ -470,7 +471,8 @@
           "connection_polling": "Opvraagfrequentie",
           "local_setup": "Lokale toegang wijzigen",
           "local_polling": "Lokale opvraagfrequentie en status",
-          "local_values": "Lokale waarden gebruiken voor bestaande entiteiten"
+          "local_values": "Lokale waarden gebruiken voor bestaande entiteiten",
+          "back": "← Terug"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Het zoeken is niet gestart: verzoeken zijn nu gepauzeerd (bijvoorbeeld nadat de cloud om een pauze vroeg). Probeer het later opnieuw.",
       "rescan_running": "Er loopt of is al een zoekopdracht gepland. Wacht tot deze klaar is.",
       "rescan_partial": "Het zoeken is gepland voor de onderdelen die gereed zijn en wordt uitgevoerd bij de volgende reguliere update. Onderdelen die nu gepauzeerd zijn, zijn overgeslagen; probeer het later opnieuw voor die onderdelen.",
-      "rescan_unavailable": "Het zoeken is niet gestart: er is nu geen toegang tot de installatie gereed."
+      "rescan_unavailable": "Het zoeken is niet gestart: er is nu geen toegang tot de installatie gereed.",
+      "connection_saved": "De wijziging is opgeslagen.",
+      "connection_removed": "De toegang is verwijderd.",
+      "notifications_saved": "De meldingsinstellingen zijn opgeslagen.",
+      "rrc_program_saved": "Het schakelpunt is opgeslagen en bevestigd door het terug te lezen."
     },
     "progress": {
       "local_work": "De lokale verbinding wordt gecontroleerd. Een moment geduld."

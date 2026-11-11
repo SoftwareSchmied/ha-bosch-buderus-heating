@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Postavke",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Obavijesti",
           "holidays": "Upravljanje razdobljima odmora",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Veze",
-        "description": "Odaberite pristup kojim želite upravljati.",
-        "data": {
-          "connection": "Veza"
+        "description": "{result}Odaberite pristup kojim želite upravljati.",
+        "menu_options": {
+          "back": "← Natrag"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Upravljanje vezom",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Testiraj vezu sada",
           "connection_enabled": "Uključi ili isključi pristup",
@@ -470,7 +471,8 @@
           "connection_polling": "Učestalost dohvaćanja",
           "local_setup": "Promjena lokalnog pristupa",
           "local_polling": "Učestalost lokalnog dohvaćanja i stanje",
-          "local_values": "Koristi lokalne vrijednosti za postojeće entitete"
+          "local_values": "Koristi lokalne vrijednosti za postojeće entitete",
+          "back": "← Natrag"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Pretraživanje nije pokrenuto: zahtjevi su trenutno pauzirani (na primjer nakon što je oblak zatražio stanku). Pokušajte ponovno kasnije.",
       "rescan_running": "Pretraživanje se već izvodi ili je zakazano. Pričekajte da završi.",
       "rescan_partial": "Pretraživanje je zakazano za dijelove koji su spremni i izvodi se pri sljedećem redovitom ažuriranju. Dijelovi koji su trenutno pauzirani preskočeni su; za njih pokušajte ponovno kasnije.",
-      "rescan_unavailable": "Pretraživanje nije pokrenuto: trenutno nije spreman nijedan pristup sustavu."
+      "rescan_unavailable": "Pretraživanje nije pokrenuto: trenutno nije spreman nijedan pristup sustavu.",
+      "connection_saved": "Promjena je spremljena.",
+      "connection_removed": "Pristup je uklonjen.",
+      "notifications_saved": "Postavke obavijesti su spremljene.",
+      "rrc_program_saved": "Točka prebacivanja je spremljena i potvrđena ponovnim čitanjem."
     },
     "progress": {
       "local_work": "Provjera lokalne veze. Pričekajte."

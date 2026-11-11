@@ -33,6 +33,7 @@ from custom_components.bosch_buderus_heating.local_selection import (
     local_snapshot,
 )
 from custom_components.bosch_buderus_heating.pointt import Resource, ResourceMetadata
+from tests.helpers.options_menu import connection_choice
 from tests.test_local_api import read, scalar
 from tests.test_local_setup import registered
 
@@ -666,7 +667,7 @@ async def test_local_values_menu_requires_a_linked_installation(
             result["flow_id"], {"next_step_id": "connections"}
         )
         result = await manager.async_configure(
-            result["flow_id"], {"connection": local_id}
+            result["flow_id"], connection_choice(hass, result, local_id)
         )
         manager.async_abort(result["flow_id"])
         return result["menu_options"]

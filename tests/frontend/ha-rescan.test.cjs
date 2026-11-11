@@ -30,6 +30,8 @@ const path = require("node:path");
       running: "Eine Suche läuft bereits oder ist geplant.",
       paused: "Die Suche wurde nicht gestartet: Anfragen sind gerade pausiert",
       submit: /^(Absenden|Weiter|OK)$/i,
+      connections: "Verbindungen",
+      back: "← Zurück",
     }
     : {
       entry: "Search the system again",
@@ -38,6 +40,8 @@ const path = require("node:path");
       running: "A search is already running or planned.",
       paused: "The search was not started: requests are paused right now",
       submit: /^(Submit|Next|OK)$/i,
+      connections: "Connections",
+      back: "← Back",
     };
   const openMenu = async () => {
     await page.goto(process.env.LOCAL_SETUP_URL + "config/integrations/integration/bosch_buderus_heating");
@@ -46,13 +50,29 @@ const path = require("node:path");
     await item.waitFor();
     return item;
   };
+  const menuItem = text =>
+    page.locator("ha-md-list-item, ha-list-item, mwc-list-item").filter({hasText: text}).first();
   const search = async (expected, name) => {
     const item = await openMenu();
     await item.click();
     // The confirmation form names the action as its title.
     await page.getByRole("button", {name: texts.submit}).first().click();
     await page.getByText(expected, {exact: false}).first().waitFor();
+    // The dialog stays open: back in the main menu, with the result as its note.
+    await menuItem(texts.entry).waitFor();
+    await menuItem(texts.connections).waitFor();
     await shot(name);
+  };
+  const backFromConnections = async () => {
+    await openMenu();
+    await menuItem(texts.connections).click();
+    const back = menuItem(texts.back);
+    await back.waitFor();
+    await shot("connections-menu");
+    await back.click();
+    // Back in the main menu of the same dialog.
+    await menuItem(texts.entry).waitFor();
+    assert.equal(await menuItem(texts.back).count(), 0);
   };
   try {
     await page.addInitScript(({url, token, language}) => {
@@ -67,6 +87,7 @@ const path = require("node:path");
     if (phase === "start") {
       await openMenu();
       await shot("rescan-menu");
+      await backFromConnections();
       await search(texts.planned, "rescan-planned");
       await search(texts.running, "rescan-running");
     } else {

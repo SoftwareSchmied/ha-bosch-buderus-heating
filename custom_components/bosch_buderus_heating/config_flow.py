@@ -1015,6 +1015,8 @@ class BoschBuderusOptionsFlow(
             return await self.async_step_local_setup()
         return self.async_show_menu(
             step_id="init",
+            # The note of a finished action, see ``options_navigation``.
+            description_placeholders={"result": self.take_result_note()},
             menu_options=[
                 *(["connections"] if self._entry.version == 4 else []),
                 *(
@@ -1052,7 +1054,9 @@ class BoschBuderusOptionsFlow(
             return self.async_abort(reason="rescan_unavailable")
         if user_input is None:
             return self.async_show_form(step_id="rescan", data_schema=vol.Schema({}))
-        return self.async_abort(reason=f"rescan_{request_rescan(owner)}")
+        return await self.async_return_to_menu(
+            "init", f"rescan_{request_rescan(owner)}"
+        )
 
     async def async_step_notifications(
         self, user_input: dict[str, Any] | None = None
@@ -1089,14 +1093,18 @@ class BoschBuderusOptionsFlow(
                     persistent_notification.async_dismiss(
                         self.hass, notification_id(self._entry.entry_id, gateway_id)
                     )
-            return self.async_create_entry(
-                title="",
-                data={
+            # Saved to the entry at once (the same effect as ending the
+            # dialog with it); the dialog returns to the main menu.
+            self.hass.config_entries.async_update_entry(
+                self._entry,
+                options={
                     **self._entry.options,
                     CONF_FAULT_NOTIFICATIONS: options,
                     CONF_NOTIFY_NOTICES: user_input.get(CONF_NOTIFY_NOTICES) is True,
                 },
             )
+            self._notification_gateway_keys = None
+            return await self.async_return_to_menu("init", "notifications_saved")
         selected = [
             key
             for gateway_id, key in zip(gateway_ids, current_keys, strict=True)
@@ -1234,7 +1242,7 @@ class BoschBuderusOptionsFlow(
             except PointTError:
                 errors = {"base": "delete_failed"}
             else:
-                return self.async_abort(reason="holiday_deleted")
+                return await self.async_return_to_menu("init", "holiday_deleted")
         self._delete_choice = choice
         return self.async_show_form(
             step_id="delete_holiday",
@@ -1324,7 +1332,7 @@ class BoschBuderusOptionsFlow(
             if user_input["holiday_mode"] == displayed.value:
                 # FLOW-4: an unchanged OK sends nothing, even if the system
                 # changed meanwhile; a change is written against the value shown.
-                return self.async_abort(reason="holiday_unchanged")
+                return await self.async_return_to_menu("init", "holiday_unchanged")
             try:
                 await coordinator.async_write_control(
                     WDDW2_HOLIDAY_PATH,
@@ -1345,7 +1353,7 @@ class BoschBuderusOptionsFlow(
             except PointTError:
                 errors = {"base": "write_failed"}
             else:
-                return self.async_abort(reason="holiday_updated")
+                return await self.async_return_to_menu("init", "holiday_updated")
             resource = holiday_resources_from_snapshots(coordinator.data or {}).get(
                 WDDW2_HOLIDAY_PATH, resource
             )
@@ -1558,7 +1566,7 @@ class BoschBuderusOptionsFlow(
                 elif values == current:
                     # Saving the values as shown sends nothing: such a write
                     # could only undo a change made meanwhile in the app.
-                    return self.async_abort(reason="holiday_unchanged")
+                    return await self.async_return_to_menu("init", "holiday_unchanged")
                 else:
                     await choice.coordinator.async_update_holiday(
                         holiday_id, values, expected=current
@@ -1604,8 +1612,8 @@ class BoschBuderusOptionsFlow(
             except PointTError:
                 errors = {"base": "write_failed"}
             else:
-                return self.async_abort(
-                    reason="holiday_created" if creating else "holiday_updated"
+                return await self.async_return_to_menu(
+                    "init", "holiday_created" if creating else "holiday_updated"
                 )
             # A correction must still compare with the values originally shown,
             # even if polling has since received changes from the appliance app.

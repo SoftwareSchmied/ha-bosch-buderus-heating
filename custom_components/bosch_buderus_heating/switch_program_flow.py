@@ -13,7 +13,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from homeassistant.config_entries import ConfigEntry, ConfigFlowResult, OptionsFlow
+from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.helpers.selector import (
     BooleanSelector,
     SelectOptionDict,
@@ -32,6 +32,7 @@ from .device import grouped_entity_name
 from .entry_sources import pointt_coordinators
 from .ha_schema import validation as vol
 from .markdown_text import markdown_literal
+from .options_navigation import NavigatingOptionsFlow
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -111,7 +112,7 @@ def _day_key(day: int) -> str:
     return DAYS[day].lower()
 
 
-class SwitchProgramOptionsFlow(OptionsFlow):
+class SwitchProgramOptionsFlow(NavigatingOptionsFlow):
     """Edit an EMS/iCom weekly program as a draft and send it once."""
 
     _entry: ConfigEntry
@@ -592,9 +593,12 @@ class SwitchProgramOptionsFlow(OptionsFlow):
                 errors["base"] = "switch_program_failed"
             else:
                 self._sp_choice = None
-                return self.async_abort(
-                    reason="switch_program_saved",
-                    description_placeholders={
+                # Back to the main menu, with the saved program and the
+                # previous switch points as its note.
+                return await self.async_return_to_menu(
+                    "init",
+                    "switch_program_saved",
+                    {
                         # D43: the label holds the program name from the cloud.
                         "program": markdown_literal(choice.label),
                         "before": before,

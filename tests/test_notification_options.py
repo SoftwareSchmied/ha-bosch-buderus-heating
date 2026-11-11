@@ -18,6 +18,7 @@ from custom_components.bosch_buderus_heating.notifications import (
     notification_policy,
 )
 from tests.ha_test_helpers import MockConfigEntry
+from tests.helpers.options_menu import outcome
 
 
 async def _start(hass, entry):
@@ -62,7 +63,8 @@ async def test_offline_options_preserve_existing_settings(
             result["flow_id"], {CONF_FAULT_NOTIFICATIONS: enabled}
         )
         await hass.async_block_till_done()
-        assert result["type"] is FlowResultType.CREATE_ENTRY
+        assert result["type"] is FlowResultType.MENU
+        assert await outcome(hass, result) == "notifications_saved"
         assert entry.options[CONF_POLLING_PROFILE] == "cloud_friendly"
         assert entry.options["future_setting"] == "new"
         assert notification_policy(entry.options, "one") == (enabled, 0)
@@ -92,7 +94,8 @@ async def test_multiple_installations_are_independent_and_user_names_are_used(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_FAULT_NOTIFICATIONS: [gateway_notification_key("two")]}
     )
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["type"] is FlowResultType.MENU
+    assert await outcome(hass, result) == "notifications_saved"
     assert notification_policy(entry.options, "one") == (False, 0)
     assert notification_policy(entry.options, "two") == (True, 0)
     result = await _start(hass, entry)
@@ -115,7 +118,7 @@ async def test_no_configured_installation_is_explained(
     entry = MockConfigEntry(domain=DOMAIN, data={CONF_GATEWAY_IDS: []})
     entry.add_to_hass(hass)
     result = await _start(hass, entry)
-    assert result["reason"] == "no_notification_gateways"
+    assert await outcome(hass, result) == "no_notification_gateways"
 
 
 async def test_changed_gateway_selection_does_not_apply_to_another_installation(
@@ -128,7 +131,7 @@ async def test_changed_gateway_selection_does_not_apply_to_another_installation(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_FAULT_NOTIFICATIONS: False}
     )
-    assert result["reason"] == "notification_gateways_changed"
+    assert await outcome(hass, result) == "notification_gateways_changed"
     assert not entry.options
 
 
@@ -181,7 +184,8 @@ async def test_warnings_and_maintenance_option_is_kept_and_shown_again(
         result["flow_id"],
         {CONF_FAULT_NOTIFICATIONS: [], CONF_NOTIFY_NOTICES: True},
     )
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["type"] is FlowResultType.MENU
+    assert await outcome(hass, result) == "notifications_saved"
     assert entry.options[CONF_NOTIFY_NOTICES] is True
     result = await _start(hass, entry)
     assert (

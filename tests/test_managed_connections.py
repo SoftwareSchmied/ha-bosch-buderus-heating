@@ -46,6 +46,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     RefreshTokenRejected,
     ServiceUnavailable,
 )
+from tests.helpers.options_menu import connection_choice
 from tests.test_config_flow import _redirect_from_result
 from tests.test_connection_runtime import MODULE, Harness, build, entry_for, settle
 
@@ -60,7 +61,7 @@ async def choose_connection(hass, entry, connection):
     )
     assert result["step_id"] == "connections"
     return await hass.config_entries.options.async_configure(
-        result["flow_id"], {"connection": connection}
+        result["flow_id"], connection_choice(hass, result, connection)
     )
 
 
@@ -110,7 +111,7 @@ async def test_connection_options_work_offline_without_global_reload(
         assert result["type"] is FlowResultType.MENU
         assert entry.data == before
     else:
-        assert result["type"] is FlowResultType.CREATE_ENTRY
+        assert result["type"] is FlowResultType.MENU
         if action == "remove":
             assert cloud not in entry.data["connections"]
         elif action == "disable":
@@ -687,7 +688,7 @@ async def test_unknown_connection_can_be_reviewed_and_removed_in_options(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"confirm": True}
     )
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["type"] is FlowResultType.MENU
     assert "local" not in entry.data["connections"]
 
 
@@ -813,9 +814,132 @@ async def test_local_access_removal_with_a_damaged_setup_record(
         assert result["reason"] == "local_storage_failed"
         assert "local" in entry.data["connections"]
         return
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["type"] is FlowResultType.MENU
     assert "local" not in entry.data["connections"]
     assert not journal._path.exists()
     aside = tmp_path / (JOURNAL_KEY + ".corrupt")
     assert aside.read_text() == '{"version": 4, "attempts": []}'
     assert await journal.records() == ()
+
+
+# Back navigation and result notes (options dialog, option B) --------------
+
+
+async def _menu(hass, flow_id, step):
+    return await hass.config_entries.options.async_configure(
+        flow_id, {"next_step_id": step}
+    )
+
+
+async def test_every_submenu_leads_back_to_its_parent(hass, enable_custom_integrations):
+    from tests.helpers.options_menu import connection_choice
+
+    hass.config.language = "de"
+    entry, cloud, _ = entry_for(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = result["flow_id"]
+    assert result["step_id"] == "init"
+    assert "back" not in result["menu_options"]  # the main menu has none
+    result = await _menu(hass, flow_id, "connections")
+    assert result["type"] is FlowResultType.MENU
+    assert list(result["menu_options"])[-1] == "back"
+    assert result["menu_options"]["back"] == "← Zurück"
+    # Connections -> main menu.
+    result = await _menu(hass, flow_id, "back")
+    assert result["step_id"] == "init"
+    # Main menu -> connections -> connection -> connections -> main menu.
+    result = await _menu(hass, flow_id, "connections")
+    result = await hass.config_entries.options.async_configure(
+        flow_id, connection_choice(hass, result, cloud)
+    )
+    assert result["step_id"] == "connection"
+    assert result["menu_options"][-1] == "back"
+    result = await _menu(hass, flow_id, "back")
+    assert result["step_id"] == "connections"
+    result = await _menu(hass, flow_id, "back")
+    assert result["step_id"] == "init"
+    assert result["description_placeholders"]["result"] == ""
+    # Going back and forth many times keeps one flow, nothing piles up.
+    for _ in range(20):
+        result = await _menu(hass, flow_id, "connections")
+        result = await _menu(hass, flow_id, "back")
+    assert result["step_id"] == "init"
+    assert [
+        flow["flow_id"] for flow in hass.config_entries.options.async_progress()
+    ] == [flow_id]
+    hass.config_entries.options.async_abort(flow_id)
+    assert not hass.config_entries.options.async_progress()
+
+
+async def test_a_saved_connection_setting_returns_to_its_menu(
+    hass, enable_custom_integrations
+):
+    from tests.helpers.options_menu import menu_note
+
+    hass.config.language = "en"
+    entry, cloud, _ = entry_for(hass)
+    result = await choose_connection(hass, entry, cloud)
+    flow_id = result["flow_id"]
+    result = await _menu(hass, flow_id, "connection_enabled")
+    with patch.object(hass.config_entries, "async_reload", AsyncMock()):
+        result = await hass.config_entries.options.async_configure(
+            flow_id, {"enabled": False}
+        )
+        await settle(hass)
+    note = await menu_note(hass, result, "connection_saved", step="connection")
+    assert note.startswith("The change was saved.")
+    # The note is shown once: the same menu again has none.
+    flow = hass.config_entries.options._progress[flow_id]
+    again = await flow.async_step_connection()
+    assert again["description_placeholders"]["result"] == ""
+    # Saved, and the next change in the same dialog works on the new state.
+    assert entry.options["connections"][cloud]["enabled"] is False
+    result = await _menu(hass, flow_id, "connection_enabled")
+    assert result["step_id"] == "connection_enabled"
+    with patch.object(hass.config_entries, "async_reload", AsyncMock()):
+        result = await hass.config_entries.options.async_configure(
+            flow_id, {"enabled": True}
+        )
+        await settle(hass)
+    assert result["step_id"] == "connection"
+    assert entry.options["connections"][cloud]["enabled"] is True
+    # The note is shown once.
+    result = await _menu(hass, flow_id, "back")
+    assert result["step_id"] == "connections"
+    assert result["description_placeholders"]["result"] == ""
+    hass.config_entries.options.async_abort(flow_id)
+
+
+async def test_a_removed_access_returns_to_the_connections(
+    hass, enable_custom_integrations
+):
+    from tests.helpers.options_menu import connection_choice, menu_note
+
+    hass.config.language = "en"
+    entry, cloud, _ = entry_for(hass)
+    result = await choose_connection(hass, entry, cloud)
+    flow_id = result["flow_id"]
+    result = await _menu(hass, flow_id, "connection_remove")
+    with patch.object(hass.config_entries, "async_reload", AsyncMock()):
+        result = await hass.config_entries.options.async_configure(
+            flow_id, {"confirm": True}
+        )
+        await settle(hass)
+    await menu_note(hass, result, "connection_removed", step="connections")
+    assert cloud not in entry.data["connections"]
+    with pytest.raises(AssertionError):
+        connection_choice(hass, result, cloud)
+    # The last access: removed, back in the main menu.
+    (local,) = entry.data["connections"]
+    result = await hass.config_entries.options.async_configure(
+        flow_id, connection_choice(hass, result, local)
+    )
+    result = await _menu(hass, flow_id, "connection_remove")
+    with patch.object(hass.config_entries, "async_reload", AsyncMock()):
+        result = await hass.config_entries.options.async_configure(
+            flow_id, {"confirm": True}
+        )
+        await settle(hass)
+    await menu_note(hass, result, "connection_removed", step="init")
+    assert not entry.data["connections"]
+    hass.config_entries.options.async_abort(flow_id)

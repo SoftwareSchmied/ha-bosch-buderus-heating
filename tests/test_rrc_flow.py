@@ -19,6 +19,7 @@ from custom_components.bosch_buderus_heating.pointt import (
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 from custom_components.bosch_buderus_heating.writes import WriteBusy
 from tests import test_dynamic_controls
+from tests.helpers.options_menu import outcome
 from tests.test_rrc import RESOURCES, WEEK, wire
 
 
@@ -71,7 +72,9 @@ async def test_native_flow_uses_hour_minute_and_commits_only_requested_point(
     assert fields["time"].config["type"] == "time"
     assert list(fields) == ["time", "temperature"]
     result = await flow.async_step_rrc_point({"time": "07:10", "temperature": 22})
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    # Back in the main menu with the note of the saved point.
+    assert await outcome(hass, result) == "rrc_program_saved"
+    assert result["step_id"] == "init"
     assert coordinator.data[WEEK].resource.value[1] == {"d": "Mo", "t": 430, "Th": 22}
 
 
@@ -145,9 +148,10 @@ async def test_readonly_or_empty_week_can_be_viewed_without_writes(
     result = await flow.async_step_rrc_programs({"program": f"1:{WEEK}"})
     assert result["step_id"] == "rrc_readonly"
     assert not result["data_schema"].schema
-    assert (await flow.async_step_rrc_readonly({}))[
-        "type"
-    ] is FlowResultType.CREATE_ENTRY
+    shown = await flow.async_step_rrc_readonly({})
+    # Only shown: back in the main menu, without a note.
+    assert shown["type"] is FlowResultType.MENU and shown["step_id"] == "init"
+    assert shown["description_placeholders"]["result"] == ""
     coordinator.client.put_resource_value.assert_not_awaited()
 
 
@@ -160,7 +164,7 @@ async def test_multiple_gateways_and_disappearing_programs_are_explicit(
     assert all("[" in item.label for item in flow._rrc_choices().values())
     coordinator.data = {}
     result = await flow.async_step_rrc_programs({"program": f"1:{WEEK}"})
-    assert result["reason"] == "no_rrc_schedules"
+    assert await outcome(hass, result) == "no_rrc_schedules"
 
 
 @pytest.mark.parametrize("language", ["de", "en"])

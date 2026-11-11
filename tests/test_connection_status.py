@@ -493,10 +493,9 @@ async def test_options_dialog_shows_state_and_offers_the_test(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"next_step_id": "connections"}
     )
-    labels = [
-        item["label"]
-        for item in result["data_schema"].schema["connection"].config["options"]
-    ]
+    # The accesses are a menu with their labels and a way back.
+    labels = [label for step, label in result["menu_options"].items() if step != "back"]
+    assert list(result["menu_options"])[-1] == "back"
     assert any(item.startswith("Cloud access (") for item in labels)
     assert not any("bosch" in item.casefold() for item in labels)
     hass.config_entries.options.async_abort(result["flow_id"])

@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Asetukset",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Ilmoitukset",
           "holidays": "Hallitse lomajaksoja",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Yhteydet",
-        "description": "Valitse yhteys, jota haluat hallita.",
-        "data": {
-          "connection": "Yhteys"
+        "description": "{result}Valitse yhteys, jota haluat hallita.",
+        "menu_options": {
+          "back": "← Takaisin"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Hallitse yhteyttä",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Testaa yhteys nyt",
           "connection_enabled": "Ota yhteys käyttöön tai poista käytöstä",
@@ -470,7 +471,8 @@
           "connection_polling": "Kyselytiheys",
           "local_setup": "Muuta paikallista yhteyttä",
           "local_polling": "Paikallinen kyselytiheys ja tila",
-          "local_values": "Käytä paikallisia arvoja olemassa oleville entiteeteille"
+          "local_values": "Käytä paikallisia arvoja olemassa oleville entiteeteille",
+          "back": "← Takaisin"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Etsintää ei aloitettu: pyynnöt ovat tällä hetkellä tauolla (esimerkiksi kun pilvi on pyytänyt taukoa). Yritä myöhemmin uudelleen.",
       "rescan_running": "Etsintä on jo käynnissä tai ajoitettu. Odota, kunnes se on valmis.",
       "rescan_partial": "Etsintä on ajoitettu valmiille osille ja suoritetaan seuraavan säännöllisen päivityksen yhteydessä. Osat, jotka ovat tällä hetkellä tauolla, ohitettiin; yritä niiden osalta myöhemmin uudelleen.",
-      "rescan_unavailable": "Etsintää ei aloitettu: mikään järjestelmän yhteys ei ole tällä hetkellä valmis."
+      "rescan_unavailable": "Etsintää ei aloitettu: mikään järjestelmän yhteys ei ole tällä hetkellä valmis.",
+      "connection_saved": "Muutos tallennettiin.",
+      "connection_removed": "Yhteys poistettiin.",
+      "notifications_saved": "Ilmoitusasetukset tallennettiin.",
+      "rrc_program_saved": "Kytkentäpiste tallennettiin ja vahvistettiin lukemalla se takaisin."
     },
     "progress": {
       "local_work": "Tarkistetaan paikallista yhteyttä. Odota."

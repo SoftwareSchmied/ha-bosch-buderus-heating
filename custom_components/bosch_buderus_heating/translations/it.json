@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Impostazioni",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Notifiche",
           "holidays": "Gestisci i periodi di vacanza",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Connessioni",
-        "description": "Scegli l'accesso che vuoi gestire.",
-        "data": {
-          "connection": "Connessione"
+        "description": "{result}Scegli l'accesso che vuoi gestire.",
+        "menu_options": {
+          "back": "← Indietro"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Gestisci connessione",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Testa la connessione ora",
           "connection_enabled": "Abilita o disabilita l'accesso",
@@ -470,7 +471,8 @@
           "connection_polling": "Frequenza di interrogazione",
           "local_setup": "Modifica accesso locale",
           "local_polling": "Frequenza di interrogazione locale e stato",
-          "local_values": "Usa i valori locali per le entità esistenti"
+          "local_values": "Usa i valori locali per le entità esistenti",
+          "back": "← Indietro"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "La ricerca non è stata avviata: le richieste sono attualmente in pausa (ad esempio dopo che il cloud ha chiesto una pausa). Riprova più tardi.",
       "rescan_running": "È già in corso o pianificata una ricerca. Attendi che sia conclusa.",
       "rescan_partial": "La ricerca è pianificata per i componenti pronti e viene eseguita con il prossimo aggiornamento regolare. I componenti attualmente in pausa sono stati saltati; riprova più tardi per questi.",
-      "rescan_unavailable": "La ricerca non è stata avviata: al momento nessun accesso all'impianto è pronto."
+      "rescan_unavailable": "La ricerca non è stata avviata: al momento nessun accesso all'impianto è pronto.",
+      "connection_saved": "La modifica è stata salvata.",
+      "connection_removed": "L'accesso è stato rimosso.",
+      "notifications_saved": "Le impostazioni delle notifiche sono state salvate.",
+      "rrc_program_saved": "Il punto di commutazione è stato salvato e confermato rileggendolo."
     },
     "progress": {
       "local_work": "Verifica della connessione locale in corso. Attendi."

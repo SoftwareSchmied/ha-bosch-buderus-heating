@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Paramètres",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Notifications",
           "holidays": "Gérer les périodes de vacances",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Connexions",
-        "description": "Choisissez l'accès que vous souhaitez gérer.",
-        "data": {
-          "connection": "Connexion"
+        "description": "{result}Choisissez l'accès que vous souhaitez gérer.",
+        "menu_options": {
+          "back": "← Retour"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Gérer la connexion",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Tester la connexion maintenant",
           "connection_enabled": "Activer ou désactiver l'accès",
@@ -470,7 +471,8 @@
           "connection_polling": "Fréquence d'interrogation",
           "local_setup": "Modifier l'accès local",
           "local_polling": "Fréquence et état de l'interrogation locale",
-          "local_values": "Utiliser les valeurs locales pour les entités existantes"
+          "local_values": "Utiliser les valeurs locales pour les entités existantes",
+          "back": "← Retour"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "La recherche n'a pas été lancée : les requêtes sont actuellement en pause (par exemple après une demande de pause du cloud). Veuillez réessayer plus tard.",
       "rescan_running": "Une recherche est déjà en cours ou planifiée. Veuillez attendre qu'elle soit terminée.",
       "rescan_partial": "La recherche est planifiée pour les composants prêts et s'exécute lors de la prochaine mise à jour régulière. Les composants actuellement en pause ont été ignorés ; réessayez plus tard pour eux.",
-      "rescan_unavailable": "La recherche n'a pas été lancée : aucun accès à l'installation n'est prêt pour le moment."
+      "rescan_unavailable": "La recherche n'a pas été lancée : aucun accès à l'installation n'est prêt pour le moment.",
+      "connection_saved": "La modification a été enregistrée.",
+      "connection_removed": "L'accès a été supprimé.",
+      "notifications_saved": "Les paramètres de notification ont été enregistrés.",
+      "rrc_program_saved": "Le point de commutation a été enregistré et confirmé par relecture."
     },
     "progress": {
       "local_work": "Vérification de la connexion locale. Veuillez patienter."

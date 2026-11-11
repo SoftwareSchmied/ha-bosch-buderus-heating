@@ -374,9 +374,9 @@ class CloudOptionsFlow(CloudAuthorizationFlow, ConnectionOptionsFlow):
                         raise
                     errors = {"base": str(error)}
                 else:
-                    return self.async_create_entry(
-                        title="", data=dict(self._entry.options)
-                    )
+                    # The selection is saved; back to the connection's menu.
+                    self._selection_discovery = None
+                    return await self._connection_saved()
             old = config.cloud_data()
         except ConfigurationError as error:
             if str(error) == "cloud_connection_disabled":

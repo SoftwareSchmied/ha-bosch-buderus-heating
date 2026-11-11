@@ -8,6 +8,7 @@ from custom_components.bosch_buderus_heating.diagnostics import (
 )
 from custom_components.bosch_buderus_heating.local_identity import CONTRACT
 from tests.helpers.local_runtime import running_local_owner as running_local_owner
+from tests.helpers.options_menu import connection_choice
 from tests.test_local_flow import imported, submit
 from tests.test_local_flow import journal as journal
 from tests.test_local_flow import supported as supported
@@ -87,13 +88,15 @@ async def test_native_setup_then_data_status_interval_and_offline_restart(
     # Exercise the actual options flow and per-access interval validation.
     result = await manager.async_init(entry.entry_id)
     result = await submit(hass, manager, result, {"next_step_id": "connections"})
-    result = await submit(hass, manager, result, {"connection": connection})
+    result = await submit(
+        hass, manager, result, connection_choice(hass, result, connection)
+    )
     result = await submit(hass, manager, result, {"next_step_id": "local_polling"})
     assert int(result["description_placeholders"]["available"]) >= 1
     result = await submit(hass, manager, result, {"interval": 61})
     assert result["errors"] == {"interval": "local_invalid_interval"}
     result = await submit(hass, manager, result, {"interval": 300})
-    assert result["type"] == "create_entry"
+    assert result["type"] == "menu"
     await eventually(lambda: len(probes) == 4, timeout=SLOW)
 
     # Existing entities may display paired local readings after explicit opt-in.
@@ -118,19 +121,23 @@ async def test_native_setup_then_data_status_interval_and_offline_restart(
     assert coordinator.local_selection.enabled is True
     result = await manager.async_init(entry.entry_id)
     result = await submit(hass, manager, result, {"next_step_id": "connections"})
-    result = await submit(hass, manager, result, {"connection": connection})
+    result = await submit(
+        hass, manager, result, connection_choice(hass, result, connection)
+    )
     result = await submit(hass, manager, result, {"next_step_id": "local_values"})
     assert result["data_schema"]({})["enabled"] is True
     result = await submit(hass, manager, result, {"enabled": False})
-    assert result["type"] == "create_entry"
+    assert result["type"] == "menu"
     await eventually(lambda: not coordinator.local_selection.enabled, timeout=SLOW)
     result = await manager.async_init(entry.entry_id)
     result = await submit(hass, manager, result, {"next_step_id": "connections"})
-    result = await submit(hass, manager, result, {"connection": connection})
+    result = await submit(
+        hass, manager, result, connection_choice(hass, result, connection)
+    )
     result = await submit(hass, manager, result, {"next_step_id": "local_values"})
     assert result["step_id"] == "local_values"
     result = await submit(hass, manager, result, {"enabled": True})
-    assert result["type"] == "create_entry"
+    assert result["type"] == "menu"
     target_options = management.current().to_options()["targets"]
     assert any(item.get("local_values") is True for item in target_options.values())
     await eventually(lambda: coordinator.local_selection.enabled, timeout=SLOW)

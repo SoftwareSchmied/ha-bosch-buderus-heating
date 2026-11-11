@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Nastavení",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Oznámení",
           "holidays": "Správa období dovolené",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Připojení",
-        "description": "Vyberte přístup, který chcete spravovat.",
-        "data": {
-          "connection": "Připojení"
+        "description": "{result}Vyberte přístup, který chcete spravovat.",
+        "menu_options": {
+          "back": "← Zpět"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Správa připojení",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Otestovat připojení nyní",
           "connection_enabled": "Zapnout nebo vypnout přístup",
@@ -470,7 +471,8 @@
           "connection_polling": "Frekvence dotazování",
           "local_setup": "Změna místního přístupu",
           "local_polling": "Frekvence a stav místního dotazování",
-          "local_values": "Použít místní hodnoty pro existující entity"
+          "local_values": "Použít místní hodnoty pro existující entity",
+          "back": "← Zpět"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Vyhledávání nebylo spuštěno: dotazy jsou právě pozastaveny (například poté, co cloud požádal o pauzu). Zkuste to později znovu.",
       "rescan_running": "Vyhledávání již probíhá nebo je naplánováno. Počkejte, až skončí.",
       "rescan_partial": "Vyhledávání je naplánováno pro součásti, které jsou připraveny, a proběhne při příští pravidelné aktualizaci. Součásti, které jsou právě pozastaveny, byly přeskočeny; u nich to zkuste později znovu.",
-      "rescan_unavailable": "Vyhledávání nebylo spuštěno: žádný přístup k soustavě momentálně není připraven."
+      "rescan_unavailable": "Vyhledávání nebylo spuštěno: žádný přístup k soustavě momentálně není připraven.",
+      "connection_saved": "Změna byla uložena.",
+      "connection_removed": "Přístup byl odebrán.",
+      "notifications_saved": "Nastavení oznámení bylo uloženo.",
+      "rrc_program_saved": "Spínací bod byl uložen a potvrzen zpětným načtením."
     },
     "progress": {
       "local_work": "Kontroluje se místní připojení. Čekejte prosím."

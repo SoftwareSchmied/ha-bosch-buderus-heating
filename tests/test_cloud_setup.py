@@ -495,7 +495,7 @@ async def test_discovery_adds_new_devices_and_keeps_deselected_entities(hass, ba
         result["flow_id"],
         {"gateway_ids": ["000123", "new-gateway"], "bacon_device_ids": ["new-device"]},
     )
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["type"] is FlowResultType.MENU
     assert all(
         entry.data["targets"][key] == value for key, value in old["targets"].items()
     )
@@ -523,7 +523,7 @@ async def test_temporarily_missing_existing_device_remains_selectable(hass, back
         result["flow_id"],
         {"gateway_ids": ["gateway-b"], "bacon_device_ids": ["softener"]},
     )
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["type"] is FlowResultType.MENU
 
 
 @pytest.mark.parametrize("profile", ["standard", "cloud_friendly"])
@@ -537,7 +537,7 @@ async def test_polling_profile_is_scoped_and_available_offline(hass, backend, pr
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"polling_profile": profile}
     )
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["type"] is FlowResultType.MENU
     assert entry.options["connections"][cloud]["polling_profile"] == profile
     assert entry.options["connections"]["local"] == before["connections"]["local"]
     backend.gateways.assert_not_awaited()
@@ -665,7 +665,7 @@ async def test_selection_checks_current_context_but_keeps_rotated_tokens(
         result["flow_id"], {"gateway_ids": ["new-gateway"]}
     )
     if change == "rotate":
-        assert result["type"] is FlowResultType.CREATE_ENTRY
+        assert result["type"] is FlowResultType.MENU
         assert (
             entry.data["connections"][cloud]["credentials"]["refresh_token"]
             == "new-synthetic-refresh"
@@ -832,7 +832,7 @@ async def test_first_bacon_selection_adds_account_without_touching_pointt_identi
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"gateway_ids": ["000123"], "bacon_device_ids": ["softener"]}
     )
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["type"] is FlowResultType.MENU
     assert all(entry.data["targets"][key] == value for key, value in original.items())
     assert (
         EntryConfiguration(entry, cloud).cloud_data()["bacon_account"]
@@ -863,7 +863,7 @@ async def test_selection_is_saved_when_waiting_for_a_rotation_fails(
             result["flow_id"], {"gateway_ids": ["000123"], "bacon_device_ids": []}
         )
     wait.assert_awaited_once()
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["type"] is FlowResultType.MENU
     notes = [
         record.getMessage()
         for record in caplog.records
@@ -929,7 +929,7 @@ async def test_selection_waits_for_a_running_rotation_and_keeps_it(hass, backend
     release.set()
     assert await refreshing == "rotated-access"
     result = await saving
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["type"] is FlowResultType.MENU
     configuration = EntryConfiguration(entry, cloud)
     assert configuration.tokens() == rotated
     assert configuration.cloud_data()["bacon_account"] == legacy()["bacon_account"]

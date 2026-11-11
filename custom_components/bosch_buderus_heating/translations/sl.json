@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Nastavitve",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Obvestila",
           "holidays": "Upravljanje obdobij počitnic",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Povezave",
-        "description": "Izberite dostop, ki ga želite upravljati.",
-        "data": {
-          "connection": "Povezava"
+        "description": "{result}Izberite dostop, ki ga želite upravljati.",
+        "menu_options": {
+          "back": "← Nazaj"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Upravljanje povezave",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Preizkusi povezavo zdaj",
           "connection_enabled": "Omogoči ali onemogoči dostop",
@@ -470,7 +471,8 @@
           "connection_polling": "Pogostost poizvedovanja",
           "local_setup": "Spremeni lokalni dostop",
           "local_polling": "Pogostost lokalnega poizvedovanja in stanje",
-          "local_values": "Uporabi lokalne vrednosti za obstoječe entitete"
+          "local_values": "Uporabi lokalne vrednosti za obstoječe entitete",
+          "back": "← Nazaj"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Iskanje ni bilo zagnano: zahteve so trenutno v premoru (na primer potem, ko je oblak zahteval premor). Poskusite znova pozneje.",
       "rescan_running": "Iskanje že poteka ali je načrtovano. Počakajte, da se konča.",
       "rescan_partial": "Iskanje je načrtovano za dele, ki so pripravljeni, in poteka ob naslednji redni posodobitvi. Deli, ki so trenutno v premoru, so bili preskočeni; zanje poskusite znova pozneje.",
-      "rescan_unavailable": "Iskanje ni bilo zagnano: noben dostop do sistema trenutno ni pripravljen."
+      "rescan_unavailable": "Iskanje ni bilo zagnano: noben dostop do sistema trenutno ni pripravljen.",
+      "connection_saved": "Sprememba je bila shranjena.",
+      "connection_removed": "Dostop je bil odstranjen.",
+      "notifications_saved": "Nastavitve obvestil so bile shranjene.",
+      "rrc_program_saved": "Preklopna točka je bila shranjena in potrjena s ponovnim branjem."
     },
     "progress": {
       "local_work": "Preverjanje lokalne povezave. Prosimo, počakajte."

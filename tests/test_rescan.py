@@ -26,6 +26,7 @@ from custom_components.bosch_buderus_heating.local_polling.service import (
 )
 from custom_components.bosch_buderus_heating.local_state import LocalCondition
 from custom_components.bosch_buderus_heating.rescan import request_rescan
+from tests.helpers.options_menu import outcome
 from tests.test_local_probe import CONTEXT
 from tests.test_managed_pointt import TEMP, Backend, eventually, running, source_for
 
@@ -96,11 +97,15 @@ async def test_the_dialog_plans_one_search_within_the_limits(hass) -> None:
         assert form["type"] is FlowResultType.FORM
         calls = len(backend.calls)
         result = await flow.async_step_rescan({})
-        assert result["reason"] == "rescan_planned"
-        assert len(backend.calls) == calls  # planned, nothing requested yet
+        assert await outcome(hass, result) == "rescan_planned"
+        # Planned, nothing searched yet (the dialog returns to its menu).
+        assert not any(
+            call[0] == "bulk" and "/heatingCircuits" in call[2]
+            for call in backend.calls[calls:]
+        )
         # A second request while it is planned is refused.
         again = await flow_for(hass, entry).async_step_rescan({})
-        assert again["reason"] == "rescan_running"
+        assert await outcome(hass, again) == "rescan_running"
         backend.changed = True
         discover = coordinator._async_discover_data
 
@@ -134,7 +139,7 @@ async def test_a_paused_cloud_is_skipped_and_the_ready_parts_search(hass) -> Non
         other = source_for(owner, "gateway-b")
         coordinator._cloud_backoff_until = monotonic() + 600
         result = await flow_for(hass, entry).async_step_rescan({})
-        assert result["reason"] == "rescan_partial"
+        assert await outcome(hass, result) == "rescan_partial"
         # The paused gateway is skipped; the other one searches.
         assert coordinator._rescan_due is None and other._rescan_due is not None
         assert request_rescan(owner) == "running"
@@ -171,7 +176,7 @@ async def test_without_a_ready_access_nothing_is_searched(hass) -> None:
         management.set_enabled(management.edit(cloud), False)
         await eventually(lambda: source_for(owner, HEAT) is None)
         result = await flow_for(hass, entry).async_step_rescan({})
-        assert result["reason"] == "rescan_unavailable"
+        assert await outcome(hass, result) == "rescan_unavailable"
 
 
 # ------------------------------------------------------------- local part

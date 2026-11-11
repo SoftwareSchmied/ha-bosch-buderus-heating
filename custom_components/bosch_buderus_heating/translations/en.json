@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Settings",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Notifications",
           "holidays": "Manage holiday periods",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Connections",
-        "description": "Choose the access you want to manage.",
-        "data": {
-          "connection": "Connection"
+        "description": "{result}Choose the access you want to manage.",
+        "menu_options": {
+          "back": "← Back"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Manage connection",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Test connection now",
           "connection_enabled": "Enable or disable access",
@@ -470,7 +471,8 @@
           "connection_polling": "Polling frequency",
           "local_setup": "Change local access",
           "local_polling": "Local polling frequency and status",
-          "local_values": "Use local values for existing entities"
+          "local_values": "Use local values for existing entities",
+          "back": "← Back"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "The search was not started: requests are paused right now (for example after the cloud asked for a pause). Please try again later.",
       "rescan_running": "A search is already running or planned. Please wait until it has finished.",
       "rescan_partial": "The search is planned for the parts that are ready and runs with the next regular update. Parts that are paused right now were skipped; please try again later for them.",
-      "rescan_unavailable": "The search was not started: no access to the system is ready right now."
+      "rescan_unavailable": "The search was not started: no access to the system is ready right now.",
+      "connection_saved": "The change was saved.",
+      "connection_removed": "The access was removed.",
+      "notifications_saved": "The notification settings were saved.",
+      "rrc_program_saved": "The switch point was saved and confirmed by reading it back."
     },
     "progress": {
       "local_work": "Checking the local connection. Please wait."

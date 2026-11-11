@@ -32,6 +32,7 @@ from custom_components.bosch_buderus_heating.local_transport import (
     LocalProbeExchange,
     PortRole,
 )
+from tests.helpers.options_menu import connection_choice
 from tests.test_local_auth import LABEL
 from tests.test_local_auth import auth_gateway as auth_gateway
 from tests.test_local_enrollment import journal as journal
@@ -204,7 +205,7 @@ async def test_a_kept_token_is_sent_only_after_the_new_certificate_is_confirmed(
     )
     result = await manager.async_init(entry.entry_id)
     result = await submit(hass, manager, result, {"next_step_id": "connections"})
-    result = await submit(hass, manager, result, {"connection": local})
+    result = await submit(hass, manager, result, connection_choice(hass, result, local))
     result = await submit(hass, manager, result, {"next_step_id": "local_setup"})
     if result["step_id"] == "local_target":
         result = await submit(hass, manager, result, {"target": target})

@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Innstillinger",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Varsler",
           "holidays": "Administrer ferieperioder",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Tilkoblinger",
-        "description": "Velg tilgangen du vil administrere.",
-        "data": {
-          "connection": "Tilkobling"
+        "description": "{result}Velg tilgangen du vil administrere.",
+        "menu_options": {
+          "back": "← Tilbake"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Administrer tilkobling",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Test tilkoblingen nå",
           "connection_enabled": "Aktiver eller deaktiver tilgang",
@@ -470,7 +471,8 @@
           "connection_polling": "Forespørselsfrekvens",
           "local_setup": "Endre lokal tilgang",
           "local_polling": "Lokal forespørselsfrekvens og status",
-          "local_values": "Bruk lokale verdier for eksisterende entiteter"
+          "local_values": "Bruk lokale verdier for eksisterende entiteter",
+          "back": "← Tilbake"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Søket ble ikke startet: forespørsler er satt på pause akkurat nå (for eksempel etter at skyen ba om en pause). Prøv igjen senere.",
       "rescan_running": "Et søk kjører allerede eller er planlagt. Vent til det er ferdig.",
       "rescan_partial": "Søket er planlagt for delene som er klare, og kjøres ved neste vanlige oppdatering. Deler som er satt på pause akkurat nå, ble hoppet over; prøv igjen senere for dem.",
-      "rescan_unavailable": "Søket ble ikke startet: ingen tilgang til anlegget er klar akkurat nå."
+      "rescan_unavailable": "Søket ble ikke startet: ingen tilgang til anlegget er klar akkurat nå.",
+      "connection_saved": "Endringen ble lagret.",
+      "connection_removed": "Tilgangen ble fjernet.",
+      "notifications_saved": "Varslingsinnstillingene ble lagret.",
+      "rrc_program_saved": "Koblingspunktet ble lagret og bekreftet ved tilbakelesing."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale tilkoblingen. Vent litt."

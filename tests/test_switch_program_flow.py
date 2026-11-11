@@ -6,7 +6,6 @@ from dataclasses import replace
 from unittest.mock import AsyncMock
 
 import pytest
-from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers.translation import async_get_translations
 
 from custom_components.bosch_buderus_heating.config_flow import BoschBuderusOptionsFlow
@@ -31,6 +30,7 @@ from custom_components.bosch_buderus_heating.switch_programs import SwitchPoint
 from custom_components.bosch_buderus_heating.write_policies import ContractRejected
 from custom_components.bosch_buderus_heating.writes import ControlUnused, WriteBusy
 from tests import test_dynamic_controls
+from tests.helpers.options_menu import menu_note
 from tests.switch_program_helpers import ACTIVE, DHW, PROGRAM_A, PROGRAM_B, Gateway
 
 STEPS = (
@@ -136,9 +136,9 @@ async def test_move_one_point_and_save_sends_the_week_once(hass, environment):
     assert "08:15" in confirm["description_placeholders"]["after"]
     assert "Monday" not in confirm["description_placeholders"]["after"]
     done = await flow.async_step_switch_program_confirm({})
-    assert done["type"] is FlowResultType.ABORT
-    assert done["reason"] == "switch_program_saved"
-    assert "08:00" in done["description_placeholders"]["before"]
+    # Back in the main menu; the note repeats the previous switch points.
+    note = await menu_note(hass, done, "switch_program_saved")
+    assert "08:00" in note
     ((path, body),) = gateway.raw_puts
     assert path == PROGRAM_A
     saturday = [item for item in body if item["dayOfWeek"] == "Sa"]
@@ -448,9 +448,8 @@ async def test_level_names_and_the_saved_program_are_plain_text(hass, environmen
     flow, gateway = make_flow(hass, environment, **{f"{HC}/switchPrograms/nameA": item})
     await _to_confirm(flow)
     done = await flow.async_step_switch_program_confirm({})
-    assert done["reason"] == "switch_program_saved"
-    shown = done["description_placeholders"]["program"]
-    assert _rendered(shown).endswith(f"({name})")
+    shown = await menu_note(hass, done, "switch_program_saved")
+    assert f"({name})" in _rendered(shown)
     assert "![" not in _strip(shown) and "://" not in _strip(shown)
     assert len(gateway.raw_puts) == 1
     # A level name that is markup is escaped in a description, not in a label.

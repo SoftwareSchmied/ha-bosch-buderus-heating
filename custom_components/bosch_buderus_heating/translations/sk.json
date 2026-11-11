@@ -230,6 +230,7 @@
     "step": {
       "init": {
         "title": "Nastavenia",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Upozornenia",
           "holidays": "Správa období dovolenky",
@@ -447,9 +448,9 @@
       },
       "connections": {
         "title": "Pripojenia",
-        "description": "Vyberte prístup, ktorý chcete spravovať.",
-        "data": {
-          "connection": "Pripojenie"
+        "description": "{result}Vyberte prístup, ktorý chcete spravovať.",
+        "menu_options": {
+          "back": "← Späť"
         }
       },
       "connection_test": {
@@ -458,7 +459,7 @@
       },
       "connection": {
         "title": "Správa pripojenia",
-        "description": "{status}",
+        "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Otestovať pripojenie teraz",
           "connection_enabled": "Povoliť alebo zakázať prístup",
@@ -470,7 +471,8 @@
           "connection_polling": "Frekvencia dopytovania",
           "local_setup": "Zmeniť lokálny prístup",
           "local_polling": "Frekvencia dopytovania a stav lokálneho prístupu",
-          "local_values": "Použiť lokálne hodnoty pre existujúce entity"
+          "local_values": "Použiť lokálne hodnoty pre existujúce entity",
+          "back": "← Späť"
         }
       },
       "connection_enabled": {
@@ -806,7 +808,11 @@
       "rescan_paused": "Vyhľadávanie sa nespustilo: požiadavky sú momentálne pozastavené (napríklad po tom, čo cloud požiadal o pauzu). Skúste to neskôr znova.",
       "rescan_running": "Vyhľadávanie už beží alebo je naplánované. Počkajte, kým sa dokončí.",
       "rescan_partial": "Vyhľadávanie je naplánované pre súčasti, ktoré sú pripravené, a prebehne pri najbližšej pravidelnej aktualizácii. Súčasti, ktoré sú momentálne pozastavené, sa preskočili; pre ne to skúste neskôr znova.",
-      "rescan_unavailable": "Vyhľadávanie sa nespustilo: momentálne nie je pripravený žiadny prístup k systému."
+      "rescan_unavailable": "Vyhľadávanie sa nespustilo: momentálne nie je pripravený žiadny prístup k systému.",
+      "connection_saved": "Zmena bola uložená.",
+      "connection_removed": "Prístup bol odstránený.",
+      "notifications_saved": "Nastavenia upozornení boli uložené.",
+      "rrc_program_saved": "Spínací bod bol uložený a potvrdený spätným načítaním."
     },
     "progress": {
       "local_work": "Kontroluje sa lokálne pripojenie. Čakajte, prosím."

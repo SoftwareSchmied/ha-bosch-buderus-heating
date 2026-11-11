@@ -198,7 +198,7 @@ async def test_the_dialog_offers_only_deselected_systems(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"bindings": [old]}
     )
-    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["type"] is FlowResultType.MENU
     assert old not in entry.data["bindings"]
 
 

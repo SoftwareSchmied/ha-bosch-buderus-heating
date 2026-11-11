@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from homeassistant.config_entries import ConfigEntry, ConfigFlowResult, OptionsFlow
+from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
@@ -24,6 +24,7 @@ from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .entry_sources import pointt_coordinators
 from .ha_schema import validation as vol
 from .markdown_text import markdown_literal
+from .options_navigation import NavigatingOptionsFlow
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -50,7 +51,7 @@ def _point_label(point: SwitchPoint) -> str:
     )
 
 
-class RrcScheduleOptionsFlow(OptionsFlow):
+class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
     """Keep weekly schedules separate from holiday dates and time zones."""
 
     _entry: ConfigEntry
@@ -130,7 +131,9 @@ class RrcScheduleOptionsFlow(OptionsFlow):
             return await self.async_step_rrc_programs()
         if user_input is not None:
             if not choice.schedule.editable or not choice.schedule.points:
-                return self.async_create_entry(title="", data=dict(self._entry.options))
+                # Only shown: back to the main menu.
+                self._rrc_choice = None
+                return await self.async_return_to_menu("init")
             day = next(
                 (day for day in DAYS if day.lower() == user_input.get("day")), None
             )
@@ -268,8 +271,9 @@ class RrcScheduleOptionsFlow(OptionsFlow):
                     except PointTError:
                         errors["base"] = "rrc_failed"
                     else:
-                        return self.async_create_entry(
-                            title="", data=dict(self._entry.options)
+                        self._rrc_choice = None
+                        return await self.async_return_to_menu(
+                            "init", "rrc_program_saved"
                         )
         schema = vol.Schema(
             {
