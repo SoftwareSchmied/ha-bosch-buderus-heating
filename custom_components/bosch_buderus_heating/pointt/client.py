@@ -435,6 +435,11 @@ def _encode_gateway_id(gateway_id: str) -> str:
     value = gateway_id.strip()
     if not value:
         raise ValueError("Gateway ID must not be empty")
+    # quote() keeps dots, and the URL library resolves "." and ".." as path
+    # steps: "gateways/../resource" would reach another endpoint with the
+    # token (D45). Control and other invisible characters are never an ID.
+    if value in {".", ".."} or not value.isprintable():
+        raise ValueError("Gateway ID is not a valid path segment")
     return quote(value, safe="")
 
 
