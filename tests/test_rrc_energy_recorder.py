@@ -17,6 +17,7 @@ from homeassistant.util import dt as dt_util
 
 from custom_components.bosch_buderus_heating.rrc_energy_statistics import (
     START_DELAY,
+    day_start,
     history_of,
     statistic_id,
 )
@@ -62,6 +63,8 @@ async def test_the_history_becomes_sums_and_means_in_the_recorder(
     entry, stack = await start(hass, cloud)
     try:
         await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+        # The cycle is a background task; it reads the recorder first.
+        await hass.async_block_till_done(wait_background_tasks=True)
         await async_wait_recording_done(hass)
         heating = statistic_id(GW, "heat_pump_electricity_heating")
         gas = statistic_id(GW, "gas_heating")
@@ -97,5 +100,83 @@ async def test_the_history_becomes_sums_and_means_in_the_recorder(
         assert history_of(entry.runtime_data.coordinators[0]).state.last_day == (
             date(2026, 10, 26)
         )
+    finally:
+        await stop(hass, entry, stack)
+
+
+async def test_an_empty_import_state_continues_the_recorded_sums(
+    recorder_runtime_annotations,  # noqa: F811
+    recorder_mock,
+    enable_custom_integrations,
+    hass: HomeAssistant,
+    freezer,
+) -> None:
+    """SYSTEM-05: rows of an earlier import whose state is gone (a new entry,
+    an unreadable store) are continued, never run backwards or rewritten."""
+    from homeassistant.components.recorder import get_instance
+    from homeassistant.components.recorder.models import (
+        StatisticData,
+        StatisticMeanType,
+        StatisticMetaData,
+    )
+    from homeassistant.components.recorder.statistics import (
+        async_add_external_statistics,
+        statistics_during_period,
+    )
+
+    from tests.ha_recorder_helpers import async_wait_recording_done
+
+    await hass.config.async_update(time_zone="Europe/Berlin")
+    freezer.move_to(datetime(2026, 10, 28, 7, 0, tzinfo=UTC))
+    zone = dt_util.get_default_time_zone()
+    heating = statistic_id(GW, "heat_pump_electricity_heating")
+    temperature = statistic_id(GW, "outdoor_temperature")
+    async_add_external_statistics(
+        hass,
+        StatisticMetaData(
+            mean_type=StatisticMeanType.NONE,
+            has_sum=True,
+            name="Heat pump electricity heating (kWh expected)",
+            source="bosch_buderus_heating",
+            statistic_id=heating,
+            unit_class="energy",
+            unit_of_measurement="kWh",
+        ),
+        [
+            StatisticData(start=day_start(date(2026, 10, 24), zone), sum=480.0),
+            StatisticData(start=day_start(date(2026, 10, 25), zone), sum=500.0),
+        ],
+    )
+    await async_wait_recording_done(hass)
+    items = [
+        day_record(date(2026, 10, 24), eCh=2.0, T=8.0),
+        day_record(date(2026, 10, 25), eCh=3.0, T=6.0),
+        day_record(date(2026, 10, 26), eCh=4.0, T=-1.0),
+        day_record(date(2026, 10, 28), eCh=9.0, T=0.0),  # today
+    ]
+    cloud = history_cloud(items, page=10)
+    entry, stack = await start(hass, cloud)
+    try:
+        await advance(hass, freezer, START_DELAY + timedelta(minutes=1))
+        # The cycle is a background task; it reads the recorder first.
+        await hass.async_block_till_done(wait_background_tasks=True)
+        await async_wait_recording_done(hass)
+        rows = await get_instance(hass).async_add_executor_job(
+            statistics_during_period,
+            hass,
+            datetime(2026, 10, 20, tzinfo=UTC),
+            None,
+            {heating, temperature},
+            "hour",
+            None,
+            {"sum", "mean"},
+        )
+        # The recorded days stay as they were; the sum goes on from 500.
+        assert [row["sum"] for row in rows[heating]] == [480.0, 500.0, 504.0]
+        assert [row["mean"] for row in rows[temperature]] == [-1.0]
+        state = history_of(entry.runtime_data.coordinators[0]).state
+        assert state.statistics_checked
+        assert state.floor == date(2026, 10, 25)
+        assert state.last_day == date(2026, 10, 26)
     finally:
         await stop(hass, entry, stack)

@@ -225,10 +225,32 @@ values are imported only when the controller confirms the unit kWh.
   added there automatically.
 - Only completed days are imported. A first filling reaches back at most
   400 days; changed days are recalculated up to 31 days back.
+- Every run reads again from the last day already read, so a day that was
+  still running when it was read is completed later. Controllers from
+  firmware 5.3.0 are asked by date (the first time without a date), older
+  ones by entry number. A day without a record, a full history that drops
+  its oldest day and a history that starts again do not stop the import.
+- Older firmware reports two values under other keys (`eCH`, `eHW`). On a
+  heat pump or hybrid system they count as the heat pump's electricity; on
+  a boiler, without a heat source or with an unknown heat source type they
+  count as gas and follow the gas rule: without the confirmed unit kWh they
+  are not imported. The heat source type is read once, only when such keys
+  appear; until it is known, these days wait on the controller.
+- If the import starts over, for example after the integration was added
+  again or its stored import state could not be read, the statistics
+  continue from their last recorded value; recorded days are not written
+  again, so a sum never runs backwards.
 - The first import runs 15 minutes after the start, then every three hours,
-  with at most eight requests per run.
+  with at most eight requests per run. The shared transport may repeat one
+  of them once after a server error or a timeout.
 - To remove the statistics, delete them under **Developer tools →
   Statistics**.
+
+Expected, untested: whether the history lists the running day, whether a
+query by date answers from that day on or only for a day with a record,
+what the first answer without a date contains, and which heat source
+types report the older keys. The import is built to lose no day in each of
+these cases.
 
 ## Radio devices
 
@@ -337,7 +359,10 @@ ebenso der CT200 insgesamt:
   optional in der Glocken-Benachrichtigung.
 - **Energiehistorie:** Tageswerte als Statistiken mit dem Zusatz
   „(kWh erwartet)“, weil die Einheit nicht bestätigt ist; Gas nur mit
-  bestätigter Einheit; Auswahl im Energie-Dashboard selbst, Löschen unter
+  bestätigter Einheit; die älteren Schlüssel `eCH`/`eHW` je nach
+  Wärmeerzeuger als Wärmepumpenstrom oder als Gas; jeder Lauf liest ab dem
+  zuletzt gelesenen Tag erneut; ein neu begonnener Import setzt vorhandene
+  Statistiken fort; Auswahl im Energie-Dashboard selbst, Löschen unter
   **Entwicklerwerkzeuge → Statistiken**; alle drei Stunden höchstens acht
   Anfragen.
 - **Funkgeräte:** Batterie, Funksignal, Firmware, Ventilwerte und

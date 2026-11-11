@@ -88,7 +88,12 @@ Expected, untested on a real controller:
   end with "(kWh expected)" because the unit kWh is assumed but not
   confirmed; gas values follow only when the controller confirms the unit.
   You choose the statistics in the Energy dashboard yourself and can delete
-  them under Developer tools → Statistics.
+  them under Developer tools → Statistics. Every run reads again from the
+  last day already read, so a running day, a day without a record or a full
+  history on the controller costs no day. The older keys `eCH`/`eHW` count
+  as heat pump electricity only on a heat pump or hybrid system, otherwise
+  as gas under the gas rule. If the import starts over, the statistics
+  continue from their last recorded value instead of starting at zero.
 - **Radio devices:** every device in the controller's device list becomes
   its own device below the controller, named after its type (for example
   "Radiator thermostat 2") with its zone as the suggested area. It shows

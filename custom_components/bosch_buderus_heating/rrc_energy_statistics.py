@@ -8,10 +8,14 @@ and nothing is added to the energy dashboard by itself.
 
 Load on the cloud: a cycle at most every ``CADENCE`` (3 h), the first one
 ``START_DELAY`` after the start, at most ``rrc_energy.MAX_REQUESTS``
-requests each. A cycle waits while the coordinator has no cloud (sign-in,
+requests each. The shared transport may repeat one of them once after a
+5xx answer or a timeout, so a cycle makes at most twice that many HTTP
+attempts. A cycle waits while the coordinator has no cloud (sign-in,
 pause, rate limit, outage); a rate limit answered to the history pauses
 the whole cloud access like any other. Where the import stands is stored
 privately per gateway, so a restart neither reads again nor waits less.
+An empty import state (a new entry, an unreadable store) first reads the
+last recorded row of every statistic and continues from there.
 
 Everything is expected, untested on real hardware (W5-E1).
 """
@@ -38,11 +42,14 @@ from .rrc_energy import (
     ENTRIES_PATH,
     FIRMWARE_PATH,
     GAS_UNIT_PATH,
+    HEAT_SOURCE_TYPE_PATH,
     HISTORY_PATH,
     KEY_BY_SLUG,
+    KEYS,
     HistoryRefused,
     HistoryState,
     Rows,
+    continue_from,
     history_items,
     importable,
     run_cycle,
@@ -88,6 +95,43 @@ async def async_remove_energy_store(
     ).async_remove()
 
 
+def row_day(start: float, zone: tzinfo) -> date:
+    """The day of a row written by ``day_start`` (also for half-hour zones)."""
+    return (
+        (dt_util.utc_from_timestamp(start) + timedelta(hours=1)).astimezone(zone).date()
+    )
+
+
+async def async_last_rows(
+    hass: HomeAssistant, gateway_id: str, zone: tzinfo
+) -> dict[str, tuple[date, float | None]]:
+    """The last recorded row of every history statistic: its day and sum."""
+    from homeassistant.components.recorder.statistics import get_last_statistics
+    from homeassistant.helpers.recorder import get_instance
+
+    instance = get_instance(hass)
+    found: dict[str, tuple[date, float | None]] = {}
+    for key in KEYS:
+        wanted = statistic_id(gateway_id, key.slug)
+        rows = await instance.async_add_executor_job(
+            get_last_statistics,
+            hass,
+            1,
+            wanted,
+            False,
+            {"mean"} if key.kind == "temperature" else {"sum"},
+        )
+        for row in rows.get(wanted, ()):
+            start = row.get("start")
+            if isinstance(start, int | float):
+                total = row.get("sum")
+                found[key.slug] = (
+                    row_day(start, zone),
+                    float(total) if isinstance(total, int | float) else None,
+                )
+    return found
+
+
 def day_start(day: date, zone: tzinfo) -> datetime:
     """Local midnight of a day as the top of its UTC hour.
 
@@ -116,9 +160,14 @@ class _CloudSource:
 
     async def page(self, query: Mapping[str, str | int]) -> list[object]:
         try:
-            resource = await self._client.get_resource_query(
-                self._gateway_id, HISTORY_PATH, query
-            )
+            if query:
+                resource = await self._client.get_resource_query(
+                    self._gateway_id, HISTORY_PATH, query
+                )
+            else:
+                resource = await self._client.get_resource(
+                    self._gateway_id, HISTORY_PATH
+                )
         except ResourceError as err:
             if err.status in (400, 404):
                 raise HistoryRefused(f"HTTP {err.status}") from err
@@ -131,6 +180,12 @@ class _CloudSource:
 
     async def gas_unit(self) -> str | None:
         resource = await self._client.get_resource(self._gateway_id, GAS_UNIT_PATH)
+        return resource.value if isinstance(resource.value, str) else None
+
+    async def heat_source_type(self) -> str | None:
+        resource = await self._client.get_resource(
+            self._gateway_id, HEAT_SOURCE_TYPE_PATH
+        )
         return resource.value if isinstance(resource.value, str) else None
 
 
@@ -238,22 +293,34 @@ class EnergyHistory:
                 self._schedule(now + RETRY_DELAY)
                 return
             self.waiting = None
-            firmware_resource = self._coordinator.resources.get(FIRMWARE_PATH)
-            firmware = (
-                firmware_resource.value
-                if firmware_resource is not None
-                and isinstance(firmware_resource.value, str)
-                else None
-            )
             zone = dt_util.get_default_time_zone()
+            state = self.state
+            if state.last_day is None and not state.statistics_checked:
+                # SYSTEM-05: the statistics may be older than this state.
+                try:
+                    last_rows = await async_last_rows(
+                        self._hass, self._gateway_id, zone
+                    )
+                except Exception as err:
+                    log_failure(
+                        _LOGGER,
+                        logging.WARNING,
+                        "The recorded energy history could not be read",
+                        error=err,
+                    )
+                    self.waiting = "statistics_unreadable"
+                    self._schedule(now + RETRY_DELAY)
+                    return
+                continue_from(state, last_rows)
             today = now.astimezone(zone).date()
             result = await run_cycle(
-                self.state,
+                state,
                 _CloudSource(self._coordinator),
                 today=today,
                 now=now,
-                firmware=firmware,
+                firmware=self._resource_text(FIRMWARE_PATH),
                 write=lambda rows: self._write(rows, zone),
+                heat_source_type=self._resource_text(HEAT_SOURCE_TYPE_PATH),
             )
             if result.retry_after is not None or result.reason == "rate_limited":
                 # The whole cloud access pauses, as for every other answer.
@@ -278,6 +345,12 @@ class EnergyHistory:
         finally:
             self._running = False
             await self._save()
+
+    def _resource_text(self, path: str) -> str | None:
+        resource = self._coordinator.resources.get(path)
+        if resource is None or not isinstance(resource.value, str):
+            return None
+        return resource.value
 
     async def _save(self) -> None:
         try:
