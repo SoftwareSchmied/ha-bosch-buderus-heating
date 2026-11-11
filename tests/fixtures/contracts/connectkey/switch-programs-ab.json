@@ -3,7 +3,7 @@
   "family": "connectkey",
   "provenance": {
     "kind": "synthetic",
-    "basis": "observed_structure",
+    "basis": "compatibility_mapping",
     "reference": "Constructed gateway with one heating circuit that reports two weekly programs and an active program selection, and one hot water circuit",
     "firmware": null,
     "capture_date": null,
