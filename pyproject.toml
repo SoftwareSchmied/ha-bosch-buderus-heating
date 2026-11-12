@@ -51,7 +51,7 @@ asyncio_mode = "auto"
 pythonpath = ["."]
 testpaths = ["tests"]
 # D49: a hanging test fails on its own and is named, instead of holding the
-# CI job until its 10-minute limit.
+# CI job until its time limit.
 timeout = 120
 
 [tool.coverage.run]

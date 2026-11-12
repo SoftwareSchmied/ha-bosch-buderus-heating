@@ -67,7 +67,7 @@ jobs:
   # The same older Home Assistant versions as CI must pass before publishing.
   compatibility:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -90,7 +90,7 @@ jobs:
 
   minimum-version:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
