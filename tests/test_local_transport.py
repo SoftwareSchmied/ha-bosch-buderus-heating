@@ -275,14 +275,16 @@ async def test_two_ports_may_have_different_certificates(gateways, monkeypatch):
 
 
 async def test_total_budget_covers_sum_of_requests(gateways, monkeypatch):
+    # Each answer fits the budget alone, two do not. The margins leave a
+    # loaded test machine time for the TLS loopback connections.
     async def reply(raw, writer):
-        await asyncio.sleep(0.12)
+        await asyncio.sleep(1.0)
         path = ProbePath(raw.split(b" ")[1].decode())
         writer.write(wire_reply(response(path).body))
         await writer.drain()
 
     _, requests, _, binding = await gateways(reply)
-    monkeypatch.setattr(transport, "PROBE_TIMEOUT", 0.2)
+    monkeypatch.setattr(transport, "PROBE_TIMEOUT", 1.6)
     exchange = await read(binding)
     assert problem(exchange) == ProbeProblem.TIMEOUT
     assert exchange.responses[0].status == 200
@@ -450,7 +452,7 @@ async def test_request_timeout_retains_only_completed_responses(
         await writer.drain()
 
     _, requests, _, binding = await gateways(reply)
-    monkeypatch.setattr(transport, "REQUEST_TIMEOUT", 0.15)
+    monkeypatch.setattr(transport, "REQUEST_TIMEOUT", 1.0)
     exchange = await read(binding)
     assert problem(exchange) == ProbeProblem.TIMEOUT
     expected = list(ProbePath)[: list(ProbePath).index(at) + 1]

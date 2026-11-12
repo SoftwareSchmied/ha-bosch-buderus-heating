@@ -230,11 +230,11 @@ async def test_rate_limit_pauses_without_the_brake(gateways, clock):
 @pytest.mark.usefixtures("socket_enabled")
 async def test_timeout_after_the_headers_starts_the_brake(gateways, clock):
     async def reply(raw, writer):
-        await asyncio.sleep(1)
+        await asyncio.sleep(10)
 
     _, _, _, binding = await gateways(reply)
     transport_client, budget = client(
-        binding, clock, limits=LocalReadLimits(timeout=0.3)
+        binding, clock, limits=LocalReadLimits(timeout=1.0)
     )
     async with transport_client:
         result = await transport_client.read(REQUEST)

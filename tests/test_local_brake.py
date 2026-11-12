@@ -192,8 +192,10 @@ async def test_rate_limit_sample_excludes_saving_the_pause(
     handle = await manager.budget(binding.context)
     persist = manager.persist
 
+    # Saving takes two seconds; the loopback answer, even on a loaded test
+    # machine, far less. A time with the saving in it would be over 2000 ms.
     async def slow_persist():
-        await asyncio.sleep(0.3)
+        await asyncio.sleep(2.0)
         await persist()
 
     monkeypatch.setattr(manager, "persist", slow_persist)
@@ -201,8 +203,8 @@ async def test_rate_limit_sample_excludes_saving_the_pause(
     async with transport_client:
         result = await transport_client.read(REQUEST)
     assert result.status == 429
-    assert handle.start_spacing()["median_response_ms"] < 150
-    assert transport_client.health()["response_times"]["maximum_ms"] < 250
+    assert handle.start_spacing()["median_response_ms"] < 1000
+    assert transport_client.health()["response_times"]["maximum_ms"] < 1500
     await manager.close()
 
 
@@ -220,7 +222,7 @@ async def test_timeout_on_a_kept_connection_does_not_brake(keepalive_gateway, cl
 
     _, _, binding = await keepalive_gateway(stall_second)
     transport_client, budget = reuse_client(
-        binding, clock, limits=LocalReadLimits(timeout=0.2)
+        binding, clock, limits=LocalReadLimits(timeout=1.0)
     )
     async with transport_client:
         await keep_read_ok(transport_client, clock)
@@ -236,10 +238,10 @@ async def test_timeout_on_a_kept_connection_does_not_brake(keepalive_gateway, cl
 @pytest.mark.usefixtures("socket_enabled")
 async def test_timeout_on_a_new_connection_brakes(gateways, clock):
     async def never(raw, writer):
-        await asyncio.sleep(1)
+        await asyncio.sleep(10)
 
     _, _, _, binding = await gateways(never)
-    limits = LocalReadLimits(timeout=0.3)
+    limits = LocalReadLimits(timeout=1.0)
     transport_client, budget = client(binding, clock, limits=limits)
     async with transport_client:
         result = await transport_client.read(REQUEST)

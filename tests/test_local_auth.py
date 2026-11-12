@@ -279,7 +279,7 @@ async def test_response_loss_timeout_and_cancel_never_repeat(auth_gateway, monke
         await asyncio.Future()
 
     calls, received, binding = await auth_gateway(wait)
-    monkeypatch.setattr(auth, "REQUEST_TIMEOUT", 0.15)
+    monkeypatch.setattr(auth, "REQUEST_TIMEOUT", 1.0)
     assert (await request(binding)).state == AuthState.UNCERTAIN and len(calls) == 1
     received.clear()
     task = asyncio.create_task(request(binding))

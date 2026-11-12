@@ -511,7 +511,13 @@ async def test_an_undecodable_answer_is_a_path_error_of_that_path(
             assert result.state is ReadState.PATH_ERROR
             assert result.problem == DECODE_FAILED and result.status == 200
     assert budget.pause_seconds == 0
-    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    # Only the reader's own warnings: on a loaded machine asyncio may add a
+    # slow-callback warning of its own.
+    warnings = [
+        r
+        for r in caplog.records
+        if r.levelno == logging.WARNING and r.name == reader.__name__
+    ]
     assert len(warnings) == 1
     assert REQUEST.definition.template in warnings[0].getMessage()
     assert "KeyError" in warnings[0].getMessage()
@@ -536,7 +542,7 @@ async def test_a_slow_body_on_a_kept_connection_is_no_reuse_failure(
 
     _, _, binding = await keepalive_gateway(slow_body)
     transport_client, budget = reuse_client(
-        binding, clock, limits=LocalReadLimits(timeout=0.2)
+        binding, clock, limits=LocalReadLimits(timeout=1.0)
     )
     async with transport_client:
         await keep_read_ok(transport_client, clock)

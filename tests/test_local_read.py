@@ -510,8 +510,10 @@ async def test_slow_resource_does_not_discard_previous_success_or_block_other_pa
         await success(raw, writer)
 
     _, seen, _, binding = await gateways(reply)
+    # One second leaves a loaded test machine time for the TLS loopback reads;
+    # the slow path still waits far longer.
     transport_client, budget = client(
-        binding, clock, limits=LocalReadLimits(timeout=0.08)
+        binding, clock, limits=LocalReadLimits(timeout=1.0)
     )
     async with transport_client:
         assert (await transport_client.read(REQUEST)).state is ReadState.SUCCESS

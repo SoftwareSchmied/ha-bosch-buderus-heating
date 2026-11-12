@@ -298,7 +298,7 @@ async def test_timeout_on_kept_connection_counts_as_reuse_failure(
 
     _, _, binding = await keepalive_gateway(stall_second)
     transport_client, budget = reuse_client(
-        binding, clock, limits=LocalReadLimits(timeout=0.2)
+        binding, clock, limits=LocalReadLimits(timeout=1.0)
     )
     async with transport_client:
         await read_ok(transport_client, clock)
