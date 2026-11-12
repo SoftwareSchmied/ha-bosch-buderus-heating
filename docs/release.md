@@ -4,6 +4,35 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.0-alpha.6 verification
+
+I am publishing **0.9.0-alpha.6 as a pre-release** for testing from the commit
+tagged `v0.9.0-alpha.6`. Updating from alpha.1 to alpha.5 needs no new setup;
+the storage format stays 4.
+
+From this release on, I run the full suites locally on the current Home
+Assistant version and on the minimum version only; Home Assistant 2026.9.2
+and 2026.10.4 are checked by the GitHub workflows. For alpha.6 the local run
+on the minimum version 2026.5.4 was not completed; the minimum-version job of
+the release workflow runs it.
+
+Automated checks on the release state (2026-11-12, run locally):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite with coverage, current version | Home Assistant 2026.11.0, local, four parallel workers | 10371 passed; coverage 95.99 % |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 215 files (2026.11.0); Ruff clean; 496 files formatted |
+| Browser tests of the dialogs | Chromium, local | `npm test` passed; the 12 Home Assistant frontend tests passed (Home Assistant 2026.10.4 with frontend 20260930.5 as browser environment) |
+| Release archive, SHA-256 and release notes | local build | built for version 0.9.0-alpha.6 without tests or bytecode; the release notes come from this version's CHANGELOG section |
+| GitHub checks | release workflow | the release workflow publishes only after the browser tests, both older Home Assistant versions, its Python checks, hassfest and HACS pass |
+
+On a real room controller, a TC100.2 has confirmed the functions the
+CHANGELOG names as confirmed. The schedule editor, the iCom changes, the
+firmware entity and most fixes were tested with simulated data only; the
+CHANGELOG names them. The readings of the local access now enabled by default
+show plausible values on my own heat pump; nothing of this release was
+installed on my system before the release.
+
 ## 0.9.0-alpha.5 verification
 
 I am publishing **0.9.0-alpha.5 as a pre-release** for testing from the commit
