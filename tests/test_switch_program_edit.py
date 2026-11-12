@@ -601,10 +601,16 @@ async def test_a_program_type_read_keeps_a_pause_or_sign_in(gateway, error):
         return await original(gw, path, **kwargs)
 
     gateway.client.get_resource.side_effect = get
-    with pytest.raises(type(error)):
+    # Starting the real reauthentication flow in the background would race the
+    # test teardown; the synthetic entry intentionally has no sign-in data.
+    with (
+        patch.object(gateway.coordinator._config_entry, "async_start_reauth") as reauth,
+        pytest.raises(type(error)),
+    ):
         await gateway.coordinator.async_write_switch_program(
             HEATING, moved(program().points)
         )
+    assert reauth.call_count == int(isinstance(error, AuthenticationError))
     assert gateway.raw_puts == []
 
 
