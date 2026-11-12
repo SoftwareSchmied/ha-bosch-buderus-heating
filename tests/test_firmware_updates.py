@@ -651,6 +651,11 @@ async def test_diagnostics_show_versions_and_classes_without_identifiers(
 # Entity -------------------------------------------------------------------
 
 
+# The entity tests set up the integration itself. Before Home Assistant
+# 2026.11 the test package finds it only with this fixture.
+sets_up_the_integration = pytest.mark.usefixtures("enable_custom_integrations")
+
+
 def test_the_update_platform_is_set_up() -> None:
     from homeassistant.const import Platform
 
@@ -696,11 +701,17 @@ async def _setup(
     stack.__enter__()
     stack.enter_context(patch.object(PointTClient, "get_firmware_updates", reads))
     entry = _entry(hass)
-    if prepare is not None:
-        prepare(entry)
-    assert await hass.config_entries.async_setup(entry.entry_id)
-    await settle(hass)
-    await wait_for_sources(hass, entry, 1)
+    try:
+        if prepare is not None:
+            prepare(entry)
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await settle(hass)
+        await wait_for_sources(hass, entry, 1)
+    except BaseException:
+        # A failed setup must not leave the patched client to later tests.
+        await hass.config_entries.async_unload(entry.entry_id)
+        stack.close()
+        raise
     owner = entry.runtime_data
     coordinator = next(
         value
@@ -727,6 +738,7 @@ def _entity_id(hass: HomeAssistant) -> str | None:
     )
 
 
+@sets_up_the_integration
 async def test_the_entity_shows_an_offered_update_read_only(
     hass: HomeAssistant,
 ) -> None:
@@ -766,6 +778,7 @@ async def test_the_entity_shows_an_offered_update_read_only(
         await teardown(hass, entry, stack)
 
 
+@sets_up_the_integration
 @pytest.mark.parametrize(
     ("firmware", "installed"),
     [("04.08.02", "04.08.02"), (None, "05.04.00"), ("", "1.4.0")],
@@ -794,6 +807,7 @@ async def test_the_entity_is_current_without_an_update_and_falls_back_to_the_gat
         await teardown(hass, entry, stack)
 
 
+@sets_up_the_integration
 @pytest.mark.parametrize(
     "answer", [ResourceForbidden("/", 403), ResourceNotFound("/", 404), None]
 )
@@ -812,6 +826,7 @@ async def test_a_refused_or_unlisted_gateway_gets_no_entity(
         await teardown(hass, entry, stack)
 
 
+@sets_up_the_integration
 async def test_an_existing_entity_becomes_unavailable_after_a_refusal(
     hass: HomeAssistant,
 ) -> None:
@@ -836,6 +851,7 @@ async def test_an_existing_entity_becomes_unavailable_after_a_refusal(
         await teardown(hass, entry_, stack)
 
 
+@sets_up_the_integration
 async def test_unloading_the_entry_stops_the_reads(hass: HomeAssistant) -> None:
     from tests.helpers.rrc_absence import teardown
 
@@ -1038,6 +1054,7 @@ def _kept(answer: Any, age: float) -> dict[str, Any]:
     return {"answer": stored_entry(parsed), "answered_at": time.time() - age}
 
 
+@sets_up_the_integration
 async def test_the_entity_shows_the_kept_answer_after_a_restart(
     hass: HomeAssistant,
 ) -> None:
@@ -1070,6 +1087,7 @@ async def test_the_entity_shows_the_kept_answer_after_a_restart(
         await teardown(hass, entry_, stack)
 
 
+@sets_up_the_integration
 @pytest.mark.parametrize(
     "extra",
     [
@@ -1106,6 +1124,7 @@ async def test_the_entity_waits_without_a_usable_kept_answer(
         await teardown(hass, entry_, stack)
 
 
+@sets_up_the_integration
 async def test_the_entity_keeps_the_answer_for_the_next_restart(
     hass: HomeAssistant,
 ) -> None:
