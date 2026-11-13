@@ -674,7 +674,8 @@ async def test_offered_addresses_are_bounded(hass):
 
 
 @pytest.mark.parametrize(
-    "change", ["removed", "replaced", "twin", "recovered", "repinned"]
+    "change",
+    ["removed", "removed_meanwhile", "replaced", "twin", "recovered", "repinned"],
 )
 async def test_confirmation_rechecks_after_the_handshake(
     hass, supported, journal, lan, down, monkeypatch, certificates, change
@@ -703,6 +704,10 @@ async def test_confirmation_rechecks_after_the_handshake(
             )
         elif change == "recovered":
             down["down"] = False
+        elif change == "removed_meanwhile":
+            monkeypatch.setattr(
+                hass.config_entries, "async_get_entry", lambda key: None
+            )
         elif change == "repinned":
             # The access was set up again meanwhile with another certificate.
             stored = address.load_local_access
@@ -719,6 +724,7 @@ async def test_confirmation_rechecks_after_the_handshake(
         expected = "entry_not_found"
     else:
         expected = {
+            "removed_meanwhile": "entry_not_found",
             "replaced": "configuration_changed",
             "twin": "local_address_unproven",
             "recovered": "local_address_recovered",

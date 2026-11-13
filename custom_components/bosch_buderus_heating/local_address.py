@@ -325,6 +325,10 @@ async def apply_address(hass: HomeAssistant, issue_id: str) -> str:
     digest = await _handshake(item.endpoint)
     if candidate(hass, issue_id) is not item:
         return "configuration_changed"
+    # The entry may have been removed or set up again during the handshake.
+    if hass.config_entries.async_get_entry(item.entry_id) is not entry:
+        withdraw(hass, issue_id)
+        return "entry_not_found"
     if digest is None or not certificate_matches(digest, item.pin):
         withdraw(hass, issue_id)
         return "local_address_unproven"
