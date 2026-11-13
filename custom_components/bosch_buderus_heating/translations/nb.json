@@ -1649,7 +1649,7 @@
         "name": "Utetemperatur"
       },
       "supply_temperature": {
-        "name": "Turtemperatur"
+        "name": "Turtemperatur anlegg"
       },
       "return_temperature": {
         "name": "Returtemperatur"

@@ -1649,7 +1649,7 @@
         "name": "Vanjska temperatura"
       },
       "supply_temperature": {
-        "name": "Temperatura polaznog voda"
+        "name": "Temperatura polaznog voda sustava"
       },
       "return_temperature": {
         "name": "Temperatura povratnog voda"

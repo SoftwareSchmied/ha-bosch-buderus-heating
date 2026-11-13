@@ -1649,7 +1649,7 @@
         "name": "Venkovní teplota"
       },
       "supply_temperature": {
-        "name": "Výstupní teplota"
+        "name": "Výstupní teplota soustavy"
       },
       "return_temperature": {
         "name": "Vratná teplota"
