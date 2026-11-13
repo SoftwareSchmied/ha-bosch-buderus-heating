@@ -402,11 +402,17 @@ async def test_disabled_source_invalidates_read_generation_but_saves_rotation(ha
     assert entry.options == options
 
 
-@pytest.mark.parametrize("version,minor", [(0, 1), (5, 1), (4, 3)])
+@pytest.mark.parametrize("version,minor", [(0, 1), (5, 1), (4, 0)])
 async def test_unknown_storage_versions_fail_closed(hass, version, minor):
     entry = MockConfigEntry(domain=DOMAIN, version=version, minor_version=minor)
     with pytest.raises(ConfigurationError, match="unsupported_version"):
         EntryConfiguration(entry, "cloud")
+
+
+async def test_a_later_minor_version_of_format_4_is_read(hass):
+    # D23: a later 0.9.x may raise the minor version; it is read like 4.2.
+    entry = MockConfigEntry(domain=DOMAIN, version=4, minor_version=3)
+    EntryConfiguration(entry, "cloud")
 
 
 @pytest.mark.parametrize("epoch", [-1, True, "1", None])

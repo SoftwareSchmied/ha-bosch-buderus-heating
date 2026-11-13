@@ -101,8 +101,13 @@ async def test_uncertain_put_never_leaves_old_target_fresh(
     assert entity.native_target_temperature is None
     assert not entity.supported_features & ClimateEntityFeature.TARGET_TEMPERATURE
     assert TARGET not in controls(coordinator)
-    with pytest.raises(ServiceValidationError):
+    with pytest.raises(HomeAssistantError) as refused:
         await entity.async_set_temperature(temperature=23)
+    if isinstance(error, RateLimited):
+        # The cloud pause it started is named first (D26).
+        assert refused.value.translation_key == "command_cloud_rate_limited"
+    else:
+        assert isinstance(refused.value, ServiceValidationError)
     assert coordinator.client.put_resource_value.await_count == 1
 
 
