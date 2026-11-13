@@ -153,10 +153,10 @@ async def test_metric_sensor_writes_only_changes_once_a_minute(
         await hass.async_block_till_done()
         assert write.call_count == 2
         assert entity.native_value == 3
-        # ... and when the entity is removed with a newer state.
+        # Removal writes nothing: the counts start anew with the next start.
         _record(metrics)
         await entity.async_will_remove_from_hass()
-        assert write.call_count == 3
+        assert write.call_count == 2
     for remove in entity._on_remove or ():
         remove()
 
@@ -901,21 +901,22 @@ async def test_local_only_sensor_keeps_its_unit_and_statistics(
         assert fresh.capability_attributes == {"state_class": "measurement"}
 
 
-async def test_removal_write_is_skipped_without_a_platform_state(
+async def test_removal_neither_writes_nor_changes_the_platform_state(
     hass: HomeAssistant,
 ) -> None:
-    from homeassistant.helpers.entity import Entity
-
     metrics = RequestMetrics()
     entity = _metric("pointt_api_requests_total", metrics)
     entity.hass = hass
     _record(metrics)
-    with (
-        patch.object(Entity, "_platform_state", None),
-        patch.object(entity, "async_write_ha_state") as write,
-    ):
+    platform_states = []
+
+    def write() -> None:
+        platform_states.append(getattr(entity, "_platform_state", None))
+
+    with patch.object(entity, "async_write_ha_state", side_effect=write):
+        before = getattr(entity, "_platform_state", None)
         await entity.async_will_remove_from_hass()
-    write.assert_not_called()
-    # A failing write never stops the removal.
-    with patch.object(entity, "async_write_ha_state", side_effect=RuntimeError):
-        await entity.async_will_remove_from_hass()
+        assert getattr(entity, "_platform_state", None) is before
+    # The base class removal only; no state write that needs a private
+    # platform state of Home Assistant.
+    assert platform_states == []
