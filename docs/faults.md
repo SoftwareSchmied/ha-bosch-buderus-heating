@@ -285,7 +285,10 @@ keeps showing the faults it handed over unchanged, for at most 15 minutes, so
 a fault that changes in that short time is announced once, by the cloud.
 While a cloud that is still switched on needs a new sign-in or does not answer
 (and the stored inventory is recent), the cloud stays responsible: the local
-list never ends a fault it reported, and the fault entities are unavailable.
+list never ends a fault it reported, and the fault entities are unavailable:
+after a rejected sign-in at once, without an answer once the last confirmed
+state is older than its limit (see
+[timing and reliability](#timing-and-reliability)).
 
 The bell notification follows the local list in the same way when the plant
 is shown without the cloud, with the same notification setting per
@@ -351,6 +354,17 @@ are not included in that stored evidence. A failed or malformed notification
 read restarts the two-read confirmation sequence; unrelated polling does not.
 Without a valid baseline, an unreadable response leaves the aggregate state
 unavailable instead of reporting that the system is healthy.
+
+During a short cloud outage the fault entities keep the last state that a
+complete read confirmed, as long as the requests only get no answer: for
+15 minutes after that read (3 minutes while a notification is active), see
+[validity of readings](reading-validity.md#display-values-of-several-readings).
+Nothing is resolved or announced meanwhile. The first cycle that answers
+again reads the fault sources at once, after its other readings. An explicit
+answer such as 403, invalid entries, a rejected sign-in or a stopped cloud
+connection end that state at once, and the entities are unavailable until the next complete read.
+A gateway timeout (504) of the fault sources pauses them for 15 minutes only
+when other readings of the same cycle answered.
 
 Baselines saved by older versions have no source evidence. Their existing
 faults remain conservatively retained until reobserved, after which normal

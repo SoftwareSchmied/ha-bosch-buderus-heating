@@ -65,7 +65,9 @@ from .holidays import (
     HOLIDAY_CONFIGURATION_PATH,
     HOLIDAY_CREATE_PATH,
     HOLIDAY_LIST_PATH,
+    HOLIDAY_TIMEZONE_PATH,
     HolidayWriteValues,
+    is_holiday_resource_path,
     parse_holiday_write_configuration,
 )
 from .icom_profile import (
@@ -75,7 +77,7 @@ from .icom_profile import (
     is_icom_gateway,
 )
 from .legacy_holiday_writes import IcomHolidayWriteService
-from .legacy_holidays import is_icom_slot
+from .legacy_holidays import SYSTEM_INFO_PATH, is_icom_slot
 from .plant_model import PlantModel
 from .pointt import (
     AuthenticationError,
@@ -184,6 +186,10 @@ POLL_INTERVALS_CLOUD_FRIENDLY: dict[PollGroup, timedelta] = {
 VALIDITY_INTERVALS = 3
 # Cloud cycle durations kept for the 95th percentile in diagnostics.
 RECENT_POLL_DURATIONS = 200
+# Cycle durations kept for the validity limits: longer than the longest limit
+# (twice three hourly intervals), and a bound on the number of entries.
+CYCLE_HISTORY_SPAN = timedelta(hours=12)
+CYCLE_HISTORY_ENTRIES = 256
 # A wall clock set back by more than this no longer confirms stored readings.
 CLOCK_SKEW_TOLERANCE = timedelta(seconds=60)
 VALIDITY_TIMER_MARGIN = timedelta(seconds=1)
@@ -224,6 +230,15 @@ def _transient_failure(category: str | None) -> bool:
     return category is not None and (
         category in _TRANSIENT_FAILURES
         or category.startswith(("http_5", NO_ANSWER_PREFIX))
+    )
+
+
+def _server_error_item(result: BatchItemResult) -> bool:
+    """A reading of an answered batch request that came back with a 5xx."""
+    return (
+        result.resource is None
+        and result.status is not None
+        and 500 <= result.status <= 599
     )
 
 
@@ -565,6 +580,12 @@ class BoschBuderusDataUpdateCoordinator(
         self._circuit_outage_since: float | None = None
         # O81: the failed batch request was reported once in this outage.
         self._batch_failure_logged = False
+        # An answered batch with server errors for its readings was reported
+        # once; a cycle without such readings ends that outage.
+        self._bulk_server_errors_logged = False
+        # The fault sources are read in the first cycle that answers again
+        # after their state was lost to a failure (see ``_fault_order``).
+        self._fault_reread_due = False
         # #60: failed refreshes are an error only once the outage lasts.
         self._refresh_outage = RefreshOutageLog(_LOGGER, self.name)
         self._update_lock = asyncio.Lock()
@@ -583,6 +604,11 @@ class BoschBuderusDataUpdateCoordinator(
         self._recent_poll_durations_ms: deque[float] = deque(
             maxlen=RECENT_POLL_DURATIONS
         )
+        # (finished, seconds) of the cycles, the durations strictly falling:
+        # the first entry finished after a time is the longest cycle since.
+        self._cycle_durations: deque[tuple[datetime, float]] = deque()
+        # Monotonic start of the cycle in progress; None between cycles.
+        self._cycle_running_since: float | None = None
         # Paths of a due group already read in an earlier, budget-limited
         # cycle -> monotonic read time: they are not read again until the
         # group completes (P41), while it keeps making progress (``_progress``).
@@ -683,6 +709,7 @@ class BoschBuderusDataUpdateCoordinator(
         self._switch_program_service = SwitchProgramService(client)
         self.switch_program_write_stats = RrcWriteStats()
         self.faults = FaultTracker(hass, config_entry.entry_id, gateway.gateway_id)
+        self.faults.state_limit = self._fault_state_limit
         # O51: control paths whose entities are all disabled poll slowly.
         from .entity_use import entity_use
 
@@ -1909,6 +1936,7 @@ class BoschBuderusDataUpdateCoordinator(
 
     async def _async_update_data(self) -> dict[str, ResourceSnapshot]:
         started = monotonic()
+        self._cycle_running_since = started
         self._polls_total += 1
         try:
             async with self._update_lock:
@@ -1989,7 +2017,11 @@ class BoschBuderusDataUpdateCoordinator(
                 # so it is no further failure and no answer either.
                 raise
             self._poll_failures += 1
-            self.faults.mark_unavailable()
+            # No answer: the last confirmed fault state stays shown within its
+            # validity, and the sources are read again once the cloud answers.
+            # A rejected sign-in or an unexpected error ends it.
+            self.faults.mark_unavailable(hold=isinstance(err, UpdateFailed))
+            self._fault_reread_due = True
             if isinstance(err, UpdateFailed):
                 self._refresh_outage.failed(err)
                 # #60: Home Assistant logs a failed refresh as an error only
@@ -1999,7 +2031,8 @@ class BoschBuderusDataUpdateCoordinator(
             raise
         finally:
             duration = (monotonic() - started) * 1000
-            self._last_poll_duration_ms = duration
+            self._cycle_running_since = None
+            self._note_cycle_duration(duration)
             self._total_poll_duration_ms += duration
             self._maximum_poll_duration_ms = max(
                 self._maximum_poll_duration_ms, duration
@@ -2055,7 +2088,10 @@ class BoschBuderusDataUpdateCoordinator(
         """Return how long a cloud reading stays valid; ``None`` never expires.
 
         The next poll starts one interval after the previous cycle finished, so
-        each interval is extended by the duration of the last cycle.
+        each interval is extended by a cycle duration: the longest since the
+        reading's last success, including the cycle in progress. A slow failed
+        cycle followed by a quick one therefore still covers the delay of the
+        slow one.
         """
         if snapshot.source is SnapshotSource.LOCAL:
             return None
@@ -2063,9 +2099,7 @@ class BoschBuderusDataUpdateCoordinator(
         if interval is None:
             return None
         # A hanging cycle may extend each interval by at most one interval.
-        cycle = min(
-            timedelta(milliseconds=self._last_poll_duration_ms or 0.0), interval
-        )
+        cycle = min(self._longest_cycle_since(snapshot.last_success), interval)
         limit = (interval + cycle) * VALIDITY_INTERVALS
         path = snapshot.resource.path
         if path in self._local_served:
@@ -2089,6 +2123,51 @@ class BoschBuderusDataUpdateCoordinator(
             return False
         age = now - snapshot.last_success
         return age > limit or age < -CLOCK_SKEW_TOLERANCE
+
+    def _note_cycle_duration(
+        self, duration_ms: float, finished_at: datetime | None = None
+    ) -> None:
+        """Keep a finished cycle for the validity limits (and diagnostics)."""
+        self._last_poll_duration_ms = duration_ms
+        finished = finished_at or dt_util.utcnow()
+        seconds = max(0.0, duration_ms / 1000)
+        history = self._cycle_durations
+        # A shorter or equal earlier cycle never decides any limit again.
+        while history and history[-1][1] <= seconds:
+            history.pop()
+        history.append((finished, seconds))
+        while history and (
+            len(history) > CYCLE_HISTORY_ENTRIES
+            or history[0][0] < finished - CYCLE_HISTORY_SPAN
+        ):
+            history.popleft()
+
+    def _longest_cycle_since(self, since: datetime) -> timedelta:
+        """The longest cycle that finished at or after ``since``, or the one
+        in progress if it already took longer."""
+        longest = next(
+            (
+                seconds
+                for finished, seconds in self._cycle_durations
+                if finished >= since
+            ),
+            0.0,
+        )
+        running = self._cycle_running_since
+        if running is not None:
+            longest = max(longest, monotonic() - running)
+        return timedelta(seconds=longest)
+
+    def _fault_state_limit(self, confirmed_at: datetime) -> timedelta | None:
+        """How long the last confirmed fault state stays shown without a new
+        read: the validity limit of the fault sources' group."""
+        interval = self._poll_intervals.get(PollGroup.NOTIFICATIONS)
+        if interval is None:
+            return None
+        if self.faults.active:
+            interval = ACTIVE_NOTIFICATION_INTERVAL
+        cycle = min(self._longest_cycle_since(confirmed_at), interval)
+        return (interval + cycle) * VALIDITY_INTERVALS
 
     def _cloud_auth_required(self) -> bool:
         """Managed sources report a pending sign-in of their access."""
@@ -2215,6 +2294,25 @@ class BoschBuderusDataUpdateCoordinator(
             available=False,
             freshness=Freshness.STALE,
             last_error_category=EXPIRED_CATEGORY,
+        )
+
+    def displayed_holiday_resources(self) -> dict[str, Resource]:
+        """The holiday readings as the display shows them.
+
+        Like any other cloud reading, the last good value stays shown within
+        its validity limit when a request gets no answer. Only for display:
+        writes and their capabilities keep the stored, current readings.
+        """
+        return holiday_resources_from_snapshots(
+            {
+                path: shown
+                for path in self.data or {}
+                if (
+                    is_holiday_resource_path(path)
+                    or path in (HOLIDAY_TIMEZONE_PATH, SYSTEM_INFO_PATH)
+                )
+                and (shown := self.displayed_cloud_snapshot(path)) is not None
+            }
         )
 
     def display_snapshot(self, path: str) -> ResourceSnapshot | None:
@@ -2441,6 +2539,10 @@ class BoschBuderusDataUpdateCoordinator(
             ),
             default=None,
         )
+        # The fault entities end a held state the same way.
+        held_until = self.faults.held_until()
+        if held_until is not None and held_until >= now:
+            due = held_until if due is None else min(due, held_until)
         if (
             due is not None
             and due == self._validity_due
@@ -2673,6 +2775,8 @@ class BoschBuderusDataUpdateCoordinator(
         ]
         early = self._early_reads(paths_by_group, due_groups, now_monotonic)
         urgent = tuple(path for path in self._urgent_reads if path in self.resources)
+        fault_sources = set(paths_by_group.get(PollGroup.NOTIFICATIONS, ()))
+        fault_reread = self._fault_reread_due and bool(fault_sources)
         candidate_paths = list(
             dict.fromkeys((*candidate_paths, *(path for _, path in early), *urgent))
         )
@@ -2681,6 +2785,17 @@ class BoschBuderusDataUpdateCoordinator(
             for path in candidate_paths
             if not self._resource_is_paused(path, now_monotonic)
         ]
+        if fault_reread and any(path not in fault_sources for path in paths):
+            # Read again with a cycle that requests other readings anyway,
+            # whether due or not; paused ones stay paused.
+            known = set(paths)
+            paths += [
+                path
+                for path in paths_by_group.get(PollGroup.NOTIFICATIONS, ())
+                if path in self.resources
+                and path not in known
+                and not self._resource_is_paused(path, now_monotonic)
+            ]
         # Resume work skipped by an interrupted cycle before repeating earlier
         # batches. A consistently failing batch must not starve later resources.
         path_set = set(paths)
@@ -2717,7 +2832,9 @@ class BoschBuderusDataUpdateCoordinator(
         # reading, so a failing reading elsewhere never fails them with it.
         # COORD-3: the paths of a batch that failed beside answered ones form
         # their own batches, read last, so they fail no other reading with them.
-        fault_sources = set(paths_by_group.get(PollGroup.NOTIFICATIONS, ()))
+        # After their state was lost to a failure, the fault sources are read
+        # after the others instead: during an outage nothing is sent for them
+        # in addition, and the first cycle that answers again reads them.
         faults = [path for path in paths if path in fault_sources]
         failing = [
             path
@@ -2729,33 +2846,57 @@ class BoschBuderusDataUpdateCoordinator(
             for path in paths
             if path not in self._failing_batch_paths and path not in fault_sources
         ]
-        if set(paths) <= self._failing_batch_paths and (
-            probe := self._outage_probe(paths_by_group, now_monotonic)
+        # With a fault read after the others, the fault sources cannot tell
+        # them apart either: then only the rest has to be the failing batch.
+        probed = set(paths) - fault_sources if fault_reread else set(paths)
+        if (
+            probed
+            and probed <= self._failing_batch_paths
+            and (probe := self._outage_probe(paths_by_group, now_monotonic))
         ):
             # COORD-3: only the failing batch is due. Its failure alone cannot
             # tell a broken batch from a cloud outage: one answered reading,
             # read before it, tells them apart.
             others = [probe]
-        paths = [*faults, *others, *failing]
+        faults_last = fault_reread and bool(others or failing)
+        paths = (
+            [*others, *failing, *faults]
+            if faults_last
+            else [*faults, *others, *failing]
+        )
         # I1: an iCom gateway reads smaller batches after a timeout; the
         # fault sources stay one batch (FAULT-1).
         bulk_size = (
             self._icom_bulk.size if self._icom_bulk is not None else MAX_BULK_PATHS
         )
         cycle_timed_out = False
-        chunks = (
-            *chunk_resource_paths(faults, size=MAX_BULK_PATHS),
+        fault_chunks = tuple(chunk_resource_paths(faults, size=MAX_BULK_PATHS))
+        reading_chunks = (
             *chunk_resource_paths(others, size=bulk_size),
             *chunk_resource_paths(failing, size=bulk_size),
         )
+        chunks = (
+            (*reading_chunks, *fault_chunks)
+            if faults_last
+            else (*fault_chunks, *reading_chunks)
+        )
+        bulk_server_errors: list[BatchItemResult] = []
         for chunk in chunks:
-            if attempted_paths and monotonic() - now_monotonic >= CYCLE_BUDGET_SECONDS:
-                over_budget = True
-                self._cycles_over_budget += 1
-                _LOGGER.debug(
-                    "PointT cycle budget reached; %d readings move to the next cycle",
-                    len(paths) - len(attempted_paths),
-                )
+            if (
+                attempted_paths
+                and monotonic() - now_monotonic >= CYCLE_BUDGET_SECONDS
+                and not (faults_last and chunk in fault_chunks)
+            ):
+                if not over_budget:
+                    over_budget = True
+                    self._cycles_over_budget += 1
+                    _LOGGER.debug(
+                        "PointT cycle budget reached; %d readings move to the "
+                        "next cycle",
+                        len(paths) - len(attempted_paths),
+                    )
+                if faults_last:
+                    continue  # the fault sources read after the others still follow
                 break
             attempted_paths.update(chunk)
             attempted_at = datetime.now(UTC)
@@ -2832,11 +2973,19 @@ class BoschBuderusDataUpdateCoordinator(
             gateway_unanswered = _gateway_unanswered(results)
             if result_source is SnapshotSource.BATCH:
                 self._log_unusable_bulk_results(results)
+                bulk_server_errors.extend(
+                    item for item in results if _server_error_item(item)
+                )
                 if not gateway_unanswered and not any(
                     result.status == 429 for result in results
                 ):
                     bulk_item_fallback = await self._async_bulk_item_fallback(results)
 
+            # A gateway timeout of the fault sources pauses them only while
+            # other readings of this cycle answered: then they are slow
+            # themselves. Without such an answer it is an outage, and they are
+            # read again as soon as the cloud answers.
+            timeout_pause = successful > 0 or fault_sources.isdisjoint(chunk)
             cycle_results.extend(results)
             successful += self._apply_results(
                 snapshots,
@@ -2845,6 +2994,7 @@ class BoschBuderusDataUpdateCoordinator(
                 now_monotonic=now_monotonic,
                 source=result_source,
                 pause_readings=not gateway_unanswered,
+                timeout_pause=timeout_pause,
             )
             if bulk_item_fallback:
                 cycle_results.extend(bulk_item_fallback)
@@ -2854,6 +3004,7 @@ class BoschBuderusDataUpdateCoordinator(
                     attempted_at=attempted_at,
                     now_monotonic=now_monotonic,
                     source=SnapshotSource.FALLBACK,
+                    timeout_pause=timeout_pause,
                 )
             if any(result.status == 429 for result in results):
                 interrupted_paths.update(chunk)
@@ -2871,6 +3022,19 @@ class BoschBuderusDataUpdateCoordinator(
                 gateway_failure = True
                 break
 
+        self._log_bulk_server_errors(bulk_server_errors, failed=bool(failed_chunks))
+        if attempted_faults := fault_sources & attempted_paths:
+            answered = {
+                result.path
+                for result in cycle_results
+                if result.resource is not None or _explicit_client_error(result.status)
+            }
+            # Read in the cycle that answered again: done, whatever the
+            # result (a slow source is paused, others keep their cadence).
+            # Read first and not answered: read again after the others.
+            self._fault_reread_due = not faults_last and any(
+                path not in answered for path in attempted_faults
+            )
         self._deferred_poll_paths = tuple(
             path for path in paths if path not in attempted_paths
         )
@@ -2950,8 +3114,11 @@ class BoschBuderusDataUpdateCoordinator(
             self._advance_groups(due_groups, now_monotonic)
             return snapshots
         self._record_gateway_recovery(monotonic())
-        # Paths of a failed batch beside answered ones (COORD-3).
-        self._failing_batch_paths = frozenset(interrupted_paths - completed_paths)
+        # Paths of a failed batch beside answered ones (COORD-3); the fault
+        # sources keep their own batch and order.
+        self._failing_batch_paths = frozenset(
+            interrupted_paths - completed_paths - fault_sources
+        )
         # Advance complete groups even if a different group was interrupted.
         completed_groups = tuple(
             group
@@ -3846,10 +4013,12 @@ class BoschBuderusDataUpdateCoordinator(
         source: SnapshotSource,
         whole_request: bool = False,
         pause_readings: bool = True,
+        timeout_pause: bool = True,
     ) -> int:
         """Apply partial results without discarding last-good values.
 
         ``pause_readings`` false: a failure pauses no reading of its own (B02).
+        ``timeout_pause`` false: a gateway timeout pauses no reading.
         """
         successful = 0
         affected_modes: set[str] = set()
@@ -3921,7 +4090,7 @@ class BoschBuderusDataUpdateCoordinator(
                     ended=previous.ended or not no_answer,
                 )
                 snapshots[result.path] = failed
-                if pause_readings:
+                if pause_readings and (timeout_pause or result.status != 504):
                     self._pause_failed_resource(failed, result.status, now_monotonic)
             elif result.status in (403, 404):
                 if result.status == 404 and (
@@ -4214,6 +4383,35 @@ class BoschBuderusDataUpdateCoordinator(
             "answer either. Further failures of this outage are logged at debug "
             "level",
             category,
+        )
+
+    def _log_bulk_server_errors(
+        self, items: list[BatchItemResult], *, failed: bool
+    ) -> None:
+        """Warn once per outage when an answered batch request returned
+        server errors for readings; only a cycle without them (and without a
+        failed batch) ends that outage."""
+        count = len(items)
+        if not count:
+            if not failed:
+                self._bulk_server_errors_logged = False
+            return
+        statuses = ", ".join(sorted({str(item.status) for item in items}))
+        if self._bulk_server_errors_logged:
+            _LOGGER.debug(
+                "PointT answered a batch request again with server errors for "
+                "%d readings (HTTP %s)",
+                count,
+                statuses,
+            )
+            return
+        self._bulk_server_errors_logged = True
+        _LOGGER.warning(
+            "PointT answered a batch request, but %d readings came back with "
+            "server errors (HTTP %s). Further such answers of this outage are "
+            "logged at debug level",
+            count,
+            statuses,
         )
 
     def _record_gateway_recovery(self, now_monotonic: float) -> None:

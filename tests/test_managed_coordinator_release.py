@@ -103,6 +103,18 @@ async def test_failed_source_attempts_leave_no_coordinators_alive(hass):
             assert failing[0]["failures"]["last_failure"] == "SourceFailure"
             assert failing[0]["failures"]["last_failure_stage"] == "starting"
             assert failing[0]["failures"]["last_failure_phase"] == "unavailable"
+            # Schema 46: each start of the source and its cause.
+            starts = failing[0]["starts"]
+            assert starts["total"] >= ATTEMPTS
+            assert {(item["reason"], item["failure"]) for item in starts["recent"]} <= {
+                ("start", None),
+                ("after_failure", "SourceFailure"),
+            }
+            assert starts["recent"][-1]["reason"] == "after_failure"
+            assert all(
+                connection["starts"]["recent"][0]["reason"] == "start"
+                for connection in result["connections"]
+            )
             assert "000123" not in json.dumps(result)
 
 

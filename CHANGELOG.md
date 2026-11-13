@@ -20,6 +20,46 @@ Versioning after its first tagged preview.
   - I tested these checks with automated tests only; the workflow changes
     take effect with the next release tag.
 
+#### Short cloud outages
+
+On my own plant, two short cloud outages under alpha.6 made entities
+unavailable that did not need to be. I replayed both with simulated polling
+cycles on the inventory of my plant; the changes below are tested that way,
+not yet on the plant itself.
+
+- **Live values no longer end seconds before the cloud answers again:** a
+  cloud reading stays valid for three intervals of its group, extended by a
+  cycle duration. This is now the longest cycle since the reading was last
+  received, not the last one. After a slow failed cycle (10.6 s) and a quick
+  one, a live value such as the compressor status ran out 8 s before the
+  next answer; now it stays shown.
+- **Fault entities survive a short outage:** **System fault**, **Active
+  faults** and **Active notifications** keep the last state that a complete
+  read confirmed, for 15 minutes after that read (3 minutes while a
+  notification is active), as long as the requests only get no answer.
+  Nothing is resolved or announced meanwhile. The fault list is read again in
+  the first cycle that answers, after the other readings. A gateway timeout
+  of the fault list no longer pauses it for 15 minutes when nothing else
+  answered either; after a two-minute outage the fault entities were
+  unavailable for 17 minutes. A fault list that is slow while the rest
+  answers is still paused as before.
+- **Display values keep their last value:** **System pressure status
+  (calculated)**, **Holiday mode active**, **Next holiday** and the **Holiday
+  periods** calendar now keep their last value within its validity limit when
+  their readings get no answer, like other sensors. Holiday changes in the
+  calendar still need current readings and a successful cloud cycle. The
+  away mode switch stays a control and still needs a current reading.
+- **Warning for server errors inside an answered batch:** when the cloud
+  answers a batch request but readings in it come back with server errors
+  (for example gateway timeouts), the log now shows one warning per outage.
+  Before, such outages left no log entry.
+- **Diagnostics schema 46:** each access and each source lists its recent
+  starts with the time and a fixed reason (`start`, `configuration_changed`,
+  `after_failure` with the error class, `source_ended`, `access_restarted`,
+  `requested`, `other`), so the cause of an unexpected restart of the local
+  or the cloud source can be seen in the next diagnostics. The fault section
+  shows `state_held`.
+
 ## [0.9.0-alpha.6] - 2026-11-12
 
 > [!IMPORTANT]

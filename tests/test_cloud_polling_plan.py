@@ -175,7 +175,7 @@ def _plant(
 
 async def _cycle(coordinator: BoschBuderusDataUpdateCoordinator) -> None:
     coordinator.data = await coordinator._async_update_data_locked()
-    coordinator._last_poll_duration_ms = CYCLE * 1000
+    coordinator._note_cycle_duration(CYCLE * 1000)
     coordinator.async_update_listeners()
 
 

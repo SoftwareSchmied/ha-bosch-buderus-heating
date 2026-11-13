@@ -23,6 +23,7 @@ from .const import DOMAIN
 from .i18n import localize
 from .log_helpers import log_failure
 from .pointt import Resource
+from .pointt.exceptions import ProtocolError, ResourceOmitted
 from .pointt.models import BatchItemResult, JsonValue
 
 if TYPE_CHECKING:
@@ -53,6 +54,8 @@ FAULT_SOURCE_GONE_READS = 2
 FAULT_UNVERIFIED_AFTER = timedelta(hours=24)
 FAULT_UNVERIFIED_READS = 12
 FAULT_SOURCE_ISSUE_PREFIX = "fault_source_removed_"
+# A wall clock set back by more than this no longer confirms a held state.
+_CLOCK_SKEW = timedelta(seconds=60)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -590,6 +593,13 @@ class FaultTracker:
             + fault_store_key(entry_id, gateway_id).rsplit(".", 1)[-1]
         )
         self._has_valid_state = False
+        # When the last complete read confirmed the state, and whether only
+        # missing answers followed since: then that state stays shown within
+        # ``state_limit`` (set by the coordinator). An explicit answer, invalid
+        # entries or an ended source end it at once.
+        self._confirmed_at: datetime | None = None
+        self._hold = False
+        self.state_limit: Callable[[datetime], timedelta | None] | None = None
         self._resource_results: dict[str, str] = {}
         self._last_successful_update: datetime | None = None
         self._last_parser_status = "not_run"
@@ -708,8 +718,29 @@ class FaultTracker:
         return (
             bool(self.active_faults)
             or self._has_valid_state
+            or self.held
             or (self.local_authority and self._local_current and self._local_valid)
         )
+
+    @property
+    def held(self) -> bool:
+        """The last confirmed state is shown although no read confirmed it
+        since: the requests only got no answer, within the validity limit.
+
+        Nothing is resolved meanwhile; ``current_state_confirmed`` stays false.
+        """
+        until = self.held_until()
+        return until is not None and datetime.now(UTC) <= until
+
+    def held_until(self) -> datetime | None:
+        """When a held state ends; None without one."""
+        confirmed, limit_of = self._confirmed_at, self.state_limit
+        if self._has_valid_state or not self._hold or confirmed is None:
+            return None
+        limit = limit_of(confirmed) if limit_of is not None else None
+        if limit is None or datetime.now(UTC) < confirmed - _CLOCK_SKEW:
+            return None
+        return confirmed + limit
 
     @property
     def current_state_confirmed(self) -> bool:
@@ -737,9 +768,15 @@ class FaultTracker:
         self._state_listeners.add(listener)
         return lambda: self._state_listeners.discard(listener)
 
-    def mark_unavailable(self) -> None:
-        """Invalidate freshness without resolving any retained faults."""
+    def mark_unavailable(self, *, hold: bool = False) -> None:
+        """Invalidate freshness without resolving any retained faults.
+
+        ``hold``: the requests got no answer; the last confirmed state stays
+        shown within its validity limit (``held``). Without it the evidence
+        ends here (a stopped source).
+        """
         self._has_valid_state = False
+        self._hold = self._hold and hold
         self._absence_counts.clear()
         self._notify_state_listeners()
 
@@ -932,6 +969,8 @@ class FaultTracker:
             if result.resource is None and active_source:
                 self._absence_counts.clear()
                 self._has_valid_state = False
+                if not _no_answer(result):
+                    self._hold = False
             if result.resource is not None:
                 self._supported_paths.add(result.path)
                 self._resource_results[result.path] = "success"
@@ -1159,8 +1198,12 @@ class FaultTracker:
         complete = sources_complete and not self._unverified_restored
         if parsed_resources:
             self._has_valid_state = complete
-            if not complete:
+            if complete:
+                self._confirmed_at, self._hold = now, True
+            else:
                 self._absence_counts.clear()
+                if invalid_entries:
+                    self._hold = False
 
         if not self._initialized:
             self._active = parsed_faults
@@ -1517,6 +1560,8 @@ class FaultTracker:
                 if self._last_successful_update
                 else None
             ),
+            # The last confirmed state shown while reads get no answer.
+            "state_held": self.held,
             "parser_status": self._last_parser_status,
             "parser_errors": self._parser_errors,
             "local_error_list": self._local_result,
@@ -1613,6 +1658,18 @@ class FaultTracker:
         if self.room_controller:
             data["room_controller"] = True  # SYSTEM-08
         return data
+
+
+def _no_answer(result: BatchItemResult) -> bool:
+    """No answer for the source itself: a server error, a timeout or a limit.
+
+    A client error or invalid data is an answer: it ends a held state.
+    """
+    status = result.status
+    if status is not None:
+        return status in (401, 429) or 500 <= status <= 599
+    error = result.error
+    return not isinstance(error, ProtocolError) or isinstance(error, ResourceOmitted)
 
 
 def _source_key(path: str) -> str:

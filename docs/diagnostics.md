@@ -4,6 +4,23 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 46 (0.9.0) adds fields, again without values, names or identifiers:
+
+- `starts` in each entry under `connections[]` and `sources[]`: why the
+  access or the source started since the integration started. `total`
+  counts the starts, `recent` lists the last 10, each with `at` (the time,
+  in seconds), `reason` and `failure`. `reason` is a fixed code: `start`
+  (the first start), `configuration_changed` (the options or the stored
+  access changed it, or it was switched off and on again), `after_failure`
+  (the previous attempt failed; `failure` is the error class only, for
+  example `SourceFailure`), `source_ended` (a source ended on its own),
+  `access_restarted` (its access started again, and the source with it),
+  `requested` (a restart you confirmed in a repair) or `other`. `failure` is
+  `null` for every other reason;
+- `gateways[].faults.state_held`: `true` while the fault entities show the
+  last confirmed fault state although the latest reads got no answer (see
+  [validity of readings](reading-validity.md#display-values-of-several-readings)).
+
 Schema 45 (0.9.0-alpha.6) adds sections and fields, again without values,
 names, times or identifiers:
 

@@ -3,9 +3,11 @@
 Sensors and binary sensors that show a single reading display it only while it
 is valid. The rule is the same for both connections: a reading stays valid for
 three polling intervals of its group, counted from the time it was received.
-Each cloud interval is extended by the duration of the last polling cycle, at
-most by one interval, because the next poll starts one interval after the
-previous cycle finished.
+Each cloud interval is extended by the duration of a polling cycle, at most by
+one interval, because the next poll starts one interval after the previous
+cycle finished. It is the longest cycle since the reading was last received,
+including a cycle still in progress, so a slow failed cycle followed by a
+quick one does not end a reading a few seconds before the next answer.
 
 | Cloud group | Standard profile | Cloud-friendly profile |
 | --- | --- | --- |
@@ -71,18 +73,42 @@ Assistant, because they must survive a restart. A clock change therefore shifts
 these limits by the size of the change; the case of a clock set back is limited
 as described above.
 
+## Display values of several readings
+
+Some entities only show cloud readings, without local values, and are no
+control:
+
+- **System pressure status (calculated):** the system pressure and its limits
+  each keep their last good value within their validity limit;
+- **Holiday mode active**, **Next holiday** and the **Holiday periods** calendar:
+  the holiday readings within their validity limit. The calendar offers to
+  create, change or delete a holiday only while its readings are current and
+  the last cloud cycle succeeded;
+- **System fault**, **Active faults** and **Active notifications:** the last
+  fault state that a complete read confirmed, while later reads only got no
+  answer, for three intervals of the fault list (15 minutes, 3 minutes while
+  a notification is active), extended like a reading by the longest cycle
+  since. An explicit answer for a fault source (for example 403), invalid
+  entries, a rejected sign-in or a stopped cloud connection end it at once. Nothing is resolved
+  or announced meanwhile.
+
+The fault sources are read again in the first cycle that answers after such a
+failure, after the other readings of that cycle, also when they are not due.
+A gateway timeout (504) pauses them for 15 minutes only when other readings of
+the same cycle answered: then they are slow themselves. While nothing answers,
+nothing is requested for them in addition.
+
 ## What keeps the strict rule
 
 The climate entity of a heating circuit shows its mode, target and room
 temperature like the sensors, as long as each reading is within its validity
 limit, so a failed or older cloud cycle alone does not make it unavailable.
 Changing it still requires current readings of a ready cloud. Controls,
-hot-water entities and every write require a successful current cloud cycle.
-Sensors that combine several readings or show other state,
-such as the dew point, the pressure status, the low-salt warning, fault
-counters, the system fault and holiday sensors, keep following the last cloud
-cycle and their stored readings as before, without local values. Nothing is
-restored as a current reading after a restart.
+hot-water entities and every write require a successful current cloud cycle;
+this includes the away mode switch. The dew point and the low-salt warning
+keep following the last cloud cycle and their stored readings as before,
+without local values. Nothing is restored as a current reading after a
+restart.
 
 Diagnostics show the base limits per group as `validity_limits_seconds` and the
 number of readings that are currently past their limit as `resources_expired`
