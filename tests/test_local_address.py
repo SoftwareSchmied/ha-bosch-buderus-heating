@@ -315,6 +315,21 @@ async def repair(hass, issue_id):
     return handler
 
 
+async def test_unloading_the_entry_drops_the_offer(
+    hass, supported, journal, lan, down, monkeypatch, certificates
+):
+    entry, management, _ = await configured(hass, monkeypatch, certificates)
+    before = management.current()
+    await lan.start(MOVED, 0)
+    await discover(hass, host=MOVED, hostname="renamed.example.invalid.")
+    (issue,) = issues(hass)
+    assert address.candidate(hass, issue.issue_id) is not None
+    await entry._async_process_on_unload(hass)
+    assert not issues(hass)
+    assert address.candidate(hass, issue.issue_id) is None
+    assert management.current() == before and not lan.requests
+
+
 async def test_moved_gateway_is_offered_and_saved_only_after_confirmation(
     hass, supported, journal, lan, down, monkeypatch, certificates
 ):

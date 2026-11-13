@@ -236,6 +236,16 @@ def _offer(hass: HomeAssistant, found: _Access, endpoint: LocalEndpoint) -> str:
     subscribe = getattr(runtime, "subscribe", None)
     if callable(subscribe):
         item.unsubscribe = subscribe(recheck, local_values=False)
+
+    def forget() -> None:
+        if candidates.get(issue_id) is item:
+            withdraw(hass, issue_id)
+
+    # Unloading the entry (also a reload or its removal) drops the offer: the
+    # runtime the note listened to is gone.
+    on_unload = getattr(entry, "async_on_unload", None)
+    if callable(on_unload):
+        on_unload(forget)
     ir.async_create_issue(
         hass,
         DOMAIN,
