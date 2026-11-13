@@ -564,7 +564,9 @@ or its live schema does not match the documented type and unit.
 Start-counter entities are registered even when the discovered resource has an
 empty or partial startup payload. Pool-heating starts are always created, but
 disabled by default, because not every system heats a pool; enable them if
-yours does. They are named **Anzahl der Starts Poolheizung** in German and **Number of
+yours does. From 0.9.0, other parts missing from the reading they are first
+created from, such as cooling starts on a gas boiler, are created disabled
+as well; existing entities keep their setting. They are named **Anzahl der Starts Poolheizung** in German and **Number of
 starts Pool heating** in English. Find them under **Settings → Devices &
 services → Entities**, filtered by this integration. The value stays unknown
 until the gateway supplies `pool`. It uses the existing 15-minute request,

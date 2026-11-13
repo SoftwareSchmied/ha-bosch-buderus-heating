@@ -26,8 +26,9 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from typing import Final, Literal
+from weakref import WeakKeyDictionary
 
 from . import rrc
 from .pointt import Resource, WriteValidationError
@@ -320,3 +321,54 @@ def diagnostics(resources: Mapping[str, Resource]) -> dict[str, object]:
             resources.get(BOOST_DURATION_PATH), "duration"
         ),
     }
+
+
+_SETTING_PATHS: Final[tuple[tuple[Setting, str], ...]] = (
+    ("temperature", BOOST_TEMPERATURE_PATH),
+    ("duration", BOOST_DURATION_PATH),
+)
+
+
+@dataclass(slots=True)
+class LimitIssueWatch:
+    """The last reason a boost setting had no limits, and when it was
+    last seen (monotonic seconds), so that a short state between two
+    downloads still shows in the diagnostics. ``missing`` is not kept: a
+    leaf that is not known yet is no state of the controller."""
+
+    last: dict[Setting, tuple[str, float]] = field(default_factory=dict)
+
+    def observe(self, leaves: Mapping[Setting, Resource | None], now: float) -> None:
+        for setting, _path in _SETTING_PATHS:
+            issue = limits_issue(leaves.get(setting), setting)
+            if issue is not None and issue != "missing":
+                self.last[setting] = (issue, now)
+
+    def diagnostics(self, now: float) -> dict[str, object]:
+        """Tokens and whole seconds only."""
+        result: dict[str, object] = {}
+        for setting, _path in _SETTING_PATHS:
+            seen = self.last.get(setting)
+            result[f"boost_{setting}_limits_last_issue"] = seen[0] if seen else None
+            result[f"boost_{setting}_limits_last_issue_age_s"] = (
+                max(0, round(now - seen[1])) if seen else None
+            )
+        return result
+
+
+_WATCHES: WeakKeyDictionary[object, LimitIssueWatch] = WeakKeyDictionary()
+
+
+def limit_watch(owner: object, *, create: bool = False) -> LimitIssueWatch | None:
+    """The watch of one coordinator; created on request only."""
+    watch = _WATCHES.get(owner)
+    if watch is None and create:
+        watch = _WATCHES[owner] = LimitIssueWatch()
+    return watch
+
+
+def setting_leaves(
+    resources: Mapping[str, Resource],
+) -> dict[Setting, Resource | None]:
+    """The leaves the limits come from, by setting."""
+    return {setting: resources.get(path) for setting, path in _SETTING_PATHS}

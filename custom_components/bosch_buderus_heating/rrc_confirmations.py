@@ -2,8 +2,9 @@
 
 The diagnostics report every RRC contract as ``unconfirmed`` unless one of
 its functions is listed here. A listed function was confirmed with this
-integration on a TC100.2 (firmware 05.04.00) with 0.9.0-alpha.4 or
-0.9.0-alpha.5 (``docs/room-controllers.md``, "What is confirmed"). Only
+integration on a TC100.2 (firmware 05.04.00) with 0.9.0-alpha.4,
+0.9.0-alpha.5 or 0.9.0-alpha.6 (``docs/room-controllers.md``, "What is
+confirmed"). Only
 writes are listed, no readings, and a confirmation on the TC100.2 says
 nothing about a CT200. Pure: tokens only, no Home Assistant import.
 """
@@ -32,7 +33,14 @@ CONFIRMED: Final[Mapping[str, frozenset[str]]] = MappingProxyType(
                 "mode_with_target",
             }
         ),
-        "zone": frozenset({"temporary_setpoint", "zone_window_detection"}),
+        "zone": frozenset(
+            {
+                "temporary_setpoint",
+                "zone_window_detection",
+                # alpha.6
+                "advance_switch_point",
+            }
+        ),
         "absence": frozenset({"away_mode", "absence_calendar_day", "boost_on_off"}),
         "dhw": frozenset({"operation_mode"}),
     }

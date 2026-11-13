@@ -468,6 +468,7 @@ class EnergyHistory:
             "heat_source_type_failed_cycles": state.heat_source_errors,
             "gas_unit_confirmed": state.gas_unit_confirmed,
             "invalid_records": state.invalid_records,
+            "records_seen": state.records_seen,
             "changes_outside_window": state.old_changes,
             "next_cycle_in_seconds": (
                 max(0, int((state.next_due - self._now()).total_seconds()))

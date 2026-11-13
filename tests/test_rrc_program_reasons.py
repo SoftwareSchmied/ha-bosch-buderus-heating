@@ -1,9 +1,10 @@
 """R4 (T4): why an RRC program is not read or not editable, in diagnostics.
 
-The reasons are stable tokens; the program form itself stays unchanged until
-a device shows another one. The forms below are synthetic; the day program
-without ``d`` and the point with an extra ``name`` are the two forms the
-T4 analysis suspects, not confirmed device answers.
+The reasons are stable tokens. The forms below are synthetic. A day
+program without ``d`` and a point with an integer ``name`` are the forms a
+TC100.2 reported (as reasons and in a diagnostics download, never as values);
+they are accepted. Any other extra key, or a ``name`` of another type, keeps
+the program read-only.
 """
 
 from __future__ import annotations
@@ -63,18 +64,29 @@ def with_point(index: int, **changes: Any) -> list[dict[str, Any]]:
 def test_an_editable_program_has_no_reason() -> None:
     assert schedule_issues(program()) == ()
     assert schedule_issues(program(DAY, POINTS[:2])) == ()
+    # The reported forms are editable.
+    assert schedule_issues(program(value=with_point(1, name=0))) == ()
+    assert schedule_issues(program(DAY, [{"t": 0, "Th": 16, "name": 0}])) == ()
 
 
 @pytest.mark.parametrize(
     ("resource", "reasons"),
     [
-        # The suspected T4 forms: a day point without ``d`` is no supported
-        # shape, an extra ``name`` key keeps the shape but blocks editing.
+        # A week point needs ``d``; a day point may leave it out.
         (
-            program(DAY, [{"t": 0, "Th": 16}, {"t": 425, "Th": 21.5}]),
+            program(value=with_point(1, d=...)),
             ("day_missing_d",),
         ),
-        (program(value=with_point(1, name=0)), ("extra_key",)),
+        (program(DAY, [{"t": 0, "Th": 16}, {"t": 425, "Th": 21.5}]), ()),
+        # Only an integer ``name`` is allowed besides ``d``, ``t`` and ``Th``.
+        (program(value=with_point(1, name=0)), ()),
+        (program(value=with_point(1, name="0")), ("optional_key_type",)),
+        (program(value=with_point(1, name=1.0)), ("optional_key_type",)),
+        (program(value=with_point(1, name=True)), ("optional_key_type",)),
+        (program(value=with_point(1, name=None)), ("optional_key_type",)),
+        (program(value=with_point(1, note=0)), ("extra_key",)),
+        (program(value=with_point(1, name="x", note=0)), ("extra_key",)),
+        (program(DAY, [{"t": 0, "Th": 16, "level": 1}]), ("extra_key",)),
         (program(value=with_point(1, t=427)), ("off_grid_minute",)),
         (program(value=with_point(1, Th=4.5)), ("temperature_range",)),
         (program(value=with_point(1, Th=21.3)), ("temperature_grid",)),
@@ -85,8 +97,12 @@ def test_an_editable_program_has_no_reason() -> None:
             ("unknown_fields",),
         ),
         (
-            program(value=with_point(1, t=427, Th=21.3, name=0), writeable=False),
+            program(value=with_point(1, t=427, Th=21.3, note=0), writeable=False),
             ("not_writable", "extra_key", "off_grid_minute", "temperature_grid"),
+        ),
+        (
+            program(value=with_point(1, t=427, name="0")),
+            ("optional_key_type", "off_grid_minute"),
         ),
         (program(value=with_point(1, d="Xx")), ("day_invalid",)),
         (program(DAY, [{"d": "Tu", "t": 0, "Th": 16}]), ("day_mismatch",)),
@@ -97,7 +113,7 @@ def test_an_editable_program_has_no_reason() -> None:
         (program(value=with_point(1, Th=True)), ("temperature_invalid",)),
         (program(value=[*POINTS, "Mo 06:00"]), ("point_not_object",)),
         (
-            program(value=[*with_point(0, name=0), "Mo 06:00"]),
+            program(value=[*with_point(0, note=0), "Mo 06:00"]),
             ("extra_key", "point_not_object"),
         ),
         (program(value=POINTS * 200), ("too_many_points",)),
@@ -116,6 +132,8 @@ def _variants() -> list[Resource]:
     """Every single change of a point and their pairs, on a week and a day."""
     changes: list[dict[str, Any]] = [
         {"name": 0},
+        {"name": "0"},
+        {"note": 0},
         {"t": 427},
         {"t": 0},
         {"t": 1440},
@@ -151,12 +169,14 @@ def test_the_reasons_agree_with_the_parser(resource: Resource) -> None:
 
 
 def test_capability_diagnostics_carry_the_reasons_per_program() -> None:
-    day = program(DAY, [{"t": 0, "Th": 16, "name": 0}])
+    day = program(DAY, [{"t": 0, "Th": 16, "name": "private-label"}])
     contract = _capability_diagnostics(day, None, {}, 0)["rrc_contract"]
-    assert contract["schedule_shape_supported"] is False
-    assert contract["schedule_issues"] == ("day_missing_d",)
+    assert contract["schedule_shape_supported"] is True
+    assert contract["existing_points_editable"] is False
+    assert contract["schedule_issues"] == ("optional_key_type",)
     # Only tokens: no key names or values of the points.
-    assert "Th" not in json.dumps(contract) and "name" not in json.dumps(contract)
+    text = json.dumps(contract)
+    assert "Th" not in text and "name" not in text and "private" not in text
     week = _capability_diagnostics(program(), None, {}, 0)["rrc_contract"]
     assert week["existing_points_editable"] is True
     assert week["schedule_issues"] == ()
@@ -167,9 +187,11 @@ def test_the_summary_counts_programs_and_reasons_per_kind() -> None:
 
     resources = {
         WEEK: program(),
-        "/programs/pg4/week": program("/programs/pg4/week", with_point(1, name=0)),
+        "/programs/pg4/week": program("/programs/pg4/week", with_point(1, note=0)),
         DAY: program(DAY, [{"t": 0, "Th": 16}]),
-        "/programs/pg4/monday": program("/programs/pg4/monday", [{"t": 0, "Th": 16}]),
+        "/programs/pg4/monday": program(
+            "/programs/pg4/monday", [{"d": "Mo", "t": 0, "Th": 16}, "Mo 06:00"]
+        ),
         "/zones/zn1/clockProgram": program("/zones/zn1/clockProgram"),
     }
     # A current reading takes the place of the stored one.
@@ -185,11 +207,21 @@ def test_the_summary_counts_programs_and_reasons_per_kind() -> None:
             "readable": 2,
             "editable": 1,
             "issues": {"extra_key": 1},
+            "point_shapes": {
+                "dict{Th:float,d:str,note:int,t:int}": 1,
+                "dict{Th:float,d:str,t:int}": 1,
+                "dict{Th:int,d:str,t:int}": 2,
+            },
         },
         "day": {
             "count": 2,
             "readable": 1,
             "editable": 1,
-            "issues": {"day_missing_d": 1},
+            "issues": {"point_not_object": 1},
+            "point_shapes": {
+                "dict{Th:float,d:str,t:int}": 1,
+                "dict{Th:int,d:str,t:int}": 2,
+                "str": 1,
+            },
         },
     }

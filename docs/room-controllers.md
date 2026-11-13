@@ -31,6 +31,9 @@ So far a TC100.2 has confirmed with this integration:
     with the message that the away mode is active;
 - with 0.9.0-alpha.5 as well: the discovery completes, and every zone gets
   its program select with the program names from the controller;
+- with 0.9.0-alpha.6: the **Advance next switch point** button, checked in
+  the manufacturer's app; the follow-up reading after a zone change shows in
+  the diagnostics six to eight seconds after each change;
 - readings that look right with 0.9.0-alpha.5: the climate of each zone with
   its next setpoint and zone status, the window sensors, the system pressure,
   the outdoor temperature, the humidity, the display and cause code, the
@@ -54,8 +57,8 @@ diagnostics download (see [diagnostics](diagnostics.md)).
 | Zone readings, manual/schedule mode, manual setpoint | Confirmed on a TC100.2 |
 | Mode together with a target (`heat` with a target, back to `auto`) | Confirmed on a TC100.2 |
 | Temporary setpoint and its clear button | Confirmed on a TC100.2 |
-| Advance next switch point | Expected, untested |
-| Reading the follow-up values about five seconds after a zone change | Expected, untested |
+| Advance next switch point | Confirmed on a TC100.2 |
+| Reading the follow-up values about five seconds after a zone change | Seen in the diagnostics of a TC100.2 |
 | Zone details: next setpoint, zone status, window sensor | Readings look right on a TC100.2 |
 | Zone details: minutes until the next setpoint, valve opening, optimum start | Expected, untested |
 | Open window detection of a zone | Off and on confirmed on a TC100.2 |
@@ -63,7 +66,7 @@ diagnostics download (see [diagnostics](diagnostics.md)).
 | Away mode | On and off confirmed on a TC100.2, also the refused zone target while it is on; the away temperature reading looks right |
 | Zone locks for standby, zone or communication errors | Expected, untested |
 | Program selection | Confirmed on a TC100.2, with the program names on every zone |
-| Editing switch points | Expected, untested |
+| Editing switch points | Expected, untested; the program form of a TC100.2 (with `name`, day programs without the weekday) is accepted from 0.9.0 |
 | Absence calendar | Creating and deleting a one-day absence confirmed on a TC100.2; changing an event and special days expected, untested |
 | Boost | On and off confirmed on a TC100.2; the boost settings readings look right |
 | Fireplace function | Expected, untested |
@@ -162,7 +165,7 @@ unknown and the zone can still be controlled.
   report with a diagnostics download.
 - **Clear temporary setpoint.** A button per zone ends an active temporary
   setpoint while the zone follows its schedule. *Confirmed on a TC100.2.*
-- **Advance next switch point** *(expected, untested)*. A button per zone
+- **Advance next switch point** *(confirmed on a TC100.2)*. A button per zone
   that reports its next setpoint sets the temporary setpoint to that next
   setpoint, so the zone heats up or lowers its temperature now instead of at
   the next switch point. It lasts until that switch point. The button is

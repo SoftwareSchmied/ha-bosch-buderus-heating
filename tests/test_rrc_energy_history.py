@@ -945,7 +945,8 @@ async def test_an_empty_history_by_date_asks_once_per_cycle() -> None:
     source = Source([], exact=True)
     state = HistoryState(gas_checked_at=NOW)
     result = await cycle(state, source, Sink(), firmware=NEW_FIRMWARE)
-    assert result.reason is None
+    # Nothing failed, but there is nothing to import either.
+    assert result.reason == "no_records"
     assert source.queries() == [{}]
     assert state.cursor is None and state.last_day is None
 
