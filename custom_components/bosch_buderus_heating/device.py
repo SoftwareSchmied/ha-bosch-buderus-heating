@@ -13,7 +13,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from . import rrc, rrc_devices
 from .configuration import ConfigurationError
 from .configuration_access import EntryConfiguration
-from .const import CONF_BRAND, DOMAIN
+from .const import CONF_BRAND, DEFAULT_MANUFACTURER, DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .ha_compat import device_by_identifier, via_device
 from .i18n import localize
@@ -302,7 +302,7 @@ def _manufacturer(coordinator: BoschBuderusDataUpdateCoordinator) -> str:
     manufacturer = _known_brand(
         configured_brand if isinstance(configured_brand, str) else None
     )
-    return manufacturer or "Bosch Thermotechnology"
+    return manufacturer or DEFAULT_MANUFACTURER
 
 
 def _known_brand(value: str | None) -> str | None:

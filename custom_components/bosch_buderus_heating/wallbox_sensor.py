@@ -21,7 +21,7 @@ from homeassistant.const import (
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import DEFAULT_MANUFACTURER, DOMAIN
 from .device import registered_device
 from .wallbox import STATES, Section, WallboxCoordinator
 
@@ -113,7 +113,7 @@ class WallboxSensor(CoordinatorEntity[WallboxCoordinator], SensorEntity):
         software = self.coordinator.reading("info", "software")
         info = DeviceInfo(
             identifiers={(DOMAIN, gateway.gateway_id)},
-            manufacturer="Bosch/Buderus",
+            manufacturer=DEFAULT_MANUFACTURER,
             model=product if isinstance(product, str) else gateway.model,
             sw_version=software
             if isinstance(software, str)

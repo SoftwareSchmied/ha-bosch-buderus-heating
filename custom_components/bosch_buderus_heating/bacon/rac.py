@@ -9,7 +9,7 @@ from homeassistant.components.climate.const import HVACMode
 from homeassistant.const import UnitOfTemperature
 from homeassistant.util.unit_conversion import TemperatureConverter
 
-from .metadata import metadata, writable
+from .metadata import CELSIUS, metadata, writable
 from .models import Device
 
 PREFIXES = (
@@ -39,7 +39,6 @@ SWINGS = ("vSwingEnabled", "hSwingEnabled")
 ECO = "ecoEnabled"
 PRESET_NONE = "none"
 PRESET_ECO = "eco"
-CELSIUS = ("C", "degC", "Celsius", "°C")
 FAHRENHEIT = ("degF", "Fahrenheit")
 
 

@@ -542,6 +542,7 @@ async def test_sensors_keep_unknown_invalid_values_and_expire_all_sections(hass)
         await coord.async_refresh()
         assert all(entity.available for entity in entities)
         assert entities[0].device_info["model"] == "Synthetic wallbox"
+        assert entities[0].device_info["manufacturer"] == "Bosch Thermotechnology"
         coord._next.clear()
         data["telemetry"]["values"] = {}
         data["info"]["values"] = {}

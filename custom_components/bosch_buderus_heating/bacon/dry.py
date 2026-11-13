@@ -7,7 +7,7 @@ from typing import Any
 
 from homeassistant.util.unit_conversion import TemperatureConverter
 
-from .metadata import metadata, writable
+from .metadata import CELSIUS, metadata, writable
 from .models import Device
 
 FAMILIES = {
@@ -25,7 +25,6 @@ FLAGS = {
 # Independent boolean settings, offered only when declared writable.
 SWITCHES = {"child_lock": "childLockEnabled", "display": "displayEnabled"}
 STATUSES = ("off", "running", "idle", "water_tank_full", "defrosting", "device_error")
-CELSIUS = ("C", "degC", "Celsius", "°C")
 FAHRENHEIT = ("degF", "Fahrenheit")
 
 

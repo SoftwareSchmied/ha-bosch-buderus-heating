@@ -10,6 +10,8 @@ DOMAIN: Final = "bosch_buderus_heating"
 NAME: Final = "Bosch/Buderus Home Comfort"
 
 CONF_BRAND: Final = "brand"
+# The manufacturer of every device without a reported brand.
+DEFAULT_MANUFACTURER: Final = "Bosch Thermotechnology"
 CONF_GATEWAY_IDS: Final = "gateway_ids"
 CONF_POLLING_PROFILE: Final = "polling_profile"
 CONF_FAULT_NOTIFICATIONS: Final = "fault_notifications"
