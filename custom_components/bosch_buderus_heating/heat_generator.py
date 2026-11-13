@@ -26,6 +26,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Final
+from urllib.parse import urlsplit
 
 TABLE_PATH: Final = Path(__file__).with_name("heat_generator_models.json")
 TABLE_SCHEMA: Final = 1
@@ -67,6 +68,11 @@ _ENTRY_FIELDS: Final = frozenset(
     }
 )
 _MEANING_FIELDS: Final = ("role", "family", "construction", "power_kw", "brand_family")
+# How an entry is proven: seen in the module list of a real installation, or
+# stated by the manufacturer (datasheet or product page, with its address).
+EVIDENCE_KINDS: Final = ("observed", "documented")
+_MAX_NOTE_LENGTH: Final = 500
+_MAX_SOURCE_LENGTH: Final = 500
 
 
 def clean_text(value: object, limit: int = MAX_NAME_LENGTH) -> str | None:
@@ -172,6 +178,8 @@ class TableEntry:
     hardware_type: str | None
     meaning: Mapping[str, object]
     examples: tuple[ModuleRow, ...]
+    # ``observed`` or ``documented``.
+    evidence: str
 
     @property
     def specificity(self) -> int:
@@ -194,10 +202,22 @@ class TableEntry:
 
 
 @dataclass(frozen=True, slots=True)
+class Vocabulary:
+    """The values a table entry may use, declared by the table itself."""
+
+    constructions: frozenset[str]
+    brand_families: frozenset[str]
+    # Manufacturer sites a documented entry may cite: a host (its
+    # subdomains included), optionally with a path prefix.
+    documented_sources: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class ModelTable:
     version: int
     constructions: frozenset[str]
     brand_families: frozenset[str]
+    documented_sources: tuple[str, ...]
     # Most specific first, in file order within the same specificity.
     entries: tuple[TableEntry, ...]
 
@@ -232,9 +252,49 @@ def _example(value: object) -> ModuleRow:
     return ModuleRow(product_name, hardware_type)
 
 
-def _entry(
-    item: object, constructions: frozenset[str], brand_families: frozenset[str]
-) -> TableEntry:
+def manufacturer_source(url: object, allowed: Sequence[str]) -> bool:
+    """An https address on one of the declared manufacturer sites."""
+    if not isinstance(url, str) or not url or len(url) > _MAX_SOURCE_LENGTH:
+        return False
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return False
+    host = (parts.hostname or "").casefold()
+    if parts.scheme != "https" or not host or parts.username or parts.password:
+        return False
+    for source in allowed:
+        site, _, prefix = source.partition("/")
+        site = site.casefold()
+        if host != site and not host.endswith("." + site):
+            continue
+        path = parts.path.casefold()
+        wanted = "/" + prefix.casefold().strip("/") if prefix else ""
+        if not wanted or path == wanted or path.startswith(wanted + "/"):
+            return True
+    return False
+
+
+def _evidence(value: object, vocabulary: Vocabulary) -> str:
+    """``observed`` with a note; ``documented`` with a note and the address
+    of the manufacturer's datasheet or product page."""
+    if not isinstance(value, Mapping) or set(value) - {"kind", "note", "source"}:
+        raise ValueError("invalid_evidence")
+    kind, note, source = value.get("kind"), value.get("note"), value.get("source")
+    if kind not in EVIDENCE_KINDS:
+        raise ValueError("invalid_evidence")
+    if not isinstance(note, str) or not note.strip() or len(note) > _MAX_NOTE_LENGTH:
+        raise ValueError("entry_without_evidence")
+    if kind == "observed" and source is not None:
+        raise ValueError("invalid_evidence")
+    if kind == "documented" and not manufacturer_source(
+        source, vocabulary.documented_sources
+    ):
+        raise ValueError("source_not_manufacturer")
+    return str(kind)
+
+
+def _entry(item: object, vocabulary: Vocabulary) -> TableEntry:
     if not isinstance(item, Mapping) or set(item) - _ENTRY_FIELDS:
         raise ValueError("invalid_entry")
     match = item.get("match")
@@ -261,8 +321,8 @@ def _entry(
         raise ValueError("invalid_role")
     if not (
         _optional_text(item.get("family"))
-        and _optional_text(item.get("construction"), constructions)
-        and _optional_text(item.get("brand_family"), brand_families)
+        and _optional_text(item.get("construction"), vocabulary.constructions)
+        and _optional_text(item.get("brand_family"), vocabulary.brand_families)
         and _power(item.get("power_kw"))
     ):
         raise ValueError("invalid_meaning")
@@ -270,16 +330,14 @@ def _entry(
     if not meaning:
         raise ValueError("entry_without_meaning")
     examples = item.get("examples")
-    evidence = item.get("evidence")
     if not isinstance(examples, list) or not examples:
         raise ValueError("entry_without_examples")
-    if not isinstance(evidence, str) or not evidence.strip():
-        raise ValueError("entry_without_evidence")
     entry = TableEntry(
         pattern,
         hardware_type,
         meaning,
         tuple(_example(example) for example in examples),
+        _evidence(item.get("evidence"), vocabulary),
     )
     if not all(entry.matches(example) for example in entry.examples):
         raise ValueError("example_not_matched")
@@ -293,6 +351,7 @@ def parse_table(data: object) -> ModelTable:
     version = data.get("table_version")
     constructions = data.get("constructions")
     brand_families = data.get("brand_families")
+    sources = data.get("documented_sources")
     entries = data.get("entries")
     if (
         not isinstance(version, int)
@@ -300,21 +359,29 @@ def parse_table(data: object) -> ModelTable:
         or version < 1
         or not isinstance(constructions, list)
         or not isinstance(brand_families, list)
+        or not isinstance(sources, list)
         or not isinstance(entries, list)
         or not all(isinstance(item, str) and item for item in constructions)
         or not all(isinstance(item, str) and item for item in brand_families)
+        or not all(
+            isinstance(item, str)
+            and re.fullmatch(r"[a-z0-9.-]+\.[a-z]{2,}(/[A-Za-z0-9._/-]+)?", item)
+            for item in sources
+        )
     ):
         raise ValueError("invalid_table")
-    allowed_constructions = frozenset(constructions)
-    allowed_brands = frozenset(brand_families)
-    parsed = [_entry(item, allowed_constructions, allowed_brands) for item in entries]
+    vocabulary = Vocabulary(
+        frozenset(constructions), frozenset(brand_families), tuple(sources)
+    )
+    parsed = [_entry(item, vocabulary) for item in entries]
     ordered = sorted(
         enumerate(parsed), key=lambda pair: (-pair[1].specificity, pair[0])
     )
     return ModelTable(
         version,
-        allowed_constructions,
-        allowed_brands,
+        vocabulary.constructions,
+        vocabulary.brand_families,
+        vocabulary.documented_sources,
         tuple(entry for _, entry in ordered),
     )
 

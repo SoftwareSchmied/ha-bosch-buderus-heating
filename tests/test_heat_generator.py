@@ -128,6 +128,10 @@ DOCUMENTED = next(
 )
 
 
+OBSERVED = {"kind": "observed", "note": "test"}
+DATASHEET = "https://www.bosch-homecomfort.com/de/datasheet.pdf"
+
+
 def table(*entries: dict[str, object], version: int = 7) -> heat_generator.ModelTable:
     """A test table: the shipped vocabulary plus the given entries."""
     return parse_table(
@@ -136,8 +140,9 @@ def table(*entries: dict[str, object], version: int = 7) -> heat_generator.Model
             "table_version": version,
             "constructions": ["monobloc", "split", "compact"],
             "brand_families": ["bosch_group"],
+            "documented_sources": ["example.com"],
             "entries": [
-                {"examples": _examples(item), "evidence": "test", **item}
+                {"examples": _examples(item), "evidence": OBSERVED, **item}
                 for item in entries
             ],
         }
@@ -284,7 +289,8 @@ def test_the_shipped_table_follows_its_schema() -> None:
     assert loaded.version == raw["table_version"] >= 1
     assert len(loaded.entries) == len(raw["entries"])
     for item in raw["entries"]:
-        assert item["evidence"].strip()
+        assert item["evidence"]["kind"] in ("observed", "documented")
+        assert item["evidence"]["note"].strip()
         assert item["examples"]
         for example in item["examples"]:
             generator = heat_generator.interpret_row(
@@ -319,7 +325,65 @@ def test_the_first_entries_are_the_proven_modules_only() -> None:
         ({"brand_family": "unknown"}, "invalid_meaning"),
         ({"power_kw": -1}, "invalid_meaning"),
         ({"power_kw": True}, "invalid_meaning"),
-        ({"evidence": " "}, "entry_without_evidence"),
+        ({"evidence": "test"}, "invalid_evidence"),
+        ({"evidence": None}, "invalid_evidence"),
+        ({"evidence": {"kind": "observed", "note": " "}}, "entry_without_evidence"),
+        ({"evidence": {"kind": "guessed", "note": "x"}}, "invalid_evidence"),
+        (
+            {"evidence": {"kind": "observed", "note": "x", "source": DATASHEET}},
+            "invalid_evidence",
+        ),
+        ({"evidence": {"kind": "documented", "note": "x"}}, "source_not_manufacturer"),
+        (
+            {
+                "evidence": {
+                    "kind": "documented",
+                    "note": "x",
+                    "source": "https://www.example-shop.com/wlw176i.pdf",
+                }
+            },
+            "source_not_manufacturer",
+        ),
+        (
+            {
+                "evidence": {
+                    "kind": "documented",
+                    "note": "x",
+                    "source": "http://www.bosch-homecomfort.com/datasheet.pdf",
+                }
+            },
+            "source_not_manufacturer",
+        ),
+        (
+            {
+                "evidence": {
+                    "kind": "documented",
+                    "note": "x",
+                    "source": "https://bosch-homecomfort.com.example.net/a.pdf",
+                }
+            },
+            "source_not_manufacturer",
+        ),
+        (
+            {
+                "evidence": {
+                    "kind": "documented",
+                    "note": "x",
+                    "source": "https://evilbosch-homecomfort.com/a.pdf",
+                }
+            },
+            "source_not_manufacturer",
+        ),
+        (
+            {
+                "evidence": {
+                    "kind": "documented",
+                    "note": "x",
+                    "source": "https://github.com/someone/api-docs",
+                }
+            },
+            "source_not_manufacturer",
+        ),
         ({"examples": []}, "entry_without_examples"),
         (
             {"examples": [{"product_name": "Other", "hardware_type": "HW"}]},
@@ -336,7 +400,7 @@ def test_a_faulty_table_entry_is_rejected(change, problem) -> None:
         "match": {"product_name": "Example"},
         "role": "heat_source",
         "examples": [{"product_name": "Example", "hardware_type": "HW"}],
-        "evidence": "test",
+        "evidence": OBSERVED,
         **change,
     }
     with pytest.raises(ValueError, match=problem):
@@ -346,9 +410,59 @@ def test_a_faulty_table_entry_is_rejected(change, problem) -> None:
                 "table_version": 1,
                 "constructions": ["monobloc"],
                 "brand_families": ["bosch_group"],
+                "documented_sources": [
+                    "bosch-homecomfort.com",
+                    "github.com/bosch-home-comfort",
+                ],
                 "entries": [entry],
             }
         )
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        DATASHEET,
+        "https://media3.bosch-homecomfort.com/files/WLW176i_AR.pdf",
+        "https://github.com/bosch-home-comfort/api-docs/blob/main/k-40-rf.md",
+    ],
+)
+def test_a_documented_entry_cites_a_manufacturer_page(source) -> None:
+    models = parse_table(
+        {
+            "schema": 1,
+            "table_version": 1,
+            "constructions": ["monobloc"],
+            "brand_families": [],
+            "documented_sources": [
+                "bosch-homecomfort.com",
+                "github.com/bosch-home-comfort",
+            ],
+            "entries": [
+                {
+                    "match": {"product_name": "WLW-10 MB AR"},
+                    "power_kw": 10,
+                    "examples": [{"product_name": "WLW-10 MB AR"}],
+                    "evidence": {
+                        "kind": "documented",
+                        "note": "Datasheet of the outdoor unit",
+                        "source": source,
+                    },
+                }
+            ],
+        }
+    )
+    assert models.entries[0].evidence == "documented"
+    generator = heat_generator.interpret_row(ModuleRow("WLW-10 MB AR", None), models)
+    assert generator.power_kw == 10
+
+
+def test_the_shipped_entries_are_observed_and_the_sources_are_manufacturers() -> None:
+    assert {entry.evidence for entry in TABLE.entries} == {"observed"}
+    raw = json.loads(TABLE_PATH.read_text(encoding="utf-8"))
+    assert "github.com/bosch-home-comfort" in raw["documented_sources"]
+    with pytest.raises(ValueError, match="invalid_table"):
+        parse_table({**raw, "documented_sources": ["https://example.com"]})
 
 
 def test_an_unknown_table_schema_is_rejected() -> None:

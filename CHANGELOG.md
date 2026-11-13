@@ -20,14 +20,16 @@ Versioning after its first tagged preview.
     on the source or the order of the modules, so it stays the same with
     only the cloud, only the local access, both, and after a device
     exchange. Serial numbers are never read, shown or stored.
-  - Family, construction and power come only from a model table with
-    evidence; nothing is guessed from a name. For now the table holds the
-    modules of my own installation (Logatherm WLW176i-12 TP70 with the
-    monobloc outdoor unit WLW-10 MB AR), which I read from its module list,
-    and the hardware types of the indoor and the outdoor unit. Other models
-    show their product name and hardware type, but no family, construction
-    or power yet. The power class stays empty until it is proven, also for
-    my installation.
+  - Family, construction and power come only from a model table; every
+    entry is either observed in a real module list or documented by the
+    manufacturer, with the address of the datasheet. Nothing is guessed
+    from a name. For now the table holds the modules of my own
+    installation (Logatherm WLW176i-12 TP70 with the monobloc outdoor unit
+    WLW-10 MB AR), which I read from its module list, and the hardware
+    types of the indoor and the outdoor unit. Other models show their
+    product name and hardware type, but no family, construction or power
+    yet. The power class belongs to the outdoor unit and stays empty until
+    an entry proves it, also for my installation.
   - If your model shows `known: false`, the diagnostics list it under
     `heat_generator.unmapped_modules`, without serial numbers. Please post
     that part in an issue; one new table entry is then enough.

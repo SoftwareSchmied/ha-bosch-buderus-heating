@@ -420,12 +420,16 @@ name and the hardware type are always reported as the gateway sends them.
 Role, family, construction, power and brand family come only from the model
 table `heat_generator_models.json` and stay `null` without a matching entry;
 nothing is derived from parts of a name or from the position of a module in
-the list. The role comes from the hardware type. The table contains only entries
-with evidence. In 0.9.1 these are the modules of one installation
-(Logatherm WLW176i-12 TP70 with the monobloc outdoor unit WLW-10 MB AR) and
-the hardware types `XCU_THH` (indoor unit) and `XCU_SRH` (outdoor unit),
-which the official local API documentation shows as well. The power class
-stays `null` until it is proven. A further model needs one table entry and a
+the list. The role comes from the hardware type. Every table entry names its
+evidence: `observed` (seen in the module list of a real installation) or
+`documented` (stated in a datasheet or on a product page of the
+manufacturer; the entry keeps the address, and only the manufacturer sites
+listed in the table are accepted). In 0.9.1 the table holds the observed
+modules of one installation (Logatherm WLW176i-12 TP70 with the monobloc
+outdoor unit WLW-10 MB AR) and the hardware types `XCU_THH` (indoor unit)
+and `XCU_SRH` (outdoor unit), which the official local API documentation
+shows as well. The power class belongs to the outdoor unit, not to the
+name of the indoor unit; it stays `null` until an entry proves it. A further model needs one table entry and a
 test; the entity, its keys and the structure stay as they are. Modules
 without a table entry for their product are listed in the diagnostics under
 `heat_generator.unmapped_modules`; such a report lets the table grow.

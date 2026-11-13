@@ -3,6 +3,18 @@
   "table_version": 1,
   "constructions": ["monobloc", "split", "compact"],
   "brand_families": ["bosch_group"],
+  "documented_sources": [
+    "bosch-homecomfort.com",
+    "bosch-thermotechnology.com",
+    "buderus.com",
+    "buderus.de",
+    "junkers.com",
+    "worcester-bosch.co.uk",
+    "ivt.se",
+    "elmleblanc.fr",
+    "vulcano.pt",
+    "github.com/bosch-home-comfort"
+  ],
   "entries": [
     {
       "match": {"product_name": "Logatherm WLW176i-12 TP70"},
@@ -13,7 +25,10 @@
       "examples": [
         {"product_name": "Logatherm WLW176i-12 TP70", "hardware_type": "XCU_THH"}
       ],
-      "evidence": "Reference installation: indoor unit of an air-to-water heat pump with a monobloc outdoor unit; system information read on 2026-11-13."
+      "evidence": {
+        "kind": "observed",
+        "note": "Reference installation: indoor unit of an air-to-water heat pump with a monobloc outdoor unit; module list read on 2026-11-13."
+      }
     },
     {
       "match": {"product_name": "WLW-10 MB AR"},
@@ -22,7 +37,10 @@
       "power_kw": null,
       "brand_family": "bosch_group",
       "examples": [{"product_name": "WLW-10 MB AR", "hardware_type": "XCU_SRH"}],
-      "evidence": "Reference installation: monobloc outdoor unit; system information read on 2026-11-13."
+      "evidence": {
+        "kind": "observed",
+        "note": "Reference installation: monobloc outdoor unit; module list read on 2026-11-13."
+      }
     },
     {
       "match": {"hardware_type": "XCU_THH"},
@@ -31,7 +49,10 @@
         {"product_name": "Logatherm WLW176i-12 TP70", "hardware_type": "XCU_THH"},
         {"product_name": "Compress CS6800iAW 12 E", "hardware_type": "XCU_THH"}
       ],
-      "evidence": "Indoor unit in the reference installation and in the example of the official local API documentation."
+      "evidence": {
+        "kind": "observed",
+        "note": "Indoor unit in the module list of the reference installation; the example of the official local API documentation shows the same."
+      }
     },
     {
       "match": {"hardware_type": "XCU_SRH"},
@@ -40,7 +61,10 @@
         {"product_name": "WLW-10 MB AR", "hardware_type": "XCU_SRH"},
         {"product_name": "AW 4 OR-S", "hardware_type": "XCU_SRH"}
       ],
-      "evidence": "Outdoor unit in the reference installation and in the example of the official local API documentation."
+      "evidence": {
+        "kind": "observed",
+        "note": "Outdoor unit in the module list of the reference installation; the example of the official local API documentation shows the same."
+      }
     }
   ]
 }
