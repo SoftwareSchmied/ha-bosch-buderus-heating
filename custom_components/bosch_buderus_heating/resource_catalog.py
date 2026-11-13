@@ -1390,7 +1390,7 @@ def poll_group(resource: Resource, *, rrc_plant: bool = False) -> PollGroup:
 # the control pace while their own entities are disabled.
 _CLIMATE_CONTROL_PATTERN = re.compile(
     r"/heatingCircuits/[^/]+/(?:operationMode|heatCoolMode|currentSuWiMode"
-    r"|roomtemperature|manualRoomSetpoint|currentRoomSetpoint)"
+    r"|roomtemperature|manualRoomSetpoint|currentRoomSetpoint|temporaryRoomSetpoint)"
 )
 _CLIMATE_CONTROL_PATHS = frozenset(
     {"/system/seasonOptimizer/mode", "/system/globalSeasonOptimizer/currentMode"}

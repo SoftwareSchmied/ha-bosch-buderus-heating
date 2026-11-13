@@ -1147,7 +1147,10 @@
       "message": "Ändra temperatur och driftläge var för sig så att varje ändring kan bekräftas."
     },
     "heating_climate_command": {
-      "message": "Det här termostatkommandot är inte tillgängligt just nu. Temperaturer kan bara ändras i manuellt värmeläge. Välj läget separat och kontrollera att apparaten levererar aktuella värden."
+      "message": "Det här termostatkommandot är inte tillgängligt just nu. Temperaturer kan bara ändras i manuellt värmeläge, eller i automatiskt läge när värmekretsen erbjuder ett tillfälligt börvärde. Välj läget separat och kontrollera att apparaten levererar aktuella värden."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Den här värmekretsen har just nu inget tillfälligt börvärde som kan tas bort."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "Apparaten bestämmer det aktuella börvärdet för varmvatten. Du kan justera de separata starttemperaturerna för lägena under Styr apparaten."
@@ -2434,6 +2437,9 @@
         "name": "Starta regenerering"
       },
       "rrc_override_clear": {
+        "name": "Ta bort tillfälligt börvärde"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Ta bort tillfälligt börvärde"
       },
       "rrc_override_advance": {

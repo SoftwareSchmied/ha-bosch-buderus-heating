@@ -1147,7 +1147,10 @@
       "message": "Athraigh teocht agus mód oibríochta ar leithligh le do thoil ionas gur féidir gach athrú a dheimhniú."
     },
     "heating_climate_command": {
-      "message": "Níl an t-ordú teirmeastait seo ar fáil faoi láthair. Ní féidir teochtaí a athrú ach amháin sa mhód téimh láimhe. Roghnaigh an mód ar leithligh agus seiceáil go bhfuil an trealamh ag soláthar luachanna reatha."
+      "message": "Níl an t-ordú teirmeastait seo ar fáil faoi láthair. Ní féidir teochtaí a athrú ach amháin sa mhód téimh láimhe, nó sa mhód uathoibríoch nuair a thairgeann an ciorcad téimh socphointe sealadach. Roghnaigh an mód ar leithligh agus seiceáil go bhfuil an trealamh ag soláthar luachanna reatha."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Níl aon socphointe sealadach ag an gciorcad téimh seo faoi láthair le glanadh."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "Socraíonn an trealamh socphointe reatha an uisce the. Is féidir leat teochtaí tosaithe na modhanna ar leith a choigeartú faoi Oibrigh an trealamh."
@@ -2434,6 +2437,9 @@
         "name": "Tosaigh athghiniúint"
       },
       "rrc_override_clear": {
+        "name": "Glan an socphointe sealadach"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Glan an socphointe sealadach"
       },
       "rrc_override_advance": {

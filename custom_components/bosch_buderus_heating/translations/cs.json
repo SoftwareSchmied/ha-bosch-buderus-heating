@@ -1147,7 +1147,10 @@
       "message": "Změňte prosím teplotu a provozní režim zvlášť, aby bylo možné každou změnu potvrdit."
     },
     "heating_climate_command": {
-      "message": "Tento příkaz termostatu momentálně není dostupný. Teploty lze měnit pouze v ručním režimu topení. Vyberte režim zvlášť a ověřte, že spotřebič poskytuje aktuální hodnoty."
+      "message": "Tento příkaz termostatu momentálně není dostupný. Teploty lze měnit pouze v ručním režimu topení nebo v automatickém režimu, pokud topný okruh nabízí dočasnou požadovanou hodnotu. Vyberte režim zvlášť a ověřte, že spotřebič poskytuje aktuální hodnoty."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Tento topný okruh momentálně nemá žádnou dočasnou požadovanou hodnotu, kterou by bylo možné zrušit."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "Aktuální požadovanou hodnotu teplé vody určuje spotřebič. Samostatné počáteční teploty režimů můžete upravit v části Obsluha spotřebiče."
@@ -2434,6 +2437,9 @@
         "name": "Spustit regeneraci"
       },
       "rrc_override_clear": {
+        "name": "Zrušit dočasnou požadovanou hodnotu"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Zrušit dočasnou požadovanou hodnotu"
       },
       "rrc_override_advance": {

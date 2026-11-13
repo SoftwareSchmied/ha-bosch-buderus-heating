@@ -1147,7 +1147,10 @@
       "message": "Altere a temperatura e o modo de funcionamento em separado, para que cada alteração possa ser confirmada."
     },
     "heating_climate_command": {
-      "message": "Atualmente este comando do termóstato não está disponível. As temperaturas só podem ser alteradas no modo de aquecimento manual. Selecione o modo em separado e verifique se o equipamento está a fornecer valores atuais."
+      "message": "Atualmente este comando do termóstato não está disponível. As temperaturas só podem ser alteradas no modo de aquecimento manual ou no modo automático, quando o circuito de aquecimento oferece um valor de referência temporário. Selecione o modo em separado e verifique se o equipamento está a fornecer valores atuais."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Este circuito de aquecimento não tem de momento nenhum valor de referência temporário para cancelar."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "O equipamento determina o valor de referência atual da água quente. Pode ajustar as temperaturas de arranque dos modos, em separado, em Controlar o equipamento."
@@ -2434,6 +2437,9 @@
         "name": "Iniciar regeneração"
       },
       "rrc_override_clear": {
+        "name": "Cancelar o valor de referência temporário"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Cancelar o valor de referência temporário"
       },
       "rrc_override_advance": {

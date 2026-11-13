@@ -151,6 +151,29 @@ only; none of them is checked on a real device or a fresh installation yet.
   does; my measurement, with what it compares, is now in the
   [release checks](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/main/docs/release.md#load-measurement-for-090-alpha2).
 
+### Temporary setpoint of heating circuits
+
+- **Target in automatic mode:** a heating circuit without a room controller
+  that reports a writable temporary room setpoint with limits now takes a
+  target in automatic mode as well. The climate writes it as a temporary
+  setpoint; the program stays selected. In manual mode the climate keeps
+  writing the manual setpoint, as before. The target follows the reported
+  limits and step. Values the circuit uses to end the temporary setpoint or
+  to switch off for now (-1 and 0) are never written as a target.
+- **Clear button and attribute:** a new button "Clear temporary setpoint"
+  ends an active temporary setpoint. It is created only when the reported
+  limits include the clear value -1, and it is available only in automatic
+  mode while a temporary setpoint is active. The climate attribute
+  `temporary_override` shows whether one is active.
+- **Write rules as everywhere:** each change reads the mode, the temporary
+  setpoint and the heating context on the appliance first, sends exactly
+  one request and confirms it by reading it back. The temporary setpoint
+  gets no number entity of its own and no row in the controls dialog; its
+  existing sensor stays.
+- **Tested:** only with simulated data in automated tests. On a real device
+  this is expected, untested; I would be glad about reports, especially from
+  iCom gateways.
+
 ## [0.9.0-alpha.6] - 2026-11-12
 
 > [!IMPORTANT]

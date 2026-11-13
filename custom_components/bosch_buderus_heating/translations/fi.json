@@ -1147,7 +1147,10 @@
       "message": "Muuta lämpötilaa ja käyttötilaa erikseen, jotta kukin muutos voidaan vahvistaa."
     },
     "heating_climate_command": {
-      "message": "Tämä termostaatin komento ei ole tällä hetkellä käytettävissä. Lämpötiloja voi muuttaa vain manuaalisessa lämmitystilassa. Valitse tila erikseen ja tarkista, että laite antaa ajantasaisia arvoja."
+      "message": "Tämä termostaatin komento ei ole tällä hetkellä käytettävissä. Lämpötiloja voi muuttaa vain manuaalisessa lämmitystilassa tai automaattitilassa, kun lämmityspiiri tarjoaa väliaikaisen asetusarvon. Valitse tila erikseen ja tarkista, että laite antaa ajantasaisia arvoja."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Tällä lämmityspiirillä ei tällä hetkellä ole poistettavaa väliaikaista asetusarvoa."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "Laite määrittää lämpimän käyttöveden nykyisen asetusarvon. Voit säätää erillisiä tilojen käynnistyslämpötiloja kohdassa Käytä laitetta."
@@ -2434,6 +2437,9 @@
         "name": "Käynnistä regenerointi"
       },
       "rrc_override_clear": {
+        "name": "Poista väliaikainen asetusarvo"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Poista väliaikainen asetusarvo"
       },
       "rrc_override_advance": {

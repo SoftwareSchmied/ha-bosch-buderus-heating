@@ -186,6 +186,19 @@ STRING_SWITCH_POLICIES = (
 POOL_SETPOINT_POLICY = NumberWritePolicy(
     r"^/pool/setpointTemp$", "C", 1.0, live_step=True
 )
+# The temporary target of a heating circuit in the mode auto. Only the
+# circuit's climate entity and its
+# clear button write it, so it has no number of its own and no row in the
+# controls dialog. A value lies within the advertised limits and on the
+# advertised step (0.5 without one), counted from the minimum. Expected,
+# untested on a real device.
+HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY = NumberWritePolicy(
+    r"^/heatingCircuits/[^/]+/temporaryRoomSetpoint$",
+    "C",
+    0.5,
+    strict_grid=True,
+    create_entity=False,
+)
 NUMBER_WRITE_POLICIES = (
     # ZONE-02, ZONE-05: no change while away or while the zone is locked.
     NumberWritePolicy(
@@ -207,6 +220,7 @@ NUMBER_WRITE_POLICIES = (
     NumberWritePolicy(
         r"^/heatingCircuits/[^/]+/manualRoomSetpoint$", "C", 0.5, write_grid=True
     ),
+    HEATING_CIRCUIT_TEMPORARY_SETPOINT_POLICY,
     NumberWritePolicy(
         r"^/heatingCircuits/[^/]+/maxFlowTemp$",
         "C",
