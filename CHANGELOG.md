@@ -176,12 +176,48 @@ names the heat generator models and shows texts for more gateway states.
   them. Entity IDs, unique IDs and names you set yourself stay. I compared
   the readings on my heat pump while it was heating; the cooling mode is
   untested.
+  - More names after I went through the entities of my own system:
+    *Heat source active* (before *Burner status*; the reading also exists on
+    boilers, so it does not say compressor), *Heating temperature* and
+    *Setback temperature* for the heating circuit sensors (before *Heating*
+    and *Reduced*), *Heat output (thermal)* (before *Heat output
+    (compressor)*, because it is the thermal and not the electric power),
+    *Receiver valve (VR0)* (before *Expansion valve VR0*; the reading is the
+    signal `ReceiverValveActual`), *Gateway ID* (before *Gateway UUID*; the
+    value is the gateway number), *Software family* (before *Sw Prefix*),
+    *Variable tariff – support* (before *Support status*), *iSRC
+    installation status* (before *Installation status*) and *Heat source
+    type* next to *System type*. The silent mode and the season switching
+    each have one name now (*Silent mode*, *Season switching*), and the two
+    copies of the compressor state say where they come from (*Compressor
+    running (display signal)* and *(heat pump signal)*).
+  - About 20 controller signals that still showed their signal path have
+    names, among them the EEBus status and commissioning, the four external
+    blocks, the buzzer, the relays of fan and gas valves, the holiday
+    slots and the maximum compressor speed. I only named signals whose
+    meaning follows from their path and the values I recorded; the four
+    "permitted temperature" flags and a few others keep the path until I
+    know what they report. Their entity IDs, unique IDs and activation
+    stay, and so does every name you set yourself. The names are checked by
+    automated tests; new names in other languages are drafts.
 - **Hot water start thresholds:** the three hot water temperatures of the
   Eco+, Eco and Comfort levels are the thresholds below which a charge
   starts, so the sensors and number controls are now named *Start threshold
   Eco+*, *Start threshold Eco* and *Start threshold Comfort* (before *…
   start temperature*). The sensor of the off level, before only *Off*, is
   now *Setpoint level off*. Entity IDs and unique IDs stay.
+- **Defaults for new installations:** I went through the entities my review
+  found superfluous. The total starts and the total run time of a single
+  heat source, the pool starts, the three parts of the installation date,
+  the relays of the gas valves, the software update details, the permitted
+  pressure limits (including the *Low system pressure* of 0.0 bar) and the
+  fourth heating stage are already created disabled since 0.9.0. I changed
+  nothing there and pinned it with tests; existing entities keep their
+  state either way.
+- **Installation date:** a date that lies in the future or does not exist
+  shows as unknown now. My own gateway reports the placeholder year 60,
+  which showed as 2060-08-01. The three parts it is built from are
+  unchanged.
 - The new texts are drafts in every language except English and German.
 
 ### Documentation

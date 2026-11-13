@@ -141,7 +141,7 @@ Default activation is defined explicitly:
 - **Enabled:** temperatures and operating states, all available energy
   counters, starts, operating hours, TC3, system pressure, the derived pressure
   status, and released everyday switches, number controls, and selects.
-- **Disabled:** serial number, gateway UUID, country, detailed system
+- **Disabled:** serial number, gateway ID, country, detailed system
   information, individual raw software-update fields, technical device and
   configuration values, the installer-level maximum-supply-temperature
   control, and read-only sensors whose value is already represented by a
@@ -301,9 +301,9 @@ counters—not holiday dates, names, or raw configuration data.
 |---|---|---|:---:|:---:|---:|
 | Brand | Diagnostic sensor | `/gateway/brand` | No | No | startup only |
 | Serial number (disabled) | Diagnostic sensor | `/gateway/serialId` | No | No | startup only |
-| Gateway UUID (disabled) | Diagnostic sensor | `/gateway/uuid` | No | No | startup only |
+| Gateway ID (disabled; before 0.9.1 *Gateway UUID*, the value is the gateway number) | Diagnostic sensor | `/gateway/uuid` | No | No | startup only |
 | Date and time | Diagnostic sensor | `/gateway/dateTime` | No | No | 15 min |
-| Software prefix | Diagnostic sensor | `/gateway/swPrefix` | No | No | startup only |
+| Software family (before 0.9.1 *Sw Prefix*) | Diagnostic sensor | `/gateway/swPrefix` | No | No | startup only |
 | Data processing status (disabled) | Diagnostic sensor | `/gateway/dataProcessing/status` | No | No | startup only |
 | Time zone | Diagnostic sensor | `/gateway/tzInfo/timeZone` | Yes | No | 5 min |
 | Software update – current progress | Diagnostic sensor | `/gateway/update/status` → `progress.cur_percent` | No | No | 15 min |
@@ -325,7 +325,7 @@ counters—not holiday dates, names, or raw configuration data.
 | Emergency mode | Sensor | `/heatSources/currentEmergencyMode` | No | No | 60 s |
 | System supply temperature (before 0.9.1 *Supply temperature*) | Sensor | `/heatSources/actualSupplyTemperature` | No | No | 60 s |
 | Energy management status | Sensor | `/heatSources/emStatus` | No | No | 60 s |
-| Flame status | Sensor; on a heat pump created disabled from 0.9.0 (see [default activation](#maturity-and-default-activation)) | `/heatSources/flameStatus` | No | No | 60 s |
+| Heat source active (before 0.9.1 *Burner status*; also exists on boilers) | Sensor; on a heat pump created disabled from 0.9.0 (see [default activation](#maturity-and-default-activation)) | `/heatSources/flameStatus` | No | No | 60 s |
 | Return temperature | Sensor | `/heatSources/returnTemperature` | No | No | 60 s |
 | Passive-cooling inlet temperature | Sensor | `/heatSources/passiveCooling/inflowTemp` | No | No | 60 s |
 | PV contact status | Sensor | `/heatSources/pvContactState` | No | No | 60 s |
@@ -352,7 +352,7 @@ counters—not holiday dates, names, or raw configuration data.
 | Outdoor temperature source | Diagnostic sensor | `/system/sensors/temperatures/outdoorTemperatureSource` | No | No | 15 min |
 | Outdoor temperature | Sensor | `/system/sensors/temperatures/outdoor_t1` | No | No | 15 min |
 | System type | Diagnostic sensor | `/system/type` | No | No | startup only |
-| Support status | Diagnostic sensor | `/system/variableTariff/supportStatus` | No | No | startup only |
+| Variable tariff – support (before 0.9.1 *Support status*) | Diagnostic sensor | `/system/variableTariff/supportStatus` | No | No | startup only |
 
 The system-pressure sensor also receives the six validated limits as numeric
 attributes with the unit in each attribute name:
@@ -568,8 +568,8 @@ no entity; a configured name is added dynamically.
 | Schedule type | Sensor | `/heatingCircuits/{hc}/switchProgramMode` | Yes | No | 5 min |
 | Schedule name A | Sensor | `/heatingCircuits/{hc}/switchPrograms/nameA` | Yes | No | 5 min |
 | Time program A (B) | Diagnostic enum sensor | `/heatingCircuits/{hc}/switchPrograms/A` | Yes | Yes, under Configure (since 0.9.0-alpha.6) | 15/30 min; scheduled level recalculated locally each minute; read back after change |
-| Heating | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/comfort2` | Yes | Yes | 5 min; read back after change |
-| Setback | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/eco` | Yes | Yes | 5 min; read back after change |
+| Heating temperature (sensor before 0.9.1 *Heating*) | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/comfort2` | Yes | Yes | 5 min; read back after change |
+| Setback temperature (sensor before 0.9.1 *Reduced*) | Sensor and number control | `/heatingCircuits/{hc}/temperatureLevels/eco` | Yes | Yes | 5 min; read back after change |
 
 The select is created only when the heating circuit currently reports the
 `stringValue` type, writeability, and all three allowed raw values `off`,
@@ -715,7 +715,7 @@ or its live schema does not match the documented type and unit.
 | Hot-water starts | Diagnostic sensor | `/heatSources/{hs}/numberOfStarts` → `dhw` | No | No | 15 min |
 | Pool-heating starts | Diagnostic sensor | `/heatSources/{hs}/numberOfStarts` → `pool` | No | No | 15 min |
 | Condenser outlet temperature (TC3) | Diagnostic sensor | `/heatSources/{hs}/supplyFlowCondenserTemp` | No | No | 15 min |
-| System type | Diagnostic sensor | `/heatSources/{hs}/type` | No | No | startup only |
+| Heat source type (before 0.9.1 *System type*) | Diagnostic sensor | `/heatSources/{hs}/type` | No | No | startup only |
 | Total operating time | Diagnostic sensor | `/heatSources/{hs}/workingTime` → `total` | No | No | 15 min |
 | Heating operating time | Diagnostic sensor | `/heatSources/{hs}/workingTime` → `ch` | No | No | 15 min |
 | Cooling operating time | Diagnostic sensor | `/heatSources/{hs}/workingTime` → `cooling` | No | No | 15 min |
@@ -801,8 +801,8 @@ example `…_additional_heater_flow_temperature` and
 The controller's signals are offered as follows. Signals reported as true or
 false, also as declared TRUE/FALSE states, are on/off states (`on`/`off`, not
 `true`/`false`, since 0.9.0-alpha.2); compressor, electric heater stages 1 to 3,
-drip pan and crankcase heaters, primary heating pump (PC0), cooling, low-noise
-mode, low heating volume flow and an overheated inverter are enabled. The hot
+drip pan and crankcase heaters, primary heating pump (PC0), cooling, silent
+mode (signal), low heating volume flow and an overheated inverter are enabled. The hot
 water 3-way valve (VW1) and the 4-way valve (VR4) are enabled too and show the
 position instead of on/off: VW1 *Heating* or *Hot water*, VR4 *Heating* or
 *Cooling/defrost*. On the reference heat pump (it does not cool) this matched
@@ -821,7 +821,8 @@ heating/cooling status (signal), the heating/cooling state and the smart grid
 mode are enabled, the holiday slots and other states disabled. A signal with
 a unit stays a number: its named marker states (for example an open sensor)
 show no value. Damped outdoor temperature, drip pan temperature (TA4), heat
-output (compressor), the opening of the expansion valves VR1 and VR0 (%), the
+output (thermal), the opening of the expansion valve VR1 and of the receiver
+valve VR0 (%), the
 compressor run times for heating, hot water and cooling (shown in hours) and
 the flow rate HC1 (PC1) are enabled. From 0.9.0 the compressor run times have
 long-term statistics as a growing total, like the cloud's operating times;
@@ -835,7 +836,9 @@ statistics where their unit is one of a measurement. The relay of the hot
 water 3-way valve shows the valve position like VW1 (*Heating* or *Hot
 water*). An
 **Installation date** sensor is derived from the three installation date
-signals (year counted from 2000); the parts stay available, disabled. External
+signals (year counted from 2000); the parts stay available, disabled. From
+0.9.1 a date in the future or one that does not exist (the placeholder year
+60 of a controller that was never given a date is 2060) shows as unknown. External
 inputs and the room controller assignment are disabled states.
 
 From 0.9.1 a signal reported in a pressure unit (`mbar`, `hPa`, `kPa` or
@@ -885,9 +888,9 @@ run time that was shown in seconds keeps that unit (choose hours in the entity
 settings if you like); new ones start in hours.
 
 The signal formerly named "Compressor power" is called "Heat output
-(compressor)" since 0.9.0-alpha.2: its value matches the heat meter, so it is
-the heat output, not the electric power. Its entity ID stays; a name you set
-yourself stays as well.
+(compressor)" since 0.9.0-alpha.2 and "Heat output (thermal)" since 0.9.1: its
+value matches the heat meter, so it is the thermal heat output, not the
+electric power. Its entity ID stays; a name you set yourself stays as well.
 
 From 0.9.0 the names follow the wording of the controller's Info menu (MX400)
 more closely. Entity IDs, unique IDs and names you set yourself stay; only an
@@ -932,6 +935,45 @@ evaporating temperature the low-pressure temperature (JR0).
 Entity IDs (`…_liquid_line_heating`, `…_liquid_line_cooling`), unique IDs,
 the default activation (TR3 enabled, TR4 disabled) and names you set yourself
 stay.
+
+Further names of 0.9.1, again only for entities without a name of your own;
+entity IDs, unique IDs and the activation of existing entities stay:
+
+- *Heat source active* / *Wärmeerzeuger aktiv* (before *Burner status*): the
+  reading (`flameStatus`) exists on boilers and heat pumps, so the name says
+  neither burner nor compressor.
+- *Heating temperature* and *Setback temperature* for the heating circuit
+  sensors, as the number controls are named.
+- *Heat output (thermal)* / *Heizleistung (thermisch)* (before *Heat output
+  (compressor)*), and *Receiver valve (VR0)* / *Sammlerventil (VR0)* (before
+  *Expansion valve VR0*; the reading is the signal `ReceiverValveActual`).
+- *Silent mode* / *Flüstermodus* is the one term for the setting, its state
+  and the signal (*Silent mode active (signal)*); *Season switching* /
+  *Saisonumschaltung* for the select and the sensor. The two copies of the
+  compressor state are *Compressor running (display signal)* and
+  *Compressor running (heat pump signal)*.
+- *Gateway ID* (before *Gateway UUID*), *Software family* (before *Sw
+  Prefix*), *Variable tariff – support* (before *Support status*), *iSRC
+  installation status* (before *Installation status*) and *Heat source type*
+  next to *System type*.
+- Controller signals whose meaning follows from their path and the recorded
+  values have names instead of *Signal SRC.…*: the EEBus status and
+  commissioning status, the external blocks of the auxiliary heater, heating,
+  hot water and compressor, the maximum compressor speed, the buzzer, the
+  controller operating time, the relays of the fan and the gas valves, the
+  brine temperature and collector pressure switch flags, the compressor
+  starts for cooling, the maximum supply temperature, the current room
+  setpoint and the holiday mode of heating circuit 1, the modulation of
+  the primary heating pump (PC0) and the eight holiday slots. They stay
+  generic, disabled diagnostic entities. Signals whose meaning is open, for
+  example the four *PermittedAirTemp/Temp* flags that report on/off for a
+  temperature name, keep the signal path.
+
+The names of the readings in the sections above that are created disabled
+for new installations (the total starts and total run time of a single heat
+source, the pool starts, the installation date parts, the gas valve relays,
+the software update details and the permitted pressure limits) were already
+disabled in 0.9.0; 0.9.1 only tests it.
 
 Hybrid systems with an HM200 hybrid manager report additional readings of the
 outdoor unit and the hybrid manager through the local access: temperatures of
@@ -1001,11 +1043,11 @@ IDs depend on your installation):
 | `return` | Return temperature (the main entity, not its `… (cloud)` or `… (local)` copy) |
 | `hc_flow` | System supply temperature (behind a buffer cylinder, the heating circuit flow) |
 | `hc_setpoint` | Current supply setpoint |
-| `compressor` | Compressor |
+| `compressor` | Compressor running (display signal) |
 | `valve` | Hot water 3-way valve (VW1) |
 | `status` | Refrigerant circuit status (`defrost` shows the defrost) |
 | `power` | Compressor electric power and electric heater power |
-| `heat` | Heat output (compressor) |
+| `heat` | Heat output (thermal) |
 | `heater` | Electric heater power |
 | `volume` | Primary flow rate |
 | `hc_volume` | Flow rate HC1 (PC1) |
