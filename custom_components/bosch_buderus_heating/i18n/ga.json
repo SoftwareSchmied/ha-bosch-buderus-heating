@@ -583,6 +583,7 @@
     "Current heating/cooling status (signal)": "Stádas reatha téimh/fuaraithe (comhartha)",
     "Cylinder temperature (signal)": "Teocht an tsorcóra (comhartha)",
     "Outdoor temperature (signal)": "Teocht lasmuigh (comhartha)",
-    "Hot water heat-up active": "Téamh an uisce te gníomhach"
+    "Hot water heat-up active": "Téamh an uisce te gníomhach",
+    "used by this access": "in úsáid ag an rochtain seo"
   }
 }

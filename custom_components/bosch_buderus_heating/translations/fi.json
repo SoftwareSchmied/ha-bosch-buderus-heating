@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Poista yhteys",
-        "description": "Tunnistetiedot poistetaan. Järjestelmät ja entiteetit säilyvät, vaikka tämä olisi viimeinen yhteys. Ilman käytettävissä olevaa yhteyttä entiteetit eivät voi näyttää ajantasaisia arvoja.",
+        "description": "Tunnistetiedot poistetaan Home Assistantista. Tunnus jää yhdyskäytävään, ellet peru sitä alla olevalla valintaruudulla. Järjestelmät ja entiteetit säilyvät, vaikka tämä olisi viimeinen yhteys; ilman käytettävissä olevaa yhteyttä ne eivät näytä ajantasaisia arvoja. Jätä ylin valintaruutu tyhjäksi palataksesi ilman muutoksia.",
         "data": {
           "confirm": "Poista tämä yhteys",
           "revoke": "Peru ensin tämän integraation tunnus yhdyskäytävästä"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Yhdyskäytävän tunnukset",
-        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut asiakkaat** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Jokainen kirjautuminen laitteen tarran tiedoilla luo uuden tunnuksen, joten tämän integraation vanhemmat tunnukset ovat yleensä peräisin aiemmista määrityksistä. Valitse peruttava tunnus sen luontiajan mukaan. Ilman valintaa mikään ei muutu.",
+        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon, ja sen peruminen päättää paikallisen yhteyden. Tämän integraation vanhemmat tunnukset ovat yleensä peräisin aiemmista määrityksistä. Ilman valintaa mikään ei muutu.",
         "data": {
           "token": "Peruttava tunnus"
         }
       },
       "local_tokens_remove": {
         "title": "Peru tunnus ennen poistamista",
-        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut asiakkaat** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Valitse tunnus, joka perutaan ennen yhteyden poistamista. Ilman valintaa yhteys poistetaan perumatta mitään. Jos haluat säilyttää yhteyden, sulje tämä ikkuna.",
+        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut sovellukset** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Hieman ennen luotu tunnus on yleensä se, jota tämä yhteys käyttää nyt; se on merkitty luetteloon. Valitse tunnus, joka perutaan ennen yhteyden poistamista. Ilman valintaa **Lähetä** poistaa yhteyden perumatta mitään. Jos haluat säilyttää yhteyden, sulje tämä ikkuna.",
         "data": {
           "token": "Peruttava tunnus"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Ei peruttavaa tunnusta",
+        "description": "Yhdyskäytävä ei luettele tämän integraation tunnusta, jonka voisi perua täällä, tai luetteloa ei voitu lukea. Yhteyttä ei ole vielä poistettu. Valitse, poistetaanko se perumatta vai säilytetäänkö se.",
+        "menu_options": {
+          "local_tokens_remove_without": "Poista perumatta",
+          "local_tokens_remove_cancel": "Keskeytä ja säilytä yhteys"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Peru tunnus",
-        "description": "Perutaanko tämän integraation tunnus, joka luotiin {created}, yhdyskäytävästä osoitteessa **{host}**?\n\nYhdyskäytävä poistaa sen pysyvästi. Jos se on tämän yhteyden käyttämä tunnus, paikallinen yhteys päättyy: yhteys poistetaan käytöstä ja tarvitsee uuden kirjautumisen laitteen tarran tiedoilla. Luettelo luetaan uudelleen juuri ennen, ja pyyntö lähetetään vain kerran.",
+        "description": "Perutaanko tämän integraation tunnus, joka luotiin {created}, yhdyskäytävästä osoitteessa **{host}**?\n\nYhdyskäytävä poistaa sen pysyvästi. Jos se on tämän yhteyden käyttämä tunnus, paikallinen yhteys päättyy: yhteys poistetaan käytöstä ja tarvitsee uuden kirjautumisen laitteen tarran tiedoilla. Luettelo luetaan uudelleen juuri ennen, ja pyyntö lähetetään vain kerran. Jätä valintaruutu tyhjäksi palataksesi perumatta. Jos näkyviin tulee toinen valintaruutu, tämä on tunnus, jota tämä yhteys todennäköisesti käyttää; valitse myös se vahvistaaksesi, että paikallinen yhteys päättyy.",
         "data": {
-          "confirm": "Peru tämä tunnus yhdyskäytävästä"
+          "confirm": "Peru tämä tunnus yhdyskäytävästä",
+          "confirm_end": "Tämä päättää paikallisen yhteyden"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "Yhdyskäytävä ei hyväksynyt tämän yhteyden tunnusta. Mitään ei muutettu.",
       "local_tokens_forbidden": "Yhdyskäytävän kirjautumispalvelu hylkäsi pyynnön. Mitään ei muutettu.",
       "local_tokens_unsupported": "Tämä yhdyskäytävä ei tarjoa tunnusluetteloa. Mitään ei muutettu.",
-      "local_tokens_invalid": "Yhdyskäytävän tunnusluetteloa ei voitu tarkistaa (odottamaton tai liian suuri vastaus). Mitään ei muutettu."
+      "local_tokens_invalid": "Yhdyskäytävän tunnusluetteloa ei voitu tarkistaa (odottamaton tai liian suuri vastaus). Mitään ei muutettu.",
+      "local_token_end_unconfirmed": "Tämä yhteys käyttää todennäköisesti tätä tunnusta. Valitse myös ”Tämä päättää paikallisen yhteyden” tai jätä ensimmäinen valintaruutu tyhjäksi palataksesi. Mitään ei lähetetty."
     },
     "abort": {
       "no_notification_gateways": "Lämmitysjärjestelmää ei ole määritetty.",

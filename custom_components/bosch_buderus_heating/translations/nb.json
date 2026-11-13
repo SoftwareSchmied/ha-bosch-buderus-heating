@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Fjern tilgang",
-        "description": "Påloggingsopplysningene fjernes. Anlegg og entiteter beholdes, selv om dette er den siste tilgangen. Uten en tilgjengelig tilkobling kan ikke entitetene vise gjeldende verdier.",
+        "description": "Påloggingsopplysningene fjernes fra Home Assistant. Tokenen blir værende på gatewayen, med mindre du tilbakekaller den med boksen under. Anlegg og entiteter beholdes, selv om dette er den siste tilgangen; uten en tilgjengelig tilgang viser de ingen gjeldende verdier. La den øverste boksen stå tom for å gå tilbake uten endringer.",
         "data": {
           "confirm": "Fjern denne tilgangen",
           "revoke": "Tilbakekall først en token fra denne integrasjonen på gatewayen"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Tokens på gatewayen",
-        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre klienter** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Hver pålogging med enhetsetiketten oppretter en ny token, så eldre tokens fra denne integrasjonen stammer vanligvis fra tidligere oppsett. Velg en token etter opprettelsestidspunktet for å tilbakekalle den. Uten et valg endres ingenting.",
+        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre apper** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Tokenen som ble opprettet like før, er vanligvis den denne tilgangen bruker nå; den er markert i listen, og tilbakekaller du den, avsluttes den lokale tilgangen. Eldre tokens fra denne integrasjonen stammer vanligvis fra tidligere oppsett. Uten et valg endres ingenting.",
         "data": {
           "token": "Token som skal tilbakekalles"
         }
       },
       "local_tokens_remove": {
         "title": "Tilbakekall en token før fjerning",
-        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre klienter** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Velg tokenen som skal tilbakekalles før tilgangen fjernes. Uten et valg fjernes tilgangen uten at noe tilbakekalles. Lukk denne dialogen for å beholde tilgangen.",
+        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre apper** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Tokenen som ble opprettet like før, er vanligvis den denne tilgangen bruker nå; den er markert i listen. Velg tokenen som skal tilbakekalles før tilgangen fjernes. Uten et valg fjerner **Send** tilgangen uten at noe tilbakekalles. Lukk denne dialogen for å beholde tilgangen.",
         "data": {
           "token": "Token som skal tilbakekalles"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Ingen token å tilbakekalle",
+        "description": "Gatewayen viser ingen token fra denne integrasjonen som kan tilbakekalles her, eller listen kunne ikke leses. Tilgangen er ikke fjernet ennå. Velg om den skal fjernes uten tilbakekalling eller beholdes.",
+        "menu_options": {
+          "local_tokens_remove_without": "Fjern uten tilbakekalling",
+          "local_tokens_remove_cancel": "Avbryt og behold tilgangen"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Tilbakekall token",
-        "description": "Tilbakekalle tokenen fra denne integrasjonen, opprettet {created}, på gatewayen på **{host}**?\n\nGatewayen sletter den permanent. Hvis det er tokenen denne tilgangen bruker, avsluttes den lokale tilgangen: tilgangen slås av og trenger en ny pålogging med enhetsetiketten. Listen leses på nytt rett før, og forespørselen sendes bare én gang.",
+        "description": "Tilbakekalle tokenen fra denne integrasjonen, opprettet {created}, på gatewayen på **{host}**?\n\nGatewayen sletter den permanent. Hvis det er tokenen denne tilgangen bruker, avsluttes den lokale tilgangen: tilgangen slås av og trenger en ny pålogging med enhetsetiketten. Listen leses på nytt rett før, og forespørselen sendes bare én gang. La boksen stå tom for å gå tilbake uten tilbakekalling. Hvis en andre boks vises, er dette tokenen denne tilgangen sannsynligvis bruker; merk den også for å bekrefte at den lokale tilgangen avsluttes.",
         "data": {
-          "confirm": "Tilbakekall denne tokenen på gatewayen"
+          "confirm": "Tilbakekall denne tokenen på gatewayen",
+          "confirm_end": "Dermed avsluttes den lokale tilgangen"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "Gatewayen godtok ikke tokenen for denne tilgangen. Ingenting ble endret.",
       "local_tokens_forbidden": "Påloggingstjenesten på gatewayen avviste forespørselen. Ingenting ble endret.",
       "local_tokens_unsupported": "Denne gatewayen tilbyr ingen tokenliste. Ingenting ble endret.",
-      "local_tokens_invalid": "Tokenlisten til gatewayen kunne ikke kontrolleres (uventet eller for stort svar). Ingenting ble endret."
+      "local_tokens_invalid": "Tokenlisten til gatewayen kunne ikke kontrolleres (uventet eller for stort svar). Ingenting ble endret.",
+      "local_token_end_unconfirmed": "Denne tokenen brukes sannsynligvis av denne tilgangen. Merk også «Dermed avsluttes den lokale tilgangen», eller la den første boksen stå tom for å gå tilbake. Ingenting ble sendt."
     },
     "abort": {
       "no_notification_gateways": "Ingen varmeanlegg er konfigurert.",

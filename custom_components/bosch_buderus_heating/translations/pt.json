@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Remover acesso",
-        "description": "As credenciais serão removidas. As instalações e as entidades são mantidas, mesmo que este seja o último acesso. Sem uma ligação disponível, as entidades não podem mostrar valores atuais.",
+        "description": "As credenciais são removidas do Home Assistant. O token permanece no gateway, a menos que o revogue com a caixa abaixo. As instalações e as entidades são mantidas, mesmo que este seja o último acesso; sem um acesso disponível, não mostram valores atuais. Deixe a caixa de cima desmarcada para voltar sem alterações.",
         "data": {
           "confirm": "Remover este acesso",
           "revoke": "Revogar primeiro um token desta integração no gateway"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Tokens no gateway",
-        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outros clientes** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. Cada início de sessão com a etiqueta do dispositivo cria um novo token, pelo que os tokens mais antigos desta integração costumam ficar de configurações anteriores. Para revogar um, escolha-o pela hora de criação. Sem escolha nada muda.",
+        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outras aplicações** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. O token criado pouco antes costuma ser o que este acesso usa neste momento; está marcado na lista e, se o revogar, o acesso local termina. Os tokens mais antigos desta integração costumam ficar de configurações anteriores. Sem escolha nada muda.",
         "data": {
           "token": "Token a revogar"
         }
       },
       "local_tokens_remove": {
         "title": "Revogar um token antes de remover",
-        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outros clientes** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. Escolha o token a revogar antes de o acesso ser removido. Sem escolha, o acesso é removido sem revogar nada. Para manter o acesso, feche esta caixa de diálogo.",
+        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outras aplicações** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. O token criado pouco antes costuma ser o que este acesso usa neste momento; está marcado na lista. Escolha o token a revogar antes de o acesso ser removido. Sem escolha, **Submeter** remove o acesso sem revogar nada. Para manter o acesso, feche esta caixa de diálogo.",
         "data": {
           "token": "Token a revogar"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Nenhum token para revogar",
+        "description": "O gateway não lista nenhum token desta integração que possa ser revogado aqui, ou não foi possível ler a lista. O acesso ainda não foi removido. Escolha se o remove sem revogar ou se o mantém.",
+        "menu_options": {
+          "local_tokens_remove_without": "Remover sem revogar",
+          "local_tokens_remove_cancel": "Cancelar e manter o acesso"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Revogar token",
-        "description": "Revogar o token desta integração criado em {created} no gateway em **{host}**?\n\nO gateway elimina-o definitivamente. Se for o token que este acesso usa, o acesso local termina: o acesso é desligado e precisa de um novo início de sessão com a etiqueta do dispositivo. A lista é lida de novo imediatamente antes, e o pedido é enviado apenas uma vez.",
+        "description": "Revogar o token desta integração criado em {created} no gateway em **{host}**?\n\nO gateway elimina-o definitivamente. Se for o token que este acesso usa, o acesso local termina: o acesso é desligado e precisa de um novo início de sessão com a etiqueta do dispositivo. A lista é lida de novo imediatamente antes, e o pedido é enviado apenas uma vez. Deixe a caixa desmarcada para voltar sem revogar. Se aparecer uma segunda caixa, é o token que este acesso provavelmente usa; marque-a também para confirmar que o acesso local termina.",
         "data": {
-          "confirm": "Revogar este token no gateway"
+          "confirm": "Revogar este token no gateway",
+          "confirm_end": "Com isto, o acesso local termina"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "O gateway não aceitou o token deste acesso. Nada foi alterado.",
       "local_tokens_forbidden": "O serviço de início de sessão do gateway recusou o pedido. Nada foi alterado.",
       "local_tokens_unsupported": "Este gateway não disponibiliza uma lista de tokens. Nada foi alterado.",
-      "local_tokens_invalid": "Não foi possível verificar a lista de tokens do gateway (resposta inesperada ou demasiado grande). Nada foi alterado."
+      "local_tokens_invalid": "Não foi possível verificar a lista de tokens do gateway (resposta inesperada ou demasiado grande). Nada foi alterado.",
+      "local_token_end_unconfirmed": "Este token é provavelmente usado por este acesso. Marque também «Com isto, o acesso local termina» ou deixe a primeira caixa desmarcada para voltar. Nada foi enviado."
     },
     "abort": {
       "no_notification_gateways": "Não está configurado nenhum sistema de aquecimento.",

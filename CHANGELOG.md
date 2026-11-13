@@ -60,6 +60,13 @@ names the heat generator models and shows texts for more gateway states.
   device label sets it up again. **Remove access** can revoke a token of
   this integration first if you tick that choice; otherwise removing still
   never revokes anything.
+  - The list marks the token this access most likely uses: the token of this
+    integration created last before the access was set up. Revoking that
+    token needs a second confirmation ("This ends the local access").
+  - If you tick the revoke choice when removing an access but there is no
+    token of this integration to offer, or the list cannot be read, I no
+    longer remove the access silently: you choose between removing it
+    without revoking and keeping it.
   - I tested the list and the revocation against a synthetic gateway only.
     How a real gateway counts its tokens and answers a revocation is still
     unconfirmed.

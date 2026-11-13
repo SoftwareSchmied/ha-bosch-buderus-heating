@@ -421,7 +421,15 @@ async def test_nothing_is_sent_when_the_time_left_is_too_short(
 # --- the options dialog -----------------------------------------------------
 
 
-def _entry(hass, certificate, *, imported=False, resource=None, auth_pin=True):
+def _entry(
+    hass,
+    certificate,
+    *,
+    imported=False,
+    resource=None,
+    auth_pin=True,
+    verified_at=OWN["created_at"] + 30,
+):
     from tests.test_connection_runtime import entry_for
 
     entry, _, _ = entry_for(hass)
@@ -435,7 +443,7 @@ def _entry(hass, certificate, *, imported=False, resource=None, auth_pin=True):
         resource or fingerprint,
         fingerprint if auth_pin else None,
         "000123",
-        1_700_000_000,
+        verified_at,
     )
     data["connections"]["local"] = {**data["connections"]["local"], **access.to_data()}
     hass.config_entries.async_update_entry(entry, data=data, minor_version=2)
@@ -577,7 +585,9 @@ async def test_revoking_the_used_token_switches_the_access_off(hass, dialog):
     flow = result["flow_id"]
     newest = list(_choices(result).values())[-1]
     result = await hass.config_entries.options.async_configure(flow, {"token": newest})
-    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    result = await hass.config_entries.options.async_configure(
+        flow, {"confirm": True, "confirm_end": True}
+    )
     assert await outcome(hass, result) == "local_token_access_ended"
     assert result["step_id"] == "connection"
     assert entry.options["connections"]["local"]["enabled"] is False
@@ -932,3 +942,220 @@ async def test_an_unreachable_sign_in_port_is_shown(hass, dialog, monkeypatch):
     result = await _open_list(hass, entry)
     assert result["step_id"] == "local_tokens"
     assert result["errors"] == {"base": "local_connection_failed"}
+
+
+# --- the token this access uses, and removing without an own token ----------
+
+MARKER = "used by this access"
+
+
+async def test_the_likely_used_token_is_marked_without_values(hass, dialog):
+    gateway = Gateway()
+    entry, _ = await dialog(gateway)
+    result = await _open_list(hass, entry)
+    labels = list(_choices(result))
+    # Sorted by creation time: the older token is plain, the newest is marked.
+    assert len(labels) == 2
+    assert MARKER not in labels[0] and labels[1].endswith(f"({MARKER})")
+    lines = result["description_placeholders"]["own"].split("\n")
+    assert [MARKER in line for line in lines] == [False, True]
+    shown = json.dumps(
+        {k: v for k, v in result.items() if k != "data_schema"}, default=str
+    ) + json.dumps(labels)
+    assert TOKEN not in shown and "tid-" not in shown
+
+
+async def test_the_marker_follows_the_language(hass, dialog):
+    hass.config.language = "de"
+    entry, _ = await dialog(Gateway())
+    result = await _open_list(hass, entry)
+    assert list(_choices(result))[1].endswith("(von diesem Zugang genutzt)")
+
+
+async def test_an_entered_token_marks_nothing(hass, dialog):
+    entry, _ = await dialog(Gateway(), imported=True, auth_pin=False)
+    result = await _open_list(hass, entry)
+    assert all(MARKER not in label for label in _choices(result))
+
+
+async def test_no_token_is_marked_when_all_were_created_later(hass, dialog):
+    entry, _ = await dialog(Gateway(), verified_at=OLD["created_at"] - 10_000)
+    result = await _open_list(hass, entry)
+    assert all(MARKER not in label for label in _choices(result))
+
+
+@pytest.mark.parametrize(
+    "created,verified_at,expected",
+    [
+        ([1000, 2000, 3000], 2500, [2000]),
+        ([1000, 2000, 3000], 2000, [2000]),
+        # A small clock difference to the gateway is tolerated.
+        ([1000, 2000, 3000], 1950, [2000]),
+        ([1000, 2000, 3000], 1500, [1000]),
+        ([1000, 2000, 3000], 10, []),
+        ([], 10, []),
+        # Equally old tokens are all marked; the extra confirmation then
+        # protects whichever of them is the used one.
+        ([2000, 2000, 1000], 2600, [2000, 2000]),
+    ],
+)
+def test_the_rule_for_the_likely_used_token(created, verified_at, expected):
+    from custom_components.bosch_buderus_heating.local_token_flow import (
+        USED_TOKEN_TOLERANCE,
+        likely_used_tokens,
+    )
+
+    assert USED_TOKEN_TOLERANCE == 120.0
+    tokens = [GatewayToken(f"t{n}", CLIENT_NAME, at) for n, at in enumerate(created)]
+    used = likely_used_tokens(tokens, verified_at, created=True)
+    assert sorted(token.created_at for token in used) == expected
+    assert likely_used_tokens(tokens, verified_at, created=False) == ()
+
+
+async def _select(hass, dialog_result, index):
+    values = list(_choices(dialog_result).values())
+    return await hass.config_entries.options.async_configure(
+        dialog_result["flow_id"], {"token": values[index]}
+    )
+
+
+async def test_revoking_the_used_token_needs_the_second_confirmation(hass, dialog):
+    gateway = Gateway()
+    entry, _ = await dialog(gateway)
+    result = await _open_list(hass, entry)
+    flow = result["flow_id"]
+    result = await _select(hass, result, 1)
+    assert result["step_id"] == "local_token_revoke"
+    assert {str(key) for key in result["data_schema"].schema} == {
+        "confirm",
+        "confirm_end",
+    }
+    # The first confirmation alone sends nothing and says why.
+    for answer in ({"confirm": True}, {"confirm": True, "confirm_end": False}):
+        result = await hass.config_entries.options.async_configure(flow, answer)
+        assert result["step_id"] == "local_token_revoke"
+        assert result["errors"] == {"base": "local_token_end_unconfirmed"}
+        assert gateway.posts == []
+    # The second one alone is no confirmation of the revocation either.
+    result = await hass.config_entries.options.async_configure(
+        flow, {"confirm": False, "confirm_end": True}
+    )
+    assert result["step_id"] == "connection" and gateway.posts == []
+    result = await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "local_tokens"}
+    )
+    result = await _select(hass, result, 1)
+    result = await hass.config_entries.options.async_configure(
+        flow, {"confirm": True, "confirm_end": True}
+    )
+    assert await outcome(hass, result) == "local_token_access_ended"
+    assert len(gateway.posts) == 1
+
+
+async def test_an_older_token_needs_no_second_confirmation(hass, dialog):
+    gateway = Gateway()
+    entry, _ = await dialog(gateway)
+    result = await _open_list(hass, entry)
+    result = await _select(hass, result, 0)
+    assert {str(key) for key in result["data_schema"].schema} == {"confirm"}
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"confirm": True}
+    )
+    assert await outcome(hass, result) == "local_token_revoked"
+    assert len(gateway.posts) == 1
+
+
+async def test_removing_with_the_used_token_needs_the_second_confirmation(hass, dialog):
+    gateway = Gateway()
+    entry, _ = await dialog(gateway)
+    result = await _open_menu(hass, entry)
+    flow = result["flow_id"]
+    await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "connection_remove"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow, {"confirm": True, "revoke": True}
+    )
+    result = await _select(hass, result, 1)
+    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    assert result["errors"] == {"base": "local_token_end_unconfirmed"}
+    assert gateway.posts == [] and "local" in entry.data["connections"]
+
+
+async def _remove_with_revoke(hass, entry):
+    result = await _open_menu(hass, entry)
+    flow = result["flow_id"]
+    await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "connection_remove"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow, {"confirm": True, "revoke": True}
+    )
+    return flow, result
+
+
+@pytest.mark.parametrize(
+    "tokens,list_status",
+    [
+        ((FOREIGN,), None),
+        ((), None),
+        ((OWN, OLD, FOREIGN), 401),
+        ((OWN, OLD, FOREIGN), 404),
+    ],
+)
+async def test_removing_without_an_own_token_asks_before_removing(
+    hass, dialog, tokens, list_status
+):
+    gateway = Gateway(tokens)
+    if list_status is not None:
+        gateway.list_statuses = [list_status]
+    entry, _ = await dialog(gateway)
+    flow, result = await _remove_with_revoke(hass, entry)
+    assert result["type"] is FlowResultType.MENU
+    assert result["step_id"] == "local_tokens_remove_none"
+    assert result["menu_options"] == [
+        "local_tokens_remove_without",
+        "local_tokens_remove_cancel",
+    ]
+    # Nothing is removed or sent before the choice.
+    assert "local" in entry.data["connections"] and gateway.posts == []
+    result = await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "local_tokens_remove_cancel"}
+    )
+    assert result["type"] is FlowResultType.MENU and result["step_id"] == "connection"
+    assert "local" in entry.data["connections"] and gateway.posts == []
+
+
+async def test_removing_without_revoking_after_the_explicit_choice(hass, dialog):
+    gateway = Gateway((FOREIGN,))
+    entry, _ = await dialog(gateway)
+    flow, result = await _remove_with_revoke(hass, entry)
+    assert result["step_id"] == "local_tokens_remove_none"
+    result = await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "local_tokens_remove_without"}
+    )
+    assert await outcome(hass, result) == "connection_removed"
+    assert "local" not in entry.data["connections"] and gateway.posts == []
+
+
+@pytest.mark.parametrize(
+    "step", ["local_tokens_remove_without", "local_tokens_remove_cancel"]
+)
+async def test_the_removal_choice_is_only_valid_after_its_menu(hass, dialog, step):
+    gateway = Gateway((FOREIGN,))
+    entry, _ = await dialog(gateway)
+    flow, result = await _remove_with_revoke(hass, entry)
+    hass.config_entries.options._progress[flow]._token_remove_none = False
+    result = await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": step}
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "configuration_changed"
+    assert "local" in entry.data["connections"] and gateway.posts == []
+
+
+async def test_the_plain_list_without_an_own_token_still_shows_the_form(hass, dialog):
+    gateway = Gateway((FOREIGN,))
+    entry, _ = await dialog(gateway)
+    result = await _open_list(hass, entry)
+    assert result["type"] is FlowResultType.FORM and result["step_id"] == "local_tokens"

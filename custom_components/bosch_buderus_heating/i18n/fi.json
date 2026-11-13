@@ -583,6 +583,7 @@
     "Current heating/cooling status (signal)": "Nykyinen lämmitys-/jäähdytystila (signaali)",
     "Cylinder temperature (signal)": "Varaajan lämpötila (signaali)",
     "Outdoor temperature (signal)": "Ulkolämpötila (signaali)",
-    "Hot water heat-up active": "Lämpimän käyttöveden lämmitys käynnissä"
+    "Hot water heat-up active": "Lämpimän käyttöveden lämmitys käynnissä",
+    "used by this access": "tämän yhteyden käyttämä"
   }
 }

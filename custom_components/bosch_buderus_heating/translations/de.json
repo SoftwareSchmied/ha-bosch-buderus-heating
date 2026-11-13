@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Zugang entfernen",
-        "description": "Die Zugangsdaten werden entfernt. Anlagen und Entitäten bleiben erhalten, auch wenn dies der letzte Zugang ist. Ohne einen verfügbaren Zugang zeigen die Entitäten keine aktuellen Werte.",
+        "description": "Die Zugangsdaten werden aus Home Assistant entfernt. Der Token bleibt auf dem Gateway, außer du widerrufst ihn mit dem Häkchen unten. Anlagen und Entitäten bleiben erhalten, auch wenn dies der letzte Zugang ist; ohne verfügbaren Zugang zeigen sie keine aktuellen Werte. Lass das obere Häkchen frei, um ohne Änderung zurückzukehren.",
         "data": {
           "confirm": "Diesen Zugang entfernen",
           "revoke": "Vorher einen Token dieser Integration auf dem Gateway widerrufen"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Tokens auf dem Gateway",
-        "description": "Das Gateway führt **{count}** Tokens. Token-Werte werden nie angezeigt.\n\n**Diese Integration** (nach Erstellzeit):\n{own}\n\n**Andere Clients** (werden nie zum Widerruf angeboten):\n{others}\n\nDieser Zugang wurde zuletzt am {confirmed} eingerichtet. Jede Anmeldung mit dem Geräteaufkleber legt einen neuen Token an; ältere Tokens dieser Integration stammen daher meist von früheren Einrichtungen. Wähle einen zum Widerruf nach seiner Erstellzeit. Ohne Auswahl ändert sich nichts.",
+        "description": "Das Gateway führt **{count}** Tokens. Token-Werte werden nie angezeigt.\n\n**Diese Integration** (nach Erstellzeit):\n{own}\n\n**Andere Programme** (werden nie zum Widerruf angeboten):\n{others}\n\nDieser Zugang wurde zuletzt am {confirmed} eingerichtet. Der Token mit der Erstellzeit kurz davor ist in der Regel der, den dieser Zugang gerade nutzt; er ist in der Liste markiert, und widerrufst du ihn, endet der lokale Zugang. Ältere Tokens dieser Integration stammen meist von früheren Einrichtungen. Ohne Auswahl ändert sich nichts.",
         "data": {
           "token": "Zu widerrufender Token"
         }
       },
       "local_tokens_remove": {
         "title": "Token vor dem Entfernen widerrufen",
-        "description": "Das Gateway führt **{count}** Tokens. Token-Werte werden nie angezeigt.\n\n**Diese Integration** (nach Erstellzeit):\n{own}\n\n**Andere Clients** (werden nie zum Widerruf angeboten):\n{others}\n\nDieser Zugang wurde zuletzt am {confirmed} eingerichtet. Wähle den Token, der vor dem Entfernen des Zugangs widerrufen wird. Ohne Auswahl wird der Zugang entfernt, ohne etwas zu widerrufen. Um den Zugang zu behalten, schließe diesen Dialog.",
+        "description": "Das Gateway führt **{count}** Tokens. Token-Werte werden nie angezeigt.\n\n**Diese Integration** (nach Erstellzeit):\n{own}\n\n**Andere Programme** (werden nie zum Widerruf angeboten):\n{others}\n\nDieser Zugang wurde zuletzt am {confirmed} eingerichtet. Der Token mit der Erstellzeit kurz davor ist in der Regel der, den dieser Zugang gerade nutzt; er ist in der Liste markiert. Wähle den Token, der vor dem Entfernen des Zugangs widerrufen wird. Ohne Auswahl entfernt **OK** den Zugang, ohne etwas zu widerrufen. Um den Zugang zu behalten, schließe diesen Dialog.",
         "data": {
           "token": "Zu widerrufender Token"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Kein Token zum Widerrufen",
+        "description": "Das Gateway führt keinen Token dieser Integration auf, den du hier widerrufen kannst, oder die Liste ließ sich nicht lesen. Der Zugang wurde noch nicht entfernt. Wähle, ob du ihn ohne Widerruf entfernst oder behältst.",
+        "menu_options": {
+          "local_tokens_remove_without": "Ohne Widerruf entfernen",
+          "local_tokens_remove_cancel": "Abbrechen und Zugang behalten"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Token widerrufen",
-        "description": "Den am {created} erstellten Token dieser Integration auf dem Gateway unter **{host}** widerrufen?\n\nDas Gateway löscht ihn endgültig. Ist es der Token, den dieser Zugang nutzt, endet der lokale Zugang: Er wird ausgeschaltet und braucht eine neue Anmeldung mit dem Geräteaufkleber. Die Liste wird direkt vorher neu gelesen, und die Anfrage wird nur einmal gesendet.",
+        "description": "Den am {created} erstellten Token dieser Integration auf dem Gateway unter **{host}** widerrufen?\n\nDas Gateway löscht ihn endgültig. Ist es der Token, den dieser Zugang nutzt, endet der lokale Zugang: Er wird ausgeschaltet und braucht eine neue Anmeldung mit dem Geräteaufkleber. Die Liste wird direkt vorher neu gelesen, und die Anfrage wird nur einmal gesendet. Lass das Häkchen frei, um ohne Widerruf zurückzukehren. Erscheint ein zweites Häkchen, ist dies der Token, den dieser Zugang sehr wahrscheinlich nutzt; setze es ebenfalls, um zu bestätigen, dass der lokale Zugang endet.",
         "data": {
-          "confirm": "Diesen Token auf dem Gateway widerrufen"
+          "confirm": "Diesen Token auf dem Gateway widerrufen",
+          "confirm_end": "Damit endet der lokale Zugang"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "Das Gateway hat den Token dieses Zugangs nicht angenommen. Es wurde nichts geändert.",
       "local_tokens_forbidden": "Der Anmeldedienst des Gateways hat die Anfrage abgelehnt. Es wurde nichts geändert.",
       "local_tokens_unsupported": "Dieses Gateway bietet keine Token-Liste an. Es wurde nichts geändert.",
-      "local_tokens_invalid": "Die Token-Liste des Gateways ließ sich nicht prüfen (unerwartete oder zu große Antwort). Es wurde nichts geändert."
+      "local_tokens_invalid": "Die Token-Liste des Gateways ließ sich nicht prüfen (unerwartete oder zu große Antwort). Es wurde nichts geändert.",
+      "local_token_end_unconfirmed": "Dieser Token wird von diesem Zugang sehr wahrscheinlich genutzt. Setze auch das Häkchen „Damit endet der lokale Zugang“ oder lass das erste Häkchen frei, um zurückzukehren. Es wurde nichts gesendet."
     },
     "abort": {
       "no_notification_gateways": "Es ist keine Anlage konfiguriert.",

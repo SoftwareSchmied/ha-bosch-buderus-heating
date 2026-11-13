@@ -583,6 +583,7 @@
     "Current heating/cooling status (signal)": "Текущо състояние на отопление/охлаждане (сигнал)",
     "Cylinder temperature (signal)": "Температура на бойлера (сигнал)",
     "Outdoor temperature (signal)": "Външна температура (сигнал)",
-    "Hot water heat-up active": "Загряване на горещата вода активно"
+    "Hot water heat-up active": "Загряване на горещата вода активно",
+    "used by this access": "използва се от този достъп"
   }
 }

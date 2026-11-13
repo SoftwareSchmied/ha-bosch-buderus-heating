@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Odstrani dostop",
-        "description": "Poverilnice bodo odstranjene. Sistemi in entitete so ohranjeni, tudi če je to zadnji dostop. Brez razpoložljive povezave entitete ne morejo prikazovati trenutnih vrednosti.",
+        "description": "Poverilnice se odstranijo iz Home Assistanta. Žeton ostane na prehodu, razen če ga prekličete s poljem spodaj. Sistemi in entitete so ohranjeni, tudi če je to zadnji dostop; brez razpoložljivega dostopa ne prikazujejo trenutnih vrednosti. Zgornje polje pustite neoznačeno, če se želite vrniti brez sprememb.",
         "data": {
           "confirm": "Odstrani ta dostop",
           "revoke": "Najprej prekliči žeton te integracije na prehodu"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Žetoni na prehodu",
-        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Drugi odjemalci** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Vsaka prijava z oznako na napravi ustvari nov žeton, zato starejši žetoni te integracije običajno ostanejo od prejšnjih nastavitev. Če želite enega preklicati, ga izberite po času ustvarjanja. Brez izbire se nič ne spremeni.",
+        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu, z njegovim preklicem pa se lokalni dostop konča. Starejši žetoni te integracije običajno ostanejo od prejšnjih nastavitev. Brez izbire se nič ne spremeni.",
         "data": {
           "token": "Žeton za preklic"
         }
       },
       "local_tokens_remove": {
         "title": "Preklic žetona pred odstranitvijo",
-        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Drugi odjemalci** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Izberite žeton, ki bo preklican pred odstranitvijo dostopa. Brez izbire se dostop odstrani, ne da bi se karkoli preklicalo. Če želite dostop obdržati, zaprite to pogovorno okno.",
+        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Druge aplikacije** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Žeton, ustvarjen tik pred tem, je običajno tisti, ki ga ta dostop trenutno uporablja; je označen na seznamu. Izberite žeton, ki bo preklican pred odstranitvijo dostopa. Brez izbire **Pošlji** odstrani dostop, ne da bi se karkoli preklicalo. Če želite dostop obdržati, zaprite to pogovorno okno.",
         "data": {
           "token": "Žeton za preklic"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Ni žetona za preklic",
+        "description": "Prehod ne navaja nobenega žetona te integracije, ki bi ga bilo mogoče tu preklicati, ali pa seznama ni bilo mogoče prebrati. Dostop še ni odstranjen. Izberite, ali ga odstranite brez preklica ali obdržite.",
+        "menu_options": {
+          "local_tokens_remove_without": "Odstrani brez preklica",
+          "local_tokens_remove_cancel": "Ne odstrani, obdrži dostop"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Preklic žetona",
-        "description": "Želite preklicati žeton te integracije, ustvarjen {created}, na prehodu na **{host}**?\n\nPrehod ga trajno izbriše. Če je to žeton, ki ga uporablja ta dostop, se lokalni dostop konča: dostop se izklopi in potrebuje novo prijavo z oznako na napravi. Seznam se tik pred tem ponovno prebere, zahteva pa se pošlje samo enkrat.",
+        "description": "Želite preklicati žeton te integracije, ustvarjen {created}, na prehodu na **{host}**?\n\nPrehod ga trajno izbriše. Če je to žeton, ki ga uporablja ta dostop, se lokalni dostop konča: dostop se izklopi in potrebuje novo prijavo z oznako na napravi. Seznam se tik pred tem ponovno prebere, zahteva pa se pošlje samo enkrat. Pustite potrditveno polje neoznačeno, če se želite vrniti brez preklica. Če se prikaže drugo polje, je to žeton, ki ga ta dostop najverjetneje uporablja; označite še njega, da potrdite, da se lokalni dostop konča.",
         "data": {
-          "confirm": "Prekliči ta žeton na prehodu"
+          "confirm": "Prekliči ta žeton na prehodu",
+          "confirm_end": "S tem se lokalni dostop konča"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "Prehod ni sprejel žetona tega dostopa. Nič ni bilo spremenjeno.",
       "local_tokens_forbidden": "Storitev prijave prehoda je zavrnila zahtevo. Nič ni bilo spremenjeno.",
       "local_tokens_unsupported": "Ta prehod ne ponuja seznama žetonov. Nič ni bilo spremenjeno.",
-      "local_tokens_invalid": "Seznama žetonov prehoda ni bilo mogoče preveriti (nepričakovan ali prevelik odgovor). Nič ni bilo spremenjeno."
+      "local_tokens_invalid": "Seznama žetonov prehoda ni bilo mogoče preveriti (nepričakovan ali prevelik odgovor). Nič ni bilo spremenjeno.",
+      "local_token_end_unconfirmed": "Ta žeton ta dostop najverjetneje uporablja. Označite tudi »S tem se lokalni dostop konča« ali pustite prvo polje neoznačeno, če se želite vrniti. Nič ni bilo poslano."
     },
     "abort": {
       "no_notification_gateways": "Noben ogrevalni sistem ni nastavljen.",

@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Toegang verwijderen",
-        "description": "De inloggegevens worden verwijderd. Installaties en entiteiten blijven behouden, ook als dit de laatste toegang is. Zonder beschikbare verbinding kunnen entiteiten geen actuele waarden tonen.",
+        "description": "De inloggegevens worden uit Home Assistant verwijderd. Het token blijft op de gateway staan, tenzij je het intrekt met het vakje hieronder. Installaties en entiteiten blijven behouden, ook als dit de laatste toegang is; zonder beschikbare toegang tonen ze geen actuele waarden. Laat het bovenste vakje uitgevinkt om zonder wijzigingen terug te gaan.",
         "data": {
           "confirm": "Deze toegang verwijderen",
           "revoke": "Eerst een token van deze integratie op de gateway intrekken"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Tokens op de gateway",
-        "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere clients** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Elke aanmelding met het label op het apparaat maakt een nieuw token aan; oudere tokens van deze integratie zijn daarom meestal over van eerdere instellingen. Kies een token op aanmaaktijd om het in te trekken. Zonder keuze verandert er niets.",
+        "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere apps** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Het token dat kort daarvoor is aangemaakt, is meestal het token dat deze toegang nu gebruikt; het is in de lijst gemarkeerd en als je het intrekt, eindigt de lokale toegang. Oudere tokens van deze integratie zijn meestal over van eerdere instellingen. Zonder keuze verandert er niets.",
         "data": {
           "token": "In te trekken token"
         }
       },
       "local_tokens_remove": {
         "title": "Token intrekken vóór het verwijderen",
-        "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere clients** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Kies het token dat wordt ingetrokken voordat de toegang wordt verwijderd. Zonder keuze wordt de toegang verwijderd zonder iets in te trekken. Sluit dit venster om de toegang te behouden.",
+        "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere apps** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Het token dat kort daarvoor is aangemaakt, is meestal het token dat deze toegang nu gebruikt; het is in de lijst gemarkeerd. Kies het token dat wordt ingetrokken voordat de toegang wordt verwijderd. Zonder keuze verwijdert **Verzenden** de toegang zonder iets in te trekken. Sluit dit venster om de toegang te behouden.",
         "data": {
           "token": "In te trekken token"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Geen token om in te trekken",
+        "description": "De gateway toont geen token van deze integratie dat hier kan worden ingetrokken, of de lijst kon niet worden gelezen. De toegang is nog niet verwijderd. Kies of je hem zonder intrekken verwijdert of behoudt.",
+        "menu_options": {
+          "local_tokens_remove_without": "Verwijderen zonder intrekken",
+          "local_tokens_remove_cancel": "Annuleren en toegang behouden"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Token intrekken",
-        "description": "Het token van deze integratie dat op {created} is aangemaakt intrekken op de gateway op **{host}**?\n\nDe gateway verwijdert het definitief. Als het het token is dat deze toegang gebruikt, eindigt de lokale toegang: de toegang wordt uitgeschakeld en heeft een nieuwe aanmelding met het label op het apparaat nodig. De lijst wordt vlak ervoor opnieuw gelezen en het verzoek wordt maar één keer verstuurd.",
+        "description": "Het token van deze integratie dat op {created} is aangemaakt intrekken op de gateway op **{host}**?\n\nDe gateway verwijdert het definitief. Als het het token is dat deze toegang gebruikt, eindigt de lokale toegang: de toegang wordt uitgeschakeld en heeft een nieuwe aanmelding met het label op het apparaat nodig. De lijst wordt vlak ervoor opnieuw gelezen en het verzoek wordt maar één keer verstuurd. Laat het vakje uitgevinkt om terug te gaan zonder in te trekken. Verschijnt er een tweede vakje, dan is dit het token dat deze toegang waarschijnlijk gebruikt; vink het ook aan om te bevestigen dat de lokale toegang eindigt.",
         "data": {
-          "confirm": "Dit token op de gateway intrekken"
+          "confirm": "Dit token op de gateway intrekken",
+          "confirm_end": "Hiermee eindigt de lokale toegang"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "De gateway heeft het token van deze toegang niet geaccepteerd. Er is niets gewijzigd.",
       "local_tokens_forbidden": "De aanmeldservice van de gateway heeft het verzoek geweigerd. Er is niets gewijzigd.",
       "local_tokens_unsupported": "Deze gateway biedt geen tokenlijst. Er is niets gewijzigd.",
-      "local_tokens_invalid": "De tokenlijst van de gateway kon niet worden gecontroleerd (onverwacht of te groot antwoord). Er is niets gewijzigd."
+      "local_tokens_invalid": "De tokenlijst van de gateway kon niet worden gecontroleerd (onverwacht of te groot antwoord). Er is niets gewijzigd.",
+      "local_token_end_unconfirmed": "Dit token wordt waarschijnlijk door deze toegang gebruikt. Vink ook \"Hiermee eindigt de lokale toegang\" aan of laat het eerste vakje uitgevinkt om terug te gaan. Er is niets verzonden."
     },
     "abort": {
       "no_notification_gateways": "Er is geen verwarmingsinstallatie geconfigureerd.",

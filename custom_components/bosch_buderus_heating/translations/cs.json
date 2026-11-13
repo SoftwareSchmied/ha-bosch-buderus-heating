@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Odstranění přístupu",
-        "description": "Přihlašovací údaje budou odstraněny. Soustavy a entity zůstávají zachovány, i když jde o poslední přístup. Bez dostupného připojení entity nemohou zobrazovat aktuální hodnoty.",
+        "description": "Přihlašovací údaje se odstraní z Home Assistantu. Token zůstane na bráně, pokud ho neodvoláte políčkem níže. Soustavy a entity zůstanou zachovány, i když jde o poslední přístup; bez dostupného přístupu nezobrazují aktuální hodnoty. Nechte horní políčko nezaškrtnuté, chcete-li se vrátit beze změn.",
         "data": {
           "confirm": "Odstranit tento přístup",
           "revoke": "Nejprve odvolat token této integrace na bráně"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Tokeny na bráně",
-        "description": "Brána vede **{count}** tokenů. Hodnoty tokenů se nikdy nezobrazují.\n\n**Tato integrace** (podle času vytvoření):\n{own}\n\n**Jiní klienti** (nikdy se nenabízejí k odvolání):\n{others}\n\nTento přístup byl naposledy nastaven {confirmed}. Každé přihlášení pomocí štítku zařízení vytvoří nový token, starší tokeny této integrace proto obvykle zůstávají z dřívějších nastavení. Chcete-li některý odvolat, vyberte ho podle času vytvoření. Bez výběru se nic nezmění.",
+        "description": "Brána vede **{count}** tokenů. Hodnoty tokenů se nikdy nezobrazují.\n\n**Tato integrace** (podle času vytvoření):\n{own}\n\n**Jiné aplikace** (nikdy se nenabízejí k odvolání):\n{others}\n\nTento přístup byl naposledy nastaven {confirmed}. Token vytvořený krátce předtím je obvykle ten, který tento přístup právě používá; je v seznamu označen a jeho odvoláním místní přístup skončí. Starší tokeny této integrace obvykle zůstávají z dřívějších nastavení. Bez výběru se nic nezmění.",
         "data": {
           "token": "Token k odvolání"
         }
       },
       "local_tokens_remove": {
         "title": "Odvolání tokenu před odstraněním",
-        "description": "Brána vede **{count}** tokenů. Hodnoty tokenů se nikdy nezobrazují.\n\n**Tato integrace** (podle času vytvoření):\n{own}\n\n**Jiní klienti** (nikdy se nenabízejí k odvolání):\n{others}\n\nTento přístup byl naposledy nastaven {confirmed}. Vyberte token, který se odvolá před odstraněním přístupu. Bez výběru se přístup odstraní, aniž by se cokoli odvolalo. Chcete-li přístup zachovat, zavřete tento dialog.",
+        "description": "Brána vede **{count}** tokenů. Hodnoty tokenů se nikdy nezobrazují.\n\n**Tato integrace** (podle času vytvoření):\n{own}\n\n**Jiné aplikace** (nikdy se nenabízejí k odvolání):\n{others}\n\nTento přístup byl naposledy nastaven {confirmed}. Token vytvořený krátce předtím je obvykle ten, který tento přístup právě používá; je v seznamu označen. Vyberte token, který se odvolá před odstraněním přístupu. Bez výběru **Odeslat** odstraní přístup, aniž by se cokoli odvolalo. Chcete-li přístup zachovat, zavřete tento dialog.",
         "data": {
           "token": "Token k odvolání"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Žádný token k odvolání",
+        "description": "Brána nevypisuje žádný token této integrace, který by šlo tady odvolat, nebo se seznam nepodařilo načíst. Přístup zatím nebyl odstraněn. Vyberte, zda ho odstranit bez odvolání, nebo ponechat.",
+        "menu_options": {
+          "local_tokens_remove_without": "Odstranit bez odvolání",
+          "local_tokens_remove_cancel": "Zrušit a ponechat přístup"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Odvolání tokenu",
-        "description": "Odvolat token této integrace vytvořený {created} na bráně **{host}**?\n\nBrána ho trvale odstraní. Pokud jde o token, který tento přístup používá, místní přístup skončí: přístup se vypne a bude potřebovat nové přihlášení pomocí štítku zařízení. Seznam se těsně předtím načte znovu a požadavek se odešle jen jednou.",
+        "description": "Odvolat token této integrace vytvořený {created} na bráně **{host}**?\n\nBrána ho trvale odstraní. Pokud jde o token, který tento přístup používá, místní přístup skončí: přístup se vypne a bude potřebovat nové přihlášení pomocí štítku zařízení. Seznam se těsně předtím načte znovu a požadavek se odešle jen jednou. Nechte políčko nezaškrtnuté, chcete-li se vrátit bez odvolání. Objeví-li se druhé políčko, jde o token, který tento přístup nejspíš používá; zaškrtněte i ho, abyste potvrdili, že místní přístup skončí.",
         "data": {
-          "confirm": "Odvolat tento token na bráně"
+          "confirm": "Odvolat tento token na bráně",
+          "confirm_end": "Tím místní přístup skončí"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "Brána nepřijala token tohoto přístupu. Nic se nezměnilo.",
       "local_tokens_forbidden": "Přihlašovací služba brány požadavek odmítla. Nic se nezměnilo.",
       "local_tokens_unsupported": "Tato brána seznam tokenů neposkytuje. Nic se nezměnilo.",
-      "local_tokens_invalid": "Seznam tokenů brány se nepodařilo ověřit (neočekávaná nebo příliš velká odpověď). Nic se nezměnilo."
+      "local_tokens_invalid": "Seznam tokenů brány se nepodařilo ověřit (neočekávaná nebo příliš velká odpověď). Nic se nezměnilo.",
+      "local_token_end_unconfirmed": "Tento token tento přístup nejspíš používá. Zaškrtněte také „Tím místní přístup skončí“, nebo nechte první políčko nezaškrtnuté a vraťte se. Nic nebylo odesláno."
     },
     "abort": {
       "no_notification_gateways": "Není nakonfigurována žádná topná soustava.",
