@@ -20,11 +20,13 @@
 > sign-in step by step.
 
 > [!IMPORTANT]
-> **0.9.0 is the current stable version.** It needs Home Assistant 2026.5.0
-> or newer and moves the configuration entry to storage format 4, which
-> 0.8.x cannot load. Make a full Home Assistant backup before you update;
-> going back to 0.8.x is only possible by restoring it. See the
-> [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0).
+> **0.9.1 is the current stable version.** It fixes the cloud sign-in of
+> 0.9.0, improves the local access and names the heat generator models. It
+> needs Home Assistant 2026.5.0 or newer. From 0.8.x the configuration entry
+> moves to storage format 4, which 0.8.x cannot load. Make a full Home
+> Assistant backup before you update; going back to 0.8.x is only possible
+> by restoring it. See the
+> [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.1).
 
 ## What's new in 0.9
 

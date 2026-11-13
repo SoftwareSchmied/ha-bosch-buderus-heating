@@ -8,11 +8,14 @@ not merely planned architecture.
 Status updated on **2026-11-02**. The current stable release, its
 locally tested controls and remaining work are listed below.
 
-Since 2026-11-13, **0.9.0 is the current stable release.** It completes the
-0.9.0 pre-releases from 2026-11-08 on and adds the local access and the room
-controller support; what it contains and what was tested on real devices is
-in the [CHANGELOG](../CHANGELOG.md). The sections that follow describe the
-0.8 line unless they say otherwise.
+Since 2026-11-13, **0.9.1 is the current stable release.** It fixes the
+cloud sign-in of 0.9.0
+([#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127))
+and improves the local access. 0.9.0 completes the 0.9.0 pre-releases from
+2026-11-08 on and adds the local access and the room controller support;
+what it contains and what was tested on real devices is in the
+[CHANGELOG](../CHANGELOG.md). The sections that follow describe the 0.8 line
+unless they say otherwise.
 
 ## Previous stable release: 0.8.3
 
