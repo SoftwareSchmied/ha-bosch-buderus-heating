@@ -2222,6 +2222,36 @@
           "active": "Gníomhach"
         }
       },
+      "signal_eebus_status": {
+        "name": "Stádas EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Gan coimisiúnú",
+          "no_lan_connection": "Gan nasc líonra",
+          "no_hp_connection": "Gan nasc leis an gcaidéal teasa",
+          "no_updateserver_connection": "Gan nasc leis an bhfreastalaí nuashonraithe",
+          "no_eebus_connection": "Gan nasc EEBus",
+          "no_eebus_no_trust": "Gan nasc EEBus (gan chomhpháirtí iontaofa)",
+          "no_eebus_no_usecase_active": "Gan nasc EEBus (gan chás úsáide gníomhach)",
+          "power_limitation_active": "Teorannú cumhachta gníomhach",
+          "ohpcf_active": "Solúbthacht an chomhbhrúiteora (OHPCF) gníomhach",
+          "internal_error": "Earráid inmheánach"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Coimisiúnú EEBus",
+        "state": {
+          "commissioned": "Coimisiúnaithe",
+          "not_commissioned": "Gan coimisiúnú"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Seiceáil tosaithe",
+        "state": {
+          "startup_completed": "Críochnaithe",
+          "startup_inprogress": "Ar siúl"
+        }
+      },
       "signal_true_false": {
         "name": "Stádas",
         "state": {

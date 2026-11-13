@@ -2222,6 +2222,36 @@
           "active": "Aktiv"
         }
       },
+      "signal_eebus_status": {
+        "name": "EEBus-status",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Inte driftsatt",
+          "no_lan_connection": "Ingen nätverksanslutning",
+          "no_hp_connection": "Ingen anslutning till värmepumpen",
+          "no_updateserver_connection": "Ingen anslutning till uppdateringsservern",
+          "no_eebus_connection": "Ingen EEBus-anslutning",
+          "no_eebus_no_trust": "Ingen EEBus-anslutning (ingen betrodd partner)",
+          "no_eebus_no_usecase_active": "Ingen EEBus-anslutning (inget aktivt användningsfall)",
+          "power_limitation_active": "Effektbegränsning aktiv",
+          "ohpcf_active": "Kompressorflexibilitet (OHPCF) aktiv",
+          "internal_error": "Internt fel"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "EEBus-driftsättning",
+        "state": {
+          "commissioned": "Driftsatt",
+          "not_commissioned": "Inte driftsatt"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Startkontroll",
+        "state": {
+          "startup_completed": "Slutförd",
+          "startup_inprogress": "Pågår"
+        }
+      },
       "signal_true_false": {
         "name": "Status",
         "state": {

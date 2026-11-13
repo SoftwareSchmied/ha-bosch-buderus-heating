@@ -4,6 +4,21 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
+Schema 47 (0.9.1) adds a section, again without values, paths, names or
+identifiers:
+
+- `hybrid_volume_flow`: one entry per system with cloud or local readings.
+  `hybrid_detected` is `true` when the readings show a hybrid system;
+  `evidence` lists why, as fixed codes: `hybrid_manager_signals` (signals of
+  a hybrid manager), `hybrid_resources` (resources of the hybrid control),
+  `system_type` or `heat_source_type` (the reported type names a hybrid
+  system). Product names and other readings are never used.
+  `volume_flow_readings` counts the volume flow readings of the system.
+  `volume_flow` is `unverified` on a hybrid system and `as_reported`
+  otherwise: volume flows are always shown as reported and never rescaled;
+  on a hybrid system that is not yet confirmed against the device's own
+  display.
+
 Schema 46 (0.9.0) adds fields, again without values, names or identifiers:
 
 - `starts` in each entry under `connections[]` and `sources[]`: why the

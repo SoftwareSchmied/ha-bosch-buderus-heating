@@ -5,6 +5,30 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Local access signals
+
+- **Pressure units:** a controller signal reported in `mbar`, `hPa`, `kPa`
+  or `Pa` (for example a pressure difference) now shows its value with that
+  unit as a pressure, like one in `bar`. I only recognize these spellings;
+  the value is never converted. Such entities stay disabled and diagnostic.
+  My own system has no such signal, so this is tested with synthetic
+  answers only and not verified on a real system.
+- **Volume flow on hybrid systems:** I do not know yet whether a hybrid
+  system reports its volume flows in other steps than a heat pump alone, so
+  I do not change them: they are shown as the gateway reports them. The
+  diagnostics now tell when a system is detected as a hybrid system and
+  mark its volume flows as unverified. My own system is not a hybrid
+  system. If you have one, please compare the volume flow shown in Home
+  Assistant with the display of your device and let me know the result; a
+  correction will only follow such a comparison.
+- **Texts for gateway states:** the EEBus status, the EEBus commissioning
+  and the start-up check of the heat pump now show texts instead of keys
+  such as `not_commissioned` or `startup_inprogress`, in every language of
+  the integration. The states are those my own gateway declares; a state a
+  gateway declares in addition is still shown as reported. Names, entity
+  IDs and settings of existing entities stay. The texts in languages other
+  than English and German are drafts and have not been reviewed yet.
+
 ### Documentation
 
 - **Confirmed:** changing the hot water schedule (program A) in the

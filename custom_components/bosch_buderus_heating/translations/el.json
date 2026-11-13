@@ -2222,6 +2222,36 @@
           "active": "Ενεργή"
         }
       },
+      "signal_eebus_status": {
+        "name": "Κατάσταση EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Δεν έχει τεθεί σε λειτουργία",
+          "no_lan_connection": "Χωρίς σύνδεση δικτύου",
+          "no_hp_connection": "Χωρίς σύνδεση με την αντλία θερμότητας",
+          "no_updateserver_connection": "Χωρίς σύνδεση με τον διακομιστή ενημερώσεων",
+          "no_eebus_connection": "Χωρίς σύνδεση EEBus",
+          "no_eebus_no_trust": "Χωρίς σύνδεση EEBus (κανένας αξιόπιστος συνεργάτης)",
+          "no_eebus_no_usecase_active": "Χωρίς σύνδεση EEBus (καμία ενεργή περίπτωση χρήσης)",
+          "power_limitation_active": "Περιορισμός ισχύος ενεργός",
+          "ohpcf_active": "Ευελιξία συμπιεστή (OHPCF) ενεργή",
+          "internal_error": "Εσωτερικό σφάλμα"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Θέση EEBus σε λειτουργία",
+        "state": {
+          "commissioned": "Έχει τεθεί σε λειτουργία",
+          "not_commissioned": "Δεν έχει τεθεί σε λειτουργία"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Έλεγχος εκκίνησης",
+        "state": {
+          "startup_completed": "Ολοκληρώθηκε",
+          "startup_inprogress": "Σε εξέλιξη"
+        }
+      },
       "signal_true_false": {
         "name": "Κατάσταση",
         "state": {

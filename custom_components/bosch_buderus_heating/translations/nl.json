@@ -2222,6 +2222,36 @@
           "active": "Actief"
         }
       },
+      "signal_eebus_status": {
+        "name": "EEBus-status",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Niet in bedrijf gesteld",
+          "no_lan_connection": "Geen netwerkverbinding",
+          "no_hp_connection": "Geen verbinding met de warmtepomp",
+          "no_updateserver_connection": "Geen verbinding met de updateserver",
+          "no_eebus_connection": "Geen EEBus-verbinding",
+          "no_eebus_no_trust": "Geen EEBus-verbinding (geen vertrouwde partner)",
+          "no_eebus_no_usecase_active": "Geen EEBus-verbinding (geen actieve use case)",
+          "power_limitation_active": "Vermogensbeperking actief",
+          "ohpcf_active": "Compressorflexibiliteit (OHPCF) actief",
+          "internal_error": "Interne fout"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "EEBus-inbedrijfstelling",
+        "state": {
+          "commissioned": "In bedrijf gesteld",
+          "not_commissioned": "Niet in bedrijf gesteld"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Opstartcontrole",
+        "state": {
+          "startup_completed": "Voltooid",
+          "startup_inprogress": "Bezig"
+        }
+      },
       "signal_true_false": {
         "name": "Status",
         "state": {

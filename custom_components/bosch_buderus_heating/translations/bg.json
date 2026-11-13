@@ -2222,6 +2222,36 @@
           "active": "Активен"
         }
       },
+      "signal_eebus_status": {
+        "name": "Състояние на EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Не е въведено в експлоатация",
+          "no_lan_connection": "Няма мрежова връзка",
+          "no_hp_connection": "Няма връзка с термопомпата",
+          "no_updateserver_connection": "Няма връзка със сървъра за актуализации",
+          "no_eebus_connection": "Няма връзка EEBus",
+          "no_eebus_no_trust": "Няма връзка EEBus (няма доверен партньор)",
+          "no_eebus_no_usecase_active": "Няма връзка EEBus (няма активен случай на употреба)",
+          "power_limitation_active": "Ограничението на мощността е активно",
+          "ohpcf_active": "Гъвкавостта на компресора (OHPCF) е активна",
+          "internal_error": "Вътрешна грешка"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Въвеждане на EEBus в експлоатация",
+        "state": {
+          "commissioned": "Въведено в експлоатация",
+          "not_commissioned": "Не е въведено в експлоатация"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Проверка при стартиране",
+        "state": {
+          "startup_completed": "Завършено",
+          "startup_inprogress": "В процес"
+        }
+      },
       "signal_true_false": {
         "name": "Състояние",
         "state": {

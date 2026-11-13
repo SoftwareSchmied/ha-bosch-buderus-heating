@@ -664,7 +664,7 @@ async def test_diagnostics_are_local_and_inventory_drops_technical_values(enviro
     )
     coordinator.startup_data.omit_license()
     diagnostics = await async_get_config_entry_diagnostics(coordinator.hass, entry)
-    assert diagnostics["diagnostics_schema"] == 46
+    assert diagnostics["diagnostics_schema"] == 47
     # O94: the same masked path twice is told apart by its number.
     products = [
         item

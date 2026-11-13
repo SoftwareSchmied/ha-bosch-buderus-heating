@@ -2222,6 +2222,36 @@
           "active": "Active"
         }
       },
+      "signal_eebus_status": {
+        "name": "EEBus status",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Not commissioned",
+          "no_lan_connection": "No network connection",
+          "no_hp_connection": "No connection to the heat pump",
+          "no_updateserver_connection": "No connection to the update server",
+          "no_eebus_connection": "No EEBus connection",
+          "no_eebus_no_trust": "No EEBus connection (no trusted partner)",
+          "no_eebus_no_usecase_active": "No EEBus connection (no active use case)",
+          "power_limitation_active": "Power limitation active",
+          "ohpcf_active": "Compressor flexibility (OHPCF) active",
+          "internal_error": "Internal error"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "EEBus commissioning",
+        "state": {
+          "commissioned": "Commissioned",
+          "not_commissioned": "Not commissioned"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Start-up check",
+        "state": {
+          "startup_completed": "Completed",
+          "startup_inprogress": "In progress"
+        }
+      },
       "signal_true_false": {
         "name": "State",
         "state": {

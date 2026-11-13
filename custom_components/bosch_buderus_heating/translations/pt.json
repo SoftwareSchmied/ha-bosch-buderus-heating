@@ -2222,6 +2222,36 @@
           "active": "Ativo"
         }
       },
+      "signal_eebus_status": {
+        "name": "Estado EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Não colocado em serviço",
+          "no_lan_connection": "Sem ligação de rede",
+          "no_hp_connection": "Sem ligação à bomba de calor",
+          "no_updateserver_connection": "Sem ligação ao servidor de atualizações",
+          "no_eebus_connection": "Sem ligação EEBus",
+          "no_eebus_no_trust": "Sem ligação EEBus (nenhum parceiro de confiança)",
+          "no_eebus_no_usecase_active": "Sem ligação EEBus (nenhum caso de utilização ativo)",
+          "power_limitation_active": "Limitação de potência ativa",
+          "ohpcf_active": "Flexibilidade do compressor (OHPCF) ativa",
+          "internal_error": "Erro interno"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Colocação em serviço EEBus",
+        "state": {
+          "commissioned": "Colocado em serviço",
+          "not_commissioned": "Não colocado em serviço"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Verificação de arranque",
+        "state": {
+          "startup_completed": "Concluída",
+          "startup_inprogress": "Em curso"
+        }
+      },
       "signal_true_false": {
         "name": "Estado",
         "state": {

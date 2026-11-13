@@ -695,6 +695,22 @@ water*). An
 signals (year counted from 2000); the parts stay available, disabled. External
 inputs and the room controller assignment are disabled states.
 
+From 0.9.1 a signal reported in a pressure unit (`mbar`, `hPa`, `kPa` or
+`Pa`, for example a pressure difference) shows its value with that unit as a
+pressure, like one in `bar`. The value is shown as reported and never
+converted; another spelling still shows the number without a unit. The
+reference system has no such signal, so this is not verified on a real
+system.
+
+From 0.9.1 three gateway states have texts in every language: the EEBus
+status (`GWEEBUS.Status`), the EEBus commissioning
+(`GWEEBUS.CommissioningStatus`) and the start-up check of the heat pump
+(`SRC.CUHP.StartUpCheck`), with the states the reference gateway declares
+(for example *Not commissioned*, *No EEBus connection (no trusted partner)*
+or *In progress*). Only the shown texts change: name, unique ID, entity ID,
+default activation and recorded states stay as they were. A state the
+gateway declares in addition is shown as the gateway reports it.
+
 On/off signals are enum sensors (`sensor.…` with the states `on` and `off`),
 not binary sensors. Automations, templates or cards written for a
 `binary_sensor.…` of such a signal need the sensor's entity ID and the states
@@ -763,6 +779,14 @@ decided by its answer. From 0.9.0 their compressor run times have long-term
 statistics, like the other cumulative local run times; a lower count after a
 reset of the device starts a new cycle, never a negative run time. They are
 shown on the existing heating device.
+
+Whether a hybrid system reports its volume flows in the same steps as a heat
+pump alone is not established. The volume flows are therefore shown as the
+gateway reports them, never rescaled. From 0.9.1 the diagnostics tell when a
+system is detected as a hybrid system and mark its volume flows as
+unverified (see [diagnostics](diagnostics.md)). If you have a hybrid system,
+compare the volume flow shown in Home Assistant with the display of the
+device and report the result.
 
 The refrigerant circuit status also shows the states the gateway itself
 declares (for example off, hot water, pool and pool heating), so it no longer
