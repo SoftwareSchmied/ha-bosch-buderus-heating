@@ -744,9 +744,7 @@ VENTILATION_RUN_TIME = "/ventilation/zone1/applianceRunTime"
 
 
 @pytest.mark.parametrize("unit", ["mins", "h"])
-def test_a_local_ventilation_run_time_continues_with_its_statistics(
-    hass, unit
-) -> None:
+def test_a_local_ventilation_run_time_continues_with_its_statistics(hass, unit) -> None:
     """The local run time is a growing total; the cloud's reading is one too."""
     entry = MockConfigEntry(domain=DOMAIN, entry_id="sensor-entry")
     entry.add_to_hass(hass)

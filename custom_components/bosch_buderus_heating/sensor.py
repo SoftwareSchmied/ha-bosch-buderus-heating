@@ -1465,8 +1465,9 @@ def _unknown_description(
         # applied like for a known reading. Unit and kind are fixed when the
         # entity is created: a later unit change shows after a restart.
         unit, device_class, _, scale = _measurement_attributes(resource, None)
-        if device_class is SensorDeviceClass.DURATION and _VENTILATION_RUN_TIME.fullmatch(
-            resource.path
+        if (
+            device_class is SensorDeviceClass.DURATION
+            and _VENTILATION_RUN_TIME.fullmatch(resource.path)
         ):
             state_class = SensorStateClass.TOTAL_INCREASING
     elif kind == UNKNOWN_ENUM:

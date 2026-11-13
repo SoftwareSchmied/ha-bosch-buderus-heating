@@ -2744,7 +2744,9 @@ class BoschBuderusDataUpdateCoordinator(
         if now_monotonic < self._cloud_backoff_until:
             raise UpdateFailed("The cloud rate-limit pause is active")
         if now_monotonic < self._circuit_open_until:
-            raise UpdateFailed("The cloud protection pause after gateway errors is active")
+            raise UpdateFailed(
+                "The cloud protection pause after gateway errors is active"
+            )
         due_groups = tuple(
             group
             for group in self._poll_intervals
@@ -2814,7 +2816,9 @@ class BoschBuderusDataUpdateCoordinator(
             if not self.last_update_success:
                 # B03: nothing confirmed the cloud since the failed cycle; a
                 # normal return would report it recovered to Home Assistant.
-                raise IdleAfterFailure("The cloud cycle after a failure requested nothing")
+                raise IdleAfterFailure(
+                    "The cloud cycle after a failure requested nothing"
+                )
             return dict(self.data or {})
 
         snapshots = dict(self.data or {})
@@ -3241,7 +3245,9 @@ class BoschBuderusDataUpdateCoordinator(
             raise ConfigEntryAuthFailed from err
         except RateLimited as err:
             self._activate_rate_limit_backoff(err, monotonic(), counted=not held_back)
-            raise UpdateFailed("The cloud rate limit was reached during discovery") from err
+            raise UpdateFailed(
+                "The cloud rate limit was reached during discovery"
+            ) from err
         except PointTError as err:
             raise UpdateFailed("The cloud resources could not be discovered") from err
         if not resources:
