@@ -78,14 +78,6 @@ class OAuthFlowExpired(OAuthRedirectError):
     """The authorization attempt expired before its redirect was accepted."""
 
 
-class OAuthScopeRejected(OAuthRedirectError):
-    """The sign-in service rejected the requested scopes of this attempt.
-
-    The flow has already switched to the full scope set and a fresh link; the
-    user only needs to sign in again with that link.
-    """
-
-
 class AuthorizationCodeConsumed(AuthenticationError):
     """The authorization redirect was already consumed."""
 

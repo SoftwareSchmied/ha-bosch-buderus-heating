@@ -46,8 +46,9 @@ from custom_components.bosch_buderus_heating.pointt import (
     RefreshTokenRejected,
     ServiceUnavailable,
 )
+from custom_components.bosch_buderus_heating.pointt.const import OAUTH_SCOPES
 from tests.helpers.options_menu import connection_choice
-from tests.test_config_flow import _redirect_from_result
+from tests.test_config_flow import _link_scopes, _redirect_from_result
 from tests.test_connection_runtime import MODULE, Harness, build, entry_for, settle
 
 FLOW = "custom_components.bosch_buderus_heating.config_flow"
@@ -77,6 +78,16 @@ async def open_reauth(hass, entry, connection):
     )
     assert result["step_id"] == "reauth_confirm"
     return await hass.config_entries.flow.async_configure(result["flow_id"], {})
+
+
+async def test_cloud_reauth_link_asks_for_the_full_scope_set(
+    hass, enable_custom_integrations
+):
+    """Issue #127: a renewed sign-in of a cloud access asks for the full set."""
+    entry, cloud, _ = entry_for(hass)
+    result = await open_reauth(hass, entry, cloud)
+    assert _link_scopes(result) == list(OAUTH_SCOPES)
+    assert {"openid", "email"} <= set(_link_scopes(result))
 
 
 @pytest.mark.parametrize("action", ["disable", "targets", "remove", "cancel_remove"])

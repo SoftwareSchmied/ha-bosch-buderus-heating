@@ -25,7 +25,6 @@ from .pointt import (
     OAuthFlow,
     OAuthFlowExpired,
     OAuthRedirectError,
-    OAuthScopeRejected,
     OAuthStateMismatch,
     PointTError,
 )
@@ -124,10 +123,6 @@ class CloudAuthorizationFlow(ConfigEntryBaseFlow):
             return self._restart_authorization(error="auth_expired")
         except AuthorizationCodeConsumed:
             return self._restart_authorization(error="auth_restart")
-        except OAuthScopeRejected:
-            # The attempt already switched to the full scope set and a new
-            # link: the user signs in again with that link.
-            return self._show_auth_form(error="auth_restart")
         except OAuthRedirectError, OAuthStateMismatch, ValueError:
             # Not the address of this attempt: the link stays valid.
             return self._show_auth_form(error="invalid_redirect")
