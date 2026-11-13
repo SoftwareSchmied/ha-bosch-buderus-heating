@@ -8,7 +8,7 @@ import re
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import ClassVar
+from typing import ClassVar, Final
 
 from .gateway_identity import (
     GatewayIdentity,
@@ -195,6 +195,22 @@ def parse_discovery_candidate(
     return DiscoveryCandidate(tuple(endpoints), rejected)
 
 
+# Networks a gateway in the home network can have: private IPv4 (RFC 1918),
+# IPv4 link-local, unique local IPv6 and IPv6 link-local. An announcement
+# never makes Home Assistant contact any other address.
+_HOME_NETWORKS: Final = tuple(
+    ipaddress.ip_network(network)
+    for network in (
+        "10.0.0.0/8",
+        "172.16.0.0/12",
+        "192.168.0.0/16",
+        "169.254.0.0/16",
+        "fc00::/7",
+        "fe80::/10",
+    )
+)
+
+
 def address_candidates(
     endpoints: Sequence[LocalEndpoint],
     *,
@@ -204,8 +220,9 @@ def address_candidates(
     """Announced IP addresses worth one certificate check, IPv4 first.
 
     Announced names are never resolved for this: an address follow-up looks
-    only at the literal addresses of the announcement, and never at one that
-    is configured already. The result is bounded; it is not a network scan.
+    only at the literal private or link-local addresses of the announcement,
+    and never at one that is configured already. The result is bounded; it
+    is not a network scan.
     """
     ranked: list[tuple[int, int, LocalEndpoint]] = []
     for position, endpoint in enumerate(dict.fromkeys(endpoints)):
@@ -215,6 +232,11 @@ def address_candidates(
             address = ipaddress.ip_address(endpoint.host.partition("%")[0])
         except ValueError:
             continue
+        if not any(
+            address.version == network.version and address in network
+            for network in _HOME_NETWORKS
+        ):
+            continue  # a public or special address is never contacted
         if isinstance(address, ipaddress.IPv4Address):
             rank = 0
         else:

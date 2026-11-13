@@ -50,8 +50,8 @@ from tests.test_local_transport import certificates as certificates
 
 pytestmark = pytest.mark.usefixtures("enable_custom_integrations", "socket_enabled")
 
-MOVED = "192.0.2.50"
-OTHER = "192.0.2.60"
+MOVED = "192.168.2.50"
+OTHER = "192.168.2.60"
 
 
 # ------------------------------------------------------------ pure helpers
@@ -63,24 +63,49 @@ def test_candidates_are_literal_addresses_ipv4_first_and_bounded() -> None:
         for host in (
             "fe80::1%eth0",
             "gateway.example.invalid",
-            "2001:db8::5",
-            "192.0.2.7",
-            "192.0.2.8",
+            "fd00::5",
+            "192.168.2.7",
+            "192.168.2.8",
         )
     )
     assert address_candidates(endpoints, limit=8) == (
-        LocalEndpoint("192.0.2.7"),
-        LocalEndpoint("192.0.2.8"),
-        LocalEndpoint("2001:db8::5"),
+        LocalEndpoint("192.168.2.7"),
+        LocalEndpoint("192.168.2.8"),
+        LocalEndpoint("fd00::5"),
         LocalEndpoint("fe80::1%eth0"),
     )
     assert address_candidates(endpoints) == endpoints[3:5]
     assert len(address_candidates(endpoints)) == MAX_ADDRESS_CHECKS
     # A configured address is never checked again; names never at all.
     assert address_candidates(
-        endpoints, configured={LocalEndpoint("192.0.2.7")}, limit=1
-    ) == (LocalEndpoint("192.0.2.8"),)
+        endpoints, configured={LocalEndpoint("192.168.2.7")}, limit=1
+    ) == (LocalEndpoint("192.168.2.8"),)
     assert address_candidates((LocalEndpoint("gateway.example.invalid"),)) == ()
+
+
+@pytest.mark.parametrize(
+    ("host", "checked"),
+    [
+        ("10.1.2.3", True),
+        ("172.16.0.9", True),
+        ("172.31.255.1", True),
+        ("192.168.178.20", True),
+        ("169.254.10.1", True),
+        ("fd12:3456::1", True),
+        ("fe80::2%eth0", True),
+        # Public and other addresses are never contacted.
+        ("172.32.0.1", False),
+        ("8.8.8.8", False),
+        ("203.0.113.9", False),
+        ("100.64.0.1", False),
+        ("2001:db8::5", False),
+        ("2a00:1450::1", False),
+        ("::ffff:192.168.2.7", False),
+    ],
+)
+def test_only_home_network_addresses_are_checked(host, checked) -> None:
+    endpoint = LocalEndpoint(host)
+    assert address_candidates((endpoint,)) == ((endpoint,) if checked else ())
 
 
 @pytest.mark.parametrize(
@@ -426,7 +451,7 @@ async def test_certificate_known_to_two_accesses_is_never_offered(
         entry=SimpleNamespace(entry_id="e"),
         connection_id="c",
         access=SimpleNamespace(
-            endpoint=LocalEndpoint("192.0.2.1"), resource_sha256=pin
+            endpoint=LocalEndpoint("192.168.2.1"), resource_sha256=pin
         ),
         enabled=True,
     )
@@ -498,7 +523,7 @@ async def test_changed_access_before_confirmation_changes_nothing(
     handler = await repair(hass, issue.issue_id)
     await handler.async_step_init()
     # The user set the access to another address meanwhile.
-    management.set_local_address(management.edit(local), "192.0.2.99")
+    management.set_local_address(management.edit(local), "192.168.2.99")
     changed = management.current()
     result = await handler.async_step_confirm({"confirm": True})
     assert result["reason"] == "configuration_changed"
@@ -525,7 +550,7 @@ async def test_note_is_withdrawn_when_the_access_works_again(hass, monkeypatch):
         entry=entry,
         connection_id="c",
         access=SimpleNamespace(
-            endpoint=LocalEndpoint("192.0.2.1"), resource_sha256="00" * 32
+            endpoint=LocalEndpoint("192.168.2.1"), resource_sha256="00" * 32
         ),
     )
     issue_id = address._offer(hass, found, LocalEndpoint(MOVED))
@@ -593,7 +618,7 @@ async def test_unanswered_announcement_stays_an_ordinary_notice(
     assert management.current() == before
 
 
-def fake_access(key, pin, *, enabled=True, host="192.0.2.1"):
+def fake_access(key, pin, *, enabled=True, host="192.168.2.1"):
     return SimpleNamespace(
         entry=SimpleNamespace(entry_id="e"),
         connection_id=key,
@@ -607,7 +632,7 @@ async def test_matching_access_that_works_or_is_off_is_not_offered(
     hass, monkeypatch, reason
 ):
     match = fake_access("c", "01" * 32, enabled=reason != "disabled")
-    other = fake_access("d", "02" * 32, host="192.0.2.2")
+    other = fake_access("d", "02" * 32, host="192.168.2.2")
     monkeypatch.setattr(address, "_accesses", lambda hass: iter([match, other]))
     # Only the other access is down; the gateway itself works or is off.
     monkeypatch.setattr(address, "access_down", lambda entry, key: key == "d")
@@ -648,12 +673,12 @@ def test_bookkeeping_is_bounded(monkeypatch):
     now[0] += address.CHECK_WINDOW
     assert checks.admit()
     for number in range(address.MAX_HINTS + 3):
-        checks.note(LocalEndpoint(f"192.0.2.{number + 1}"), None)
+        checks.note(LocalEndpoint(f"192.168.2.{number + 1}"), None)
     assert len(checks.results) == address.MAX_HINTS
-    assert checks.recent(LocalEndpoint("192.0.2.1")) is None
-    assert checks.recent(LocalEndpoint("192.0.2.67")) is not None
+    assert checks.recent(LocalEndpoint("192.168.2.1")) is None
+    assert checks.recent(LocalEndpoint("192.168.2.67")) is not None
     now[0] += address.CHECK_INTERVAL
-    assert checks.recent(LocalEndpoint("192.0.2.67")) is None
+    assert checks.recent(LocalEndpoint("192.168.2.67")) is None
 
 
 async def test_offered_addresses_are_bounded(hass):
@@ -665,7 +690,7 @@ async def test_offered_addresses_are_bounded(hass):
             entry=entry,
             connection_id="c",
             access=SimpleNamespace(
-                endpoint=LocalEndpoint("192.0.2.1"), resource_sha256="00" * 32
+                endpoint=LocalEndpoint("192.168.2.1"), resource_sha256="00" * 32
             ),
         )
         address._offer(hass, found, LocalEndpoint(MOVED))

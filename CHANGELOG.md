@@ -84,8 +84,9 @@ Versioning after its first tagged preview.
 
 - **New gateway address after a DHCP change:** when the local access can no
   longer reach its gateway and the gateway announces itself in the network at a
-  new address, the integration checks that address with a single TLS handshake,
-  without the token and without any request. Only if the gateway presents
+  new private or link-local address, the integration checks that address with
+  a single TLS handshake, without the token and without any request; a public
+  address is never contacted. Only if the gateway presents
   exactly the certificate confirmed during setup, a repair note under
   **Settings → System → Repairs** offers to use the new address. The address is
   saved only after you confirm it, and the certificate is checked once more

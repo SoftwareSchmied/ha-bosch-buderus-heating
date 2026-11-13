@@ -84,7 +84,11 @@ never identity; the only proof is the certificate binding confirmed at setup.
    failed connections; not during a pause the gateway asked for, and never while
    it is connected).
 2. At most two announced IP addresses (IPv4 first) get one TLS handshake each on
-   the data port. Announced names are not resolved. No HTTP request is sent and
+   the data port. Only addresses of a home network are considered: private
+   IPv4 (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16), IPv4 link-local
+   (169.254.0.0/16), unique local IPv6 (fc00::/7) and IPv6 link-local
+   (fe80::/10); a public address is never contacted. Announced names are not
+   resolved. No HTTP request is sent and
    no token leaves Home Assistant. Each address is checked at most once in five
    minutes, all announcements together at most eight times in ten minutes.
    Completing the handshake shows that the device holds the certificate's key.
