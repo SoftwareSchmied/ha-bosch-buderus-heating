@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Die lokale Einrichtung steht erst mit laufender lokaler Datenversorgung zur Verfügung.",
       "local_session_changed": "Diese Einrichtungssitzung ist beendet oder ihre Auswahl wurde geändert. Öffne die lokale Einrichtung erneut.",
       "local_discovery_invalid": "Diese Erkennungsmeldung beschreibt keinen unterstützten lokalen Gateway-Endpunkt.",
+      "local_address_moved": "Das Gateway eines eingerichteten lokalen Zugangs antwortet unter einer neuen Adresse. Eine Reparaturmeldung bietet an, sie zu übernehmen.",
       "local_existing_owner_required": "Eine Anlage ohne Cloud richtest du beim Hinzufügen der Integration mit „Nur lokaler Zugang“ ein. Ein gefundenes Gateway kann einer vorhandenen Einrichtung hinzugefügt werden.",
       "local_target_required": "Diese Einrichtung hat keine geeignete vorhandene Anlage für einen lokalen Zugang.",
       "local_setup_complete": "Der lokale Zugang wurde eingerichtet.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "Der betroffene Eintrag existiert nicht mehr.",
           "configuration_changed": "Der Zugang oder die Anlage hat sich inzwischen geändert. Öffne die Reparatur erneut."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokales Gateway unter neuer Adresse gefunden",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Neue Adresse des Gateways übernehmen",
+            "description": "Der lokale Zugang erreicht sein Gateway unter {previous} nicht. Dasselbe Gateway antwortet jetzt unter {address}: Es zeigt das bei der Einrichtung bestätigte Zertifikat. An die neue Adresse wurde kein Token gesendet.\n\nBestätige unten, um die neue Adresse zu speichern. Der lokale Zugang startet dann damit neu; Token und bestätigtes Zertifikat bleiben unverändert. Damit das nicht wieder passiert, reserviere die Adresse des Gateways im Router (DHCP-Reservierung).",
+            "data": {
+              "confirm": "Neue Adresse übernehmen"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Bitte bestätige, um weiterzumachen."
+        },
+        "abort": {
+          "entry_not_found": "Der betroffene Eintrag dieser Integration existiert nicht mehr.",
+          "configuration_changed": "Der Zugang oder die Anlage hat sich geändert. Öffne die Reparatur erneut.",
+          "local_address_expired": "Dieser Hinweis ist nicht mehr aktuell. Es wurde nichts geändert.",
+          "local_address_recovered": "Der lokale Zugang erreicht sein Gateway wieder. Es wurde nichts geändert.",
+          "local_address_unproven": "Das Gateway unter der neuen Adresse konnte nicht erneut bestätigt werden. Es wurde nichts geändert."
         }
       }
     },

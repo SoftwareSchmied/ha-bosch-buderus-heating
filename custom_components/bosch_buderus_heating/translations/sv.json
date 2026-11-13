@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Lokal konfiguration är inte tillgänglig förrän den regelbundna lokala dataförsörjningen är klar.",
       "local_session_changed": "Den här konfigurationssessionen har avslutats eller så har dess val ändrats. Öppna den lokala konfigurationen igen för att fortsätta.",
       "local_discovery_invalid": "Det här upptäcktsmeddelandet beskriver inte en lokal gatewayändpunkt som stöds.",
+      "local_address_moved": "Gatewayen för en konfigurerad lokal åtkomst svarar på en ny adress. Ett reparationsmeddelande erbjuder att använda den.",
       "local_existing_owner_required": "Konfigurera en anläggning utan molnet med “Endast lokal åtkomst” när du lägger till integrationen. En hittad gateway kan läggas till i en befintlig konfiguration.",
       "local_target_required": "Den här konfigurationen har ingen lämplig sparad installation för en lokal anslutning.",
       "local_setup_complete": "Den lokala åtkomsten har konfigurerats.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "Den berörda posten finns inte längre.",
           "configuration_changed": "Åtkomsten eller värmesystemet har ändrats. Öppna reparationen igen."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokal gateway hittad på en ny adress",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Använd gatewayens nya adress",
+            "description": "Den lokala åtkomsten når inte sin gateway på {previous}. Samma gateway svarar nu på {address}: den visar certifikatet som bekräftades vid installationen. Ingen token skickades till den nya adressen.\n\nBekräfta nedan för att spara den nya adressen. Den lokala åtkomsten startar sedan om med den; token och bekräftat certifikat förblir oförändrade. För att undvika detta i framtiden kan du reservera gatewayens adress i routern (DHCP-reservation).",
+            "data": {
+              "confirm": "Använd den nya adressen"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Bekräfta för att fortsätta."
+        },
+        "abort": {
+          "entry_not_found": "Den berörda posten för den här integrationen finns inte längre.",
+          "configuration_changed": "Åtkomsten eller anläggningen har ändrats. Öppna reparationen igen.",
+          "local_address_expired": "Det här meddelandet är inte längre aktuellt. Inget ändrades.",
+          "local_address_recovered": "Den lokala åtkomsten når sin gateway igen. Inget ändrades.",
+          "local_address_unproven": "Gatewayen på den nya adressen kunde inte bekräftas igen. Inget ändrades."
         }
       }
     },

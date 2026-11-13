@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Lokalna konfiguracija nije dostupna dok redovita opskrba lokalnim podacima nije spremna.",
       "local_session_changed": "Ova sesija konfiguracije je završila ili se njezin odabir promijenio. Ponovno otvorite lokalnu konfiguraciju za nastavak.",
       "local_discovery_invalid": "Ova objava otkrivanja ne opisuje podržanu krajnju točku lokalnog pristupnika.",
+      "local_address_moved": "Pristupnik konfiguriranog lokalnog pristupa odgovara na novoj adresi. Obavijest o popravku nudi njezino korištenje.",
       "local_existing_owner_required": "Sustav bez oblaka postavite pomoću „Samo lokalni pristup” pri dodavanju integracije. Otkriveni pristupnik može se dodati u postojeću konfiguraciju.",
       "local_target_required": "Ova konfiguracija nema prikladnu zadržanu instalaciju za lokalnu vezu.",
       "local_setup_complete": "Lokalni pristup je postavljen.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "Zahvaćeni unos više ne postoji.",
           "configuration_changed": "Pristup ili sustav grijanja se promijenio. Ponovno otvorite popravak."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokalni pristupnik pronađen na novoj adresi",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Koristi novu adresu pristupnika",
+            "description": "Lokalni pristup ne može doseći svoj pristupnik na adresi {previous}. Isti pristupnik sada odgovara na adresi {address}: prikazuje certifikat potvrđen pri postavljanju. Na novu adresu nije poslan nijedan token.\n\nPotvrdite u nastavku da biste spremili novu adresu. Lokalni pristup zatim se ponovno pokreće s njom; token i potvrđeni certifikat ostaju nepromijenjeni. Da biste to ubuduće izbjegli, rezervirajte adresu pristupnika u usmjerivaču (DHCP rezervacija).",
+            "data": {
+              "confirm": "Koristi novu adresu"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Potvrdite za nastavak."
+        },
+        "abort": {
+          "entry_not_found": "Zahvaćeni unos ove integracije više ne postoji.",
+          "configuration_changed": "Pristup ili sustav se promijenio. Ponovno otvorite popravak.",
+          "local_address_expired": "Ova obavijest više nije aktualna. Ništa nije promijenjeno.",
+          "local_address_recovered": "Lokalni pristup ponovno doseže svoj pristupnik. Ništa nije promijenjeno.",
+          "local_address_unproven": "Pristupnik na novoj adresi nije bilo moguće ponovno potvrditi. Ništa nije promijenjeno."
         }
       }
     },

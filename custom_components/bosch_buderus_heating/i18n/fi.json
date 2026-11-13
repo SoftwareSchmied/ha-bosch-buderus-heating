@@ -530,6 +530,7 @@
     "Time until next regeneration": "Aika seuraavaan regenerointiin",
     "Time zone": "Aikavyöhyke",
     "Times observed by Home Assistant ({zone}).": "Ajat Home Assistantin havaitsemina ({zone}).",
+    "Tip: if the gateway's address changes, for example after a router restart, a fixed address helps: reserve its IP address in the router (DHCP reservation) or enter the gateway's host name. If the gateway announces itself at a new address, a repair note offers to use it.": "Vinkki: jos yhdyskäytävän osoite vaihtuu esimerkiksi reitittimen uudelleenkäynnistyksen jälkeen, kiinteä osoite auttaa: varaa sen IP-osoite reitittimessä (DHCP-varaus) tai anna yhdyskäytävän isäntänimi. Jos yhdyskäytävä ilmoittautuu uudessa osoitteessa, korjausilmoitus tarjoaa sen käyttöä.",
     "Total": "Yhteensä",
     "Total electricity consumption": "Sähkönkulutus yhteensä",
     "Total gas consumption": "Kaasunkulutus yhteensä",

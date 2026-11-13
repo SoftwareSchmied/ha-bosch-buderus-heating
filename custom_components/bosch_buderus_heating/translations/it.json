@@ -217,6 +217,7 @@
       "local_setup_unavailable": "La configurazione locale non è disponibile finché la fornitura regolare dei dati locali non è pronta.",
       "local_session_changed": "Questa sessione di configurazione è terminata o la sua selezione è cambiata. Riapri la configurazione locale per continuare.",
       "local_discovery_invalid": "Questo annuncio di rilevamento non descrive un endpoint di gateway locale supportato.",
+      "local_address_moved": "Il gateway di un accesso locale configurato risponde a un nuovo indirizzo. Una notifica di riparazione propone di usarlo.",
       "local_existing_owner_required": "Configura un impianto senza il cloud con \"Solo accesso locale\" quando aggiungi l'integrazione. Un gateway rilevato può essere aggiunto a una configurazione esistente.",
       "local_target_required": "Questa configurazione non ha nessuna installazione conservata adatta a una connessione locale.",
       "local_setup_complete": "L'accesso locale è stato configurato.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "La voce interessata non esiste più.",
           "configuration_changed": "L'accesso o l'impianto di riscaldamento è cambiato. Apri di nuovo la riparazione."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Gateway locale trovato a un nuovo indirizzo",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Usa il nuovo indirizzo del gateway",
+            "description": "L'accesso locale non raggiunge il suo gateway all'indirizzo {previous}. Lo stesso gateway ora risponde all'indirizzo {address}: presenta il certificato confermato durante la configurazione. Nessun token è stato inviato al nuovo indirizzo.\n\nConferma qui sotto per salvare il nuovo indirizzo. L'accesso locale riparte poi con esso; il token e il certificato confermato restano invariati. Per evitarlo in futuro, riserva l'indirizzo del gateway nel router (prenotazione DHCP).",
+            "data": {
+              "confirm": "Usa il nuovo indirizzo"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Conferma per continuare."
+        },
+        "abort": {
+          "entry_not_found": "La voce di questa integrazione interessata non esiste più.",
+          "configuration_changed": "L'accesso o l'impianto è cambiato. Apri di nuovo la riparazione.",
+          "local_address_expired": "Questa notifica non è più attuale. Non è stato modificato nulla.",
+          "local_address_recovered": "L'accesso locale raggiunge di nuovo il suo gateway. Non è stato modificato nulla.",
+          "local_address_unproven": "Non è stato possibile confermare di nuovo il gateway al nuovo indirizzo. Non è stato modificato nulla."
         }
       }
     },

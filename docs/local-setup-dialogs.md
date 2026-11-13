@@ -19,7 +19,8 @@ usual.
 An existing entry with the provider available offers local setup in its
 options and local connection settings. A native Zeroconf announcement first asks
 the user to select an existing owner and installation; it never creates another
-entry there or silently changes a saved address. Without any entry, the notice
+entry there or silently changes a saved address (a moved gateway is offered as a
+repair note instead, see [a new gateway address](#a-new-gateway-address)). Without any entry, the notice
 offers the setup with **Local access only** directly: after the user continues,
 it creates the same entry as that choice and opens its local setup, with the
 found address offered again. Nothing is created before the user continues. If
@@ -70,6 +71,41 @@ The read check verifies the three base resources, then the trusted provider must
 supply an identity contract for this exact owner, target and gateway. Missing
 evidence is explained; the form has no override field or inferred global contract.
 Confirmation of the result triggers fresh reads and the guarded native handover.
+
+## A new gateway address
+
+After a DHCP change the gateway announces itself at an address the saved local
+access does not know. Names, TXT fields and addresses of an announcement are
+never identity; the only proof is the certificate binding confirmed at setup.
+
+1. Only an announcement whose addresses are all unknown to every configured
+   access is considered, and only while an enabled local access does not reach
+   its gateway (not reachable, starting, certificate changed, or paused after
+   failed connections; not during a pause the gateway asked for, and never while
+   it is connected).
+2. At most two announced IP addresses (IPv4 first) get one TLS handshake each on
+   the data port. Announced names are not resolved. No HTTP request is sent and
+   no token leaves Home Assistant. Each address is checked at most once in five
+   minutes, all announcements together at most eight times in ten minutes.
+   Completing the handshake shows that the device holds the certificate's key.
+3. Only when the full leaf certificate equals the stored binding of exactly one
+   local access, and that access does not reach its gateway, a repair note
+   offers the new address. Another certificate, a certificate known to several
+   accesses, a switched-off access or one that works leaves the announcement an
+   ordinary discovery notice, as before.
+4. The proven address is kept in memory only. The note is not persistent: it
+   disappears after a restart and as soon as the access reaches its gateway
+   again.
+5. Confirming the note requires a tick. Right before the change the certificate
+   is checked again with a fresh handshake, the access must still not reach its
+   gateway, and its saved address and binding must be unchanged. Only then the
+   host of the access is replaced; the token, both certificate bindings and the
+   stored gateway identity stay. The local access restarts and, as on every
+   start, checks the certificate and the gateway identity before reading. A
+   pause from the failed connections still runs out first.
+
+Without a note, the address can still be changed with **Change local access**,
+which needs a new sign-in or token for a new address.
 
 ## Recovery and cancellation
 

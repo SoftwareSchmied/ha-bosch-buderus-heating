@@ -34,6 +34,7 @@ from .configuration_management import ConfigurationManagement
 from .const import DOMAIN
 from .ha_schema import validation as vol
 from .i18n import localize
+from .local_address import follow_address
 from .local_auth import AuthState, LabelCredentials
 from .local_budget import LocalReadBudget, local_budget_manager
 from .local_completion import LOCAL_FIRST, RecoveryStatus, ScopedIdentityContract
@@ -297,6 +298,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             return self.async_abort(reason="local_discovery_invalid")
         if configured_discovery(self.hass, self._local_choices):
             return self.async_abort(reason="already_configured")
+        # A configured gateway at a new address, proven by its certificate:
+        # offered as a repair note, never as another gateway.
+        if owners and await follow_address(self.hass, self._local_choices):
+            return self.async_abort(reason="local_address_moved")
         # Lets the notice be ignored; an ignored announcement stays ignored.
         if await cast(ConfigFlow, self).async_set_unique_id(
             discovery_unique_id(discovery_info)

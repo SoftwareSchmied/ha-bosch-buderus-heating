@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Místní nastavení není dostupné, dokud není připraveno pravidelné zásobování místními daty.",
       "local_session_changed": "Tato relace nastavení skončila nebo se změnil její výběr. Pro pokračování znovu otevřete místní nastavení.",
       "local_discovery_invalid": "Toto oznámení o nalezení nepopisuje podporovaný koncový bod místní brány.",
+      "local_address_moved": "Brána nastaveného místního přístupu odpovídá na nové adrese. Upozornění k opravě nabízí její použití.",
       "local_existing_owner_required": "Soustavu bez cloudu nastavte při přidání integrace pomocí „Pouze místní přístup“. Nalezenou bránu lze přidat k existující konfiguraci.",
       "local_target_required": "Tato konfigurace nemá žádnou vhodnou uchovanou instalaci pro místní připojení.",
       "local_setup_complete": "Místní přístup byl nastaven.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "Dotčená položka již neexistuje.",
           "configuration_changed": "Přístup nebo topná soustava se změnily. Znovu otevřete opravu."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Místní brána nalezena na nové adrese",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Použít novou adresu brány",
+            "description": "Místní přístup nemůže zastihnout svou bránu na adrese {previous}. Stejná brána nyní odpovídá na adrese {address}: předkládá certifikát potvrzený při nastavení. Na novou adresu nebyl odeslán žádný token.\n\nPotvrďte níže, aby se nová adresa uložila. Místní přístup se pak s ní znovu spustí; token a potvrzený certifikát zůstanou beze změny. Abyste tomu příště předešli, rezervujte adresu brány v routeru (rezervace DHCP).",
+            "data": {
+              "confirm": "Použít novou adresu"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Pro pokračování potvrďte."
+        },
+        "abort": {
+          "entry_not_found": "Dotčená položka této integrace již neexistuje.",
+          "configuration_changed": "Přístup nebo soustava se změnily. Znovu otevřete opravu.",
+          "local_address_expired": "Toto upozornění již není aktuální. Nic nebylo změněno.",
+          "local_address_recovered": "Místní přístup opět zastihne svou bránu. Nic nebylo změněno.",
+          "local_address_unproven": "Bránu na nové adrese se nepodařilo znovu ověřit. Nic nebylo změněno."
         }
       }
     },

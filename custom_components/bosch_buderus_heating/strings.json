@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Local setup is not available until regular local data supply is ready.",
       "local_session_changed": "This setup session has ended or its selection changed. Reopen local setup to continue.",
       "local_discovery_invalid": "This discovery announcement does not describe a supported local gateway endpoint.",
+      "local_address_moved": "The gateway of a configured local access answers at a new address. A repair note offers to use it.",
       "local_existing_owner_required": "Set up a system without the cloud with \"Local access only\" when adding the integration. A discovered gateway can be added to an existing setup.",
       "local_target_required": "This setup has no suitable retained installation for a local connection.",
       "local_setup_complete": "The local access has been set up.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "The affected entry no longer exists.",
           "configuration_changed": "The access or heating system has changed. Open the repair again."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Local gateway found at a new address",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Use the new gateway address",
+            "description": "The local access cannot reach its gateway at {previous}. The same gateway now answers at {address}: it presents the certificate confirmed during setup. No token was sent to the new address.\n\nConfirm below to save the new address. The local access then starts again with it; the token and the confirmed certificate stay unchanged. To avoid this in future, reserve the gateway's address in the router (DHCP reservation).",
+            "data": {
+              "confirm": "Use the new address"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Please confirm to continue."
+        },
+        "abort": {
+          "entry_not_found": "The affected entry of this integration no longer exists.",
+          "configuration_changed": "The access or the system has changed. Open the repair again.",
+          "local_address_expired": "This note is no longer current. Nothing was changed.",
+          "local_address_recovered": "The local access reaches its gateway again. Nothing was changed.",
+          "local_address_unproven": "The gateway at the new address could not be confirmed again. Nothing was changed."
         }
       }
     },

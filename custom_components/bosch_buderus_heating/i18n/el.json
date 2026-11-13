@@ -530,6 +530,7 @@
     "Time until next regeneration": "Χρόνος μέχρι την επόμενη αναγέννηση",
     "Time zone": "Ζώνη ώρας",
     "Times observed by Home Assistant ({zone}).": "Ώρες όπως τις βλέπει το Home Assistant ({zone}).",
+    "Tip: if the gateway's address changes, for example after a router restart, a fixed address helps: reserve its IP address in the router (DHCP reservation) or enter the gateway's host name. If the gateway announces itself at a new address, a repair note offers to use it.": "Συμβουλή: αν η διεύθυνση της πύλης αλλάζει, για παράδειγμα μετά από επανεκκίνηση του δρομολογητή, βοηθά μια σταθερή διεύθυνση: δεσμεύστε τη διεύθυνση IP της στον δρομολογητή (κράτηση DHCP) ή εισαγάγετε το όνομα κεντρικού υπολογιστή της πύλης. Αν η πύλη ανακοινωθεί σε νέα διεύθυνση, μια ειδοποίηση επισκευής προτείνει τη χρήση της.",
     "Total": "Σύνολο",
     "Total electricity consumption": "Συνολική κατανάλωση ρεύματος",
     "Total gas consumption": "Συνολική κατανάλωση αερίου",

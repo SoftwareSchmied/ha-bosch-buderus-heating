@@ -530,6 +530,7 @@
     "Time until next regeneration": "Čas do ďalšej regenerácie",
     "Time zone": "Časové pásmo",
     "Times observed by Home Assistant ({zone}).": "Časy podľa Home Assistant ({zone}).",
+    "Tip: if the gateway's address changes, for example after a router restart, a fixed address helps: reserve its IP address in the router (DHCP reservation) or enter the gateway's host name. If the gateway announces itself at a new address, a repair note offers to use it.": "Tip: ak sa adresa brány mení, napríklad po reštarte routera, pomôže pevná adresa: rezervujte jej IP adresu v routeri (rezervácia DHCP) alebo zadajte názov hostiteľa brány. Ak sa brána ohlási na novej adrese, upozornenie na opravu ponúkne jej použitie.",
     "Total": "Celkom",
     "Total electricity consumption": "Celková spotreba elektriny",
     "Total gas consumption": "Celková spotreba plynu",

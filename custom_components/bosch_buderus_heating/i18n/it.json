@@ -530,6 +530,7 @@
     "Time until next regeneration": "Tempo alla prossima rigenerazione",
     "Time zone": "Fuso orario",
     "Times observed by Home Assistant ({zone}).": "Orari osservati da Home Assistant ({zone}).",
+    "Tip: if the gateway's address changes, for example after a router restart, a fixed address helps: reserve its IP address in the router (DHCP reservation) or enter the gateway's host name. If the gateway announces itself at a new address, a repair note offers to use it.": "Suggerimento: se l'indirizzo del gateway cambia, ad esempio dopo il riavvio del router, aiuta un indirizzo fisso: riserva il suo indirizzo IP nel router (prenotazione DHCP) oppure inserisci il nome host del gateway. Se il gateway si annuncia a un nuovo indirizzo, una notifica di riparazione propone di usarlo.",
     "Total": "Totale",
     "Total electricity consumption": "Consumo elettrico totale",
     "Total gas consumption": "Consumo di gas totale",

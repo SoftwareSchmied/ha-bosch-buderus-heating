@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Lokálne nastavenie nie je dostupné, kým nie je pripravené pravidelné lokálne zásobovanie údajmi.",
       "local_session_changed": "Táto relácia nastavenia skončila alebo sa zmenil jej výber. Znova otvorte lokálne nastavenie a pokračujte.",
       "local_discovery_invalid": "Toto oznámenie o vyhľadaní neopisuje podporovaný koncový bod lokálnej brány.",
+      "local_address_moved": "Brána nastaveného lokálneho prístupu odpovedá na novej adrese. Upozornenie na opravu ponúka jej použitie.",
       "local_existing_owner_required": "Systém bez cloudu nastavte pri pridávaní integrácie pomocou „Iba lokálny prístup“. Nájdenú bránu je možné pridať do existujúceho nastavenia.",
       "local_target_required": "Toto nastavenie nemá vhodnú zachovanú inštaláciu pre lokálne pripojenie.",
       "local_setup_complete": "Lokálny prístup bol nastavený.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "Dotknutý záznam už neexistuje.",
           "configuration_changed": "Prístup alebo vykurovací systém sa zmenil. Znova otvorte opravu."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokálna brána nájdená na novej adrese",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Použiť novú adresu brány",
+            "description": "Lokálny prístup nedosiahne svoju bránu na adrese {previous}. Tá istá brána teraz odpovedá na adrese {address}: predkladá certifikát potvrdený pri nastavení. Na novú adresu nebol odoslaný žiadny token.\n\nPotvrďte nižšie, aby sa nová adresa uložila. Lokálny prístup sa potom s ňou znova spustí; token a potvrdený certifikát zostanú nezmenené. Aby ste tomu nabudúce predišli, rezervujte adresu brány v routeri (rezervácia DHCP).",
+            "data": {
+              "confirm": "Použiť novú adresu"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Pokračujte potvrdením."
+        },
+        "abort": {
+          "entry_not_found": "Dotknutý záznam tejto integrácie už neexistuje.",
+          "configuration_changed": "Prístup alebo systém sa zmenil. Znova otvorte opravu.",
+          "local_address_expired": "Toto upozornenie už nie je aktuálne. Nič sa nezmenilo.",
+          "local_address_recovered": "Lokálny prístup opäť dosiahne svoju bránu. Nič sa nezmenilo.",
+          "local_address_unproven": "Bránu na novej adrese sa nepodarilo znova overiť. Nič sa nezmenilo."
         }
       }
     },

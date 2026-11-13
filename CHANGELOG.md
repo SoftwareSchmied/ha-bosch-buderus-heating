@@ -5,6 +5,31 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Local access
+
+- **New gateway address after a DHCP change:** when the local access can no
+  longer reach its gateway and the gateway announces itself in the network at a
+  new address, the integration checks that address with a single TLS handshake,
+  without the token and without any request. Only if the gateway presents
+  exactly the certificate confirmed during setup, a repair note under
+  **Settings → System → Repairs** offers to use the new address. The address is
+  saved only after you confirm it, and the certificate is checked once more
+  right before. The token and the confirmed certificate stay, so no new sign-in
+  with the device label is needed. Nothing is offered while the local access
+  works, for any other certificate, or when several accesses know the same
+  certificate.
+  - I tested this with synthetic gateways in the automated tests: the same and
+    a different certificate at the new address, two gateways, a forged
+    announcement and an announcement during normal operation. On my own
+    gateway I only checked, with one handshake and without the token, that it
+    still presents the certificate confirmed at setup. A real address change of
+    a gateway has not been tested yet; reports are welcome.
+- **Tip for a fixed address:** while the local access cannot reach its gateway,
+  its status under **Configure → Connections** and a failed **Test connection
+  now** suggest reserving the gateway's IP address in the router (DHCP
+  reservation) or entering its host name. The setup guide explains both ways.
+  - The new texts in languages other than English and German are drafts.
+
 ### Local access signals
 
 - **Pressure units:** a controller signal reported in `mbar`, `hPa`, `kPa`
