@@ -165,6 +165,47 @@ const readline = require("node:readline");
     await target.fill("24");
     await apply.click();
     await saved.waitFor();
+
+    // HA recreates the form after every step. The open tab survives Apply
+    // and reload, and a rejected value opens its own tab.
+    const heating = ui.getByRole("tab", { name: "Heizkreis 2", exact: true });
+    const water = ui.getByRole("tab", { name: "Warmwasser 1", exact: true });
+    const hotWater = ui.locator(
+      'input[data-key="/dhwCircuits/dhw1/temperatureLevels/high"]',
+    );
+    const selected = async (tab) => (await tab.getAttribute("aria-selected")) === "true";
+    assert.deepEqual(
+      await ui.getByRole("tab").allTextContents(),
+      ["Heizkreis 2", "Warmwasser 1"],
+    );
+    await water.click();
+    await hotWater.fill("55");
+    await apply.click();
+    await saved.waitFor();
+    assert.equal(await selected(water), true);
+    assert.equal(await hotWater.inputValue(), "55");
+    await reload.click();
+    await ui
+      .getByText("Änderungen werden erst mit Übernehmen geschrieben.", {
+        exact: true,
+      })
+      .waitFor();
+    assert.equal(await selected(water), true);
+    await heating.click();
+    await target.fill("99");
+    await water.click();
+    await apply.click();
+    await invalid.waitFor();
+    assert.equal(await selected(heating), true);
+    assert.equal(await target.getAttribute("aria-invalid"), "true");
+    assert.equal(
+      await ui.getByText("Bitte prüfe diesen Wert.", { exact: true }).isVisible(),
+      true,
+    );
+    await reload.click();
+    await invalid.waitFor({ state: "hidden" });
+    assert.equal(await target.inputValue(), "24");
+    assert.equal(await target.getAttribute("aria-invalid"), null);
     await page.keyboard.press("Escape");
     await ui.waitFor({ state: "hidden" });
     // The detached selector must not hijack keys in the next options menu.

@@ -1,17 +1,16 @@
-# P01: WDDW2-Typen aus dem App-Abgleich
+# P01: WDDW2-Typen
 
 ## Deutsch
 
-Ich habe die Befunde B01 und B02 des MyBuderus-Abgleichs im Code korrigiert.
+Ich habe die Befunde B01 und B02 im Code korrigiert.
 Die Änderung ist zusammen mit den Geräteerweiterungen aus PR #76, #77
 und #78 in v0.8.2-beta.5 enthalten.
 
 ### Sicherheitstemperatur
 
-Die App liest `/dhwCircuits/dhw1/safetyTemperature` als `LocalStringValue`.
-Ihr `Wddw2ModelMapperImpl.operationDetail` wertet den Text über
-`onOffToBoolean` aus und erzeugt bei aktivem Zustand einen
-`SafetyTemperatureEnabled`-Hinweis. Der eigentliche Temperaturwert wird
+`/dhwCircuits/dhw1/safetyTemperature` liefert einen Textwert. Sein Code `on`
+oder `off` meldet, ob die Sicherheitstemperatur aktiv ist. Der eigentliche
+Temperaturwert wird
 an anderer Stelle ermittelt. Der Ressourcenname allein rechtfertigt daher
 keine Temperaturanzeige.
 
@@ -24,9 +23,9 @@ in der regulären Abfragegruppe und kann sich ohne Neustart erholen.
 
 ### Startzähler
 
-Die WDDW2-Klasse `NumberOfStarts.updateResourceWith` verwendet
-`LocalFloatValue`. ConnectKey verwendet am Wärmeerzeugerpfad dagegen
-`emonValue` mit Teilwerten. Ich unterstütze beide Formen getrennt.
+Der WDDW2-Startzähler liefert einen einfachen Zahlenwert. Am
+Wärmeerzeugerpfad wird dagegen `emonValue` mit Teilwerten verwendet. Ich
+unterstütze beide Formen getrennt.
 
 | Datenquelle | Beispiel für die eindeutige Identität |
 |---|---|
@@ -47,18 +46,11 @@ auch für den neuen Skalar. Fehlerkennwerte, falsche Einheiten und gemischte
 skalare/strukturierte Antworten ergeben keinen gültigen Zählerstand.
 Die [Zählerdokumentation](start-counters.de.md) beschreibt die gemeinsamen Regeln.
 
-### Belege und Grenzen
-
-Die Belege stammen aus MyBuderus 5.0.0, Paket `com.buderus.tt.dashtt`:
-
-- `com.bosch.tt.dashtt.wddw2provider.data.remote.resources.SafetyTemperature.updateResourceWith`
-- `com.bosch.tt.dashtt.wddw2provider.mapper.Wddw2ModelMapperImpl.operationDetail`
-- `com.bosch.tt.dashtt.wddw2provider.data.remote.resources.NumberOfStarts.updateResourceWith`
-- `ConnectKeyHeatSourcesResource$NumberOfStarts` für den bestehenden Teilzählervertrag
+### Prüfungen und Grenzen
 
 Die [Fixtures](../tests/fixtures/wddw2/synthetic-readings.json) sind ausdrücklich
-synthetisch. Typzuordnung und Zustandscodes stammen aus dem App-Code; die
-Beispielwerte und Antwortdaten stammen nicht aus einer realen Anlage.
+synthetisch. Die Beispielwerte und Antwortdaten stammen nicht aus einer realen
+Anlage.
 Die [Regressionstests](../tests/test_wddw2_types.py) prüfen Zustände,
 fehlerhafte Antworten, getrennte Identitäten und Wiederherstellung.
 Die erweiterten [Zählertests](../tests/test_start_counters.py) verwenden außerdem
@@ -93,17 +85,16 @@ Beta-Prüfung ist im [Release-Bericht](release.md) dokumentiert.
 I corrected findings B01 and B02 together with the device extensions from
 #76, #77 and #78. The combined changes are included in v0.8.2-beta.5.
 
-MyBuderus reads the DHW safety-temperature resource as `LocalStringValue`.
-Its operation mapper converts the string with `onOffToBoolean` and creates
-a `SafetyTemperatureEnabled` callout. The actual temperature comes from a
-separate calculation. I therefore expose the known `on/off` codes as the
+The DHW safety-temperature resource reports a text value. Its `on` or `off`
+code indicates whether the safety temperature is active. The actual
+temperature comes from a separate calculation. I therefore expose the known `on/off` codes as the
 read-only binary sensor “Safety temperature active”. Unknown states remain
 unknown. References, value arrays, objects, other resource types and physical
 units are rejected. Discovered paths retain regular polling after malformed
 responses and can recover without a restart.
 
-The WDDW2 per-source counter uses `LocalFloatValue`, while ConnectKey uses
-`emonValue` parts at the corresponding path. I accept both formats with
+The WDDW2 per-source counter is a plain number, while the corresponding
+heat-source path uses `emonValue` parts. I accept both formats with
 separate identities, as shown above. A source scalar never inherits the
 multipart total's statistics. Existing IDs, user names and disabled entities
 are preserved. Both registered forms can be restored after a restart; only
@@ -114,7 +105,6 @@ dimensionless-unit checks apply to the new scalar. Mixed scalar/structured
 responses do not produce valid counts. See the
 [start-counter contract](start-counters.md) for the shared rules.
 
-The MyBuderus 5.0.0 source classes listed above establish the type mapping.
 The linked fixtures explicitly identify their synthetic provenance. Regression
 tests cover states, invalid payloads, identities and recovery. Extended
 counter tests also exercise Home Assistant setup, reload and recorder statistics.

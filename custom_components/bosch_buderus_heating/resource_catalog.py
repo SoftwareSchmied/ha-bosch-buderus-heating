@@ -6,30 +6,24 @@ import base64
 import binascii
 import math
 import re
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
+from functools import lru_cache
 
-from . import rrc
+from . import rrc, rrc_contracts
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
+from .i18n import localize
 from .legacy_holidays import is_legacy_holiday_path
 from .pointt import Resource
+from .poll_group import PollGroup as PollGroup
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
 from .start_counters import assess_start_counter, is_start_counter_path
 from .startup_data import is_static_startup_resource
 from .switch_programs import assess_switch_program, is_switch_program_path
 from .unit_contracts import canonical_unit
 from .water_softener import softener_capability, softener_schema_issue
-
-
-class PollGroup(StrEnum):
-    """Cloud polling cadence for one discovered resource."""
-
-    FAST = "fast"
-    NOTIFICATIONS = "notifications"
-    CONTROL = "control"
-    ENERGY = "energy"
-    SLOW = "slow"
-    STATIC = "static"
+from .write_policies import rrc_kwargs
 
 
 class CapabilityMaturity(StrEnum):
@@ -42,8 +36,8 @@ class CapabilityMaturity(StrEnum):
 
 
 @dataclass(frozen=True, slots=True)
-class LogicalDevice:
-    """Stable logical-device identity derived from a PointT path."""
+class FunctionGroup:
+    """A resource group, never evidence of a separate PointT device."""
 
     kind: str
     logical_id: str
@@ -52,7 +46,7 @@ class LogicalDevice:
 
 @dataclass(frozen=True, slots=True)
 class _EntitySchemaRule:
-    """Expected live schema for an optional vendor-app resource."""
+    """Expected live schema for an optional catalog resource."""
 
     pattern: re.Pattern[str]
     resource_types: frozenset[str]
@@ -132,6 +126,24 @@ _PRIVATE_PREFIXES = ("/gateway/wifi",)
 _PRIVATE_PATTERNS = (
     re.compile(r"^/devices/[^/]+/(?:inclusionTime|sgtin)$", re.IGNORECASE),
     re.compile(r"^/pv/commissioning(?:/.*)?$", re.IGNORECASE),
+)
+
+# C8 (CT-E07, CT-F05): resources of RRC controllers that hold device keys,
+# passwords, personal or location data. They are never requested, stored,
+# polled or exported: ``/devices/devN`` lists the radio key (``dlk``) and the
+# radio identifier (``sgtin``) of a device, the product lookup takes an
+# identifier as its query, and the user and installer resources hold names,
+# addresses, phone numbers and e-mail addresses.
+_NEVER_READ_PATHS = frozenset({"/gateway/userPassword", "/system/autoAway/users/list"})
+_NEVER_READ_PATTERNS = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"^/devices/dev[0-9]+(?:/.*)?$",
+        r"^/devices/productLookup.*$",
+        r"^/devices/[^/]+/homematicip(?:/.*)?$",
+        r"^/gateway/(?:user|installer)(?:/.*)?$",
+        r"^/system/location(?:/.*)?$",
+    )
 )
 
 _OPT_IN_DIAGNOSTIC_PATHS = frozenset(
@@ -961,10 +973,18 @@ _ENGLISH_SUBKEY_NAMES = {
 }
 
 
+def is_never_read(path: str) -> bool:
+    """C8: a resource with keys or personal data that is never requested."""
+    return path in _NEVER_READ_PATHS or any(
+        pattern.fullmatch(path) for pattern in _NEVER_READ_PATTERNS
+    )
+
+
 def is_private_resource(path: str) -> bool:
     """Return whether a resource must never become an entity or diagnostic."""
     return (
-        path in _PRIVATE_PATHS
+        is_never_read(path)
+        or path in _PRIVATE_PATHS
         or path.startswith(_PRIVATE_PREFIXES)
         or any(pattern.fullmatch(path) for pattern in _PRIVATE_PATTERNS)
     )
@@ -975,17 +995,253 @@ def is_opt_in_diagnostic_resource(path: str) -> bool:
     return path in _OPT_IN_DIAGNOSTIC_PATHS
 
 
-def is_read_only_control_mirror(path: str) -> bool:
-    """Return whether a read-only entity duplicates an available control."""
+def is_read_only_control_mirror(path: str, *, rrc_plant: bool = False) -> bool:
+    """Return whether a read-only entity duplicates an available control.
+
+    ``rrc_plant``: the gateway is an RRC controller, whose contracts may
+    declare further mirrors (S11).
+    """
     return any(
         pattern.fullmatch(path) for pattern in _READ_ONLY_CONTROL_MIRROR_PATTERNS
+    ) or (rrc_plant and rrc_contracts.is_mirror(path))
+
+
+# The words of a reading name that denote an identifier, address, location or
+# secret, in any spelling (ID, Id, Ssid, Mac ...). Shared by the local and the
+# cloud readings. Words that only count as the last word of a name:
+_PRIVATE_LAST_WORDS = frozenset(
+    {
+        "id",
+        "ski",
+        "ssid",
+        "mac",
+        "uuid",
+        "fingerprint",
+        "address",
+        "key",
+        "token",
+        "pin",
+        "user",
+        "username",
+        "owner",
+        "location",
+        "coordinates",
+        "lat",
+        "lon",
+        "lng",
+    }
+)
+# Since 0.9.0-alpha.2; like all words added since then, only for the last
+# segment of a path when deciding whether a known entity is retired.
+_ADDED_LAST_WORDS = frozenset({"ids", "addr"})
+# Words that mark a name wherever they appear.
+_PRIVATE_WORDS = frozenset(
+    {
+        "ip",
+        "zip",
+        "postal",
+        "postcode",
+        "gtin",
+        "sgtin",
+        "ean",
+        "imei",
+        "iban",
+        "phone",
+        "email",
+        "password",
+        "secret",
+        "latitude",
+        "longitude",
+    }
+)
+_ADDED_WORDS = frozenset(
+    {
+        "latlong",
+        "latlng",
+        "gps",
+        "identifier",
+        "identifiers",
+        "identification",
+        "customer",
+        "host",
+        "hostname",
+        "netmask",
+        # C8: the key of a radio device (device link key).
+        "dlk",
+    }
+)
+_PRIVATE_WORD_PREFIXES = (
+    "mac",
+    "ipv",
+    "serial",
+    "passw",
+    "cert",
+    "uuid",
+    "ssid",
+    "latitud",
+    "longitud",
+    "coordinat",
+    "postal",
+    "imei",
+    "iban",
+    "secret",
+)
+_ADDED_WORD_PREFIXES = ("geoloc", "geopos", "bssid", "subnet", "ipaddr")
+# "...Number" or "...Nr" after one of these words is a number that identifies.
+_NUMBER_OWNERS = frozenset(
+    {"house", "customer", "contract", "account", "order", "article", "part", "ser"}
+)
+_NUMBER_WORDS = frozenset({"number", "nr"})
+_LONGITUDE_WORDS = frozenset({"long", "lng", "lon"})
+# A code is private when it opens something.
+_PRIVATE_CODE_WORDS = frozenset({"installer", "pairing", "access", "pin", "pass"})
+_IP_VERSION = re.compile(r"ip(?:v?[46])(?![a-z])", re.IGNORECASE)
+# "IDs" as one word ("gatewayIDs"), like "Ids".
+_ID_PLURAL = re.compile(r"IDs(?![a-z])")
+_WORD = re.compile(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|[0-9]+", re.ASCII)
+# Types of a single readable value; everything else is a structure, a list
+# or configuration that feeds other features.
+_UNKNOWN_VALUE_TYPES = frozenset({"floatValue", "integerValue", "stringValue"})
+UNKNOWN_NUMBER = "number"
+UNKNOWN_ENUM = "enum"
+UNKNOWN_FLAG = "flag"
+
+
+def identifier_name(name: str) -> bool:
+    """A reading name that denotes an identifier, address, location or secret."""
+    return _identifier_name(name, added=True)
+
+
+def _earlier_identifier_name(name: str) -> bool:
+    """The rules before 0.9.0-alpha.2, for the parents of a path."""
+    return _identifier_name(name, added=False)
+
+
+def _identifier_name(name: str, *, added: bool) -> bool:
+    # "IPv4", "ipv6", "Ip4" as one word, whatever their spelling.
+    last = _IP_VERSION.sub("_Ip_", name.rsplit(".", 1)[-1])
+    if added:
+        last = _ID_PLURAL.sub("Ids", last)
+    spelled = _WORD.findall(last)
+    words = [word.casefold() for word in spelled]
+    if not words:
+        return False
+    if (
+        words[-1] in _PRIVATE_LAST_WORDS
+        or any(
+            word in _PRIVATE_WORDS or word.startswith(_PRIVATE_WORD_PREFIXES)
+            for word in words
+        )
+        or ("code" in words and not _PRIVATE_CODE_WORDS.isdisjoint(words))
+    ):
+        return True
+    return (
+        added
+        and (
+            words[-1] in _ADDED_LAST_WORDS
+            # "moduleNo", "SerNo": "No" only as its own last word of a longer
+            # name, never inside a word or at the start ("NoOfStarts").
+            or (len(spelled) > 1 and spelled[-1] == "No")
+            or any(
+                word in _ADDED_WORDS or word.startswith(_ADDED_WORD_PREFIXES)
+                for word in words
+            )
+            or ("lat" in words and not _LONGITUDE_WORDS.isdisjoint(words))
+            or (
+                len(words) > 1
+                and words[-1] in _NUMBER_WORDS
+                and words[-2] in _NUMBER_OWNERS
+            )
+            or words[-2:] == ["net", "mask"]
+        )
     )
 
 
-def supports_entity(resource: Resource) -> bool:
+def is_identifier_path(path: str) -> bool:
+    """A path whose leaf or parents name an identifier, address or secret."""
+    return _identifier_path(path)
+
+
+def _identifier_path(path: str) -> bool:
+    """An identifier in a path: the leaf by every rule, its parents only by
+    the earlier ones, so a newer word never retires a whole subtree."""
+    *parents, leaf = path.strip("/").split("/")
+    return identifier_name(leaf) or any(
+        _earlier_identifier_name(part) for part in parents
+    )
+
+
+def unknown_never_entity(resource: Resource) -> bool:
+    """An unknown resource that can never become an entity, whatever its
+    current value: private, an identifier, a name, a structure or
+    configuration. Only these lose a registered entity (create-all)."""
+    path = resource.path
+    return bool(
+        is_private_resource(path)
+        or is_opt_in_diagnostic_resource(path)
+        or path in _NO_ENTITY_PATHS
+        or any(pattern.fullmatch(path) for pattern in _NO_ENTITY_PATTERNS)
+        or _identifier_path(path)
+        or path.endswith("/name")
+        or resource.references
+        or isinstance(resource.value, dict | list)
+        or is_monitor_collection(path)
+        or (
+            resource.metadata.resource_type is not None
+            and resource.metadata.resource_type not in _UNKNOWN_VALUE_TYPES
+        )
+    )
+
+
+def unknown_entity_kind(resource: Resource) -> str | None:
+    """Create-all (owner decision): the form of a cloud resource the
+    integration does not know.
+
+    A single number, a text with declared values or a true/false value
+    becomes a read-only, disabled diagnostic sensor; never a control.
+    Identifiers, network and privacy data, free text, names, lists,
+    structures and configuration stay out. A known resource in a shape its
+    rules reject stays without an entity (its schema guard): an entity under
+    its ID would replace the known entity's unit and statistics, and the
+    known entity returns once the shape fits again.
+    """
+    path = resource.path
+    if capability_maturity(path) is not CapabilityMaturity.OBSERVED:
+        return None  # known: its own rules and guards decide
+    if (
+        is_private_resource(path)
+        or is_opt_in_diagnostic_resource(path)
+        or path in _NO_ENTITY_PATHS
+        or any(pattern.fullmatch(path) for pattern in _NO_ENTITY_PATTERNS)
+        or any(identifier_name(part) for part in path.strip("/").split("/"))
+        or path.endswith("/name")
+        or resource.references
+        or is_monitor_collection(path)
+        or resource.values
+        or resource.has_values
+        or not resource.has_value
+        or resource.metadata.resource_type not in _UNKNOWN_VALUE_TYPES
+    ):
+        return None
+    value = resource.value
+    if isinstance(value, bool):
+        return UNKNOWN_FLAG
+    if isinstance(value, int | float):
+        return UNKNOWN_NUMBER if math.isfinite(value) else None
+    if not isinstance(value, str):
+        return None
+    if any(isinstance(item, str) for item in resource.metadata.allowed_values):
+        return UNKNOWN_ENUM
+    if value.strip().casefold() in ("true", "false"):
+        return UNKNOWN_FLAG
+    return None  # free text could carry an identifier
+
+
+def supports_entity(resource: Resource, *, rrc_plant: bool = False) -> bool:
     """Return whether the resource can yield at least one safe HA state."""
     return (
-        capability_maturity(resource.path) is not CapabilityMaturity.OBSERVED
+        capability_maturity(resource.path, **rrc_kwargs(rrc_plant))
+        is not CapabilityMaturity.OBSERVED
         and not is_private_resource(resource.path)
         and resource.path not in _NO_ENTITY_PATHS
         and not any(pattern.fullmatch(resource.path) for pattern in _NO_ENTITY_PATTERNS)
@@ -1024,8 +1280,15 @@ def _matches_optional_app_schema(resource: Resource) -> bool:
     return True
 
 
-def capability_maturity(path: str) -> CapabilityMaturity:
-    """Return the curated evidence level for a concrete PointT path."""
+@lru_cache(maxsize=4096)
+def capability_maturity(path: str, *, rrc_plant: bool = False) -> CapabilityMaturity:
+    """Return the curated evidence level for a concrete PointT path.
+
+    On an RRC controller (``rrc_plant``) the paths of its contracts are
+    understood (S11).
+    """
+    if rrc_plant and rrc_contracts.is_understood(path):
+        return CapabilityMaturity.UNDERSTOOD
     if rrc.scalar_field(path):
         return CapabilityMaturity.UNDERSTOOD
     if is_switch_program_path(path):
@@ -1047,8 +1310,46 @@ def capability_maturity(path: str) -> CapabilityMaturity:
     return CapabilityMaturity.OBSERVED
 
 
-def entity_enabled_by_default(path: str) -> bool:
+_HEAT_SOURCE_ID = re.compile(r"^/heatSources/(hs\d+)(?:/|$)")
+_HEAT_PUMP_TYPE = re.compile(r"^/heatSources/hs\d+/heatPumpType$")
+SOURCE_TOTAL_PATHS = frozenset(
+    {"/heatSources/numberOfStarts", "/heatSources/workingTime/totalSystem"}
+)
+FLAME_STATUS_PATH = "/heatSources/flameStatus"
+
+
+def plant_duplicate_paths(paths: Iterable[str]) -> frozenset[str]:
+    """Paths whose entities only repeat another entity on this plant.
+
+    With exactly one heat source, the totals of all heat sources (starts and
+    system run time) are the counters of that heat source. On a heat pump
+    without a second heat source or a hybrid manager, the burner status
+    follows the compressor. Such entities are created disabled; an entity
+    that already exists keeps its setting, because Home Assistant applies an
+    enabled default only when it registers an entity.
+    """
+    known = tuple(paths)
+    sources = {
+        match.group(1)
+        for path in known
+        if (match := _HEAT_SOURCE_ID.match(path)) is not None
+    }
+    duplicates: set[str] = set()
+    if len(sources) == 1:
+        duplicates.update(SOURCE_TOTAL_PATHS)
+    if (
+        len(sources) <= 1
+        and any(_HEAT_PUMP_TYPE.fullmatch(path) for path in known)
+        and not any(path.startswith("/heatSources/hybrid") for path in known)
+    ):
+        duplicates.add(FLAME_STATUS_PATH)
+    return frozenset(duplicates)
+
+
+def entity_enabled_by_default(path: str, *, rrc_plant: bool = False) -> bool:
     """Apply the explicit user-facing default entity policy."""
+    if rrc_plant and (enabled := rrc_contracts.default_enabled(path)) is not None:
+        return enabled
     if rrc.scalar_field(path):
         return rrc.scalar_field(path) in {
             "temperatureActual",
@@ -1058,15 +1359,98 @@ def entity_enabled_by_default(path: str) -> bool:
         return True
     if is_additional_app_scalar(path):
         return not path.endswith("/dhwType")
-    if is_opt_in_diagnostic_resource(path) or is_read_only_control_mirror(path):
+    if is_opt_in_diagnostic_resource(path) or is_read_only_control_mirror(
+        path, **rrc_kwargs(rrc_plant)
+    ):
         return False
     return path in _DEFAULT_ENABLED_PATHS or any(
         pattern.fullmatch(path) for pattern in _DEFAULT_ENABLED_PATTERNS
     )
 
 
-def poll_group(resource: Resource) -> PollGroup:
-    """Classify a discovered resource into a cloud-friendly cadence."""
+# Read with the slow group so a firmware update while running is noticed (P22).
+FIRMWARE_PATHS = ("/gateway/versionFirmware", "/system/appliance/versionFirmware")
+
+
+# O50: cloud containers and lists that never become an entity. They only
+# show new devices, zones or circuits, so an hourly read is enough.
+_HOURLY_CONTAINER_PATHS = frozenset(
+    {
+        "/devices",
+        "/devices/list",
+        "/devices/inclusionWhitelist",
+        "/solarCircuits",
+        "/ventilation",
+        "/zones/list",
+        "/zones/configuration",
+        "/heatSources/info",
+    }
+)
+_HOURLY_CONTAINER_PATTERN = re.compile(r"^/(?:solarCircuits|ventilation)/[^/]+$")
+# O40: settled cloud values that the 60-second group read only because their
+# names contain "status" or "temperature".
+_STATIC_SETTLED_PATHS = frozenset(
+    {"/system/iSRC/installationStatus", "/system/variableTariff/supportStatus"}
+)
+_SLOW_SETTLED_PATHS = frozenset(
+    {"/system/sensors/temperatures/outdoorTemperatureSource", "/gateway/update/status"}
+)
+_FAST_HEAT_SOURCE_PATTERN = re.compile(
+    r"/heatSources/(?:passiveCooling/inflowTemp|hs[^/]+/(?:actualPower|defrostActive|powerPercentage|brineCircuit/(?:collectorInflowTemp|collectorOutflowTemp)))"
+)
+
+
+def poll_group(resource: Resource, *, rrc_plant: bool = False) -> PollGroup:
+    """Classify a discovered resource into a cloud-friendly cadence.
+
+    On an RRC controller (``rrc_plant``) its contracts' groups come first.
+    """
+    group = _poll_group(resource, rrc_plant)
+    if (
+        group in (PollGroup.FAST, PollGroup.CONTROL, PollGroup.SLOW)
+        and (
+            resource.path in _HOURLY_CONTAINER_PATHS
+            or _HOURLY_CONTAINER_PATTERN.fullmatch(resource.path) is not None
+        )
+        and not supports_entity(resource, **rrc_kwargs(rrc_plant))
+        # An RRC contract that reads a list for its entities (the zone list
+        # for an open window and the standby, W1) keeps its own group.
+        and not (rrc_plant and rrc_contracts.poll_group(resource.path) is not None)
+    ):
+        return PollGroup.HOURLY
+    return group
+
+
+# O51: control paths the climate entity of a heating circuit reads besides
+# its own entities; with the hot water, holiday and calendar paths they keep
+# the control pace while their own entities are disabled.
+_CLIMATE_CONTROL_PATTERN = re.compile(
+    r"/heatingCircuits/[^/]+/(?:operationMode|heatCoolMode|currentSuWiMode"
+    r"|roomtemperature|manualRoomSetpoint|currentRoomSetpoint|temporaryRoomSetpoint)"
+)
+_CLIMATE_CONTROL_PATHS = frozenset(
+    {"/system/seasonOptimizer/mode", "/system/globalSeasonOptimizer/currentMode"}
+)
+
+
+@lru_cache(maxsize=4096)
+def slows_when_unused(path: str) -> bool:
+    """O51: a control path whose entities are all disabled may use the slow
+    group (15 minutes), except the holiday, calendar, climate and hot water
+    paths (also those the entities of their own read)."""
+    return not (
+        path.startswith(("/holidayMode", "/dhwCircuits/"))
+        or is_legacy_holiday_path(path)
+        or path in _CLIMATE_CONTROL_PATHS
+        or _CLIMATE_CONTROL_PATTERN.fullmatch(path) is not None
+    )
+
+
+def _poll_group(resource: Resource, rrc_plant: bool = False) -> PollGroup:
+    if rrc_plant and (group := rrc_contracts.poll_group(resource.path)) is not None:
+        return group
+    if resource.path in FIRMWARE_PATHS:
+        return PollGroup.SLOW
     if rrc.scalar_field(resource.path):
         return PollGroup.CONTROL if resource.metadata.writable else PollGroup.FAST
     if rrc.PROGRAM.match(resource.path) or resource.path == rrc.PROGRAM_LIST:
@@ -1130,8 +1514,13 @@ def poll_group(resource: Resource) -> PollGroup:
         "/system/appliance/model",
         "/system/appliance/versionFirmware",
         "/system/iSRC/supportStatus",
+        rrc.PRODUCT_TYPE_PATH,
     }:
         return PollGroup.STATIC
+    if resource.path in _STATIC_SETTLED_PATHS:
+        return PollGroup.STATIC
+    if resource.path in _SLOW_SETTLED_PATHS:
+        return PollGroup.SLOW
     if "/emon/" in resource.path or resource.path.endswith(
         ("TotalConsumption", "/solarYield")
     ):
@@ -1145,10 +1534,7 @@ def poll_group(resource: Resource) -> PollGroup:
         "/heatSources/smartFunction/active",
     }:
         return PollGroup.FAST
-    if re.fullmatch(
-        r"/heatSources/(?:passiveCooling/inflowTemp|hs[^/]+/(?:actualPower|defrostActive|powerPercentage|brineCircuit/(?:collectorInflowTemp|collectorOutflowTemp)))",
-        resource.path,
-    ):
+    if _FAST_HEAT_SOURCE_PATTERN.fullmatch(resource.path):
         return PollGroup.FAST
     tail = resource.path.rsplit("/", 1)[-1].lower()
     if tail in _STATIC_TOKENS:
@@ -1160,136 +1546,163 @@ def poll_group(resource: Resource) -> PollGroup:
     return PollGroup.SLOW
 
 
-def logical_device_for_path(path: str) -> LogicalDevice | None:
-    """Map dynamic PointT object IDs to stable Home Assistant devices."""
-    for root, kind, label in (
-        ("heatingCircuits", "heating_circuit", "Heizkreis"),
-        ("dhwCircuits", "hot_water_circuit", "Warmwasser"),
-        ("heatSources", "heat_source", "Wärmeerzeuger"),
-    ):
-        prefix = {
-            "heatingCircuits": "hc",
-            "dhwCircuits": "dhw",
-            "heatSources": "hs",
-        }[root]
-        match = re.match(rf"^/{root}/({prefix}\d+)(?:/|$)", path, re.IGNORECASE)
+_FUNCTION_GROUP_PATTERNS = (
+    *(
+        (re.compile(rf"^/{root}/({prefix}\d+)(?:/|$)", re.IGNORECASE), kind, label)
+        for root, prefix, kind, label in (
+            ("heatingCircuits", "hc", "heating_circuit", "Heizkreis"),
+            ("dhwCircuits", "dhw", "hot_water_circuit", "Warmwasser"),
+            ("heatSources", "hs", "heat_source", "Wärmeerzeuger"),
+        )
+    ),
+    *(
+        (re.compile(pattern, re.IGNORECASE), kind, label)
+        for pattern, kind, label in (
+            (rf"^/zones/(zn{rrc.RRC_ID})(?:/|$)", "rrc_zone", "RRC zone"),
+            (r"^/swCircuits/([^/]+)(?:/|$)", "water_softener", "Water softener"),
+            (r"^/solarCircuits/(sc[^/]+)(?:/|$)", "solar_circuit", "Solar circuit"),
+            (
+                r"^/ventilation/(zone[^/]+)(?:/|$)",
+                "ventilation_zone",
+                "Ventilation zone",
+            ),
+            (r"^/zones/(zone[^/]+)(?:/|$)", "room_zone", "Zone"),
+            (r"^/devices/((?!list$)[^/]+)(?:/|$)", "room_device", "Room device"),
+        )
+    ),
+)
+_TRAILING_NUMBER = re.compile(r"(\d+)$")
+
+
+@lru_cache(maxsize=4096)
+def function_group_for_path(path: str) -> FunctionGroup | None:
+    """Classify a PointT path without creating devices or proving presence."""
+    for pattern, kind, label in _FUNCTION_GROUP_PATTERNS:
+        match = pattern.match(path)
         if match:
             logical_id = match.group(1)
-            number = re.search(r"(\d+)$", logical_id)
+            number = _TRAILING_NUMBER.search(logical_id)
             suffix = number.group(1) if number else logical_id
-            return LogicalDevice(kind, logical_id, f"{label} {suffix}")
-    for pattern, kind, label in (
-        (rf"^/zones/(zn{rrc.RRC_ID})(?:/|$)", "rrc_zone", "RRC zone"),
-        (r"^/swCircuits/([^/]+)(?:/|$)", "water_softener", "Water softener"),
-        (r"^/solarCircuits/(sc[^/]+)(?:/|$)", "solar_circuit", "Solar circuit"),
-        (r"^/ventilation/(zone[^/]+)(?:/|$)", "ventilation_zone", "Ventilation zone"),
-        (r"^/zones/(zone[^/]+)(?:/|$)", "room_zone", "Zone"),
-        (r"^/devices/((?!list$)[^/]+)(?:/|$)", "room_device", "Room device"),
-    ):
-        match = re.match(pattern, path, re.IGNORECASE)
-        if match:
-            logical_id = match.group(1)
-            number = re.search(r"(\d+)$", logical_id)
-            suffix = number.group(1) if number else logical_id
-            return LogicalDevice(kind, logical_id, f"{label} {suffix}")
+            return FunctionGroup(kind, logical_id, f"{label} {suffix}")
     return None
 
 
-def resource_name(path: str, subkey: str | None = None, *, language: str = "de") -> str:
-    """Return a localized user-facing name without exposing technical IDs."""
+# Preserve existing imports while distinguishing groups from real devices.
+LogicalDevice = FunctionGroup
+logical_device_for_path = function_group_for_path
+
+
+_APP_PATH_ROOT = re.compile(
+    r"^/(heatingCircuits|dhwCircuits|solarCircuits|ventilation)/[^/]+/"
+)
+_PROGRAM_NAME = re.compile(r"name[A-Z0-9]+")
+_CAMEL_BOUNDARY = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
+
+
+@lru_cache(maxsize=4096)
+def resource_name(
+    path: str,
+    subkey: str | None = None,
+    *,
+    language: str = "de",
+    rrc_plant: bool = False,
+) -> str:
+    """Return a localized user-facing name without exposing technical IDs.
+
+    On an RRC controller (``rrc_plant``) its contracts' names come first.
+    """
+    if (
+        rrc_plant
+        and subkey is None
+        and (label := rrc_contracts.name(path, language)) is not None
+    ):
+        return label
     if (label := rrc.name(path, language)) is not None:
         return label
-    german = language.casefold().startswith("de")
     if (softener := softener_capability(path)) is not None:
         if subkey == "low_salt":
-            return "Salzvorrat niedrig" if german else "Low salt"
-        return softener.name_de if german else softener.name_en
-    names = _GERMAN_NAMES if german else _ENGLISH_NAMES
+            return localize(language, "Salzvorrat niedrig", "Low salt")
+        return localize(language, softener.name_de, softener.name_en)
     if is_additional_app_scalar(path):
         if path.endswith("/dhwType"):
-            return "Warmwasser-Gerätetyp" if german else "Hot-water device type"
+            return localize(language, "Warmwasser-Gerätetyp", "Hot-water device type")
         mode = (
-            ("Heizen" if german else "Heating")
+            localize(language, "Heizen", "Heating")
             if "/heating/" in path
-            else ("Kühlen" if german else "Cooling")
+            else localize(language, "Kühlen", "Cooling")
         )
         key = path.rsplit("/", 1)[-1]
         label = (
-            ("Vorübergehender Sollwert" if german else "Temporary setpoint")
+            localize(language, "Vorübergehender Sollwert", "Temporary setpoint")
             if key == "temporaryRoomSetpoint"
-            else names[key]
+            else _name(language, _GERMAN_NAMES, _ENGLISH_NAMES, key)
         )
         return f"{mode}: {label}"
-    path_names = _GERMAN_PATH_NAMES if german else _ENGLISH_PATH_NAMES
-    subkey_names = _SUBKEY_NAMES if german else _ENGLISH_SUBKEY_NAMES
     tail = path.rsplit("/", 1)[-1]
-    app_path = re.sub(
-        r"^/(heatingCircuits|dhwCircuits|solarCircuits|ventilation)/[^/]+/",
-        r"/\1/*/",
-        path,
-    )
+    app_path = _APP_PATH_ROOT.sub(r"/\1/*/", path)
     if (app_names := _APP_PATH_NAMES.get(app_path)) is not None:
-        base = app_names[0] if german else app_names[1]
+        base = localize(language, *app_names)
     elif "/heatingCircuits/" in path and "/temperatureLevels/" in path:
-        temperature_names = (
-            {"comfort2": "Heizen", "eco": "Absenken"}
-            if german
-            else {"comfort2": "Heating", "eco": "Reduced"}
-        )
+        temperature_names = {
+            "comfort2": localize(language, "Heizen", "Heating"),
+            "eco": localize(language, "Absenken", "Reduced"),
+        }
         base = temperature_names.get(tail, _humanize(tail))
     elif "/dhwCircuits/" in path and "/temperatureLevels/" in path:
-        temperature_names = (
-            {
-                "eco": "Eco+ Starttemperatur",
-                "high": "Komfort Starttemperatur",
-                "low": "Eco Starttemperatur",
-                "off": "Aus",
-            }
-            if german
-            else {
-                "eco": "Eco+ start temperature",
-                "high": "Comfort start temperature",
-                "low": "Eco start temperature",
-                "off": "Off",
-            }
-        )
+        temperature_names = {
+            "eco": localize(language, "Eco+ Starttemperatur", "Eco+ start temperature"),
+            "high": localize(
+                language, "Komfort Starttemperatur", "Comfort start temperature"
+            ),
+            "low": localize(language, "Eco Starttemperatur", "Eco start temperature"),
+            "off": localize(language, "Aus", "Off"),
+        }
         base = temperature_names.get(tail, _humanize(tail))
-    elif re.fullmatch(r"name[A-Z0-9]+", tail):
+    elif _PROGRAM_NAME.fullmatch(tail):
         suffix = tail.removeprefix("name")
-        base = (
-            f"Name des Zeitprogramms {suffix}" if german else f"Schedule {suffix} name"
-        )
+        base = localize(
+            language, "Name des Zeitprogramms {suffix}", "Schedule {suffix} name"
+        ).format(suffix=suffix)
     elif path == "/gateway/update/status":
-        base = "Softwareupdate" if german else "Software update"
+        base = localize(language, "Softwareupdate", "Software update")
+    elif path in _ENGLISH_PATH_NAMES:
+        base = _name(language, _GERMAN_PATH_NAMES, _ENGLISH_PATH_NAMES, path)
+    elif tail in _ENGLISH_NAMES:
+        base = _name(language, _GERMAN_NAMES, _ENGLISH_NAMES, tail)
     else:
-        base = path_names.get(path, names.get(tail, _humanize(tail)))
+        base = _humanize(tail)
     if "/emon/" in path:
-        energy_domains = (
-            {
-                "totalConsumption": "Gesamt",
-                "chConsumption": "Heizung",
-                "dhwConsumption": "Warmwasser",
-                "coolingConsumption": "Kühlung",
-            }
-            if german
-            else {
-                "totalConsumption": "Total",
-                "chConsumption": "Heating",
-                "dhwConsumption": "Hot water",
-                "coolingConsumption": "Cooling",
-            }
-        )
+        energy_domains = {
+            "totalConsumption": localize(language, "Gesamt", "Total"),
+            "chConsumption": localize(language, "Heizung", "Heating"),
+            "dhwConsumption": localize(language, "Warmwasser", "Hot water"),
+            "coolingConsumption": localize(language, "Kühlung", "Cooling"),
+        }
         domain = energy_domains.get(tail, base)
         if subkey is None:
             return domain
-        subname = subkey_names.get(subkey, _humanize(subkey))
+        subname = _subkey_name(language, subkey)
         if subkey == "outputProduced" and tail == "coolingConsumption":
-            subname = "Erzeugte Kühlenergie" if german else "Cooling energy produced"
+            subname = localize(
+                language, "Erzeugte Kühlenergie", "Cooling energy produced"
+            )
         return f"{domain} \N{EN DASH} {subname}"
     if subkey is None:
         return base
-    subname = subkey_names.get(subkey, _humanize(subkey))
-    return f"{base} {subname}"
+    return f"{base} {_subkey_name(language, subkey)}"
+
+
+def _name(
+    language: str, german: Mapping[str, str], english: Mapping[str, str], key: str
+) -> str:
+    """One entry of a German/English name table in the given language."""
+    return localize(language, german[key], english[key])
+
+
+def _subkey_name(language: str, subkey: str) -> str:
+    if subkey in _ENGLISH_SUBKEY_NAMES:
+        return _name(language, _SUBKEY_NAMES, _ENGLISH_SUBKEY_NAMES, subkey)
+    return _humanize(subkey)
 
 
 def configured_device_name(value: str) -> str | None:
@@ -1313,7 +1726,7 @@ def configured_device_name(value: str) -> str | None:
 
 
 def _humanize(value: str) -> str:
-    words = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", value)
+    words = _CAMEL_BOUNDARY.sub(" ", value)
     words = words.replace("_", " ").replace(".", " ").strip()
     return words[:1].upper() + words[1:] if words else "Wert"
 

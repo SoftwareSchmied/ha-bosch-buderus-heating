@@ -18,7 +18,9 @@ Poll batch-first in fast, control, energy, slow, static, and discovery groups:
 
 Discovery processes the reference tree in batches of at most 30 paths.
 Runtime polling combines all groups due in the same cycle before it
-splits the paths into batches of at most 30. A typical installation should need
+splits the paths into batches of at most 30; only the fault sources are read
+together in a first batch of their own, so a failing reading elsewhere never
+fails them with it. A typical installation should need
 one request per minute plus the less frequent additional batches and remain
 well below 5,000 HTTP requests per day. Preserve successful batch items and
 per-resource last-good state with explicit freshness.
@@ -41,8 +43,8 @@ Transport retries are counted separately from logical resource reads.
 For each advertised or successfully discovered heating-circuit directory, the
 core catalog requests `operationMode`, `manualRoomSetpoint`, `controlType`,
 `temperatureLevels`, `temperatureLevels/comfort2`, and `temperatureLevels/eco`.
-The vendor apps also address these resources independently of the circuit
-directory. An unreadable circuit or temperature-level directory therefore does
+These resources are addressed independently of the circuit directory. An
+unreadable circuit or temperature-level directory therefore does
 not prevent a child read. Circuit IDs come from the resource tree; discovery
 never guesses additional circuit numbers. Duplicate paths are read once, and
 an advertised reference takes priority over a previously scheduled catalog
@@ -73,9 +75,35 @@ opaque reference. It must not guess arbitrary paths for other containers.
 ## Consequences
 
 Discovery is bounded and runs once per integration load. A reload is required
-after the physical system gains or loses a circuit. `429` pauses all cloud
-polling according to `Retry-After`, bounded to one hour; if the server omits the
-header, the default pause is five minutes. A failed batch preserves last-good
+after the physical system gains or loses a circuit. Parts that were discovered
+at an earlier start but are missing now are an exception: the integration keeps
+the discovered resources per gateway in local storage and searches the missing
+subtrees again with the same bounded discovery, 5, 15 and 60 minutes after the
+start and then every six hours until one day has passed. Without stored
+resources, a root that ended with a temporary error is searched again on the
+same schedule. A search waits for a working cycle; a rate limit, no answer or
+a 5xx failure of the whole cloud postpones it without using an attempt; an
+HTTP 5xx answer for a missing path uses one; other errors never block the regular poll. After
+24 postponements the series ends until the next start, which still expects the
+parts. A part still missing after the last search is no longer expected at the
+next start.
+Registry entries of missing parts are never removed.
+
+If the gateway list or the first discovery fails with a temporary error and a
+saved inventory of at most 30 days exists for every selected gateway, setup
+completes with that inventory instead of raising `ConfigEntryNotReady`. All
+entities exist and stay unavailable; no stored value is shown as current and
+writes are rejected. The regular poll reads the stored paths, and after the
+first working cycle one discovery compares the inventory with the system,
+repeated on the same schedule if it fails. In a managed setup, an answered
+gateway list without the gateway (also an empty one) is treated the same way
+for the display, with the reason `gateway_not_listed`; without a usable
+inventory the local readings are shown, and the gateway-exchange question is
+decided from the list as before. A rejected sign-in still starts
+reauthentication; without a usable inventory setup is retried as before. `429` pauses all cloud
+polling according to `Retry-After`, honored in full with a minimum of 60 seconds
+and a safety bound of 24 hours (see [cloud pauses](../cloud-pauses.md)); if the
+server omits the header, the default pause is five minutes. A failed batch preserves last-good
 values, and a partial cycle keeps successful earlier batches. After one failed
 batch, at most five central operating paths are read individually; `429` never
 triggers this fallback. Three consecutive complete gateway failures open a
@@ -85,15 +113,19 @@ Resource failures remain local. A `404` on a previously discovered resource
 marks its snapshot stale and unavailable, but it remains eligible for the next
 regular poll of its group. There is no immediate individual retry or 24-hour
 pause for that resource. A valid response restores the same entity without a
-restart. This follows the inspected app behavior, where cache age suppresses
-successful repeat reads but an error permits the next requested read. Home
+restart. A fresh value thus suppresses repeat reads until it ages, while an
+error permits the next requested read. Home
 Assistant retains its existing background polling intervals and global backoff.
 
 Paths that never returned a resource are not added to regular polling by the
 catalog. The existing optional fault-resource placeholders retain their
 24-hour pause after an initial `403` or `404`. For previously discovered
 resources, a second consecutive `403` pauses the path for 24 hours, and a `504`
-pauses it for 15 minutes.
+pauses it for 15 minutes. The fault sources are paused for a `504` only when
+other readings of the same cycle answered; otherwise they are read again in
+the first cycle that answers. When every item of a request with several items
+answers with a server error, the gateway itself does not answer: no path is
+paused and no single read follows; the circuit breaker handles the outage.
 A later successful read clears the pause. Each resource stores its last
 successful and attempted timestamps, value source, freshness, sanitized error
 category, and consecutive failure count. Entity availability is therefore

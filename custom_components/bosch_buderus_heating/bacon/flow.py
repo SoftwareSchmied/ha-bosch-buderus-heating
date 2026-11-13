@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import Callable
 from typing import Any
 
 from homeassistant.helpers.selector import (
@@ -14,7 +16,8 @@ from homeassistant.helpers.selector import (
 from ..ha_schema import validation as vol
 from ..pointt import AuthTokens
 from ..pointt.token_manager import StaticTokenProvider
-from .client import BaconClient
+from ..pointt.transport import RateLimitBackoff
+from .client import BaconClient, TokenProvider
 from .models import (
     CONF_BACON_ACCOUNT,
     CONF_BACON_IDS,
@@ -25,11 +28,24 @@ from .models import (
 
 
 async def discover(
-    client_session: Any, tokens: AuthTokens
+    client_session: Any,
+    tokens: AuthTokens,
+    *,
+    token_provider: TokenProvider | None = None,
+    request_guard: Callable[[], None] = lambda: None,
+    backoff: RateLimitBackoff | None = None,
+    request_semaphore: asyncio.Semaphore | None = None,
 ) -> tuple[tuple[str, ...], str]:
+    request_guard()
     if "bacon" not in tokens.scope:
         return (), ""
-    client = BaconClient(client_session, StaticTokenProvider(tokens.access_token))
+    client = BaconClient(
+        client_session,
+        token_provider or StaticTokenProvider(tokens.access_token),
+        request_guard=request_guard,
+        backoff=backoff,
+        request_semaphore=request_semaphore,
+    )
     devices = await client.get_devices()
     assert client.subject is not None
     return devices, account_key(client.subject)

@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 from homeassistant.exceptions import ServiceValidationError
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
@@ -41,6 +40,7 @@ from custom_components.bosch_buderus_heating.switch import (
     async_setup_entry as setup_switches,
 )
 from custom_components.bosch_buderus_heating.writes import WriteService, assess_control
+from tests.ha_test_helpers import MockConfigEntry
 
 MODE = "/heatingCircuits/hc2/operationMode"
 NUMBER = "/heatingCircuits/hc2/manualRoomSetpoint"
@@ -234,7 +234,8 @@ async def test_hc2_discovery_control_404_recovery_and_confirmed_write(
     assert entities[target].unique_id == identity
     assert len(selects) == len(numbers) == 2
     assert coordinator.data[target].consecutive_failures == 0
-    expected = "auto" if target == MODE else 21.25
+    # C31: heating-circuit setpoints keep the gateway's 0.5 °C grid.
+    expected = "auto" if target == MODE else 21.5
     client.get_resource.return_value = replace(resources[target], value=expected)
     if target == MODE:
         await entities[target].async_select_option(expected)
@@ -339,8 +340,10 @@ async def test_switch_variants_add_select_without_replacing_existing_switch(
 @pytest.mark.parametrize(
     ("minimum", "maximum", "target", "unit"),
     [
-        (0, 40, 35.25, "C"),
-        (-10, 45, -2.25, "C"),
+        # C31: Celsius setpoints keep the gateway's 0.5 °C grid; the limits
+        # and the UI step still come from the device, not a reference.
+        (0, 40, 35.5, "C"),
+        (-10, 45, -2.5, "C"),
         (41, 104, 68.25, "F"),
         (270, 320, 291.25, "K"),
     ],

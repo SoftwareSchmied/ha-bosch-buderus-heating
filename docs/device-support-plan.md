@@ -1,45 +1,27 @@
-# Ausbau der Geräteunterstützung
+# Device families
 
-Ich veröffentliche v0.8.2 als Stable/Latest. Die Version enthält den Ausbau
-einschließlich P03 und P05 bis P14 sowie P16 aus Beta.6 und die Bedien- und
-Verbindungskorrekturen aus Beta.7. P15 ist abgewählt. Wegen der neuen
-Geräteklassen und größeren Umbauten gegenüber 0.8.1 empfehle ich ein Backup
-und eine bewusste Prüfung nach dem Update. Offene Geräteprüfungen bleiben offen.
-Die folgende Übersicht trennt den enthaltenen Code von noch offenen Geräteprüfungen. Ein Gateway behält sein vorhandenes
-HA-Gerät; Kennungen, Namen und Verläufe bestehender Entitäten bleiben erhalten.
+This page gives an overview of the device families the integration supports
+and links to their detailed descriptions. What is available on a particular
+system depends on the resources its account, gateway and controller report;
+missing capabilities are simply omitted.
 
-| Arbeitspaket | Stand dieses Checkpoints | Noch offen |
-|---|---|---|
-| 1. Bestandsaufnahme | 361 Modellzeilen einzeln zugeordnet, einschließlich zweier allgemeiner Befehlsmodelle; Herkunft, Datenverträge und Lücken dokumentiert | Vollständige Prüfung der strukturierten Datenformate und anderer Adapter am Gerät |
-| 2. Katalog und Erkennung | Gemeinsame Definition der Enthärterressourcen, profilabhängige Abfragen, dynamische Kreise und bestehende Grenzen | Weitere Geräteprofile nach gesicherter Zuordnung |
-| 3. WE800i-Anzeigen | Aktuelle Sensoren und Binärsensoren implementiert, synthetische Tests | Vergleich mit MyBuderus am echten WE800i, weitere Einheiten und Erholung nach Neustart bestätigen |
-| 4. WE800i-Bedienung | Vier Bedienfunktionen vorbereitet und standardmäßig deaktiviert | Reale Schreibbestätigung vor Freigabe; Abbruchfunktion ungeklärt |
-| 5. Weitere Heizungsfunktionen | Bestehende Unterstützung abgeglichen; sechs Heiz-/Kühlanzeigen je angebotener Raumzone und Warmwasser-Gerätetyp ergänzt | Weitere fehlende Felder und zusätzliche Schreibfunktionen einzeln prüfen; Gerätebestätigung |
-| 6. Zusammengesetzte Entitäten | Midea/RWH-Warmwasser, Midea Climate Series, sieben Air-Familien und drei Dry-Familien in Beta.6 enthalten und synthetisch geprüft | Physische Bestätigung; weitere Familien und abgegrenzte Zusatzfunktionen |
-| 7. Weitere Programme | RRC-Programmauswahl und Bearbeitung vorhandener Wochenschaltpunkte, ICOM-Urlaubszeiten und WDDW2-Urlaubsmodus enthalten | Neue Programme und Schaltpunkte, zusätzliche Geräte- und Browserbestätigung |
-| 8. Weitere Geräte und Wartung | Geräteadapter und administrative Ressourcen im Index getrennt gekennzeichnet | Adapterprüfung und gesonderte Bedienabläufe; keine Freigabe allein aufgrund von Schreibrechten |
-| 9. Diagnose und Übersicht | Schema 27 enthält Gerätefamilien, Aktualitäts-, Laufzeit-, Sammlungs- und Energieprüfung ohne Messwerte; frühere Sicherheits-, Profil- und Registrierungsangaben bleiben erhalten | Erweiterung je weiterem Gerätepaket |
-| 10. Tests und Freigabe | Gezielte Regressionstests und gemeinsame Qualitätsprüfung | Geräteprüfungen; die Veröffentlichung setzt erfolgreiche GitHub-Prüfungen voraus |
+| Family | Access | Shows | Operates | Details |
+| --- | --- | --- | --- | --- |
+| Heating systems with MX300/MX400 internet modules or K30/K40 Connect-Keys (K30/K40 gateways) (heat pumps, gas condensing boilers) | Cloud; K40 gateways also local | Heating circuits, hot water, heat source, energy and start counters, faults, time programs | Heating-circuit mode and setpoints, hot-water mode and extra hot water, holidays, existing time-program switch points | [Heating controls](heating-controls.md), [hot water](pointt-hot-water.md), [faults](faults.md), [holidays](holiday-periods.md) |
+| Room controllers and zones (RRC 2.0 platform, for example TC100.2; CT200 expected, untested) | Cloud only, no local access | Zone temperatures and states, programs; radio devices with battery low, signal and firmware | Zone mode, manual setpoint, program selection, existing switch points; nothing on radio devices | [Zone controls](zone-controls.md), [room controller zones](rrc-zones-and-schedules.md) |
+| WDDW2 appliances | Cloud | Heat-source values, start counters, safety temperature | Holiday mode | [WDDW2 types](wddw2-types.md) |
+| Water softener WE800i | Cloud | Salt level, soft water, flow, regeneration | Four controls, disabled by default | [Water softener](water-softener.md) |
+| Water heaters (Midea/RWH) | Cloud, selected at setup | Temperatures and state | Operation mode and target temperature | [Water heaters](bacon-water-heaters.md) |
+| Air conditioners (Climate Series) | Cloud, selected at setup | Temperatures and state | On/off, mode, target temperature and the fan settings the device reports | [Air conditioners](bacon-air-conditioners.md) |
+| Air purifiers (seven families) | Cloud, selected at setup | Air quality and filter state | On/off, presets and fan levels the device reports | [Air purifiers](bacon-air-purifiers.md) |
+| Dehumidifiers (Dry 4000i/6000i/8000i) | Cloud, selected at setup | Humidity and state | On/off, mode and target humidity the device reports | [Dehumidifiers](bacon-dehumidifiers.md) |
+| Wallboxes | Cloud | Charging state and energy | read-only | [Wallboxes](pointt-wallboxes.md) |
 
-Zusätzlich sind P01 (WDDW2-Typen), P02 (Ressourcennamen und Sprache) und P04
-(Enthärterphasen und Prüfanleitung) enthalten. P13 ergänzt acht reine
-[Wallbox-Anzeigen](pointt-wallboxes.md). P14 behält ein Anlagengerät je
-PointT-Gateway bei; P16 korrigiert und dokumentiert Werteumrechnungen.
-Die Bestätigung am WE800i benötigt weiterhin die Rückmeldung des Melders
-von Issue #60.
+The cloud access signs in with an account of the Bosch or Buderus app. The
+local access recognises gateways of Bosch, Buderus, IVT, Vulcano and Worcester;
+see [compatibility](compatibility.md) for the local access and its checked
+firmware.
 
-Der [Ressourcenindex](app-resource-inventory.md) ist ein Arbeitsnachweis und
-noch keine vollständige Freigabeliste. Ein Pfadfund beweist weder die
-Verfügbarkeit am Gerät noch die Eignung als Bedienelement. Die
-[WE800i-Beschreibung](water-softener.md) hält diese Unterschiede fest.
-
-Das Paket für Verbrauchshistorie und Regenerationsprotokoll (P15) ist
-abgewählt. Aktuelle Verbrauchssensoren aus `/recordings` und ein rückwirkender
-Import historischer Messreihen sind nicht enthalten.
-Der Wunsch nach Weichwasserverbrauch in Issue #60 ist deshalb gesondert zu
-klären und wird durch den aktuellen Durchflusssensor nicht als erledigt gewertet.
-
-Für die weitere Arbeit bleiben die Pakete getrennt prüfbar. Insbesondere
-dürfen Änderungen an administrativen Funktionen, Energieauswertung und
-Schreibabläufen nicht mit einer pauschalen Behauptung vollständiger
-Geräteunterstützung freigegeben werden.
+The [resource inventory](resource-inventory.md) lists every path model with its
+disposition. A path appearing there does not by itself make an entity or a
+control; the [resource contracts](resource-contracts.md) describe the rules.

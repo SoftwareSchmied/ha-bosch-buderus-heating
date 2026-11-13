@@ -10,7 +10,6 @@ from unittest.mock import AsyncMock, patch
 import aiozoneinfo
 import pytest
 from homeassistant.util import dt as dt_util
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.binary_sensor import (
     BoschBuderusHolidayActiveBinarySensor,
@@ -41,6 +40,7 @@ from custom_components.bosch_buderus_heating.pointt import (
 )
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 from custom_components.bosch_buderus_heating.sensor import BoschBuderusNextHolidaySensor
+from tests.ha_test_helpers import MockConfigEntry
 
 
 def _resources(gateway_zone="Europe/Berlin", period_zone=None):

@@ -1,0 +1,1494 @@
+{
+  "schema": 1,
+  "family": "icom",
+  "provenance": {
+    "kind": "synthetic",
+    "basis": "compatibility_mapping",
+    "firmware": null,
+    "capture_date": null,
+    "created": "2026-11-11",
+    "redaction": "Paths, types, units, write flags, the number of options, the presence of limits and the sets of 403 and 404 answers follow the shapes of an iCom gateway with a boiler controller (EMS 2). Every value, option name, date and component entry is constructed. No identifier, serial number, token, address or account data.",
+    "physical_device_verified": false
+  },
+  "gateway": {
+    "device_type": "icom"
+  },
+  "contract": "iCom gateway with one heating circuit, one hot water circuit and a boiler: 5 holiday slots with assignedTo as arrayData, fixTemperature 404, delete and the slot parents 403; temporaryRoomSetpoint writable, manualRoomSetpoint 404; faults only through /notifications.",
+  "resources": [
+    {
+      "id": "/dhwCircuits",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/dhwCircuits/dhw1"
+        }
+      ]
+    },
+    {
+      "id": "/dhwCircuits/dhw1",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/dhwCircuits/dhw1/actualTemp"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/charge"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/chargeDuration"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/currentSetpoint"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/operationMode"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/singleChargeSetpoint"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/switchPrograms/A"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/tdMode"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/temperatureLevels"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/holidayMode"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/status"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/switchPrograms"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/workingTime"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/waterFlow"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/cpStartph"
+        }
+      ]
+    },
+    {
+      "id": "/dhwCircuits/dhw1/actualTemp",
+      "type": "floatValue",
+      "value": 49.5,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/dhwCircuits/dhw1/charge",
+      "type": "stringValue",
+      "value": "stop",
+      "writeable": 1,
+      "allowedValues": [
+        "start",
+        "stop"
+      ]
+    },
+    {
+      "id": "/dhwCircuits/dhw1/chargeDuration",
+      "type": "floatValue",
+      "value": 60,
+      "writeable": 1,
+      "unitOfMeasure": "mins",
+      "minValue": 15,
+      "maxValue": 2880
+    },
+    {
+      "id": "/dhwCircuits/dhw1/currentSetpoint",
+      "type": "floatValue",
+      "value": 55,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/dhwCircuits/dhw1/operationMode",
+      "type": "stringValue",
+      "value": "ownprogram",
+      "writeable": 1,
+      "allowedValues": [
+        "Off",
+        "high",
+        "HCprogram",
+        "ownprogram"
+      ]
+    },
+    {
+      "id": "/dhwCircuits/dhw1/singleChargeSetpoint",
+      "type": "floatValue",
+      "value": 60,
+      "writeable": 1,
+      "unitOfMeasure": "C",
+      "minValue": 30,
+      "maxValue": 80
+    },
+    {
+      "id": "/dhwCircuits/dhw1/switchPrograms/A",
+      "type": "switchProgram",
+      "setpointProperty": {
+        "id": "/dhwCircuits/dhw1/temperatureLevels"
+      },
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 330,
+          "setpoint": "high"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1320,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 330,
+          "setpoint": "high"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 1320,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 330,
+          "setpoint": "high"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 1320,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 330,
+          "setpoint": "high"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 1320,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 330,
+          "setpoint": "high"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 1320,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 330,
+          "setpoint": "high"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 1320,
+          "setpoint": "off"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 330,
+          "setpoint": "high"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 1320,
+          "setpoint": "off"
+        }
+      ]
+    },
+    {
+      "id": "/dhwCircuits/dhw1/tdMode",
+      "type": "stringValue",
+      "value": "off",
+      "writeable": 1,
+      "allowedValues": [
+        "on",
+        "off"
+      ]
+    },
+    {
+      "id": "/dhwCircuits/dhw1/temperatureLevels",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/dhwCircuits/dhw1/temperatureLevels/high"
+        },
+        {
+          "id": "/dhwCircuits/dhw1/temperatureLevels/off"
+        }
+      ]
+    },
+    {
+      "id": "/dhwCircuits/dhw1/temperatureLevels/high",
+      "type": "floatValue",
+      "value": 55,
+      "writeable": 1,
+      "unitOfMeasure": "C",
+      "minValue": 30,
+      "maxValue": 80
+    },
+    {
+      "id": "/dhwCircuits/dhw1/temperatureLevels/off",
+      "type": "floatValue",
+      "value": 15,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/gateway",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/gateway/DateTime"
+        },
+        {
+          "id": "/gateway/update"
+        },
+        {
+          "id": "/gateway/uuid"
+        },
+        {
+          "id": "/gateway/versionFirmware"
+        },
+        {
+          "id": "/gateway/versionHardware"
+        },
+        {
+          "id": "/gateway/firmware"
+        },
+        {
+          "id": "/gateway/logging"
+        },
+        {
+          "id": "/gateway/version"
+        },
+        {
+          "id": "/gateway/instAccess"
+        },
+        {
+          "id": "/gateway/instWriteAccess"
+        },
+        {
+          "id": "/gateway/instPassword"
+        },
+        {
+          "id": "/gateway/portalPassword"
+        },
+        {
+          "id": "/gateway/userpassword"
+        },
+        {
+          "id": "/gateway/haiPassword"
+        },
+        {
+          "id": "/gateway/knxPassword"
+        },
+        {
+          "id": "/gateway/boschSHPassword"
+        }
+      ]
+    },
+    {
+      "id": "/gateway/DateTime",
+      "type": "stringValue",
+      "value": "2030-01-01T12:00:00",
+      "writeable": 1
+    },
+    {
+      "id": "/gateway/update",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/gateway/update/status"
+        },
+        {
+          "id": "/gateway/update/request"
+        },
+        {
+          "id": "/gateway/update/strategy"
+        },
+        {
+          "id": "/gateway/update/version"
+        }
+      ]
+    },
+    {
+      "id": "/gateway/update/status",
+      "type": "stringValue",
+      "value": "idle",
+      "writeable": 0,
+      "allowedValues": [
+        "idle",
+        "running",
+        "failed"
+      ]
+    },
+    {
+      "id": "/gateway/uuid",
+      "type": "stringValue",
+      "value": "fixture-uuid",
+      "writeable": 0,
+      "allowedValues": [
+        "fixture-uuid"
+      ]
+    },
+    {
+      "id": "/gateway/versionFirmware",
+      "type": "stringValue",
+      "value": "01.02.03",
+      "writeable": 0
+    },
+    {
+      "id": "/gateway/versionHardware",
+      "type": "stringValue",
+      "value": "fixture-hw",
+      "writeable": 0
+    },
+    {
+      "id": "/heatSources",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/heatSources/actualModulation"
+        },
+        {
+          "id": "/heatSources/actualSupplyTemperature"
+        },
+        {
+          "id": "/heatSources/flameStatus"
+        },
+        {
+          "id": "/heatSources/info"
+        },
+        {
+          "id": "/heatSources/numberOfStarts"
+        },
+        {
+          "id": "/heatSources/returnTemperature"
+        },
+        {
+          "id": "/heatSources/systemPressure"
+        },
+        {
+          "id": "/heatSources/workingTime"
+        },
+        {
+          "id": "/heatSources/workingTime/totalSystem"
+        },
+        {
+          "id": "/heatSources/hs1"
+        }
+      ]
+    },
+    {
+      "id": "/heatSources/actualModulation",
+      "type": "floatValue",
+      "value": 35,
+      "writeable": 0,
+      "unitOfMeasure": "%"
+    },
+    {
+      "id": "/heatSources/actualSupplyTemperature",
+      "type": "floatValue",
+      "value": 52.3,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/heatSources/flameStatus",
+      "type": "stringValue",
+      "value": "on",
+      "writeable": 0,
+      "allowedValues": [
+        "on",
+        "off"
+      ]
+    },
+    {
+      "id": "/heatSources/info",
+      "type": "systeminfo",
+      "values": [
+        {
+          "Id": "0",
+          "Tok": "0"
+        }
+      ]
+    },
+    {
+      "id": "/heatSources/numberOfStarts",
+      "type": "floatValue",
+      "value": 12345,
+      "writeable": 0
+    },
+    {
+      "id": "/heatSources/returnTemperature",
+      "type": "floatValue",
+      "value": 41.7,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/heatSources/systemPressure",
+      "type": "floatValue",
+      "value": 1.6,
+      "writeable": 0,
+      "unitOfMeasure": "bar"
+    },
+    {
+      "id": "/heatSources/workingTime/totalSystem",
+      "type": "floatValue",
+      "value": 600000,
+      "writeable": 0,
+      "unitOfMeasure": "mins"
+    },
+    {
+      "id": "/heatSources/hs1",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/heatSources/hs1/actualPower"
+        },
+        {
+          "id": "/heatSources/hs1/type"
+        },
+        {
+          "id": "/heatSources/hs1/actualModulation"
+        },
+        {
+          "id": "/heatSources/hs1/flameStatus"
+        },
+        {
+          "id": "/heatSources/hs1/info"
+        }
+      ]
+    },
+    {
+      "id": "/heatSources/hs1/actualPower",
+      "type": "floatValue",
+      "value": 6.2,
+      "writeable": 0,
+      "unitOfMeasure": "kW"
+    },
+    {
+      "id": "/heatSources/hs1/type",
+      "type": "stringValue",
+      "value": "BOILER_GAS",
+      "writeable": 0,
+      "allowedValues": [
+        "BOILER_GAS",
+        "BOILER_OIL",
+        "BOILER_UNKNOWN",
+        "HEATPUMP",
+        "NONE"
+      ]
+    },
+    {
+      "id": "/heatingCircuits",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/heatingCircuits/hc1"
+        }
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/heatingCircuits/hc1/activeSwitchProgram"
+        },
+        {
+          "id": "/heatingCircuits/hc1/actualSupplyTemperature"
+        },
+        {
+          "id": "/heatingCircuits/hc1/controlType"
+        },
+        {
+          "id": "/heatingCircuits/hc1/currentRoomSetpoint"
+        },
+        {
+          "id": "/heatingCircuits/hc1/currentSuWiMode"
+        },
+        {
+          "id": "/heatingCircuits/hc1/heatCurveMax"
+        },
+        {
+          "id": "/heatingCircuits/hc1/heatCurveMin"
+        },
+        {
+          "id": "/heatingCircuits/hc1/operationMode"
+        },
+        {
+          "id": "/heatingCircuits/hc1/roomInfluence"
+        },
+        {
+          "id": "/heatingCircuits/hc1/roomtemperature"
+        },
+        {
+          "id": "/heatingCircuits/hc1/suWiSwitchMode"
+        },
+        {
+          "id": "/heatingCircuits/hc1/suWiThreshold"
+        },
+        {
+          "id": "/heatingCircuits/hc1/supplyTemperatureSetpoint"
+        },
+        {
+          "id": "/heatingCircuits/hc1/switchProgramMode"
+        },
+        {
+          "id": "/heatingCircuits/hc1/switchPrograms"
+        },
+        {
+          "id": "/heatingCircuits/hc1/temperatureLevels"
+        },
+        {
+          "id": "/heatingCircuits/hc1/temporaryRoomSetpoint"
+        },
+        {
+          "id": "/heatingCircuits/hc1/cooling"
+        },
+        {
+          "id": "/heatingCircuits/hc1/currentOpModeInfo"
+        },
+        {
+          "id": "/heatingCircuits/hc1/designTemp"
+        },
+        {
+          "id": "/heatingCircuits/hc1/fastHeatupFactor"
+        },
+        {
+          "id": "/heatingCircuits/hc1/holidayMode"
+        },
+        {
+          "id": "/heatingCircuits/hc1/nextSetpoint"
+        },
+        {
+          "id": "/heatingCircuits/hc1/pumpModulation"
+        },
+        {
+          "id": "/heatingCircuits/hc1/roomTempOffset"
+        },
+        {
+          "id": "/heatingCircuits/hc1/status"
+        },
+        {
+          "id": "/heatingCircuits/hc1/timeToNextSetpoint"
+        }
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/activeSwitchProgram",
+      "type": "stringValue",
+      "value": "A",
+      "writeable": 1,
+      "allowedValues": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/actualSupplyTemperature",
+      "type": "floatValue",
+      "value": 38.2,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/heatingCircuits/hc1/controlType",
+      "type": "stringValue",
+      "value": "outdoorTemperature",
+      "writeable": 1,
+      "allowedValues": [
+        "outdoorTemperature",
+        "roomTemperature",
+        "outdoorRoomTemperature",
+        "constants"
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/currentRoomSetpoint",
+      "type": "floatValue",
+      "value": 21,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/heatingCircuits/hc1/currentSuWiMode",
+      "type": "stringValue",
+      "value": "forced",
+      "writeable": 0,
+      "allowedValues": [
+        "off",
+        "forced",
+        "cooling"
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/heatCurveMax",
+      "type": "floatValue",
+      "value": 60,
+      "writeable": 1,
+      "unitOfMeasure": "C",
+      "minValue": 25,
+      "maxValue": 90
+    },
+    {
+      "id": "/heatingCircuits/hc1/heatCurveMin",
+      "type": "floatValue",
+      "value": 25,
+      "writeable": 1,
+      "unitOfMeasure": "C",
+      "minValue": 10,
+      "maxValue": 40
+    },
+    {
+      "id": "/heatingCircuits/hc1/operationMode",
+      "type": "stringValue",
+      "value": "auto",
+      "writeable": 1,
+      "allowedValues": [
+        "auto",
+        "manual"
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/roomInfluence",
+      "type": "floatValue",
+      "value": 3,
+      "writeable": 1,
+      "unitOfMeasure": "K",
+      "minValue": 0,
+      "maxValue": 10
+    },
+    {
+      "id": "/heatingCircuits/hc1/roomtemperature",
+      "type": "floatValue",
+      "value": 20.6,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/heatingCircuits/hc1/suWiSwitchMode",
+      "type": "stringValue",
+      "value": "automatic",
+      "writeable": 1,
+      "allowedValues": [
+        "automatic",
+        "forced",
+        "off"
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/suWiThreshold",
+      "type": "floatValue",
+      "value": 17,
+      "writeable": 1,
+      "unitOfMeasure": "C",
+      "minValue": 10,
+      "maxValue": 30
+    },
+    {
+      "id": "/heatingCircuits/hc1/supplyTemperatureSetpoint",
+      "type": "floatValue",
+      "value": 40,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/heatingCircuits/hc1/switchProgramMode",
+      "type": "stringValue",
+      "value": "levels",
+      "writeable": 1,
+      "allowedValues": [
+        "levels",
+        "absolute"
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/switchPrograms",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/heatingCircuits/hc1/switchPrograms/A"
+        },
+        {
+          "id": "/heatingCircuits/hc1/switchPrograms/B"
+        }
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/switchPrograms/A",
+      "type": "switchProgram",
+      "setpointProperty": {
+        "id": "/heatingCircuits/hc1/temperatureLevels"
+      },
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 1320,
+          "setpoint": "eco"
+        }
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/switchPrograms/B",
+      "type": "switchProgram",
+      "setpointProperty": {
+        "id": "/heatingCircuits/hc1/temperatureLevels"
+      },
+      "writeable": 1,
+      "maxNbOfSwitchPoints": 42,
+      "maxNbOfSwitchPointsPerDay": 6,
+      "switchPointTimeRaster": 15,
+      "switchPoints": [
+        {
+          "dayOfWeek": "Mo",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Mo",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Tu",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "We",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Th",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Fr",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Sa",
+          "time": 1320,
+          "setpoint": "eco"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 360,
+          "setpoint": "comfort2"
+        },
+        {
+          "dayOfWeek": "Su",
+          "time": 1320,
+          "setpoint": "eco"
+        }
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/temperatureLevels",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/heatingCircuits/hc1/temperatureLevels/comfort2"
+        },
+        {
+          "id": "/heatingCircuits/hc1/temperatureLevels/eco"
+        }
+      ]
+    },
+    {
+      "id": "/heatingCircuits/hc1/temperatureLevels/comfort2",
+      "type": "floatValue",
+      "value": 21,
+      "writeable": 1,
+      "unitOfMeasure": "C",
+      "minValue": 5,
+      "maxValue": 30,
+      "stepSize": 0.5
+    },
+    {
+      "id": "/heatingCircuits/hc1/temperatureLevels/eco",
+      "type": "floatValue",
+      "value": 17,
+      "writeable": 1,
+      "unitOfMeasure": "C",
+      "minValue": 5,
+      "maxValue": 30,
+      "stepSize": 0.5
+    },
+    {
+      "id": "/heatingCircuits/hc1/temporaryRoomSetpoint",
+      "type": "floatValue",
+      "value": -1,
+      "writeable": 1,
+      "unitOfMeasure": "C",
+      "minValue": 5,
+      "maxValue": 30
+    },
+    {
+      "id": "/notifications",
+      "type": "errorList",
+      "values": []
+    },
+    {
+      "id": "/solarCircuits",
+      "type": "refEnum",
+      "references": []
+    },
+    {
+      "id": "/system",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/system/appliance"
+        },
+        {
+          "id": "/system/brand"
+        },
+        {
+          "id": "/system/bus"
+        },
+        {
+          "id": "/system/healthStatus"
+        },
+        {
+          "id": "/system/holidayModes"
+        },
+        {
+          "id": "/system/info"
+        },
+        {
+          "id": "/system/sensors"
+        },
+        {
+          "id": "/system/busReq"
+        },
+        {
+          "id": "/system/minOutdoorTemp"
+        },
+        {
+          "id": "/system/systemType"
+        }
+      ]
+    },
+    {
+      "id": "/system/appliance",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/system/appliance/actualSupplyTemperature"
+        }
+      ]
+    },
+    {
+      "id": "/system/brand",
+      "type": "stringValue",
+      "value": "brand_a",
+      "writeable": 0,
+      "allowedValues": [
+        "brand_a",
+        "brand_b",
+        "brand_c",
+        "brand_d",
+        "brand_e",
+        "brand_f",
+        "brand_g",
+        "brand_h",
+        "brand_i",
+        "brand_j",
+        "brand_k",
+        "brand_l",
+        "brand_m",
+        "brand_n",
+        "brand_o",
+        "brand_p",
+        "brand_q",
+        "brand_r"
+      ]
+    },
+    {
+      "id": "/system/bus",
+      "type": "stringValue",
+      "value": "EMS2_0",
+      "writeable": 0,
+      "allowedValues": [
+        "EMS2_0",
+        "EMS1_0",
+        "CAN",
+        "No_Bus"
+      ]
+    },
+    {
+      "id": "/system/healthStatus",
+      "type": "stringValue",
+      "value": "ok",
+      "writeable": 0,
+      "allowedValues": [
+        "ok",
+        "maintenance",
+        "error"
+      ]
+    },
+    {
+      "id": "/system/holidayModes",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/system/holidayModes/hm1"
+        },
+        {
+          "id": "/system/holidayModes/hm2"
+        },
+        {
+          "id": "/system/holidayModes/hm3"
+        },
+        {
+          "id": "/system/holidayModes/hm4"
+        },
+        {
+          "id": "/system/holidayModes/hm5"
+        }
+      ]
+    },
+    {
+      "id": "/system/holidayModes/hm1/assignedTo",
+      "type": "arrayData",
+      "values": [
+        "hc1",
+        "dhw1"
+      ],
+      "allowedValues": [
+        "hc1",
+        "dhw1"
+      ],
+      "writeable": 1
+    },
+    {
+      "id": "/system/holidayModes/hm1/dhwMode",
+      "type": "stringValue",
+      "value": "OFF",
+      "writeable": 1,
+      "allowedValues": [
+        "OFF",
+        "LOW",
+        "AUTO_SAT"
+      ]
+    },
+    {
+      "id": "/system/holidayModes/hm1/hcMode",
+      "type": "stringValue",
+      "value": "ECO",
+      "writeable": 1,
+      "allowedValues": [
+        "OFF",
+        "ECO",
+        "SATURDAY",
+        "AUTO_SAT"
+      ]
+    },
+    {
+      "id": "/system/holidayModes/hm1/startStop",
+      "type": "stringValue",
+      "value": "2030-12-21/2031-01-04",
+      "writeable": 1
+    },
+    {
+      "id": "/system/holidayModes/hm2/assignedTo",
+      "type": "arrayData",
+      "values": [],
+      "allowedValues": [
+        "hc1",
+        "dhw1"
+      ],
+      "writeable": 1
+    },
+    {
+      "id": "/system/holidayModes/hm2/dhwMode",
+      "type": "stringValue",
+      "value": "OFF",
+      "writeable": 1,
+      "allowedValues": [
+        "OFF",
+        "LOW",
+        "AUTO_SAT"
+      ]
+    },
+    {
+      "id": "/system/holidayModes/hm2/hcMode",
+      "type": "stringValue",
+      "value": "ECO",
+      "writeable": 1,
+      "allowedValues": [
+        "OFF",
+        "ECO",
+        "SATURDAY",
+        "AUTO_SAT"
+      ]
+    },
+    {
+      "id": "/system/holidayModes/hm2/startStop",
+      "type": "stringValue",
+      "value": "2009-01-01/2009-01-01",
+      "writeable": 1
+    },
+    {
+      "id": "/system/holidayModes/hm3/assignedTo",
+      "type": "arrayData",
+      "values": [],
+      "allowedValues": [
+        "hc1",
+        "dhw1"
+      ],
+      "writeable": 1
+    },
+    {
+      "id": "/system/holidayModes/hm3/dhwMode",
+      "type": "stringValue",
+      "value": "OFF",
+      "writeable": 1,
+      "allowedValues": [
+        "OFF",
+        "LOW",
+        "AUTO_SAT"
+      ]
+    },
+    {
+      "id": "/system/holidayModes/hm3/hcMode",
+      "type": "stringValue",
+      "value": "ECO",
+      "writeable": 1,
+      "allowedValues": [
+        "OFF",
+        "ECO",
+        "SATURDAY",
+        "AUTO_SAT"
+      ]
+    },
+    {
+      "id": "/system/holidayModes/hm3/startStop",
+      "type": "stringValue",
+      "value": "2009-01-01/2009-01-01",
+      "writeable": 1
+    },
+    {
+      "id": "/system/holidayModes/hm4/assignedTo",
+      "type": "arrayData",
+      "values": [],
+      "allowedValues": [
+        "hc1",
+        "dhw1"
+      ],
+      "writeable": 1
+    },
+    {
+      "id": "/system/holidayModes/hm4/dhwMode",
+      "type": "stringValue",
+      "value": "OFF",
+      "writeable": 1,
+      "allowedValues": [
+        "OFF",
+        "LOW",
+        "AUTO_SAT"
+      ]
+    },
+    {
+      "id": "/system/holidayModes/hm4/hcMode",
+      "type": "stringValue",
+      "value": "ECO",
+      "writeable": 1,
+      "allowedValues": [
+        "OFF",
+        "ECO",
+        "SATURDAY",
+        "AUTO_SAT"
+      ]
+    },
+    {
+      "id": "/system/holidayModes/hm4/startStop",
+      "type": "stringValue",
+      "value": "2009-01-01/2009-01-01",
+      "writeable": 1
+    },
+    {
+      "id": "/system/holidayModes/hm5/assignedTo",
+      "type": "arrayData",
+      "values": [],
+      "allowedValues": [
+        "hc1",
+        "dhw1"
+      ],
+      "writeable": 1
+    },
+    {
+      "id": "/system/holidayModes/hm5/dhwMode",
+      "type": "stringValue",
+      "value": "OFF",
+      "writeable": 1,
+      "allowedValues": [
+        "OFF",
+        "LOW",
+        "AUTO_SAT"
+      ]
+    },
+    {
+      "id": "/system/holidayModes/hm5/hcMode",
+      "type": "stringValue",
+      "value": "ECO",
+      "writeable": 1,
+      "allowedValues": [
+        "OFF",
+        "ECO",
+        "SATURDAY",
+        "AUTO_SAT"
+      ]
+    },
+    {
+      "id": "/system/holidayModes/hm5/startStop",
+      "type": "stringValue",
+      "value": "2009-01-01/2009-01-01",
+      "writeable": 1
+    },
+    {
+      "id": "/system/info",
+      "type": "systeminfo",
+      "values": [
+        {
+          "Id": "189",
+          "Tok": "1",
+          "Ver": "01.00.00",
+          "ProductName": "Gateway"
+        },
+        {
+          "Id": "11",
+          "Tok": "2",
+          "Ver": "02.00.00",
+          "ProductName": "Controller"
+        },
+        {
+          "Id": "4",
+          "Tok": "3",
+          "Ver": "03.00.00",
+          "ProductName": "Boiler"
+        }
+      ]
+    },
+    {
+      "id": "/system/sensors",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/system/sensors/temperatures"
+        }
+      ]
+    },
+    {
+      "id": "/system/sensors/temperatures",
+      "type": "refEnum",
+      "references": [
+        {
+          "id": "/system/sensors/temperatures/chimney"
+        },
+        {
+          "id": "/system/sensors/temperatures/outdoor_t1"
+        },
+        {
+          "id": "/system/sensors/temperatures/return"
+        },
+        {
+          "id": "/system/sensors/temperatures/supply_t1"
+        },
+        {
+          "id": "/system/sensors/temperatures/supply_t1_setpoint"
+        },
+        {
+          "id": "/system/sensors/temperatures/hotWater_t2"
+        },
+        {
+          "id": "/system/sensors/temperatures/switch"
+        }
+      ]
+    },
+    {
+      "id": "/system/sensors/temperatures/chimney",
+      "type": "floatValue",
+      "value": 95.5,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/system/sensors/temperatures/outdoor_t1",
+      "type": "floatValue",
+      "value": 4.5,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/system/sensors/temperatures/return",
+      "type": "floatValue",
+      "value": 40.5,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/system/sensors/temperatures/supply_t1",
+      "type": "floatValue",
+      "value": 51.5,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    },
+    {
+      "id": "/system/sensors/temperatures/supply_t1_setpoint",
+      "type": "floatValue",
+      "value": 52,
+      "writeable": 0,
+      "unitOfMeasure": "C"
+    }
+  ],
+  "unavailable": {
+    "403": [
+      "/dhwCircuits/dhw1/cpStartph",
+      "/dhwCircuits/dhw1/holidayMode",
+      "/dhwCircuits/dhw1/status",
+      "/dhwCircuits/dhw1/switchPrograms",
+      "/dhwCircuits/dhw1/tdsetPoint",
+      "/dhwCircuits/dhw1/waterFlow",
+      "/dhwCircuits/dhw1/waterTotalConsumption",
+      "/dhwCircuits/dhw1/workingTime",
+      "/gateway/boschSHPassword",
+      "/gateway/firmware",
+      "/gateway/haiPassword",
+      "/gateway/instAccess",
+      "/gateway/instPassword",
+      "/gateway/instWriteAccess",
+      "/gateway/knxPassword",
+      "/gateway/logging",
+      "/gateway/portalPassword",
+      "/gateway/update/request",
+      "/gateway/update/strategy",
+      "/gateway/update/version",
+      "/gateway/userpassword",
+      "/gateway/version",
+      "/heatSources/hs1/actualModulation",
+      "/heatSources/hs1/electricityTotalConsumption",
+      "/heatSources/hs1/emon/totalConsumption",
+      "/heatSources/hs1/flameStatus",
+      "/heatSources/hs1/info",
+      "/heatSources/workingTime",
+      "/heatingCircuits/hc1/cooling",
+      "/heatingCircuits/hc1/cooling/manualRoomSetpoint",
+      "/heatingCircuits/hc1/cooling/temporaryRoomSetpoint",
+      "/heatingCircuits/hc1/currentOpModeInfo",
+      "/heatingCircuits/hc1/designTemp",
+      "/heatingCircuits/hc1/fastHeatupFactor",
+      "/heatingCircuits/hc1/holidayMode",
+      "/heatingCircuits/hc1/nextSetpoint",
+      "/heatingCircuits/hc1/openWindowDetection/status",
+      "/heatingCircuits/hc1/operationSetpoints",
+      "/heatingCircuits/hc1/pumpModulation",
+      "/heatingCircuits/hc1/roomTempOffset",
+      "/heatingCircuits/hc1/status",
+      "/heatingCircuits/hc1/timeToNextSetpoint",
+      "/holidayMode/activated",
+      "/holidayMode/enabled",
+      "/pool",
+      "/pv",
+      "/system/appliance/actualSupplyTemperature",
+      "/system/busReq",
+      "/system/holidayModes/hm1",
+      "/system/holidayModes/hm1/delete",
+      "/system/holidayModes/hm2",
+      "/system/holidayModes/hm2/delete",
+      "/system/holidayModes/hm3",
+      "/system/holidayModes/hm3/delete",
+      "/system/holidayModes/hm4",
+      "/system/holidayModes/hm4/delete",
+      "/system/holidayModes/hm5",
+      "/system/holidayModes/hm5/delete",
+      "/system/minOutdoorTemp",
+      "/system/sensors/temperatures/hotWater_t2",
+      "/system/sensors/temperatures/switch",
+      "/system/systemType"
+    ],
+    "404": [
+      "/devices",
+      "/dhwCircuits/dhw1/dhwType",
+      "/dhwCircuits/dhw1/temperatureLevels/low",
+      "/heatSources/hs1/activefailure",
+      "/heatSources/hs1/failurelist",
+      "/heatingCircuits/hc1/cooling/roomTempSetpoint",
+      "/heatingCircuits/hc1/manualRoomSetpoint",
+      "/holidayMode/activeModes",
+      "/holidayMode/configuration",
+      "/holidayMode/list",
+      "/system/holidayMode",
+      "/system/holidayModes/hm1/fixTemperature",
+      "/system/holidayModes/hm2/fixTemperature",
+      "/system/holidayModes/hm3/fixTemperature",
+      "/system/holidayModes/hm4/fixTemperature",
+      "/system/holidayModes/hm5/fixTemperature",
+      "/ventilation",
+      "/zones"
+    ]
+  },
+  "transport_profile": {
+    "healthy_seconds_base": 1.0,
+    "healthy_seconds_per_path": 0.07,
+    "outage_request_timeout_seconds": 30,
+    "outage_failed_cycles_before_rate_limit": 4,
+    "note": "Shape of the observed timing; constructed figures, no capture."
+  },
+  "variants": {
+    "hmi800_hp_light": {
+      "observed": false,
+      "note": "Not observed on any system. Expected rule, untested: a component with Id 240 (HMI800 HP Light) keeps hcMode and assignedTo of a holiday unwritten.",
+      "system_info": {
+        "id": "/system/info",
+        "type": "systeminfo",
+        "values": [
+          {
+            "Id": "189",
+            "Tok": "1"
+          },
+          {
+            "Id": "240",
+            "Tok": "5"
+          }
+        ]
+      }
+    },
+    "circuit_token_16": {
+      "observed": false,
+      "note": "Not observed. Expected rule, untested: with token 16, the heating circuits of the tokens 24-27 are not offered for a holiday.",
+      "system_info": {
+        "id": "/system/info",
+        "type": "systeminfo",
+        "values": [
+          {
+            "Id": "189",
+            "Tok": "16"
+          },
+          {
+            "Id": "7",
+            "Tok": "24"
+          }
+        ]
+      }
+    }
+  }
+}

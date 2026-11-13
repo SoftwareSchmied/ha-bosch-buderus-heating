@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import re
+from collections.abc import Mapping
+from dataclasses import replace
 from typing import Any, override
 
-from homeassistant.config_entries import ConfigEntry, ConfigFlowResult, OptionsFlow
+from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.helpers.selector import (
     ObjectSelector,
     SelectOptionDict,
@@ -13,13 +16,18 @@ from homeassistant.helpers.selector import (
 )
 from homeassistant.helpers.translation import async_get_translations
 
+from . import rrc_contracts
 from .const import DOMAIN
+from .control import pause_end_text
 from .control_presentation import control_category, control_icon, control_label
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .entity_resources import fresh_resource
+from .entry_sources import pointt_coordinators
 from .enum_translation import enum_value_to_ha
 from .ha_schema import validation as vol
+from .i18n import LANGUAGES, dialog_config
 from .notifications import gateway_notification_key, installation_name
+from .options_navigation import NavigatingOptionsFlow
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -29,12 +37,24 @@ from .pointt import (
     WriteValidationError,
 )
 from .resource_catalog import resource_name
-from .runtime import BoschBuderusRuntimeData
+from .rrc_contract_circuit import (
+    control_path,
+    guard_paths,
+    limit_role,
+    weather_control_off,
+)
+from .switch_program_selection import is_active_program_path
 from .unit_contracts import DURATION_UNITS, TEMPERATURE_UNITS
 from .writes import (
+    ContractRejected,
+    ControlContext,
+    ControlLocked,
+    ControlUnused,
     EnumWritePolicy,
     NumberWritePolicy,
+    WriteBusy,
     assess_control,
+    context_of,
     validate_control_value,
 )
 
@@ -44,22 +64,73 @@ class ControlsSelector(ObjectSelector):
 
     selector_type = "bosch-buderus-controls"
 
-    def __init__(self, rows: list[dict[str, Any]], status: str = "") -> None:
+    def __init__(
+        self,
+        rows: list[dict[str, Any]],
+        status: str = "",
+        *,
+        active: str = "",
+        invalid: list[str] | None = None,
+    ) -> None:
         super().__init__()
         self.rows = rows
         self.status = status
+        # HA recreates the selector after every step, so the open tab and the
+        # rejected fields must come with the step itself.
+        self.active = active
+        self.invalid = invalid or []
 
     @override
     def serialize(self) -> dict[str, Any]:
         return {
-            "selector": {self.selector_type: {"rows": self.rows, "status": self.status}}
+            "selector": {
+                self.selector_type: {
+                    "rows": self.rows,
+                    "status": self.status,
+                    "active": self.active,
+                    "invalid": self.invalid,
+                    **dialog_config("controls"),
+                }
+            }
         }
 
 
+# Tabs: heating circuits, then hot water, then the remaining system settings.
+_GROUP_RANK = {"heatingCircuits": 0, "dhwCircuits": 1}
+
+
+def control_group(path: str) -> str:
+    """The dialog tab of a control path."""
+    parts = path.strip("/").split("/")
+    if parts[0] in _GROUP_RANK and len(parts) > 1:
+        return "/".join(parts[:2])
+    return "system"
+
+
+def _row_order(path: str) -> tuple[int, int, str, str]:
+    """Order circuits naturally, so hc2 precedes hc10."""
+    family, _, circuit = control_group(path).partition("/")
+    number = re.search(r"\d+$", circuit)
+    return (
+        _GROUP_RANK.get(family, len(_GROUP_RANK)),
+        int(number.group()) if number else 0,
+        circuit,
+        path,
+    )
+
+
 def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resource]:
-    """Use only discovered scalar controls from the approved heating functions."""
+    """Use only discovered scalar controls from the approved heating functions.
+
+    On an RRC controller the contracts' policies apply, and their
+    ``dialog_paths`` join (S11).
+    """
+    context = context_of(coordinator)
     result = {}
     for path in coordinator.data or {}:
+        if context.rrc_plant and _weather_control_off(coordinator, path):
+            # Offered only while the circuit uses weather-compensated control.
+            continue
         if not (
             path.startswith(("/heatingCircuits/", "/dhwCircuits/"))
             or path
@@ -69,19 +140,191 @@ def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resour
                 "/system/seasonOptimizer/mode",
                 "/heatSources/additionalHeater/operationMode",
             }
+            or (context.rrc_plant and rrc_contracts.in_dialog(path))
         ):
             continue
         resource = fresh_resource(coordinator, path)
-        if resource is None:
+        if resource is None or is_active_program_path(path):
+            # Z1: the active program has its own select, which also checks
+            # that the program it names can be read.
             continue
-        assessment = assess_control(resource)
+        assessment = assess_control(resource, context)
         if (
             assessment.eligible
             and assessment.current_value_issue is None
             and assessment.platform != "button"
+            and _dialog_policy(assessment.policy)
         ):
             result[path] = resource
     return result
+
+
+def _dialog_policy(policy: EnumWritePolicy | NumberWritePolicy | None) -> bool:
+    """A generic number without an entity of its own (``create_entity``),
+    such as a heating circuit's temporary setpoint, belongs to the entity
+    that writes it, not to the dialog. A contract's settings keep their own
+    rule (``rrc_contracts.in_dialog``)."""
+    return (
+        not isinstance(policy, NumberWritePolicy)
+        or policy.create_entity
+        or rrc_contracts.owns(policy)
+    )
+
+
+def _weather_control_off(
+    coordinator: BoschBuderusDataUpdateCoordinator, path: str
+) -> bool:
+    control = control_path(path)
+    return control is not None and weather_control_off(
+        path, fresh_resource(coordinator, control)
+    )
+
+
+# Settings precede activation: a mode, a charge, extra hot water (after its
+# duration).
+_ACTIVATIONS = ("/operationMode", "/charge", "/extraDhw")
+# A heating curve point or supply limit: lowered lower limits first, then
+# raised upper ones, lowered upper ones and raised lower ones, so that each
+# write keeps every lower limit at or below every upper one.
+_LIMIT_PHASES = {
+    ("lower", True): 0,
+    ("upper", False): 1,
+    ("upper", True): 2,
+    ("lower", False): 3,
+}
+
+
+def _write_order(path: str, value: object, before: Resource) -> tuple[bool, int, str]:
+    """The position of a draft entry among the writes."""
+    role = limit_role(path)
+    phase = 0
+    if (
+        role is not None
+        and isinstance(value, int | float)
+        and isinstance(before.value, int | float)
+    ):
+        phase = _LIMIT_PHASES[role, value < before.value]
+    return path.endswith(_ACTIVATIONS), phase, path
+
+
+# The contracts whose rules are checked against the whole draft first.
+_DRAFT_CHECKED = frozenset({"circuit", "dhw"})
+# A contract refusal -> the message of the dialog; others get a general one.
+_REJECTED_ERRORS = {
+    "rrc_curve_order": "controls_curve_order",
+    "rrc_weather_control_off": "controls_weather_control_off",
+    "rrc_extra_dhw_duration_zero": "controls_extra_dhw_duration_zero",
+}
+
+
+def _refusal_error(err: WriteValidationError) -> str | None:
+    """The message of the dialog for a refusal that names its reason."""
+    if isinstance(err, ControlUnused):
+        return "controls_unused"
+    if isinstance(err, ControlLocked):
+        return "controls_locked"
+    if isinstance(err, ContractRejected):
+        return _REJECTED_ERRORS.get(err.reason, "controls_rejected")
+    return None
+
+
+def _guards(
+    coordinator: BoschBuderusDataUpdateCoordinator, path: str
+) -> tuple[Resource, ...] | None:
+    """S5: the readings a heating circuit setting is checked against (the
+    limits it is ordered against, the control strategy), read again with it
+    before the write; a change there sends nothing.
+
+    VER-05: the control strategy counts only with a current reading, as on
+    the number entity. A limit the plant has but without a current reading
+    gives ``None``: the order cannot be checked, so nothing is sent (the
+    entity refuses it the same way) instead of checking without that limit.
+    """
+    if not context_of(coordinator).rrc_plant:
+        return ()
+    snapshots = coordinator.data or {}
+    guards: list[Resource] = []
+    for item in guard_paths(path):
+        resource = fresh_resource(coordinator, item)
+        if resource is not None:
+            guards.append(resource)
+        elif control_path(path) != item and item in snapshots:
+            return None
+    return tuple(guards)
+
+
+def _draft_readings(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    displayed: Mapping[str, Resource],
+    draft: Mapping[str, Any],
+) -> dict[str, Resource]:
+    """The current readings with the draft applied: the state after every
+    write, for the contract rules that compare settings."""
+    readings = {
+        path: resource
+        for path in coordinator.data or {}
+        if (resource := fresh_resource(coordinator, path)) is not None
+    }
+    for path, value in draft.items():
+        if path in displayed:
+            readings[path] = replace(displayed[path], value=value, has_value=True)
+    return readings
+
+
+def _offered_options(
+    path: str, options: tuple[str, ...], *, contract: bool
+) -> tuple[str, ...]:
+    """The options of a row; of two spellings a contract gives one option key
+    ("Off" and "off"), only the first."""
+    if not contract:
+        return options
+    keys: set[str] = set()
+    offered: list[str] = []
+    for raw in options:
+        key = rrc_contracts.option_key(path, raw)
+        if key is not None and key in keys:
+            continue
+        if key is not None:
+            keys.add(key)
+        offered.append(raw)
+    return tuple(offered)
+
+
+def _missing_cloud_reason(entry: ConfigEntry) -> str:
+    """Why no cloud appliance is loaded: sign-in, unreachable, starting or none."""
+    from .configuration import CLOUD_KIND
+    from .connection_runtime import ConnectionPhase
+    from .managed_entry import ManagedEntry
+
+    runtime = getattr(entry, "runtime_data", None)
+    if not isinstance(runtime, ManagedEntry):
+        return "controls_not_loaded"
+    connections = runtime.connections
+    snapshot = connections.snapshot
+    clouds = {
+        key for key, item in snapshot.connections.items() if item.kind == CLOUD_KIND
+    }
+    # First the access itself, then its appliances: a ready access may still
+    # discover an appliance, or the appliance may not answer. A deliberately
+    # disabled appliance is not "loading".
+    for phases in (
+        {connections.connection_phase(key) for key in clouds},
+        {
+            connections.source_phase(key)
+            for key, binding in snapshot.bindings.items()
+            if binding.connection_id in clouds
+        },
+    ):
+        if ConnectionPhase.AUTH_REQUIRED in phases:
+            return "controls_auth_required"
+        if ConnectionPhase.UNAVAILABLE in phases:
+            return "controls_cloud_unreachable"
+        if ConnectionPhase.CONNECTING in phases:
+            return "controls_not_current"
+    if ConnectionPhase.READY in phases:
+        return "controls_not_current"
+    # No cloud access, a stopped one or only disabled appliances.
+    return "controls_not_loaded"
 
 
 def _translation_key(path: str) -> str:
@@ -98,20 +341,21 @@ def _translation_key(path: str) -> str:
     return ""
 
 
-class ControlsOptionsFlow(OptionsFlow):
+class ControlsOptionsFlow(NavigatingOptionsFlow):
     """Keep drafts per flow and never store appliance values in entry options."""
 
     _entry: ConfigEntry
     _control_gateway: str | None = None
     _control_displayed: dict[str, Resource] | None = None
+    _control_source: BoschBuderusDataUpdateCoordinator | None = None
 
     def _control_gateways(self) -> dict[str, BoschBuderusDataUpdateCoordinator]:
-        runtime = getattr(self._entry, "runtime_data", None)
-        if not isinstance(runtime, BoschBuderusRuntimeData):
+        coordinators = pointt_coordinators(self._entry)
+        if coordinators is None:
             return {}
         return {
             gateway_notification_key(item.gateway.gateway_id): item
-            for item in runtime.coordinators
+            for item in coordinators
         }
 
     async def async_step_controls(
@@ -119,7 +363,7 @@ class ControlsOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         gateways = self._control_gateways()
         if not gateways:
-            return self.async_abort(reason="controls_not_loaded")
+            return self.async_abort(reason=_missing_cloud_reason(self._entry))
         if len(gateways) == 1:
             self._control_gateway = next(iter(gateways))
             self._control_displayed = None
@@ -154,16 +398,41 @@ class ControlsOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         coordinator = self._control_gateways().get(self._control_gateway or "")
         if coordinator is None:
-            return self.async_abort(reason="controls_not_loaded")
+            return self.async_abort(reason=_missing_cloud_reason(self._entry))
+        if user_input is not None and coordinator is not self._control_source:
+            # The appliance was reloaded while the dialog was open.
+            return self.async_abort(reason="controls_not_current")
+        self._control_source = coordinator
         current = controls(coordinator)
+        reason, until = coordinator.control_status()
+        if user_input is None and (reason is not None or not current):
+            # Say why nothing can be operated instead of an empty dialog or
+            # controls whose writes would be rejected right away.
+            return self.async_abort(
+                reason=f"controls_{reason or 'none'}",
+                description_placeholders={"until": pause_end_text(until)},
+            )
         if self._control_displayed is None:
             self._control_displayed = current
         errors: dict[str, str] = {}
         draft: dict[str, Any] = {}
         status = ""
+        # Rejected values, the path a write stopped at and the last written
+        # path select the tab shown with the next step.
+        invalid: list[str] = []
+        stopped: str | None = None
+        written: str | None = None
+        shown = ""
         if user_input is not None:
             payload = user_input.get("controls")
-            if not isinstance(payload, dict) or set(payload) - {"changes", "action"}:
+            if isinstance(payload, dict) and isinstance(payload.get("active"), str):
+                # The tab open in the browser; only a tab name, never written.
+                shown = payload["active"]
+            if not isinstance(payload, dict) or set(payload) - {
+                "changes",
+                "action",
+                "active",
+            }:
                 errors["base"] = "controls_invalid"
             elif payload.get("action") == "refresh":
                 self._control_displayed = current
@@ -173,22 +442,47 @@ class ControlsOptionsFlow(OptionsFlow):
                 errors["base"] = "controls_invalid"
             else:
                 draft = dict(payload.get("changes", {}))
-                try:
+                for path, value in draft.items():
+                    before = self._control_displayed.get(path)
+                    if before is None or current.get(path) != before:
+                        # The displayed control changed, not the entered value.
+                        errors["base"] = "controls_invalid"
+                        stopped = stopped or path
+                        continue
+                    try:
+                        validate_control_value(before, value, context_of(coordinator))
+                    except WriteValidationError as err:
+                        errors["base"] = _refusal_error(err) or "controls_invalid"
+                        invalid.append(path)
+                if not errors:
+                    # The heating circuit and hot water rules that compare
+                    # settings, against the state after the whole draft:
+                    # nothing is written when the draft as a whole breaks
+                    # one (the write order keeps every step in order).
+                    readings = _draft_readings(
+                        coordinator, self._control_displayed, draft
+                    )
                     for path, value in draft.items():
-                        before = self._control_displayed.get(path)
-                        if before is None or current.get(path) != before:
-                            raise WriteValidationError("Displayed control changed")
-                        validate_control_value(before, value)
-                except WriteValidationError:
-                    errors["base"] = "controls_invalid"
-                else:
-                    # Settings precede activation. Each write is individually
-                    # confirmed; the appliance API has no multi-setting commit.
+                        if rrc_contracts.contract_for(path) not in _DRAFT_CHECKED:
+                            continue
+                        before = self._control_displayed[path]
+                        policy = assess_control(before, context_of(coordinator)).policy
+                        check = policy.value_check if policy is not None else None
+                        if check is not None and (
+                            reason := check(before, value, readings)
+                        ):
+                            errors["base"] = _REJECTED_ERRORS.get(
+                                reason, "controls_rejected"
+                            )
+                            invalid.append(path)
+                if not errors:
+                    # Each write is individually confirmed; the appliance API
+                    # has no multi-setting commit.
+                    shown_before = self._control_displayed
                     for path in sorted(
                         draft,
-                        key=lambda item: (
-                            item.endswith(("/operationMode", "/charge")),
-                            item,
+                        key=lambda item: _write_order(
+                            item, draft[item], shown_before[item]
                         ),
                     ):
                         before = self._control_displayed[path]
@@ -196,11 +490,21 @@ class ControlsOptionsFlow(OptionsFlow):
                         if value == before.value:
                             draft.pop(path)
                             continue
-                        policy = assess_control(before).policy
+                        policy = assess_control(before, context_of(coordinator)).policy
                         assert isinstance(policy, (EnumWritePolicy, NumberWritePolicy))
+                        guards = _guards(coordinator, path)
+                        if guards is None:
+                            # A limit it is ordered against has no current
+                            # reading: nothing is sent.
+                            errors["base"] = "controls_changed"
+                            stopped = path
+                            break
                         try:
                             confirmed = await coordinator.async_write_control(
-                                path, value, policy, expected=(before,)
+                                path,
+                                value,
+                                policy,
+                                expected=(before, *guards),
                             )
                         except AuthenticationError:
                             errors["base"] = "controls_auth"
@@ -208,31 +512,55 @@ class ControlsOptionsFlow(OptionsFlow):
                             errors["base"] = "controls_rate_limit"
                         except WriteNotConfirmed:
                             errors["base"] = "controls_unconfirmed"
-                        except WriteValidationError:
-                            errors["base"] = "controls_changed"
+                        except WriteValidationError as err:
+                            # A lock or a contract rule says why; anything
+                            # else changed since it was shown.
+                            errors["base"] = _refusal_error(err) or "controls_changed"
+                        except WriteBusy:
+                            # Nothing was sent; the change can be tried again.
+                            errors["base"] = "controls_busy"
                         except PointTError:
                             errors["base"] = "controls_failed"
                         else:
                             self._control_displayed[path] = confirmed
                             draft.pop(path)
+                            written = path
                         if errors:
+                            stopped = path
                             break
                     if not errors:
                         self._control_displayed = controls(coordinator)
                         draft = {}
-                        status = "saved"
+                        # D53: "confirmed" only after a write; an empty or
+                        # unchanged draft wrote nothing.
+                        status = "saved" if written else "unchanged"
         rows = await self._control_rows(
-            self._control_displayed, current=controls(coordinator)
+            self._control_displayed,
+            current=controls(coordinator),
+            context=context_of(coordinator),
         )
         if not rows:
             status = "empty"
+        invalid.sort(key=_row_order)
+        if errors:
+            # The first rejected value, else where writing stopped, else the
+            # first change still pending.
+            preferred = [*invalid, *([stopped] if stopped else []), *draft]
+        else:
+            # After writing, show the last confirmed change.
+            preferred = [written] if written else []
+        candidates = [
+            control_group(path) for path in preferred if isinstance(path, str)
+        ]
+        groups = {row["group"] for row in rows}
+        active = next((group for group in [*candidates, shown] if group in groups), "")
         return self.async_show_form(
             step_id="operate",
             data_schema=vol.Schema(
                 {
                     vol.Required(
                         "controls", default={"changes": draft}
-                    ): ControlsSelector(rows, status)
+                    ): ControlsSelector(rows, status, active=active, invalid=invalid)
                 }
             ),
             errors=errors,
@@ -240,41 +568,63 @@ class ControlsOptionsFlow(OptionsFlow):
         )
 
     async def _control_rows(
-        self, displayed: dict[str, Resource], *, current: dict[str, Resource]
+        self,
+        displayed: dict[str, Resource],
+        *,
+        current: dict[str, Resource],
+        context: ControlContext | None = None,
     ) -> list[dict[str, Any]]:
         translations = {
             language: await async_get_translations(
                 self.hass, language, "entity", {DOMAIN}
             )
-            for language in ("de", "en")
+            for language in LANGUAGES
         }
         rows = []
-        for path, resource in sorted(displayed.items()):
-            assessment = assess_control(resource)
-            parts = path.strip("/").split("/")
-            group = (
-                "/".join(parts[:2])
-                if parts[0] in {"heatingCircuits", "dhwCircuits"}
-                else "system"
+        for path in sorted(displayed, key=_row_order):
+            resource = displayed[path]
+            assessment = assess_control(resource, context)
+            contract = rrc_contracts.owns(assessment.policy)
+            group = control_group(path)
+            key = (
+                rrc_contracts.entity_key(path, "select") or ""
+                if contract
+                else _translation_key(path)
             )
-            key = _translation_key(path)
             labels = {
-                lang: control_label(path, resource_name(path, language=lang), lang)
+                lang: control_label(
+                    path, resource_name(path, language=lang), lang, contract=contract
+                )
                 for lang in translations
             }
+            offered = _offered_options(path, assessment.options, contract=contract)
+            value = resource.value
+            if (
+                contract
+                and isinstance(assessment.policy, EnumWritePolicy)
+                and value not in offered
+            ):
+                # A reading that confirms an option ("off" for "Off") selects it.
+                value = next(
+                    (raw for raw in offered if assessment.policy.confirms(value, raw)),
+                    value,
+                )
             options = [
                 {
                     "value": raw,
                     "label": {
                         lang: translations[lang].get(
                             f"component.{DOMAIN}.entity.select.{key}.state."
-                            + enum_value_to_ha(key, raw),
+                            + (
+                                (contract and rrc_contracts.option_key(path, raw))
+                                or enum_value_to_ha(key, raw)
+                            ),
                             raw,
                         )
                         for lang in translations
                     },
                 }
-                for raw in assessment.options
+                for raw in offered
             ]
             rows.append(
                 {
@@ -284,7 +634,7 @@ class ControlsOptionsFlow(OptionsFlow):
                     "kind": "select"
                     if assessment.supports_select
                     else assessment.platform,
-                    "value": resource.value,
+                    "value": value,
                     "options": options,
                     "minimum": assessment.minimum,
                     "maximum": assessment.maximum,
@@ -292,9 +642,15 @@ class ControlsOptionsFlow(OptionsFlow):
                     "unit": {**TEMPERATURE_UNITS, **DURATION_UNITS}.get(
                         assessment.unit or "", assessment.unit or ""
                     ),
-                    "icon": control_icon(path, numeric=assessment.platform == "number"),
+                    "icon": control_icon(
+                        path,
+                        numeric=assessment.platform == "number",
+                        contract=contract,
+                    ),
                     "advanced": control_category(
-                        path, numeric=assessment.platform == "number"
+                        path,
+                        numeric=assessment.platform == "number",
+                        contract=contract,
                     )
                     is not None
                     and not (

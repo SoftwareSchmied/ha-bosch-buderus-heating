@@ -1,9 +1,8 @@
 # Conversion audit, P16
 
-I completed this bounded comparison on 24 October 2026 against MyBuderus 5.0.0
-and the local implementation through P14. The base commit is
-`c6f298705aeab609f7049973b4869a590f8dad71`; the changes are on
-`codex/p16-conversion-audit`. At that checkpoint, the manifest still said
+I completed this bounded review of the local implementation through P14 on
+24 October 2026. The base commit is
+`c6f298705aeab609f7049973b4869a590f8dad71`. At that checkpoint, the manifest still said
 `0.8.2-beta.5`. I included the implementation and subsequent review fixes in
 v0.8.2-beta.6. The original checkpoint figures below remain historical.
 
@@ -25,16 +24,16 @@ U119 also retains the charging-duration contract established in P13.
 | Evidence incomplete, outside the implemented scope | 3 |
 | Code correct, earlier report corrected | 1 |
 
-The [inventory](conversion-audit-inventory.json) maps every rule to the
-current rationale, code, tests and source identifiers. It also records every
-candidate's classification. A referenced boundary test is not a test of an
-unimplemented formula. The original comparison against published Beta.5
-remains a separate historical record.
+I assigned every rule its current rationale, code and tests and classified
+every candidate. A referenced boundary test is not a test of an unimplemented
+formula. The original review of published Beta.5 remains a separate
+historical record.
 
-I subsequently aligned U100 with the app's integer salt-warning comparison
-and absent-threshold default. It now counts as correct rather than a validation
-difference. The original P16 validation figures below remain historical.
-The [follow-up corrections](app-parity-corrections.md) also cover receive
+I subsequently corrected U100 to compare the integer parts of the salt level
+and threshold and to use the default for an absent threshold. It now counts as
+correct rather than a validation difference. The original P16 validation
+figures below remain historical.
+The [follow-up corrections](corrected-values.md) also cover receive
 formats, partial reports, sign-in isolation and the identified write edge cases.
 
 ## Corrections in the implemented scope
@@ -124,13 +123,13 @@ confirmation. Eleven before/after probes also compare the earlier helpers
 with the corrected behavior. All added device inputs are synthetic.
 
 I did not install this stand on a real device, perform physical writes,
-publish a release or run remote PR checks. The review covers the documented
-source search and supported contracts. It is not proof of every native,
-dynamic or server-side app conversion, nor of every device or firmware.
+publish a release or run remote PR checks. The review covers the supported
+contracts. It is not proof of every native, dynamic or server-side
+conversion, nor of every device or firmware.
 
 ## Deutsch
 
-Ich habe alle 118 Ausgangsregeln und 250 offenen Suchtreffer geprüft. Der
+Ich habe alle 118 Ausgangsregeln und 250 offenen Kandidaten geprüft. Der
 aktuelle Bestand enthält 132 Regeln mit Begründung, Code- und Testzuordnung.
 Ich habe Einheiten-Aliase, die Energieumrechnung strukturierter Werte, die
 Auswertung geänderter Einheiten und Temperaturdifferenzen korrigiert. Eine

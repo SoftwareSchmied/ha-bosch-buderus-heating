@@ -3,6 +3,15 @@
   "config": {
     "step": {
       "user": {
+        "title": "Connect Home Comfort",
+        "description": "Choose how Home Assistant connects to your system.\n\n**Cloud access** signs in to your account. It offers controls, time programs, holidays and system information.\n\n**Local access** connects to the gateway in your home network. It only reads: no controls and no settings. It updates many readings more often and can add technical readings the cloud does not offer, such as the refrigerant circuit, pumps and internal signals.\n\nEach access has readings the other does not have. If both are possible, **cloud and local access** is recommended.",
+        "menu_options": {
+          "cloud": "Cloud access",
+          "cloud_local": "Cloud and local access (recommended)",
+          "local_only": "Local access only"
+        }
+      },
+      "cloud": {
         "title": "Connect a heating account",
         "description": "Choose the brand of the mobile app that is already linked to the heating system. Select **Bosch** for the Bosch app or **Buderus** for the Buderus app. The app brand matters more than the logo on the appliance.",
         "data": {
@@ -23,6 +32,10 @@
       "retry": {
         "title": "Retry gateway discovery",
         "description": "Sign-in succeeded, but the device list could not be loaded. Check the Home Assistant internet connection, wait a moment, and try again."
+      },
+      "selection_expired": {
+        "title": "Load the device list again",
+        "description": "The device list is older than five minutes and has to be loaded again before saving. You stay signed in. Select **Submit** to load the list again, then choose the devices."
       },
       "gateways": {
         "title": "Select devices",
@@ -49,46 +62,197 @@
       "reconfigure_retry": {
         "title": "Retry gateway discovery",
         "description": "The current gateway list could not be loaded. Check the Home Assistant internet connection, wait a moment, and select **Submit**."
+      },
+      "local_owner": {
+        "title": "Choose the existing setup",
+        "description": "Select the setup this local gateway belongs to. This will not create another installation.",
+        "data": {
+          "owner": "Existing setup"
+        }
+      },
+      "local_discovered": {
+        "title": "Gateway found",
+        "description": "Home Assistant found a gateway at {host} in the home network, and this integration is not set up yet.\n\nContinue to set it up with **Local access only**: an entry without a cloud is created, and its local setup opens next. The local access only reads. A cloud access can be added to the same entry later."
+      },
+      "local_target": {
+        "title": "Choose the installation",
+        "description": "Select the installation to connect locally. Its gateway identity will be checked before saving.",
+        "data": {
+          "target": "Installation / gateway"
+        }
+      },
+      "local_address": {
+        "title": "Local gateway address",
+        "description": "Choose a discovered address or enter an IP address or hostname. Discovery does not change any saved connection.",
+        "data": {
+          "address": "IP address or hostname"
+        }
+      },
+      "local_method": {
+        "title": "Connect to the local gateway",
+        "description": "Sign in with the device label or use an existing access token. Local appliance access is read-only.",
+        "data": {
+          "method": "Sign-in method"
+        }
+      },
+      "local_method_keep": {
+        "title": "Connect to the local gateway again",
+        "description": "A new sign-in with the **device label** is recommended.\n\nKeep the current token only if you are sure that the certificate you are about to confirm belongs to your own gateway, for example right after an update or reset you started yourself. With this option, the stored token is sent to the device that presents the newly confirmed certificate. If that is not your gateway, it receives a working token for your system. Signing in with the device label is safer: the label details only work together with the buttons on the gateway, while a stored token works right away for anyone who receives it.\n\nLocal appliance access is read-only.",
+        "data": {
+          "method": "Sign-in method"
+        }
+      },
+      "local_certificate": {
+        "title": "Confirm the gateway certificate",
+        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.",
+        "data": {
+          "confirm": "I confirm this gateway and its certificate"
+        }
+      },
+      "local_auth": {
+        "title": "Sign in with the device label",
+        "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for about two seconds, under three seconds, and release them together. Confirm the brief blue signal and continue within five minutes. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and password are not saved.",
+        "data": {
+          "login": "Login on device label",
+          "password": "Pass on device label",
+          "unlocked": "I have released local sign-in and seen the blue signal"
+        }
+      },
+      "local_token": {
+        "title": "Use an existing token",
+        "description": "Enter a local API access token. It will be retained privately so this setup can be resumed. The data connection and gateway identity still need to be checked.",
+        "data": {
+          "token": "Local access token"
+        }
+      },
+      "local_pending": {
+        "title": "Resume local setup",
+        "description": "A previous attempt is saved. If a token was received, continue with that token. If the response was lost, a token may exist on the gateway even though Home Assistant could not save it. Discarding removes only the local pending copy and permits another attempt; it does not revoke gateway tokens.\n\nRemaining server pause: {seconds} seconds.",
+        "data": {
+          "action": "Next action",
+          "confirm": "I understand and want to discard this pending attempt"
+        }
+      },
+      "local_result": {
+        "title": "Confirm the local connection",
+        "description": "The read check for **{host}** succeeded and gateway **{gateway}** matches the selected installation. Saving checks the current data again and adds or updates this access on the existing setup.",
+        "data": {
+          "confirm": "Save this local connection"
+        }
+      },
+      "local_retry": {
+        "title": "Local check could not finish",
+        "description": "Check the message below and try again when ready. No token is automatically created or replaced."
       }
     },
     "error": {
       "auth_expired": "This sign-in attempt has expired. Open the new SingleKey ID link shown above and sign in again.",
       "auth_restart": "This sign-in attempt can no longer be used. Open the new SingleKey ID link shown above and sign in again.",
-      "cannot_connect": "The PointT service cannot be reached. Check the internet connection, wait a moment, and try again.",
+      "cannot_connect": "The cloud access cannot be reached. Check the internet connection, wait a moment, and try again.",
       "invalid_auth": "SingleKey ID rejected or expired the authorization. Use the new SingleKey ID link shown above and repeat sign-in.",
       "invalid_redirect": "Home Assistant could not use this address. Copy the complete app address from the Chrome console's ‘Failed to launch’ message. It must begin with the scheme shown above and belong to the current sign-in attempt.",
       "gateway_changed": "The gateway list changed while this dialog was open. Close the dialog and open Reconfigure again.",
       "select_gateway": "Select at least one device from the list before continuing.",
-      "unknown": "An unexpected PointT error occurred. Wait a moment and try again.",
+      "unknown": "An unexpected error occurred in the cloud access. Wait a moment and try again.",
       "bacon_unavailable": "The additional cloud device list is currently unavailable. Wait at least one minute and try again.",
-      "bacon_selection_unavailable": "Additional cloud devices could not be queried at this time. You can select reachable heating gateways. Existing cloud device selections will be preserved."
+      "bacon_selection_unavailable": "Additional cloud devices could not be queried at this time. You can select reachable heating gateways. Existing cloud device selections will be preserved.",
+      "reauth_targets_missing": "This sign-in found none of the switched-on systems and devices. The previous credentials are kept. Check that you signed in with the same account as before. If the systems were removed from the account, open Configure → Connections → the cloud access: switch on a system that is still in the account under **Use for systems and devices**, or switch the removed ones off and remove them with **Forget deselected systems**. If none is left, remove the cloud access and connect it again.",
+      "cloud_rate_limited": "The cloud has requested a pause. Please wait before trying again.",
+      "local_invalid_address": "Enter an IP address or hostname without a URL, path or credentials.",
+      "local_interface_required": "This IPv6 address needs the network interface on the Home Assistant host.",
+      "local_invalid_token": "The token format is invalid. Copy the complete token without spaces.",
+      "local_invalid_credentials": "Check Login and Pass on the gateway label and enter them again.",
+      "local_unlock_required": "Release local sign-in on the gateway and confirm the blue signal before trying again.",
+      "local_token_database_full": "The gateway token database is full. Review its existing tokens before creating another. No tokens were deleted.",
+      "local_rate_limited": "The gateway requested a pause. Wait until the displayed time has elapsed.",
+      "local_service_unavailable": "The gateway service is temporarily unavailable. Wait and try again.",
+      "local_timeout": "The local gateway did not respond in time. Check the connection and try again.",
+      "local_connection_failed": "Home Assistant could not reach this gateway. Check its address and the network connection.",
+      "local_certificate_changed": "The certificate could not be confirmed or has changed. Inspect the gateway certificate again before continuing.",
+      "local_token_rejected": "The gateway rejected this token. Check it or deliberately discard this attempt to use another.",
+      "local_resource_forbidden": "The gateway denied access to a required resource. A token alone does not prove read access.",
+      "local_missing_resource": "The gateway does not provide a required setup resource.",
+      "local_unknown_firmware": "The firmware version could not be verified.",
+      "local_old_firmware": "Update the gateway firmware before setting up the local connection.",
+      "local_unsupported_brand": "This gateway brand is not supported by the documented local interface.",
+      "local_incomplete_system": "The gateway system information is not complete yet. Try the read check again later.",
+      "local_invalid_response": "A required gateway response could not be verified.",
+      "local_identity_unverified": "This system has not yet been matched unambiguously. The first setup requires an available cloud access and matching gateway and module identifiers from both interfaces. Verified links can subsequently be used without the cloud.",
+      "local_identity_conflict": "The gateway identity conflicts with the selected installation or another setup.",
+      "local_configuration_changed": "The selected connection or installation changed. Close this dialog and review the current setup before continuing.",
+      "local_pending_exists": "Another pending attempt exists for this installation or gateway address. Resume or deliberately discard it first.",
+      "local_storage_failed": "The private setup record could not be read or saved. Check Home Assistant storage before continuing.",
+      "local_completion_uncertain": "The connection may already have been saved. Reopen local setup to check its state before attempting another change.",
+      "local_unexpected": "The local check could not be completed. The pending token, if received, is retained for recovery.",
+      "local_confirmation_required": "Confirm this action explicitly before continuing.",
+      "local_busy": "Local access is currently busy or paused. Wait before trying again.",
+      "local_cloud_auth_required": "Sign in to the cloud access again so the first link can be verified. An already verified local access starts independently of the cloud.",
+      "local_cloud_rate_limited": "The cloud is currently limiting requests. Wait for its pause to end, then retry the identity comparison.",
+      "local_cloud_unavailable": "The cloud system information could not be read. Check the cloud access and retry the identity comparison.",
+      "local_auth_forbidden": "The gateway's sign-in service refused the request. Check that local access is allowed on the gateway, then try again.",
+      "local_creation_uncertain": "It is unclear whether the gateway created a token, because its answer was incomplete. Continue with the pending attempt; a new token is not created automatically.",
+      "local_plant_known": "This gateway already belongs to a configured system. Choose that system instead of a new one."
     },
     "abort": {
+      "configuration_changed": "The connection settings changed while this dialog was open. Please close it and try again.",
       "already_configured": "This heating account or at least one selected gateway is already configured in Home Assistant.",
       "invalid_flow": "This setup session is incomplete or expired. Close the dialog and add Bosch/Buderus Home Comfort again.",
-      "no_gateways": "No devices were found. Check that the selected brand and SingleKey ID account match your app.",
+      "no_gateways": "No devices were found. Check that the selected brand and SingleKey ID account match your app. A room controller with older firmware only appears once its firmware has been updated and it has been set up in the current app with your SingleKey ID.",
       "reauth_required": "The saved authorization is no longer valid. Close this dialog and select Reauthenticate for Bosch/Buderus Home Comfort.",
       "reauth_successful": "Sign-in was renewed successfully.",
       "reauth_wrong_account": "The selected account does not match the configured devices. Sign in with the original account.",
-      "reconfigure_successful": "The settings were saved. Bosch/Buderus Home Comfort is reloading and discovering all available resources again."
-    }
+      "reauth_no_targets": "This cloud access has no systems or devices left, and the account it belongs to cannot be confirmed. The previous credentials are kept. To use a cloud account again, remove the cloud access under Configure → Connections and connect it again.",
+      "reauth_successful_targets_missing": "Sign-in was renewed. {count} switched-on systems or devices were not found in the account; they stay configured. A repair note names them and explains how to forget them.",
+      "reconfigure_successful": "The settings were saved. Bosch/Buderus Home Comfort is reloading and discovering all available resources again.",
+      "connection_required": "Select the connection under Settings before signing in again.",
+      "connection_settings_required": "Manage this access under Settings and Connections.",
+      "cloud_already_connected": "A cloud connection is already configured. Use its connection settings to select more devices or sign in again. A second parallel cloud sign-in is not supported yet.",
+      "cloud_setup_in_progress": "Another cloud setup is already open. Finish or close that dialog first.",
+      "cloud_setup_taken_over": "A newer cloud setup dialog has replaced this one. Close this dialog and continue in the newer one.",
+      "cloud_target_owned": "A selected system or device belongs to another configured entry or cloud connection. Reconnect it through its existing entry.",
+      "cloud_selection_expired": "This device list is no longer current. Open device discovery again before saving.",
+      "cloud_selection_changed": "The selected device is not in the confirmed list. Please search again.",
+      "cloud_connection_disabled": "Enable this cloud connection before searching for devices.",
+      "cloud_rate_limited": "The cloud has requested a pause. Please wait before trying again.",
+      "local_setup_unavailable": "Local setup is not available until regular local data supply is ready.",
+      "local_session_changed": "This setup session has ended or its selection changed. Reopen local setup to continue.",
+      "local_discovery_invalid": "This discovery announcement does not describe a supported local gateway endpoint.",
+      "local_existing_owner_required": "Set up a system without the cloud with \"Local access only\" when adding the integration. A discovered gateway can be added to an existing setup.",
+      "local_target_required": "This setup has no suitable retained installation for a local connection.",
+      "local_setup_complete": "The local access has been set up.",
+      "local_pending_saved": "The pending attempt is retained. You can resume it from local setup.",
+      "local_storage_failed": "The private setup record could not be read or saved. Check Home Assistant storage before continuing.",
+      "already_in_progress": "Setup for this local gateway is already in progress.",
+      "cloud_local_first_other_entry": "This system is already set up through its local access in another entry of this integration. Add the cloud access in that entry instead."
+    },
+    "progress": {
+      "local_work": "Checking the local connection. Please wait."
+    },
+    "flow_title": "Local gateway ({host})"
   },
   "options": {
     "step": {
       "init": {
         "title": "Settings",
+        "description": "{result}",
         "menu_options": {
           "notifications": "Notifications",
           "holidays": "Manage holiday periods",
           "rrc_programs": "RRC heating schedules",
-          "controls": "Operate appliance"
+          "switch_programs": "Heating and hot water schedules",
+          "controls": "Operate appliance",
+          "connections": "Connections",
+          "connection_add_cloud": "Connect cloud access",
+          "local_setup": "Set up local access",
+          "rescan": "Search the system again"
         }
       },
       "notifications": {
         "title": "Notifications",
         "description": "Heating system faults appear under the bell in Home Assistant. For multiple installations, select those you want notifications for. Notifications and dismissals are shared by all users. Their text uses the system language. Dismissing a notification does not acknowledge a fault on the appliance. New or more critical faults appear again. Changes take effect immediately.",
         "data": {
-          "fault_notifications": "Show heating system faults"
+          "fault_notifications": "Show heating system faults",
+          "notify_warnings_and_maintenance": "Also show warnings and maintenance in the bell notification"
         }
       },
       "holidays": {
@@ -197,7 +361,7 @@
       },
       "rrc_readonly": {
         "title": "View heating schedule",
-        "description": "**{program}**\n\n**Monday:** {mo}\n\n**Tuesday:** {tu}\n\n**Wednesday:** {we}\n\n**Thursday:** {th}\n\n**Friday:** {fr}\n\n**Saturday:** {sa}\n\n**Sunday:** {su}\n\nThis schedule can only be viewed here. It has no editable switch points or contains unsupported settings. ∅ means no switch point is stored. You can make changes in MyBuderus."
+        "description": "**{program}**\n\n**Monday:** {mo}\n\n**Tuesday:** {tu}\n\n**Wednesday:** {we}\n\n**Thursday:** {th}\n\n**Friday:** {fr}\n\n**Saturday:** {sa}\n\n**Sunday:** {su}\n\nThis schedule can only be viewed here. It has no editable switch points or contains unsupported settings. ∅ means no switch point is stored. You can make changes in the manufacturer app."
       },
       "rrc_point": {
         "title": "Edit switch point",
@@ -214,6 +378,64 @@
           "point": "Switch point"
         }
       },
+      "switch_programs": {
+        "title": "Select schedule",
+        "description": "Choose the weekly schedule of a heating circuit or of the hot water. Only schedules that the heating system reports as changeable are listed.",
+        "data": {
+          "program": "Schedule"
+        }
+      },
+      "switch_program_week": {
+        "title": "Change schedule",
+        "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.",
+        "data": {
+          "action": "Next step",
+          "day": "Weekday"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Change schedule",
+        "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.\n\nThis schedule is not the active one of the heating circuit. Changes take effect once it is selected.",
+        "data": {
+          "action": "Next step",
+          "day": "Weekday"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Change schedule",
+        "description": "**{program}**\n\n{week}\n\nAt most {per_day} switch points per day and {total} per week, times in steps of {raster} minutes. Each switch point applies until the next one; the times repeat weekly in the heating system's local time. Days marked with * have changes that are not saved yet. Nothing is sent before the last step.\n\nThe hot water schedule applies only while the hot water operation mode is Auto.",
+        "data": {
+          "action": "Next step",
+          "day": "Weekday"
+        }
+      },
+      "switch_program_day": {
+        "title": "Choose switch point",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nChoose a switch point to change or delete it, add a new one, or go back to the week.",
+        "data": {
+          "point": "Switch point"
+        }
+      },
+      "switch_program_point": {
+        "title": "Edit switch point",
+        "description": "**{program}** – **{day}**\n\nChoose a time in steps of {raster} minutes and a level. The level applies from this time until the next switch point.",
+        "data": {
+          "time": "Time",
+          "level": "Level",
+          "delete": "Delete this switch point"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Copy day",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nChoose the days that get the same switch points. Their current switch points are replaced.",
+        "data": {
+          "days": "Days"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Save schedule",
+        "description": "**{program}**\n\n**Before:**\n\n{before}\n\n**After:**\n\n{after}\n\nThe whole week is sent once and then read back. Note the previous switch points in case you want to set them back."
+      },
       "controls": {
         "title": "Select appliance",
         "data": {
@@ -227,6 +449,210 @@
           "controls": "Controls"
         },
         "submit": "Apply"
+      },
+      "connections": {
+        "title": "Connections",
+        "description": "{result}Choose the access you want to manage.",
+        "menu_options": {
+          "back": "← Back"
+        }
+      },
+      "connection_test": {
+        "title": "Connection test",
+        "description": "{result}"
+      },
+      "connection": {
+        "title": "Manage connection",
+        "description": "{result}{status}",
+        "menu_options": {
+          "connection_test": "Test connection now",
+          "connection_enabled": "Enable or disable access",
+          "connection_forget": "Forget deselected systems",
+          "connection_targets": "Use for systems and devices",
+          "connection_reauthenticate": "Sign in again",
+          "connection_remove": "Remove access",
+          "connection_discover": "Search and select devices",
+          "connection_polling": "Polling frequency",
+          "local_setup": "Change local access",
+          "local_polling": "Local polling frequency and status",
+          "local_values": "Use local values for existing entities",
+          "back": "← Back"
+        }
+      },
+      "connection_enabled": {
+        "title": "Enable access",
+        "description": "Disabling affects only this access. Other connections continue running. Systems and entities are retained.",
+        "data": {
+          "enabled": "Enabled"
+        }
+      },
+      "connection_forget": {
+        "title": "Forget deselected systems",
+        "description": "These systems are switched off for this access. Forgotten systems are no longer listed here and a new sign-in no longer needs to find them. Their devices and entities stay in Home Assistant until you delete them. If the gateway was exchanged, keep the system switched on instead: a repair note then offers to continue it with its history.",
+        "data": {
+          "bindings": "Systems"
+        }
+      },
+      "connection_targets": {
+        "title": "Systems and devices",
+        "description": "Choose the targets that should use this access. Other targets continue using their connections independently.",
+        "data": {
+          "targets": "Use for"
+        }
+      },
+      "connection_remove_cloud": {
+        "title": "Remove cloud access",
+        "description": "The sign-in will be removed. Selected systems with an enabled local access keep showing their local readings (read-only, no controls; counters continue from the last shown value). Other systems keep their entities without current values. If you sign in again later, the same entities continue. For a temporary pause, switch the access off instead.",
+        "data": {
+          "confirm": "Remove this access"
+        }
+      },
+      "connection_remove": {
+        "title": "Remove access",
+        "description": "The credentials will be removed. Systems and entities are retained, even if this is the last access. Without an available connection, entities cannot show current values.",
+        "data": {
+          "confirm": "Remove this access"
+        }
+      },
+      "connection_polling": {
+        "title": "Polling frequency",
+        "description": "Standard reads current heating operating values every minute, settings and energy values every 5 minutes and slower information every 15 minutes. Cloud-friendly doubles these intervals. Active faults are checked every minute in both profiles. The profile applies to the heating and wallbox polling of the selected cloud connection; additional cloud devices report changes as messages. Sign-in, device checks and the confirmation after a change can add requests outside this schedule. If a polling cycle takes longer than its interval, the next one starts later.",
+        "data": {
+          "polling_profile": "Polling profile"
+        }
+      },
+      "connection_add_cloud": {
+        "title": "Connect cloud access",
+        "description": "Choose the app brand you use. After signing in, select the systems and devices to connect to this entry. Existing systems and entities are retained.",
+        "data": {
+          "brand": "App brand"
+        }
+      },
+      "cloud_auth": {
+        "title": "Sign in with SingleKey ID",
+        "description": "SingleKey ID is the same sign-in used by your Bosch or Buderus app. Use the same email address or mobile number and password. You do not need a new account, and you do **not** enter your password in Home Assistant.\n\n1. Keep this dialog open and open [SingleKey ID]({authorization_url}) in a new Chrome tab. Always use this newly generated link.\n2. Press `F12` there and open **Console** in the developer tools.\n3. Sign in with the SingleKey ID credentials used by your heating app.\n4. A network-problem message may appear after sign-in. In this case it normally only means that Chrome could not open the `{redirect_scheme}://` app address.\n5. Find the red **Failed to launch** or **Connecting to** message in the console. Right-click the blue `{redirect_scheme}://` address in that message and choose **Copy link address**.\n6. Return to this dialog, paste the complete address below, and select **OK**. The field may display dots for security.\n\nUse the address from this exact sign-in attempt and do not copy only the `code` parameter. The complete address contains a short-lived one-time code. Never share it in an issue, chat, screenshot, or log.",
+        "data": {
+          "redirect_url": "Complete redirect address"
+        }
+      },
+      "cloud_retry": {
+        "title": "Retry cloud connection",
+        "description": "Retry when the cloud is available again. Your entry has not been changed."
+      },
+      "cloud_select": {
+        "title": "Select systems and devices",
+        "description": "Select the systems and devices to connect. A matching existing system keeps its entities and settings.",
+        "data": {
+          "gateway_ids": "Gateways",
+          "bacon_device_ids": "Additional cloud devices"
+        }
+      },
+      "connection_discover": {
+        "title": "Search and select devices",
+        "description": "Select the systems and devices to use through this cloud connection. Previously configured devices remain listed even when temporarily unavailable. Deselecting stops their queries and keeps their entities.",
+        "data": {
+          "gateway_ids": "Gateways",
+          "bacon_device_ids": "Additional cloud devices"
+        }
+      },
+      "connection_discover_retry": {
+        "title": "Retry device discovery",
+        "description": "The selection has not been changed. Retry to load a fresh list."
+      },
+      "local_owner": {
+        "title": "Choose the existing setup",
+        "description": "Select the setup this local gateway belongs to. This will not create another installation.",
+        "data": {
+          "owner": "Existing setup"
+        }
+      },
+      "local_target": {
+        "title": "Choose the installation",
+        "description": "Select the installation to connect locally. Its gateway identity will be checked before saving.",
+        "data": {
+          "target": "Installation / gateway"
+        }
+      },
+      "local_address": {
+        "title": "Local gateway address",
+        "description": "Choose a discovered address or enter an IP address or hostname. Discovery does not change any saved connection.",
+        "data": {
+          "address": "IP address or hostname"
+        }
+      },
+      "local_method": {
+        "title": "Connect to the local gateway",
+        "description": "Sign in with the device label or use an existing access token. Local appliance access is read-only.",
+        "data": {
+          "method": "Sign-in method"
+        }
+      },
+      "local_method_keep": {
+        "title": "Connect to the local gateway again",
+        "description": "A new sign-in with the **device label** is recommended.\n\nKeep the current token only if you are sure that the certificate you are about to confirm belongs to your own gateway, for example right after an update or reset you started yourself. With this option, the stored token is sent to the device that presents the newly confirmed certificate. If that is not your gateway, it receives a working token for your system. Signing in with the device label is safer: the label details only work together with the buttons on the gateway, while a stored token works right away for anyone who receives it.\n\nLocal appliance access is read-only.",
+        "data": {
+          "method": "Sign-in method"
+        }
+      },
+      "local_certificate": {
+        "title": "Confirm the gateway certificate",
+        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.",
+        "data": {
+          "confirm": "I confirm this gateway and its certificate"
+        }
+      },
+      "local_auth": {
+        "title": "Sign in with the device label",
+        "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for about two seconds, under three seconds, and release them together. Confirm the brief blue signal and continue within five minutes. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and password are not saved.",
+        "data": {
+          "login": "Login on device label",
+          "password": "Pass on device label",
+          "unlocked": "I have released local sign-in and seen the blue signal"
+        }
+      },
+      "local_token": {
+        "title": "Use an existing token",
+        "description": "Enter a local API access token. It will be retained privately so this setup can be resumed. The data connection and gateway identity still need to be checked.",
+        "data": {
+          "token": "Local access token"
+        }
+      },
+      "local_pending": {
+        "title": "Resume local setup",
+        "description": "A previous attempt is saved. If a token was received, continue with that token. If the response was lost, a token may exist on the gateway even though Home Assistant could not save it. Discarding removes only the local pending copy and permits another attempt; it does not revoke gateway tokens.\n\nRemaining server pause: {seconds} seconds.",
+        "data": {
+          "action": "Next action",
+          "confirm": "I understand and want to discard this pending attempt"
+        }
+      },
+      "local_result": {
+        "title": "Confirm the local connection",
+        "description": "The read check for **{host}** succeeded and gateway **{gateway}** matches the selected installation. Saving checks the current data again and adds or updates this access on the existing setup.",
+        "data": {
+          "confirm": "Save this local connection"
+        }
+      },
+      "local_retry": {
+        "title": "Local check could not finish",
+        "description": "Check the message below and try again when ready. No token is automatically created or replaced."
+      },
+      "local_polling": {
+        "title": "Local polling",
+        "description": "Confirmed resources: {known}. Currently available: {available}. These counts show the state when this dialog was opened. The interval is the target for live values. Settings, energy values and diagnostics are read every 5 minutes and counters every 15 minutes, or at this interval if it is longer; static details are read daily. A value becomes unavailable after three missed intervals. Large resource sets can take longer. Cloud polling remains independent. Readings that the cloud also provides are read locally at least as often as in the cloud.",
+        "data": {
+          "interval": "Target interval for live values"
+        }
+      },
+      "local_values": {
+        "title": "Local values for existing entities",
+        "description": "While the cloud is running, this option decides whether existing sensors use the local value of a reading that both accesses provide under the same documented resource. Without the cloud (switched off, sign-in required, paused, limited or unreachable), local values are always used. The option is on by default for new setups with cloud and local access.\n\nWhen enabled, the local value is used as long as it is current. If the local value is outdated or missing, the current cloud value is used; if both are outdated, the sensor becomes unavailable. Energy, start and operating-time counters use the local value too, but only change their source when every shown count is at least the last shown count, so a source change never makes them count backwards. Adjustable settings keep using the cloud. Entity IDs, names and history stay unchanged. Controls and changes are still sent through the cloud.",
+        "data": {
+          "enabled": "Use local values"
+        }
+      },
+      "rescan": {
+        "title": "Search the system again",
+        "description": "Searches the system once more for parts and readings, through the cloud access and the local access. Use it after adding or changing components. The search runs with the next regular update and within the usual limits for requests; it never removes an entity, and readings it does not find again stay as they are."
       }
     },
     "error": {
@@ -239,8 +665,9 @@
       "holiday_time_ambiguous": "The selected start or end time occurs twice because the clock moves back in the heating system's time zone. Choose an unambiguous time.",
       "write_authentication_failed": "The cloud sign-in is no longer valid. Reauthenticate Bosch/Buderus Home Comfort before trying again.",
       "write_failed": "The holiday settings could not be changed.",
+      "write_busy": "The heating system is being read or another change is still running. Nothing was sent. Try again in a moment.",
       "write_not_confirmed": "The change could not be fully confirmed. Some settings may already have been saved. Reopen the holiday and check its current settings.",
-      "write_rate_limited": "The PointT cloud is currently limiting requests. Wait before trying again.",
+      "write_rate_limited": "The cloud is currently limiting requests. Wait before trying again.",
       "write_validation_failed": "At least one selection is no longer supported by the heating system. Close the dialog, refresh the integration, and try again.",
       "holiday_end_not_after_start": "The end must be after the start. Please choose a later end.",
       "rrc_time": "Choose a time in five-minute steps, without seconds.",
@@ -249,34 +676,159 @@
       "rrc_changed": "The schedule has changed or can no longer be edited. Reopen it to check the current settings.",
       "rrc_not_confirmed": "The change could not be confirmed. It may already have been saved. Reopen the schedule and check its current settings.",
       "rrc_failed": "The heating schedule could not be changed. Check the connection and reopen the schedule.",
+      "switch_program_time": "Choose a time in steps of {raster} minutes, without seconds.",
+      "switch_program_level": "Choose one of the offered levels.",
+      "switch_program_duplicate_time": "This day already has a switch point at this time.",
+      "switch_program_too_many_per_day": "This day already has the highest number of switch points the heating system allows ({per_day}).",
+      "switch_program_too_many_in_all": "The week would have more switch points than the heating system allows ({total}).",
+      "switch_program_empty_week": "The week needs at least one switch point.",
+      "switch_program_day_required": "Choose a day.",
+      "switch_program_no_changes": "Nothing has been changed yet.",
+      "switch_program_invalid": "The change does not fit the limits of the schedule.",
+      "switch_program_changed": "The schedule has changed in the meantime or can no longer be changed. Nothing was sent. Reopen it to see the current switch points.",
+      "switch_program_not_confirmed": "The change could not be confirmed. It may already have been saved. Reopen the schedule and check its switch points; the previous ones are shown above.",
+      "switch_program_rejected": "The heating system refused the schedule. Nothing was changed.",
+      "switch_program_unused": "The heating system does not use this schedule at the moment. Nothing was sent.",
+      "switch_program_paused": "Writing to the heating system is paused for a few minutes after repeated failed readings. Nothing was sent. Try again later.",
+      "switch_program_mode": "The schedule is no longer a level program, or its program type could not be read. Nothing was sent. Reopen the schedule.",
+      "switch_program_failed": "The schedule could not be changed. Check the connection and reopen the schedule.",
       "controls_invalid": "An input is invalid or the displayed values have changed. Check your inputs or reload the values. Nothing was written.",
       "controls_changed": "A setting has changed or is no longer available. Previously confirmed changes remain applied. Reload the values before trying again.",
       "controls_auth": "Authentication has expired. Please reauthenticate the integration. Previously confirmed changes remain applied. Reload the values before trying again.",
-      "controls_rate_limit": "The appliance is currently limiting requests. Please wait before trying again. Previously confirmed changes remain applied. Reload the values before trying again.",
+      "controls_rate_limit": "The cloud is currently limiting requests. Please wait before trying again. Previously confirmed changes remain applied. Reload the values before trying again.",
       "controls_unconfirmed": "The last change could not be confirmed. It may already have taken effect on the appliance. Previously confirmed changes remain applied. Reload the values before trying again.",
-      "controls_failed": "Communication with the appliance failed. The last change may already have taken effect. Previously confirmed changes remain applied. Reload the values before trying again."
+      "controls_failed": "Communication with the appliance failed. The last change may already have taken effect. Previously confirmed changes remain applied. Reload the values before trying again.",
+      "controls_busy": "The appliance is being read or another change is still running. This change was not sent. Previously confirmed changes remain applied. Try again in a moment.",
+      "controls_locked": "The appliance currently locks this setting. This change was not sent. Previously confirmed changes remain applied. Try again later.",
+      "controls_unused": "The appliance does not use this setting at the moment. This change was not sent. Previously confirmed changes remain applied.",
+      "controls_curve_order": "The heating curve and the supply limits must stay in order: the base point and the minimum supply temperature at or below the end point and the maximum supply temperature. This change was not sent. Previously confirmed changes remain applied.",
+      "controls_weather_control_off": "This heating circuit setting only works with weather-compensated control, and the circuit uses another control at the moment. This change was not sent. Previously confirmed changes remain applied.",
+      "controls_extra_dhw_duration_zero": "Extra hot water needs a duration of more than 0 minutes. Set the duration first. This change was not sent. Previously confirmed changes remain applied.",
+      "controls_rejected": "The appliance does not accept this value at the moment. This change was not sent. Previously confirmed changes remain applied. Check the value or reload the values.",
+      "cloud_already_connected": "A cloud connection is already configured. Use its connection settings to select more devices or sign in again. A second parallel cloud sign-in is not supported yet.",
+      "cloud_setup_in_progress": "Another cloud setup is already open. Finish or close that dialog first.",
+      "cloud_target_owned": "A selected system or device belongs to another configured entry or cloud connection. Reconnect it through its existing entry.",
+      "cloud_selection_expired": "This device list is no longer current. Open device discovery again before saving.",
+      "cloud_selection_changed": "The selected device is not in the confirmed list. Please search again.",
+      "cloud_connection_disabled": "Enable this cloud connection before searching for devices.",
+      "cloud_rate_limited": "The cloud has requested a pause. Please wait before trying again.",
+      "invalid_auth": "SingleKey ID rejected or expired the authorization. Use the new SingleKey ID link shown above and repeat sign-in.",
+      "invalid_redirect": "Home Assistant could not use this address. Copy the complete app address from the Chrome console's ‘Failed to launch’ message. It must begin with the scheme shown above and belong to the current sign-in attempt.",
+      "cannot_connect": "The cloud access cannot be reached. Check the internet connection, wait a moment, and try again.",
+      "select_gateway": "Select at least one device from the list before continuing.",
+      "no_gateways": "No devices were found. Check that the selected brand and SingleKey ID account match your app. A room controller with older firmware only appears once its firmware has been updated and it has been set up in the current app with your SingleKey ID.",
+      "local_invalid_address": "Enter an IP address or hostname without a URL, path or credentials.",
+      "local_interface_required": "This IPv6 address needs the network interface on the Home Assistant host.",
+      "local_invalid_token": "The token format is invalid. Copy the complete token without spaces.",
+      "local_invalid_credentials": "Check Login and Pass on the gateway label and enter them again.",
+      "local_unlock_required": "Release local sign-in on the gateway and confirm the blue signal before trying again.",
+      "local_token_database_full": "The gateway token database is full. Review its existing tokens before creating another. No tokens were deleted.",
+      "local_rate_limited": "The gateway requested a pause. Wait until the displayed time has elapsed.",
+      "local_service_unavailable": "The gateway service is temporarily unavailable. Wait and try again.",
+      "local_timeout": "The local gateway did not respond in time. Check the connection and try again.",
+      "local_connection_failed": "Home Assistant could not reach this gateway. Check its address and the network connection.",
+      "local_certificate_changed": "The certificate could not be confirmed or has changed. Inspect the gateway certificate again before continuing.",
+      "local_token_rejected": "The gateway rejected this token. Check it or deliberately discard this attempt to use another.",
+      "local_resource_forbidden": "The gateway denied access to a required resource. A token alone does not prove read access.",
+      "local_missing_resource": "The gateway does not provide a required setup resource.",
+      "local_unknown_firmware": "The firmware version could not be verified.",
+      "local_old_firmware": "Update the gateway firmware before setting up the local connection.",
+      "local_unsupported_brand": "This gateway brand is not supported by the documented local interface.",
+      "local_incomplete_system": "The gateway system information is not complete yet. Try the read check again later.",
+      "local_invalid_response": "A required gateway response could not be verified.",
+      "local_identity_unverified": "This system has not yet been matched unambiguously. The first setup requires an available cloud access and matching gateway and module identifiers from both interfaces. Verified links can subsequently be used without the cloud.",
+      "local_identity_conflict": "The gateway identity conflicts with the selected installation or another setup.",
+      "local_configuration_changed": "The selected connection or installation changed. Close this dialog and review the current setup before continuing.",
+      "local_pending_exists": "Another pending attempt exists for this installation or gateway address. Resume or deliberately discard it first.",
+      "local_storage_failed": "The private setup record could not be read or saved. Check Home Assistant storage before continuing.",
+      "local_completion_uncertain": "The connection may already have been saved. Reopen local setup to check its state before attempting another change.",
+      "local_unexpected": "The local check could not be completed. The pending token, if received, is retained for recovery.",
+      "local_confirmation_required": "Confirm this action explicitly before continuing.",
+      "local_busy": "Local access is currently busy or paused. Wait before trying again.",
+      "local_invalid_interval": "Choose 60 to 900 seconds in steps of 60 seconds.",
+      "local_cloud_auth_required": "Sign in to the cloud access again so the first link can be verified. An already verified local access starts independently of the cloud.",
+      "local_cloud_rate_limited": "The cloud is currently limiting requests. Wait for its pause to end, then retry the identity comparison.",
+      "local_cloud_unavailable": "The cloud system information could not be read. Check the cloud access and retry the identity comparison.",
+      "local_auth_forbidden": "The gateway's sign-in service refused the request. Check that local access is allowed on the gateway, then try again.",
+      "local_creation_uncertain": "It is unclear whether the gateway created a token, because its answer was incomplete. Continue with the pending attempt; a new token is not created automatically.",
+      "cloud_local_first_other_entry": "This system is already set up through its local access in another entry of this integration. Add the cloud access in that entry instead.",
+      "cloud_local_first_unverified": "This system could not be compared with the cloud. Nothing was saved. Please try again.",
+      "cloud_local_first_local_unavailable": "The local access of this system is switched off, not running, unreachable or paused. Switch it on and make sure it is reachable, or set it up again, then try again. Nothing was saved.",
+      "cloud_local_first_local_busy": "The local access of this system is busy with its regular readings. Nothing was saved. Wait a moment and try again.",
+      "cloud_rate_limited_until": "The cloud has requested a pause until {until}. Nothing was saved. Please try again after that.",
+      "cloud_local_first_conflict": "The cloud and the local access do not describe the same system. Nothing was saved. Deselect this system to keep using it through its local access only.",
+      "local_plant_known": "This gateway already belongs to a configured system. Choose that system instead of a new one.",
+      "auth_expired": "This sign-in attempt has expired. Open the new SingleKey ID link shown above and sign in again.",
+      "auth_restart": "This sign-in attempt can no longer be used. Open the new SingleKey ID link shown above and sign in again."
     },
     "abort": {
       "no_notification_gateways": "No heating system is configured.",
       "notification_gateways_changed": "The installation selection changed. Open the settings again.",
       "holiday_changed": "The selected holiday has changed or is no longer available for editing. Open the holiday again to review its current details.",
       "holiday_updated": "The holiday settings were saved and confirmed by the heating system.",
+      "holiday_unchanged": "Nothing was changed, so nothing was sent to the heating system.",
       "no_writable_holidays": "Holiday management is currently unavailable. Wait until the installation has provided its holiday settings.",
       "holiday_deleted": "The holiday was deleted and its removal was confirmed by the heating system.",
       "not_loaded": "Bosch/Buderus Home Comfort must be loaded before a holiday can be configured.",
       "holiday_created": "The holiday was created and confirmed by reading it back.",
       "holiday_previous_request_found": "The earlier unresolved request is now confirmed. Your new inputs were not sent. Check the existing holiday under Manage holiday periods first.",
       "holiday_already_exists": "A holiday with this start and circuit selection already exists. No additional holiday was created. Open Manage holiday periods and edit the existing entry.",
-      "holiday_create_unconfirmed": "The creation request could not be confirmed. The holiday may already exist. Check Manage holiday periods or the manufacturer app. While this request remains unresolved, another attempt checks its result without creating a second holiday.",
+      "holiday_create_unconfirmed": "The creation request could not be confirmed. The holiday may already exist. Check Manage holiday periods or the manufacturer app. For the next 10 minutes, another attempt checks the result of this request without creating a second holiday.",
       "holiday_create_adjusted": "The heating system returned a new holiday, but its settings differ from your request. Requested period: {requested}. Returned period: {actual}. Open Manage holiday periods to check and edit this entry.",
       "holiday_update_adjusted": "The heating system returned settings that differ from your requested change. Requested period: {requested}. Returned period: {actual}. Open Manage holiday periods to check and edit the current entry.",
       "no_rrc_schedules": "No current, supported RRC weekly schedule is available.",
-      "controls_not_loaded": "A PointT appliance must be loaded to use these controls."
+      "no_switch_programs": "No current schedule of a heating circuit or of the hot water can be changed here.",
+      "switch_program_changed": "The schedule has changed in the meantime or can no longer be changed. Reopen it to see the current switch points.",
+      "switch_program_saved": "The schedule {program} was saved and confirmed by reading it back.\n\nPrevious switch points of the changed days:\n\n{before}",
+      "controls_not_loaded": "Controls are only available through the cloud access; the local access only reads. Connect a cloud access or wait until it has loaded.",
+      "controls_auth_required": "Controls are not available: the cloud access needs a new sign-in. Readings stay visible.",
+      "controls_cloud_stopped": "Controls are not available: the cloud access is stopped or being restarted. Readings stay visible.",
+      "controls_rate_limited": "Controls are paused after a rate limit of the cloud until about {until}. Readings stay visible.",
+      "controls_protection_pause": "Controls are paused after repeated cloud errors until about {until}. Readings stay visible.",
+      "controls_cloud_unreachable": "Controls are not available: the cloud is not reachable right now. Readings stay visible.",
+      "controls_not_current": "Controls are not available yet: the cloud has not delivered current values. Try again in a moment.",
+      "controls_none": "This appliance currently reports no settings that can be changed here.",
+      "configuration_changed": "The connection settings changed while this dialog was open. Please close it and try again.",
+      "no_connections": "No access is configured. Existing systems and entities are retained.",
+      "connection_reauth_started": "Sign-in has been requested. Open the authentication prompt for this entry.",
+      "cloud_already_connected": "A cloud connection is already configured. Use its connection settings to select more devices or sign in again. A second parallel cloud sign-in is not supported yet.",
+      "cloud_setup_in_progress": "Another cloud setup is already open. Finish or close that dialog first.",
+      "cloud_setup_taken_over": "A newer cloud setup dialog has replaced this one. Close this dialog and continue in the newer one.",
+      "cloud_target_owned": "A selected system or device belongs to another configured entry or cloud connection. Reconnect it through its existing entry.",
+      "cloud_selection_expired": "This device list is no longer current. Open device discovery again before saving.",
+      "cloud_selection_changed": "The selected device is not in the confirmed list. Please search again.",
+      "cloud_connection_disabled": "Enable this cloud connection before searching for devices.",
+      "cloud_rate_limited": "The cloud has requested a pause. Please wait before trying again.",
+      "local_setup_unavailable": "Local setup is not available until regular local data supply is ready.",
+      "local_session_changed": "This setup session has ended or its selection changed. Reopen local setup to continue.",
+      "local_discovery_invalid": "This discovery announcement does not describe a supported local gateway endpoint.",
+      "local_existing_owner_required": "Set up a system without the cloud with \"Local access only\" when adding the integration. A discovered gateway can be added to an existing setup.",
+      "local_target_required": "This setup has no suitable retained installation for a local connection.",
+      "local_setup_complete": "The local access has been set up.",
+      "local_pending_saved": "The pending attempt is retained. You can resume it from local setup.",
+      "local_storage_failed": "The private setup record could not be read or saved. Check Home Assistant storage before continuing.",
+      "cloud_local_first_other_entry": "This system is already set up through its local access in another entry of this integration. Add the cloud access in that entry instead.",
+      "rescan_planned": "The search is planned and runs with the next regular update; new parts appear as soon as they are found.",
+      "rescan_paused": "The search was not started: requests are paused right now (for example after the cloud asked for a pause). Please try again later.",
+      "rescan_running": "A search is already running or planned. Please wait until it has finished.",
+      "rescan_partial": "The search is planned for the parts that are ready and runs with the next regular update. Parts that are paused right now were skipped; please try again later for them.",
+      "rescan_unavailable": "The search was not started: no access to the system is ready right now.",
+      "connection_saved": "The change was saved.",
+      "connection_removed": "The access was removed.",
+      "notifications_saved": "The notification settings were saved.",
+      "rrc_program_saved": "The switch point was saved and confirmed by reading it back."
+    },
+    "progress": {
+      "local_work": "Checking the local connection. Please wait."
     }
   },
   "issues": {
+    "fault_source_removed": {
+      "title": "A fault source no longer exists",
+      "description": "The integration no longer waits for {count} fault source(s) of a heating system that no longer exist, for example the error list of a radio room device that was removed or replaced. Until now such a source kept every fault from ending. Faults that only it reported now end after the next two complete reads with a normal \"resolved\" event. If the device is still installed, check its connection to the system; its error list counts again as soon as the system reports it again. You can ignore this notice; it disappears after the next restart."
+    },
     "repeated_rate_limit": {
-      "title": "Bosch/Buderus cloud requests are being limited",
+      "title": "Cloud requests are being limited",
       "fix_flow": {
         "step": {
           "confirm": {
@@ -290,21 +842,193 @@
       }
     },
     "incompatible_firmware": {
-      "title": "PointT capabilities changed after a firmware update",
+      "title": "Capabilities changed after a firmware update",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Rediscover PointT capabilities",
-            "description": "Bosch/Buderus Home Comfort found {conflict_count} known capabilities whose data type or unit no longer matches the safely supported PointT schema. Select **Submit** to reload the integration and inspect all capabilities again. If the warning returns, download the integration diagnostics and report the changed schema without sharing credentials or raw values."
+            "title": "Rediscover the capabilities",
+            "description": "Bosch/Buderus Home Comfort found {conflict_count} known capabilities whose data type or unit no longer matches the safely supported schema. Select **Submit** to reload the integration and inspect all capabilities again. If the warning returns, download the integration diagnostics and report the changed schema without sharing credentials or raw values."
           }
         },
         "abort": {
           "entry_not_found": "The affected Bosch/Buderus Home Comfort entry no longer exists."
         }
       }
+    },
+    "managed_rate_limit": {
+      "title": "Cloud requests are being limited",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Use cloud-friendly polling",
+            "description": "Switch only the affected cloud connection to cloud-friendly polling: current operating values every two minutes, control and energy values every ten minutes, and slow counters every thirty minutes. Only this connection reconnects; other connections remain active."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected Bosch/Buderus Home Comfort entry no longer exists.",
+          "configuration_changed": "The access or heating system has changed. Open the repair again."
+        }
+      }
+    },
+    "managed_firmware": {
+      "title": "Capabilities changed after a firmware update",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Rediscover the capabilities",
+            "description": "This heating system reports {conflict_count} known capabilities with an unexpected data type or unit. Inspect its capabilities again. Only this source restarts; other systems and connections remain active. Existing entity IDs and custom settings are retained."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected Bosch/Buderus Home Comfort entry no longer exists.",
+          "configuration_changed": "The access or heating system has changed. Open the repair again."
+        }
+      }
+    },
+    "local_certificate_changed": {
+      "title": "Local gateway certificate changed",
+      "description": "The gateway of a local access presents a different certificate. The integration does not accept it on its own and stops reading locally. If you know why the certificate changed (for example after a gateway update or reset), open the integration options, choose the local access and select \"Change local access\". You confirm the new certificate there. A new sign-in with the device label is recommended; keep the current token only if you are sure the new certificate belongs to your own gateway."
+    },
+    "local_start_certificate": {
+      "title": "Local access cannot connect securely",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Try the local access again",
+            "description": "The local access has failed to start several times in a row because the secure connection to the gateway could not be established (code: {code}). This can happen while the gateway restarts. The integration keeps trying on its own, at the latest every hour, and removes this note once the local access starts. Other accesses are not affected. Select **Submit** to try again now. If it persists, check that the stored address still belongs to your gateway."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected entry no longer exists.",
+          "configuration_changed": "The access or heating system has changed. Open the repair again."
+        }
+      }
+    },
+    "local_start_incomplete": {
+      "title": "Local gateway is not ready yet",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Try the local access again",
+            "description": "The local access has failed to start several times in a row because the gateway reports that its system information is not complete yet (code: {code}). This is usual for a while after the gateway starts. The integration keeps trying on its own, at the latest every hour, and removes this note once the local access starts. Other accesses are not affected. Select **Submit** to try again now. If the note stays for hours, restart the gateway."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected entry no longer exists.",
+          "configuration_changed": "The access or heating system has changed. Open the repair again."
+        }
+      }
+    },
+    "local_start_unrecognized": {
+      "title": "Local gateway answer not recognized",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Try the local access again",
+            "description": "The local access has failed to start several times in a row because the gateway's answer about its brand, firmware or identity could not be recognized (code: {code}). The integration keeps trying on its own, at the latest every hour, and removes this note once the local access starts. Other accesses are not affected. Select **Submit** to try again now. If the note stays after a gateway update, please report the code."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected entry no longer exists.",
+          "configuration_changed": "The access or heating system has changed. Open the repair again."
+        }
+      }
+    },
+    "local_start_response": {
+      "title": "Local gateway answers unexpectedly",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Try the local access again",
+            "description": "The local access has failed to start several times in a row because the gateway answers, but not as expected, for example with an error or an unreadable answer (code: {code}). The integration keeps trying on its own, at the latest every hour, and removes this note once the local access starts. Other accesses are not affected. Select **Submit** to try again now. If it persists, check that the stored address still belongs to your gateway."
+          }
+        },
+        "abort": {
+          "entry_not_found": "The affected entry no longer exists.",
+          "configuration_changed": "The access or heating system has changed. Open the repair again."
+        }
+      }
+    },
+    "cloud_targets_not_found": {
+      "title": "Systems not found in the cloud account",
+      "description": "The last sign-in of the cloud access in \"{title}\" did not find {count} switched-on systems or devices (ending in {systems}). They stay configured and unavailable until they appear in the account again; this note then disappears.\n\nIf they were removed from the account, open Configure → Connections → the cloud access, switch them off under **Use for systems and devices** and remove them with **Forget deselected systems**. Their devices and entities stay in Home Assistant until you delete them. If a gateway was exchanged, keep it switched on: a separate repair note offers to continue the system with its history."
+    },
+    "gateway_exchange": {
+      "title": "Gateway replaced?",
+      "fix_flow": {
+        "step": {
+          "evidence_match": {
+            "title": "Gateway replaced?",
+            "description": "The gateway ending in **{old}** no longer appears in the cloud access. A new gateway ending in **{new}** appeared instead. At least one device module it reports matches one this system reported before (for example the heat source or the controller). This strongly suggests that the gateway was replaced.\n\nHow do you want to continue?",
+            "menu_options": {
+              "continue": "Continue as the same system",
+              "separate": "Keep as a separate system",
+              "later": "Decide later"
+            }
+          },
+          "evidence_no_match": {
+            "title": "Gateway replaced?",
+            "description": "The gateway ending in **{old}** no longer appears in the cloud access. A new gateway ending in **{new}** appeared instead. However, the device modules it reports differ from those this system reported before. It may belong to another system.\n\nHow do you want to continue?",
+            "menu_options": {
+              "continue": "Continue as the same system",
+              "separate": "Keep as a separate system",
+              "later": "Decide later"
+            }
+          },
+          "evidence_unknown": {
+            "title": "Gateway replaced?",
+            "description": "The gateway ending in **{old}** no longer appears in the cloud access. A new gateway ending in **{new}** appeared instead. Its device modules could not be compared, because no earlier module data is stored or the new gateway did not report any. Whether it is the same system cannot be confirmed.\n\nHow do you want to continue?",
+            "menu_options": {
+              "continue": "Continue as the same system",
+              "separate": "Keep as a separate system",
+              "later": "Decide later"
+            }
+          },
+          "continue_match": {
+            "title": "Continue as the same system",
+            "description": "The system continues with the gateway ending in {new}. Its history, its entities with their IDs, names and areas, and your automations stay. The integration stops briefly and starts again.\n\nIf a local access is set up for this system, it is removed, because it belongs to the old gateway. Set it up again for the new gateway afterwards.\n\nPlease create a Home Assistant backup first.",
+            "data": {
+              "confirm": "Continue this system with the new gateway"
+            }
+          },
+          "continue_unverified": {
+            "title": "Continue without confirmation",
+            "description": "**Warning:** It cannot be confirmed that the gateway ending in {new} belongs to this system. If it belongs to another system, that system's values end up in this system's history and your automations act on the wrong system. Only continue if you replaced the gateway yourself and are sure.\n\nThe system continues with the gateway ending in {new}. Its history, its entities with their IDs, names and areas, and your automations stay. The integration stops briefly and starts again.\n\nIf a local access is set up for this system, it is removed, because it belongs to the old gateway. Set it up again for the new gateway afterwards.\n\nPlease create a Home Assistant backup first.",
+            "data": {
+              "confirm": "Continue this system with the new gateway",
+              "confirm_unverified": "I am sure that the new gateway belongs to this system"
+            }
+          },
+          "separate": {
+            "title": "Keep as a separate system",
+            "description": "The integration no longer asks about this gateway. The system with the old gateway stays as it is. To add the new gateway as a system of its own, select it in the options of the cloud access."
+          }
+        },
+        "error": {
+          "confirmation_required": "Please confirm to continue."
+        },
+        "abort": {
+          "entry_not_found": "The affected entry of this integration no longer exists.",
+          "configuration_changed": "The access or the system has changed. Open the repair again.",
+          "later": "Nothing was changed. The note stays under repairs until you decide.",
+          "exchange_unavailable": "The integration is not running. Start it and open the repair again.",
+          "cloud_unavailable": "The cloud access cannot be reached right now. Try again later.",
+          "exchange_changed": "The gateways in the cloud access have changed. Open the repair again when it is shown again.",
+          "exchange_collision": "Nothing was changed: entities or a device for the new gateway already exist. Remove them first or keep the new gateway as a separate system.",
+          "exchange_failed": "Nothing was changed; the system continues with the old gateway. Details are in the log.",
+          "unload_failed": "Nothing was changed: the integration could not be stopped. Restart Home Assistant and open the repair again."
+        }
+      }
+    },
+    "setup_unfinished": {
+      "title": "Setup not finished",
+      "description": "The entry \"{title}\" has no access yet. Open its configuration options and choose \"Set up local access\" (or add a cloud access) to finish the setup."
     }
   },
   "exceptions": {
+    "invalid_stored_configuration": {
+      "message": "The saved configuration of this entry cannot be read ({reason}). Nothing was changed. Restore a backup from before the problem, or delete the entry and add it again."
+    },
     "holiday_previous_request_found": {
       "message": "The earlier unresolved request is now confirmed. Your new inputs were not sent. Check the existing holiday under Configure → Manage holiday periods."
     },
@@ -312,7 +1036,7 @@
       "message": "A holiday with this start and circuit selection already exists. Edit that entry under Configure → Manage holiday periods."
     },
     "holiday_create_unconfirmed": {
-      "message": "Creation could not be confirmed. The holiday may already exist. Check Manage holiday periods or the manufacturer app. Another attempt checks the unresolved request without creating a second holiday."
+      "message": "Creation could not be confirmed. The holiday may already exist. Check Manage holiday periods or the manufacturer app. For the next 10 minutes, another attempt checks the unresolved request without creating a second holiday."
     },
     "holiday_update_unconfirmed": {
       "message": "The change could not be fully confirmed. Some settings may already have been saved. Check the current holiday under Configure → Manage holiday periods."
@@ -329,20 +1053,86 @@
     "holiday_time_ambiguous": {
       "message": "The selected start or end time occurs twice because the clock moves back in the heating system's time zone. Choose an unambiguous time."
     },
+    "holiday_changes_unavailable": {
+      "message": "This heating system does not currently allow holiday changes."
+    },
+    "holiday_create_failed": {
+      "message": "The holiday could not be created or confirmed."
+    },
+    "holiday_change_unsafe": {
+      "message": "This holiday cannot currently be changed safely."
+    },
+    "holiday_update_failed": {
+      "message": "The holiday could not be changed or confirmed."
+    },
+    "holiday_not_deletable": {
+      "message": "This holiday cannot be deleted here."
+    },
+    "holiday_delete_failed": {
+      "message": "The holiday could not be deleted or confirmed."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Recurring holidays are not supported."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Holidays have no description or location. Remove them and try again."
+    },
+    "select_option_unavailable": {
+      "message": "The heating system no longer offers this option. Reload the values and choose again."
+    },
+    "rrc_mode_locked": {
+      "message": "The controller currently locks the heating mode of this zone, for example while the system cools. The current mode stays shown. Try again later."
+    },
+    "rrc_zone_setting_locked": {
+      "message": "The controller currently locks this setting of the zone. The current value stays shown. Try again later."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "The controller currently locks this heating circuit setting. The current value stays shown. Try again later."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "The controller currently locks this hot water setting, for example because the water heater does not offer it right now. The current value stays shown. Try again later."
+    },
+    "rrc_device_setting_locked": {
+      "message": "The controller currently locks this setting of the radio device. The current value stays shown. Try again later."
+    },
+    "rrc_setting_locked": {
+      "message": "The controller currently locks this setting. The current value stays shown. Try again later."
+    },
     "write_validation_failed": {
       "message": "This setting is not currently safe to change. Refresh or reconfigure the integration and try again."
     },
     "write_not_confirmed": {
-      "message": "The heating system did not confirm the new operating mode. Its previous displayed state has been retained."
+      "message": "The change was sent, but the heating system did not confirm it. It may already have taken effect. The value is updated with the next reading."
+    },
+    "rrc_write_pending_confirmation": {
+      "message": "The change was sent to the room controller, but it has not confirmed it yet. The controller may apply it with a delay; the value is updated with the next reading."
     },
     "write_authentication_failed": {
       "message": "The cloud sign-in is no longer valid. Reauthenticate Bosch/Buderus Home Comfort before trying again."
     },
     "write_rate_limited": {
-      "message": "The PointT cloud is currently limiting requests. Wait before trying the change again."
+      "message": "The cloud is currently limiting requests. Wait before trying the change again."
     },
     "write_failed": {
-      "message": "The operating mode could not be changed. No success was reported because the heating system did not confirm the value."
+      "message": "The change could not be completed and was not confirmed by the heating system. The value shown is updated with the next reading."
+    },
+    "write_busy": {
+      "message": "The heating system is being read or another change is still running. Nothing was sent. Try again in a moment."
+    },
+    "command_cloud_auth_required": {
+      "message": "Not possible right now: the cloud access needs a new sign-in. Nothing was sent."
+    },
+    "command_cloud_stopped": {
+      "message": "Not possible right now: the cloud access is stopped or being restarted. Nothing was sent."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Not possible right now: requests are paused after a rate limit of the cloud until about {until}. Nothing was sent."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Not possible right now: requests are paused after repeated cloud errors until about {until}. Nothing was sent."
+    },
+    "command_cloud_unreachable": {
+      "message": "Not possible right now: the cloud is not reachable. Nothing was sent. Try again once current values are shown."
     },
     "holiday_end_not_after_start": {
       "message": "The end must be after the start. Please choose a later end."
@@ -357,10 +1147,118 @@
       "message": "Please change temperature and operation mode separately so each change can be confirmed."
     },
     "heating_climate_command": {
-      "message": "This thermostat command is not currently available. Temperatures can only be changed in manual heating mode. Select the mode separately and check that the appliance is providing current values."
+      "message": "This thermostat command is not currently available. Temperatures can only be changed in manual heating mode, or in automatic mode when the heating circuit offers a temporary setpoint. Select the mode separately and check that the appliance is providing current values."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "This heating circuit has no temporary setpoint to clear at the moment."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "The appliance determines the current hot water setpoint. You can adjust the separate mode start temperatures under Operate appliance."
+    },
+    "gateway_exchange_incomplete": {
+      "message": "An interrupted gateway exchange could not be finished, so the integration does not start. Details are in the log; remove what blocks the exchange (for example entities of the new gateway) and restart Home Assistant."
+    },
+    "rrc_override_ended": {
+      "message": "The room controller ended the temporary setpoint at once, for example because the next switch point of the schedule was reached. The schedule's setpoint applies."
+    },
+    "rrc_override_needs_clock_mode": {
+      "message": "A temporary setpoint can only be set or cleared while the zone follows its schedule. Select the schedule mode first."
+    },
+    "rrc_override_below_minimum": {
+      "message": "The temporary setpoint must lie at or above the lowest manual setpoint of the zone. Choose a higher temperature."
+    },
+    "rrc_override_not_active": {
+      "message": "This zone has no temporary setpoint to clear at the moment."
+    },
+    "rrc_advance_not_offered": {
+      "message": "The next switch point of this zone cannot be advanced at the moment. This needs the schedule mode and a next setpoint that the temporary setpoint can take."
+    },
+    "rrc_zone_climate_command": {
+      "message": "This zone command is not available at the moment. Check that the zone reports current values and that the temperature lies within the offered range; a temporary setpoint needs the schedule mode."
+    },
+    "rrc_zone_locked_away": {
+      "message": "Away mode is active. Switch it off to change the setpoint of this zone; nothing was sent."
+    },
+    "rrc_zone_standby": {
+      "message": "This zone is in standby on the room controller and cannot be controlled at the moment; nothing was sent."
+    },
+    "rrc_zone_unreachable": {
+      "message": "The room controller reports a zone or communication error for this zone, so it cannot be controlled at the moment; nothing was sent."
+    },
+    "rrc_device_setting_unused": {
+      "message": "The radio device does not use this setting at the moment, so it was not changed."
+    },
+    "rrc_setting_unused": {
+      "message": "The room controller does not use this setting at the moment, so it was not changed."
+    },
+    "rrc_away_unused": {
+      "message": "Away mode is not possible in the room controller's current operating mode, so it was not changed."
+    },
+    "rrc_window_detection_unused": {
+      "message": "The room controller does not offer open window detection here at the moment, so it was not changed."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "The room controller does not use this hot water setting at the moment, so it was not changed."
+    },
+    "rrc_boost_changed": {
+      "message": "The boost changed on the room controller after it was shown, so nothing was sent. Check the current boost and try again."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Only the levels high, medium and low can be set for the open window detection."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "The start time must be a time of day between 00:00 and 23:59."
+    },
+    "rrc_time_of_day_step": {
+      "message": "Choose a start time in steps of {step} minutes."
+    },
+    "rrc_curve_order": {
+      "message": "The heating curve and the supply limits must stay in order: the base point and the minimum supply temperature at or below the end point and the maximum supply temperature. Nothing was sent; change the other limit first."
+    },
+    "rrc_weather_control_off": {
+      "message": "This heating circuit setting only works with weather-compensated control, and the circuit uses another control at the moment. Nothing was sent."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Extra hot water needs a duration of more than 0 minutes. Set the duration first. Nothing was sent."
+    },
+    "rrc_event_invalid_name": {
+      "message": "Enter a name with 1 to 32 bytes of printable text (fewer characters with umlauts or emoji)."
+    },
+    "rrc_event_invalid_dates": {
+      "message": "The event needs whole days from 2016 to 2099: a start on or before the end, and an end not in the past."
+    },
+    "rrc_event_overlap": {
+      "message": "The event shares a day with another event of the room controller. Events may not overlap, not even on their first or last day."
+    },
+    "rrc_event_type_read_only": {
+      "message": "A day run like another weekday can only be deleted here, not changed."
+    },
+    "rrc_event_rejected": {
+      "message": "The room controller refused the event, for example because its calendar is full. Nothing was changed."
+    },
+    "rrc_event_pending": {
+      "message": "An earlier change of the events is not confirmed yet. Nothing was sent; wait until it shows in the calendar or try again in ten minutes."
+    },
+    "rrc_event_lists_unreadable": {
+      "message": "Not every event list of the room controller can be read right now, so the events cannot be checked completely. Nothing was sent; try again later."
+    },
+    "rrc_event_unsupported_fields": {
+      "message": "The room controller stores only a name and whole days. Recurring events, descriptions and locations are not supported."
+    },
+    "rrc_boost_no_zones": {
+      "message": "The boost has no rooms. Select the rooms for the boost on the room controller first."
+    },
+    "rrc_boost_unsupported_shape": {
+      "message": "The room controller reports the boost in a form this integration does not know completely. The boost is shown but not changed, so that no setting is lost."
+    },
+    "rrc_boost_locked": {
+      "message": "The room controller currently locks the boost. Try again later."
+    },
+    "rrc_boost_running": {
+      "message": "The boost is running. Its temperature and duration can be changed only while it is off; they then apply from its next start. Nothing was changed."
+    },
+    "switch_program_not_readable": {
+      "message": "The selected schedule cannot be read at the moment. Nothing was sent."
     }
   },
   "selector": {
@@ -430,12 +1328,42 @@
         "sa": "Saturday",
         "su": "Sunday"
       }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Edit a day",
+        "copy": "Copy a day to other days",
+        "review": "Review and save the changes"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Add a switch point",
+        "done": "Back to the week"
+      }
+    },
+    "local_method": {
+      "options": {
+        "label": "Device label (recommended)",
+        "token": "Existing token",
+        "keep": "Keep the current token (not recommended)"
+      }
+    },
+    "local_pending_action": {
+      "options": {
+        "continue": "Continue with saved token",
+        "discard": "Discard pending attempt",
+        "later": "Continue later"
+      }
     }
   },
   "entity": {
     "number": {
       "manual_room_setpoint": {
         "name": "Manual setpoint"
+      },
+      "pool_setpoint_temperature": {
+        "name": "Pool target temperature"
       },
       "heating_temperature": {
         "name": "Heating"
@@ -472,6 +1400,51 @@
       },
       "bacon_purifier_light_intensity": {
         "name": "Ambient light brightness"
+      },
+      "rrc_window_duration": {
+        "name": "Open window duration"
+      },
+      "rrc_window_temperature": {
+        "name": "Open window temperature"
+      },
+      "rrc_temperature_offset": {
+        "name": "Temperature offset"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Extra hot water duration"
+      },
+      "rrc_hot_water_temperature": {
+        "name": "Hot water temperature"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Heating curve base point"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Heating curve end point"
+      },
+      "rrc_min_supply": {
+        "name": "Minimum supply temperature"
+      },
+      "rrc_max_supply": {
+        "name": "Maximum supply temperature"
+      },
+      "rrc_room_influence": {
+        "name": "Room influence"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Stop heating at outdoor temperature"
+      },
+      "rrc_night_threshold": {
+        "name": "Night setback down to outdoor temperature"
+      },
+      "rrc_boost_temperature": {
+        "name": "Boost temperature"
+      },
+      "rrc_boost_duration": {
+        "name": "Boost duration"
+      },
+      "rrc_away_temperature": {
+        "name": "Away temperature"
       }
     },
     "select": {
@@ -526,6 +1499,17 @@
           "auto": "Auto"
         }
       },
+      "ventilation_exhaust_fan_level": {
+        "name": "Exhaust fan level",
+        "state": {
+          "off": "Off",
+          "min": "Fan level 1",
+          "red": "Fan level 2",
+          "nom": "Fan level 3",
+          "max": "Fan level 4",
+          "dem": "Demand"
+        }
+      },
       "rrc_user_mode": {
         "state": {
           "manual": "Manual",
@@ -542,6 +1526,56 @@
           "purple": "Purple",
           "orange": "Orange",
           "red": "Red"
+        }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Open window detection sensitivity",
+        "state": {
+          "high": "High",
+          "medium": "Medium",
+          "low": "Low"
+        }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Thermal disinfection day",
+        "state": {
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday",
+          "saturday": "Saturday",
+          "sunday": "Sunday",
+          "daily": "Every day"
+        }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Summer/winter switching",
+        "state": {
+          "off": "Off",
+          "automatic": "Automatic"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Night setback by outdoor temperature",
+        "state": {
+          "off": "Off",
+          "automatic": "Automatic"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Season mode",
+        "state": {
+          "always_heating": "Always heating",
+          "always_cooling": "Always cooling",
+          "automatic": "Automatic"
+        }
+      },
+      "active_switch_program": {
+        "name": "Active schedule",
+        "state": {
+          "a": "Program A",
+          "b": "Program B"
         }
       }
     },
@@ -561,6 +1595,9 @@
       "wddw2_holiday_mode": {
         "name": "Holiday mode"
       },
+      "pool_enabled": {
+        "name": "Pool"
+      },
       "bacon_purifier_child_lock": {
         "name": "Child lock"
       },
@@ -578,6 +1615,33 @@
       },
       "bacon_dry_child_lock": {
         "name": "Child lock"
+      },
+      "bacon_dry_display": {
+        "name": "Display"
+      },
+      "rrc_window_detection": {
+        "name": "Open window detection"
+      },
+      "rrc_system_window_detection": {
+        "name": "Open window detection"
+      },
+      "rrc_child_lock": {
+        "name": "Child lock"
+      },
+      "rrc_extra_dhw": {
+        "name": "Extra hot water"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Thermal disinfection"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Setpoint optimization"
+      },
+      "rrc_boost": {
+        "name": "Boost"
+      },
+      "rrc_fireplace": {
+        "name": "Fireplace function"
       }
     },
     "sensor": {
@@ -629,6 +1693,9 @@
       "calculated_dew_point": {
         "name": "Dew point (calculated)"
       },
+      "estimated_energy": {
+        "name": "Energy (estimated from current power)"
+      },
       "heating_switch_program": {
         "name": "Heating time program",
         "state": {
@@ -644,7 +1711,9 @@
         "state": {
           "low": "Eco",
           "eco": "Eco+",
+          "eco_plus": "Eco plus",
           "high": "Comfort",
+          "comfort": "Comfort",
           "off": "Off"
         }
       },
@@ -787,6 +1856,20 @@
           "start": "On"
         }
       },
+      "four_way_valve_position": {
+        "name": "4-way valve",
+        "state": {
+          "off": "Heating",
+          "on": "Cooling/defrost"
+        }
+      },
+      "dhw_valve_position": {
+        "name": "Hot water 3-way valve",
+        "state": {
+          "off": "Heating",
+          "on": "Hot water"
+        }
+      },
       "heat_demand": {
         "name": "Current heat demand",
         "state": {
@@ -833,6 +1916,35 @@
           "auto": "Auto"
         }
       },
+      "refrigerant_status": {
+        "name": "Refrigerant circuit status",
+        "state": {
+          "idle": "Idle",
+          "startup": "Starting",
+          "heating": "Heating",
+          "cooling": "Cooling",
+          "defrost": "Defrosting",
+          "passive_defrost": "Passive defrosting",
+          "shutoff": "Shut off",
+          "alarm": "Alarm",
+          "test_mode": "Test mode",
+          "off": "Off",
+          "dhw": "Hot water",
+          "pool": "Pool",
+          "pool_heat": "Pool heating"
+        }
+      },
+      "ventilation_fan_level": {
+        "name": "Exhaust fan level",
+        "state": {
+          "off": "Off",
+          "min": "Fan level 1",
+          "red": "Fan level 2",
+          "nom": "Fan level 3",
+          "max": "Fan level 4",
+          "dem": "Demand"
+        }
+      },
       "pv_contact_state": {
         "name": "PV contact status",
         "state": {
@@ -865,6 +1977,12 @@
           "not_supported_pairing_enabled": "Not supported: pairing enabled",
           "supported": "Supported",
           "in_evaluation": "Being evaluated"
+        }
+      },
+      "isrc_installation_status": {
+        "name": "iSRC installation status",
+        "state": {
+          "timeout": "Timed out"
         }
       },
       "heat_pump_type": {
@@ -954,13 +2072,13 @@
         "name": "Next holiday"
       },
       "pointt_api_requests_total": {
-        "name": "PointT API requests total"
+        "name": "Cloud requests total"
       },
       "pointt_api_requests_last_hour": {
-        "name": "PointT API requests – last hour"
+        "name": "Cloud requests – last hour"
       },
       "pointt_api_response_time_last_hour": {
-        "name": "PointT API response time – last hour"
+        "name": "Cloud response time – last hour"
       },
       "softener_regeneration_phase": {
         "state": {
@@ -1069,11 +2187,169 @@
       },
       "wallbox_hardware_current_limit": {
         "name": "Hardware current limit"
+      },
+      "smart_grid_mode": {
+        "name": "Smart grid mode",
+        "state": {
+          "blocked": "Blocked",
+          "normal": "Normal",
+          "preferred": "Preferred",
+          "forced": "Forced",
+          "not_used": "Not used"
+        }
+      },
+      "signal_season_mode": {
+        "name": "Season mode",
+        "state": {
+          "heating": "Heating",
+          "idle": "Idle",
+          "cooling": "Cooling"
+        }
+      },
+      "signal_heat_cool": {
+        "name": "Heating/cooling state",
+        "state": {
+          "idle": "Idle",
+          "heat": "Heating",
+          "cool": "Cooling"
+        }
+      },
+      "signal_holiday_slot": {
+        "name": "Holiday period",
+        "state": {
+          "idle": "Not planned",
+          "planned": "Planned",
+          "active": "Active"
+        }
+      },
+      "signal_true_false": {
+        "name": "State",
+        "state": {
+          "true": "Yes",
+          "false": "No"
+        }
+      },
+      "volume_flow": {
+        "state_attributes": {
+          "measuring_range": {
+            "name": "Measuring range",
+            "state": {
+              "below": "Below measuring range"
+            }
+          }
+        }
+      },
+      "rrc_next_setpoint": {
+        "name": "Next setpoint"
+      },
+      "rrc_minutes_to_next_setpoint": {
+        "name": "Minutes to the next setpoint"
+      },
+      "rrc_zone_status": {
+        "name": "Zone status",
+        "state": {
+          "idle": "Idle",
+          "heat_request": "Heat request",
+          "zone_error": "Zone error",
+          "comm_error": "Communication error",
+          "comm_warning": "Communication warning",
+          "low_battery": "Low battery"
+        }
+      },
+      "rrc_zone_valve_position": {
+        "name": "Valve opening"
+      },
+      "rrc_optimum_start_state": {
+        "name": "Optimum start"
+      },
+      "rrc_optimum_start_heatup_rate": {
+        "name": "Optimum start heat-up rate"
+      },
+      "rrc_valve_position": {
+        "name": "Valve opening"
+      },
+      "rrc_max_valve_position": {
+        "name": "Maximum valve opening"
+      },
+      "rrc_valve_temperature": {
+        "name": "Temperature at the valve"
+      },
+      "rrc_valve_state": {
+        "name": "Valve state"
+      },
+      "rrc_whisper_mode": {
+        "name": "Whisper mode"
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Thermal disinfection result"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Current hot water schedule level",
+        "state": {
+          "off": "Off",
+          "low": "Eco",
+          "high": "Comfort",
+          "eco": "Eco+"
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Operating season",
+        "state": {
+          "heating": "Heating",
+          "cooling": "Cooling",
+          "idle": "Idle"
+        }
+      },
+      "rrc_display_code": {
+        "name": "Display code"
+      },
+      "rrc_cause_code": {
+        "name": "Cause code"
+      },
+      "rrc_maintenance_request": {
+        "name": "Maintenance request"
+      },
+      "rrc_system_pressure": {
+        "name": "System pressure"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Indoor humidity"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Controller air temperature"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Controller chip temperature"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Controller board temperature"
+      },
+      "rrc_update_state": {
+        "name": "Firmware update state"
       }
     },
     "binary_sensor": {
       "holiday_active": {
         "name": "Holiday mode active"
+      },
+      "cloud_control": {
+        "name": "Cloud control available",
+        "state_attributes": {
+          "reason": {
+            "name": "Reason",
+            "state": {
+              "auth_required": "Sign-in required",
+              "cloud_stopped": "Cloud access stopped",
+              "rate_limited": "Paused after a rate limit",
+              "protection_pause": "Protection pause after repeated errors",
+              "cloud_unreachable": "Cloud not reachable",
+              "not_current": "Values not current yet"
+            }
+          },
+          "until": {
+            "name": "Until"
+          }
+        }
       },
       "system_fault": {
         "name": "System fault"
@@ -1113,21 +2389,64 @@
       },
       "bacon_dry_device_error": {
         "name": "Reported device error"
+      },
+      "rrc_window_open": {
+        "name": "Window open"
+      },
+      "rrc_valve_problem": {
+        "name": "Valve problem"
+      },
+      "rrc_locking_error": {
+        "name": "Locking fault"
+      },
+      "rrc_blocking_error": {
+        "name": "Blocking fault"
+      },
+      "rrc_maintenance_due": {
+        "name": "Maintenance due"
+      },
+      "rrc_refill_needed": {
+        "name": "Refill needed"
       }
     },
     "calendar": {
       "holiday_periods": {
         "name": "Holiday periods"
+      },
+      "rrc_events": {
+        "name": "Absences and special days",
+        "state_attributes": {
+          "stale": {
+            "name": "Events possibly outdated"
+          }
+        }
       }
     },
     "event": {
       "system_notifications": {
-        "name": "System notifications"
+        "name": "System notifications",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Appeared",
+              "resolved": "Resolved"
+            }
+          }
+        }
       }
     },
     "button": {
       "softener_start_regeneration": {
         "name": "Start regeneration"
+      },
+      "rrc_override_clear": {
+        "name": "Clear temporary setpoint"
+      },
+      "heating_temporary_setpoint_clear": {
+        "name": "Clear temporary setpoint"
+      },
+      "rrc_override_advance": {
+        "name": "Advance next switch point"
       }
     },
     "water_heater": {
@@ -1207,6 +2526,34 @@
               "off": "Off",
               "on": "On"
             }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "None",
+              "eco": "Eco"
+            }
+          }
+        }
+      },
+      "rrc_zone": {
+        "name": "Zone",
+        "state_attributes": {
+          "zone_status": {
+            "state": {
+              "idle": "Idle",
+              "heat_request": "Heat request",
+              "zone_error": "Zone error",
+              "comm_error": "Communication error",
+              "comm_warning": "Communication warning",
+              "low_battery": "Low battery"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Away mode",
+              "standby": "Standby",
+              "unreachable": "Zone or communication error"
+            }
           }
         }
       }
@@ -1234,6 +2581,34 @@
               "auto": "Automatic",
               "night": "Night",
               "laundry": "Laundry drying"
+            }
+          }
+        }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Thermal disinfection start time"
+      }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Firmware",
+        "state_attributes": {
+          "auto_update_enabled": {
+            "name": "Automatic update enabled"
+          },
+          "auto_update_changeable": {
+            "name": "Automatic update changeable"
+          },
+          "update_state": {
+            "name": "Update state",
+            "state": {
+              "waiting": "Waiting for approval",
+              "denied": "Declined",
+              "approved": "Approved",
+              "none": "No approval state",
+              "unknown": "Unknown"
             }
           }
         }

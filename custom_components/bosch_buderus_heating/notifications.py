@@ -7,7 +7,7 @@ import hashlib
 import html
 import logging
 import re
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
@@ -17,15 +17,19 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
-from .const import CONF_FAULT_NOTIFICATIONS, CONF_GATEWAY_IDS, DOMAIN
+from .const import CONF_FAULT_NOTIFICATIONS, CONF_NOTIFY_NOTICES, DOMAIN
+from .entry_sources import notification_gateways
 from .faults import (
     ActiveFault,
     FaultEventType,
     FaultLifecycleEvent,
     FaultSeverity,
+    FaultTracker,
     fault_severity_label,
     fault_summary,
 )
+from .i18n import language_code, localize, localize_all
+from .log_helpers import log_failure
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -35,6 +39,12 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 _MAX_DETAILS = 25
 _RANK = {FaultSeverity.UNKNOWN: 0, FaultSeverity.FAULT: 1, FaultSeverity.CRITICAL: 2}
+# With the option on, warnings and maintenance join the notification. They
+# rank below every fault, so a fault after a dismissed warning shows again;
+# the stored ranks of faults keep their earlier values.
+_NOTICE_RANK = {FaultSeverity.MAINTENANCE: -2, FaultSeverity.WARNING: -1}
+_ALL_RANKS = {**_NOTICE_RANK, **_RANK}
+_UNSEEN = -3
 _TEXT = {
     "en": {
         "title": "{name}: heating system fault",
@@ -50,7 +60,21 @@ _TEXT = {
             "Last reported faults. Their current status has not yet been confirmed."
         ),
         "resolved": "The previously reported faults are no longer active.",
+        # SYSTEM-07: the same with warnings or maintenance among them.
+        "resolved_notices_title": "{name}: notifications cleared",
+        "unconfirmed_notices": (
+            "Last reported notifications. "
+            "Their current status has not yet been confirmed."
+        ),
+        "resolved_notices": (
+            "The previously reported notifications are no longer active."
+        ),
+        "more_resolved_notices": (
+            "{count} older cleared notifications are no longer listed."
+        ),
         "more": "{count} additional active faults.",
+        "active_notices": "Active notifications: {count}",
+        "more_notices": "{count} additional active notifications.",
         "more_changed": "{count} additional notifications with changed classification.",
         "more_resolved": "{count} older resolved faults are no longer listed.",
         "open": "Open heating system",
@@ -77,7 +101,18 @@ _TEXT = {
             "Ihr aktueller Status ist noch nicht bestätigt."
         ),
         "resolved": "Die zuvor gemeldeten Störungen sind nicht mehr aktiv.",
+        "resolved_notices_title": "{name}: Meldungen erledigt",
+        "unconfirmed_notices": (
+            "Zuletzt gemeldete Anlagenmeldungen. "
+            "Ihr aktueller Status ist noch nicht bestätigt."
+        ),
+        "resolved_notices": "Die zuvor gemeldeten Meldungen sind nicht mehr aktiv.",
+        "more_resolved_notices": (
+            "{count} ältere erledigte Meldungen werden nicht mehr aufgelistet."
+        ),
         "more": "{count} weitere aktive Störungen.",
+        "active_notices": "Aktive Meldungen: {count}",
+        "more_notices": "{count} weitere aktive Meldungen.",
         "more_changed": "{count} weitere Meldungen mit geänderter Einstufung.",
         "more_resolved": (
             "{count} ältere behobene Störungen werden nicht mehr aufgelistet."
@@ -90,6 +125,10 @@ _TEXT = {
         "system": "Anlage {number}",
     },
 }
+
+
+def _texts(language: str) -> dict[str, str]:
+    return localize_all(language, _TEXT["de"], _TEXT["en"])
 
 
 def gateway_notification_key(gateway_id: str) -> str:
@@ -124,11 +163,23 @@ def notification_policy(
     )
 
 
+def notification_includes_notices(options: Mapping[str, Any]) -> bool:
+    """Warnings and maintenance in the bell notification: off by default."""
+    return options.get(CONF_NOTIFY_NOTICES) is True
+
+
 def notification_store(
     hass: HomeAssistant, entry_id: str, gateway_id: str
 ) -> Store[dict[str, Any]]:
     """Keep only dismissal fingerprints and local option revision in private storage."""
     return Store(hass, 1, notification_id(entry_id, gateway_id), private=True)
+
+
+async def async_remove_notification_store(
+    hass: HomeAssistant, entry_id: str, gateway_id: str
+) -> None:
+    """Delete the dismissals of one gateway of a removed entry (STORE-5)."""
+    await notification_store(hass, entry_id, gateway_id).async_remove()
 
 
 def installation_device(
@@ -154,8 +205,7 @@ def installation_name(
     device = installation_device(hass, entry_id, gateway_id)
     if device and (name := device.name_by_user or device.name):
         return name
-    language = "de" if hass.config.language.lower().startswith("de") else "en"
-    return _TEXT[language]["system"].format(number=number)
+    return _texts(hass.config.language)["system"].format(number=number)
 
 
 def _incident_key(fault: ActiveFault) -> str:
@@ -163,6 +213,11 @@ def _incident_key(fault: ActiveFault) -> str:
     return hashlib.sha256(
         f"{fault.fingerprint}|{fault.first_seen_at.isoformat()}".encode()
     ).hexdigest()
+
+
+def _has_notices(faults: Iterable[ActiveFault]) -> bool:
+    """Whether a warning or a maintenance message is among these entries."""
+    return any(fault.severity in _NOTICE_RANK for fault in faults)
 
 
 def _safe_text(value: str) -> str:
@@ -178,13 +233,32 @@ class FaultNotifications:
         self,
         hass: HomeAssistant,
         entry: ConfigEntry[Any],
-        coordinator: BoschBuderusDataUpdateCoordinator,
+        coordinator: BoschBuderusDataUpdateCoordinator | None,
+        *,
+        source_current: Callable[[], bool] = lambda: True,
+        gateway_id: str | None = None,
+        tracker: FaultTracker | None = None,
+        flush_tracker: bool = True,
     ) -> None:
         self.hass = hass
         self.entry = entry
-        self.coordinator = coordinator
-        self._tracker = coordinator.faults
-        self._gateway_id = coordinator.gateway.gateway_id
+        self.coordinator: BoschBuderusDataUpdateCoordinator | None = coordinator
+        self._source_current = source_current
+        if coordinator is None and (gateway_id is None or tracker is None):
+            raise ValueError(
+                "Offline notifications require a known gateway and baseline"
+            )
+        resolved_tracker = coordinator.faults if coordinator is not None else tracker
+        assert resolved_tracker is not None
+        self._tracker: FaultTracker = resolved_tracker
+        self._retained_faults = self._tracker.active
+        self._includes_notices = notification_includes_notices(entry.options)
+        resolved_gateway = (
+            coordinator.gateway.gateway_id if coordinator is not None else gateway_id
+        )
+        assert resolved_gateway is not None
+        self._gateway_id: str = resolved_gateway
+        self._flush_tracker = flush_tracker
         self._id = notification_id(entry.entry_id, self._gateway_id)
         self._store = notification_store(hass, entry.entry_id, self._gateway_id)
         self._dismissed: dict[str, int] = {}
@@ -192,9 +266,19 @@ class FaultNotifications:
         self._visible = False
         self._last_content: tuple[str, str] | None = None
         self._reported: dict[str, ActiveFault] = {}
+        # SYSTEM-07: whether the visible notification has listed a warning or
+        # a maintenance message; then its texts speak of notifications.
+        self._reported_notices = False
+        if coordinator is None:
+            self._reported = {
+                _incident_key(fault): fault
+                for fault in self._shown(self._tracker.active)
+            }
+            self._reported_notices = _has_notices(self._reported.values())
         self._resolved: dict[str, FaultLifecycleEvent] = {}
         self._omitted_resolved = 0
         self._remove_callbacks: list[Callable[[], None]] = []
+        self._remove_tracker_callbacks: list[Callable[[], None]] = []
         self._closed = False
         self._dirty = False
         self._save_schedule_failed = False
@@ -206,8 +290,13 @@ class FaultNotifications:
             return
         try:
             stored = await self._store.async_load()
-        except Exception:
-            _LOGGER.warning("Stored fault notification preferences could not be read")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Stored fault notification preferences could not be read",
+                error=err,
+            )
             stored = None
         if self._closed or self._remove_callbacks:
             return
@@ -224,14 +313,74 @@ class FaultNotifications:
                     and re.fullmatch(r"[0-9a-f]{64}", key)
                     and isinstance(rank, int)
                     and not isinstance(rank, bool)
-                    and rank in _RANK.values()
+                    and rank in _ALL_RANKS.values()
                 }
         self._remove_callbacks = [
             pn.async_register_callback(self.hass, self._notification_changed),
+        ]
+        if self._source_current():
+            self._attach_tracker()
+        self.async_update()
+
+    def _attach_tracker(self) -> None:
+        self._remove_tracker_callbacks = [
             self._tracker.async_add_state_listener(self.async_update),
             self._tracker.async_add_event_observer(self._fault_changed),
         ]
+
+    @callback
+    def detach_source(self) -> None:
+        """Retain visible incidents as unconfirmed while their access is absent."""
+        for remove in self._remove_tracker_callbacks:
+            remove()
+        self._remove_tracker_callbacks.clear()
+        self.coordinator = None
+        self._source_current = lambda: False
         self.async_update()
+
+    @callback
+    def replace_source(
+        self,
+        coordinator: BoschBuderusDataUpdateCoordinator,
+        current: Callable[[], bool],
+    ) -> None:
+        if self._closed or coordinator.gateway.gateway_id != self._gateway_id:
+            raise ValueError("Notification source identity changed")
+        self.detach_source()
+        self.coordinator = coordinator
+        self._tracker = coordinator.faults
+        self._source_current = current
+        if self._remove_callbacks:
+            self._attach_tracker()
+        self.async_update()
+
+    @property
+    def _ranks(self) -> Mapping[FaultSeverity, int]:
+        """The severities the notification shows, with their ranks."""
+        return _ALL_RANKS if self._includes_notices else _RANK
+
+    def _shown(self, faults: tuple[ActiveFault, ...]) -> tuple[ActiveFault, ...]:
+        ranks = self._ranks
+        return tuple(fault for fault in faults if fault.severity in ranks)
+
+    @property
+    def _confirmed(self) -> bool:
+        return self._source_current() and self._tracker.current_state_confirmed
+
+    @property
+    def _active_faults(self) -> tuple[ActiveFault, ...]:
+        current = self._shown(
+            self._tracker.active if self._source_current() else self._retained_faults
+        )
+        if self._confirmed:
+            return current
+        retained = {
+            key: fault
+            for key, fault in self._reported.items()
+            if fault.severity in self._ranks
+        }
+        retained.update({_incident_key(fault): fault for fault in current})
+        return tuple(retained.values())
 
     @callback
     def async_update(self) -> None:
@@ -239,10 +388,17 @@ class FaultNotifications:
         if self._closed:
             return
         try:
+            if self._source_current():
+                self._retained_faults = self._tracker.active
             self._update()
-        except Exception:
+        except Exception as err:
             if not self._update_error_logged:
-                _LOGGER.error("The heating fault notification could not be updated")
+                log_failure(
+                    _LOGGER,
+                    logging.ERROR,
+                    "The heating fault notification could not be updated",
+                    error=err,
+                )
                 self._update_error_logged = True
         else:
             self._update_error_logged = False
@@ -255,13 +411,32 @@ class FaultNotifications:
             self._reset = reset
             self._dismissed.clear()
             self._schedule_save()
-        active = self._tracker.active_faults
-        current = {_incident_key(fault): _RANK[fault.severity] for fault in active}
+        includes_notices = notification_includes_notices(self.entry.options)
+        if includes_notices != self._includes_notices:
+            # Another set of severities: the notification starts over, like
+            # one enabled again; dismissals stay.
+            self._includes_notices = includes_notices
+            if self._visible:
+                self._remove_notification()
+        ranks = self._ranks
+        active = self._active_faults
+        current = {_incident_key(fault): ranks[fault.severity] for fault in active}
         # Only discard obsolete suppression after the tracker has confirmed absence.
         # A retained fault remains in "current" during partial/failed reads.
-        if active or self._tracker.current_state_confirmed:
+        if active or self._confirmed:
+            # SYSTEM-13: every incident still reported keeps its dismissal,
+            # also one the notification does not show right now (a warning
+            # while the option is off).
+            known = set(current) | {
+                _incident_key(fault)
+                for fault in (
+                    self._tracker.active
+                    if self._source_current()
+                    else self._retained_faults
+                )
+            }
             retained = {
-                key: rank for key, rank in self._dismissed.items() if key in current
+                key: rank for key, rank in self._dismissed.items() if key in known
             }
             if retained != self._dismissed:
                 self._dismissed = retained
@@ -271,22 +446,22 @@ class FaultNotifications:
             return
         # Keep the current classification of previously shown faults. A change
         # to warning or maintenance alone does not confirm their resolution.
-        for fault in self._tracker.active:
+        for fault in self._tracker.active if self._source_current() else ():
             key = _incident_key(fault)
             if key in self._reported:
                 self._reported[key] = fault
         if active:
             if not self._visible and not any(
-                rank > self._dismissed.get(key, -1) for key, rank in current.items()
+                rank > self._dismissed.get(key, _UNSEEN)
+                for key, rank in current.items()
             ):
                 return
             if not self._visible:
                 self._clear_details()
             self._reported.update({_incident_key(fault): fault for fault in active})
+            self._reported_notices |= _has_notices(active)
             self._show(*self._content(active))
-        elif self._visible and (
-            self._reported or self._tracker.current_state_confirmed
-        ):
+        elif self._visible and (self._reported or self._confirmed):
             self._show(*self._content(()))
 
     @callback
@@ -294,6 +469,7 @@ class FaultNotifications:
         """Retain only confirmed resolutions belonging to the visible notification."""
         if (
             self._closed
+            or not self._source_current()
             or not self._visible
             or event.event_type is not FaultEventType.RESOLVED
         ):
@@ -313,13 +489,14 @@ class FaultNotifications:
     def _time(self, value: datetime, language: str) -> str:
         """Show HA observation times with the configured zone's actual UTC offset."""
         local = dt_util.as_local(value)
-        date_format = "%d.%m.%Y" if language == "de" else "%Y-%m-%d"
+        # The usual date order of the language; a data file can set its own.
+        date_format = localize(language, "%d.%m.%Y", "%Y-%m-%d")
         return local.strftime(f"{date_format} %H:%M:%S %z")
 
     def _detail(
         self, fault: ActiveFault, language: str, resolved_at: datetime | None = None
     ) -> str:
-        texts = _TEXT[language]
+        texts = _texts(language)
         details = [
             fault_severity_label(fault.severity, language),
             fault.code or "",
@@ -335,10 +512,12 @@ class FaultNotifications:
         return line
 
     def _content(self, active: tuple[ActiveFault, ...]) -> tuple[str, str]:
-        language = "de" if self.hass.config.language.lower().startswith("de") else "en"
-        texts = _TEXT[language]
-        configured = self.entry.data.get(CONF_GATEWAY_IDS, [])
-        gateways = configured if isinstance(configured, list) else []
+        language = language_code(self.hass.config.language)
+        texts = _texts(language)
+        try:
+            gateways = notification_gateways(self.entry)
+        except ValueError:
+            gateways = (self._gateway_id,)
         number = (
             gateways.index(self._gateway_id) + 1 if self._gateway_id in gateways else 1
         )
@@ -353,18 +532,29 @@ class FaultNotifications:
         if names.count(name) > 1:
             name = f"{name} ({number})"
         name = " ".join(name.split())[:240]
+        ranks = self._ranks
         changed = tuple(
-            fault for fault in self._reported.values() if fault.severity not in _RANK
+            fault for fault in self._reported.values() if fault.severity not in ranks
         )
+        # Warnings and maintenance (option on) count as notifications.
+        faults_only = all(fault.severity in _RANK for fault in active)
+        # SYSTEM-07: the texts about the reported entries follow what the
+        # notification has listed.
+        reported = "_notices" if self._reported_notices else ""
         if active:
-            title = texts["title"].format(name=name)
-            lines = [texts["active"].format(count=len(active))]
-            if not self._tracker.current_state_confirmed:
-                lines += ["", texts["unconfirmed"]]
+            title = texts["title" if faults_only else "changed_title"].format(name=name)
+            lines = [
+                texts["active" if faults_only else "active_notices"].format(
+                    count=len(active)
+                )
+            ]
+            if not self._confirmed:
+                unconfirmed = "unconfirmed" if faults_only else "unconfirmed_notices"
+                lines += ["", texts[unconfirmed]]
             ordered = sorted(
                 active,
                 key=lambda fault: (
-                    -_RANK[fault.severity],
+                    -ranks[fault.severity],
                     fault.code or "",
                     fault.fingerprint,
                 ),
@@ -372,12 +562,16 @@ class FaultNotifications:
             for fault in ordered[:_MAX_DETAILS]:
                 lines.append(self._detail(fault, language))
             if len(active) > _MAX_DETAILS:
-                lines += ["", texts["more"].format(count=len(active) - _MAX_DETAILS)]
+                more = texts["more" if faults_only else "more_notices"]
+                lines += ["", more.format(count=len(active) - _MAX_DETAILS)]
         elif changed:
             title = texts["changed_title"].format(name=name)
             lines = []
-            if not self._tracker.current_state_confirmed:
-                lines.append(texts["unconfirmed"])
+            if not self._confirmed:
+                lines.append(texts[f"unconfirmed{reported}"])
+        elif reported:
+            title = texts["resolved_notices_title"].format(name=name)
+            lines = [texts["resolved_notices"]]
         else:
             title = texts["resolved_title"].format(name=name)
             lines = [texts["resolved"]]
@@ -406,7 +600,9 @@ class FaultNotifications:
             if self._omitted_resolved:
                 lines += [
                     "",
-                    texts["more_resolved"].format(count=self._omitted_resolved),
+                    texts[f"more_resolved{reported}"].format(
+                        count=self._omitted_resolved
+                    ),
                 ]
         lines += [
             "",
@@ -438,10 +634,14 @@ class FaultNotifications:
         ):
             return
         if self._visible:
-            self._dismissed = {
-                _incident_key(fault): _RANK[fault.severity]
-                for fault in self._tracker.active_faults
-            }
+            # SYSTEM-13: added to the earlier dismissals; those of incidents
+            # that are no longer reported are dropped by the next update.
+            self._dismissed.update(
+                {
+                    _incident_key(fault): self._ranks[fault.severity]
+                    for fault in self._active_faults
+                }
+            )
             self._schedule_save()
         self._visible = False
         self._last_content = None
@@ -449,6 +649,7 @@ class FaultNotifications:
 
     def _clear_details(self) -> None:
         self._reported.clear()
+        self._reported_notices = False
         self._resolved.clear()
         self._omitted_resolved = 0
 
@@ -463,9 +664,14 @@ class FaultNotifications:
         self._dirty = True
         try:
             self._store.async_delay_save(self._serialize, 1)
-        except Exception:
+        except Exception as err:
             if not self._save_schedule_failed:
-                _LOGGER.warning("Fault notification preferences could not be queued")
+                log_failure(
+                    _LOGGER,
+                    logging.WARNING,
+                    "Fault notification preferences could not be queued",
+                    error=err,
+                )
             self._save_schedule_failed = True
         else:
             self._save_schedule_failed = False
@@ -477,26 +683,43 @@ class FaultNotifications:
         """Flush a just-dismissed notification before an integration reload."""
         self.stop()
         try:
-            await self._tracker.async_flush()
-        except Exception:
-            _LOGGER.warning("The fault baseline could not be saved during unload")
+            if self._flush_tracker:
+                await self._tracker.async_flush()
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "The fault baseline could not be saved during unload",
+                error=err,
+            )
         if self._dirty:
             try:
                 await self._store.async_save(self._serialize())
-            except Exception:
-                _LOGGER.warning("Fault notification preferences could not be saved")
+            except Exception as err:
+                log_failure(
+                    _LOGGER,
+                    logging.WARNING,
+                    "Fault notification preferences could not be saved",
+                    error=err,
+                )
 
     @callback
     def stop(self) -> None:
         """Disconnect observers and remove the locally owned notification."""
         self._closed = True
-        for remove in self._remove_callbacks:
+        for remove in (*self._remove_callbacks, *self._remove_tracker_callbacks):
             remove()
         self._remove_callbacks.clear()
+        self._remove_tracker_callbacks.clear()
         try:
             self._remove_notification()
-        except Exception:
-            _LOGGER.warning("The heating fault notification could not be removed")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "The heating fault notification could not be removed",
+                error=err,
+            )
 
 
 async def async_setup_notifications(
@@ -513,9 +736,14 @@ async def async_setup_notifications(
             for started in managers:
                 started.stop()
             raise
-        except Exception:
+        except Exception as err:
             manager.stop()
-            _LOGGER.error("Heating fault notifications could not be initialized")
+            log_failure(
+                _LOGGER,
+                logging.ERROR,
+                "Heating fault notifications could not be initialized",
+                error=err,
+            )
         else:
             managers.append(manager)
             entry.async_on_unload(manager.stop)

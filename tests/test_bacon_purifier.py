@@ -396,6 +396,11 @@ async def test_unconfirmed_commands_are_not_replayed(outcome):
     with pytest.raises(HomeAssistantError) as error:
         await fan.async_set_preset_mode("manual")
     assert error.value.translation_key == "bacon_command_failed"
+    if outcome not in ("desired", "disconnect"):
+        # C50: the immediate state read shows the actual, unchanged mode.
+        assert fan.available and fan.preset_mode == "auto"
+        assert writes == [{"opMode": "manual"}]
+        return
     assert writes == [{"opMode": "manual"}] and not fan.available
     assert fan.is_on is None and not fan.preset_modes and fan.supported_features == 0
     if outcome != "disconnect":
@@ -409,9 +414,9 @@ def test_stream_freshness_ordering_and_snapshot_recovery():
     account, fan, data = configured()
     sensor = BaconPurifierSensor(account, "serial-A", "pm2_5")
     identity = sensor.unique_id
-    fan.device.sensor_received_at -= 901
+    fan.device.sensor_received_at -= 3601
     for key in fan.device.sensor_fields_received_at:
-        fan.device.sensor_fields_received_at[key] -= 901
+        fan.device.sensor_fields_received_at[key] -= 3601
     for timestamp, retained in [(1, False), (2, False), (3, True)]:
         emit(
             account,

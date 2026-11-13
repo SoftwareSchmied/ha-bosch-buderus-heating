@@ -1,0 +1,2618 @@
+{
+  "title": "Bosch/Buderus Home Comfort",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Povezivanje s Home Comfortom",
+        "description": "Odaberite kako se Home Assistant povezuje s vašim sustavom.\n\n**Pristup putem oblaka** prijavljuje se na vaš račun. Nudi upravljanje, vremenske programe, odmore i informacije o sustavu.\n\n**Lokalni pristup** povezuje se s pristupnikom u vašoj kućnoj mreži. Samo čita: bez upravljanja i bez postavki. Mnoge mjerne vrijednosti ažurira češće i može dodati tehničke vrijednosti koje oblak ne nudi, kao što su krug rashladnog sredstva, crpke i interni signali.\n\nSvaki pristup ima vrijednosti koje drugi nema. Ako su moguća oba, preporučuje se **pristup putem oblaka i lokalni pristup**.",
+        "menu_options": {
+          "cloud": "Pristup putem oblaka",
+          "cloud_local": "Pristup putem oblaka i lokalni pristup (preporučeno)",
+          "local_only": "Samo lokalni pristup"
+        }
+      },
+      "cloud": {
+        "title": "Povezivanje računa za grijanje",
+        "description": "Odaberite marku mobilne aplikacije koja je već povezana sa sustavom grijanja. Odaberite **Bosch** za aplikaciju Bosch ili **Buderus** za aplikaciju Buderus. Marka aplikacije važnija je od logotipa na uređaju.",
+        "data": {
+          "brand": "Marka"
+        }
+      },
+      "auth": {
+        "title": "Prijava putem SingleKey ID",
+        "description": "SingleKey ID je ista prijava koju koristi vaša aplikacija Bosch ili Buderus. Upotrijebite istu adresu e-pošte ili broj mobitela i istu lozinku. Ne trebate novi račun, a lozinku **ne** unosite u Home Assistant.\n\n1. Ostavite ovaj dijalog otvorenim i otvorite [SingleKey ID]({authorization_url}) u novoj kartici preglednika Chrome. Uvijek upotrijebite ovu novo generiranu poveznicu.\n2. Ondje pritisnite `F12` i u razvojnim alatima otvorite **Console**.\n3. Prijavite se podacima za SingleKey ID koje koristi vaša aplikacija za grijanje.\n4. Nakon prijave može se pojaviti poruka o problemu s mrežom. U tom slučaju obično samo znači da Chrome nije mogao otvoriti adresu aplikacije `{redirect_scheme}://`.\n5. U konzoli pronađite crvenu poruku **Failed to launch** ili **Connecting to**. Desnom tipkom miša kliknite plavu adresu `{redirect_scheme}://` u toj poruci i odaberite **Copy link address**.\n6. Vratite se u ovaj dijalog, zalijepite cijelu adresu u nastavku i odaberite **OK**. Polje iz sigurnosnih razloga može prikazivati točkice.\n\nUpotrijebite adresu iz ovog točnog pokušaja prijave i ne kopirajte samo parametar `code`. Cijela adresa sadrži kratkotrajni jednokratni kôd. Nikada ga ne dijelite u prijavi problema, razgovoru, snimci zaslona ili zapisniku.",
+        "data": {
+          "redirect_url": "Cijela adresa preusmjeravanja"
+        }
+      },
+      "auth_wait": {
+        "title": "Pričekajte prije ponovne prijave",
+        "description": "SingleKey ID privremeno ograničava zahtjeve za prijavu. Pričekajte još najmanje {seconds} s, zatim odaberite **Podnijeti**. Sljedeći korak ponudit će novu poveznicu za prijavu."
+      },
+      "retry": {
+        "title": "Ponovno otkrivanje pristupnika",
+        "description": "Prijava je uspjela, ali popis uređaja nije se mogao učitati. Provjerite internetsku vezu Home Assistanta, pričekajte trenutak i pokušajte ponovno."
+      },
+      "selection_expired": {
+        "title": "Ponovno učitavanje popisa uređaja",
+        "description": "Popis uređaja stariji je od pet minuta i prije spremanja ga treba ponovno učitati. Ostajete prijavljeni. Odaberite **Podnijeti** za ponovno učitavanje popisa, zatim odaberite uređaje."
+      },
+      "gateways": {
+        "title": "Odabir uređaja",
+        "description": "Odaberite pristupnike i dodatne uređaje koje Home Assistant treba koristiti. Posljednji znakovi pomažu u razlikovanju uređaja. Dostupne mjerne vrijednosti i upravljanje ovise o modelu i mogućnostima koje uređaj prijavljuje.",
+        "data": {
+          "gateway_ids": "Pristupnici",
+          "bacon_device_ids": "Dodatni uređaji u oblaku"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Ponovna prijava",
+        "description": "Spremljeno ovlaštenje više nije valjano. Ponovite prijavu putem SingleKey ID. Vaš postojeći odabir uređaja bit će zadržan."
+      },
+      "reconfigure": {
+        "title": "Ponovna konfiguracija i ponovno otkrivanje",
+        "description": "Odaberite marku aplikacije, pristupnike i profil dohvaćanja. Spremanje ponovno učitava integraciju i provodi potpuno otkrivanje resursa. Koristite to nakon ažuriranja firmvera ili kada su se promijenili krugovi, sustavi potrošne tople vode, izvori topline ili pristupnici. **Standardno** dohvaća trenutne radne vrijednosti svake minute. **Poštedno za oblak** smanjuje promet prema oblaku dohvaćanjem svake dvije minute, a sve ostale promjenjive vrijednosti rjeđe. Promjena marke aplikacije zahtijeva novu prijavu putem SingleKey ID.",
+        "data": {
+          "brand": "Marka aplikacije",
+          "gateway_ids": "Pristupnici",
+          "polling_profile": "Profil dohvaćanja",
+          "bacon_device_ids": "Dodatni uređaji u oblaku"
+        }
+      },
+      "reconfigure_retry": {
+        "title": "Ponovno otkrivanje pristupnika",
+        "description": "Trenutni popis pristupnika nije se mogao učitati. Provjerite internetsku vezu Home Assistanta, pričekajte trenutak i odaberite **Podnijeti**."
+      },
+      "local_owner": {
+        "title": "Odabir postojeće konfiguracije",
+        "description": "Odaberite konfiguraciju kojoj pripada ovaj lokalni pristupnik. Time se neće stvoriti nova instalacija.",
+        "data": {
+          "owner": "Postojeća konfiguracija"
+        }
+      },
+      "local_discovered": {
+        "title": "Pronađen je pristupnik",
+        "description": "Home Assistant pronašao je pristupnik na adresi {host} u kućnoj mreži, a ova integracija još nije postavljena.\n\nNastavite kako biste ga postavili s opcijom **Samo lokalni pristup**: stvara se unos bez oblaka, a zatim se otvara njegovo lokalno postavljanje. Lokalni pristup samo čita. Pristup putem oblaka može se kasnije dodati istom unosu."
+      },
+      "local_target": {
+        "title": "Odabir instalacije",
+        "description": "Odaberite instalaciju koju treba lokalno povezati. Identitet njezina pristupnika provjerit će se prije spremanja.",
+        "data": {
+          "target": "Instalacija / pristupnik"
+        }
+      },
+      "local_address": {
+        "title": "Adresa lokalnog pristupnika",
+        "description": "Odaberite otkrivenu adresu ili unesite IP adresu ili naziv hosta. Otkrivanje ne mijenja nijednu spremljenu vezu.",
+        "data": {
+          "address": "IP adresa ili naziv hosta"
+        }
+      },
+      "local_method": {
+        "title": "Povezivanje s lokalnim pristupnikom",
+        "description": "Prijavite se s oznakom uređaja ili upotrijebite postojeći pristupni token. Lokalni pristup uređaju samo je za čitanje.",
+        "data": {
+          "method": "Način prijave"
+        }
+      },
+      "local_method_keep": {
+        "title": "Ponovno povezivanje s lokalnim pristupnikom",
+        "description": "Preporučuje se nova prijava s **oznakom uređaja**.\n\nZadržite trenutni token samo ako ste sigurni da certifikat koji ćete potvrditi pripada vašem vlastitom pristupniku, na primjer odmah nakon ažuriranja ili resetiranja koje ste sami pokrenuli. S ovom opcijom spremljeni token šalje se uređaju koji predoči novo potvrđeni certifikat. Ako to nije vaš pristupnik, dobit će valjan token za vaš sustav. Prijava s oznakom uređaja je sigurnija: podaci s oznake rade samo zajedno s tipkama na pristupniku, dok spremljeni token odmah radi za svakoga tko ga dobije.\n\nLokalni pristup uređaju samo je za čitanje.",
+        "data": {
+          "method": "Način prijave"
+        }
+      },
+      "local_certificate": {
+        "title": "Potvrda certifikata pristupnika",
+        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.",
+        "data": {
+          "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
+        }
+      },
+      "local_auth": {
+        "title": "Prijava s oznakom uređaja",
+        "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze oko dvije sekunde, kraće od tri sekunde, i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i lozinka se ne spremaju.",
+        "data": {
+          "login": "Login s oznake uređaja",
+          "password": "Pass s oznake uređaja",
+          "unlocked": "Otpustio sam lokalnu prijavu i vidio plavi signal"
+        }
+      },
+      "local_token": {
+        "title": "Upotreba postojećeg tokena",
+        "description": "Unesite pristupni token lokalnog API-ja. Zadržat će se privatno kako bi se ova konfiguracija mogla nastaviti. Podatkovnu vezu i identitet pristupnika i dalje treba provjeriti.",
+        "data": {
+          "token": "Token lokalnog pristupa"
+        }
+      },
+      "local_pending": {
+        "title": "Nastavak lokalne konfiguracije",
+        "description": "Prethodni pokušaj je spremljen. Ako je token primljen, nastavite s tim tokenom. Ako je odgovor izgubljen, token možda postoji na pristupniku iako ga Home Assistant nije mogao spremiti. Odbacivanje uklanja samo lokalnu kopiju na čekanju i dopušta novi pokušaj; ne opoziva tokene pristupnika.\n\nPreostala stanka poslužitelja: {seconds} s.",
+        "data": {
+          "action": "Sljedeća radnja",
+          "confirm": "Razumijem i želim odbaciti ovaj pokušaj na čekanju"
+        }
+      },
+      "local_result": {
+        "title": "Potvrda lokalne veze",
+        "description": "Provjera čitanja za **{host}** uspjela je i pristupnik **{gateway}** odgovara odabranoj instalaciji. Spremanje ponovno provjerava trenutne podatke te dodaje ili ažurira ovaj pristup u postojećoj konfiguraciji.",
+        "data": {
+          "confirm": "Spremi ovu lokalnu vezu"
+        }
+      },
+      "local_retry": {
+        "title": "Lokalna provjera nije se mogla dovršiti",
+        "description": "Pročitajte poruku u nastavku i pokušajte ponovno kad budete spremni. Nijedan token nije automatski stvoren niti zamijenjen."
+      }
+    },
+    "error": {
+      "auth_expired": "Ovaj pokušaj prijave je istekao. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno.",
+      "auth_restart": "Ovaj pokušaj prijave više se ne može koristiti. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno.",
+      "cannot_connect": "Pristup putem oblaka nije dostupan. Provjerite internetsku vezu, pričekajte trenutak i pokušajte ponovno.",
+      "invalid_auth": "SingleKey ID je odbio ili poništio ovlaštenje. Upotrijebite novu poveznicu SingleKey ID prikazanu iznad i ponovite prijavu.",
+      "invalid_redirect": "Home Assistant nije mogao koristiti ovu adresu. Kopirajte cijelu adresu aplikacije iz poruke ‘Failed to launch’ u konzoli preglednika Chrome. Mora započinjati shemom prikazanom iznad i pripadati trenutnom pokušaju prijave.",
+      "gateway_changed": "Popis pristupnika promijenio se dok je ovaj dijalog bio otvoren. Zatvorite dijalog i ponovno otvorite Ponovnu konfiguraciju.",
+      "select_gateway": "Prije nastavka odaberite barem jedan uređaj s popisa.",
+      "unknown": "Došlo je do neočekivane greške u pristupu putem oblaka. Pričekajte trenutak i pokušajte ponovno.",
+      "bacon_unavailable": "Popis dodatnih uređaja u oblaku trenutno nije dostupan. Pričekajte najmanje jednu minutu i pokušajte ponovno.",
+      "bacon_selection_unavailable": "Dodatni uređaji u oblaku trenutno se nisu mogli dohvatiti. Možete odabrati dostupne pristupnike grijanja. Postojeći odabiri uređaja u oblaku bit će zadržani.",
+      "reauth_targets_missing": "Ova prijava nije pronašla nijedan od uključenih sustava i uređaja. Prethodni podaci za prijavu su zadržani. Provjerite jeste li se prijavili istim računom kao prije. Ako su sustavi uklonjeni s računa, otvorite Konfiguriraj → Veze → pristup putem oblaka: uključite sustav koji je još na računu pod **Koristi za sustave i uređaje** ili isključite uklonjene i uklonite ih pomoću **Zaboravi isključene sustave**. Ako nijedan nije ostao, uklonite pristup putem oblaka i ponovno ga povežite.",
+      "cloud_rate_limited": "Oblak je zatražio stanku. Pričekajte prije ponovnog pokušaja.",
+      "local_invalid_address": "Unesite IP adresu ili naziv hosta bez URL-a, putanje ili podataka za prijavu.",
+      "local_interface_required": "Ova IPv6 adresa zahtijeva mrežno sučelje na hostu Home Assistanta.",
+      "local_invalid_token": "Format tokena nije valjan. Kopirajte cijeli token bez razmaka.",
+      "local_invalid_credentials": "Provjerite Login i Pass na oznaci pristupnika i unesite ih ponovno.",
+      "local_unlock_required": "Otpustite lokalnu prijavu na pristupniku i potvrdite plavi signal prije ponovnog pokušaja.",
+      "local_token_database_full": "Baza tokena pristupnika je puna. Pregledajte njegove postojeće tokene prije stvaranja novog. Nijedan token nije obrisan.",
+      "local_rate_limited": "Pristupnik je zatražio stanku. Pričekajte da prikazano vrijeme istekne.",
+      "local_service_unavailable": "Usluga pristupnika privremeno nije dostupna. Pričekajte i pokušajte ponovno.",
+      "local_timeout": "Lokalni pristupnik nije odgovorio na vrijeme. Provjerite vezu i pokušajte ponovno.",
+      "local_connection_failed": "Home Assistant nije mogao doseći ovaj pristupnik. Provjerite njegovu adresu i mrežnu vezu.",
+      "local_certificate_changed": "Certifikat se nije mogao potvrditi ili se promijenio. Ponovno pregledajte certifikat pristupnika prije nastavka.",
+      "local_token_rejected": "Pristupnik je odbio ovaj token. Provjerite ga ili namjerno odbacite ovaj pokušaj kako biste koristili drugi.",
+      "local_resource_forbidden": "Pristupnik je zabranio pristup potrebnom resursu. Sam token ne dokazuje pravo čitanja.",
+      "local_missing_resource": "Pristupnik ne nudi potreban resurs za konfiguraciju.",
+      "local_unknown_firmware": "Verzija firmvera nije se mogla provjeriti.",
+      "local_old_firmware": "Ažurirajte firmver pristupnika prije postavljanja lokalne veze.",
+      "local_unsupported_brand": "Marka ovog pristupnika nije podržana dokumentiranim lokalnim sučeljem.",
+      "local_incomplete_system": "Informacije o sustavu pristupnika još nisu potpune. Ponovite provjeru čitanja kasnije.",
+      "local_invalid_response": "Potreban odgovor pristupnika nije se mogao provjeriti.",
+      "local_identity_unverified": "Ovaj sustav još nije jednoznačno povezan. Prva konfiguracija zahtijeva dostupan pristup putem oblaka te podudarne identifikatore pristupnika i modula iz oba sučelja. Provjerene veze nakon toga mogu se koristiti bez oblaka.",
+      "local_identity_conflict": "Identitet pristupnika je u sukobu s odabranom instalacijom ili drugom konfiguracijom.",
+      "local_configuration_changed": "Odabrana veza ili instalacija promijenila se. Zatvorite ovaj dijalog i pregledajte trenutnu konfiguraciju prije nastavka.",
+      "local_pending_exists": "Za ovu instalaciju ili adresu pristupnika postoji drugi pokušaj na čekanju. Prvo ga nastavite ili namjerno odbacite.",
+      "local_storage_failed": "Privatni zapis konfiguracije nije se mogao pročitati ili spremiti. Provjerite pohranu Home Assistanta prije nastavka.",
+      "local_completion_uncertain": "Veza je možda već spremljena. Ponovno otvorite lokalnu konfiguraciju kako biste provjerili njezino stanje prije nove promjene.",
+      "local_unexpected": "Lokalna provjera nije se mogla dovršiti. Token na čekanju, ako je primljen, zadržan je za oporavak.",
+      "local_confirmation_required": "Izričito potvrdite ovu radnju prije nastavka.",
+      "local_busy": "Lokalni pristup trenutno je zauzet ili pauziran. Pričekajte prije ponovnog pokušaja.",
+      "local_cloud_auth_required": "Ponovno se prijavite u pristup putem oblaka kako bi se prva veza mogla provjeriti. Već provjeren lokalni pristup pokreće se neovisno o oblaku.",
+      "local_cloud_rate_limited": "Oblak trenutno ograničava zahtjeve. Pričekajte da njegova stanka završi, zatim ponovite usporedbu identiteta.",
+      "local_cloud_unavailable": "Informacije o sustavu iz oblaka nisu se mogle pročitati. Provjerite pristup putem oblaka i ponovite usporedbu identiteta.",
+      "local_auth_forbidden": "Usluga prijave pristupnika odbila je zahtjev. Provjerite je li lokalni pristup na pristupniku dopušten, zatim pokušajte ponovno.",
+      "local_creation_uncertain": "Nije jasno je li pristupnik stvorio token jer je njegov odgovor bio nepotpun. Nastavite s pokušajem na čekanju; novi token ne stvara se automatski.",
+      "local_plant_known": "Ovaj pristupnik već pripada konfiguriranom sustavu. Odaberite taj sustav umjesto novog."
+    },
+    "abort": {
+      "configuration_changed": "Postavke veze promijenile su se dok je ovaj dijalog bio otvoren. Zatvorite ga i pokušajte ponovno.",
+      "already_configured": "Ovaj račun za grijanje ili barem jedan odabrani pristupnik već je konfiguriran u Home Assistantu.",
+      "invalid_flow": "Ova sesija konfiguracije je nepotpuna ili je istekla. Zatvorite dijalog i ponovno dodajte Bosch/Buderus Home Comfort.",
+      "no_gateways": "Nije pronađen nijedan uređaj. Provjerite podudaraju li se odabrana marka i račun SingleKey ID s vašom aplikacijom. Sobni regulator sa starijim firmverom pojavljuje se tek nakon što se njegov firmver ažurira i nakon što se postavi u trenutačnoj aplikaciji s vašim računom SingleKey ID.",
+      "reauth_required": "Spremljeno ovlaštenje više nije valjano. Zatvorite ovaj dijalog i odaberite Ponovna autentifikacija za Bosch/Buderus Home Comfort.",
+      "reauth_successful": "Prijava je uspješno obnovljena.",
+      "reauth_wrong_account": "Odabrani račun ne odgovara konfiguriranim uređajima. Prijavite se izvornim računom.",
+      "reauth_no_targets": "Ovaj pristup putem oblaka nema više sustava ni uređaja, a račun kojem pripada ne može se potvrditi. Prethodni podaci za prijavu su zadržani. Da biste ponovno koristili račun u oblaku, uklonite pristup putem oblaka pod Konfiguriraj → Veze i ponovno ga povežite.",
+      "reauth_successful_targets_missing": "Prijava je obnovljena. Sustavi ili uređaji koji su uključeni ({count}) nisu pronađeni na računu; ostaju konfigurirani. Popravak ih imenuje i objašnjava kako ih zaboraviti.",
+      "reconfigure_successful": "Postavke su spremljene. Bosch/Buderus Home Comfort se ponovno učitava i ponovno otkriva sve dostupne resurse.",
+      "connection_required": "Prije ponovne prijave odaberite vezu u Postavkama.",
+      "connection_settings_required": "Upravljajte ovim pristupom u Postavkama i Vezama.",
+      "cloud_already_connected": "Veza s oblakom već je konfigurirana. Upotrijebite njezine postavke veze za odabir dodatnih uređaja ili ponovnu prijavu. Druga paralelna prijava u oblak još nije podržana.",
+      "cloud_setup_in_progress": "Već je otvorena druga konfiguracija oblaka. Prvo dovršite ili zatvorite taj dijalog.",
+      "cloud_setup_taken_over": "Noviji dijalog za konfiguraciju oblaka zamijenio je ovaj. Zatvorite ovaj dijalog i nastavite u novijem.",
+      "cloud_target_owned": "Odabrani sustav ili uređaj pripada drugom konfiguriranom unosu ili vezi s oblakom. Ponovno ga povežite putem njegova postojećeg unosa.",
+      "cloud_selection_expired": "Ovaj popis uređaja više nije aktualan. Prije spremanja ponovno otvorite otkrivanje uređaja.",
+      "cloud_selection_changed": "Odabrani uređaj nije na potvrđenom popisu. Pretražite ponovno.",
+      "cloud_connection_disabled": "Omogućite ovu vezu s oblakom prije traženja uređaja.",
+      "cloud_rate_limited": "Oblak je zatražio stanku. Pričekajte prije ponovnog pokušaja.",
+      "local_setup_unavailable": "Lokalna konfiguracija nije dostupna dok redovita opskrba lokalnim podacima nije spremna.",
+      "local_session_changed": "Ova sesija konfiguracije je završila ili se njezin odabir promijenio. Ponovno otvorite lokalnu konfiguraciju za nastavak.",
+      "local_discovery_invalid": "Ova objava otkrivanja ne opisuje podržanu krajnju točku lokalnog pristupnika.",
+      "local_existing_owner_required": "Sustav bez oblaka postavite pomoću „Samo lokalni pristup” pri dodavanju integracije. Otkriveni pristupnik može se dodati u postojeću konfiguraciju.",
+      "local_target_required": "Ova konfiguracija nema prikladnu zadržanu instalaciju za lokalnu vezu.",
+      "local_setup_complete": "Lokalni pristup je postavljen.",
+      "local_pending_saved": "Pokušaj na čekanju je zadržan. Možete ga nastaviti iz lokalne konfiguracije.",
+      "local_storage_failed": "Privatni zapis konfiguracije nije se mogao pročitati ili spremiti. Provjerite pohranu Home Assistanta prije nastavka.",
+      "already_in_progress": "Konfiguracija ovog lokalnog pristupnika već je u tijeku.",
+      "cloud_local_first_other_entry": "Ovaj sustav već je postavljen putem svog lokalnog pristupa u drugom unosu ove integracije. Dodajte pristup putem oblaka u tom unosu."
+    },
+    "progress": {
+      "local_work": "Provjera lokalne veze. Pričekajte."
+    },
+    "flow_title": "Lokalni pristupnik ({host})"
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Postavke",
+        "description": "{result}",
+        "menu_options": {
+          "notifications": "Obavijesti",
+          "holidays": "Upravljanje razdobljima odmora",
+          "rrc_programs": "RRC vremenski programi grijanja",
+          "switch_programs": "Vremenski programi grijanja i tople vode",
+          "controls": "Upravljanje uređajem",
+          "connections": "Veze",
+          "connection_add_cloud": "Povezivanje pristupa putem oblaka",
+          "local_setup": "Postavljanje lokalnog pristupa",
+          "rescan": "Ponovno pretraživanje sustava"
+        }
+      },
+      "notifications": {
+        "title": "Obavijesti",
+        "description": "Smetnje sustava grijanja prikazuju se pod zvonom u Home Assistantu. Za više instalacija odaberite one za koje želite obavijesti. Obavijesti i njihovo odbacivanje dijele svi korisnici. Njihov tekst koristi jezik sustava. Odbacivanje obavijesti ne potvrđuje smetnju na uređaju. Nove ili kritičnije smetnje ponovno se prikazuju. Promjene stupaju na snagu odmah.",
+        "data": {
+          "fault_notifications": "Prikaži smetnje sustava grijanja",
+          "notify_warnings_and_maintenance": "Prikaži i upozorenja i održavanje u obavijesti ispod zvona"
+        }
+      },
+      "holidays": {
+        "title": "Upravljanje razdobljima odmora",
+        "description": "Stvorite odmor ili odaberite postojeći kako biste promijenili njegov naziv, datume i postavke grijanja ili ga izbrisali. Kalendar Razdoblja odmora i dalje je dostupan.",
+        "data": {
+          "holiday_period": "Odmor"
+        }
+      },
+      "delete_holiday": {
+        "title": "Brisanje odmora",
+        "description": "**{holiday}**\n\nObrisati ovaj odmor u potpunosti? Uklonit će se i iz sustava grijanja i iz kalendara. Ostavite potvrdu neoznačenom za povratak bez brisanja.",
+        "data": {
+          "confirm_delete": "Obriši ovaj odmor u potpunosti"
+        }
+      },
+      "holiday": {
+        "title": "Razdoblje odmora",
+        "description": "Postavite naziv, razdoblje i postavke. Odaberite vremena u razmacima od četvrt sata: minute 00, 15, 30 ili 45. Na kraju se nastavlja normalan rad.",
+        "data": {
+          "holiday_name": "Naziv",
+          "holiday_start": "Početak",
+          "holiday_end": "Kraj (isključivo)",
+          "holiday_assigned_to": "Primijeni na",
+          "holiday_heating_mode": "Središnje grijanje",
+          "holiday_dhw_mode": "Topla voda",
+          "holiday_ventilation_mode": "Ventilacija",
+          "holiday_thermal_disinfection": "Termička dezinfekcija",
+          "holiday_fix_temperature": "Stalna temperatura",
+          "holiday_delete": "Obriši razdoblje odmora u potpunosti"
+        }
+      },
+      "holiday_gateway": {
+        "title": "Odabir instalacije",
+        "description": "Odaberite instalaciju za novi odmor.",
+        "data": {
+          "holiday_gateway": "Instalacija"
+        }
+      },
+      "new_holiday": {
+        "title": "Razdoblje odmora",
+        "description": "Postavite naziv, razdoblje i postavke. Odaberite vremena u razmacima od četvrt sata: minute 00, 15, 30 ili 45. Na kraju se nastavlja normalan rad.",
+        "data": {
+          "holiday_name": "Naziv",
+          "holiday_start": "Početak",
+          "holiday_end": "Kraj (isključivo)",
+          "holiday_assigned_to": "Primijeni na",
+          "holiday_heating_mode": "Središnje grijanje",
+          "holiday_dhw_mode": "Topla voda",
+          "holiday_ventilation_mode": "Ventilacija",
+          "holiday_thermal_disinfection": "Termička dezinfekcija",
+          "holiday_fix_temperature": "Stalna temperatura"
+        }
+      },
+      "legacy_holiday": {
+        "title": "Razdoblje odmora",
+        "description": "Prilagodite **{holiday}**. Ovaj uređaj sprema cijele dane odmora. Datum završetka je prvi dan nakon odmora. Vremena i prilagođeni nazivi nisu podržani. Nude se samo postavke i slobodna mjesta za odmor koje uređaj prijavljuje.",
+        "data": {
+          "holiday_name": "Naziv",
+          "holiday_start": "Početak",
+          "holiday_end": "Kraj (isključivo)",
+          "holiday_assigned_to": "Primijeni na",
+          "holiday_heating_mode": "Središnje grijanje",
+          "holiday_dhw_mode": "Topla voda",
+          "holiday_ventilation_mode": "Ventilacija",
+          "holiday_thermal_disinfection": "Termička dezinfekcija",
+          "holiday_fix_temperature": "Stalna temperatura",
+          "holiday_delete": "Obriši razdoblje odmora u potpunosti"
+        }
+      },
+      "new_legacy_holiday": {
+        "title": "Razdoblje odmora",
+        "description": "Odaberite datume i postavke. Ovaj uređaj sprema cijele dane odmora. Datum završetka je prvi dan nakon odmora. Vremena i prilagođeni nazivi nisu podržani. Nude se samo postavke i slobodna mjesta za odmor koje uređaj prijavljuje.",
+        "data": {
+          "holiday_name": "Naziv",
+          "holiday_start": "Početak",
+          "holiday_end": "Kraj (isključivo)",
+          "holiday_assigned_to": "Primijeni na",
+          "holiday_heating_mode": "Središnje grijanje",
+          "holiday_dhw_mode": "Topla voda",
+          "holiday_ventilation_mode": "Ventilacija",
+          "holiday_thermal_disinfection": "Termička dezinfekcija",
+          "holiday_fix_temperature": "Stalna temperatura"
+        }
+      },
+      "holiday_mode": {
+        "title": "Konfiguracija odmora",
+        "description": "Ovaj uređaj nudi način odmora koji se može uključiti i isključiti. Ne sprema razdoblja odmora.",
+        "data": {
+          "holiday_mode": "Način odmora"
+        }
+      },
+      "rrc_programs": {
+        "title": "Odabir vremenskog programa grijanja",
+        "description": "Odaberite postojeći tjedni vremenski program. Može ga dijeliti više zona.",
+        "data": {
+          "program": "Vremenski program grijanja"
+        }
+      },
+      "rrc_schedule": {
+        "title": "Prikaz vremenskog programa grijanja",
+        "description": "**{program}**\n\n**Ponedjeljak:** {mo}\n\n**Utorak:** {tu}\n\n**Srijeda:** {we}\n\n**Četvrtak:** {th}\n\n**Petak:** {fr}\n\n**Subota:** {sa}\n\n**Nedjelja:** {su}\n\nOdaberite dan u tjednu. Vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. ∅ znači da za taj dan nije spremljena nijedna točka uklapanja. Promjene utječu na svaku zonu koja koristi ovaj vremenski program.",
+        "data": {
+          "day": "Dan u tjednu"
+        }
+      },
+      "rrc_readonly": {
+        "title": "Prikaz vremenskog programa grijanja",
+        "description": "**{program}**\n\n**Ponedjeljak:** {mo}\n\n**Utorak:** {tu}\n\n**Srijeda:** {we}\n\n**Četvrtak:** {th}\n\n**Petak:** {fr}\n\n**Subota:** {sa}\n\n**Nedjelja:** {su}\n\nOvaj se vremenski program ovdje može samo pregledavati. Nema točaka uklapanja koje se mogu uređivati ili sadrži nepodržane postavke. ∅ znači da nije spremljena nijedna točka uklapanja. Promjene možete napraviti u aplikaciji proizvođača."
+      },
+      "rrc_point": {
+        "title": "Uređivanje točke uklapanja",
+        "description": "**{program}**\n\nOdaberite vrijeme u koracima od pet minuta i temperaturu od 5 do 30 °C u koracima od 0,5 °C. Vrijeme se ponavlja tjedno u lokalnom vremenu sustava grijanja. Promjene utječu na sve dodijeljene zone.",
+        "data": {
+          "time": "Vrijeme",
+          "temperature": "Temperatura"
+        }
+      },
+      "rrc_day": {
+        "title": "Odabir točke uklapanja",
+        "description": "**{program}**",
+        "data": {
+          "point": "Točka uklapanja"
+        }
+      },
+      "switch_programs": {
+        "title": "Odabir vremenskog programa",
+        "description": "Odaberite tjedni program kruga grijanja ili tople vode. Prikazuju se samo programi koje sustav grijanja javlja kao promjenjive.",
+        "data": {
+          "program": "Vremenski program"
+        }
+      },
+      "switch_program_week": {
+        "title": "Promjena vremenskog programa",
+        "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.",
+        "data": {
+          "action": "Sljedeći korak",
+          "day": "Dan u tjednu"
+        }
+      },
+      "switch_program_week_inactive": {
+        "title": "Promjena vremenskog programa",
+        "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.\n\nOvaj program nije aktivni program kruga grijanja. Promjene djeluju kada bude odabran.",
+        "data": {
+          "action": "Sljedeći korak",
+          "day": "Dan u tjednu"
+        }
+      },
+      "switch_program_week_dhw": {
+        "title": "Promjena vremenskog programa",
+        "description": "**{program}**\n\n{week}\n\nNajviše {per_day} točaka uklapanja dnevno i {total} tjedno, vremena u koracima od {raster} minuta. Svaka točka uklapanja vrijedi do sljedeće; vremena se ponavljaju tjedno u lokalnom vremenu sustava grijanja. Dani označeni s * imaju još nespremljene promjene. Prije posljednjeg koraka ništa se ne šalje.\n\nProgram tople vode vrijedi samo dok je način rada tople vode postavljen na Automatski.",
+        "data": {
+          "action": "Sljedeći korak",
+          "day": "Dan u tjednu"
+        }
+      },
+      "switch_program_day": {
+        "title": "Odabir točke uklapanja",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nOdaberite točku uklapanja da biste je promijenili ili izbrisali, dodajte novu ili se vratite na tjedan.",
+        "data": {
+          "point": "Točka uklapanja"
+        }
+      },
+      "switch_program_point": {
+        "title": "Uređivanje točke uklapanja",
+        "description": "**{program}** – **{day}**\n\nOdaberite vrijeme u koracima od {raster} minuta i razinu. Razina vrijedi od tog vremena do sljedeće točke uklapanja.",
+        "data": {
+          "time": "Vrijeme",
+          "level": "Razina",
+          "delete": "Izbriši ovu točku uklapanja"
+        }
+      },
+      "switch_program_copy": {
+        "title": "Kopiranje dana",
+        "description": "**{program}**\n\n**{day}:** {points}\n\nOdaberite dane koji dobivaju iste točke uklapanja. Njihove dosadašnje točke uklapanja bit će zamijenjene.",
+        "data": {
+          "days": "Dani"
+        }
+      },
+      "switch_program_confirm": {
+        "title": "Spremanje vremenskog programa",
+        "description": "**{program}**\n\n**Prije:**\n\n{before}\n\n**Poslije:**\n\n{after}\n\nCijeli tjedan šalje se jednom i zatim ponovno čita. Zabilježite dosadašnje točke uklapanja za slučaj da ih želite vratiti."
+      },
+      "controls": {
+        "title": "Odabir uređaja",
+        "data": {
+          "installation": "Uređaj"
+        }
+      },
+      "operate": {
+        "title": "Upravljanje uređajem",
+        "description": "Odaberite odjeljak i prilagodite postavke. Primijeni zapisuje samo vaše promjene. Pri promjeni više postavki svaka se potvrđuje zasebno.",
+        "data": {
+          "controls": "Upravljanje"
+        },
+        "submit": "Primijeni"
+      },
+      "connections": {
+        "title": "Veze",
+        "description": "{result}Odaberite pristup kojim želite upravljati.",
+        "menu_options": {
+          "back": "← Natrag"
+        }
+      },
+      "connection_test": {
+        "title": "Test veze",
+        "description": "{result}"
+      },
+      "connection": {
+        "title": "Upravljanje vezom",
+        "description": "{result}{status}",
+        "menu_options": {
+          "connection_test": "Testiraj vezu sada",
+          "connection_enabled": "Uključi ili isključi pristup",
+          "connection_forget": "Zaboravi isključene sustave",
+          "connection_targets": "Koristi za sustave i uređaje",
+          "connection_reauthenticate": "Ponovna prijava",
+          "connection_remove": "Ukloni pristup",
+          "connection_discover": "Pretraži i odaberi uređaje",
+          "connection_polling": "Učestalost dohvaćanja",
+          "local_setup": "Promjena lokalnog pristupa",
+          "local_polling": "Učestalost lokalnog dohvaćanja i stanje",
+          "local_values": "Koristi lokalne vrijednosti za postojeće entitete",
+          "back": "← Natrag"
+        }
+      },
+      "connection_enabled": {
+        "title": "Uključivanje pristupa",
+        "description": "Isključivanje utječe samo na ovaj pristup. Ostale veze nastavljaju raditi. Sustavi i entiteti se zadržavaju.",
+        "data": {
+          "enabled": "Uključeno"
+        }
+      },
+      "connection_forget": {
+        "title": "Zaboravi isključene sustave",
+        "description": "Ovi su sustavi isključeni za ovaj pristup. Zaboravljeni sustavi više se ovdje ne navode i nova prijava ne mora ih pronaći. Njihovi uređaji i entiteti ostaju u Home Assistantu dok ih ne izbrišete. Ako je pristupnik zamijenjen, umjesto toga ostavite sustav uključenim: popravak tada nudi nastavak sa spremljenom poviješću.",
+        "data": {
+          "bindings": "Sustavi"
+        }
+      },
+      "connection_targets": {
+        "title": "Sustavi i uređaji",
+        "description": "Odaberite ciljeve koji trebaju koristiti ovaj pristup. Ostali ciljevi nastavljaju neovisno koristiti svoje veze.",
+        "data": {
+          "targets": "Koristi za"
+        }
+      },
+      "connection_remove_cloud": {
+        "title": "Uklanjanje pristupa putem oblaka",
+        "description": "Prijava će se ukloniti. Odabrani sustavi s uključenim lokalnim pristupom i dalje prikazuju svoje lokalne mjerne vrijednosti (samo čitanje, bez upravljanja; brojila nastavljaju od zadnje prikazane vrijednosti). Ostali sustavi zadržavaju svoje entitete bez trenutnih vrijednosti. Ako se kasnije ponovno prijavite, isti entiteti nastavljaju raditi. Za privremenu stanku umjesto toga isključite pristup.",
+        "data": {
+          "confirm": "Ukloni ovaj pristup"
+        }
+      },
+      "connection_remove": {
+        "title": "Ukloni pristup",
+        "description": "Podaci za prijavu bit će uklonjeni. Sustavi i entiteti se zadržavaju, čak i ako je ovo posljednji pristup. Bez dostupne veze entiteti ne mogu prikazivati trenutne vrijednosti.",
+        "data": {
+          "confirm": "Ukloni ovaj pristup"
+        }
+      },
+      "connection_polling": {
+        "title": "Učestalost dohvaćanja",
+        "description": "Standardno dohvaća trenutne radne vrijednosti grijanja svake minute, postavke i vrijednosti energije svakih 5 minuta, a sporije informacije svakih 15 minuta. Poštedno za oblak udvostručuje te intervale. Aktivne smetnje provjeravaju se svake minute u oba profila. Profil se odnosi na dohvaćanje podataka grijanja i zidnog punjača za odabranu vezu s oblakom; dodatni uređaji u oblaku prijavljuju promjene kao poruke. Prijava, provjere uređaja i potvrda nakon promjene mogu dodati zahtjeve izvan ovog rasporeda. Ako ciklus dohvaćanja traje dulje od svog intervala, sljedeći počinje kasnije.",
+        "data": {
+          "polling_profile": "Profil dohvaćanja"
+        }
+      },
+      "connection_add_cloud": {
+        "title": "Povezivanje pristupa putem oblaka",
+        "description": "Odaberite marku aplikacije koju koristite. Nakon prijave odaberite sustave i uređaje koje treba povezati s ovim unosom. Postojeći sustavi i entiteti se zadržavaju.",
+        "data": {
+          "brand": "Marka aplikacije"
+        }
+      },
+      "cloud_auth": {
+        "title": "Prijava putem SingleKey ID",
+        "description": "SingleKey ID je ista prijava koju koristi vaša aplikacija Bosch ili Buderus. Upotrijebite istu adresu e-pošte ili broj mobitela i istu lozinku. Ne trebate novi račun, a lozinku **ne** unosite u Home Assistant.\n\n1. Ostavite ovaj dijalog otvorenim i otvorite [SingleKey ID]({authorization_url}) u novoj kartici preglednika Chrome. Uvijek upotrijebite ovu novo generiranu poveznicu.\n2. Ondje pritisnite `F12` i u razvojnim alatima otvorite **Console**.\n3. Prijavite se podacima za SingleKey ID koje koristi vaša aplikacija za grijanje.\n4. Nakon prijave može se pojaviti poruka o problemu s mrežom. U tom slučaju obično samo znači da Chrome nije mogao otvoriti adresu aplikacije `{redirect_scheme}://`.\n5. U konzoli pronađite crvenu poruku **Failed to launch** ili **Connecting to**. Desnom tipkom miša kliknite plavu adresu `{redirect_scheme}://` u toj poruci i odaberite **Copy link address**.\n6. Vratite se u ovaj dijalog, zalijepite cijelu adresu u nastavku i odaberite **OK**. Polje iz sigurnosnih razloga može prikazivati točkice.\n\nUpotrijebite adresu iz ovog točnog pokušaja prijave i ne kopirajte samo parametar `code`. Cijela adresa sadrži kratkotrajni jednokratni kôd. Nikada ga ne dijelite u prijavi problema, razgovoru, snimci zaslona ili zapisniku.",
+        "data": {
+          "redirect_url": "Cijela adresa preusmjeravanja"
+        }
+      },
+      "cloud_retry": {
+        "title": "Ponovni pokušaj veze s oblakom",
+        "description": "Pokušajte ponovno kada oblak ponovno bude dostupan. Vaš unos nije promijenjen."
+      },
+      "cloud_select": {
+        "title": "Odabir sustava i uređaja",
+        "description": "Odaberite sustave i uređaje koje treba povezati. Odgovarajući postojeći sustav zadržava svoje entitete i postavke.",
+        "data": {
+          "gateway_ids": "Pristupnici",
+          "bacon_device_ids": "Dodatni uređaji u oblaku"
+        }
+      },
+      "connection_discover": {
+        "title": "Pretraži i odaberi uređaje",
+        "description": "Odaberite sustave i uređaje koji će se koristiti putem ove veze s oblakom. Prethodno konfigurirani uređaji ostaju na popisu čak i kada su privremeno nedostupni. Poništavanje odabira zaustavlja njihove upite i zadržava njihove entitete.",
+        "data": {
+          "gateway_ids": "Pristupnici",
+          "bacon_device_ids": "Dodatni uređaji u oblaku"
+        }
+      },
+      "connection_discover_retry": {
+        "title": "Ponovno otkrivanje uređaja",
+        "description": "Odabir nije promijenjen. Pokušajte ponovno za učitavanje novog popisa."
+      },
+      "local_owner": {
+        "title": "Odabir postojeće konfiguracije",
+        "description": "Odaberite konfiguraciju kojoj pripada ovaj lokalni pristupnik. Time se neće stvoriti nova instalacija.",
+        "data": {
+          "owner": "Postojeća konfiguracija"
+        }
+      },
+      "local_target": {
+        "title": "Odabir instalacije",
+        "description": "Odaberite instalaciju koju treba lokalno povezati. Identitet njezina pristupnika provjerit će se prije spremanja.",
+        "data": {
+          "target": "Instalacija / pristupnik"
+        }
+      },
+      "local_address": {
+        "title": "Adresa lokalnog pristupnika",
+        "description": "Odaberite otkrivenu adresu ili unesite IP adresu ili naziv hosta. Otkrivanje ne mijenja nijednu spremljenu vezu.",
+        "data": {
+          "address": "IP adresa ili naziv hosta"
+        }
+      },
+      "local_method": {
+        "title": "Povezivanje s lokalnim pristupnikom",
+        "description": "Prijavite se s oznakom uređaja ili upotrijebite postojeći pristupni token. Lokalni pristup uređaju samo je za čitanje.",
+        "data": {
+          "method": "Način prijave"
+        }
+      },
+      "local_method_keep": {
+        "title": "Ponovno povezivanje s lokalnim pristupnikom",
+        "description": "Preporučuje se nova prijava s **oznakom uređaja**.\n\nZadržite trenutni token samo ako ste sigurni da certifikat koji ćete potvrditi pripada vašem vlastitom pristupniku, na primjer odmah nakon ažuriranja ili resetiranja koje ste sami pokrenuli. S ovom opcijom spremljeni token šalje se uređaju koji predoči novo potvrđeni certifikat. Ako to nije vaš pristupnik, dobit će valjan token za vaš sustav. Prijava s oznakom uređaja je sigurnija: podaci s oznake rade samo zajedno s tipkama na pristupniku, dok spremljeni token odmah radi za svakoga tko ga dobije.\n\nLokalni pristup uređaju samo je za čitanje.",
+        "data": {
+          "method": "Način prijave"
+        }
+      },
+      "local_certificate": {
+        "title": "Potvrda certifikata pristupnika",
+        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.",
+        "data": {
+          "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
+        }
+      },
+      "local_auth": {
+        "title": "Prijava s oznakom uređaja",
+        "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze oko dvije sekunde, kraće od tri sekunde, i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i lozinka se ne spremaju.",
+        "data": {
+          "login": "Login s oznake uređaja",
+          "password": "Pass s oznake uređaja",
+          "unlocked": "Otpustio sam lokalnu prijavu i vidio plavi signal"
+        }
+      },
+      "local_token": {
+        "title": "Upotreba postojećeg tokena",
+        "description": "Unesite pristupni token lokalnog API-ja. Zadržat će se privatno kako bi se ova konfiguracija mogla nastaviti. Podatkovnu vezu i identitet pristupnika i dalje treba provjeriti.",
+        "data": {
+          "token": "Token lokalnog pristupa"
+        }
+      },
+      "local_pending": {
+        "title": "Nastavak lokalne konfiguracije",
+        "description": "Prethodni pokušaj je spremljen. Ako je token primljen, nastavite s tim tokenom. Ako je odgovor izgubljen, token možda postoji na pristupniku iako ga Home Assistant nije mogao spremiti. Odbacivanje uklanja samo lokalnu kopiju na čekanju i dopušta novi pokušaj; ne opoziva tokene pristupnika.\n\nPreostala stanka poslužitelja: {seconds} s.",
+        "data": {
+          "action": "Sljedeća radnja",
+          "confirm": "Razumijem i želim odbaciti ovaj pokušaj na čekanju"
+        }
+      },
+      "local_result": {
+        "title": "Potvrda lokalne veze",
+        "description": "Provjera čitanja za **{host}** uspjela je i pristupnik **{gateway}** odgovara odabranoj instalaciji. Spremanje ponovno provjerava trenutne podatke te dodaje ili ažurira ovaj pristup u postojećoj konfiguraciji.",
+        "data": {
+          "confirm": "Spremi ovu lokalnu vezu"
+        }
+      },
+      "local_retry": {
+        "title": "Lokalna provjera nije se mogla dovršiti",
+        "description": "Pročitajte poruku u nastavku i pokušajte ponovno kad budete spremni. Nijedan token nije automatski stvoren niti zamijenjen."
+      },
+      "local_polling": {
+        "title": "Lokalno dohvaćanje",
+        "description": "Potvrđeni resursi: {known}. Trenutno dostupno: {available}. Ovi brojevi prikazuju stanje u trenutku otvaranja ovog dijaloga. Interval je ciljna vrijednost za vrijednosti uživo. Postavke, vrijednosti energije i dijagnostika čitaju se svakih 5 minuta, a brojila svakih 15 minuta, ili u ovom intervalu ako je dulji; statični podaci čitaju se dnevno. Vrijednost postaje nedostupna nakon tri propuštena intervala. Veliki skupovi resursa mogu trajati dulje. Dohvaćanje putem oblaka ostaje neovisno. Mjerne vrijednosti koje oblak također pruža lokalno se čitaju barem jednako često kao u oblaku.",
+        "data": {
+          "interval": "Ciljni interval za vrijednosti uživo"
+        }
+      },
+      "local_values": {
+        "title": "Lokalne vrijednosti za postojeće entitete",
+        "description": "Dok oblak radi, ova opcija određuje koriste li postojeći senzori lokalnu vrijednost mjerne vrijednosti koju oba pristupa pružaju pod istim dokumentiranim resursom. Bez oblaka (isključen, potrebna prijava, pauziran, ograničen ili nedostupan) uvijek se koriste lokalne vrijednosti. Opcija je prema zadanim postavkama uključena za nove konfiguracije s pristupom putem oblaka i lokalnim pristupom.\n\nKada je uključena, lokalna vrijednost koristi se dok je aktualna. Ako je lokalna vrijednost zastarjela ili nedostaje, koristi se trenutna vrijednost iz oblaka; ako su obje zastarjele, senzor postaje nedostupan. Brojila energije, pokretanja i vremena rada također koriste lokalnu vrijednost, ali mijenjaju izvor tek kada je svaki prikazani broj barem jednak zadnjem prikazanom broju, tako da promjena izvora nikada ne uzrokuje brojanje unatrag. Podesive postavke i dalje koriste oblak. ID-jevi entiteta, nazivi i povijest ostaju nepromijenjeni. Upravljanje i promjene i dalje se šalju putem oblaka.",
+        "data": {
+          "enabled": "Koristi lokalne vrijednosti"
+        }
+      },
+      "rescan": {
+        "title": "Ponovno pretraživanje sustava",
+        "description": "Još jednom pretražuje sustav u potrazi za dijelovima i mjernim vrijednostima, putem pristupa putem oblaka i lokalnog pristupa. Koristite to nakon dodavanja ili promjene komponenti. Pretraživanje se izvodi pri sljedećem redovitom ažuriranju i unutar uobičajenih ograničenja zahtjeva; nikada ne uklanja entitet, a mjerne vrijednosti koje ponovno ne pronađe ostaju kakve jesu."
+      }
+    },
+    "error": {
+      "holiday_changed": "Odabrani odmor promijenio se dok je ovaj dijalog bio otvoren. Zatvorite dijalog i pokušajte ponovno.",
+      "invalid_holiday_details": "Provjerite uneseni naziv, datume i vremena.",
+      "delete_failed": "Odmor se nije mogao obrisati. Provjerite vezu i ponovno otvorite odmor prije nego što ga pokušate obrisati.",
+      "delete_not_confirmed": "Brisanje se nije moglo potvrditi. Provjerite postoji li odmor još uvijek prije ponovnog pokušaja.",
+      "holiday_time_step": "Odaberite vrijeme u razmacima od četvrt sata: minute 00, 15, 30 ili 45.",
+      "holiday_time_nonexistent": "Odabrano vrijeme početka ili završetka ne postoji jer se sat u vremenskoj zoni sustava grijanja pomiče unaprijed. Odaberite drugo vrijeme.",
+      "holiday_time_ambiguous": "Odabrano vrijeme početka ili završetka pojavljuje se dvaput jer se sat u vremenskoj zoni sustava grijanja pomiče unatrag. Odaberite jednoznačno vrijeme.",
+      "write_authentication_failed": "Prijava u oblak više nije valjana. Ponovno autentificirajte Bosch/Buderus Home Comfort prije ponovnog pokušaja.",
+      "write_failed": "Postavke odmora nisu se mogle promijeniti.",
+      "write_busy": "Sustav grijanja se čita ili je u tijeku druga promjena. Ništa nije poslano. Pokušajte ponovno za trenutak.",
+      "write_not_confirmed": "Promjena se nije mogla u potpunosti potvrditi. Neke postavke možda su već spremljene. Ponovno otvorite odmor i provjerite njegove trenutne postavke.",
+      "write_rate_limited": "Oblak trenutno ograničava zahtjeve. Pričekajte prije ponovnog pokušaja.",
+      "write_validation_failed": "Sustav grijanja više ne podržava barem jedan odabir. Zatvorite dijalog, osvježite integraciju i pokušajte ponovno.",
+      "holiday_end_not_after_start": "Kraj mora biti nakon početka. Odaberite kasniji kraj.",
+      "rrc_time": "Odaberite vrijeme u koracima od pet minuta, bez sekundi.",
+      "rrc_temperature": "Unesite temperaturu od 5 do 30 °C u koracima od 0,5 °C.",
+      "rrc_point_invalid": "Provjerite vrijeme i temperaturu. Dvije točke uklapanja istog dana ne mogu imati isto vrijeme.",
+      "rrc_changed": "Vremenski program se promijenio ili se više ne može uređivati. Ponovno ga otvorite kako biste provjerili trenutne postavke.",
+      "rrc_not_confirmed": "Promjena se nije mogla potvrditi. Možda je već spremljena. Ponovno otvorite vremenski program i provjerite njegove trenutne postavke.",
+      "rrc_failed": "Vremenski program grijanja nije se mogao promijeniti. Provjerite vezu i ponovno otvorite vremenski program.",
+      "switch_program_time": "Odaberite vrijeme u koracima od {raster} minuta, bez sekundi.",
+      "switch_program_level": "Odaberite jednu od ponuđenih razina.",
+      "switch_program_duplicate_time": "Ovaj dan već ima točku uklapanja u to vrijeme.",
+      "switch_program_too_many_per_day": "Ovaj dan već ima najveći broj točaka uklapanja koji sustav grijanja dopušta ({per_day}).",
+      "switch_program_too_many_in_all": "Tjedan bi imao više točaka uklapanja nego što sustav grijanja dopušta ({total}).",
+      "switch_program_empty_week": "Tjedan treba barem jednu točku uklapanja.",
+      "switch_program_day_required": "Odaberite dan.",
+      "switch_program_no_changes": "Još ništa nije promijenjeno.",
+      "switch_program_invalid": "Promjena ne odgovara ograničenjima vremenskog programa.",
+      "switch_program_changed": "Vremenski program se u međuvremenu promijenio ili se više ne može mijenjati. Ništa nije poslano. Ponovno ga otvorite da biste vidjeli trenutne točke uklapanja.",
+      "switch_program_not_confirmed": "Promjena se nije mogla potvrditi. Možda je već spremljena. Ponovno otvorite vremenski program i provjerite njegove točke uklapanja; dosadašnje su navedene gore.",
+      "switch_program_rejected": "Sustav grijanja odbio je vremenski program. Ništa nije promijenjeno.",
+      "switch_program_unused": "Sustav grijanja trenutno ne koristi ovaj vremenski program. Ništa nije poslano.",
+      "switch_program_paused": "Pisanje u sustav grijanja pauzirano je nekoliko minuta nakon ponovljenih neuspjelih očitanja. Ništa nije poslano. Pokušajte ponovno kasnije.",
+      "switch_program_mode": "Vremenski program više nije program s razinama ili se njegova vrsta nije mogla pročitati. Ništa nije poslano. Ponovno otvorite vremenski program.",
+      "switch_program_failed": "Vremenski program nije se mogao promijeniti. Provjerite vezu i ponovno otvorite vremenski program.",
+      "controls_invalid": "Unos nije valjan ili su se prikazane vrijednosti promijenile. Provjerite unose ili ponovno učitajte vrijednosti. Ništa nije zapisano.",
+      "controls_changed": "Postavka se promijenila ili više nije dostupna. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
+      "controls_auth": "Autentifikacija je istekla. Ponovno autentificirajte integraciju. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
+      "controls_rate_limit": "Oblak trenutno ograničava zahtjeve. Pričekajte prije ponovnog pokušaja. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
+      "controls_unconfirmed": "Posljednja promjena nije se mogla potvrditi. Možda je već stupila na snagu na uređaju. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
+      "controls_failed": "Komunikacija s uređajem nije uspjela. Posljednja promjena možda je već stupila na snagu. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
+      "controls_busy": "Uređaj se čita ili je u tijeku druga promjena. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene. Pokušajte ponovno za trenutak.",
+      "controls_locked": "Uređaj trenutno zaključava ovu postavku. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene. Pokušajte ponovno kasnije.",
+      "controls_unused": "Uređaj trenutačno ne koristi ovu postavku. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene.",
+      "controls_curve_order": "Krivulja grijanja i granice temperature polaznog voda moraju ostati u ispravnom redoslijedu: početna točka i minimalna temperatura polaznog voda ne iznad krajnje točke i maksimalne temperature polaznog voda. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene.",
+      "controls_weather_control_off": "Ova postavka kruga grijanja djeluje samo uz regulaciju prema vanjskoj temperaturi, a krug trenutno koristi drugi način regulacije. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene.",
+      "controls_extra_dhw_duration_zero": "Dodatna topla voda treba trajanje dulje od 0 minuta. Najprije postavite trajanje. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene.",
+      "controls_rejected": "Uređaj trenutačno ne prihvaća ovu vrijednost. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene. Provjerite vrijednost ili ponovno učitajte vrijednosti.",
+      "cloud_already_connected": "Veza s oblakom već je konfigurirana. Upotrijebite njezine postavke veze za odabir dodatnih uređaja ili ponovnu prijavu. Druga paralelna prijava u oblak još nije podržana.",
+      "cloud_setup_in_progress": "Već je otvorena druga konfiguracija oblaka. Prvo dovršite ili zatvorite taj dijalog.",
+      "cloud_target_owned": "Odabrani sustav ili uređaj pripada drugom konfiguriranom unosu ili vezi s oblakom. Ponovno ga povežite putem njegova postojećeg unosa.",
+      "cloud_selection_expired": "Ovaj popis uređaja više nije aktualan. Prije spremanja ponovno otvorite otkrivanje uređaja.",
+      "cloud_selection_changed": "Odabrani uređaj nije na potvrđenom popisu. Pretražite ponovno.",
+      "cloud_connection_disabled": "Omogućite ovu vezu s oblakom prije traženja uređaja.",
+      "cloud_rate_limited": "Oblak je zatražio stanku. Pričekajte prije ponovnog pokušaja.",
+      "invalid_auth": "SingleKey ID je odbio ili poništio ovlaštenje. Upotrijebite novu poveznicu SingleKey ID prikazanu iznad i ponovite prijavu.",
+      "invalid_redirect": "Home Assistant nije mogao koristiti ovu adresu. Kopirajte cijelu adresu aplikacije iz poruke ‘Failed to launch’ u konzoli preglednika Chrome. Mora započinjati shemom prikazanom iznad i pripadati trenutnom pokušaju prijave.",
+      "cannot_connect": "Pristup putem oblaka nije dostupan. Provjerite internetsku vezu, pričekajte trenutak i pokušajte ponovno.",
+      "select_gateway": "Prije nastavka odaberite barem jedan uređaj s popisa.",
+      "no_gateways": "Nije pronađen nijedan uređaj. Provjerite podudaraju li se odabrana marka i račun SingleKey ID s vašom aplikacijom. Sobni regulator sa starijim firmverom pojavljuje se tek nakon što se njegov firmver ažurira i nakon što se postavi u trenutačnoj aplikaciji s vašim računom SingleKey ID.",
+      "local_invalid_address": "Unesite IP adresu ili naziv hosta bez URL-a, putanje ili podataka za prijavu.",
+      "local_interface_required": "Ova IPv6 adresa zahtijeva mrežno sučelje na hostu Home Assistanta.",
+      "local_invalid_token": "Format tokena nije valjan. Kopirajte cijeli token bez razmaka.",
+      "local_invalid_credentials": "Provjerite Login i Pass na oznaci pristupnika i unesite ih ponovno.",
+      "local_unlock_required": "Otpustite lokalnu prijavu na pristupniku i potvrdite plavi signal prije ponovnog pokušaja.",
+      "local_token_database_full": "Baza tokena pristupnika je puna. Pregledajte njegove postojeće tokene prije stvaranja novog. Nijedan token nije obrisan.",
+      "local_rate_limited": "Pristupnik je zatražio stanku. Pričekajte da prikazano vrijeme istekne.",
+      "local_service_unavailable": "Usluga pristupnika privremeno nije dostupna. Pričekajte i pokušajte ponovno.",
+      "local_timeout": "Lokalni pristupnik nije odgovorio na vrijeme. Provjerite vezu i pokušajte ponovno.",
+      "local_connection_failed": "Home Assistant nije mogao doseći ovaj pristupnik. Provjerite njegovu adresu i mrežnu vezu.",
+      "local_certificate_changed": "Certifikat se nije mogao potvrditi ili se promijenio. Ponovno pregledajte certifikat pristupnika prije nastavka.",
+      "local_token_rejected": "Pristupnik je odbio ovaj token. Provjerite ga ili namjerno odbacite ovaj pokušaj kako biste koristili drugi.",
+      "local_resource_forbidden": "Pristupnik je zabranio pristup potrebnom resursu. Sam token ne dokazuje pravo čitanja.",
+      "local_missing_resource": "Pristupnik ne nudi potreban resurs za konfiguraciju.",
+      "local_unknown_firmware": "Verzija firmvera nije se mogla provjeriti.",
+      "local_old_firmware": "Ažurirajte firmver pristupnika prije postavljanja lokalne veze.",
+      "local_unsupported_brand": "Marka ovog pristupnika nije podržana dokumentiranim lokalnim sučeljem.",
+      "local_incomplete_system": "Informacije o sustavu pristupnika još nisu potpune. Ponovite provjeru čitanja kasnije.",
+      "local_invalid_response": "Potreban odgovor pristupnika nije se mogao provjeriti.",
+      "local_identity_unverified": "Ovaj sustav još nije jednoznačno povezan. Prva konfiguracija zahtijeva dostupan pristup putem oblaka te podudarne identifikatore pristupnika i modula iz oba sučelja. Provjerene veze nakon toga mogu se koristiti bez oblaka.",
+      "local_identity_conflict": "Identitet pristupnika je u sukobu s odabranom instalacijom ili drugom konfiguracijom.",
+      "local_configuration_changed": "Odabrana veza ili instalacija promijenila se. Zatvorite ovaj dijalog i pregledajte trenutnu konfiguraciju prije nastavka.",
+      "local_pending_exists": "Za ovu instalaciju ili adresu pristupnika postoji drugi pokušaj na čekanju. Prvo ga nastavite ili namjerno odbacite.",
+      "local_storage_failed": "Privatni zapis konfiguracije nije se mogao pročitati ili spremiti. Provjerite pohranu Home Assistanta prije nastavka.",
+      "local_completion_uncertain": "Veza je možda već spremljena. Ponovno otvorite lokalnu konfiguraciju kako biste provjerili njezino stanje prije nove promjene.",
+      "local_unexpected": "Lokalna provjera nije se mogla dovršiti. Token na čekanju, ako je primljen, zadržan je za oporavak.",
+      "local_confirmation_required": "Izričito potvrdite ovu radnju prije nastavka.",
+      "local_busy": "Lokalni pristup trenutno je zauzet ili pauziran. Pričekajte prije ponovnog pokušaja.",
+      "local_invalid_interval": "Odaberite od 60 do 900 sekundi u koracima od 60 sekundi.",
+      "local_cloud_auth_required": "Ponovno se prijavite u pristup putem oblaka kako bi se prva veza mogla provjeriti. Već provjeren lokalni pristup pokreće se neovisno o oblaku.",
+      "local_cloud_rate_limited": "Oblak trenutno ograničava zahtjeve. Pričekajte da njegova stanka završi, zatim ponovite usporedbu identiteta.",
+      "local_cloud_unavailable": "Informacije o sustavu iz oblaka nisu se mogle pročitati. Provjerite pristup putem oblaka i ponovite usporedbu identiteta.",
+      "local_auth_forbidden": "Usluga prijave pristupnika odbila je zahtjev. Provjerite je li lokalni pristup na pristupniku dopušten, zatim pokušajte ponovno.",
+      "local_creation_uncertain": "Nije jasno je li pristupnik stvorio token jer je njegov odgovor bio nepotpun. Nastavite s pokušajem na čekanju; novi token ne stvara se automatski.",
+      "cloud_local_first_other_entry": "Ovaj sustav već je postavljen putem svog lokalnog pristupa u drugom unosu ove integracije. Dodajte pristup putem oblaka u tom unosu.",
+      "cloud_local_first_unverified": "Ovaj se sustav nije mogao usporediti s oblakom. Ništa nije spremljeno. Pokušajte ponovno.",
+      "cloud_local_first_local_unavailable": "Lokalni pristup ovog sustava je isključen, ne radi, nedostupan je ili je pauziran. Uključite ga i provjerite je li dostupan ili ga ponovno postavite, zatim pokušajte ponovno. Ništa nije spremljeno.",
+      "cloud_local_first_local_busy": "Lokalni pristup ovog sustava zauzet je svojim redovitim čitanjima. Ništa nije spremljeno. Pričekajte trenutak i pokušajte ponovno.",
+      "cloud_rate_limited_until": "Oblak je zatražio stanku do {until}. Ništa nije spremljeno. Pokušajte ponovno nakon toga.",
+      "cloud_local_first_conflict": "Oblak i lokalni pristup ne opisuju isti sustav. Ništa nije spremljeno. Poništite odabir ovog sustava kako biste ga i dalje koristili samo putem lokalnog pristupa.",
+      "local_plant_known": "Ovaj pristupnik već pripada konfiguriranom sustavu. Odaberite taj sustav umjesto novog.",
+      "auth_expired": "Ovaj pokušaj prijave je istekao. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno.",
+      "auth_restart": "Ovaj pokušaj prijave više se ne može koristiti. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno."
+    },
+    "abort": {
+      "no_notification_gateways": "Nije konfiguriran nijedan sustav grijanja.",
+      "notification_gateways_changed": "Odabir instalacije se promijenio. Ponovno otvorite postavke.",
+      "holiday_changed": "Odabrani odmor se promijenio ili se više ne može uređivati. Ponovno otvorite odmor kako biste pregledali njegove trenutne podatke.",
+      "holiday_updated": "Postavke odmora su spremljene i potvrđene od strane sustava grijanja.",
+      "holiday_unchanged": "Ništa nije promijenjeno, pa ništa nije poslano sustavu grijanja.",
+      "no_writable_holidays": "Upravljanje odmorima trenutno nije dostupno. Pričekajte dok instalacija ne pruži svoje postavke odmora.",
+      "holiday_deleted": "Odmor je obrisan i njegovo uklanjanje potvrdio je sustav grijanja.",
+      "not_loaded": "Bosch/Buderus Home Comfort mora biti učitan prije nego što se odmor može konfigurirati.",
+      "holiday_created": "Odmor je stvoren i potvrđen ponovnim čitanjem.",
+      "holiday_previous_request_found": "Raniji neriješeni zahtjev sada je potvrđen. Vaši novi unosi nisu poslani. Prvo provjerite postojeći odmor pod Upravljanje razdobljima odmora.",
+      "holiday_already_exists": "Odmor s ovim početkom i odabirom krugova već postoji. Nije stvoren dodatni odmor. Otvorite Upravljanje razdobljima odmora i uredite postojeći unos.",
+      "holiday_create_unconfirmed": "Zahtjev za stvaranje nije se mogao potvrditi. Odmor možda već postoji. Provjerite Upravljanje razdobljima odmora ili aplikaciju proizvođača. Sljedećih 10 minuta novi pokušaj provjerava ishod ovog zahtjeva bez stvaranja drugog odmora.",
+      "holiday_create_adjusted": "Sustav grijanja vratio je novi odmor, ali se njegove postavke razlikuju od vašeg zahtjeva. Traženo razdoblje: {requested}. Vraćeno razdoblje: {actual}. Otvorite Upravljanje razdobljima odmora kako biste provjerili i uredili ovaj unos.",
+      "holiday_update_adjusted": "Sustav grijanja vratio je postavke koje se razlikuju od vaše tražene promjene. Traženo razdoblje: {requested}. Vraćeno razdoblje: {actual}. Otvorite Upravljanje razdobljima odmora kako biste provjerili i uredili trenutni unos.",
+      "no_rrc_schedules": "Nije dostupan nijedan aktualni, podržani RRC tjedni vremenski program.",
+      "no_switch_programs": "Ovdje se ne može promijeniti nijedan aktualni vremenski program kruga grijanja ni tople vode.",
+      "switch_program_changed": "Vremenski program se u međuvremenu promijenio ili se više ne može mijenjati. Ponovno ga otvorite da biste vidjeli trenutne točke uklapanja.",
+      "switch_program_saved": "Vremenski program {program} spremljen je i potvrđen ponovnim čitanjem.\n\nDosadašnje točke uklapanja promijenjenih dana:\n\n{before}",
+      "controls_not_loaded": "Upravljanje je dostupno samo putem pristupa putem oblaka; lokalni pristup samo čita. Povežite pristup putem oblaka ili pričekajte da se učita.",
+      "controls_auth_required": "Upravljanje nije dostupno: pristup putem oblaka treba novu prijavu. Mjerne vrijednosti ostaju vidljive.",
+      "controls_cloud_stopped": "Upravljanje nije dostupno: pristup putem oblaka je zaustavljen ili se ponovno pokreće. Mjerne vrijednosti ostaju vidljive.",
+      "controls_rate_limited": "Upravljanje je pauzirano nakon ograničenja broja zahtjeva u oblaku, otprilike do {until}. Mjerne vrijednosti ostaju vidljive.",
+      "controls_protection_pause": "Upravljanje je pauzirano nakon ponovljenih grešaka oblaka, otprilike do {until}. Mjerne vrijednosti ostaju vidljive.",
+      "controls_cloud_unreachable": "Upravljanje nije dostupno: oblak trenutno nije dostupan. Mjerne vrijednosti ostaju vidljive.",
+      "controls_not_current": "Upravljanje još nije dostupno: oblak nije isporučio trenutne vrijednosti. Pokušajte ponovno za trenutak.",
+      "controls_none": "Ovaj uređaj trenutno ne prijavljuje postavke koje se ovdje mogu mijenjati.",
+      "configuration_changed": "Postavke veze promijenile su se dok je ovaj dijalog bio otvoren. Zatvorite ga i pokušajte ponovno.",
+      "no_connections": "Nije konfiguriran nijedan pristup. Postojeći sustavi i entiteti se zadržavaju.",
+      "connection_reauth_started": "Prijava je zatražena. Otvorite upit za autentifikaciju za ovaj unos.",
+      "cloud_already_connected": "Veza s oblakom već je konfigurirana. Upotrijebite njezine postavke veze za odabir dodatnih uređaja ili ponovnu prijavu. Druga paralelna prijava u oblak još nije podržana.",
+      "cloud_setup_in_progress": "Već je otvorena druga konfiguracija oblaka. Prvo dovršite ili zatvorite taj dijalog.",
+      "cloud_setup_taken_over": "Noviji dijalog za konfiguraciju oblaka zamijenio je ovaj. Zatvorite ovaj dijalog i nastavite u novijem.",
+      "cloud_target_owned": "Odabrani sustav ili uređaj pripada drugom konfiguriranom unosu ili vezi s oblakom. Ponovno ga povežite putem njegova postojećeg unosa.",
+      "cloud_selection_expired": "Ovaj popis uređaja više nije aktualan. Prije spremanja ponovno otvorite otkrivanje uređaja.",
+      "cloud_selection_changed": "Odabrani uređaj nije na potvrđenom popisu. Pretražite ponovno.",
+      "cloud_connection_disabled": "Omogućite ovu vezu s oblakom prije traženja uređaja.",
+      "cloud_rate_limited": "Oblak je zatražio stanku. Pričekajte prije ponovnog pokušaja.",
+      "local_setup_unavailable": "Lokalna konfiguracija nije dostupna dok redovita opskrba lokalnim podacima nije spremna.",
+      "local_session_changed": "Ova sesija konfiguracije je završila ili se njezin odabir promijenio. Ponovno otvorite lokalnu konfiguraciju za nastavak.",
+      "local_discovery_invalid": "Ova objava otkrivanja ne opisuje podržanu krajnju točku lokalnog pristupnika.",
+      "local_existing_owner_required": "Sustav bez oblaka postavite pomoću „Samo lokalni pristup” pri dodavanju integracije. Otkriveni pristupnik može se dodati u postojeću konfiguraciju.",
+      "local_target_required": "Ova konfiguracija nema prikladnu zadržanu instalaciju za lokalnu vezu.",
+      "local_setup_complete": "Lokalni pristup je postavljen.",
+      "local_pending_saved": "Pokušaj na čekanju je zadržan. Možete ga nastaviti iz lokalne konfiguracije.",
+      "local_storage_failed": "Privatni zapis konfiguracije nije se mogao pročitati ili spremiti. Provjerite pohranu Home Assistanta prije nastavka.",
+      "cloud_local_first_other_entry": "Ovaj sustav već je postavljen putem svog lokalnog pristupa u drugom unosu ove integracije. Dodajte pristup putem oblaka u tom unosu.",
+      "rescan_planned": "Pretraživanje je zakazano i izvodi se pri sljedećem redovitom ažuriranju; novi dijelovi pojavljuju se čim budu pronađeni.",
+      "rescan_paused": "Pretraživanje nije pokrenuto: zahtjevi su trenutno pauzirani (na primjer nakon što je oblak zatražio stanku). Pokušajte ponovno kasnije.",
+      "rescan_running": "Pretraživanje se već izvodi ili je zakazano. Pričekajte da završi.",
+      "rescan_partial": "Pretraživanje je zakazano za dijelove koji su spremni i izvodi se pri sljedećem redovitom ažuriranju. Dijelovi koji su trenutno pauzirani preskočeni su; za njih pokušajte ponovno kasnije.",
+      "rescan_unavailable": "Pretraživanje nije pokrenuto: trenutno nije spreman nijedan pristup sustavu.",
+      "connection_saved": "Promjena je spremljena.",
+      "connection_removed": "Pristup je uklonjen.",
+      "notifications_saved": "Postavke obavijesti su spremljene.",
+      "rrc_program_saved": "Točka prebacivanja je spremljena i potvrđena ponovnim čitanjem."
+    },
+    "progress": {
+      "local_work": "Provjera lokalne veze. Pričekajte."
+    }
+  },
+  "issues": {
+    "fault_source_removed": {
+      "title": "Izvor smetnji više ne postoji",
+      "description": "Integracija više ne čeka na izvore smetnji sustava grijanja koji više ne postoje (broj: {count}), na primjer popis grešaka bežične sobne jedinice koja je uklonjena ili zamijenjena. Do sada je takav izvor sprječavao završetak svake smetnje. Smetnje koje je prijavljivao samo on sada završavaju nakon sljedeća dva potpuna čitanja uobičajenim događajem „riješeno”. Ako je uređaj još ugrađen, provjerite njegovu vezu sa sustavom; njegov popis grešaka ponovno se računa čim ga sustav ponovno prijavi. Ovu obavijest možete zanemariti; nestaje nakon sljedećeg ponovnog pokretanja."
+    },
+    "repeated_rate_limit": {
+      "title": "Zahtjevi prema oblaku se ograničavaju",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Koristi dohvaćanje poštedno za oblak",
+            "description": "Odaberite **Podnijeti** za prebacivanje ove integracije na profil dohvaćanja poštedan za oblak. Trenutne radne vrijednosti tada će se čitati svake dvije minute umjesto svake minute; vrijednosti upravljanja i energije svakih deset minuta; spora brojila svakih trideset minuta. Integracija se ponovno učitava i provodi potpuno otkrivanje resursa."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Zahvaćeni unos Bosch/Buderus Home Comfort više ne postoji."
+        }
+      }
+    },
+    "incompatible_firmware": {
+      "title": "Mogućnosti su se promijenile nakon ažuriranja firmvera",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Ponovno otkrivanje mogućnosti",
+            "description": "Bosch/Buderus Home Comfort pronašao je poznate mogućnosti ({conflict_count}) čiji se tip podataka ili jedinica više ne podudara sa sigurno podržanom shemom. Odaberite **Podnijeti** za ponovno učitavanje integracije i ponovni pregled svih mogućnosti. Ako se upozorenje vrati, preuzmite dijagnostiku integracije i prijavite promijenjenu shemu bez dijeljenja podataka za prijavu ili neobrađenih vrijednosti."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Zahvaćeni unos Bosch/Buderus Home Comfort više ne postoji."
+        }
+      }
+    },
+    "managed_rate_limit": {
+      "title": "Zahtjevi prema oblaku se ograničavaju",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Koristi dohvaćanje poštedno za oblak",
+            "description": "Prebacite samo zahvaćenu vezu s oblakom na dohvaćanje poštedno za oblak: trenutne radne vrijednosti svake dvije minute, vrijednosti upravljanja i energije svakih deset minuta te spora brojila svakih trideset minuta. Ponovno se povezuje samo ova veza; ostale veze ostaju aktivne."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Zahvaćeni unos Bosch/Buderus Home Comfort više ne postoji.",
+          "configuration_changed": "Pristup ili sustav grijanja se promijenio. Ponovno otvorite popravak."
+        }
+      }
+    },
+    "managed_firmware": {
+      "title": "Mogućnosti su se promijenile nakon ažuriranja firmvera",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Ponovno otkrivanje mogućnosti",
+            "description": "Ovaj sustav grijanja prijavljuje poznate mogućnosti ({conflict_count}) s neočekivanim tipom podataka ili jedinicom. Ponovno pregledajte njegove mogućnosti. Ponovno se pokreće samo ovaj izvor; ostali sustavi i veze ostaju aktivni. Postojeći ID-jevi entiteta i prilagođene postavke se zadržavaju."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Zahvaćeni unos Bosch/Buderus Home Comfort više ne postoji.",
+          "configuration_changed": "Pristup ili sustav grijanja se promijenio. Ponovno otvorite popravak."
+        }
+      }
+    },
+    "local_certificate_changed": {
+      "title": "Certifikat lokalnog pristupnika se promijenio",
+      "description": "Pristupnik lokalnog pristupa predočuje drugi certifikat. Integracija ga sama ne prihvaća i prestaje lokalno čitati. Ako znate zašto se certifikat promijenio (na primjer nakon ažuriranja ili resetiranja pristupnika), otvorite opcije integracije, odaberite lokalni pristup i odaberite „Promjena lokalnog pristupa”. Ondje potvrđujete novi certifikat. Preporučuje se nova prijava s oznakom uređaja; trenutni token zadržite samo ako ste sigurni da novi certifikat pripada vašem vlastitom pristupniku."
+    },
+    "local_start_certificate": {
+      "title": "Lokalni pristup se ne može sigurno povezati",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Ponovni pokušaj lokalnog pristupa",
+            "description": "Lokalni pristup nije se uspio pokrenuti više puta zaredom jer se nije mogla uspostaviti sigurna veza s pristupnikom (kôd: {code}). To se može dogoditi dok se pristupnik ponovno pokreće. Integracija sama nastavlja pokušavati, najkasnije svaki sat, i uklanja ovu obavijest čim se lokalni pristup pokrene. Drugi pristupi nisu zahvaćeni. Odaberite **Podnijeti** za ponovni pokušaj odmah. Ako se problem nastavi, provjerite pripada li spremljena adresa još uvijek vašem pristupniku."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Zahvaćeni unos više ne postoji.",
+          "configuration_changed": "Pristup ili sustav grijanja se promijenio. Ponovno otvorite popravak."
+        }
+      }
+    },
+    "local_start_incomplete": {
+      "title": "Lokalni pristupnik još nije spreman",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Ponovni pokušaj lokalnog pristupa",
+            "description": "Lokalni pristup nije se uspio pokrenuti više puta zaredom jer pristupnik prijavljuje da njegove informacije o sustavu još nisu potpune (kôd: {code}). To je uobičajeno neko vrijeme nakon pokretanja pristupnika. Integracija sama nastavlja pokušavati, najkasnije svaki sat, i uklanja ovu obavijest čim se lokalni pristup pokrene. Drugi pristupi nisu zahvaćeni. Odaberite **Podnijeti** za ponovni pokušaj odmah. Ako obavijest ostane satima, ponovno pokrenite pristupnik."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Zahvaćeni unos više ne postoji.",
+          "configuration_changed": "Pristup ili sustav grijanja se promijenio. Ponovno otvorite popravak."
+        }
+      }
+    },
+    "local_start_unrecognized": {
+      "title": "Odgovor lokalnog pristupnika nije prepoznat",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Ponovni pokušaj lokalnog pristupa",
+            "description": "Lokalni pristup nije se uspio pokrenuti više puta zaredom jer se odgovor pristupnika o njegovoj marki, firmveru ili identitetu nije mogao prepoznati (kôd: {code}). Integracija sama nastavlja pokušavati, najkasnije svaki sat, i uklanja ovu obavijest čim se lokalni pristup pokrene. Drugi pristupi nisu zahvaćeni. Odaberite **Podnijeti** za ponovni pokušaj odmah. Ako obavijest ostane nakon ažuriranja pristupnika, prijavite kôd."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Zahvaćeni unos više ne postoji.",
+          "configuration_changed": "Pristup ili sustav grijanja se promijenio. Ponovno otvorite popravak."
+        }
+      }
+    },
+    "local_start_response": {
+      "title": "Lokalni pristupnik odgovara neočekivano",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Ponovni pokušaj lokalnog pristupa",
+            "description": "Lokalni pristup nije se uspio pokrenuti više puta zaredom jer pristupnik odgovara, ali ne kako se očekuje, na primjer greškom ili nečitljivim odgovorom (kôd: {code}). Integracija sama nastavlja pokušavati, najkasnije svaki sat, i uklanja ovu obavijest čim se lokalni pristup pokrene. Drugi pristupi nisu zahvaćeni. Odaberite **Podnijeti** za ponovni pokušaj odmah. Ako se problem nastavi, provjerite pripada li spremljena adresa još uvijek vašem pristupniku."
+          }
+        },
+        "abort": {
+          "entry_not_found": "Zahvaćeni unos više ne postoji.",
+          "configuration_changed": "Pristup ili sustav grijanja se promijenio. Ponovno otvorite popravak."
+        }
+      }
+    },
+    "cloud_targets_not_found": {
+      "title": "Sustavi nisu pronađeni na računu u oblaku",
+      "description": "Posljednja prijava pristupa putem oblaka u „{title}” nije pronašla uključene sustave ili uređaje ({count}; završavaju na {systems}). Ostaju konfigurirani i nedostupni dok se ponovno ne pojave na računu; tada ova obavijest nestaje.\n\nAko su uklonjeni s računa, otvorite Konfiguriraj → Veze → pristup putem oblaka, isključite ih pod **Koristi za sustave i uređaje** i uklonite ih pomoću **Zaboravi isključene sustave**. Njihovi uređaji i entiteti ostaju u Home Assistantu dok ih ne izbrišete. Ako je pristupnik zamijenjen, ostavite ga uključenim: zasebna obavijest o popravku nudi nastavak sustava sa spremljenom poviješću."
+    },
+    "gateway_exchange": {
+      "title": "Pristupnik zamijenjen?",
+      "fix_flow": {
+        "step": {
+          "evidence_match": {
+            "title": "Pristupnik zamijenjen?",
+            "description": "Pristupnik koji završava na **{old}** više se ne pojavljuje u pristupu putem oblaka. Umjesto njega pojavio se novi pristupnik koji završava na **{new}**. Barem jedan modul uređaja koji prijavljuje podudara se s onim koji je ovaj sustav prijavljivao prije (na primjer izvor topline ili regulator). To snažno upućuje na to da je pristupnik zamijenjen.\n\nKako želite nastaviti?",
+            "menu_options": {
+              "continue": "Nastavi kao isti sustav",
+              "separate": "Zadrži kao zaseban sustav",
+              "later": "Odluči kasnije"
+            }
+          },
+          "evidence_no_match": {
+            "title": "Pristupnik zamijenjen?",
+            "description": "Pristupnik koji završava na **{old}** više se ne pojavljuje u pristupu putem oblaka. Umjesto njega pojavio se novi pristupnik koji završava na **{new}**. Međutim, moduli uređaja koje prijavljuje razlikuju se od onih koje je ovaj sustav prijavljivao prije. Možda pripada drugom sustavu.\n\nKako želite nastaviti?",
+            "menu_options": {
+              "continue": "Nastavi kao isti sustav",
+              "separate": "Zadrži kao zaseban sustav",
+              "later": "Odluči kasnije"
+            }
+          },
+          "evidence_unknown": {
+            "title": "Pristupnik zamijenjen?",
+            "description": "Pristupnik koji završava na **{old}** više se ne pojavljuje u pristupu putem oblaka. Umjesto njega pojavio se novi pristupnik koji završava na **{new}**. Njegovi moduli uređaja nisu se mogli usporediti jer nisu spremljeni raniji podaci o modulima ili novi pristupnik nije prijavio nijedan. Ne može se potvrditi je li riječ o istom sustavu.\n\nKako želite nastaviti?",
+            "menu_options": {
+              "continue": "Nastavi kao isti sustav",
+              "separate": "Zadrži kao zaseban sustav",
+              "later": "Odluči kasnije"
+            }
+          },
+          "continue_match": {
+            "title": "Nastavi kao isti sustav",
+            "description": "Sustav nastavlja s pristupnikom koji završava na {new}. Njegova povijest, njegovi entiteti s ID-jevima, nazivima i područjima te vaše automatizacije ostaju. Integracija se nakratko zaustavlja i ponovno pokreće.\n\nAko je za ovaj sustav postavljen lokalni pristup, uklanja se jer pripada starom pristupniku. Nakon toga ga ponovno postavite za novi pristupnik.\n\nPrvo napravite sigurnosnu kopiju Home Assistanta.",
+            "data": {
+              "confirm": "Nastavi ovaj sustav s novim pristupnikom"
+            }
+          },
+          "continue_unverified": {
+            "title": "Nastavak bez potvrde",
+            "description": "**Upozorenje:** Ne može se potvrditi da pristupnik koji završava na {new} pripada ovom sustavu. Ako pripada drugom sustavu, vrijednosti tog sustava završit će u povijesti ovog sustava, a vaše automatizacije djelovat će na pogrešan sustav. Nastavite samo ako ste sami zamijenili pristupnik i sigurni ste.\n\nSustav nastavlja s pristupnikom koji završava na {new}. Njegova povijest, njegovi entiteti s ID-jevima, nazivima i područjima te vaše automatizacije ostaju. Integracija se nakratko zaustavlja i ponovno pokreće.\n\nAko je za ovaj sustav postavljen lokalni pristup, uklanja se jer pripada starom pristupniku. Nakon toga ga ponovno postavite za novi pristupnik.\n\nPrvo napravite sigurnosnu kopiju Home Assistanta.",
+            "data": {
+              "confirm": "Nastavi ovaj sustav s novim pristupnikom",
+              "confirm_unverified": "Siguran sam da novi pristupnik pripada ovom sustavu"
+            }
+          },
+          "separate": {
+            "title": "Zadrži kao zaseban sustav",
+            "description": "Integracija više ne pita za ovaj pristupnik. Sustav sa starim pristupnikom ostaje kakav jest. Da biste novi pristupnik dodali kao zaseban sustav, odaberite ga u opcijama pristupa putem oblaka."
+          }
+        },
+        "error": {
+          "confirmation_required": "Potvrdite za nastavak."
+        },
+        "abort": {
+          "entry_not_found": "Zahvaćeni unos ove integracije više ne postoji.",
+          "configuration_changed": "Pristup ili sustav se promijenio. Ponovno otvorite popravak.",
+          "later": "Ništa nije promijenjeno. Obavijest ostaje pod popravcima dok ne odlučite.",
+          "exchange_unavailable": "Integracija ne radi. Pokrenite je i ponovno otvorite popravak.",
+          "cloud_unavailable": "Pristup putem oblaka trenutno nije dostupan. Pokušajte ponovno kasnije.",
+          "exchange_changed": "Pristupnici u pristupu putem oblaka su se promijenili. Ponovno otvorite popravak kada se ponovno prikaže.",
+          "exchange_collision": "Ništa nije promijenjeno: entiteti ili uređaj za novi pristupnik već postoje. Prvo ih uklonite ili zadržite novi pristupnik kao zaseban sustav.",
+          "exchange_failed": "Ništa nije promijenjeno; sustav nastavlja sa starim pristupnikom. Pojedinosti su u zapisniku.",
+          "unload_failed": "Ništa nije promijenjeno: integracija se nije mogla zaustaviti. Ponovno pokrenite Home Assistant i ponovno otvorite popravak."
+        }
+      }
+    },
+    "setup_unfinished": {
+      "title": "Konfiguracija nije dovršena",
+      "description": "Unos „{title}” još nema pristup. Otvorite njegove opcije konfiguracije i odaberite „Postavljanje lokalnog pristupa” (ili dodajte pristup putem oblaka) kako biste dovršili konfiguraciju."
+    }
+  },
+  "exceptions": {
+    "invalid_stored_configuration": {
+      "message": "Spremljena konfiguracija ovog unosa ne može se pročitati ({reason}). Ništa nije promijenjeno. Vratite sigurnosnu kopiju iz vremena prije problema ili izbrišite unos i ponovno ga dodajte."
+    },
+    "holiday_previous_request_found": {
+      "message": "Raniji neriješeni zahtjev sada je potvrđen. Vaši novi unosi nisu poslani. Provjerite postojeći odmor pod Konfiguriraj → Upravljanje razdobljima odmora."
+    },
+    "holiday_already_exists": {
+      "message": "Odmor s ovim početkom i odabirom krugova već postoji. Uredite taj unos pod Konfiguriraj → Upravljanje razdobljima odmora."
+    },
+    "holiday_create_unconfirmed": {
+      "message": "Stvaranje se nije moglo potvrditi. Odmor možda već postoji. Provjerite Upravljanje razdobljima odmora ili aplikaciju proizvođača. Sljedećih 10 minuta novi pokušaj provjerava neriješeni zahtjev bez stvaranja drugog odmora."
+    },
+    "holiday_update_unconfirmed": {
+      "message": "Promjena se nije mogla u potpunosti potvrditi. Neke postavke možda su već spremljene. Provjerite trenutni odmor pod Konfiguriraj → Upravljanje razdobljima odmora."
+    },
+    "holiday_write_adjusted": {
+      "message": "Sustav grijanja vratio je postavke odmora koje se razlikuju od vašeg zahtjeva. Provjerite vraćene datume i postavke pod Konfiguriraj → Upravljanje razdobljima odmora i uredite taj unos."
+    },
+    "holiday_time_step": {
+      "message": "Odaberite vrijeme u razmacima od četvrt sata: minute 00, 15, 30 ili 45 i sekunde 00."
+    },
+    "holiday_time_nonexistent": {
+      "message": "Odabrano vrijeme početka ili završetka ne postoji jer se sat u vremenskoj zoni sustava grijanja pomiče unaprijed. Odaberite drugo vrijeme."
+    },
+    "holiday_time_ambiguous": {
+      "message": "Odabrano vrijeme početka ili završetka pojavljuje se dvaput jer se sat u vremenskoj zoni sustava grijanja pomiče unatrag. Odaberite jednoznačno vrijeme."
+    },
+    "holiday_changes_unavailable": {
+      "message": "Ovaj sustav grijanja trenutno ne dopušta promjene odmora."
+    },
+    "holiday_create_failed": {
+      "message": "Odmor nije bilo moguće stvoriti ni potvrditi."
+    },
+    "holiday_change_unsafe": {
+      "message": "Ovaj odmor trenutno se ne može sigurno promijeniti."
+    },
+    "holiday_update_failed": {
+      "message": "Odmor nije bilo moguće promijeniti ni potvrditi."
+    },
+    "holiday_not_deletable": {
+      "message": "Ovaj odmor ovdje se ne može izbrisati."
+    },
+    "holiday_delete_failed": {
+      "message": "Odmor nije bilo moguće izbrisati ni potvrditi."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Ponavljajući odmori nisu podržani."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Odmori nemaju opis ni lokaciju. Uklonite ih i pokušajte ponovno."
+    },
+    "select_option_unavailable": {
+      "message": "Sustav grijanja više ne nudi ovu opciju. Ponovno učitajte vrijednosti i odaberite ponovno."
+    },
+    "rrc_mode_locked": {
+      "message": "Regulator trenutno zaključava način grijanja ove zone, na primjer dok sustav hladi. Trenutni način ostaje prikazan. Pokušajte ponovno kasnije."
+    },
+    "rrc_zone_setting_locked": {
+      "message": "Regulator trenutno zaključava ovu postavku zone. Trenutna vrijednost ostaje prikazana. Pokušajte ponovno kasnije."
+    },
+    "rrc_circuit_setting_locked": {
+      "message": "Regulator trenutno zaključava ovu postavku kruga grijanja. Trenutna vrijednost ostaje prikazana. Pokušajte ponovno kasnije."
+    },
+    "rrc_dhw_setting_locked": {
+      "message": "Regulator trenutno zaključava ovu postavku tople vode, na primjer zato što je grijač vode trenutno ne nudi. Trenutna vrijednost ostaje prikazana. Pokušajte ponovno kasnije."
+    },
+    "rrc_device_setting_locked": {
+      "message": "Regulator trenutno zaključava ovu postavku radijskog uređaja. Trenutna vrijednost ostaje prikazana. Pokušajte ponovno kasnije."
+    },
+    "rrc_setting_locked": {
+      "message": "Regulator trenutno zaključava ovu postavku. Trenutna vrijednost ostaje prikazana. Pokušajte ponovno kasnije."
+    },
+    "write_validation_failed": {
+      "message": "Ovu postavku trenutno nije sigurno mijenjati. Osvježite ili ponovno konfigurirajte integraciju i pokušajte ponovno."
+    },
+    "write_not_confirmed": {
+      "message": "Promjena je poslana, ali je sustav grijanja nije potvrdio. Možda je već stupila na snagu. Vrijednost se ažurira sljedećim čitanjem."
+    },
+    "rrc_write_pending_confirmation": {
+      "message": "Promjena je poslana sobnom regulatoru, ali ju on još nije potvrdio. Regulator je možda primjenjuje s odgodom; vrijednost se ažurira pri sljedećem očitanju."
+    },
+    "write_authentication_failed": {
+      "message": "Prijava u oblak više nije valjana. Ponovno autentificirajte Bosch/Buderus Home Comfort prije ponovnog pokušaja."
+    },
+    "write_rate_limited": {
+      "message": "Oblak trenutno ograničava zahtjeve. Pričekajte prije ponovnog pokušaja promjene."
+    },
+    "write_failed": {
+      "message": "Promjena se nije mogla dovršiti i sustav grijanja je nije potvrdio. Prikazana vrijednost ažurira se sljedećim čitanjem."
+    },
+    "write_busy": {
+      "message": "Sustav grijanja se čita ili je u tijeku druga promjena. Ništa nije poslano. Pokušajte ponovno za trenutak."
+    },
+    "command_cloud_auth_required": {
+      "message": "Trenutno nije moguće: pristup putem oblaka treba novu prijavu. Ništa nije poslano."
+    },
+    "command_cloud_stopped": {
+      "message": "Trenutno nije moguće: pristup putem oblaka je zaustavljen ili se ponovno pokreće. Ništa nije poslano."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Trenutno nije moguće: zahtjevi su pauzirani nakon ograničenja oblaka, otprilike do {until}. Ništa nije poslano."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Trenutno nije moguće: zahtjevi su pauzirani nakon ponovljenih grešaka oblaka, otprilike do {until}. Ništa nije poslano."
+    },
+    "command_cloud_unreachable": {
+      "message": "Trenutno nije moguće: oblak nije dostupan. Ništa nije poslano. Pokušajte ponovno kada se prikažu trenutne vrijednosti."
+    },
+    "holiday_end_not_after_start": {
+      "message": "Kraj mora biti nakon početka. Odaberite kasniji kraj."
+    },
+    "bacon_unsupported_command": {
+      "message": "Uređaj trenutno ne podržava ovu postavku. Provjerite njegovu vezu, dostupne načine rada i ograničenja temperature."
+    },
+    "bacon_command_failed": {
+      "message": "Uređaj nije mogao potvrditi promjenu. Nisam je ponovno poslao. Provjerite prijavljeno stanje prije ponovnog pokušaja."
+    },
+    "bacon_separate_settings": {
+      "message": "Promijenite temperaturu i način rada zasebno kako bi se svaka promjena mogla potvrditi."
+    },
+    "heating_climate_command": {
+      "message": "Ova naredba termostata trenutno nije dostupna. Temperature se mogu mijenjati samo u ručnom načinu grijanja ili u automatskom načinu kada krug grijanja nudi privremenu zadanu vrijednost. Odaberite način zasebno i provjerite pruža li uređaj trenutne vrijednosti."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Ovaj krug grijanja trenutačno nema privremenu zadanu vrijednost koju bi bilo moguće poništiti."
+    },
+    "pointt_dhw_temperature_read_only": {
+      "message": "Uređaj određuje trenutnu zadanu vrijednost tople vode. Zasebne početne temperature načina možete prilagoditi pod Upravljanje uređajem."
+    },
+    "gateway_exchange_incomplete": {
+      "message": "Prekinuta zamjena pristupnika nije se mogla dovršiti, pa se integracija ne pokreće. Pojedinosti su u zapisniku; uklonite ono što blokira zamjenu (na primjer entitete novog pristupnika) i ponovno pokrenite Home Assistant."
+    },
+    "rrc_override_ended": {
+      "message": "Sobni regulator je odmah prekinuo privremenu zadanu vrijednost, na primjer jer je dosegnuta sljedeća točka uklapanja vremenskog programa. Vrijedi zadana vrijednost vremenskog programa."
+    },
+    "rrc_override_needs_clock_mode": {
+      "message": "Privremena zadana vrijednost može se postaviti ili poništiti samo dok zona slijedi svoj vremenski program. Najprije odaberite način rada Vremenski program."
+    },
+    "rrc_override_below_minimum": {
+      "message": "Privremena zadana vrijednost mora biti barem jednaka najnižoj ručnoj zadanoj vrijednosti zone. Odaberite višu temperaturu."
+    },
+    "rrc_override_not_active": {
+      "message": "Ova zona trenutačno nema privremenu zadanu vrijednost koju bi bilo moguće poništiti."
+    },
+    "rrc_advance_not_offered": {
+      "message": "Sljedeća točka uklapanja ove zone trenutačno se ne može prijevremeno aktivirati. Za to su potrebni način rada Vremenski program i sljedeća zadana vrijednost koju privremena zadana vrijednost može preuzeti."
+    },
+    "rrc_zone_climate_command": {
+      "message": "Ova naredba zone trenutačno nije dostupna. Provjerite izvješćuje li zona o trenutačnim vrijednostima i nalazi li se temperatura unutar ponuđenog raspona; privremena zadana vrijednost zahtijeva način rada Vremenski program."
+    },
+    "rrc_zone_locked_away": {
+      "message": "Način odsutnosti je aktivan. Isključite ga kako biste promijenili zadanu vrijednost ove zone; ništa nije poslano."
+    },
+    "rrc_zone_standby": {
+      "message": "Ova je zona na sobnom regulatoru u stanju pripravnosti i njome se trenutačno ne može upravljati; ništa nije poslano."
+    },
+    "rrc_zone_unreachable": {
+      "message": "Sobni regulator javlja grešku zone ili grešku u komunikaciji za ovu zonu, pa se njome trenutačno ne može upravljati; ništa nije poslano."
+    },
+    "rrc_device_setting_unused": {
+      "message": "Radijski uređaj trenutačno ne koristi ovu postavku, pa nije promijenjena."
+    },
+    "rrc_setting_unused": {
+      "message": "Sobni regulator trenutačno ne koristi ovu postavku, pa nije promijenjena."
+    },
+    "rrc_away_unused": {
+      "message": "Način odsutnosti nije moguć u trenutačnom načinu rada sobnog regulatora, pa nije promijenjen."
+    },
+    "rrc_window_detection_unused": {
+      "message": "Sobni regulator ovdje trenutačno ne nudi prepoznavanje otvorenog prozora, pa nije promijenjeno."
+    },
+    "rrc_dhw_setting_unused": {
+      "message": "Sobni regulator trenutačno ne koristi ovu postavku tople vode, pa nije promijenjena."
+    },
+    "rrc_boost_changed": {
+      "message": "Funkcija Boost promijenjena je na sobnom regulatoru nakon što je prikazana, pa ništa nije poslano. Provjerite trenutačne postavke funkcije Boost i pokušajte ponovno."
+    },
+    "rrc_window_sensitivity_level": {
+      "message": "Za prepoznavanje otvorenog prozora mogu se postaviti samo razine visoka, srednja i niska."
+    },
+    "rrc_time_of_day_invalid": {
+      "message": "Vrijeme početka mora biti doba dana između 00:00 i 23:59."
+    },
+    "rrc_time_of_day_step": {
+      "message": "Odaberite vrijeme početka u koracima od {step} minuta."
+    },
+    "rrc_curve_order": {
+      "message": "Krivulja grijanja i granice temperature polaznog voda moraju ostati u ispravnom redoslijedu: početna točka i minimalna temperatura polaznog voda ne iznad krajnje točke i maksimalne temperature polaznog voda. Ništa nije poslano; najprije promijenite drugu granicu."
+    },
+    "rrc_weather_control_off": {
+      "message": "Ova postavka kruga grijanja djeluje samo uz regulaciju prema vanjskoj temperaturi, a krug trenutno koristi drugi način regulacije. Ništa nije poslano."
+    },
+    "rrc_extra_dhw_duration_zero": {
+      "message": "Dodatna topla voda treba trajanje dulje od 0 minuta. Najprije postavite trajanje. Ništa nije poslano."
+    },
+    "rrc_event_invalid_name": {
+      "message": "Unesite naziv od 1 do 32 bajtova ispisivog teksta (manje znakova s dijakritičkim znakovima ili emojijima)."
+    },
+    "rrc_event_invalid_dates": {
+      "message": "Događaj zahtijeva cijele dane od 2016. do 2099.: početak na dan završetka ili prije njega te završetak koji nije u prošlosti."
+    },
+    "rrc_event_overlap": {
+      "message": "Događaj dijeli dan s drugim događajem sobnog regulatora. Događaji se ne smiju preklapati, čak ni prvog ili posljednjeg dana."
+    },
+    "rrc_event_type_read_only": {
+      "message": "Dan koji se regulira kao drugi dan u tjednu ovdje se može samo izbrisati, ne i promijeniti."
+    },
+    "rrc_event_rejected": {
+      "message": "Sobni regulator odbio je događaj, na primjer jer mu je kalendar pun. Ništa nije promijenjeno."
+    },
+    "rrc_event_pending": {
+      "message": "Prethodna promjena događaja još nije potvrđena. Ništa nije poslano; pričekajte da se prikaže u kalendaru ili pokušajte ponovno za deset minuta."
+    },
+    "rrc_event_lists_unreadable": {
+      "message": "Trenutačno se ne mogu pročitati svi popisi događaja sobnog regulatora, pa se događaji ne mogu potpuno provjeriti. Ništa nije poslano; pokušajte ponovno kasnije."
+    },
+    "rrc_event_unsupported_fields": {
+      "message": "Sobni regulator pohranjuje samo naziv i cijele dane. Ponavljajući događaji, opisi i lokacije nisu podržani."
+    },
+    "rrc_boost_no_zones": {
+      "message": "Funkcija Boost nema prostorija. Najprije odaberite prostorije za Boost na sobnom regulatoru."
+    },
+    "rrc_boost_unsupported_shape": {
+      "message": "Sobni regulator javlja funkciju Boost u obliku koji ova integracija ne poznaje u potpunosti. Boost se prikazuje, ali se ne mijenja kako se nijedna postavka ne bi izgubila."
+    },
+    "rrc_boost_locked": {
+      "message": "Sobni regulator trenutačno blokira funkciju Boost. Pokušajte ponovno kasnije."
+    },
+    "rrc_boost_running": {
+      "message": "Funkcija Boost je aktivna. Njezina temperatura i trajanje mogu se promijeniti samo dok je isključena; tada vrijede od sljedećeg pokretanja. Ništa nije promijenjeno."
+    },
+    "switch_program_not_readable": {
+      "message": "Odabrani vremenski program trenutno se ne može pročitati. Ništa nije poslano."
+    }
+  },
+  "selector": {
+    "holiday_period": {
+      "options": {
+        "create": "Novi odmor"
+      }
+    },
+    "polling_profile": {
+      "options": {
+        "standard": "Standardno",
+        "cloud_friendly": "Poštedno za oblak"
+      }
+    },
+    "holiday_heating_mode": {
+      "options": {
+        "saturday": "Kao subota",
+        "fix_temperature": "Stalna temperatura",
+        "off": "ISKLJUČENO",
+        "eco": "Sniženo",
+        "auto_sat": "Kao subota",
+        "fix_temp": "Stalna temperatura"
+      }
+    },
+    "holiday_dhw_mode": {
+      "options": {
+        "saturday": "Kao subota",
+        "off": "ISKLJUČENO",
+        "eco": "Eco+",
+        "low": "Eco",
+        "high": "Komfor",
+        "off_td": "ISKLJUČENO s termičkom dezinfekcijom",
+        "auto_sat": "Kao subota",
+        "td_off": "ISKLJUČENO s termičkom dezinfekcijom"
+      }
+    },
+    "holiday_ventilation_mode": {
+      "options": {
+        "saturday": "Kao subota",
+        "off": "ISKLJUČENO",
+        "min": "Stupanj ventilatora 1",
+        "red": "Stupanj ventilatora 2",
+        "nom": "Stupanj ventilatora 3",
+        "max": "Stupanj ventilatora 4",
+        "dem": "Prema potrebi"
+      }
+    },
+    "holiday_thermal_disinfection": {
+      "options": {
+        "on": "Uključeno",
+        "off": "Isključeno"
+      }
+    },
+    "holiday_mode": {
+      "options": {
+        "on": "Uključeno",
+        "off": "Isključeno"
+      }
+    },
+    "rrc_weekday": {
+      "options": {
+        "mo": "Ponedjeljak",
+        "tu": "Utorak",
+        "we": "Srijeda",
+        "th": "Četvrtak",
+        "fr": "Petak",
+        "sa": "Subota",
+        "su": "Nedjelja"
+      }
+    },
+    "switch_program_action": {
+      "options": {
+        "edit": "Uredi dan",
+        "copy": "Kopiraj dan na druge dane",
+        "review": "Provjeri i spremi promjene"
+      }
+    },
+    "switch_program_point": {
+      "options": {
+        "add": "Dodaj točku uklapanja",
+        "done": "Natrag na tjedan"
+      }
+    },
+    "local_method": {
+      "options": {
+        "label": "Oznaka uređaja (preporučeno)",
+        "token": "Postojeći token",
+        "keep": "Zadrži trenutni token (ne preporučuje se)"
+      }
+    },
+    "local_pending_action": {
+      "options": {
+        "continue": "Nastavi sa spremljenim tokenom",
+        "discard": "Odbaci pokušaj na čekanju",
+        "later": "Nastavi kasnije"
+      }
+    }
+  },
+  "entity": {
+    "number": {
+      "manual_room_setpoint": {
+        "name": "Ručna zadana vrijednost"
+      },
+      "pool_setpoint_temperature": {
+        "name": "Ciljna temperatura bazena"
+      },
+      "heating_temperature": {
+        "name": "Grijanje"
+      },
+      "reduced_temperature": {
+        "name": "Smanjeno"
+      },
+      "extra_hot_water_duration": {
+        "name": "Trajanje dodatne tople vode"
+      },
+      "extra_hot_water_setpoint": {
+        "name": "Zadana vrijednost dodatne tople vode"
+      },
+      "hot_water_eco_plus": {
+        "name": "Početna temperatura Eco+"
+      },
+      "hot_water_comfort": {
+        "name": "Početna temperatura Komfor"
+      },
+      "hot_water_eco": {
+        "name": "Početna temperatura Eco"
+      },
+      "maximum_supply_temperature": {
+        "name": "Maksimalna temperatura polaznog voda"
+      },
+      "softener_salt_threshold": {
+        "name": "Prag upozorenja za sol"
+      },
+      "softener_regeneration_delay": {
+        "name": "Zakaži regeneraciju"
+      },
+      "bacon_purifier_fan_speed": {
+        "name": "Stupanj ventilatora"
+      },
+      "bacon_purifier_light_intensity": {
+        "name": "Svjetlina ambijentalnog svjetla"
+      },
+      "rrc_window_duration": {
+        "name": "Trajanje otvorenog prozora"
+      },
+      "rrc_window_temperature": {
+        "name": "Temperatura pri otvorenom prozoru"
+      },
+      "rrc_temperature_offset": {
+        "name": "Pomak temperature"
+      },
+      "rrc_extra_dhw_duration": {
+        "name": "Trajanje dodatne tople vode"
+      },
+      "rrc_hot_water_temperature": {
+        "name": "Temperatura tople vode"
+      },
+      "rrc_heat_curve_min": {
+        "name": "Početna točka krivulje grijanja"
+      },
+      "rrc_heat_curve_max": {
+        "name": "Krajnja točka krivulje grijanja"
+      },
+      "rrc_min_supply": {
+        "name": "Minimalna temperatura polaznog voda"
+      },
+      "rrc_max_supply": {
+        "name": "Maksimalna temperatura polaznog voda"
+      },
+      "rrc_room_influence": {
+        "name": "Utjecaj prostorije"
+      },
+      "rrc_summer_winter_threshold": {
+        "name": "Zaustavi grijanje pri vanjskoj temperaturi"
+      },
+      "rrc_night_threshold": {
+        "name": "Noćno sniženje do vanjske temperature"
+      },
+      "rrc_boost_temperature": {
+        "name": "Temperatura funkcije Boost"
+      },
+      "rrc_boost_duration": {
+        "name": "Trajanje funkcije Boost"
+      },
+      "rrc_away_temperature": {
+        "name": "Temperatura odsutnosti"
+      }
+    },
+    "select": {
+      "zone_operation_mode": {
+        "name": "Postavi način rada zone",
+        "state": {
+          "off": "Isključeno",
+          "manual": "Ručno",
+          "auto": "Automatski"
+        }
+      },
+      "heating_circuit_operation_mode": {
+        "name": "Način rada kruga grijanja",
+        "state": {
+          "off": "Isključeno",
+          "manual": "Ručno",
+          "auto": "Automatski"
+        }
+      },
+      "hot_water_operation_mode": {
+        "name": "Način rada tople vode",
+        "state": {
+          "off": "Isključeno",
+          "low": "Eco",
+          "high": "Komfor",
+          "ownprogram": "Automatski",
+          "eco": "Eco+"
+        }
+      },
+      "season_switching": {
+        "name": "Sezonsko prebacivanje",
+        "state": {
+          "off": "Grijanje/hlađenje isključeno",
+          "automatic": "Automatski",
+          "forced_heat": "Samo grijanje",
+          "forced_cool": "Samo hlađenje"
+        }
+      },
+      "silent_mode": {
+        "name": "Tihi način rada",
+        "state": {
+          "off": "Isključeno",
+          "auto": "Automatski",
+          "on": "Uključeno"
+        }
+      },
+      "auxiliary_heater_operation_mode": {
+        "name": "Način rada dodatnog grijača",
+        "state": {
+          "off": "Isključeno",
+          "manual": "Uključeno",
+          "auto": "Automatski"
+        }
+      },
+      "ventilation_exhaust_fan_level": {
+        "name": "Stupanj ventilatora otpadnog zraka",
+        "state": {
+          "off": "Isključeno",
+          "min": "Stupanj ventilatora 1",
+          "red": "Stupanj ventilatora 2",
+          "nom": "Stupanj ventilatora 3",
+          "max": "Stupanj ventilatora 4",
+          "dem": "Prema potrebi"
+        }
+      },
+      "rrc_user_mode": {
+        "state": {
+          "manual": "Ručno",
+          "clock": "Vremenski program"
+        }
+      },
+      "bacon_purifier_light_color": {
+        "name": "Boja ambijentalnog svjetla",
+        "state": {
+          "warm_white": "Topla bijela",
+          "neutral_white": "Neutralna bijela",
+          "cool_white": "Hladna bijela",
+          "blue": "Plava",
+          "purple": "Ljubičasta",
+          "orange": "Narančasta",
+          "red": "Crvena"
+        }
+      },
+      "rrc_window_sensitivity": {
+        "name": "Osjetljivost prepoznavanja otvorenog prozora",
+        "state": {
+          "high": "Visoka",
+          "medium": "Srednja",
+          "low": "Niska"
+        }
+      },
+      "rrc_thermal_disinfection_weekday": {
+        "name": "Dan termičke dezinfekcije",
+        "state": {
+          "monday": "Ponedjeljak",
+          "tuesday": "Utorak",
+          "wednesday": "Srijeda",
+          "thursday": "Četvrtak",
+          "friday": "Petak",
+          "saturday": "Subota",
+          "sunday": "Nedjelja",
+          "daily": "Svaki dan"
+        }
+      },
+      "rrc_summer_winter_mode": {
+        "name": "Ljetno/zimsko prebacivanje",
+        "state": {
+          "off": "Isključeno",
+          "automatic": "Automatski"
+        }
+      },
+      "rrc_night_mode": {
+        "name": "Noćno sniženje prema vanjskoj temperaturi",
+        "state": {
+          "off": "Isključeno",
+          "automatic": "Automatski"
+        }
+      },
+      "rrc_season_mode": {
+        "name": "Sezonski način rada",
+        "state": {
+          "always_heating": "Uvijek grijanje",
+          "always_cooling": "Uvijek hlađenje",
+          "automatic": "Automatski"
+        }
+      },
+      "active_switch_program": {
+        "name": "Aktivni vremenski program",
+        "state": {
+          "a": "Program A",
+          "b": "Program B"
+        }
+      }
+    },
+    "switch": {
+      "extra_hot_water": {
+        "name": "Dodatna topla voda"
+      },
+      "reduce_temperature_on_alarm": {
+        "name": "Smanjenje temperature tijekom smetnje"
+      },
+      "away_mode": {
+        "name": "Način odsutnosti"
+      },
+      "softener_holiday_mode": {
+        "name": "Način odmora"
+      },
+      "wddw2_holiday_mode": {
+        "name": "Način odmora"
+      },
+      "pool_enabled": {
+        "name": "Bazen"
+      },
+      "bacon_purifier_child_lock": {
+        "name": "Dječja zaštita"
+      },
+      "bacon_purifier_display": {
+        "name": "Zaslon"
+      },
+      "bacon_purifier_light": {
+        "name": "Svjetlosni prsten"
+      },
+      "bacon_purifier_light_in_standby": {
+        "name": "Ambijentalno svjetlo u stanju pripravnosti"
+      },
+      "bacon_purifier_light_in_sleep": {
+        "name": "Ambijentalno svjetlo u tihom načinu rada"
+      },
+      "bacon_dry_child_lock": {
+        "name": "Dječja zaštita"
+      },
+      "bacon_dry_display": {
+        "name": "Zaslon"
+      },
+      "rrc_window_detection": {
+        "name": "Prepoznavanje otvorenog prozora"
+      },
+      "rrc_system_window_detection": {
+        "name": "Prepoznavanje otvorenog prozora"
+      },
+      "rrc_child_lock": {
+        "name": "Dječja brava"
+      },
+      "rrc_extra_dhw": {
+        "name": "Dodatna topla voda"
+      },
+      "rrc_thermal_disinfection": {
+        "name": "Termička dezinfekcija"
+      },
+      "rrc_setpoint_optimization": {
+        "name": "Optimizacija zadane vrijednosti"
+      },
+      "rrc_boost": {
+        "name": "Boost"
+      },
+      "rrc_fireplace": {
+        "name": "Funkcija kamina"
+      }
+    },
+    "sensor": {
+      "outdoor_temperature": {
+        "name": "Vanjska temperatura"
+      },
+      "supply_temperature": {
+        "name": "Temperatura polaznog voda"
+      },
+      "return_temperature": {
+        "name": "Temperatura povratnog voda"
+      },
+      "hot_water_temperature": {
+        "name": "Temperatura tople vode"
+      },
+      "modulation": {
+        "name": "Stvarna modulacija"
+      },
+      "system_pressure": {
+        "name": "Tlak sustava"
+      },
+      "heating_status": {
+        "name": "Stanje grijanja"
+      },
+      "hot_water_status": {
+        "name": "Stanje tople vode"
+      },
+      "total_electricity": {
+        "name": "Ukupno – Potrošnja električne energije"
+      },
+      "total_heat_produced": {
+        "name": "Ukupno – Proizvedena toplina"
+      },
+      "environmental_energy": {
+        "name": "Ukupno – Energija iz okoliša (izračunato)"
+      },
+      "heating_electricity": {
+        "name": "Grijanje – Potrošnja električne energije"
+      },
+      "heating_heat_produced": {
+        "name": "Grijanje – Proizvedena toplina"
+      },
+      "hot_water_electricity": {
+        "name": "Topla voda – Potrošnja električne energije"
+      },
+      "hot_water_heat_produced": {
+        "name": "Topla voda – Proizvedena toplina"
+      },
+      "calculated_dew_point": {
+        "name": "Točka rosišta (izračunato)"
+      },
+      "estimated_energy": {
+        "name": "Energija (procijenjena iz trenutne snage)"
+      },
+      "heating_switch_program": {
+        "name": "Vremenski program grijanja",
+        "state": {
+          "comfort1": "Komfor 1",
+          "comfort2": "Grijanje",
+          "comfort3": "Komfor 3",
+          "eco": "Smanjeno",
+          "off": "Isključeno"
+        }
+      },
+      "dhw_switch_program": {
+        "name": "Vremenski program tople vode",
+        "state": {
+          "low": "Eco",
+          "eco": "Eco+",
+          "eco_plus": "Eco plus",
+          "high": "Komfor",
+          "comfort": "Komfor",
+          "off": "Isključeno"
+        }
+      },
+      "heating_circuit_switch_program_mode": {
+        "name": "Vrsta vremenskog programa kruga grijanja",
+        "state": {
+          "level": "Temperaturna razina",
+          "levels": "Temperaturne razine",
+          "absolute": "Slobodno podesive temperature"
+        }
+      },
+      "heating_circuit_operation_mode": {
+        "name": "Način rada kruga grijanja",
+        "state": {
+          "off": "Isključeno",
+          "manual": "Ručno",
+          "auto": "Automatski"
+        }
+      },
+      "heating_circuit_overall_status": {
+        "name": "Stanje kruga grijanja",
+        "state": {
+          "ch_enabled": "Grijanje omogućeno",
+          "ch_disabled": "Grijanje onemogućeno",
+          "emergency_mode": "Način rada u nuždi",
+          "floor_drying": "Sušenje poda",
+          "summer_idle": "Ljetna stanka",
+          "boost": "Pojačano grijanje",
+          "away": "Odsutnost",
+          "holiday": "Odmor",
+          "cooling_manual_on": "Ručno hlađenje aktivno",
+          "cooling_manual_off": "Ručno hlađenje isključeno",
+          "heating_manual_on": "Ručno grijanje aktivno",
+          "heating_manual_off": "Ručno grijanje isključeno",
+          "heating_auto": "Automatsko grijanje"
+        }
+      },
+      "heating_circuit_summer_winter_mode": {
+        "name": "Trenutno stanje grijanja/hlađenja",
+        "state": {
+          "off": "Mirovanje",
+          "forced": "Grijanje",
+          "cooling": "Hlađenje"
+        }
+      },
+      "heating_circuit_summer_winter_switch_mode": {
+        "name": "Prebacivanje grijanje/hlađenje",
+        "state": {
+          "off": "Mirovanje",
+          "automatic": "Automatsko prebacivanje",
+          "forced": "Uvijek grijanje",
+          "cooling": "Uvijek hlađenje"
+        }
+      },
+      "heating_circuit_heat_cool_mode": {
+        "name": "Podrška grijanju/hlađenju",
+        "state": {
+          "heat": "Samo grijanje",
+          "cool": "Samo hlađenje",
+          "heat_cool": "Grijanje i hlađenje"
+        }
+      },
+      "heating_circuit_type": {
+        "name": "Vrsta kruga grijanja",
+        "state": {
+          "floor": "Podno grijanje",
+          "radiator": "Radijatori",
+          "convector": "Konvektori"
+        }
+      },
+      "heating_circuit_control_type": {
+        "name": "Vrsta regulacije",
+        "state": {
+          "room": "Regulacija prema sobnoj temperaturi",
+          "outdoor": "Regulacija prema vanjskoj temperaturi",
+          "wdc": "Ekvitermna regulacija",
+          "wdcoptimized": "Optimizirana ekvitermna regulacija",
+          "wdcsimplified": "Pojednostavljena ekvitermna regulacija",
+          "mpc": "Prediktivna regulacija prema modelu",
+          "room_flow_temperature": "Polazna temperatura vođena sobnom temperaturom",
+          "room_power": "Snaga vođena sobnom temperaturom",
+          "constant": "Konstantna regulacija",
+          "valve_feedback_control": "Regulacija povratnom vezom ventila",
+          "isrc": "Pojedinačna regulacija prostorija (iSRC)",
+          "vbh": "VBH",
+          "external": "Vanjska regulacija"
+        }
+      },
+      "heating_circuit_cooling_control_type": {
+        "name": "Vrsta regulacije hlađenja",
+        "state": {
+          "constant": "Stalna temperatura",
+          "rtcc_with_dewpoint": "Regulacija sobne temperature s nadzorom točke rosišta",
+          "rtcc_no_dewpoint": "Regulacija sobne temperature bez nadzora točke rosišta"
+        }
+      },
+      "hot_water_temperature_level": {
+        "name": "Temperaturna razina tople vode",
+        "state": {
+          "off": "Isključeno",
+          "low": "Eco",
+          "high": "Komfor",
+          "eco": "Eco+"
+        }
+      },
+      "hot_water_operation_mode": {
+        "name": "Način rada tople vode",
+        "state": {
+          "off": "Isključeno",
+          "low": "Eco",
+          "high": "Komfor",
+          "ownprogram": "Automatski",
+          "eco": "Eco+",
+          "follow_heating_program": "Prati program grijanja"
+        }
+      },
+      "hot_water_overall_status": {
+        "name": "Stanje tople vode",
+        "state": {
+          "dhw_enabled": "Topla voda omogućena",
+          "dhw_disabled": "Topla voda onemogućena",
+          "auto": "Automatski",
+          "manual_off": "Isključeno",
+          "manual_on_low": "Eco",
+          "manual_on_eco": "Eco+",
+          "manual_on_high": "Komfor",
+          "extra": "Dodatna topla voda",
+          "away": "Odsutnost",
+          "holiday": "Odmor",
+          "floor_drying": "Sušenje poda",
+          "td": "Termička dezinfekcija"
+        }
+      },
+      "on_off_state": {
+        "name": "Stanje",
+        "state": {
+          "off": "Isključeno",
+          "on": "Uključeno",
+          "stop": "Isključeno",
+          "start": "Uključeno"
+        }
+      },
+      "four_way_valve_position": {
+        "name": "4-smjerni ventil",
+        "state": {
+          "off": "Grijanje",
+          "on": "Hlađenje/odmrzavanje"
+        }
+      },
+      "dhw_valve_position": {
+        "name": "3-smjerni ventil tople vode",
+        "state": {
+          "off": "Grijanje",
+          "on": "Topla voda"
+        }
+      },
+      "heat_demand": {
+        "name": "Trenutna potreba za toplinom",
+        "state": {
+          "none": "Nema",
+          "ch": "Grijanje",
+          "dhw": "Topla voda",
+          "frost": "Zaštita od smrzavanja",
+          "ch_dhw": "Grijanje i topla voda",
+          "ch_frost": "Grijanje i zaštita od smrzavanja",
+          "dhw_frost": "Topla voda i zaštita od smrzavanja",
+          "ch_dhw_frost": "Grijanje, topla voda i zaštita od smrzavanja"
+        }
+      },
+      "compressor_status": {
+        "name": "Stanje kompresora",
+        "state": {
+          "off": "Isključeno",
+          "heating": "Grijanje prostora",
+          "cooling": "Hlađenje prostora",
+          "dhw": "Topla voda",
+          "pool": "Grijanje bazena",
+          "pool_heat": "Grijanje prostora i bazena",
+          "defrost": "Odmrzavanje",
+          "alarm": "Blokirano"
+        }
+      },
+      "electric_auxiliary_heater_status": {
+        "name": "Stanje dodatnog grijača",
+        "state": {
+          "off": "Isključeno",
+          "heating": "Grijanje prostora",
+          "dhw": "Topla voda",
+          "pool": "Grijanje bazena",
+          "pool_heat": "Grijanje prostora i bazena",
+          "defrost": "Odmrzavanje",
+          "alarm": "Blokirano"
+        }
+      },
+      "auxiliary_heater_operation_mode": {
+        "name": "Način rada dodatnog grijača",
+        "state": {
+          "off": "Isključeno",
+          "manual": "Uključeno",
+          "auto": "Automatski"
+        }
+      },
+      "refrigerant_status": {
+        "name": "Stanje kruga rashladnog sredstva",
+        "state": {
+          "idle": "Mirovanje",
+          "startup": "Pokretanje",
+          "heating": "Grijanje",
+          "cooling": "Hlađenje",
+          "defrost": "Odmrzavanje je u tijeku",
+          "passive_defrost": "Pasivno odmrzavanje",
+          "shutoff": "Zaustavljeno",
+          "alarm": "Alarm",
+          "test_mode": "Probni način rada",
+          "off": "Isključeno",
+          "dhw": "Topla voda",
+          "pool": "Bazen",
+          "pool_heat": "Grijanje bazena"
+        }
+      },
+      "ventilation_fan_level": {
+        "name": "Stupanj ventilatora otpadnog zraka",
+        "state": {
+          "off": "Isključeno",
+          "min": "Stupanj ventilatora 1",
+          "red": "Stupanj ventilatora 2",
+          "nom": "Stupanj ventilatora 3",
+          "max": "Stupanj ventilatora 4",
+          "dem": "Prema potrebi"
+        }
+      },
+      "pv_contact_state": {
+        "name": "Stanje PV kontakta",
+        "state": {
+          "inactive": "Neaktivno",
+          "active": "Aktivno"
+        }
+      },
+      "data_processing_status": {
+        "name": "Stanje obrade podataka",
+        "state": {
+          "in_progress": "U tijeku",
+          "completed": "Dovršeno"
+        }
+      },
+      "season_optimizer_mode": {
+        "name": "Trenutno stanje grijanja/hlađenja",
+        "state": {
+          "off": "Mirovanje",
+          "heating": "Grijanje",
+          "cooling": "Hlađenje",
+          "automatic": "Automatsko prebacivanje",
+          "forced_heat": "Uvijek grijanje",
+          "forced_cool": "Uvijek hlađenje"
+        }
+      },
+      "isrc_support_status": {
+        "name": "Podrška za iSRC",
+        "state": {
+          "not_supported_incompatible_controller": "Nije podržano: nekompatibilan regulator",
+          "not_supported_pairing_enabled": "Nije podržano: uparivanje omogućeno",
+          "supported": "Podržano",
+          "in_evaluation": "U procjeni"
+        }
+      },
+      "isrc_installation_status": {
+        "name": "Stanje instalacije iSRC",
+        "state": {
+          "timeout": "Isteklo vrijeme"
+        }
+      },
+      "heat_pump_type": {
+        "name": "Vrsta dizalice topline",
+        "state": {
+          "air_water": "Zrak/voda",
+          "brine_water": "Rasolina/voda",
+          "exhaust_air": "Otpadni zrak/voda"
+        }
+      },
+      "heat_source_type": {
+        "name": "Vrsta izvora topline",
+        "state": {
+          "no_appliance": "Nema uređaja",
+          "heatpump": "Dizalica topline",
+          "boiler": "Kotao",
+          "boiler_oil": "Kotao na loživo ulje",
+          "boiler_gas": "Plinski kotao",
+          "boiler_unknown": "Nepoznati kotao",
+          "hybrid": "Hibridni sustav"
+        }
+      },
+      "system_type": {
+        "name": "Vrsta sustava",
+        "state": {
+          "heatpump_single": "Jedna dizalica topline",
+          "heatpump_cascade": "Kaskada dizalica topline",
+          "boiler_single": "Jedan kotao",
+          "hybrid": "Hibridni sustav"
+        }
+      },
+      "energy_management_status": {
+        "name": "Stanje upravljanja energijom",
+        "state": {
+          "not_connected": "Nije povezano",
+          "inactive": "Neaktivno",
+          "active_ch": "Aktivno za grijanje",
+          "active_dhw": "Aktivno za toplu vodu",
+          "active_em": "Upravljanje energijom aktivno",
+          "connected": "Povezano",
+          "active": "Aktivno",
+          "error": "Greška"
+        }
+      },
+      "outdoor_temperature_source": {
+        "name": "Izvor vanjske temperature",
+        "state": {
+          "appliance": "Sustav grijanja",
+          "internet": "Internet",
+          "roomcontroller": "Sobni regulator"
+        }
+      },
+      "support_status": {
+        "name": "Stanje podrške",
+        "state": {
+          "not_supported": "Nije podržano",
+          "supported": "Podržano",
+          "active": "Aktivno"
+        }
+      },
+      "update_status": {
+        "name": "Stanje ažuriranja",
+        "state": {
+          "idle": "Mirovanje",
+          "running": "Radi",
+          "success": "Uspješno",
+          "failed": "Neuspjelo"
+        }
+      },
+      "pressure_status": {
+        "name": "Stanje tlaka sustava (izračunato)",
+        "state": {
+          "critical_low": "Kritično nizak",
+          "low": "Nizak",
+          "normal": "Normalan",
+          "high": "Visok",
+          "critical_high": "Kritično visok"
+        }
+      },
+      "active_faults": {
+        "name": "Aktivne smetnje"
+      },
+      "active_notifications": {
+        "name": "Aktivne poruke"
+      },
+      "next_holiday": {
+        "name": "Sljedeći odmor"
+      },
+      "pointt_api_requests_total": {
+        "name": "Ukupno zahtjeva prema oblaku"
+      },
+      "pointt_api_requests_last_hour": {
+        "name": "Zahtjevi prema oblaku – zadnji sat"
+      },
+      "pointt_api_response_time_last_hour": {
+        "name": "Vrijeme odziva oblaka – zadnji sat"
+      },
+      "softener_regeneration_phase": {
+        "state": {
+          "end": "Kraj",
+          "backwash": "Povratno ispiranje",
+          "rinse": "Ispiranje",
+          "normal": "Normalan rad",
+          "brine_draw": "Povlačenje rasoline",
+          "brine_preparation": "Priprema rasoline",
+          "refill": "Ponovno punjenje"
+        }
+      },
+      "rrc_user_mode": {
+        "state": {
+          "manual": "Ručno",
+          "clock": "Vremenski program"
+        }
+      },
+      "bacon_purifier_air_quality": {
+        "name": "Kvaliteta zraka",
+        "state": {
+          "good": "Dobra",
+          "fair": "Zadovoljavajuća",
+          "poor": "Slaba",
+          "bad": "Loša"
+        }
+      },
+      "bacon_purifier_pm2_5": {
+        "name": "PM2.5"
+      },
+      "bacon_purifier_tvoc": {
+        "name": "TVOC vrijednost"
+      },
+      "bacon_purifier_temperature": {
+        "name": "Sobna temperatura"
+      },
+      "bacon_purifier_humidity": {
+        "name": "Relativna vlažnost"
+      },
+      "bacon_purifier_filter_life": {
+        "name": "Preostali vijek filtra"
+      },
+      "bacon_purifier_filter_status": {
+        "name": "Stanje filtra",
+        "state": {
+          "ok": "U redu",
+          "warning": "Zamjena se približava",
+          "error": "Zamijenite filtar"
+        }
+      },
+      "bacon_dry_temperature": {
+        "name": "Sobna temperatura"
+      },
+      "bacon_dry_humidity": {
+        "name": "Relativna vlažnost"
+      },
+      "bacon_dry_operating_status": {
+        "name": "Radno stanje",
+        "state": {
+          "off": "Isključeno",
+          "running": "Radi",
+          "idle": "Mirovanje",
+          "water_tank_full": "Spremnik za vodu je pun",
+          "defrosting": "Odmrzavanje je u tijeku",
+          "device_error": "Prijavljena greška uređaja"
+        }
+      },
+      "wallbox_state": {
+        "name": "Stanje punjenja",
+        "state": {
+          "initializing": "Inicijalizacija",
+          "available": "Dostupno",
+          "authenticated": "Autentificirano",
+          "preparing": "Priprema",
+          "charging": "Punjenje",
+          "suspended_ev": "Pauzirano od vozila",
+          "suspended_evse": "Pauzirano od punionice",
+          "faulted": "Smetnja",
+          "locked": "Zaključano",
+          "limited": "Ograničeno",
+          "phase_switch": "Prebacivanje faza"
+        }
+      },
+      "wallbox_power": {
+        "name": "Snaga punjenja"
+      },
+      "wallbox_energy": {
+        "name": "Prijavljena napunjena energija"
+      },
+      "wallbox_duration": {
+        "name": "Vrijeme aktivnog punjenja"
+      },
+      "wallbox_current_limit": {
+        "name": "Prijavljeno ograničenje struje"
+      },
+      "wallbox_charging_start": {
+        "name": "Početak punjenja"
+      },
+      "wallbox_role": {
+        "name": "Uloga zidnog punjača",
+        "state": {
+          "standalone": "Samostalno",
+          "leader": "Vodeći",
+          "follower": "Slijedeći"
+        }
+      },
+      "wallbox_hardware_current_limit": {
+        "name": "Hardversko ograničenje struje"
+      },
+      "smart_grid_mode": {
+        "name": "Način rada pametne mreže",
+        "state": {
+          "blocked": "Blokirano",
+          "normal": "Normalan",
+          "preferred": "Preferirano",
+          "forced": "Prisilno",
+          "not_used": "Ne koristi se"
+        }
+      },
+      "signal_season_mode": {
+        "name": "Sezonski način rada",
+        "state": {
+          "heating": "Grijanje",
+          "idle": "Mirovanje",
+          "cooling": "Hlađenje"
+        }
+      },
+      "signal_heat_cool": {
+        "name": "Stanje grijanja/hlađenja",
+        "state": {
+          "idle": "Mirovanje",
+          "heat": "Grijanje",
+          "cool": "Hlađenje"
+        }
+      },
+      "signal_holiday_slot": {
+        "name": "Razdoblje odmora",
+        "state": {
+          "idle": "Nije planirano",
+          "planned": "Planirano",
+          "active": "Aktivno"
+        }
+      },
+      "signal_true_false": {
+        "name": "Stanje",
+        "state": {
+          "true": "Da",
+          "false": "Ne"
+        }
+      },
+      "volume_flow": {
+        "state_attributes": {
+          "measuring_range": {
+            "name": "Mjerno područje",
+            "state": {
+              "below": "Ispod mjernog područja"
+            }
+          }
+        }
+      },
+      "rrc_next_setpoint": {
+        "name": "Sljedeća zadana vrijednost"
+      },
+      "rrc_minutes_to_next_setpoint": {
+        "name": "Minute do sljedeće zadane vrijednosti"
+      },
+      "rrc_zone_status": {
+        "name": "Status zone",
+        "state": {
+          "idle": "Mirovanje",
+          "heat_request": "Zahtjev za grijanje",
+          "zone_error": "Greška zone",
+          "comm_error": "Greška u komunikaciji",
+          "comm_warning": "Upozorenje o komunikaciji",
+          "low_battery": "Slaba baterija"
+        }
+      },
+      "rrc_zone_valve_position": {
+        "name": "Otvorenost ventila"
+      },
+      "rrc_optimum_start_state": {
+        "name": "Optimirani start"
+      },
+      "rrc_optimum_start_heatup_rate": {
+        "name": "Brzina zagrijavanja pri optimiranom startu"
+      },
+      "rrc_valve_position": {
+        "name": "Otvorenost ventila"
+      },
+      "rrc_max_valve_position": {
+        "name": "Maksimalna otvorenost ventila"
+      },
+      "rrc_valve_temperature": {
+        "name": "Temperatura na ventilu"
+      },
+      "rrc_valve_state": {
+        "name": "Stanje ventila"
+      },
+      "rrc_whisper_mode": {
+        "name": "Tihi rad ventila"
+      },
+      "rrc_thermal_disinfection_result": {
+        "name": "Rezultat termičke dezinfekcije"
+      },
+      "rrc_dhw_program_level": {
+        "name": "Trenutna razina vremenskog programa tople vode",
+        "state": {
+          "off": "Isključeno",
+          "low": "Eco",
+          "high": "Komfor",
+          "eco": "Eco+"
+        }
+      },
+      "rrc_operating_season": {
+        "name": "Radna sezona",
+        "state": {
+          "heating": "Grijanje",
+          "cooling": "Hlađenje",
+          "idle": "Mirovanje"
+        }
+      },
+      "rrc_display_code": {
+        "name": "Kod prikaza"
+      },
+      "rrc_cause_code": {
+        "name": "Kod uzroka"
+      },
+      "rrc_maintenance_request": {
+        "name": "Zahtjev za održavanje"
+      },
+      "rrc_system_pressure": {
+        "name": "Tlak sustava"
+      },
+      "rrc_indoor_humidity": {
+        "name": "Vlažnost zraka u prostoriji"
+      },
+      "rrc_indoor_air_temperature": {
+        "name": "Temperatura zraka na regulatoru"
+      },
+      "rrc_indoor_chip_temperature": {
+        "name": "Temperatura čipa regulatora"
+      },
+      "rrc_indoor_board_temperature": {
+        "name": "Temperatura ploče regulatora"
+      },
+      "rrc_update_state": {
+        "name": "Stanje ažuriranja firmvera"
+      }
+    },
+    "binary_sensor": {
+      "holiday_active": {
+        "name": "Način odmora aktivan"
+      },
+      "cloud_control": {
+        "name": "Upravljanje putem oblaka dostupno",
+        "state_attributes": {
+          "reason": {
+            "name": "Razlog",
+            "state": {
+              "auth_required": "Potrebna prijava",
+              "cloud_stopped": "Pristup putem oblaka zaustavljen",
+              "rate_limited": "Pauzirano nakon ograničenja broja zahtjeva",
+              "protection_pause": "Zaštitna stanka nakon ponovljenih grešaka",
+              "cloud_unreachable": "Oblak nije dostupan",
+              "not_current": "Vrijednosti još nisu aktualne"
+            }
+          },
+          "until": {
+            "name": "Do"
+          }
+        }
+      },
+      "system_fault": {
+        "name": "Smetnja sustava"
+      },
+      "bacon_connectivity": {
+        "name": "Veza uređaja"
+      },
+      "bacon_dhw_energy_saving": {
+        "name": "Štednja energije aktivna"
+      },
+      "bacon_dhw_standard_mode": {
+        "name": "Standardni način rada aktivan"
+      },
+      "bacon_dhw_thermal_disinfection": {
+        "name": "Termička dezinfekcija aktivna"
+      },
+      "bacon_dhw_vacation": {
+        "name": "Način odmora aktivan"
+      },
+      "bacon_dhw_top_heater": {
+        "name": "Gornji električni grijač aktivan"
+      },
+      "bacon_dhw_bottom_heater": {
+        "name": "Donji električni grijač aktivan"
+      },
+      "bacon_dry_water_tank_full": {
+        "name": "Spremnik za vodu je pun"
+      },
+      "bacon_dry_defrosting": {
+        "name": "Odmrzavanje je u tijeku"
+      },
+      "bacon_dry_condensate_pump": {
+        "name": "Crpka kondenzata radi"
+      },
+      "bacon_dry_idle": {
+        "name": "Stanje mirovanja"
+      },
+      "bacon_dry_device_error": {
+        "name": "Prijavljena greška uređaja"
+      },
+      "rrc_window_open": {
+        "name": "Prozor otvoren"
+      },
+      "rrc_valve_problem": {
+        "name": "Problem s ventilom"
+      },
+      "rrc_locking_error": {
+        "name": "Smetnja koja zahtijeva poništavanje"
+      },
+      "rrc_blocking_error": {
+        "name": "Blokirajuća smetnja"
+      },
+      "rrc_maintenance_due": {
+        "name": "Potrebno održavanje"
+      },
+      "rrc_refill_needed": {
+        "name": "Potrebno dopunjavanje"
+      }
+    },
+    "calendar": {
+      "holiday_periods": {
+        "name": "Razdoblja odmora"
+      },
+      "rrc_events": {
+        "name": "Odsutnosti i posebni dani",
+        "state_attributes": {
+          "stale": {
+            "name": "Događaji su možda zastarjeli"
+          }
+        }
+      }
+    },
+    "event": {
+      "system_notifications": {
+        "name": "Poruke sustava",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Pojavilo se",
+              "resolved": "Riješeno"
+            }
+          }
+        }
+      }
+    },
+    "button": {
+      "softener_start_regeneration": {
+        "name": "Pokreni regeneraciju"
+      },
+      "rrc_override_clear": {
+        "name": "Poništi privremenu zadanu vrijednost"
+      },
+      "heating_temporary_setpoint_clear": {
+        "name": "Poništi privremenu zadanu vrijednost"
+      },
+      "rrc_override_advance": {
+        "name": "Prijevremeno aktiviraj sljedeću točku uklapanja"
+      }
+    },
+    "water_heater": {
+      "bacon_dhw": {
+        "name": "Topla voda",
+        "state": {
+          "off": "Isključeno",
+          "electric": "Električni grijač",
+          "economy": "Ekonomično",
+          "hybrid": "Hibridno",
+          "smart": "Pametno",
+          "comfort": "Komfor",
+          "dual": "Dvostruko",
+          "eco": "Eco"
+        },
+        "state_attributes": {
+          "operation_mode": {
+            "state": {
+              "off": "Isključeno",
+              "electric": "Električni grijač",
+              "economy": "Ekonomično",
+              "hybrid": "Hibridno",
+              "smart": "Pametno",
+              "comfort": "Komfor",
+              "dual": "Dvostruko",
+              "eco": "Eco"
+            }
+          }
+        }
+      },
+      "pointt_dhw": {
+        "name": "Topla voda",
+        "state": {
+          "off": "Isključeno",
+          "low": "Eco",
+          "high": "Komfor",
+          "ownprogram": "Automatski",
+          "eco": "Eco+",
+          "follow_heating_program": "Prati vremenski program grijanja"
+        },
+        "state_attributes": {
+          "operation_mode": {
+            "state": {
+              "off": "Isključeno",
+              "low": "Eco",
+              "high": "Komfor",
+              "ownprogram": "Automatski",
+              "eco": "Eco+",
+              "follow_heating_program": "Prati vremenski program grijanja"
+            }
+          }
+        }
+      }
+    },
+    "climate": {
+      "bacon_rac": {
+        "name": "Klimatizacijski uređaj",
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "auto": "Automatski",
+              "quiet": "Tiho",
+              "low": "Nizak",
+              "medium": "Srednje",
+              "high": "Visok",
+              "turbo": "Turbo"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Isključeno",
+              "on": "Uključeno"
+            }
+          },
+          "swing_horizontal_mode": {
+            "state": {
+              "off": "Isključeno",
+              "on": "Uključeno"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "none": "Nema",
+              "eco": "Eco"
+            }
+          }
+        }
+      },
+      "rrc_zone": {
+        "name": "Zona",
+        "state_attributes": {
+          "zone_status": {
+            "state": {
+              "idle": "Mirovanje",
+              "heat_request": "Zahtjev za grijanje",
+              "zone_error": "Greška zone",
+              "comm_error": "Greška u komunikaciji",
+              "comm_warning": "Upozorenje o komunikaciji",
+              "low_battery": "Slaba baterija"
+            }
+          },
+          "control_lock": {
+            "state": {
+              "away": "Način odsutnosti",
+              "standby": "Stanje pripravnosti",
+              "unreachable": "Greška zone ili komunikacije"
+            }
+          }
+        }
+      }
+    },
+    "fan": {
+      "bacon_purifier_fan": {
+        "name": "Pročišćivač zraka",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "auto": "Automatski",
+              "manual": "Ručno",
+              "silent": "Nečujno"
+            }
+          }
+        }
+      }
+    },
+    "humidifier": {
+      "bacon_dry_dehumidifier": {
+        "name": "Odvlaživač zraka",
+        "state_attributes": {
+          "mode": {
+            "state": {
+              "auto": "Automatski",
+              "night": "Noć",
+              "laundry": "Sušenje rublja"
+            }
+          }
+        }
+      }
+    },
+    "time": {
+      "rrc_thermal_disinfection_time": {
+        "name": "Vrijeme početka termičke dezinfekcije"
+      }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "Firmver",
+        "state_attributes": {
+          "auto_update_enabled": {
+            "name": "Automatsko ažuriranje uključeno"
+          },
+          "auto_update_changeable": {
+            "name": "Automatsko ažuriranje može se promijeniti"
+          },
+          "update_state": {
+            "name": "Stanje ažuriranja",
+            "state": {
+              "waiting": "Čeka odobrenje",
+              "denied": "Odbijeno",
+              "approved": "Odobreno",
+              "none": "Bez stanja odobrenja",
+              "unknown": "Nepoznato"
+            }
+          }
+        }
+      }
+    }
+  }
+}

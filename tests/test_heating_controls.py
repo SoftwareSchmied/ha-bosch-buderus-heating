@@ -1,13 +1,14 @@
 """Integration tests for heating climates, dialog drafts and guarded writes."""
 
+import json
 from dataclasses import replace
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock
+from pathlib import Path
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from homeassistant.components.climate.const import ClimateEntityFeature, HVACMode
 from homeassistant.exceptions import ServiceValidationError
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.config_flow import BoschBuderusOptionsFlow
 from custom_components.bosch_buderus_heating.const import DOMAIN
@@ -28,6 +29,7 @@ from custom_components.bosch_buderus_heating.heating_climate import (
     HeatingCircuitClimate,
     track_heating_climates,
 )
+from custom_components.bosch_buderus_heating.i18n import LANGUAGES
 from custom_components.bosch_buderus_heating.pointt import (
     AuthenticationError,
     Gateway,
@@ -42,7 +44,23 @@ from custom_components.bosch_buderus_heating.pointt import (
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 from custom_components.bosch_buderus_heating.writes import (
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
+    ContractRejected,
+    ControlLocked,
+    ControlUnused,
+    WriteBusy,
 )
+from tests.ha_test_helpers import MockConfigEntry
+
+PACKAGE = Path(__file__).parents[1] / "custom_components" / "bosch_buderus_heating"
+
+
+def _codes(directory: str) -> set[str]:
+    return {path.stem for path in (PACKAGE / directory).glob("*.json")}
+
+
+def _data(directory: str, code: str) -> dict:
+    return json.loads((PACKAGE / directory / f"{code}.json").read_text("utf-8"))
+
 
 ROOT = "/heatingCircuits/hc2"
 MODE = ROOT + "/operationMode"
@@ -89,7 +107,7 @@ def setup(hass, *, mode="manual", options=("off", "manual", "auto")):
         coordinator.data[path].resource
     )
 
-    async def write(_gateway, resource, value, _policy):
+    async def write(_gateway, resource, value, _policy, **_kwargs):
         desired = replace(resource, value=value)
         return WriteResult(None, desired)
 
@@ -129,8 +147,8 @@ def test_climate_identity_and_measurement(hass):
     assert entity.device_info["identifiers"] == {(DOMAIN, "gateway")}
     assert entity.hvac_modes == [HVACMode.OFF, HVACMode.HEAT, HVACMode.AUTO]
     assert entity.hvac_mode == HVACMode.HEAT
-    assert entity.target_temperature == 19
-    assert entity.current_temperature == 20
+    assert entity.native_target_temperature == 19
+    assert entity.native_current_temperature == 20
     assert entity.min_temp == 5 and entity.max_temp == 30
     assert entity.target_temperature_step == 0.5
     assert entity.capability_attributes["target_temp_step"] == 0.5
@@ -139,7 +157,7 @@ def test_climate_identity_and_measurement(hass):
         ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TURN_OFF
     )
     del coordinator.data[ROOT + "/roomtemperature"]
-    assert entity.current_temperature is None
+    assert entity.native_current_temperature is None
 
 
 async def test_manual_target_writes_correct_circuit_and_keeps_mode(hass):
@@ -150,14 +168,14 @@ async def test_manual_target_writes_correct_circuit_and_keeps_mode(hass):
     )
     assert coordinator._write_service.async_write_number.await_args.args[2] == 20.5
     coordinator._write_service.async_write_enum.assert_not_awaited()
-    assert entity.target_temperature == 20.5
+    assert entity.native_target_temperature == 20.5
     assert coordinator.client.get_resource.await_count == 2
 
 
 @pytest.mark.parametrize("mode,target", [("auto", 21), ("off", None)])
 async def test_nonmanual_modes_do_not_write_target(hass, mode, target):
     _, coordinator, entity = setup(hass, mode=mode)
-    assert entity.target_temperature == target
+    assert entity.native_target_temperature == target
     assert not entity.supported_features & ClimateEntityFeature.TARGET_TEMPERATURE
     with pytest.raises(ServiceValidationError):
         await entity.async_set_temperature(temperature=22)
@@ -269,7 +287,7 @@ def test_temperature_contract(hass, field, value):
             old.resource, metadata=replace(old.resource.metadata, **{field: value})
         ),
     )
-    assert entity.current_temperature is None
+    assert entity.native_current_temperature is None
 
 
 @pytest.mark.parametrize("value", [True, None, "20", float("nan"), float("inf")])
@@ -281,7 +299,7 @@ def test_fahrenheit_conversion(hass):
     _, coordinator, entity = setup(hass)
     resource = scalar(TARGET, 68, unit="F", minimum=41, maximum=86)
     coordinator.data[TARGET] = ResourceSnapshot(resource, True, datetime.now(UTC))
-    assert entity.target_temperature == 20
+    assert entity.native_target_temperature == 20
     assert entity.min_temp == 5 and entity.max_temp == 30
     assert entity.target_temperature_step == pytest.approx(0.5 / 1.8)
 
@@ -307,8 +325,26 @@ async def test_dialog_shows_real_metadata_and_localized_options(
     assert isinstance(ui, ControlsSelector)
     rows = ui.serialize()["selector"]["bosch-buderus-controls"]["rows"]
     mode = next(row for row in rows if row["key"] == MODE)
-    assert mode["label"] == {"de": "Betriebsart", "en": "Operating mode"}
-    assert mode["options"][1]["label"] == {"de": "Manuell", "en": "Manual"}
+    # Every language with a data file, so the dialog follows the profile
+    # language. The expected texts come from the data files, so a new
+    # language needs no change here.
+    texts = {code: _data("i18n", code).get("texts", {}) for code in _codes("i18n")}
+    assert set(texts) == set(LANGUAGES) == set(_codes("translations"))
+    expected = {
+        code: catalog.get("Operating mode", "Operating mode")
+        for code, catalog in texts.items()
+    }
+    expected.update(de="Betriebsart", en="Operating mode")
+    assert mode["label"] == expected
+    manual = {
+        code: _data("translations", code)["entity"]["select"][
+            "heating_circuit_operation_mode"
+        ]["state"]["manual"]
+        for code in _codes("translations")
+    }
+    assert manual["de"] == "Manuell" and manual["en"] == "Manual"
+    assert mode["options"][1]["label"] == manual
+    assert all(label.strip() for label in (*expected.values(), *manual.values()))
     assert set(controls(coordinator)) == {MODE, TARGET}
     assert options._entry.options == {}
     coordinator.client.get_resource.assert_not_awaited()
@@ -354,7 +390,7 @@ async def test_dialog_saves_and_stays_open(hass, enable_custom_integrations):
     result = await options.async_step_operate({"controls": {"changes": {TARGET: 20}}})
     assert result["step_id"] == "operate" and not result["errors"]
     assert selector(result).status == "saved"
-    assert entity.target_temperature == 20
+    assert entity.native_target_temperature == 20
     assert options._entry.options == {}
 
 
@@ -371,6 +407,28 @@ async def test_dialog_refresh_is_local_and_rebases_changes(
     coordinator.client.get_resource.assert_not_awaited()
 
 
+async def test_dialog_behind_a_long_poll_sends_nothing_and_says_so(
+    hass, enable_custom_integrations
+):
+    """D: a held gateway is no communication failure; nothing was sent."""
+    from custom_components.bosch_buderus_heating import (
+        coordinator as coordinator_module,
+    )
+
+    options, coordinator, _, _ = await flow(hass)
+    write = coordinator._write_service.async_write_enum
+    with patch.object(
+        coordinator_module, "WRITE_LOCK_TIMEOUT", coordinator_module.timedelta(0)
+    ):
+        async with coordinator._update_lock:
+            result = await options.async_step_operate(
+                {"controls": {"changes": {MODE: "auto"}}}
+            )
+    assert result["errors"] == {"base": "controls_busy"}
+    write.assert_not_awaited()
+    assert not coordinator._update_lock.locked()
+
+
 @pytest.mark.parametrize(
     "error,key",
     [
@@ -378,7 +436,18 @@ async def test_dialog_refresh_is_local_and_rebases_changes(
         (RateLimited(60), "controls_rate_limit"),
         (WriteNotConfirmed("lost"), "controls_unconfirmed"),
         (WriteValidationError("changed"), "controls_changed"),
+        # CIRCUIT-08: a lock or a contract rule names itself.
+        (ControlLocked("locked"), "controls_locked"),
+        (ControlUnused("unused"), "controls_unused"),
+        (ContractRejected("rrc_curve_order"), "controls_curve_order"),
+        (ContractRejected("rrc_weather_control_off"), "controls_weather_control_off"),
+        (
+            ContractRejected("rrc_extra_dhw_duration_zero"),
+            "controls_extra_dhw_duration_zero",
+        ),
+        (ContractRejected("rrc_time_of_day_invalid"), "controls_rejected"),
         (PointTError("lost"), "controls_failed"),
+        (WriteBusy("busy"), "controls_busy"),
     ],
 )
 async def test_dialog_partial_write_failure_is_explicit(
@@ -535,7 +604,7 @@ async def test_new_enum_codes_use_select_without_losing_the_wire_value(
     rows = await options._control_rows({path: resource}, current={path: resource})
     assert rows[0]["kind"] == "select"
     assert rows[0]["options"][-1]["value"] == "boost"
-    assert rows[0]["options"][-1]["label"] == {"de": "boost", "en": "boost"}
+    assert rows[0]["options"][-1]["label"] == dict.fromkeys(LANGUAGES, "boost")
 
 
 async def test_already_applied_draft_causes_no_write(hass, enable_custom_integrations):

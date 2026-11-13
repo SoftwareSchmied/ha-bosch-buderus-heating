@@ -9,9 +9,12 @@ import re
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta, timezone, tzinfo
+from functools import lru_cache
 
 from .legacy_holidays import (
+    SYSTEM_INFO_PATH,
     icom_assignments,
+    icom_components,
     icom_dates,
     icom_empty,
     icom_mode,
@@ -49,45 +52,45 @@ _MAX_HOLIDAY_ID = 2_147_483_647
 _MAX_NAME_LENGTH = 80
 _CIRCUIT_PATTERN = re.compile(r"(?:hc|dhw|vent)\d+", re.IGNORECASE)
 
-_START_KEYS = frozenset(
-    {
-        "begin",
-        "begindate",
-        "begindatetime",
-        "from",
-        "fromdate",
-        "start",
-        "startdate",
-        "startdatetime",
-        "starttime",
-        "starttimestamp",
-        "fromdatetime",
-        "validfrom",
-    }
+# Synonyms in a fixed priority, so a row with several of them is always read
+# the same way (D28): full date-times first, then dates, then the bare words;
+# a separate time of day comes last.
+_START_KEYS = (
+    "startdatetime",
+    "begindatetime",
+    "fromdatetime",
+    "starttimestamp",
+    "startdate",
+    "begindate",
+    "fromdate",
+    "start",
+    "begin",
+    "from",
+    "validfrom",
+    "starttime",
 )
-_END_KEYS = frozenset(
-    {
-        "end",
-        "enddate",
-        "enddatetime",
-        "endtime",
-        "endtimestamp",
-        "to",
-        "todate",
-        "todatetime",
-        "until",
-        "validto",
-    }
+_END_KEYS = (
+    "enddatetime",
+    "todatetime",
+    "endtimestamp",
+    "enddate",
+    "todate",
+    "end",
+    "to",
+    "until",
+    "validto",
+    "endtime",
 )
 _ID_KEYS = ("id", "holidayid", "holidaymodeid", "identifier", "uuid")
 _NAME_KEYS = ("name", "title", "label")
+# A named zone (with its daylight saving time) before a fixed offset.
 _TIME_ZONE_KEYS = (
-    "offset",
     "timezone",
     "timezoneid",
-    "timezoneoffset",
     "tz",
+    "timezoneoffset",
     "utcoffset",
+    "offset",
 )
 _FALSE_TOKENS = frozenset(
     {
@@ -130,7 +133,7 @@ class HolidayWriteValues:
     source_path: str = HOLIDAY_CREATE_PATH
 
     def as_payload(self) -> dict[str, JsonValue]:
-        """Return the exact payload shape used by MyBuderus/HomeCom Easy."""
+        """Return the exact payload shape the cloud expects."""
         return {
             "startDate": self.start_date,
             "endDate": self.end_date,
@@ -363,7 +366,7 @@ def parse_holiday_write_configuration(
         )
     list_resource = resources.get(HOLIDAY_LIST_PATH)
     # PointT exposes the collection through the read-only ``/holidayMode/list``
-    # resource, while the apps create and mutate entries through the separate
+    # resource, while entries are created and mutated through the separate
     # ``/holidayMode[/<id>]`` endpoint.  The list therefore does not need to
     # advertise scalar writes; a current list and a complete configuration are
     # the capability contract for calendar mutations.
@@ -426,7 +429,7 @@ def parse_holiday_write_configuration(
     heating_modes = frozenset(heating_mode_values)
     ventilation_modes = frozenset(ventilation_mode_values)
     thermal_modes = frozenset(thermal_mode_values)
-    # These are the defaults used by both official apps. PointT expects OFF
+    # These are conservative defaults for a new period. PointT expects OFF
     # even when a circuit family is not installed and therefore has no list.
     heating_mode = "FIX_TEMPERATURE" if "FIX_TEMPERATURE" in heating_modes else "OFF"
     dhw_mode = "OFF"
@@ -473,11 +476,13 @@ def parse_holiday_write_configuration(
     )
 
 
+@lru_cache(maxsize=4096)
 def is_holiday_resource_path(path: str) -> bool:
     """Include all three contracts without treating timezone metadata as state."""
     return path in HOLIDAY_RESOURCE_PATHS or is_legacy_holiday_path(path)
 
 
+@lru_cache(maxsize=4096)
 def is_holiday_period_path(path: str) -> bool:
     """WDDW2 has no dates and therefore cannot create a calendar."""
     return path in HOLIDAY_PERIOD_PATHS or (
@@ -555,6 +560,24 @@ def icom_write_configuration(
             not options or mode not in options
         ):
             return None
+    # I2 (expected, untested on a real device): the rules for the
+    # components of ``/system/info``. They only remove choices.
+    components = icom_components(resources.get(SYSTEM_INFO_PATH))
+    if hidden := components.hidden_circuits:
+        # Token 16: these circuits are not offered; one already assigned stays.
+        allowed = tuple(
+            item
+            for item in allowed
+            if item not in hidden or item in current.assigned_to
+        )
+    if components.hmi800_hp_light:
+        # HMI800 HP Light: circuits and heating mode stay as the slot has them.
+        allowed = tuple(item for item in allowed if item in current.assigned_to)
+        heating_modes = tuple(
+            mode for mode in heating_modes if mode == current.heating_mode
+        )
+    if not allowed:
+        return None
     fixed = resources.get(f"{source_path}/fixTemperature")
     if fixed is None and any(
         mode in ("FIX_TEMP", "FIX_TEMPERATURE") for mode in heating_modes
@@ -690,14 +713,16 @@ def _parse_period(
     if not (_MIN_YEAR <= end.year <= _MAX_YEAR) or end <= start:
         return None
 
-    identifier = _identifier_text(_find_value(normalized, frozenset(_ID_KEYS)))
-    raw_name = _safe_text(_find_value(normalized, frozenset(_NAME_KEYS)), 512)
+    identifier = _identifier_text(_find_value(normalized, _ID_KEYS))
+    raw_name = _safe_text(_find_value(normalized, _NAME_KEYS), 512)
     period_name_codec = _name_codec(normalized.get("nameconfig")) or name_codec
+    # C39: an exclusive end at midnight (T00:00:00), as written for an all-day
+    # calendar event, is as much a whole day as the legacy T24:00:00 form.
     full_day_timespan = (
         isinstance(start_raw, str)
         and isinstance(end_raw, str)
         and start_raw.endswith("T00:00:00")
-        and end_raw.endswith("T24:00:00")
+        and end_raw.endswith(("T24:00:00", "T00:00:00"))
     )
     return HolidayPeriod(
         start=start,
@@ -728,14 +753,14 @@ def holiday_timezone(
 
 
 def encode_holiday_name(name: str, codec: HolidayNameCodec | None) -> str | None:
-    """Encode a holiday name exactly as supported by the official apps."""
+    """Encode a holiday name in the format PointT expects."""
     value = " ".join(name.split())
     if not value or len(value) > _MAX_NAME_LENGTH:
         return None
     if codec is None or len(value) > codec.maximum_length:
         return None
     if codec.coding_type == "ASCII":
-        # The apps keep ASCII names locally and submit null to PointT.
+        # ASCII-coded names are not stored in PointT; submit null instead.
         return None
     encoding = _python_encoding(codec.charset)
     if codec.coding_type != "BASE64" or encoding is None:
@@ -1047,7 +1072,7 @@ def _select_timezone(
 
 
 def _timezone_name_from_mapping(values: Mapping[str, JsonValue]) -> str | None:
-    value = _find_value(values, frozenset(_TIME_ZONE_KEYS))
+    value = _find_value(values, _TIME_ZONE_KEYS)
     return value.strip() if isinstance(value, str) else None
 
 
@@ -1088,8 +1113,9 @@ def holiday_timezone_names(resources: Mapping[str, Resource]) -> frozenset[str]:
 
 
 def _find_value(
-    values: Mapping[str, JsonValue], keys: frozenset[str]
+    values: Mapping[str, JsonValue], keys: tuple[str, ...]
 ) -> JsonValue | None:
+    """The value of the first synonym present, in the order of ``keys``."""
     return next((values[key] for key in keys if key in values), None)
 
 

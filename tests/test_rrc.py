@@ -1,5 +1,6 @@
 """RRC discovery, native readings and safe commands with synthetic responses."""
 
+import base64
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -7,13 +8,17 @@ from time import monotonic
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 
 from custom_components.bosch_buderus_heating import rrc
 from custom_components.bosch_buderus_heating.diagnostics import _capability_diagnostics
 from custom_components.bosch_buderus_heating.discovery import (
     DiscoveryDiagnostics,
     async_discover_resources,
+)
+from custom_components.bosch_buderus_heating.discovery_inventory import (
+    resource_from_data,
+    resource_to_data,
 )
 from custom_components.bosch_buderus_heating.number import (
     BoschBuderusNumber,
@@ -38,10 +43,12 @@ from custom_components.bosch_buderus_heating.resource_catalog import (
     poll_group,
     supports_entity,
 )
+from custom_components.bosch_buderus_heating.rrc_contract_zone import OVERRIDE_POLICY
 from custom_components.bosch_buderus_heating.rrc_programs import (
     RrcProgramService,
     edit_point,
     parse_schedule,
+    selection_options,
 )
 from custom_components.bosch_buderus_heating.rrc_select import (
     RrcProgramSelect,
@@ -58,7 +65,12 @@ from custom_components.bosch_buderus_heating.sensor import (
     BoschBuderusSensor,
     build_sensor_descriptions,
 )
-from custom_components.bosch_buderus_heating.writes import assess_control
+from custom_components.bosch_buderus_heating.writes import (
+    RRC_CONTEXT,
+    ControlLocked,
+    assess_control,
+    validate_control_value,
+)
 from tests import test_dynamic_controls
 from tests.test_dynamic_controls import snapshots
 
@@ -66,6 +78,13 @@ PAYLOADS = json.loads(
     (Path(__file__).parent / "fixtures/contracts/rrc/zones-programs.json").read_text()
 )["resources"]
 RESOURCES = {item.path: item for item in map(parse_resource, PAYLOADS)}
+TC100_PAYLOADS = json.loads(
+    (
+        Path(__file__).parent / "fixtures/contracts/rrc/tc100-string-flags.json"
+    ).read_text()
+)["resources"]
+TC100_PAYLOADS_BY_ID = {item["id"]: item for item in TC100_PAYLOADS}
+TC100_RESOURCES = {item.path: item for item in map(parse_resource, TC100_PAYLOADS)}
 MANUAL = "/zones/zn2/manualTemperatureHeating"
 MODE = "/zones/zn2/userMode"
 SELECTION = "/zones/zn2/clockProgram"
@@ -229,13 +248,216 @@ async def test_separate_rrc_readings_and_stable_identity(environment, path):
 
 @pytest.mark.parametrize(
     "field,value",
-    [("available", False), ("used", False), ("used", 1), ("available", "true")],
+    [
+        ("available", False),
+        ("used", False),
+        ("used", 1),
+        ("used", "True"),
+        ("available", "yes"),
+    ],
 )
 def test_device_availability_is_not_boolean_coerced(field, value):
     payload = next(item for item in PAYLOADS if item["id"] == MANUAL)
     resource = parse_resource({**payload, field: value})
     assert not supports_entity(resource)
     assert not assess_control(resource).eligible
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/zones/zn1/temperatureActual",
+        "/zones/zn1/temperatureHeatingSetpoint",
+        "/zones/zn1/userMode",
+        "/zones/zn1/clockProgram",
+    ],
+)
+def test_observed_string_used_flag_yields_tc100_readings(path):
+    resource = TC100_RESOURCES[path]
+    assert TC100_PAYLOADS_BY_ID[path]["used"] == "true"
+    assert resource.metadata.used is True
+    assert supports_entity(resource)
+    assert rrc.scalar_value(resource) == TC100_PAYLOADS_BY_ID[path]["value"]
+
+
+async def test_observed_tc100_zone_creates_reading_and_program_select(environment):
+    coordinator, _, _ = environment
+    coordinator.resources = dict(TC100_RESOURCES)
+    coordinator.data = snapshots(*TC100_RESOURCES.values())
+    reading = TC100_RESOURCES["/zones/zn1/temperatureActual"]
+    sensor = BoschBuderusSensor(
+        coordinator, build_sensor_descriptions({reading.path: reading})[0]
+    )
+    assert sensor.available
+    assert sensor.native_value == TC100_PAYLOADS_BY_ID[reading.path]["value"]
+    selects = [
+        RrcProgramSelect(coordinator, description)
+        for description in descriptions(TC100_RESOURCES)
+    ]
+    # #113 (RRC-03): the manual zone zn4 keeps its assigned program as well.
+    assert [select.entity_description.resource_path for select in selects] == [
+        "/zones/zn1/clockProgram",
+        "/zones/zn4/clockProgram",
+    ]
+    assert all(select.available for select in selects)
+    assert [select.options for select in selects] == [["1", "2", "3", "4"]] * 2
+    assert [select.current_option for select in selects] == ["2", "4"]
+
+
+@pytest.mark.parametrize(
+    ("path", "used"),
+    [("/zones/zn1/temperatureActual", True), ("/zones/zn4/clockProgram", False)],
+)
+def test_diagnostics_report_observed_string_flags_as_valid(path, used):
+    contract = _capability_diagnostics(TC100_RESOURCES[path], None, {}, 0)[
+        "rrc_contract"
+    ]
+    assert contract["used"] is used
+    assert contract["available"] is None
+    assert contract["availability_flags_valid"]
+    # #113 (RRC-03): an unused program selection is still a valid reading.
+    assert contract["reading_valid"]
+
+
+def test_observed_unused_program_selection_keeps_its_assignment():
+    """#113 (RRC-03): a manual zone keeps its program."""
+    resource = TC100_RESOURCES["/zones/zn4/clockProgram"]
+    assert resource.metadata.used is False
+    assert rrc.scalar_value(resource) == 4
+    assert supports_entity(resource)
+    assert selection_options(resource, TC100_RESOURCES[rrc.PROGRAM_LIST]) == (
+        1,
+        2,
+        3,
+        4,
+    )
+
+
+@pytest.mark.parametrize("path", ["/zones/zn1/userMode", "/zones/zn4/userMode"])
+def test_observed_mode_without_allowed_values_offers_manual_and_clock(path):
+    # #113: the TC100.2 sends no allowedValues for userMode at all.
+    resource = TC100_RESOURCES[path]
+    assert "allowedValues" not in TC100_PAYLOADS_BY_ID[path]
+    assert resource.metadata.allowed_values_missing
+    assert rrc.scalar_value(resource) == TC100_PAYLOADS_BY_ID[path]["value"]
+    assert rrc.control_issue(resource) is None
+    assessment = assess_control(resource)
+    assert assessment.eligible and assessment.current_value_issue is None
+    assert assessment.options == ("manual", "clock")
+    assert [item.options for item in build_select_descriptions({path: resource})] == [
+        ["manual", "clock"]
+    ]
+
+
+@pytest.mark.parametrize("advertised", [[], None, ["manual"], ["eco", "comfort"]])
+def test_advertised_mode_options_keep_the_strict_rules(advertised):
+    payload = {
+        **TC100_PAYLOADS_BY_ID["/zones/zn1/userMode"],
+        "allowedValues": advertised,
+        "value": "clock",
+    }
+    resource = parse_resource(payload)
+    assert not resource.metadata.allowed_values_missing
+    assert rrc.allowed_values(resource) == tuple(advertised or ())
+    assessment = assess_control(resource)
+    assert not assessment.eligible
+    assert assessment.rejection_reason == "current_option_not_advertised"
+    assert not build_select_descriptions({resource.path: resource})
+
+
+@pytest.mark.parametrize("value", ["undefined", "eco", "", None, 1])
+def test_mode_fallback_rejects_a_current_value_outside_manual_and_clock(value):
+    payload = {**TC100_PAYLOADS_BY_ID["/zones/zn1/userMode"], "value": value}
+    resource = parse_resource(payload)
+    assert rrc.control_issue(resource) == "invalid_rrc_reading"
+    assert not assess_control(resource).eligible
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/heatingCircuits/hc1/operationMode",
+        "/zones/zone1/heating/operationMode",
+        "/zones/zn1/clockProgram",
+    ],
+)
+def test_mode_fallback_is_limited_to_rrc_user_mode(path):
+    resource = parse_resource(
+        {"id": path, "type": "stringValue", "writeable": 1, "value": "manual"}
+    )
+    assert resource.metadata.allowed_values_missing
+    assert rrc.allowed_values(resource) == ()
+    assert assess_control(resource).options == ()
+    assert not assess_control(resource).eligible
+
+
+def locked(path="/zones/zn1/userMode", **flags):
+    payload = {**TC100_PAYLOADS_BY_ID[path], "available": "false", **flags}
+    return parse_resource(payload)
+
+
+def test_locked_mode_keeps_its_value_and_refuses_every_write():
+    resource = locked()
+    assert rrc.mode_locked(resource)
+    assert rrc.scalar_value(resource) == "clock"
+    assert supports_entity(resource)
+    assessment = assess_control(resource)
+    assert assessment.eligible and assessment.options == ("manual", "clock")
+    for value in ("manual", "clock"):
+        with pytest.raises(ControlLocked):
+            validate_control_value(resource, value)
+    unlocked = locked(available="true")
+    assert not rrc.mode_locked(unlocked)
+    validate_control_value(unlocked, "manual")
+
+
+@pytest.mark.parametrize(
+    ("path", "flags"),
+    [
+        ("/zones/zn1/userMode", {"used": "false"}),
+        ("/zones/zn1/userMode", {"used": None}),
+        ("/zones/zn1/userMode", {"used": 1}),
+        ("/zones/zn1/temperatureActual", {}),
+        ("/zones/zn1/temperatureHeatingSetpoint", {}),
+        ("/zones/zn1/clockProgram", {}),
+    ],
+)
+def test_lock_reading_is_limited_to_a_used_user_mode(path, flags):
+    payload = {**TC100_PAYLOADS_BY_ID[path], "available": "false", **flags}
+    if flags.get("used", "") is None:
+        del payload["used"]
+    resource = parse_resource(payload)
+    assert not rrc.mode_locked(resource)
+    assert rrc.scalar_value(resource) is None
+    assert not assess_control(resource).eligible
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("V29obnppbW1lcg==", "Wohnzimmer"),
+        ("S8O8Y2hl", "Küche"),
+        ("  QmFkIE9H  ", "Bad OG"),
+        ("Flur", "Flur"),  # valid Base64, but not UTF-8: the raw text
+        ("Bad", "Bad"),
+        ("Büro", "Büro"),
+        ("V29obnppbW1lcg", "V29obnppbW1lcg"),  # no padding
+        ("V29obnppbW1lch==", "V29obnppbW1lch=="),  # not canonical
+        ("AAEC", "AAEC"),  # decodes to control characters
+        ("AEIAYQBk", "AEIAYQBk"),  # UTF-16 is not the RRC encoding
+        ("IA==", "IA=="),  # decodes to a blank
+        ("", None),
+        ("   ", None),
+        ("a\nb", None),
+        ("/w==", "/w=="),  # decodes to invalid UTF-8
+        (base64.b64encode(b"x" * 65).decode(), None),  # too long either way
+        ("x" * 65, None),
+        (None, None),
+        (7, None),
+    ],
+)
+def test_rrc_names_decode_base64_and_otherwise_keep_the_text(value, expected):
+    assert rrc.display_name(value) == expected
 
 
 @pytest.mark.parametrize(
@@ -306,10 +528,12 @@ async def test_fresh_permissions_and_steps_block_invalid_writes(environment):
 def test_override_and_program_arrays_are_not_scalar_controls():
     override = RESOURCES["/zones/zn2/clockOverride/temperatureHeating"]
     assert rrc.scalar_value(override) == 22
-    assert (
-        assess_control(override).rejection_reason == "rrc_override_lifecycle_unverified"
-    )
+    # W1: written only through the zone contract on an RRC controller (S11),
+    # by the zone's climate entity, never as a number of its own.
+    assert assess_control(override).policy is None
+    assert assess_control(override, RRC_CONTEXT).policy is OVERRIDE_POLICY
     assert not build_number_descriptions({override.path: override})
+    assert not build_number_descriptions({override.path: override}, RRC_CONTEXT)
     assert not build_sensor_descriptions({WEEK: RESOURCES[WEEK]})
 
 
@@ -405,7 +629,8 @@ async def test_app_change_before_write_is_not_overwritten(environment, changed_p
     with pytest.raises(WriteValidationError):
         await coordinator.async_edit_rrc_program(RESOURCES[WEEK], 1, 430, 22)
     client.put_resource_value.assert_not_awaited()
-    assert not coordinator.data[WEEK].available
+    # C33: a refused preflight sends nothing; the next poll reads the change.
+    assert coordinator.data[WEEK].available
 
 
 async def test_numeric_program_selection_uses_current_list_and_never_guesses(
@@ -496,3 +721,186 @@ async def test_late_rrc_program_control_recovers_without_duplicate_entity(
     assert (
         len([entity for entity in added if isinstance(entity, RrcProgramSelect)]) == 2
     )
+
+
+TC100_MODE = "/zones/zn1/userMode"
+TC100_NAME = "/zones/zn1/name"
+DASH = " \N{EN DASH} "
+
+
+def wire_tc100(environment, **changes):
+    """A TC100.2-shaped gateway whose reads return the current state."""
+    coordinator, client, _ = environment
+    state = {**TC100_RESOURCES, **changes}
+    coordinator.resources = dict(state)
+    coordinator.data = snapshots(*state.values())
+
+    async def get(gateway, path):
+        return state[path]
+
+    async def put(gateway, path, value):
+        state[path] = replace(state[path], value=value)
+
+    client.get_resource.side_effect = get
+    client.put_resource_value.side_effect = put
+    return state
+
+
+async def tc100_mode_select(hass, environment):
+    added = []
+    await setup_selects(hass, environment[2], added.extend)
+    return next(
+        entity
+        for entity in added
+        if isinstance(entity, BoschBuderusSelect)
+        and entity.entity_description.resource_path == TC100_MODE
+    )
+
+
+async def test_tc100_mode_select_writes_only_manual_and_clock(hass, environment):
+    coordinator, client, _ = environment
+    state = wire_tc100(environment)
+    entity = await tc100_mode_select(hass, environment)
+    assert entity.available
+    assert entity.options == ["manual", "clock"]
+    assert entity.current_option == "clock"
+    await entity.async_select_option("manual")
+    client.put_resource_value.assert_awaited_once_with(
+        "synthetic-gateway", TC100_MODE, "manual"
+    )
+    assert state[TC100_MODE].value == "manual"
+    assert entity.current_option == "manual"
+    client.put_resource_value.reset_mock()
+    with pytest.raises(ServiceValidationError):
+        await entity.async_select_option("eco")
+    # The write path refuses another value as well, before sending anything.
+    policy = entity.entity_description.write_policy
+    for value in ("eco", "undefined", ""):
+        with pytest.raises(WriteValidationError):
+            await coordinator.async_write_control(TC100_MODE, value, policy)
+    client.put_resource_value.assert_not_awaited()
+
+
+@pytest.mark.parametrize("advertised", [[], ["eco"]])
+async def test_mode_write_stops_when_the_gateway_now_advertises_options(
+    hass, environment, advertised
+):
+    _, client, _ = environment
+    state = wire_tc100(environment)
+    entity = await tc100_mode_select(hass, environment)
+    state[TC100_MODE] = parse_resource(
+        {**TC100_PAYLOADS_BY_ID[TC100_MODE], "allowedValues": advertised}
+    )
+    with pytest.raises(ServiceValidationError) as caught:
+        await entity.async_select_option("manual")
+    assert caught.value.translation_key == "write_validation_failed"
+    client.put_resource_value.assert_not_awaited()
+
+
+async def test_locked_mode_stays_visible_and_refuses_with_its_reason(hass, environment):
+    coordinator, client, _ = environment
+    state = wire_tc100(environment, **{TC100_MODE: locked()})
+    entity = await tc100_mode_select(hass, environment)
+    assert entity.available and entity.current_option == "clock"
+    reading = BoschBuderusSensor(
+        coordinator, build_sensor_descriptions({TC100_MODE: state[TC100_MODE]})[0]
+    )
+    assert reading.available and reading.native_value == "clock"
+    for option in ("manual", "clock"):
+        with pytest.raises(ServiceValidationError) as caught:
+            await entity.async_select_option(option)
+        assert caught.value.translation_key == "rrc_mode_locked"
+    client.put_resource_value.assert_not_awaited()
+    # Each attempt checked the gateway first; nothing changed the reading.
+    assert [call.args[1] for call in client.get_resource.await_args_list] == [
+        TC100_MODE,
+        TC100_MODE,
+    ]
+    assert coordinator.data[TC100_MODE].available
+    # The lock ends on the gateway: the next change goes through.
+    state[TC100_MODE] = locked(available="true")
+    await entity.async_select_option("manual")
+    client.put_resource_value.assert_awaited_once_with(
+        "synthetic-gateway", TC100_MODE, "manual"
+    )
+
+
+async def test_mode_locked_after_it_was_shown_sends_nothing(hass, environment):
+    _, client, _ = environment
+    state = wire_tc100(environment)
+    entity = await tc100_mode_select(hass, environment)
+    state[TC100_MODE] = locked()
+    with pytest.raises(ServiceValidationError) as caught:
+        await entity.async_select_option("manual")
+    assert caught.value.translation_key == "rrc_mode_locked"
+    client.put_resource_value.assert_not_awaited()
+
+
+@pytest.mark.parametrize(
+    ("raw", "group"),
+    [
+        ("V29obnppbW1lcg==", "Wohnzimmer"),
+        ("Flur", "Flur"),
+        ("AAEC", "AAEC"),
+        ("\u0001", "RRC zone 1"),
+        ("", "RRC zone 1"),
+        (None, "RRC zone 1"),
+    ],
+)
+async def test_zone_names_decode_without_changing_identities(
+    hass, environment, raw, group
+):
+    coordinator, _, _ = environment
+    reading = TC100_RESOURCES["/zones/zn1/temperatureActual"]
+
+    async def entities():
+        sensor = BoschBuderusSensor(
+            coordinator, build_sensor_descriptions({reading.path: reading})[0]
+        )
+        return await tc100_mode_select(hass, environment), sensor
+
+    wire_tc100(environment)
+    unnamed = [entity.unique_id for entity in await entities()]
+    changes = {}
+    if raw is not None:
+        changes[TC100_NAME] = parse_resource(
+            {"id": TC100_NAME, "type": "stringValue", "writeable": 1, "value": raw}
+        )
+    wire_tc100(environment, **changes)
+    select, sensor = await entities()
+    assert select.name == f"{group}{DASH}Set heating mode"
+    assert sensor.name == f"{group}{DASH}Room temperature"
+    assert [select.unique_id, sensor.unique_id] == unnamed
+
+
+@pytest.mark.parametrize(
+    ("extra", "missing"),
+    [
+        ({}, True),
+        ({"allowedValues": []}, False),
+        ({"allowedValues": None}, False),
+        ({"allowedValues": ["manual", "clock"]}, False),
+    ],
+)
+def test_parser_tells_a_missing_option_list_from_an_advertised_one(extra, missing):
+    payload = {**TC100_PAYLOADS_BY_ID[TC100_MODE], **extra}
+    resource = parse_resource(payload)
+    assert resource.metadata.allowed_values_missing is missing
+    assert assess_control(resource).eligible is (
+        missing or bool(extra["allowedValues"])
+    )
+
+
+def test_stored_inventory_keeps_the_missing_option_list():
+    resource = TC100_RESOURCES[TC100_MODE]
+    data = resource_to_data(resource)
+    assert data["metadata"]["allowed_values_missing"] is True
+    restored = resource_from_data(data)
+    assert restored == resource and assess_control(restored).eligible
+    # Stored by alpha.3 and earlier without it: the strict reading.
+    del data["metadata"]["allowed_values_missing"]
+    assert not resource_from_data(data).metadata.allowed_values_missing
+    assert not assess_control(resource_from_data(data)).eligible
+    data["metadata"]["allowed_values_missing"] = "true"
+    with pytest.raises(ValueError):
+        resource_from_data(data)

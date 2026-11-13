@@ -1,0 +1,37 @@
+{
+ "provenance": {
+  "kind": "synthetic",
+  "basis": "compatibility_mapping",
+  "reference": "RRC 2.0 room controller: away mode, fireplace function, event lists and boost (work package W2)",
+  "firmware": null,
+  "capture_date": null,
+  "created": "2026-11-10",
+  "redaction": "Constructed values only. Field names and JSON types follow the expected RRC 2.0 shapes (event arrays, the boost structure) and the leaf names and types of the anonymized TC100.2 device tree of issue 122. Event names are Base64 placeholders; one carries a marker for the leak tests.",
+  "physical_device_verified": false,
+  "contract": "Joins tests/fixtures/contracts/rrc/ct200-shapes.json. Away and fireplace are string flags \"true\"/\"false\" without allowedValues. The three event lists are read-only arrays; /events/evN exist for the listed IDs and are write targets only. /events/activeEvent is unused. The boost structure is written as a whole; its limits come from the boost leaves."
+ },
+ "resources": [
+  {"id": "/gateway/time", "type": "refEnum", "references": [{"id": "/gateway/time/timeZone"}]},
+  {"id": "/gateway/time/timeZone", "type": "stringValue", "writeable": 1, "recordable": 0, "value": "Europe/Berlin"},
+  {"id": "/system/fireplace", "type": "refEnum", "references": [{"id": "/system/fireplace/enabled"}]},
+  {"id": "/system/fireplace/enabled", "type": "stringValue", "writeable": 1, "recordable": 0, "value": "false", "used": "true", "available": "true"},
+  {"id": "/events", "type": "refEnum", "references": [{"id": "/events/activeEvent"}, {"id": "/events/ev1"}, {"id": "/events/ev2"}, {"id": "/events/list1"}, {"id": "/events/list2"}, {"id": "/events/list3"}]},
+  {"id": "/events/activeEvent", "type": "floatValue", "writeable": 0, "recordable": 0, "used": "false", "value": 42},
+  {"id": "/events/ev1", "type": "eventArray", "writeable": 1, "recordable": 0, "value": [{"id": 1, "name": "UFJJVkFURS1NQVJLRVItRVZFTlQ=", "start": "2027-01-10", "end": "2027-01-17", "type": "away"}]},
+  {"id": "/events/ev2", "type": "eventArray", "writeable": 1, "recordable": 0, "value": [{"id": 2, "name": "V2VpaG5hY2h0ZW4=", "start": "2026-12-25", "end": "2026-12-26", "type": "Su"}]},
+  {"id": "/events/list1", "type": "eventArray", "writeable": 0, "recordable": 0, "value": [{"id": 1, "name": "UFJJVkFURS1NQVJLRVItRVZFTlQ=", "start": "2027-01-10", "end": "2027-01-17", "type": "away"}]},
+  {"id": "/events/list2", "type": "eventArray", "writeable": 0, "recordable": 0, "value": [{"id": 2, "name": "V2VpaG5hY2h0ZW4=", "start": "2026-12-25", "end": "2026-12-26", "type": "Su"}]},
+  {"id": "/events/list3", "type": "eventArray", "writeable": 0, "recordable": 0, "value": []},
+  {"id": "/heatingCircuits/hc1/boostShortcut", "type": "boostShortcutStruct", "writeable": 1, "recordable": 0, "used": "true", "available": "true", "value": [{"duration": 2, "mode": "off", "temperature": 20, "zones": [1, 2], "allowedZones": [1, 2, 3, 4]}]},
+  {"id": "/heatingCircuits/hc1/boostRemainingTime", "type": "floatValue", "writeable": 0, "recordable": 0, "unitOfMeasure": "mins", "minValue": 0.0, "maxValue": 480.0, "used": "true", "available": "true", "value": 0.0},
+  {"id": "/heatingCircuits/hc1/boostTemperature", "type": "floatValue", "writeable": 1, "recordable": 0, "unitOfMeasure": "C", "minValue": 5.0, "maxValue": 30.0, "stepSize": 0.5, "value": 20.0},
+  {"id": "/heatingCircuits/hc1/boostDuration", "type": "floatValue", "writeable": 1, "recordable": 0, "unitOfMeasure": "hour", "minValue": 1.0, "maxValue": 8.0, "stepSize": 1.0, "value": 2.0},
+  {"id": "/heatingCircuits/hc1/boostMode", "type": "stringValue", "writeable": 1, "recordable": 0, "value": "off"}
+ ],
+ "variants": {
+  "boost_on": [{"duration": 3, "mode": "on", "temperature": 22.5, "zones": [2], "allowedZones": [1, 2, 3, 4]}],
+  "boost_without_zones": [{"duration": 2, "mode": "off", "temperature": 20, "zones": [], "allowedZones": [1, 2, 3, 4]}],
+  "boost_extra_field": [{"duration": 2, "mode": "off", "temperature": 20, "zones": [1, 2], "allowedZones": [1, 2, 3, 4], "priority": 1}],
+  "event_placeholder_dates": {"id": 7, "name": "EVENT_NAME", "start": "EVENT_START_DATE-12-25", "end": "EVENT_END_DATE-12-26", "type": "Su"}
+ }
+}

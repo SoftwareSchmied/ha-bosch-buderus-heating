@@ -16,6 +16,7 @@ from custom_components.bosch_buderus_heating.pointt.bulk import (
 from custom_components.bosch_buderus_heating.pointt.parsers import (
     parse_batch_response,
     parse_gateway,
+    parse_gateway_list,
     parse_gateways,
     parse_part_number,
     parse_resource,
@@ -195,6 +196,38 @@ def test_resource_parser_rejects_additional_invalid_shapes(payload: object) -> N
         parse_resource(payload)
 
 
+@pytest.mark.parametrize("field", ["used", "available"])
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [(True, True), (False, False), ("true", True), ("false", False)],
+)
+def test_resource_parser_reads_boolean_and_observed_string_flags(
+    field: str, raw: object, expected: bool
+) -> None:
+    # The TC100.2 RRC controller sends used as the JSON strings "true"/"false".
+    metadata = parse_resource({"id": "/x", field: raw}).metadata
+    assert getattr(metadata, field) is expected
+    assert metadata.availability_flags_valid
+
+
+@pytest.mark.parametrize("field", ["used", "available"])
+@pytest.mark.parametrize(
+    "raw", [1, 0, "True", "FALSE", " true", "yes", "1", "", None, [], {}]
+)
+def test_resource_parser_keeps_other_flag_forms_malformed(
+    field: str, raw: object
+) -> None:
+    metadata = parse_resource({"id": "/x", field: raw}).metadata
+    assert getattr(metadata, field) is None
+    assert not metadata.availability_flags_valid
+
+
+def test_resource_parser_accepts_missing_availability_flags() -> None:
+    metadata = parse_resource({"id": "/x"}).metadata
+    assert metadata.used is None and metadata.available is None
+    assert metadata.availability_flags_valid
+
+
 def test_bulk_response_keeps_partial_success_in_request_order() -> None:
     payload = [
         {
@@ -367,3 +400,44 @@ def test_bulk_mismatched_inner_id_is_local_to_its_requested_path():
     )
     assert not result[0].ok and isinstance(result[0].error, InvalidPayload)
     assert result[1].ok and result[1].resource.path == two
+
+
+# --- C20/AUTH-7: one unexpected gateway entry does not void the list ---
+
+
+def test_unreadable_gateway_entries_are_skipped_and_counted() -> None:
+    payload = [
+        {"deviceId": "gw-1", "deviceType": "heatpump"},
+        {"deviceType": "new-device-without-id"},
+        {"deviceId": 12345},
+        "not-an-object",
+        {"deviceId": "gw-2", "firmwareVersion": 15, "model": ["x"]},
+    ]
+    gateways, skipped = parse_gateway_list(payload)
+    assert [gateway.gateway_id for gateway in gateways] == ["gw-1", "gw-2"]
+    assert skipped == 3
+    # Unexpected types of descriptive fields are treated as absent.
+    assert gateways[1].firmware_version is None and gateways[1].model is None
+    assert gateways[0].device_type == "heatpump"
+    assert parse_gateways(payload) == gateways
+    assert parse_gateways({"gateways": payload}) == gateways
+
+
+def test_single_gateway_tolerates_unexpected_descriptive_fields() -> None:
+    gateway = parse_gateway({"id": "gw", "deviceType": 7, "firmware_version": 1.5})
+    assert gateway.gateway_id == "gw"
+    assert gateway.device_type is None and gateway.firmware_version is None
+    with pytest.raises(InvalidPayload):
+        parse_gateway({"deviceType": "no-id"})
+
+
+@pytest.mark.parametrize(
+    "payload", [[{"model": "x"}], {"gateways": [{"id": 3}]}, "text", {"gateways": 3}]
+)
+def test_gateway_list_without_any_readable_entry_is_invalid(payload) -> None:
+    with pytest.raises(InvalidPayload):
+        parse_gateway_list(payload)
+
+
+def test_empty_gateway_list_is_a_valid_answer() -> None:
+    assert parse_gateway_list([]) == ((), 0)

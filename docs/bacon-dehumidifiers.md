@@ -24,6 +24,7 @@ compatibility. Existing PointT humidity sensors do not become dehumidifiers.
 | Operating mode | `opMode` | Offered subset of `auto`, `night`, `laundry` |
 | Target humidity | `humiditySetpoint` | Integer percentage within current minimum, maximum and step |
 | Child lock | `childLockEnabled` | Separate switch if explicitly writable and currently reported |
+| Display | `displayEnabled` | Separate switch if explicitly writable and currently reported |
 
 Each write requires current metadata and explicit `ro=false`. Missing rights
 mean read-only. The target contract establishes percentage even if its unit
@@ -39,8 +40,8 @@ promise continuous operation or reset the deadline. The HA humidifier platform
 does not provide a feature flag to disable just the target control; requests
 are still checked and rejected when target editing is unavailable.
 
-Laundry timer changes, on/off scheduling, display, fan and pump commands are
-not exposed. A writable field alone does not establish the complete action
+Laundry timer changes, on/off scheduling, fan and pump commands are not
+offered. A writable field alone does not establish the complete action
 contract. Timer lifecycle and user-facing constraints need further work.
 There is no generic write service that bypasses these restrictions.
 
@@ -79,9 +80,12 @@ Missing, malformed or retained error information remains unknown.
 ## Freshness, writes and diagnostics
 
 The existing information, metadata, sensor and shadow streams are reused.
-No additional cloud queries or polling intervals are introduced. Live
-information, state and sensor freshness are required independently; state
-and sensor data expire after 15 minutes. Old, duplicate and retained sensor
+No additional cloud queries or polling intervals are introduced. Online
+status comes from the newest information message and stays usable while a
+non-retained device message on any channel arrived within the last hour.
+State and sensor freshness are required independently; reported state fields
+expire after 15 minutes and sensor fields after one hour. Old, duplicate and
+retained sensor
 messages cannot refresh readings. Sensor envelopes contain timestamped items;
 the newest item extends non-null fields in the existing sample. Omitted fields
 retain their own age and expire independently. Model and connection changes
@@ -121,8 +125,9 @@ states and control effects. This package has not been released.
 
 Ich habe Dry 4000i, 6000i und 8000i in v0.8.2-beta.6 mit einem nativen Entfeuchter-
 Bedienelement ergänzt. Ein/Aus, angebotene Betriebsarten und Ziel-Luftfeuchte
-verwenden die aktuellen Rechte und Grenzen des Geräts. Die Kindersicherung
-erscheint bei passender Ausstattung als eigener Schalter. Messfeuchte und
+verwenden die aktuellen Rechte und Grenzen des Geräts. Kindersicherung und
+Display erscheinen nur dann als eigene Schalter, wenn das Gerät sie als
+beschreibbar meldet und einen Ein/Aus-Wert liefert. Messfeuchte und
 Sollwert bleiben getrennt.
 
 Raumtemperatur, Feuchte, voller Wasserbehälter, Abtauen, Ruhezustand und
@@ -134,8 +139,8 @@ voraus und ist kein separater Nachweis eines laufenden Kompressors.
 
 Zielwerte lassen sich in Automatik und Nachtmodus ändern. Im Wäscheprogramm
 bleibt der gespeicherte Zielwert lesbar. Der Moduswechsel erhält den
-vorhandenen Wäschetimer. Timeränderungen, Zeitprogramme und zusätzliche
-Display-, Lüfter- oder Pumpenbefehle bleiben offen. Ein sichtbares
+vorhandenen Wäschetimer. Timeränderungen, Zeitprogramme sowie Lüfter- und
+Pumpenbefehle bietet die Integration nicht an. Ein sichtbares
 Zielwertfeld in HA umgeht diese Einschränkungen nicht.
 
 Ich prüfe vor jedem Befehl den aktuellen Gerätestand erneut und ändere nur

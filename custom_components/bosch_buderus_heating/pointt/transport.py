@@ -7,12 +7,16 @@ import json
 import math
 import random
 from collections.abc import Awaitable, Callable, Mapping
-from contextlib import suppress
 from dataclasses import dataclass
-from time import monotonic
+from time import monotonic, time
 
 import aiohttp
-from aiohttp import ClientHandlerType, ClientRequest, ClientResponse
+from aiohttp import (
+    ClientHandlerType,
+    ClientMiddlewareType,
+    ClientRequest,
+    ClientResponse,
+)
 
 from .const import (
     DEFAULT_CONCURRENCY,
@@ -31,10 +35,16 @@ from .exceptions import (
     ResourceNotAcceptable,
     ResourceNotFound,
     ServiceUnavailable,
+    TransportError,
     UnexpectedHttpStatus,
 )
 from .metrics import RequestMetrics, bulk_resource_count, request_category
 from .models import JsonValue
+from .retry_after import (
+    MAX_CLOUD_PAUSE_SECONDS,
+    bounded_cloud_pause,
+    parse_retry_after,
+)
 
 
 async def _single_http_attempt(
@@ -49,25 +59,76 @@ async def _single_http_attempt(
         raise ServiceUnavailable() from err
 
 
-class RateLimitBackoff:
-    """Stop all account requests for a bounded interval after a rate limit."""
+def _session_middlewares(
+    session: aiohttp.ClientSession,
+) -> tuple[ClientMiddlewareType, ...]:
+    """Return the shared session's own middleware chain (D14).
 
-    def __init__(self, *, clock: Callable[[], float] = monotonic) -> None:
+    Per-request middleware replaces the chain of the session, so the chain is
+    carried over; it holds Home Assistant's URL checks. aiohttp offers no
+    public accessor, and dropping the chain silently would drop those checks.
+    A renamed attribute therefore stops the request with a clear error.
+    """
+    try:
+        chain = session._middlewares
+    except AttributeError as err:
+        raise TransportError(
+            "The HTTP session has no readable middleware chain; the cloud "
+            "request is not sent without the session's own URL checks"
+        ) from err
+    return tuple(chain)
+
+
+class RateLimitBackoff:
+    """Stop all requests of one saved cloud access while a server pause lasts.
+
+    A server-requested pause is honored in full up to the safety bound in
+    ``retry_after``. Activations only extend the deadline. An optional change
+    listener lets the integration persist the pause across restarts.
+    """
+
+    def __init__(
+        self,
+        *,
+        clock: Callable[[], float] = monotonic,
+        on_change: Callable[[], None] | None = None,
+    ) -> None:
         self._clock = clock
         self._until = 0.0
+        self.restored = False
+        self.on_change = on_change
 
     def activate(self, retry_after: float | None) -> None:
         """Extend the shared deadline without shortening an existing pause."""
-        delay = retry_after
-        if delay is None or not math.isfinite(delay):
-            delay = 300.0
-        self._until = max(self._until, self._clock() + min(3600.0, max(60.0, delay)))
+        until = self._clock() + bounded_cloud_pause(retry_after)
+        if until > self._until:
+            self._until = until
+            self._changed()
+
+    def restore(self, remaining: float) -> None:
+        """Resume a pause loaded from storage without shortening a current one."""
+        if not math.isfinite(remaining) or remaining <= 0:
+            return
+        until = self._clock() + min(MAX_CLOUD_PAUSE_SECONDS, remaining)
+        if until > self._until:
+            self._until = until
+            self.restored = True
+
+    @property
+    def remaining(self) -> float:
+        """Return the remaining pause in seconds, or zero."""
+        return max(0.0, self._until - self._clock())
 
     def raise_if_active(self) -> None:
         """Reject a locally blocked request before it reaches the cloud."""
         remaining = self._until - self._clock()
         if remaining > 0:
             raise RateLimited(remaining)
+
+    def _changed(self) -> None:
+        self.restored = False
+        if self.on_change is not None:
+            self.on_change()
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,13 +159,20 @@ class PointTTransport:
         random_value: Callable[[], float] = random.random,
         metrics: RequestMetrics | None = None,
         backoff: RateLimitBackoff | None = None,
+        request_guard: Callable[[], None] | None = None,
+        request_semaphore: asyncio.Semaphore | None = None,
     ) -> None:
         if concurrency < 1:
             raise ValueError("Transport concurrency must be positive")
         self._session = session
         self._base_url = base_url.rstrip("/")
         self._user_agent = user_agent
-        self._semaphore = asyncio.Semaphore(concurrency)
+        self._semaphore = (
+            request_semaphore
+            if request_semaphore is not None
+            else asyncio.Semaphore(concurrency)
+        )
+        self._request_guard = request_guard or (lambda: None)
         self._retry_policy = retry_policy or RetryPolicy()
         self._sleep = sleep
         self._random_value = random_value
@@ -159,16 +227,23 @@ class PointTTransport:
         last_error: RequestTimeout | ServiceUnavailable | None = None
         for attempt in range(attempts):
             try:
-                return await self._request_once(
-                    method,
-                    path,
-                    access_token,
-                    json_body=json_body,
-                    resource_path=resource_path,
-                    request_type=request_type,
-                    fallback_reason=fallback_reason,
-                    attempt=attempt_offset + attempt + 1,
-                )
+                self._request_guard()
+                try:
+                    result = await self._request_once(
+                        method,
+                        path,
+                        access_token,
+                        json_body=json_body,
+                        resource_path=resource_path,
+                        request_type=request_type,
+                        fallback_reason=fallback_reason,
+                        attempt=attempt_offset + attempt + 1,
+                    )
+                except Exception:
+                    self._request_guard()
+                    raise
+                self._request_guard()
+                return result
             except (RequestTimeout, ServiceUnavailable) as err:
                 last_error = err
                 if attempt + 1 == attempts:
@@ -195,7 +270,10 @@ class PointTTransport:
         attempt: int,
     ) -> tuple[JsonValue, int]:
         self.backoff.raise_if_active()
+        waiting = monotonic()
         async with self._semaphore:
+            self.metrics.record_slot_wait(monotonic() - waiting)
+            self._request_guard()
             # A preceding request may have activated backoff while this waited.
             self.backoff.raise_if_active()
             return await self._request_once_locked(
@@ -246,7 +324,10 @@ class PointTTransport:
                         # Per-request middleware replaces the session chain.
                         # Preserve HA's middleware, including its URL checks,
                         # without changing the shared session's retry settings.
-                        middlewares=(*self._session._middlewares, _single_http_attempt),
+                        middlewares=(
+                            *_session_middlewares(self._session),
+                            _single_http_attempt,
+                        ),
                     ) as response,
                 ):
                     status = response.status
@@ -330,12 +411,7 @@ class PointTTransport:
         if status == 406:
             raise ResourceNotAcceptable(path, status)
         if status == 429:
-            retry_after: float | None = None
-            raw_retry = headers.get("Retry-After")
-            if raw_retry is not None:
-                with suppress(ValueError):
-                    retry_after = max(0.0, float(raw_retry))
-            raise RateLimited(retry_after)
+            raise RateLimited(parse_retry_after(headers.get("Retry-After"), now=time()))
         if status >= 500:
             raise ServiceUnavailable(status)
         raise UnexpectedHttpStatus(status)

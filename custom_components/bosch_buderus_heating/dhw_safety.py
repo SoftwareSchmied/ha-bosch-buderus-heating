@@ -1,4 +1,4 @@
-"""Read-only WDDW2 safety-temperature state, based on the app's string model."""
+"""Read-only WDDW2 safety-temperature state, based on its string value."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ class DhwSafetyAssessment:
 
 
 def assess_dhw_safety(resource: Resource) -> DhwSafetyAssessment:
-    """Interpret only the app's known on/off codes, never a temperature."""
+    """Interpret only the known on/off codes, never a temperature."""
     if not is_dhw_safety_path(resource.path):
         return DhwSafetyAssessment(False, reason="not_dhw_safety")
     if (

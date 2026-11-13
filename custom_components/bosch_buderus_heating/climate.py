@@ -8,20 +8,27 @@ from typing import Any
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import ClimateEntityFeature as Feature
 from homeassistant.components.climate.const import HVACMode
-from homeassistant.const import ATTR_ENTITY_ID, ATTR_TEMPERATURE, UnitOfTemperature
+from homeassistant.const import (
+    ATTR_ENTITY_ID,
+    ATTR_TEMPERATURE,
+    Platform,
+    UnitOfTemperature,
+)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util.unit_conversion import TemperatureDeltaConverter
 
-from . import BoschBuderusConfigEntry
+from . import BoschBuderusConfigEntry, rrc_platforms
 from .bacon import rac
+from .bacon.access import BaconAccess
 from .bacon.entity import BaconEntity
 from .bacon.metadata import metadata, writable
 from .bacon.models import BaconError, Device
-from .bacon.session import BaconAccount
 from .const import DOMAIN
+from .ha_compat import temperature_members, temperature_unit
 from .heating_climate import track_heating_climates
+from .platform_scope import PlatformScope, setup_platform
 
 
 async def async_setup_entry(
@@ -29,9 +36,17 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    for coordinator in entry.runtime_data.coordinators:
+    setup_platform(entry, Platform.CLIMATE, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    for coordinator in entry.coordinators:
         track_heating_climates(entry, coordinator, async_add_entities)
-    if (account := entry.runtime_data.bacon) is None:
+        rrc_platforms.track(Platform.CLIMATE, entry, coordinator, async_add_entities)
+    if (account := entry.bacon) is None:
         return
     seen: set[str] = set()
 
@@ -49,13 +64,14 @@ async def async_setup_entry(
     discover()
 
 
+@temperature_members
 class BaconClimate(BaconEntity, ClimateEntity):
     _attr_translation_key = "bacon_rac"
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_precision = 0.1
     _enable_turn_on_off_backwards_compatibility = False
 
-    def __init__(self, account: BaconAccount, serial: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str) -> None:
         super().__init__(account, serial, "climate")
 
     @property
@@ -85,7 +101,7 @@ class BaconClimate(BaconEntity, ClimateEntity):
         return rac.modes(self.device) if self.controls_current else []
 
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         return (
             rac.current_temperature(self.device)
             if rac.supported(self.device)
@@ -95,7 +111,7 @@ class BaconClimate(BaconEntity, ClimateEntity):
         )
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         return rac.target(self.device) if self.controls_current else None
 
     @property
@@ -118,7 +134,7 @@ class BaconClimate(BaconEntity, ClimateEntity):
         attributes = super().capability_attributes or {}
         if (step := self.target_temperature_step) is not None:
             attributes["target_temp_step"] = TemperatureDeltaConverter.convert(
-                step, self.temperature_unit, self.hass.config.units.temperature_unit
+                step, temperature_unit(self), self.hass.config.units.temperature_unit
             )
         return attributes
 
@@ -173,12 +189,28 @@ class BaconClimate(BaconEntity, ClimateEntity):
         return self._swing("hSwingEnabled")
 
     @property
+    def preset_modes(self) -> list[str] | None:
+        # Offered only when the device declares Eco writable and reports it.
+        if self.controls_current and rac.boolean_control(self.device, rac.ECO):
+            return [rac.PRESET_NONE, rac.PRESET_ECO]
+        return None
+
+    @property
+    def preset_mode(self) -> str | None:
+        value = rac.reported(self.device, rac.ECO)
+        if not self.preset_modes or type(value) is not bool:
+            return None
+        return rac.PRESET_ECO if value else rac.PRESET_NONE
+
+    @property
     def supported_features(self) -> Feature:
         features = Feature(0)
         if not self.controls_current:
             return features
+        if self.preset_modes:
+            features |= Feature.PRESET_MODE
         if (
-            self.target_temperature is not None
+            self.native_target_temperature is not None
             and writable(metadata(self.device, "state", "tempSetpoint"))
             and rac.reported(self.device, "opMode") in rac.TEMPERATURE_MODES
         ):
@@ -251,6 +283,11 @@ class BaconClimate(BaconEntity, ClimateEntity):
         if swing_horizontal_mode not in ("off", "on"):
             raise _invalid_command()
         await self._write({"hSwingEnabled": swing_horizontal_mode == "on"})
+
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
+        if not self.preset_modes or preset_mode not in self.preset_modes:
+            raise _invalid_command()
+        await self._write({rac.ECO: preset_mode == rac.PRESET_ECO})
 
     async def _write(self, desired: dict[str, Any]) -> None:
         model = self.device.model

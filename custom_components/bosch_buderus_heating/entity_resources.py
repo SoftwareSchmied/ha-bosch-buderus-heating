@@ -13,17 +13,35 @@ from .unit_contracts import TEMPERATURE_UNITS
 
 
 def fresh_resource(
-    coordinator: BoschBuderusDataUpdateCoordinator, path: str
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    path: str,
+    *,
+    displayed: bool = False,
 ) -> Resource | None:
-    snapshot = (coordinator.data or {}).get(path)
-    if (
+    """A current, usable reading; ``displayed`` prefers a paired local value.
+
+    The same checks apply to both sources, and a failed cloud cycle still hides
+    the value, so a combined entity never looks current without the cloud.
+    """
+    assumed = getattr(coordinator, "assumed_fresh", None)
+    stored: Resource | None = assumed(path) if assumed is not None else None
+    snapshot = (
+        coordinator.display_snapshot(path)
+        if displayed
+        else (coordinator.data or {}).get(path)
+    )
+    if stored is not None:
+        # Only while deciding entity creation from the stored inventory.
+        resource = stored
+    elif (
         not coordinator.last_update_success
         or snapshot is None
         or not snapshot.available
         or snapshot.freshness is not Freshness.FRESH
     ):
         return None
-    resource = snapshot.resource
+    else:
+        resource = snapshot.resource
     metadata = resource.metadata
     if (
         resource.path != path

@@ -5,13 +5,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.fan import FanEntity
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import BoschBuderusConfigEntry
 from .bacon import purifier
+from .bacon.access import BaconAccess
 from .bacon.purifier_entities import PurifierEntity, invalid_command
-from .bacon.session import BaconAccount
+from .platform_scope import PlatformScope, setup_platform
 
 if TYPE_CHECKING:
     from homeassistant.components.fan.const import FanEntityFeature as Feature
@@ -24,7 +26,14 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    if (account := entry.runtime_data.bacon) is None:
+    setup_platform(entry, Platform.FAN, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    if (account := entry.bacon) is None:
         return
     seen: set[str] = set()
 
@@ -45,7 +54,7 @@ async def async_setup_entry(
 class BaconPurifierFan(PurifierEntity, FanEntity):
     _enable_turn_on_off_backwards_compatibility = False
 
-    def __init__(self, account: BaconAccount, serial: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str) -> None:
         super().__init__(account, serial, "fan")
 
     @property

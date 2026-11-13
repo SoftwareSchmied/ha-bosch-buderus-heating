@@ -5,6 +5,2526 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-13
+
+> [!IMPORTANT]
+> **Before you update**
+>
+> - **Make a full Home Assistant backup first.** On its first start, 0.9.0
+>   moves the configuration entry to storage format 4. Versions 0.8.x cannot
+>   load it, so going back to 0.8.x is only possible by restoring that
+>   backup.
+> - **Home Assistant 2026.5.0 or newer** is required.
+> - Entity IDs, names, areas and history are kept. New entities appear; some
+>   of them are disabled by default and can be enabled in the entity
+>   settings.
+
+0.9.0 is the first stable release of the 0.9 line. It contains everything
+from the six 0.9.0 alpha pre-releases and the changes since alpha.6. Coming
+from 0.8.x, the highlights give the overview; the detailed notes of each
+alpha are linked at the end of this section.
+
+### Highlights of 0.9
+
+- **Local access:** a K40/K40RF gateway in the home network, for example an
+  MX300 or MX400 internet module with firmware 15.00.01 or newer, can be
+  added with the sign-in details from its label, next to the cloud access
+  or on its own. It only reads, updates many readings more often and adds
+  readings the cloud does not offer, such as refrigerant circuit,
+  compressor and pump values. Changes always go through the cloud.
+  Confirmed on my own heat pump and on two further Logatherm WLW186i heat
+  pumps with an MX400.
+- **Operation without the cloud:** when the cloud needs a new sign-in, is
+  paused, switched off or unreachable, a system with a local access keeps
+  showing its readings, and current faults follow the gateway's local error
+  list. When the cloud is back, it continues with the same entities and
+  their history. Confirmed on my own system.
+- **Accesses in one entry:** the setup offers the cloud access, cloud and
+  local access, or local access only. **Configure → Connections** shows the
+  state of every access, tests it on request, signs it in again, switches it
+  off or removes it. A system set up with local access only can get its
+  cloud access later and keeps its entities.
+- **More robust, less load:** a cloud outage during start-up, missing parts,
+  a firmware update, rate-limit pauses and an exchanged gateway no longer
+  need a restart. During short outages readings stay shown within their
+  validity. Entities write a new state only when their value, availability
+  or source changes, and while an entity shows the value of the local
+  access, its cloud copy is read at most every 15 minutes.
+- **Room controllers of the RRC 2.0 platform (TC100.2, CT200):** zone
+  climates, programs, absences, hot water, heating circuit settings, radio
+  devices, faults and the energy history. On a real TC100.2 the zone
+  climates, the program selection, the temporary setpoint, the open window
+  detection, a one-day absence, the hot water mode, boost, away mode and
+  advancing the next switch point are confirmed. Editing switch points and
+  the other functions are expected to work but untested on a real
+  controller; the CT200 is expected to work but untested. Room controllers
+  use the cloud only.
+- **Weekly schedule editor:** the heating and hot water schedules of EMS and
+  iCom gateways can be changed under **Configure**. Tested with simulated
+  data only; expected to work, untested on a real device.
+- **Firmware entity and iCom profile:** each cloud gateway shows its
+  firmware and offered updates (read-only), and iCom gateways (KM200, KM100,
+  KM50, MB LAN 2 and others) get a cloud-friendly load profile. Tested with
+  simulated data only.
+- **Temporary setpoint of heating circuits:** a heating circuit without a
+  room controller that reports a writable temporary room setpoint takes a
+  target in automatic mode as well, with a button to clear it. Tested with
+  simulated data only; expected to work, untested on a real device.
+- **Faults, entities and languages:** clearer fault and maintenance
+  notifications, and the fault documentation explains where current and
+  past faults are. Every reading becomes an entity; readings not needed in
+  everyday operation are disabled by default, and names follow the menus of
+  the controller. The texts come in 19 languages: English and German are
+  maintained with the code, Czech and Slovak were reviewed up to 2026-11-10,
+  all other texts are drafts awaiting review.
+
+What was confirmed on a real device is named as confirmed; everything else
+is tested with automated tests and simulated data. Reports from other
+systems are very welcome in the
+[0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111),
+bugs as [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new/choose).
+
+### Thank you
+
+- [obvius1](https://github.com/obvius1), for testing the room controller
+  functions on a TC100.2 with alpha.4 to alpha.6 and for the analyses and
+  diagnostics in
+  [#113](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/113)
+  and [#122](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/122),
+  each change checked in the manufacturer's app.
+- [lanebe](https://github.com/lanebe), for the exact deprecation warnings
+  and for confirming the local access on a WLW186i-12 E in
+  [#106](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/106).
+- [gejomo](https://github.com/gejomo), for the diagnostics and logs in
+  [#104](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/104)
+  and [#105](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/105),
+  which showed the start-up failures and the timing of an iCom gateway.
+- [ssteve111](https://github.com/ssteve111), for the report of a Logatherm
+  WLW186i-12 TP70 W with an MX400 and the local access in the
+  [0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111).
+- [ColinFinck](https://github.com/ColinFinck), for pointing out in
+  [#120](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/120)
+  that current and past faults were hard to find, which led to the new
+  section of the fault documentation.
+
+### Documentation and earlier notes
+
+- [Setup](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/setup.md),
+  [cloud and local access](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/operation-without-cloud.md),
+  [room controllers](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/room-controllers.md),
+  [heating controls and schedules](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/heating-controls.md),
+  [faults](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/faults.md),
+  [confirmed installations](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/confirmed-installations.md).
+- The detailed notes of the pre-releases:
+  [alpha.1](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.1),
+  [alpha.2](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.2),
+  [alpha.3](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.3),
+  [alpha.4](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.4),
+  [alpha.5](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.5),
+  [alpha.6](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.6).
+
+### What changed since alpha.6
+
+#### Room controllers and start counters
+
+- **Start counters per heat source on a TC100.2:** the counters of `hs1`
+  and `hs2` come as a list with one entry (total, heating, hot water) on
+  that controller, which the integration did not read. A list of up to
+  eight entries is read now, so total, heating and hot water starts get
+  values. I have tested this only with simulated data in the reported form.
+- **Missing start counter parts disabled:** a part of a start counter that
+  the reading does not contain when its entity is first created, for
+  example cooling starts on a gas boiler, is now created disabled, like the
+  pool starts. Existing entities keep their setting; you can disable such a
+  sensor yourself.
+- **Switch points of a TC100.2 editable:** the week programs of that
+  controller have an extra whole-number field `name` on each switch point,
+  and its day programs have no weekday field, so the switch point dialog
+  stayed read-only. The integration now accepts exactly this form and
+  nothing else: a change is sent as day, time and temperature for every
+  point of that day, without `name`, and before and after the change only
+  day, time and temperature are compared. Reading the form is tested with
+  simulated data in the shape the diagnostics reported; writing it is
+  expected, untested on a real controller, and I would be glad about a
+  report. Any other extra field, or a `name` that is not a whole number,
+  keeps the program read-only (new diagnostics code `optional_key_type`).
+- **Advance next switch point confirmed:** the button is now listed as
+  confirmed on a TC100.2 in the diagnostics and in the room controller
+  documentation. Thank you, @obvius1, for the diagnostics in
+  [#122](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/122)
+  that showed the counter and program forms, and for checking the button on
+  your controller.
+
+#### Temporary setpoint of heating circuits
+
+- **Target in automatic mode:** a heating circuit without a room controller
+  that reports a writable temporary room setpoint with limits now takes a
+  target in automatic mode as well. The climate writes it as a temporary
+  setpoint; the program stays selected. In manual mode the climate keeps
+  writing the manual setpoint, as before. The target follows the reported
+  limits and step. Values the circuit uses to end the temporary setpoint or
+  to switch off for now (-1 and 0) are never written as a target.
+- **Clear button and attribute:** a new button "Clear temporary setpoint"
+  ends an active temporary setpoint. It is created only when the reported
+  limits include the clear value -1, and it is available only in automatic
+  mode while a temporary setpoint is active. The climate attribute
+  `temporary_override` shows whether one is active.
+- **Write rules as everywhere:** each change reads the mode, the temporary
+  setpoint and the heating context on the appliance first, sends exactly
+  one request and confirms it by reading it back. The temporary setpoint
+  gets no number entity of its own and no row in the controls dialog; its
+  existing sensor stays.
+- **Tested:** only with simulated data in automated tests. On a real device
+  this is expected, untested; I would be glad about reports, especially from
+  iCom gateways.
+
+#### Short cloud outages
+
+On my own plant, two short cloud outages under alpha.6 made entities
+unavailable that did not need to be. I replayed both with simulated polling
+cycles on the inventory of my plant; the changes below are tested that way,
+not yet on the plant itself.
+
+- **Live values no longer end seconds before the cloud answers again:** a
+  cloud reading stays valid for three intervals of its group, extended by a
+  cycle duration. This is now the longest cycle since the reading was last
+  received, not the last one. After a slow failed cycle (10.6 s) and a quick
+  one, a live value such as the compressor status ran out 8 s before the
+  next answer; now it stays shown. A refresh that waits for another one
+  counts as running as well.
+- **Fault entities survive a short outage:** **System fault**, **Active
+  faults** and **Active notifications** keep the last state that a complete
+  read confirmed, for 15 minutes after that read (3 minutes while a
+  notification is active), as long as the requests only get no answer.
+  Nothing is resolved or announced meanwhile. The fault list is read again in
+  the first cycle that answers, after the other readings. A gateway timeout
+  of the fault list no longer pauses it for 15 minutes when nothing else
+  answered either; after a two-minute outage the fault entities were
+  unavailable for 17 minutes.
+- **Fault sources with a lasting server error:** fault sources that keep
+  failing with a server error while the other readings of the cycle answer
+  are paused for 15 minutes, with any server error and also when several
+  fault sources fail together. Before, only a single fault source with a
+  gateway timeout was paused; otherwise every other cycle failed and the
+  fault sources were asked every minute.
+- **Display values keep their last value:** **System pressure status
+  (calculated)**, **Holiday mode active**, **Next holiday** and the **Holiday
+  periods** calendar now keep their last value within its validity limit when
+  their readings get no answer, like other sensors. Holiday changes in the
+  calendar still need current readings and a successful cloud cycle. The
+  away mode switch stays a control and still needs a current reading.
+- **Warning for server errors inside an answered batch:** when the cloud
+  answers a batch request but readings in it come back with server errors
+  (for example gateway timeouts), the log now shows one warning per outage.
+  The outage ends only when these readings answered again, so a single
+  reading that keeps timing out and is paused meanwhile does not warn again
+  every 15 minutes. Before, such outages left no log entry.
+
+#### Diagnostics (schema 46)
+
+- **Starts of accesses and sources:** each access and each source lists its
+  recent starts with the time (UTC) and a fixed reason (`start`,
+  `configuration_changed`, `after_failure` with the error class,
+  `source_ended`, `access_restarted`, `requested`, `other`), so the cause of
+  an unexpected restart of the local or the cloud source can be seen in the
+  next diagnostics. The fault section shows `state_held`.
+- **Room controllers:** `rrc_programs.schedules` lists the form of the
+  switch points per program kind (key names and value types only, never a
+  value); the boost settings report the last reason they had no limits and
+  how long ago it was seen; `rrc_profile.confirmation` now matches the
+  confirmed functions instead of always saying `unconfirmed`; and the energy
+  history names why a cycle without an error imported nothing
+  (`no_records`, `no_completed_days`, `all_series_empty`) and counts the
+  daily records it read, without values.
+
+#### Setup, messages and smaller fixes
+
+I tested the following changes with the automated tests and simulated data
+only; none of them is checked on a real device or a fresh installation yet.
+
+- **A found gateway can be set up directly:** when Home Assistant finds a
+  gateway in the home network and the integration has no entry yet, the
+  discovery notice now offers the setup with **Local access only**. Continuing
+  creates the same entry as that choice and opens its local setup, with the
+  found address offered. Before, such a notice was dropped silently. With an
+  entry, the notice still asks which setup the gateway belongs to.
+- **New sign-in link instead of a useless retry:** when a new sign-in of the
+  cloud access finds none of its systems and devices, the dialog now shows a
+  fresh sign-in link with the explanation, instead of a retry with the same
+  sign-in. A cloud pause during this check is reported as a pause, not as an
+  unreachable service.
+- **Commands during a cloud pause or outage say why:** a heating circuit
+  climate command, a zone climate command of a room controller, the new
+  button to clear a temporary setpoint or a control change during a cloud
+  pause, a protection pause after repeated errors, an outage, a stopped
+  cloud access or a needed new sign-in now names that reason, with the end
+  of the pause when it is known. Before, the message spoke of the manual
+  heating mode, of the zone command or of a setting that could not be
+  changed safely. Saving a switch point of a room controller during the
+  protection pause now says that writing is paused, instead of asking to
+  reopen a program that did not change. Nothing is sent in these cases, as
+  before. A change in the holiday calendar during an outage is still
+  answered by Home Assistant as not supported, because the calendar offers
+  no changes without current readings.
+- **Clear button without a current reading:** when the temporary setpoint is
+  shown as active from a reading that is still valid but was missing in the
+  last cycle, the button now asks to try again instead of saying that no
+  temporary setpoint is active. Nothing is sent.
+- **"Cloud access" in messages:** connection, error and rate-limit messages,
+  the reasons of a failed refresh that Home Assistant can show on the
+  integration card, and the titles of the firmware repair notes no longer
+  use the internal service name; the rate-limit message of the controls
+  dialog now says that the cloud limits the requests.
+- **Translated messages:** the errors of the holiday calendar and of a select
+  option that is no longer offered now follow the language of Home
+  Assistant, and the event types of the system notifications are shown as
+  "Appeared" and "Resolved" in every language. The new texts are drafts in all
+  languages except English and German.
+- **One manufacturer name:** additional cloud devices and wallboxes now show
+  the same manufacturer as heating systems that report no brand, instead of
+  two other spellings, and water heaters among the additional cloud devices
+  also accept temperatures reported in "degC" or "Celsius".
+- **A later minor version of the entry is read:** an entry saved by a later
+  0.9.x version with a higher minor version of format 4 now loads, read like
+  this version's format; data it does not know stays stored. Before, such an
+  entry did not start. This covers only the entry itself; make a backup
+  before you go back to an earlier version, also within 0.9.x.
+- **Request count sensors:** they no longer write their last counts when they
+  are removed, which relied on Home Assistant internals; stopping Home
+  Assistant still records them, and the counts start anew at every start
+  anyway.
+- **Local sign-in:** the token request with the gateway label now uses the
+  same hardened connection settings as all other local requests. Nothing
+  changes in its behavior.
+- **Local readings asked again after the search:** a local reading that
+  was not confirmed yet and is due again after the search of the local
+  resources has finished, for example after a firmware change, now starts
+  at once instead of waiting for the next other local reading.
+- **Integration category:** the manifest declares the category "climate".
+- **README:** the load figures in the README are replaced by what the code
+  does; my measurement, with what it compares, is now in the
+  [release checks](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/main/docs/release.md#load-measurement-for-090-alpha2).
+
+#### Entities: defaults, names and statistics
+
+I checked these changes with automated tests and simulated data, the valve
+positions and the hot water heat-up also against the recorded history of my
+own heat pump (it does not cool). I have not yet checked them on a real
+installation after an update. Existing entities keep their entity ID, their
+unique ID, a name you set yourself and whether they are enabled; an entity
+without a name of your own shows its new name.
+
+- **Duplicates created disabled:** with exactly one heat source, the total
+  starts and the total system run time of all heat sources show the same
+  values as the counters of that heat source, and on a heat pump without a
+  second heat source or a hybrid manager the burner status follows the
+  compressor. New entities of these three readings are now created
+  disabled. With a cascade, a hybrid system or a boiler they stay enabled.
+  The integration never enables such an entity later on its own, also when
+  a later start does not see the heat pump type or sees a second heat
+  source for a while.
+- **Valve positions checked on my heat pump:** the 4-way valve (VR4) showed
+  *Cooling/defrost* during every recorded defrost and *Heating* otherwise;
+  the hot water 3-way valve (VW1) showed *Hot water* during every hot water
+  charge and in the last one to three minutes of each defrost. These
+  recorded moments are now part of the tests. The relay of VW1, a disabled
+  second source, now shows the same position texts instead of on and off.
+  Other outdoor units are not confirmed.
+- **Hot water heat-up as on/off:** the signal `SRC.IntDHW.HeatUpActive`
+  showed the raw states `false` and `heat`. It is now an on/off sensor
+  named "Hot water heat-up active", where heat and post-heat count as on;
+  it was on during every hot water charge on my heat pump. It stays
+  disabled by default. If you enabled it and use `heat` or `false` in an
+  automation, change it to `on` or `off`; earlier history entries keep the
+  old states. It is no longer listed under the diagnostic entities.
+- **Long-term statistics for local run times:** the compressor run times
+  for heating, hot water and cooling, those of a hybrid manager and the run
+  time of a ventilation unit now have statistics as a growing total, like
+  the operating times from the cloud. The statistics start with the
+  update; remaining times and timers keep none. The cloud's reading of the
+  ventilation run time gets the same statistics, so the local entity still
+  continues as the cloud entity, with its entity ID and history, when a
+  cloud access reports that reading later.
+- **Room controller settings without a control:** the read-only sensor of
+  a setting that offers no control (not writable, a single season mode,
+  no limits, or the temperature of the open window detection) is now
+  enabled when it is created, as the only place its value is shown. While
+  the control exists, the sensor stays a disabled duplicate. I tested this
+  with simulated data only.
+- **Ventilation fan level:** the exhaust fan level select is now created
+  disabled, because no ventilation unit has confirmed it yet.
+- **Names after the controller:** German names say *Kompressor* instead of
+  *Verdichter*, as the Info menu of my MX400 does, and signal names use
+  *HK1*. English names use *Drip pan temperature (TA4)*, *Flow rate HC1
+  (PC1)* and *Heating circuit pump HC1 (PC1)*. The flow of the heat source
+  is *Primary flow rate*, the season signal is *Current heating/cooling
+  status (signal)*, because it repeats that cloud value, and the cylinder
+  and outdoor temperature signals got names. The request count sensors are
+  now *Cloud requests total*, *Cloud requests – last hour* and *Cloud
+  response time – last hour*. On a room controller, the hot water level
+  `high` is named *Hot water temperature* instead of *Comfort start
+  temperature*. The new and changed texts are drafts in all languages
+  except English and German.
+- **Hydraulic card preset:** I checked the `bosch_buderus_heating` preset of
+  the hydraulic card against these entities. The unique IDs, translation
+  keys, states and units of its mappings are unchanged. On a new
+  installation with a single heat pump, the total starts and the total
+  system run time are created disabled, so the preset no longer shows them
+  among its additional values; its starts and run time tiles use the heat
+  pump's own counters, which stay enabled. I have not tested this with the
+  card on a real installation. The
+  [entity documentation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/main/docs/entities.md#using-the-heat-pump-hydraulic-card)
+  lists which entity suits which card key.
+
+#### Release tooling
+
+I tested these checks with automated tests only; the workflow changes take
+effect with the next release tag.
+
+- The release notes of a version must stand on their own. Publishing stops
+  when the CHANGELOG section sends readers to the notes of another version
+  further down, because the GitHub release and the update dialog show only
+  this one section.
+- The installation archive lists its files in the plain order of their
+  paths, so it comes out the same on every platform, and a local build
+  refuses to run while the integration directory has uncommitted changes.
+- Only an annotated tag publishes a release, and a stable release only from
+  a commit on `main`. The workflow now sets the draft and pre-release state
+  explicitly, so an existing draft is published with the right type, and
+  two runs of the same tag no longer publish at the same time.
+
+## [0.9.0-alpha.6] - 2026-11-12
+
+> [!IMPORTANT]
+> **Alpha pre-release for testing.** Make a full Home Assistant backup first.
+> From alpha.1 to alpha.5 no new setup is needed; from 0.8.x, the notes of
+> alpha.1 below apply as well.
+
+Alpha.6 confirms most room controller functions on a real TC100.2, adds an
+editor for the weekly heating and hot water schedules of EMS and iCom
+gateways, a load profile for the slower iCom gateways, a read-only firmware
+entity and a way back in the menus of the Configure dialog, and enables more
+readings of the local access by default. It also brings the fixes of a review
+of the whole 0.9 code. What a TC100.2 confirmed is marked as confirmed below.
+The schedule editor, the iCom changes, the firmware entity and most fixes I
+have tested only with simulated data; they are expected to work but untested
+on a real device, and I would be glad about reports.
+
+### What changed since alpha.5
+
+#### Entities
+
+- **Fan and pump speeds enabled:** the readings of the local access for the
+  outdoor unit fan speed (PL3) and the primary heating pump speed (PC0), in
+  %, are now enabled by default, as promised in
+  [#106](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/106).
+  On an existing installation they are enabled at the next start, unless
+  you disabled them yourself. The compressor speed and the controller
+  signals that repeat these readings stay disabled.
+- **Heat pump temperatures enabled:** also enabled by default are the
+  readings of the local access a hydraulic view of the heat pump needs: the
+  primary supply temperature (TC1), the air intake temperature (TL2), and the
+  hot gas (TR6), condenser heating (TR3), high-pressure (JR1), low-pressure
+  (JR0) and suction line (TR5) temperatures. Existing installations get them
+  at the next start unless you disabled them; the entity IDs stay. The
+  compressor temperature, the condenser cooling temperature (TR4) and the
+  compressor speed, which practically repeats the compressor modulation,
+  stay disabled.
+- **Confirmed installations:** the Logatherm WLW186i-12 E with the outdoor
+  unit WLW MB-5 AR, a Logamatic BC400 and an MX400 gateway now also lists
+  the local access as confirmed, in the README and on the
+  [separate page](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.6/docs/confirmed-installations.md).
+  Thank you, lanebe, for confirming it in
+  [#106](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/106).
+
+#### Configure dialog
+
+- **Back and stay in the dialog:** every menu below the main menu of
+  **Configure** now ends with "← Back" to the menu above it, and
+  **Connections** is a menu of its accesses. A finished action, for example
+  a saved connection setting, saved notifications, a saved holiday or
+  schedule or a planned search, returns to its menu with the result instead
+  of closing the dialog, so several things can be done in one session. The
+  settings are saved at once, as before. Signing in again, adding a cloud
+  access, the local setup and error messages end the dialog as before. In
+  all languages except German and English the new texts are drafts.
+
+#### Room controllers (TC100.2)
+
+Newly confirmed on a real controller, a TC100.2 with firmware 05.04.00 and
+five zones, tested with alpha.5. Each change was checked in the
+manufacturer's app and set back afterwards:
+
+- **Programs:** the discovery completes, and every zone gets its program
+  select with the program names from the controller. Switching the program
+  and back works.
+- **Temporary setpoint:** a new target in the schedule mode sets it, and the
+  clear button removes it again. In that test Home Assistant showed the new
+  target after about a minute.
+- **Mode with a target:** the climate to `heat` with a target and back to
+  `auto` works; the mode changes first, then the target.
+- **Open window detection:** turning it off and on for a zone works.
+- **Absence calendar:** creating a one-day absence and deleting it again
+  works.
+- **Hot water:** the mode `ownprogram` → `high` → `ownprogram` works.
+- **Boost:** on and off works.
+- **Away mode:** on and off works. While it was on, a new zone target was
+  refused with the message that the away mode is active.
+- **Readings that look right:** the climate of each zone with its next
+  setpoint and zone status, the window sensors, the system pressure, the
+  outdoor temperature, the humidity, the display and cause code, the boost
+  settings, the away temperature, and the hot water mode and temperature.
+  The eight radiator thermostats appear as separate devices in the right
+  areas, with their battery and valve state.
+
+The room controller page, the confirmed installations and the README now
+show this per function. Editing switch points, changing an absence,
+special days, the fireplace function, the system's open window detection,
+the zone locks other than the away mode, the other hot water settings, the
+heating circuit, the fault and maintenance sensors, the energy history, the
+settings of the radio devices and the CT200 stay expected, untested. Thank you, @obvius1, for
+testing all of this on your TC100.2, checking every change in the app and
+reporting it in #122.
+
+#### Room controllers: new and changed
+
+Everything in this block is expected, untested on a real controller. I
+tested it with simulated controller data only.
+
+- **Advance next switch point:** a new button per zone sets the temporary
+  setpoint to the zone's next setpoint, so the zone heats up or lowers its
+  temperature now instead of at the next switch point. It is available only
+  in the schedule mode with a next setpoint that the temporary setpoint can
+  take. The mode and the next setpoint are read again before the change;
+  if the next setpoint changed on the controller, nothing is sent. The
+  attribute `next_setpoint_advanced` shows it.
+- **Values after a zone change:** after a confirmed change of a zone, the
+  active setpoint, the zone status, the next setpoint, the minutes until it
+  and the zone list are read once about five seconds later, not only with
+  the next cycle about a minute later. Several changes in a row share this
+  one read; pauses and the protection pause still apply.
+- **Hot water on a heat pump:** if the controller reports its heat source
+  as a heat pump or a hybrid system, the hot water mode always offers all
+  five modes, so eco can be chosen again after comfort.
+- **Diagnostics:** the functions confirmed on the TC100.2 are now named as
+  confirmed for their function group; everything else stays unconfirmed.
+  Start counters with a form the integration cannot read describe that
+  form without values, the boost settings say why they have no limits, the
+  active temporary setpoints count only zones in the schedule mode, and the
+  holiday block points to the room controller's absence report.
+- **Documentation:** the room controller page says that the temporary
+  setpoint follows the used and available flags like every other setting;
+  whether a controller reports such flags for it is still open.
+
+#### Room controller programs
+
+- **Why a program is read-only:** on a real TC100.2 the program editor showed
+  every program read-only, without saying why. The diagnostics now name the
+  reason per week and day program, for example a switch point without a day
+  or with an additional key, as fixed codes without values. The editor still
+  accepts only the form it knows; I will adjust it once a diagnostics file
+  shows the real form.
+
+#### Heating and hot water schedules
+
+Expected, untested on a real gateway; so far I have tested both only with
+simulated data:
+
+- **Change a schedule:** **Configure > Heating and hot water schedules**
+  changes the weekly programs A and B of a heating circuit and program A of
+  the hot water. Choose a day, then change, add or delete its switch points
+  within the limits the gateway reports, or copy a day onto other days. The
+  last step shows the changed days before and after; the whole week is then
+  sent once, read back and shown at once. A program that changed in the
+  meantime is not overwritten, and nothing is ever sent twice. The program
+  type and the program names stay read-only. The program type is read again
+  right before sending, so an absolute program is never written as a level
+  program; a program whose type has no current reading, or that the gateway
+  reports as not used, is not offered. An unreadable answer to an accepted
+  request is resolved by reading back. A refusal names its cause: writing
+  paused after failed readings, a changed program type or a rule of the
+  draft. Program names and level names in the dialog texts show as plain
+  text.
+- **Active schedule:** a select switches between programs A and B, but only
+  where the gateway allows both and both programs can be read. With a
+  single program, as on my heat pump, there is none.
+
+#### iCom gateways (KM200, KM100, KM50, MB LAN 2 and others)
+
+These changes apply only to gateways that report the device type `icom`;
+every other gateway keeps its behaviour. I tested them with simulated data in
+the shapes of a real iCom gateway with a boiler controller. On a real iCom
+gateway they are expected, untested.
+
+- **Load profile:** a new cloud connection with an iCom gateway starts with
+  the cloud-friendly profile. An existing connection with an iCom gateway
+  is switched to it once at the first start of this version, noted once in
+  the log at info level. It can be changed in the connection options, and
+  a choice made there is never switched again.
+  After a cycle with a timeout the next one reads batches of half the size,
+  at least 10 paths, and after three good cycles in a row the size doubles
+  back step by step to 30. During a long outage the breaker pauses 5, 10, 20
+  and then 30 minutes, and starts at 5 minutes again after the first good
+  cycle. Writes are read back after 1, 2, 3 and 4 seconds. The timing comes
+  from the diagnostics and logs in
+  [#104](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/104)
+  and [#105](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/105);
+  thank you, [gejomo](https://github.com/gejomo), for them.
+- **Holidays:** before the first change I now check that every field to be
+  changed is writable. A fixed temperature reported in `°C` is accepted like
+  `C`. Two new rules from the component list only remove choices: with a
+  HMI800 HP Light controller the heating mode and the circuits of a holiday
+  stay as the slot reports them, and with token 16 in the component list the
+  heating circuits of the tokens 24 to 27 are not offered. I have not seen
+  either case on a system; both are expected, untested.
+- **Control type `constants`:** the heating circuit climate then only shows
+  the circuit and sends no command, on every gateway that reports it. A
+  missing or old reading keeps it so until a reading shows another control
+  type. Expected, untested on a real device.
+- **Diagnostics:** a new `icom` section shows the state of the load profile,
+  the component type numbers of `/system/info` (no serial numbers or names),
+  the reported bus with a hint for `EMS1_0`, `CAN` and `No_Bus`, and whether a
+  holiday rule applies.
+- **Inventory:** the [resource inventory](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.6/docs/resource-inventory.md#icom-rows-r199-to-r243-compared-with-a-real-gateway)
+  now lists the iCom paths a real gateway offers beyond the rows R199 to R243
+  and the rows it does not answer, and a synthetic fixture holds these shapes
+  with constructed values.
+
+#### Firmware update
+
+- **Firmware entity:** each cloud gateway gets an update entity
+  **Firmware**. It shows the installed gateway firmware and an update the
+  cloud offers, with a link to its release notes in the language of Home
+  Assistant. It only shows: I left out installing an update and changing the
+  gateway's automatic update, so nothing can start a firmware update from
+  Home Assistant. The list is read about ten minutes after the start and then
+  every six hours; a gateway the list refuses or does not name gets no
+  entity. An update counts as offered only with a version other than the
+  installed one; the state `none` offers nothing and shows only in the
+  `update_state` attribute. After a restart, the entity shows the last
+  answer it kept, at most 13 hours old, until the first new read instead of
+  being unavailable. I tested it with simulated answers of the cloud's
+  firmware update list only; it is expected, untested on a real gateway.
+- **Diagnostics:** the new section `firmware_updates` shows the result of the
+  last reads, the state and the versions, without the gateway ID or links.
+
+#### Robustness, privacy and texts from the review of 0.9
+
+All of the following is tested with synthetic data only, not on a real
+device.
+
+- **Newer firmware:** an added field in the rows of the local signal list,
+  the system information or a fault list no longer makes the whole answer
+  invalid; required fields and types stay strict.
+- **On/off signals as 1.0/0.0:** an on/off signal reported as a float value
+  now shows on or off instead of unknown.
+- **p95 response time:** the value never exceeds the measured maximum and
+  no longer stops at exactly 10000 ms; answers up to the 30-second timeout
+  keep their size.
+- **Short token lifetimes:** a token answer with a lifetime of 0 or less
+  keeps its new refresh token, so the sign-in is not lost; its access token
+  counts as expired at once and is renewed once more right away. If that
+  answer has no lifetime either, the usual wait after a failed renewal
+  applies (30 seconds, doubling up to 10 minutes). A short lifetime no
+  longer starts a token renewal before every request.
+- **Start values answered as missing:** a registered value that keeps
+  answering 403, 404 or 406, for example of a replaced room device, is
+  given up after five answers until the next discovery instead of being read
+  every 30 minutes for good.
+- **Holiday fields:** of several synonyms in a holiday row, the same one is
+  now always used, also after a restart.
+- **Cloud session:** if a Home Assistant update ever hides the middleware
+  chain of the shared HTTP session, cloud requests stop with a clear error
+  instead of an unexpected one, and a test notices it early.
+- **Privacy:** log lines hide every identifier the diagnostics hide; the
+  stored discovery inventory keeps no serial numbers, UUIDs or module data,
+  also from older files; a device keeps its known serial number, model and
+  software and hardware versions after a start from that inventory.
+- **Dialog texts:** holiday names, program names, the gateway model, the
+  local address and the gateway ID in dialog descriptions are shown as plain
+  text, so a name can no longer add an image or a link. Gateway IDs `.` and `..` are rejected before any
+  request.
+- **Local setup messages:** more failure causes of the local setup are named
+  instead of "unexpected error", for example a system that already has a
+  local access, an unverified identity or a full setup journal.
+- **Deleting old devices:** a device without any entity, for example a
+  heating circuit removed at the controller, can now be deleted on its
+  device page. A device that still has an entity, also a disabled one or
+  one that is no longer provided, stays until its entities are deleted, so
+  no setting of an entity gets lost.
+- **Status in the dialogs:** the controls dialog shows "1 unsaved change"
+  in the singular, says "No changes, nothing was written." when Apply had
+  nothing to write, and asks to close and reopen the dialog when Home
+  Assistant no longer knows it (for example after a restart); the holiday
+  delete button does the same.
+- **Documentation:** the entity page uses the current names of the local
+  readings and lists VR0, the valve positions, the compressor start delay
+  and the signal entities; it explains that on/off signals are enum sensors
+  and that signals no longer listed keep their entity. The pause limits,
+  the climate validity, the active entry version 4.2, the version notes and
+  the load of the energy history are now described as the code behaves.
+- **Tests:** three date-dependent tests run at a fixed time, and every test
+  has a time limit of 120 seconds (`pytest-timeout` is now a test
+  requirement).
+
+#### Diagnostics
+
+- **Diagnostics schema 45** gathers the new sections of this version:
+  `firmware_updates`, `icom` (only for iCom gateways), `switch_program_writes`,
+  the reasons why a room controller program stays read-only and the
+  confirmation per function group, without values, names or identifiers. See
+  [diagnostics](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.6/docs/diagnostics.md).
+
+#### Translations
+
+- **New texts are drafts:** the texts added in this version (the schedule
+  editor and the active schedule select, the advance button, the firmware
+  entity, the dialog status texts and the back entries and result notes of
+  the Configure dialog) are written in English and German; in all other
+  languages, Czech and Slovak included, they are drafts and not yet
+  reviewed.
+
+#### Fixes
+
+- **Writes with a slow cloud:** a change that has started now has an overall
+  deadline of 60 seconds (180 seconds for a holiday change, 200 seconds on
+  an iCom gateway, which is read back more slowly) for its checks, its
+  request and the read-back. Before, a slow cloud with request retries
+  could hold the polling of the gateway and the calling automation for
+  several minutes. Right before each request the time left is checked: if
+  it no longer covers the request and its read-back, nothing is sent and
+  the change is reported as busy, so a slow check can no longer cut a
+  request off while it is sent. A change stopped before its request keeps
+  its value as it is. At the deadline after a request the change is
+  reported as not confirmed, its value counts as not current until it is
+  read again, and nothing is sent a second time.
+- **Warning after a restart:** Home Assistant no longer logs "Detected
+  blocking call to import_module … inside the event loop" for the room
+  controller functions. I now load their modules in the background before
+  the entity platforms start. The warning was reported in #122.
+- **Room controller fault times:** a fault time without a time zone is now
+  read as local time in Home Assistant's time zone instead of as UTC, so
+  the fault no longer shows hours off. Expected, untested.
+- **Room controller heating circuit settings:** after a failed reading of
+  the circuit's control strategy, a change of a heating curve or supply
+  setting is no longer refused as "changed" until the next poll. The
+  limits it is ordered against are still checked with a current reading.
+- **Room controller absence calendar:** a changed event no longer counts as
+  confirmed while the list it came from cannot be read.
+- **Room controller program names in Configure:** the room controller
+  heating schedules in the Configure dialog are listed with the program
+  names from the controller, as in the zone program select, instead of only
+  their numbers.
+
+## [0.9.0-alpha.5] - 2026-11-11
+
+> [!IMPORTANT]
+> **Alpha pre-release for testing.** Make a full Home Assistant backup first.
+> From alpha.1 to alpha.4 no new setup is needed; from 0.8.x, the notes of
+> alpha.1 below apply as well.
+
+Alpha.5 brings the functions of the room controllers of the RRC 2.0 platform
+(TC100.2 and CT200) beyond the zone readings, clearer fault and maintenance
+notifications, and texts in 19 languages. On a real room controller, a
+TC100.2 has so far confirmed the zone readings, switching a zone between
+manual mode and the schedule, and changing the manual setpoint. Everything
+else for room controllers I have tested only with simulated data, in the
+shapes of the observed TC100.2 answers and of a constructed controller with
+11 zones, 12 radio devices and 24 programs. It is expected to work but
+untested on a real controller; I would be glad about reports from owners.
+The new [room controller page](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/room-controllers.md) lists every
+function with its status.
+
+### What changed since alpha.4
+
+#### Room controllers (TC100.2, CT200)
+
+Confirmed on a real controller:
+
+- **Zone climate:** every zone that reports a heating mode and a room
+  temperature now gets a climate entity. `heat` is the manual mode and
+  `auto` the schedule; room controllers have no off mode. In manual mode a
+  new target changes the manual setpoint. A mode together with a temperature
+  changes the mode first and the target only once the controller has
+  confirmed the mode. The mode and manual setpoint changes behind it were
+  confirmed on a TC100.2 with alpha.4; the climate entity itself is new.
+- **Confirmed installations:** the Logano plus GB212 with a Logamatic TC100.2
+  is listed in the README and on a
+  [separate page](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/confirmed-installations.md) with the zones confirmed
+  with 0.9.0-alpha.4 without a local patch: room temperature, active
+  setpoint, zone names, operating mode and manual setpoint changes from Home
+  Assistant. Thank you, @obvius1, for testing this on your system and
+  reporting it in #113.
+
+Expected, untested on a real controller:
+
+- **Temporary setpoint:** in the schedule mode a new target sets a temporary
+  setpoint until the next switch point of the schedule; the attribute
+  `override_until_next_switch_point` says so. A button per zone clears it.
+  If the controller ends a replaced temporary setpoint at once, for example
+  at a switch point, a message of its own says so. In manual mode the
+  attributes no longer report a temporary setpoint, and the clear button is
+  only offered where the controller accepts 0.
+- **Locked zones:** while the away mode is active, I refuse a new target of
+  a zone with a message that names the away mode, instead of sending it. A
+  zone the controller reports with a zone or communication error, or in
+  standby, takes no change of its mode or target. The attributes
+  `control_lock`, `away_mode` and `active_setpoint` show why, and the target
+  shown is then the setpoint the controller applies, as also with an open
+  window or a boost.
+- **Zone climate:** a zone whose room temperature the controller does not
+  use stays available with an unknown current temperature. After an
+  unconfirmed change the target control stays until the value is read
+  again.
+- **Zone details:** sensors for the next setpoint (unknown instead of 999),
+  the minutes until it, the zone status, the valve opening and the optimum
+  start, a binary sensor for an open window, and switches and numbers for
+  the open window detection of each zone and of the system. The valve
+  opening, the optimum start and the system settings are disabled by
+  default. The window sensor now follows the special function the zone list
+  reports for each zone, and a zone's open window detection is only changed
+  while the system's detection is offered.
+- **Programs:** the program selection keeps the program numbers as its
+  options, so automations keep working when a program is renamed; the names
+  appear as the attributes `program_names` and `program_name`. A selection
+  and a changed switch point are now read back with the same patience as
+  every other room controller change and are counted in the diagnostics. A program day
+  reported as `dayProgram` is read, and its switch points can be edited like
+  those of a week program.
+- **Away mode, absences and special days:** the away mode is a switch and
+  the away temperature a number. The controller's events appear as a
+  calendar of whole days in the controller's time zone; absences can be
+  created, changed and deleted there, days that run like another weekday
+  only deleted. Names have at most 32 bytes, events lie between 2016 and
+  2099 and may not overlap, not even on their first or last day. Every
+  change reads the lists first and is sent once; until an unconfirmed change
+  shows, the next one is refused, so an event is never created twice. A new
+  event is recognised by its name, dates and type, also if the controller
+  numbers its events anew, and a list that cannot be read for a moment no
+  longer leaves a change of another list unconfirmed. If a list cannot be
+  read for a moment, its events stay in the calendar from the last valid
+  reading, so a running absence does not end in Home Assistant; the
+  attribute `stale` shows it. An event list that got no answer at the start
+  no longer counts as missing: it is searched again, and until it reads, the
+  calendar changes nothing and says so with a message of its own.
+- **Boost and fireplace function:** the switch writes the controller's
+  boost settings as a whole. I send the boost temperature and duration only
+  together with the start: while the boost is off, a new value is kept for
+  the next start (also across a restart); while it runs, a change is refused.
+  A start heats only the rooms set on the controller that still exist and
+  that the boost may heat; without such a room the boost is refused. The
+  fireplace function is a switch, disabled by default.
+- **Hot water:** the operating mode as a select and a water heater entity,
+  the comfort temperature, extra hot water with its duration, the thermal
+  disinfection (switch, weekday, start time in five-minute steps and last
+  result, disabled by default) and the current level of the hot water
+  program (disabled by default). Without a list of modes from the
+  controller I offer off, comfort and own program, and eco and eco+ as well
+  while the controller reports one of them, so a hot water mode set to eco
+  elsewhere keeps its control; an empty list leaves the mode a reading.
+  Extra hot water does not turn on with a duration of 0, and in Operate
+  appliance the duration is written first. A hot water mode the controller
+  reports as not available gets no water heater entity.
+- **Heating circuit:** summer/winter switching and night setback by outdoor
+  temperature with their thresholds (disabled by default), the season mode
+  (only with at least two offered modes and while the current mode is one
+  of them), the setpoint optimization and a sensor for the operating
+  season. The season mode and the setpoint optimization are everyday
+  settings and enabled by default. The heating curve, the supply
+  temperature limits and the room influence are disabled by default; enable
+  them only if you know these settings. The base point and the minimum
+  supply temperature stay at or below the end point and the maximum supply
+  temperature; before such a change I read these limits again and send
+  nothing if one of them changed. In Operate appliance several limits can be
+  changed in one step. All of these settings act only with
+  weather-compensated control; with another control a change is refused
+  with its own message. The heat-up speed is switched off by the
+  manufacturer and never written. Installer settings are never written.
+- **Operate appliance:** a locked or unused room controller setting and a
+  refused value now get their own message instead of "A setting has
+  changed".
+- **System readings:** display code, cause code, system pressure and its
+  status, indoor humidity, and binary sensors for a locking fault (locked
+  out until a manual reset), a blocking fault, maintenance due and refill
+  needed. The maintenance request text, the controller's own temperatures
+  and the firmware update state are disabled by default.
+- **Energy history:** the controller's daily energy values are imported
+  into the Home Assistant statistics, for the Energy dashboard. Their names
+  end with "(kWh expected)" because the unit kWh is assumed but not
+  confirmed; gas values follow only when the controller confirms the unit.
+  You choose the statistics in the Energy dashboard yourself and can delete
+  them under Developer tools → Statistics. Every run reads again from the
+  last day already read, so a running day, a day without a record or a full
+  history on the controller costs no day. The older keys `eCH`/`eHW` count
+  as heat pump electricity only on a heat pump or hybrid system, otherwise
+  as gas under the gas rule. While the controller answers its heat source
+  type with a server error, these days wait for up to 24 hours, also across
+  a restart, and every run reads the type again, so a short fault costs no
+  value; only after that do I import them without these two values instead
+  of assuming gas. If the import starts over, the statistics continue from
+  their last recorded value instead of starting at zero. The statistic IDs
+  contain a token of the gateway keyed with the instance ID of your Home
+  Assistant instead of its ID, so the ID cannot be found back from the
+  database or an export; the token stays the same when the integration is
+  added again or a backup is restored.
+- **Radio devices:** every device in the controller's device list becomes
+  its own device below the controller, named after its type (for example
+  "Radiator thermostat 2") with its zone as the suggested area. It shows
+  "Battery low", "Radio signal" (disabled by default) and its firmware; a
+  radiator thermostat also its valve readings and whisper mode (disabled by
+  default) and a "Valve problem" binary sensor. The child lock, the
+  temperature offset and the open window sensitivity can be changed and are
+  disabled by default. The valve calibration and the whisper mode are never
+  written. "Valve problem" also turns on while a valve adaption waits, and
+  the sensitivity offers only the levels its limits and step allow.
+- **Settings the controller does not offer or use:** a setting the
+  controller reports as not available gets no control, and an existing one
+  becomes unavailable. A setting that is available but not used, such as
+  the open window detection of a zone, stays visible with its value; a
+  change is refused before anything is sent, with a message that names it.
+  The heating circuit settings keep their earlier rule, except the season
+  mode and the setpoint optimization, which follow this one. Before every
+  change of a room controller setting I read it from the controller once
+  more, so
+  a lock that came after the last poll is found; a value changed in the
+  meantime no longer blocks the change, and a failed read sends nothing and
+  keeps the last reading. For the boost only the mode and the rooms must
+  still be as shown.
+- **Unconfirmed changes:** a change that the controller has not confirmed
+  yet is read again with the next cycle, within a minute, so a zone's target
+  temperature control is back quickly. A temporary setpoint that the
+  controller ended at once keeps its valid reading.
+- **Recognised by their resources:** a gateway the cloud reports as device
+  type `rrc2`, with the product type `RRC 2.0` or with RRC zones is handled
+  as a room controller, never by a model name. A controller without a name
+  is called "Room controller" and shows the reported product type as its
+  model. The CT200 is listed as expected but untested on the
+  [compatibility](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/compatibility.md) page.
+- **Privacy:** the device arrays with the radio key (`dlk`) and radio
+  identifier (`sgtin`) of each device, the product lookup, the user,
+  installer, password, location and phone resources are never requested,
+  stored or exported, on any gateway. A discovery inventory stored by an
+  earlier release drops them when it is loaded.
+- **Older firmware:** the setup's "no devices" message explains that a room
+  controller with older firmware only appears once its firmware has been
+  updated and it has been set up in the current app with the SingleKey ID.
+- **Diagnostics:** room controllers get the sections `rrc_profile` (profile,
+  firmware, numbers of zones, programs and devices, access reason),
+  `rrc_programs` (why each zone offers the program selection or not, with
+  codes such as `program_list_missing`) and `rrc_features` (read-back timing,
+  value-free write counters and counts per function, the state of the energy
+  history import). The discovery diagnostics separate single refused paths
+  (`some_paths_forbidden`) from a sign-in without the rights for the
+  controller (`scope_or_permission_denied`) and count the paths deliberately
+  not read. None of this contains names or values, and everything is marked
+  `unconfirmed`. The [diagnostics guide](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/diagnostics.md) describes them.
+  The diagnostics schema stays 44.
+
+#### Faults and notifications
+
+- **Class 18/20 messages count as maintenance:** a notification with the
+  numeric class 18 or 20 is a maintenance message on every gateway, no longer
+  an unknown problem. It no longer turns on System fault or counts as an
+  active fault; Active notifications still counts and lists it, and System
+  notifications still reports it.
+- **Warnings and maintenance in the bell notification (optional):** under
+  **Configure → Notifications** a new option also shows warnings and
+  maintenance messages in the bell notification, with the same details,
+  dismissal and resolution rules as faults. It is off by default, so nothing
+  changes unless you turn it on. With it on, a notification that listed a
+  warning or a maintenance message ends with "notifications cleared"
+  instead of "faults resolved", and a dismissed warning stays dismissed when
+  the option is turned off and on again.
+- **No more "Unknown fault" for maintenance and warnings:** a maintenance
+  message, warning or information without a text of its own now reads, for
+  example, "Maintenance message (code 1234)" or "Warning (code 5000)", in the
+  bell, the events and the attributes, in all 19 languages.
+- **Notifications for the installer on room controllers:** a notification
+  that a room controller marks for experts or installers (display level 0, 2
+  or 4, numeric class below 18) is still listed under Active notifications,
+  but no longer turns on System fault, counts as an active fault or shows in
+  the bell. Expected, untested on a real controller.
+- **Faults of radio devices:** on room controllers, the faults of radio
+  devices get their own texts (for example "Battery of a radio device low"),
+  other ones "Radio device fault (code …)", and a too low water pressure
+  reads "Water pressure too low". Expected, untested on a real controller.
+- **Clearer messages for locked settings:** when a room controller locks a
+  setting, the message now names what is locked (the heating mode of a zone,
+  another zone setting, a heating circuit, hot water or a radio device
+  setting) instead of always speaking of the zone's heating mode.
+- **Where do I find faults?** A new section in the
+  [fault documentation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/faults.md#where-do-i-find-faults) and a short
+  pointer in the README explain where current faults are (the `faults`
+  attribute of Active faults) and where past ones are (history and logbook
+  of the System notifications event entity). It includes an automation that
+  writes every `appeared` and `resolved` event to the logbook and sends it as
+  a push notification. Thank you, @ColinFinck, for pointing out in #120 that
+  this was hard to find.
+
+#### Requests and local access
+
+- **Discovery on large room controllers
+  ([#122](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/122)):**
+  on a TC100.2 with nine radio devices the device tree used 206 of the 512
+  discovery reads and the program list was never requested. On a room
+  controller the zone, program and device lists are now read first. Of the
+  device tree only the device list, one firmware reading per device (at most
+  64) and the known setting leaves are read; probes meant for other device
+  families are no longer sent. The setting leaves come last, leaf by leaf
+  over all devices, with a cap of their own of 192 paths outside the 512, so
+  a large controller no longer loses the settings of its last devices.
+  Thank you, @obvius1, for the diagnostics that showed this.
+- **HTTP 500 for missing paths:** room controllers answer HTTP 500 for a
+  path they do not have. Such an answer to a catalog or optional probe now
+  counts as "missing" and no longer ends the discovery; for optional probes
+  and zone detail leaves a 500 inside a batch answer costs no single request
+  either. Roots, advertised references and failing requests keep the outage
+  rule. This rule now applies only while the cloud answers: a batch of
+  nothing but such probes carries one path read before, so a short outage
+  no longer makes every optional part, such as the radio device settings,
+  count as missing until the next start. The single event entries
+  (`/events/evN`, `/events/activeEvent`) are no longer read at all; the event
+  lists hold the events, and an entry answering HTTP 500 could end the setup.
+  On my large test tree with all functions active the setup needs 21
+  batch and 7 single requests, and an hour of regular polling about 150
+  requests.
+- **More time for changes on room controllers:** a room controller applies a
+  change with a delay. On such controllers I now read a change back after 1,
+  2, 4 and 8 seconds instead of 0.5, 1 and 2 seconds, and still send it only
+  once. If it is not confirmed by then, a message says that the change was
+  sent but is not confirmed yet; a later regular reading can still confirm
+  it. Other gateways keep their timing and messages.
+- **Energy history:** at most eight requests every three hours, the first
+  run 15 minutes after the start; a first filling reaches back at most 400
+  days.
+- **No local access for room controllers:** they have no local interface;
+  the [room controller page](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/room-controllers.md#sign-in-local-access-and-older-firmware)
+  explains this. A K40 gateway next to them keeps its own local access.
+- The README now names the K40/K40RF gateways that the local access
+  recognises for IVT, Worcester and Vulcano. Systems of these brands should
+  work with the cloud access when **Bosch** is selected, but none has been
+  confirmed yet.
+
+#### Translations
+
+- **19 languages:** besides English and German, the integration now speaks
+  Swedish, Norwegian Bokmål, Finnish, Danish, French, Spanish, Italian,
+  Portuguese, Dutch, Polish, Czech, Slovak, Greek, Bulgarian, Croatian,
+  Slovenian and Irish, in the setup and options dialogs, repairs, entity and
+  device names, notifications and the controls and holiday dialogs. Brazilian
+  Portuguese shows the Portuguese texts and Norwegian Nynorsk the Bokmål
+  ones.
+- **Czech and Slovak reviewed:** the Czech and Slovak translations were
+  reviewed on 2026-11-10. Generated names
+  write the group out instead of abbreviating it, for example
+  "Okruh 1: Provozní režim" or "Teplá voda 1: Teplota". Slovak uses
+  "nemrznúca zmes" for the brine of a heat pump, "prídavný ohrev" for the
+  auxiliary heater, "výstupná teplota" and "vratná teplota" for supply and
+  return, and "VYP" for the off options of the holiday settings. Czech
+  confirmations no longer use gendered forms such as "(a)".
+- **The other languages are drafts:** they follow a glossary per language
+  (`docs/glossary/<code>.md`, and a shared one for the Nordic languages in
+  `docs/translations.md`), but nobody who speaks them as a mother tongue has
+  checked them yet. The room controller texts added in alpha.5 are drafts in
+  every language, Czech and Slovak included; those two will be reviewed
+  separately. Corrections are very welcome, see
+  [translations](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.5/docs/translations.md).
+- Names and texts that the integration builds itself (for example
+  "Heating circuit 1 – Supply temperature") follow the Home Assistant system
+  language; any other language still shows English. German and English
+  texts are unchanged, so existing entity names stay the same. After
+  switching the system language, reload the integration so generated names
+  are rebuilt.
+- A further language needs only two data files, `translations/<code>.json`
+  and `i18n/<code>.json`; the tests take the languages and the expected
+  texts from these files.
+
+#### Fixes
+
+- **Select heating schedule on large systems
+  ([#113](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/113)):**
+  the selection needs the controller's program list. On a large system the
+  discovery could reach its limit before it read this list, and a failed
+  read was never repeated, so no zone got the selection. The program list
+  and the zone list are now read together with the zones, within the same
+  limit and without an extra request. If zones select a program but the list
+  is still missing or failed, it is read again on its own (at most seven
+  attempts within a day). Thank you, @obvius1, for testing alpha.4 on a
+  TC100.2 and reporting the missing selection. Not yet confirmed on a real
+  controller.
+- **Zones in manual mode:** the controller marks the selected program of a
+  zone in manual mode as not used. The integration used to drop the value,
+  the sensor and the selection then; they now stay, and the program can be
+  changed. Not yet confirmed on a real controller.
+- **Program list flags:** the integration now ignores the `used` and
+  `available` flags of the program list itself; the zone list keeps its
+  rules.
+- **Temporary heating setpoint:** a value of 0 means that no temporary
+  setpoint is active. The sensor now shows unknown instead of 0 °C.
+- **No second climate:** a room controller with zone climates no longer
+  gets a climate entity for its heating circuit as well.
+
+## [0.9.0-alpha.4] - 2026-11-10
+
+> [!IMPORTANT]
+> **Alpha pre-release for testing.** Make a full Home Assistant backup first.
+> From alpha.1, alpha.2 or alpha.3 no new setup is needed; from 0.8.x, the
+> notes of alpha.1 below apply as well.
+
+Alpha.4 mainly makes 0.9 more robust. The code was reviewed area by area, and
+I fixed the problems found, most of them in rare error and outage situations.
+It also reads the zones of the TC100.2 room controller, logs unexpected errors
+more clearly and handles fault sources, the sign-in and the additional cloud
+devices more reliably. Several fixes could only be tested with simulated data
+so far; the sections below say where.
+
+### What changed since alpha.3
+
+#### Entities
+
+- **Names as on the controller:** readings that only the local access
+  provides now use the wording and sensor codes of the controller's Info menu,
+  so both can be compared line by line. Examples: "Primary supply temperature
+  (TC1)" instead of "Additional heater flow temperature", "Air intake
+  temperature (TL2)" instead of "Evaporator temperature", "Condenser
+  temperature heating (TR3)", "Expansion valve VR0/VR1", "Drain pan
+  temperature (TA4)". Entity IDs, history and your own names stay.
+- The 4-way valve (VR4) shows Heating or Cooling/defrost, the hot water 3-way
+  valve (VW1) Heating or Hot water. The states stay `off` and `on`, so
+  automations keep working.
+- The second expansion valve VR0 is now a reviewed reading (enabled); the
+  compressor start delay gets its name and stays disabled. Signals that repeat another entity's
+  reading are named after it with "(signal)" and stay disabled by default.
+- The names follow the Info menu of my own controller (MX400, firmware
+  15.00.01) in German and English.
+- **Newly enabled entities also on existing installations:** an entity that
+  an earlier version created disabled by default, and that is now enabled by
+  default, is enabled at the next start. This brings VR0 to installations
+  that already had it as a disabled signal, and applies to readings from the
+  cloud as well. An entity you disabled yourself stays disabled. Home
+  Assistant reloads the integration once, about 30 seconds after the start.
+  If "Enable newly added entities" is switched off for the integration,
+  nothing is enabled.
+- **No stale unit after a change of form:** a local-only reading that turns
+  from a number into a state no longer keeps the unit of the number, which
+  made Home Assistant refuse the state. A current number without a known unit
+  now shows no unit instead of the previous one; the last unit only stands in
+  while there is no reading.
+- **Smart grid mode without a state list:** the numbers now count as the
+  controller declares them: 0 not used, 1 blocked, 2 normal, 3 preferred, 4
+  forced. Before, 0 showed as blocked and 4 as unknown. I could not check an
+  answer without a state list yet.
+- **Kelvin values are differences:** a cloud reading in K, for example a
+  hysteresis or spread, is now a temperature difference. As a temperature,
+  Home Assistant showed 5 K as -268.15 °C.
+- **Temperatures in °C spelled differently:** a cloud reading that reports
+  its unit as "°C" instead of "C" now gets its entity like any other
+  temperature.
+
+#### Local values and counters
+
+- **No false states from local texts:** a local text that the cloud does not
+  declare for this reading now keeps the cloud state instead of showing
+  "unknown". Diagnostics count it as `unknown_entry`, as for lists. The log
+  line for an undeclared state no longer names the cloud as its source.
+- **A single low counter reading no longer counts the whole meter again:**
+  if a paired energy, start or runtime counter drops by more than 10 %
+  within one source, the drop is shown only when the next reading confirms
+  it. A single zero or low outlier therefore no longer appears as a meter
+  reset with the whole count added again in the energy dashboard. A real
+  reset still shows, one reading later. Small decreases such as the produced
+  heat during a defrost are shown as before.
+- **A counter part that is gone for good no longer blocks the counter:** if
+  a part of a counter, for example the auxiliary heater, disappears for good
+  after a firmware update, it stops binding the counter seven days after the
+  shown source stopped reporting it. Before, it kept the counter on the cloud
+  forever and made it unavailable during a cloud outage.
+- **Shown counters are saved within a minute:** frequent counter changes
+  kept postponing the save of the last shown counts. The save now happens at
+  most about a minute after the first change.
+
+#### Outages and recovery
+
+- **Clearer log entries for unexpected errors:** about thirty places that
+  logged an unexpected error with a bare sentence, for example "The heating
+  fault notification could not be updated", now name the error class.
+  Internal errors that repeat with every reading are logged once. The error
+  text itself stays out of the log, because it may contain account or device
+  details or values; with debug logging enabled, the full details follow at
+  debug level.
+- **Short gateway outages no longer hide values for 15 minutes:** when the
+  gateway does not answer at all, the cloud reports a timeout for every
+  reading. Each of these readings was then paused for 15 minutes, so the most
+  important values stayed unavailable long after the gateway was back. Now
+  only the protection pause for the whole gateway applies, no reading is
+  paused on its own, and no single reads are sent to the silent gateway. A
+  single slow reading next to answered ones is still paused as before.
+- **No false "recovered" after a failed cycle:** a cycle that had nothing to
+  request right after a failed one reported the cloud as reachable again. The
+  connection status, the preference for local values without the cloud and
+  the switch of paired counters then flipped back and forth. Such a cycle now
+  keeps the failure until the cloud really answers.
+- **A cloud outage next to a failing batch is noticed at once:** if one batch
+  of readings kept failing while the others answered, a cycle that only had
+  to read this batch again counted as fine. During a complete cloud outage the
+  integration then stayed "available" and could even report the cloud as
+  recovered. Such a cycle now also reads one reading that answered before. If
+  that one answers, the failing batch alone still changes nothing; if nothing
+  answers, the cycle fails as in any outage.
+- **Failed starts wait longer and no longer pile up in memory:** a system
+  whose start keeps failing was tried again every minute without end, and
+  each attempt stayed in memory until the integration was reloaded. Attempts
+  in a row now wait 1, 2, 4, 8, 16 and then 30 minutes; a successful start
+  resets this. Discarded attempts are released.
+- **Unexpected start errors are visible:** an unexpected error while starting
+  or running a source or an access was not logged at all. The first one of a
+  series is now logged as a warning with its error type, the details at debug
+  level, and the recovery as info. Diagnostics count the failed attempts of
+  each access and source with the last error type.
+
+#### Local access
+
+- **The local access no longer gives up at startup:** if the gateway answers
+  at startup but not usably, for example because it is still starting, the
+  local access tries again on its own instead of staying unavailable until a
+  reload. Typical answers are incomplete system information, an error page, an
+  unreadable answer or a TLS handshake that fails. The waits grow from one
+  minute to one hour. Only a rejected token, a changed certificate, a different
+  gateway or too old firmware still stop it.
+- After five failed attempts, about 18 minutes in, a repair note names the
+  cause and offers to try again at once. It disappears as soon as the local
+  access starts.
+- **A short pause no longer hides the local values:** one failed request
+  pauses the local access for a minute or more. Until now every local value
+  disappeared at once, paired sensors jumped to an older cloud value and
+  local counters became unavailable. Now values already read stay until their
+  normal expiry of three intervals. A rejected token, a changed certificate
+  or an unavailable access still end them at once.
+- **Faster recovery after a restart:** if the first read of a value fails
+  after Home Assistant starts, for example the list of signals, it is asked
+  again after 30 seconds and then a little later each time, instead of only
+  after its full interval. Before, one failure could keep all signals away
+  for 15 minutes and static values such as the hardware version for a day.
+- **Pauses grow as intended:** a gateway asking for a pause with a very short
+  or zero Retry-After no longer gets asked again every second; the pause
+  grows from one minute to ten as for every other failed request. When both
+  running reads fail together, that counts as one failure, so a short
+  gateway restart no longer leads to a ten-minute pause. A failed read that
+  was repeated at once after a timeout is now repeated at once only for the
+  first timeout in a row.
+- **Fewer false "late" values:** a value read on time no longer shows as late
+  for a moment just before its next read. It now becomes late only 10 seconds
+  (or a tenth of the interval) after its interval.
+- **An unreadable answer stays a problem of its own path:** an answer the
+  integration cannot decode no longer pauses all local reads; only that value
+  is unavailable, and the log names the kind of path once. Repeated
+  unexpected problems are logged as a warning at most once an hour.
+- **No false keep-alive warning on a busy start:** a slow answer on a kept
+  connection no longer counts as a connection the gateway dropped.
+- **A damaged pause file no longer blocks the local access:** if the file
+  with the stored pauses of the local access cannot be read, it is kept as a
+  backup (`.corrupt`) and the local access starts without it. A file from a
+  later release keeps the pauses it can still use.
+- The local access needs less processing time per read, which matters most
+  on small boards such as a Raspberry Pi.
+
+#### Cloud connection and robustness
+
+- **One entity no longer blocks all others:** if a single entity could not
+  be set up, for example because another entry already owns its ID or the
+  stored entity list was full, no entity of that kind came for the whole
+  system, and the same error came back with every reading. Now only the
+  affected entity is skipped (or, for the full list, added anyway), and the
+  cause is logged once.
+- **Reloading the integration is cleaner:** while Home Assistant unloads the
+  entities, no new entity is added any more. If the unload fails, the
+  entities that are still loaded are set up again. On Home Assistant before
+  2026.10 this included a kind of entity that had already been unloaded; now
+  it stays unloaded there as well.
+- **Less work per local reading:** a new local reading no longer makes the
+  integration check its repairs, notifications and entity lists again; only
+  the entities that show the reading are updated. Changes of a connection
+  still do all checks.
+- **Local readings without the cloud are tried again:** if the view of a
+  system with the cloud switched off (or unavailable) could not be built,
+  this was only visible in the debug log and was not tried again until a
+  restart. Now a warning names it and it is tried again after five minutes.
+- **One faulty value no longer stops the discovery:** if the cloud answers a
+  single value with a server error such as HTTP 504, also when it is read
+  again on its own, the discovery now skips only that value and finds all the
+  others. Before, this one value stopped the whole discovery, so a new setup
+  never started and a later discovery never found new parts. Timeouts,
+  sign-in problems and rate limits still stop the discovery at once, and so
+  do three server errors in a row, so a failing cloud is not flooded with
+  single reads.
+- The search for parts that are missing after a start now keeps to its plan
+  when such a value answers with a server error: it ends after one day instead
+  of repeating every five minutes.
+- A search that gets no answer at all is still repeated without using up its
+  plan, but now at most 24 times; then it waits for the next start, which
+  still looks for the missing parts.
+- **A failing request no longer makes the cloud read everything every
+  minute:** when one request of a cycle keeps failing as a whole, for example
+  because one value makes the cloud answer with a server error, the values
+  of the other requests were read again every minute instead of every 15 or
+  60 minutes, and a warning appeared every minute. Now only the failing
+  request is repeated, on its own so that it does not take other values down
+  with it; the other values keep their interval, and the warning appears once.
+- **Refreshing an entity reads everything at most once a minute:** the
+  "Update entity" action read the whole system from the cloud every time. An
+  automation calling it every few seconds multiplied the cloud requests and
+  could trigger the cloud's rate limit. A further refresh within one minute
+  (two with the cloud-friendly profile) now reads only the controls.
+  Diagnostics count both kinds.
+- **Fewer pointless "cloud requests are limited" repairs:** the repair now
+  needs three rate limits that the cloud really reported within 24 hours.
+  Requests that the integration held back itself during a running pause, for
+  example for a second gateway of the same cloud access, no longer count, and
+  the pause now starts when the cloud answered. With the cloud-friendly
+  profile already in use the repair is not offered, because it would change
+  nothing.
+- **Repairs ask first and work again:** Home Assistant hands a repair its
+  note when it opens, and the repairs took that for the confirmation. The
+  repairs for limited cloud requests and for changed capabilities after a
+  firmware update ended at once with "The access or heating system has
+  changed" and changed nothing; the repair for a local gateway that is not
+  ready tried again without asking. Now every repair shows its question first
+  and acts only after it is confirmed. I checked this with simulated repairs
+  on Home Assistant 2026.5, 2026.9 and 2026.10, not yet on a real
+  installation.
+- **A gateway missing from the cloud's list still shows its values:** if the
+  cloud answers its gateway list without this gateway, also with an empty
+  list, the system now starts with its saved inventory as during a cloud
+  outage, or shows the local readings when there is no usable inventory. The
+  question about an exchanged gateway works as before.
+- **"Search the system again" no longer warns about parts it keeps:** a part
+  the gateway did not report during a requested search or the search after a
+  firmware update stays and is read as before; the warning now names only the
+  parts that are really missing.
+
+#### Sign-in
+
+- **No new sign-in for a single refused value:** if the cloud refused just
+  one value with HTTP 401, for example the manual room setpoint inside an
+  answered request or a single value during the start, the integration asked
+  for a new sign-in although the sign-in was working. Such a value is now read
+  again with the regular poll, as all other values already were.
+- **Only a clear refusal ends the sign-in:** a refusal of the sign-in service
+  without a definite reason, for example an HTML page of a firewall, no longer
+  ends the sign-in; only a clear answer such as `invalid_grant` does. After a
+  rejected sign-in, reloading the entry tries the stored token once more.
+- **Less load when the sign-in service is down:** after a failed token
+  renewal the next one waits 30 seconds, doubling up to 10 minutes. Before,
+  every single request started another renewal, and the failure was counted
+  as an outage of the gateway. Only a failure of the sign-in service starts
+  this wait, not an unexpected program error.
+- **Rotated token kept:** choosing the first separate cloud device exactly
+  while a token renewal ran could discard the new token, so the next renewal
+  asked for a new sign-in. The renewal is now saved in this case, and the
+  selection waits for it. If this wait fails, the selection is still saved,
+  with the stored tokens.
+- **Fewer permissions:** a new sign-in now asks only for the permissions the
+  integration uses. Removing gateways from the account, claiming gateways and
+  managing other users are no longer part of it. If the sign-in service does
+  not accept this, the dialog shows a new link with the previous full set
+  and asks you to open it, instead of reporting a wrong address.
+  Existing sign-ins keep their permissions until you sign in again. I have
+  not yet confirmed this with a real sign-in.
+- The token request no longer follows redirects, so the refresh token is only
+  sent to the sign-in service itself, and its answer is read with a size
+  limit. A rejection sent in several parts keeps its OAuth error code in the
+  diagnostics.
+- A pasted app address with a stray `[` or `]` now shows the usual hint for
+  an unusable address instead of "Unknown error".
+- One unreadable entry in the account's gateway list, for example a new device
+  without an ID, no longer blocks adding or changing systems; it is left out
+  and counted in the diagnostics.
+
+#### Diagnostics
+
+- **Diagnostics schema 44** counts the failed attempts of each access and
+  source with the last error type (see "Outages and recovery") and adds the
+  fields below. See
+  [diagnostics](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.4/docs/diagnostics.md).
+- `energy_counter_resets_detected` no longer counts the produced heat falling
+  during a defrost, and a change of the energy unit is no reset any more; the
+  values are compared in kWh. Decreases of the produced heat are counted in
+  the new `produced_heat_decreases_detected`.
+- New fields in each gateway's `runtime`: `rate_limit_events_last_24h`,
+  `explicit_refreshes_full`, `explicit_refreshes_control_only` and
+  `explicit_refresh_gap_seconds`.
+
+#### Changes to the heating system
+
+- **Half degrees for hot water are refused up front:** the heating system
+  rounds hot-water temperatures to whole degrees and heating-circuit setpoints
+  to half degrees. A value off this grid, for example 52.5 °C for hot water,
+  was sent, stored differently and then reported as not confirmed. Such a
+  value is now refused before anything is sent. A thermostat command in °F
+  is set to the nearest half degree Celsius. Other settings keep accepting
+  every value within the system's limits.
+- **Corrupt limits create no control:** a control is only offered when its
+  limits lie between −30 and 100 °C or 0 and 2,880 minutes. A placeholder
+  maximum such as 6,553.5 °C no longer allows a mistyped 650 °C.
+- **Honest message after a sent change:** if the confirming read after a
+  change fails, for example because the cloud limits requests, the message
+  now says that the change was sent and may already have taken effect. The
+  texts no longer speak of an "operating mode" for every setting, and the
+  cloud brake and a sign-in request still apply.
+- **Nothing becomes unavailable without a sent change:** a failed check
+  before the change, a change refused while the cloud brake is active, or a
+  time program that is no longer offered left the control or the thermostat
+  unavailable until the next reading. These cases change nothing on the
+  system and now keep the shown values.
+- **Fewer requests per thermostat command:** the checks before a thermostat
+  change now read all their values in one request instead of up to seven.
+  Repeating an unchanged temperature costs one request instead of seven.
+- **No change is sent minutes later:** while a long query of the system was
+  running, a change waited without limit and was sent much later. After one
+  minute of waiting it is now refused with "Try again in a moment", and
+  nothing is sent. A change that has started is never interrupted.
+- **Thermostat after a restart in cooling mode:** a heating-circuit thermostat
+  that already existed is now provided again, unavailable, when Home Assistant
+  starts while the system cools. It no longer appears as "no longer provided"
+  for the whole summer.
+
+#### Holidays
+
+- **Creating holidays no longer stays blocked:** when the cloud finally
+  refused a new holiday (for example with HTTP 400) or the connection failed
+  before anything was sent, every further attempt only checked the old
+  request until Home Assistant was restarted. Such a request now ends the
+  block at once. A request with an unknown outcome blocks a second holiday for
+  10 minutes; if the holiday list then still shows no such entry, the next
+  attempt creates it normally.
+- **All-day holidays stay all-day:** a whole-day holiday created in the Home
+  Assistant calendar showed up as an appointment from 00:00 to 00:00 on
+  systems that store times. It is now shown as an all-day event again.
+- **Calendar actions hit only the shown holiday:** a calendar entry now
+  carries its dates in its ID, and deleting from the calendar first compares
+  the holiday with the system, as the options dialog already did. If the app
+  replaced the holiday in the meantime, nothing is deleted or changed.
+- **Older systems with holiday slots:** the order in which circuits are
+  ticked no longer matters; the circuits are compared as a set and sent in
+  the order the slot reports. Each step now reads the slot once instead of
+  twice and waits briefly for a slow confirmation. A lost response is
+  resolved by reading instead of ending the change. I tested this with
+  synthetic data only; a test on a real device is still open.
+
+#### Additional cloud devices
+
+These fixes concern air conditioners, air purifiers, dehumidifiers and water
+heaters connected through the cloud. I tested them with synthetic devices and
+a local test broker; checks with real devices are still open.
+
+- **A refused sign-in no longer stops the heat pump:** when the broker of these
+  devices refused the sign-in once, the whole cloud connection asked for a new
+  sign-in and the heat pump entities stopped too. The connection now first
+  tries once more with a freshly renewed token, as the device list already did.
+  Only a second refusal asks for a new sign-in.
+- **A short outage of the device list no longer drops the devices:** the
+  device list is checked every five minutes. A timeout or server error there
+  ended the working connection and made all these devices unavailable for at
+  least a minute. The connection now keeps running with the last known devices.
+  A newly enabled device is tried again a minute later without disturbing the
+  others.
+- **No more gap at the hourly token renewal:** the renewal reconnected only
+  after a pause of five seconds and a new device list request, so all devices
+  were unavailable for a few seconds every hour. It now reconnects at once.
+  Diagnostics count these planned renewals separately as `renewals`.
+- **The shared cloud pause is no longer extended:** while the cloud access was
+  paused after a rate limit, a connection attempt of these devices counted as
+  a new rate limit and extended the pause by up to a minute. It now waits for
+  the end of the pause; the diagnostics show `paused`.
+- **Commands with a late confirmation:** when a device did not confirm a
+  command within 20 seconds, its entities stayed unavailable for up to five
+  minutes. A plain state read now follows at once, and its answer shows the
+  actual state again. The command itself is still never sent twice.
+- **No more "busy" because of 22 and 22.0:** a pending value of 22.0 and a
+  reported value of 22 counted as different, so every further command failed.
+  Numbers are now compared by their value.
+- **Offline devices show as disconnected:** a device reported as offline now
+  shows "Disconnected" on its connection entity, also after a restart and after
+  more than an hour, instead of becoming unavailable.
+- **Capabilities are kept:** an information message without a device type
+  cleared the model, the capabilities and the state until the next reconnect.
+  It now keeps them. After a real model change, I request capabilities and
+  state again without reconnecting.
+- **Refused subscriptions are visible:** a subscription refused by the broker
+  no longer counts as a working connection. It shows as
+  `subscription_rejected` in the diagnostics and is retried with a growing
+  wait.
+- **No silent stop after an unexpected error:** an unexpected error, for
+  example while updating an entity, stopped these devices until the next
+  reload, without a log entry. The connection now logs the error type once and
+  reconnects with a growing wait. Unloading the integration no longer reports
+  "A connection resource could not be closed" because of it.
+
+#### Dialogs
+
+- **Cloud setup no longer stays blocked:** a cloud sign-in dialog left behind
+  by a reloaded page or a restarted companion app blocked every new cloud
+  setup until Home Assistant was restarted ("Another cloud setup is already
+  open"). A newly opened cloud setup now replaces the older one; the older
+  dialog ends with a note at its next step and saves nothing. A dialog left
+  idle for more than 15 minutes counts as closed. Saving still checks that
+  only one cloud setup registers.
+- **Adding the cloud access later:** in the options dialog "Add cloud
+  access", a mistyped redirect address no longer voids a sign-in that was
+  already completed in the browser; the same link stays usable. An expired or
+  already used sign-in attempt now says so and shows a new link. The step now
+  shows the same step-by-step guide as the setup, because both dialogs share
+  one sign-in step.
+- **A rejected sign-in with the device label no longer restarts the local
+  setup:** if the gateway rejects the label data (wrong login or password,
+  button not pressed, too many attempts) or the request was not sent, the
+  sign-in form returns with the reason. The certificate stays confirmed and
+  nothing has to be discarded first. "Continue" after a temporary error no
+  longer asks again for a certificate that was already confirmed in the same
+  dialog for this address and port, as long as it is unchanged.
+- **Removing a local access with a damaged setup record:** an unreadable
+  record of pending local sign-ins, for example after going back to an older
+  version, blocked removing the local access with the misleading message
+  "configuration changed". Removing the access or the whole entry now moves
+  the record aside as a `.corrupt` file and continues. A record that cannot be
+  read at all now says so.
+- **Holiday mode on systems with a single holiday switch:** confirming the
+  dialog without a change no longer sends anything, and a change made in the
+  app meanwhile is no longer overwritten; the dialog then shows the current
+  mode.
+- Unexpected errors in the local setup are logged as a warning with their
+  error type. The text of an error from outside the integration is no longer
+  shown as a misleading reason such as "timeout".
+- **Deleting a holiday by keyboard:** pressing Enter on "Delete holiday period
+  completely" saved the holiday instead of opening the deletion confirmation.
+  Enter and Space now open the confirmation. Saving a holiday without any
+  change no longer sends anything to the heating system.
+- **Operate appliance keeps your tab:** after Apply or Reload values, the
+  dialog jumped back to the first tab. It now stays on the open tab, shows the
+  tab of the last confirmed change, and opens the tab of a rejected value,
+  whose field is now marked. The tabs are ordered heating circuits (HC2 before
+  HC10), hot water, system; before, hot water came first.
+- **No more focus jumps:** a click on an empty area of the dialog followed by
+  any state change in Home Assistant moved the focus to the first tab and
+  scrolled to the top. The focus is now restored only once, when a new form
+  appears.
+- Number fields in the dialog step by the setting's step, for example 0.5 °C
+  instead of 1. If the lowest value of a setting is not on this step, any
+  value within the limits can be entered, and the integration checks it;
+  before, the browser could refuse a valid value.
+- **"Busy" instead of a connection error:** if a running poll or another
+  change holds the heating system, the dialogs for the controls, holidays and
+  heating schedules now say that nothing was sent and that you can try again
+  in a moment. Before, they showed a general error that suggested the change
+  might have been made.
+- A missing or blocked dialog file no longer stops the whole integration from
+  starting; only the affected form is missing, with a warning in the log.
+
+#### Storage and removal
+
+- **A damaged or newer entity inventory no longer stops the integration:**
+  if the stored entity inventory could not be read, came from a newer version
+  or lacked its storage envelope, the entry ended in a setup error without a
+  retry. It now starts with the entities known to Home Assistant and logs the
+  cause.
+- **Deleting an entry cleans up completely:** its repair notes about
+  firmware, rate limits or a changed certificate stayed until the next
+  restart. Its fault baselines, notification dismissals, sign-in histories,
+  learned local read schedules and estimated energy totals stayed in
+  `.storage` and in every backup. They are now deleted with the entry, also
+  when it was never loaded. Removing a local access deletes its read schedule,
+  and a gateway exchange deletes the old gateway's copies. At every start,
+  files of entries deleted earlier are removed; `.corrupt` backups stay.
+- A failed configuration migration now names its cause in the log, as a
+  static code or the error type.
+
+#### Faults
+
+- **Room device errors from the cloud:** a device error list now counts only
+  rows that report an active error as faults. A valve status such as
+  `valveTight` no longer shows up as an "Unknown fault" and no longer keeps
+  the system fault on. An active error is named by its error type (for example
+  `defectiveTempSensor`) instead of "active", and the same error on two room
+  devices is now two faults instead of one.
+- A device error that was already active before the update keeps its incident:
+  it is not announced again, and a notification you dismissed stays dismissed.
+  A stored valve status ends once with a normal "resolved" event.
+- The rules follow the gateway's documented error list. I have not yet seen a
+  cloud answer from a system with radio room devices.
+- **System fault no longer stays unavailable on larger systems:** with several
+  cloud fault sources, the spreading of cloud reads could read them in
+  different cycles. The fault state was then never confirmed, and System
+  fault, Active faults and Active notifications stayed unavailable while
+  everything was fine. The fault sources are now always read together, in the
+  first request of a cycle, and in a request of their own: a failing reading
+  elsewhere no longer takes them along every minute. This costs one more
+  request every five minutes.
+- **A removed room device no longer blocks every fault:** a fault source that
+  is gone for good (it answers "not found" for 24 hours and at least twice,
+  or complete discoveries no longer find it for that long) no longer keeps
+  every fault from ending. Faults only it reported end normally, and a repair
+  notice says so. A temporary error such as a timeout, or a refused access
+  (403), never counts. A fault restored from an older version's baseline that
+  no source reports for a whole day of complete reads now ends as well instead
+  of staying forever.
+- **System notifications (event) without the cloud:** the event entity now
+  also reports the events of the local error list when the plant runs without
+  the cloud, and it no longer turns unavailable during a cloud outage, which
+  used to show the last event again afterwards. The automation example in the
+  fault documentation now ignores the return from `unavailable` and `unknown`;
+  I recommend adding the same `not_from` to your own automations on this
+  entity.
+
+#### RRC zones
+
+- **Zones of the TC100.2 are read
+  ([#113](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/113)):**
+  the TC100.2 room controller sends the `used` flag as the text `"true"` or
+  `"false"`. Exactly these two texts now count as true and false; numbers and
+  other spellings stay invalid. Room temperature, active target, the heating
+  mode reading, the selected program and **Select heating schedule** become
+  available on this controller. Thank you, @obvius1, for the analysis, the
+  fix and the tests in
+  [#114](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/pull/114).
+- **Heating mode without a list of options:** if the controller sends no
+  `allowedValues` for the heating mode at all, as the TC100.2 does, the mode
+  select offers Manual and Schedule (`manual`, `clock`), as the controller's
+  app does. Only these two can be set. Another current mode keeps the select
+  unavailable, and an empty or different list keeps the strict rules.
+- **Locked heating mode:** if the controller reports the mode as used but not
+  available, for example while the system cools, the select keeps showing the
+  current mode. A change is refused with a message that the controller locks
+  the mode, and nothing is sent. Other zone values are not affected.
+- **Zone names:** a zone name that the controller sends in Base64 now appears
+  decoded in the entity names, for example "Living room – Room temperature".
+  Any other name is shown as it is. Existing entity IDs, unique IDs and your
+  own names stay.
+- @obvius1 confirmed with a local patch on a TC100.2 that mode and manual
+  temperature changes from Home Assistant reach the app and the thermostat. I
+  have not tested this version on a TC100.2 myself; program selection and the
+  zone names still need a check on the device.
+
+#### Release checks
+
+- The release workflow now also runs the browser tests of the dialogs before
+  it publishes anything. Before, only the pull request ran them, and my
+  release documentation for alpha.2 and alpha.3 wrongly listed them as a
+  release gate; I corrected that.
+- The browser tests for the local-only menu and "Search the system again"
+  now also run in CI.
+
+## [0.9.0-alpha.3] - 2026-11-09
+
+> [!IMPORTANT]
+> **Alpha pre-release for testing.** Make a full Home Assistant backup first.
+> From alpha.1 or alpha.2 no new setup is needed; from 0.8.x, the notes of
+> alpha.1 below apply as well.
+
+### What changed since alpha.2
+
+#### Local access
+
+- **Live values every minute again:** two scheduling errors limited the local
+  reads to about two per second, so live values arrived about every 76 seconds
+  instead of every 60. The scheduler now starts reads 200 ms apart, at most two
+  at a time, and computes the next due time from the start of a read. It slows
+  down on its own when the gateway itself answers slowly, measured from
+  sending a request until its answer arrives (up to one second between reads,
+  also for five minutes after a timeout or server error). A read that timed
+  out is repeated once at the next opportunity. The pause at the end of each
+  minute is 3 instead of 5 seconds. The diagnostics show how long each part of
+  a read takes.
+- **Connections are kept open:** reads reuse an answered TLS connection for up
+  to 4 seconds instead of opening a new one every time. The certificate is
+  still checked on every new connection before anything is sent. If a gateway
+  closes or drops kept connections repeatedly (3 times within 15 minutes), the
+  integration returns to one connection per read for 6 hours, then 12 and
+  24 hours, and logs this once.
+- Signals whose entities are all disabled, and signals that never become an
+  entity, are read hourly. Pairs with the cloud, counters, faults, the
+  installation date and signals the integration uses internally keep their
+  period. Enabling an entity restores its period within about a second.
+- The state shown from the local access is updated per reading instead of
+  being rebuilt every time.
+
+#### Cloud
+
+- **Fewer cloud requests:** reads of the 5, 15 and 60-minute groups are spread
+  over the regular requests instead of causing extra ones. No value is read
+  less often than its period allows.
+- While an entity shows the local value, the cloud reads its copy only every
+  15 minutes. When the entity switches to the cloud, the copy is read at once
+  and then every minute again. Counters, values that can be changed through the
+  cloud, the hot-water setpoint, the summer/winter mode and the system pressure
+  keep their normal period.
+- Control readings whose entities are all disabled are read every 15 minutes;
+  holidays, climate, hot water and the holiday calendar keep their period.
+- **Log:** an ERROR for a cloud outage now appears only after 5 minutes and at
+  least 3 failed cycles, once per outage with its category, duration and number
+  of failures.
+
+#### Entities
+
+- **Changed states:** a flow rate below the measuring range (raw value 65535,
+  marked `lowflow`) shows unknown with the attribute `measuring_range: below`,
+  from the local access and from the cloud. The used lower and upper flow
+  setpoints of the energy manager show unknown instead of 0 °C while the
+  energy manager is not connected.
+
+#### Diagnostics
+
+- **Diagnostics schema 43** adds the connection reuse of the local access
+  (handshakes, reused connections, errors, fallback state, response times by
+  connection type), the effective start spacing, readings slowed down because
+  their entities are disabled or missing, the effective polling groups and the
+  cloud reads of locally shown values. See
+  [diagnostics](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.3/docs/diagnostics.md).
+- In the comparison of local and cloud readings, a difference with more than
+  60 seconds between the two readings now counts as `changed_between_reads`
+  instead of `differ`. Write checks still report an unconfirmed write as
+  `differ`.
+
+## [0.9.0-alpha.2] - 2026-11-08
+
+> [!IMPORTANT]
+> **This is an alpha pre-release for testing. 0.8.3 remains the latest stable
+> release.** HACS offers it only when pre-releases are shown for this
+> repository. Make a full Home Assistant backup before installing it. Updating
+> from alpha.1 needs no new setup; coming from 0.8.x, the notes of alpha.1
+> below apply as well.
+
+### What changed since alpha.1
+
+- **Without the cloud, local readings are always used.** When the cloud access
+  is switched off, needs a new sign-in, is paused, rate-limited or
+  unreachable, a system with a local access shows its paired readings from the
+  local access, whatever the option says. With the cloud running, **Use local
+  values for existing entities** decides as before. Energy, start and runtime
+  counters follow only longer outages: a required sign-in, a switched-off or
+  paused cloud at once, an unreachable cloud after 15 minutes; they never
+  count backwards. The option is now on by
+  default when a system gets its first local access and when a system set up
+  locally joins the cloud; stored choices stay. See
+  [operation without the cloud](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/operation-without-cloud.md).
+- **Sign-in:** a new sign-in must use the same account as before; the
+  integration compares a hash of the account, no personal data. It is
+  accepted when at least one switched-on system or device appears in the
+  account. Missing ones stay configured, and a repair note names them. A
+  cloud access without any system left can only sign in again with the same
+  account; otherwise remove it and add it again. This fixes a lock-out after a device was removed from the
+  account. Additional devices can now be forgotten like gateways; a different
+  account is still refused. See
+  [setup](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/setup.md#a-new-sign-in-does-not-find-every-system).
+- **More robust local access:** it recovers by itself after unexpected errors
+  (retries after 1, 2, 4 and 8 minutes, then at most every 15 minutes); a
+  failed save no longer stops the reads; local pauses last at most 24 hours;
+  a corrupt schedule file is set aside. Each read uses one TLS connection
+  instead of two, which halves the load on the gateway. The polling schedule
+  is saved only when it really changes, otherwise at most every 30 minutes,
+  which spares SD cards, and the configuration is read again less often.
+- **Search the system again** also searches the parts that are ready while
+  another part is paused.
+- A reading only the local access provides keeps its entity ID and history
+  when the cloud starts offering it while Home Assistant is running.
+- Counters are no longer held unavailable when the source shown last is gone
+  for good; they still never count backwards.
+- Entity registry entries of deselected gateways and of resources that can
+  never become entities are cleaned up in the managed storage format;
+  entries you customised are kept.
+- The filter that keeps identifiers, addresses and locations out of entities
+  recognises more names.
+- The notice for a gateway discovered in the network can be ignored for good.
+- An unreadable stored configuration now shows a setup error instead of a
+  migration error, and the migration no longer runs at every start. Its
+  gateways stay reserved, so a new setup cannot take them over twice.
+- A command to an additional device that is interrupted because its access is
+  switched off now reports "source stopped" instead of an unconfirmed command.
+- **Certificate change of a gateway:** signing in again with the device label
+  is now the recommended default; keeping the stored token warns first. See
+  [setup](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/setup.md#the-local-gateway-certificate-changed).
+- A device list that expired during the first setup can be loaded again
+  without a new sign-in.
+- **New for [#107](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/107):**
+  "Energy (estimated from current power)" for heat sources that report a
+  current power but no consumption counter. It is disabled by default and only
+  an estimate: it does not count across gaps, continues across a switch
+  between local and cloud readings, saves its total every minute and only
+  counts from the moment it is enabled. I have not confirmed it on a real device yet. Thank you,
+  @flame4ever, for the detailed request. See
+  [entities](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/entities.md#energy-estimated-from-current-power).
+- **Texts:** the rate-limit notices no longer name a brand, dialogs use
+  neutral wording, and messages say "cloud access" instead of internal names.
+- **Release workflow:** only the publishing job has write access.
+
+### Performance and load
+
+- Entities update only when a value, its availability or its source really
+  changes, no longer after every local read, and repeated work is cached.
+- The request-count sensors write at most once per minute and no longer
+  record their large attributes, so the database grows much less. The total
+  request sensor counts from the start of the integration (state class `total`).
+- Unit, options and limits stay while an entity is briefly unavailable. The
+  climate entity stays available while its readings are within their validity
+  limit; changes still need the cloud.
+- **Fewer requests:** settled cloud values are read once or every 15 minutes,
+  containers and lists without an entity hourly. Local paths the gateway does
+  not have are asked again weekly after the third answer; a firmware change, a
+  new sign-in or changed settings and **Search the system again** still check
+  them at once. Descriptive system metadata of the gateway, such as the time
+  zone, the bus and tariff or iSRC support, is read hourly, the installation
+  date daily; room-device metadata such as battery level and name stays at
+  15 minutes; device serial numbers are no longer read.
+- **Storage:** compact files, stores load in parallel, "still seen"
+  confirmations are saved at most hourly, counter sources after 60 seconds
+  (a source change at once), the connection inventory privately and
+  atomically. The cloud token is renewed 2 minutes before it expires.
+- **Log:** one warning per cloud outage with its category, an info line when
+  the cloud or the local access answers again, and the hand-over warning once
+  per path.
+- **Diagnostics schema 42** adds local condition changes, failure classes,
+  response times and reasons for deferred reads, the pair result
+  `changed_between_reads`, receive gaps per polling class, the 95th percentile
+  of cloud cycles and numbered start-up paths. See
+  [diagnostics](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/diagnostics.md).
+- The working time of a heat source can now come from the local access.
+- The controller signal "Compressor power" is now "Heat output (compressor)";
+  its entity ID stays. Signal measurements with a unit get long-term statistics.
+- **Changed states:** iSRC installation status, iSRC support status, the season
+  optimizer mode and controller signals reported as true/false now show
+  translated states, for example `timeout` instead of `TIMEOUT`, `forced_heat`
+  instead of `forcedHeat` and `on`/`off` instead of `true`/`false`. Please
+  update automations and templates that check the raw values.
+
+### Produced heat during defrosting
+
+Since alpha.1 the "Heat produced" energy sensors use the state class `total`,
+because the counter falls briefly while the heat pump defrosts. The energy
+dashboard can therefore show small negative hourly values during defrosting.
+See [entities](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.2/docs/entities.md#published-device-families-and-reference-inventory).
+
+### Related issues
+
+- [#104](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/104)
+  and [#105](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/105):
+  the start from the saved setup after a cloud timeout from alpha.1 is
+  included, together with the more robust local access above. Thank you,
+  @gejomo, for the diagnostics and logs.
+- [#106](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/106):
+  the deprecation warnings stay fixed. Thank you, @lanebe, for the exact
+  warnings.
+- [#49](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/49):
+  the renewal diagnostics stay included, and a new sign-in is no longer
+  refused because a system or device is missing from the account. Thank you,
+  @lanebe, for the details.
+- [#107](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/107):
+  new, see above.
+
+## [0.9.0-alpha.1] - 2026-11-08
+
+> [!IMPORTANT]
+> **This is an alpha pre-release for testing. 0.8.3 remains the latest stable
+> release.** HACS offers it only when pre-releases are shown for this
+> repository. Make a full Home Assistant backup before installing it: the
+> configuration entry moves to storage format 4, which 0.8.x cannot load. I
+> welcome feedback on how it works on your system in the issues.
+
+0.9.0 adds an optional local access to K40/K40RF gateways next to the cloud
+access, keeps a system with a local access running without the cloud, makes
+the integration more robust when the cloud is slow, paused or unavailable, and
+reviews which entities exist and which are enabled by default.
+
+### What is new
+
+- **Optional local access:** a K40/K40RF gateway in the home network can be
+  added with the sign-in details from its label, next to the cloud access or
+  on its own. The local access only reads; it updates many readings more often
+  and adds technical readings the cloud does not offer. Changes always go
+  through the cloud.
+- **Operation without the cloud:** a system with a local access keeps showing
+  its readings when the cloud needs a new sign-in, is paused, switched off or
+  removed. Current faults and the bell notifications then follow the gateway's
+  local error list. A system set up with local access only can get its cloud
+  access later and continues with the same entities.
+- **Robustness:** a cloud outage during start-up, parts missing after a start,
+  a firmware update, rate-limit pauses and an exchanged gateway no longer need
+  a restart or leave entities "not provided". **Search the system again** in
+  the options looks for new parts on request.
+- **Entity review:** every reading becomes an entity; readings not needed in
+  everyday operation are only disabled by default. Signals show on/off or
+  named states instead of "unknown", measurements have names and units, and
+  cloud resources the integration does not know yet appear as disabled
+  diagnostic sensors. New devices are named without the brand.
+
+### Before you update
+
+- Make a full Home Assistant backup. On its first start the configuration
+  entry moves to storage format 4; 0.8.3 and older cannot load it afterwards,
+  so the backup is the way back.
+- Home Assistant 2026.5.0 or newer is required.
+- Entity IDs, names, areas and history are kept. New entities appear; some of
+  them are disabled by default and can be enabled in the entity settings.
+
+### Hydraulic card preset
+
+The hydraulic card preset keeps working unchanged; the pool-heating start
+counter is disabled by default on new installations; systems set up with local
+access only are not recognised by the preset yet.
+
+### Related issues
+
+- [#106](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/106): Home Assistant 2026.11 no longer logs deprecation warnings
+  for the integration.
+- [#104](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/104) and [#105](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/105): when the cloud times out or the discovery
+  gets no answer at start-up, a system that was set up before starts from its
+  saved setup and searches again for missing parts, instead of leaving its
+  entities unavailable.
+- [#49](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/49): the sign-in renewal diagnostics from 0.8.4-beta.1 are included
+  for every saved cloud access; they help to find out why a renewal was
+  rejected.
+
+### Setup and local access
+
+Adding the integration now starts with a choice: cloud access, cloud and local
+access (recommended when both are possible), or local access only. The local
+access only reads, but updates many readings more often and can add technical
+readings the cloud does not offer; the cloud adds controls, time programs,
+holidays and system information. With "local access only" the system is set up
+from its gateway in the home network and shown read-only under its gateway ID,
+with the manufacturer and controller model the gateway reports. See
+[setup](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/setup.md).
+
+The local setup explains each failure separately (wrong sign-in details, a
+refused sign-in service, missing confirmation on the device, a full token list,
+a rejected token, a denied resource, an unclear creation result). If the
+gateway presents a new certificate, a repair note explains how to confirm it,
+and the setup can keep the current token instead of creating a new one. A
+gateway that refuses access is shown as "access denied" rather than "not
+reachable".
+
+The connection list in the settings now shows the state of every access
+(connected, sign-in required, paused until a time, not reachable, disabled),
+without naming a brand, and each access shows its last successful request. A
+new "Test connection now" reads once on request and names the result or the
+cause, without changing settings; opening the dialog never starts a request.
+
+Readings that only the local access provides now become their own sensors:
+for example the current supply setpoint, volume flow, compressor and electric
+heater power, the refrigerant circuit status and the cylinder temperature.
+Technical readings of the refrigerant circuit, the drives and the controller's
+internal signals are available as disabled sensors. These sensors are created
+only for readings the local access of the system could read, are unavailable
+without a current local reading and are removed together with the local
+access. See [entities](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/entities.md#readings-only-the-local-access-provides).
+
+I added the option **Use local values for existing entities** to the local
+connection settings. It is off by default. When enabled, existing sensors of
+readings that both connections provide under the same documented resource show
+the current local value and fall back to the current cloud value. They stay
+available during a cloud outage as long as local readings are current.
+Adjustable settings and all controls keep using the cloud. Entity IDs, names,
+devices and history are unchanged, no requests are added and switching the
+option restarts neither connection. Diagnostics show the number of entity
+sources using local or cloud values.
+
+With an enabled local access, simple paired sensor readings that are not
+counters get two diagnostic entities, "... (local)" and "... (cloud)", disabled
+by default and without long-term statistics, for troubleshooting and
+comparison. Paired sensors show the attribute `source` with the source of their
+current value.
+The documentation now explains the difference between disabling, hiding and
+switching off an access.
+
+With local values enabled, readings that both connections provide are now polled
+locally at least as often as the cloud polls them: the local interval is
+min(local interval, cloud interval). Local values stay first, so a slower local
+setting no longer makes a paired sensor update less often than with the cloud
+alone. Diagnostics explain why eligible sensors use the cloud. The complete
+source selection rules and decision matrix are documented.
+
+Paired readings now treat equivalent unit spellings as equal (`C`, `°C` and
+`degC`, `min` and `mins`, `wh` and `Wh`), using the same reviewed aliases as the
+cloud contracts; different units are never converted automatically. Local named
+states such as a setpoint reported as `off` with the value 0 are shown like the
+cloud shows them, while error markers such as an open or shorted sensor, also in
+their one-decimal form such as -3276.8, and numbers the cloud declares error
+markers are never supplied locally. Diagnostics name the measurements that keep
+using the cloud, without values or paths.
+
+With local values enabled, energy, start and runtime counters can now be shown
+from the local connection as well. A counter only changes its source when every
+number it shows, including total electricity and environmental energy, is at
+least the last number shown; otherwise the previous source stays while valid and
+the counter is unavailable after that. Falling back to the cloud follows the
+same rule. Without stored history the cloud sets the first count, missing parts
+keep their last number, the last shown numbers are stored and a source change is
+written immediately, so a source change does not make a counter go backwards,
+also not after a regular restart. Diagnostics show the shown source, switches,
+prevented switches and comparison evidence per counter, without absolute counts.
+
+With local values enabled, a sensor no longer shows a local reading from before
+a confirmed change when the cloud has a newer reading of the same circuit, and
+the local connection reads the changed circuit again right away. Settings are
+still only written and confirmed through the cloud. Diagnostics count local
+read-backs that agree or differ with a confirmed change, without values; a
+difference never repeats the command.
+
+When settings cannot be changed, the "Operate appliance" dialog now says why
+(sign-in required, cloud not reachable, pause after a rate limit or repeated
+errors with its end, values not current yet, or only a local access) instead of
+an empty list. A new diagnostic entity "Cloud control available", disabled by
+default, shows the same state for dashboards and automations. With local values
+enabled, the water heater's current temperature uses the same local reading as
+the hot-water temperature sensor; its mode, target and writes stay on the cloud.
+
+Showing local values for existing entities no longer re-checks every local
+reading against the pair catalog on each state update; in my measurement a
+lookup is about 14 times faster, which avoids slow entity updates on smaller
+Home Assistant hosts.
+
+### Operation without the cloud
+
+A system without the cloud for more than 30 days (cloud access switched off,
+sign-in required or no answer) now keeps its entities from the local readings
+alone. Up to then the stored inventory is used as before, with a switched-off
+access now taking the current faults from the local error list; once the
+inventory is older than 30 days, every readable local reading becomes an
+entity (while Home Assistant runs for a switched-off access or a start that
+needed a new sign-in, otherwise at the next start), and the stored descriptions of the
+cloud's readings (without values) serve where they fit. Readings the
+cloud offered keep their entity IDs and history, the others become local-only
+sensors, and identifiers or network data never become entities. These entities
+are read-only: no controls and no writes, and they request nothing from the
+cloud. Counters continue
+only from a count shown before and never count backwards, and the current
+faults come from the local error list. A required sign-in stays required. The
+local entities stay until the cloud answers; then it takes over the same
+entities and continues from the local fault list. Local readings reported as
+numbers are offered as local-only sensors also while they report an error
+marker. Sensors created without the cloud for documented readings without a
+reviewed meaning keep their local values once the cloud runs again. See
+[source selection](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/source-selection.md).
+
+Switching the cloud access off while Home Assistant runs now also takes the
+current faults from the local error list at once, without a restart; switched
+on again, the cloud continues the same faults without announcing one twice.
+The bell notification now follows the local error list whenever a system is
+shown without the cloud, with the same notification setting. The active faults
+sensor also lists active entries of the room devices' own error lists as extra
+information; a device error row the cloud marks as inactive no longer counts
+as a fault. The options offer **Search the system again** to look for new
+parts through the cloud and local access within the usual limits. Heat demand
+and the variable tariff support status now also show the local reading; their
+lists previously always fell back to the cloud. Diagnostics
+schema 41 describes the systems shown without the cloud. See
+[faults](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/faults.md) and [reconfiguration](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/reconfiguration.md).
+
+Removing the cloud access no longer leaves a system with a local access
+without values: if it was selected, it keeps showing its local readings under
+the same entities, read-only and without controls, also after a restart, and
+again after its local access was switched off and on. Other systems keep their
+entities without current values, and a new sign-in that selects the same
+system continues the same entities. The remove dialog now explains this and recommends switching
+the access off only for a temporary pause. See
+[source selection](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/source-selection.md).
+
+A system set up with local access only can now get its cloud access later in
+the same entry: add the cloud access in the entry's options, or select the
+system in the entry's existing cloud access. Before anything is saved, the
+cloud's system information is compared with the one read through the running
+local access; the gateway ID alone is not enough. The system then continues as
+the same system with the same entities, devices and fault list, and gains the
+cloud's controls. If the local access is switched off or unreachable, or the
+two do not describe the same system, the dialog says so and saves nothing. A
+system set up locally in another entry is still refused there, and only one
+cloud access can be configured across all entries. If the local access is
+busy with its regular reads, the dialog asks to try again shortly. Local-only
+sensors of readings the cloud now offers continue as the cloud's sensors with
+their entity ID and recorded history where this is unambiguous (exactly one
+matching sensor, the same native unit, no change of an existing state class);
+otherwise they are removed as before. See
+[source selection](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/source-selection.md#adding-the-cloud-later).
+
+If the cloud access needs a new sign-in or is switched off, a system with a
+local access keeps showing its local values instead of turning every entity
+unavailable. The entities stay in place; controls stay unavailable until the
+cloud is back and say why. A start without a working sign-in uses the stored
+inventory, so the local values appear right away. See
+[source selection](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/source-selection.md#when-the-cloud-stops).
+
+A system with a local access now also shows its local readings after a Home
+Assistant restart while its cloud access is switched off, from the stored
+inventory if the cloud confirmed it within the last 30 days, and without any
+cloud request.
+
+If the local energy readings of a system contain only the produced heat and
+not the consumption parts, the produced heat now continues while the system
+is shown from its local readings alone; consumption parts and the values
+calculated from them show nothing rather than a wrong value; a part that
+reappears below its last shown number is held back until it reaches it.
+Serial numbers
+in the device information no longer contain control or padding characters;
+a serial number made only of padding is not shown.
+
+With a local access, the gateway's local error list feeds the existing fault
+display as well: a fault reported by the cloud and the gateway appears once, a
+fault only the gateway reports appears too, and a fault ends only when every
+source confirms it. A missing or late local answer never clears a fault; a
+local list that stays silent for a long time hands the decision back to the
+cloud, and a restart neither ends nor repeats faults only the gateway reported.
+
+Sensors and binary sensors of single readings now show a cloud reading for three
+polling intervals of its group, the same rule as for local readings: live values
+for about 3 minutes, slower groups correspondingly longer and static values
+without limit. A timeout, rate limit or server error of a whole request
+therefore no longer makes these sensors unavailable at once, while an explicit
+answer for the reading, such as not found, still does. During a long cloud pause
+readings expire after three intervals at the latest. A timer makes the expiry
+visible without an additional request. With local values enabled, a current
+local reading now also keeps a sensor available when the whole cloud cycle fails
+or pauses; previously this only worked when a single cloud reading failed.
+Controls and writes keep requiring a successful current cloud cycle. Diagnostics
+report the limits, the number of expired readings and the unit combinations of
+pairs that differ only by unit.
+
+With a local access next to a running cloud access, the diagnostics report now
+previews operation without the cloud (`local_plant_view`). It works out which
+entities the current local readings alone would give, with the same IDs as from
+the cloud where the reading is the same, and compares them with the cloud's
+entities and the entity registry: matching, only local, only with the cloud, and
+differences in unit, device class or allowed values. The preview creates no
+entities, sends no requests and lists no values or identifiers. See
+[diagnostics](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/diagnostics.md).
+
+### Entities
+
+Every reading the local access offers now becomes an entity; readings not
+needed in everyday operation are disabled by default instead of left out, and
+identifiers, network data and configuration structures never become entities.
+Controller signals reported as true/false become on/off states, signals with
+named states become states (for example season mode and smart grid mode), a
+derived installation date is added, and useful measurements such as the
+compressor run times, drip pan temperature and the heating circuit volume
+flow get their names and units. Existing entities keep their IDs. Cloud
+resources the integration does not know yet also become disabled diagnostic
+sensors (numbers, states, on/off), never controls, without additional requests.
+
+The cylinder temperature read through the local access is now disabled
+by default for new installations, because it shows the same value as
+the hot water temperature. The pool-heating start counter is now disabled by
+default (it is still always created). The refrigerant circuit status also shows
+the states the gateway declares (off, hot water, pool, pool heating) instead of
+"unknown"; other local states accept their declared values as well. New devices
+are named without the brand (for example "MX400" or "Wallbox"); existing
+devices keep their names, and the manufacturer stays in the device information.
+The documentation explains that entity names follow the system language while
+state texts follow the profile language. Hybrid systems with an HM200 hybrid
+manager get additional local readings of the outdoor unit and the hybrid
+manager, including the smart grid mode; they are disabled by default and not
+yet verified on a real system.
+
+Produced heat and cooling use the `total` state class. While the heat pump
+defrosts, the produced heat falls briefly; Home Assistant now records this as
+a small negative amount instead of warning about a counter that is not
+strictly increasing, and the long-term statistics continue without a break.
+
+### Cloud connection and robustness
+
+Parts of the system that were missing after a start now come back without a
+restart. If the cloud answered a few requests incompletely during start-up,
+for example with an error for `/system` or a container without its usual
+references, the affected entities used to stay "not provided" until the next
+restart. The integration now remembers which resources it found before and
+searches missing parts again 5, 15 and 60 minutes after the start and then
+every six hours until one day has passed; found parts get their previous
+entities back with unchanged entity IDs and settings. A part still missing
+after one day is no longer expected at the next start; its entities stay in
+the registry. Thank you, [gejomo](https://github.com/gejomo), for the report
+and the diagnostics in
+[#104](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/104).
+
+A cloud outage while Home Assistant starts no longer leaves a system's entities
+"not provided" until its cloud access can start it. The access now starts the
+system with the resources from an earlier start, at most 30 days since they were
+last confirmed: entities keep their IDs and show "unavailable" until the cloud
+answers again, then the values return within one polling cycle. Changes are not
+possible while values are unconfirmed, and a rejected sign-in still asks for a
+new sign-in. Only temporary failures use the saved resources. Diagnostics show
+both under `discovery_recovery` and `startup_inventory`.
+
+A firmware update while Home Assistant keeps running is now noticed: the
+firmware versions are read every 15 minutes, and a change leads to one new
+discovery, so new capabilities appear without a restart. A known reading that
+suddenly reports text instead of a number, or a declared error marker, is no
+longer shown as a value: the sensor shows no value and a type change is logged
+once and counted in diagnostics. A reading in another unit of the same quantity
+(for example °F instead of °C) is shown with the unit it was reported in, and
+Home Assistant converts it for display. The local access pauses with a clear
+cause if a gateway falls below the minimum firmware. The new
+[compatibility page](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/compatibility.md) lists the specification version,
+the checked systems and how each kind of change is handled. For maintenance, a
+new version of the official local API specification can now be compared with
+the reviewed one before it is adopted (`scripts/compare_local_api_spec.py`);
+the official examples are additionally checked against their meaning.
+
+Slow or failing answers cost less: a cloud cycle stops starting new requests
+after 50 seconds and keeps the values it did not reach, follow-up single reads
+stop at a clear connection problem, and a search for missing parts that gets no
+answer is repeated later without using up an attempt. After a firmware update,
+readings the gateway does not report right away are kept, and earlier
+"not found" pauses are cleared, for the cloud and for the local access, also
+when the update happened while Home Assistant was stopped. The local access
+no longer retries continuously at its record limit and no longer treats an
+empty signal list as the removal of every signal.
+
+An exchanged gateway can now continue the same system. If a system's gateway
+disappears from the cloud access and exactly one new, unassigned gateway
+appears instead, Home Assistant shows the repair "Gateway replaced?". It
+compares the device modules the new gateway reports with those the system
+reported before and offers to continue as the same system, to keep the new
+gateway as a separate system, or to decide later. If no device module matches,
+or there is nothing to compare, it continues only after a clear warning and a
+second confirmation; if the cloud cannot answer at the moment, it asks to try
+again later. Continuing keeps entity IDs, history, names, areas and
+automations; only the internal unique IDs and the device identifier move to
+the new gateway, and active faults and dismissed fault notifications carry
+over. A local access of that system belongs to the old gateway and is
+removed, so it has to be set up again. A journal lets the next start finish an
+interrupted exchange; if that is impossible, the integration does not start
+and the log names the reason, instead of creating duplicate entities.
+Energy, runtime and start counters keep clean statistics after the exchange,
+whether they continue or start again: a counter that starts again begins a new
+cycle, and a slightly lower value shows no value until the counter has caught
+up, so there are no jumps and no negative consumption. See
+[architecture](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/architecture.md#gateway-exchange).
+
+Switched-off systems of a cloud access can now be forgotten in the access's
+options ("Forget deselected systems"). A forgotten system is no longer listed
+there, and a new sign-in no longer fails because it cannot find that system
+any more. Its devices and entities stay in Home Assistant until you delete
+them.
+
+Additional cloud devices no longer drop out after 15 minutes when they report
+only on change. Any non-retained message from the device (information, new
+measurements or a newly reported state, but not the answer to the
+integration's own state read) now counts as a sign of life; a device stays
+available for up to one hour after the last one, and an explicit offline
+message still applies immediately. A reconnect of the integration, for example
+after a token renewal, no longer makes such devices unavailable for that hour:
+the redelivered information restores them while the last sign of life is
+recent, their last measurements and reported state stay visible within their
+own age limits, and a re-added device takes its online status from it even
+with an unchanged timestamp. Measurements expire individually after one
+hour, reported state after 15 minutes. Air conditioners that declare Eco as
+writable get the preset `eco` on their climate entity, and dehumidifiers that
+declare the display as writable get a display switch; both send only that one
+field and wait for the reported confirmation. With a local access, the
+documented ventilation readings (air temperatures, humidity, air quality, fan
+power and speed, bypass flap, auxiliary heater, run and filter times, exhaust
+fan level) are offered as disabled local-only sensors; temperature error
+markers such as `-32768` show no value. When the cloud reports
+them writable, the exhaust fan level becomes a select (only with the
+documented levels), the pool target temperature a number with the reported
+limits and step, and the pool's enabled state an on/off switch (only for
+exactly `on`/`off`), each with read-back confirmation. See [connection](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/bacon-connection.md)
+and [entities](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0-alpha.1/docs/entities.md).
+
+I made cloud pauses after rate limits complete. A `Retry-After` value is now
+honored in seconds or as an HTTP date, in full up to a safety bound of 24 hours
+instead of being shortened to one hour. PointT, additional cloud devices and
+sign-in use the same rule, and the setup dialog, connection restart and polling
+coordinator no longer resume earlier. The pause of a saved cloud access now
+survives Home Assistant restarts; real downtime is deducted, but a restored
+pause never becomes longer than saved. Removing an access deletes its pause, and
+a new access never inherits one. Diagnostics report the pause per cloud
+connection. Synthetic HTTP, clock and restart tests cover these cases.
+
+I fixed skipped wallbox polls. Home Assistant can start a scheduled refresh
+slightly before the exact section deadline, which previously postponed the
+reading by a whole interval, for example 120 instead of 60 seconds for
+telemetry. Wallbox sections now use the same one-second tolerance as heating
+polling groups. The tolerance applies only to the regular cadence; error and
+rate-limit pauses still end only when they have expired. Tests use Home
+Assistant's actual timer scheduling in both polling profiles.
+
+I measured cloud polling with up to ten systems and the maximum of 512 resources
+each, using the actual coordinator and the shared three-slot request limit
+against a local test server. Requests stayed within three parallel slots, all
+systems progressed evenly and cycles never overlapped. Diagnostics now show the
+longest cycle per gateway, how often a cycle exceeded its interval and how long
+requests waited for a free slot. The polling dialogs now explain which values
+each interval covers, that active faults are always checked every minute, that
+the local interval also sets the minimum spacing of slower values and that
+sign-in, device checks and confirmations can add requests.
+
+I made device discovery and replacement sign-in verification share the same
+three resource-request slots as the running cloud sources. PointT management
+requests now appear in the existing request statistics. Queued checks reject
+closed dialogs, changed access and new account pauses before sending a request.
+Token renewal runs outside those slots and remains serialized per connection;
+local polling keeps its independent budget.
+
+I fixed source invalidation when removing cloud or local access from an
+installation that uses both. The other source now keeps its running requests,
+observations and listeners. Changing the read order updates the target view
+without restarting healthy readers. Identity, binding and credential changes
+still reject results from affected old source attempts.
+
+I included the sign-in renewal diagnostics from 0.8.4-beta.1. Each saved cloud
+access now keeps its own history of starts, renewals and saves, with the HTTP
+status, OAuth error code and sanitized reason of a rejected renewal. Refresh
+tokens are recognized only through a local keyed fingerprint. The original cloud
+access continues the history file of the beta; removing an access deletes its
+history. Diagnostics report it per cloud connection. Sign-in, renewal and
+reauthentication behavior are unchanged.
+
+I fixed the loss of the last system-notification event timestamp when a cloud
+connection is disabled and reenabled. The original timestamp is retained in HA's
+event restore data, including while the entity is unavailable. Restoration does
+not emit a new event or change entity IDs. Legacy data remains readable; an
+already missing timestamp is not inferred from other dates.
+
+### Compatibility
+
+Home Assistant 2026.5.0 or newer is now required: from that release the setup
+dialog can continue directly with the local access of the new entry. Home
+Assistant 2026.11 no longer logs deprecation warnings for the heating circuit,
+hot-water, air-conditioner and water-heater entities. They now report their
+temperatures through the native temperature members introduced in 2026.11; the
+old members would stop working in Home Assistant 2027.11. Older releases from
+2026.5 keep working unchanged. The automated checks use the official Home
+Assistant test package from 2026.11 on and run the full suite on Home Assistant
+2026.5.4, 2026.9.2 and 2026.11.0.
+
+### Groundwork for the local access
+
+I added a common internal format for cloud and local readings that keeps their
+source, raw path, interpretation, validity and separate timestamps, without any
+write rights. A versioned catalog lists the readings that both interfaces
+provide under the same documented path with the same type and unit; only those
+can be compared. Comparisons report agreement, difference or incomparability and
+keep both readings. Missing, empty and error values never become zero.
+Diagnostics summarize the pairs per installation.
+
+I added support for numeric local `state` objects alongside the documented
+lists, and for `module_id` in update reports. Original fields and exact
+identifiers are preserved; missing or conflicting module identifiers remain
+invalid. The recorded response variants now pass the local decoder.
+
+Local discovery now suppresses addresses with saved, verified access, including
+disabled connections. Saving setup dismisses matching untouched notices; other
+gateways and dialogs already advanced by the user are retained. Discovery titles
+follow the selected frontend language.
+
+I connected local setup to the managed runtime. The first link compares fresh
+PointT and local gateway and module identities; the confirmed relationship is
+retained so later local starts work without cloud access. Every start still
+checks the local gateway and the saved full certificate fingerprint. Changed
+certificates, rejected tokens and conflicting identities stop that local source.
+
+Local settings now expose the live polling interval and current resource counts.
+Diagnostics add local conditions, request metrics, discovery progress and
+per-resource freshness without values or private identifiers. No additional
+devices are inferred from resource paths.
+
+I added fair local scheduling, bounded resource discovery and independent value
+expiry. All documented GET templates have explicit polling classes. Search
+progress and negative results survive restarts without restoring old values as
+fresh; identical requests share work and explicit history reads have fixed
+limits. Synthetic installation, TLS, storage and memory tests cover these
+boundaries. The managed local source now uses this service.
+
+I added a shared gateway budget for local setup and read clients: two concurrent
+reads, at least 250 ms between starts and exclusive setup admission. Complete
+retry pauses survive restarts, configuration changes and acknowledged enrollment
+attempts. Failed storage blocks further local requests. Local health now remains
+separate from configuration validity and historical observations. Synthetic TLS,
+storage and runtime tests cover these boundaries.
+
+I added the general local HTTPS read client with full certificate checks before
+token transmission, bounded responses and structured path or access failures.
+One shared connection budget limits concurrent reads, enforces request spacing
+and retains complete retry pauses when a client is replaced. Stale results and
+cancelled reads cannot update observations; session cleanup owns only its reads.
+Synthetic HTTPS tests cover these behaviors and the shared setup helpers.
+
+I added the complete local resource catalog and immutable response contracts for
+all 261 documented K40/MX400 GET path templates. The decoder preserves exact
+identifiers, named states, source units and recording groups, validates each
+operation's parameters and remains read-only regardless of reported write flags.
+Manufacturer examples and synthetic cases cover the response forms and invalid
+inputs. Setup and token parsing share the bounded JSON checks.
+
+I added native local setup and recovery dialogs with device-label sign-in and
+token import. Discovery and manual addresses use the same checks on an existing
+installation. Certificate and save confirmations remain separate even when a
+check completes immediately. Resource retry pauses survive reopening the dialog.
+The tested runtime and scoped identity provider now enable these dialogs for
+an existing installation.
+
+I added recoverable completion for local setup, including imported tokens and
+pending enrollments from the previous journal format. A saved completion intent
+distinguishes an accepted update from an interrupted one without replaying it.
+The extra token copy is cleared only when matching configuration is loaded on a
+later process start. Native entry removal clears pending access, and the prepared
+format transition restores a running cloud entry after cancellation.
+
+I added local token enrollment with a private recovery journal. A pending attempt
+is saved before the single token request; received tokens can be recovered after
+a restart without creating another token. Lost responses remain uncertain until
+explicitly acknowledged. Passwords are not stored, tokens are not automatically
+revoked, and recovery still requires fresh read and identity checks. Synthetic
+TLS and storage tests cover cancellation, failed writes and concurrent attempts.
+The managed runtime and setup dialogs use this enrollment layer.
+
+I added local credential provenance and a guarded handover for a selected
+retained installation. Imported tokens keep unknown scopes separate from
+verified read access. Certificate, identity and configuration checks precede one
+HA update; existing IDs and unrelated changes are preserved. A local token
+replacement invalidates older reads. Version 4.2 readers and isolated HA tests
+cover the storage transition, retained cloud refresh and uncertain update
+outcomes.
+
+I added a bounded local setup transport with explicit certificate binding for
+each port role. It checks the complete certificate before sending a token,
+rejects every certificate change and prevents redirects and automatic HTTP
+retries. The three read probes have time and response limits and discard stale
+results. Synthetic TLS server tests cover these behaviors.
+
+I added a shared local setup probe for manual addresses and discovery hints. It
+validates the three K40/MX400 base responses, distinguishes API and transport
+failures, and rejects stale or ambiguous evidence before the existing gateway
+identity comparison. This parser performs no I/O and never writes to the
+appliance.
+
+### Managed connections and storage format 4
+
+I introduced a PointT plant model that keeps device evidence separate from
+functional groups. The existing gateway device and entity identities remain in
+place. Additional heating circuits and solar groups use their reported
+identifiers without creating artificial devices. Device metadata and grouped
+names now use the central resource binding.
+
+I also corrected the architecture documentation: the current PointT entry
+fingerprint is based on the brand and gateway list, rather than a verified
+stable account identity.
+
+I added strict gateway identity parsers and a separate comparison against an
+explicitly selected installation. They preserve exact IDs, reject conflicting
+aliases and incomplete local responses, and detect stale connection evidence,
+competing installations and ownership conflicts. Cloud and local identities
+remain separate unless the caller supplies a verified source contract.
+
+I added an immutable configuration snapshot and a pure converter for existing
+cloud settings. The new storage separates connections, durable targets and
+explicit bindings, retains old identity namespaces and user options, and
+supports targets with no remaining connection. Unresolved account routing is not
+treated as authenticated identity. Local storage requires a read scope and does
+not grant appliance write access. The pure converter has no side effects.
+
+I centralized cloud configuration access and scoped the shared token manager and
+account pause to the owner and connection. An explicit replacement login now
+advances an authentication epoch, so an older refresh cannot overwrite it even
+when the new login returns identical tokens. Rotation preserves concurrent
+settings changes; stale configuration dialogs receive a specific message.
+The version 4 foundation also distinguishes connection, target and binding
+changes and rejects results from outdated request generations.
+
+I implemented the version 4 lifecycle framework with independent connection and
+target jobs, guarded retries, connection settings, scoped reauthentication and a
+value-free entity inventory. Replacement cloud credentials must confirm every
+assigned target, including disabled bindings, before they are saved. Removing the
+last connection retains targets and registered entities as unavailable.
+
+I connected the existing PointT client and coordinator to the managed framework.
+Gateway sources share account authentication, backoff, request accounting and
+concurrency while retaining their existing discovery, polling and write policies.
+Stopping a source blocks further requests and confirmation of late results.
+Reauthentication replaces its clients without making old consumers valid again.
+Fault baselines finish saving before a replacement starts. Tests exercise the
+actual client against a local HTTP server, including a confirmed manual room
+setpoint write.
+
+I also connected the existing read-only wallbox adapter to the managed PointT
+connection. Reported wallboxes keep their own parsing, polling intervals and
+eight sensor identities while sharing account services with heating sources.
+Stopping a wallbox invalidates its readings and cancels active polls; late
+responses cannot revive it. A slow wallbox does not hold the heating startup
+queue. Both coordinator types use the same lifecycle guards.
+
+I connected the additional-cloud adapter to the same managed cloud connection.
+Its devices share one MQTT session and the cloud login's token refresh, rate
+limits and HTTP concurrency. Each device has a separate access view. Disabling
+one device cancels its pending operations while peers continue; disabling the
+last device closes MQTT without stopping PointT. Replacement access views obtain
+fresh metadata, and old views remain invalid after reenabling or a new login.
+The existing family validation and reported-state write confirmation remain in
+place. Interrupted commands are not replayed. HTTP cancellation also retains its
+normal cancellation outcome when a connection stops during a shared request.
+I connected all twelve native HA platforms to independently replaceable source
+access. Reconnection rebuilds the affected entity objects with the same registry
+IDs, names and settings, while unrelated sources continue. Old objects retain
+their stopped access. Offline restarts keep registered entities unavailable
+without restoring old values or write permissions. Partial setup failures clean
+up before retrying; another entry's entity identity cannot be claimed.
+
+I kept request statistics separate for each cloud connection and preserved the
+original connection's statistics IDs.
+
+I connected diagnostics, fault notifications, repairs and the custom dialogs to
+the prepared managed owner. Diagnostics describe connection and target
+relationships with export-local numbers and separate request metrics, without
+additional requests or private identifiers. Fault notices survive unavailable,
+disabled or removed access as unconfirmed, including an offline restart;
+existing dismissals and notification choices remain effective.
+
+Rate-limit repairs change only the affected cloud connection's polling. Firmware
+repairs rediscover only their source. Old control, holiday and schedule drafts
+cannot write through replacement access, and a changed list cannot redirect a
+schedule selection to another installation.
+
+I prepared a guarded storage transition using one HA entry update. It preserves
+registry identities and local fault stores, rejects unsupported states and
+invalid input, and does not rewrite an already valid version 4 record. A pending
+credential rotation blocks the transition until its result is saved in the old
+format. Existing account pauses remain. I tested interruption, repeated loading,
+earlier preview migrations and restoration of the full previous configuration. A
+separate offline replay retained my installation's 138 entities and existing
+device assignments using a snapshot with substituted credentials.
+
+I connected the regular version 4 setup and migration dispatch and tested it
+through HA's entry lifecycle. Pending token rotation can finish before migration;
+late request errors are retrieved after cancelled waiters. Failed setup cleans
+up its background work, and failed platform unload is no longer reported as
+success. HA requires a restart after migration or unload errors, which the tests
+keep separate from ordinary reloads. I also repeated the private 138-entity
+probe through HA's regular setup and unload APIs.
+
+I completed the prepared cloud management dialogs for initial setup, reconnection,
+device discovery and connection-specific polling profiles. Exact provider
+identities retain the existing targets and registry settings. Previously assigned
+devices remain selectable when temporarily absent. Aborted authentication,
+expired listings and changed configuration cannot silently restore removed access.
+I also checked device, entity and statistic identities through regular HA setup
+and reconnection against a loopback server.
+
+Additional parallel cloud sign-ins are temporarily blocked until there is a
+verified account-identity contract. Existing multiple connections remain
+manageable. I activated entry version 4 and automatic conversion through normal
+HA setup. Invalid preview storage is rejected before its legacy device migration
+changes registry records. Disabled entries migrate when reenabled; already
+configured cloud entries remain independent.
+
+An identified wallbox keeps its eight known sensors unavailable after a failed
+first service read and recovers them through normal polling. I checked this
+alongside migrated solar circuits, two-gateway start counters and retained names.
+
+I also checked the previous v0.8.3-beta.1 code in a separate process. It rejects
+version 4 storage and loads the complete restored old configuration. The private
+138-entity capture retains its assignments, names and fault stores. A synthetic
+online rollback reads again through the previous code and keeps its entity and
+device identities. This does not test real token validity, a Home Assistant
+backup restoration service or a physical appliance.
+
 ## [0.8.4-beta.1] - 2026-11-02
 
 > [!IMPORTANT]
@@ -464,7 +2984,7 @@ are useful. Check the export for personal information before publishing it.
 ## [0.8.2-beta.5] - 2026-10-23
 
 I am releasing the current device-support improvements and the first three
-completed comparison packages together as a beta.
+completed correction packages together as a beta.
 
 - I added initial WE800i discovery and readings for salt, available soft water,
   flow, regeneration and holiday mode. Known regeneration phases also accept
@@ -503,7 +3023,7 @@ Select **0.8.2-beta.5** explicitly in HACS, update and restart Home Assistant.
 ### Deutsch
 
 Ich veröffentliche den bisherigen Ausbau der Geräteunterstützung und die
-ersten drei abgeschlossenen Vergleichspakete gemeinsam als Beta.
+ersten drei abgeschlossenen Korrekturpakete gemeinsam als Beta.
 
 - Die erste WE800i-Unterstützung ergänzt Salzfüllstand, verfügbares Weichwasser,
   Durchfluss, Regeneration und Urlaubsmodus. Bekannte Regenerationsphasen werden
@@ -655,7 +3175,7 @@ entities and normal polling without a restart. Existing forbidden-resource
 pauses, authentication handling and cloud rate limits remain effective. I also
 stop pending recovery on unload and keep a targeted success from clearing an
 unrelated failed polling cycle. See [request behavior](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.8.2-beta.1/docs/request-behavior.md)
-for timing, request limits and the scope of the APK comparison.
+for timing and request limits.
 
 I register the pool-heating start counter (`numberOfStarts` → `pool`) even
 when the gateway's initial payload is empty or partial, with German and English
@@ -1323,7 +3843,7 @@ missing controls on the second heating circuit.
 - Expand diagnostics through schema 13 with discovery outcomes per circuit,
   reasons for control eligibility, and local resource pauses. Current values,
   credentials, and private identifiers remain excluded.
-- Recognize additional app-defined operating states and schedule types, with
+- Recognize additional operating states and schedule types, with
   German and English translations.
 
 ### Fixes
@@ -1692,25 +4212,24 @@ another app.
 ## [0.7.0-beta.2] - 2026-09-04
 
 This beta closes enum gaps found while investigating an upstream report about
-the `absolute` heating-circuit schedule type. A complete comparison of the
-corresponding models in MyBuderus and HomeCom Easy found several additional
-PointT values that are now handled and translated explicitly.
+the `absolute` heating-circuit schedule type. Several additional PointT values
+are now handled and translated explicitly.
 
 ### Fixed
 
-- Added the app-confirmed `absolute` and `levels` values to
+- Added the `absolute` and `levels` values to
   `/heatingCircuits/{hc}/switchProgramMode`.
-- Added exact app mappings for heating and cooling control types, hot water
+- Added exact mappings for heating and cooling control types, hot water
   following the heating schedule, heat-pump and heat-source variants, system
   layouts, energy-management activity, and the PV contact state.
-- Accepted the enum-name spellings used by the app model for the gateway data
+- Accepted the alternative enum-name spellings for the gateway data
   processing states while retaining the already observed PointT spellings.
 - Added English and German state translations for every newly recognized
   canonical value.
 
 ### Behavior changes
 
-- Schedule-type sensors now recognize all app-defined modes: `level`, `levels`,
+- Schedule-type sensors now recognize all known modes: `level`, `levels`,
   and `absolute`, even when the gateway does not advertise a complete enum
   list.
 - PointT's legacy or product-specific spellings are normalized at the Home
@@ -1730,7 +4249,7 @@ PointT values that are now handled and translated explicitly.
 ### Validation
 
 - 547 automated tests pass with 95.16% branch coverage, including the
-  app-confirmed raw values, canonical states, enum options, and matching German
+  newly handled raw values, canonical states, enum options, and matching German
   and English translations.
 - Ruff formatting and linting and strict Mypy validation pass.
 
@@ -2086,8 +4605,7 @@ PointT communication gateway of an installation.
 ## [0.5.0] - 2026-08-23
 
 Version 0.5.0 expands heat-pump monitoring with optional PointT
-resources confirmed in both MyBuderus and HomeCom Easy while retaining strict
-capability and schema checks.
+resources while retaining strict capability and schema checks.
 
 ### Added
 
@@ -2100,8 +4618,7 @@ capability and schema checks.
   fresh-water stations, per-source energy, hybrid systems, low-noise and power
   limiting, solar, pool, ventilation, room zones, room devices, photovoltaics,
   and gateway-provided variable-tariff state.
-- English and German names and state translations based on the official app
-  terminology.
+- English and German names and state translations.
 - A capability-gated Silent Mode select with Off, Automatic, and On options.
 - A capability-gated auxiliary-heater mode select with Off, On, and Auto.
 - A maximum-supply-temperature number control with whole-degree steps and an
@@ -2111,8 +4628,7 @@ capability and schema checks.
 
 ### Changed
 
-- Discovery combines gateway references with a bounded official-app path
-  catalog. Per-source probes are derived dynamically and do not assume `hs1`
+- Discovery combines gateway references with a bounded path catalog. Per-source probes are derived dynamically and do not assume `hs1`
   or `hs2`.
 - Unsupported optional paths are discarded after the initial probe and never
   enter recurring polling.
@@ -2165,8 +4681,8 @@ capability and schema checks.
 ## [0.4.1] - 2026-08-23
 
 Version 0.4.1 fixes editing and moving ordinary holiday periods from Home
-Assistant and makes the detailed holiday configuration match the terminology
-and limits used by MyBuderus and HomeCom Easy.
+Assistant and gives the detailed holiday configuration clearer terminology
+and consistent limits.
 
 ### Fixed
 
@@ -2185,11 +4701,10 @@ and limits used by MyBuderus and HomeCom Easy.
 
 - **Constant temperature** now appears directly below the central-heating
   mode in the **Configure holiday** dialog, before the hot-water settings.
-- Constant-temperature input is restricted to the 5–30 °C range supported by
-  the official apps. Stricter limits reported by the connected gateway still
-  take precedence.
-- English and German holiday labels now follow the terms extracted from
-  MyBuderus and HomeCom Easy, including **Apply for**, **Central Heating**,
+- Constant-temperature input is restricted to a 5–30 °C range. Stricter
+  limits reported by the connected gateway still take precedence.
+- English and German holiday labels now use clear terms, including
+  **Apply for**, **Central Heating**,
   **Constant temperature**, **Hot Water**, **Ventilation**, **Setback**,
   **OFF with Thermal Disinfection**, and their German equivalents.
 - A new step-by-step guide explains how to create, configure, move, rename,
@@ -2220,8 +4735,7 @@ heating settings that the standard calendar editor cannot represent.
 
 - Capability-gated create, edit, and delete support for the **Holiday periods**
   calendar using Home Assistant's standard calendar interface.
-- Exact PointT holiday payloads derived from MyBuderus and HomeCom Easy,
-  including date mode, affected circuits, heating, hot-water, ventilation,
+- Exact PointT holiday payloads, including date mode, affected circuits, heating, hot-water, ventilation,
   thermal-disinfection, fixed-temperature, and encoded-name fields.
 - Privacy-safe diagnostics indicating whether holiday calendar writes are
   currently available. The diagnostics schema is now version 5.
@@ -2234,7 +4748,7 @@ heating settings that the standard calendar editor cannot represent.
 - Editing a holiday changes only its dates and, where PointT supports cloud
   names, its name. All circuit assignments and operating-mode settings are
   preserved from the latest confirmed PointT value.
-- New holidays use the same conservative defaults as the official apps:
+- New holidays use conservative defaults:
   all advertised circuits, fixed-temperature heating at 17 °C when supported,
   hot water off, ventilation off when supported, and thermal disinfection on
   when supported.
@@ -2291,7 +4805,7 @@ heating settings that the standard calendar editor cannot represent.
 
 ### Changed
 
-- Holiday entities now use terminology aligned with MyBuderus and HomeCom Easy:
+- Holiday entities now use clear terminology:
   **Holiday mode active**, **Next holiday**, and **Holiday periods**, with
   corresponding German translations.
 - The capability roadmap now reflects read-only holiday support as released.
@@ -2317,9 +4831,8 @@ heating settings that the standard calendar editor cannot represent.
 
 ## [0.2.2] - 2026-08-22
 
-This release aligns heating/cooling and circuit states with the enums embedded
-in MyBuderus and HomeCom Easy. It replaces previously inferred labels with the
-terminology and raw values used by both official apps.
+This release corrects heating/cooling and circuit states. It replaces
+previously inferred labels with exact raw values and clearer terminology.
 
 ### Added
 
@@ -2327,8 +4840,8 @@ terminology and raw values used by both official apps.
   dynamically discovered `/heatingCircuits/{hc}/suWiSwitchMode` resource.
   Supported states are idle, automatic switching, heating only, and cooling
   only. The entity is omitted when the gateway does not expose the resource.
-- Complete English and German state labels for all APK-confirmed heating-
-  circuit and hot-water status values, including enabled, disabled, automatic,
+- Complete English and German state labels for all heating-circuit and
+  hot-water status values, including enabled, disabled, automatic,
   manual, cooling, holiday, extra hot water, and thermal disinfection states.
 
 ### Fixed
@@ -2338,12 +4851,12 @@ terminology and raw values used by both official apps.
 - **Heating/cooling support** now recognizes `heat`, `cool`, and `heatCool`;
   camel-case values are normalized only at the Home Assistant boundary.
 - **Season optimization** now recognizes `off`, `automatic`, `forcedHeat`, and
-  `forcedCool`, with app-aligned labels for automatic switching, heating only,
+  `forcedCool`, with clear labels for automatic switching, heating only,
   and cooling only.
-- **Heating circuit status** now includes the APK-confirmed `ch_enabled` value
+- **Heating circuit status** now includes the `ch_enabled` value
   in addition to disabled, emergency, floor-drying, summer-pause, boost, away,
   holiday, manual heating/cooling, and automatic heating states.
-- **Hot water status** now uses the complete app enum: enabled, disabled,
+- **Hot water status** now uses the complete value set: enabled, disabled,
   automatic, off, Eco, Eco+, Comfort, extra hot water, away, holiday, floor
   drying, and thermal disinfection.
 
@@ -2352,7 +4865,7 @@ terminology and raw values used by both official apps.
 - Existing config entries, devices, entity IDs, history, dashboards, and
   automations are preserved; no migration is required.
 - Only displayed state values and translations change where an older inferred
-  enum did not match the official apps.
+  enum was incorrect.
 - The new entity remains read-only. Heating/cooling switching is not exposed as
   a control until a physical write and read-back test confirms safe behavior.
 - Unsupported optional paths are ignored after capability discovery and do not
@@ -2369,18 +4882,18 @@ terminology and raw values used by both official apps.
 
 ### Added
 
-- App-aligned operating states for current heat demand, compressor, electric
+- Operating states for current heat demand, compressor, electric
   auxiliary heater, central heating, seasonal optimization, data processing,
   and iSRC support.
-- German and English state labels based on the terminology used by MyBuderus
-  and HomeCom Easy, including blocked, defrost, home cooling, and pool modes.
+- German and English state labels, including blocked, defrost, home cooling,
+  and pool modes.
 
 ### Enhanced
 
 - Stable entities are now created for known array and multipart resources even
   when their startup payload is empty or temporarily incomplete.
 - Dynamic PointT discovery is complemented by a bounded set of optional status
-  resources used by the official apps. Unsupported resources remain ignored
+  resources. Unsupported resources remain ignored
   and do not add recurring cloud requests.
 - Starts and operating times consistently provide total, heating, cooling, and
   hot-water entities, ready for values that become available after startup.
@@ -2481,15 +4994,15 @@ terminology and raw values used by both official apps.
   operating sensors.
 - Organize service counters and TC3 as diagnostics and outdoor temperature and
   away mode as primary values.
-- Use MyBuderus labels for heating and hot-water temperature levels and decode
+- Use clearer labels for heating and hot-water temperature levels and decode
   PointT's UTF-16/Base64 configured names for display.
 - Retire the empty switch-program placeholder and the duplicate aggregate
   start counter while preserving the detailed compressor counters, and omit
   optional circuit-name sensors when no name is configured.
 - Represent static system information as a readable module-and-version text
   instead of an unhelpful module count while retaining sanitized attributes.
-- Align German heating labels with the resolved MyBuderus and HomeCom Easy 5.0
-  language resources while keeping clearer energy terminology where needed.
+- Refine German heating labels while keeping clearer energy terminology where
+  needed.
 - Use the detected Bosch or Buderus brand for device manufacturers and gateway
   names, and identify PointT heat-pump sources as `Heat pump`.
 - Redrew the brand icon with a compact symmetric three-blade fan and added its

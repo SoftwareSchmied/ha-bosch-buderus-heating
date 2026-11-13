@@ -2,7 +2,14 @@
 
 ## Published releases
 
-As of 2026-11-02, **0.8.3 is Stable/Latest** and includes the work from all
+Since 2026-11-13, **0.9.0 is Stable/Latest**. It adds the local access to
+K40/K40RF gateways, operation without the cloud, the room controllers of the
+RRC 2.0 platform, the weekly schedule editor and the firmware entity; the
+[CHANGELOG](../CHANGELOG.md) lists what was confirmed on real devices. The
+text that follows describes the 0.8 line, which remains the base of these
+features.
+
+On 2026-11-02, **0.8.3 became Stable/Latest** and includes the work from all
 0.8.2 betas plus the compatible maintenance updates and sign-in guide changes.
 It fixes platform imports on Home Assistant 2026.9.2, includes compatible
 maintenance updates from PRs #97 through #99 and promotes the read-only time
@@ -17,8 +24,7 @@ supports Bosch and Buderus PointT systems and includes:
 
 - brand-aware SingleKey ID authorization, serialized token rotation, reauth,
   and selection of one or more gateways;
-- bounded dynamic discovery plus a small catalog of paths verified in both
-  MyBuderus and HomeCom Easy;
+- bounded dynamic discovery plus a small catalog of known optional paths;
 - grouped batch polling, partial-result handling, negative capability pauses,
   bounded rate-limit backoff, and a gateway circuit breaker;
 - dynamic heating-circuit, hot-water, heat-source, energy, diagnostic, and
@@ -123,7 +129,7 @@ gateway removal and user administration remain excluded.
 
 ## Optional local backend
 
-An eventual EMS-ESP or Modbus backend may implement the same semantic
+An eventual local bus or Modbus backend may implement the same semantic
 capability model. It would be a separate transport with separate fixtures and
 must not be described as local MX300/MX400 access.
 

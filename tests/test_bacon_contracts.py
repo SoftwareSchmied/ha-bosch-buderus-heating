@@ -208,8 +208,9 @@ async def test_http_rate_limit_prevents_another_request(header, seconds):
         aiohttp.ClientSession() as session,
     ):
         client = BaconClient(session, provider(), url=url, clock=lambda: 100)
-        for _ in range(2):
-            with pytest.raises(BaconError, match="rate_limited") as exc:
+        # The server's limit first, then the local block of its pause (C49).
+        for category in ("rate_limited", "paused"):
+            with pytest.raises(BaconError, match=category) as exc:
                 await client.get_devices()
             assert exc.value.retry_after == seconds
         assert calls == [1]

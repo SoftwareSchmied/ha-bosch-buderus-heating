@@ -75,12 +75,21 @@ Reloading is therefore not a way to bypass an active cloud rate limit.
    `budget_wait`, with no invented HTTP attempt or failed request.
 
 Core discovery and supplementary requests share the limit of **512 distinct
-requested paths per gateway and metadata session**. Reference depth is limited
+requested paths per gateway and metadata session**. The later search for
+parts missing at start (see below) is charged to the same limit. Reference
+depth is limited
 to eight, with roots at depth zero. The supplementary queue also holds at most
 512 paths. These bounds survive automatic setup retries. Retrying an already
 requested path does not consume another distinct-path slot. A `resource_limit`
 or `depth_limit` result is a safety stop for this session, not an ordinary
 temporary failure that will be retried indefinitely.
+
+On a room controller, the setting leaves of the listed radio devices are read
+last and have a limit of their own of 192 paths, outside the 512. The first
+leaf of every device comes first, then the second, so a limit drops the least
+important leaves of all devices. A room controller answers HTTP 500 for a
+leaf it does not have; for optional probes and zone detail leaves I take such
+an answer in a batch as "missing" without a single read of its own.
 
 ## Recovery after startup
 
@@ -103,11 +112,12 @@ postpone recovery. Missed deadlines do not cause a burst of catch-up batches.
 | --- | --- |
 | Valid read-only scalar with the reviewed schema | Cache it with the actual read time. Stop periodic reads for the rest of this load. |
 | Timeout, connection/service failure, malformed response, missing requested item or unusable value, including an empty HTTP 200 | Keep the affected paths pending. The delay after successive failures is **60, 120, 300, 900, then 1800 seconds**. Further failures keep the 1800-second delay; there is no lifetime attempt limit. |
-| HTTP 403, 404 or 406 for an advertised metadata sensor or an existing registered metadata sensor | Retain it as expected and retry no earlier than **1800 seconds** later. These local errors do not fail the complete integration. |
+| HTTP 403, 404 or 406 for an advertised metadata sensor or an existing registered metadata sensor | Retain it as expected and retry no earlier than **1800 seconds** later. After the fifth such answer (since 0.9.0-alpha.6) it counts as unsupported until the next discovery, so a replaced device is not read every 30 minutes for good. These local errors do not fail the complete integration. |
 | HTTP 403, 404 or 406 for diagnostic-only data or an unconfirmed optional candidate | Mark it unsupported for this load. Do not keep requesting an unsupported informational path. A new explicit discovery can reconsider it. |
 | HTTP 429, including a rate-limited item inside a successful bulk envelope | Respect the account-wide pause before any further PointT read. Use `Retry-After` where supplied, bounded to 60 through 3600 seconds; otherwise pause for 300 seconds. Per-path deadlines still apply afterward. |
 | An expired access token that can be refreshed | Keep the existing single token refresh and repeat the PointT request once. This is distinct from a transport retry. |
-| Authentication still fails, including an unresolved 401 item | End the metadata session and let Home Assistant request reauthentication. Do not hide an invalid sign-in as an optional-data problem. |
+| A 401 for a single item inside an accepted bulk request | Treat it like the regular poll does: a temporary failure of that path only, retried with the delays above. The request itself was accepted with the current token, so no new sign-in is requested. |
+| Authentication of the request still fails | End the metadata session and let Home Assistant request reauthentication. Do not hide an invalid sign-in as an optional-data problem. |
 | Cancellation or expiry of the batch deadline | Release the recovery reservation. Attempted paths remain pending with the appropriate cancellation/timeout result. Cancellation is not counted as HTTP success. |
 | A reviewed leaf unexpectedly contains references or is writable | Route the confirmed resource through normal catalog handling. Follow only actual references within allowed roots and the shared bounds. Do not freeze a writable control as static metadata. |
 | Reply for another gateway, an unrequested path or a different resource path | Do not store it as the requested value. Leave the missing/invalid requested data eligible for recovery. |
@@ -126,6 +136,13 @@ batch can have two actual PointT HTTP attempts. Normal discovery and normal
 polling retain their existing bounded retry and fallback rules; disabling
 those retries is specific to supplementary reads.
 
+In discovery, as in normal polling, an HTTP 5xx or other status answer to one
+individual fallback read stays local to that path, and discovery continues
+with the remaining paths. A timeout or network failure without any answer, a
+sign-in failure or a rate limit still ends the discovery at once. Three
+fallback reads in a row that answer HTTP 5xx end it as well, so a failing
+cloud does not receive up to 30 individual reads per batch.
+
 ## Entity continuity and limits
 
 An already registered product-name or refrigerant-count sensor is created with
@@ -138,7 +155,17 @@ unless the user enables them.
 
 This is not continuous rediscovery of the entire installation. A physically
 added circuit or a new path that was never reported or scheduled still needs
-[rediscovery](reconfiguration.md). Other static resources outside the reviewed
+[rediscovery](reconfiguration.md). The one exception is a part that an earlier
+start discovered and that is missing now: the integration searches that
+subtree again 5, 15 and 60 minutes after the start and then every six hours
+until one day has passed. A search waits for a working cycle, a rate limit
+postpones it, and it is charged to the same path limit. A missing path that
+answers HTTP 5xx during the search uses up that search. Only a search without
+any answer, or one that the cloud ends with three 5xx answers in a row, is
+postponed, at most 24 times; then the search waits for the next start, which
+still expects the part. A part still missing after the last search is no longer expected at
+the next start; its entities stay in the registry. Without stored resources, a
+root that ended with a temporary error is searched again on the same schedule. Other static resources outside the reviewed
 list retain their previous behavior. Previously discovered dynamic values
 returning 404 already recover on the next regular group read, with their
 existing entities. Fault probes, other path pauses and the gateway circuit
@@ -159,10 +186,75 @@ poll healthy. Stored values and unavailable states are not fabricated.
 | Slow values, such as operating hours | 900 seconds | 1800 seconds |
 | Successfully read supplementary metadata | No periodic requests | No periodic requests |
 
+A control whose entities are all disabled in Home Assistant is polled with the
+slow values instead (900 or 1800 seconds). Controls that the climate, hot water,
+holiday and calendar entities read keep the control group. Enabling an entity
+moves its control back to the control group within seconds, without a restart;
+a cloud value older than the control interval is then read at once. A reading
+that is also shown from the local access keeps the slower of the two rates.
+
+The firmware update list of a cloud gateway is one extra request about ten
+minutes after the start and then every six hours, at most four a day per
+gateway; a gateway the list refuses or does not name is read once a day. It is
+sent once, without a retry, and waits like every request while the cloud
+access is paused.
+
 Due functional groups share batches of up to 30 paths. Group scheduling permits
 one second of timer-rounding tolerance; retry deadlines and rate-limit pauses
 are not shortened by that tolerance. Normal writes retain metadata validation
 and read-back confirmation and are never blindly retried.
+
+A write waits at most 60 seconds for a running poll or another write of its
+gateway; after that it sends nothing and says so. Since 0.9.0-alpha.6 a write
+that has started also has an overall deadline of 60 seconds (180 seconds for a
+holiday change, which may send up to five values) for its fresh reads, its
+requests and the read-backs. A gateway that is read back more slowly gets
+correspondingly longer, at least its read-back waits plus 30 seconds per step,
+so a healthy change is never cut short. With a
+slow cloud it then no longer holds the polling of its gateway and the calling
+automation for minutes. Right before each request the integration checks the
+time left: if it no longer covers the request timeout (30 seconds) and the
+read-back waits, the request is not sent and the change is reported as busy,
+so it can simply be tried again; a slow check before it thus never cuts a
+request off while it is sent. A change stopped before its request went out
+changes no reading. At the deadline after a request it ends as not confirmed:
+the request may already have been sent, so the reading involved is no longer
+shown as current until it is read again, and nothing is sent a second time.
+
+Since 0.9.0-alpha.3, paths of the groups read every 5, 15 or 60 minutes are
+spread over the minutes before their group's deadline where the batch of that
+minute has room left, instead of all falling due together and needing extra
+batches. Each path keeps its group's interval; only the minute within it
+moves, and a path read early is not read again before its group's deadline.
+A wake-up without a batch never gets one this way, and when no minute has room
+the deadline itself is used, as before. Small plants therefore keep their
+previous timing. With the anonymized cloud inventory of my heat pump (20 live
+values, 32 paths every 5 minutes, 16 every 15 minutes and 9 hourly paths) a
+simulated hour needs 60 batches instead of 76, with the same 1,657 path reads.
+If a group cannot complete because a batch with another of its paths keeps
+failing, a path read early (or in an earlier, budget-limited cycle) waits at
+most one interval of its group and one minute; then it is read again, so its
+value does not expire. The first reads after a start or a requested discovery stay immediate.
+
+A batch that fails as a whole beside answered ones keeps its group due. The
+paths answered in that cycle are then not read again before their own group
+interval has passed; only the failing batch is repeated each minute, as a
+batch of its own read after the others, so its failure does not take other
+readings with it. A cycle in which only that batch was read and failed is no
+gateway failure, as when it failed beside the others; a cycle in which other
+readings fail too is. The batch warning appears once and ends only after a
+cycle in which every batch answered.
+
+An explicit refresh, for example the "Update entity" action, reads every
+group. A further explicit refresh within the shortest group interval of the
+profile (60 seconds, or 120 seconds with the cloud-friendly profile) reads
+only the control group, so an automation that asks every few seconds does not
+read the whole plant each time.
+
+While an entity shows the local value of a paired reading, its cloud path is
+read every 15 minutes only and at once again at its normal rate when the cloud
+value is shown again; see
+[source selection](source-selection.md#cloud-reads-while-local-values-are-shown).
 
 For **each** eligible product-name or installed-circuit-count path, stopping
 slow polling avoids 96 scheduled path reads per day in the standard profile or
@@ -183,6 +275,85 @@ responses rather than fewer HTTP requests. Separating startup metadata can
 add a dedicated initial batch. Failed supplementary reads also need later
 recovery requests. The test does not establish faster startup, a guaranteed
 percentage reduction, or real-world uptime on a physical heating system.
+
+## iCom gateways
+
+Gateways that report the device type `icom` (for example KM200, KM100, KM50
+or MB LAN 2) pass every request on to the gateway itself. In one diagnostic I
+evaluated, such a gateway answered about 40 % slower per path than a room
+controller, and during an outage every request ran into the 30 s timeout. The
+cloud then answered with a rate limit after a few failed cycles. Since
+0.9.0-alpha.6 I therefore apply a separate load profile to these gateways
+only; every other gateway keeps the behaviour described above:
+
+- **Cloud-friendly from the start:** a new cloud connection with an iCom
+  gateway starts with the cloud-friendly profile. An existing connection with
+  an iCom gateway is switched to it once, at the first start of 0.9.0-alpha.6
+  or later; the log notes this once at info level, and the connection
+  restarts once with the new profile. The profile can be changed in the
+  options of the connection like any other profile; a choice made there is
+  kept and never switched again.
+- **Smaller batches after a timeout:** after a cycle with a timeout, the next
+  cycle reads batches of half the size, at least 10 paths (30, 15, 10). After
+  three cycles in a row in which every batch answered, the size doubles again
+  step by step (10, 20, 30). A fixed batch size of 10 would double the number
+  of requests in normal operation without any evidence that it helps, so the
+  size goes back to 30 once the gateway answers. The fault sources stay one
+  batch.
+- **Growing breaker:** the breaker still opens after three failed cycles in a
+  row. During one outage each further opening pauses longer: 5, 10, 20 and
+  then 30 minutes at most. The first usable cycle closes it, and the next
+  outage starts again at 5 minutes.
+- **Longer read-back:** a write is read back after 1, 2, 3 and 4 seconds
+  (10 s in all) instead of 0.5, 1 and 2 seconds. A write is still sent only
+  once. The overall deadline of a write stays 60 seconds; a holiday change
+  gets 200 seconds instead of 180 (five steps of 10 s waits plus 30 s).
+
+I tested this with simulated outages of this shape (timeouts, a rate limit
+after four failed cycles, recovery). It is expected, untested on a real iCom
+gateway.
+
+## Capacity with several systems
+
+All PointT requests of one saved cloud access share three request slots:
+regular polling of every gateway, wallboxes, startup metadata, device checks,
+reconnection and confirmation reads. Each gateway sends its batches one after
+another and never overlaps its own cycles. If a cycle takes longer than its
+interval, the next one starts later instead of running in parallel.
+
+I measured the actual coordinator, client and slot limit against a local server
+with fixed response times of 20 and 50 ms. The table scales the measured cycle
+length at 50 ms, in multiples of one response time, to the average response
+time of 0.56 seconds observed on my installation and to a pessimistic 2 seconds:
+
+| Systems × operating values | Batches per minute | Cycle at 0.56 s | Cycle at 2 s |
+| --- | ---: | ---: | ---: |
+| 1 × 40 | 2 | about 1.5 s | about 6 s |
+| 3 × 120 | 12 | about 4 s | about 15 s |
+| 5 × 256 | 45 | about 13 s | about 48 s |
+| 10 × 512, the discovery maximum | 180 | about 55 s | about 200 s |
+
+No more than three requests ran at once, and all gateways progressed evenly.
+A device check issued during full load waited roughly the duration of one to
+ten responses. These are synthetic measurements, not a statement about Bosch
+cloud limits. Large accounts may therefore prefer the cloud-friendly profile.
+
+Diagnostics report the longest cycle per gateway, how often a cycle exceeded
+its interval and how long requests waited for a free slot.
+
+## Energy history of room controllers
+
+On a room controller (RRC 2.0, for example a TC100.2), the integration reads
+the daily energy history and imports it as long-term statistics. This comes on
+top of the regular polling. The first cycle runs 15 minutes after the start,
+later cycles at most every 3 hours. A cycle sends at most 8 requests; the
+shared transport may repeat one of them once after a 5xx answer or a timeout,
+so a cycle makes at most 16 HTTP attempts. A first filling reaches back at most
+400 days. While the cloud cannot be used (sign-in, pause, rate limit, outage)
+a cycle waits and is tried again after one hour; a rate limit answered to the
+history pauses the whole cloud access like any other. The import position is
+stored, so a restart neither reads the history again nor waits less. The
+energy history is expected, untested on a real controller.
 
 ## Manual heating-circuit setpoint recovery
 
@@ -214,13 +385,9 @@ A 404 for this provisional target does not install a 24-hour absence pause.
 403 pauses remain unchanged. Targeted results update only the affected resource;
 they do not declare a failed main cycle healthy or reset its polling timer.
 
-Static inspection of MyBuderus and HomeCom Easy **5.0.0 (26072914)** supports
-reading the matching setpoint again after a mode change and reconsidering
-failed cached reads. The APKs contain several provider paths, including an
-ICOM helper with five retries one second apart. The 3/10/20-second sequence and
-the episode limit above are integration policy, not timing copied from that
-helper. Static inspection does not establish how long a particular installation
-takes to expose its setpoint. No appliance write test is claimed for this change.
+The 3/10/20-second sequence and the episode limit above are integration
+policy. How long a particular installation takes to expose its setpoint has not
+been established. No appliance write test is claimed for this change.
 
 ## Diagnostics and privacy
 
@@ -250,13 +417,46 @@ gelesene Zusatzdaten, sofern die Konfiguration und Anmeldung unverändert sind.
 Vorübergehend fehlende Zusatzdaten werden ohne Neustart nachgeladen. Bestehende
 Sensoren behalten ihre Identität und werden nach erfolgreichem Lesen wieder
 verfügbar. Die Wartezeiten steigen nach Fehlern von 1 auf 2, 5, 15 und 30 Minuten
-und bleiben danach bei 30 Minuten. Cloud-Sperrzeiten und reguläre Anlagenabfragen
+und bleiben danach bei 30 Minuten. Ein Wert, der fünfmal als nicht vorhanden
+(403, 404 oder 406) beantwortet wurde, wird bis zur nächsten Discovery nicht
+mehr gelesen. Cloud-Sperrzeiten und reguläre Anlagenabfragen
 haben Vorrang. Nicht unterstützte reine Zusatzpfade und Sicherheitsgrenzen sind
 ausdrücklich von dieser fortgesetzten Wiederholung ausgenommen.
+
+Ein Schreibvorgang wartet höchstens 60 Sekunden auf eine laufende Abfrage und
+sendet sonst nichts. Seit 0.9.0-alpha.6 hat ein begonnener Schreibvorgang
+außerdem eine Gesamtfrist von 60 Sekunden (Urlaubsänderungen mit bis zu fünf
+Werten 180 Sekunden) für die frische Prüfung, die Anfragen und das
+Zurücklesen. Bei einem Gateway mit längeren Rücklesezeiten verlängert sie sich
+auf mindestens diese Wartezeiten plus 30 Sekunden je Schritt. Direkt vor jeder
+Anfrage prüft die Integration die verbleibende Zeit: Reicht sie nicht mehr für
+die Anfragezeit (30 Sekunden) und das Zurücklesen, wird nichts gesendet und
+der Vorgang als belegt gemeldet, er kann also einfach wiederholt werden. Ein
+Abbruch vor der Anfrage ändert keinen Wert. Läuft die Frist nach einer Anfrage
+ab, gilt der Vorgang als nicht bestätigt; der betroffene Wert gilt bis zum
+nächsten Lesen nicht mehr als aktuell, und nichts wird ein zweites Mal
+gesendet.
 
 Die Integration spart wiederholte Metadatenabrufe und lässt unwichtige
 Zusatzabfragen die funktionierende Einrichtung nicht mehr abbrechen. Neue,
 bisher unbekannte Anlagenbestandteile benötigen weiterhin eine neue Discovery.
+
+Für iCom-Gateways (Gerätetyp `icom`) gilt seit 0.9.0-alpha.6 ein eigenes
+Lastprofil, alle anderen Gateways bleiben unverändert: Eine neue
+Cloud-Verbindung mit einem iCom-Gateway beginnt mit dem cloudschonenden
+Profil. Eine bestehende Verbindung mit einem iCom-Gateway stellt die
+Integration beim ersten Start ab 0.9.0-alpha.6 einmalig darauf um; das Log
+vermerkt das einmal auf Info-Ebene, und die Verbindung startet dafür einmal
+neu. Das Profil lässt sich in den Optionen wie bisher ändern; eine dort
+getroffene Wahl bleibt erhalten und wird nie wieder umgestellt. Nach einem Zyklus
+mit Zeitüberschreitung liest der nächste Zyklus halb so große Pakete,
+mindestens 10 Pfade; nach drei fehlerfreien Zyklen in Folge verdoppelt sich
+die Größe schrittweise wieder bis 30. Der Schutzschalter pausiert während
+eines Ausfalls 5, 10, 20 und höchstens 30 Minuten und beginnt nach dem ersten
+brauchbaren Zyklus wieder bei 5 Minuten. Schreibvorgänge werden nach 1, 2, 3
+und 4 Sekunden zurückgelesen; die Gesamtfrist einer Urlaubsänderung beträgt
+dort 200 statt 180 Sekunden. Ich habe das mit simulierten Ausfällen geprüft;
+an einem echten iCom-Gateway ist es erwartet, aber ungetestet.
 
 Für einen fehlenden manuellen Heizkreis-Sollwert gibt es zusätzlich höchstens
 drei gezielte Abrufe pro zusammenhängendem Ausfall. Die Wartezeiten von 3, 10

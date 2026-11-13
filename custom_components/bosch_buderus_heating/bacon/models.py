@@ -136,6 +136,8 @@ class Device:
     error_present: bool | None = None
     info_timestamp: int = -1
     info_received_at: float = 0
+    # Last device-originated, non-retained message on any channel.
+    alive_at: float | None = None
     model: str | None = None
     state: Shadow | None = field(default=None, repr=False)
     metadata: dict[str, Any] = field(default_factory=dict, repr=False)
@@ -151,6 +153,8 @@ class Device:
     state_fields_received_at: dict[str, float] = field(default_factory=dict, repr=False)
     state_fields_version: dict[str, int] = field(default_factory=dict, repr=False)
     state_snapshot_version: int = -1
+    # Counts accepted reported-field observations to separate device reports.
+    state_reports: int = 0
     received_at: float = 0
     generation: int = 0
     state_generation: int = 0

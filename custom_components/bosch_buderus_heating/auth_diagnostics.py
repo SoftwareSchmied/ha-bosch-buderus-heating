@@ -20,16 +20,22 @@ from datetime import UTC, datetime
 from time import time
 from typing import Any
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.storage import Store
 from homeassistant.util.hass_dict import HassKey
 
+from .configuration import CLOUD_KIND
+from .configuration_migration import legacy_cloud_connection_id
 from .const import DOMAIN
+from .log_helpers import log_failure
 from .pointt import (
     AuthTokens,
     RateLimited,
     RefreshAttempt,
+    RefreshRefused,
     RefreshTokenRejected,
+    TokenEndpointRejection,
     TokenManager,
 )
 
@@ -41,52 +47,109 @@ MAX_ISSUED = 20
 _KEY_PATTERN = re.compile(r"[0-9a-f]{64}")
 _SAFE_TOKEN = re.compile(r"[A-Za-z0-9_.:-]{1,64}")
 
-_RECORDERS: HassKey[dict[str, AuthDiagnostics]] = HassKey(f"{DOMAIN}.auth_diagnostics")
+type HistoryKey = tuple[str, str]
+
+_RECORDERS: HassKey[dict[HistoryKey, AuthDiagnostics]] = HassKey(
+    f"{DOMAIN}.auth_diagnostics"
+)
+_LOADED_OWNERS: HassKey[set[str]] = HassKey(f"{DOMAIN}.auth_diagnostics_owners")
 
 
-def _storage_key(entry_id: str) -> str:
-    return f"{DOMAIN}.auth_history.{entry_id}"
+def _storage_key(owner_id: str, connection_id: str) -> str:
+    # The migrated original cloud access keeps the per-entry history file used
+    # before managed connections, so its history continues after the update.
+    if connection_id == legacy_cloud_connection_id(owner_id):
+        return f"{DOMAIN}.auth_history.{owner_id}"
+    return f"{DOMAIN}.auth_history.{owner_id}.{connection_id}"
 
 
-async def async_load_auth_diagnostics(
-    hass: HomeAssistant, entry_id: str, *, clock: Callable[[], float] = time
-) -> AuthDiagnostics:
-    """Return the loaded history for one entry, loading it once per process."""
+def _cloud_connection_ids(entry: ConfigEntry[Any]) -> set[str]:
+    ids = {legacy_cloud_connection_id(entry.entry_id)}
+    connections = entry.data.get("connections")
+    if isinstance(connections, Mapping):
+        ids.update(
+            key
+            for key, value in connections.items()
+            if isinstance(key, str)
+            and isinstance(value, Mapping)
+            and value.get("kind") == CLOUD_KIND
+        )
+    return ids
+
+
+async def async_load_auth_histories(
+    hass: HomeAssistant, entry: ConfigEntry[Any], *, clock: Callable[[], float] = time
+) -> None:
+    """Load the histories of every saved cloud access of one entry once."""
     recorders = hass.data.setdefault(_RECORDERS, {})
-    if (recorder := recorders.get(entry_id)) is not None:
+    for connection_id in sorted(_cloud_connection_ids(entry)):
+        key = (entry.entry_id, connection_id)
+        if key in recorders:
+            continue
+        store: Store[dict[str, Any]] = Store(
+            hass, STORAGE_VERSION, _storage_key(*key), private=True
+        )
+        try:
+            stored = await store.async_load()
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Token refresh history could not be read; starting anew",
+                error=err,
+            )
+            stored = None
+        recorders.setdefault(key, AuthDiagnostics(store, stored, clock=clock))
+    hass.data.setdefault(_LOADED_OWNERS, set()).add(entry.entry_id)
+
+
+@callback
+def auth_diagnostics_for(
+    hass: HomeAssistant, owner_id: str, connection_id: str
+) -> AuthDiagnostics | None:
+    """Return the history of one access without I/O.
+
+    A new access added after loading starts an empty history. Before its entry
+    was loaded, nothing is recorded, so an existing file is never overwritten.
+    """
+    recorders = hass.data.setdefault(_RECORDERS, {})
+    key = (owner_id, connection_id)
+    if (recorder := recorders.get(key)) is not None:
         return recorder
-    store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, _storage_key(entry_id))
-    try:
-        stored = await store.async_load()
-    except Exception:
-        _LOGGER.warning("Token refresh history could not be read; starting anew")
-        stored = None
-    recorder = recorders.get(entry_id)
-    if recorder is None:
-        recorder = AuthDiagnostics(store, stored, clock=clock)
-        recorders[entry_id] = recorder
+    if owner_id not in hass.data.get(_LOADED_OWNERS, set()):
+        return None
+    recorder = recorders[key] = AuthDiagnostics(
+        Store(hass, STORAGE_VERSION, _storage_key(*key), private=True), None
+    )
     return recorder
 
 
 @callback
-def auth_diagnostics_for(hass: HomeAssistant, entry_id: str) -> AuthDiagnostics | None:
-    """Return an already loaded history without performing I/O."""
-    return hass.data.get(_RECORDERS, {}).get(entry_id)
+def loaded_auth_history(
+    hass: HomeAssistant, owner_id: str, connection_id: str
+) -> AuthDiagnostics | None:
+    """Return an existing history without creating one."""
+    return hass.data.get(_RECORDERS, {}).get((owner_id, connection_id))
 
 
-async def async_remove_auth_diagnostics(hass: HomeAssistant, entry_id: str) -> None:
-    """Delete the history together with its configuration entry."""
-    recorder = hass.data.get(_RECORDERS, {}).pop(entry_id, None)
-    store = (
-        recorder.store
-        if recorder is not None
-        else Store(hass, STORAGE_VERSION, _storage_key(entry_id))
-    )
-    await store.async_remove()
+@callback
+def forget_auth_history(
+    hass: HomeAssistant, owner_id: str, connection_id: str | None = None
+) -> None:
+    """Delete the history of a removed access, or of every access of an entry."""
+    recorders = hass.data.get(_RECORDERS, {})
+    for key in tuple(recorders):
+        if key[0] == owner_id and connection_id in (None, key[1]):
+            recorder = recorders.pop(key)
+            hass.async_create_task(
+                recorder.store.async_remove(), "remove token refresh history"
+            )
+    if connection_id is None:
+        hass.data.get(_LOADED_OWNERS, set()).discard(owner_id)
 
 
 class AuthDiagnostics:
-    """Record token lifecycle events for one configuration entry."""
+    """Record token lifecycle events for one saved cloud access."""
 
     def __init__(
         self,
@@ -178,15 +241,7 @@ class AuthDiagnostics:
         elif isinstance(attempt.error, RefreshTokenRejected):
             rejection = attempt.error.rejection
             if rejection is not None:
-                event.update(
-                    {
-                        "http_status": rejection.http_status,
-                        "oauth_error": rejection.oauth_error,
-                        "oauth_error_description": rejection.oauth_error_description,
-                        "body_format": rejection.body_format,
-                        "content_type": rejection.content_type,
-                    }
-                )
+                event.update(_rejection_fields(rejection))
                 reason = rejection.summary()
             else:
                 event["reason"] = "no_refresh_token"
@@ -215,6 +270,14 @@ class AuthDiagnostics:
                     event["http_status"] = status
             if isinstance(error, RateLimited) and error.retry_after is not None:
                 event["retry_after_s"] = _seconds(error.retry_after)
+            if isinstance(error, RefreshRefused):
+                # Refused without a definite OAuth error: retried later.
+                event.update(_rejection_fields(error.rejection))
+                _LOGGER.debug(
+                    "SingleKey ID refused the token refresh (%s); it is "
+                    "retried later and no new sign-in is requested yet",
+                    error.rejection.summary(),
+                )
             self._count(f"refresh_{_safe(attempt.outcome)}")
         self._append(now, event)
 
@@ -412,10 +475,21 @@ def _finite(value: object) -> bool:
     )
 
 
-def _seconds(value: float | None) -> float | None:
+def _rejection_fields(rejection: TokenEndpointRejection) -> dict[str, Any]:
+    return {
+        "http_status": rejection.http_status,
+        "oauth_error": rejection.oauth_error,
+        "oauth_error_description": rejection.oauth_error_description,
+        "body_format": rejection.body_format,
+        "content_type": rejection.content_type,
+    }
+
+
+def _seconds(value: float | None) -> int | None:
+    # Whole seconds are precise enough and avoid fractional digit noise in exports.
     if value is None or not math.isfinite(value):
         return None
-    return round(value, 1)
+    return round(value)
 
 
 def _duration(value: float | None) -> str:

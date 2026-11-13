@@ -1,0 +1,988 @@
+"""Run one verified local gateway independently of cloud connections."""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+from collections import deque
+from collections.abc import Callable
+from dataclasses import asdict, replace
+from datetime import timedelta
+from time import monotonic
+from typing import Any, cast
+
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.util import dt as dt_util
+
+from .configuration import (
+    CLOUD_KIND,
+    LOCAL_KIND,
+    ConfigurationError,
+    StoredBinding,
+    StoredConnection,
+)
+from .connection_runtime import ConnectionRuntime, SourceContext
+from .entity_use import EntityUse, entity_use
+from .gateway_identity import GatewayNamespace
+from .local_api.catalog import ReadRequest, request_for_path
+from .local_api.errors import LocalResourceError
+from .local_api.models import SystemInfo
+from .local_budget import LocalBudgetError, LocalReadBudget, local_budget_manager
+from .local_credentials import (
+    LocalCredentialError,
+    StoredLocalAccess,
+    load_local_access,
+)
+from .local_polling.inventory import Freshness
+from .local_polling.policy import PollClass, category, validate_interval
+from .local_polling.service import LocalPollingService, PollSnapshot
+from .local_polling.storage import LocalScheduleStore
+from .local_probe import (
+    ProbeContext,
+    ProbeProblem,
+    ProbeStatus,
+    TransportFailure,
+    assess_local_probe,
+)
+from .local_read import RESPONSE_PHASES, LocalReadClient, ReadResult, ReadState
+from .local_selection import (
+    UNUSED_SIGNAL_PERIOD,
+    paired_cloud_interval,
+    signal_slows_when_unused,
+)
+from .local_state import LocalCondition, LocalSourceState
+from .local_transport import (
+    CertificateBinding,
+    PortRole,
+    StaleLocalRequest,
+    read_local_probe,
+)
+
+# An explicit system read waits for the regular reads at most this often,
+# each time for at most this long (P49b step 8).
+SYSTEM_READ_ATTEMPTS = 6
+SYSTEM_READ_WAIT_SECONDS = 4.0
+# Within the comparison's 30 s limit, so a busy access is reported as busy.
+SYSTEM_READ_SECONDS = 20.0
+# A start that failed on the stored local pauses is tried again after these.
+START_RETRY = (60.0, 120.0, 240.0, 480.0, 900.0)
+# B01: the start check stops for good only on these problems (and on another
+# gateway): a refused token, a changed certificate (P39) and too old firmware
+# need the user. Every other problem is tried again.
+_STOP = frozenset(
+    {ProbeProblem.AUTH_REJECTED, ProbeProblem.TLS_CHANGED, ProbeProblem.OLD_FIRMWARE}
+)
+# The gateway cannot be reached or asks for a pause: the stored pause of the
+# gateway holds every reader, growing up to the last of these; a longer
+# Retry-After is kept.
+_UNREACHABLE = frozenset(
+    {
+        ProbeProblem.CONNECT,
+        ProbeProblem.DNS,
+        ProbeProblem.TIMEOUT,
+        ProbeProblem.RATE_LIMITED,
+        ProbeProblem.SERVICE_UNAVAILABLE,
+    }
+)
+UNREACHABLE_RETRY = (60.0, 120.0, 300.0, 600.0)
+# B01: the gateway answers, but not usably (for example still starting):
+# tried again after these, then hourly; a longer Retry-After is kept.
+START_PROBLEM_RETRY = (60.0, 120.0, 300.0, 600.0, 1200.0, 2400.0, 3600.0)
+# From this failed check of one start (after about 18 minutes) a repair note
+# names the cause and offers a new attempt; a successful check removes it.
+START_ISSUE_ATTEMPTS = 5
+# The note's text per cause; every other problem is an unexpected answer.
+_START_ISSUE_KEYS = {
+    ProbeProblem.TLS: "local_start_certificate",
+    ProbeProblem.INCOMPLETE_SYSTEM: "local_start_incomplete",
+    ProbeProblem.UNKNOWN_BRAND: "local_start_unrecognized",
+    ProbeProblem.UNKNOWN_FIRMWARE: "local_start_unrecognized",
+    ProbeProblem.INVALID_IDENTITY: "local_start_unrecognized",
+}
+# Condition changes kept for the diagnostics.
+CONDITION_CHANGES = 20
+_DOWN = frozenset(
+    {
+        LocalCondition.PAUSED,
+        LocalCondition.UNAVAILABLE,
+        LocalCondition.AUTH_REQUIRED,
+        LocalCondition.CERTIFICATE_CHANGED,
+    }
+)
+_LOGGER = logging.getLogger(__name__)
+
+
+class LocalDriverFactory:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry[Any],
+        runtime: Callable[[], ConnectionRuntime],
+    ) -> None:
+        self.hass, self.entry, self.runtime = hass, entry, runtime
+
+    def __call__(self, identifier: str, record: StoredConnection) -> LocalConnection:
+        return LocalConnection(self, identifier, record)
+
+
+class LocalConnection:
+    def __init__(
+        self, factory: LocalDriverFactory, identifier: str, record: StoredConnection
+    ) -> None:
+        self.factory, self.identifier, self.record = factory, identifier, record
+        self.sources: dict[str, LocalSource] = {}
+        self.closed = False
+
+    async def connect(self) -> None:
+        # Verification belongs to the source and never blocks peer startup.
+        if self.closed or self.record.kind != LOCAL_KIND:
+            raise ConfigurationError("unsupported_connection")
+
+    def source(self, binding_id: str, binding: StoredBinding) -> LocalSource:
+        if (
+            self.closed
+            or binding.connection_id != self.identifier
+            or binding.adapter != LOCAL_KIND
+        ):
+            raise ConfigurationError("local_configuration_changed")
+        source = LocalSource(self, binding_id, binding)
+        self.sources[binding_id] = source
+        return source
+
+    async def close(self) -> None:
+        self.closed = True
+        await asyncio.gather(*(s.close() for s in tuple(self.sources.values())))
+
+
+class _IdentityClient:
+    """A later system response must still belong to the verified gateway."""
+
+    def __init__(self, client: LocalReadClient, gateway_id: str) -> None:
+        self.client, self.gateway_id = client, gateway_id
+
+    async def read(self, request: ReadRequest) -> ReadResult:
+        result = await self.client.read(request)
+        if (
+            result.observation is not None
+            and isinstance(result.observation.data, SystemInfo)
+            and result.observation.data.gateway_id != self.gateway_id
+        ):
+            return replace(
+                result,
+                state=ReadState.ACCESS_ERROR,
+                problem="local_identity_conflict",
+                observation=None,
+            )
+        return result
+
+    async def close(self) -> None:
+        await self.client.close()
+
+
+class LocalSource:
+    def __init__(
+        self, connection: LocalConnection, binding_id: str, binding: StoredBinding
+    ) -> None:
+        self.connection, self.binding_id, self.binding = connection, binding_id, binding
+        self.context: SourceContext | None = None
+        self.service: LocalPollingService | None = None
+        self.client: LocalReadClient | None = None
+        # The gateway of the verified access, once the reads start.
+        self._gateway_id: str | None = None
+        # A3: per reading, the answer last judged and whether it has no entity.
+        self._without_entity: dict[str, tuple[float | None, bool]] = {}
+        self._closed = False
+        # O93: the most recent condition changes, with time and fixed reason.
+        self._changes: deque[dict[str, object]] = deque(maxlen=CONDITION_CHANGES)
+        self._condition: LocalCondition | None = None
+        # Since when the access is paused or unavailable (monotonic seconds).
+        self._down_since: float | None = None
+        # G3: stops the running service hearing of enabled or disabled entities.
+        self._remove_use_listener: Callable[[], None] | None = None
+        # B01: set by the repair note to end the wait before the next check.
+        self._retry = asyncio.Event()
+
+    def refresh(self, paths: tuple[str, ...]) -> int:
+        """Read these paths again soon, within the existing explicit-read limits.
+
+        Used after a confirmed cloud write. Silently does nothing when the source
+        is not running or its queue is full; regular reads continue anyway.
+        """
+        service = self.service
+        if service is None or not self.current():
+            return 0
+        requests: list[ReadRequest] = []
+        for path in paths:
+            try:
+                requests.append(request_for_path(path))
+            except LocalResourceError:
+                continue
+        sent = 0
+        # At most two operations of four reads: the explicit queue holds eight.
+        for start in range(0, min(len(requests), 8), 4):
+            chunk = tuple(requests[start : start + 4])
+            try:
+                service.request(chunk)
+            except StaleLocalRequest, ValueError:
+                break
+            sent += len(chunk)
+        return sent
+
+    def rescan_state(self) -> str:
+        """A6: see ``LocalPollingService.rescan_state``."""
+        service = self.service
+        if service is None or not self.current():
+            return "unavailable"
+        return service.rescan_state()
+
+    def rescan(self) -> str:
+        """A6: search the local resources again (``LocalPollingService``)."""
+        service = self.service
+        if service is None or not self.current():
+            return "unavailable"
+        return service.rescan()
+
+    async def test_connection(self) -> tuple[str, int]:
+        """Read ``/system/basicInfo`` once on explicit request (P21).
+
+        Uses the running client and its limits; the identity must still be the
+        verified gateway. Returns a result key and the elapsed milliseconds.
+        """
+        from time import monotonic
+
+        client = self.client
+        if client is None or not self.current():
+            return "not_running", 0
+        locator = cast(dict[str, Any], self.binding.to_data()["locator"])
+        started = monotonic()
+        try:
+            result = await _IdentityClient(client, str(locator["value"])).read(
+                request_for_path("/system/basicInfo")
+            )
+        except StaleLocalRequest:
+            return "not_running", 0
+        except asyncio.CancelledError:
+            task = asyncio.current_task()
+            if task is not None and task.cancelling():
+                raise
+            # The source was closed or replaced during the test.
+            return "not_running", 0
+        millis = round((monotonic() - started) * 1000)
+        if result.state is ReadState.SUCCESS:
+            return "ok", millis
+        problem = str(result.problem or "")
+        if problem == "local_identity_conflict":
+            return "other_gateway", millis
+        if problem == TransportFailure.TLS_CHANGED:
+            return "certificate_changed", millis
+        if problem == "auth_required":
+            return "auth_required", millis
+        if problem == "busy":
+            return "busy", millis
+        if problem in ("paused", "rate_limited"):
+            return "paused", millis
+        return "unreachable", millis
+
+    async def read_system(self) -> SystemInfo | str | None:
+        """Read the system information once on explicit request (P49b step 8).
+
+        Uses the running client and its read limits; the answer must still
+        belong to the verified gateway. While the regular reads hold the
+        access, the read waits for its turn a few times; ``"busy"`` if it
+        never gets one. None when the source is not running, paused,
+        unreachable or the answer is not a complete system record.
+        """
+        client = self.client
+        if client is None or not self.current():
+            return None
+        from time import monotonic
+
+        locator = cast(dict[str, Any], self.binding.to_data()["locator"])
+        reader = _IdentityClient(client, str(locator["value"]))
+        deadline = monotonic() + SYSTEM_READ_SECONDS
+        for attempt in range(SYSTEM_READ_ATTEMPTS):
+            try:
+                result = await reader.read(request_for_path("/system/basicInfo"))
+            except StaleLocalRequest:
+                return None
+            except asyncio.CancelledError:
+                task = asyncio.current_task()
+                if task is not None and task.cancelling():
+                    raise
+                return None  # the source was closed or replaced during the read
+            wait = result.retry_after_seconds
+            if result.state is not ReadState.DEFERRED or wait is None:
+                break
+            busy = result.problem == "busy"
+            if (
+                wait > SYSTEM_READ_WAIT_SECONDS
+                or attempt == SYSTEM_READ_ATTEMPTS - 1
+                or monotonic() + wait > deadline
+            ):
+                # Still busy with the regular reads: try again shortly. A
+                # longer pause of the access (rate limit) counts as paused.
+                return "busy" if busy or wait <= SYSTEM_READ_WAIT_SECONDS else None
+            # Busy with the regular reads, or the gap between two reads.
+            await asyncio.sleep(wait)
+            if not self.current():
+                return None
+        observation = result.observation
+        if (
+            result.state is not ReadState.SUCCESS
+            or observation is None
+            or not isinstance(observation.data, SystemInfo)
+            or not self.current()
+        ):
+            return None
+        return observation.data
+
+    def current(self) -> bool:
+        return (
+            not self._closed
+            and not self.connection.closed
+            and self.context is not None
+            and self.context.configuration_current
+        )
+
+    def diagnostics(self) -> dict[str, object]:
+        """Describe ages and discovery without values, credentials or device IDs."""
+        state = (
+            self.context.runtime.local_state(self.binding_id)
+            if self.context is not None and self.current()
+            else None
+        )
+        snapshot = (
+            self.service.snapshot()
+            if self.service is not None and self.current()
+            else None
+        )
+        reader = getattr(self.client, "health", None)
+        health = (
+            reader()
+            if callable(reader)
+            else {
+                "failures_by_class": {},
+                "response_times": {"samples": 0},
+                "response_phases": {phase: {"samples": 0} for phase in RESPONSE_PHASES},
+                "deferred_reasons": {},
+            }
+        )
+        reuse = getattr(self.client, "connection_reuse", None)
+        spacing = (
+            getattr(getattr(self.service, "budget", None), "start_spacing", None)
+            if self.current()
+            else None
+        )
+        hourly = (
+            self.hourly_counts() if snapshot else {"disabled": 0, "without_entity": 0}
+        )
+        return {
+            "condition": state.condition.value if state else "unavailable",
+            "identity_confirmed": state.identity_confirmed if state else False,
+            "problem": state.problem if state else None,
+            "request_metrics": asdict(self.client.metrics)
+            if self.client is not None
+            else {},
+            # O93: bounded history and counts, fixed codes only.
+            "condition_changes": list(self._changes),
+            **health,
+            # G4/O56: kept connections, handshakes, fallback and overlap.
+            "connection_reuse": reuse() if callable(reuse) else None,
+            # T1: the spacing between starts and the latency brake.
+            "start_spacing": spacing() if callable(spacing) else None,
+            "discovery_cursor": snapshot.discovery_cursor if snapshot else 0,
+            "discovery_complete": snapshot.discovery_exhausted if snapshot else False,
+            "discovery_pause_seconds": snapshot.discovery_pause_seconds
+            if snapshot
+            else 0,
+            "gateway_pause_seconds": snapshot.gateway_pause_seconds if snapshot else 0,
+            # G3: signals read hourly because all their entities are disabled;
+            # A3: and those no entity shows at all.
+            "signals_read_hourly_unused": hourly["disabled"],
+            "signals_read_hourly_without_entity": hourly["without_entity"],
+            "resources": [
+                {
+                    "path": v.request.definition.template
+                    if v.request.path.startswith(("/devices/", "/signals/"))
+                    else v.request.path,
+                    # The signal list has no expiry of its own: once read it
+                    # is "read", not "unconfirmed".
+                    "freshness": "read"
+                    if v.freshness is Freshness.UNCONFIRMED
+                    and v.observation is not None
+                    else v.freshness.value,
+                    "available": v.available,
+                    "age_seconds": v.age_seconds,
+                    "target_interval_seconds": v.target_interval_seconds,
+                    "actual_interval_seconds": v.actual_interval_seconds,
+                    "problem": v.problem,
+                }
+                for v in snapshot.resources
+            ]
+            if snapshot
+            else [],
+        }
+
+    def _note(self, condition: LocalCondition, reason: str | None) -> None:
+        """Keep a condition change for the diagnostics (O93); a recovery after
+        a pause or outage is logged once with its duration (O80)."""
+        if condition is self._condition:
+            return
+        self._condition = condition
+        self._changes.append(
+            {
+                "at": dt_util.utcnow().isoformat(timespec="seconds"),
+                "condition": condition.value,
+                "reason": reason,
+            }
+        )
+        now = monotonic()
+        if condition in _DOWN:
+            if self._down_since is None:
+                self._down_since = now
+        elif condition is LocalCondition.READY and self._down_since is not None:
+            _LOGGER.info(
+                "The local access is available again after %d s",
+                round(now - self._down_since),
+            )
+            self._down_since = None
+
+    def _state(
+        self,
+        condition: LocalCondition,
+        problem: str | None = None,
+        *,
+        reason: str | None = None,
+    ) -> None:
+        if self.context is not None and self.current():
+            self._note(condition, problem or reason)
+            self.context.publish_local(
+                LocalSourceState(
+                    self.context.identity_context(GatewayNamespace.K40_LOCAL),
+                    condition,
+                    problem=problem,
+                )
+            )
+            self._certificate_issue(condition)
+
+    def _certificate_issue(self, condition: LocalCondition) -> None:
+        """A changed gateway certificate is never accepted silently (P39): a
+        repair note points to the setup, which asks for confirmation."""
+        from homeassistant.helpers import issue_registry as ir
+
+        from .const import DOMAIN
+        from .repair_scope import repair_data
+
+        factory = self.connection.factory
+        issue_id = self._certificate_issue_id()
+        if condition is LocalCondition.CERTIFICATE_CHANGED:
+            ir.async_create_issue(
+                factory.hass,
+                DOMAIN,
+                issue_id,
+                is_fixable=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key="local_certificate_changed",
+                data=repair_data(
+                    factory.entry, self.connection.identifier, self.binding_id
+                ),
+            )
+        elif condition is LocalCondition.READY:
+            ir.async_delete_issue(factory.hass, DOMAIN, issue_id)
+
+    def _certificate_issue_id(self) -> str:
+        from .repair_scope import repair_id
+
+        return repair_id(
+            "local_certificate_changed_",
+            self.connection.factory.entry,
+            self.connection.identifier,
+            self.binding_id,
+        )
+
+    def _publish(self, snapshot: PollSnapshot) -> None:
+        if self.context is None or not self.current():
+            return
+        service = self.service
+        self._note(
+            snapshot.condition,
+            snapshot.problem
+            or (
+                getattr(service.budget, "pause_reason", None)
+                if service is not None and snapshot.condition is LocalCondition.PAUSED
+                else None
+            ),
+        )
+        self._certificate_issue(snapshot.condition)
+        self.context.publish_local(
+            LocalSourceState(
+                self.context.identity_context(GatewayNamespace.K40_LOCAL),
+                snapshot.condition,
+                snapshot.identity_confirmed,
+                tuple(
+                    v.observation
+                    for v in snapshot.resources
+                    if v.observation is not None
+                ),
+                resources=snapshot.resources,
+                problem=snapshot.problem,
+            )
+        )
+
+    def retry_start(self) -> bool:
+        """B01: try the start check again now, on request of its repair note.
+
+        Only ends the waiting between two attempts; a stored pause of the
+        gateway (rate limit, Retry-After) is still kept. False when the
+        source no longer runs.
+        """
+        if not self.current():
+            return False
+        self._retry.set()
+        return True
+
+    async def _wait(self, seconds: float) -> None:
+        """Wait between two start checks, at most until a retry is requested."""
+        try:
+            async with asyncio.timeout(seconds):
+                await self._retry.wait()
+        except TimeoutError:
+            pass
+
+    def _start_issue(self, problem: ProbeProblem | None) -> None:
+        """B01: a start that keeps failing is named in a repair note that
+        offers a new attempt; None removes the note."""
+        from homeassistant.helpers import issue_registry as ir
+
+        from .const import DOMAIN
+        from .repair_scope import repair_data
+
+        factory = self.connection.factory
+        issue_id = self._start_issue_id()
+        if problem is None:
+            ir.async_delete_issue(factory.hass, DOMAIN, issue_id)
+            return
+        ir.async_create_issue(
+            factory.hass,
+            DOMAIN,
+            issue_id,
+            is_fixable=True,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key=_START_ISSUE_KEYS.get(problem, "local_start_response"),
+            translation_placeholders={"code": problem.value},
+            data={
+                **repair_data(
+                    factory.entry, self.connection.identifier, self.binding_id
+                ),
+                "problem": problem.value,
+            },
+        )
+
+    def _start_issue_id(self) -> str:
+        from .const import LOCAL_START_ISSUE_PREFIX
+        from .repair_scope import repair_id
+
+        return repair_id(
+            LOCAL_START_ISSUE_PREFIX,
+            self.connection.factory.entry,
+            self.connection.identifier,
+            self.binding_id,
+        )
+
+    def _stop(self, condition: LocalCondition, problem: str) -> bool:
+        """The start check stops for good: its own note gives way."""
+        self._start_issue(None)
+        self._state(condition, problem)
+        return False
+
+    async def _verify(
+        self,
+        access: StoredLocalAccess,
+        context: ProbeContext,
+        pin: CertificateBinding,
+        budget: LocalReadBudget,
+    ) -> bool:
+        # Failed checks with an unreachable gateway, and with an answer that
+        # was not usable (B01); each has its own growing wait.
+        failures = problems = 0
+        while self.current():
+            if budget.pause_seconds:
+                self._state(
+                    LocalCondition.PAUSED, reason=getattr(budget, "pause_reason", None)
+                )
+                # Kept even on a requested retry: the gateway asked for it.
+                await asyncio.sleep(budget.pause_seconds)
+                continue
+            self._retry.clear()
+            self._state(LocalCondition.INITIALIZING)
+            exchange = await read_local_probe(
+                context,
+                access.credentials.token,
+                pin,
+                is_current=self.current,
+                budget=budget,
+            )
+            if not self.current():
+                raise StaleLocalRequest()
+            assessment = assess_local_probe(exchange.responses, current_context=context)
+            if assessment.status is ProbeStatus.READY_FOR_IDENTITY_COMPARISON:
+                if (
+                    assessment.identity is None
+                    or assessment.identity.value != access.gateway_id
+                ):
+                    return self._stop(
+                        LocalCondition.UNAVAILABLE, "local_identity_conflict"
+                    )
+                await budget.bind_gateway(access.gateway_id)
+                self._start_issue(None)
+                return True
+            found = [issue.problem for issue in assessment.issues]
+            # A refused token, a changed certificate or too old firmware
+            # decide over any other problem of the same check.
+            problem = next(
+                (p for p in found if p in _STOP),
+                next((p for p in found if p in _UNREACHABLE), found[0]),
+            )
+            if problem is ProbeProblem.AUTH_REJECTED:
+                return self._stop(LocalCondition.AUTH_REQUIRED, "auth_required")
+            if problem is ProbeProblem.TLS_CHANGED:
+                return self._stop(
+                    LocalCondition.CERTIFICATE_CHANGED, "certificate_changed"
+                )
+            if problem is ProbeProblem.OLD_FIRMWARE:
+                return self._stop(LocalCondition.UNAVAILABLE, problem.value)
+            delay = exchange.retry_after_seconds
+            if problem in _UNREACHABLE:
+                # Growing with every failed check, also with a Retry-After: a
+                # longer one is kept in full, a short or zero one (or a date
+                # in the past) never makes the checks repeat at once.
+                delay = max(
+                    delay or 0.0,
+                    UNREACHABLE_RETRY[min(failures, len(UNREACHABLE_RETRY) - 1)],
+                )
+                failures += 1
+                await budget.pause(
+                    delay,
+                    "rate_limited"
+                    if problem is ProbeProblem.RATE_LIMITED
+                    else "connection",
+                )
+                continue
+            # B01: the gateway answers, but not usably (still starting, an
+            # error page, an unreadable answer): try again, slower each time.
+            # Each check still goes through the gateway's limits and pauses.
+            wait = START_PROBLEM_RETRY[min(problems, len(START_PROBLEM_RETRY) - 1)]
+            problems += 1
+            self._state(LocalCondition.UNAVAILABLE, problem.value)
+            if problems >= START_ISSUE_ATTEMPTS:
+                self._start_issue(problem)
+            await self._wait(max(wait, delay or 0.0))
+        return False
+
+    def _paired_cap(
+        self, context: SourceContext
+    ) -> Callable[[ReadRequest], int | None]:
+        """Cloud interval of paired readings, from current options and cloud plan.
+
+        A changed cloud polling profile or plan takes effect with the next due
+        time, without restarting the local source.
+        """
+        runtime, target = context.runtime, self.binding.target_id
+        parsed: list[object] = [None, None]
+
+        def scheduled(binding: str, path: str) -> tuple[bool, timedelta | None]:
+            lookup = getattr(runtime.source_data(binding), "scheduled_interval", None)
+            if lookup is None:
+                # The cloud source is not running: no cloud pace to keep up with.
+                return True, None
+            return cast(tuple[bool, timedelta | None], lookup(path))
+
+        def cap(request: ReadRequest) -> int | None:
+            snapshot = runtime.snapshot
+            if snapshot is not parsed[0]:
+                parsed[0], parsed[1] = snapshot, snapshot.to_options()
+            return paired_cloud_interval(
+                snapshot,
+                target,
+                request.path,
+                options=cast(dict[str, Any], parsed[1]),
+                scheduled=scheduled,
+            )
+
+        return cap
+
+    @staticmethod
+    def _unused_floor(
+        use: EntityUse,
+        gateway_id: str,
+        without_entity: Callable[[ReadRequest], bool] | None = None,
+    ) -> Callable[[ReadRequest], int | None]:
+        """G3: a signal whose entities are all disabled is read hourly.
+
+        A3: so is a signal that gets no entity at all (``without_entity``).
+        Never for observation pairs, counters, faults and the installation
+        date; enabling one of its entities restores the usual pace.
+        """
+
+        def floor(request: ReadRequest) -> int | None:
+            return (
+                UNUSED_SIGNAL_PERIOD
+                if _hourly_reason(use, gateway_id, request, without_entity)
+                else None
+            )
+
+        return floor
+
+    def _hourly(self, request: ReadRequest) -> bool:
+        """A3: a signal no entity will show: an identifier or private
+        signal, or a reading whose last answer gives no entity (free text,
+        a structure). Undecided two-form signals keep their pace."""
+        from .local_plant_view import local_sensor, private_path
+
+        service = self.service
+        record = (
+            service.inventory.records.get(request.target)
+            if service is not None
+            else None
+        )
+        observation = record.observation if record is not None else None
+        # Asked for every period: worked out once per answer (by its receive
+        # time, so no answer is kept here beyond the inventory's bounds).
+        received = observation.observed_monotonic if observation is not None else None
+        cached = self._without_entity.get(request.target)
+        if cached is not None and cached[0] == received:
+            return cached[1]
+        if private_path(request.path):
+            result = True
+        elif observation is None:
+            result = False
+        else:
+            sensor, reason = local_sensor(observation)
+            result = sensor is None and reason in _WITHOUT_ENTITY
+        self._without_entity[request.target] = (received, result)
+        return result
+
+    def hourly_counts(self) -> dict[str, int]:
+        """How many local readings are read hourly, and why (A3/G3)."""
+        counts = {"disabled": 0, "without_entity": 0}
+        inventory = getattr(self.service, "inventory", None)
+        records = getattr(inventory, "records", None)
+        if not isinstance(records, dict) or self._gateway_id is None:
+            return counts
+        factory = self.connection.factory
+        use = entity_use(factory.hass, factory.entry)
+        for record in records.values():
+            reason = _hourly_reason(use, self._gateway_id, record.request, self._hourly)
+            if reason is not None:
+                counts[reason] += 1
+        return counts
+
+    def _period_token(
+        self, context: SourceContext, use: EntityUse, gateway_id: str
+    ) -> Callable[[], tuple[object, ...]]:
+        """O13: what the cap and the floor depend on, compared by identity.
+
+        The options, the disabled entities and the plan of each cloud source
+        of this target; a cloud source without a plan of its own changes the
+        token every time, so its cap is always asked again.
+        """
+        runtime, target = context.runtime, self.binding.target_id
+
+        def token() -> tuple[object, ...]:
+            snapshot = runtime.snapshot
+            parts: list[object] = [
+                snapshot,
+                use.disabled_paths(gateway_id),
+                use.noted_paths(gateway_id),
+            ]
+            for key, binding in snapshot.bindings.items():
+                connection = snapshot.connections.get(binding.connection_id)
+                if (
+                    binding.target_id != target
+                    or connection is None
+                    or connection.kind != CLOUD_KIND
+                ):
+                    continue
+                data = runtime.source_data(key)
+                parts.append(data)
+                plan = getattr(data, "schedule_token", None)
+                if callable(plan):
+                    parts.extend(plan())
+                elif data is not None:
+                    parts.append(object())
+            return tuple(parts)
+
+        return token
+
+    def _stop_use_listener(self) -> None:
+        if self._remove_use_listener is not None:
+            self._remove_use_listener()
+            self._remove_use_listener = None
+
+    async def run(self, context: SourceContext) -> None:
+        self.context = context
+        failures = 0
+        while True:
+            try:
+                await self._start(context)
+            except LocalBudgetError:
+                # The stored pauses could not be read: try again after a
+                # bounded, growing pause instead of stopping until a reload.
+                self._state(LocalCondition.UNAVAILABLE, "local_budget_storage_failed")
+                await self._reset()
+                await asyncio.sleep(START_RETRY[min(failures, len(START_RETRY) - 1)])
+                failures += 1
+                if not self.current():
+                    return
+                continue
+            except StaleLocalRequest:
+                return
+            break
+        # Pause/auth/identity failures remain available for settings and recovery.
+        # A changed connection replaces this source through the normal lifecycle.
+        await asyncio.Future[None]()
+
+    async def _reset(self) -> None:
+        """Close a half-started service or client before the next start."""
+        self._stop_use_listener()
+        service, client, self.service, self.client = (
+            self.service,
+            self.client,
+            None,
+            None,
+        )
+        if service is not None:
+            await service.close()
+        elif client is not None:
+            await client.close()
+
+    async def _start(self, context: SourceContext) -> None:
+        self._state(LocalCondition.INITIALIZING)
+        try:
+            access = load_local_access(self.connection.record.to_data())
+            locator = cast(dict[str, Any], self.binding.to_data()["locator"])
+            if (
+                locator["namespace"] != GatewayNamespace.K40_LOCAL
+                or locator["value"] != access.gateway_id
+            ):
+                raise LocalCredentialError("local_identity_conflict")
+            probe = ProbeContext(
+                context.identity_context(GatewayNamespace.K40_LOCAL), access.endpoint
+            )
+            budget = await local_budget_manager(self.connection.factory.hass).budget(
+                probe, target_id=self.binding.target_id, gateway_id=access.gateway_id
+            )
+            pin = CertificateBinding(
+                probe, PortRole.RESOURCES, bytes.fromhex(access.resource_sha256)
+            )
+            if await self._verify(access, probe, pin, budget):
+                if not self.current():
+                    raise StaleLocalRequest()
+                options = context.runtime.snapshot.to_options()
+                settings = cast(dict[str, dict[str, Any]], options["connections"])[
+                    self.connection.identifier
+                ]
+                interval = validate_interval(settings.get("local_interval", 60))
+                factory = self.connection.factory
+                use = entity_use(factory.hass, factory.entry)
+                self._gateway_id = access.gateway_id
+                self.client = LocalReadClient(
+                    probe,
+                    access.credentials.token,
+                    pin,
+                    budget=budget,
+                    is_current=self.current,
+                )
+                self.service = LocalPollingService(
+                    probe,
+                    _IdentityClient(self.client, access.gateway_id),
+                    budget,
+                    LocalScheduleStore(
+                        self.connection.factory.hass,
+                        context.runtime.snapshot.owner_id
+                        + ":"
+                        + self.binding.target_id
+                        + ":"
+                        + self.binding_id,
+                    ),
+                    is_current=self.current,
+                    publish=self._publish,
+                    interval=interval,
+                    cap=self._paired_cap(context),
+                    access_key=_access_key(context, self.binding.connection_id),
+                    floor=self._unused_floor(use, access.gateway_id, self._hourly),
+                    period_token=self._period_token(context, use, access.gateway_id),
+                )
+                self._stop_use_listener()
+                self._remove_use_listener = use.add_listener(
+                    self.service.periods_changed
+                )
+                self.service.confirm_identity(probe.identity)
+                await self.service.start()
+        except LocalCredentialError:
+            self._state(LocalCondition.AUTH_REQUIRED, "local_revalidation_required")
+
+    async def close(self) -> None:
+        self._closed = True
+        self._stop_use_listener()
+        if self.binding_id not in self.connection.factory.runtime().snapshot.bindings:
+            # The access is gone: its certificate note goes with it (P39),
+            # as does the note of a failing start (B01).
+            from homeassistant.helpers import issue_registry as ir
+
+            from .const import DOMAIN
+
+            ir.async_delete_issue(
+                self.connection.factory.hass, DOMAIN, self._certificate_issue_id()
+            )
+            self._start_issue(None)
+        if self.service is not None:
+            await self.service.close()
+        elif self.client is not None:
+            await self.client.close()
+
+
+# A3: reasons of the local plant view for a reading that never gets an entity.
+_WITHOUT_ENTITY = frozenset({"private", "multipart", "unsupported_shape", "text"})
+
+
+def _hourly_reason(
+    use: EntityUse,
+    gateway_id: str,
+    request: ReadRequest,
+    without_entity: Callable[[ReadRequest], bool] | None,
+) -> str | None:
+    """Why a local signal is read only hourly, or None for its usual pace.
+
+    ``disabled`` (G3): every entity that shows it is disabled.
+    ``without_entity`` (A3): no entity shows it and none will. Never for
+    readings the integration uses itself: observation pairs, counters,
+    faults and the installation date keep their pace, as does a signal
+    with any enabled entity.
+    """
+    if (
+        request.definition.template != "/signals/{signalId}"
+        or not signal_slows_when_unused(request.path)
+        or category(request) in (PollClass.COUNTERS, PollClass.STATIC)
+    ):
+        return None
+    if request.path in use.disabled_paths(gateway_id):
+        return "disabled"
+    if (
+        without_entity is not None
+        and request.path not in use.noted_paths(gateway_id)
+        and without_entity(request)
+    ):
+        return "without_entity"
+    return None
+
+
+def _access_key(context: SourceContext, connection_id: str) -> str | None:
+    """Sign-in and settings generation of the access (P41), without secrets."""
+    record = context.runtime.snapshot.connections.get(connection_id)
+    epoch = getattr(record, "auth_epoch", None)
+    revision = getattr(record, "config_revision", None)
+    if not isinstance(epoch, int) or not isinstance(revision, int):
+        return None
+    return f"{epoch}:{revision}"

@@ -6,6 +6,9 @@ from typing import Any
 
 from .models import Device
 
+# The Celsius spellings every device family accepts.
+CELSIUS = ("C", "degC", "Celsius", "°C")
+
 
 def metadata(device: Device, section: str, key: str) -> dict[str, Any] | None:
     """Distinguish an empty field declaration from an absent field."""

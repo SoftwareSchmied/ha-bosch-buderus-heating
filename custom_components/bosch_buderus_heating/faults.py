@@ -5,24 +5,57 @@ from __future__ import annotations
 import hashlib
 import logging
 import re
+import time
 from collections import Counter
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
+from homeassistant.util import dt as dt_util
 
+from . import rrc
 from .const import DOMAIN
+from .i18n import localize
+from .log_helpers import log_failure
 from .pointt import Resource
+from .pointt.exceptions import ProtocolError, ResourceOmitted
 from .pointt.models import BatchItemResult, JsonValue
+
+if TYPE_CHECKING:
+    from .discovery import DiscoveryDiagnostics
 
 FAULT_STORAGE_VERSION = 1
 FAULT_STORAGE_SAVE_DELAY = 1.0
 FAULT_RESOLUTION_CONFIRMATIONS = 2
+# P42: without a new local error list for this long, the cloud decides alone
+# again (as before P42); also the grace period after a restart. At least three
+# local query intervals, so a slow interval or one missed reading never counts.
+LOCAL_FAULT_MAX_AGE = timedelta(minutes=15)
+LOCAL_FAULT_MISSED_READINGS = 3
+# A1: how long a view that handed its baseline to a starting source shows it
+# unchanged at most.
+HAND_OVER_HOLD = LOCAL_FAULT_MAX_AGE
 MAX_FAULT_ATTRIBUTES = 25
+# FAULT-2: a required fault source that is gone for good stops blocking every
+# resolution. Only two kinds of evidence count: it answers HTTP 404 on every
+# read for this long (and at least this many reads, also across restarts), or
+# a fully answered discovery no longer finds it.
+# A 5xx answer, a timeout or a lost permission never counts.
+FAULT_SOURCE_GONE_AFTER = timedelta(hours=24)
+FAULT_SOURCE_GONE_READS = 2
+# FAULT-2: a fault restored from a baseline without source evidence takes
+# part in the normal resolution again once complete reads of every required
+# source have not reported it for this long (and this many reads).
+FAULT_UNVERIFIED_AFTER = timedelta(hours=24)
+FAULT_UNVERIFIED_READS = 12
+FAULT_SOURCE_ISSUE_PREFIX = "fault_source_removed_"
+# A wall clock set back by more than this no longer confirms a held state.
+_CLOCK_SKEW = timedelta(seconds=60)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,6 +65,20 @@ _DEVICE_PATH = re.compile(r"^/devices/([^/]+)(?:/|$)")
 _ACTIVE_FAILURE_PATH = re.compile(r"^/heatSources/[^/]+/activefailure$", re.IGNORECASE)
 _FAILURE_LIST_PATH = re.compile(r"^/heatSources/[^/]+/failurelist$", re.IGNORECASE)
 _DEVICE_ERRORS_PATH = re.compile(r"^/devices/[^/]+/errors$", re.IGNORECASE)
+# B3: the local device error lists of the documented device slots.
+_LOCAL_DEVICE_ERRORS_PATH = re.compile(
+    r"/devices/device([1-9]|[12][0-9]|3[0-2])/errors"
+)
+_DEVICE_ERROR_TYPE = re.compile(r"[A-Za-z][A-Za-z0-9_.-]{0,63}")
+# B06: the only documented states of a device error that is an error at all;
+# other ``allowedValues`` (such as a valve status) describe no error.
+_DEVICE_ERROR_STATES = frozenset({"active", "inactive"})
+MAX_DEVICE_ERRORS = 16
+MAX_DEVICE_ERROR_LISTS = 32
+# FAULT-2: discovery answers that a retry does not change. A refused access
+# (403) can be temporary and says nothing about whether the path exists.
+_FINAL_ANSWER = re.compile(r"http_4\d\d")
+_RETRYABLE_ANSWERS = frozenset({"http_401", "http_403", "http_408", "http_429"})
 
 _KNOWN_SUMMARIES: dict[tuple[str, str | None], dict[str, str]] = {
     ("6249", None): {
@@ -46,7 +93,68 @@ _KNOWN_SUMMARIES: dict[tuple[str, str | None], dict[str, str]] = {
         "en": "Date or time value invalid",
         "de": "Zeit- oder Datumswert ungültig",
     },
+    # CT-F01: the radio devices of an RRC 2.0 room controller report their
+    # faults with display code A84 and these cause codes (expected, untested).
+    ("1869", "A84"): {
+        "en": "Radio connection to a device lost",
+        "de": "Funkverbindung zu einem Gerät verloren",
+    },
+    ("1870", "A84"): {
+        "en": "Battery of a radio device low",
+        "de": "Batterie eines Funkgeräts schwach",
+    },
+    ("1871", "A84"): {
+        "en": "Valve adaptation of a radiator thermostat pending",
+        "de": "Ventiladaption eines Heizkörperthermostats steht aus",
+    },
+    ("1872", "A84"): {
+        "en": "Valve of a radiator thermostat moves too stiffly",
+        "de": "Ventil eines Heizkörperthermostats zu schwergängig",
+    },
+    ("1873", "A84"): {
+        "en": "Valve travel of a radiator thermostat too large",
+        "de": "Stellbereich eines Heizkörperthermostats zu groß",
+    },
+    ("1874", "A84"): {
+        "en": "Valve travel of a radiator thermostat too small",
+        "de": "Stellbereich eines Heizkörperthermostats zu klein",
+    },
+    ("1876", "A84"): {
+        "en": "Radio device lost its connection to the controller",
+        "de": "Funkgerät hat die Verbindung zum Regler verloren",
+    },
+    ("1879", "A84"): {
+        "en": "Valve of a radiator thermostat in a wrong position",
+        "de": "Ventil eines Heizkörperthermostats in Fehlstellung",
+    },
+    # CT-F01: low water pressure, with any display code (expected, untested).
+    ("207", None): {
+        "en": "Water pressure too low",
+        "de": "Wasserdruck zu niedrig",
+    },
+    ("1017", None): {
+        "en": "Water pressure too low",
+        "de": "Wasserdruck zu niedrig",
+    },
+    ("2971", None): {
+        "en": "Water pressure too low",
+        "de": "Wasserdruck zu niedrig",
+    },
 }
+# CT-F01: a radio device fault with a cause code without a text of its own.
+RADIO_DISPLAY_CODE = "A84"
+# CT-F01: numeric classes of a notification (expected, untested). A fault is
+# reported at display level 8 with a class below 18; classes 18 and 20 are
+# maintenance requests. Named classes and class 12 keep their meaning.
+_FAULT_DISPLAY_LEVEL = 8
+_FAULT_CLASS_LIMIT = 18
+_MAINTENANCE_CLASSES = frozenset({18, 20})
+# SYSTEM-08: display levels below the user's (0 not displayed, 2 expert,
+# 4 installer). On a room controller a notification with such a level and a
+# numeric class below 18 is information for the installer: it stays listed,
+# but is no problem (expected, untested). Other gateways keep the classes as
+# they are: the real K40 fault 6249 came with display level 4.
+_HIDDEN_DISPLAY_LEVELS = frozenset({0, 2, 4})
 
 
 class FaultSeverity(StrEnum):
@@ -76,6 +184,11 @@ class FaultEventType(StrEnum):
     RESOLVED = "resolved"
 
 
+# SYSTEM-06: severities whose summary without a text of its own names the
+# kind of message rather than an unknown fault.
+_NOTICE_SEVERITIES = frozenset(
+    {FaultSeverity.INFO, FaultSeverity.MAINTENANCE, FaultSeverity.WARNING}
+)
 _SEVERITY_LABELS = {
     FaultSeverity.INFO: {"en": "Information", "de": "Information"},
     FaultSeverity.MAINTENANCE: {"en": "Maintenance", "de": "Wartung"},
@@ -126,6 +239,11 @@ class FaultParseResult:
 
     faults: tuple[ActiveFault, ...]
     invalid_entries: int = 0
+    # B06: device error rows as fingerprinted up to 0.9.0-alpha.3, so a
+    # stored incident keeps its identity: (current, earlier) per active row,
+    # and the earlier fingerprints of rows that are no fault any more.
+    legacy_fingerprints: tuple[tuple[str, str], ...] = ()
+    retired_fingerprints: tuple[str, ...] = ()
 
 
 def is_fault_resource_path(path: str) -> bool:
@@ -147,7 +265,9 @@ def is_active_fault_resource_path(path: str) -> bool:
     )
 
 
-def fault_resource_candidates(resources: Mapping[str, Resource]) -> tuple[str, ...]:
+def fault_resource_candidates(
+    resources: Mapping[str, Resource], *, device_type: str | None = None
+) -> tuple[str, ...]:
     """Build bounded optional fault paths from actually discovered IDs."""
     candidates = {_NOTIFICATIONS_PATH}
 
@@ -171,6 +291,10 @@ def fault_resource_candidates(resources: Mapping[str, Resource]) -> tuple[str, .
             candidates.add(f"/heatSources/{match[1]}/failurelist")
 
     device_ids: set[str] = set()
+    if rrc.profile_evidence(device_type, resources):
+        # C8: the radio devices of an RRC controller have no fault resource;
+        # their faults arrive in /notifications.
+        return tuple(sorted(candidates))
     for path in resources:
         match = _DEVICE_PATH.match(path)
         identifier = _safe_identifier(match[1]) if match else None
@@ -197,10 +321,37 @@ def fault_resource_candidates(resources: Mapping[str, Resource]) -> tuple[str, .
     return tuple(sorted(candidates))
 
 
+def discovery_fully_answered(diagnostics: DiscoveryDiagnostics) -> bool:
+    """A finished discovery in which every read path got a final answer.
+
+    Final means the resource, or a client error that a retry does not change
+    (such as HTTP 404). A refused access (401, 403), a 5xx answer, a timeout,
+    a malformed or missing item, a rate limit or a stop at a bound means the
+    tree may be incomplete, so its fault candidates must not count against a
+    required source (FAULT-2).
+    """
+    if not diagnostics.completed:
+        return False
+    for item in diagnostics.paths.values():
+        if item.discovered or item.read_policy != "normal":
+            continue  # start-up leaves and the license are read elsewhere
+        result = item.fallback_result or item.bulk_result
+        if not _FINAL_ANSWER.fullmatch(result) or result in _RETRYABLE_ANSWERS:
+            return False
+    return True
+
+
 def parse_fault_resource(
-    resource: Resource, *, observed_at: datetime | None = None
+    resource: Resource,
+    *,
+    observed_at: datetime | None = None,
+    room_controller: bool = False,
 ) -> FaultParseResult:
-    """Parse known fault fields while ignoring unknown vendor extensions."""
+    """Parse known fault fields while ignoring unknown vendor extensions.
+
+    ``room_controller`` reads the display levels of an RRC 2.0 room
+    controller (SYSTEM-08).
+    """
     now = observed_at or datetime.now(UTC)
     if not is_fault_resource_path(resource.path):
         return FaultParseResult(())
@@ -221,50 +372,186 @@ def parse_fault_resource(
 
     faults: list[ActiveFault] = []
     invalid = 0
+    legacy: list[tuple[str, str]] = []
+    retired: list[str] = []
+    device_errors = _DEVICE_ERRORS_PATH.fullmatch(resource.path) is not None
     for raw in raw_items:
         if not isinstance(raw, dict):
             invalid += 1
             continue
+        if device_errors:
+            earlier = _legacy_device_fingerprint(resource.path, raw)
+            if _is_explicitly_inactive(raw) or not _is_active_device_error(raw):
+                if earlier is not None:
+                    retired.append(earlier)
+                continue
+            fault = _parse_device_error(resource.path, raw, now)
+            if fault is None:
+                invalid += 1
+                continue
+            faults.append(fault)
+            if earlier is not None and earlier != fault.fingerprint:
+                legacy.append((fault.fingerprint, earlier))
+            continue
         if _is_explicitly_inactive(raw):
             continue
-        parsed = _parse_fault_item(resource.path, raw, now)
+        parsed = _parse_fault_item(resource.path, raw, now, room_controller)
         if parsed is None:
             invalid += 1
             continue
         faults.append(parsed)
-    return FaultParseResult(tuple(faults), invalid)
+    return FaultParseResult(tuple(faults), invalid, tuple(legacy), tuple(retired))
+
+
+def local_fault_resource(observation: object) -> Resource | None:
+    """The local error list in the cloud's shape, so both give one fingerprint.
+
+    Only ``/notifications`` (``errorList``) is used: its fields are the same on
+    both interfaces. Device error lists stay unused until their meaning is
+    confirmed on a real device.
+    """
+    from decimal import Decimal
+
+    from .local_api.models import FaultList
+
+    data = getattr(observation, "data", None)
+    request = getattr(observation, "request", None)
+    if not isinstance(data, FaultList) or getattr(request, "path", None) != (
+        "/notifications"
+    ):
+        return None
+
+    def number(value: object) -> JsonValue:
+        if isinstance(value, Decimal):
+            return int(value) if value == value.to_integral_value() else float(value)
+        return value  # type: ignore[return-value]
+
+    return Resource(
+        "/notifications",
+        values=tuple(
+            {
+                "ccd": number(fault.cause_code),
+                "dcd": fault.display_code,
+                "orig": fault.origin,
+                "dlv": fault.level,
+                "fc": fault.fault_class,
+            }
+            for fault in data.faults
+        ),
+        has_values=True,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class DeviceError:
+    """One entry of a room device's own error list (B3), extra information.
+
+    ``state`` is ``active`` or ``inactive`` when the entry reports one of
+    these documented values and allows only these two, otherwise ``other``
+    (for example a valve status whose meaning as an error is not documented).
+    """
+
+    device: int
+    error_type: str
+    state: str
+
+
+def local_device_errors(
+    observation: object,
+) -> tuple[str, tuple[DeviceError, ...]] | None:
+    """A local device error list (``deviceErrors``) as bounded entries (B3).
+
+    Returns the path and its entries, or ``None`` for any other reading.
+    Entries without a well-formed error type are left out. The entries are
+    never part of the fault lifecycle: they create no fault, no event and no
+    notification.
+    """
+    from .local_api.models import DeviceFaultList
+
+    data = getattr(observation, "data", None)
+    path = getattr(getattr(observation, "request", None), "path", None)
+    if not isinstance(path, str) or not isinstance(data, DeviceFaultList):
+        return None
+    match = _LOCAL_DEVICE_ERRORS_PATH.fullmatch(path)
+    if match is None:
+        return None
+    entries: list[DeviceError] = []
+    for item in data.faults[:MAX_DEVICE_ERRORS]:
+        error_type = item.type if isinstance(item.type, str) else ""
+        if not _DEVICE_ERROR_TYPE.fullmatch(error_type):
+            continue
+        value = item.value.strip().casefold() if isinstance(item.value, str) else ""
+        state = (
+            value
+            if value in _DEVICE_ERROR_STATES
+            and _binary_device_error(list(item.allowed_values))
+            else "other"
+        )
+        entries.append(DeviceError(int(match[1]), error_type, state))
+    return path, tuple(entries)
 
 
 def fault_summary(fault: ActiveFault, language: str | None) -> str:
     """Return an independently worded, localized summary."""
-    selected_language = "de" if (language or "").lower().startswith("de") else "en"
     normalized_subcode = fault.subcode.upper() if fault.subcode else None
     exact = _KNOWN_SUMMARIES.get((fault.code or "", normalized_subcode))
     generic = _KNOWN_SUMMARIES.get((fault.code or "", None))
     if summary := exact or generic:
-        return summary[selected_language]
-    if selected_language == "de":
-        return (
-            f"Unbekannte Störung (Code {fault.code})"
-            if fault.code
-            else "Unbekannte Störung"
-        )
-    return f"Unknown fault (code {fault.code})" if fault.code else "Unknown fault"
+        return localize(language, summary["de"], summary["en"])
+    # SYSTEM-06: a message that is no fault is never called one.
+    if fault.severity in _NOTICE_SEVERITIES:
+        if not fault.code:
+            return fault_severity_label(fault.severity, language)
+        if fault.severity is FaultSeverity.MAINTENANCE:
+            text = localize(
+                language,
+                "Wartungsmeldung (Code {code})",
+                "Maintenance message (code {code})",
+            )
+        elif fault.severity is FaultSeverity.WARNING:
+            text = localize(language, "Warnung (Code {code})", "Warning (code {code})")
+        else:
+            text = localize(
+                language, "Information (Code {code})", "Information (code {code})"
+            )
+        return text.format(code=fault.code)
+    if normalized_subcode == RADIO_DISPLAY_CODE and fault.code:
+        return localize(
+            language,
+            "Störung eines Funkgeräts (Code {code})",
+            "Radio device fault (code {code})",
+        ).format(code=fault.code)
+    if fault.code:
+        return localize(
+            language, "Unbekannte Störung (Code {code})", "Unknown fault (code {code})"
+        ).format(code=fault.code)
+    return localize(language, "Unbekannte Störung", "Unknown fault")
 
 
 def fault_severity_label(severity: FaultSeverity, language: str | None) -> str:
     """Return a localized display label while retaining stable enum values."""
-    selected_language = "de" if (language or "").lower().startswith("de") else "en"
-    return _SEVERITY_LABELS[severity][selected_language]
+    labels = _SEVERITY_LABELS[severity]
+    return localize(language, labels["de"], labels["en"])
 
 
 def no_active_faults_label(language: str | None) -> str:
     """Return the localized healthy-state label used in attributes."""
-    return (
-        "Keine aktiven Störungen"
-        if (language or "").lower().startswith("de")
-        else "No active faults"
-    )
+    return localize(language, "Keine aktiven Störungen", "No active faults")
+
+
+def fault_store_key(entry_id: str, gateway_id: str) -> str:
+    """The private fault baseline of one gateway, without its identifier."""
+    gateway_digest = hashlib.sha256(gateway_id.encode()).hexdigest()[:16]
+    return f"{DOMAIN}.faults.{entry_id}.{gateway_digest}"
+
+
+async def async_remove_fault_store(
+    hass: HomeAssistant, entry_id: str, gateway_id: str
+) -> None:
+    """Delete the fault baseline of one gateway of a removed entry (STORE-5)."""
+    await Store[dict[str, Any]](
+        hass, FAULT_STORAGE_VERSION, fault_store_key(entry_id, gateway_id), private=True
+    ).async_remove()
 
 
 class FaultTracker:
@@ -276,11 +563,10 @@ class FaultTracker:
         entry_id: str,
         gateway_id: str,
     ) -> None:
-        gateway_digest = hashlib.sha256(gateway_id.encode()).hexdigest()[:16]
         self._store: Store[dict[str, Any]] = Store(
             hass,
             FAULT_STORAGE_VERSION,
-            f"{DOMAIN}.faults.{entry_id}.{gateway_digest}",
+            fault_store_key(entry_id, gateway_id),
             private=True,
         )
         self._active: dict[str, ActiveFault] = {}
@@ -293,12 +579,105 @@ class FaultTracker:
         self._supported_paths: set[str] = set()
         self._required_source_keys: set[str] = set()
         self._unverified_restored: set[str] = set()
+        # FAULT-2: source key -> (first of an unbroken run of 404 answers,
+        # their number), and unverified fingerprint -> (first complete read
+        # without it, number of such reads). Both are stored.
+        self._sources_not_found: dict[str, tuple[datetime, int]] = {}
+        self._unverified_unseen: dict[str, tuple[datetime, int]] = {}
+        self._removed_sources = 0
+        self._hass = hass
+        self._issue_id = (
+            FAULT_SOURCE_ISSUE_PREFIX
+            + entry_id
+            + "_"
+            + fault_store_key(entry_id, gateway_id).rsplit(".", 1)[-1]
+        )
         self._has_valid_state = False
+        # When the last complete read confirmed the state, and whether only
+        # missing answers followed since: then that state stays shown within
+        # ``state_limit`` (set by the coordinator). An explicit answer, invalid
+        # entries or an ended source end it at once.
+        self._confirmed_at: datetime | None = None
+        self._hold = False
+        self.state_limit: Callable[[datetime], timedelta | None] | None = None
         self._resource_results: dict[str, str] = {}
         self._last_successful_update: datetime | None = None
         self._last_parser_status = "not_run"
         self._parser_errors = 0
         self._save_schedule_failed = False
+        # P42: the local error list as a second source of the same faults.
+        self._local_attached = False
+        self._local_valid = False
+        self._local_faults: dict[str, ActiveFault] = {}
+        self._local_absence: Counter[str] = Counter()
+        self._local_last_reading: float | None = None
+        # Monotonic seconds: a clock change never ends the local evidence.
+        self._local_fresh_at: float | None = None
+        self._local_max_age = LOCAL_FAULT_MAX_AGE.total_seconds()
+        self._local_stale = False
+        self._clock: Callable[[], float] = time.monotonic
+        self._state_version = 0
+        self._local_result = "not_attached"
+        # P49b: a plant view without any cloud. The local error list is the
+        # only source: a current, complete list establishes the state and
+        # confirms an absence alone. Set only by the local plant view.
+        self.local_authority = False
+        # Faults the local list has reported (restored or seen). Without a
+        # cloud only these can be resolved by the list's silence: a fault only
+        # the cloud knew stays pending instead of an invented all-clear.
+        self._locally_known: set[str] = set()
+        # P49b: the baseline was handed to the next source of the gateway;
+        # this tracker no longer writes it.
+        self._handed_over = False
+        # The source attempt that took the baseline; only it may give it back,
+        # never an older, overlapping attempt (review P49b).
+        self._hand_over_owner: object | None = None
+        # A1: the stored baseline was read (also when there was none).
+        self._store_read = False
+        # A1: when the baseline was handed over (monotonic seconds).
+        self._handed_over_at: float | None = None
+        # B3: the current local device error lists by path; extra
+        # information only, never stored and never part of the lifecycle.
+        self._device_errors: dict[str, tuple[DeviceError, ...]] = {}
+        # B06: current fingerprint -> stored earlier fingerprint of a device
+        # error incident stored by 0.9.0-alpha.3 or earlier. It keeps its
+        # stored identity until it ends, so it is never announced again.
+        self._aliases: dict[str, str] = {}
+        # SYSTEM-08: the gateway is an RRC 2.0 room controller, by the same
+        # resource evidence as ``rrc.profile_evidence``. Learnt from the
+        # readings, kept once seen and stored with the baseline, so a restart
+        # reads the display levels the same way from its first list.
+        self.room_controller = False
+
+    @property
+    def device_errors(self) -> tuple[DeviceError, ...]:
+        """Active entries of the current local device error lists (B3)."""
+        return tuple(
+            sorted(
+                (
+                    item
+                    for entries in self._device_errors.values()
+                    for item in entries
+                    if item.state == "active"
+                ),
+                key=lambda item: (item.device, item.error_type),
+            )
+        )
+
+    def process_device_errors(
+        self, lists: Mapping[str, tuple[DeviceError, ...]]
+    ) -> bool:
+        """Replace the current local device error lists (B3).
+
+        Shown next to the faults only: no fault appears or ends, nothing is
+        announced or stored. True when the shown information changed.
+        """
+        current = dict(sorted(lists.items())[:MAX_DEVICE_ERROR_LISTS])
+        if current == self._device_errors:
+            return False
+        self._device_errors = current
+        self._notify_state_listeners()
+        return True
 
     @property
     def active(self) -> tuple[ActiveFault, ...]:
@@ -333,12 +712,54 @@ class FaultTracker:
     @property
     def has_known_state(self) -> bool:
         """Keep known faults visible, but never infer health from unreadable data."""
-        return bool(self.active_faults) or self._has_valid_state
+        # The local list covers only part of the cloud's fault sources, so it
+        # never stands in for an unreadable cloud read (P42), except in a view
+        # without any cloud (P49b).
+        return (
+            bool(self.active_faults)
+            or self._has_valid_state
+            or self.held
+            or (self.local_authority and self._local_current and self._local_valid)
+        )
+
+    @property
+    def held(self) -> bool:
+        """The last confirmed state is shown although no read confirmed it
+        since: the requests only got no answer, within the validity limit.
+
+        Nothing is resolved meanwhile; ``current_state_confirmed`` stays false.
+        """
+        until = self.held_until()
+        return until is not None and datetime.now(UTC) <= until
+
+    def held_until(self) -> datetime | None:
+        """When a held state ends; None without one."""
+        confirmed, limit_of = self._confirmed_at, self.state_limit
+        if self._has_valid_state or not self._hold or confirmed is None:
+            return None
+        limit = limit_of(confirmed) if limit_of is not None else None
+        if limit is None or datetime.now(UTC) < confirmed - _CLOCK_SKEW:
+            return None
+        return confirmed + limit
 
     @property
     def current_state_confirmed(self) -> bool:
-        """Whether the last fault read fully confirmed the retained baseline."""
-        return self._has_valid_state and not self._absence_counts
+        """Whether the last fault read fully confirmed the retained baseline.
+
+        A fault the cloud no longer lists is still confirmed while a current
+        local error list reports it (P42); one that no source reports any
+        more is pending until its resolution.
+        """
+        local = self._local_current and self._local_valid
+        if self.local_authority:
+            # Without a cloud: every retained fault is in the current list.
+            return local and set(self._active) <= set(self._local_faults)
+        if not self._has_valid_state:
+            return False
+        return not any(
+            count and not (local and fingerprint in self._local_faults)
+            for fingerprint, count in self._absence_counts.items()
+        )
 
     def async_add_state_listener(
         self, listener: Callable[[], None]
@@ -347,18 +768,35 @@ class FaultTracker:
         self._state_listeners.add(listener)
         return lambda: self._state_listeners.discard(listener)
 
-    def mark_unavailable(self) -> None:
-        """Invalidate freshness without resolving any retained faults."""
+    def mark_unavailable(self, *, hold: bool = False) -> None:
+        """Invalidate freshness without resolving any retained faults.
+
+        ``hold``: the requests got no answer; the last confirmed state stays
+        shown within its validity limit (``held``). Without it the evidence
+        ends here (a stopped source).
+        """
         self._has_valid_state = False
+        self._hold = self._hold and hold
         self._absence_counts.clear()
         self._notify_state_listeners()
 
+    @property
+    def state_version(self) -> int:
+        """Changes with every state notification (for entity refreshes)."""
+        return self._state_version
+
     def _notify_state_listeners(self) -> None:
+        self._state_version += 1
         for listener in tuple(self._state_listeners):
             try:
                 listener()
-            except Exception:
-                _LOGGER.error("A fault-state observer could not update")
+            except Exception as err:
+                log_failure(
+                    _LOGGER,
+                    logging.ERROR,
+                    "A fault-state observer could not update",
+                    error=err,
+                )
 
     @property
     def highest_severity(self) -> FaultSeverity | None:
@@ -373,10 +811,21 @@ class FaultTracker:
         """Restore the minimal active baseline used for restart deduplication."""
         try:
             data = await self._store.async_load()
-        except Exception:
-            _LOGGER.warning("The stored fault baseline could not be read")
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "The stored fault baseline could not be read",
+                error=err,
+            )
             return
-        if not isinstance(data, dict) or not isinstance(data.get("active"), list):
+        # Read (perhaps empty): a later first list is a real first baseline.
+        self._store_read = True
+        if not isinstance(data, dict):
+            return
+        if data.get("room_controller") is True:
+            self.room_controller = True  # SYSTEM-08
+        if not isinstance(data.get("active"), list):
             return
         restored: dict[str, ActiveFault] = {}
         for item in data["active"]:
@@ -404,6 +853,23 @@ class FaultTracker:
             # Older stores lack source evidence. Reobserve those incidents before
             # permitting absence-based resolution; never invent an all-clear.
             self._unverified_restored = set(restored)
+        self._sources_not_found = _restore_aging(
+            data.get("sources_not_found"), self._required_source_keys
+        )
+        self._unverified_unseen = _restore_aging(
+            data.get("unverified_unseen"), self._unverified_restored
+        )
+        local = data.get("local_faults")
+        if isinstance(local, list) and all(isinstance(key, str) for key in local):
+            # P42: the local list was attached before the restart. Its faults
+            # stay until it confirms their absence (or stays silent for the
+            # grace period), so a restart neither ends nor repeats them.
+            self._local_attached = True  # grace starts with the first read
+            self._local_faults = {
+                key: restored[key] for key in local if key in restored
+            }
+            self._locally_known = set(self._local_faults)
+            self._local_result = "restored"
         self._initialized = True
 
     def async_add_listener(
@@ -423,7 +889,58 @@ class FaultTracker:
 
     async def async_flush(self) -> None:
         """Save incident identities before a dependent dismissal store is flushed."""
+        if self._handed_over:
+            return  # the next source owns the baseline (P49b)
         await self._store.async_save(self._serialize())
+
+    async def async_close(self) -> None:
+        """Finish pending baseline writes before another source replaces this one."""
+        if self._initialized:
+            await self.async_flush()
+
+    async def async_hand_over(self, owner: object | None = None) -> None:
+        """Save the baseline now and stop writing it (P49b).
+
+        The next source of the same gateway loads it right after, so a later
+        write of this tracker must never replace that source's baseline.
+        ``owner`` is the taking source attempt; a newer attempt takes over
+        the ownership of a baseline that is already handed over.
+        """
+        self._hand_over_owner = owner
+        if self._handed_over:
+            return
+        if self._initialized:
+            await self.async_flush()
+        self._handed_over = True
+        self._handed_over_at = self._clock()
+
+    def discard(self) -> None:
+        """A view that was never kept: it never writes the baseline (P49b)."""
+        self._handed_over = True
+
+    @property
+    def baseline_known(self) -> bool:
+        """The stored baseline was read, or a cloud read set one (A1).
+
+        Before that, a first local list must never become the baseline: it
+        would replace the stored faults the local list does not report.
+        """
+        return self._store_read or self._initialized
+
+    @property
+    def local_list_current(self) -> bool:
+        """A current, valid local error list takes part (P49b)."""
+        return self._local_current and self._local_valid
+
+    async def async_resume(self, owner: object | None = None) -> None:
+        """The next source did not take over: write the baseline again and
+        save it now, after that source's last write (P49b)."""
+        if not self._handed_over or owner is not self._hand_over_owner:
+            return  # not handed over, or a newer attempt holds it
+        self._handed_over = False
+        self._hand_over_owner = None
+        if self._initialized:
+            await self.async_flush()
 
     def async_add_event_observer(
         self, observer: Callable[[FaultLifecycleEvent], None]
@@ -432,14 +949,28 @@ class FaultTracker:
         self._event_observers.add(observer)
         return lambda: self._event_observers.discard(observer)
 
-    def record_results(self, results: Iterable[BatchItemResult]) -> None:
+    def record_results(
+        self,
+        results: Iterable[BatchItemResult],
+        *,
+        observed_at: datetime | None = None,
+    ) -> None:
         """Record bounded capability outcomes without response bodies."""
+        now = observed_at or datetime.now(UTC)
+        results = tuple(results)
+        changed = self._learn_profile(
+            (result.path, result.resource) for result in results
+        )
+        gone: set[str] = set()
         for result in results:
             if not is_fault_resource_path(result.path):
                 continue
-            if result.resource is None and is_active_fault_resource_path(result.path):
+            active_source = is_active_fault_resource_path(result.path)
+            if result.resource is None and active_source:
                 self._absence_counts.clear()
                 self._has_valid_state = False
+                if not _no_answer(result):
+                    self._hold = False
             if result.resource is not None:
                 self._supported_paths.add(result.path)
                 self._resource_results[result.path] = "success"
@@ -451,6 +982,131 @@ class FaultTracker:
                 self._resource_results[result.path] = str(result.status)
             else:
                 self._resource_results[result.path] = "error"
+            if not active_source:
+                continue
+            key = _source_key(result.path)
+            if result.resource is not None or result.status != 404:
+                # FAULT-2: an answer, or any other error (5xx, timeout, 403),
+                # ends a run of 404 answers; only an unbroken run counts.
+                changed |= self._end_not_found_run(result.path)
+            elif key in self._required_source_keys:
+                # Saved when the run starts; later reads only count.
+                changed |= key not in self._sources_not_found
+                if _advance_aging(
+                    self._sources_not_found,
+                    key,
+                    now,
+                    after=FAULT_SOURCE_GONE_AFTER,
+                    reads=FAULT_SOURCE_GONE_READS,
+                ):
+                    gone.add(key)
+        if gone:
+            self._retire_sources(gone, "not_found")
+        elif changed:
+            self._schedule_save()
+
+    def reconcile_discovery(
+        self,
+        resources: Mapping[str, Resource],
+        *,
+        observed_at: datetime | None = None,
+    ) -> None:
+        """Count required sources a fully answered discovery no longer finds.
+
+        Call only when :func:`discovery_fully_answered` holds: then a source
+        that is neither discovered nor a fault candidate of the discovered
+        tree (for example the error list of a removed radio room device) is
+        missing. Like a 404 answer it only counts towards the run of a gone
+        source: it is retired once it has been missing for a day and at least
+        twice, without an answer in between (FAULT-2).
+        """
+        now = observed_at or datetime.now(UTC)
+        current = {
+            _source_key(path)
+            for path in (*resources, *fault_resource_candidates(resources))
+            if is_active_fault_resource_path(path)
+        }
+        changed = self._learn_profile(resources.items())
+        for path in resources:
+            if is_active_fault_resource_path(path):
+                # Discovered again: the source exists.
+                changed |= self._end_not_found_run(path)
+        gone: set[str] = set()
+        for key in sorted(self._required_source_keys - current):
+            changed |= key not in self._sources_not_found
+            if _advance_aging(
+                self._sources_not_found,
+                key,
+                now,
+                after=FAULT_SOURCE_GONE_AFTER,
+                reads=FAULT_SOURCE_GONE_READS,
+            ):
+                gone.add(key)
+        if gone:
+            self._retire_sources(gone, "not_discovered")
+        elif changed:
+            self._schedule_save()
+
+    def _learn_profile(self, readings: Iterable[tuple[str, Resource | None]]) -> bool:
+        """SYSTEM-08: note a room controller in these readings; True if new."""
+        if self.room_controller:
+            return False
+        evidence = {
+            path: resource
+            for path, resource in readings
+            if resource is not None
+            and path.startswith(("/gateway/", "/zones/"))
+            and (
+                path in (rrc.PRODUCT_TYPE_PATH, rrc.ZONE_LIST)
+                or rrc.ZONE.match(path) is not None
+            )
+        }
+        if not evidence or not rrc.profile_evidence(None, evidence):
+            return False
+        self.room_controller = True
+        return True
+
+    def _end_not_found_run(self, path: str) -> bool:
+        """The run of 404 answers of a source ends. True if it had one."""
+        return self._sources_not_found.pop(_source_key(path), None) is not None
+
+    def _retire_sources(self, keys: set[str], reason: str) -> None:
+        """Stop requiring sources that are gone, and say so (FAULT-2).
+
+        Faults only these sources reported then end like any other fault,
+        after two complete reads of the remaining sources. The repair notice
+        makes sure this never happens silently.
+        """
+        self._required_source_keys -= keys
+        for key in keys:
+            self._sources_not_found.pop(key, None)
+        self._removed_sources += len(keys)
+        _LOGGER.warning(
+            "%d fault source(s) of this system no longer exist (%s); faults "
+            "that only they reported end after the next complete reads",
+            len(keys),
+            reason,
+        )
+        try:
+            ir.async_create_issue(
+                self._hass,
+                DOMAIN,
+                self._issue_id,
+                is_fixable=False,
+                is_persistent=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key="fault_source_removed",
+                translation_placeholders={"count": str(self._removed_sources)},
+            )
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "The notice about a removed fault source failed",
+                error=err,
+            )
+        self._schedule_save()
+        self._notify_state_listeners()
 
     def record_deferred_paths(self, paths: Iterable[str]) -> None:
         """Do not retain an all-clear when active sources could not be polled."""
@@ -469,30 +1125,51 @@ class FaultTracker:
     ) -> tuple[FaultLifecycleEvent, ...]:
         """Apply one cycle, requiring complete success before resolving faults."""
         now = observed_at or datetime.now(UTC)
+        self._expire_local()
         previous_sources = set(self._required_source_keys)
         previous_unverified = set(self._unverified_restored)
+        # Saved when a run starts or ends, not for every counted read.
+        previous_aging = self._aging_marks()
         successful = set(resources) if successful_paths is None else successful_paths
         for path in successful:
             if is_fault_resource_path(path):
                 self._supported_paths.add(path)
                 self._resource_results[path] = "success"
+                if is_active_fault_resource_path(path):
+                    self._end_not_found_run(path)
 
         parsed_faults: dict[str, ActiveFault] = {}
         invalid_entries = 0
         parsed_resources = 0
+        seen: list[tuple[ActiveFault, str | None]] = []
+        retired: set[str] = set()
         for path, resource in resources.items():
             if path not in successful or not is_active_fault_resource_path(path):
                 continue
             parsed_resources += 1
             self._required_source_keys.add(_source_key(path))
-            parsed = parse_fault_resource(resource, observed_at=now)
+            parsed = parse_fault_resource(
+                resource, observed_at=now, room_controller=self.room_controller
+            )
             invalid_entries += parsed.invalid_entries
-            for fault in parsed.faults:
-                self._unverified_restored.discard(fault.fingerprint)
-                existing = parsed_faults.get(fault.fingerprint)
-                parsed_faults[fault.fingerprint] = (
-                    fault if existing is None else _merge_faults(existing, fault)
-                )
+            earlier = dict(parsed.legacy_fingerprints)
+            seen.extend(
+                (fault, earlier.get(fault.fingerprint)) for fault in parsed.faults
+            )
+            retired.update(parsed.retired_fingerprints)
+        migrated, new_aliases = self._apply_aliases(seen)
+        for fault in migrated:
+            self._unverified_restored.discard(fault.fingerprint)
+            existing = parsed_faults.get(fault.fingerprint)
+            parsed_faults[fault.fingerprint] = (
+                fault if existing is None else _merge_faults(existing, fault)
+            )
+        for fingerprint in retired - set(parsed_faults):
+            # B06: a stored device error row that is no fault any more was
+            # seen; its absence is real, so it may end like any other fault.
+            stored = self._active.get(fingerprint)
+            if stored is not None and stored.component_type == "device":
+                self._unverified_restored.discard(fingerprint)
 
         self._parser_errors += invalid_entries
         if parsed_resources:
@@ -502,7 +1179,7 @@ class FaultTracker:
             )
             self._last_successful_update = now
 
-        complete = (
+        sources_complete = (
             bool(self._required_source_keys)
             and self._required_source_keys.issubset(
                 _source_key(path)
@@ -510,12 +1187,23 @@ class FaultTracker:
                 if path in successful and is_active_fault_resource_path(path)
             )
             and not invalid_entries
-            and not self._unverified_restored
         )
+        if sources_complete:
+            self._age_unverified(now)
+        self._unverified_unseen = {
+            fingerprint: aging
+            for fingerprint, aging in self._unverified_unseen.items()
+            if fingerprint in self._unverified_restored
+        }
+        complete = sources_complete and not self._unverified_restored
         if parsed_resources:
             self._has_valid_state = complete
-            if not complete:
+            if complete:
+                self._confirmed_at, self._hold = now, True
+            else:
                 self._absence_counts.clear()
+                if invalid_entries:
+                    self._hold = False
 
         if not self._initialized:
             self._active = parsed_faults
@@ -528,7 +1216,9 @@ class FaultTracker:
         changed = (
             previous_sources != self._required_source_keys
             or previous_unverified != self._unverified_restored
+            or previous_aging != self._aging_marks()
             or self._save_schedule_failed
+            or new_aliases  # store the corrected name of a migrated incident
         )
         for fingerprint, fault in parsed_faults.items():
             previous = self._active.get(fingerprint)
@@ -554,11 +1244,17 @@ class FaultTracker:
 
         if complete:
             for fingerprint in set(self._active) - set(parsed_faults):
-                self._absence_counts[fingerprint] += 1
+                self._absence_counts[fingerprint] = min(
+                    self._absence_counts[fingerprint] + 1,
+                    FAULT_RESOLUTION_CONFIRMATIONS,
+                )
                 if self._absence_counts[fingerprint] < FAULT_RESOLUTION_CONFIRMATIONS:
                     continue
+                if not self._local_confirms_absence(fingerprint):
+                    continue  # the local error list has not confirmed it (P42)
                 fault = self._active.pop(fingerprint)
                 self._absence_counts.pop(fingerprint, None)
+                self._local_absence.pop(fingerprint, None)
                 events.append(FaultLifecycleEvent(FaultEventType.RESOLVED, fault, now))
                 changed = True
 
@@ -568,6 +1264,277 @@ class FaultTracker:
             self._emit(event)
         self._notify_state_listeners()
         return tuple(events)
+
+    def _age_unverified(self, now: datetime) -> None:
+        """Count a complete read that did not report a restored fault (FAULT-2).
+
+        A fault restored without source evidence is held until a source
+        reports it again. One that no required source reports for a day of
+        complete reads (for example one fixed while Home Assistant was off)
+        takes part in the normal two-read resolution again.
+        """
+        for fingerprint in sorted(self._unverified_restored):
+            if _advance_aging(
+                self._unverified_unseen,
+                fingerprint,
+                now,
+                after=FAULT_UNVERIFIED_AFTER,
+                reads=FAULT_UNVERIFIED_READS,
+            ):
+                self._unverified_restored.discard(fingerprint)
+                _LOGGER.info(
+                    "A restored fault was not reported by any fault source for "
+                    "a day; it ends after the next complete reads"
+                )
+
+    def _aging_marks(self) -> tuple[dict[str, datetime], dict[str, datetime]]:
+        return (
+            {key: since for key, (since, _) in self._sources_not_found.items()},
+            {key: since for key, (since, _) in self._unverified_unseen.items()},
+        )
+
+    def _apply_aliases(
+        self, seen: Iterable[tuple[ActiveFault, str | None]]
+    ) -> tuple[list[ActiveFault], bool]:
+        """Give device errors of stored incidents their stored identity (B06).
+
+        Up to 0.9.0-alpha.3 a device error row was fingerprinted by its
+        occurrence ID alone. A stored incident that is still reported keeps
+        that fingerprint until it ends, so neither its event nor its
+        notification repeats. Each stored incident is taken by one row only;
+        a second device that shared it before is a fault of its own.
+        """
+        self._aliases = {
+            current: stored
+            for current, stored in self._aliases.items()
+            if stored in self._active
+        }
+        items = sorted(
+            seen, key=lambda item: (item[0].source_resources, item[0].fingerprint)
+        )
+        claimed = {fault.fingerprint for fault, _ in items}
+        claimed.update(self._aliases.values())
+        added = False
+        result: list[ActiveFault] = []
+        for fault, earlier in items:
+            alias = self._aliases.get(fault.fingerprint)
+            if (
+                alias is None
+                and earlier is not None
+                and fault.fingerprint not in self._active
+                and earlier not in claimed
+                and (stored := self._active.get(earlier)) is not None
+                and stored.component_type == "device"
+            ):
+                alias = self._aliases[fault.fingerprint] = earlier
+                claimed.add(earlier)
+                added = True
+            result.append(fault if alias is None else replace(fault, fingerprint=alias))
+        return result, added
+
+    # ------------------------------------------------- P42: local error list
+
+    @property
+    def _local_current(self) -> bool:
+        """The local list takes part: attached and not silent for too long."""
+        return self._local_attached and not self._local_stale
+
+    def _expire_local(self) -> None:
+        """A local list without a new reading for too long stops blocking."""
+        if not self._local_current:
+            return
+        now = self._clock()
+        if self._local_fresh_at is None:
+            self._local_fresh_at = now  # after a restart: the grace period starts
+            return
+        if now - self._local_fresh_at > self._local_max_age:
+            self._local_stale = True
+            self._local_valid = False
+            self._local_absence.clear()
+            self._local_result = "stale"
+            self._schedule_save()  # a restart must not attach it again
+            self._notify_state_listeners()
+
+    def _local_confirms_absence(self, fingerprint: str) -> bool:
+        return not self._local_current or (
+            self._local_valid
+            and fingerprint not in self._local_faults
+            and self._local_absence[fingerprint] >= FAULT_RESOLUTION_CONFIRMATIONS
+        )
+
+    def _cloud_confirms_absence(self, fingerprint: str) -> bool:
+        if self.local_authority:
+            # No cloud takes part (P49b): the list decides only what it knows.
+            return fingerprint in self._locally_known
+        return (
+            self._has_valid_state
+            and self._absence_counts[fingerprint] >= FAULT_RESOLUTION_CONFIRMATIONS
+        )
+
+    def process_local(
+        self,
+        resource: Resource | None,
+        *,
+        reading: float | None,
+        ready: bool,
+        interval: float | None = None,
+        observed_at: datetime | None = None,
+    ) -> tuple[FaultLifecycleEvent, ...]:
+        """Apply the local error list as a second source of the same faults.
+
+        Only a new, current and complete local reading counts. A missing,
+        late or unreadable answer never resolves anything, and a fault is
+        resolved only when every taking-part source confirms its absence.
+        ``resource`` is ``None`` while the access is ready but has no new list
+        (for example a late reading after a timeout): no new evidence, so
+        nothing changes. ``ready`` false suspends the local evidence.
+        ``interval`` is the local list's query interval in seconds.
+        """
+        now = observed_at or datetime.now(UTC)
+        initializing = False
+        if not self._initialized:
+            if not (self.local_authority and resource is not None and ready):
+                return ()  # the stored baseline is not loaded yet
+            # P49b: no stored baseline and no cloud. Like a first cloud read,
+            # the first complete list is the baseline, without events.
+            initializing = True
+        if self._handed_over and (
+            self._handed_over_at is None
+            or self._clock() - self._handed_over_at <= HAND_OVER_HOLD.total_seconds()
+        ):
+            # The next source of the gateway holds the baseline: this view
+            # keeps showing it unchanged until that source publishes or gives
+            # it back, so no fault is announced by both (A1). Never longer
+            # than the hold, so a hand-over that is never ended cannot stop
+            # the view's fault display.
+            self._expire_local()
+            return ()
+        was_current = self._local_current
+        if resource is not None and ready:
+            # Attached once it delivered a list; a gateway without one never
+            # blocks the cloud's resolution.
+            self._local_attached = True
+        if not self._local_attached:
+            return ()
+        self._expire_local()
+        if not ready:
+            # No evidence while not ready, but the confirmations of earlier new
+            # readings stay: brief pauses between readings never block forever.
+            if self._local_valid:
+                self._local_valid = False
+                self._local_result = "no_answer"
+                self._notify_state_listeners()
+            return ()
+        if resource is None:
+            return ()  # ready, but no new list: keep the current evidence
+        if reading is not None and reading == self._local_last_reading:
+            return ()  # the same reading again: no new evidence
+        self._local_last_reading = reading
+        self._local_fresh_at = self._clock()
+        self._local_stale = False
+        self._local_max_age = max(
+            LOCAL_FAULT_MAX_AGE.total_seconds(),
+            LOCAL_FAULT_MISSED_READINGS * (interval or 0),
+        )
+        parsed = parse_fault_resource(
+            resource, observed_at=now, room_controller=self.room_controller
+        )
+        faults: dict[str, ActiveFault] = {}
+        for fault in parsed.faults:
+            existing = faults.get(fault.fingerprint)
+            faults[fault.fingerprint] = (
+                fault if existing is None else _merge_faults(existing, fault)
+            )
+        if initializing and parsed.invalid_entries:
+            return ()  # only a complete first list becomes the baseline
+        self._locally_known.update(faults)
+        if initializing:
+            self._active = dict(faults)
+            self._local_faults = faults
+            self._local_valid = not parsed.invalid_entries
+            self._local_result = "partial" if parsed.invalid_entries else "success"
+            self._initialized = True
+            self._schedule_save()
+            self._notify_state_listeners()
+            return ()
+        before = self._local_signature()
+        # A changed local set is saved, so a restart knows which faults it held.
+        # Also after attaching or returning from silence, which the store
+        # does not know yet.
+        changed = not was_current or set(faults) != set(self._local_faults)
+        self._local_faults = faults
+        self._local_valid = not parsed.invalid_entries
+        self._local_result = "partial" if parsed.invalid_entries else "success"
+        events: list[FaultLifecycleEvent] = []
+        for fingerprint, fault in faults.items():
+            self._local_absence.pop(fingerprint, None)
+            if fingerprint in self._unverified_restored:
+                # Seen again after a restart: verified, like a cloud sighting.
+                self._unverified_restored.discard(fingerprint)
+                changed = True
+            previous = self._active.get(fingerprint)
+            if previous is None:
+                self._active[fingerprint] = fault
+                events.append(FaultLifecycleEvent(FaultEventType.APPEARED, fault, now))
+                changed = True
+            else:
+                self._active[fingerprint] = replace(
+                    previous,
+                    last_seen_at=fault.last_seen_at,
+                    source_resources=tuple(
+                        sorted(
+                            set(previous.source_resources) | set(fault.source_resources)
+                        )
+                    ),
+                )
+        if self._local_valid:
+            for fingerprint in set(self._active) - set(faults):
+                self._local_absence[fingerprint] = min(
+                    self._local_absence[fingerprint] + 1,
+                    FAULT_RESOLUTION_CONFIRMATIONS,
+                )
+                if self._local_absence[
+                    fingerprint
+                ] < FAULT_RESOLUTION_CONFIRMATIONS or not (
+                    self._cloud_confirms_absence(fingerprint)
+                ):
+                    continue
+                fault = self._active.pop(fingerprint)
+                self._absence_counts.pop(fingerprint, None)
+                self._local_absence.pop(fingerprint, None)
+                events.append(FaultLifecycleEvent(FaultEventType.RESOLVED, fault, now))
+                changed = True
+        else:
+            self._local_absence.clear()
+        if changed:
+            self._schedule_save()
+        for event in events:
+            self._emit(event)
+        if events or changed or self._local_signature() != before:
+            # Only a real change refreshes the entities, not every reading.
+            self._notify_state_listeners()
+        return tuple(events)
+
+    def _local_signature(self) -> tuple[object, ...]:
+        return (
+            self._local_valid,
+            self._local_result,
+            frozenset(self._local_absence.items()),
+        )
+
+    def detach_local(self) -> None:
+        """The local access is gone: the cloud decides alone again."""
+        if not self._local_attached:
+            return
+        self._local_attached = self._local_valid = False
+        self._local_faults = {}
+        self._local_absence.clear()
+        self._local_last_reading = None
+        self._local_fresh_at = None
+        self._local_stale = False
+        self._local_result = "not_attached"
+        self._schedule_save()
+        self._notify_state_listeners()
 
     def diagnostics(self) -> dict[str, object]:
         """Return fault state without identifiers or unknown payloads."""
@@ -580,6 +1547,12 @@ class FaultTracker:
             "active_notifications": len(self.active),
             "active_faults": len(self.active_faults),
             "severity_counts": dict(sorted(severity_counts.items())),
+            # SYSTEM-08: listed, but below the user's display level.
+            **(
+                {"below_user_display_level": self._below_user_display_level}
+                if self.room_controller
+                else {}
+            ),
             "codes": tuple(codes[:MAX_FAULT_ATTRIBUTES]),
             "codes_truncated": len(codes) > MAX_FAULT_ATTRIBUTES,
             "last_successful_update": (
@@ -587,9 +1560,40 @@ class FaultTracker:
                 if self._last_successful_update
                 else None
             ),
+            # The last confirmed state shown while reads get no answer.
+            "state_held": self.held,
             "parser_status": self._last_parser_status,
             "parser_errors": self._parser_errors,
+            "local_error_list": self._local_result,
+            "local_faults": len(self._local_faults),
+            # FAULT-2: counts only, never the hashed source keys.
+            "fault_sources": {
+                "required": len(self._required_source_keys),
+                "not_found": len(self._sources_not_found),
+                "removed": self._removed_sources,
+                "unverified_faults": len(self._unverified_restored),
+            },
+            # B3: counts only, never device slots or error types.
+            "device_errors": {
+                "lists": len(self._device_errors),
+                **{
+                    state: sum(
+                        item.state == state
+                        for entries in self._device_errors.values()
+                        for item in entries
+                    )
+                    for state in ("active", "inactive", "other")
+                },
+            },
         }
+
+    @property
+    def _below_user_display_level(self) -> int:
+        return sum(
+            item.severity is FaultSeverity.INFO
+            and _whole_number(item.display_level_raw) in _HIDDEN_DISPLAY_LEVELS
+            for item in self.active
+        )
 
     def _supported_active_paths(self) -> set[str]:
         return {
@@ -614,28 +1618,58 @@ class FaultTracker:
     ) -> None:
         try:
             listener(event)
-        except Exception:
-            _LOGGER.exception(
+        except Exception as err:
+            log_failure(
+                _LOGGER,
+                logging.ERROR,
                 "Fault lifecycle listener failed for transition %s",
                 event.event_type.value,
+                error=err,
             )
 
     def _schedule_save(self) -> None:
+        if self._handed_over:
+            return
         try:
             self._store.async_delay_save(self._serialize, FAULT_STORAGE_SAVE_DELAY)
-        except Exception:
+        except Exception as err:
             if not self._save_schedule_failed:
-                _LOGGER.warning("The fault baseline could not be queued for storage")
+                log_failure(
+                    _LOGGER,
+                    logging.WARNING,
+                    "The fault baseline could not be queued for storage",
+                    error=err,
+                )
             self._save_schedule_failed = True
         else:
             self._save_schedule_failed = False
 
     def _serialize(self) -> dict[str, Any]:
-        return {
+        data: dict[str, Any] = {
             "active": [_serialize_fault(item) for item in self.active],
             "required_source_keys": sorted(self._required_source_keys),
             "unverified_faults": sorted(self._unverified_restored),
+            "sources_not_found": _serialize_aging(self._sources_not_found),
+            "unverified_unseen": _serialize_aging(self._unverified_unseen),
         }
+        if self._local_current:
+            # Which faults the local list reported (P42), for a restart.
+            data["local_faults"] = sorted(set(self._local_faults) & set(self._active))
+        if self.room_controller:
+            data["room_controller"] = True  # SYSTEM-08
+        return data
+
+
+def _no_answer(result: BatchItemResult) -> bool:
+    """No answer for the source itself: a server error, a timeout or a limit.
+
+    A client error or invalid data is an answer: it ends a held state.
+    """
+    status = result.status
+    if status is not None:
+        return status in (401, 429) or 500 <= status <= 599
+    error = result.error
+    return not isinstance(error, ProtocolError) or isinstance(error, ResourceOmitted)
 
 
 def _source_key(path: str) -> str:
@@ -643,16 +1677,74 @@ def _source_key(path: str) -> str:
     return hashlib.sha256(path.encode()).hexdigest()
 
 
+def _advance_aging(
+    table: dict[str, tuple[datetime, int]],
+    key: str,
+    now: datetime,
+    *,
+    after: timedelta,
+    reads: int,
+) -> bool:
+    """Count one more piece of evidence; True once it lasted long enough.
+
+    A clock that went back starts the run again, so a run begun at a wrong
+    time far ahead cannot hold until that time comes round.
+    """
+    since, count = table.get(key, (now, 0))
+    if now < since:
+        since, count = now, 0
+    count = min(count + 1, reads)
+    table[key] = (since, count)
+    return count >= reads and now - since >= after
+
+
+def _serialize_aging(table: Mapping[str, tuple[datetime, int]]) -> dict[str, Any]:
+    return {
+        key: [since.isoformat(), count] for key, (since, count) in sorted(table.items())
+    }
+
+
+def _restore_aging(value: object, allowed: set[str]) -> dict[str, tuple[datetime, int]]:
+    """Restore a stored run for known keys only; anything else starts anew."""
+    if not isinstance(value, dict):
+        return {}
+    restored: dict[str, tuple[datetime, int]] = {}
+    for key, item in value.items():
+        if (
+            key not in allowed
+            or not isinstance(item, list)
+            or len(item) != 2
+            or not isinstance(item[0], str)
+            or not isinstance(item[1], int)
+            or isinstance(item[1], bool)
+            or item[1] < 1
+        ):
+            continue
+        try:
+            since = datetime.fromisoformat(item[0])
+        except ValueError:
+            continue
+        if since.tzinfo is None:
+            continue
+        restored[key] = (since, item[1])
+    return restored
+
+
 def _parse_fault_item(
-    path: str, data: Mapping[str, JsonValue], now: datetime
+    path: str,
+    data: Mapping[str, JsonValue],
+    now: datetime,
+    room_controller: bool = False,
 ) -> ActiveFault | None:
     code = _token(data.get("ccd", data.get("code", data.get("value"))))
     subcode = _token(data.get("dcd", data.get("subcode")))
     occurrence_id = _token(data.get("occurrenceId", data.get("occurrence_id")))
     class_raw = _token(data.get("fc", data.get("errorType", data.get("cat"))))
-    pointt_class, severity = _classify(class_raw)
     origin = _token(data.get("orig", data.get("origin")))
     display_level = _token(data.get("dlv", data.get("displayLevel")))
+    pointt_class, severity = _classify_notification(
+        class_raw, display_level, room_controller=room_controller
+    )
     component_type, component_id = _component_from_path(path)
     occurred_at = _parse_timestamp(data.get("t"), now)
     time_source = (
@@ -662,27 +1754,18 @@ def _parse_fault_item(
     )
     if not any((code, subcode, occurrence_id, class_raw)):
         return None
-    # A vendor occurrence ID is the strongest available identity and remains
-    # stable when the same incident is reported by more than one resource.
-    # Without it, retain the component fields to avoid collapsing two real,
-    # simultaneous faults that happen to share a manufacturer code.
-    identity = (
-        f"occurrence|{occurrence_id}"
-        if occurrence_id is not None
-        else "|".join(
-            (
-                code or "",
-                subcode or "",
-                component_type or "",
-                component_id or "",
-                origin or "",
-                class_raw or "",
-            )
-        )
-    )
-    fingerprint = hashlib.sha256(identity.encode()).hexdigest()[:24]
     return ActiveFault(
-        fingerprint=fingerprint,
+        fingerprint=_fingerprint(
+            _identity(
+                code,
+                subcode,
+                occurrence_id,
+                component_type,
+                component_id,
+                origin,
+                class_raw,
+            )
+        ),
         code=code,
         subcode=subcode,
         severity=severity,
@@ -698,6 +1781,146 @@ def _parse_fault_item(
         last_seen_at=now,
         time_source=time_source,
         source_resources=(path,),
+    )
+
+
+def _identity(
+    code: str | None,
+    subcode: str | None,
+    occurrence_id: str | None,
+    component_type: str | None,
+    component_id: str | None,
+    origin: str | None,
+    class_raw: str | None,
+) -> str:
+    # A vendor occurrence ID is the strongest available identity and remains
+    # stable when the same incident is reported by more than one resource.
+    # Without it, retain the component fields to avoid collapsing two real,
+    # simultaneous faults that happen to share a manufacturer code.
+    if occurrence_id is not None:
+        return f"occurrence|{occurrence_id}"
+    return "|".join(
+        (
+            code or "",
+            subcode or "",
+            component_type or "",
+            component_id or "",
+            origin or "",
+            class_raw or "",
+        )
+    )
+
+
+def _fingerprint(identity: str) -> str:
+    return hashlib.sha256(identity.encode()).hexdigest()[:24]
+
+
+def _binary_device_error(allowed: object) -> bool:
+    """Whether a device error row allows only ``active`` and ``inactive``.
+
+    Rows without ``allowedValues`` (an older shape) are not restricted.
+    """
+    if allowed is None:
+        return True
+    return (
+        isinstance(allowed, list)
+        and all(isinstance(item, str) for item in allowed)
+        and {item.strip().casefold() for item in allowed} == _DEVICE_ERROR_STATES
+    )
+
+
+def _is_active_device_error(data: Mapping[str, JsonValue]) -> bool:
+    """A device error row that reports an active error (B06).
+
+    The documented rows (``errorType``, ``occurrenceId``, ``value``,
+    ``allowedValues``) report each error type as ``active`` or ``inactive``;
+    only an active row of such a two-state error is a fault. Other states,
+    such as a valve status, describe no error.
+    """
+    value = data.get("value")
+    return (
+        isinstance(value, str)
+        and value.strip().casefold() == "active"
+        and _binary_device_error(data.get("allowedValues"))
+    )
+
+
+def _parse_device_error(
+    path: str, data: Mapping[str, JsonValue], now: datetime
+) -> ActiveFault | None:
+    """One active device error row as a fault (B06), or None when unnamed.
+
+    The error is named by ``errorType`` (``type`` in an older shape). Its
+    identity is the device, the error type and the occurrence ID, because the
+    occurrence ID alone is the same for one error type on every device.
+    """
+    code = _token(data.get("errorType")) or _token(data.get("type"))
+    if code is None:
+        return None
+    raw_occurrence = data.get("occurrenceId", data.get("occurrence_id"))
+    if isinstance(raw_occurrence, float) and raw_occurrence.is_integer():
+        raw_occurrence = int(raw_occurrence)
+    occurrence_id = _token(raw_occurrence)
+    class_raw = _token(data.get("fc", data.get("cat")))
+    pointt_class, severity = _classify(class_raw)
+    component_type, component_id = _component_from_path(path)
+    occurred_at = _parse_timestamp(data.get("t"), now)
+    identity = "|".join(("device-error", component_id or "", code, occurrence_id or ""))
+    return ActiveFault(
+        fingerprint=_fingerprint(identity),
+        code=code,
+        subcode=None,
+        severity=severity,
+        pointt_class=pointt_class,
+        pointt_class_raw=class_raw,
+        component_type=component_type,
+        component_id=component_id,
+        origin_raw=None,
+        display_level_raw=None,
+        occurrence_id=occurrence_id,
+        occurred_at=occurred_at,
+        first_seen_at=now,
+        last_seen_at=now,
+        time_source=(
+            FaultTimeSource.CLOUD
+            if occurred_at is not None
+            else FaultTimeSource.HOME_ASSISTANT_OBSERVED
+        ),
+        source_resources=(path,),
+    )
+
+
+def _legacy_device_fingerprint(path: str, data: Mapping[str, JsonValue]) -> str | None:
+    """The fingerprint a device error row had up to 0.9.0-alpha.3 (B06).
+
+    None when that version did not count the row as a fault either. Only used
+    to keep the identity of incidents that are already stored.
+    """
+    value = data.get("value")
+    if _is_explicitly_inactive(data) or (
+        isinstance(value, str) and value.strip().casefold() == "inactive"
+    ):
+        return None
+    code = _token(data.get("ccd", data.get("code", value)))
+    if code is not None and code.casefold() == "active":
+        code = _token(data.get("type")) or code
+    subcode = _token(data.get("dcd", data.get("subcode")))
+    occurrence_id = _token(data.get("occurrenceId", data.get("occurrence_id")))
+    class_raw = _token(data.get("fc", data.get("errorType", data.get("cat"))))
+    if not any((code, subcode, occurrence_id, class_raw)):
+        return None
+    component_type, component_id = _component_from_path(path)
+    origin = _token(data.get("orig", data.get("origin")))
+    return _fingerprint(
+        _identity(
+            code,
+            subcode,
+            occurrence_id,
+            component_type,
+            component_id,
+            origin,
+            class_raw,
+        )
     )
 
 
@@ -760,6 +1983,45 @@ def _classify(value: str | None) -> tuple[str | None, FaultSeverity]:
     return None, FaultSeverity.UNKNOWN
 
 
+def _classify_notification(
+    value: str | None,
+    display_level: str | None,
+    *,
+    room_controller: bool = False,
+) -> tuple[str | None, FaultSeverity]:
+    """``_classify`` plus the numeric classes of a notification (CT-F01).
+
+    Only a class ``_classify`` leaves unknown is read as a number: 18 and 20
+    are maintenance, a class below 18 at display level 8 is a fault. On a
+    room controller, such a class at a display level below the user's is
+    information (SYSTEM-08). Anything else stays unknown, so it still counts
+    as a problem; a missing display level as well.
+    """
+    pointt_class, severity = _classify(value)
+    number = _whole_number(value)
+    if severity is not FaultSeverity.UNKNOWN or number is None:
+        return pointt_class, severity
+    if number in _MAINTENANCE_CLASSES:
+        return "maintenance", FaultSeverity.MAINTENANCE
+    level = _whole_number(display_level)
+    if 0 <= number < _FAULT_CLASS_LIMIT and level == _FAULT_DISPLAY_LEVEL:
+        return "fault", FaultSeverity.FAULT
+    if (
+        room_controller
+        and 0 <= number < _FAULT_CLASS_LIMIT
+        and level in _HIDDEN_DISPLAY_LEVELS
+    ):
+        return pointt_class, FaultSeverity.INFO
+    return pointt_class, severity
+
+
+def _whole_number(value: str | None) -> int | None:
+    """A token such as ``18`` or ``18.0`` as an integer, else None."""
+    if value is None or not re.fullmatch(r"[0-9]{1,4}(?:\.0+)?", value):
+        return None
+    return int(value.split(".", 1)[0])
+
+
 def _component_from_path(path: str) -> tuple[str | None, str | None]:
     heat_source = _HEAT_SOURCE_PATH.match(path)
     if heat_source and path not in {"/heatSources", "/heatSources/emon"}:
@@ -808,7 +2070,9 @@ def _parse_timestamp(value: JsonValue, now: datetime) -> datetime | None:
     if parsed is None:
         return None
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=UTC)
+        # SYSTEM-18: a time without a zone is the local time, as the
+        # controller shows it; Home Assistant's time zone stands for it.
+        parsed = parsed.replace(tzinfo=dt_util.get_default_time_zone())
     parsed = parsed.astimezone(UTC)
     minimum = datetime(2000, 1, 1, tzinfo=UTC)
     return parsed if minimum <= parsed <= now + timedelta(days=1) else None

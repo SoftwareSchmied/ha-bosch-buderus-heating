@@ -26,7 +26,7 @@ reserved markers cannot be submitted as a new holiday.
 
 Each slot supplies its own `assignedTo`, `hcMode`, `dhwMode` and optional
 `fixTemperature`. Assignment lists and offered modes must be valid.
-Temperature readings use unit `C` without scaling. Changes require the
+Temperature readings use unit `C` or `°C` without scaling. Changes require the
 resource's write permission, current limits and any advertised step.
 The fixed temperature can only be changed with `FIX_TEMP` or
 `FIX_TEMPERATURE`. Unsupported fields are omitted. Incomplete contracts
@@ -49,9 +49,18 @@ advertises allowed values, they must include the documented `TRUE` command.
 Before editing, I reread the known resources of the selected slot. Changed
 settings are written in this order: hot-water mode, heating mode, fixed
 temperature, assignments, and dates last. Unchanged fields are skipped.
-Each change has a complete read immediately before and after it. An app
-change, missing permission, rejected value or unmatched read-back stops the
-transaction. No write is retried automatically and no rollback is attempted.
+Before the first change I check that every field to be changed is
+writable, so a read-only field stops the change before anything is sent.
+Each change starts right after a complete read of the slot: the initial
+one or the read-back of the previous step. After each change I read the slot
+again after 0.5 s, and if the value is not yet there, after 1 and 2 s more.
+On a gateway that reports the device type `icom`, the read-backs follow after
+1, 2, 3 and 4 s.
+A lost response to a change is resolved by this read-back, never by sending
+it again. An app change of another field, missing permission, rejected value
+or unmatched read-back stops the transaction. No write is retried
+automatically and no rollback is attempted. Circuit assignments are compared
+as a set and sent in the order the slot advertises them.
 
 A network, authentication or service failure may leave earlier steps applied.
 The integration invalidates uncertain readings and ordinary polling restores
@@ -63,6 +72,28 @@ inside the remaining request window cannot be ruled out.
 The WDDW2 mode is independent of these slots. It neither creates calendar
 events nor accepts holiday dates. Unknown current modes, missing permissions,
 or unavailable on/off options block its switch.
+
+## Rules from the component list (expected, untested)
+
+I read the component list `/system/info` and apply two rules to holidays. I
+use only the component type (`Id`) and its token (`Tok`) of each entry, never
+a serial number, name or version, and the rules only remove choices:
+
+- **HMI800 HP Light (`Id` 240):** with such a controller, the heating mode
+  (`hcMode`) and the circuit assignment (`assignedTo`) of a holiday are
+  expected not to be changeable through the cloud. With such a component the
+  dialog offers only the slot's current heating mode and circuits, and the
+  transaction refuses a change of either before the first PUT. Dates, hot
+  water mode and fixed temperature stay changeable. A free slot without
+  assigned circuits then offers no new holiday.
+- **Token 16:** when an entry has token 16, the heating circuits of the
+  tokens 24 to 27 (`hc1` to `hc4`) are expected not to be available for a
+  holiday. The dialog no longer offers these circuits for a holiday; a circuit
+  the slot already has stays.
+
+No system with either case has been observed; both rules are expected,
+untested. The diagnostics of an iCom gateway list the `Id`/`Tok` pairs and
+whether a rule applies.
 
 ## Validation limits
 
@@ -86,7 +117,8 @@ weiterhin der erste Tag nach dem Urlaub. Deshalb wird aus
 für dieses Format nicht vorgesehen.
 
 Ich übernehme Kreise, Betriebsarten, Schreibrechte und Temperaturgrenzen
-aus dem jeweiligen Speicherplatz. Eine fehlende oder fehlerhafte Antwort
+aus dem jeweiligen Speicherplatz. Die konstante Temperatur nehme ich mit der
+Einheit `C` oder `°C` an. Eine fehlende oder fehlerhafte Antwort
 gilt nicht als freier Platz. Nur die oben genannten bekannten Leerkennungen
 geben einen Platz für das Anlegen frei. Die konstante Temperatur lässt sich
 nur zusammen mit der entsprechenden Betriebsart ändern.
@@ -99,9 +131,17 @@ Es gibt kein zusätzliches Aktionsmenü. WDDW2 erhält einen Ein-/Aus-Schalter
 und einen Dialog für diesen Modus, weil das Gerät dort keine Zeiträume
 speichert.
 
-Vor und nach jedem geänderten ICOM-Feld lese ich den gesamten bekannten
-Speicherplatz. Die Reihenfolge ist Warmwasser, Heizung, konstante Temperatur,
-Kreiszuordnung und zuletzt der Zeitraum. Bei Konflikten oder Fehlern bricht
+Vor dem ersten Schreiben prüfe ich, ob alle zu ändernden Felder schreibbar
+sind; ein nicht schreibbares Feld stoppt die Änderung, bevor etwas gesendet
+wird. Jedes geänderte ICOM-Feld schreibe ich direkt nach einem vollständigen
+Lesen des Speicherplatzes: dem ersten oder dem Zurücklesen des vorigen
+Schritts. Danach lese ich den Platz nach 0,5 s erneut, falls der Wert noch
+fehlt, nach weiteren 1 und 2 s; bei einem Gateway mit dem Gerätetyp `icom`
+nach 1, 2, 3 und 4 s. Eine verlorene Antwort klärt dieses
+Zurücklesen, gesendet wird nie ein zweites Mal. Kreiszuordnungen vergleiche
+ich als Menge und sende sie in der gemeldeten Reihenfolge des Platzes. Die
+Reihenfolge ist Warmwasser, Heizung, konstante Temperatur, Kreiszuordnung und
+zuletzt der Zeitraum. Bei Konflikten oder Fehlern bricht
 der Ablauf ab. Bereits ausgeführte Schritte können dabei bestehen bleiben.
 Es gibt weder automatische Schreibwiederholungen noch ein eigenmächtiges
 Zurücksetzen. Unsichere Anzeigen werden bis zur nächsten erfolgreichen
@@ -112,3 +152,11 @@ nennt die erkannten Formate, enthält aber keine Urlaubszeiten, Namen,
 Zuordnungen, aktuellen Betriebsarten oder Temperaturen. Es entstehen dadurch
 keine zusätzlichen Cloud-Abfragen. Echte Schreibtests an ICOM- und
 WDDW2-Geräten sowie die Bestätigung ihrer jeweiligen Metadaten stehen aus.
+
+Aus der Komponentenliste `/system/info` lese ich nur Typ (`Id`) und Token
+(`Tok`) und wende zwei Regeln an, die nur Auswahl wegnehmen: Bei einem
+HMI800 HP Light (`Id` 240) bleiben Heizbetriebsart und Kreiszuordnung eines
+Urlaubs so, wie der Speicherplatz sie meldet; eine Änderung daran lehnt die
+Transaktion vor dem ersten Schreiben ab. Bei Token 16 biete ich die Heizkreise
+der Tokens 24 bis 27 nicht neu an. Beide Fälle habe ich an keiner Anlage
+gesehen; sie sind erwartet, aber ungetestet.

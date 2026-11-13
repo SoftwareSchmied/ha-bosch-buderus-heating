@@ -1,8 +1,7 @@
 # Zusätzliche Raumzonen- und Warmwasseranzeigen
 
-Ich habe die MyBuderus-Ressourcenmodelle mit dem vorhandenen Katalog
-abgeglichen. Für Raumzonen fehlten die ausgeschriebenen Pfadbestandteile
-`heating` und `cooling`. Die bisherigen `heat`, `cool` und `heatCool`
+Ich habe den vorhandenen Katalog ergänzt. Für Raumzonen fehlten die
+ausgeschriebenen Pfadbestandteile `heating` und `cooling`. Die bisherigen `heat`, `cool` und `heatCool`
 bleiben unterstützt und behalten ihre bestehenden Kennungen.
 
 | Neue Pfade | Darstellung |
@@ -35,10 +34,7 @@ Diese Anzeigen erzeugen keine zusätzlichen Gateway-Geräte.
 Sollwert als Bedienelemente für Heizen und Kühlen. Vorübergehende Sollwerte
 bleiben Anzeigen.
 
-Nachweis: MyBuderus 5.0.0, `ConnectKeyZonesResource.Heating/Cooling`
-und `ConnectKeyDhwCircuitResource.DhwType`, einschließlich der lokalen
-Zuordnung zu Zahlen- beziehungsweise Textwerten. Die automatisierten Tests
-verwenden synthetische Antworten. Eine Bestätigung an diesen Raumzonen
+Die automatisierten Tests verwenden synthetische Antworten. Eine Bestätigung an diesen Raumzonen
 oder Warmwasser-Gerätetypen steht noch aus.
 
 Der erweiterte Ressourcenindex enthält auch die dynamischen RRC-Programm-
@@ -49,7 +45,7 @@ gesondert eingeordnet.
 ## English
 
 I added the explicit `heating` and `cooling` zone resource variants and
-the DHW device-type reading identified in MyBuderus 5.0.0. Existing shorter
+the DHW device-type reading. Existing shorter
 variants and entity identities remain unchanged. Temperature readings require
 numeric Celsius resources; modes and the device type require scalar strings.
 Every update validates the current schema and value, and stale readings

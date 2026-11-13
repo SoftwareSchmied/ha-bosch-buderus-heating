@@ -18,6 +18,8 @@ still displays it.
 
 ## Requirements
 
+- Home Assistant 2026.5.0 or newer (HACS does not offer the integration to
+  older versions);
 - a compatible Bosch or Buderus heating system with an MX300, MX400, K30/K30RF,
   K40/K40RF, or another compatible PointT gateway;
 - a working SingleKey ID account that is already connected to the heating app;
@@ -94,10 +96,32 @@ required.
 
 4. Search for **Bosch/Buderus**, then select the name shown by the installed version.
 5. Confirm the Home Assistant prompt with **OK**.
+6. Choose how Home Assistant connects to the system:
+
+   - **Cloud access** signs in to your account. It offers controls, time
+     programs, holidays and system information.
+   - **Cloud and local access** (recommended when both are possible) first
+     sets up the cloud access and then continues directly with the local
+     access to the gateway in your home network.
+   - **Local access only** sets up the system from its gateway in the home
+     network, without an account. The local access only reads: no controls
+     and no settings. It updates many readings more often and can add
+     technical readings the cloud does not offer, such as the refrigerant circuit,
+     pumps and internal signals. The system is shown under its gateway ID,
+     with the manufacturer and controller model the gateway reports.
+
+   If the local setup is cancelled, the entry stays and a repair note asks to
+   finish it with **Set up local access** in the entry's options. The cloud
+   access can be added to a system set up with local access only later, in the
+   same entry's options; the system is compared with the cloud first and then
+   continues as the same system (see
+   [adding the cloud later](source-selection.md#adding-the-cloud-later)).
+
+For the cloud access:
 
 ![Setup prompt using the former Bosch/Buderus Heating display name](images/setup/02-start-integration.jpg)
 
-6. Select the brand of the smartphone app that is already connected to the
+7. Select the brand of the smartphone app that is already connected to the
    heating system:
 
    - **Bosch** when using the Bosch app;
@@ -192,19 +216,53 @@ the account.
    distinguish them.
 4. Select **Submit**.
 
+If the device list was loaded more than five minutes ago, Home Assistant asks
+to load it again before saving. You stay signed in; select **Submit** and
+choose the devices again.
+
 **Bosch/Buderus Home Comfort** now appears as a configured integration. Open
 **Devices** on its integration card to find the detected heating equipment and
 entities. Devices can then be assigned to areas and dashboards.
+
+## Set up the local access
+
+The local access reads the system directly from a K40 or K40RF gateway in the
+home network. I checked it with gateway firmware 15.00.01; older firmware
+pauses the local access (see [compatibility](compatibility.md#checked-systems)).
+
+1. Choose **Cloud and local access** when adding the integration, or add the
+   local access later with **Set up local access** in the entry's options.
+2. Select the discovered gateway address or enter its IP address or hostname.
+3. Confirm the gateway certificate when Home Assistant asks for it.
+4. Sign in with the device label: enter **Login** and **Pass** from the label
+   on the gateway. Home Assistant does not save them.
+5. When asked, press the buttons on the gateway as described in the dialog to
+   release the local sign-in, then continue within five minutes.
+
+The local access only reads. With the first local access of a system,
+**Use local values for existing entities** is switched on, so existing
+entities show the current local readings; a choice saved before stays.
+Without the cloud, local readings are shown whatever this option says. Details
+are in [operation without the cloud](operation-without-cloud.md).
+
+When Home Assistant finds a gateway in the network, it shows a discovery
+notice. If you select **Ignore**, that notice stays ignored, also after a
+restart; you can still add the local access from the entry's options.
+Without any entry of this integration yet, the notice sets the gateway up with
+**Local access only**: continuing creates an entry without a cloud and opens
+its local setup, with the found address offered. With an entry, the notice asks
+which existing setup the gateway belongs to.
 
 <a id="everyday-operation-in-the-development-version"></a>
 
 <a id="everyday-operation-from-beta7"></a>
 
-## Everyday operation in 0.8.2
+## Everyday operation since 0.8.2
 
-The following controls are included in stable **0.8.2** and were introduced
+The following controls are included since stable **0.8.2** and were introduced
 in Beta.7. The older 0.8.2-beta.6 and 0.8.1 packages do not contain this dialog.
-Update to **0.8.2** through HACS, restart Home Assistant and reload the browser.
+Update to the latest release through HACS, restart Home Assistant and reload the
+browser.
 
 1. Open **Settings > Devices & services > Bosch/Buderus Home Comfort > Configure**.
 2. Select **Operate appliance**. With several PointT gateways, select the
@@ -218,6 +276,36 @@ The German route is **Einstellungen > Geräte & Dienste > Bosch/Buderus Home Com
 Konfigurieren > Anlage bedienen**. The dialog follows the profile language.
 This is separate from **Reconfigure**, which changes gateway selection and
 polling and starts resource discovery again.
+
+### Moving around in Configure
+
+Since 0.9.0-alpha.6 every menu below the main menu of **Configure** ends with
+**← Back**, which leads to the menu above it: **Connections** back to the
+main menu, a single connection back to **Connections**. A finished action no
+longer closes the dialog: after a saved connection setting, a removed
+access, saved notification settings, a saved, changed or deleted holiday, a
+saved heating or hot water schedule, a saved room controller switch point or
+a planned search, the dialog returns to its menu and shows the result there,
+so several things can be done in one session. The settings are saved at once,
+as before; the dialog is closed with **X**. Input pages keep only their
+submit button and **X**. A dialog that hands over to another one (signing in
+again, adding a cloud access, setting up the local access) and every error
+message end as before.
+
+Seit 0.9.0-alpha.6 endet jedes Menü unterhalb des Hauptmenüs von
+**Konfigurieren** mit **← Zurück**, das zum übergeordneten Menü führt:
+**Verbindungen** zurück zum Hauptmenü, eine einzelne Verbindung zurück zu
+**Verbindungen**. Eine abgeschlossene Aktion schließt den Dialog nicht mehr:
+Nach einer gespeicherten Verbindungseinstellung, einem entfernten Zugang,
+gespeicherten Benachrichtigungen, einem gespeicherten, geänderten oder
+gelöschten Urlaub, einem gespeicherten Heiz- oder Warmwasserprogramm, einem
+gespeicherten Schaltpunkt eines Raumreglers oder einer geplanten Suche kehrt
+der Dialog zu seinem Menü zurück und zeigt dort das Ergebnis, sodass sich
+mehreres in einer Sitzung erledigen lässt. Die Einstellungen werden wie
+bisher sofort gespeichert; geschlossen wird der Dialog mit **X**.
+Eingabeseiten haben weiter nur ihre Bestätigen-Schaltfläche und **X**. Dialoge,
+die an einen anderen übergeben (erneut anmelden, Cloud-Zugang hinzufügen,
+lokalen Zugang einrichten), und alle Fehlermeldungen enden wie bisher.
 
 On the device page, tap the heating-circuit climate or hot-water entity to open
 Home Assistant's native controls. Those controls write immediately. The original
@@ -239,8 +327,8 @@ is not necessary.
 ### The new controls are missing or look different
 
 - Check the installed integration version and its release notes. The PointT
-  dialog, climate and hot-water entity described above are included in stable
-  **0.8.2** and Beta.7. The published Beta.6 and 0.8.1 packages do not contain them.
+  dialog, climate and hot-water entity described above are included since
+  stable **0.8.2** and Beta.7. The published Beta.6 and 0.8.1 packages do not contain them.
 - After installing a build that includes them, restart Home Assistant and
   reload the browser. Check disabled entities as well.
 - Entities follow the resources offered by each circuit. A missing valid
@@ -250,6 +338,45 @@ is not necessary.
 - A profile-language change translates dialogs but does not rename entities.
   Names follow the system language or a custom name; see the
   [language guide](resource-names-and-languages.md).
+
+### Entities are "not provided" or unavailable after a restart
+
+- **All entities unavailable after a restart:** if the cloud does not answer
+  while Home Assistant starts, each cloud access starts its systems with the
+  resources it found at an earlier start (at most 30 days since they were last
+  confirmed). The entities exist but are
+  unavailable until the cloud answers again; their values then return within
+  one polling cycle, without a restart. The log shows a warning starting with
+  `PointT start-up failed temporarily`.
+- **All entities "not provided":** this happens only without such a saved
+  inventory, for example right after installing or upgrading, or if the
+  system has not answered successfully for more than 30 days. Home Assistant
+  then retries on its own: the cloud access starts the system again about
+  every minute (the setup of older entries is retried by Home Assistant).
+- **Other cloud devices** (air conditioners, air purifiers, dehumidifiers or
+  water heaters) do not hold back the start either. If they cannot sign in
+  while Home Assistant starts, they connect in the background and their
+  entities return once the connection is up; until then they are shown as
+  "not provided". The log shows `Other cloud devices could not sign in during
+  start-up`.
+- **Some entities "not provided":** if parts of the system were missing after
+  the start, the integration searches them again 5, 15 and 60 minutes later
+  and then every six hours until one day has passed. The log names the missing
+  parts as path templates.
+
+Diagnostics show both under `startup_inventory` and `discovery_recovery` for
+each gateway.
+
+### A device that no longer exists
+
+Since 0.9.0-alpha.6 a device of the integration can be deleted on its device
+page (**⋮ > Delete**) once it has no entity left, for example a heating circuit
+removed at the controller. A disabled entity and an entity that is no longer
+provided count as well: delete those entities first (on the entity page or in
+**Settings > Devices & services > Entities**), then the device. While the
+device or a device connected through it still has an entity, Home Assistant
+offers no Delete, so no entity setting gets lost. If the system reports the
+device again, the next start creates it anew.
 
 ### Chrome Console is empty or the redirect address is missing
 
@@ -358,11 +485,12 @@ wait in seconds. Wait for that interval and select **Submit** to obtain a new
 sign-in link. Submitting early does not send another token request or extend
 the wait. Without a usable wait time from the server, the pause is five minutes.
 
-### PointT service cannot be reached
+### The cloud access cannot be reached
 
 Check the Home Assistant internet connection and wait briefly. If Home
 Assistant displays **Retry gateway discovery**, select **Submit** again; no new
-sign-in is required.
+sign-in is required. The same applies when the step says that the cloud has
+requested a pause: wait, then select **Submit**.
 
 ### No gateway is found
 
@@ -371,6 +499,49 @@ sign-in is required.
 - Confirm the selected brand.
 - Compare the gateway with the compatibility list in the README. If it is
   listed, create a bug report as described below.
+
+### A new sign-in does not find every system
+
+A new sign-in of the cloud access must use the same account as before; the
+integration compares a hash of the account and refuses a different one. It is
+accepted when at least one switched-on system or additional device of that
+access appears in the account. Missing
+ones stay configured but unavailable, and the repair note **Systems not found
+in the cloud account** names them by their last characters. It disappears
+when they appear in the account again.
+
+If they were removed from the account, open **Configure → Connections →** the
+cloud access, switch them off under **Use for systems and devices** and remove
+them with **Forget deselected systems**; this works for gateways and
+additional devices alike. Their devices and entities stay in Home Assistant
+until you delete them. If a gateway was exchanged, keep it switched on: a
+separate repair note offers to continue the system with its history.
+
+A cloud access that has no system or device left can only sign in again with
+the same account. If that is not possible, remove the cloud access and add it
+again.
+
+A sign-in that finds none of the switched-on systems and devices, or that
+belongs to a different account, is refused, and the previous sign-in is kept.
+When it finds none of them, the dialog shows a new sign-in link right away,
+so you can sign in again with the right account.
+
+### The local gateway certificate changed
+
+The local access stops reading and the repair note **Local gateway
+certificate changed** appears. If you know why, for example after a gateway
+update or reset, open the entry's options, choose the local access and select
+**Change local access**. Confirm the new certificate there and sign in again
+with the device label, which is recommended. **Keep the current token** sends
+the stored token to the device with the newly confirmed certificate; the
+dialog warns about this first, so choose it only if you are sure that it is
+your own gateway.
+
+### The saved configuration cannot be read
+
+If the entry does not start and reports that its saved configuration cannot
+be read, nothing was changed. Restore a backup from before the problem, or
+delete the entry and add the integration again.
 
 ### Integration is not shown in search
 

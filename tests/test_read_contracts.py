@@ -7,7 +7,6 @@ from pathlib import Path
 from unittest.mock import AsyncMock
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
@@ -36,6 +35,7 @@ from custom_components.bosch_buderus_heating.sensor import (
     _track_resource_sensors,
     build_sensor_descriptions,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 FIXTURES = Path(__file__).parent / "fixtures/contracts"
 
@@ -135,7 +135,12 @@ def test_family_reading_contracts_reach_ha(hass, case):
     assert entity.native_unit_of_measurement == expected["unit"]
 
 
-@pytest.mark.parametrize("path", sorted(FIXTURES.glob("*/*.json")))
+@pytest.mark.parametrize(
+    "path",
+    sorted(
+        p for p in FIXTURES.glob("*/*.json") if not p.name.endswith(".expected.json")
+    ),
+)
 def test_fixtures_distinguish_synthetic_evidence_from_device_captures(path):
     fixture = json.loads(path.read_text(encoding="utf-8"))
     provenance = fixture["provenance"]
@@ -413,12 +418,19 @@ async def test_monitor_discovery_uses_current_child_responses(hass, child_status
 
 def test_inventory_is_complete_and_matches_real_parser_and_catalog():
     inventory = json.loads(
-        (FIXTURES.parents[2] / "docs/app-resource-inventory.json").read_text()
+        (FIXTURES.parents[2] / "docs/resource-inventory.json").read_text()
     )
     records = inventory["resources"]
     assert len(records) == 361
-    assert len({(r["family"], r["model"]) for r in records}) == 361
+    assert len({r["model_id"] for r in records}) == len(records)
     assert {r["model_id"] for r in records} == {f"R{i:03}" for i in range(1, 362)}
+    assert {r["family"] for r in records} == {
+        "connectkey",
+        "icom",
+        "rrc",
+        "watersoftener",
+        "wddw2",
+    }
     assert sum(r["previous_path"] is not None for r in records) == 359
     for record in records:
         contract = record["contract"]
@@ -434,4 +446,4 @@ def test_inventory_is_complete_and_matches_real_parser_and_catalog():
             assert record["followup_packages"]
     paths = {r["model_id"]: r["path"] for r in records}
     assert paths["R256"] == "/dhwCircuits/dhw{circuitId}/programs/pg{programId}/week"
-    assert len(inventory["reconciliation"]["added_generic_execution_classes"]) == 2
+    assert len(inventory["reconciliation"]["added_generic_execution_models"]) == 2

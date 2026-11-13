@@ -96,7 +96,7 @@ fit your installation.
 The integration sends the new period once and reads it back from PointT. Home
 Assistant reports success only after the heating system has confirmed it.
 
-A new period initially uses conservative defaults based on the official apps:
+A new period initially uses conservative defaults:
 all advertised circuits, constant-temperature heating at 17 °C when
 supported, hot water off, ventilation off when supported, and thermal
 disinfection on when supported. Review these settings as described below.
@@ -205,6 +205,10 @@ Deletion is also confirmed by reading the holiday list back from PointT.
 - If **Holiday periods** is read-only or **Manage holiday periods** is unavailable, the
   gateway has not supplied a current, complete write configuration. Reload
   the integration and try again; unsupported systems remain safely read-only.
+- During a short cloud outage the calendar keeps showing the last periods
+  within their validity, but offers no changes. A change tried meanwhile is
+  answered by Home Assistant itself as not supported, not with a message
+  about the outage. Nothing is sent; try again once the cloud answers.
 - Changes made in the app while the configuration dialog is open are preserved
   for fields you did not edit. Conflicting changes to the same field are
   rejected; reopen the dialog to review the current values.

@@ -7,18 +7,22 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry, flush_store
 
 from custom_components.bosch_buderus_heating.auth_diagnostics import (
+    _LOADED_OWNERS,
     _RECORDERS,
     MAX_EVENTS,
-    async_load_auth_diagnostics,
-    async_remove_auth_diagnostics,
+    async_load_auth_histories,
     auth_diagnostics_for,
+    forget_auth_history,
+    loaded_auth_history,
 )
 from custom_components.bosch_buderus_heating.auth_lifecycle import (
     _TOKEN_MANAGERS,
     entry_auth,
+)
+from custom_components.bosch_buderus_heating.configuration_migration import (
+    legacy_cloud_connection_id,
 )
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.data import (
@@ -30,10 +34,13 @@ from custom_components.bosch_buderus_heating.diagnostics import (
 )
 from custom_components.bosch_buderus_heating.pointt import (
     AuthTokens,
+    RefreshRefused,
     RefreshTokenRejected,
     RequestTimeout,
+    SignInUnavailable,
     TokenEndpointRejection,
 )
+from tests.ha_test_helpers import MockConfigEntry, flush_store
 
 SECRETS = ("access-0", "access-1", "refresh-0", "refresh-1")
 
@@ -79,9 +86,20 @@ def _storage_key(entry: MockConfigEntry) -> str:
     return f"{DOMAIN}.auth_history.{entry.entry_id}"
 
 
+async def _load(hass, entry, clock=None):
+    if clock is None:
+        await async_load_auth_histories(hass, entry)
+    else:
+        await async_load_auth_histories(hass, entry, clock=clock)
+    return loaded_auth_history(
+        hass, entry.entry_id, legacy_cloud_connection_id(entry.entry_id)
+    )
+
+
 def _restart(hass: Any) -> None:
     """Drop everything Home Assistant keeps only in memory."""
     hass.data.pop(_RECORDERS, None)
+    hass.data.pop(_LOADED_OWNERS, None)
     hass.data.pop(_TOKEN_MANAGERS, None)
 
 
@@ -105,7 +123,7 @@ async def test_history_detects_reuse_of_a_rotated_token_after_restart(
     entry = MockConfigEntry(domain=DOMAIN, data=tokens_to_data(original))
     entry.add_to_hass(hass)
 
-    first = await async_load_auth_diagnostics(hass, entry.entry_id, clock=clock)
+    first = await _load(hass, entry, clock)
     manager, _backoff = entry_auth(hass, entry, oauth)
     clock.now += 60
     assert await manager.get_access_token() == "access-1"
@@ -119,7 +137,7 @@ async def test_history_detects_reuse_of_a_rotated_token_after_restart(
     hass.config_entries.async_update_entry(entry, data=tokens_to_data(original))
     clock.now += 3600
     caplog.set_level(logging.WARNING)
-    recorder = await async_load_auth_diagnostics(hass, entry.entry_id, clock=clock)
+    recorder = await _load(hass, entry, clock)
     manager, _backoff = entry_auth(hass, entry, oauth)
     assert "older than the newest one" in caplog.text
 
@@ -186,14 +204,15 @@ async def test_entry_diagnostics_include_history_without_credentials(
         data=tokens_to_data(AuthTokens("access-0", "refresh-0", 0, scope=("openid",))),
     )
     entry.add_to_hass(hass)
-    recorder = await async_load_auth_diagnostics(hass, entry.entry_id, clock=clock)
+    recorder = await _load(hass, entry, clock)
     manager, _backoff = entry_auth(hass, entry, oauth)
     await manager.get_access_token()
     await flush_store(recorder.store)
 
     diagnostics = await async_get_config_entry_diagnostics(hass, entry)
-    authentication = diagnostics["authentication"]
-    assert diagnostics["diagnostics_schema"] == 28
+    assert [item["connection"] for item in diagnostics["authentication"]] == [1]
+    authentication = diagnostics["authentication"][0]
+    assert diagnostics["diagnostics_schema"] == 46
     assert diagnostics["privacy"]["contains_credentials"] is False
     assert authentication["history_available"] is True
     assert authentication["current"]["has_refresh_token"] is True
@@ -210,12 +229,12 @@ async def test_entry_diagnostics_without_history(hass) -> None:
     entry.add_to_hass(hass)
     assert (await async_get_config_entry_diagnostics(hass, entry))[
         "authentication"
-    ] == {"history_available": False}
+    ] == [{"connection": 1, "history_available": False}]
 
     entry_auth(hass, entry, ScriptedOAuth(Clock()))
     authentication = (await async_get_config_entry_diagnostics(hass, entry))[
         "authentication"
-    ]
+    ][0]
     assert authentication["history_available"] is False
     assert authentication["current"]["has_refresh_token"] is True
     assert authentication["current"]["refresh_rejected"] is False
@@ -227,7 +246,7 @@ async def test_skipped_credential_write_is_recorded(hass, caplog) -> None:
         domain=DOMAIN, data=tokens_to_data(AuthTokens("access-0", "refresh-0", 0))
     )
     entry.add_to_hass(hass)
-    recorder = await async_load_auth_diagnostics(hass, entry.entry_id, clock=clock)
+    recorder = await _load(hass, entry, clock)
     manager, _backoff = entry_auth(hass, entry, ScriptedOAuth(clock))
     # Another sign-in replaced the credentials while this refresh was running.
     hass.config_entries.async_update_entry(
@@ -254,7 +273,7 @@ async def test_reused_manager_receives_the_loaded_observer(hass) -> None:
     entry.add_to_hass(hass)
     oauth = ScriptedOAuth(clock)
     manager, _backoff = entry_auth(hass, entry, oauth)
-    recorder = await async_load_auth_diagnostics(hass, entry.entry_id, clock=clock)
+    recorder = await _load(hass, entry, clock)
     reused, _backoff = entry_auth(hass, entry, oauth)
     assert reused is manager
     await manager.get_access_token()
@@ -276,9 +295,9 @@ async def test_transient_failure_is_recorded_without_counting_a_rejection(
         domain=DOMAIN, data=tokens_to_data(AuthTokens("access-0", "refresh-0", 0))
     )
     entry.add_to_hass(hass)
-    recorder = await async_load_auth_diagnostics(hass, entry.entry_id, clock=clock)
+    recorder = await _load(hass, entry, clock)
     manager, _backoff = entry_auth(hass, entry, TimingOut())
-    with pytest.raises(RequestTimeout):
+    with pytest.raises(SignInUnavailable):
         await manager.get_access_token()
 
     report = recorder.diagnostics(manager)
@@ -287,6 +306,39 @@ async def test_transient_failure_is_recorded_without_counting_a_rejection(
     assert report["counters"]["refresh_failed"] == 1
     assert "refresh_rejected" not in report["counters"]
     assert report["current"]["refresh_token"]["presented_before"] == 1
+
+
+async def test_refusal_without_oauth_code_is_recorded_as_temporary(hass) -> None:
+    """C17/AUTH-4: the refusal details are kept, no rejection is counted."""
+    rejection = TokenEndpointRejection(
+        403, body_format="non_json", content_type="text/html"
+    )
+
+    class Refusing:
+        async def refresh(self, refresh_token: str) -> AuthTokens:
+            raise RefreshRefused(403, rejection=rejection)
+
+    clock = Clock()
+    entry = MockConfigEntry(
+        domain=DOMAIN, data=tokens_to_data(AuthTokens("access-0", "refresh-0", 0))
+    )
+    entry.add_to_hass(hass)
+    recorder = await _load(hass, entry, clock)
+    manager, _backoff = entry_auth(hass, entry, Refusing())
+    with pytest.raises(SignInUnavailable):
+        await manager.get_access_token()
+
+    report = recorder.diagnostics(manager)
+    event = report["events"][-1]
+    assert event["outcome"] == "failed"
+    assert event["error_type"] == "RefreshRefused"
+    assert event["http_status"] == 403
+    assert event["body_format"] == "non_json"
+    assert event["content_type"] == "text/html"
+    assert event["oauth_error"] is None
+    assert report["counters"]["refresh_failed"] == 1
+    assert "refresh_rejected" not in report["counters"]
+    assert report["current"]["refresh_rejected"] is False
 
 
 @pytest.mark.parametrize(
@@ -306,7 +358,7 @@ async def test_damaged_history_starts_anew(hass, hass_storage, stored) -> None:
         "key": _storage_key(entry),
         "data": stored,
     }
-    recorder = await async_load_auth_diagnostics(hass, entry.entry_id)
+    recorder = await _load(hass, entry)
     report = recorder.diagnostics(None)
     assert report["history_reset"] is True
     assert report["events"] == []
@@ -334,7 +386,7 @@ async def test_valid_history_ignores_damaged_items_and_stays_bounded(
             + [{"at": "never"}],
         },
     }
-    recorder = await async_load_auth_diagnostics(hass, entry.entry_id)
+    recorder = await _load(hass, entry)
     report = recorder.diagnostics(None)
     assert report["history_reset"] is False
     assert report["counters"] == {"refresh_success": 3}
@@ -348,17 +400,20 @@ async def test_removing_the_entry_deletes_its_history(hass, hass_storage) -> Non
         domain=DOMAIN, data=tokens_to_data(AuthTokens("access-0", "refresh-0", 0))
     )
     entry.add_to_hass(hass)
-    recorder = await async_load_auth_diagnostics(hass, entry.entry_id)
+    recorder = await _load(hass, entry)
     entry_auth(hass, entry, ScriptedOAuth(Clock()))
     await flush_store(recorder.store)
     assert _storage_key(entry) in hass_storage
 
-    await async_remove_auth_diagnostics(hass, entry.entry_id)
+    forget_auth_history(hass, entry.entry_id)
     await hass.async_block_till_done()
-    assert auth_diagnostics_for(hass, entry.entry_id) is None
+    legacy = legacy_cloud_connection_id(entry.entry_id)
+    assert loaded_auth_history(hass, entry.entry_id, legacy) is None
+    # After removal nothing is recorded until the entry is loaded again.
+    assert auth_diagnostics_for(hass, entry.entry_id, legacy) is None
     assert _storage_key(entry) not in hass_storage
     # Removing an unloaded history is also safe.
-    await async_remove_auth_diagnostics(hass, entry.entry_id)
+    forget_auth_history(hass, entry.entry_id)
 
 
 async def test_rate_limits_and_server_errors_keep_their_details(hass) -> None:
@@ -381,7 +436,7 @@ async def test_rate_limits_and_server_errors_keep_their_details(hass) -> None:
         domain=DOMAIN, data=tokens_to_data(AuthTokens("access-0", "refresh-0", 0))
     )
     entry.add_to_hass(hass)
-    recorder = await async_load_auth_diagnostics(hass, entry.entry_id, clock=Clock())
+    recorder = await _load(hass, entry, Clock())
     manager, _backoff = entry_auth(hass, entry, Failing())
     with pytest.raises(RateLimited):
         await manager.get_access_token()
@@ -402,7 +457,7 @@ async def test_missing_refresh_token_rejection_is_recorded(hass, caplog) -> None
         domain=DOMAIN, data=tokens_to_data(AuthTokens("access-0", None, 0))
     )
     entry.add_to_hass(hass)
-    recorder = await async_load_auth_diagnostics(hass, entry.entry_id, clock=Clock())
+    recorder = await _load(hass, entry, Clock())
     manager, _backoff = entry_auth(hass, entry, ScriptedOAuth(Clock()))
     caplog.set_level(logging.WARNING)
     with pytest.raises(RefreshTokenRejected):
@@ -415,21 +470,24 @@ async def test_missing_refresh_token_rejection_is_recorded(hass, caplog) -> None
     assert "no refresh token available" in caplog.text
 
 
-@pytest.mark.parametrize("change", ["removed", "invalid"])
+@pytest.mark.parametrize("change", ["removed", "replaced"])
 async def test_other_skipped_credential_writes_are_recorded(hass, change) -> None:
     entry = MockConfigEntry(
         domain=DOMAIN, data=tokens_to_data(AuthTokens("access-0", "refresh-0", 0))
     )
     entry.add_to_hass(hass)
-    recorder = await async_load_auth_diagnostics(hass, entry.entry_id, clock=Clock())
+    recorder = await _load(hass, entry, Clock())
     manager, _backoff = entry_auth(hass, entry, ScriptedOAuth(Clock()))
     if change == "removed":
         expected = "skipped_entry_removed"
         with patch.object(hass.config_entries, "async_get_entry", return_value=None):
             await manager.get_access_token()
     else:
-        hass.config_entries.async_update_entry(entry, data={"unexpected": True})
-        expected = "skipped_invalid_entry_data"
+        # A newer manager owns the access; the old rotation must not be saved.
+        expected = "skipped_manager_replaced"
+        hass.data[_TOKEN_MANAGERS][
+            (entry.entry_id, legacy_cloud_connection_id(entry.entry_id))
+        ] = object()
         await manager.get_access_token()
     assert recorder.diagnostics(manager)["events"][-1]["outcome"] == expected
 
@@ -441,10 +499,10 @@ async def test_unreadable_history_does_not_block_setup(hass, caplog) -> None:
         "custom_components.bosch_buderus_heating.auth_diagnostics.Store.async_load",
         side_effect=OSError("disk"),
     ):
-        recorder = await async_load_auth_diagnostics(hass, entry.entry_id)
+        recorder = await _load(hass, entry)
     assert "could not be read" in caplog.text
     assert recorder.diagnostics(None)["history_reset"] is False
-    assert await async_load_auth_diagnostics(hass, entry.entry_id) is recorder
+    assert await _load(hass, entry) is recorder
 
 
 @pytest.mark.parametrize(
@@ -461,3 +519,100 @@ def test_log_durations_are_readable(seconds, text) -> None:
     from custom_components.bosch_buderus_heating.auth_diagnostics import _duration
 
     assert _duration(seconds) == text
+
+
+async def test_additional_access_has_its_own_history_file(hass, hass_storage) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN, data=tokens_to_data(AuthTokens("access-0", "refresh-0", 0))
+    )
+    entry.add_to_hass(hass)
+    # Before the entry was loaded, nothing is recorded or overwritten.
+    assert auth_diagnostics_for(hass, entry.entry_id, "cloud_new") is None
+    await _load(hass, entry)
+    recorder = auth_diagnostics_for(hass, entry.entry_id, "cloud_new")
+    assert recorder is not None
+    assert auth_diagnostics_for(hass, entry.entry_id, "cloud_new") is recorder
+    recorder.persist_result("saved")
+    await flush_store(recorder.store)
+    assert f"{DOMAIN}.auth_history.{entry.entry_id}.cloud_new" in hass_storage
+    assert _storage_key(entry) not in hass_storage
+
+    forget_auth_history(hass, entry.entry_id, "cloud_new")
+    await hass.async_block_till_done()
+    assert f"{DOMAIN}.auth_history.{entry.entry_id}.cloud_new" not in hass_storage
+
+
+async def test_beta_history_continues_for_the_original_access(
+    hass, hass_storage
+) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN, data=tokens_to_data(AuthTokens("access-0", "refresh-0", 0))
+    )
+    entry.add_to_hass(hass)
+    hass_storage[_storage_key(entry)] = {
+        "version": 1,
+        "minor_version": 1,
+        "key": _storage_key(entry),
+        "data": {
+            "key": "b" * 64,
+            "created_at": 1_790_000_000,
+            "counters": {"refresh_success": 7},
+            "issued": [],
+            "events": [{"at": 1_790_000_100, "event": "refresh", "outcome": "success"}],
+        },
+    }
+    recorder = await _load(hass, entry)
+    report = recorder.diagnostics(None)
+    assert report["history_reset"] is False
+    assert report["counters"] == {"refresh_success": 7}
+    assert report["events"][0]["event"] == "refresh"
+
+
+async def test_managed_connections_load_every_cloud_history(hass, hass_storage) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        version=4,
+        data={
+            "connections": {
+                "cloud_b": {"kind": "singlekey_cloud"},
+                "local_c": {"kind": "k40_local"},
+                7: {"kind": "singlekey_cloud"},
+            }
+        },
+    )
+    entry.add_to_hass(hass)
+    await async_load_auth_histories(hass, entry)
+    owner = entry.entry_id
+    assert loaded_auth_history(hass, owner, legacy_cloud_connection_id(owner))
+    assert loaded_auth_history(hass, owner, "cloud_b")
+    assert loaded_auth_history(hass, owner, "local_c") is None
+    # Loading twice keeps the same objects.
+    first = loaded_auth_history(hass, owner, "cloud_b")
+    await async_load_auth_histories(hass, entry)
+    assert loaded_auth_history(hass, owner, "cloud_b") is first
+
+
+async def test_exported_seconds_are_whole_numbers(hass) -> None:
+    clock = Clock(1_800_000_000.37)
+    entry = MockConfigEntry(
+        domain=DOMAIN, data=tokens_to_data(AuthTokens("access-0", "refresh-0", 0))
+    )
+    entry.add_to_hass(hass)
+    recorder = await _load(hass, entry, clock)
+    manager, _backoff = entry_auth(hass, entry, ScriptedOAuth(clock))
+    clock.now += 7.25
+    await manager.get_access_token()
+    report = recorder.diagnostics(manager)
+
+    def seconds(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key.endswith("_s") and item is not None:
+                    yield item
+                yield from seconds(item)
+        elif isinstance(value, list):
+            for item in value:
+                yield from seconds(item)
+
+    values = list(seconds(report))
+    assert values and all(isinstance(item, int) for item in values)

@@ -7,16 +7,148 @@ remain authoritative.
 ## Entities
 
 - **System fault** is on for a fault, critical fault, or notification whose
-  class is unknown. Warnings and maintenance alone leave it off.
+  class is unknown. Warnings and maintenance alone leave it off. A numeric
+  class 18 or 20 is a maintenance message on every gateway. On a room
+  controller, a notification meant for the installer also leaves it off (see
+  [display levels on room controllers](#display-levels-on-room-controllers)).
 - **Active faults** counts the notifications represented by System fault and
   exposes bounded details in its `faults` attribute.
 - **Active notifications** counts every current warning, maintenance message,
   fault, critical fault, and unknown notification.
-- **System notifications** emits `appeared` and `resolved` events.
+- **System notifications** emits `appeared` and `resolved` events. It stays
+  available during a cloud outage, because an event has no value that could
+  be outdated, and without the cloud it reports the events of the local error
+  list.
 
 Details can include the code, subcode, normalized severity, component class,
 summary, and first Home Assistant observation. At most 25 entries are attached
 to an entity state; `truncated: true` indicates additional entries.
+
+Room controllers of the RRC 2.0 platform report the faults of their radio
+devices with display code A84; known cause codes get their own summary (for
+example "Battery of a radio device low" or "Valve of a radiator thermostat
+moves too stiffly"), other ones "Radio device fault (code …)". Cause codes
+for a too low water pressure read "Water pressure too low". These
+controllers also get the binary sensors Locking fault, Blocking fault,
+Maintenance due and Refill needed; see
+[room controllers](room-controllers.md#system-faults-and-maintenance). The
+texts are expected, untested on a real controller.
+
+A maintenance message, warning or information without a text of its own is
+named by its kind, for example "Maintenance message (code 1234)" or
+"Warning (code 5000)", never "Unknown fault". Only a fault or a notification
+of an unknown class reads "Unknown fault (code …)".
+
+### Display levels on room controllers
+
+*Expected, untested.* A notification carries a display level: 8 is meant for
+the user, 0 is not displayed, 2 is meant for experts and 4 for installers. On
+a room controller of the RRC 2.0 platform, a notification with a numeric
+class below 18 and an explicit level 0, 2 or 4 counts as **information**:
+**Active notifications** and the diagnostics still list it (the diagnostics
+count it as `below_user_display_level`), and System notifications reports
+it, but it does not turn on System fault, does not count as an active fault
+and does not show in the bell notification. A notification without a display
+level, or with another one, keeps counting as a problem. Known classes keep
+their meaning: class 12 stays a fault and 18 or 20 maintenance at any level.
+Other gateways do not read the display level this way; the real fault 6249
+of a K40 came with level 4. Which levels a TC100.2 or a CT200 sends still has
+to be confirmed on a real controller.
+
+## Where do I find faults?
+
+The bell notification is not an archive: once it is dismissed, or after a
+Home Assistant restart, it is gone. The faults themselves stay available in
+two places.
+
+### Current faults
+
+Open the **Active faults** entity (German: "Aktive Störungen") and expand
+**Attributes**. The `faults` attribute lists every current fault with:
+
+| Field | Meaning |
+|---|---|
+| `code`, `subcode` | Fault code and subcode as reported by the system |
+| `severity`, `severity_label` | `fault`, `critical` or `unknown`, with a translated label |
+| `component` | Reporting component class, or `unknown` |
+| `summary` | Short description for verified codes; otherwise the kind of message with its code, such as "Unknown fault (code …)" or "Maintenance message (code …)", without an invented explanation |
+| `first_seen` | When Home Assistant first saw the fault |
+| `occurred_at`, `time_source` | Time reported by the system, if any, and where the time comes from |
+
+`status` repeats the summary of the first entry. **Active notifications** has
+the same attribute for all current notifications, including warnings and
+maintenance messages, and adds `severity_counts`. In a template:
+
+```jinja
+{{ state_attr('sensor.heating_active_faults', 'faults') }}
+```
+
+### Past faults
+
+**System notifications** is an event entity. It fires `appeared` when a
+notification is first seen and `resolved` once its end is confirmed. Each
+event carries `event_type`, `code`, `subcode` (when reported), `summary`,
+`severity`, `severity_label`, `component`, `observed_at`, `time_source` and,
+when the system reports a time, `occurred_at`. It covers every notification
+class, so filter on `severity` if you only want faults.
+
+The entity's **history** and the **logbook** record every event with its
+time, and each recorded state keeps these details as attributes. They reach
+back as far as the Home Assistant recorder keeps data, by default 10 days
+(`purge_keep_days` in the
+[recorder configuration](https://www.home-assistant.io/integrations/recorder/)).
+The integration keeps no fault history of its own.
+
+To find the entity ID, open **Settings → Devices & services → Entities** and
+search for "System notifications" (German: "Anlagenmeldungen").
+
+### Keeping a permanent record
+
+The following automation writes each event as a readable logbook entry and
+sends it as a push notification; replace the example entity ID with yours.
+Logbook entries are purged with the recorder as well. A push notification
+stays on the phone, and a notify target of the
+[File integration](https://www.home-assistant.io/integrations/file/) can
+append the same message to a file.
+
+```yaml
+automation:
+  - alias: "Record heating notifications"
+    triggers:
+      - trigger: state
+        entity_id: event.heating_system_notifications
+        # Not when the entity returns from unavailable or unknown, for example
+        # after a restart: that shows the last event again, not a new one.
+        not_from:
+          - unavailable
+          - unknown
+    actions:
+      - variables:
+          text: >-
+            {% set info = trigger.to_state.attributes -%}
+            {{ 'Appeared' if info.event_type == 'appeared' else 'Resolved' }}:
+            {{ info.summary }}
+            {%- if info.code %} [code {{ info.code }}
+            {%- if info.subcode %}, subcode {{ info.subcode }}{% endif %}]{% endif %}
+      - action: logbook.log
+        data:
+          name: "Heating"
+          entity_id: event.heating_system_notifications
+          message: "{{ text }}"
+      - action: notify.notify
+        data:
+          title: "Heating notification"
+          message: "{{ text }}"
+```
+
+### Decoding codes
+
+For verified codes, `summary` already contains a short description. Unknown
+codes are shown without an invented explanation. Look them up in the official
+[Bosch error-code search](https://www.bosch-homecomfort.com/de/de/wohngebaeude/service-und-support/bosch-fehlercode-suche/),
+which lists possible causes and remedies, or in the troubleshooting chapter of
+your appliance's installation and service manual, which has the complete list.
+The appliance display remains authoritative.
 
 ## Home Assistant bell notifications
 
@@ -30,6 +162,21 @@ as a separate configuration menu item.
 Each installation has one notification containing its active faults, critical
 faults and notifications with an unknown class, matching the System fault
 sensor. Warnings and maintenance alone do not create a bell notification.
+
+The option **Also show warnings and maintenance in the bell notification**
+in the same dialog, off by default, adds warnings and maintenance messages
+of all installations. They follow the same rules as faults: the same
+details, the same dismissal and the same confirmed resolution. Faults are
+listed first; with warnings or maintenance messages the title speaks of
+notifications instead of faults. A fault after a dismissed warning shows the
+notification again. Changing the option takes effect at once; turning it off
+removes a notification that only showed warnings or maintenance. A dismissed
+warning or maintenance message stays dismissed when the option is turned off
+and on again, as long as it is still reported. Once a notification has listed
+a warning or a maintenance message, its other texts speak of notifications
+as well: when everything has ended it reads "notifications cleared" instead
+of "faults resolved", and entries whose current status is not confirmed are
+"last reported notifications".
 Details include known descriptions and codes, with a link to the device page.
 Unknown codes are not given an invented explanation.
 
@@ -69,7 +216,8 @@ anything on the appliance.
 
 Bell notifications and dismissals are shared by all Home Assistant users.
 Their text uses the Home Assistant system language, while the configuration
-dialog follows the user's profile language. German and English are available.
+dialog follows the user's profile language. Every language of the integration
+is available.
 Mobile push notifications remain available through your own automations.
 
 Only opaque incident fingerprints, dismissed severities and the local option
@@ -99,6 +247,91 @@ write errors, normal shutdown, repeated reloads, cancelled startup, and rapid
 notification option changes. These are process and filesystem tests; they do
 not simulate physical power loss or a failing storage controller.
 
+## Local error list
+
+With a local access, the gateway's local error list (`/notifications`) is a
+second source of the same faults. It is read every minute anyway and uses the
+same fields as the cloud, so one fault reported by both appears once and raises
+one event. A fault only the local list reports appears as well.
+
+A fault ends only when every source taking part confirms its absence in two new,
+complete readings. A late or repeated local reading is no new evidence and
+changes nothing, and a local access that is not ready confirms nothing until its
+next new reading. While one source still reports a fault, the display counts as confirmed.
+The local list never stands in for an unreadable cloud read: it covers only the
+system-wide error list, not the cloud's other fault sources.
+
+The local list takes part while it delivers new readings. After 15 minutes
+without one (or three local query intervals, if that is longer), for example
+during a lasting network problem, the cloud decides alone again, as without a
+local access, until the next local reading. This age is measured independently
+of clock changes. Switching off or
+removing the local access hands the decision back to the cloud at once, and a
+gateway that offers no local list leaves it to the cloud from the start. After a
+Home Assistant restart, faults only the local list reported stay until the local
+list confirms their absence or stays silent for those 15 minutes, so a restart
+neither ends nor repeats them.
+
+Without the cloud (a switched-off cloud access, also when it is switched off
+while Home Assistant runs, or a cloud that needs a new sign-in or does not
+answer once the stored inventory is older than 30 days, see
+[source selection](source-selection.md)), the local list decides alone and
+the fault entities show its state only while it is current.
+Its first complete reading sets the known faults without events; a fault ends
+only when it was reported by the local list and is then missing from it, so a
+fault only the cloud knew stays until the cloud answers. When the cloud
+returns, it continues with these faults. While the cloud starts, the plant
+keeps showing the faults it handed over unchanged, for at most 15 minutes, so
+a fault that changes in that short time is announced once, by the cloud.
+While a cloud that is still switched on needs a new sign-in or does not answer
+(and the stored inventory is recent), the cloud stays responsible: the local
+list never ends a fault it reported, and the fault entities are unavailable:
+after a rejected sign-in at once, without an answer once the last confirmed
+state is older than its limit (see
+[timing and reliability](#timing-and-reliability)).
+
+The bell notification follows the local list in the same way when the plant
+is shown without the cloud, with the same notification setting per
+installation. A fault only the cloud knew stays in it as not confirmed, and a
+notification you dismissed is not shown again for the same faults when the
+cloud takes over.
+
+The room devices' own error lists (`/devices/…/errors`, read locally where a
+gateway offers them) are shown as extra information only: the active entries
+appear in the `device_errors` attribute of the active faults sensor, as the
+device number and the error type (for example `defectiveTempSensor`). They do
+not count as faults, raise no event and no notification. Only an entry whose
+value is `active` and whose allowed values are just `active` and `inactive` is
+shown; any other entry (such as a valve status like `valveTight`) is not,
+because its meaning as an error is not documented. They have not been seen on
+a real device yet.
+
+Where the cloud offers a device error list, the same rule decides which rows
+are faults: only a row whose value is `active`, and whose allowed values (if
+given) are just `active` and `inactive`, is a fault. Every other row, for
+example a valve status, is no fault. The fault is named by the row's error
+type (`errorType`, or `type` in an older shape), and it belongs to its device:
+the same error type on two room devices is two faults. A row that is active
+but names no error type counts as malformed, so it never confirms that the
+other faults have ended. These rules follow the gateway's documented error
+list; a cloud answer from a system with radio room devices has not been
+captured yet, so the tests (`tests/test_cloud_device_errors.py`) use the
+documented example rows, and a real capture is added there once one exists.
+
+Up to 0.9.0-alpha.3 such rows were identified by their occurrence ID alone,
+and any row not marked `inactive` was read as a fault. A device error stored
+by that version that is still active keeps its stored identity and first-seen
+time until it ends, so it is not announced again and a dismissed notification
+stays dismissed; only its name is corrected. A stored valve status or other
+row that is no fault any more ends with a normal `resolved` event after two
+complete reads. Where two devices shared one stored incident, it stays with
+one of them and the other device's error is announced once as a new fault.
+
+No Wi-Fi lists, network data, serial numbers
+or update logs are read for faults. Diagnostics show the state of the local list
+under `local_error_list` (`not_attached`, `success`, `partial`, `no_answer`,
+`stale`, `restored`) and the number of faults it reports under `local_faults`.
+
 ## Timing and reliability
 
 PointT is checked every five minutes during normal operation and every minute
@@ -122,9 +355,54 @@ read restarts the two-read confirmation sequence; unrelated polling does not.
 Without a valid baseline, an unreadable response leaves the aggregate state
 unavailable instead of reporting that the system is healthy.
 
+During a short cloud outage the fault entities keep the last state that a
+complete read confirmed, as long as the requests only get no answer: for
+15 minutes after that read (3 minutes while a notification is active), see
+[validity of readings](reading-validity.md#display-values-of-several-readings).
+Nothing is resolved or announced meanwhile. The first cycle that answers
+again reads the fault sources at once, after its other readings. An explicit
+answer such as 403, invalid entries, a rejected sign-in or a stopped cloud
+connection end that state at once, and the entities are unavailable until
+the next complete read.
+
+A gateway timeout (504) of the fault sources pauses them for 15 minutes only
+when other readings of the same cycle answered. When they are read after the
+other readings and keep failing with any server error (5xx) while those
+answered, they are paused for 15 minutes as well, also when several fault
+sources fail together. A fault source whose single read still answered keeps
+its normal interval.
+
 Baselines saved by older versions have no source evidence. Their existing
 faults remain conservatively retained until reobserved, after which normal
 resolution checks apply. Restarting again does not bypass this protection.
+Such a fault that no source reports again for a whole day of complete reads
+(at least 12), for example one that was fixed while Home Assistant was off,
+then takes part in the normal two-read resolution and ends with a `resolved`
+event.
+
+### Fault sources that no longer exist
+
+A source that was read once stays required, so a source that only fails for
+a while never ends a fault. A source that is gone for good, for example the
+error list of a radio room device that was removed or replaced, would then
+keep every fault from ending. It is no longer required when:
+
+- it answers HTTP 404 on every read for at least 24 hours (and at least two
+  reads; also across restarts), or
+- a discovery in which every path got a final answer (the resource or a
+  client error such as 404) no longer finds it, neither as a resource nor as
+  a fault source of the discovered components.
+
+A 5xx answer, a timeout, a lost permission (403) or a discovery that ended
+early or with such an answer never counts. Any successful read of the source
+ends a run of 404 answers. When a source is no longer required, Home
+Assistant shows a repair notice and the log has a warning. Faults that only
+this source reported then end after the next two complete reads with a
+normal `resolved` event. If the device is still installed, its error list
+counts again as soon as the system reports it again. The notice can be
+ignored and disappears after the next restart. Diagnostics show the counts
+under `fault_sources` (`required`, `not_found`, `removed`,
+`unverified_faults`).
 
 PointT did not provide an appliance timestamp in the verified K40 fault case.
 In that situation `first_seen` and `observed_at` mean when Home Assistant first
@@ -162,6 +440,11 @@ automation:
     triggers:
       - trigger: state
         entity_id: event.heating_system_notifications
+        # Not when the entity returns from unavailable or unknown, for example
+        # after a restart: that shows the last event again, not a new one.
+        not_from:
+          - unavailable
+          - unknown
     conditions:
       - condition: template
         value_template: >-
@@ -177,6 +460,36 @@ automation:
             {% endif %}
 ```
 
+### Push a maintenance message
+
+Maintenance messages (for example a numeric class 18 or 20) do not turn on
+System fault. To get them on the phone, filter the events by severity:
+
+```yaml
+automation:
+  - alias: "Heating maintenance due"
+    triggers:
+      - trigger: state
+        entity_id: event.heating_system_notifications
+        not_from:
+          - unavailable
+          - unknown
+    conditions:
+      - condition: template
+        value_template: >-
+          {{ trigger.to_state.attributes.event_type == 'appeared'
+             and trigger.to_state.attributes.severity == 'maintenance' }}
+    actions:
+      - action: notify.notify
+        data:
+          title: "Heating maintenance"
+          message: >-
+            {{ trigger.to_state.attributes.summary }}
+            {% if trigger.to_state.attributes.code %}
+            (code {{ trigger.to_state.attributes.code }})
+            {% endif %}
+```
+
 ## Unsupported installations
 
 The aggregate entities remain unavailable if the gateway exposes no readable
@@ -184,7 +497,8 @@ current-notification resource. Other heating entities continue to work.
 Optional resources that have never been read successfully and return HTTP 403
 or 404 are skipped and retried only after their 24-hour capability pause or a
 rediscovery. Previously discovered current-notification resources that return
-404 remain eligible for their next regular poll and recover on a valid read.
+404 remain eligible for their next regular poll and recover on a valid read;
+see [fault sources that no longer exist](#fault-sources-that-no-longer-exist).
 Historical failure lists are capability-probed at startup but are not polled
 repeatedly because no history entity currently consumes them.
 

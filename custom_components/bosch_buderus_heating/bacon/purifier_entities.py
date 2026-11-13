@@ -17,12 +17,12 @@ from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .. import BoschBuderusConfigEntry
 from ..const import DOMAIN
+from ..platform_scope import DiscoveryLifecycle
 from . import purifier
+from .access import BaconAccess
 from .entity import BaconEntity
 from .models import BaconError, Device
-from .session import BaconAccount
 
 
 def invalid_command() -> ServiceValidationError:
@@ -32,7 +32,7 @@ def invalid_command() -> ServiceValidationError:
 
 
 class PurifierEntity(BaconEntity):
-    def __init__(self, account: BaconAccount, serial: str, key: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str, key: str) -> None:
         super().__init__(account, serial, "purifier_" + key)
         self.key = key
         self._attr_translation_key = "bacon_purifier_" + key
@@ -66,8 +66,8 @@ class PurifierEntity(BaconEntity):
 
 
 def track_entities(
-    entry: BoschBuderusConfigEntry,
-    account: BaconAccount,
+    entry: DiscoveryLifecycle,
+    account: BaconAccess,
     async_add_entities: AddConfigEntryEntitiesCallback,
     entity_type: type[PurifierEntity],
     fields: dict[str, str],
@@ -134,7 +134,7 @@ class BaconPurifierSwitch(PurifierEntity, SwitchEntity):
 class BaconPurifierNumber(PurifierEntity, NumberEntity):
     _attr_mode = NumberMode.BOX
 
-    def __init__(self, account: BaconAccount, serial: str, key: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str, key: str) -> None:
         super().__init__(account, serial, key)
         if key == "light_intensity":
             self._attr_native_unit_of_measurement = "%"
@@ -216,7 +216,7 @@ class BaconPurifierColor(PurifierEntity, SelectEntity):
 
 
 class BaconPurifierSensor(PurifierEntity, SensorEntity):
-    def __init__(self, account: BaconAccount, serial: str, key: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str, key: str) -> None:
         super().__init__(account, serial, key)
         self._attr_device_class = {
             "temperature": SensorDeviceClass.TEMPERATURE,

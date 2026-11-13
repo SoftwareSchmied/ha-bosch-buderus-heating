@@ -10,9 +10,11 @@ from homeassistant.const import EntityCategory
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
 
-from ..const import DOMAIN
+from ..const import DEFAULT_MANUFACTURER, DOMAIN
+from ..device import registered_device
+from .access import BaconAccess
 from .models import device_key
-from .session import STALE_AFTER, BaconAccount
+from .session import SENSOR_STALE_AFTER, STATE_STALE_AFTER
 
 if TYPE_CHECKING:
     from homeassistant.components.binary_sensor.const import BinarySensorDeviceClass
@@ -24,7 +26,7 @@ class BaconEntity(Entity):
     _attr_has_entity_name = True
     _attr_should_poll = False
 
-    def __init__(self, account: BaconAccount, serial: str, suffix: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str, suffix: str) -> None:
         self.account, self.serial = account, serial
         self.device = account.devices[serial]
         assert account.client.subject is not None
@@ -50,7 +52,7 @@ class BaconEntity(Entity):
             self.live
             and not self.device.uncertain
             and self.device.state_generation == self.account.generation
-            and monotonic() - self.device.state_received_at <= STALE_AFTER
+            and monotonic() - self.device.state_received_at <= STATE_STALE_AFTER
             and self.device.state is not None
             and bool(self.device.state.reported)
         )
@@ -61,16 +63,19 @@ class BaconEntity(Entity):
         return (
             self.live
             and self.device.sensor_generation == self.account.generation
-            and monotonic() - self.device.sensor_received_at <= STALE_AFTER
+            and monotonic() - self.device.sensor_received_at <= SENSOR_STALE_AFTER
         )
 
     @property
     def device_info(self) -> DeviceInfo:
-        return DeviceInfo(
+        info = DeviceInfo(
             identifiers={(DOMAIN, self._identity)},
-            name=f"Bosch/Buderus (…{self.serial[-6:]})",
-            manufacturer="Bosch Thermotechnik",
+            manufacturer=DEFAULT_MANUFACTURER,
         )
+        if self.hass is None or not registered_device(self.hass, self._identity):
+            # C8: a new device is named without the brand.
+            info["name"] = f"Appliance (…{self.serial[-6:]})"
+        return info
 
 
 class BaconConnectivity(BaconEntity, BinarySensorEntity):
@@ -78,7 +83,7 @@ class BaconConnectivity(BaconEntity, BinarySensorEntity):
     _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
-    def __init__(self, account: BaconAccount, serial: str) -> None:
+    def __init__(self, account: BaconAccess, serial: str) -> None:
         super().__init__(account, serial, "connectivity")
 
     @property

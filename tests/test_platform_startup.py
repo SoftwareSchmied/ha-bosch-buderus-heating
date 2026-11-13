@@ -6,7 +6,6 @@ from unittest.mock import patch
 import pytest
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import DOMAIN, PLATFORMS
 from custom_components.bosch_buderus_heating.coordinator import (
@@ -15,11 +14,12 @@ from custom_components.bosch_buderus_heating.coordinator import (
 )
 from custom_components.bosch_buderus_heating.pointt import Gateway, PointTClient
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
+from tests.ha_test_helpers import MockConfigEntry
 from tests.test_heating_controls import MODE, TARGET, scalar
 from tests.test_water_softener import reading
 
 
-@pytest.mark.usefixtures("enable_custom_integrations")
+@pytest.mark.usefixtures("enable_custom_integrations", "legacy_platform_runtime")
 @pytest.mark.parametrize("include_heating", [False, True])
 async def test_all_platforms_load_without_purifier(hass, include_heating):
     entry = MockConfigEntry(domain=DOMAIN, version=3)

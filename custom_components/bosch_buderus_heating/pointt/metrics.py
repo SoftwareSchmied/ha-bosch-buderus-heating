@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from collections import Counter, deque
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from math import ceil
 from time import monotonic
 
 ROLLING_MINUTES = 60
 MAX_RECENT_REQUESTS = 250
-_LATENCY_BOUNDS_MS = (100, 250, 500, 1000, 2000, 5000, 10000)
+# Up to the 30 s request timeout, so slow phases keep their size (D16).
+_LATENCY_BOUNDS_MS = (100, 250, 500, 1000, 2000, 5000, 10000, 20000, 30000)
 
 
 @dataclass(slots=True)
@@ -98,6 +100,8 @@ class RequestMetrics:
     """Collect request metadata without URLs, identifiers, or payload values."""
 
     started_at: float = field(default_factory=monotonic)
+    # Wall-clock start, the reset time of the request counter sensor.
+    started_utc: datetime = field(default_factory=lambda: datetime.now(UTC))
     requests_total: int = 0
     retry_attempts: int = 0
     fallback_requests: int = 0
@@ -110,6 +114,12 @@ class RequestMetrics:
     total_duration_ms: float = 0.0
     maximum_duration_ms: float = 0.0
     last_duration_ms: float | None = None
+    slot_waits_total: int = 0
+    slot_waits_over_10s: int = 0
+    slot_wait_maximum_ms: float = 0.0
+    slot_wait_last_ms: float | None = None
+    # Gateway list entries that could not be read and were left out (no IDs).
+    gateway_list_entries_skipped: int = 0
     requests_by_category: Counter[str] = field(default_factory=Counter)
     requests_by_type: Counter[str] = field(default_factory=Counter)
     requests_by_method: Counter[str] = field(default_factory=Counter)
@@ -314,12 +324,59 @@ class RequestMetrics:
                 sorted(self.bulk_items_by_gateway_status_class.items())
             ),
             "maximum_bulk_size": self.maximum_bulk_size,
+            "gateway_list_entries_skipped": self.gateway_list_entries_skipped,
             "average_duration_ms": _rounded(average),
             "maximum_duration_ms": _rounded(self.maximum_duration_ms),
             "last_duration_ms": _rounded(self.last_duration_ms),
+            "slot_wait": {
+                "waits_total": self.slot_waits_total,
+                "waits_over_10_seconds": self.slot_waits_over_10s,
+                "maximum_ms": _rounded(self.slot_wait_maximum_ms),
+                "last_ms": _rounded(self.slot_wait_last_ms),
+            },
             "rolling_60_minutes": self._rolling_snapshot(now),
             "recent_requests": [event.as_dict(now) for event in self._recent_requests],
         }
+
+    def entity_summary(self) -> dict[str, object]:
+        """The values the request sensors show, without the recent requests.
+
+        A lighter form of ``snapshot`` for state writes: the same totals and
+        rolling hour, but no per-request list and no diagnostics-only fields.
+        """
+        now = monotonic()
+        self._prune(now)
+        successful = self.outcomes.get("success", 0)
+        return {
+            "observation_seconds": round(max(0.0, now - self.started_at)),
+            "requests_total": self.requests_total,
+            "requests_successful": successful,
+            "requests_failed": max(0, self.requests_total - successful),
+            "success_rate_percent": _percentage(successful, self.requests_total),
+            "retry_attempts": self.retry_attempts,
+            "fallback_requests": self.fallback_requests,
+            "rate_limit_events": self.outcomes.get("rate_limited", 0),
+            "requests_by_category": dict(sorted(self.requests_by_category.items())),
+            "requests_by_method": dict(sorted(self.requests_by_method.items())),
+            "responses_by_status_class": dict(
+                sorted(self.responses_by_status_class.items())
+            ),
+            "outcomes": dict(sorted(self.outcomes.items())),
+            "rolling_60_minutes": self._rolling_snapshot(now),
+        }
+
+    def record_skipped_gateway_entries(self, count: int) -> None:
+        """Count unreadable gateway list entries without keeping their content."""
+        self.gateway_list_entries_skipped += max(0, count)
+
+    def record_slot_wait(self, seconds: float) -> None:
+        """Record how long one attempt waited for a shared request slot."""
+        waited_ms = max(0.0, seconds * 1000)
+        self.slot_waits_total += 1
+        if waited_ms > 10000:
+            self.slot_waits_over_10s += 1
+        self.slot_wait_maximum_ms = max(self.slot_wait_maximum_ms, waited_ms)
+        self.slot_wait_last_ms = waited_ms
 
     def _prune(self, now: float) -> None:
         oldest_timestamp = now - ROLLING_MINUTES * 60
@@ -374,6 +431,9 @@ class RequestMetrics:
             responses_by_status.update(bucket.responses_by_status)
             outcomes.update(bucket.outcomes)
         latest_bucket = max(buckets, key=lambda item: item.minute) if buckets else None
+        maximum = max(
+            (bucket.maximum_successful_duration_ms for bucket in buckets), default=0.0
+        )
         return {
             "requests_total": requests,
             "requests_successful": successful,
@@ -398,15 +458,10 @@ class RequestMetrics:
                 duration_total / samples if samples else None
             ),
             "p95_successful_response_time_ms": _rounded(
-                _percentile_from_histogram(histogram, samples, 0.95)
+                _percentile_from_histogram(histogram, samples, 0.95, maximum)
             ),
             "maximum_successful_response_time_ms": _rounded(
-                max(
-                    (bucket.maximum_successful_duration_ms for bucket in buckets),
-                    default=0.0,
-                )
-                if samples
-                else None
+                maximum if samples else None
             ),
             "latest_response_time_ms": _rounded(
                 latest_bucket.latest_duration_ms if latest_bucket is not None else None
@@ -421,6 +476,8 @@ def request_category(path: str) -> str:
         return "bulk"
     if "/resource/" in normalized:
         return "resource"
+    if normalized.split("?", 1)[0] == "firmwareUpdates":
+        return "firmware_updates"
     if normalized.endswith("/partnumber"):
         return "gateway_metadata"
     if normalized == "gateways":
@@ -474,8 +531,14 @@ def _latency_bucket(duration_ms: float) -> int:
 
 
 def _percentile_from_histogram(
-    histogram: Counter[int], samples: int, percentile: float
+    histogram: Counter[int], samples: int, percentile: float, maximum: float
 ) -> float | None:
+    """Upper bound of the percentile's bucket, never above the measured maximum.
+
+    A bucket bound is only an upper estimate: a p95 of 5000 ms beside a
+    maximum of 3054 ms overstates the slowest answer (D16). Beyond the last
+    bound the maximum itself is the honest value.
+    """
     if not samples:
         return None
     target = ceil(samples * percentile)
@@ -483,7 +546,9 @@ def _percentile_from_histogram(
     for bound in (*_LATENCY_BOUNDS_MS, _LATENCY_BOUNDS_MS[-1] + 1):
         seen += histogram[bound]
         if seen >= target:
-            return float(bound) if bound <= _LATENCY_BOUNDS_MS[-1] else 10000.0
+            if bound > _LATENCY_BOUNDS_MS[-1]:
+                return maximum
+            return min(float(bound), maximum)
     return None
 
 

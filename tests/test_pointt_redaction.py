@@ -2,53 +2,29 @@ from __future__ import annotations
 
 import pytest
 
-from custom_components.bosch_buderus_heating.pointt import (
-    anonymize_identifier,
-    redact_mapping,
-    redact_text,
-)
+from custom_components.bosch_buderus_heating.pointt import anonymize_identifier
 from custom_components.bosch_buderus_heating.pointt.redaction import (
     diagnostic_resource_path,
     resource_path_template,
 )
 
 
-def test_mapping_redacts_credentials_and_private_data_recursively() -> None:
-    source = {
-        "access_token": "secret-access",
-        "gatewayId": "gateway-123",
-        "email": "owner@example.test",
-        "nested": {"refresh_token": "secret-refresh", "temperature": 21.5},
-        "items": [{"serial": "serial-123"}],
-        "unsupported": object(),
-    }
-    redacted = redact_mapping(source, salt=b"installation salt")
-    rendered = repr(redacted)
-    assert "secret" not in rendered
-    assert "owner@example.test" not in rendered
-    assert "gateway-123" not in rendered
-    assert redacted["nested"] == {"refresh_token": "<redacted>", "temperature": 21.5}
-    assert anonymize_identifier("gateway-123", salt=b"installation salt").startswith(
-        "id:"
-    )
+def test_identifier_hash_is_stable_and_hides_the_value() -> None:
+    hashed = anonymize_identifier("gateway-123", salt=b"installation salt")
+    assert hashed.startswith("id:") and "gateway-123" not in hashed
+    assert hashed == anonymize_identifier("gateway-123", salt=b"installation salt")
+    assert hashed != anonymize_identifier("gateway-123", salt=b"other salt")
 
 
-def test_text_redacts_common_sensitive_patterns() -> None:
-    text = (
-        "Bearer abc.def token eyJheader.payload.signature owner@example.test "
-        "aa:bb:cc:dd:ee:ff 192.168.1.2 https://callback?code=secret&state=secret2"
-    )
-    redacted = redact_text(text)
-    for secret in (
-        "abc.def",
-        "eyJheader.payload.signature",
-        "owner@example.test",
-        "aa:bb:cc:dd:ee:ff",
-        "192.168.1.2",
-        "code=secret",
-        "state=secret2",
-    ):
-        assert secret not in redacted
+def test_no_denylist_redaction_helpers_are_offered() -> None:
+    """PRIV-3: diagnostics use allowlists; no incomplete generic helper."""
+    from custom_components.bosch_buderus_heating import pointt
+    from custom_components.bosch_buderus_heating.pointt import redaction
+
+    for name in ("redact_mapping", "redact_text"):
+        assert not hasattr(pointt, name)
+        assert not hasattr(redaction, name)
+        assert name not in pointt.__all__
 
 
 def test_resource_path_template_removes_installation_identifiers() -> None:
@@ -119,3 +95,31 @@ def test_diagnostic_paths_hide_unknown_ids_without_hiding_logical_circuits(
 )
 def test_diagnostic_paths_preserve_known_static_resources(path: str) -> None:
     assert diagnostic_resource_path(path) == path
+
+
+@pytest.mark.parametrize(
+    ("path", "logged"),
+    [
+        ("/zones/PRIVATE-ZONE/name", "/zones/{zone}/name"),
+        ("/zones/zn3/name", "/zones/{zn}/name"),
+        ("/zones/list", "/zones/list"),
+        ("/heatSources/PRIVATE-HS/x", "/heatSources/{hs}/x"),
+        ("/heatSources/hs1/x", "/heatSources/{hs}/x"),
+        ("/heatSources/emon/totalConsumption", "/heatSources/emon/totalConsumption"),
+        ("/solarCircuits/PRIVATE/x", "/solarCircuits/{solar}/x"),
+        ("/ventilation/PRIVATE/x", "/ventilation/{zone}/x"),
+        ("/system/holidayModes/hm1/startStop", "/system/holidayModes/{hm}/startStop"),
+        ("/programs/PRIVATE/days", "/programs/{pg}/days"),
+        ("/devices/PRIVATE/errors", "/devices/{device}/errors"),
+    ],
+)
+def test_log_templates_hide_at_least_what_the_diagnostics_hide(path, logged):
+    """D31: no identifier the diagnostics mask stays visible in a log line."""
+    from custom_components.bosch_buderus_heating.diagnostics import _path_template
+
+    assert resource_path_template(path) == logged
+    assert _path_template(path) == logged  # the diagnostics' template agrees
+    masked = diagnostic_resource_path(path)
+    for part in path.split("/"):
+        if part and part not in masked.split("/"):
+            assert part not in logged.split("/")

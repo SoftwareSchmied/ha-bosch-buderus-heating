@@ -16,6 +16,7 @@ from homeassistant.components.calendar.const import (
     EVENT_SUMMARY,
     CalendarEntityFeature,
 )
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -23,8 +24,9 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
-from . import BoschBuderusConfigEntry
+from . import BoschBuderusConfigEntry, rrc_platforms
 from .const import DOMAIN
+from .control import track_entity_once
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .device import device_info_for_resource
 from .holiday_writes import (
@@ -46,7 +48,10 @@ from .holidays import (
     parse_holiday_state,
     parse_holiday_write_configuration,
 )
+from .i18n import localize
+from .platform_scope import DiscoveryLifecycle, PlatformScope, setup_platform
 from .pointt import PointTError, Resource, WriteNotConfirmed
+from .writes import WriteBusy
 
 
 async def async_setup_entry(
@@ -54,12 +59,34 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Create one holiday calendar for every supporting gateway."""
-    del hass
-    async_add_entities(
-        BoschBuderusHolidayCalendar(coordinator)
-        for coordinator in entry.runtime_data.coordinators
-        if any(is_holiday_period_path(path) for path in coordinator.resources)
+    setup_platform(entry, Platform.CALENDAR, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    """Create one holiday calendar for every supporting gateway.
+
+    A gateway whose holiday resources are found later, for example by the
+    search for parts missing at start, gets its calendar then, exactly once.
+    """
+    for coordinator in entry.coordinators:
+        _track_holiday_calendar(entry, coordinator, async_add_entities)
+        rrc_platforms.track(Platform.CALENDAR, entry, coordinator, async_add_entities)
+
+
+def _track_holiday_calendar(
+    entry: DiscoveryLifecycle,
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    track_entity_once(
+        entry,
+        coordinator,
+        async_add_entities,
+        lambda: any(is_holiday_period_path(path) for path in coordinator.resources),
+        lambda: BoschBuderusHolidayCalendar(coordinator),
     )
 
 
@@ -78,15 +105,18 @@ class BoschBuderusHolidayCalendar(
 
     @property
     def available(self) -> bool:
-        return super().available and any(
-            is_holiday_period_path(path) for path in self._available_resources
-        )
+        # The periods are shown like any other reading: within their validity
+        # limit also while a cloud cycle fails. Changes need current readings
+        # (``supported_features``).
+        return any(is_holiday_period_path(path) for path in self._shown_resources)
 
     @property
     def supported_features(self) -> CalendarEntityFeature:
         """Expose writes only while all required capabilities are current."""
         resources = self._available_resources
         result = CalendarEntityFeature(0)
+        if not super().available:
+            return result
         if parse_holiday_write_configuration(resources) is not None:
             result |= CalendarEntityFeature.CREATE_EVENT
         configurations = [
@@ -112,7 +142,9 @@ class BoschBuderusHolidayCalendar(
     @property
     def event(self) -> CalendarEvent | None:
         now = datetime.now(UTC)
-        period = next((item for item in self._state.periods if item.end > now), None)
+        period = next(
+            (item for item in self._shown_state.periods if item.end > now), None
+        )
         return self._event_from_period(period) if period is not None else None
 
     async def async_get_events(
@@ -127,7 +159,7 @@ class BoschBuderusHolidayCalendar(
         end_utc = _as_utc(end_date)
         return [
             self._event_from_period(period)
-            for period in self._state.periods
+            for period in self._shown_state.periods
             if _as_utc(period.end) > start_utc and _as_utc(period.start) < end_utc
         ]
 
@@ -137,9 +169,7 @@ class BoschBuderusHolidayCalendar(
         self._validate_event_fields(kwargs)
         configuration = parse_holiday_write_configuration(self._available_resources)
         if configuration is None:
-            raise HomeAssistantError(
-                "This heating system does not currently allow holiday changes"
-            )
+            raise _error("holiday_changes_unavailable")
         try:
             values = create_holiday_values(
                 kwargs[EVENT_START],
@@ -167,10 +197,10 @@ class BoschBuderusHolidayCalendar(
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key=err.translation_key
             ) from err
+        except WriteBusy as err:
+            raise _busy() from err
         except (KeyError, PointTError, TypeError, ValueError) as err:
-            raise HomeAssistantError(
-                "The holiday could not be created or confirmed"
-            ) from err
+            raise _error("holiday_create_failed") from err
 
     @override
     async def async_update_event(
@@ -193,7 +223,7 @@ class BoschBuderusHolidayCalendar(
         )
         holiday_id = holiday_period_id(period) if period is not None else None
         if configuration is None or period is None or holiday_id is None:
-            raise HomeAssistantError("This holiday cannot currently be changed safely")
+            raise _error("holiday_change_unsafe")
         try:
             values = update_holiday_values(
                 period,
@@ -218,10 +248,10 @@ class BoschBuderusHolidayCalendar(
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key=err.translation_key
             ) from err
+        except WriteBusy as err:
+            raise _busy() from err
         except (KeyError, PointTError, TypeError, ValueError) as err:
-            raise HomeAssistantError(
-                "The holiday could not be changed or confirmed"
-            ) from err
+            raise _error("holiday_update_failed") from err
 
     @override
     async def async_delete_event(
@@ -241,23 +271,21 @@ class BoschBuderusHolidayCalendar(
             else parse_holiday_write_configuration(self._available_resources)
         )
         if configuration is None or not configuration.can_delete:
-            raise HomeAssistantError(
-                "This heating system does not currently allow holiday changes"
-            )
+            raise _error("holiday_changes_unavailable")
         holiday_id = holiday_period_id(period) if period is not None else None
         if holiday_id is None:
-            raise HomeAssistantError("This holiday has no writable PointT ID")
+            raise _error("holiday_not_deletable")
         try:
-            if period is not None and period.source_path != "/holidayMode":
-                await self.coordinator.async_delete_holiday(
-                    holiday_id, expected=period.write_values
-                )
-            else:
-                await self.coordinator.async_delete_holiday(holiday_id)
+            # C40: like the options dialog, delete only the holiday this
+            # event showed; the gateway's current entry is compared first.
+            await self.coordinator.async_delete_holiday(
+                holiday_id,
+                expected=period.write_values if period is not None else None,
+            )
+        except WriteBusy as err:
+            raise _busy() from err
         except PointTError as err:
-            raise HomeAssistantError(
-                "The holiday could not be deleted or confirmed"
-            ) from err
+            raise _error("holiday_delete_failed") from err
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -265,12 +293,26 @@ class BoschBuderusHolidayCalendar(
 
     @property
     def _available_resources(self) -> dict[str, Resource]:
+        """Current readings: they decide every change."""
         return holiday_resources_from_snapshots(self.coordinator.data or {})
+
+    @property
+    def _shown_resources(self) -> dict[str, Resource]:
+        """The readings shown, within their validity limit."""
+        return self.coordinator.displayed_holiday_resources()
 
     @property
     def _state(self) -> HolidayState:
         return parse_holiday_state(
             self._available_resources,
+            fallback_timezone=dt_util.get_default_time_zone(),
+            timezones=self.coordinator.holiday_timezones,
+        )
+
+    @property
+    def _shown_state(self) -> HolidayState:
+        return parse_holiday_state(
+            self._shown_resources,
             fallback_timezone=dt_util.get_default_time_zone(),
             timezones=self.coordinator.holiday_timezones,
         )
@@ -303,16 +345,14 @@ class BoschBuderusHolidayCalendar(
         # The HA frontend sends an empty string for "this event", including
         # ordinary non-recurring events edited or dragged in the calendar.
         if recurrence_range:
-            raise HomeAssistantError("Recurring holidays are not supported")
+            raise _error("holiday_recurring_unsupported")
 
     @staticmethod
     def _validate_event_fields(event: dict[str, Any]) -> None:
         if event.get(EVENT_RRULE):
-            raise HomeAssistantError("Recurring holidays are not supported")
+            raise _error("holiday_recurring_unsupported")
         if event.get(EVENT_DESCRIPTION) or event.get(EVENT_LOCATION):
-            raise HomeAssistantError(
-                "PointT holidays do not support descriptions or locations"
-            )
+            raise _error("holiday_fields_unsupported")
 
     def _event_from_period(self, period: HolidayPeriod) -> CalendarEvent:
         return CalendarEvent(
@@ -325,15 +365,20 @@ class BoschBuderusHolidayCalendar(
     def _summary_for_period(self, period: HolidayPeriod) -> str:
         if period.name is not None:
             return period.name
-        language = self.coordinator.hass.config.language.casefold()
-        return "Urlaubszeit" if language.startswith("de") else "Holiday period"
+        return localize(
+            self.coordinator.hass.config.language, "Urlaubszeit", "Holiday period"
+        )
 
     @staticmethod
     def _uid_for_period(period: HolidayPeriod) -> str:
         if (holiday_id := holiday_period_id(period)) is not None:
             if period.source_path != "/holidayMode":
                 return f"icom-hm{holiday_id}"
-            return f"pointt-{holiday_id}"
+            # C40: the numeric ID may be reused for another holiday. A short
+            # digest of the timespan keeps an outdated UID from matching it.
+            timespan = f"{period.start.isoformat()}|{period.end.isoformat()}"
+            digest = hashlib.sha256(timespan.encode()).hexdigest()[:8]
+            return f"pointt-{holiday_id}-{digest}"
         fingerprint = "|".join(
             (
                 period.start.isoformat(),
@@ -343,6 +388,15 @@ class BoschBuderusHolidayCalendar(
             )
         )
         return f"read-only-{hashlib.sha256(fingerprint.encode()).hexdigest()[:24]}"
+
+
+def _busy() -> HomeAssistantError:
+    return _error("write_busy")
+
+
+def _error(key: str) -> HomeAssistantError:
+    """A translated message; the text follows the user's language."""
+    return HomeAssistantError(translation_domain=DOMAIN, translation_key=key)
 
 
 def _as_utc(value: datetime) -> datetime:

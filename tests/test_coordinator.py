@@ -13,7 +13,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import (
     DOMAIN,
@@ -31,7 +30,7 @@ from custom_components.bosch_buderus_heating.coordinator import (
     Freshness,
     ResourceSnapshot,
     SnapshotSource,
-    _energy_reset_count,
+    _energy_decreases,
     _error_category,
 )
 from custom_components.bosch_buderus_heating.holiday_writes import (
@@ -67,6 +66,7 @@ from custom_components.bosch_buderus_heating.writes import (
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
     number_policy_for_resource,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 
 def _coordinator(
@@ -108,7 +108,7 @@ async def test_first_refresh_discovers_and_classifies_resources(
         values=({"total": 3600},),
         metadata=ResourceMetadata(resource_type="emonValue"),
     )
-    static = _resource("/gateway/versionFirmware", 1.0)
+    static = _resource("/gateway/versionHardware", 1.0)
     with patch(
         "custom_components.bosch_buderus_heating.coordinator.async_discover_resources",
         AsyncMock(return_value={item.path: item for item in (fast, slow, static)}),
@@ -325,6 +325,7 @@ async def test_polling_preserves_last_good_values(hass: HomeAssistant) -> None:
         "total": 2,
         "successful": 1,
         "failed": 1,
+        "paths_failing": 1,
         "success_rate_percent": 50.0,
     }
 
@@ -335,24 +336,25 @@ def _snapshot(resource: Resource) -> ResourceSnapshot:
 
 def test_energy_reset_detection_uses_only_valid_counter_components() -> None:
     path = "/heatSources/emon/totalConsumption"
+    metadata = ResourceMetadata(resource_type="emonValue")
     previous = Resource(
         path=path,
         values=({"compressor": 120.0, "eheater": 4.0, "outputProduced": 350.0},),
+        metadata=metadata,
     )
     reset = Resource(
         path=path,
         values=({"compressor": 2.0, "eheater": 4.5, "outputProduced": 3.0},),
+        metadata=metadata,
     )
 
-    assert _energy_reset_count(previous, reset) == 2
-    assert _energy_reset_count(reset, reset) == 0
-    assert (
-        _energy_reset_count(
-            previous,
-            Resource(path="/other", values=reset.values),
-        )
-        == 0
-    )
+    # The compressor counter was reset; the produced heat is counted apart.
+    assert _energy_decreases(previous, reset) == (1, 1)
+    assert _energy_decreases(reset, reset) == (0, 0)
+    assert _energy_decreases(
+        previous,
+        Resource(path="/other", values=reset.values, metadata=metadata),
+    ) == (0, 0)
 
 
 async def test_poll_records_energy_resets_without_changing_values(
@@ -383,7 +385,9 @@ async def test_poll_records_energy_resets_without_changing_values(
     result = await coordinator._async_update_data()
 
     assert result[path].resource is current
-    assert coordinator.diagnostics_summary()["energy_counter_resets_detected"] == 2
+    summary = coordinator.diagnostics_summary()
+    assert summary["energy_counter_resets_detected"] == 1
+    assert summary["produced_heat_decreases_detected"] == 1
 
 
 async def test_confirmed_write_updates_coordinator_without_batch_refresh(
@@ -411,6 +415,8 @@ async def test_confirmed_write_updates_coordinator_without_batch_refresh(
     coordinator.data = {path: _snapshot(current)}
     coordinator.last_update_success = True
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_enum.return_value = WriteResult(
         WriteRequest("gateway-one", path, "auto"), confirmed
     )
@@ -446,6 +452,8 @@ async def test_confirmed_number_write_updates_coordinator(
     coordinator.data = {path: _snapshot(current)}
     coordinator.last_update_success = True
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_number.return_value = WriteResult(
         WriteRequest("gateway-one", path, 20.5), confirmed
     )
@@ -454,7 +462,7 @@ async def test_confirmed_number_write_updates_coordinator(
 
     assert result is confirmed
     coordinator._write_service.async_write_number.assert_awaited_once_with(
-        "gateway-one", current, 20.5, policy
+        "gateway-one", current, 20.5, policy, current=None
     )
 
 
@@ -701,6 +709,8 @@ async def test_number_policy_rejects_non_numeric_value(hass: HomeAssistant) -> N
     assert policy is not None
     coordinator.data = {path: _snapshot(resource)}
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
 
     with pytest.raises(WriteValidationError):
         await coordinator.async_write_control(path, True, policy)  # type: ignore[arg-type]
@@ -723,6 +733,8 @@ async def test_write_rejects_stale_resource_before_cloud_call(
         )
     }
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
 
     with pytest.raises(WriteValidationError):
         await coordinator.async_write_control(
@@ -740,6 +752,8 @@ async def test_write_rate_limit_activates_global_backoff(
     coordinator.resources = {path: resource}
     coordinator.data = {path: _snapshot(resource)}
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_enum.side_effect = RateLimited(30)
 
     with pytest.raises(RateLimited):
@@ -757,6 +771,8 @@ async def test_write_respects_existing_backoff_without_cloud_call(
     coordinator = _coordinator(hass, AsyncMock())
     coordinator._cloud_backoff_until = 10**20
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
 
     with pytest.raises(RateLimited):
         await coordinator.async_write_control(
@@ -785,6 +801,8 @@ async def test_write_auth_failure_starts_reauthentication(
     coordinator.resources = {path: resource}
     coordinator.data = {path: _snapshot(resource)}
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_enum.side_effect = AuthenticationError()
     coordinator._config_entry.async_start_reauth = Mock()
 
@@ -1175,7 +1193,7 @@ async def test_rate_limit_starts_bounded_no_request_backoff(
 
     with pytest.raises(UpdateFailed, match="no usable resources"):
         await coordinator._async_update_data()
-    with pytest.raises(UpdateFailed, match="backoff"):
+    with pytest.raises(UpdateFailed, match="rate-limit pause"):
         await coordinator._async_update_data()
 
     assert client.get_resources_bulk.await_count == 1
@@ -1442,7 +1460,7 @@ async def test_repeated_gateway_failure_opens_circuit_breaker(
         with pytest.raises(UpdateFailed, match="no usable resources"):
             await coordinator._async_update_data()
 
-    with pytest.raises(UpdateFailed, match="circuit breaker"):
+    with pytest.raises(UpdateFailed, match="protection pause"):
         await coordinator._async_update_data()
 
     assert client.get_resources_bulk.await_count == CIRCUIT_FAILURE_THRESHOLD
@@ -1478,7 +1496,7 @@ async def test_fallback_maps_scoped_errors_and_stops_on_rate_limit(
     )
     client.get_resource.side_effect = (
         ResourceNotFound(paths[0], 404),
-        ServiceUnavailable(),
+        ServiceUnavailable(503),  # an HTTP answer; no status = no connection
         RateLimited(90),
     )
 
@@ -1544,6 +1562,8 @@ async def test_manual_setpoint_recovery_queued_after_confirmed_mode_write(
     }
     coordinator.last_update_success = True
     coordinator._write_service = AsyncMock()
+    # D25: the deadline reads the (synchronous) read-back schedule.
+    coordinator._write_service.read_back_delays = Mock(return_value=())
     coordinator._write_service.async_write_enum.return_value = WriteResult(
         WriteRequest("gateway-one", mode_path, "manual"), new_mode
     )

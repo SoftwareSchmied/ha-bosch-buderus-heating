@@ -1,0 +1,28 @@
+{
+  "dialogs": {
+    "controls": {
+      "system": "System",
+      "heatingCircuit": "Heating circuit",
+      "hotWater": "Hot water",
+      "sections": "Appliance sections",
+      "moreSettings": "More settings",
+      "checkValue": "Please check this value.",
+      "discard": "Discard",
+      "reload": "Reload values",
+      "unsaved": "{count} unsaved changes",
+      "unsavedOne": "{count} unsaved change",
+      "saved": "Changes confirmed.",
+      "unchanged": "No changes, nothing was written.",
+      "empty": "No controls are currently available.",
+      "pending": "Changes are written only when you select Apply.",
+      "reopen": "Please close and reopen the dialog.",
+      "reloadFailed": "The values could not be reloaded."
+    },
+    "holiday": {
+      "date": "Date",
+      "time": "Time",
+      "deleteFailed": "The deletion confirmation could not be opened. Please reload the page and try again.",
+      "reopen": "Please close and reopen the dialog."
+    }
+  }
+}

@@ -11,7 +11,6 @@ from unittest.mock import AsyncMock
 import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating import _restore_registered_startup_paths
 from custom_components.bosch_buderus_heating.binary_sensor import (
@@ -56,6 +55,7 @@ from custom_components.bosch_buderus_heating.start_counters import (
     registered_start_counter_path,
 )
 from custom_components.bosch_buderus_heating.writes import assess_control
+from tests.ha_test_helpers import MockConfigEntry
 
 FIXTURES = json.loads(
     (Path(__file__).parent / "fixtures/wddw2/synthetic-readings.json").read_text()
@@ -334,6 +334,7 @@ def test_registered_scalar_and_parts_survive_shape_changes(hass, source_id) -> N
     added = []
     _track_resource_sensors(entry, coordinator, added.extend)
     assert len(added) == 6
+    assert set(identities) <= {sensor.unique_id for sensor in added}
     assert all(not sensor.available for sensor in added)
     original = tuple(added)
     for resource in (scalar, parts, scalar):

@@ -1,0 +1,428 @@
+{
+ "provenance": {
+  "kind": "synthetic",
+  "basis": "compatibility_mapping",
+  "reference": "RRC 2.0 heating circuit settings (W4): hc1 in the demo shapes of the vendor app, hc2 in the leaf, type and flag shapes of the TC100.2 diagnostics of issue 122",
+  "firmware": null,
+  "capture_date": null,
+  "created": "2026-11-10",
+  "redaction": "Constructed values only (synthetic from the demo shapes of the vendor app). Leaf names, JSON types, units and flags follow the expected shapes; no value was observed on a device.",
+  "physical_device_verified": false,
+  "contract": "Combine with ct200-shapes.json for a whole controller; this file replaces its /heatingCircuits containers."
+ },
+ "resources": [
+  {
+   "id": "/heatingCircuits",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatingCircuits/hc1"
+    },
+    {
+     "id": "/heatingCircuits/hc2"
+    }
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc1",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatingCircuits/hc1/heatCurveMin"
+    },
+    {
+     "id": "/heatingCircuits/hc1/heatCurveMax"
+    },
+    {
+     "id": "/heatingCircuits/hc1/minSupply"
+    },
+    {
+     "id": "/heatingCircuits/hc1/maxSupply"
+    },
+    {
+     "id": "/heatingCircuits/hc1/roomInfluence"
+    },
+    {
+     "id": "/heatingCircuits/hc1/suWiSwitchMode"
+    },
+    {
+     "id": "/heatingCircuits/hc1/suWiThreshold"
+    },
+    {
+     "id": "/heatingCircuits/hc1/nightSwitchMode"
+    },
+    {
+     "id": "/heatingCircuits/hc1/nightThreshold"
+    },
+    {
+     "id": "/heatingCircuits/hc1/seasonOptMode"
+    },
+    {
+     "id": "/heatingCircuits/hc1/setpointOptimization"
+    },
+    {
+     "id": "/heatingCircuits/hc1/buildingHeatup"
+    },
+    {
+     "id": "/heatingCircuits/hc1/operatingSeason"
+    },
+    {
+     "id": "/heatingCircuits/hc1/supplyTemperatureSetpoint"
+    },
+    {
+     "id": "/heatingCircuits/hc1/powerSetpoint"
+    },
+    {
+     "id": "/heatingCircuits/hc1/minOutdoorTemp"
+    },
+    {
+     "id": "/heatingCircuits/hc1/control"
+    },
+    {
+     "id": "/heatingCircuits/hc1/type"
+    },
+    {
+     "id": "/heatingCircuits/hc1/typeRoomControl"
+    }
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc1/heatCurveMin",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 20.0,
+   "maxValue": 90.0,
+   "stepSize": 1.0,
+   "value": 25.0
+  },
+  {
+   "id": "/heatingCircuits/hc1/heatCurveMax",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 25.0,
+   "maxValue": 90.0,
+   "stepSize": 1.0,
+   "value": 60.0
+  },
+  {
+   "id": "/heatingCircuits/hc1/minSupply",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 10.0,
+   "maxValue": 90.0,
+   "stepSize": 1.0,
+   "value": 20.0
+  },
+  {
+   "id": "/heatingCircuits/hc1/maxSupply",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 25.0,
+   "maxValue": 90.0,
+   "stepSize": 1.0,
+   "value": 75.0
+  },
+  {
+   "id": "/heatingCircuits/hc1/roomInfluence",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 1.0,
+   "value": 1.0
+  },
+  {
+   "id": "/heatingCircuits/hc1/suWiSwitchMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "automatic"
+  },
+  {
+   "id": "/heatingCircuits/hc1/suWiThreshold",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 10.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 16.0
+  },
+  {
+   "id": "/heatingCircuits/hc1/nightSwitchMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "off"
+  },
+  {
+   "id": "/heatingCircuits/hc1/nightThreshold",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 10.0
+  },
+  {
+   "id": "/heatingCircuits/hc1/seasonOptMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "used": true,
+   "available": true,
+   "allowedValues": [
+    "always_heating",
+    "always_cooling",
+    "automatic",
+    ""
+   ],
+   "value": "automatic"
+  },
+  {
+   "id": "/heatingCircuits/hc1/setpointOptimization",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "used": "true",
+   "available": "true",
+   "value": "off"
+  },
+  {
+   "id": "/heatingCircuits/hc1/buildingHeatup",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "used": "true",
+   "available": "true",
+   "value": "normal"
+  },
+  {
+   "id": "/heatingCircuits/hc1/operatingSeason",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "used": "true",
+   "value": "heating"
+  },
+  {
+   "id": "/heatingCircuits/hc1/supplyTemperatureSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 90.0,
+   "stepSize": 1.0,
+   "value": 35.0
+  },
+  {
+   "id": "/heatingCircuits/hc1/powerSetpoint",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "%",
+   "minValue": 0.0,
+   "maxValue": 100.0,
+   "stepSize": 1.0,
+   "value": 0.0
+  },
+  {
+   "id": "/heatingCircuits/hc1/minOutdoorTemp",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": -30.0,
+   "maxValue": 10.0,
+   "stepSize": 1.0,
+   "value": -12.0
+  },
+  {
+   "id": "/heatingCircuits/hc1/control",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "used": "true",
+   "available": "true",
+   "value": "weather"
+  },
+  {
+   "id": "/heatingCircuits/hc1/type",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "value": "radiator"
+  },
+  {
+   "id": "/heatingCircuits/hc1/typeRoomControl",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "used": "true",
+   "available": "true",
+   "value": "radiator"
+  },
+  {
+   "id": "/heatingCircuits/hc2",
+   "type": "refEnum",
+   "references": [
+    {
+     "id": "/heatingCircuits/hc2/seasonOptMode"
+    },
+    {
+     "id": "/heatingCircuits/hc2/roomInfluence"
+    },
+    {
+     "id": "/heatingCircuits/hc2/heatCurveMin"
+    },
+    {
+     "id": "/heatingCircuits/hc2/maxSupply"
+    },
+    {
+     "id": "/heatingCircuits/hc2/minSupply"
+    },
+    {
+     "id": "/heatingCircuits/hc2/buildingHeatup"
+    },
+    {
+     "id": "/heatingCircuits/hc2/nightSwitchMode"
+    },
+    {
+     "id": "/heatingCircuits/hc2/setpointOptimization"
+    },
+    {
+     "id": "/heatingCircuits/hc2/suWiThreshold"
+    },
+    {
+     "id": "/heatingCircuits/hc2/nightThreshold"
+    },
+    {
+     "id": "/heatingCircuits/hc2/operatingSeason"
+    }
+   ]
+  },
+  {
+   "id": "/heatingCircuits/hc2/seasonOptMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "used": "true",
+   "available": "true",
+   "allowedValues": [
+    "automatic"
+   ],
+   "value": "automatic"
+  },
+  {
+   "id": "/heatingCircuits/hc2/roomInfluence",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "other",
+   "minValue": 0.0,
+   "maxValue": 3.0,
+   "stepSize": 1.0,
+   "value": 2.0
+  },
+  {
+   "id": "/heatingCircuits/hc2/heatCurveMin",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 20.0,
+   "maxValue": 90.0,
+   "stepSize": 1.0,
+   "value": 30.0
+  },
+  {
+   "id": "/heatingCircuits/hc2/maxSupply",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "stepSize": 1.0,
+   "value": 70.0
+  },
+  {
+   "id": "/heatingCircuits/hc2/minSupply",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 10.0,
+   "maxValue": 90.0,
+   "stepSize": 1.0,
+   "value": 20.0,
+   "available": "maybe"
+  },
+  {
+   "id": "/heatingCircuits/hc2/buildingHeatup",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "available": "false",
+   "value": "fast"
+  },
+  {
+   "id": "/heatingCircuits/hc2/nightSwitchMode",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "allowedValues": [],
+   "value": "automatic"
+  },
+  {
+   "id": "/heatingCircuits/hc2/setpointOptimization",
+   "type": "stringValue",
+   "writeable": 1,
+   "recordable": 0,
+   "used": "true",
+   "available": "false",
+   "value": "on"
+  },
+  {
+   "id": "/heatingCircuits/hc2/suWiThreshold",
+   "type": "floatValue",
+   "writeable": 0,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 10.0,
+   "maxValue": 30.0,
+   "stepSize": 0.5,
+   "value": 15.0
+  },
+  {
+   "id": "/heatingCircuits/hc2/nightThreshold",
+   "type": "floatValue",
+   "writeable": 1,
+   "recordable": 0,
+   "unitOfMeasure": "C",
+   "minValue": 5.0,
+   "maxValue": 30.0,
+   "stepSize": 100.0,
+   "value": 10.0
+  },
+  {
+   "id": "/heatingCircuits/hc2/operatingSeason",
+   "type": "stringValue",
+   "writeable": 0,
+   "recordable": 0,
+   "value": "idle"
+  }
+ ]
+}

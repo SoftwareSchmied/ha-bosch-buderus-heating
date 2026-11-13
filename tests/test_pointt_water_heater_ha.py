@@ -3,7 +3,10 @@
 from unittest.mock import patch
 
 import pytest
-from homeassistant.components.water_heater import WaterHeaterEntityFeature
+from homeassistant.components.water_heater import (
+    WaterHeaterEntity,
+    WaterHeaterEntityFeature,
+)
 from homeassistant.const import EntityCategory, Platform
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import entity_registry as er
@@ -16,6 +19,7 @@ from tests.test_pointt_water_heater import MODE, setup
 
 @pytest.mark.parametrize("fahrenheit", [False, True])
 @pytest.mark.parametrize("language", ["de", "en"])
+@pytest.mark.usefixtures("legacy_platform_runtime")
 async def test_native_water_heater_services_and_preserved_controls(
     hass, enable_custom_integrations, fahrenheit, language
 ):
@@ -143,7 +147,11 @@ async def test_native_water_heater_services_and_preserved_controls(
             registry.async_get(heater_id).disabled_by is er.RegistryEntryDisabler.USER
         )
         disabled_state = hass.states.get(heater_id)
-        assert disabled_state.state == "unavailable"
-        assert disabled_state.attributes["restored"] is True
+        if hasattr(WaterHeaterEntity, "native_temperature_unit"):
+            # Home Assistant 2026.11 shows no state for a disabled entity.
+            assert disabled_state is None
+        else:  # older releases keep a restored placeholder
+            assert disabled_state.state == "unavailable"
+            assert disabled_state.attributes["restored"] is True
         assert registry.async_get(original.entity_id).disabled_by is None
         assert await hass.config_entries.async_unload(entry.entry_id)

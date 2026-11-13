@@ -8,7 +8,13 @@ not merely planned architecture.
 Status updated on **2026-11-02**. The current stable release, its
 locally tested controls and remaining work are listed below.
 
-## Current stable release: 0.8.3
+Since 2026-11-13, **0.9.0 is the current stable release.** It completes the
+0.9.0 pre-releases from 2026-11-08 on and adds the local access and the room
+controller support; what it contains and what was tested on real devices is
+in the [CHANGELOG](../CHANGELOG.md). The sections that follow describe the
+0.8 line unless they say otherwise.
+
+## Previous stable release: 0.8.3
 
 I fixed platform imports that prevented startup on Home Assistant 2026.9.2.
 This release also includes compatible dependency updates from PRs #97, #98 and
@@ -87,7 +93,7 @@ Issue #49 and the WE800i field checks in issue #60 retain their separate scope.
   separate device contracts.
 - I completed P16 with 132 conversion rules and 250 numeric candidates
   classified. The [conversion audit](conversion-audit.md) retains its original
-  test checkpoint; the [follow-up corrections](app-parity-corrections.md)
+  test checkpoint; the [follow-up corrections](corrected-values.md)
   document the final review fixes and validation.
 - I retained one device per existing PointT heating gateway. Separate cloud
   appliances and wallboxes keep their own identities. See
@@ -98,7 +104,7 @@ Physical checks of the new families, reconnection and real write effects are
 outstanding. Wallbox controls, additional device actions and new RRC schedule
 points are outside the implemented scope. WE800i controls remain disabled by
 default pending confirmation in issue #60. See the
-[device-support plan](device-support-plan.md) for remaining work.
+[device families](device-support-plan.md) for the supported families.
 
 ## Accepted deviations
 

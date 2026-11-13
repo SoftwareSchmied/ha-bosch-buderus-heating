@@ -36,6 +36,13 @@ class PointTError(Exception):
     """Base class for client errors."""
 
 
+class SourceStopped(PointTError):
+    """The request belongs to a source that no longer accepts work."""
+
+    def __init__(self) -> None:
+        super().__init__("PointT source is no longer active")
+
+
 class AuthenticationError(PointTError):
     """Base class for authentication failures."""
 
@@ -71,6 +78,14 @@ class OAuthFlowExpired(OAuthRedirectError):
     """The authorization attempt expired before its redirect was accepted."""
 
 
+class OAuthScopeRejected(OAuthRedirectError):
+    """The sign-in service rejected the requested scopes of this attempt.
+
+    The flow has already switched to the full scope set and a fresh link; the
+    user only needs to sign in again with that link.
+    """
+
+
 class AuthorizationCodeConsumed(AuthenticationError):
     """The authorization redirect was already consumed."""
 
@@ -94,6 +109,30 @@ class ServiceUnavailable(TransportError):
         super().__init__(message)
 
 
+class SignInUnavailable(ServiceUnavailable):
+    """The sign-in service could not renew the access token for now.
+
+    Raised for temporary token endpoint failures: no answer, a server error,
+    an unreadable answer or a refusal without a definite OAuth error. It is
+    no answer of the PointT service itself and carries no HTTP status, so
+    callers treat it like a missing connection. Until ``retry_after`` seconds
+    have passed, the token manager repeats it without contacting the service.
+    """
+
+    def __init__(
+        self,
+        reason: str = "unavailable",
+        *,
+        retry_after: float | None = None,
+        rejection: TokenEndpointRejection | None = None,
+    ) -> None:
+        super().__init__()
+        self.reason = reason
+        self.retry_after = retry_after
+        self.rejection = rejection
+        self.args = (f"Sign-in service is temporarily unavailable ({reason})",)
+
+
 class RateLimited(TransportError):
     """The cloud rejected requests due to rate limiting."""
 
@@ -108,6 +147,19 @@ class UnexpectedHttpStatus(TransportError):
     def __init__(self, status: int) -> None:
         self.status = status
         super().__init__(f"Unexpected PointT HTTP status {status}")
+
+
+class RefreshRefused(UnexpectedHttpStatus):
+    """The token endpoint refused a refresh without a definite OAuth error.
+
+    An HTML page of a firewall, an empty body or an unrelated error code is
+    no reliable sign of an invalid sign-in. The refresh is retried later.
+    """
+
+    def __init__(self, status: int, *, rejection: TokenEndpointRejection) -> None:
+        super().__init__(status)
+        self.rejection = rejection
+        self.args = (f"Token refresh was refused ({rejection.summary()})",)
 
 
 class ResourceError(PointTError):
@@ -137,6 +189,10 @@ class ProtocolError(PointTError):
 
 class InvalidPayload(ProtocolError):
     """A response body did not match its required envelope."""
+
+
+class ResourceOmitted(InvalidPayload):
+    """A bulk response did not contain a requested path: no answer for it."""
 
 
 class InvalidBatchEnvelope(ProtocolError):

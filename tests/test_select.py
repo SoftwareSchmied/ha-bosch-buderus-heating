@@ -10,7 +10,6 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
@@ -38,6 +37,7 @@ from custom_components.bosch_buderus_heating.writes import (
     HEATING_CIRCUIT_OPERATION_MODE_POLICY,
     SILENT_MODE_POLICY,
 )
+from tests.ha_test_helpers import MockConfigEntry
 
 PATH = "/heatingCircuits/hc1/operationMode"
 SILENT_MODE_PATH = "/system/silentMode/enabled"

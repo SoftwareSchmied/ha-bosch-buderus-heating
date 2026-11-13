@@ -64,10 +64,9 @@ requests and expose no readings or unknown mode text.
 
 ## Boundaries and evidence
 
-I traced the reviewed MyBuderus 5.0.0 command behavior through mode and
-temperature selection to a single-value PUT. The temporary setter also uses
-a single float, but its presentation additionally uses the active thermal
-mode, schedule and current switch point. A numeric command alone does not
+Mode and temperature selection each use a single-value PUT. The temporary
+setter also uses a single float, but its presentation additionally depends on
+the active thermal mode, schedule and current switch point. A numeric command alone does not
 prove complete override behavior, so no temporary control is released.
 
 RRC paths under `/zones/zn{id}`, child locks, pairing, weekly programs and a

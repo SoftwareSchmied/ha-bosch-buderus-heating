@@ -10,9 +10,13 @@ DOMAIN: Final = "bosch_buderus_heating"
 NAME: Final = "Bosch/Buderus Home Comfort"
 
 CONF_BRAND: Final = "brand"
+# The manufacturer of every device without a reported brand.
+DEFAULT_MANUFACTURER: Final = "Bosch Thermotechnology"
 CONF_GATEWAY_IDS: Final = "gateway_ids"
 CONF_POLLING_PROFILE: Final = "polling_profile"
 CONF_FAULT_NOTIFICATIONS: Final = "fault_notifications"
+# Also show warnings and maintenance in the bell notification (default off).
+CONF_NOTIFY_NOTICES: Final = "notify_warnings_and_maintenance"
 CONF_REDIRECT_URL: Final = "redirect_url"
 
 CONF_ACCESS_TOKEN: Final = "access_token"
@@ -32,6 +36,9 @@ class PollingProfile(StrEnum):
 DEFAULT_POLLING_PROFILE: Final = PollingProfile.STANDARD
 RATE_LIMIT_ISSUE_PREFIX: Final = "repeated_rate_limit_"
 FIRMWARE_ISSUE_PREFIX: Final = "incompatible_firmware_"
+GATEWAY_EXCHANGE_ISSUE_PREFIX: Final = "gateway_exchange_"
+# B01: the local start check keeps failing on an unusable answer.
+LOCAL_START_ISSUE_PREFIX: Final = "local_start_failed_"
 
 
 def polling_profile_from_options(options: Mapping[str, Any]) -> PollingProfile:
@@ -57,5 +64,9 @@ PLATFORMS: Final = (
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SWITCH,
+    # W3 (RRC): the disinfection time; no entity on other gateways.
+    Platform.TIME,
+    # F1: the read-only gateway firmware entity.
+    Platform.UPDATE,
     Platform.WATER_HEATER,
 )

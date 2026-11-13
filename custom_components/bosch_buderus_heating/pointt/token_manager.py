@@ -10,11 +10,27 @@ from inspect import isawaitable
 from time import monotonic, time
 from typing import Protocol
 
-from .exceptions import RateLimited, RefreshTokenRejected, TokenEndpointRejection
+from .exceptions import (
+    InvalidPayload,
+    PointTError,
+    RateLimited,
+    RefreshTokenRejected,
+    SignInUnavailable,
+    TokenEndpointRejection,
+)
 from .models import AuthTokens
 from .transport import RateLimitBackoff
 
 _LOGGER = logging.getLogger(__name__)
+
+# Refresh while at least this much lifetime remains. Requests only check the
+# token when they run, so a smaller margin was often met with 30-40 s left.
+REFRESH_MARGIN_SECONDS = 120.0
+# After a temporary refresh failure, wait this long before the next attempt;
+# the wait doubles with every further failure up to the maximum. Requests in
+# between fail at once instead of each starting another token request.
+REFRESH_RETRY_INITIAL_SECONDS = 30.0
+REFRESH_RETRY_MAXIMUM_SECONDS = 600.0
 
 
 class OAuthTokenClient(Protocol):
@@ -59,9 +75,10 @@ class TokenManager:
         persist: PersistTokens,
         *,
         clock: Callable[[], float] = time,
-        refresh_margin: float = 60.0,
+        refresh_margin: float = REFRESH_MARGIN_SECONDS,
         backoff: RateLimitBackoff | None = None,
         observer: RefreshObserver | None = None,
+        retry_clock: Callable[[], float] = monotonic,
     ) -> None:
         self._oauth_client = oauth_client
         self._tokens = tokens
@@ -73,6 +90,10 @@ class TokenManager:
         self._rejection: TokenEndpointRejection | None = None
         self._backoff = backoff if backoff is not None else RateLimitBackoff()
         self._observer = observer
+        self._retry_clock = retry_clock
+        self._failures = 0
+        self._retry_not_before = 0.0
+        self._last_failure: SignInUnavailable | None = None
 
     def set_observer(self, observer: RefreshObserver | None) -> None:
         """Attach the diagnostics observer for subsequent refresh attempts."""
@@ -84,6 +105,16 @@ class TokenManager:
         return self._refresh_rejected
 
     @property
+    def refresh_in_progress(self) -> bool:
+        """Include a shielded refresh whose original waiter has stopped."""
+        return self._refresh_task is not None and not self._refresh_task.done()
+
+    async def async_wait_for_refresh(self) -> None:
+        """Finish an existing rotation without starting or cancelling one."""
+        if self._refresh_task is not None:
+            await self._wait_for_refresh(self._refresh_task)
+
+    @property
     def tokens(self) -> AuthTokens:
         """Return the current token set without logging its contents."""
         return self._tokens
@@ -93,17 +124,18 @@ class TokenManager:
     ) -> str:
         """Share one refresh, even if a caller stops waiting for its result."""
         if self._refresh_task is not None and not self._refresh_task.done():
-            return await asyncio.shield(self._refresh_task)
+            return await self._wait_for_refresh(self._refresh_task)
         if self._refresh_rejected:
             raise RefreshTokenRejected(rejection=self._rejection)
         already_refreshed = (
             rejected_token is not None and self._tokens.access_token != rejected_token
         )
         if (not force_refresh or already_refreshed) and not self._tokens.is_expired(
-            now=self._clock(), margin=self._refresh_margin
+            now=self._clock(), margin=self._margin()
         ):
             return self._tokens.access_token
         self._backoff.raise_if_active()
+        self._raise_if_retry_pending()
         # Keep a strong reference and retrieve errors even when all original
         # callers are cancelled. A rotating credential must still be saved.
         trigger = "access_token_rejected" if force_refresh else "expiry"
@@ -111,7 +143,53 @@ class TokenManager:
             self._refresh(trigger), name="pointt_refresh"
         )
         self._refresh_task.add_done_callback(self._refresh_finished)
-        return await asyncio.shield(self._refresh_task)
+        return await self._wait_for_refresh(self._refresh_task)
+
+    def _margin(self) -> float:
+        """The refresh margin, at most half of a known token lifetime (D15).
+
+        A lifetime shorter than the margin would make every new token count
+        as expired at once, so each request would start another refresh.
+        """
+        issued_at = self._tokens.issued_at
+        if issued_at is None:
+            return self._refresh_margin
+        lifetime = self._tokens.expires_at - issued_at
+        return min(self._refresh_margin, max(0.0, lifetime / 2))
+
+    def _raise_if_retry_pending(self) -> None:
+        """Repeat a recent temporary failure without another token request."""
+        last = self._last_failure
+        if last is None:
+            return
+        remaining = self._retry_not_before - self._retry_clock()
+        if remaining > 0:
+            raise SignInUnavailable(
+                last.reason, retry_after=remaining, rejection=last.rejection
+            )
+
+    def _temporary_failure(self, err: Exception) -> SignInUnavailable:
+        """Start or extend the retry wait and describe the failure neutrally."""
+        self._failures += 1
+        delay = min(
+            REFRESH_RETRY_MAXIMUM_SECONDS,
+            REFRESH_RETRY_INITIAL_SECONDS * 2 ** min(self._failures - 1, 16),
+        )
+        self._retry_not_before = self._retry_clock() + delay
+        failure = SignInUnavailable(
+            _failure_reason(err),
+            retry_after=delay,
+            rejection=getattr(err, "rejection", None),
+        )
+        self._last_failure = failure
+        return failure
+
+    @staticmethod
+    async def _wait_for_refresh(task: asyncio.Task[str]) -> str:
+        # asyncio.wait leaves the shared task running if this caller is cancelled.
+        # _refresh_finished owns errors when every caller has stopped waiting.
+        await asyncio.wait((task,))
+        return task.result()
 
     @staticmethod
     def _refresh_finished(task: asyncio.Task[str]) -> None:
@@ -119,6 +197,26 @@ class TokenManager:
             task.exception()
 
     async def _refresh(self, trigger: str) -> str:
+        """Refresh; an access token expired on arrival is refreshed once more.
+
+        D15: such an answer may rotate the refresh token, so the new token
+        set is kept and saved. The next refresh uses it right away, once; if
+        that answer is expired as well, the attempt counts as a temporary
+        failure and the usual retry wait (30 s doubling up to 10 min) holds
+        every further refresh. There is never a tight refresh loop.
+        """
+        tokens = await self._refresh_once(trigger)
+        if not _expired_on_arrival(tokens):
+            return tokens.access_token
+        self._backoff.raise_if_active()
+        tokens = await self._refresh_once("expired_on_arrival")
+        if not _expired_on_arrival(tokens):
+            return tokens.access_token
+        raise self._temporary_failure(
+            InvalidPayload("OAuth access token was expired on arrival")
+        )
+
+    async def _refresh_once(self, trigger: str) -> AuthTokens:
         refresh_token = self._tokens.refresh_token
         started_at = self._clock()
         started = monotonic()
@@ -131,6 +229,10 @@ class TokenManager:
             # The old refresh token may already be invalid. Retain the new one
             # in memory even if the persistence callback itself fails.
             self._tokens = new_tokens
+            if not _expired_on_arrival(new_tokens):
+                # An expired token ends no retry wait (D15).
+                self._failures = 0
+                self._last_failure = None
             self._report(
                 trigger,
                 "success",
@@ -143,7 +245,7 @@ class TokenManager:
             persisted = self._persist(new_tokens)
             if isawaitable(persisted):
                 await persisted
-            return new_tokens.access_token
+            return new_tokens
         except RefreshTokenRejected as err:
             self._refresh_rejected = True
             self._rejection = err.rejection
@@ -181,16 +283,24 @@ class TokenManager:
                 )
             raise
         except Exception as err:
-            if new_tokens is None:
-                self._report(
-                    trigger,
-                    "failed",
-                    started_at,
-                    started,
-                    remaining,
-                    refresh_token,
-                    error=err,
-                )
+            if new_tokens is not None:
+                # Saving failed; the new tokens are already in use.
+                raise
+            self._report(
+                trigger,
+                "failed",
+                started_at,
+                started,
+                remaining,
+                refresh_token,
+                error=err,
+            )
+            if isinstance(err, PointTError):
+                # Not an answer of the PointT service: no gateway or reading
+                # failed, and an unreadable token answer is no invalid value.
+                raise self._temporary_failure(err) from err
+            # A programming error is no failure of the sign-in service: it
+            # propagates unchanged and pauses no later sign-in.
             raise
 
     def _report(
@@ -223,6 +333,23 @@ class TokenManager:
         except Exception:
             # Diagnostics must never change authentication behavior.
             _LOGGER.debug("Refresh diagnostics observer failed", exc_info=True)
+
+
+def _expired_on_arrival(tokens: AuthTokens) -> bool:
+    """The answer gave the access token no lifetime (D15)."""
+    return tokens.issued_at is not None and tokens.expires_at <= tokens.issued_at
+
+
+def _failure_reason(err: Exception) -> str:
+    """A short, fixed category for logs and diagnostics."""
+    status = getattr(err, "status", None)
+    if isinstance(status, int):
+        return f"http_{status}"
+    return {
+        "RequestTimeout": "timeout",
+        "ServiceUnavailable": "no_connection",
+        "InvalidPayload": "invalid_answer",
+    }.get(type(err).__name__, "unexpected_error")
 
 
 class StaticTokenProvider:

@@ -118,12 +118,12 @@ def test_empty_old_and_retained_envelopes_do_not_refresh_fields():
     assert device.sensor["currentTemp"] == 48
 
 
-@pytest.mark.parametrize("stream", ["sensor", "state"])
-def test_partial_updates_do_not_rejuvenate_unrelated_fields(stream):
+@pytest.mark.parametrize("stream,max_age", [("sensor", 3600), ("state", 900)])
+def test_partial_updates_do_not_rejuvenate_unrelated_fields(stream, max_age):
     account, heater, _ = dhw_configured()
     device = account.devices["serial-A"]
     baseline = max(device.sensor_received_at, device.state_received_at)
-    with patch(MODULE + ".monotonic", return_value=baseline + 899):
+    with patch(MODULE + ".monotonic", return_value=baseline + max_age - 1):
         if stream == "sensor":
             emit(
                 account,
@@ -140,12 +140,12 @@ def test_partial_updates_do_not_rejuvenate_unrelated_fields(stream):
                     "state": {"reported": {"powerEnabled": False}},
                 },
             )
-    with patch(MODULE + ".monotonic", return_value=baseline + 901):
+    with patch(MODULE + ".monotonic", return_value=baseline + max_age + 1):
         account.expire_values(device)
         if stream == "sensor":
             assert "currentTemp" not in device.sensor
             assert device.sensor["vacationModeEnabled"] is True
-            assert heater.current_temperature is None
+            assert heater.native_current_temperature is None
         else:
             assert "opMode" not in device.state.reported
             assert device.state.reported["powerEnabled"] is False
@@ -329,3 +329,91 @@ def test_full_snapshot_prevents_replay_of_removed_fields_at_same_version():
     )
     emit(account, "shadows/state/update/accepted", state(2, "on"))
     assert account.devices["serial-A"].state.reported == {"other": True}
+
+
+ENTITY = "custom_components.bosch_buderus_heating.bacon.entity"
+
+
+def reconnect(account, data, serial="serial-A"):
+    """Our own reconnect: the broker redelivers only retained messages."""
+    account._disconnected()
+    account.connected = True
+    account._start_generation()
+    emit(account, "topics/info", data["info"], serial, retained=True)
+    emit(account, "topics/meta", data["metadata"], serial, retained=True)
+
+
+def test_reconnect_keeps_readings_within_their_age_limits():
+    account, heater, data = dhw_configured()
+    device = account.devices["serial-A"]
+    reconnect(account, data)
+    assert heater.available
+    assert heater.native_current_temperature == 48
+    assert heater.native_target_temperature == 50
+    # Later observations extend the carried-over readings instead of replacing them.
+    emit(account, "topics/sensor", {"items": [{"timestamp": 3, "currentTemp": 49}]})
+    assert heater.native_current_temperature == 49
+    assert device.state.reported["tempSetpoint"] == 50
+
+
+def test_carried_over_readings_still_expire_by_their_own_age():
+    account, heater, data = dhw_configured()
+    device = account.devices["serial-A"]
+    start = max(device.sensor_received_at, device.state_received_at)
+    reconnect(account, data)
+    # Only these two clocks: patch.stopall() would also end the test
+    # framework's own patches (for example its socket guard helpers).
+    with (
+        patch(MODULE + ".monotonic", return_value=start + 901),
+        patch(ENTITY + ".monotonic", return_value=start + 901),
+    ):
+        account.expire_values(device)
+        assert heater.native_target_temperature is None
+        assert "tempSetpoint" not in device.state.reported
+        assert device.sensor["currentTemp"] == 48
+    with patch(MODULE + ".monotonic", return_value=start + 3601):
+        account.expire_values(device)
+        assert "currentTemp" not in device.sensor
+
+
+def test_reconnect_does_not_carry_readings_older_than_their_limit():
+    account, _, data = dhw_configured()
+    device = account.devices["serial-A"]
+    start = max(device.sensor_received_at, device.state_received_at)
+    account._disconnected()
+    with patch(MODULE + ".monotonic", return_value=start + 3601):
+        account.connected = True
+        account._start_generation()
+        emit(account, "topics/info", data["info"], retained=True)
+        # Retained messages never extend an age or prove a live device.
+        emit(account, "topics/sensor", data["sensor"], retained=True)
+        account.expire_values(device)
+        assert "currentTemp" not in device.sensor
+        assert "tempSetpoint" not in device.state.reported
+        assert not account.available("serial-A")
+
+
+def test_membership_loss_still_clears_readings():
+    account, heater, data = dhw_configured()
+    device = account.devices["serial-A"]
+    account._set_membership(("serial-B",))
+    account._set_membership(("serial-A", "serial-B"))
+    reconnect(account, data)
+    assert heater.native_current_temperature is None
+    assert heater.native_target_temperature is None
+    emit(
+        account,
+        "topics/sensor",
+        {"items": [{"timestamp": 3, "vacationModeEnabled": True}]},
+    )
+    # A new sample starts a fresh set: the old temperature is not merged back.
+    assert "currentTemp" not in device.sensor
+
+
+def test_explicit_offline_after_reconnect_hides_readings_at_once():
+    account, heater, data = dhw_configured()
+    reconnect(account, data)
+    assert heater.native_current_temperature == 48
+    emit(account, "topics/info", {**data["info"], "timestamp": 9, "online": False})
+    assert not heater.available
+    assert heater.native_current_temperature is None

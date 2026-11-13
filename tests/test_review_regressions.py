@@ -24,6 +24,7 @@ ROOT = "custom_components.bosch_buderus_heating"
 
 
 @pytest.mark.usefixtures("enable_custom_integrations")
+@pytest.mark.usefixtures("legacy_platform_runtime")
 async def test_water_heater_accepts_valid_fahrenheit_target(hass):
     hass.config.units = US_CUSTOMARY_SYSTEM
     config = entry(hass)

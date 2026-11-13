@@ -1,0 +1,6706 @@
+{
+  "source_commit": "78e36b3b57e11ac6266558acba96c13bee88ceff",
+  "source_sha256": "ee7f17d9b783e4722b82e9c141dd63f1bc717c13c04bb435bfb2a7989323fb93",
+  "copyright": "Bosch Thermotechnik GmbH 2026",
+  "license": "Apache-2.0",
+  "templates": [
+    "/devices/inclusionTime",
+    "/devices/inclusionWhitelist",
+    "/devices/rhc/assignedTo",
+    "/devices/uhc/assignedTo",
+    "/gateway/brand",
+    "/gateway/dataProcessing/status",
+    "/gateway/eth/ip/ipv4",
+    "/gateway/eth/mac",
+    "/gateway/tzInfo/timeZone",
+    "/gateway/update/status",
+    "/gateway/update/report",
+    "/gateway/versionFirmware",
+    "/gateway/versionHardware",
+    "/gateway/wifi/apList",
+    "/gateway/wifi/hotspotRemainingTime",
+    "/gateway/wifi/ip/ipv4",
+    "/gateway/wifi/mac",
+    "/gateway/wifi/pairingStatus",
+    "/gateway/wifi/ssid",
+    "/heatSources/actualHeatDemand",
+    "/heatSources/actualModulation",
+    "/heatSources/actualSupplyTemperature",
+    "/heatSources/compressor/powerElecActual",
+    "/heatSources/currentSupplySetpoint",
+    "/heatSources/dhw/cylinderTemperature",
+    "/heatSources/additionalHeater/flowTemp",
+    "/heatSources/additionalHeater/primary/status",
+    "/heatSources/eHeater/powerElecActual",
+    "/heatSources/eHeater/powerElecActualLowResolution",
+    "/heatSources/emon/chConsumption",
+    "/heatSources/emon/coolingConsumption",
+    "/heatSources/emon/dhwConsumption",
+    "/heatSources/emon/poolConsumption",
+    "/heatSources/emon/totalConsumption",
+    "/heatSources/emStatus",
+    "/heatSources/externalInputs/input1/state",
+    "/heatSources/externalInputs/input2/state",
+    "/heatSources/externalInputs/input3/state",
+    "/heatSources/externalInputs/input4/state",
+    "/heatSources/externalInputs/status/coolingBlock",
+    "/heatSources/fallbackOperation/status",
+    "/heatSources/flameStatus",
+    "/heatSources/numberOfRefrigerantCircuitsOnline",
+    "/heatSources/hybrid/activeHeatSource",
+    "/heatSources/numberOfStarts",
+    "/heatSources/pvContactState",
+    "/heatSources/returnTemperature",
+    "/heatSources/sensors/evaporatorTemp_tl1",
+    "/heatSources/sensors/evaporatorTemp_tl2",
+    "/heatSources/smartFunction/active",
+    "/heatSources/Source/eHeater/status",
+    "/heatSources/systemPressure",
+    "/heatSources/workingTime/totalSystem",
+    "/heatSources/dhw/cylinderUpperTemp",
+    "/notifications",
+    "/pool/currentTemp",
+    "/recordings/heatSources/actualSupplyTemperature",
+    "/recordings/heatSources/emon/ch/burner",
+    "/recordings/heatSources/emon/ch/compressor",
+    "/recordings/heatSources/emon/ch/eheater",
+    "/recordings/heatSources/emon/ch/electricity",
+    "/recordings/heatSources/emon/ch/numberOfStarts",
+    "/recordings/heatSources/emon/ch/outputProduced",
+    "/recordings/heatSources/emon/ch/workingTime",
+    "/recordings/heatSources/emon/cooling/compressor",
+    "/recordings/heatSources/emon/cooling/numberOfStarts",
+    "/recordings/heatSources/emon/cooling/outputProduced",
+    "/recordings/heatSources/emon/cooling/workingTime",
+    "/recordings/heatSources/emon/dhw/burner",
+    "/recordings/heatSources/emon/dhw/compressor",
+    "/recordings/heatSources/emon/dhw/eheater",
+    "/recordings/heatSources/emon/dhw/electricity",
+    "/recordings/heatSources/emon/dhw/numberOfStarts",
+    "/recordings/heatSources/emon/dhw/outputProduced",
+    "/recordings/heatSources/emon/dhw/workingTime",
+    "/recordings/heatSources/emon/pool/compressor",
+    "/recordings/heatSources/emon/pool/eheater",
+    "/recordings/heatSources/emon/pool/numberOfStarts",
+    "/recordings/heatSources/emon/pool/outputProduced",
+    "/recordings/heatSources/emon/pool/workingTime",
+    "/recordings/heatSources/emon/total/burner",
+    "/recordings/heatSources/emon/total/compressor",
+    "/recordings/heatSources/emon/total/eheater",
+    "/recordings/heatSources/emon/total/electricity",
+    "/recordings/heatSources/emon/total/numberOfStarts",
+    "/recordings/heatSources/emon/total/outputProduced",
+    "/recordings/heatSources/emon/total/workingTime",
+    "/recordings/heatSources/emon/total/solar",
+    "/recordings/heatSources/emon/total/ventilation",
+    "/recordings/heatSources/emon/ventilation/heatRecovered",
+    "/recordings/system/sensors/temperatures/outdoor_t1",
+    "/signals",
+    "/signals/{signalId}",
+    "/system/basicInfo",
+    "/system/bus",
+    "/system/type",
+    "/system/iSRC/installationStatus",
+    "/system/iSRC/supportStatus",
+    "/system/powerConstraints/affectedDomain/additionalHeaterCh",
+    "/system/powerConstraints/affectedDomain/additionalHeaterDhwTank",
+    "/system/powerConstraints/affectedDomain/additionalHeaterPrimaryCircuit",
+    "/system/powerConstraints/affectedDomain/ch",
+    "/system/powerConstraints/affectedDomain/cooling",
+    "/system/powerConstraints/affectedDomain/dhw",
+    "/system/powerConstraints/affectedDomain/pool",
+    "/system/powerConstraints/affectedDomain/refrigerantCircuit",
+    "/system/powerConstraints/dhwReduceTempOnAlarm/status",
+    "/system/powerConstraints/externalInputs/additionalHeaterBlock/status",
+    "/system/powerConstraints/externalInputs/appliancePowerBlock/status",
+    "/system/powerConstraints/externalInputs/appliancePowerLimit/status",
+    "/system/powerConstraints/externalInputs/coolingBlock/status",
+    "/system/powerConstraints/externalInputs/dhwBlock/status",
+    "/system/powerConstraints/externalInputs/heatingBlock/status",
+    "/system/powerConstraints/externalInputs/pv/status",
+    "/system/powerConstraints/highSourceTempStopCooling/status",
+    "/system/powerConstraints/highSourceTempStopHeating/status",
+    "/system/powerConstraints/lowSourceTempStopCooling/status",
+    "/system/powerConstraints/lowSourceTempStopHeating/status",
+    "/system/powerConstraints/maintenanceMode/status",
+    "/system/powerConstraints/powerElecDesired/status",
+    "/system/powerConstraints/powerElecLimitation/status",
+    "/system/powerConstraints/powerGuard/status",
+    "/system/powerConstraints/silentMode/status",
+    "/system/powerConstraints/userAdditionalHeaterBlock/status",
+    "/system/powerGuard/active",
+    "/system/powerLimitation/active",
+    "/system/sensors/temperatures/outdoor_t1",
+    "/system/update/status",
+    "/system/update/report",
+    "/system/variableTariff/ch/currentSetpoint",
+    "/system/variableTariff/ch/highPriceDelta",
+    "/system/variableTariff/ch/lowPriceDelta",
+    "/system/variableTariff/ch/midPriceSetpoint",
+    "/system/variableTariff/ch/optimization",
+    "/system/variableTariff/ch/status",
+    "/system/variableTariff/currentPriceCatagorization",
+    "/system/variableTariff/dhw/currentOpmode",
+    "/system/variableTariff/dhw/highPriceEnable",
+    "/system/variableTariff/dhw/lowPriceEnable",
+    "/system/variableTariff/dhw/optimization",
+    "/system/variableTariff/dhw/status",
+    "/system/variableTariff/supportStatus",
+    "/system/variableTariff/tariffId",
+    "/zones/configuration",
+    "/devices/{deviceId}/actualHumidity",
+    "/devices/{deviceId}/actuatorModulation",
+    "/devices/{deviceId}/actuatorPower",
+    "/devices/{deviceId}/assignedHC",
+    "/devices/{deviceId}/battery",
+    "/devices/{deviceId}/currentRoomSetpoint",
+    "/devices/{deviceId}/errors",
+    "/devices/{deviceId}/name",
+    "/devices/{deviceId}/operationMode",
+    "/devices/{deviceId}/rfConnectionStatus",
+    "/devices/{deviceId}/rfErrorCause",
+    "/devices/{deviceId}/rfPairedStatus",
+    "/devices/{deviceId}/rfTimeofConnectionLost",
+    "/devices/{deviceId}/roomtemperature",
+    "/devices/{deviceId}/sgtin",
+    "/devices/{deviceId}/signal",
+    "/devices/{deviceId}/signalIcon",
+    "/devices/{deviceId}/type",
+    "/devices/{deviceId}/versionFirmware",
+    "/devices/{deviceId}/zoneId",
+    "/dhwCircuits/{dhwCircuitId}/currentFriwaSupplyTemperature",
+    "/dhwCircuits/{dhwCircuitId}/friwaPrimaryPumpModulation",
+    "/dhwCircuits/{dhwCircuitId}/actualTemp",
+    "/dhwCircuits/{dhwCircuitId}/chargeRemainingTime",
+    "/dhwCircuits/{dhwCircuitId}/currentSetpoint",
+    "/dhwCircuits/{dhwCircuitId}/currentTemperatureLevel",
+    "/dhwCircuits/{dhwCircuitId}/outTemp",
+    "/dhwCircuits/{dhwCircuitId}/overallStatus",
+    "/dhwCircuits/{dhwCircuitId}/tdrunningStatus",
+    "/dhwCircuits/{dhwCircuitId}/volumeFlow",
+    "/heatingCircuits/{heatingCircuitId}/actualHumidity",
+    "/heatingCircuits/{heatingCircuitId}/boostRemainingTime",
+    "/heatingCircuits/{heatingCircuitId}/currentRoomSetpoint",
+    "/heatingCircuits/{heatingCircuitId}/currentSuWiMode",
+    "/heatingCircuits/{heatingCircuitId}/maxFlowTemp",
+    "/heatingCircuits/{heatingCircuitId}/mixerPosition",
+    "/heatingCircuits/{heatingCircuitId}/openWindowDetection/status",
+    "/heatingCircuits/{heatingCircuitId}/overallStatus",
+    "/heatingCircuits/{heatingCircuitId}/pumpStatus",
+    "/heatingCircuits/{heatingCircuitId}/roomtemperature",
+    "/heatSources/{heatSourceId}/numberOfStarts",
+    "/heatSources/{heatSourceId}/oduFanSpeed",
+    "/heatSources/{heatSourceId}/pumpVolumeFlow",
+    "/heatSources/{heatSourceId}/refrigerant/status",
+    "/heatSources/{heatSourceId}/refrigerant/compressorElecPowerActual",
+    "/heatSources/{heatSourceId}/refrigerant/compressorTemp",
+    "/heatSources/{heatSourceId}/refrigerant/heatCarrierPumpSpeed",
+    "/heatSources/{heatSourceId}/refrigerant/liquidPipeCoolingTemp",
+    "/heatSources/{heatSourceId}/refrigerant/liquidPipeHeatingTemp",
+    "/heatSources/{heatSourceId}/refrigerant/lowPressureTemp",
+    "/heatSources/{heatSourceId}/refrigerant/highPressureTemp",
+    "/heatSources/{heatSourceId}/refrigerant/hotGasTemp",
+    "/heatSources/{heatSourceId}/refrigerant/suctionGasTemp",
+    "/heatSources/{heatSourceId}/returnFlowTemp",
+    "/heatSources/{heatSourceId}/refrigerant/compressorActualSpeed",
+    "/heatSources/{heatSourceId}/supplyFlowCondenserTemp",
+    "/heatSources/{heatSourceId}/workingTime",
+    "/heatSources/{heatSourceId}/safetyBoard/status",
+    "/heatSources/{heatSourceId}/brineCircuit/collectorInflowTemp",
+    "/heatSources/{heatSourceId}/brineCircuit/collectorOutflowTemp",
+    "/heatSources/{heatSourceId}/brineCircuit/pressure",
+    "/heatSources/{heatSourceId}/brineCircuit/pumpSpeed",
+    "/heatSources/{heatSourceId}/brineCircuit/volumeFlow",
+    "/heatSources/{heatSourceId}/heatPumpType",
+    "/heatSources/{heatSourceId}/emon/chConsumption",
+    "/heatSources/{heatSourceId}/emon/dhwConsumption",
+    "/heatSources/{heatSourceId}/emon/totalConsumption",
+    "/recordings/dhwCircuits/{dhwCircuitId}/actualTemp",
+    "/recordings/heatingCircuits/{heatingCircuitId}/roomtemperature",
+    "/recordings/heatSources/{heatSourceId}/emon/ch/compressor",
+    "/recordings/heatSources/{heatSourceId}/emon/ch/numberOfStarts",
+    "/recordings/heatSources/{heatSourceId}/emon/ch/outputProduced",
+    "/recordings/heatSources/{heatSourceId}/emon/ch/workingTime",
+    "/recordings/heatSources/{heatSourceId}/emon/dhw/compressor",
+    "/recordings/heatSources/{heatSourceId}/emon/dhw/numberOfStarts",
+    "/recordings/heatSources/{heatSourceId}/emon/dhw/outputProduced",
+    "/recordings/heatSources/{heatSourceId}/emon/dhw/workingTime",
+    "/recordings/heatSources/{heatSourceId}/emon/total/compressor",
+    "/recordings/heatSources/{heatSourceId}/emon/total/numberOfStarts",
+    "/recordings/heatSources/{heatSourceId}/emon/total/outputProduced",
+    "/recordings/heatSources/{heatSourceId}/emon/total/workingTime",
+    "/solarCircuits/{solarCircuitId}/collectorTemperature",
+    "/solarCircuits/{solarCircuitId}/dhwTankBottomTemperature",
+    "/solarCircuits/{solarCircuitId}/pumpModulation",
+    "/solarCircuits/{solarCircuitId}/solarYield",
+    "/ventilation/{ventilationZoneId}/applianceRunTime",
+    "/ventilation/{ventilationZoneId}/elAuxHeaterPower",
+    "/ventilation/{ventilationZoneId}/electricalAuxHeaterPower",
+    "/ventilation/{ventilationZoneId}/exhaustFanLevel",
+    "/ventilation/{ventilationZoneId}/exhaustFanPower",
+    "/ventilation/{ventilationZoneId}/exhaustFanSpeed",
+    "/ventilation/{ventilationZoneId}/filter/remainingTime",
+    "/ventilation/{ventilationZoneId}/maxIndoorAirQuality",
+    "/ventilation/{ventilationZoneId}/maxRelativeHumidity",
+    "/ventilation/{ventilationZoneId}/sensors/exhaustTemp",
+    "/ventilation/{ventilationZoneId}/sensors/externalAirQuality",
+    "/ventilation/{ventilationZoneId}/sensors/externalHumidity",
+    "/ventilation/{ventilationZoneId}/sensors/extractTemp",
+    "/ventilation/{ventilationZoneId}/sensors/internalAirQuality",
+    "/ventilation/{ventilationZoneId}/sensors/internalHumidity",
+    "/ventilation/{ventilationZoneId}/sensors/outdoorTemp",
+    "/ventilation/{ventilationZoneId}/sensors/supplyFanRotation",
+    "/ventilation/{ventilationZoneId}/sensors/supplyTemp",
+    "/ventilation/{ventilationZoneId}/summerBypass/flapPower",
+    "/ventilation/{ventilationZoneId}/supplyFanPower",
+    "/zones/{zoneId}/averageActualHumidity",
+    "/zones/{zoneId}/averageCurrentTemperature",
+    "/zones/{zoneId}/childLock",
+    "/zones/{zoneId}/cooling/manualRoomSetpoint",
+    "/zones/{zoneId}/cooling/temporaryRoomSetpoint",
+    "/zones/{zoneId}/cooling/operationMode",
+    "/zones/{zoneId}/currentRoomSetpoint",
+    "/zones/{zoneId}/heating/manualRoomSetpoint",
+    "/zones/{zoneId}/heating/operationMode",
+    "/zones/{zoneId}/heating/temporaryRoomSetpoint",
+    "/zones/{zoneId}/icon",
+    "/zones/{zoneId}/name"
+  ],
+  "examples": [
+    {
+      "template": "/devices/inclusionTime",
+      "name": "default",
+      "response": {
+        "id": "/devices/inclusionTime",
+        "type": "floatValue",
+        "writeable": 1,
+        "value": 180,
+        "unitOfMeasure": "s",
+        "minValue": 0,
+        "maxValue": 1800
+      }
+    },
+    {
+      "template": "/devices/inclusionWhitelist",
+      "name": "default",
+      "response": {
+        "id": "/devices/inclusionWhitelist",
+        "type": "inclusionWhitelist",
+        "writeable": 0,
+        "value": [
+          {
+            "assignedHC": "hc1",
+            "actualDevices": 0,
+            "maxSupportedDevices": 16,
+            "sgtinPattern": [
+              {
+                "type": "ETRV",
+                "pattern": "3014F711A0000480"
+              },
+              {
+                "type": "ETRV",
+                "pattern": "3014F711A0000040"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/devices/rhc/assignedTo",
+      "name": "default",
+      "response": {
+        "id": "/devices/rhc/assignedTo",
+        "writeable": 1,
+        "type": "stringValue",
+        "value": "hc1",
+        "allowedValues": [
+          "unassigned",
+          "hc1",
+          "hc2",
+          "hc3",
+          "hc4"
+        ]
+      }
+    },
+    {
+      "template": "/devices/uhc/assignedTo",
+      "name": "default",
+      "response": {
+        "id": "/devices/uhc/assignedTo",
+        "writeable": 1,
+        "type": "stringValue",
+        "value": "hc1",
+        "allowedValues": [
+          "unassigned",
+          "hc1",
+          "hc2",
+          "hc3",
+          "hc4"
+        ]
+      }
+    },
+    {
+      "template": "/gateway/brand",
+      "name": "default",
+      "response": {
+        "id": "/gateway/brand",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "Buderus"
+      }
+    },
+    {
+      "template": "/gateway/dataProcessing/status",
+      "name": "default",
+      "response": {
+        "id": "/gateway/dataProcessing/status",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "in_progress",
+        "allowedValues": [
+          "in_progress",
+          "completed"
+        ]
+      }
+    },
+    {
+      "template": "/gateway/eth/ip/ipv4",
+      "name": "default",
+      "response": {
+        "id": "/gateway/eth/ip/ipv4",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "192.0.2.10"
+      }
+    },
+    {
+      "template": "/gateway/tzInfo/timeZone",
+      "name": "default",
+      "response": {
+        "id": "/gateway/tzInfo/timeZone",
+        "type": "stringValue",
+        "writeable": 1,
+        "value": "Europe/Berlin"
+      }
+    },
+    {
+      "template": "/gateway/update/status",
+      "name": "default",
+      "response": {
+        "id": "/gateway/update/status",
+        "type": "updateStatus",
+        "writeable": 0,
+        "value": {
+          "recipeId": "ZiGhCf73rVVS",
+          "updateId": "45625",
+          "status": {
+            "value": "success",
+            "allowedValues": [
+              "idle",
+              "start",
+              "run",
+              "download",
+              "in_progress",
+              "success",
+              "failure",
+              "done"
+            ]
+          },
+          "progress": {
+            "nsteps": 2,
+            "cur_step": 1,
+            "cur_percent": 90,
+            "percent": 90,
+            "cur_stepName": "",
+            "cur_stepType": {
+              "value": "",
+              "allowedValues": [
+                "",
+                "start_update",
+                "system_transfer",
+                "install",
+                "rollback"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "template": "/gateway/update/report",
+      "name": "default",
+      "response": {
+        "id": "/gateway/update/report",
+        "type": "updateReport",
+        "writeable": 0,
+        "timeStamp": "1708683200",
+        "recipeId": "ZiGhCf73rVVS",
+        "status": "SUCCESS",
+        "gatewayId": "102041838",
+        "values": [
+          {
+            "moduleId": "102041838",
+            "status": "SUCCESS",
+            "timeStamp": "1721825354"
+          }
+        ]
+      }
+    },
+    {
+      "template": "/gateway/versionFirmware",
+      "name": "default",
+      "response": {
+        "id": "/gateway/versionFirmware",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "01.00.00"
+      }
+    },
+    {
+      "template": "/gateway/versionHardware",
+      "name": "default",
+      "response": {
+        "id": "/gateway/versionHardware",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "K30RF_v1"
+      }
+    },
+    {
+      "template": "/gateway/wifi/apList",
+      "name": "default",
+      "response": {
+        "id": "/gateway/wifi/apList",
+        "type": "apList",
+        "writeable": 0,
+        "values": [
+          {
+            "ssid": "5Lit6Iux5a2X5YW4",
+            "secType": "WPA2",
+            "strength": "-57"
+          }
+        ]
+      }
+    },
+    {
+      "template": "/gateway/wifi/hotspotRemainingTime",
+      "name": "default",
+      "response": {
+        "id": "/gateway/wifi/hotspotRemainingTime",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 120,
+        "unitOfMeasure": "mins"
+      }
+    },
+    {
+      "template": "/gateway/wifi/ip/ipv4",
+      "name": "default",
+      "response": {
+        "id": "/gateway/wifi/ip/ipv4",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "192.0.2.10"
+      }
+    },
+    {
+      "template": "/gateway/wifi/pairingStatus",
+      "name": "default",
+      "response": {
+        "id": "/gateway/wifi/pairingStatus",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": false,
+        "allowedValues": [
+          false,
+          "hotspot",
+          "wps"
+        ]
+      }
+    },
+    {
+      "template": "/gateway/wifi/ssid",
+      "name": "default",
+      "response": {
+        "id": "/gateway/wifi/ssid",
+        "type": "apList",
+        "writeable": 0,
+        "values": [
+          {
+            "ssid": "5Lit6Iux5a2X5YW4",
+            "secType": "WPA2",
+            "strength": "-57"
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/actualHeatDemand",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/actualHeatDemand",
+        "type": "arrayData",
+        "writeable": 0,
+        "values": [
+          "ch",
+          "dhw"
+        ],
+        "allowedValues": [
+          "",
+          "ch",
+          "dhw",
+          "frost",
+          "ch_heat",
+          "ch_cool",
+          "dhw_exclusive",
+          "dhw_nonexclusive",
+          "pool"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/actualModulation",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/actualModulation",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 100,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/heatSources/actualSupplyTemperature",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/actualSupplyTemperature",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 24.4,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768,
+            "short": 32768
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/compressor/powerElecActual",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/compressor/powerElecActual",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 65,
+        "unitOfMeasure": "W"
+      }
+    },
+    {
+      "template": "/heatSources/currentSupplySetpoint",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/currentSupplySetpoint",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 23,
+        "unitOfMeasure": "C"
+      }
+    },
+    {
+      "template": "/heatSources/dhw/cylinderTemperature",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/dhw/cylinderTemperature",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 24.4,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32768
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/additionalHeater/flowTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/additionalHeater/flowTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 54.1,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32768
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/additionalHeater/primary/status",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/additionalHeater/primary/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "off",
+        "allowedValues": [
+          "off",
+          "on_requested",
+          "alarm"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/eHeater/powerElecActual",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/eHeater/powerElecActual",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 65,
+        "unitOfMeasure": "W"
+      }
+    },
+    {
+      "template": "/heatSources/eHeater/powerElecActualLowResolution",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/eHeater/powerElecActualLowResolution",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 25,
+        "unitOfMeasure": "kW"
+      }
+    },
+    {
+      "template": "/heatSources/emon/chConsumption",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/emon/chConsumption",
+        "writeable": 0,
+        "type": "emonValue",
+        "values": [
+          {
+            "outputProduced": 30
+          },
+          {
+            "eheater": 2
+          },
+          {
+            "compressor": 2
+          },
+          {
+            "burner": 2
+          },
+          {
+            "electricity": 2
+          }
+        ],
+        "unit": "kWh"
+      }
+    },
+    {
+      "template": "/heatSources/emon/coolingConsumption",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/emon/coolingConsumption",
+        "writeable": 0,
+        "type": "emonValue",
+        "values": [
+          {
+            "outputProduced": 30
+          },
+          {
+            "compressor": 2
+          }
+        ],
+        "unit": "kWh"
+      }
+    },
+    {
+      "template": "/heatSources/emon/dhwConsumption",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/emon/dhwConsumption",
+        "writeable": 0,
+        "type": "emonValue",
+        "values": [
+          {
+            "outputProduced": 30
+          },
+          {
+            "eheater": 2
+          },
+          {
+            "compressor": 2
+          },
+          {
+            "burner": 2
+          },
+          {
+            "electricity": 2
+          }
+        ],
+        "unit": "kWh"
+      }
+    },
+    {
+      "template": "/heatSources/emon/poolConsumption",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/emon/poolConsumption",
+        "writeable": 0,
+        "type": "emonValue",
+        "values": [
+          {
+            "outputProduced": 30
+          },
+          {
+            "eheater": 2
+          },
+          {
+            "compressor": 2
+          }
+        ],
+        "unit": "kWh"
+      }
+    },
+    {
+      "template": "/heatSources/emon/totalConsumption",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/emon/totalConsumption",
+        "writeable": 0,
+        "type": "emonValue",
+        "values": [
+          {
+            "outputProduced": 30
+          },
+          {
+            "eheater": 2
+          },
+          {
+            "compressor": 14
+          },
+          {
+            "solar": 27.9
+          },
+          {
+            "burner": 156.9
+          },
+          {
+            "electricity": 236.8
+          },
+          {
+            "ventilation": 72.436
+          },
+          {
+            "ventilationHeatRecovered": 15.314
+          }
+        ],
+        "unit": "kWh"
+      }
+    },
+    {
+      "template": "/heatSources/emStatus",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/emStatus",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "inactive",
+        "allowedValues": [
+          "notConnected",
+          "inactive",
+          "activeCh",
+          "activeDHW"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/externalInputs/input1/state",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/externalInputs/input1/state",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "on",
+        "allowedValues": [
+          "on",
+          "off"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/externalInputs/input2/state",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/externalInputs/input2/state",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "on",
+        "allowedValues": [
+          "on",
+          "off"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/externalInputs/input3/state",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/externalInputs/input3/state",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "on",
+        "allowedValues": [
+          "on",
+          "off"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/externalInputs/input4/state",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/externalInputs/input4/state",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "on",
+        "allowedValues": [
+          "on",
+          "off"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/externalInputs/status/coolingBlock",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/externalInputs/status/coolingBlock",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "yes",
+        "allowedValues": [
+          "no",
+          "yes"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/fallbackOperation/status",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/fallbackOperation/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "normal",
+        "allowedValues": []
+      }
+    },
+    {
+      "template": "/heatSources/flameStatus",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/flameStatus",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "off",
+        "allowedValues": [
+          "off",
+          "on"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/numberOfRefrigerantCircuitsOnline",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/numberOfRefrigerantCircuitsOnline",
+        "type": "integerValue",
+        "writeable": 0,
+        "value": 1
+      }
+    },
+    {
+      "template": "/heatSources/hybrid/activeHeatSource",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hybrid/activeHeatSource",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "heatpump_only",
+        "allowedValues": [
+          "none",
+          "heatpump_only",
+          "appliance_only",
+          "both",
+          "additionalHeater_only",
+          "heatpump_and_additionalHeater"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/numberOfStarts",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/numberOfStarts",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 139
+      }
+    },
+    {
+      "template": "/heatSources/pvContactState",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/pvContactState",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "on",
+        "allowedValues": [
+          "on",
+          "off"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/returnTemperature",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/returnTemperature",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": -3276.8,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/sensors/evaporatorTemp_tl1",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/sensors/evaporatorTemp_tl1",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 43.5,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/sensors/evaporatorTemp_tl2",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/sensors/evaporatorTemp_tl2",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 43.5,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/smartFunction/active",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/smartFunction/active",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "off",
+        "allowedValues": [
+          "off",
+          "on"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/Source/eHeater/status",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/Source/eHeater/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "off",
+        "allowedValues": [
+          "off",
+          "heating",
+          "dhw",
+          "pool",
+          "pool_heat",
+          "defrost",
+          "alarm"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/systemPressure",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/systemPressure",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 0,
+        "unitOfMeasure": "bar",
+        "state": [
+          {
+            "invalid": 255
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/workingTime/totalSystem",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/workingTime/totalSystem",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 80064,
+        "unitOfMeasure": "s"
+      }
+    },
+    {
+      "template": "/heatSources/dhw/cylinderUpperTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/dhw/cylinderUpperTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 55,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/notifications",
+      "name": "default",
+      "response": {
+        "id": "/notifications",
+        "type": "errorList",
+        "writeable": 0,
+        "values": [
+          {
+            "dcd": "4U",
+            "ccd": 521,
+            "orig": "8",
+            "dlv": "8",
+            "fc": "4"
+          }
+        ]
+      }
+    },
+    {
+      "template": "/pool/currentTemp",
+      "name": "default",
+      "response": {
+        "id": "/pool/currentTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 30,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/actualSupplyTemperature",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/actualSupplyTemperature?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "C",
+        "recordedResource": {
+          "id": "/heatSources/actualSupplyTemperature",
+          "uri": "http://192.0.2.10/heatSources/actualSupplyTemperature"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 55.3,
+                "c": 1
+              },
+              {
+                "y": 56.1,
+                "c": 1
+              },
+              {
+                "y": 54.8,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 55,
+                "c": 24
+              },
+              {
+                "y": 55.5,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 55.1,
+                "c": 500
+              },
+              {
+                "y": 55.3,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/ch/burner",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/ch/burner?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/ch/burner",
+          "uri": "http://192.0.2.10/heatSources/emon/ch/burner"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 3.15,
+                "c": 1
+              },
+              {
+                "y": 4.22,
+                "c": 1
+              },
+              {
+                "y": 3.87,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 85.6,
+                "c": 24
+              },
+              {
+                "y": 92.4,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 2250.8,
+                "c": 500
+              },
+              {
+                "y": 2340.2,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/ch/compressor",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/ch/compressor?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/ch/compressor",
+          "uri": "http://192.0.2.10/heatSources/emon/ch/compressor"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 1.85,
+                "c": 1
+              },
+              {
+                "y": 2.12,
+                "c": 1
+              },
+              {
+                "y": 1.97,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 48.5,
+                "c": 24
+              },
+              {
+                "y": 52.3,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 1420.8,
+                "c": 500
+              },
+              {
+                "y": 1485.2,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/ch/eheater",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/ch/eheater?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/ch/eheater",
+          "uri": "http://192.0.2.10/heatSources/emon/ch/eheater"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 2.35,
+                "c": 1
+              },
+              {
+                "y": 2.78,
+                "c": 1
+              },
+              {
+                "y": 2.56,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 58.4,
+                "c": 24
+              },
+              {
+                "y": 64.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 1695.8,
+                "c": 500
+              },
+              {
+                "y": 1782.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/ch/electricity",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/ch/electricity?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/ch/electricity",
+          "uri": "http://192.0.2.10/heatSources/emon/ch/electricity"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 5.85,
+                "c": 1
+              },
+              {
+                "y": 6.42,
+                "c": 1
+              },
+              {
+                "y": 6.18,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 144.8,
+                "c": 24
+              },
+              {
+                "y": 158.5,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 4234.5,
+                "c": 500
+              },
+              {
+                "y": 4621.2,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/ch/numberOfStarts",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/ch/numberOfStarts?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "count",
+        "recordedResource": {
+          "id": "/heatSources/emon/ch/numberOfStarts",
+          "uri": "http://192.0.2.10/heatSources/emon/ch/numberOfStarts"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/ch/outputProduced",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/ch/outputProduced?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/ch/outputProduced",
+          "uri": "http://192.0.2.10/heatSources/emon/ch/outputProduced"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 12.85,
+                "c": 1
+              },
+              {
+                "y": 14.12,
+                "c": 1
+              },
+              {
+                "y": 13.47,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 317.4,
+                "c": 24
+              },
+              {
+                "y": 348.6,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 9278.5,
+                "c": 500
+              },
+              {
+                "y": 10184.7,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/ch/workingTime",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/ch/workingTime?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "s",
+        "recordedResource": {
+          "id": "/heatSources/emon/ch/workingTime",
+          "uri": "http://192.0.2.10/heatSources/emon/ch/workingTime"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/cooling/compressor",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/cooling/compressor?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/cooling/compressor",
+          "uri": "http://192.0.2.10/heatSources/emon/cooling/compressor"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 3.45,
+                "c": 1
+              },
+              {
+                "y": 3.78,
+                "c": 1
+              },
+              {
+                "y": 3.62,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 85.2,
+                "c": 24
+              },
+              {
+                "y": 93.5,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 2492.8,
+                "c": 500
+              },
+              {
+                "y": 2736.4,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/cooling/numberOfStarts",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/cooling/numberOfStarts?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "count",
+        "recordedResource": {
+          "id": "/heatSources/emon/cooling/numberOfStarts",
+          "uri": "http://192.0.2.10/heatSources/emon/cooling/numberOfStarts"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/cooling/outputProduced",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/cooling/outputProduced?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/cooling/outputProduced",
+          "uri": "http://192.0.2.10/heatSources/emon/cooling/outputProduced"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/cooling/workingTime",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/cooling/workingTime?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "s",
+        "recordedResource": {
+          "id": "/heatSources/emon/cooling/workingTime",
+          "uri": "http://192.0.2.10/heatSources/emon/cooling/workingTime"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/dhw/burner",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/dhw/burner?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/dhw/burner",
+          "uri": "http://192.0.2.10/heatSources/emon/dhw/burner"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 2.45,
+                "c": 1
+              },
+              {
+                "y": 3.12,
+                "c": 1
+              },
+              {
+                "y": 2.87,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 65.2,
+                "c": 24
+              },
+              {
+                "y": 72.8,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 1850.5,
+                "c": 500
+              },
+              {
+                "y": 1920.3,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/dhw/compressor",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/dhw/compressor?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/dhw/compressor",
+          "uri": "http://192.0.2.10/heatSources/emon/dhw/compressor"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 1.85,
+                "c": 1
+              },
+              {
+                "y": 2.12,
+                "c": 1
+              },
+              {
+                "y": 1.97,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 45.6,
+                "c": 24
+              },
+              {
+                "y": 52.4,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 1334.8,
+                "c": 500
+              },
+              {
+                "y": 1487.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/dhw/eheater",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/dhw/eheater?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/dhw/eheater",
+          "uri": "http://192.0.2.10/heatSources/emon/dhw/eheater"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 1.25,
+                "c": 1
+              },
+              {
+                "y": 1.68,
+                "c": 1
+              },
+              {
+                "y": 1.42,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 32.8,
+                "c": 24
+              },
+              {
+                "y": 38.5,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 945.6,
+                "c": 500
+              },
+              {
+                "y": 1022.4,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/dhw/electricity",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/dhw/electricity?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/dhw/electricity",
+          "uri": "http://192.0.2.10/heatSources/emon/dhw/electricity"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 3.85,
+                "c": 1
+              },
+              {
+                "y": 4.12,
+                "c": 1
+              },
+              {
+                "y": 3.96,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 94.8,
+                "c": 24
+              },
+              {
+                "y": 102.4,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 2768.5,
+                "c": 500
+              },
+              {
+                "y": 2895.2,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/dhw/numberOfStarts",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/dhw/numberOfStarts?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "count",
+        "recordedResource": {
+          "id": "/heatSources/emon/dhw/numberOfStarts",
+          "uri": "http://192.0.2.10/heatSources/emon/dhw/numberOfStarts"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/dhw/outputProduced",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/dhw/outputProduced?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/dhw/outputProduced",
+          "uri": "http://192.0.2.10/heatSources/emon/dhw/outputProduced"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 3.85,
+                "c": 1
+              },
+              {
+                "y": 4.12,
+                "c": 1
+              },
+              {
+                "y": 3.97,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 95.4,
+                "c": 24
+              },
+              {
+                "y": 102.8,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 2845.6,
+                "c": 500
+              },
+              {
+                "y": 2932.4,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/dhw/workingTime",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/dhw/workingTime?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "s",
+        "recordedResource": {
+          "id": "/heatSources/emon/dhw/workingTime",
+          "uri": "http://192.0.2.10/heatSources/emon/dhw/workingTime"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/pool/compressor",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/pool/compressor?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/pool/compressor",
+          "uri": "http://192.0.2.10/heatSources/emon/pool/compressor"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 2.15,
+                "c": 1
+              },
+              {
+                "y": 2.48,
+                "c": 1
+              },
+              {
+                "y": 2.32,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 53.2,
+                "c": 24
+              },
+              {
+                "y": 61.4,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 1557.8,
+                "c": 500
+              },
+              {
+                "y": 1796.5,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/pool/eheater",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/pool/eheater?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/pool/eheater",
+          "uri": "http://192.0.2.10/heatSources/emon/pool/eheater"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 4.35,
+                "c": 1
+              },
+              {
+                "y": 4.78,
+                "c": 1
+              },
+              {
+                "y": 4.56,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 107.4,
+                "c": 24
+              },
+              {
+                "y": 118.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 3142.8,
+                "c": 500
+              },
+              {
+                "y": 3456.7,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/pool/numberOfStarts",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/pool/numberOfStarts?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "count",
+        "recordedResource": {
+          "id": "/heatSources/emon/pool/numberOfStarts",
+          "uri": "http://192.0.2.10/heatSources/emon/pool/numberOfStarts"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/pool/outputProduced",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/pool/outputProduced?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/pool/outputProduced",
+          "uri": "http://192.0.2.10/heatSources/emon/pool/outputProduced"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 8.45,
+                "c": 1
+              },
+              {
+                "y": 9.12,
+                "c": 1
+              },
+              {
+                "y": 8.87,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 208.5,
+                "c": 24
+              },
+              {
+                "y": 225.6,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6095.8,
+                "c": 500
+              },
+              {
+                "y": 6387.4,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/pool/workingTime",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/pool/workingTime?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "s",
+        "recordedResource": {
+          "id": "/heatSources/emon/pool/workingTime",
+          "uri": "http://192.0.2.10/heatSources/emon/pool/workingTime"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/total/burner",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/total/burner?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/total/burner",
+          "uri": "http://192.0.2.10/heatSources/emon/total/burner"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 18.75,
+                "c": 1
+              },
+              {
+                "y": 20.45,
+                "c": 1
+              },
+              {
+                "y": 19.62,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 462.8,
+                "c": 24
+              },
+              {
+                "y": 505.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 13538.5,
+                "c": 500
+              },
+              {
+                "y": 14784.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/total/compressor",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/total/compressor?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/total/compressor",
+          "uri": "http://192.0.2.10/heatSources/emon/total/compressor"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.85,
+                "c": 1
+              },
+              {
+                "y": 10.45,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 243.2,
+                "c": 24
+              },
+              {
+                "y": 258.6,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 7118.5,
+                "c": 500
+              },
+              {
+                "y": 7568.4,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/total/eheater",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/total/eheater?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/total/eheater",
+          "uri": "http://192.0.2.10/heatSources/emon/total/eheater"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 6.25,
+                "c": 1
+              },
+              {
+                "y": 6.78,
+                "c": 1
+              },
+              {
+                "y": 6.53,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 154.2,
+                "c": 24
+              },
+              {
+                "y": 167.8,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 4508.5,
+                "c": 500
+              },
+              {
+                "y": 4889.2,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/total/electricity",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/total/electricity?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/total/electricity",
+          "uri": "http://192.0.2.10/heatSources/emon/total/electricity"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 12.45,
+                "c": 1
+              },
+              {
+                "y": 13.78,
+                "c": 1
+              },
+              {
+                "y": 12.96,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 307.2,
+                "c": 24
+              },
+              {
+                "y": 340.5,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 8986.5,
+                "c": 500
+              },
+              {
+                "y": 9647.8,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/total/numberOfStarts",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/total/numberOfStarts?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "count",
+        "recordedResource": {
+          "id": "/heatSources/emon/total/numberOfStarts",
+          "uri": "http://192.0.2.10/heatSources/emon/total/numberOfStarts"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/total/outputProduced",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/total/outputProduced?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/total/outputProduced",
+          "uri": "http://192.0.2.10/heatSources/emon/total/outputProduced"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 15.75,
+                "c": 1
+              },
+              {
+                "y": 16.84,
+                "c": 1
+              },
+              {
+                "y": 16.23,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 388.5,
+                "c": 24
+              },
+              {
+                "y": 416.8,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 11359.2,
+                "c": 500
+              },
+              {
+                "y": 12187.5,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/total/workingTime",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/total/workingTime?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "s",
+        "recordedResource": {
+          "id": "/heatSources/emon/total/workingTime",
+          "uri": "http://192.0.2.10/heatSources/emon/total/workingTime"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/total/solar",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/total/solar?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/total/solar",
+          "uri": "http://192.0.2.10/heatSources/emon/total/solar"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 6.25,
+                "c": 1
+              },
+              {
+                "y": 7.18,
+                "c": 1
+              },
+              {
+                "y": 6.84,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 154.8,
+                "c": 24
+              },
+              {
+                "y": 177.6,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 4529.4,
+                "c": 500
+              },
+              {
+                "y": 5193.8,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/total/ventilation",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/total/ventilation?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/total/ventilation",
+          "uri": "http://192.0.2.10/heatSources/emon/total/ventilation"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 0.75,
+                "c": 1
+              },
+              {
+                "y": 0.82,
+                "c": 1
+              },
+              {
+                "y": 0.78,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 18.5,
+                "c": 24
+              },
+              {
+                "y": 20.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 541.8,
+                "c": 500
+              },
+              {
+                "y": 587.4,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/emon/ventilation/heatRecovered",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/emon/ventilation/heatRecovered?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/emon/ventilation/heatRecovered",
+          "uri": "http://192.0.2.10/heatSources/emon/ventilation/heatRecovered"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 3.25,
+                "c": 1
+              },
+              {
+                "y": 3.68,
+                "c": 1
+              },
+              {
+                "y": 3.47,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 80.4,
+                "c": 24
+              },
+              {
+                "y": 91.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 2351.8,
+                "c": 500
+              },
+              {
+                "y": 2658.7,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/system/sensors/temperatures/outdoor_t1",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/system/sensors/temperatures/outdoor_t1?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "C",
+        "recordedResource": {
+          "id": "/system/sensors/temperatures/outdoor_t1",
+          "uri": "http://192.0.2.10/system/sensors/temperatures/outdoor_t1"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 12.5,
+                "c": 1
+              },
+              {
+                "y": 13.2,
+                "c": 1
+              },
+              {
+                "y": 11.8,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 12,
+                "c": 24
+              },
+              {
+                "y": 12.8,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 12.3,
+                "c": 500
+              },
+              {
+                "y": 12.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/signals",
+      "name": "default",
+      "response": {
+        "id": "/signals",
+        "type": "refEnum",
+        "writeable": 0,
+        "references": [
+          {
+            "id": "/signals/SRC.RelativeTime",
+            "uri": "http://192.0.2.10/signals/SRC.RelativeTime"
+          },
+          {
+            "id": "/signals/SRC.RuntimeAfterConversion",
+            "uri": "http://192.0.2.10/signals/SRC.RuntimeAfterConversion"
+          },
+          {
+            "id": "/signals/SC.IntRoomTemp",
+            "uri": "http://192.0.2.10/signals/SC.IntRoomTemp"
+          },
+          {
+            "id": "/signals/HC1ROOMREMOTESECOND.IntRoomTemp",
+            "uri": "http://192.0.2.10/signals/HC1ROOMREMOTESECOND.IntRoomTemp"
+          }
+        ]
+      }
+    },
+    {
+      "template": "/signals/{signalId}",
+      "name": "default",
+      "response": {
+        "id": "/signals/SC.HC1.FlowTempSetp",
+        "type": "integerValue",
+        "writeable": 0,
+        "value": 25,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "OFF_COOL": 90
+          },
+          {
+            "OFF_HEAT": 0
+          }
+        ]
+      }
+    },
+    {
+      "template": "/system/basicInfo",
+      "name": "default",
+      "response": {
+        "id": "/system/basicInfo",
+        "type": "systeminfo",
+        "writeable": 0,
+        "status": "completed",
+        "timeStamp": "1684201667",
+        "gatewayId": "101012902",
+        "values": [
+          {
+            "Tok": "8",
+            "Id": "8",
+            "Ver": "23.06.02-5.33-d510f849",
+            "ProductName": "Compress CS6800iAW 12 E",
+            "ModuleSerialNumber": 5.703731019068751e+21,
+            "ProductSerialNumber": "83703740000878738215205",
+            "ModuleHwIdentStr": "XCU_THH"
+          },
+          {
+            "Tok": "8",
+            "Id": "65281",
+            "Ver": "3.06.02-5.33-d510f849",
+            "ProductName": "AW 4 OR-S",
+            "ModuleSerialNumber": 5.703731009168751e+21,
+            "ProductSerialNumber": "83703740000968738215209",
+            "ModuleHwIdentStr": "XCU_SRH"
+          },
+          {
+            "Tok": "72",
+            "Id": "17",
+            "Ver": "10.02.00",
+            "ModuleSerialNumber": "25302791000098738806125",
+            "ModuleHwIdentStr": "K40RF"
+          }
+        ]
+      }
+    },
+    {
+      "template": "/system/bus",
+      "name": "default",
+      "response": {
+        "id": "/system/bus",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "EMS2_0",
+        "allowedValues": [
+          "No_Bus",
+          "EMS2_0",
+          "Detecting"
+        ]
+      }
+    },
+    {
+      "template": "/system/type",
+      "name": "default",
+      "response": {
+        "id": "/system/type",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "eHybrid",
+        "allowedValues": [
+          "unknown",
+          "heatpump_cascade",
+          "heatpump_single",
+          "eHybrid",
+          "hybman",
+          "hybridBoiler",
+          "boiler"
+        ]
+      }
+    },
+    {
+      "template": "/system/iSRC/installationStatus",
+      "name": "default",
+      "response": {
+        "id": "/system/iSRC/installationStatus",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "SUCCESS",
+        "allowedValues": [
+          "TIMEOUT",
+          "IN_PROGRESS",
+          "SUCCESS"
+        ]
+      }
+    },
+    {
+      "template": "/system/iSRC/supportStatus",
+      "name": "default",
+      "response": {
+        "id": "/system/iSRC/supportStatus",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "SUPPORTED",
+        "allowedValues": [
+          "NOT_SUPPORTED_INCOMPATIBLE_CONTROLLER",
+          "NOT_SUPPORTED_PAIRING_ENABLED",
+          "SUPPORTED",
+          "IN_EVALUATION"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/affectedDomain/additionalHeaterCh",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/affectedDomain/additionalHeaterCh",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "externalInputs_pv",
+        "allowedValues": []
+      }
+    },
+    {
+      "template": "/system/powerConstraints/affectedDomain/additionalHeaterDhwTank",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/affectedDomain/additionalHeaterDhwTank",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "lowSourceTempStopCooling",
+        "allowedValues": []
+      }
+    },
+    {
+      "template": "/system/powerConstraints/affectedDomain/additionalHeaterPrimaryCircuit",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/affectedDomain/additionalHeaterPrimaryCircuit",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "externalInputs_heatingBlock",
+        "allowedValues": []
+      }
+    },
+    {
+      "template": "/system/powerConstraints/affectedDomain/ch",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/affectedDomain/ch",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "externalInputs_heatingBlock",
+        "allowedValues": []
+      }
+    },
+    {
+      "template": "/system/powerConstraints/affectedDomain/cooling",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/affectedDomain/cooling",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "externalInputs_heatingBlock",
+        "allowedValues": []
+      }
+    },
+    {
+      "template": "/system/powerConstraints/affectedDomain/dhw",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/affectedDomain/dhw",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "externalInputs_heatingBlock",
+        "allowedValues": []
+      }
+    },
+    {
+      "template": "/system/powerConstraints/affectedDomain/pool",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/affectedDomain/pool",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "externalInputs_heatingBlock",
+        "allowedValues": []
+      }
+    },
+    {
+      "template": "/system/powerConstraints/affectedDomain/refrigerantCircuit",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/affectedDomain/refrigerantCircuit",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "externalInputs_pv",
+        "allowedValues": []
+      }
+    },
+    {
+      "template": "/system/powerConstraints/dhwReduceTempOnAlarm/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/dhwReduceTempOnAlarm/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/externalInputs/additionalHeaterBlock/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/externalInputs/additionalHeaterBlock/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/externalInputs/appliancePowerBlock/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/externalInputs/appliancePowerBlock/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/externalInputs/appliancePowerLimit/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/externalInputs/appliancePowerLimit/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/externalInputs/coolingBlock/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/externalInputs/coolingBlock/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/externalInputs/dhwBlock/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/externalInputs/dhwBlock/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/externalInputs/heatingBlock/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/externalInputs/heatingBlock/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/externalInputs/pv/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/externalInputs/pv/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/highSourceTempStopCooling/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/highSourceTempStopCooling/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/highSourceTempStopHeating/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/highSourceTempStopHeating/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/lowSourceTempStopCooling/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/lowSourceTempStopCooling/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/lowSourceTempStopHeating/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/lowSourceTempStopHeating/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/maintenanceMode/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/maintenanceMode/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/powerElecDesired/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/powerElecDesired/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/powerElecLimitation/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/powerElecLimitation/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/powerGuard/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/powerGuard/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/silentMode/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/silentMode/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerConstraints/userAdditionalHeaterBlock/status",
+      "name": "default",
+      "response": {
+        "id": "/system/powerConstraints/userAdditionalHeaterBlock/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "active",
+        "allowedValues": [
+          "active",
+          "inactive"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerGuard/active",
+      "name": "default",
+      "response": {
+        "id": "/system/powerGuard/active",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "on",
+        "allowedValues": [
+          "on",
+          "off"
+        ]
+      }
+    },
+    {
+      "template": "/system/powerLimitation/active",
+      "name": "default",
+      "response": {
+        "id": "/system/powerLimitation/active",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "on",
+        "allowedValues": [
+          "on",
+          "off"
+        ]
+      }
+    },
+    {
+      "template": "/system/sensors/temperatures/outdoor_t1",
+      "name": "default",
+      "response": {
+        "id": "/system/sensors/temperatures/outdoor_t1",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 30,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768,
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/system/update/status",
+      "name": "default",
+      "response": {
+        "id": "/system/update/status",
+        "type": "updateStatus",
+        "writeable": 0,
+        "value": {
+          "recipeId": "ZiGhCf73rVVS",
+          "updateId": "45625",
+          "status": {
+            "value": "success",
+            "allowedValues": [
+              "idle",
+              "start",
+              "run",
+              "download",
+              "in_progress",
+              "success",
+              "failure",
+              "done"
+            ]
+          },
+          "progress": {
+            "nsteps": 2,
+            "cur_step": 1,
+            "cur_percent": 90,
+            "percent": 90,
+            "cur_stepName": "HMI",
+            "cur_stepType": {
+              "value": "system_transfer",
+              "allowedValues": [
+                "",
+                "start_update",
+                "system_transfer",
+                "install",
+                "rollback"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "template": "/system/update/report",
+      "name": "default",
+      "response": {
+        "id": "/system/update/report",
+        "type": "updateReport",
+        "writeable": 0,
+        "timeStamp": "1708683200",
+        "recipeId": "ZiGhCf73rVVS",
+        "status": "SUCCESS",
+        "gatewayId": "102041838",
+        "logs": [
+          {
+            "msg": "pre-inst running",
+            "timeStampMs": "1712741772170"
+          },
+          {
+            "msg": "post-inst running",
+            "timeStampMs": "1712741772250"
+          }
+        ],
+        "values": [
+          {
+            "moduleId": 5.714518173668752e+21,
+            "distributionSetId": "1532123",
+            "status": "SUCCESS",
+            "previousSwVersion": "4.0.0-charlie",
+            "statusCode": 0,
+            "timeStamp": "1721825354",
+            "logs": [
+              {
+                "msg": "another dummy module log on nil from within handler",
+                "timeStampMs": "1721825354359"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/system/variableTariff/ch/currentSetpoint",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/ch/currentSetpoint",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 21,
+        "unitOfMeasure": "C"
+      }
+    },
+    {
+      "template": "/system/variableTariff/ch/highPriceDelta",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/ch/highPriceDelta",
+        "type": "floatValue",
+        "writeable": 1,
+        "value": 1,
+        "minValue": 0.5,
+        "maxValue": 2,
+        "stepSize": 0.5
+      }
+    },
+    {
+      "template": "/system/variableTariff/ch/lowPriceDelta",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/ch/lowPriceDelta",
+        "type": "floatValue",
+        "writeable": 1,
+        "value": 1,
+        "minValue": 0.5,
+        "maxValue": 2,
+        "stepSize": 0.5
+      }
+    },
+    {
+      "template": "/system/variableTariff/ch/midPriceSetpoint",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/ch/midPriceSetpoint",
+        "type": "floatValue",
+        "writeable": 1,
+        "value": 21,
+        "minValue": 7,
+        "maxValue": 28
+      }
+    },
+    {
+      "template": "/system/variableTariff/ch/optimization",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/ch/optimization",
+        "writeable": 1,
+        "type": "stringValue",
+        "value": "on",
+        "allowedValues": [
+          "off",
+          "on"
+        ]
+      }
+    },
+    {
+      "template": "/system/variableTariff/ch/status",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/ch/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "disabled",
+        "allowedValues": [
+          "disabled",
+          "paused",
+          "active"
+        ]
+      }
+    },
+    {
+      "template": "/system/variableTariff/currentPriceCatagorization",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/currentPriceCatagorization",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 1
+      }
+    },
+    {
+      "template": "/system/variableTariff/dhw/currentOpmode",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/dhw/currentOpmode",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "eco",
+        "allowedValues": [
+          "low",
+          "high",
+          "eco"
+        ]
+      }
+    },
+    {
+      "template": "/system/variableTariff/dhw/highPriceEnable",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/dhw/highPriceEnable",
+        "writeable": 1,
+        "type": "stringValue",
+        "value": "yes",
+        "allowedValues": [
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "template": "/system/variableTariff/dhw/lowPriceEnable",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/dhw/lowPriceEnable",
+        "writeable": 1,
+        "type": "stringValue",
+        "value": "yes",
+        "allowedValues": [
+          "yes",
+          "no"
+        ]
+      }
+    },
+    {
+      "template": "/system/variableTariff/dhw/optimization",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/dhw/optimization",
+        "writeable": 1,
+        "type": "stringValue",
+        "value": "on",
+        "allowedValues": [
+          "on",
+          "off"
+        ]
+      }
+    },
+    {
+      "template": "/system/variableTariff/dhw/status",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/dhw/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "disabled",
+        "allowedValues": [
+          "disabled",
+          "paused",
+          "active"
+        ]
+      }
+    },
+    {
+      "template": "/system/variableTariff/supportStatus",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/supportStatus",
+        "type": "arrayData",
+        "writeable": 0,
+        "values": [
+          "vta_gateway"
+        ],
+        "allowedValues": [
+          "not_supported",
+          "vta_gateway",
+          "in_evaluation",
+          "blocked"
+        ]
+      }
+    },
+    {
+      "template": "/system/variableTariff/tariffId",
+      "name": "default",
+      "response": {
+        "id": "/system/variableTariff/tariffId",
+        "type": "stringValue",
+        "writeable": 1,
+        "value": "TVPE-DK1-c7485dcc8d256a6f197ed780268"
+      }
+    },
+    {
+      "template": "/zones/configuration",
+      "name": "default",
+      "response": {
+        "id": "/zones/configuration",
+        "type": "configData",
+        "writeable": 0,
+        "values": {
+          "availableIcons": [
+            {
+              "type": "arrayData"
+            },
+            {
+              "allowedValues": [
+                "KITCHEN",
+                "LIVING_ROOM",
+                "DINING_ROOM",
+                "BEDROOM",
+                "MASTER_ROOM",
+                "CHILDRENS_ROOM",
+                "BATHROOM",
+                "OFFICE",
+                "HALLWAY",
+                "HOBBY_ROOM",
+                "LAUNDRY",
+                "LIBRARY"
+              ]
+            }
+          ],
+          "maxSupportedZones": [
+            {
+              "type": "integerValue"
+            },
+            {
+              "value": 16
+            }
+          ]
+        }
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/actualHumidity",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/actualHumidity",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 57,
+        "unitOfMeasure": "%",
+        "state": [
+          {
+            "overflow": 254
+          },
+          {
+            "underflow": 253
+          }
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/actuatorModulation",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/actuatorModulation",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 20,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/actuatorPower",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/actuatorPower",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 20,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/assignedHC",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/assignedHC",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "hc1",
+        "allowedValues": [
+          "hc1",
+          "hc2",
+          "hc3",
+          "hc4"
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/battery",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/battery",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "BAT_NORMAL",
+        "allowedValues": [
+          "NO_BAT",
+          "BAT_NORMAL",
+          "BAT_FOTA_FORBIDDEN",
+          "BAT_LOW",
+          "BAT_TOO_LOW"
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/currentRoomSetpoint",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/currentRoomSetpoint",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 18,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "off": 0
+          }
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/errors",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/errors",
+        "writeable": 0,
+        "type": "deviceErrors",
+        "values": [
+          {
+            "errorType": "eTRVValveStatus",
+            "occurrenceId": 0,
+            "value": "valveTight",
+            "allowedValues": [
+              "valveTight",
+              "bigAdjRange",
+              "smallAdjRange",
+              "valveErrPos"
+            ]
+          },
+          {
+            "errorType": "defectiveTempSensor",
+            "occurrenceId": 10,
+            "value": "active",
+            "allowedValues": [
+              "inactive",
+              "active"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/name",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/name",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "CR20RF",
+        "valueConfig": {
+          "charset": "UTF8",
+          "codingType": "ascii"
+        }
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/operationMode",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/operationMode",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "manual",
+        "allowedValues": [
+          "auto",
+          "manual",
+          "party"
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/rfConnectionStatus",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/rfConnectionStatus",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "ONLINE",
+        "allowedValues": [
+          "OFFLINE",
+          "ONLINE"
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/rfErrorCause",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/rfErrorCause",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "NO_ERROR",
+        "allowedValues": [
+          "INVALID_CONFIGURATION",
+          "MAX_DEVICES_REACHED",
+          "NO_ERROR",
+          "PAIRING_TIMEOUT"
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/rfPairedStatus",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/rfPairedStatus",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "NOT_PAIRED",
+        "allowedValues": [
+          "NOT_PAIRED",
+          "IN_PAIRING",
+          "PAIRED",
+          "EXCLUDED"
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/rfTimeofConnectionLost",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/rfTimeofConnectionLost",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "2022-2-15T16:15"
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/roomtemperature",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/roomtemperature",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 25.8,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "overflow": -32767
+          },
+          {
+            "underflow": -32766
+          }
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/sgtin",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/sgtin",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "3014Faaaabbbccccddd"
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/signal",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/signal",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": -80,
+        "unitOfMeasure": "db"
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/signalIcon",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/signalIcon",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "VERY_GOOD",
+        "allowedValues": [
+          "NO_CONNECTION",
+          "POOR",
+          "GOOD",
+          "VERY_GOOD"
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/type",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/type",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "XLOW_RF",
+        "allowedValues": [
+          "UnDEFINED",
+          "XLOWRF",
+          "LOW_RF",
+          "ETRV",
+          "ROOM_SENSOR",
+          "OUTDOOR_SENSOR",
+          "IUFH_240v",
+          "IUFH_24V",
+          "SMARTPLUG_REPEATER"
+        ]
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/versionFirmware",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/versionFirmware",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "18.00.00"
+      }
+    },
+    {
+      "template": "/devices/{deviceId}/zoneId",
+      "name": "default",
+      "response": {
+        "id": "/devices/device1/zoneId",
+        "type": "integerValue",
+        "writeable": 1,
+        "value": 3,
+        "minValue": 1,
+        "maxValue": 16
+      }
+    },
+    {
+      "template": "/dhwCircuits/{dhwCircuitId}/currentFriwaSupplyTemperature",
+      "name": "default",
+      "response": {
+        "id": "/dhwCircuits/dhw1/currentFriwaSupplyTemperature",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 55,
+        "unitOfMeasure": "C"
+      }
+    },
+    {
+      "template": "/dhwCircuits/{dhwCircuitId}/friwaPrimaryPumpModulation",
+      "name": "default",
+      "response": {
+        "id": "/dhwCircuits/dhw1/friwaPrimaryPumpModulation",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 100,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/dhwCircuits/{dhwCircuitId}/actualTemp",
+      "name": "default",
+      "response": {
+        "id": "/dhwCircuits/dhw1/actualTemp",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 55,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/dhwCircuits/{dhwCircuitId}/chargeRemainingTime",
+      "name": "default",
+      "response": {
+        "id": "/dhwCircuits/dhw1/chargeRemainingTime",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 55,
+        "unitOfMeasure": "mins"
+      }
+    },
+    {
+      "template": "/dhwCircuits/{dhwCircuitId}/currentSetpoint",
+      "name": "default",
+      "response": {
+        "id": "/dhwCircuits/dhw1/currentSetpoint",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 10,
+        "unitOfMeasure": "C"
+      }
+    },
+    {
+      "template": "/dhwCircuits/{dhwCircuitId}/currentTemperatureLevel",
+      "name": "default",
+      "response": {
+        "id": "/dhwCircuits/dhw1/currentTemperatureLevel",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "off",
+        "allowedValues": [
+          "off",
+          "low",
+          "high",
+          "eco"
+        ]
+      }
+    },
+    {
+      "template": "/dhwCircuits/{dhwCircuitId}/outTemp",
+      "name": "default",
+      "response": {
+        "id": "/dhwCircuits/dhw1/outTemp",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 50,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/dhwCircuits/{dhwCircuitId}/overallStatus",
+      "name": "default",
+      "response": {
+        "id": "/dhwCircuits/dhw1/overallStatus",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "dhw_disabled",
+        "allowedValues": [
+          "dhw_enabled",
+          "dhw_disabled",
+          "floor_drying",
+          "td",
+          "extra",
+          "away",
+          "holiday",
+          "manual_on_high",
+          "manual_on_low",
+          "manual_on_eco",
+          "manual_off",
+          "auto"
+        ]
+      }
+    },
+    {
+      "template": "/dhwCircuits/{dhwCircuitId}/tdrunningStatus",
+      "name": "default",
+      "response": {
+        "id": "/dhwCircuits/dhw1/tdrunningStatus",
+        "writeable": 0,
+        "type": "stringValue",
+        "value": "off",
+        "allowedValues": [
+          "off",
+          "on"
+        ]
+      }
+    },
+    {
+      "template": "/dhwCircuits/{dhwCircuitId}/volumeFlow",
+      "name": "default",
+      "response": {
+        "id": "/dhwCircuits/dhw1/volumeFlow",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 20,
+        "unitOfMeasure": "l/min",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatingCircuits/{heatingCircuitId}/actualHumidity",
+      "name": "default",
+      "response": {
+        "id": "/heatingCircuits/hc1/actualHumidity",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 255,
+        "unitOfMeasure": "%",
+        "state": [
+          {
+            "invalid": 255
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatingCircuits/{heatingCircuitId}/boostRemainingTime",
+      "name": "default",
+      "response": {
+        "id": "/heatingCircuits/hc1/boostRemainingTime",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 480,
+        "unitOfMeasure": "mins"
+      }
+    },
+    {
+      "template": "/heatingCircuits/{heatingCircuitId}/currentRoomSetpoint",
+      "name": "default",
+      "response": {
+        "id": "/heatingCircuits/hc1/currentRoomSetpoint",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 21,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "off": 0
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatingCircuits/{heatingCircuitId}/currentSuWiMode",
+      "name": "default",
+      "response": {
+        "id": "/heatingCircuits/hc1/currentSuWiMode",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "forced",
+        "allowedValues": [
+          "forced",
+          "off",
+          "cooling"
+        ]
+      }
+    },
+    {
+      "template": "/heatingCircuits/{heatingCircuitId}/maxFlowTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatingCircuits/hc1/maxFlowTemp",
+        "type": "floatValue",
+        "writeable": 1,
+        "value": 48,
+        "unitOfMeasure": "C",
+        "minValue": 30,
+        "maxValue": 60
+      }
+    },
+    {
+      "template": "/heatingCircuits/{heatingCircuitId}/mixerPosition",
+      "name": "default",
+      "response": {
+        "id": "/heatingCircuits/hc1/mixerPosition",
+        "type": "integerValue",
+        "writeable": 0,
+        "value": 60,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/heatingCircuits/{heatingCircuitId}/overallStatus",
+      "name": "default",
+      "response": {
+        "id": "/heatingCircuits/hc1/overallStatus",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "ch_disabled",
+        "allowedValues": [
+          "ch_enabled",
+          "ch_disabled",
+          "emergency_mode",
+          "floor_drying",
+          "summer_idle",
+          "boost",
+          "away",
+          "holiday",
+          "cooling_manual_on",
+          "cooling_manual_off",
+          "heating_manual_on",
+          "heating_manual_off",
+          "heating_auto"
+        ]
+      }
+    },
+    {
+      "template": "/heatingCircuits/{heatingCircuitId}/pumpStatus",
+      "name": "default",
+      "response": {
+        "id": "/heatingCircuits/hc1/pumpStatus",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "on",
+        "allowedValues": [
+          "on",
+          "off"
+        ]
+      }
+    },
+    {
+      "template": "/heatingCircuits/{heatingCircuitId}/roomtemperature",
+      "name": "default",
+      "response": {
+        "id": "/heatingCircuits/hc1/roomtemperature",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 20,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/numberOfStarts",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs2/numberOfStarts",
+        "type": "emonValue",
+        "writeable": 0,
+        "values": [
+          {
+            "ch": 139
+          },
+          {
+            "dhw": 30
+          },
+          {
+            "total": 30
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/oduFanSpeed",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hsX/oduFanSpeed",
+        "type": "integerValue",
+        "writeable": 0,
+        "value": 60,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/pumpVolumeFlow",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/pumpVolumeFlow",
+        "type": "integerValue",
+        "writeable": 0,
+        "value": 2,
+        "unitOfMeasure": "l/h",
+        "state": [
+          {
+            "lowflow": 65535
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/refrigerant/status",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/refrigerant/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "idle",
+        "allowedValues": [
+          "idle",
+          "startup",
+          "heating",
+          "cooling",
+          "defrost",
+          "passive_defrost",
+          "shutoff",
+          "alarm",
+          "test_mode"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/refrigerant/compressorElecPowerActual",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/refrigerant/compressorElecPowerActual",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": -3276.8,
+        "unitOfMeasure": "W"
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/refrigerant/compressorTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/refrigerant/compressorTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 55,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/refrigerant/heatCarrierPumpSpeed",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs${hs_id}/refrigerant/heatCarrierPumpSpeed",
+        "writeable": 0,
+        "type": "integerValue",
+        "value": 60,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/refrigerant/liquidPipeCoolingTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs2/refrigerant/liquidPipeCoolingTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 44,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/refrigerant/liquidPipeHeatingTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs2/refrigerant/liquidPipeHeatingTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 44,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/refrigerant/lowPressureTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs2/refrigerant/lowPressureTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 44,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/refrigerant/highPressureTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs2/refrigerant/highPressureTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 44,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/refrigerant/hotGasTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs2/refrigerant/hotGasTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 55,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/refrigerant/suctionGasTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs2/refrigerant/suctionGasTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 55,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/returnFlowTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/returnFlowTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": -3276.8,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/refrigerant/compressorActualSpeed",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/refrigerant/compressorActualSpeed",
+        "type": "integerValue",
+        "writeable": 0,
+        "value": 0,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/supplyFlowCondenserTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs2/supplyFlowCondenserTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 45,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/workingTime",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/workingTime",
+        "type": "emonValue",
+        "writeable": 0,
+        "values": [
+          {
+            "ch": 139
+          },
+          {
+            "dhw": 30
+          },
+          {
+            "pool": 10
+          },
+          {
+            "cooling": 10
+          },
+          {
+            "total": 30
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/safetyBoard/status",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/safetyBoard/status",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "initialization",
+        "allowedValues": [
+          "initialization",
+          "normal",
+          "information",
+          "alarm",
+          "critical",
+          "service"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/brineCircuit/collectorInflowTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/brineCircuit/collectorInflowTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 44,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32768
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/brineCircuit/collectorOutflowTemp",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/brineCircuit/collectorOutflowTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 44,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32768
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/brineCircuit/pressure",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/brineCircuit/pressure",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 24.5,
+        "unitOfMeasure": "bar",
+        "state": [
+          {
+            "invalid": 255
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/brineCircuit/pumpSpeed",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/brineCircuit/pumpSpeed",
+        "type": "integerValue",
+        "writeable": 0,
+        "value": 60,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/brineCircuit/volumeFlow",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/brineCircuit/volumeFlow",
+        "type": "integerValue",
+        "writeable": 0,
+        "value": 2,
+        "unitOfMeasure": "l/h",
+        "state": [
+          {
+            "lowflow": 65535
+          }
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/heatPumpType",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs1/heatPumpType",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "air_water",
+        "allowedValues": [
+          "air_water",
+          "liquid_water",
+          "exhaustAir_water"
+        ]
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/emon/chConsumption",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs2/emon/chConsumption",
+        "writeable": 0,
+        "type": "emonValue",
+        "values": [
+          {
+            "outputProduced": 30
+          },
+          {
+            "compressor": 2
+          }
+        ],
+        "unit": "kWh"
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/emon/dhwConsumption",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs2/emon/dhwConsumption",
+        "writeable": 0,
+        "type": "emonValue",
+        "values": [
+          {
+            "outputProduced": 30
+          },
+          {
+            "compressor": 2
+          }
+        ],
+        "unit": "kWh"
+      }
+    },
+    {
+      "template": "/heatSources/{heatSourceId}/emon/totalConsumption",
+      "name": "default",
+      "response": {
+        "id": "/heatSources/hs2/emon/totalConsumption",
+        "writeable": 0,
+        "type": "emonValue",
+        "values": [
+          {
+            "outputProduced": 30
+          },
+          {
+            "compressor": 14
+          }
+        ],
+        "unit": "kWh"
+      }
+    },
+    {
+      "template": "/recordings/dhwCircuits/{dhwCircuitId}/actualTemp",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/dhwCircuits/dhw1/actualTemp?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "C",
+        "recordedResource": {
+          "id": "/dhwCircuits/dhw1/actualTemp",
+          "uri": "http://192.0.2.10/dhwCircuits/dhw1/actualTemp"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 0.452,
+                "c": 1
+              },
+              {
+                "y": 0.461,
+                "c": 1
+              },
+              {
+                "y": 0.448,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 4.5,
+                "c": 24
+              },
+              {
+                "y": 4.55,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 45.1,
+                "c": 500
+              },
+              {
+                "y": 45.3,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatingCircuits/{heatingCircuitId}/roomtemperature",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatingCircuits/hc1/roomtemperature?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "C",
+        "recordedResource": {
+          "id": "/heatingCircuits/hc1/roomtemperature",
+          "uri": "http://192.0.2.10/heatingCircuits/hc1/roomtemperature"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 21.5,
+                "c": 1
+              },
+              {
+                "y": 22,
+                "c": 1
+              },
+              {
+                "y": 21.8,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 21.2,
+                "c": 24
+              },
+              {
+                "y": 21.9,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 21.6,
+                "c": 500
+              },
+              {
+                "y": 21.7,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/ch/compressor",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/ch/compressor?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/ch/compressor",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/ch/compressor"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 3.25,
+                "c": 1
+              },
+              {
+                "y": 3.68,
+                "c": 1
+              },
+              {
+                "y": 3.47,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 80.4,
+                "c": 24
+              },
+              {
+                "y": 91.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 2351.8,
+                "c": 500
+              },
+              {
+                "y": 2667.4,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/ch/numberOfStarts",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/ch/numberOfStarts?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "count",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/ch/numberOfStarts",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/ch/numberOfStarts"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 8.45,
+                "c": 1
+              },
+              {
+                "y": 9.12,
+                "c": 1
+              },
+              {
+                "y": 8.78,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 208.9,
+                "c": 24
+              },
+              {
+                "y": 225.4,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6113.8,
+                "c": 500
+              },
+              {
+                "y": 6593.7,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/ch/outputProduced",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/ch/outputProduced?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/ch/outputProduced",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/ch/outputProduced"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 8.45,
+                "c": 1
+              },
+              {
+                "y": 9.12,
+                "c": 1
+              },
+              {
+                "y": 8.78,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 208.9,
+                "c": 24
+              },
+              {
+                "y": 225.4,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6113.8,
+                "c": 500
+              },
+              {
+                "y": 6593.7,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/ch/workingTime",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/ch/workingTime?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "s",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/ch/workingTime",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/ch/workingTime"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/dhw/compressor",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/dhw/compressor?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/dhw/compressor",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/dhw/compressor"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 1.6,
+                "c": 1
+              },
+              {
+                "y": 1.77,
+                "c": 1
+              },
+              {
+                "y": 1.71,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 39.4,
+                "c": 24
+              },
+              {
+                "y": 43.6,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 1155.7,
+                "c": 500
+              },
+              {
+                "y": 1277.1,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/dhw/numberOfStarts",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/dhw/numberOfStarts?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "count",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/dhw/numberOfStarts",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/dhw/numberOfStarts"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/dhw/outputProduced",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/dhw/outputProduced?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/dhw/outputProduced",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/dhw/outputProduced"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 2.75,
+                "c": 1
+              },
+              {
+                "y": 3.12,
+                "c": 1
+              },
+              {
+                "y": 2.94,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 68.1,
+                "c": 24
+              },
+              {
+                "y": 77.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 1993.5,
+                "c": 500
+              },
+              {
+                "y": 2258.7,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/dhw/workingTime",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/dhw/workingTime?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "s",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/dhw/workingTime",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/dhw/workingTime"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/total/compressor",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/total/compressor?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/total/compressor",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/total/compressor"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 4.85,
+                "c": 1
+              },
+              {
+                "y": 5.45,
+                "c": 1
+              },
+              {
+                "y": 5.18,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 119.8,
+                "c": 24
+              },
+              {
+                "y": 134.6,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 3507.5,
+                "c": 500
+              },
+              {
+                "y": 3938.4,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/total/numberOfStarts",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/total/numberOfStarts?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "count",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/total/numberOfStarts",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/total/numberOfStarts"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/total/outputProduced",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/total/outputProduced?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "kWh",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/total/outputProduced",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/total/outputProduced"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 11.2,
+                "c": 1
+              },
+              {
+                "y": 12.24,
+                "c": 1
+              },
+              {
+                "y": 11.72,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 277,
+                "c": 24
+              },
+              {
+                "y": 302.6,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 8107.3,
+                "c": 500
+              },
+              {
+                "y": 8852.4,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/recordings/heatSources/{heatSourceId}/emon/total/workingTime",
+      "name": "sampleRateRequest",
+      "response": {
+        "id": "/recordings/heatSources/hs2/emon/total/workingTime?sampleRate=all&startDate=2025-09-01&endDate=2025-10-30",
+        "type": "yRecordingExtended",
+        "writeable": 0,
+        "recordingType": "actual",
+        "unitOfMeasure": "s",
+        "recordedResource": {
+          "id": "/heatSources/hs2/emon/total/workingTime",
+          "uri": "http://192.0.2.10/heatSources/hs2/emon/total/workingTime"
+        },
+        "values": [
+          {
+            "sampleRate": "PT1H",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T23:00:00+02:00",
+            "recording": [
+              {
+                "y": 9.25,
+                "c": 1
+              },
+              {
+                "y": 10.18,
+                "c": 1
+              },
+              {
+                "y": 9.74,
+                "c": 1
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1D",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-30T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 228.5,
+                "c": 24
+              },
+              {
+                "y": 251.2,
+                "c": 24
+              }
+            ]
+          },
+          {
+            "sampleRate": "P1M",
+            "startTime": "2025-09-01T00:00:00+02:00",
+            "endTime": "2025-10-01T00:00:00+02:00",
+            "recording": [
+              {
+                "y": 6685.8,
+                "c": 500
+              },
+              {
+                "y": 7348.6,
+                "c": 500
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "template": "/solarCircuits/{solarCircuitId}/collectorTemperature",
+      "name": "default",
+      "response": {
+        "id": "/solarCircuits/sc1/collectorTemperature",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 43.5,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/solarCircuits/{solarCircuitId}/dhwTankBottomTemperature",
+      "name": "default",
+      "response": {
+        "id": "/solarCircuits/sc1/dhwTankBottomTemperature",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 43.5,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "open": -32768
+          },
+          {
+            "short": 32767
+          }
+        ]
+      }
+    },
+    {
+      "template": "/solarCircuits/{solarCircuitId}/pumpModulation",
+      "name": "default",
+      "response": {
+        "id": "/solarCircuits/sc1/pumpModulation",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 0,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/solarCircuits/{solarCircuitId}/solarYield",
+      "name": "default",
+      "response": {
+        "id": "/solarCircuits/sc1/solarYield",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 6960.5,
+        "unitOfMeasure": "wh"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/applianceRunTime",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/applianceRunTime",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 30,
+        "unitOfMeasure": "mins"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/elAuxHeaterPower",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/elAuxHeaterPower",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 100,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/electricalAuxHeaterPower",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/electricalAuxHeaterPower",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 30,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/exhaustFanLevel",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/exhaustFanLevel",
+        "type": "stringValue",
+        "writeable": 0,
+        "value": "off",
+        "allowedValues": [
+          "off",
+          "min",
+          "red",
+          "nom",
+          "max",
+          "dem"
+        ]
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/exhaustFanPower",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/exhaustFanPower",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 100,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/exhaustFanSpeed",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/exhaustFanSpeed",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 100,
+        "unitOfMeasure": "1/min"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/filter/remainingTime",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/filter/remainingTime",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 10,
+        "unitOfMeasure": "mins"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/maxIndoorAirQuality",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/maxIndoorAirQuality",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 100,
+        "unitOfMeasure": "ppm"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/maxRelativeHumidity",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/maxRelativeHumidity",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 100,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/sensors/exhaustTemp",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/sensors/exhaustTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": -32768,
+        "unitOfMeasure": "C"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/sensors/externalAirQuality",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/sensors/externalAirQuality",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 10,
+        "unitOfMeasure": "ppm"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/sensors/externalHumidity",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/sensors/externalHumidity",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 10,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/sensors/extractTemp",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/sensors/extractTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": -32768,
+        "unitOfMeasure": "C"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/sensors/internalAirQuality",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/sensors/internalAirQuality",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 10,
+        "unitOfMeasure": "ppm"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/sensors/internalHumidity",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/sensors/internalHumidity",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 50,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/sensors/outdoorTemp",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/sensors/outdoorTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": -32768,
+        "unitOfMeasure": "C"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/sensors/supplyFanRotation",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/sensors/supplyFanRotation",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 200,
+        "unitOfMeasure": "rpm\""
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/sensors/supplyTemp",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/sensors/supplyTemp",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": -32768,
+        "unitOfMeasure": "C"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/summerBypass/flapPower",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/summerBypass/flapPower",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 30,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/ventilation/{ventilationZoneId}/supplyFanPower",
+      "name": "default",
+      "response": {
+        "id": "/ventilation/zone1/supplyFanPower",
+        "type": "floatValue",
+        "writeable": 0,
+        "value": 50,
+        "unitOfMeasure": "%"
+      }
+    },
+    {
+      "template": "/zones/{zoneId}/averageActualHumidity",
+      "name": "default",
+      "response": {
+        "id": "/zones/zone1/averageActualHumidity",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 57,
+        "unitOfMeasure": "%",
+        "state": [
+          {
+            "overflow": 254
+          },
+          {
+            "underflow": 253
+          }
+        ]
+      }
+    },
+    {
+      "template": "/zones/{zoneId}/averageCurrentTemperature",
+      "name": "default",
+      "response": {
+        "id": "/zones/zone1/averageCurrentTemperature",
+        "writeable": 0,
+        "type": "floatValue",
+        "value": 25.8,
+        "unitOfMeasure": "C",
+        "state": [
+          {
+            "overflow": -32767
+          },
+          {
+            "underflow": -32766
+          }
+        ]
+      }
+    },
+    {
+      "template": "/zones/{zoneId}/childLock",
+      "name": "default",
+      "response": {
+        "id": "/zones/zone1/childLock",
+        "writeable": 1,
+        "type": "stringValue",
+        "value": "inactive",
+        "allowedValues": [
+          "inactive",
+          "active"
+        ]
+      }
+    },
+    {
+      "template": "/zones/{zoneId}/cooling/operationMode",
+      "name": "default",
+      "response": {
+        "id": "/zones/zone1/cooling/operationMode",
+        "type": "stringValue",
+        "writeable": 1,
+        "value": "off",
+        "allowedValues": [
+          "auto",
+          "manual",
+          "off"
+        ]
+      }
+    },
+    {
+      "template": "/zones/{zoneId}/heating/operationMode",
+      "name": "default",
+      "response": {
+        "id": "/zones/zone1/heating/operationMode",
+        "writeable": 1,
+        "type": "stringValue",
+        "value": "off",
+        "allowedValues": [
+          "auto",
+          "manual",
+          "off"
+        ]
+      }
+    },
+    {
+      "template": "/zones/{zoneId}/icon",
+      "name": "default",
+      "response": {
+        "id": "/zones/zone1/icon",
+        "writeable": 1,
+        "type": "stringValue",
+        "value": "KITCHEN",
+        "allowedValues": [
+          "KITCHEN",
+          "LIVING_ROOM",
+          "DINING_ROOM",
+          "BED_ROOM",
+          "MASTER_ROOM",
+          "CHILDRENS_ROOM",
+          "BATHROOM",
+          "OFFICE",
+          "HALLWAY",
+          "HOBBY_ROOM",
+          "LAUNDRY",
+          "LIBRARY"
+        ]
+      }
+    },
+    {
+      "template": "/zones/{zoneId}/name",
+      "name": "default",
+      "response": {
+        "id": "/zones/zone1/name",
+        "type": "stringValue",
+        "writeable": 1,
+        "value": "AHoAbwBuAGUAIABvAG4AZQ==",
+        "valueConfig": {
+          "charset": "UTF16",
+          "codingType": "base64",
+          "maxLength": 50
+        }
+      }
+    }
+  ]
+}

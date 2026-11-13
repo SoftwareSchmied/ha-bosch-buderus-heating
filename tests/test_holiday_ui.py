@@ -41,6 +41,8 @@ def test_delete_confirmation_rejects_unknown_fields():
 
 
 def test_form_schema_preserves_validation_context():
+    if vol.__name__ != "probatio":
+        pytest.skip("Voluptuous forms receive no validation context")
     assert _schema()({"holiday_start": "2030-08-01T08:00"}, context={}) == {
         "holiday_start": "2030-08-01T08:00"
     }

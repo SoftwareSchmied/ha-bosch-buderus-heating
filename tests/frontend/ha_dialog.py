@@ -23,6 +23,8 @@ from custom_components.bosch_buderus_heating.resource_catalog import PollGroup
 from custom_components.bosch_buderus_heating.writes import WriteService
 from tests.test_heating_controls import MODE, ROOT, TARGET, scalar, setup
 
+HOT_WATER = "/dhwCircuits/dhw1/temperatureLevels/high"
+
 
 async def test_real_frontend(
     recorder_mock,
@@ -39,6 +41,10 @@ async def test_real_frontend(
     coordinator.data[advanced.path] = replace(
         coordinator.data[TARGET], resource=advanced
     )
+    # A second tab: HA recreates the form after each step.
+    hot_water = scalar(HOT_WATER, 52, minimum=30, maximum=60)
+    coordinator.resources[HOT_WATER] = hot_water
+    coordinator.data[HOT_WATER] = replace(coordinator.data[TARGET], resource=hot_water)
     plant = dict(coordinator.resources)
     failed_readback = False
 
@@ -112,10 +118,21 @@ async def test_real_frontend(
         await coordinator.async_shutdown()
     assert process.returncode == 0, "\n".join(output)
     assert coordinator.data[TARGET].resource.value == 24
+    assert coordinator.data[HOT_WATER].resource.value == 55
     assert entry.options == {}
     assert hass.config_entries.options.async_progress() == []
     assert [
         call.args for call in coordinator.client.put_resource_value.await_args_list
-    ] == [("gateway", TARGET, value) for value in (20.5, 22, 23, 24)]
-    assert coordinator.client.get_resource.await_count == 8
-    coordinator.client.get_resources_bulk.assert_awaited_once()
+    ] == [("gateway", TARGET, value) for value in (20.5, 22, 23, 24)] + [
+        ("gateway", HOT_WATER, 55)
+    ]
+    # C35: each write reads its target in one bulk preflight and confirms it
+    # with a single GET; the simulated poll is the only other bulk read.
+    reads = [call.args for call in coordinator.client.get_resource.await_args_list]
+    assert reads == [("gateway", TARGET)] * 4 + [("gateway", HOT_WATER)]
+    bulk = [call.args for call in coordinator.client.get_resources_bulk.await_args_list]
+    assert bulk == [("gateway", (TARGET,))] * 3 + [
+        ("gateway", (MODE, TARGET)),
+        ("gateway", (TARGET,)),
+        ("gateway", (HOT_WATER,)),
+    ]

@@ -35,7 +35,7 @@ def test_ha_suggested_values_survive_using_the_matching_marker_type():
 
 @pytest.mark.parametrize("backend", ["voluptuous", "probatio"])
 def test_backend_selection_follows_ha_even_when_both_libraries_are_installed(backend):
-    module = importlib.import_module(backend)
+    module = pytest.importorskip(backend)
     try:
         with patch.object(cv, "PLATFORM_SCHEMA", module.Schema({})):
             importlib.reload(ha_schema)

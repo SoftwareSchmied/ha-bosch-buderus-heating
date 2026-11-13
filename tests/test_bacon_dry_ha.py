@@ -21,6 +21,7 @@ ROOT = "custom_components.bosch_buderus_heating"
 
 @pytest.mark.usefixtures("enable_custom_integrations")
 @pytest.mark.parametrize("language", ["de", "en"])
+@pytest.mark.usefixtures("legacy_platform_runtime")
 async def test_native_dehumidifier_services_translations_and_reload(hass, language):
     hass.config.language = language
     config = entry(hass)
@@ -71,7 +72,7 @@ async def test_native_dehumidifier_services_translations_and_reload(hass, langua
                     "device_error",
                 ),
             ),
-            ("switch", ("child_lock",)),
+            ("switch", ("child_lock", "display")),
         ):
             for key in keys:
                 item = entity_id(domain, key)
@@ -80,6 +81,7 @@ async def test_native_dehumidifier_services_translations_and_reload(hass, langua
         for locale in ("de", "en"):
             texts = await async_get_translations(hass, locale, "entity", {DOMAIN})
             prefix = "component." + DOMAIN + ".entity."
+            assert texts[prefix + "switch.bacon_dry_display.name"] == "Display"
             assert texts[prefix + "humidifier.bacon_dry_dehumidifier.name"] == (
                 "Luftentfeuchter" if locale == "de" else "Dehumidifier"
             )
@@ -109,6 +111,8 @@ async def test_native_dehumidifier_services_translations_and_reload(hass, langua
             ),
             ("switch", "child_lock", "turn_on", {}, {"childLockEnabled": True}),
             ("switch", "child_lock", "turn_off", {}, {"childLockEnabled": False}),
+            ("switch", "display", "turn_off", {}, {"displayEnabled": False}),
+            ("switch", "display", "turn_on", {}, {"displayEnabled": True}),
         ]
         for domain, key, service, params, expected in commands:
             await hass.services.async_call(
@@ -208,4 +212,4 @@ def test_dry_translation_keys_and_states_match_in_both_languages():
                 count += 1
                 assert item == texts[1]["entity"][domain][key]
                 assert leaves(item) == leaves(texts[2]["entity"][domain][key])
-    assert count == 10
+    assert count == 11

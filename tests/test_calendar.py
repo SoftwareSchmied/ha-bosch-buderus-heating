@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, date, datetime
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from homeassistant.components.calendar.const import (
@@ -17,7 +18,6 @@ from homeassistant.components.calendar.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.calendar import (
     BoschBuderusHolidayCalendar,
@@ -42,6 +42,15 @@ from custom_components.bosch_buderus_heating.pointt import (
     Resource,
     WriteNotConfirmed,
 )
+from tests.ha_test_helpers import MockConfigEntry
+
+CALENDAR_MODULE = "custom_components.bosch_buderus_heating.calendar"
+
+
+def _uid(entity: BoschBuderusHolidayCalendar) -> str:
+    """The calendar UID of the only holiday, ID 7."""
+    (period,) = entity._state.periods
+    return entity._uid_for_period(period)
 
 
 def _coordinator(
@@ -62,8 +71,10 @@ def _coordinator(
 
 
 async def test_calendar_exposes_multiple_overlapping_periods(
-    hass: HomeAssistant,
+    hass: HomeAssistant, freezer
 ) -> None:
+    # D48: before the periods, so the current event exists in any year.
+    freezer.move_to("2029-12-01T00:00:00+00:00")
     periods = Resource(
         path=HOLIDAY_LIST_PATH,
         value=[
@@ -107,7 +118,9 @@ async def test_calendar_exposes_multiple_overlapping_periods(
 
     entry = SimpleNamespace(runtime_data=SimpleNamespace(coordinators=(coordinator,)))
     added: list[object] = []
-    await async_setup_entry(hass, entry, added.extend)
+    # Independent of the room controller trackers of the calendar platform.
+    with patch(f"{CALENDAR_MODULE}.rrc_platforms.track"):
+        await async_setup_entry(hass, entry, added.extend)
     assert len(added) == 1
     assert isinstance(added[0], BoschBuderusHolidayCalendar)
 
@@ -117,12 +130,20 @@ async def test_calendar_setup_requires_a_period_resource(
 ) -> None:
     active_modes = Resource(path=HOLIDAY_ACTIVE_MODES_PATH, value=[], has_value=True)
     coordinator = _coordinator(hass, (active_modes,))
-    entry = SimpleNamespace(runtime_data=SimpleNamespace(coordinators=(coordinator,)))
+    unloads: list[object] = []
+    entry = SimpleNamespace(
+        runtime_data=SimpleNamespace(coordinators=(coordinator,)),
+        async_on_unload=unloads.append,
+    )
     added: list[object] = []
 
-    await async_setup_entry(hass, entry, added.extend)
+    with patch(f"{CALENDAR_MODULE}.rrc_platforms.track"):
+        await async_setup_entry(hass, entry, added.extend)
 
     assert added == []
+    assert len(unloads) == 1  # waits for holiday periods found later
+    for remove in unloads:
+        remove()
 
 
 def _writable_holiday_resources() -> tuple[Resource, ...]:
@@ -188,7 +209,8 @@ async def test_writable_calendar_creates_updates_and_deletes(
         datetime(2030, 1, 1, tzinfo=UTC),
         datetime(2031, 1, 1, tzinfo=UTC),
     )
-    assert events[0].uid == "pointt-7"
+    assert re.fullmatch(r"pointt-7-[0-9a-f]{8}", events[0].uid)
+    assert events[0].uid == _uid(entity)
     assert events[0].summary == "Test"
 
     await entity.async_create_event(
@@ -204,7 +226,7 @@ async def test_writable_calendar_creates_updates_and_deletes(
     assert created.heating_mode == "FIX_TEMPERATURE"
 
     await entity.async_update_event(
-        "pointt-7",
+        _uid(entity),
         {
             EVENT_START: datetime(2030, 8, 2, 9, tzinfo=UTC),
             EVENT_END: datetime(2030, 8, 9, 19, tzinfo=UTC),
@@ -215,7 +237,7 @@ async def test_writable_calendar_creates_updates_and_deletes(
     )
     holiday_id, updated = coordinator.async_update_holiday.await_args.args
     baseline = coordinator.async_update_holiday.await_args.kwargs["expected"]
-    assert baseline == entity._period_for_uid("pointt-7").write_values
+    assert baseline == entity._period_for_uid(_uid(entity)).write_values
     assert baseline.start_date != updated.start_date
     assert holiday_id == 7
     assert updated.heating_mode == "ECO"
@@ -226,11 +248,15 @@ async def test_writable_calendar_creates_updates_and_deletes(
     assert updated.fix_temperature == 16.5
 
     await entity.async_delete_event(
-        "pointt-7",
+        _uid(entity),
         recurrence_id="ordinary-event-instance",
         recurrence_range="",
     )
-    coordinator.async_delete_holiday.assert_awaited_once_with(7)
+    # C40: the calendar checks the shown holiday before deleting, as the
+    # options dialog does.
+    coordinator.async_delete_holiday.assert_awaited_once_with(
+        7, expected=entity._state.periods[0].write_values
+    )
 
 
 @pytest.mark.parametrize(
@@ -268,7 +294,7 @@ async def test_calendar_explains_unconfirmed_holiday_writes(
         if operation == "create":
             await entity.async_create_event(**event)
         else:
-            await entity.async_update_event("pointt-7", event)
+            await entity.async_update_event(_uid(entity), event)
     assert caught.value.translation_key == key
     writer.assert_awaited_once()
 
@@ -278,7 +304,7 @@ async def test_calendar_rejects_unsupported_fields(hass: HomeAssistant) -> None:
     coordinator.async_create_holiday = AsyncMock()
     entity = BoschBuderusHolidayCalendar(coordinator)
 
-    with pytest.raises(HomeAssistantError, match="descriptions or locations"):
+    with pytest.raises(HomeAssistantError) as raised:
         await entity.async_create_event(
             **{
                 EVENT_START: date(2030, 9, 1),
@@ -287,6 +313,7 @@ async def test_calendar_rejects_unsupported_fields(hass: HomeAssistant) -> None:
                 EVENT_LOCATION: "Private",
             }
         )
+    assert raised.value.translation_key == "holiday_fields_unsupported"
 
     coordinator.async_create_holiday.assert_not_awaited()
 
@@ -296,18 +323,20 @@ async def test_calendar_rejects_unsupported_fields(hass: HomeAssistant) -> None:
         EVENT_SUMMARY: "New trip",
     }
 
-    with pytest.raises(HomeAssistantError, match="Recurring"):
+    with pytest.raises(HomeAssistantError) as raised:
         await entity.async_update_event(
-            "pointt-7",
+            _uid(entity),
             event,
             recurrence_range="THIS_AND_FUTURE",
         )
+    assert raised.value.translation_key == "holiday_recurring_unsupported"
 
-    with pytest.raises(HomeAssistantError, match="Recurring"):
+    with pytest.raises(HomeAssistantError) as raised:
         await entity.async_update_event(
-            "pointt-7",
+            _uid(entity),
             {**event, EVENT_RRULE: "FREQ=YEARLY"},
         )
+    assert raised.value.translation_key == "holiday_recurring_unsupported"
 
 
 @pytest.mark.parametrize("operation", ["create", "update"])
@@ -337,7 +366,7 @@ async def test_calendar_rejects_invalid_wall_times_without_writing(
         if operation == "create":
             await entity.async_create_event(**event)
         else:
-            await entity.async_update_event("pointt-7", event)
+            await entity.async_update_event(_uid(entity), event)
     assert caught.value.translation_domain == DOMAIN
     assert caught.value.translation_key == reason
     coordinator.async_create_holiday.assert_not_awaited()
@@ -362,7 +391,7 @@ async def test_calendar_explains_an_end_that_does_not_follow_the_start(
         if operation == "create":
             await entity.async_create_event(**event)
         else:
-            await entity.async_update_event("pointt-7", event)
+            await entity.async_update_event(_uid(entity), event)
     assert caught.value.translation_domain == DOMAIN
     assert caught.value.translation_key == "holiday_end_not_after_start"
     coordinator.async_create_holiday.assert_not_awaited()
@@ -375,7 +404,7 @@ async def test_calendar_reports_unavailable_and_failed_writes(
     read_only = Resource(path=HOLIDAY_LIST_PATH, value=[], has_value=True)
     entity = BoschBuderusHolidayCalendar(_coordinator(hass, (read_only,)))
 
-    with pytest.raises(HomeAssistantError, match="does not currently allow"):
+    with pytest.raises(HomeAssistantError) as raised:
         await entity.async_create_event(
             **{
                 EVENT_START: date(2030, 9, 1),
@@ -383,8 +412,10 @@ async def test_calendar_reports_unavailable_and_failed_writes(
                 EVENT_SUMMARY: "New trip",
             }
         )
-    with pytest.raises(HomeAssistantError, match="does not currently allow"):
+    assert raised.value.translation_key == "holiday_changes_unavailable"
+    with pytest.raises(HomeAssistantError) as raised:
         await entity.async_delete_event("unknown")
+    assert raised.value.translation_key == "holiday_changes_unavailable"
 
     coordinator = _coordinator(hass, _writable_holiday_resources())
     coordinator.async_create_holiday = AsyncMock(side_effect=WriteNotConfirmed())
@@ -401,10 +432,111 @@ async def test_calendar_reports_unavailable_and_failed_writes(
         await entity.async_create_event(**event)
     assert error.value.translation_key == "holiday_create_unconfirmed"
     with pytest.raises(HomeAssistantError) as error:
-        await entity.async_update_event("pointt-7", event)
+        await entity.async_update_event(_uid(entity), event)
     assert error.value.translation_key == "holiday_update_unconfirmed"
-    with pytest.raises(HomeAssistantError, match="deleted or confirmed"):
-        await entity.async_delete_event("pointt-7")
+    with pytest.raises(HomeAssistantError) as raised:
+        await entity.async_delete_event(_uid(entity))
+    assert raised.value.translation_key == "holiday_delete_failed"
 
-    with pytest.raises(HomeAssistantError, match="no writable PointT ID"):
+    with pytest.raises(HomeAssistantError) as raised:
         await entity.async_delete_event("unknown")
+    assert raised.value.translation_key == "holiday_not_deletable"
+
+
+async def test_reused_holiday_id_does_not_match_an_outdated_event(
+    hass: HomeAssistant,
+) -> None:
+    # C40: the app replaced holiday 7 by another one with the same ID.
+    coordinator = _coordinator(hass, _writable_holiday_resources())
+    coordinator.async_update_holiday = AsyncMock()
+    coordinator.async_delete_holiday = AsyncMock()
+    entity = BoschBuderusHolidayCalendar(coordinator)
+    outdated = _uid(entity)
+    snapshot = coordinator.data[HOLIDAY_LIST_PATH]
+    replaced = dict(snapshot.resource.value[0])
+    replaced.update(startDate="2030-12-20T08:00:00", endDate="2030-12-27T18:00:00")
+    coordinator.data[HOLIDAY_LIST_PATH] = ResourceSnapshot(
+        Resource(HOLIDAY_LIST_PATH, value=[replaced], has_value=True),
+        True,
+        datetime.now(UTC),
+    )
+    assert _uid(entity) != outdated and _uid(entity).startswith("pointt-7-")
+    event = {
+        EVENT_START: date(2030, 9, 1),
+        EVENT_END: date(2030, 9, 8),
+        EVENT_SUMMARY: "Old trip",
+    }
+    with pytest.raises(HomeAssistantError) as raised:
+        await entity.async_update_event(outdated, event)
+    assert raised.value.translation_key == "holiday_change_unsafe"
+    with pytest.raises(HomeAssistantError) as raised:
+        await entity.async_delete_event(outdated)
+    assert raised.value.translation_key == "holiday_not_deletable"
+    coordinator.async_update_holiday.assert_not_awaited()
+    coordinator.async_delete_holiday.assert_not_awaited()
+
+
+async def test_calendar_delete_of_a_holiday_changed_meanwhile_sends_nothing(
+    hass: HomeAssistant,
+) -> None:
+    # C40: between the last poll and the deletion, the app changed holiday 7.
+    from custom_components.bosch_buderus_heating.holiday_writes import (
+        HolidayWriteService,
+    )
+
+    coordinator = _coordinator(hass, _writable_holiday_resources())
+    client = coordinator.client
+    coordinator._holiday_write_service = HolidayWriteService(client, sleep=AsyncMock())
+    live = dict(coordinator.data[HOLIDAY_LIST_PATH].resource.value[0])
+    live["endDate"] = "2030-08-10T18:00:00"
+    client.get_resource.return_value = Resource(
+        HOLIDAY_LIST_PATH, value=[live], has_value=True
+    )
+    entity = BoschBuderusHolidayCalendar(coordinator)
+    with pytest.raises(HomeAssistantError) as raised:
+        await entity.async_delete_event(_uid(entity))
+    assert raised.value.translation_key == "holiday_delete_failed"
+    client.delete_holiday_period.assert_not_awaited()
+    client.get_resource.assert_awaited_once_with("gateway-one", HOLIDAY_LIST_PATH)
+
+    # Unchanged, the same deletion is sent exactly once and confirmed.
+    client.get_resource.reset_mock()
+    current = coordinator.data[HOLIDAY_LIST_PATH].resource
+    client.get_resource.side_effect = [
+        current,
+        Resource(HOLIDAY_LIST_PATH, value=[], has_value=True),
+    ]
+    await entity.async_delete_event(_uid(entity))
+    client.delete_holiday_period.assert_awaited_once_with("gateway-one", 7)
+
+
+async def test_calendar_reports_a_busy_gateway_without_writing(
+    hass: HomeAssistant,
+) -> None:
+    from unittest.mock import patch
+
+    from custom_components.bosch_buderus_heating import coordinator as module
+
+    coordinator = _coordinator(hass, _writable_holiday_resources())
+    entity = BoschBuderusHolidayCalendar(coordinator)
+    uid = _uid(entity)
+    event = {
+        EVENT_START: date(2030, 9, 1),
+        EVENT_END: date(2030, 9, 8),
+        EVENT_SUMMARY: "Trip",
+    }
+    with patch.object(module, "WRITE_LOCK_TIMEOUT", module.timedelta(0)):
+        async with coordinator._update_lock:
+            for attempt in (
+                entity.async_create_event(**event),
+                entity.async_update_event(uid, event),
+                entity.async_delete_event(uid),
+            ):
+                with pytest.raises(HomeAssistantError) as error:
+                    await attempt
+                assert error.value.translation_key == "write_busy"
+    client = coordinator.client
+    client.create_holiday_period.assert_not_awaited()
+    client.update_holiday_period.assert_not_awaited()
+    client.delete_holiday_period.assert_not_awaited()
+    client.get_resource.assert_not_awaited()

@@ -477,7 +477,7 @@ async def test_discovery_probes_known_unadvertised_status_resources() -> None:
     assert expected.issubset(resources)
 
 
-async def test_discovery_probes_app_paths_for_each_reported_heat_source() -> None:
+async def test_discovery_probes_catalog_paths_for_each_reported_heat_source() -> None:
     client = AsyncMock()
     heat_source = "/heatSources/hs7"
     expected = {
@@ -521,9 +521,7 @@ async def test_discovery_probes_app_paths_for_each_reported_heat_source() -> Non
     assert not any(path.startswith("/heatSources/hs1/") for path in discovered)
 
 
-async def test_discovery_probes_optional_app_families_only_after_container_exists() -> (
-    None
-):
+async def test_discovery_probes_optional_families_only_after_container_exists() -> None:
     client = AsyncMock()
     roots = {
         "/heatingCircuits": Resource(
@@ -743,7 +741,7 @@ def test_catalog_privacy_polling_devices_and_names() -> None:
     )
 
 
-def test_optional_app_paths_require_the_expected_live_schema() -> None:
+def test_optional_catalog_paths_require_the_expected_live_schema() -> None:
     assert supports_entity(
         Resource(
             path="/heatSources/hs1/actualPower",

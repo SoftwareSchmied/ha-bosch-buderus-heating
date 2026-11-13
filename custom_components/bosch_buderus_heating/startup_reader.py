@@ -107,10 +107,9 @@ class StartupReader:
             for item in results
             if item.path in paths and item.gateway_id == self._gateway_id
         }
-        if any(item.status == 401 for item in by_path.values()):
-            # End every claimed read before reauth, never leave one 'reading'.
-            self._state.fail(paths, "authentication_error", monotonic())
-            raise AuthenticationError
+        # A 401 of one item inside an accepted request concerns that path,
+        # not the sign-in: the token was just accepted. As in the regular
+        # poll it is retried later; only a refused request asks for sign-in.
         outcomes = []
         for path in paths:
             result = by_path.get(path)
@@ -170,7 +169,7 @@ def _failure_category(
     error: PointTError | TimeoutError | None, status: int | None
 ) -> str:
     """Keep local metadata errors distinct from temporary service failures."""
-    if status in (403, 404, 406):
+    if status in (401, 403, 404, 406):
         return f"http_{status}"
     if status == 429 or isinstance(error, RateLimited):
         return "rate_limited"

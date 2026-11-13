@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
-from homeassistant.components.event import EventEntity
-from homeassistant.core import HomeAssistant
+from dataclasses import dataclass
+
+from homeassistant.components.event import EventEntity, EventExtraStoredData
+from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN, Platform
+from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from . import BoschBuderusConfigEntry
 from .coordinator import BoschBuderusDataUpdateCoordinator
@@ -17,6 +21,14 @@ from .faults import (
     fault_severity_label,
     fault_summary,
 )
+from .platform_scope import PlatformScope, setup_platform
+
+
+@dataclass
+class _NotificationEventData(EventExtraStoredData):
+    """Keep the real event timestamp separate from entity availability."""
+
+    last_event_timestamp: str | None = None
 
 
 async def async_setup_entry(
@@ -24,11 +36,16 @@ async def async_setup_entry(
     entry: BoschBuderusConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
+    setup_platform(entry, Platform.EVENT, async_add_entities, _setup_entities)
+
+
+def _setup_entities(
+    entry: PlatformScope,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
     """Create one bounded event stream per configured gateway."""
-    del hass
     async_add_entities(
-        BoschBuderusNotificationEvent(coordinator)
-        for coordinator in entry.runtime_data.coordinators
+        BoschBuderusNotificationEvent(coordinator) for coordinator in entry.coordinators
     )
 
 
@@ -46,6 +63,41 @@ class BoschBuderusNotificationEvent(
         self._attr_event_types = [item.value for item in FaultEventType]
         self._attr_unique_id = f"{coordinator.gateway.gateway_id}:system_notifications"
 
+    @property
+    def extra_restore_state_data(self) -> EventExtraStoredData:
+        """Retain the timestamp even when HA stores an unavailable state."""
+        stored = super().extra_restore_state_data
+        return _NotificationEventData(
+            stored.last_event_type, stored.last_event_attributes, self.state
+        )
+
+    async def async_get_last_state(self) -> State | None:
+        """Let native event restoration recover the original timestamp."""
+        state = await super().async_get_last_state()
+        if state is None or state.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+            return state
+        extra = await self.async_get_last_extra_data()
+        if extra is None:
+            return state
+        data = extra.as_dict()
+        timestamp = data.get("last_event_timestamp")
+        if (
+            not isinstance(timestamp, str)
+            or data.get("last_event_type") not in self.event_types
+            or "last_event_attributes" not in data
+            or not isinstance(data["last_event_attributes"], dict | type(None))
+        ):
+            return state
+        try:
+            parsed = dt_util.parse_datetime(timestamp)
+        except ValueError, OverflowError:
+            return state
+        if parsed is None or parsed.tzinfo is None:
+            return state
+        # Only the restore input changes. Actual availability and event delivery
+        # remain managed by HA; replaying _trigger_event would invent an event.
+        return State.from_dict(state.as_dict() | {"state": timestamp})
+
     async def async_added_to_hass(self) -> None:
         """Subscribe after the entity can safely publish HA events."""
         await super().async_added_to_hass()
@@ -55,7 +107,12 @@ class BoschBuderusNotificationEvent(
 
     @property
     def available(self) -> bool:
-        return super().available and self.coordinator.faults.has_supported_source
+        # FAULT-4: an event has no value that could be outdated, so a cloud
+        # outage does not make it unavailable (its return would show the last
+        # event again as a new state). Without a cloud (P49b) the local error
+        # list is the source of the events.
+        faults = self.coordinator.faults
+        return faults.has_supported_source or faults.local_authority is True
 
     @property
     def device_info(self) -> DeviceInfo:

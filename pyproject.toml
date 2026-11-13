@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ha-bosch-buderus-heating-development"
-version = "0.8.4-beta.1"
+version = "0.9.0"
 description = "Development tooling for the Bosch/Buderus Home Comfort Home Assistant integration"
 readme = "README.md"
 requires-python = ">=3.14.2"
@@ -24,12 +24,14 @@ security = [
   "pip-audit==2.10.1",
 ]
 test = [
-  "hypothesis==6.170.13",
+  "homeassistant==2026.11.0",
+  "hypothesis==6.170.14",
   "mypy==2.4.1",
   "pytest==9.0.3",
   "pytest-asyncio==1.4.0",
   "pytest-cov==7.1.0",
-  "pytest-homeassistant-custom-component==0.13.375",
+  "pytest-homeassistant==2026.11.0",
+  "pytest-timeout==2.4.0",
   "ruff==0.17.3",
 ]
 
@@ -44,10 +46,13 @@ line-length = 88
 select = ["ASYNC", "B", "E", "F", "I", "RUF", "SIM", "UP"]
 
 [tool.pytest.ini_options]
-addopts = "--strict-config --strict-markers --cov=custom_components/bosch_buderus_heating --cov-branch --cov-report=term-missing --cov-fail-under=95"
+addopts = "-p no:respx --strict-config --strict-markers --cov=custom_components/bosch_buderus_heating --cov-branch --cov-report=term-missing --cov-fail-under=95"
 asyncio_mode = "auto"
 pythonpath = ["."]
 testpaths = ["tests"]
+# D49: a hanging test fails on its own and is named, instead of holding the
+# CI job until its time limit.
+timeout = 120
 
 [tool.coverage.run]
 source = ["custom_components/bosch_buderus_heating"]

@@ -38,7 +38,20 @@ supported values become entities. Registry entries belonging to deliberately
 deselected gateways are removed.
 
 Changing between Bosch and Buderus requires a new SingleKey ID sign-in because
-the apps use different OAuth configurations.
+the two brands use different OAuth configurations.
+
+## Search the system again
+
+Entries with connections offer **Search the system again** in their options.
+It searches the system once more for parts and readings without a reload:
+every running cloud access plans one discovery with its next regular update,
+and every running local access searches its resources again in its usual
+search slots. The search keeps to the usual limits for requests. It never
+removes an entity: a reading it does not find again stays and keeps being
+read until its own answer says it is gone. While requests are paused (for
+example after the cloud asked for a pause, or while the local read budget
+pauses), while a search is already running, or when no access is ready, the
+dialog says so and starts nothing.
 
 ## Polling profiles
 
@@ -62,10 +75,13 @@ installations where the PointT cloud repeatedly reports rate limits.
 
 ## Repair notifications
 
-After three rate-limit events during one running Home Assistant session, the
+After three rate limits that the cloud reported within 24 hours, the
 integration creates a notification under **Settings → System → Repairs**. The
 offered repair flow can switch the affected account to cloud-friendly polling
-and then reload the integration.
+and then reload the integration. Requests that a running pause held back
+before they were sent do not count. With the cloud-friendly profile already in
+use, the notification is not created, because the repair would change
+nothing; the pauses themselves still apply.
 
 Invalid credentials are not treated as a rate limit. Home Assistant uses the
 separate **Reauthenticate** flow for that condition.

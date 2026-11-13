@@ -9,7 +9,7 @@ from homeassistant.components.climate.const import HVACMode
 from homeassistant.const import UnitOfTemperature
 from homeassistant.util.unit_conversion import TemperatureConverter
 
-from .metadata import metadata, writable
+from .metadata import CELSIUS, metadata, writable
 from .models import Device
 
 PREFIXES = (
@@ -35,7 +35,10 @@ MODES = {
 FANS = ("auto", "quiet", "low", "medium", "high", "turbo")
 TEMPERATURE_MODES = ("auto", "heat", "cool")
 SWINGS = ("vSwingEnabled", "hSwingEnabled")
-CELSIUS = ("C", "degC", "Celsius", "°C")
+# Eco is a separate boolean; it never changes the fan speed named "turbo".
+ECO = "ecoEnabled"
+PRESET_NONE = "none"
+PRESET_ECO = "eco"
 FAHRENHEIT = ("degF", "Fahrenheit")
 
 
@@ -172,12 +175,13 @@ def command_valid(device: Device, desired: dict[str, Any], expected_model: str) 
         "tempSetpoint",
         "fanSpeed",
         *SWINGS,
+        ECO,
     }:
         return False
     for field in keys:
         if not writable(metadata(device, "state", field)):
             return False
-    if keys & {"fanSpeed", *SWINGS}:
+    if keys & {"fanSpeed", *SWINGS, ECO}:
         if len(keys) != 1:
             return False
         if "fanSpeed" in keys:

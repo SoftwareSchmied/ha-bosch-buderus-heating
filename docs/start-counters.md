@@ -24,7 +24,11 @@ The general resource uses `floatValue`. Source-specific leaves support the
 WDDW2 `floatValue` scalar as well as the ConnectKey `emonValue` format
 with the known parts `total`, `ch`, `cooling`, `dhw` and `pool`. The parser
 retains the existing object or array-of-objects representations of multipart
-values. Empty or partial supported responses retain stable part entities.
+values. From 0.9.0 the parts may also come as a list of up to eight objects
+in `value`, as a TC100.2 reports them (for example one object with `total`,
+`ch` and `dhw`); a longer or empty list, or a list with something other than
+objects, stays `invalid_structure`. Empty or partial supported responses
+retain stable part entities.
 The WDDW2 addition is included in v0.8.2-beta.5; its mapping and validation are
 documented in [P01: WDDW2 types](wddw2-types.md).
 
@@ -65,7 +69,14 @@ source scalar uses `gateway:heatSources:hsN:numberOfStarts`. It never
 reuses the multipart total's identity or statistics. Registry recovery retains
 both identities if a device has reported both formats; only the currently
 matching format can produce a value. Each supported
-source is enabled by default when first created. Existing registry choices,
+source is enabled by default when first created. From 0.9.0 a part that does
+not occur in the reading the entity is created from (for example `cooling`
+on a gas boiler) is created disabled, like `pool`; the key decides, not its
+value. Without a usable reading (empty, or a form that is not read), the
+parts keep these defaults. From 0.9.0 the general counter
+`/heatSources/numberOfStarts` is created disabled when the system reports
+exactly one heat source: it then counts the same starts as that source's
+`total`. Existing registry choices,
 including disabled entities, remain unchanged. Equal values do not establish
 equal meaning. A source number does not by itself identify a boiler or heat pump.
 

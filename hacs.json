@@ -1,5 +1,6 @@
 {
   "filename": "bosch_buderus_heating.zip",
+  "homeassistant": "2026.5.0",
   "name": "Bosch/Buderus Home Comfort",
   "render_readme": true,
   "zip_release": true

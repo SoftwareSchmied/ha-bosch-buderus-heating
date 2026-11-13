@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import math
 import re
+from functools import lru_cache
 
+from .i18n import localize
 from .pointt import Resource
 from .resource_catalog import additional_app_value
 
@@ -14,14 +16,13 @@ _ZONE_TEMPORARY = re.compile(
     r"^/zones/zone[^/:]+/(?:heating|cooling)/temporaryRoomSetpoint$"
 )
 ZONE_MODES = frozenset({"off", "manual", "auto"})
+_ZONE_CONTROLS = (re.compile(ZONE_MODE_PATTERN), re.compile(ZONE_MANUAL_PATTERN))
 
 
+@lru_cache(maxsize=4096)
 def is_zone_control(path: str) -> bool:
     """Keep RRC, legacy paths and temporary schedule overrides outside."""
-    return any(
-        re.fullmatch(pattern, path)
-        for pattern in (ZONE_MODE_PATTERN, ZONE_MANUAL_PATTERN)
-    )
+    return any(pattern.fullmatch(path) for pattern in _ZONE_CONTROLS)
 
 
 def is_zone_temporary(path: str) -> bool:
@@ -57,10 +58,16 @@ def zone_control_name(path: str, language: str) -> str | None:
         return None
     heating = "/heating/" in path
     mode = path.endswith("/operationMode")
-    if language.casefold().startswith("de"):
-        prefix = "Heizen" if heating else "Kühlen"
-        action = "Betriebsart einstellen" if mode else "Manuellen Sollwert einstellen"
-    else:
-        prefix = "Heating" if heating else "Cooling"
-        action = "Set operating mode" if mode else "Set manual temperature"
+    prefix = (
+        localize(language, "Heizen", "Heating")
+        if heating
+        else localize(language, "Kühlen", "Cooling")
+    )
+    action = (
+        localize(language, "Betriebsart einstellen", "Set operating mode")
+        if mode
+        else localize(
+            language, "Manuellen Sollwert einstellen", "Set manual temperature"
+        )
+    )
     return f"{prefix}: {action}"

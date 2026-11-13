@@ -54,8 +54,35 @@ field and user-review policy.
 RRC schema 20 adds availability and schedule-shape decisions. It excludes
 switch times, temperatures, program contents and unknown field names.
 Canonical RRC IDs such as `zn2` and `pg3` remain visible; other dynamic
-identifiers are redacted. The contract fixtures and browser data are synthetic.
+identifiers are redacted. The contract fixtures and browser data are synthetic,
+except an anonymized TC100.2 read structure with constructed values.
 See [RRC zones and schedules](rrc-zones-and-schedules.md) for their scope.
+The room controller functions of 0.9.0-alpha.5 have one synthetic fixture
+each in `tests/fixtures/contracts/rrc/` (`zone_climate.json`, `absence.json`,
+`dhw.json`, `circuit.json`, `system.json`, `energy.json`,
+`device_settings.json`), built from constructed values in the shapes of the
+TC100.2 diagnostics, never from copied answers. Event names in `absence.json`
+are marker values, and a test checks that no marker reaches a log or the
+diagnostics. The `rrc_features` diagnostics count these functions without
+values, names, dates or device numbers.
+
+The energy history statistics and their stored import state are named by a
+token of the gateway instead of its ID: an HMAC-SHA256 of the gateway ID,
+keyed with the Home Assistant instance ID and cut to 16 hex digits (12 in the
+statistic ID). A plain hash could be found back by hashing candidate IDs; the
+keyed token cannot without the instance ID. Neither the gateway ID nor the
+instance ID nor the token appears in the diagnostics.
+
+Some resources are never requested at all, on any gateway: the radio device
+arrays `/devices/devN` of room controllers (they carry the radio key `dlk` and
+the radio identifier `sgtin`), `/devices/productLookup`, every `homematicip`
+subtree, `/gateway/userPassword`, `/gateway/user/*`, `/gateway/installer/*`,
+`/system/location/*` and `/system/autoAway/users/list`. They are not stored in
+the discovery inventory either; an inventory of an earlier release drops them
+when it is loaded. `dlk` counts as an identifier word like `sgtin`. The
+synthetic fixture `ct200-shapes.json` fills these resources with marker
+values, and a test checks that no marker reaches a request, the stored
+inventory, a log, an entity state or the diagnostics.
 
 Maintainers can reduce a downloaded diagnostics report further with the
 [anonymized inventory exporter](anonymized-inventory.md). It removes runtime

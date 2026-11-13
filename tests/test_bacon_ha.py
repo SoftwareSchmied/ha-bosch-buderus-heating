@@ -9,7 +9,6 @@ import pytest
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating import (
     _remove_unselected_gateway_entries,
@@ -26,6 +25,9 @@ from custom_components.bosch_buderus_heating.bacon.models import (
     device_key,
 )
 from custom_components.bosch_buderus_heating.config_flow import BoschBuderusConfigFlow
+from custom_components.bosch_buderus_heating.configuration_access import (
+    EntryConfiguration,
+)
 from custom_components.bosch_buderus_heating.const import (
     CONF_BRAND,
     CONF_GATEWAY_IDS,
@@ -36,6 +38,7 @@ from custom_components.bosch_buderus_heating.diagnostics import (
     async_get_config_entry_diagnostics,
 )
 from custom_components.bosch_buderus_heating.pointt import AuthTokens, Brand, Gateway
+from tests.ha_test_helpers import MockConfigEntry
 from tests.test_bacon_contracts import token
 from tests.test_bacon_session import emit, environment
 
@@ -46,6 +49,7 @@ def flow(hass):
     result = BoschBuderusConfigFlow()
     result.hass = hass
     result.context = {}
+    result.flow_id = "synthetic-discovery"
     result._brand = Brand.BUDERUS
     result._tokens = AuthTokens(token(), "refresh", 4e9, scope=("bacon",))
     return result
@@ -94,8 +98,13 @@ async def test_selection_discovers_separate_backends(hass, mixed):
         }
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
-    assert result["data"][CONF_BACON_IDS] == ["serial-A"]
-    assert result["data"][CONF_GATEWAY_IDS] == (["pointt"] if mixed else [])
+    stored = MockConfigEntry(
+        domain=DOMAIN, version=4, data=result["data"], options=result["options"]
+    )
+    cloud = next(iter(stored.data["connections"]))
+    data = EntryConfiguration(stored, cloud).cloud_data()
+    assert data[CONF_BACON_IDS] == ["serial-A"]
+    assert data[CONF_GATEWAY_IDS] == (["pointt"] if mixed else [])
     assert config._account_identity().startswith("buderus:")
     if not mixed:
         assert ":bacon:" in config._account_identity()
@@ -267,7 +276,7 @@ async def test_entity_registry_identity_and_redacted_diagnostics(hass):
         await entity.async_will_remove_from_hass()
     assert entity.is_on is False
     data = await async_get_config_entry_diagnostics(hass, configured)
-    assert data["diagnostics_schema"] == 28
+    assert data["diagnostics_schema"] == 46
     assert data["bacon"]["selected_devices"] == 2
     serialized = json.dumps(data)
     for private in ("account-A", "serial-A", "My device", token()):
@@ -356,7 +365,7 @@ async def test_runtime_rejects_a_changed_account(hass):
     configured.runtime_data.startup.close()
 
 
-@pytest.mark.parametrize("category", ["authentication", "connection", "rate_limited"])
+@pytest.mark.parametrize("category", ["authentication", "invalid_payload"])
 async def test_runtime_token_failures_distinguish_signin_from_retry(hass, category):
     from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
@@ -373,6 +382,66 @@ async def test_runtime_token_failures_distinguish_signin_from_retry(hass, catego
     ):
         await async_setup_entry(hass, configured)
     configured.runtime_data.startup.close()
+
+
+@pytest.mark.parametrize("category", ["connection", "rate_limited"])
+async def test_temporary_signin_failure_connects_in_the_background(
+    hass, caplog, category
+):
+    """P47: an outage of the other cloud devices does not hold back the entry."""
+    configured = entry(hass)
+    started = asyncio.Event()
+
+    async def run():
+        started.set()
+        await asyncio.Event().wait()
+
+    with (
+        patch(
+            ROOT + ".BaconClient.access_token",
+            AsyncMock(side_effect=BaconError(category)),
+        ),
+        patch(ROOT + ".async_setup_notifications", AsyncMock(return_value=())),
+        patch.object(hass.config_entries, "async_forward_entry_setups", AsyncMock()),
+        patch(ROOT + ".BaconAccount.run", side_effect=run),
+    ):
+        assert await async_setup_entry(hass, configured)
+        await asyncio.wait_for(started.wait(), 1)
+        account = configured.runtime_data.bacon
+        assert account is not None and account.selected == ("serial-A",)
+        assert not account.connected
+        assert account.client.expected_account == account_key("account-A")
+        assert account.client.subject is None
+        assert account.error == category  # visible in diagnostics at once
+        assert f"could not sign in during start-up ({category})" in caplog.text
+        assert "account-A" not in caplog.text
+        with patch.object(
+            hass.config_entries, "async_unload_platforms", AsyncMock(return_value=True)
+        ):
+            assert await async_unload_entry(hass, configured)
+
+
+async def test_background_signin_still_rejects_another_account() -> None:
+    """The account check skipped at start-up happens with the first token."""
+    from custom_components.bosch_buderus_heating.bacon.client import BaconClient
+
+    tokens = SimpleNamespace(
+        get_access_token=AsyncMock(return_value=token("another-account"))
+    )
+    client = BaconClient(None, tokens)
+    client.expected_account = account_key("account-A")
+    with pytest.raises(BaconError) as raised:
+        await client.access_token()
+    assert raised.value.category == "account_changed"
+    assert client.subject is None
+
+    tokens.get_access_token = AsyncMock(return_value=token("account-A"))
+    assert await client.access_token() == token("account-A")
+    assert client.subject == "account-A"
+    # Without an expectation (normal start) the first token sets the account.
+    plain = BaconClient(None, tokens)
+    await plain.access_token()
+    assert plain.subject == "account-A"
 
 
 @pytest.mark.parametrize("kind", ["setup", "reauth", "reconfigure"])
@@ -534,3 +603,118 @@ async def test_cloud_only_reauth_stays_retryable_during_service_outage(hass):
         result = await config._async_discover_gateways()
     assert result["step_id"] == "retry"
     assert result["errors"] == {"base": "bacon_unavailable"}
+
+
+async def test_connection_entities_wait_for_the_first_signin(hass):
+    """After a start-up during an outage the account identity is not known yet."""
+    from custom_components.bosch_buderus_heating.binary_sensor import (
+        async_setup_entry as setup,
+    )
+
+    account = environment()
+    subject = account.client.subject
+    account.client.subject = None
+    unloads = []
+    configured = SimpleNamespace(
+        runtime_data=SimpleNamespace(bacon=account, coordinators=()),
+        async_on_unload=unloads.append,
+    )
+    added = []
+    await setup(hass, configured, added.extend)
+    assert not any(isinstance(entity, BaconConnectivity) for entity in added)
+    account._notify()  # e.g. a failed attempt: still unknown
+    assert not any(isinstance(entity, BaconConnectivity) for entity in added)
+    account.client.subject = subject  # the background sign-in succeeded
+    account._notify()
+    account._notify()
+    connectivity = [e for e in added if isinstance(e, BaconConnectivity)]
+    assert {entity.serial for entity in connectivity} == {"serial-A", "serial-B"}
+    assert connectivity[0].unique_id == (
+        device_key(subject, connectivity[0].serial) + ":connectivity"
+    )
+    for remove in unloads:
+        remove()
+
+
+@pytest.mark.parametrize("known", [False, True])
+async def test_registry_cleanup_keeps_devices_while_the_account_is_unknown(hass, known):
+    from custom_components.bosch_buderus_heating import (
+        _remove_unselected_gateway_entries,
+    )
+    from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
+
+    configured = entry(hass)
+    account = environment()
+    configured.runtime_data = BoschBuderusRuntimeData(
+        client=None, token_manager=None, gateways=(), coordinators=(), bacon=account
+    )
+    stale = device_key("account-A", "removed-serial")
+    device = dr.async_get(hass).async_get_or_create(
+        config_entry_id=configured.entry_id, identifiers={(DOMAIN, stale)}
+    )
+    registered = er.async_get(hass).async_get_or_create(
+        "binary_sensor",
+        DOMAIN,
+        stale + ":connectivity",
+        config_entry=configured,
+        device_id=device.id,
+    )
+    if not known:
+        account.client.subject = None
+    _remove_unselected_gateway_entries(hass, configured, frozenset())
+    kept = er.async_get(hass).async_get(registered.entity_id) is not None
+    assert kept is not known
+    assert (dr.async_get(hass).async_get(device.id) is not None) is not known
+
+
+@pytest.mark.parametrize(
+    ("later", "category"),
+    [("another-account", "account_changed"), ("rejected", "authentication")],
+)
+async def test_background_signin_failure_stops_and_asks_for_signin(later, category):
+    """The real reconnect loop after a start-up during an outage."""
+    from custom_components.bosch_buderus_heating.bacon.client import BaconClient
+    from custom_components.bosch_buderus_heating.bacon.session import BaconAccount
+    from custom_components.bosch_buderus_heating.pointt import RefreshTokenRejected
+
+    async def get_access_token(**_kwargs):
+        if later == "rejected":
+            raise RefreshTokenRejected("rejected")
+        return token(later)
+
+    client = BaconClient(None, SimpleNamespace(get_access_token=get_access_token))
+    client.expected_account = account_key("account-A")
+    errors = []
+    account = BaconAccount(
+        client, ("serial-A",), notify=lambda: errors.append(account.error)
+    )
+    await asyncio.wait_for(account.run(), 1)  # ends instead of retrying
+    assert account.error == category
+    assert category in errors  # notify -> reauthentication in the entry
+    assert client.subject is None and not account.connected
+
+
+async def test_connection_entities_are_not_added_during_unload(hass):
+    from custom_components.bosch_buderus_heating.binary_sensor import (
+        _track_connectivity,
+    )
+
+    account = environment()
+    subject = account.client.subject
+    account.client.subject = None
+    unloads = []
+    scope = {"current": True}
+    configured = SimpleNamespace(
+        current=lambda: scope["current"], async_on_unload=unloads.append
+    )
+    added = []
+    _track_connectivity(configured, account, added.extend)
+    scope["current"] = False  # the source or entry is stopping
+    account.client.subject = subject
+    account._notify()  # e.g. close() during unload
+    assert added == []
+    scope["current"] = True
+    account._notify()
+    assert len(added) == 2
+    for remove in unloads:
+        remove()

@@ -20,6 +20,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     RetryPolicy,
     ServiceUnavailable,
     UnexpectedHttpStatus,
+    WriteNotConfirmed,
 )
 from custom_components.bosch_buderus_heating.pointt.const import (
     DEFAULT_USER_AGENT,
@@ -73,8 +74,6 @@ async def test_hour_of_polling_saves_metadata_paths_and_batch_boundary_requests(
     from datetime import UTC, datetime
     from unittest.mock import patch
 
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
-
     from custom_components.bosch_buderus_heating.const import DOMAIN, PollingProfile
     from custom_components.bosch_buderus_heating.coordinator import (
         BoschBuderusDataUpdateCoordinator,
@@ -90,6 +89,7 @@ async def test_hour_of_polling_saves_metadata_paths_and_batch_boundary_requests(
         poll_group,
     )
     from custom_components.bosch_buderus_heating.startup_data import CIRCUIT_COUNT_PATH
+    from tests.ha_test_helpers import MockConfigEntry
 
     fast_paths = tuple(
         f"/heatingCircuits/hc{number}/roomtemperature" for number in range(1, 31)
@@ -300,7 +300,7 @@ async def serve(routes: list[tuple[str, str, Handler]]) -> AsyncIterator[str]:
 
 @pytest.mark.parametrize(
     "delay, expected",
-    [(None, 300), (0, 60), (float("inf"), 300), (99999, 3600), (90, 90)],
+    [(None, 300), (0, 60), (float("inf"), 300), (7200, 7200), (99999, 86400), (90, 90)],
 )
 def test_account_backoff_is_bounded_and_expires(delay, expected) -> None:
     now = 10.0
@@ -573,6 +573,25 @@ async def test_client_retries_once_with_forced_token_refresh() -> None:
     ]
     assert metrics["recent_requests"][1]["attempt"] == 2
     assert metrics["recent_requests"][1]["retry"] is True
+
+
+async def test_client_counts_unreadable_gateway_entries_without_ids() -> None:
+    async def handler(_request: web.Request) -> web.Response:
+        return web.json_response(
+            [{"deviceId": "gw-1"}, {"model": "private-unreadable-entry"}]
+        )
+
+    async with (
+        serve([("GET", "/gateways/", handler)]) as url,
+        aiohttp.ClientSession() as session,
+    ):
+        client = PointTClient(session, "token", base_url=url)
+        gateways = await client.get_gateways()
+
+    assert [gateway.gateway_id for gateway in gateways] == ["gw-1"]
+    snapshot = client.metrics.snapshot()
+    assert snapshot["gateway_list_entries_skipped"] == 1
+    assert "private-unreadable-entry" not in repr(snapshot)
 
 
 async def test_client_marks_individual_bulk_fallback_without_exposing_path() -> None:
@@ -1037,8 +1056,10 @@ async def test_another_circuit_cannot_confirm_a_write_over_http():
     )
     async with serve(routes) as url, aiohttp.ClientSession() as session:
         client = PointTClient(session, "token", base_url=url)
-        with pytest.raises(InvalidPayload):
+        # C32: after a sent PUT, a failed read-back means "not confirmed".
+        with pytest.raises(WriteNotConfirmed) as error:
             await WriteService(client, sleep=AsyncMock()).async_write_enum(
                 "gateway", resource, "auto", HEATING_CIRCUIT_OPERATION_MODE_POLICY
             )
+    assert isinstance(error.value.__cause__, InvalidPayload)
     assert calls == ["PUT", "GET"]

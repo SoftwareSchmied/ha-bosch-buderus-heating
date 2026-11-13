@@ -9,21 +9,24 @@ from unittest.mock import Mock
 
 import pytest
 from homeassistant.components.humidifier.const import HumidifierAction as Action
+from homeassistant.const import EntityCategory
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 
 from custom_components.bosch_buderus_heating.bacon import dry
 from custom_components.bosch_buderus_heating.bacon.dry_entities import (
-    BaconDryChildLock,
     BaconDrySensor,
     BaconDryStatus,
+    BaconDrySwitch,
     track_entities,
 )
-from custom_components.bosch_buderus_heating.bacon.models import Device
+from custom_components.bosch_buderus_heating.bacon.entity import BaconConnectivity
+from custom_components.bosch_buderus_heating.bacon.models import Device, device_key
 from custom_components.bosch_buderus_heating.humidifier import (
     BaconDehumidifier,
     async_setup_entry,
 )
 from tests.test_bacon_dhw import responding
+from tests.test_bacon_rac import configured as rac_configured
 from tests.test_bacon_session import emit, environment
 
 FIXTURES = Path(__file__).parent / "fixtures/contracts/bacon-dry"
@@ -75,7 +78,7 @@ def test_profile_capabilities_and_private_diagnostics(profile):
     )
     assert unit.action == Action.DRYING
     assert BaconDrySensor(account, "serial-A", "temperature").native_value == 22.5
-    assert BaconDryChildLock(account, "serial-A", "child_lock").available is not basic
+    assert BaconDrySwitch(account, "serial-A", "child_lock").available is not basic
     assert BaconDryStatus(account, "serial-A", "condensate_pump").available is not basic
     assert account.diagnostics()["dehumidifiers"][profile] == {
         "identified": 1,
@@ -266,7 +269,7 @@ def test_error_ordering_retained_data_and_reconnect_cannot_clear_live_error():
     assert error.is_on is None and unit.action is None
     emit(account, "topics/info", {**data["info"], "timestamp": 6, "error": None})
     assert error.is_on is False and unit.action == Action.DRYING
-    unit.device.info_received_at -= 901
+    unit.device.alive_at -= 3601
     assert not error.available and not unit.available
     account._disconnected()
     account.connected = True
@@ -332,7 +335,7 @@ async def test_confirmed_commands_preserve_other_fields_and_device():
     await unit.async_turn_on()
     await unit.async_set_mode("night")
     await unit.async_set_humidity(60)
-    lock = BaconDryChildLock(account, "serial-A", "child_lock")
+    lock = BaconDrySwitch(account, "serial-A", "child_lock")
     await lock.async_turn_on()
     assert lock.is_on is True
     await lock.async_turn_off()
@@ -368,7 +371,7 @@ async def test_confirmed_commands_preserve_other_fields_and_device():
         {},
         {"powerEnabled": 1},
         {"opMode": "unknown"},
-        {"displayEnabled": False},
+        {"displayEnabled": 1},
         {"laundryModeTimestamp": 0},
         {"onTimestamp": 0},
         {"condensatePumpRunning": True},
@@ -437,6 +440,11 @@ async def test_unconfirmed_commands_are_unavailable_without_replay(outcome):
     writes = responding(account, data, outcome=outcome)
     with pytest.raises(HomeAssistantError):
         await unit.async_set_humidity(60)
+    if outcome not in ("desired", "disconnect"):
+        # C50: the immediate state read shows the actual, unchanged set point.
+        assert unit.available and unit.target_humidity == 50
+        assert writes == [{"humiditySetpoint": 60}]
+        return
     assert writes == [{"humiditySetpoint": 60}] and not unit.available
     assert (
         unit.target_humidity is None
@@ -454,9 +462,9 @@ def test_independent_streams_snapshot_and_recovery():
     account, unit, data = configured()
     sensor = BaconDrySensor(account, "serial-A", "humidity")
     identity = sensor.unique_id
-    unit.device.sensor_received_at -= 901
+    unit.device.sensor_received_at -= 3601
     for key in unit.device.sensor_fields_received_at:
-        unit.device.sensor_fields_received_at[key] -= 901
+        unit.device.sensor_fields_received_at[key] -= 3601
     for timestamp, retained in [(1, False), (2, False), (3, True)]:
         emit(
             account,
@@ -507,7 +515,8 @@ async def test_late_discovery_keeps_entity_identity_and_unload_listeners(hass):
         track_entities(entry, account, added.extend, platform)
     assert not added
     _, _, data = configured("dry_4000i", account=account)
-    assert len(added) == 8  # humidifier, three sensors, three flags and device error
+    # Humidifier, three sensors, three flags, device error and display switch.
+    assert len(added) == 9
     remembered = {e.unique_id for e in added}
     emit(account, "topics/meta", {})
     assert not any(
@@ -523,12 +532,12 @@ async def test_late_discovery_keeps_entity_identity_and_unload_listeners(hass):
         "topics/sensor",
         {"items": [{**extended["sensor"]["items"][0], "timestamp": 3}]},
     )
-    assert len(added) == 10 and remembered <= {e.unique_id for e in added}
+    assert len(added) == 11 and remembered <= {e.unique_id for e in added}
     assert all(e.available for e in added)
     for remove in cleanup:
         remove()
     configured("dry_8000i", "serial-B", account)
-    assert len(added) == 10
+    assert len(added) == 11
     await async_setup_entry(
         hass, SimpleNamespace(runtime_data=SimpleNamespace(bacon=None)), Mock()
     )
@@ -579,7 +588,7 @@ async def test_delayed_confirmation_and_cancellation(cancel):
 
 async def test_readonly_missing_rights_and_unknown_modes_never_publish():
     account, unit, data = configured("dry_4000i")
-    lock = BaconDryChildLock(account, "serial-A", "child_lock")
+    lock = BaconDrySwitch(account, "serial-A", "child_lock")
     assert lock.is_on is None
     with pytest.raises(ServiceValidationError):
         await lock.async_turn_on()
@@ -594,3 +603,88 @@ async def test_readonly_missing_rights_and_unknown_modes_never_publish():
     with pytest.raises(ServiceValidationError):
         await unit.async_turn_off()
     account._mqtt.publish.assert_not_called()
+
+
+@pytest.mark.parametrize("profile", ["dry_4000i", "dry_8000i"])
+async def test_display_switch_sends_one_field_and_reads_back(profile):
+    account, unit, data = configured(profile)
+    display = BaconDrySwitch(account, "serial-A", "display")
+    assert display.unique_id.endswith(":dry_display")
+    assert display.translation_key == "bacon_dry_display"
+    assert display.available and display.is_on is True
+    writes = responding(account, data)
+    await display.async_turn_off()
+    assert display.is_on is False
+    await display.async_turn_on()
+    assert display.is_on is True
+    assert writes == [{"displayEnabled": False}, {"displayEnabled": True}]
+    assert unit.mode == "auto"
+
+
+@pytest.mark.parametrize("meta", [None, {}, {"ro": True}])
+async def test_display_switch_absent_unless_declared_writable(meta):
+    account, _, data = configured()
+    state = data["metadata"]["shadows"]["state"]
+    state.pop("displayEnabled")
+    if meta is not None:
+        state["displayEnabled"] = meta
+    emit(account, "topics/meta", data["metadata"])
+    display = BaconDrySwitch(account, "serial-A", "display")
+    assert not display.available and display.is_on is None
+    assert not dry.command_valid(display.device, {"displayEnabled": False}, "x")
+    with pytest.raises(ServiceValidationError):
+        await display.async_turn_off()
+    account._mqtt.publish.assert_not_called()
+
+
+@pytest.mark.parametrize("value", ["on", 1, None])
+async def test_display_switch_needs_boolean_report(value):
+    account, _, data = configured()
+    update(account, data, displayEnabled=value)
+    display = BaconDrySwitch(account, "serial-A", "display")
+    assert not display.available
+    model = display.device.model
+    assert not dry.command_valid(display.device, {"displayEnabled": True}, model)
+    assert not dry.command_valid(
+        display.device, {"displayEnabled": True, "childLockEnabled": True}, model
+    )
+
+
+def test_display_switch_discovery_follows_metadata():
+    account, _, _ = configured("dry_4000i")
+    added = []
+    entry = SimpleNamespace(async_on_unload=lambda remove: None)
+    track_entities(entry, account, added.extend, "switch")
+    # The basic profile declares only the display as writable.
+    assert [entity.key for entity in added] == ["display"]
+
+
+def test_child_lock_identity_is_unchanged_by_the_switch_rename():
+    account, _, _ = configured()
+    lock = BaconDrySwitch(account, "serial-A", "child_lock")
+    assert lock.unique_id == device_key("account-A", "serial-A") + ":dry_child_lock"
+    assert lock.translation_key == "bacon_dry_child_lock"
+    assert lock.entity_category is EntityCategory.CONFIG
+
+
+def test_explicit_offline_makes_entities_unavailable_at_once():
+    account, unit, data = configured()
+    _, climate, rac_data = rac_configured(serial="serial-B", account=account)
+    links = {
+        serial: BaconConnectivity(account, serial)
+        for serial in ("serial-A", "serial-B")
+    }
+    assert unit.available and climate.available
+    assert all(link.is_on is True for link in links.values())
+    for serial, info in (("serial-A", data["info"]), ("serial-B", rac_data["info"])):
+        emit(
+            account,
+            "topics/info",
+            {**info, "timestamp": info["timestamp"] + 1, "online": False},
+            serial,
+        )
+    assert not unit.available and not climate.available
+    assert unit.is_on is None and climate.hvac_mode is None
+    # The connectivity sensor stays available and reports the device as off.
+    for link in links.values():
+        assert link.available and link.is_on is False

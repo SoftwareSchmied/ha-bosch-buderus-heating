@@ -98,29 +98,56 @@ async def test_uncertain_put_never_leaves_old_target_fresh(
     assert coordinator.data[TARGET].freshness is Freshness.STALE
     assert not coordinator.data[TARGET].available
     assert coordinator.data[TARGET].last_success == before.last_success
-    assert entity.target_temperature is None
+    assert entity.native_target_temperature is None
     assert not entity.supported_features & ClimateEntityFeature.TARGET_TEMPERATURE
     assert TARGET not in controls(coordinator)
-    with pytest.raises(ServiceValidationError):
+    with pytest.raises(HomeAssistantError) as refused:
         await entity.async_set_temperature(temperature=23)
+    if isinstance(error, RateLimited):
+        # The cloud pause it started is named first (D26).
+        assert refused.value.translation_key == "command_cloud_rate_limited"
+    else:
+        assert isinstance(refused.value, ServiceValidationError)
     assert coordinator.client.put_resource_value.await_count == 1
 
 
 async def test_cancelled_put_invalidates_only_affected_setting(hass):
+    from custom_components.bosch_buderus_heating.write_window import (
+        ensure_send_window,
+    )
+
     _, coordinator, entity = setup(hass)
-    coordinator._write_service.async_write_number.side_effect = asyncio.CancelledError()
+
+    async def cancelled_put(*_args, **_kwargs):
+        ensure_send_window(0.0)  # the PUT goes out ...
+        raise asyncio.CancelledError  # ... and is cancelled on its way
+
+    coordinator._write_service.async_write_number.side_effect = cancelled_put
     with pytest.raises(asyncio.CancelledError):
         await entity.async_set_temperature(temperature=22)
     assert TARGET not in controls(coordinator)
     assert MODE in controls(coordinator)
 
 
-async def test_failed_guard_read_marks_the_dependency_stale(hass):
+async def test_cancelled_write_before_its_put_keeps_the_setting(hass):
+    """A cancellation before the PUT went out changes nothing."""
+    _, coordinator, entity = setup(hass)
+    coordinator._write_service.async_write_number.side_effect = asyncio.CancelledError()
+    with pytest.raises(asyncio.CancelledError):
+        await entity.async_set_temperature(temperature=22)
+    assert TARGET in controls(coordinator)
+    assert MODE in controls(coordinator)
+
+
+async def test_failed_guard_read_keeps_the_dependency_like_a_failed_poll(hass):
+    # C33: nothing was written, so a failed preflight read changes nothing.
     _, coordinator, entity = setup(hass)
     coordinator.client.get_resource.side_effect = RequestTimeout()
     with pytest.raises(HomeAssistantError):
         await entity.async_set_temperature(temperature=22)
     coordinator._write_service.async_write_number.assert_not_awaited()
-    assert not entity.available
-    assert coordinator.data[MODE].freshness is Freshness.STALE
+    coordinator.client.put_resource_value.assert_not_awaited()
+    assert entity.available
+    assert coordinator.data[MODE].freshness is Freshness.FRESH
+    assert not coordinator.data[MODE].ended
     assert coordinator.data[TARGET].freshness is Freshness.FRESH

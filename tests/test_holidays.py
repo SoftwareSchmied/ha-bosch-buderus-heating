@@ -297,7 +297,7 @@ def test_candidate_count_and_user_text_are_bounded() -> None:
     assert all(period.name is None for period in state.periods)
 
 
-def test_writable_app_configuration_and_period_are_strictly_parsed() -> None:
+def test_writable_configuration_and_period_are_strictly_parsed() -> None:
     resources = {
         HOLIDAY_LIST_PATH: Resource(
             path=HOLIDAY_LIST_PATH,
@@ -549,3 +549,162 @@ def test_malformed_holiday_contract_cannot_be_treated_as_an_omitted_field(field,
         ),
     }
     assert parse_holiday_write_configuration(resources) is None
+
+
+@pytest.mark.parametrize(
+    ("start", "end", "all_day"),
+    [
+        # C39: the form written for an all-day calendar event.
+        ("2030-09-01T00:00:00", "2030-09-08T00:00:00", True),
+        ("2030-09-01T00:00:00", "2030-09-08T24:00:00", True),
+        ("2030-09-01T00:00:00", "2030-09-08T12:00:00", False),
+        ("2030-09-01T08:00:00", "2030-09-08T00:00:00", False),
+    ],
+)
+def test_midnight_to_midnight_periods_are_all_day(start, end, all_day) -> None:
+    zone = ZoneInfo("Europe/Berlin")
+    resource = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value=[{"id": 3, "startDate": start, "endDate": end}],
+        has_value=True,
+    )
+    (period,) = parse_holiday_state(
+        {HOLIDAY_LIST_PATH: resource}, fallback_timezone=zone
+    ).periods
+    assert period.all_day is all_day
+    assert period.start == datetime.fromisoformat(start).replace(tzinfo=zone)
+
+
+def test_all_day_calendar_holiday_reads_back_as_all_day() -> None:
+    from custom_components.bosch_buderus_heating.holiday_writes import (
+        create_holiday_values,
+    )
+    from custom_components.bosch_buderus_heating.holidays import (
+        HolidayWriteConfiguration,
+    )
+
+    configuration = HolidayWriteConfiguration(
+        date_time_mode="dateTime",
+        assigned_to=("hc1", "dhw1"),
+        heating_mode="FIX_TEMPERATURE",
+        dhw_mode="OFF",
+        ventilation_mode=None,
+        thermal_disinfection=None,
+        fix_temperature=17.0,
+        name_codec=HolidayNameCodec("BASE64", "UTF16", 49),
+        heating_modes=("FIX_TEMPERATURE", "OFF"),
+        dhw_modes=("OFF", "ECO"),
+        ventilation_modes=(),
+        thermal_disinfection_modes=(),
+        fix_temperature_min=5.0,
+        fix_temperature_max=30.0,
+    )
+    zone = ZoneInfo("Europe/Berlin")
+    created = create_holiday_values(
+        date(2030, 9, 1), date(2030, 9, 8), "Urlaub", configuration, zone
+    )
+    resource = Resource(
+        path=HOLIDAY_LIST_PATH,
+        value=[{"id": 3, **created.as_payload()}],
+        has_value=True,
+    )
+    (period,) = parse_holiday_state(
+        {HOLIDAY_LIST_PATH: resource}, fallback_timezone=zone
+    ).periods
+    assert period.all_day
+    assert (period.start.date(), period.end.date()) == (
+        date(2030, 9, 1),
+        date(2030, 9, 8),
+    )
+
+
+def test_rows_with_several_synonyms_are_always_read_the_same_way() -> None:
+    """D28: the documented priority decides, never the hash seed.
+
+    A row with a separate date and time of day is read by its date, a named
+    zone wins over a fixed offset, and ``id`` and ``name`` win over their
+    synonyms. Before, the choice changed with each Home Assistant start.
+    """
+    from custom_components.bosch_buderus_heating import holidays
+
+    for keys in (
+        holidays._START_KEYS,
+        holidays._END_KEYS,
+        holidays._ID_KEYS,
+        holidays._NAME_KEYS,
+        holidays._TIME_ZONE_KEYS,
+    ):
+        assert isinstance(keys, tuple) and len(set(keys)) == len(keys)
+    resource = Resource(
+        path=HOLIDAY_LIST_PATH,
+        values=(
+            {
+                "id": "7",
+                "uuid": "other",
+                "name": "Winter",
+                "title": "Other",
+                "startDate": "2026-12-24",
+                "startTime": "2026-12-24T10:00:00",
+                "endDate": "2026-12-26",
+                "endTime": "2026-12-26T18:00:00",
+                "timeZone": "Europe/Berlin",
+                "offset": "+05:00",
+            },
+        ),
+    )
+    state = parse_holiday_state(
+        {resource.path: resource},
+        fallback_timezone=UTC,
+        timezones={"Europe/Berlin": ZoneInfo("Europe/Berlin")},
+    )
+    period = state.periods[0]
+    assert period.all_day
+    assert period.start.isoformat() == "2026-12-24T00:00:00+01:00"
+    assert period.end.isoformat() == "2026-12-27T00:00:00+01:00"
+    assert period.name == "Winter"
+    assert period.identifier == "7"
+
+
+def test_the_synonym_priority_does_not_depend_on_the_hash_seed() -> None:
+    """D28: the same row gives the same period under different hash seeds."""
+    import os
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    package = Path(__file__).parents[1] / "custom_components" / "bosch_buderus_heating"
+    script = (
+        # Only the holidays module and what it imports: the package itself
+        # would load Home Assistant first, which takes most of the time.
+        "import sys, types\n"
+        f"for name, path in (('custom_components', {str(package.parent)!r}),"
+        f" ('custom_components.bosch_buderus_heating', {str(package)!r})):\n"
+        "    sys.modules[name] = types.ModuleType(name)\n"
+        "    sys.modules[name].__path__ = [path]\n"
+        "from custom_components.bosch_buderus_heating import holidays as h\n"
+        "row = {k: str(i) for i, k in enumerate(h._START_KEYS + h._END_KEYS)}\n"
+        "print(h._find_value(row, h._START_KEYS), h._find_value(row, h._END_KEYS))\n"
+    )
+    # The four interpreters run side by side; each one only imports and prints.
+    processes = [
+        subprocess.Popen(
+            [sys.executable, "-c", script],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env={**os.environ, "PYTHONHASHSEED": seed},
+        )
+        for seed in ("1", "2", "3", "4")
+    ]
+    seen = set()
+    try:
+        for process in processes:
+            output, errors = process.communicate(timeout=60)
+            assert process.returncode == 0, errors
+            seen.add(output.strip())
+    finally:
+        for process in processes:
+            if process.poll() is None:
+                process.kill()
+                process.communicate()
+    assert seen == {"0 12"}

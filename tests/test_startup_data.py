@@ -12,7 +12,6 @@ import pytest
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating import (
     _async_load_startup_data,
@@ -21,6 +20,7 @@ from custom_components.bosch_buderus_heating import (
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
     BoschBuderusDataUpdateCoordinator,
+    IdleAfterFailure,
     ResourceSnapshot,
     SnapshotSource,
 )
@@ -31,6 +31,7 @@ from custom_components.bosch_buderus_heating.discovery import (
     DiscoveryDiagnostics,
     async_discover_resources,
 )
+from custom_components.bosch_buderus_heating.entry_sources import pointt_coordinators
 from custom_components.bosch_buderus_heating.inventory import (
     InventoryError,
     build_anonymized_inventory,
@@ -71,6 +72,8 @@ from custom_components.bosch_buderus_heating.startup_data import (
     safe_technical_value,
     startup_placeholder,
 )
+from tests.ha_test_helpers import MockConfigEntry
+from tests.helpers.managed_runtime import pointt_client, wait_for_sources
 
 PRODUCT = "/devices/synthetic-device/productName"
 FAST = "/heatSources/actualModulation"
@@ -463,19 +466,27 @@ def test_pending_queue_is_bounded_even_when_a_gateway_advertises_too_many_paths(
     assert len(state.due(0)) == 30
 
 
-@pytest.mark.parametrize("bulk_item", [False, True])
-async def test_real_authentication_failure_requests_reauth(environment, bulk_item):
+async def test_real_authentication_failure_requests_reauth(environment):
     _, client, coordinator = environment
     coordinator.startup_data.schedule(PRODUCT, 2)
-    if bulk_item:
-        client.get_resources_bulk.return_value = (
-            BatchItemResult("synthetic", PRODUCT, 401),
-        )
-    else:
-        client.get_resources_bulk.side_effect = AuthenticationError()
+    client.get_resources_bulk.side_effect = AuthenticationError()
     with pytest.raises(ConfigEntryAuthFailed):
         await coordinator._async_update_data()
     assert coordinator.startup_session.closed
+    assert not coordinator.startup_session.busy
+
+
+async def test_item_401_keeps_the_sign_in_and_retries_the_path(environment):
+    """C14/START-3: the request was accepted, so only this path failed."""
+    _, client, coordinator = environment
+    coordinator.startup_data.schedule(PRODUCT, 2)
+    client.get_resources_bulk.return_value = (
+        BatchItemResult("synthetic", PRODUCT, 401),
+    )
+    await coordinator._async_update_data()
+    read = coordinator.startup_data.reads[PRODUCT]
+    assert read.pending and read.result == "http_401" and read.attempts == 1
+    assert not coordinator.startup_session.closed
     assert not coordinator.startup_session.busy
 
 
@@ -494,7 +505,9 @@ async def test_main_failure_has_priority_and_cannot_be_healed_by_metadata(enviro
     client.get_resources_bulk.assert_not_awaited()
     assert not coordinator.startup_data.healthy
     coordinator.last_update_success = False
-    await coordinator._async_update_data()
+    # B03: a cycle with nothing to request keeps the failure.
+    with pytest.raises(IdleAfterFailure):
+        await coordinator._async_update_data()
     client.get_resources_bulk.assert_not_awaited()
 
 
@@ -646,9 +659,25 @@ async def test_diagnostics_are_local_and_inventory_drops_technical_values(enviro
     ):
         coordinator.resources[resource.path] = resource
     coordinator.startup_data.schedule(PRODUCT, 2, advertised=True)
+    coordinator.startup_data.schedule(
+        "/devices/synthetic-other/productName", 2, advertised=True
+    )
     coordinator.startup_data.omit_license()
     diagnostics = await async_get_config_entry_diagnostics(coordinator.hass, entry)
-    assert diagnostics["diagnostics_schema"] == 28
+    assert diagnostics["diagnostics_schema"] == 46
+    # O94: the same masked path twice is told apart by its number.
+    products = [
+        item
+        for item in diagnostics["gateways"][0]["startup_data"]["paths"]
+        if item["path"].endswith("/productName")
+    ]
+    assert len({item["path"] for item in products}) == 1
+    assert sorted(item["index"] for item in products) == [1, 2]
+    assert all(
+        "index" not in item
+        for item in diagnostics["gateways"][0]["startup_data"]["paths"]
+        if not item["path"].endswith("/productName")
+    )
     assert diagnostics["privacy"]["contains_raw_resource_values"] is True
     metadata = diagnostics["gateways"][0]["technical_metadata"]
     assert {item["path"] for item in metadata} == {
@@ -711,15 +740,18 @@ def test_live_or_structural_surprises_are_not_reused_as_static_cache():
 async def test_removing_an_entry_drops_only_its_own_account_pause(environment):
     from custom_components.bosch_buderus_heating import async_remove_entry
     from custom_components.bosch_buderus_heating.auth_lifecycle import ACCOUNT_BACKOFFS
+    from custom_components.bosch_buderus_heating.configuration_migration import (
+        legacy_cloud_connection_id,
+    )
 
     entry, client, coordinator = environment
     other = RateLimitBackoff()
     coordinator.hass.data[ACCOUNT_BACKOFFS] = {
-        entry.entry_id: client.backoff,
-        "other": other,
+        (entry.entry_id, legacy_cloud_connection_id(entry.entry_id)): client.backoff,
+        ("other", "cloud"): other,
     }
     await async_remove_entry(coordinator.hass, entry)
-    assert coordinator.hass.data[ACCOUNT_BACKOFFS] == {"other": other}
+    assert coordinator.hass.data[ACCOUNT_BACKOFFS] == {("other", "cloud"): other}
     await async_remove_entry(coordinator.hass, entry)
 
 
@@ -822,9 +854,7 @@ async def test_real_ha_registry_and_entities_recover_during_a_refresh(hass):
         return {FAST: scalar(FAST, 20)}
 
     with (
-        patch(
-            "custom_components.bosch_buderus_heating.PointTClient", return_value=client
-        ),
+        pointt_client(client),
         patch(
             "custom_components.bosch_buderus_heating.coordinator.async_discover_resources",
             side_effect=discover,
@@ -839,11 +869,12 @@ async def test_real_ha_registry_and_entities_recover_during_a_refresh(hass):
         ),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
+        await wait_for_sources(hass, entry, 1)
         await hass.async_block_till_done()
         assert hass.states.get(existing.entity_id).state == "unavailable"
         product_id = f"synthetic:{PRODUCT.strip('/').replace('/', ':')}"
         assert registry.async_get_entity_id("sensor", DOMAIN, product_id) is None
-        coordinator = entry.runtime_data.coordinators[0]
+        coordinator = pointt_coordinators(entry)[0]
         recovery_at = (
             max(read.next_attempt for read in coordinator.startup_data.reads.values())
             + 60
@@ -871,3 +902,53 @@ async def test_real_ha_registry_and_entities_recover_during_a_refresh(hass):
         if registered_product.disabled_by is None:
             assert hass.states.get(product_entity_id).state == "MX400"
         assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+@pytest.mark.parametrize("status", [403, 404, 406])
+@pytest.mark.parametrize("advertised,registered", [(True, False), (False, True)])
+def test_a_value_answered_as_missing_is_given_up_after_five_answers(
+    status, advertised, registered
+):
+    """D33: no endless read every 30 minutes for a replaced device."""
+    from custom_components.bosch_buderus_heating.startup_data import (
+        MAX_MISSING_ANSWERS,
+    )
+
+    assert MAX_MISSING_ANSWERS == 5
+    state = StartupGatewayData()
+    state.schedule(PRODUCT, 2, advertised=advertised, registered=registered)
+    now = 100.0
+    for _ in range(MAX_MISSING_ANSWERS - 1):
+        paths = state.due(now)
+        assert paths == (PRODUCT,)
+        state.start(paths, STAMP)
+        state.fail(paths, f"http_{status}", now)
+        assert state.reads[PRODUCT].pending
+        now += 1800
+    paths = state.due(now)
+    state.start(paths, STAMP)
+    state.fail(paths, f"http_{status}", now)
+    read = state.reads[PRODUCT]
+    assert read.result == "unsupported" and not read.pending
+    assert not state.due(now + 7 * 86400)
+    assert read.attempts == MAX_MISSING_ANSWERS
+    # The next discovery asks once more, with a fresh count.
+    state.begin_discovery()
+    state.schedule(PRODUCT, 2, advertised=advertised, registered=registered)
+    assert state.due(now) == (PRODUCT,)
+    assert state.reads[PRODUCT].missing_answers == 0
+
+
+def test_other_failures_and_a_success_do_not_use_up_the_missing_answers():
+    state = StartupGatewayData()
+    state.schedule(PRODUCT, 2, registered=True)
+    now = 100.0
+    for category in ("http_404",) * 4 + ("service_unavailable",) * 3:
+        paths = state.due(now)
+        state.start(paths, STAMP)
+        state.fail(paths, category, now)
+        now += 1800
+    assert state.reads[PRODUCT].pending
+    assert state.reads[PRODUCT].missing_answers == 4
+    assert state.receive(scalar(), now, STAMP)
+    assert state.reads[PRODUCT].missing_answers == 0

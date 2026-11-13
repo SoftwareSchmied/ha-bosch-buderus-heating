@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Mapping, Sequence
 
 from .bulk import normalize_resource_path
@@ -13,6 +14,7 @@ from .exceptions import (
     ResourceForbidden,
     ResourceNotAcceptable,
     ResourceNotFound,
+    ResourceOmitted,
 )
 from .models import (
     BatchItemResult,
@@ -100,6 +102,11 @@ def _response_resource_path(path: str) -> str:
         raise InvalidPayload("Response contained an invalid resource path") from err
 
 
+def _lenient_string(value: object) -> str | None:
+    """Optional descriptive gateway fields: an unexpected type is just absent."""
+    return value if isinstance(value, str) else None
+
+
 def parse_gateway(payload: object) -> Gateway:
     """Parse one gateway while tolerating unknown fields."""
     data = _mapping(payload, message="Gateway response must be an object")
@@ -112,16 +119,21 @@ def parse_gateway(payload: object) -> Gateway:
     )
     return Gateway(
         gateway_id=gateway_id,
-        device_type=_optional_string(data.get("deviceType", data.get("device_type"))),
-        model=_optional_string(data.get("model")),
-        firmware_version=_optional_string(
+        device_type=_lenient_string(data.get("deviceType", data.get("device_type"))),
+        model=_lenient_string(data.get("model")),
+        firmware_version=_lenient_string(
             data.get("firmwareVersion", data.get("firmware_version"))
         ),
     )
 
 
-def parse_gateways(payload: object) -> tuple[Gateway, ...]:
-    """Parse common gateway list response variants."""
+def parse_gateway_list(payload: object) -> tuple[tuple[Gateway, ...], int]:
+    """Parse a gateway list and count entries that cannot be read.
+
+    One unreadable entry, for example a new device of the account without an
+    ID, does not block the others. Only a list without any readable entry is
+    an invalid answer.
+    """
     items: Sequence[object]
     if isinstance(payload, Mapping) and "gateways" in payload:
         items = _sequence(
@@ -131,7 +143,21 @@ def parse_gateways(payload: object) -> tuple[Gateway, ...]:
         items = (payload,)
     else:
         items = _sequence(payload, message="Gateway list response must be an array")
-    return tuple(parse_gateway(item) for item in items)
+    gateways: list[Gateway] = []
+    skipped = 0
+    for item in items:
+        try:
+            gateways.append(parse_gateway(item))
+        except InvalidPayload:
+            skipped += 1
+    if skipped and not gateways:
+        raise InvalidPayload("Gateway list did not contain a readable gateway")
+    return tuple(gateways), skipped
+
+
+def parse_gateways(payload: object) -> tuple[Gateway, ...]:
+    """Parse common gateway list response variants, skipping unreadable entries."""
+    return parse_gateway_list(payload)[0]
 
 
 def parse_part_number(payload: object) -> str:
@@ -190,6 +216,47 @@ def _parse_numeric_error_states(value: object) -> tuple[tuple[int | float, ...],
     return tuple(sorted(markers)), True
 
 
+# A4/#73: the state a flow reports below its sensor's measuring range, as the
+# local access declares it ("lowflow", "LOW_FLOW").
+_LOW_FLOW_STATE = re.compile(r"(?:^|[^a-z0-9])low[_ -]?flow(?:[^a-z0-9]|$)")
+
+
+def _parse_below_range_states(value: object) -> tuple[int | float, ...]:
+    """The numeric values declared as below the measuring range."""
+    if not isinstance(value, list) or len(value) > 32:
+        return ()
+    markers: set[int | float] = set()
+    for item in value:
+        if not isinstance(item, Mapping):
+            return ()
+        for key, marker in item.items():
+            if (
+                isinstance(key, str)
+                and _LOW_FLOW_STATE.search(key.casefold()) is not None
+                and isinstance(marker, (int, float))
+                and not isinstance(marker, bool)
+                and math.isfinite(marker)
+            ):
+                markers.add(marker)
+    return tuple(sorted(markers))
+
+
+def _parse_availability_flag(
+    data: Mapping[str, object], key: str
+) -> tuple[bool | None, bool]:
+    """Read a used/available flag; an absent flag is valid and unreported."""
+    if key not in data:
+        return None, True
+    raw = data[key]
+    if isinstance(raw, bool):
+        return raw, True
+    # The TC100.2 RRC controller sends the exact JSON strings
+    # "true"/"false". Other spellings and numbers remain malformed.
+    if isinstance(raw, str) and raw in ("true", "false"):
+        return raw == "true", True
+    return None, False
+
+
 SWITCH_PROGRAM_FIELDS = (
     "setpointProperty",
     "maxNbOfSwitchPoints",
@@ -244,12 +311,19 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
     numeric_error_values, numeric_error_states_valid = _parse_numeric_error_states(
         data.get("state")
     )
+    below_range_values = _parse_below_range_states(data.get("state"))
+    if below_range_values:
+        # Not a reading either: shown as unknown, like the local access.
+        numeric_error_values = tuple(
+            sorted({*numeric_error_values, *below_range_values})
+        )
     try:
         step_size = _optional_number(data.get("stepSize"))
     except InvalidPayload:
         step_size = None
     step_size_valid = "stepSize" not in data or step_size is not None
-    used_raw, available_raw = data.get("used"), data.get("available")
+    used, used_valid = _parse_availability_flag(data, "used")
+    available, available_valid = _parse_availability_flag(data, "available")
     program_fields = (
         {key: _json_value(data[key]) for key in SWITCH_PROGRAM_FIELDS if key in data}
         if data.get("type") == "switchProgram"
@@ -265,19 +339,18 @@ def parse_resource(payload: object, *, path: str | None = None) -> Resource:
             resource_type=_optional_string(data.get("type")),
             unit=_optional_string(data.get("unitOfMeasure")),
             allowed_values=allowed_values,
+            allowed_values_missing="allowedValues" not in data,
             minimum=_optional_number(data.get("minValue")),
             maximum=_optional_number(data.get("maxValue")),
             writable=bool(writable_raw),
             numeric_error_values=numeric_error_values,
             numeric_error_states_valid=numeric_error_states_valid,
+            below_range_values=below_range_values,
             step_size=step_size,
             step_size_valid=step_size_valid,
-            used=used_raw if isinstance(used_raw, bool) else None,
-            available=(available_raw if isinstance(available_raw, bool) else None),
-            availability_flags_valid=all(
-                key not in data or isinstance(data[key], bool)
-                for key in ("used", "available")
-            ),
+            used=used,
+            available=available,
+            availability_flags_valid=used_valid and available_valid,
         ),
         references=_parse_references(data.get("references")),
         program_fields=program_fields,
@@ -361,7 +434,7 @@ def parse_batch_response(
                     gateway_id=gateway_id,
                     path=path,
                     status=None,
-                    error=InvalidPayload("Bulk response omitted a requested path"),
+                    error=ResourceOmitted("Bulk response omitted a requested path"),
                 )
             )
             continue

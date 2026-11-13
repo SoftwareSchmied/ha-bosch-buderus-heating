@@ -32,12 +32,13 @@ def test_stable_project_identity() -> None:
 
     assert manifest["domain"] == "bosch_buderus_heating"
     assert manifest["name"] == "Bosch/Buderus Home Comfort"
-    assert manifest["version"] == "0.8.4-beta.1"
+    assert manifest["version"] == "0.9.0"
     assert project["project"]["version"] == manifest["version"]
     assert manifest["requirements"] == ["aiomqtt==2.5.1"]
     assert set(manifest["requirements"]).issubset(project["project"]["dependencies"])
     assert manifest["config_flow"] is True
     assert hacs["name"] == manifest["name"]
+    assert hacs["homeassistant"] == "2026.5.0"
     assert hacs["zip_release"] is True
     assert hacs["filename"] == "bosch_buderus_heating.zip"
     assert strings["title"] == manifest["name"]
@@ -106,8 +107,8 @@ def test_all_known_sensor_enum_options_have_translations() -> None:
             assert set(sensors[translation_key]["state"]) == set(options)
 
 
-def test_heat_source_status_translations_match_vendor_app_terms() -> None:
-    """Operational status labels follow the MyBuderus/HomeCom terminology."""
+def test_heat_source_status_translations_are_consistent() -> None:
+    """Operational status labels use consistent, clear terminology."""
     german = load_json(INTEGRATION / "translations" / "de.json")
     sensor = german["entity"]["sensor"]
 
@@ -144,8 +145,8 @@ def test_heat_source_type_translations_are_complete() -> None:
     }
 
 
-def test_schedule_type_translations_match_vendor_app_terms() -> None:
-    """Schedule types use the terms found in both official app variants."""
+def test_schedule_type_translations_are_consistent() -> None:
+    """Schedule types use consistent terms in both UI languages."""
     source = load_json(INTEGRATION / "strings.json")["entity"]["sensor"]
     german = load_json(INTEGRATION / "translations" / "de.json")["entity"]["sensor"]
     english = load_json(INTEGRATION / "translations" / "en.json")["entity"]["sensor"]
@@ -179,8 +180,8 @@ def test_schedule_type_translations_match_vendor_app_terms() -> None:
         "system_type",
     ],
 )
-def test_app_audited_enum_translations_are_complete(translation_key: str) -> None:
-    """Expanded app enum groups remain aligned in both UI languages."""
+def test_enum_translations_are_complete(translation_key: str) -> None:
+    """Expanded enum groups remain aligned in both UI languages."""
     source = load_json(INTEGRATION / "strings.json")["entity"]["sensor"]
     german = load_json(INTEGRATION / "translations" / "de.json")["entity"]["sensor"]
     english = load_json(INTEGRATION / "translations" / "en.json")["entity"]["sensor"]
@@ -192,8 +193,8 @@ def test_app_audited_enum_translations_are_complete(translation_key: str) -> Non
     )
 
 
-def test_holiday_translations_are_clear_and_match_vendor_terms() -> None:
-    """Holiday labels stay consistent with the official app terminology."""
+def test_holiday_translations_are_clear_and_consistent() -> None:
+    """Holiday labels stay clear and consistent."""
     german = load_json(INTEGRATION / "translations" / "de.json")["entity"]
     english = load_json(INTEGRATION / "translations" / "en.json")["entity"]
 
@@ -260,3 +261,14 @@ def test_fixable_issue_translations_use_only_fix_flow(path: Path) -> None:
     for issue in issues.values():
         assert isinstance(issue, dict)
         assert not ({"description", "fix_flow"} <= issue.keys())
+
+
+def test_every_test_has_a_time_limit(request: pytest.FixtureRequest) -> None:
+    """D49: a hanging test is stopped and named, not the whole CI job."""
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert project["tool"]["pytest"]["ini_options"]["timeout"] == 120
+    test_extras = project["project"]["optional-dependencies"]["test"]
+    assert "pytest-timeout==2.4.0" in test_extras
+    # Where the plugin is installed (every CI job), the option is applied.
+    if request.config.pluginmanager.hasplugin("timeout"):
+        assert request.config.getini("timeout") == "120"

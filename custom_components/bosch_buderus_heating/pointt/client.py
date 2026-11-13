@@ -2,26 +2,31 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+import asyncio
+import logging
+from collections.abc import Callable, Mapping, Sequence
 from typing import Literal, Protocol
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 
 import aiohttp
 
-from .bulk import chunk_resource_paths, normalize_resource_path
+from .bulk import chunk_resource_paths, normalize_query, normalize_resource_path
 from .const import DEFAULT_USER_AGENT, MAX_BULK_PATHS, POINTT_BASE_URL
 from .exceptions import AccessTokenRejected
+from .firmware_updates import FirmwareUpdates, parse_firmware_updates
 from .metrics import RequestMetrics
 from .models import BatchItemResult, Gateway, JsonValue, Resource
 from .parsers import (
     parse_batch_response,
     parse_gateway,
-    parse_gateways,
+    parse_gateway_list,
     parse_part_number,
     parse_resource,
 )
 from .token_manager import StaticTokenProvider
 from .transport import PointTTransport, RateLimitBackoff, RetryPolicy
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class AccessTokenProvider(Protocol):
@@ -48,8 +53,13 @@ class PointTClient:
         retry_policy: RetryPolicy | None = None,
         metrics: RequestMetrics | None = None,
         backoff: RateLimitBackoff | None = None,
+        request_guard: Callable[[], None] | None = None,
+        request_semaphore: asyncio.Semaphore | None = None,
+        gateway_id: str | None = None,
     ) -> None:
         self._token_provider: AccessTokenProvider
+        self._request_guard = request_guard or (lambda: None)
+        self._gateway_id = gateway_id
         if isinstance(access_token, str):
             self._token_provider = StaticTokenProvider(access_token)
         else:
@@ -62,6 +72,8 @@ class PointTClient:
             retry_policy=retry_policy,
             metrics=metrics,
             backoff=backoff,
+            request_guard=self._request_guard,
+            request_semaphore=request_semaphore,
         )
 
     @property
@@ -76,22 +88,46 @@ class PointTClient:
 
     async def get_gateways(self) -> tuple[Gateway, ...]:
         """Return the gateways visible to the current account."""
+        if self._gateway_id is not None:
+            raise ValueError("A gateway source cannot enumerate an account")
         payload = await self._request("GET", "gateways/", retryable=True)
-        return parse_gateways(payload)
+        gateways, skipped = parse_gateway_list(payload)
+        if skipped:
+            self.metrics.record_skipped_gateway_entries(skipped)
+            _LOGGER.debug("Ignored %d unreadable gateway list entries", skipped)
+        return gateways
 
     async def get_gateway(self, gateway_id: str) -> Gateway:
         """Return normalized metadata for one gateway."""
-        gateway = _encode_gateway_id(gateway_id)
+        gateway = self._encode_gateway(gateway_id)
         payload = await self._request("GET", f"gateways/{gateway}", retryable=True)
         return parse_gateway(payload)
 
     async def get_part_number(self, gateway_id: str) -> str:
         """Return a gateway part number."""
-        gateway = _encode_gateway_id(gateway_id)
+        gateway = self._encode_gateway(gateway_id)
         payload = await self._request(
             "GET", f"gateways/{gateway}/partnumber", retryable=True
         )
         return parse_part_number(payload)
+
+    async def get_local_identity_evidence(
+        self, gateway_id: str
+    ) -> tuple[JsonValue, JsonValue]:
+        """Read raw identity fields before tolerant resource parsing discards them.
+
+        Explicit local setup only; both GETs retain normal account pacing,
+        authentication, request guards and rate-limit accounting.
+        """
+        gateway = self._encode_gateway(gateway_id)
+        metadata = await self._request("GET", f"gateways/{gateway}", retryable=True)
+        system = await self._request(
+            "GET",
+            f"gateways/{gateway}/resource/system/info",
+            retryable=True,
+            resource_path="/system/info",
+        )
+        return metadata, system
 
     async def get_resource(
         self,
@@ -101,7 +137,7 @@ class PointTClient:
         fallback_reason: str | None = None,
     ) -> Resource:
         """Read and parse one resource path."""
-        gateway = _encode_gateway_id(gateway_id)
+        gateway = self._encode_gateway(gateway_id)
         normalized = normalize_resource_path(path)
         encoded_path = "/".join(
             quote(segment, safe="") for segment in normalized.lstrip("/").split("/")
@@ -122,7 +158,7 @@ class PointTClient:
         """Read one cp0 object through the shared account transport."""
         if section not in ("telemetry", "conf", "info"):
             raise ValueError("Invalid wallbox section")
-        gateway = _encode_gateway_id(gateway_id)
+        gateway = self._encode_gateway(gateway_id)
         path = f"/rest/v1/cp0/{section}"
         return await self._request(
             "GET",
@@ -131,11 +167,26 @@ class PointTClient:
             resource_path=path,
         )
 
+    async def get_firmware_updates(self, gateway_id: str) -> FirmwareUpdates | None:
+        """F1: the gateway's entry in the firmware update list, read-only.
+
+        No resource path: ``GET firmwareUpdates?gatewayId=<id>``. Sent once,
+        without an automatic retry; the account pause (429/Retry-After)
+        applies as for every request. ``None``: the list does not name the
+        gateway.
+        """
+        self._encode_gateway(gateway_id)
+        query = urlencode({"gatewayId": gateway_id.strip()})
+        payload = await self._request(
+            "GET", f"firmwareUpdates?{query}", retryable=False
+        )
+        return parse_firmware_updates(payload, gateway_id)
+
     async def put_resource_value(
         self, gateway_id: str, path: str, value: JsonValue
     ) -> Resource | None:
         """Write one scalar value without retrying a potentially applied PUT."""
-        gateway = _encode_gateway_id(gateway_id)
+        gateway = self._encode_gateway(gateway_id)
         normalized = normalize_resource_path(path)
         encoded_path = "/".join(
             quote(segment, safe="") for segment in normalized.lstrip("/").split("/")
@@ -149,6 +200,83 @@ class PointTClient:
         )
         if payload is None:
             return None
+        return parse_resource(payload, path=normalized)
+
+    async def put_resource_json(
+        self, gateway_id: str, path: str, value: JsonValue
+    ) -> Resource | None:
+        """Write one structured value (a list or an object) exactly once.
+
+        The body is ``{"value": value}`` as for scalars; never retried.
+        """
+        if not isinstance(value, list | dict):
+            raise ValueError("A structured PointT value is a list or an object")
+        return await self.put_resource_value(gateway_id, path, value)
+
+    async def put_resource_raw_json(
+        self, gateway_id: str, path: str, body: list[JsonValue]
+    ) -> None:
+        """Write a raw JSON array exactly once, without a ``{"value": ...}``
+        envelope (Z2: a weekly switch program); never retried.
+
+        The answer of the gateway is not used: the caller confirms the write
+        by reading the resource again.
+        """
+        if not isinstance(body, list):
+            raise ValueError("A raw PointT array body is a list")
+        gateway = self._encode_gateway(gateway_id)
+        normalized = normalize_resource_path(path)
+        await self._request(
+            "PUT",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}",
+            json_body=body,
+            retryable=False,
+            resource_path=normalized,
+        )
+
+    async def post_resource(
+        self, gateway_id: str, path: str, value: JsonValue
+    ) -> JsonValue:
+        """Create one entry below a resource (``{"value": value}``) without
+        retrying the non-idempotent POST; returns the raw answer, if any."""
+        gateway = self._encode_gateway(gateway_id)
+        normalized = normalize_resource_path(path)
+        return await self._request(
+            "POST",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}",
+            json_body={"value": value},
+            retryable=False,
+            resource_path=normalized,
+        )
+
+    async def delete_resource(self, gateway_id: str, path: str) -> None:
+        """Delete one resource without an automatic retry."""
+        gateway = self._encode_gateway(gateway_id)
+        normalized = normalize_resource_path(path)
+        await self._request(
+            "DELETE",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}",
+            retryable=False,
+            resource_path=normalized,
+        )
+
+    async def get_resource_query(
+        self, gateway_id: str, path: str, query: Mapping[str, str | int]
+    ) -> Resource:
+        """Read one resource with a validated query (W5: ``?entry=``,
+        ``?date=``, ``?next=``).
+
+        Errors, metrics and logs name the path without its query.
+        """
+        gateway = self._encode_gateway(gateway_id)
+        normalized = normalize_resource_path(path)
+        parameters = urlencode(normalize_query(query))
+        payload = await self._request(
+            "GET",
+            f"gateways/{gateway}/resource/{_encode_path(normalized)}?{parameters}",
+            retryable=True,
+            resource_path=normalized,
+        )
         return parse_resource(payload, path=normalized)
 
     async def put_icom_holiday_assignments(
@@ -170,7 +298,7 @@ class PointTClient:
             )
         ):
             raise ValueError("Invalid ICOM holiday assignments")
-        gateway = _encode_gateway_id(gateway_id)
+        gateway = self._encode_gateway(gateway_id)
         path = f"/system/holidayModes/hm{slot}/assignedTo"
         await self._request(
             "PUT",
@@ -184,7 +312,7 @@ class PointTClient:
         self, gateway_id: str, values: dict[str, JsonValue]
     ) -> None:
         """Create one holiday period without retrying the non-idempotent POST."""
-        gateway = _encode_gateway_id(gateway_id)
+        gateway = self._encode_gateway(gateway_id)
         await self._request(
             "POST",
             f"gateways/{gateway}/resource/holidayMode",
@@ -197,7 +325,7 @@ class PointTClient:
         self, gateway_id: str, holiday_id: int, values: dict[str, JsonValue]
     ) -> None:
         """Update one numeric holiday period without an automatic write retry."""
-        gateway = _encode_gateway_id(gateway_id)
+        gateway = self._encode_gateway(gateway_id)
         validated_id = _validate_holiday_id(holiday_id)
         await self._request(
             "PUT",
@@ -209,7 +337,7 @@ class PointTClient:
 
     async def delete_holiday_period(self, gateway_id: str, holiday_id: int) -> None:
         """Delete one numeric holiday period without an automatic write retry."""
-        gateway = _encode_gateway_id(gateway_id)
+        gateway = self._encode_gateway(gateway_id)
         validated_id = _validate_holiday_id(holiday_id)
         await self._request(
             "DELETE",
@@ -228,7 +356,7 @@ class PointTClient:
         request_type: str | None = None,
     ) -> tuple[BatchItemResult, ...]:
         """Read resources sequentially in safe bulk chunks."""
-        _encode_gateway_id(gateway_id)
+        self._encode_gateway(gateway_id)
         results: list[BatchItemResult] = []
         for chunk in chunk_resource_paths(paths, size=chunk_size):
             body: JsonValue = [
@@ -293,8 +421,10 @@ class PointTClient:
         request_type: str | None = None,
         fallback_reason: str | None = None,
     ) -> tuple[JsonValue, int]:
+        self._request_guard()
         self._transport.backoff.raise_if_active()
         token = await self._token_provider.get_access_token()
+        self._request_guard()
         try:
             return await self._transport.request_json_with_sequence(
                 method,
@@ -307,10 +437,12 @@ class PointTClient:
                 fallback_reason=fallback_reason,
             )
         except AccessTokenRejected:
+            self._request_guard()
             self._transport.backoff.raise_if_active()
             token = await self._token_provider.get_access_token(
                 force_refresh=True, rejected_token=token
             )
+            self._request_guard()
             return await self._transport.request_json_with_sequence(
                 method,
                 path,
@@ -323,11 +455,28 @@ class PointTClient:
                 attempt_offset=1,
             )
 
+    def _encode_gateway(self, gateway_id: str) -> str:
+        self._request_guard()
+        if self._gateway_id is not None and gateway_id != self._gateway_id:
+            raise ValueError("Gateway does not match the source binding")
+        return _encode_gateway_id(gateway_id)
+
+
+def _encode_path(normalized: str) -> str:
+    return "/".join(
+        quote(segment, safe="") for segment in normalized.lstrip("/").split("/")
+    )
+
 
 def _encode_gateway_id(gateway_id: str) -> str:
     value = gateway_id.strip()
     if not value:
         raise ValueError("Gateway ID must not be empty")
+    # quote() keeps dots, and the URL library resolves "." and ".." as path
+    # steps: "gateways/../resource" would reach another endpoint with the
+    # token (D45). Control and other invisible characters are never an ID.
+    if value in {".", ".."} or not value.isprintable():
+        raise ValueError("Gateway ID is not a valid path segment")
     return quote(value, safe="")
 
 

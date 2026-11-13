@@ -13,6 +13,7 @@ from homeassistant.helpers import issue_registry as ir
 from .const import DOMAIN, FIRMWARE_ISSUE_PREFIX
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .pointt import Resource
+from .repair_scope import repair_data, repair_id
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,9 +121,12 @@ def sync_firmware_compatibility_issue(
     hass: HomeAssistant,
     entry: ConfigEntry[Any],
     coordinators: tuple[BoschBuderusDataUpdateCoordinator, ...],
+    *,
+    connection_id: str | None = None,
+    binding_id: str | None = None,
 ) -> None:
     """Create one repair only when a known PointT capability changed shape."""
-    issue_id = f"{FIRMWARE_ISSUE_PREFIX}{entry.entry_id}"
+    issue_id = repair_id(FIRMWARE_ISSUE_PREFIX, entry, connection_id, binding_id)
     conflicts = sum(
         len(incompatible_capabilities(coordinator.resources))
         for coordinator in coordinators
@@ -134,9 +138,11 @@ def sync_firmware_compatibility_issue(
         hass,
         DOMAIN,
         issue_id,
-        data={"entry_id": entry.entry_id},
+        data=repair_data(entry, connection_id, binding_id),
         is_fixable=True,
         severity=ir.IssueSeverity.WARNING,
-        translation_key="incompatible_firmware",
+        translation_key="managed_firmware"
+        if entry.version == 4
+        else "incompatible_firmware",
         translation_placeholders={"conflict_count": str(conflicts)},
     )

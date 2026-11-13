@@ -9,7 +9,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating import _remove_retired_entities
 from custom_components.bosch_buderus_heating.binary_sensor import (
@@ -26,6 +25,7 @@ from custom_components.bosch_buderus_heating.diagnostics import (
     _capability_diagnostics,
     _discovery_diagnostics,
 )
+from custom_components.bosch_buderus_heating.entry_sources import pointt_coordinators
 from custom_components.bosch_buderus_heating.pointt import (
     AuthTokens,
     BatchItemResult,
@@ -40,6 +40,8 @@ from custom_components.bosch_buderus_heating.sensor import (
     BoschBuderusSensor,
     build_sensor_descriptions,
 )
+from tests.ha_test_helpers import MockConfigEntry
+from tests.helpers.managed_runtime import wait_for_sources
 
 _BASE = "custom_components.bosch_buderus_heating"
 _SOLAR_FIELDS = (
@@ -315,9 +317,10 @@ async def test_solar_entities_survive_discovery_polling_and_reload(
         hass: HomeAssistant,
         entry: MockConfigEntry,
         coordinators: tuple[BoschBuderusDataUpdateCoordinator, ...],
+        **kwargs: bool,
     ) -> None:
         before = len(solar_entries())
-        _remove_retired_entities(hass, entry, coordinators)
+        _remove_retired_entities(hass, entry, coordinators, **kwargs)
         cleanup_counts.append((before, len(solar_entries())))
 
     expected_count = 6 * len(circuits) * gateway_count
@@ -327,13 +330,15 @@ async def test_solar_entities_survive_discovery_polling_and_reload(
         patch(f"{_BASE}._remove_retired_entities", side_effect=cleanup),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
+        await wait_for_sources(hass, entry, gateway_count)
         await hass.async_block_till_done()
-        assert cleanup_counts == [(expected_count, expected_count)]
+        # 0.9.0-alpha.2: the managed views run the cleanup; it removes none.
+        assert all(before == after for before, after in cleanup_counts)
         identities = {
             item.unique_id: (item.id, item.entity_id) for item in solar_entries()
         }
         assert len(identities) == expected_count
-        for coordinator in entry.runtime_data.coordinators:
+        for coordinator in pointt_coordinators(entry):
             discovery = _discovery_diagnostics(coordinator)
             assert discovery["completed"] and discovery["stop_reason"] == "complete"
             for circuit in circuits:
@@ -372,8 +377,11 @@ async def test_solar_entities_survive_discovery_polling_and_reload(
             == gateway_count
         )
         assert await hass.config_entries.async_reload(entry.entry_id)
+        await wait_for_sources(hass, entry, gateway_count)
         await hass.async_block_till_done()
-        assert cleanup_counts[-1] == (expected_count, expected_count)
+        assert cleanup_counts and all(
+            before == after for before, after in cleanup_counts
+        )
         assert {
             item.unique_id: (item.id, item.entity_id) for item in solar_entries()
         } == identities
@@ -563,3 +571,180 @@ def test_retirement_only_removes_observed_resources_and_their_own_fields(
     assert all(registry.async_get(item.entity_id) is None for item in own)
     assert all(registry.async_get(item.entity_id) == item for item in retained)
     assert registry.async_get(foreign.entity_id) == foreign
+
+
+# ------------------------------------------ 0.9.0-alpha.2 registry cleanups
+
+
+def test_former_field_entries_keep_catalogued_and_present_children(
+    hass: HomeAssistant,
+) -> None:
+    """The legacy field rule again spares catalogued children (old guard)."""
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    keys = {
+        "field": "gateway-one:pool:other",
+        "catalogued": "gateway-one:pool:currentTemp",
+        "present": "gateway-one:heatSources:vendorExtension:detail",
+    }
+    created = {
+        name: registry.async_get_or_create("sensor", DOMAIN, key, config_entry=entry)
+        for name, key in keys.items()
+    }
+    child = "/heatSources/vendorExtension/detail"
+    coordinator = SimpleNamespace(
+        gateway=Gateway("gateway-one"),
+        resources={
+            "/pool": Resource(
+                path="/pool", value={"currentTemp": 1, "other": 2}, has_value=True
+            ),
+            "/heatSources/vendorExtension": Resource(
+                path="/heatSources/vendorExtension",
+                value={"detail": 1},
+                has_value=True,
+            ),
+            child: Resource(
+                path=child,
+                value=1.0,
+                has_value=True,
+                metadata=ResourceMetadata(resource_type="floatValue"),
+            ),
+        },
+    )
+
+    _remove_retired_entities(hass, entry, (coordinator,))
+
+    assert registry.async_get(created["field"].entity_id) is None
+    assert registry.async_get(created["catalogued"].entity_id) is not None
+    assert registry.async_get(created["present"].entity_id) is not None
+
+
+def _managed_view(hass, entry, **changes):
+    private = "/heatSources/hs1/installerPinCode"
+    values = {
+        "config_entry": entry,
+        "hass": hass,
+        "gateway": Gateway("gateway-one"),
+        "resources": {
+            private: Resource(
+                path=private,
+                value=1234,
+                has_value=True,
+                metadata=ResourceMetadata(resource_type="integerValue"),
+            )
+        },
+    }
+    values.update(changes)
+    return SimpleNamespace(**values)
+
+
+@pytest.mark.parametrize("case", ["managed", "legacy", "read_only"])
+def test_managed_views_remove_entries_that_can_never_be_entities(
+    hass: HomeAssistant, case: str
+) -> None:
+    from custom_components.bosch_buderus_heating import remove_never_entities
+
+    entry = MockConfigEntry(domain=DOMAIN, version=3 if case == "legacy" else 4)
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    plain = registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        "gateway-one:heatSources:hs1:installerPinCode",
+        config_entry=entry,
+    )
+    named = registry.async_get_or_create(
+        "binary_sensor",
+        DOMAIN,
+        "gateway-one:heatSources:hs1:installerPinCode",
+        config_entry=entry,
+    )
+    registry.async_update_entity(named.entity_id, name="My code")
+    kept = registry.async_get_or_create(
+        "sensor", DOMAIN, "gateway-one:heatSources:hs1:supplyTemp", config_entry=entry
+    )
+    extra = {"read_only_view": True} if case == "read_only" else {}
+
+    remove_never_entities(_managed_view(hass, entry, **extra))
+
+    removed = case == "managed"
+    assert (registry.async_get(plain.entity_id) is None) is removed
+    assert registry.async_get(named.entity_id) is not None  # customised: kept
+    assert registry.async_get(kept.entity_id) is not None
+
+
+def _snapshot(*targets, bindings=()):
+    return SimpleNamespace(
+        targets={
+            f"t{index}": SimpleNamespace(
+                kind=kind,
+                to_data=lambda identities=identities: {"identities": identities},
+            )
+            for index, (kind, identities) in enumerate(targets)
+        },
+        bindings={
+            f"b{index}": SimpleNamespace(
+                to_data=lambda value=value: {
+                    "locator": {"namespace": "pointt_gateway", "value": value}
+                }
+            )
+            for index, value in enumerate(bindings)
+        },
+    )
+
+
+_PLANT = ("pointt_plant", [{"namespace": "pointt_gateway", "value": "gateway-one"}])
+
+
+@pytest.mark.parametrize("case", ["clean", "unknown_target", "unreadable"])
+def test_managed_entries_lose_only_gateways_no_system_has(
+    hass: HomeAssistant, case: str
+) -> None:
+    from custom_components.bosch_buderus_heating import (
+        _remove_unconfigured_gateway_entries,
+    )
+
+    entry = MockConfigEntry(domain=DOMAIN, version=4)
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+
+    def create(unique_id, **changes):
+        item = registry.async_get_or_create(
+            "sensor", DOMAIN, unique_id, config_entry=entry
+        )
+        if changes:
+            registry.async_update_entity(item.entity_id, **changes)
+        return item.entity_id
+
+    present = create("gateway-one:heatSources:supplyTemp")
+    bound = create("gateway-two:heatSources:supplyTemp")
+    gone = create("gateway-old:heatSources:supplyTemp")
+    renamed = create("gateway-old:heatSources:returnTemp", name="Mine")
+    disabled = create(
+        "gateway-old:heatSources:power",
+        disabled_by=er.RegistryEntryDisabler.USER,
+    )
+    others = [
+        create("bacon:abc:power"),
+        create(f"{entry.entry_id}:request_metrics:total"),
+        create(f"{entry.entry_id}:connection:c1:request_metrics:total"),
+        create("no-colon"),
+    ]
+    targets = [_PLANT, ("bacon_device", [{"namespace": "bacon_device", "value": "x"}])]
+    if case == "unknown_target":
+        targets.append(("other", [{"namespace": "something_new", "value": "y"}]))
+    load = (
+        patch(f"{_BASE}.configuration.load_configuration", side_effect=ValueError)
+        if case == "unreadable"
+        else patch(
+            f"{_BASE}.configuration.load_configuration",
+            return_value=_snapshot(*targets, bindings=("gateway-two",)),
+        )
+    )
+    with load:
+        _remove_unconfigured_gateway_entries(hass, entry)
+
+    assert (registry.async_get(gone) is None) is (case == "clean")
+    for entity_id in (present, bound, renamed, disabled, *others):
+        assert registry.async_get(entity_id) is not None

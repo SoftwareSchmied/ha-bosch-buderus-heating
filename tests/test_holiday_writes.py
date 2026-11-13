@@ -874,7 +874,7 @@ async def test_update_and_delete_reject_an_id_missing_from_current_list() -> Non
     client.delete_holiday_period.assert_not_awaited()
 
 
-def test_create_uses_app_defaults_base64_and_exact_midnight_end() -> None:
+def test_create_uses_safe_defaults_base64_and_exact_midnight_end() -> None:
     timezone = ZoneInfo("Europe/Berlin")
 
     values = create_holiday_values(
@@ -1404,3 +1404,132 @@ def test_holiday_contract_rejects_invalid_choices(changed):
     values = replace(_values(), ventilation_mode="OFF", **changed)
     with pytest.raises(WriteValidationError):
         validate_holiday_values(values, _configuration())
+
+
+def _connection_error(kind: str) -> Exception:
+    """C36: errors of a request that never reached the cloud."""
+    import aiohttp
+
+    from custom_components.bosch_buderus_heating.pointt import RequestTimeout as Timeout
+
+    if kind == "connect":
+        error: Exception = ServiceUnavailable()
+        error.__cause__ = aiohttp.ClientConnectorError(
+            SimpleNamespace(host="cloud", port=443, ssl=True), OSError(101, "down")
+        )
+    else:
+        error = Timeout("connect timeout")
+        error.__cause__ = aiohttp.ConnectionTimeoutError()
+    return error
+
+
+@pytest.mark.parametrize("kind", ["connect", "connect_timeout", "400", "422"])
+async def test_final_refusal_or_unsent_post_releases_the_creation_block(kind):
+    from custom_components.bosch_buderus_heating.pointt import UnexpectedHttpStatus
+
+    error = (
+        UnexpectedHttpStatus(int(kind)) if kind.isdecimal() else _connection_error(kind)
+    )
+    client = AsyncMock()
+    empty = Resource(path=HOLIDAY_LIST_PATH, has_values=True)
+    client.get_resource.return_value = empty
+    client.create_holiday_period.side_effect = error
+    service = HolidayWriteService(client, sleep=AsyncMock())
+    with pytest.raises(type(error)):
+        await service.async_create("gateway-one", {}, _values(), fallback_timezone=UTC)
+    assert client.get_resource.await_count == 1  # preflight only, no read-back
+    # Corrected data are sent: exactly one new POST, then confirmed.
+    corrected = replace(_values(), start_date="2030-08-02T08:00:00")
+    client.create_holiday_period.side_effect = None
+    client.get_resource.side_effect = [empty, _resource(7, corrected)]
+    await service.async_create("gateway-one", {}, corrected, fallback_timezone=UTC)
+    assert client.create_holiday_period.await_count == 2
+    assert client.create_holiday_period.await_args.args[1] == corrected.as_payload()
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        ServiceUnavailable(503),
+        RequestTimeout(),
+        ServiceUnavailable(),  # connection lost without a known phase
+    ],
+)
+async def test_unknown_outcome_keeps_blocking_a_second_post(error):
+    from custom_components.bosch_buderus_heating.pointt import UnexpectedHttpStatus
+
+    client = AsyncMock()
+    empty = Resource(path=HOLIDAY_LIST_PATH, has_values=True)
+    client.get_resource.return_value = empty
+    client.create_holiday_period.side_effect = error
+    service = HolidayWriteService(client, sleep=AsyncMock())
+    with pytest.raises(HolidayWriteNotConfirmed):
+        await service.async_create("gateway-one", {}, _values(), fallback_timezone=UTC)
+    with pytest.raises(HolidayWriteNotConfirmed):
+        await service.async_create("gateway-one", {}, _values(), fallback_timezone=UTC)
+    client.create_holiday_period.assert_awaited_once()
+    # A redirect is no final refusal either.
+    client.create_holiday_period.side_effect = UnexpectedHttpStatus(302)
+    service = HolidayWriteService(client, sleep=AsyncMock())
+    with pytest.raises(UnexpectedHttpStatus):
+        await service.async_create("gateway-one", {}, _values(), fallback_timezone=UTC)
+    with pytest.raises(HolidayWriteNotConfirmed):
+        await service.async_create("gateway-one", {}, _values(), fallback_timezone=UTC)
+    assert client.create_holiday_period.await_count == 2
+
+
+@pytest.mark.parametrize("appeared", [False, True])
+async def test_creation_block_ends_ten_minutes_after_an_unresolved_post(appeared):
+    now = [1000.0]
+    client = AsyncMock()
+    empty = Resource(path=HOLIDAY_LIST_PATH, has_values=True)
+    client.get_resource.return_value = empty
+    client.create_holiday_period.side_effect = ServiceUnavailable(504)
+    service = HolidayWriteService(client, sleep=AsyncMock(), clock=lambda: now[0])
+    with pytest.raises(HolidayWriteNotConfirmed):
+        await service.async_create("gateway-one", {}, _values(), fallback_timezone=UTC)
+
+    now[0] += 599
+    with pytest.raises(HolidayWriteNotConfirmed):
+        await service.async_create("gateway-one", {}, _values(), fallback_timezone=UTC)
+    client.create_holiday_period.assert_awaited_once()
+
+    now[0] += 1
+    client.create_holiday_period.side_effect = None
+    late = _resource(7, _values())
+    if appeared:
+        # The first request did create it after all: never a second POST.
+        client.get_resource.return_value = late
+        assert (
+            await service.async_create(
+                "gateway-one", {}, _values(), fallback_timezone=UTC
+            )
+            is late
+        )
+        client.create_holiday_period.assert_awaited_once()
+    else:
+        client.get_resource.side_effect = [empty, empty, late]
+        assert (
+            await service.async_create(
+                "gateway-one", {}, _values(), fallback_timezone=UTC
+            )
+            is late
+        )
+        assert client.create_holiday_period.await_count == 2
+    assert "gateway-one" not in service._pending_creations
+
+
+async def test_expired_block_with_an_invalid_list_stays_in_place():
+    now = [0.0]
+    client = AsyncMock()
+    client.get_resource.return_value = Resource(path=HOLIDAY_LIST_PATH, has_values=True)
+    client.create_holiday_period.side_effect = RequestTimeout()
+    service = HolidayWriteService(client, sleep=AsyncMock(), clock=lambda: now[0])
+    with pytest.raises(HolidayWriteNotConfirmed):
+        await service.async_create("gateway-one", {}, _values(), fallback_timezone=UTC)
+    now[0] = 3600
+    client.get_resource.return_value = Resource(path=HOLIDAY_LIST_PATH)
+    with pytest.raises(WriteValidationError, match="incomplete"):
+        await service.async_create("gateway-one", {}, _values(), fallback_timezone=UTC)
+    client.create_holiday_period.assert_awaited_once()
+    assert "gateway-one" in service._pending_creations

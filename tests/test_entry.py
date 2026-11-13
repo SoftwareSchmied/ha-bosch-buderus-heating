@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -10,7 +11,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating import (
     _consolidate_logical_devices,
@@ -20,6 +20,7 @@ from custom_components.bosch_buderus_heating import (
     async_migrate_entry,
     async_setup_entry,
     async_unload_entry,
+    enable_promoted_defaults,
 )
 from custom_components.bosch_buderus_heating.const import (
     CONF_ACCESS_TOKEN,
@@ -27,10 +28,14 @@ from custom_components.bosch_buderus_heating.const import (
     CONF_GATEWAY_IDS,
     DOMAIN,
 )
+from custom_components.bosch_buderus_heating.coordinator import (
+    BoschBuderusDataUpdateCoordinator,
+)
 from custom_components.bosch_buderus_heating.data import (
     tokens_from_data,
     tokens_to_data,
 )
+from custom_components.bosch_buderus_heating.ha_compat import device_by_identifier
 from custom_components.bosch_buderus_heating.pointt import (
     AuthTokens,
     Brand,
@@ -41,6 +46,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     ServiceUnavailable,
 )
 from custom_components.bosch_buderus_heating.startup_data import StartupSession
+from tests.ha_test_helpers import MockConfigEntry
 
 
 def _entry(hass: HomeAssistant) -> MockConfigEntry:
@@ -359,7 +365,7 @@ async def test_entry_migration_merges_preview_logical_devices(
 
     assert await async_migrate_entry(hass, entry)
 
-    assert entry.version == 3
+    assert entry.version == 4
     assert entity_registry.async_get(entity.entity_id).device_id == replacement.id
     assert device_registry.async_get(legacy.id) is None
 
@@ -385,7 +391,7 @@ async def test_entry_migration_updates_legacy_device_in_place(
 async def test_entry_migration_rejects_unknown_future_version(
     hass: HomeAssistant,
 ) -> None:
-    entry = MockConfigEntry(domain=DOMAIN, version=4)
+    entry = MockConfigEntry(domain=DOMAIN, version=5)
     entry.add_to_hass(hass)
 
     assert not await async_migrate_entry(hass, entry)
@@ -409,17 +415,17 @@ def test_logical_devices_are_consolidated_without_changing_entities(
         config_entry=entry,
         device_id=logical.id,
     )
-    coordinator = SimpleNamespace(
-        gateway=Gateway("gateway-one", device_type="k40"),
-        config_entry=entry,
-        resources={},
-        data={},
+    coordinator = BoschBuderusDataUpdateCoordinator(
+        hass,
+        AsyncMock(),
+        Gateway("gateway-one", device_type="k40"),
+        entry,
     )
 
     _consolidate_logical_devices(hass, entry, (coordinator,))
 
-    gateway = device_registry.async_get_device_by_identifier(
-        (DOMAIN, "gateway-one"), entry.entry_id
+    gateway = device_by_identifier(
+        device_registry, (DOMAIN, "gateway-one"), entry.entry_id
     )
     assert gateway is not None
     assert entity_registry.async_get(entity.entity_id).device_id == gateway.id
@@ -613,6 +619,57 @@ def test_new_defaults_enable_only_integration_disabled_entities(
     )
 
 
+def test_new_defaults_stay_disabled_without_enabling_new_entities(
+    hass: HomeAssistant,
+) -> None:
+    """With "enable new entities" switched off nothing is enabled."""
+    entry = _entry(hass)
+    hass.config_entries.async_update_entry(entry, pref_disable_new_entities=True)
+    entity_registry = er.async_get(hass)
+    promoted = entity_registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        "gateway-one:heatSources:hs1:workingTime:total",
+        config_entry=entry,
+        disabled_by=er.RegistryEntryDisabler.INTEGRATION,
+    )
+    coordinator = SimpleNamespace(
+        gateway=Gateway("gateway-one"),
+        resources={
+            "/heatSources/hs1/workingTime": Resource(
+                path="/heatSources/hs1/workingTime",
+                values=({"total": 3600},),
+            )
+        },
+    )
+
+    _enable_new_default_entities(hass, entry, (coordinator,))
+
+    assert (
+        entity_registry.async_get(promoted.entity_id).disabled_by
+        is er.RegistryEntryDisabler.INTEGRATION
+    )
+
+
+def test_a_failing_promotion_logs_only_the_error_class(hass, caplog) -> None:
+    """ERR-9: the error text stays out of the log; the view still starts."""
+    entry = _entry(hass)
+    coordinator = SimpleNamespace(config_entry=entry, hass=hass)
+    with patch(
+        "custom_components.bosch_buderus_heating._enable_promoted_local_only",
+        side_effect=RuntimeError("account@example.invalid"),
+    ):
+        enable_promoted_defaults(coordinator)
+    errors = [record for record in caplog.records if record.levelname == "ERROR"]
+    assert [record.getMessage() for record in errors] == [
+        "Newly enabled default entities could not be enabled (RuntimeError)"
+    ]
+    assert errors[0].exc_info is None
+    # The traceback follows at debug level only.
+    details = [record for record in caplog.records if record.exc_info]
+    assert [record.levelname for record in details] == ["DEBUG"]
+
+
 async def test_device_migration_never_merges_into_another_config_entry(hass):
     entry = _entry(hass)
     other_entry = MockConfigEntry(domain=DOMAIN)
@@ -627,9 +684,18 @@ async def test_device_migration_never_merges_into_another_config_entry(hass):
         identifiers={(DOMAIN, "gateway-one", "heating_circuit", "hc1")},
     )
     assert await async_migrate_entry(hass, entry)
-    migrated = registry.async_get_device_by_identifier(identifier, entry.entry_id)
-    assert migrated is not None and migrated.id == legacy.id
-    assert registry.async_get(foreign.id).config_entry_id == other_entry.entry_id
+    if hasattr(registry, "async_get_device_by_identifier"):
+        migrated = registry.async_get_device_by_identifier(identifier, entry.entry_id)
+        assert migrated is not None and migrated.id == legacy.id
+    else:
+        # Older releases keep identifiers globally unique: the legacy device
+        # keeps its identifier instead of colliding with the other entry.
+        assert registry.async_get(legacy.id).identifiers == legacy.identifiers
+    owner = registry.async_get(foreign.id)
+    if hasattr(owner, "config_entry_id"):
+        assert owner.config_entry_id == other_entry.entry_id
+    else:
+        assert owner.config_entries == {other_entry.entry_id}
 
 
 @pytest.mark.parametrize("per_source", [False, True])
@@ -667,3 +733,98 @@ def test_global_start_counter_registry_is_independent(
     _remove_retired_entities(hass, entry, (coordinator,))
 
     assert registry.async_get(global_counter.entity_id) is not None
+
+
+def _setup_stores(started, done, *, budget_error=None, pause_error=None):
+    """Stand-ins for the stores async_setup loads; all must start together."""
+    together = asyncio.Event()
+    settled: list[str] = []
+
+    def load(name, error=None):
+        async def run(*_args):
+            started.append(name)
+            if len(started) == 3:
+                together.set()
+            try:
+                await asyncio.wait_for(together.wait(), 5)
+                if error is not None:
+                    raise error
+                done.append(name)
+            finally:
+                settled.append(name)
+
+        return run
+
+    budget = SimpleNamespace(initialize=load("budget", budget_error))
+
+    async def journal_step(*_args):
+        # The journal reads pauses from the budget: after it, also failed.
+        assert "budget" in settled
+        done.append("journal")
+
+    journal = SimpleNamespace(records=journal_step, initialize=journal_step)
+    package = "custom_components.bosch_buderus_heating"
+    return (
+        patch(
+            f"{package}.cloud_pause_store",
+            return_value=SimpleNamespace(async_initialize=load("pauses", pause_error)),
+        ),
+        patch(
+            f"{package}.counter_source_store",
+            return_value=SimpleNamespace(async_initialize=load("counters")),
+        ),
+        patch(f"{package}.local_budget_manager", return_value=budget),
+        patch(f"{package}.enrollment_journal", return_value=journal),
+        patch(f"{package}.async_setup_holiday_ui", AsyncMock()),
+        patch(f"{package}.async_setup_controls_ui", AsyncMock()),
+        patch(f"{package}.local_identity.install_local_support"),
+        patch(f"{package}.update_load.install_update_load"),
+    )
+
+
+async def test_integration_setup_loads_independent_stores_side_by_side(
+    hass: HomeAssistant,
+) -> None:
+    """O64: pauses, counters and local access storage load in parallel."""
+    from contextlib import ExitStack
+
+    from custom_components.bosch_buderus_heating import async_setup
+
+    started: list[str] = []
+    done: list[str] = []
+    with ExitStack() as stack:
+        for item in _setup_stores(started, done):
+            stack.enter_context(item)
+        assert await async_setup(hass, {})
+    assert sorted(started) == ["budget", "counters", "pauses"]
+    assert sorted(done) == ["budget", "counters", "journal", "journal", "pauses"]
+
+
+async def test_integration_setup_keeps_error_handling_per_store(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
+    from contextlib import ExitStack
+
+    from custom_components.bosch_buderus_heating import async_setup
+    from custom_components.bosch_buderus_heating.local_budget import LocalBudgetError
+
+    # Unreadable local pauses: a warning, the other stores and the journal
+    # still load.
+    started: list[str] = []
+    done: list[str] = []
+    with ExitStack() as stack:
+        for item in _setup_stores(started, done, budget_error=LocalBudgetError("x")):
+            stack.enter_context(item)
+        assert await async_setup(hass, {})
+    assert sorted(done) == ["counters", "journal", "journal", "pauses"]
+    assert "The pauses of the local access could not be read" in caplog.text
+    assert "could not be reconciled" not in caplog.text
+    # An unexpected error still fails the set-up, after the others loaded.
+    started.clear()
+    done.clear()
+    with ExitStack() as stack:
+        for item in _setup_stores(started, done, pause_error=RuntimeError("boom")):
+            stack.enter_context(item)
+        with pytest.raises(RuntimeError, match="boom"):
+            await async_setup(hass, {})
+    assert sorted(done) == ["budget", "counters", "journal", "journal"]

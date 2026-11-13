@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from homeassistant.config_entries import ConfigEntry, ConfigFlowResult, OptionsFlow
+from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
@@ -20,8 +20,12 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
 )
 
+from . import rrc
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
+from .entry_sources import pointt_coordinators
 from .ha_schema import validation as vol
+from .markdown_text import markdown_literal
+from .options_navigation import NavigatingOptionsFlow
 from .pointt import (
     AuthenticationError,
     PointTError,
@@ -30,8 +34,27 @@ from .pointt import (
     WriteNotConfirmed,
     WriteValidationError,
 )
-from .rrc_programs import DAYS, WEEK, Schedule, SwitchPoint, edit_point, parse_schedule
-from .runtime import BoschBuderusRuntimeData
+from .rrc_programs import (
+    DAYS,
+    WEEK,
+    Schedule,
+    SwitchPoint,
+    edit_point,
+    parse_schedule,
+    program_names,
+)
+from .writes import WriteBusy
+
+
+def _refused_error(coordinator: BoschBuderusDataUpdateCoordinator) -> str:
+    """The dialog error of a change refused before anything was sent.
+
+    During the pause after repeated failed readings nothing may be sent;
+    saying so is more useful than asking to reopen a program that did not
+    change.
+    """
+    reason, _until = coordinator.control_status()
+    return "switch_program_paused" if reason == "protection_pause" else "rrc_changed"
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,20 +71,22 @@ def _point_label(point: SwitchPoint) -> str:
     )
 
 
-class RrcScheduleOptionsFlow(OptionsFlow):
+class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
     """Keep weekly schedules separate from holiday dates and time zones."""
 
     _entry: ConfigEntry
     _rrc_choice: ScheduleChoice | None = None
     _rrc_point: int | None = None
     _rrc_day: str | None = None
+    _rrc_offered: dict[str, ScheduleChoice] | None = None
 
     def _rrc_choices(self) -> dict[str, ScheduleChoice]:
-        runtime = getattr(self._entry, "runtime_data", None)
-        if not isinstance(runtime, BoschBuderusRuntimeData):
+        coordinators = pointt_coordinators(self._entry)
+        if coordinators is None:
             return {}
         result: dict[str, ScheduleChoice] = {}
-        for number, coordinator in enumerate(runtime.coordinators, 1):
+        for number, coordinator in enumerate(coordinators, 1):
+            names = _program_names(coordinator)
             for path, snapshot in (coordinator.data or {}).items():
                 match = WEEK.fullmatch(path)
                 if (
@@ -73,8 +98,12 @@ class RrcScheduleOptionsFlow(OptionsFlow):
                 schedule = parse_schedule(snapshot.resource)
                 if schedule is None:
                     continue
-                label = f"#{match[1]}"
-                if len(runtime.coordinators) > 1:
+                # The controller's program name, as in the zone's program
+                # select; the number without one. Shown as plain text in
+                # the dialog descriptions (markdown_literal there).
+                name = names.get(int(match[1]))
+                label = f"{name} (#{match[1]})" if name else f"#{match[1]}"
+                if len(coordinators) > 1:
                     label = (
                         f"{coordinator.gateway.model or self._entry.title} "
                         f"[{number}] / {label}"
@@ -91,11 +120,17 @@ class RrcScheduleOptionsFlow(OptionsFlow):
         if not choices:
             return self.async_abort(reason="no_rrc_schedules")
         if user_input is not None:
-            choice = choices.get(str(user_input.get("program", "")))
-            if choice is None:
+            offered = self._rrc_offered or choices
+            choice = offered.get(str(user_input.get("program", "")))
+            if choice is None or not any(
+                current.coordinator is choice.coordinator
+                and current.resource == choice.resource
+                for current in choices.values()
+            ):
                 return self.async_abort(reason="no_rrc_schedules")
             self._rrc_choice = choice
             return await self.async_step_rrc_schedule()
+        self._rrc_offered = choices
         return self.async_show_form(
             step_id="rrc_programs",
             data_schema=vol.Schema(
@@ -121,7 +156,9 @@ class RrcScheduleOptionsFlow(OptionsFlow):
             return await self.async_step_rrc_programs()
         if user_input is not None:
             if not choice.schedule.editable or not choice.schedule.points:
-                return self.async_create_entry(title="", data=dict(self._entry.options))
+                # Only shown: back to the main menu.
+                self._rrc_choice = None
+                return await self.async_return_to_menu("init")
             day = next(
                 (day for day in DAYS if day.lower() == user_input.get("day")), None
             )
@@ -155,7 +192,7 @@ class RrcScheduleOptionsFlow(OptionsFlow):
             step_id="rrc_schedule" if can_edit else "rrc_readonly",
             data_schema=schema,
             description_placeholders={
-                "program": choice.label,
+                "program": markdown_literal(choice.label),
                 **{
                     day.lower(): ", ".join(
                         _point_label(point)
@@ -203,7 +240,7 @@ class RrcScheduleOptionsFlow(OptionsFlow):
                     ),
                 }
             ),
-            description_placeholders={"program": choice.label},
+            description_placeholders={"program": markdown_literal(choice.label)},
         )
 
     async def async_step_rrc_readonly(
@@ -217,6 +254,8 @@ class RrcScheduleOptionsFlow(OptionsFlow):
         choice, index = self._rrc_choice, self._rrc_point
         if choice is None or index is None:
             return await self.async_step_rrc_programs()
+        if choice.coordinator not in (pointt_coordinators(self._entry) or ()):
+            return self.async_abort(reason="no_rrc_schedules")
         original = choice.schedule.points[index]
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -249,14 +288,17 @@ class RrcScheduleOptionsFlow(OptionsFlow):
                     except AuthenticationError:
                         errors["base"] = "write_authentication_failed"
                     except WriteValidationError:
-                        errors["base"] = "rrc_changed"
+                        errors["base"] = _refused_error(choice.coordinator)
                     except WriteNotConfirmed:
                         errors["base"] = "rrc_not_confirmed"
+                    except WriteBusy:
+                        errors["base"] = "write_busy"
                     except PointTError:
                         errors["base"] = "rrc_failed"
                     else:
-                        return self.async_create_entry(
-                            title="", data=dict(self._entry.options)
+                        self._rrc_choice = None
+                        return await self.async_return_to_menu(
+                            "init", "rrc_program_saved"
                         )
         schema = vol.Schema(
             {
@@ -281,5 +323,24 @@ class RrcScheduleOptionsFlow(OptionsFlow):
             step_id="rrc_point",
             data_schema=self.add_suggested_values_to_schema(schema, user_input),
             errors=errors,
-            description_placeholders={"program": choice.label},
+            description_placeholders={"program": markdown_literal(choice.label)},
         )
+
+
+_PROGRAM_NAME = re.compile(rf"^/programs/pg({rrc.RRC_ID})/name$")
+
+
+def _program_names(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[int, str]:
+    """The program names the zone program select shows (same source)."""
+    snapshots = coordinator.data or {}
+    programs = snapshots.get(rrc.PROGRAM_LIST)
+    names: dict[int, Resource | None] = {}
+    for path, snapshot in snapshots.items():
+        match = _PROGRAM_NAME.fullmatch(path)
+        if (
+            match is not None
+            and snapshot.available
+            and snapshot.freshness is Freshness.FRESH
+        ):
+            names[int(match[1])] = snapshot.resource
+    return program_names(programs.resource if programs is not None else None, names)

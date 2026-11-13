@@ -21,6 +21,7 @@ async def test_native_hot_water_frontend(
     hass_client,
     hass_access_token,
     enable_custom_integrations,
+    legacy_platform_runtime,
     tmp_path,
 ):
     hass.config.language = "de"
@@ -138,5 +139,13 @@ async def test_native_hot_water_frontend(
         assert [
             call.args for call in coordinator.client.put_resource_value.await_args_list
         ] == [("gateway", MODE, "high"), ("gateway", MODE, "ownprogram")]
-        assert coordinator.client.get_resource.await_count == 4
-        assert coordinator.client.get_resources_bulk.await_count == 2
+        # C35: each write reads the mode in one bulk preflight and confirms it
+        # with a single GET; the other two bulk reads are the polls.
+        assert [
+            call.args for call in coordinator.client.get_resource.await_args_list
+        ] == [("gateway", MODE)] * 2
+        bulk = [
+            call.args for call in coordinator.client.get_resources_bulk.await_args_list
+        ]
+        assert bulk[0] == bulk[2] == ("gateway", (MODE,))
+        assert len(bulk) == 4

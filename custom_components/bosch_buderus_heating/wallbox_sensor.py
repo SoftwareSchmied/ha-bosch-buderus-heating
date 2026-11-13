@@ -21,7 +21,8 @@ from homeassistant.const import (
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import DEFAULT_MANUFACTURER, DOMAIN
+from .device import registered_device
 from .wallbox import STATES, Section, WallboxCoordinator
 
 
@@ -110,15 +111,18 @@ class WallboxSensor(CoordinatorEntity[WallboxCoordinator], SensorEntity):
         gateway = self.coordinator.gateway
         product = self.coordinator.reading("info", "product")
         software = self.coordinator.reading("info", "software")
-        return DeviceInfo(
+        info = DeviceInfo(
             identifiers={(DOMAIN, gateway.gateway_id)},
-            name="Bosch/Buderus Wallbox",
-            manufacturer="Bosch/Buderus",
+            manufacturer=DEFAULT_MANUFACTURER,
             model=product if isinstance(product, str) else gateway.model,
             sw_version=software
             if isinstance(software, str)
             else gateway.firmware_version,
         )
+        if not registered_device(self.coordinator.hass, gateway.gateway_id):
+            # C8: a new device is named without the brand.
+            info["name"] = "Wallbox"
+        return info
 
     @property
     def available(self) -> bool:

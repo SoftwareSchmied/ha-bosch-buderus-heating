@@ -7,7 +7,6 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 from homeassistant.components.water_heater import WaterHeaterEntityFeature
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bosch_buderus_heating.const import DOMAIN
 from custom_components.bosch_buderus_heating.coordinator import (
@@ -32,6 +31,7 @@ from custom_components.bosch_buderus_heating.pointt_water_heater import (
 from custom_components.bosch_buderus_heating.resource_catalog import PollGroup
 from custom_components.bosch_buderus_heating.runtime import BoschBuderusRuntimeData
 from custom_components.bosch_buderus_heating.writes import WriteService
+from tests.ha_test_helpers import MockConfigEntry
 
 ROOT = "/dhwCircuits/dhw2"
 MODE = ROOT + "/operationMode"
@@ -108,8 +108,8 @@ def test_identity_and_readings_use_the_exact_circuit(hass, german):
     assert heater.name == ("Warmwasser 2" if german else "Hot water 2")
     assert heater.unique_id == "gateway:dhwCircuits:dhw2:water_heater"
     assert heater.device_info["identifiers"] == {(DOMAIN, "gateway")}
-    assert heater.current_temperature == 48.5
-    assert heater.target_temperature == 52
+    assert heater.native_current_temperature == 48.5
+    assert heater.native_target_temperature == 52
     assert heater.current_operation == "ownprogram"
     assert heater.operation_list == ["off", "low", "high", "ownprogram", "eco"]
     assert heater.supported_features == WaterHeaterEntityFeature.OPERATION_MODE
@@ -126,17 +126,15 @@ async def test_exact_mode_write_is_guarded_and_confirmed(hass, mode):
     coordinator.client.put_resource_value.assert_awaited_once_with(
         "gateway", MODE, mode
     )
-    assert coordinator.client.get_resource.await_count == 2
-    assert all(
-        call.args == ("gateway", MODE)
-        for call in coordinator.client.get_resource.await_args_list
-    )
+    # C35: the preflight is one bulk read; only the read-back is a single GET.
+    coordinator.client.get_resources_bulk.assert_awaited_once_with("gateway", (MODE,))
+    coordinator.client.get_resource.assert_awaited_once_with("gateway", MODE)
     assert heater.current_operation == display
-    assert heater.target_temperature is None
-    assert heater.current_temperature == 48.5
+    assert heater.native_target_temperature is None
+    assert heater.native_current_temperature == 48.5
     await coordinator.async_refresh()
-    assert heater.target_temperature == 52
-    coordinator.client.get_resources_bulk.assert_awaited_once()
+    assert heater.native_target_temperature == 52
+    assert coordinator.client.get_resources_bulk.await_count == 2
     await coordinator.async_shutdown()
 
 
@@ -153,9 +151,9 @@ async def test_current_setpoint_cannot_be_written_or_replaced_with_a_start_level
     coordinator.client.put_resource_value.assert_not_awaited()
     coordinator.client.get_resource.assert_not_awaited()
     del coordinator.data[TARGET]
-    assert heater.target_temperature is None
+    assert heater.native_target_temperature is None
     del coordinator.data[ACTUAL]
-    assert heater.current_temperature is None
+    assert heater.native_current_temperature is None
     assert heater.available
 
 
@@ -238,7 +236,9 @@ def test_unusable_temperature_is_not_a_reading(hass, path, defect):
             item = replace(item, references=(ResourceReference("/other"),))
         coordinator.data[path] = replace(snapshot, resource=item)
     assert (
-        heater.current_temperature if path == ACTUAL else heater.target_temperature
+        heater.native_current_temperature
+        if path == ACTUAL
+        else heater.native_target_temperature
     ) is None
 
 
@@ -249,8 +249,8 @@ def test_temperature_units_are_converted_without_changing_source(hass, unit, val
         coordinator.data[path] = replace(
             coordinator.data[path], resource=resource(path, value, unit=unit)
         )
-    assert heater.current_temperature == pytest.approx(48.5)
-    assert heater.target_temperature == pytest.approx(48.5)
+    assert heater.native_current_temperature == pytest.approx(48.5)
+    assert heater.native_target_temperature == pytest.approx(48.5)
 
 
 async def test_gateway_changes_are_read_before_mode_write(hass):
@@ -267,25 +267,19 @@ async def test_gateway_changes_are_read_before_mode_write(hass):
 )
 async def test_failed_preflight_never_writes(hass, error):
     _, coordinator, heater, _ = setup(hass)
+    coordinator.client.get_resources_bulk.side_effect = error
     coordinator.client.get_resource.side_effect = error
     with pytest.raises(HomeAssistantError):
         await heater.async_set_operation_mode("high")
     coordinator.client.put_resource_value.assert_not_awaited()
-    assert not heater.available
+    # C33: nothing was written; a failed read keeps the reading, as in a poll.
+    assert heater.available
 
 
 async def test_unconfirmed_mode_never_retries_put_and_recovers_by_polling(hass):
-    _, coordinator, heater, plant = setup(hass)
-    calls = 0
-
-    async def read(_gateway, path):
-        nonlocal calls
-        calls += 1
-        if calls > 1:
-            raise RequestTimeout()
-        return plant[path]
-
-    coordinator.client.get_resource.side_effect = read
+    _, coordinator, heater, _plant = setup(hass)
+    # Every read-back after the PUT is lost; the preflight was a bulk read.
+    coordinator.client.get_resource.side_effect = RequestTimeout()
     with pytest.raises(HomeAssistantError) as failure:
         await heater.async_set_operation_mode("eco")
     assert failure.value.translation_key == "write_not_confirmed"
@@ -343,7 +337,7 @@ def test_target_requires_a_reading_after_a_confirmed_mode_write(hass):
     coordinator.data[MODE] = replace(
         coordinator.data[MODE], source=SnapshotSource.WRITE, last_success=timestamp
     )
-    assert heater.target_temperature is None
+    assert heater.native_target_temperature is None
     heater.async_write_ha_state = Mock()
     heater._handle_coordinator_update()
     coordinator.data[MODE] = replace(
@@ -352,8 +346,8 @@ def test_target_requires_a_reading_after_a_confirmed_mode_write(hass):
         last_success=timestamp + timedelta(seconds=1),
     )
     heater._handle_coordinator_update()
-    assert heater.target_temperature is None
+    assert heater.native_target_temperature is None
     coordinator.data[TARGET] = replace(
         coordinator.data[TARGET], last_success=timestamp + timedelta(seconds=2)
     )
-    assert heater.target_temperature == 52
+    assert heater.native_target_temperature == 52
