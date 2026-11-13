@@ -219,16 +219,16 @@ def test_holiday_options_are_translated_and_structurally_aligned() -> None:
         "auto_sat": "Wie Samstag",
         "fix_temperature": "Konstante Temperatur",
         "fix_temp": "Konstante Temperatur",
-        "off": "AUS",
+        "off": "Aus",
         "eco": "Absenken",
     }
     assert german["selector"]["holiday_dhw_mode"]["options"]["off_td"] == (
-        "AUS bei thermischer Desinfektion"
+        "Aus bei thermischer Desinfektion"
     )
     assert german["options"]["step"]["holiday"]["data"] == {
         "holiday_name": "Name",
         "holiday_start": "Beginn",
-        "holiday_end": "Ende (exklusiv)",
+        "holiday_end": "Ende (ab hier wieder Normalbetrieb)",
         "holiday_assigned_to": "Anwenden auf",
         "holiday_heating_mode": "Heizung",
         "holiday_dhw_mode": "Warmwasser",
