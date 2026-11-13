@@ -42,10 +42,17 @@ async def test_failed_source_attempts_leave_no_coordinators_alive(hass):
     backend.status["000123"] = 500  # the discovery of one gateway keeps failing
     created = []
     original = ManagedPointTCoordinator.__init__
+    retry_pauses: list[float] = []
+
+    async def no_retry_pause(delay):
+        # The HTTP retry pause of each failing read is recorded, not waited.
+        retry_pauses.append(delay)
+        await asyncio.sleep(0)
 
     def tracked(self, *args, **kwargs):
         original(self, *args, **kwargs)
         created.append(weakref.ref(self))
+        self.client._transport._sleep = no_retry_pause
 
     with patch.object(ManagedPointTCoordinator, "__init__", tracked):
         async with running(hass, backend) as (entry, _, owner, harness):
@@ -60,6 +67,8 @@ async def test_failed_source_attempts_leave_no_coordinators_alive(hass):
 
             # B04 option 3: the retries of the same source wait longer.
             assert delays[:6] == [60, 120, 240, 480, 960, RETRY_MAX_SECONDS]
+            # Each failed attempt still retried its read once over HTTP.
+            assert len(retry_pauses) >= ATTEMPTS
             # B04 option 1: no coordinator shutdown is kept on the entry.
             assert not pinned(entry)
             assert len(entry._on_unload or []) <= before
