@@ -425,7 +425,7 @@ async def test_limit_follows_the_scheduled_group_and_the_cycle_duration(
     assert poll_group(snapshot.resource) is PollGroup.FAST
     assert coordinator.validity_limit(snapshot) == timedelta(minutes=15)
     coordinator._paths_by_group = {}
-    coordinator._last_poll_duration_ms = 20_000.0
+    coordinator._note_cycle_duration(20_000.0)
     assert coordinator.validity_limit(snapshot) == timedelta(seconds=240)
 
 
@@ -514,7 +514,7 @@ async def test_cycle_extension_is_capped_at_one_interval(
     hass: HomeAssistant,
 ) -> None:
     coordinator, _ = _polling(hass, _temperature(RETURN))
-    coordinator._last_poll_duration_ms = 3_600_000.0
+    coordinator._note_cycle_duration(3_600_000.0)
     assert coordinator.validity_limit(coordinator.data[RETURN]) == timedelta(minutes=6)
 
 

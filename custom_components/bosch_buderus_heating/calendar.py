@@ -105,15 +105,18 @@ class BoschBuderusHolidayCalendar(
 
     @property
     def available(self) -> bool:
-        return super().available and any(
-            is_holiday_period_path(path) for path in self._available_resources
-        )
+        # The periods are shown like any other reading: within their validity
+        # limit also while a cloud cycle fails. Changes need current readings
+        # (``supported_features``).
+        return any(is_holiday_period_path(path) for path in self._shown_resources)
 
     @property
     def supported_features(self) -> CalendarEntityFeature:
         """Expose writes only while all required capabilities are current."""
         resources = self._available_resources
         result = CalendarEntityFeature(0)
+        if not super().available:
+            return result
         if parse_holiday_write_configuration(resources) is not None:
             result |= CalendarEntityFeature.CREATE_EVENT
         configurations = [
@@ -139,7 +142,9 @@ class BoschBuderusHolidayCalendar(
     @property
     def event(self) -> CalendarEvent | None:
         now = datetime.now(UTC)
-        period = next((item for item in self._state.periods if item.end > now), None)
+        period = next(
+            (item for item in self._shown_state.periods if item.end > now), None
+        )
         return self._event_from_period(period) if period is not None else None
 
     async def async_get_events(
@@ -154,7 +159,7 @@ class BoschBuderusHolidayCalendar(
         end_utc = _as_utc(end_date)
         return [
             self._event_from_period(period)
-            for period in self._state.periods
+            for period in self._shown_state.periods
             if _as_utc(period.end) > start_utc and _as_utc(period.start) < end_utc
         ]
 
@@ -298,12 +303,26 @@ class BoschBuderusHolidayCalendar(
 
     @property
     def _available_resources(self) -> dict[str, Resource]:
+        """Current readings: they decide every change."""
         return holiday_resources_from_snapshots(self.coordinator.data or {})
+
+    @property
+    def _shown_resources(self) -> dict[str, Resource]:
+        """The readings shown, within their validity limit."""
+        return self.coordinator.displayed_holiday_resources()
 
     @property
     def _state(self) -> HolidayState:
         return parse_holiday_state(
             self._available_resources,
+            fallback_timezone=dt_util.get_default_time_zone(),
+            timezones=self.coordinator.holiday_timezones,
+        )
+
+    @property
+    def _shown_state(self) -> HolidayState:
+        return parse_holiday_state(
+            self._shown_resources,
             fallback_timezone=dt_util.get_default_time_zone(),
             timezones=self.coordinator.holiday_timezones,
         )

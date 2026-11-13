@@ -77,7 +77,6 @@ from .faults import (
     fault_summary,
     no_active_faults_label,
 )
-from .holiday_writes import holiday_resources_from_snapshots
 from .holidays import (
     HolidayPeriod,
     HolidayState,
@@ -951,9 +950,9 @@ class BoschBuderusNextHolidaySensor(
 
     @property
     def available(self) -> bool:
-        return super().available and any(
-            is_holiday_resource_path(path) for path in self._available_resources
-        )
+        # Display only: the holiday readings within their validity limit, as
+        # for any other reading, also while a cloud cycle fails.
+        return any(is_holiday_resource_path(path) for path in self._available_resources)
 
     @property
     def native_value(self) -> datetime | None:
@@ -978,7 +977,7 @@ class BoschBuderusNextHolidaySensor(
 
     @property
     def _available_resources(self) -> dict[str, Resource]:
-        return holiday_resources_from_snapshots(self.coordinator.data or {})
+        return self.coordinator.displayed_holiday_resources()
 
     @property
     def _state(self) -> HolidayState:
@@ -1013,7 +1012,9 @@ class _BoschBuderusFaultCountSensor(
         if faults.local_authority is True:
             # Without a cloud (P49b) only a current local list gives a state.
             return faults.local_list_current
-        return super().available and faults.has_known_state
+        # A failed cloud cycle keeps a held state (no answer, within its
+        # validity limit) shown, like the last good value of a reading.
+        return (super().available or faults.held) and faults.has_known_state
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -1641,10 +1642,11 @@ class BoschBuderusSensor(
         # available while the cloud fails or pauses.
         if snapshot is None or not snapshot.available:
             return False
-        if self.entity_description.value_kind in _COMBINED_VALUE_KINDS and not (
+        if self.entity_description.value_kind == "dew_point" and not (
             super().available
         ):
-            # Values calculated from several readings keep the strict rule.
+            # The dew point keeps the strict rule; the pressure status shows
+            # its cloud inputs within their validity limit (``_reading``).
             return False
         if rrc.scalar_field(snapshot.resource.path):
             return (
@@ -2107,12 +2109,17 @@ class BoschBuderusSensor(
         return self._reading(self.entity_description.resource_path)
 
     def _reading(self, path: str) -> ResourceSnapshot | None:
-        """Combined sensors keep the stored cloud readings and the strict rule.
+        """Combined sensors never mix in local readings.
 
-        They neither mix in local readings nor keep inputs whose last request
-        failed; only single readings use the validity rule.
+        The dew point keeps the stored readings and the strict rule: no input
+        whose last request failed. The pressure status is a display value of
+        two cloud readings: like any single reading, each keeps its last good
+        value within its validity limit when a request gets no answer.
         """
-        if self.entity_description.value_kind in _COMBINED_VALUE_KINDS:
+        kind = self.entity_description.value_kind
+        if kind == "pressure_status":
+            return self.coordinator.displayed_cloud_snapshot(path)
+        if kind in _COMBINED_VALUE_KINDS:
             return (self.coordinator.data or {}).get(path)
         return self.coordinator.display_snapshot(path)
 
@@ -2151,7 +2158,10 @@ class BoschBuderusSensor(
 
     @property
     def _pressure_range_snapshot(self) -> ResourceSnapshot | None:
-        # Limits are a second reading: status and attributes use stored data.
+        # Limits are a second reading: the status shows them like its pressure
+        # reading, the attributes of the pressure use stored data.
+        if self.entity_description.value_kind == "pressure_status":
+            return self._reading(_SYSTEM_PRESSURE_RANGE_PATH)
         return (self.coordinator.data or {}).get(_SYSTEM_PRESSURE_RANGE_PATH)
 
 

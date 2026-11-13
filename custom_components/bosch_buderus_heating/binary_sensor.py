@@ -35,7 +35,6 @@ from .faults import (
     fault_summary,
     no_active_faults_label,
 )
-from .holiday_writes import holiday_resources_from_snapshots
 from .holidays import (
     HolidayState,
     is_holiday_resource_path,
@@ -204,9 +203,9 @@ class BoschBuderusHolidayActiveBinarySensor(
 
     @property
     def available(self) -> bool:
-        return super().available and any(
-            is_holiday_resource_path(path) for path in self._available_resources
-        )
+        # Display only: the holiday readings within their validity limit, as
+        # for any other reading, also while a cloud cycle fails.
+        return any(is_holiday_resource_path(path) for path in self._available_resources)
 
     @property
     def is_on(self) -> bool | None:
@@ -230,7 +229,7 @@ class BoschBuderusHolidayActiveBinarySensor(
 
     @property
     def _available_resources(self) -> dict[str, Resource]:
-        return holiday_resources_from_snapshots(self.coordinator.data or {})
+        return self.coordinator.displayed_holiday_resources()
 
     @property
     def _state(self) -> HolidayState:
@@ -350,7 +349,9 @@ class BoschBuderusSystemFaultBinarySensor(
         if faults.local_authority is True:
             # Without a cloud (P49b) only a current local list gives a state.
             return faults.local_list_current
-        return super().available and faults.has_known_state
+        # A failed cloud cycle keeps a held state (no answer, within its
+        # validity limit) shown, like the last good value of a reading.
+        return (super().available or faults.held) and faults.has_known_state
 
     @property
     def is_on(self) -> bool:

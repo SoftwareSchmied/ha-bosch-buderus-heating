@@ -232,7 +232,9 @@ Warnings and maintenance messages contribute to **Active notifications** but
 do not by themselves activate **System fault**. Unknown classifications are
 treated conservatively as faults. A missing entry is considered resolved only
 after two complete successful reads; a timeout, rate limit, malformed entry,
-or partial batch response never clears an existing fault.
+or partial batch response never clears an existing fault. During a short
+cloud outage the entities keep the last confirmed state for a limited time
+(see [faults](faults.md#timing-and-reliability)).
 
 The integration persists only the normalized active baseline needed to avoid
 duplicate events after a Home Assistant restart. No raw cloud response is

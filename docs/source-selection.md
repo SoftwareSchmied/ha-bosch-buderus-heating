@@ -249,7 +249,8 @@ local access, its entities stay in place:
   entities, and from then on their faults also come from the local error list,
   without a restart; while a new sign-in is required, or the cloud does not
   answer, the cloud stays responsible for the faults, because it is expected
-  back (the fault entities are unavailable meanwhile);
+  back (the fault entities keep the last confirmed state for a short time,
+  then they are unavailable, see [faults](faults.md#timing-and-reliability));
 - once the cloud answers again, it takes over without new entities.
 
 For a temporary pause, switch the cloud access off rather than removing it.
