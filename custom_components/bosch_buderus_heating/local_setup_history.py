@@ -1,11 +1,13 @@
-"""The last attempts to set up a local access of one entry, without data.
+"""The last setup and sign-in attempts of one entry, without data.
 
-When the local setup needs several tries, the diagnostics should tell why. Each
-attempt keeps only when it happened (UTC, to the second), the dialog step and
-the error code the dialog showed, or that it succeeded. Login, password,
-token, address, certificate data and gateway identifiers are never part of
-it. The history belongs to one configuration entry, keeps the last
-``MAX_ATTEMPTS`` attempts and survives a restart.
+When the local setup or a cloud sign-in needs several tries, the diagnostics
+should tell why. Each attempt keeps only when it happened (UTC, to the
+second), the dialog step and the error code the dialog showed, or that it
+succeeded. Login, password, token, address, certificate data, sign-in links
+and their codes, e-mail addresses and account or gateway identifiers are
+never part of it. Each entry has one list for the local access and one for
+the cloud; each keeps the last ``MAX_ATTEMPTS`` attempts and survives a
+restart.
 """
 
 from __future__ import annotations
@@ -37,13 +39,25 @@ _CODE: Final = re.compile(
 SUCCEEDED: Final = "succeeded"
 FAILED: Final = "failed"
 
-_HISTORIES: HassKey[dict[str, LocalSetupHistory]] = HassKey(
-    f"{DOMAIN}.local_setup_history"
+LOCAL: Final = "local"
+CLOUD: Final = "cloud"
+_KINDS: Final = {
+    LOCAL: ("local_setup_history", "A local setup attempt failed: %s"),
+    CLOUD: ("cloud_sign_in_history", "A cloud sign-in attempt failed: %s"),
+}
+
+_HISTORIES: HassKey[dict[tuple[str, str], LocalSetupHistory]] = HassKey(
+    f"{DOMAIN}.setup_histories"
 )
 
 
-def _storage_key(entry_id: str) -> str:
-    return f"{DOMAIN}.local_setup_history.{entry_id}"
+def _storage_key(entry_id: str, kind: str = LOCAL) -> str:
+    return f"{DOMAIN}.{_KINDS[kind][0]}.{entry_id}"
+
+
+def now_text() -> str:
+    """The current UTC time as kept in an attempt."""
+    return dt_util.utcnow().replace(microsecond=0).isoformat()
 
 
 def safe_code(value: object) -> str | None:
@@ -81,33 +95,45 @@ def _attempt(value: object) -> dict[str, str | None] | None:
 class LocalSetupHistory:
     """The attempts of one entry; adding needs no I/O in the event loop."""
 
-    def __init__(self, hass: HomeAssistant, entry_id: str) -> None:
+    def __init__(self, hass: HomeAssistant, entry_id: str, kind: str = LOCAL) -> None:
         self._hass = hass
+        self._message = _KINDS[kind][1]
         self._store: Store[dict[str, Any]] = Store(
-            hass, STORAGE_VERSION, _storage_key(entry_id), private=True
+            hass, STORAGE_VERSION, _storage_key(entry_id, kind), private=True
         )
         self._attempts: list[dict[str, str | None]] | None = None
         self._pending: list[dict[str, str | None]] = []
         self._lock = asyncio.Lock()
 
     @callback
-    def add(self, step: str, error: str | None) -> None:
-        """Note one attempt: failed with ``error``, or succeeded without."""
+    def add(
+        self,
+        step: str,
+        error: str | None,
+        *,
+        at: str | None = None,
+        log: bool = True,
+    ) -> None:
+        """Note one attempt: failed with ``error``, or succeeded without.
+
+        ``at`` keeps the time of an attempt noted earlier (``log`` is then
+        False: it was logged when it happened).
+        """
         if not _STEP.fullmatch(step):
             return
         if error is None:
             attempt = {"result": SUCCEEDED, "error": None}
         else:
             attempt = {"result": FAILED, "error": safe_code(error) or "unknown"}
-            # Once per failed attempt, with nothing but the code.
-            _LOGGER.info("A local setup attempt failed: %s", attempt["error"])
-        self._pending.append(
-            {
-                "at": dt_util.utcnow().replace(microsecond=0).isoformat(),
-                "step": step,
-                **attempt,
-            }
+            if log:
+                # Once per failed attempt, with nothing but the code.
+                _LOGGER.info(self._message, attempt["error"])
+        when = (
+            at
+            if at is not None and _attempt({"at": at, "step": step, **attempt})
+            else now_text()
         )
+        self._pending.append({"at": when, "step": step, **attempt})
         del self._pending[:-MAX_ATTEMPTS]
         self._hass.async_create_task(self._flush(), "local setup history")
 
@@ -146,17 +172,27 @@ class LocalSetupHistory:
             await self._store.async_remove()
 
 
-@callback
-def local_setup_history(hass: HomeAssistant, entry_id: str) -> LocalSetupHistory:
+def _history(hass: HomeAssistant, entry_id: str, kind: str) -> LocalSetupHistory:
     histories = hass.data.setdefault(_HISTORIES, {})
-    if (history := histories.get(entry_id)) is None:
-        history = histories[entry_id] = LocalSetupHistory(hass, entry_id)
+    if (history := histories.get((kind, entry_id))) is None:
+        history = histories[(kind, entry_id)] = LocalSetupHistory(hass, entry_id, kind)
     return history
 
 
+@callback
+def local_setup_history(hass: HomeAssistant, entry_id: str) -> LocalSetupHistory:
+    return _history(hass, entry_id, LOCAL)
+
+
+@callback
+def cloud_sign_in_history(hass: HomeAssistant, entry_id: str) -> LocalSetupHistory:
+    return _history(hass, entry_id, CLOUD)
+
+
 async def async_forget_local_setup_history(hass: HomeAssistant, entry_id: str) -> None:
-    """Delete the history of a removed entry."""
-    history = hass.data.setdefault(_HISTORIES, {}).pop(entry_id, None)
-    if history is None:
-        history = LocalSetupHistory(hass, entry_id)
-    await history.async_remove()
+    """Delete both histories of a removed entry."""
+    for kind in _KINDS:
+        history = hass.data.setdefault(_HISTORIES, {}).pop((kind, entry_id), None)
+        if history is None:
+            history = LocalSetupHistory(hass, entry_id, kind)
+        await history.async_remove()

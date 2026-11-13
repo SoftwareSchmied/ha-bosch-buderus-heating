@@ -83,12 +83,19 @@ names the heat generator models and shows texts for more gateway states.
   connection now** suggest a DHCP reservation in the router or the
   gateway's host name.
 - **Setup attempts in the diagnostics:** the diagnostics list the last 10
-  attempts to set up or change the local access of an entry, with the time,
-  the dialog step and the error the dialog showed, for example a rejected
-  device label or a gateway that was not unlocked. Login, password, token,
-  address and certificate data are never part of it. This helps to find out
-  why a setup needed several tries. Tested with automated tests of the
-  setup dialog only.
+  attempts to set up or change the local access of an entry, and in a
+  separate list the last 10 cloud sign-ins (new, added under **Configure →
+  Connections**, or signing in again). Each attempt has the time, the
+  dialog step and the error the dialog showed, for example a rejected
+  device label, a gateway that was not unlocked or a pasted address that
+  did not belong to the sign-in. Login, password, token, address,
+  certificate data, sign-in links and codes, e-mail addresses and account
+  or gateway identifiers are never part of it. This helps to find out why a
+  setup needed several tries.
+  - A sign-in that never gets back from the sign-in page, as in #127, can
+    only show as a link that was not used. Attempts of a first setup are
+    kept only when it creates its entry.
+  - Tested with automated tests of the dialogs only.
 
 ### Heat generator models
 

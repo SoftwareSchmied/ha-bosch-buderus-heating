@@ -46,7 +46,7 @@ from .holidays import (
 )
 from .icom_diagnostics import icom_diagnostics
 from .local_only import hybrid_evidence, volume_flow_path
-from .local_setup_history import local_setup_history
+from .local_setup_history import cloud_sign_in_history, local_setup_history
 from .observations import (
     Observation,
     from_cloud_snapshot,
@@ -111,10 +111,13 @@ if TYPE_CHECKING:
 
 
 async def _local_setup_attempts(
-    hass: HomeAssistant, entry_id: str
+    hass: HomeAssistant, entry_id: str, *, cloud: bool = False
 ) -> list[dict[str, str | None]]:
     try:
-        return await local_setup_history(hass, entry_id).async_attempts()
+        history = (cloud_sign_in_history if cloud else local_setup_history)(
+            hass, entry_id
+        )
+        return await history.async_attempts()
     except Exception:  # the rest of the report stays available
         return []
 
@@ -149,8 +152,12 @@ async def async_get_config_entry_diagnostics(
             else 0,
         },
         "update_load": update_load_diagnostics(hass),
-        # Schema 47: the last local setup attempts, codes and times only.
+        # Schema 47: the last local setup and cloud sign-in attempts, codes
+        # and times only.
         "local_setup_attempts": await _local_setup_attempts(hass, entry.entry_id),
+        "cloud_sign_in_attempts": await _local_setup_attempts(
+            hass, entry.entry_id, cloud=True
+        ),
     }
     if isinstance(runtime, ManagedEntry):
         return _managed_diagnostics(base, runtime)

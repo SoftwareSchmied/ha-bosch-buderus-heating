@@ -34,6 +34,23 @@ success). Login, password, token, address, certificate data and gateway
 identifiers are never part of it. Each failed attempt is also logged once at
 the info level with only its code.
 
+`cloud_sign_in_attempts` is a separate list in the same form for the cloud
+sign-ins of this entry: a new cloud access in the setup, adding one under
+**Configure → Connections** and signing in again. It also keeps the last
+10 attempts. `step` is `link_created`, `redirect_submitted`,
+`code_exchanged`, `access_checked` or `success`; `error` is the code the
+dialog showed, for example `invalid_redirect`, `state_mismatch`,
+`auth_expired`, `invalid_auth`, `cannot_connect`, `rate_limited`,
+`reauth_wrong_account` or `unexpected:<type>`. A dialog that showed a
+sign-in link and was closed, or got a new link, before an address from it
+was pasted gives `link_created` with `abandoned_after_link`; a dialog closed
+after the sign-in but before its end gives `abandoned_after_sign_in`. A
+sign-in that never reaches the redirect, for example because the sign-in
+page shows an error, can only appear as `abandoned_after_link`. The
+attempts of a first setup are kept only when that setup creates its entry.
+The link, its state and code verifier, the authorization code, tokens,
+e-mail addresses and account or gateway identifiers are never part of it.
+
 Schema 46 (0.9.0) adds fields, again without values, names or identifiers:
 
 - `starts` in each entry under `connections[]` and `sources[]`: why the
