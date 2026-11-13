@@ -2138,6 +2138,9 @@
       "next_holiday": {
         "name": "Επόμενες διακοπές"
       },
+      "heat_generator": {
+        "name": "Πηγή θερμότητας"
+      },
       "pointt_api_requests_total": {
         "name": "Σύνολο αιτημάτων στο cloud"
       },

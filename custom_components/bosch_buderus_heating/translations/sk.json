@@ -2138,6 +2138,9 @@
       "next_holiday": {
         "name": "Nasledujúca dovolenka"
       },
+      "heat_generator": {
+        "name": "Zdroj tepla"
+      },
       "pointt_api_requests_total": {
         "name": "Požiadavky na cloud celkom"
       },

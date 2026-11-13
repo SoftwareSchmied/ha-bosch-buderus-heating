@@ -2138,6 +2138,9 @@
       "next_holiday": {
         "name": "Następny urlop"
       },
+      "heat_generator": {
+        "name": "Źródło ciepła"
+      },
       "pointt_api_requests_total": {
         "name": "Żądania do chmury łącznie"
       },

@@ -2138,6 +2138,9 @@
       "next_holiday": {
         "name": "Næste ferie"
       },
+      "heat_generator": {
+        "name": "Varmekilde"
+      },
       "pointt_api_requests_total": {
         "name": "Cloud-forespørgsler i alt"
       },

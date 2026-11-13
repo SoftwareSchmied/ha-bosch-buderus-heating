@@ -2138,6 +2138,9 @@
       "next_holiday": {
         "name": "Nästa semester"
       },
+      "heat_generator": {
+        "name": "Värmekälla"
+      },
       "pointt_api_requests_total": {
         "name": "Förfrågningar till molnet totalt"
       },

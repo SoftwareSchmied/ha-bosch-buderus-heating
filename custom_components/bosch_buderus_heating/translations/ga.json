@@ -2138,6 +2138,9 @@
       "next_holiday": {
         "name": "An chéad saoire eile"
       },
+      "heat_generator": {
+        "name": "Foinse teasa"
+      },
       "pointt_api_requests_total": {
         "name": "Iarratais chuig an néal san iomlán"
       },

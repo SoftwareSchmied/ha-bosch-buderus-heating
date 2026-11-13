@@ -39,6 +39,7 @@ from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .discovery import DiscoveryPathSource
 from .energy_contracts import energy_diagnostics, is_energy_collection
 from .firmware_updates import existing_tracker
+from .heat_generator_sensor import heat_generator_diagnostics
 from .holidays import (
     parse_holiday_state,
     parse_holiday_write_configuration,
@@ -156,7 +157,7 @@ async def async_get_config_entry_diagnostics(
         _gateway_diagnostics(index, coordinator)
         for index, coordinator in enumerate(runtime.coordinators, start=1)
     ]
-    if any(report["technical_metadata"] for report in gateway_reports):
+    if _contains_technical_values(gateway_reports):
         base["privacy"]["contains_raw_resource_values"] = True
         base["privacy"]["raw_resource_values_scope"] = "allowlisted_technical_metadata"
     return {
@@ -289,7 +290,10 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
     base["config"]["configured_gateway_count"] = sum(
         target.kind == "pointt_object" for target in snapshot.targets.values()
     )
-    if any(report["technical_metadata"] for report in gateways):
+    views = _views_without_cloud(runtime, targets)
+    if _contains_technical_values(gateways) or any(
+        (view.get("heat_generator") or {}).get("modules") for view in views
+    ):
         base["privacy"]["contains_raw_resource_values"] = True
         base["privacy"]["raw_resource_values_scope"] = "allowlisted_technical_metadata"
     return {
@@ -315,7 +319,7 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
         "local_plant_view": _local_plant_views(runtime, targets),
         # P49b: systems shown from their local readings alone (count only).
         "local_plant_targets": len(runtime.connections.target_views()),
-        "views_without_cloud": _views_without_cloud(runtime, targets),
+        "views_without_cloud": views,
         # Schema 47: a detected hybrid system; its volume flows stay unverified.
         "hybrid_volume_flow": _hybrid_volume_flow(runtime, targets),
         "inventory": {
@@ -325,6 +329,16 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
         "gateways": gateways,
         "wallboxes": wallboxes,
     }
+
+
+def _contains_technical_values(reports: list[dict[str, Any]]) -> bool:
+    """Reviewed technical values or the product names of the heat
+    generator modules (schema 47) are part of the report."""
+    return any(
+        report["technical_metadata"]
+        or (report.get("heat_generator") or {}).get("modules")
+        for report in reports
+    )
 
 
 def _add_counters(
@@ -533,6 +547,12 @@ def _views_without_cloud(
                     "entities": len(shown),
                     "entities_available": available,
                     "active_faults": len(faults.active_faults),
+                    # Schema 47: as in the gateway report.
+                    **(
+                        {"heat_generator": generators}
+                        if (generators := heat_generator_diagnostics(view)) is not None
+                        else {}
+                    ),
                 }
             )
         except Exception:  # the report must stay available
@@ -704,6 +724,13 @@ def _gateway_diagnostics(
                 )
             }
             if (icom := coordinator.icom_profile_diagnostics()) is not None
+            else {}
+        ),
+        # Schema 47: the heat generator modules by role (product names and
+        # hardware types only); not for iCom gateways and room controllers.
+        **(
+            {"heat_generator": generators}
+            if (generators := heat_generator_diagnostics(coordinator)) is not None
             else {}
         ),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),

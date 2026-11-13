@@ -37,6 +37,46 @@ Versioning after its first tagged preview.
     revoked a token on a real gateway yet, so how a real gateway answers a
     revocation is still unconfirmed.
 
+- **Heat generator models:** every gateway with a module list gets one new
+  diagnostic sensor **Heat generator**, enabled by default. Its state is the
+  product name of the main heat generator; its attributes list every heat
+  generator module by role (indoor unit, outdoor unit, boiler, hybrid
+  manager, further cascade stages) with family, construction and power
+  class, and give `primary`, `outdoor_unit`, `source`, `table_version` and
+  `known`. Dashboard cards can choose a matching drawing from it. Details: [heat generator models](docs/entities.md#heat-generator-models).
+  - The sensor sends no request of its own: it uses the module lists the
+    cloud and the local access already read. Its unique ID does not depend
+    on the source or the order of the modules, so it stays the same with
+    only the cloud, only the local access, both, and after a device
+    exchange. Serial numbers are never read, shown or stored.
+  - Family, construction and power come only from a model table; every
+    entry is either observed in a real module list or documented by the
+    manufacturer, with the address of the datasheet. Nothing is guessed
+    from a name. The table holds the modules of my own installation
+    (Logatherm WLW176i-12 TP70 with the monobloc outdoor unit WLW-10 MB AR),
+    which I read from its module list, and the hardware types of the indoor
+    and the outdoor unit. From the manufacturers' brochures and product
+    pages it also knows the WLW176i/WLW186i indoor units with the WLW MB AR
+    outdoor units, the CS5800i/CS6800i AW indoor units with the AW OR-S/OR-T
+    outdoor units, and the outdoor units of the CS3800i AW and CS8800i AW.
+    The power class belongs to the outdoor unit and is shown only where a
+    document states it (for example 10 kW for WLW-10 MB AR); the
+    construction only where a document names it. Other models show their
+    product name and hardware type, but no family, construction or power
+    yet.
+  - If your model shows `known: false`, the diagnostics list it under
+    `heat_generator.unmapped_modules`, without serial numbers. Please post
+    that part in an issue; one new table entry is then enough.
+  - So far I have tested the sensor with automated tests only, not yet on a
+    running installation. iCom gateways follow the same rules; whether their
+    module list names the boiler is not known yet. Room controllers and
+    gateways without a named module get no such sensor. Existing entities
+    and devices stay unchanged.
+  - The diagnostics schema is now 47, with the new `heat_generator` block
+    (see [heat generator modules](docs/diagnostics.md#heat-generator-modules)).
+  - The entity name is translated into all languages; outside English and
+    German these are drafts.
+
 ### Local access
 
 - **New gateway address after a DHCP change:** when the local access can no

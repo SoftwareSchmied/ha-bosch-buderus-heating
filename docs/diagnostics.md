@@ -4,8 +4,11 @@ Home Assistant can generate a diagnostics report for Bosch/Buderus Home Comfort.
 It is intended for troubleshooting and support and does not make additional
 cloud requests.
 
-Schema 47 (0.9.1) adds a section, again without values, paths, names or
-identifiers:
+Schema 47 (0.9.1) adds `gateways[].heat_generator` and the same block in
+`views_without_cloud[]`: the heat generator modules of the module list with
+their product names and hardware types, never serial numbers (see
+[heat generator modules](#heat-generator-modules)). It also adds a section
+without values, paths, names or identifiers:
 
 - `hybrid_volume_flow`: one entry per system with cloud or local readings.
   `hybrid_detected` is `true` when the readings show a hybrid system;
@@ -667,6 +670,34 @@ tokens and component type numbers only:
   circuits token 16 hides, with `status: expected_untested`
   (see [older holiday formats](legacy-holidays.md)).
 
+## Heat generator modules
+
+`gateways[].heat_generator` (schema 47) appears for every gateway except
+room controllers; a system shown from its local readings
+alone has the same block in `views_without_cloud[]`. It belongs to the
+[heat generator sensor](entities.md#heat-generator-models) and makes no
+request:
+
+- `table_version`: the version of the model table;
+- `cloud_modules` and `local_modules`: how many modules with a product name
+  the current answer of the cloud (`/system/info`) and of the local access
+  (`/system/basicInfo`) lists, `null` without a current answer;
+- `source`: the access whose list is used (`cloud`, `local` or `null`);
+  `known`: whether the table describes the product of every module;
+- `conflict`: `true` while the two answers list different modules; then
+  `other_source_modules` lists the modules of the other answer;
+- `modules`: `role`, `product_name` and `hardware_type` of each module;
+- `unmapped_modules`: the modules without a table entry for their product.
+  Reporting them lets the model table grow.
+
+Only the product name and the hardware type of a module are read. Serial
+numbers, tokens, versions and type numbers are never included; a name field
+that holds a serial number of the same module, or only digits, is left out.
+Because product names are included, the privacy block then sets
+`contains_raw_resource_values: true` with
+`raw_resource_values_scope: allowlisted_technical_metadata`. The anonymized
+inventory drops this block.
+
 ## RRC program selection
 
 `gateways[].rrc_programs` explains for the zones of an RRC room controller,
@@ -1073,7 +1104,8 @@ and diagnostics.
 - token fingerprints, their key, account names and e-mail addresses;
 - gateway IDs, config-entry IDs, serial numbers, and UUIDs;
 - IP addresses, MAC addresses, SSIDs, and location data;
-- firmware identifiers and complete model names;
+- firmware identifiers and complete model names, except the product names
+  of the heat generator modules (see [heat generator modules](#heat-generator-modules));
 - user-defined heating-circuit, hot-water, and schedule names;
 - current temperatures, setpoints, operating modes, and energy consumption;
 - complete request or response bodies.

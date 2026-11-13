@@ -2138,6 +2138,9 @@
       "next_holiday": {
         "name": "Volgende vakantie"
       },
+      "heat_generator": {
+        "name": "Warmteopwekker"
+      },
       "pointt_api_requests_total": {
         "name": "Cloudverzoeken totaal"
       },

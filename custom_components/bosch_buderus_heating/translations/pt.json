@@ -2138,6 +2138,9 @@
       "next_holiday": {
         "name": "Próximas férias"
       },
+      "heat_generator": {
+        "name": "Gerador de calor"
+      },
       "pointt_api_requests_total": {
         "name": "Total de pedidos à cloud"
       },
