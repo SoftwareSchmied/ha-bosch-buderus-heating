@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 import subprocess
 import sys
 import zipfile
@@ -11,10 +12,19 @@ from pathlib import Path
 
 import pytest
 
-from scripts.build_release import ARCHIVE_NAME, ROOT, build_release
-from scripts.release_notes import extract_release_notes
+from scripts.build_release import (
+    ARCHIVE_NAME,
+    COMPONENT_PATH,
+    ROOT,
+    build_release,
+    component_files,
+)
+from scripts.release_notes import CHANGELOG, extract_release_notes
+from scripts.release_tag import ReleaseTag, check_release_tag
 
 RELEASE_VERSION = "0.9.0-alpha.6"
+# The last section written before release notes had to stand on their own.
+LAST_SECTION_WITH_CROSS_REFERENCES = "0.9.0-alpha.6"
 
 
 @pytest.fixture
@@ -42,9 +52,11 @@ def git_worktree() -> None:
 @pytest.mark.usefixtures("git_worktree")
 def test_release_archive_is_reproducible_and_component_rooted(tmp_path: Path) -> None:
     first, checksum = build_release(
-        tmp_path / "first", expected_version=RELEASE_VERSION
+        tmp_path / "first", expected_version=RELEASE_VERSION, allow_dirty=True
     )
-    second, _ = build_release(tmp_path / "second", expected_version=RELEASE_VERSION)
+    second, _ = build_release(
+        tmp_path / "second", expected_version=RELEASE_VERSION, allow_dirty=True
+    )
 
     assert first.name == ARCHIVE_NAME
     assert first.read_bytes() == second.read_bytes()
@@ -102,7 +114,9 @@ def test_release_rejects_a_version_mismatch(tmp_path: Path) -> None:
 
 @pytest.mark.usefixtures("git_worktree")
 def test_release_archive_imports_from_an_isolated_install(tmp_path: Path) -> None:
-    archive, _ = build_release(tmp_path / "dist", expected_version=RELEASE_VERSION)
+    archive, _ = build_release(
+        tmp_path / "dist", expected_version=RELEASE_VERSION, allow_dirty=True
+    )
     install_root = tmp_path / "install"
     component = install_root / "custom_components" / "bosch_buderus_heating"
     component.mkdir(parents=True)
@@ -219,3 +233,279 @@ def test_release_notes_reject_missing_or_empty_sections(
     """A tag cannot silently publish generic or empty release notes."""
     with pytest.raises(ValueError, match=message):
         extract_release_notes(changelog, "2.0.0")
+
+
+_STANDALONE_CHANGELOG = """# Changelog
+
+## [Unreleased]
+
+## [2.0.0-alpha.2] - 2030-02-02
+
+> [!IMPORTANT]
+> Make a backup first. From alpha.1 no new setup is needed; from 1.0.x, the
+> notes of alpha.1 below apply as well.
+
+## [2.0.0-alpha.1] - 2030-02-01
+
+Alpha release.
+
+## [1.0.0] - 2030-01-01
+
+First release.
+
+## [1.0.0-alpha.2] - 2029-12-01
+
+An older alpha.2 of another version.
+"""
+
+
+def test_release_notes_reject_a_pointer_to_another_section() -> None:
+    """A published release cannot send its readers to notes it lacks."""
+    with pytest.raises(ValueError, match=r"points to other sections.*alpha\.1 below"):
+        extract_release_notes(_STANDALONE_CHANGELOG, "2.0.0-alpha.2")
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "The changes of 1.0.0 above still apply.",
+        "Coming from 1.0.x, read the notes below first.",
+        "Coming from alpha.1, read the notes below first.",
+        "See the 2.0.0-alpha.1 section below.",
+    ],
+)
+def test_release_notes_reject_every_named_section(sentence: str) -> None:
+    changelog = _STANDALONE_CHANGELOG.replace(
+        "> Make a backup first. From alpha.1 no new setup is needed; from 1.0.x, the\n"
+        "> notes of alpha.1 below apply as well.",
+        sentence,
+    )
+    with pytest.raises(ValueError, match="points to other sections"):
+        extract_release_notes(changelog, "2.0.0-alpha.2")
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        # Own subsections, comparisons and plain mentions stay allowed, also
+        # when an older version had a pre-release with the same name.
+        "What alpha.2 confirmed is marked as confirmed below.",
+        "The sections below say where.",
+        "Gateways below 1.0.0 are paused; firmware 05.04.00 or above works.",
+        "A flow rate below the measuring range shows unknown.",
+        "Updating from alpha.1 needs no new setup.",
+    ],
+)
+def test_release_notes_allow_text_within_the_section(sentence: str) -> None:
+    changelog = _STANDALONE_CHANGELOG.replace(
+        "> Make a backup first. From alpha.1 no new setup is needed; from 1.0.x, the\n"
+        "> notes of alpha.1 below apply as well.",
+        sentence,
+    )
+    assert extract_release_notes(changelog, "2.0.0-alpha.2") == (
+        f"> [!IMPORTANT]\n{sentence}\n"
+    )
+
+
+def test_changelog_sections_since_the_rule_stand_on_their_own() -> None:
+    """Every version section newer than the rule is complete in its release."""
+    changelog = CHANGELOG.read_text(encoding="utf-8")
+    versions = re.findall(r"^## \[([^]]+)]", changelog, re.MULTILINE)
+    assert LAST_SECTION_WITH_CROSS_REFERENCES in versions
+    newer = versions[1 : versions.index(LAST_SECTION_WITH_CROSS_REFERENCES)]
+    assert versions[0] == "Unreleased"
+    for version in newer:
+        extract_release_notes(changelog, version)
+    # The rule recognises the pointer that the earlier sections still carry.
+    with pytest.raises(ValueError, match="points to other sections"):
+        extract_release_notes(changelog, LAST_SECTION_WITH_CROSS_REFERENCES)
+
+
+def _git(root: Path, *arguments: str) -> None:
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=Release test",
+            "-c",
+            "user.email=release-test@example.invalid",
+            "-c",
+            "commit.gpgsign=false",
+            "-c",
+            "core.autocrlf=false",
+            *arguments,
+        ],
+        cwd=root,
+        check=True,
+        capture_output=True,
+    )
+
+
+@pytest.fixture
+def release_repository(tmp_path: Path) -> Path:
+    """Return a committed repository with a small integration directory."""
+    root = tmp_path / "repository"
+    component = root / COMPONENT_PATH
+    for relative, content in {
+        "manifest.json": '{"domain": "demo", "version": "1.2.3"}\n',
+        # Path objects and strings sort these names differently.
+        "a.py": "a\n",
+        "a-b.py": "a-b\n",
+        "a/b.py": "a/b\n",
+        "B.py": "B\n",
+        "www/dialog.js": "dialog\n",
+    }.items():
+        (component / relative).parent.mkdir(parents=True, exist_ok=True)
+        (component / relative).write_text(content, encoding="utf-8", newline="\n")
+    (root / "pyproject.toml").write_text(
+        '[project]\nname = "demo"\nversion = "1.2.3"\n', encoding="utf-8"
+    )
+    (root / ".gitignore").write_text("__pycache__/\n", encoding="utf-8")
+    (root / "README.md").write_text("readme\n", encoding="utf-8")
+    _git(root, "init", "--quiet")
+    _git(root, "add", ".")
+    _git(root, "commit", "--quiet", "-m", "initial")
+    return root
+
+
+def test_release_archive_order_is_the_plain_path_order(
+    release_repository: Path, tmp_path: Path
+) -> None:
+    """The entries follow the POSIX path strings, independent of the platform."""
+    archive, _ = build_release(
+        tmp_path / "dist", expected_version="1.2.3", root=release_repository
+    )
+    expected = [
+        "B.py",
+        "a-b.py",
+        "a.py",
+        "a/b.py",
+        "manifest.json",
+        "www/dialog.js",
+    ]
+    assert sorted(expected) == expected
+    with zipfile.ZipFile(archive) as release_zip:
+        assert release_zip.namelist() == expected
+        assert release_zip.read("a/b.py") == b"a/b\n"
+    assert component_files(release_repository) == tuple(
+        f"{COMPONENT_PATH}/{name}" for name in expected
+    )
+
+
+@pytest.mark.parametrize("change", ["modified", "staged", "deleted", "untracked"])
+def test_release_refuses_an_integration_directory_with_changes(
+    release_repository: Path, tmp_path: Path, change: str
+) -> None:
+    """A local archive is built only from what the commit contains."""
+    component = release_repository / COMPONENT_PATH
+    if change in {"modified", "staged"}:
+        (component / "a.py").write_text("changed\n", encoding="utf-8")
+        if change == "staged":
+            _git(release_repository, "add", ".")
+    elif change == "deleted":
+        (component / "a.py").unlink()
+    else:
+        (component / "new_module.py").write_text("new\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="uncommitted changes"):
+        build_release(tmp_path / "dist", root=release_repository)
+    assert not (tmp_path / "dist").exists()
+
+    # A deliberate local trial build stays possible.
+    archive, _ = build_release(
+        tmp_path / "trial", root=release_repository, allow_dirty=True
+    )
+    with zipfile.ZipFile(archive) as release_zip:
+        assert "new_module.py" not in release_zip.namelist()
+
+
+def test_release_ignores_changes_outside_the_integration(
+    release_repository: Path, tmp_path: Path
+) -> None:
+    (release_repository / "README.md").write_text("changed\n", encoding="utf-8")
+    (release_repository / "notes.txt").write_text("draft\n", encoding="utf-8")
+    cache = release_repository / COMPONENT_PATH / "__pycache__"
+    cache.mkdir()
+    (cache / "a.cpython-314.pyc").write_bytes(b"\0")
+
+    archive, _ = build_release(tmp_path / "dist", root=release_repository)
+
+    with zipfile.ZipFile(archive) as release_zip:
+        assert not any("__pycache__" in name for name in release_zip.namelist())
+
+
+@pytest.mark.parametrize(
+    ("tag", "main_status", "expected"),
+    [
+        ("v0.9.0", "identical", ReleaseTag("0.9.0", prerelease=False)),
+        ("v0.9.0", "behind", ReleaseTag("0.9.0", prerelease=False)),
+        ("v0.9.1-beta.1", "diverged", ReleaseTag("0.9.1-beta.1", prerelease=True)),
+        ("v0.9.0-alpha.6", "ahead", ReleaseTag("0.9.0-alpha.6", prerelease=True)),
+    ],
+)
+def test_release_tag_decides_the_release_type(
+    tag: str, main_status: str, expected: ReleaseTag
+) -> None:
+    """Stable tags come from main; pre-releases may come from a feature branch."""
+    assert check_release_tag(tag, object_type="tag", main_status=main_status) == (
+        expected
+    )
+
+
+@pytest.mark.parametrize(
+    ("tag", "object_type", "main_status", "message"),
+    [
+        ("v0.9.0", "commit", "identical", "not annotated"),
+        ("v0.9.0-beta.1", "commit", "identical", "not annotated"),
+        ("v0.9.0", "tag", "ahead", "not point to a commit on main"),
+        ("v0.9.0", "tag", "diverged", "not point to a commit on main"),
+        ("v0.9.0", "tag", "", "not point to a commit on main"),
+        ("0.9.0", "tag", "identical", "not a release tag"),
+        ("v0.9", "tag", "identical", "not a release tag"),
+        ("v0.9.0-", "tag", "identical", "not a release tag"),
+    ],
+)
+def test_release_tag_refuses_to_publish(
+    tag: str, object_type: str, main_status: str, message: str
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        check_release_tag(tag, object_type=object_type, main_status=main_status)
+
+
+def test_release_tag_prints_the_workflow_outputs() -> None:
+    script = ROOT / "scripts" / "release_tag.py"
+    published = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--tag",
+            "v0.9.0",
+            "--object-type",
+            "tag",
+            "--main-status",
+            "behind",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert published.stdout == "version=0.9.0\nprerelease=false\n"
+
+    refused = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--tag",
+            "v0.9.0",
+            "--object-type",
+            "commit",
+            "--main-status",
+            "behind",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert refused.returncode != 0
+    assert refused.stdout == ""
+    assert "not annotated" in refused.stderr

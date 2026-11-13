@@ -9,10 +9,58 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CHANGELOG = ROOT / "CHANGELOG.md"
 _VERSION_HEADER = re.compile(r"^## \[(?P<version>[^]]+)](?: - .+)?$")
+# "below" or "above", but not as a comparison such as "below 0.8.0" or
+# "05.04.00 or above".
+_DIRECTION = re.compile(
+    r"(?<!\bor )(?<!\band )\b(?:below|above)\b(?!\s+(?:version\s+)?v?\d)", re.I
+)
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+_VERSION_FAMILY = r"\d+\.\d+\.x"
+
+
+def _other_release_names(changelog: str, version: str) -> list[str]:
+    """Return the names under which the text can mention other sections."""
+    names: set[str] = set()
+    for line in changelog.splitlines():
+        match = _VERSION_HEADER.fullmatch(line)
+        if match is None or match.group("version") in {version, "Unreleased"}:
+            continue
+        other = match.group("version")
+        names.add(other)
+        _, _, suffix = other.partition("-")
+        if suffix:
+            names.add(suffix)
+    _, _, own_suffix = version.partition("-")
+    names.discard(own_suffix)
+    return sorted(names, key=len, reverse=True)
+
+
+def cross_section_references(changelog: str, version: str, notes: str) -> list[str]:
+    """Return the sentences of ``notes`` that point to another section.
+
+    The notes of a version are published on their own, so a sentence such as
+    "the notes of alpha.1 below apply as well" points to text that the reader
+    of the release does not see.
+    """
+    alternatives = [
+        *(re.escape(name) for name in _other_release_names(changelog, version)),
+        _VERSION_FAMILY,
+    ]
+    other_release = re.compile(
+        rf"(?<![\w.])(?:{'|'.join(alternatives)})(?!\w|\.\d)", re.I
+    )
+    text = " ".join(
+        line.lstrip("> ").strip() for line in notes.splitlines() if line.strip()
+    )
+    return [
+        sentence
+        for sentence in _SENTENCE_END.split(text)
+        if _DIRECTION.search(sentence) and other_release.search(sentence)
+    ]
 
 
 def extract_release_notes(changelog: str, version: str) -> str:
-    """Return the non-empty changelog section for a released version."""
+    """Return the non-empty, self-contained changelog section of a version."""
     lines = changelog.splitlines()
     start: int | None = None
     end = len(lines)
@@ -33,6 +81,12 @@ def extract_release_notes(changelog: str, version: str) -> str:
     notes = "\n".join(lines[start:end]).strip()
     if not notes:
         raise ValueError(f"CHANGELOG.md section for version {version!r} is empty")
+    references = cross_section_references(changelog, version, notes)
+    if references:
+        raise ValueError(
+            f"CHANGELOG.md section for version {version!r} points to other "
+            f"sections, which its release notes do not contain: {references[0]!r}"
+        )
     return f"{notes}\n"
 
 

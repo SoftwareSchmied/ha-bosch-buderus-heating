@@ -5,6 +5,21 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+- **Release tooling:**
+  - The release notes of a version must stand on their own. Publishing stops
+    when the CHANGELOG section sends readers to the notes of another version
+    further down, because the GitHub release and the update dialog show only
+    this one section.
+  - The installation archive lists its files in the plain order of their
+    paths, so it comes out the same on every platform, and a local build
+    refuses to run while the integration directory has uncommitted changes.
+  - Only an annotated tag publishes a release, and a stable release only from
+    a commit on `main`. The workflow now sets the draft and pre-release state
+    explicitly, so an existing draft is published with the right type, and
+    two runs of the same tag no longer publish at the same time.
+  - I tested these checks with automated tests only; the workflow changes
+    take effect with the next release tag.
+
 ## [0.9.0-alpha.6] - 2026-11-12
 
 > [!IMPORTANT]

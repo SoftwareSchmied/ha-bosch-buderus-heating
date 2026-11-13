@@ -8,9 +8,45 @@ on:
 permissions:
   contents: read
 
+# Runs for the same tag wait for each other instead of publishing at once.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
+  # Only an annotated tag publishes, and a stable one only from main.
+  tag:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      prerelease: ${{ steps.check.outputs.prerelease }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14.2"
+      - name: Check the release tag
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          object_type="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" --jq .object.type)"
+          main_status="$(gh api "repos/${GITHUB_REPOSITORY}/compare/main...${GITHUB_SHA}" --jq .status)"
+          python scripts/release_tag.py \
+            --tag "${RELEASE_TAG}" \
+            --object-type "${object_type}" \
+            --main-status "${main_status}" >> "${GITHUB_OUTPUT}"
+
   # The browser tests of the dialogs, exactly as in CI.
   frontend:
+    needs: [tag]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -66,6 +102,7 @@ jobs:
 
   # The same older Home Assistant versions as CI must pass before publishing.
   compatibility:
+    needs: [tag]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -89,6 +126,7 @@ jobs:
         run: pytest
 
   minimum-version:
+    needs: [tag]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -151,7 +189,7 @@ jobs:
 
   release:
     # Builds the archive again from the verified tag and publishes it.
-    needs: [verify]
+    needs: [tag, verify]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -176,11 +214,11 @@ jobs:
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ needs.tag.outputs.prerelease }}
         run: |
-          release_flags=()
-          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
-            release_flags+=(--prerelease)
-          fi
+          # Set both flags explicitly, so an existing draft is published and
+          # an earlier pre-release of the same tag changes its type.
+          release_flags=(--draft=false "--prerelease=${PRERELEASE}")
           if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
             gh release upload "${GITHUB_REF_NAME}" \
               dist/bosch_buderus_heating.zip \
@@ -196,5 +234,6 @@ jobs:
               dist/bosch_buderus_heating.zip.sha256 \
               --title "Bosch/Buderus Home Comfort ${GITHUB_REF_NAME}" \
               --notes-file dist/release-notes.md \
+              --verify-tag \
               "${release_flags[@]}"
           fi
