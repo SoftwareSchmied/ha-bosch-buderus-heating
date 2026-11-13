@@ -317,7 +317,10 @@ is expected, untested.*
   count such lists (`operation_mode_options_empty`). Both cases are expected,
   untested. If the controller reports the hot water mode as not available,
   there is no water heater entity.
-- The comfort temperature as a number.
+- The hot water temperature (`temperatureLevels/high`) as a number. Since
+  0.9.0 it is named **Hot water temperature**; before it was called
+  "Comfort start temperature", the name this level has on other gateways.
+  Its entity ID stays; a name you set yourself stays as well.
 - **Extra hot water:** a switch and its duration in minutes. The switch does
   not turn on while the duration is 0; set the duration first. In
   **Operate appliance** the duration is written before the switch.
@@ -359,6 +362,14 @@ is expected, untested.*
   type) are never written.
 - The heat-up speed is switched off by the manufacturer and is never
   written; it is at most a disabled reading.
+- A setting that the controller reports but that gets no control, for
+  example because it is not writable, has a single season mode or reports
+  no limits, is shown by its read-only sensor: from 0.9.0 a diagnostic
+  sensor enabled by default. While the control exists, the sensor stays a
+  disabled duplicate. This applies only to entities created from 0.9.0; an
+  existing sensor keeps its setting, and you can enable it under
+  **Settings → Devices & services → Entities**. The same holds for the
+  temperature of the open window detection of the system.
 
 ## System, faults and maintenance
 
@@ -597,7 +608,8 @@ ist erwartet, ungetestet**, ebenso der CT200 insgesamt:
   Boost merke ich sie als Vorgabe für den nächsten Start, bei laufendem
   Boost wird eine Änderung abgelehnt; ein Start heizt nur Räume, die es noch
   gibt und die der Regler für den Boost erlaubt; Kaminfunktion.
-- **Warmwasser:** Betriebsart, Komforttemperatur, Extra-Warmwasser mit
+- **Warmwasser:** Betriebsart, Warmwassertemperatur (seit 0.9.0 so benannt,
+  vorher „Komfort-Starttemperatur“), Extra-Warmwasser mit
   Dauer, thermische Desinfektion (Startzeit in 5-Minuten-Schritten),
   aktuelle Programmstufe. Ohne angebotene Liste biete ich Aus, Komfort und
   Eigenes Programm an, solange der Regler Eco oder Eco+ meldet auch diese
@@ -614,7 +626,10 @@ ist erwartet, ungetestet**, ebenso der CT200 insgesamt:
   Vorlauftemperatur bleiben nicht über Endpunkt und maximaler
   Vorlauftemperatur. Diese Einstellungen wirken nur bei witterungsgeführter
   Regelung; sonst wird eine Änderung abgelehnt. Die Aufheizgeschwindigkeit
-  ist vom Hersteller abgeschaltet und wird nie geschrieben.
+  ist vom Hersteller abgeschaltet und wird nie geschrieben. Eine Einstellung
+  ohne Steuerung (nicht schreibbar, nur ein Saisonbetrieb, ohne Grenzen)
+  zeigt ab 0.9.0 ihr Lesesensor, ein standardmäßig aktivierter
+  Diagnosesensor; bestehende Entitäten behalten ihre Einstellung.
 - **System:** Anzeige- und Ursachencode, Anlagendruck, Raumluftfeuchte,
   verriegelnde Störung (bis zum manuellen Reset), blockierende Störung,
   Wartung fällig, Nachfüllen erforderlich; eigene Texte für

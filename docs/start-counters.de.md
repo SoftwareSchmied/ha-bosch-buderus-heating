@@ -21,6 +21,9 @@ Die ausführlichen technischen Regeln stehen auch in der
 ## Gültige Werte und unveränderte Zuordnung
 
 Der allgemeine Pfad `/heatSources/numberOfStarts` verwendet `floatValue`.
+Ab 0.9.0 wird sein Sensor deaktiviert angelegt, wenn die Anlage genau einen
+Wärmeerzeuger meldet: Er zählt dann dieselben Starts wie dessen `total`.
+Bestehende Entitäten behalten ihre Einstellung.
 Die Pfade einzelner Wärmeerzeuger unterstützen einen skalaren `floatValue`
 bei WDDW2 sowie `emonValue` bei ConnectKey mit den bekannten
 Teilen `total`, `ch`, `cooling`, `dhw` und `pool`. Fehlende Teilwerte bleiben

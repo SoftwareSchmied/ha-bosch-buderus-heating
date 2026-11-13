@@ -73,7 +73,10 @@ source is enabled by default when first created. From 0.9.0 a part that does
 not occur in the reading the entity is created from (for example `cooling`
 on a gas boiler) is created disabled, like `pool`; the key decides, not its
 value. Without a usable reading (empty, or a form that is not read), the
-parts keep these defaults. Existing registry choices,
+parts keep these defaults. From 0.9.0 the general counter
+`/heatSources/numberOfStarts` is created disabled when the system reports
+exactly one heat source: it then counts the same starts as that source's
+`total`. Existing registry choices,
 including disabled entities, remain unchanged. Equal values do not establish
 equal meaning. A source number does not by itself identify a boiler or heat pump.
 

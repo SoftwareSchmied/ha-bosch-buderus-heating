@@ -119,7 +119,7 @@ applies to every text that uses it.
 | extra hot water | Extra-Warmwasser | extra varmvatten | ekstra varmtvann | lisälämmin käyttövesi | ekstra varmt vand |
 | heat generator, heat source | Wärmeerzeuger | värmekälla | varmekilde | lämmönlähde | varmekilde |
 | auxiliary heater | Zuheizer | tillsatsvärme | tilleggsvarme | lisälämmitin | tilskudsvarme |
-| compressor | Verdichter, Kompressor | kompressor | kompressor | kompressori | kompressor |
+| compressor | Kompressor (the controller's word) | kompressor | kompressor | kompressori | kompressor |
 | defrost | Abtauen | avfrostning | avriming | sulatus | afrimning |
 | heating (mode) | Heizen | värme | oppvarming | lämmitys | opvarmning |
 | cooling (mode) | Kühlen | kyla | kjøling | jäähdytys | køling |
