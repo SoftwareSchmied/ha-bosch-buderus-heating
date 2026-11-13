@@ -46,6 +46,17 @@ from .rrc_programs import (
 from .writes import WriteBusy
 
 
+def _refused_error(coordinator: BoschBuderusDataUpdateCoordinator) -> str:
+    """The dialog error of a change refused before anything was sent.
+
+    During the pause after repeated failed readings nothing may be sent;
+    saying so is more useful than asking to reopen a program that did not
+    change.
+    """
+    reason, _until = coordinator.control_status()
+    return "switch_program_paused" if reason == "protection_pause" else "rrc_changed"
+
+
 @dataclass(frozen=True, slots=True)
 class ScheduleChoice:
     coordinator: BoschBuderusDataUpdateCoordinator
@@ -277,7 +288,7 @@ class RrcScheduleOptionsFlow(NavigatingOptionsFlow):
                     except AuthenticationError:
                         errors["base"] = "write_authentication_failed"
                     except WriteValidationError:
-                        errors["base"] = "rrc_changed"
+                        errors["base"] = _refused_error(choice.coordinator)
                     except WriteNotConfirmed:
                         errors["base"] = "rrc_not_confirmed"
                     except WriteBusy:

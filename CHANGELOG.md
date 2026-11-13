@@ -132,11 +132,22 @@ only; none of them is checked on a real device or a fresh installation yet.
   sign-in. A cloud pause during this check is reported as a pause, not as an
   unreachable service.
 - **Commands during a cloud pause or outage say why:** a heating circuit
-  climate command, the new button to clear a temporary setpoint or a control
-  change during a cloud pause, a protection pause after repeated errors, an
-  outage, a stopped cloud access or a needed new sign-in now names that
-  reason, with the end of the pause when it is known. Before, the message spoke of the manual heating mode or of a setting
-  that could not be changed safely. Nothing is sent in these cases, as before.
+  climate command, a zone climate command of a room controller, the new
+  button to clear a temporary setpoint or a control change during a cloud
+  pause, a protection pause after repeated errors, an outage, a stopped
+  cloud access or a needed new sign-in now names that reason, with the end
+  of the pause when it is known. Before, the message spoke of the manual
+  heating mode, of the zone command or of a setting that could not be
+  changed safely. Saving a switch point of a room controller during the
+  protection pause now says that writing is paused, instead of asking to
+  reopen a program that did not change. Nothing is sent in these cases, as
+  before. A change in the holiday calendar during an outage is still
+  answered by Home Assistant as not supported, because the calendar offers
+  no changes without current readings.
+- **Clear button without a current reading:** when the temporary setpoint is
+  shown as active from a reading that is still valid but was missing in the
+  last cycle, the button now asks to try again instead of saying that no
+  temporary setpoint is active. Nothing is sent.
 - **"Cloud access" in messages:** connection, error and rate-limit messages
   and the titles of the firmware repair notes no longer use the internal
   service name; the rate-limit message of the controls dialog now says that

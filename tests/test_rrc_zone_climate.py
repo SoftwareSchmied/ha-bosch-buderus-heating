@@ -512,9 +512,11 @@ async def test_writes_need_a_successful_cycle(hass: HomeAssistant) -> None:
         await refresh(hass, coordinator, clock, 61)
         assert not coordinator.last_update_success
         assert hass.states.get(climate(hass, 1)).state == "heat"
-        with pytest.raises(ServiceValidationError) as refused:
+        # The command names the outage; nothing is sent.
+        with pytest.raises(HomeAssistantError) as refused:
             await set_temperature(hass, climate(hass, 1), temperature=22.0)
-        assert refused.value.translation_key == "rrc_zone_climate_command"
+        assert refused.value.translation_key == "command_cloud_unreachable"
+        assert not cloud.written("PUT")
         cloud.bulk_error = None
         await refresh(hass, coordinator, clock, 61)
         await set_temperature(hass, climate(hass, 1), temperature=22.0)
@@ -803,3 +805,25 @@ def test_detail_readings_are_checked() -> None:
     assert rrc.scalar_value(status) is None
     assert not rrc.is_control(status.path)
     assert rrc.name(status.path, "de") is None
+
+
+async def test_zone_commands_during_a_protection_pause_name_it(
+    hass: HomeAssistant,
+) -> None:
+    """A paused cloud refuses a zone command with the reason, before anything
+    is read or sent."""
+    cloud = zone_cloud()
+    entry, coordinator, _sleeps, stack, clock = await setup(hass, cloud)
+    try:
+        coordinator._circuit_open_until = clock.now + 600
+        for command in (
+            lambda: set_mode(hass, climate(hass, 1), "auto"),
+            lambda: set_temperature(hass, climate(hass, 1), temperature=21.5),
+        ):
+            with pytest.raises(HomeAssistantError) as refused:
+                await command()
+            assert refused.value.translation_key == "command_cloud_protection_pause"
+            assert refused.value.translation_placeholders["until"]
+        assert not cloud.writes
+    finally:
+        await teardown(hass, entry, stack)

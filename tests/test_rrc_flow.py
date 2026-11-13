@@ -1,6 +1,7 @@
 """Native RRC schedule dialogs retain input and never touch holiday settings."""
 
 from dataclasses import replace
+from time import monotonic
 from unittest.mock import AsyncMock
 
 import pytest
@@ -134,6 +135,17 @@ async def test_write_failure_has_specific_translated_error(
     )
 
 
+async def test_a_change_during_the_protection_pause_says_so(hass, environment):
+    """Nothing is sent during the pause after repeated failed readings; the
+    dialog names the pause instead of a changed program."""
+    flow, coordinator = make_flow(hass, environment)
+    await open_point(flow)
+    coordinator._circuit_open_until = monotonic() + 600
+    result = await flow.async_step_rrc_point({"time": "07:10", "temperature": 22})
+    assert result["errors"] == {"base": "switch_program_paused"}
+    coordinator.client.put_resource_value.assert_not_awaited()
+
+
 @pytest.mark.parametrize("empty", [True, False])
 async def test_readonly_or_empty_week_can_be_viewed_without_writes(
     hass, environment, empty
@@ -182,6 +194,7 @@ async def test_all_rrc_flow_and_enum_translations_are_available(
         "rrc_changed",
         "rrc_not_confirmed",
         "rrc_failed",
+        "switch_program_paused",
     ):
         assert options[prefix + f"error.{error}"]
     entities = await async_get_translations(hass, language, "entity", {DOMAIN})

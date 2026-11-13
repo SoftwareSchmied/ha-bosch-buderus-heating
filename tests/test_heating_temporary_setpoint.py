@@ -22,7 +22,7 @@ from homeassistant.util.unit_system import US_CUSTOMARY_SYSTEM
 
 from custom_components.bosch_buderus_heating import button as button_platform
 from custom_components.bosch_buderus_heating.controls_flow import controls
-from custom_components.bosch_buderus_heating.coordinator import ResourceSnapshot
+from custom_components.bosch_buderus_heating.coordinator import Freshness, ResourceSnapshot
 from custom_components.bosch_buderus_heating.heating_climate import (
     HeatingCircuitTemporaryClearButton,
     clear_button_descriptions,
@@ -315,6 +315,27 @@ async def test_clear_button_needs_an_active_setpoint_in_auto(hass, mode, value):
     with pytest.raises(ServiceValidationError) as error:
         await button.async_press()
     assert error.value.translation_key == "heating_temporary_setpoint_not_active"
+    assert cloud.puts == []
+
+
+async def test_clear_button_without_a_current_reading_does_not_deny_the_setpoint(
+    hass,
+):
+    """Shown as active from a reading still within its validity, but missing
+    from the last cycle: the message asks to try again, nothing is sent."""
+    coordinator, _, cloud = _circuit(hass, temporary=_temporary(22.0, minimum=-1.0))
+    snapshot = coordinator.data[TEMPORARY]
+    coordinator.data[TEMPORARY] = replace(
+        snapshot,
+        available=False,
+        freshness=Freshness.STALE,
+        last_error_category="http_504",
+    )
+    button = _button(hass, coordinator)
+    assert button.available
+    with pytest.raises(ServiceValidationError) as error:
+        await button.async_press()
+    assert error.value.translation_key == "write_validation_failed"
     assert cloud.puts == []
 
 

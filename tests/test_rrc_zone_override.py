@@ -238,7 +238,7 @@ async def test_put_without_effect_and_failing_puts(hass: HomeAssistant) -> None:
         # The account brake stops the next change before anything is sent.
         with pytest.raises(HomeAssistantError) as braked:
             await set_temperature(hass, climate(hass, 3), temperature=22.0)
-        assert braked.value.translation_key == "write_rate_limited"
+        assert braked.value.translation_key == "command_cloud_rate_limited"
         assert cloud.calls["PUT", target] == 4
         zone = stats(coordinator)
         assert zone["writes_sent"] == 4

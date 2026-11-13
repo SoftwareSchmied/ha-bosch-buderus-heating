@@ -35,7 +35,7 @@ from homeassistant.util.unit_conversion import TemperatureDeltaConverter
 
 from . import rrc, rrc_contract_zone
 from .const import DOMAIN
-from .control import HeldCapabilities, async_set_control
+from .control import HeldCapabilities, async_set_control, cloud_down_error
 from .coordinator import (
     BoschBuderusDataUpdateCoordinator,
     Freshness,
@@ -466,6 +466,8 @@ class RrcZoneClimate(
 
     # ------------------------------------------------------------ writes
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
+        if (down := cloud_down_error(self.coordinator)) is not None:
+            raise down
         mode = self._mode(strict=True)
         if mode is None or hvac_mode not in self.hvac_modes:
             raise _invalid()
@@ -486,6 +488,8 @@ class RrcZoneClimate(
         )
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
+        if (down := cloud_down_error(self.coordinator)) is not None:
+            raise down
         value = kwargs.get(ATTR_TEMPERATURE)
         if (
             set(kwargs) - _SERVICE_KEYS

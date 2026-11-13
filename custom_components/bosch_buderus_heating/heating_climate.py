@@ -767,7 +767,11 @@ class HeatingCircuitTemporaryClearButton(
         if state is None:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
-                translation_key="heating_temporary_setpoint_not_active",
+                # Shown as active, but not from a current reading: no claim
+                # that nothing is active.
+                translation_key="write_validation_failed"
+                if self._state(strict=False) is not None
+                else "heating_temporary_setpoint_not_active",
             )
         resource, mode, context = state
         await async_set_control(
