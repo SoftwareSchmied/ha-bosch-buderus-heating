@@ -583,6 +583,7 @@
     "Current heating/cooling status (signal)": "Actuele status verwarmen/koelen (signaal)",
     "Cylinder temperature (signal)": "Boilertemperatuur (signaal)",
     "Outdoor temperature (signal)": "Buitentemperatuur (signaal)",
-    "Hot water heat-up active": "Opwarmen warm water actief"
+    "Hot water heat-up active": "Opwarmen warm water actief",
+    "used by this access": "gebruikt door deze toegang"
   }
 }

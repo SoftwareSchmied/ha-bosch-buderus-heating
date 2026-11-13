@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Ta bort åtkomst",
-        "description": "Inloggningsuppgifterna tas bort. Anläggningar och entiteter behålls, även om detta är den sista åtkomsten. Utan en tillgänglig anslutning kan entiteter inte visa aktuella värden.",
+        "description": "Inloggningsuppgifterna tas bort från Home Assistant. Token blir kvar på gatewayen om du inte återkallar den med rutan nedan. Anläggningar och entiteter behålls, även om detta är den sista åtkomsten; utan en tillgänglig åtkomst visar de inga aktuella värden. Lämna den övre rutan tom för att gå tillbaka utan ändringar.",
         "data": {
           "confirm": "Ta bort den här åtkomsten",
           "revoke": "Återkalla först en token från den här integrationen på gatewayen"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Tokens på gatewayen",
-        "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra klienter** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Varje inloggning med enhetsetiketten skapar en ny token, så äldre tokens från den här integrationen kommer oftast från tidigare konfigurationer. Välj en token efter dess skapandetid för att återkalla den. Utan ett val ändras ingenting.",
+        "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra appar** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Den token som skapades strax innan är vanligtvis den som den här åtkomsten använder nu; den är markerad i listan, och återkallar du den upphör den lokala åtkomsten. Äldre tokens från den här integrationen kommer oftast från tidigare konfigurationer. Utan ett val ändras ingenting.",
         "data": {
           "token": "Token som ska återkallas"
         }
       },
       "local_tokens_remove": {
         "title": "Återkalla en token före borttagning",
-        "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra klienter** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Välj den token som ska återkallas innan åtkomsten tas bort. Utan ett val tas åtkomsten bort utan att något återkallas. Stäng den här dialogen för att behålla åtkomsten.",
+        "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra appar** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Den token som skapades strax innan är vanligtvis den som den här åtkomsten använder nu; den är markerad i listan. Välj den token som ska återkallas innan åtkomsten tas bort. Utan ett val tar **Skicka** bort åtkomsten utan att något återkallas. Stäng den här dialogen för att behålla åtkomsten.",
         "data": {
           "token": "Token som ska återkallas"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Ingen token att återkalla",
+        "description": "Gatewayen listar ingen token från den här integrationen som kan återkallas här, eller så gick listan inte att läsa. Åtkomsten har inte tagits bort än. Välj om den ska tas bort utan återkallelse eller behållas.",
+        "menu_options": {
+          "local_tokens_remove_without": "Ta bort utan återkallelse",
+          "local_tokens_remove_cancel": "Avbryt och behåll åtkomsten"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Återkalla token",
-        "description": "Återkalla token från den här integrationen, skapad {created}, på gatewayen på **{host}**?\n\nGatewayen raderar den permanent. Om det är den token som den här åtkomsten använder upphör den lokala åtkomsten: åtkomsten stängs av och behöver en ny inloggning med enhetsetiketten. Listan läses igen precis innan, och begäran skickas bara en gång.",
+        "description": "Återkalla token från den här integrationen, skapad {created}, på gatewayen på **{host}**?\n\nGatewayen raderar den permanent. Om det är den token som den här åtkomsten använder upphör den lokala åtkomsten: åtkomsten stängs av och behöver en ny inloggning med enhetsetiketten. Listan läses igen precis innan, och begäran skickas bara en gång. Lämna rutan tom för att gå tillbaka utan att återkalla. Om en andra ruta visas är det den token som den här åtkomsten troligen använder; kryssa i den också för att bekräfta att den lokala åtkomsten upphör.",
         "data": {
-          "confirm": "Återkalla den här token på gatewayen"
+          "confirm": "Återkalla den här token på gatewayen",
+          "confirm_end": "Därmed upphör den lokala åtkomsten"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "Gatewayen godtog inte token för den här åtkomsten. Ingenting ändrades.",
       "local_tokens_forbidden": "Gatewayens inloggningstjänst avvisade begäran. Ingenting ändrades.",
       "local_tokens_unsupported": "Den här gatewayen erbjuder ingen tokenlista. Ingenting ändrades.",
-      "local_tokens_invalid": "Gatewayens tokenlista kunde inte kontrolleras (oväntat eller för stort svar). Ingenting ändrades."
+      "local_tokens_invalid": "Gatewayens tokenlista kunde inte kontrolleras (oväntat eller för stort svar). Ingenting ändrades.",
+      "local_token_end_unconfirmed": "Den här token används troligen av den här åtkomsten. Kryssa också i ”Därmed upphör den lokala åtkomsten” eller lämna den första rutan tom för att gå tillbaka. Ingenting skickades."
     },
     "abort": {
       "no_notification_gateways": "Inget värmesystem är konfigurerat.",

@@ -583,6 +583,7 @@
     "Current heating/cooling status (signal)": "Τρέχουσα κατάσταση θέρμανσης/ψύξης (σήμα)",
     "Cylinder temperature (signal)": "Θερμοκρασία δοχείου (σήμα)",
     "Outdoor temperature (signal)": "Εξωτερική θερμοκρασία (σήμα)",
-    "Hot water heat-up active": "Θέρμανση ζεστού νερού ενεργή"
+    "Hot water heat-up active": "Θέρμανση ζεστού νερού ενεργή",
+    "used by this access": "χρησιμοποιείται από αυτή την πρόσβαση"
   }
 }

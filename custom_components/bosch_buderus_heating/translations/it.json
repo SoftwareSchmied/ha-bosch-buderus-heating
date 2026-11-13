@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Rimuovi accesso",
-        "description": "Le credenziali verranno rimosse. Impianti ed entità vengono conservati, anche se questo è l'ultimo accesso. Senza una connessione disponibile, le entità non possono mostrare valori aggiornati.",
+        "description": "Le credenziali vengono rimosse da Home Assistant. Il token resta sul gateway, a meno che tu non lo revochi con la casella qui sotto. Impianti ed entità vengono conservati, anche se questo è l'ultimo accesso; senza un accesso disponibile non mostrano valori aggiornati. Lascia deselezionata la casella in alto per tornare indietro senza modifiche.",
         "data": {
           "confirm": "Rimuovi questo accesso",
           "revoke": "Revoca prima un token di questa integrazione sul gateway"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Token sul gateway",
-        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altri client** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Ogni login con l'etichetta del dispositivo crea un nuovo token, quindi i token più vecchi di questa integrazione di solito provengono da configurazioni precedenti. Per revocarne uno, sceglilo in base alla data di creazione. Senza una scelta non cambia nulla.",
+        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altre app** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Il token creato poco prima è di solito quello che questo accesso usa ora; è contrassegnato nell'elenco e, se lo revochi, l'accesso locale termina. I token più vecchi di questa integrazione di solito provengono da configurazioni precedenti. Senza una scelta non cambia nulla.",
         "data": {
           "token": "Token da revocare"
         }
       },
       "local_tokens_remove": {
         "title": "Revoca un token prima della rimozione",
-        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altri client** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Scegli il token da revocare prima di rimuovere l'accesso. Senza una scelta l'accesso viene rimosso senza revocare nulla. Per mantenere l'accesso, chiudi questa finestra.",
+        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altre app** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Il token creato poco prima è di solito quello che questo accesso usa ora; è contrassegnato nell'elenco. Scegli il token da revocare prima di rimuovere l'accesso. Senza una scelta, **Invia** rimuove l'accesso senza revocare nulla. Per mantenere l'accesso, chiudi questa finestra.",
         "data": {
           "token": "Token da revocare"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Nessun token da revocare",
+        "description": "Il gateway non elenca alcun token di questa integrazione che si possa revocare qui, oppure l'elenco non è stato letto. L'accesso non è ancora stato rimosso. Scegli se rimuoverlo senza revocare o mantenerlo.",
+        "menu_options": {
+          "local_tokens_remove_without": "Rimuovi senza revocare",
+          "local_tokens_remove_cancel": "Annulla e mantieni l'accesso"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Revoca token",
-        "description": "Revocare il token di questa integrazione creato il {created} sul gateway su **{host}**?\n\nIl gateway lo elimina definitivamente. Se è il token usato da questo accesso, l'accesso locale termina: l'accesso viene disattivato e richiede un nuovo login con l'etichetta del dispositivo. L'elenco viene riletto subito prima e la richiesta viene inviata una sola volta.",
+        "description": "Revocare il token di questa integrazione creato il {created} sul gateway su **{host}**?\n\nIl gateway lo elimina definitivamente. Se è il token usato da questo accesso, l'accesso locale termina: l'accesso viene disattivato e richiede un nuovo login con l'etichetta del dispositivo. L'elenco viene riletto subito prima e la richiesta viene inviata una sola volta. Lascia la casella deselezionata per tornare indietro senza revocare. Se compare una seconda casella, è il token che questo accesso molto probabilmente usa; selezionala anche per confermare che l'accesso locale termina.",
         "data": {
-          "confirm": "Revoca questo token sul gateway"
+          "confirm": "Revoca questo token sul gateway",
+          "confirm_end": "Così l'accesso locale termina"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "Il gateway non ha accettato il token di questo accesso. Non è stato modificato nulla.",
       "local_tokens_forbidden": "Il servizio di login del gateway ha rifiutato la richiesta. Non è stato modificato nulla.",
       "local_tokens_unsupported": "Questo gateway non fornisce un elenco dei token. Non è stato modificato nulla.",
-      "local_tokens_invalid": "Non è stato possibile verificare l'elenco dei token del gateway (risposta inattesa o troppo grande). Non è stato modificato nulla."
+      "local_tokens_invalid": "Non è stato possibile verificare l'elenco dei token del gateway (risposta inattesa o troppo grande). Non è stato modificato nulla.",
+      "local_token_end_unconfirmed": "Questo token è molto probabilmente usato da questo accesso. Seleziona anche «Così l'accesso locale termina» oppure lascia deselezionata la prima casella per tornare indietro. Non è stato inviato nulla."
     },
     "abort": {
       "no_notification_gateways": "Nessun impianto di riscaldamento configurato.",

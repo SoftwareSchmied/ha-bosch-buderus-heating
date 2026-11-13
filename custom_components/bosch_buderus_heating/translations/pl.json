@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Usuń dostęp",
-        "description": "Dane logowania zostaną usunięte. Instalacje i encje są zachowane, nawet jeśli jest to ostatni dostęp. Bez dostępnego połączenia encje nie mogą pokazywać wartości bieżących.",
+        "description": "Dane logowania zostaną usunięte z Home Assistanta. Token pozostanie na bramce, chyba że unieważnisz go polem poniżej. Instalacje i encje są zachowane, nawet jeśli jest to ostatni dostęp; bez działającego dostępu nie pokazują wartości bieżących. Pozostaw górne pole niezaznaczone, aby wrócić bez zmian.",
         "data": {
           "confirm": "Usuń ten dostęp",
           "revoke": "Najpierw unieważnij token tej integracji na bramce"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Tokeny na bramce",
-        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inni klienci** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Każde logowanie za pomocą etykiety urządzenia tworzy nowy token, dlatego starsze tokeny tej integracji zwykle pozostają po wcześniejszych konfiguracjach. Aby unieważnić token, wybierz go według czasu utworzenia. Bez wyboru nic się nie zmienia.",
+        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście, a jego unieważnienie kończy dostęp lokalny. Starsze tokeny tej integracji zwykle pozostają po wcześniejszych konfiguracjach. Bez wyboru nic się nie zmienia.",
         "data": {
           "token": "Token do unieważnienia"
         }
       },
       "local_tokens_remove": {
         "title": "Unieważnij token przed usunięciem",
-        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inni klienci** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Wybierz token, który zostanie unieważniony przed usunięciem dostępu. Bez wyboru dostęp zostanie usunięty bez unieważniania czegokolwiek. Aby zachować dostęp, zamknij to okno.",
+        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inne aplikacje** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Token utworzony tuż przed tym jest zwykle tym, którego ten dostęp używa teraz; jest oznaczony na liście. Wybierz token, który zostanie unieważniony przed usunięciem dostępu. Bez wyboru **Prześlij** usunie dostęp bez unieważniania czegokolwiek. Aby zachować dostęp, zamknij to okno.",
         "data": {
           "token": "Token do unieważnienia"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Brak tokenu do unieważnienia",
+        "description": "Bramka nie wymienia żadnego tokenu tej integracji, który można tu unieważnić, albo nie udało się odczytać listy. Dostęp nie został jeszcze usunięty. Wybierz, czy usunąć go bez unieważniania, czy zachować.",
+        "menu_options": {
+          "local_tokens_remove_without": "Usuń bez unieważniania",
+          "local_tokens_remove_cancel": "Anuluj i zachowaj dostęp"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Unieważnij token",
-        "description": "Unieważnić token tej integracji utworzony {created} na bramce pod adresem **{host}**?\n\nBramka usuwa go na stałe. Jeśli to token używany przez ten dostęp, dostęp lokalny się kończy: dostęp zostaje wyłączony i wymaga ponownego logowania za pomocą etykiety urządzenia. Lista jest odczytywana ponownie tuż przed tym, a żądanie jest wysyłane tylko raz.",
+        "description": "Unieważnić token tej integracji utworzony {created} na bramce pod adresem **{host}**?\n\nBramka usuwa go na stałe. Jeśli to token używany przez ten dostęp, dostęp lokalny się kończy: dostęp zostaje wyłączony i wymaga ponownego logowania za pomocą etykiety urządzenia. Lista jest odczytywana ponownie tuż przed tym, a żądanie jest wysyłane tylko raz. Pozostaw pole niezaznaczone, aby wrócić bez unieważniania. Jeśli pojawi się drugie pole, jest to token, którego ten dostęp najprawdopodobniej używa; zaznacz je również, aby potwierdzić, że dostęp lokalny się kończy.",
         "data": {
-          "confirm": "Unieważnij ten token na bramce"
+          "confirm": "Unieważnij ten token na bramce",
+          "confirm_end": "To kończy dostęp lokalny"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "Bramka nie zaakceptowała tokenu tego dostępu. Nic nie zostało zmienione.",
       "local_tokens_forbidden": "Usługa logowania bramki odrzuciła żądanie. Nic nie zostało zmienione.",
       "local_tokens_unsupported": "Ta bramka nie udostępnia listy tokenów. Nic nie zostało zmienione.",
-      "local_tokens_invalid": "Nie udało się sprawdzić listy tokenów bramki (nieoczekiwana lub zbyt duża odpowiedź). Nic nie zostało zmienione."
+      "local_tokens_invalid": "Nie udało się sprawdzić listy tokenów bramki (nieoczekiwana lub zbyt duża odpowiedź). Nic nie zostało zmienione.",
+      "local_token_end_unconfirmed": "Ten token jest najprawdopodobniej używany przez ten dostęp. Zaznacz także „To kończy dostęp lokalny” albo pozostaw pierwsze pole niezaznaczone, aby wrócić. Nic nie zostało wysłane."
     },
     "abort": {
       "no_notification_gateways": "Nie skonfigurowano żadnej instalacji grzewczej.",

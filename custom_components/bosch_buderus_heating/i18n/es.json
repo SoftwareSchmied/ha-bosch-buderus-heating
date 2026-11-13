@@ -583,6 +583,7 @@
     "Current heating/cooling status (signal)": "Estado actual de calefacción/refrigeración (señal)",
     "Cylinder temperature (signal)": "Temperatura del depósito (señal)",
     "Outdoor temperature (signal)": "Temperatura exterior (señal)",
-    "Hot water heat-up active": "Calentamiento del agua caliente activo"
+    "Hot water heat-up active": "Calentamiento del agua caliente activo",
+    "used by this access": "usado por este acceso"
   }
 }

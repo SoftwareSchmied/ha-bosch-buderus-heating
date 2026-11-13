@@ -29,6 +29,7 @@ from .configuration_management import ConnectionEdit
 from .connection_flow import ConnectionOptionsFlow
 from .gateway_identity import GatewayNamespace, IdentityContext
 from .ha_schema import validation as vol
+from .i18n import localize
 from .local_auth import (
     AuthProblem,
     GatewayToken,
@@ -43,7 +44,7 @@ from .local_budget import (
     LocalReadBudget,
     local_budget_manager,
 )
-from .local_credentials import load_local_access
+from .local_credentials import TokenOrigin, load_local_access
 from .local_probe import ProbeContext, TransportFailure
 from .local_transport import (
     CertificateBinding,
@@ -57,6 +58,12 @@ from .markdown_text import markdown_literal
 
 # Lines of one group shown in the description; the rest is counted.
 MAX_SHOWN_TOKENS = 32
+
+# The gateway does not say which token an access uses. The access's stored
+# setup time is taken after its token was created, so the own token created
+# last at or before that time is the likely current one. The tolerance covers
+# a small clock difference between the gateway and Home Assistant.
+USED_TOKEN_TOLERANCE = 120.0
 
 _PROBLEM_ERRORS = {
     AuthProblem.UNAUTHORIZED: "local_tokens_rejected",
@@ -120,6 +127,23 @@ class _TokenAccess:
     gateway_id: str = field(repr=False)
     target_id: str | None = field(repr=False)
     verified_at: float = field(repr=False)
+    # Only a token this integration created can be among the listed own ones.
+    created: bool = field(repr=False)
+
+
+def likely_used_tokens(
+    own: Iterable[GatewayToken], verified_at: float, *, created: bool
+) -> tuple[GatewayToken, ...]:
+    """The own tokens an access most likely uses (several if equally old)."""
+    if not created:
+        return ()
+    candidates = [
+        token for token in own if token.created_at <= verified_at + USED_TOKEN_TOLERANCE
+    ]
+    if not candidates:
+        return ()
+    newest = max(token.created_at for token in candidates)
+    return tuple(token for token in candidates if token.created_at == newest)
 
 
 class LocalTokenFlow(ConnectionOptionsFlow):
@@ -129,7 +153,9 @@ class LocalTokenFlow(ConnectionOptionsFlow):
     _token_choices: dict[str, GatewayToken] | None = None
     _token_selected: GatewayToken | None = None
     _token_observation: CertificateObservation | None = None
+    _token_used: tuple[GatewayToken, ...] = ()
     _token_removal = False
+    _token_remove_none = False
     _token_closed = False
 
     def _token_load(self, edit: ConnectionEdit | None) -> _TokenAccess:
@@ -169,6 +195,7 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             access.gateway_id,
             next(iter(targets)) if len(targets) == 1 else None,
             access.verified_at,
+            access.credentials.origin == TokenOrigin.CREATED,
         )
 
     def _token_current(self) -> bool:
@@ -194,6 +221,8 @@ class LocalTokenFlow(ConnectionOptionsFlow):
     def _token_reset(self) -> None:
         self._token_access = self._token_choices = self._token_selected = None
         self._token_observation = None
+        self._token_used = ()
+        self._token_remove_none = False
 
     async def async_step_local_tokens(
         self, user_input: dict[str, Any] | None = None
@@ -210,6 +239,44 @@ class LocalTokenFlow(ConnectionOptionsFlow):
         if user_input is None:
             return self.async_abort(reason="configuration_changed")
         return await self._tokens_submit(user_input, removal=True)
+
+    async def async_step_local_tokens_remove_none(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Nothing to revoke: the menu with the explicit choice."""
+        if not (self._token_remove_none and self._token_removal):
+            return self.async_abort(reason="configuration_changed")
+        return self._tokens_remove_none_menu()
+
+    def _tokens_remove_none_menu(self) -> ConfigFlowResult:
+        self._token_choices = None
+        self._token_remove_none = True
+        return self.async_show_menu(
+            step_id="local_tokens_remove_none",
+            menu_options=[
+                "local_tokens_remove_without",
+                "local_tokens_remove_cancel",
+            ],
+        )
+
+    async def async_step_local_tokens_remove_without(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """The explicit choice to remove the access without revoking."""
+        access = self._token_access
+        if not (self._token_remove_none and self._token_removal and access):
+            return self.async_abort(reason="configuration_changed")
+        self._token_reset()
+        return await self._remove_access(access.edit, "connection_removed")
+
+    async def async_step_local_tokens_remove_cancel(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """The access stays; back to its menu."""
+        if not (self._token_remove_none and self._token_removal):
+            return self.async_abort(reason="configuration_changed")
+        self._token_reset()
+        return await self.async_step_connection()
 
     async def async_step_connection_remove(
         self, user_input: dict[str, Any] | None = None
@@ -338,6 +405,22 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             (token for token in tokens or () if not token.own),
             key=lambda token: token.created_at,
         )
+        if self._token_removal and not own:
+            # Nothing of this integration can be revoked, or the list could
+            # not be read: the access is removed only after an explicit
+            # choice, never silently.
+            return self._tokens_remove_none_menu()
+        used = (
+            likely_used_tokens(own, access.verified_at, created=access.created)
+            if access
+            else ()
+        )
+        self._token_used = used
+        marker = localize(
+            self.hass.config.language,
+            "von diesem Zugang genutzt",
+            "used by this access",
+        )
         choices: dict[str, GatewayToken] = {}
         options: list[SelectOptionDict] = []
         labels: dict[str, int] = {}
@@ -346,6 +429,8 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             labels[label] = labels.get(label, 0) + 1
             if labels[label] > 1:
                 label = f"{label} ({labels[label]})"
+            if token in used:
+                label = f"{label} ({marker})"
             choices[f"token_{number}"] = token
             options.append(SelectOptionDict(value=f"token_{number}", label=label))
         self._token_choices = choices
@@ -360,7 +445,12 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             errors={"base": error} if error else {},
             description_placeholders={
                 "count": "?" if tokens is None else str(len(tokens)),
-                "own": _lines(_created(token.created_at) for token in own),
+                "own": _lines(
+                    f"{_created(token.created_at)} ({marker})"
+                    if token in used
+                    else _created(token.created_at)
+                    for token in own
+                ),
                 "others": _lines(
                     f"{markdown_literal(token.client_name) or '?'}: "
                     f"{_created(token.created_at)}"
@@ -399,11 +489,16 @@ class LocalTokenFlow(ConnectionOptionsFlow):
         selected = self._token_selected
         access = self._token_access
         assert selected is not None and access is not None
+        fields: dict[Any, Any] = {
+            vol.Required("confirm", default=False): BooleanSelector()
+        }
+        if selected in self._token_used:
+            # Revoking the token the access uses ends the access: a second,
+            # separate confirmation is needed.
+            fields[vol.Optional("confirm_end", default=False)] = BooleanSelector()
         return self.async_show_form(
             step_id="local_token_revoke",
-            data_schema=vol.Schema(
-                {vol.Required("confirm", default=False): BooleanSelector()}
-            ),
+            data_schema=vol.Schema(fields),
             errors={"base": error} if error else {},
             description_placeholders={
                 "created": _created(selected.created_at),
@@ -424,6 +519,10 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             # Without the explicit confirmation nothing is sent.
             self._token_reset()
             return await self.async_step_connection()
+        if selected in self._token_used and user_input.get("confirm_end") is not True:
+            # The token this access uses: without the second confirmation
+            # nothing is sent.
+            return self._token_confirm_form("local_token_end_unconfirmed")
         if not self._token_current():
             self._token_reset()
             return self.async_abort(reason="configuration_changed")

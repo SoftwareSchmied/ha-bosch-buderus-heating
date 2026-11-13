@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Eliminar el acceso",
-        "description": "Se eliminarán las credenciales. Se conservan las instalaciones y las entidades, incluso si este es el último acceso. Sin una conexión disponible, las entidades no pueden mostrar valores actuales.",
+        "description": "Las credenciales se eliminan de Home Assistant. El token permanece en la pasarela, salvo que lo revoques con la casilla de abajo. Se conservan las instalaciones y las entidades, incluso si este es el último acceso; sin un acceso disponible no muestran valores actuales. Deja la casilla superior sin marcar para volver sin cambios.",
         "data": {
           "confirm": "Eliminar este acceso",
           "revoke": "Revocar antes un token de esta integración en la pasarela"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Tokens en la pasarela",
-        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otros clientes** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. Cada inicio de sesión con la etiqueta del dispositivo crea un token nuevo, por lo que los tokens más antiguos de esta integración suelen proceder de configuraciones anteriores. Para revocar uno, elígelo por su fecha de creación. Sin elección no cambia nada.",
+        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista y, si lo revocas, el acceso local termina. Los tokens más antiguos de esta integración suelen proceder de configuraciones anteriores. Sin elección no cambia nada.",
         "data": {
           "token": "Token que se revocará"
         }
       },
       "local_tokens_remove": {
         "title": "Revocar un token antes de eliminar",
-        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otros clientes** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. Elige el token que se revocará antes de eliminar el acceso. Sin elección, el acceso se elimina sin revocar nada. Para conservar el acceso, cierra este diálogo.",
+        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otras aplicaciones** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. El token creado poco antes suele ser el que este acceso usa ahora; está marcado en la lista. Elige el token que se revocará antes de eliminar el acceso. Sin elección, **Enviar** elimina el acceso sin revocar nada. Para conservar el acceso, cierra este diálogo.",
         "data": {
           "token": "Token que se revocará"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Ningún token que revocar",
+        "description": "La pasarela no lista ningún token de esta integración que se pueda revocar aquí, o no se pudo leer la lista. El acceso todavía no se ha eliminado. Elige si lo eliminas sin revocar o si lo conservas.",
+        "menu_options": {
+          "local_tokens_remove_without": "Eliminar sin revocar",
+          "local_tokens_remove_cancel": "Cancelar y conservar el acceso"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Revocar token",
-        "description": "¿Revocar el token de esta integración creado el {created} en la pasarela de **{host}**?\n\nLa pasarela lo elimina definitivamente. Si es el token que usa este acceso, el acceso local termina: el acceso se desactiva y necesita un nuevo inicio de sesión con la etiqueta del dispositivo. La lista se vuelve a leer justo antes y la solicitud se envía una sola vez.",
+        "description": "¿Revocar el token de esta integración creado el {created} en la pasarela de **{host}**?\n\nLa pasarela lo elimina definitivamente. Si es el token que usa este acceso, el acceso local termina: el acceso se desactiva y necesita un nuevo inicio de sesión con la etiqueta del dispositivo. La lista se vuelve a leer justo antes y la solicitud se envía una sola vez. Deja la casilla sin marcar para volver sin revocar. Si aparece una segunda casilla, es el token que este acceso probablemente usa; márcala también para confirmar que el acceso local termina.",
         "data": {
-          "confirm": "Revocar este token en la pasarela"
+          "confirm": "Revocar este token en la pasarela",
+          "confirm_end": "Con esto termina el acceso local"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "La pasarela no aceptó el token de este acceso. No se ha cambiado nada.",
       "local_tokens_forbidden": "El servicio de inicio de sesión de la pasarela rechazó la solicitud. No se ha cambiado nada.",
       "local_tokens_unsupported": "Esta pasarela no ofrece una lista de tokens. No se ha cambiado nada.",
-      "local_tokens_invalid": "No se pudo comprobar la lista de tokens de la pasarela (respuesta inesperada o demasiado grande). No se ha cambiado nada."
+      "local_tokens_invalid": "No se pudo comprobar la lista de tokens de la pasarela (respuesta inesperada o demasiado grande). No se ha cambiado nada.",
+      "local_token_end_unconfirmed": "Este acceso probablemente usa este token. Marca también «Con esto termina el acceso local» o deja la primera casilla sin marcar para volver. No se ha enviado nada."
     },
     "abort": {
       "no_notification_gateways": "No hay ninguna instalación de calefacción configurada.",

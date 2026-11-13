@@ -583,6 +583,7 @@
     "Current heating/cooling status (signal)": "Gjeldende oppvarmings-/kjølingsstatus (signal)",
     "Cylinder temperature (signal)": "Beholdertemperatur (signal)",
     "Outdoor temperature (signal)": "Utetemperatur (signal)",
-    "Hot water heat-up active": "Oppvarming av varmtvann aktiv"
+    "Hot water heat-up active": "Oppvarming av varmtvann aktiv",
+    "used by this access": "brukt av denne tilgangen"
   }
 }

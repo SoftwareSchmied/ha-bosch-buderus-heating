@@ -583,6 +583,7 @@
     "Current heating/cooling status (signal)": "Trenutno stanje ogrevanja/hlajenja (signal)",
     "Cylinder temperature (signal)": "Temperatura hranilnika (signal)",
     "Outdoor temperature (signal)": "Zunanja temperatura (signal)",
-    "Hot water heat-up active": "Ogrevanje tople vode aktivno"
+    "Hot water heat-up active": "Ogrevanje tople vode aktivno",
+    "used by this access": "uporablja ga ta dostop"
   }
 }

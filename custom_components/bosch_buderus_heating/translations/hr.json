@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Ukloni pristup",
-        "description": "Podaci za prijavu bit će uklonjeni. Sustavi i entiteti se zadržavaju, čak i ako je ovo posljednji pristup. Bez dostupne veze entiteti ne mogu prikazivati trenutne vrijednosti.",
+        "description": "Podaci za prijavu uklanjaju se iz Home Assistanta. Token ostaje na pristupniku osim ako ga ne opozovete kvačicom u nastavku. Sustavi i entiteti se zadržavaju, čak i ako je ovo posljednji pristup; bez dostupnog pristupa ne prikazuju trenutne vrijednosti. Ostavite gornju kvačicu neoznačenom da se vratite bez promjena.",
         "data": {
           "confirm": "Ukloni ovaj pristup",
           "revoke": "Najprije opozovi token ove integracije na pristupniku"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Tokeni na pristupniku",
-        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostali klijenti** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Svaka prijava s oznakom uređaja stvara novi token, pa stariji tokeni ove integracije obično potječu iz ranijih postavljanja. Da biste opozvali jedan, odaberite ga prema vremenu stvaranja. Bez odabira ništa se ne mijenja.",
+        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostale aplikacije** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Token stvoren neposredno prije toga obično je onaj koji ovaj pristup trenutačno koristi; označen je na popisu, a ako ga opozovete, lokalni pristup završava. Stariji tokeni ove integracije obično potječu iz ranijih postavljanja. Bez odabira ništa se ne mijenja.",
         "data": {
           "token": "Token za opoziv"
         }
       },
       "local_tokens_remove": {
         "title": "Opoziv tokena prije uklanjanja",
-        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostali klijenti** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Odaberite token koji će se opozvati prije uklanjanja pristupa. Bez odabira pristup se uklanja bez opoziva. Da biste zadržali pristup, zatvorite ovaj dijalog.",
+        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostale aplikacije** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Token stvoren neposredno prije toga obično je onaj koji ovaj pristup trenutačno koristi; označen je na popisu. Odaberite token koji će se opozvati prije uklanjanja pristupa. Bez odabira **Podnijeti** uklanja pristup bez opoziva. Da biste zadržali pristup, zatvorite ovaj dijalog.",
         "data": {
           "token": "Token za opoziv"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Nema tokena za opoziv",
+        "description": "Pristupnik ne navodi nijedan token ove integracije koji se ovdje može opozvati ili se popis nije mogao pročitati. Pristup još nije uklonjen. Odaberite hoćete li ga ukloniti bez opoziva ili zadržati.",
+        "menu_options": {
+          "local_tokens_remove_without": "Ukloni bez opoziva",
+          "local_tokens_remove_cancel": "Odustani i zadrži pristup"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Opoziv tokena",
-        "description": "Opozvati token ove integracije stvoren {created} na pristupniku na **{host}**?\n\nPristupnik ga trajno briše. Ako je to token koji koristi ovaj pristup, lokalni pristup završava: pristup se isključuje i treba novu prijavu s oznakom uređaja. Popis se ponovno čita neposredno prije, a zahtjev se šalje samo jednom.",
+        "description": "Opozvati token ove integracije stvoren {created} na pristupniku na **{host}**?\n\nPristupnik ga trajno briše. Ako je to token koji koristi ovaj pristup, lokalni pristup završava: pristup se isključuje i treba novu prijavu s oznakom uređaja. Popis se ponovno čita neposredno prije, a zahtjev se šalje samo jednom. Ostavite kvačicu neoznačenom da se vratite bez opoziva. Ako se pojavi druga kvačica, to je token koji ovaj pristup najvjerojatnije koristi; označite i nju kako biste potvrdili da lokalni pristup završava.",
         "data": {
-          "confirm": "Opozovi ovaj token na pristupniku"
+          "confirm": "Opozovi ovaj token na pristupniku",
+          "confirm_end": "Time lokalni pristup završava"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "Pristupnik nije prihvatio token ovog pristupa. Ništa nije promijenjeno.",
       "local_tokens_forbidden": "Usluga prijave pristupnika odbila je zahtjev. Ništa nije promijenjeno.",
       "local_tokens_unsupported": "Ovaj pristupnik ne nudi popis tokena. Ništa nije promijenjeno.",
-      "local_tokens_invalid": "Popis tokena pristupnika nije bilo moguće provjeriti (neočekivan ili prevelik odgovor). Ništa nije promijenjeno."
+      "local_tokens_invalid": "Popis tokena pristupnika nije bilo moguće provjeriti (neočekivan ili prevelik odgovor). Ništa nije promijenjeno.",
+      "local_token_end_unconfirmed": "Ovaj token ovaj pristup najvjerojatnije koristi. Označite i „Time lokalni pristup završava” ili ostavite prvu kvačicu neoznačenom da se vratite. Ništa nije poslano."
     },
     "abort": {
       "no_notification_gateways": "Nije konfiguriran nijedan sustav grijanja.",

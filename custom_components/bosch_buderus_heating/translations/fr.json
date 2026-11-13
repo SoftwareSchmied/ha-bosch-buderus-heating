@@ -514,7 +514,7 @@
       },
       "connection_remove": {
         "title": "Supprimer l'accès",
-        "description": "Les identifiants seront supprimés. Les installations et les entités sont conservées, même s'il s'agit du dernier accès. Sans connexion disponible, les entités ne peuvent pas afficher de valeurs actuelles.",
+        "description": "Les identifiants sont supprimés de Home Assistant. Le jeton reste sur la passerelle, sauf si vous le révoquez avec la case ci-dessous. Les installations et les entités sont conservées, même s'il s'agit du dernier accès ; sans accès disponible, elles n'affichent pas de valeurs actuelles. Laissez la case du haut décochée pour revenir sans modification.",
         "data": {
           "confirm": "Supprimer cet accès",
           "revoke": "Révoquer d'abord un jeton de cette intégration sur la passerelle"
@@ -662,16 +662,24 @@
       },
       "local_tokens": {
         "title": "Jetons sur la passerelle",
-        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres clients** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Chaque connexion avec l'étiquette de l'appareil crée un nouveau jeton ; les jetons plus anciens de cette intégration proviennent donc généralement de configurations antérieures. Pour en révoquer un, choisissez-le d'après sa date de création. Sans choix, rien ne change.",
+        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste, et le révoquer met fin à l'accès local. Les jetons plus anciens de cette intégration proviennent généralement de configurations antérieures. Sans choix, rien ne change.",
         "data": {
           "token": "Jeton à révoquer"
         }
       },
       "local_tokens_remove": {
         "title": "Révoquer un jeton avant la suppression",
-        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres clients** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Choisissez le jeton à révoquer avant la suppression de l'accès. Sans choix, l'accès est supprimé sans rien révoquer. Pour conserver l'accès, fermez cette boîte de dialogue.",
+        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres applications** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Le jeton créé peu avant est en général celui que cet accès utilise actuellement ; il est signalé dans la liste. Choisissez le jeton à révoquer avant la suppression de l'accès. Sans choix, **Valider** supprime l'accès sans rien révoquer. Pour conserver l'accès, fermez cette boîte de dialogue.",
         "data": {
           "token": "Jeton à révoquer"
+        }
+      },
+      "local_tokens_remove_none": {
+        "title": "Aucun jeton à révoquer",
+        "description": "La passerelle ne liste aucun jeton de cette intégration que l'on puisse révoquer ici, ou la liste n'a pas pu être lue. L'accès n'a pas encore été supprimé. Choisissez de le supprimer sans révoquer ou de le conserver.",
+        "menu_options": {
+          "local_tokens_remove_without": "Supprimer sans révoquer",
+          "local_tokens_remove_cancel": "Annuler et conserver l'accès"
         }
       },
       "local_tokens_certificate": {
@@ -683,9 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Révoquer le jeton",
-        "description": "Révoquer le jeton de cette intégration créé le {created} sur la passerelle à **{host}** ?\n\nLa passerelle le supprime définitivement. S'il s'agit du jeton utilisé par cet accès, l'accès local prend fin : l'accès est désactivé et nécessite une nouvelle connexion avec l'étiquette de l'appareil. La liste est relue juste avant, et la requête n'est envoyée qu'une seule fois.",
+        "description": "Révoquer le jeton de cette intégration créé le {created} sur la passerelle à **{host}** ?\n\nLa passerelle le supprime définitivement. S'il s'agit du jeton utilisé par cet accès, l'accès local prend fin : l'accès est désactivé et nécessite une nouvelle connexion avec l'étiquette de l'appareil. La liste est relue juste avant, et la requête n'est envoyée qu'une seule fois. Laissez la case décochée pour revenir sans révoquer. Si une deuxième case apparaît, il s'agit du jeton que cet accès utilise très probablement ; cochez-la aussi pour confirmer que l'accès local prend fin.",
         "data": {
-          "confirm": "Révoquer ce jeton sur la passerelle"
+          "confirm": "Révoquer ce jeton sur la passerelle",
+          "confirm_end": "Cela met fin à l'accès local"
         }
       }
     },
@@ -800,7 +809,8 @@
       "local_tokens_rejected": "La passerelle n'a pas accepté le jeton de cet accès. Rien n'a été modifié.",
       "local_tokens_forbidden": "Le service de connexion de la passerelle a refusé la requête. Rien n'a été modifié.",
       "local_tokens_unsupported": "Cette passerelle ne fournit pas de liste de jetons. Rien n'a été modifié.",
-      "local_tokens_invalid": "La liste de jetons de la passerelle n'a pas pu être vérifiée (réponse inattendue ou trop volumineuse). Rien n'a été modifié."
+      "local_tokens_invalid": "La liste de jetons de la passerelle n'a pas pu être vérifiée (réponse inattendue ou trop volumineuse). Rien n'a été modifié.",
+      "local_token_end_unconfirmed": "Ce jeton est très probablement utilisé par cet accès. Cochez aussi « Cela met fin à l'accès local » ou laissez la première case décochée pour revenir. Rien n'a été envoyé."
     },
     "abort": {
       "no_notification_gateways": "Aucune installation de chauffage n'est configurée.",

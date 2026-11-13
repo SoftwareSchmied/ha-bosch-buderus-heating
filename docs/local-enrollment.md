@@ -154,10 +154,20 @@ access the message stays as before.
   from the gateway and are shown as literal text.
 - **Revoking a token** is offered only for entries with this integration's
   client name (`Home Assistant Home Comfort`); tokens of other clients are
-  never offered. The list has no token values, so the dialog cannot tell which
-  of these entries the access itself uses. The user chooses by creation time;
-  the dialog shows when the access was last set up as a guide. The revocation
-  needs its own confirmation. Right before it, the list is read again, and
+  never offered. The list has no token values, so the gateway does not say
+  which of these entries the access itself uses. The dialog marks the likely
+  one: the token of this integration created last at or before the time the
+  access was last set up (a tolerance of two minutes covers a small clock
+  difference between the gateway and Home Assistant; tokens that are equally
+  old are all marked). The setup time is taken after the token was created,
+  so this is normally the token in use, but it remains an assumption. For an
+  access that uses a token entered by hand, nothing is marked, because that
+  token is not one of this integration's own. The mark appears in the list
+  and in the selection ("used by this access"); no token value or ID is shown.
+  The user chooses by creation time. The revocation
+  needs its own confirmation. Revoking the marked token also needs a second,
+  separate box ("This ends the local access"); without it nothing is sent.
+  Right before the request, the list is read again, and
   nothing is sent unless the chosen entry is still listed unchanged. Then
   exactly one `POST /auth/revoke` (`token_id`, `usage_type=private`) is sent,
   without any retry, and the list is read once more to confirm it. If the
@@ -169,7 +179,11 @@ access the message stays as before.
 - **Remove access** for a local access has an extra choice to revoke a token
   of this integration first. Only with that choice is anything sent; the access
   is removed only after the revocation was confirmed (or when no token is
-  chosen).
+  chosen in the list). If that choice is ticked but there is no token of this
+  integration to offer (the gateway lists none, or its list could not be
+  read), the access is not removed silently: a step says so and offers
+  "Remove without revoking" or "Cancel and keep the access". Nothing is
+  removed or sent before that choice.
 
 All three requests use the confirmed certificate of the sign-in port and the
 shared [gateway budget](local-budget.md): they wait for an exclusive turn,

@@ -583,6 +583,7 @@
     "Current heating/cooling status (signal)": "Aktuálny stav vykurovania/chladenia (signál)",
     "Cylinder temperature (signal)": "Teplota zásobníka (signál)",
     "Outdoor temperature (signal)": "Vonkajšia teplota (signál)",
-    "Hot water heat-up active": "Ohrev teplej vody aktívny"
+    "Hot water heat-up active": "Ohrev teplej vody aktívny",
+    "used by this access": "používa ho tento prístup"
   }
 }
