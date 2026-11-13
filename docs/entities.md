@@ -440,7 +440,10 @@ Families are kept per product line (`wlw176i`, `wlw186i`, `wlw_mb_ar`,
 `cs5800i_aw`, `cs6800i_aw`, `aw_or`, `cs3800i_aw`, `cs8800i_aw`); lines of
 different brands are never equated. An outdoor unit that serves several
 indoor lines has its own family, and the indoor unit names the line.
-`construction` is set only where a manufacturer document names it. The
+`construction` is set only where a manufacturer document names it; for the
+WLW176i and WLW186i indoor units it comes from the system documentation,
+which names the monobloc WLW MB AR as the only outdoor unit of these
+systems, not from a statement about the indoor unit itself. The
 power class belongs to the outdoor unit, not to the name of the indoor
 unit, and is set only where a document states it for that unit (for
 example 10 for WLW-10 MB AR and AW 10 OR-T); otherwise it stays `null`.
