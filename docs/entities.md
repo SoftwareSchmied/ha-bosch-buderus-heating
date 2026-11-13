@@ -665,8 +665,8 @@ position instead of on/off: VW1 *Heating* or *Hot water*, VR4 *Heating* or
 *Cooling/defrost*. On the reference heat pump (it does not cool) this matched
 the recorded history of several days: VR4 was on during every defrost, also
 during a defrost within a hot water charge, and off otherwise; VW1 was on
-during every hot water charge and for about the last minute of each defrost,
-when the heat pump takes the heat from the hot water side as well. The
+during every hot water charge and for the last one to three minutes of each
+defrost, when the heat pump takes heat from the hot water side as well. The
 on states of other outdoor units are not confirmed. A second compressor status, electric heater stage 4 and the
 heating circuit pump HC1 (PC1) are disabled. The hot water heat-up
 (`SRC.IntDHW.HeatUpActive`) is an on/off state from 0.9.0, disabled: the

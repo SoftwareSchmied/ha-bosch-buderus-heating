@@ -182,10 +182,10 @@ without a name of your own shows its new name.
 - **Valve positions checked on my heat pump:** the 4-way valve (VR4) showed
   *Cooling/defrost* during every recorded defrost and *Heating* otherwise;
   the hot water 3-way valve (VW1) showed *Hot water* during every hot water
-  charge and in the last minute of each defrost. These recorded moments are
-  now part of the tests. The relay of VW1, a disabled second source, now
-  shows the same position texts instead of on and off. Other outdoor units
-  are not confirmed.
+  charge and in the last one to three minutes of each defrost. These
+  recorded moments are now part of the tests. The relay of VW1, a disabled
+  second source, now shows the same position texts instead of on and off.
+  Other outdoor units are not confirmed.
 - **Hot water heat-up as on/off:** the signal `SRC.IntDHW.HeatUpActive`
   showed the raw states `false` and `heat`. It is now an on/off sensor
   named "Hot water heat-up active", where heat and post-heat count as on;
