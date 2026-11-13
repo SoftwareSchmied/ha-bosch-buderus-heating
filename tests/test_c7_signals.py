@@ -210,7 +210,7 @@ def date_sensor(day, month, year):
 
 
 def test_the_installation_date_is_derived_from_its_parts() -> None:
-    assert date_sensor(1, 8, 60) == date(2060, 8, 1)
+    assert date_sensor(1, 8, 20) == date(2020, 8, 1)
     assert date_sensor(0, 8, 60) is None  # INVALID
     assert date_sensor(1, 255, 60) is None  # INVALID2
     assert date_sensor(31, 2, 60) is None  # no real date
@@ -300,7 +300,7 @@ async def test_the_installation_date_entity_is_added_with_its_parts(hass) -> Non
             unit=name.lower(),
             state={"INVALID2": 255, "INVALID": 0},
         )
-        for name, value in (("Day", 1), ("Month", 8), ("Year", 60))
+        for name, value in (("Day", 1), ("Month", 8), ("Year", 20))
     ]
     coordinator = coordinator_with(hass, parts)
     entities = track(coordinator)
@@ -310,7 +310,7 @@ async def test_the_installation_date_entity_is_added_with_its_parts(hass) -> Non
         if isinstance(item, BoschBuderusInstallationDateSensor)
     ]
     assert derived.unique_id == "gateway-one:installation_date"
-    assert derived.native_value == date(2060, 8, 1)
+    assert derived.native_value == date(2020, 8, 1)
     assert derived.entity_registry_enabled_default
     assert len(entities) == 4  # and the three parts, disabled
     assert not any(

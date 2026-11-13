@@ -21,9 +21,9 @@ _LABELS = {
     "singleChargeSetpoint": ("Extra-Warmwasser Sollwert", "Extra hot water target"),
     "charge": ("Extra-Warmwasser", "Extra hot water"),
     "reduceTempOnAlarm": ("Absenkung bei Störung", "Reduce on alarm"),
-    "silentMode/enabled": ("Leiser Betrieb", "Silent mode"),
+    "silentMode/enabled": ("Flüstermodus", "Silent mode"),
     "awayMode/enabled": ("Abwesenheit", "Away mode"),
-    "seasonOptimizer/mode": ("Saisonbetrieb", "Season mode"),
+    "seasonOptimizer/mode": ("Saisonumschaltung", "Season switching"),
     "additionalHeater/operationMode": ("Zuheizer", "Auxiliary heater"),
 }
 

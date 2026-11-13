@@ -731,12 +731,12 @@ def test_poll_duration_percentile_and_failing_paths(hass: HomeAssistant) -> None
 # ------------------------------------------ O100, O101, O104, O107, #80
 
 
-def test_compressor_power_signal_is_named_as_heat_output() -> None:
+def test_compressor_power_signal_is_named_as_thermal_heat_output() -> None:
     definition = local_only.definition_for("/signals/SRC.CUHP.HP1.CompressorPower")
     assert definition is not None
     assert definition.names == (
-        "Wärmeleistung (Kompressor)",
-        "Heat output (compressor)",
+        "Heizleistung (thermisch)",
+        "Heat output (thermal)",
     )
     assert definition.key == "compressor_output"
 

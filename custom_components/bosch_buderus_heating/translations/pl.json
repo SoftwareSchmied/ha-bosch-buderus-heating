@@ -1439,10 +1439,10 @@
         "name": "Temperatura zadana basenu"
       },
       "heating_temperature": {
-        "name": "Grzanie"
+        "name": "Temperatura grzania"
       },
       "reduced_temperature": {
-        "name": "Obniżona"
+        "name": "Temperatura obniżona"
       },
       "extra_hot_water_duration": {
         "name": "Czas trwania dodatkowej ciepłej wody"
@@ -2109,7 +2109,7 @@
         }
       },
       "support_status": {
-        "name": "Stan obsługi",
+        "name": "Taryfa zmienna – obsługa",
         "state": {
           "not_supported": "Nieobsługiwane",
           "supported": "Obsługiwane",

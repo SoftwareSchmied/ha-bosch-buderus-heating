@@ -20,6 +20,7 @@ from homeassistant.const import EntityCategory, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 from homeassistant.util.hass_dict import HassKey
 
 from .const import DOMAIN
@@ -339,8 +340,9 @@ class BoschBuderusInstallationDateSensor(
 ):
     """C7-3: the installation date, from its three local signals.
 
-    The year counts from 2000. Unknown while a part is missing, reports a
-    declared marker (for example INVALID) or the parts give no real date.
+    The year counts from 2000. Unavailable while a part is missing or reports
+    a declared marker (for example INVALID); unknown when the parts give no
+    real date or a date in the future.
     """
 
     _attr_has_entity_name = True
@@ -390,13 +392,18 @@ class BoschBuderusInstallationDateSensor(
         if day is None or month is None or year is None or not 0 <= year <= 99:
             return None
         try:
-            return date(2000 + year, month, day)
+            installed = date(2000 + year, month, day)
         except ValueError:
             return None
+        # A controller that was never given a date reports a placeholder
+        # (for example year 60); a date after today is no installation date.
+        return None if installed > dt_util.now().date() else installed
 
     @property
     def available(self) -> bool:
-        return self.native_value is not None
+        # Readable parts that give no plausible date show as unknown; only
+        # missing parts or a declared marker make the entity unavailable.
+        return all(self._part(name) is not None for name in ("Day", "Month", "Year"))
 
     async def async_update(self) -> None:
         """Local readings arrive by themselves; never start a cloud poll."""

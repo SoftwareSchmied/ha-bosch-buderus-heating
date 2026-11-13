@@ -1439,10 +1439,10 @@
         "name": "Ciljna temperatura bazena"
       },
       "heating_temperature": {
-        "name": "Ogrevanje"
+        "name": "Temperatura ogrevanja"
       },
       "reduced_temperature": {
-        "name": "Znižano"
+        "name": "Znižana temperatura"
       },
       "extra_hot_water_duration": {
         "name": "Trajanje dodatne tople vode"
@@ -2109,7 +2109,7 @@
         }
       },
       "support_status": {
-        "name": "Stanje podpore",
+        "name": "Spremenljiva tarifa – podpora",
         "state": {
           "not_supported": "Ni podprto",
           "supported": "Podprto",

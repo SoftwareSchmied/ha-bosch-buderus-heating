@@ -74,7 +74,7 @@ def _select(
 
 @pytest.mark.parametrize(
     ("language", "name"),
-    [("de", "Saisonbetrieb"), ("en", "Season mode")],
+    [("de", "Saisonumschaltung"), ("en", "Season switching")],
 )
 def test_season_select_is_central_and_does_not_invent_cooling(
     hass: HomeAssistant, language: str, name: str

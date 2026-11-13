@@ -5787,7 +5787,7 @@
      "domain": "select",
      "entity_category": "config",
      "original_icon": "mdi:sun-snowflake",
-     "original_name": "System: Season mode",
+     "original_name": "System: Season switching",
      "translation_key": "season_switching",
      "unique_id": "gateway-one:system:seasonOptimizer:mode:control",
      "unit": null
@@ -6359,7 +6359,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Gateway \u2013 Sw Prefix",
+     "original_name": "Gateway \u2013 Software family",
      "translation_key": null,
      "unique_id": "gateway-one:gateway:swPrefix",
      "unit": null
@@ -6492,7 +6492,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Gateway \u2013 Gateway UUID",
+     "original_name": "Gateway \u2013 Gateway ID",
      "translation_key": null,
      "unique_id": "gateway-one:gateway:uuid",
      "unit": null
@@ -6757,7 +6757,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Heat pump \u2013 Burner status",
+     "original_name": "Heat pump \u2013 Heat source active",
      "translation_key": "on_off_state",
      "unique_id": "gateway-one:heatSources:flameStatus",
      "unit": null
@@ -6882,7 +6882,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Heat pump \u2013 System type",
+     "original_name": "Heat pump \u2013 Heat source type",
      "translation_key": "heat_source_type",
      "unique_id": "gateway-one:heatSources:hs1:type",
      "unit": null
@@ -7307,7 +7307,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Heating circuit 1 \u2013 Heating",
+     "original_name": "Heating circuit 1 \u2013 Heating temperature",
      "translation_key": null,
      "unique_id": "gateway-one:heatingCircuits:hc1:temperatureLevels:comfort2",
      "unit": "\u00b0C"
@@ -7321,7 +7321,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Heating circuit 1 \u2013 Reduced",
+     "original_name": "Heating circuit 1 \u2013 Setback temperature",
      "translation_key": null,
      "unique_id": "gateway-one:heatingCircuits:hc1:temperatureLevels:eco",
      "unit": "\u00b0C"
@@ -7427,7 +7427,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "System \u2013 Installation status",
+     "original_name": "System \u2013 iSRC installation status",
      "translation_key": "isrc_installation_status",
      "unique_id": "gateway-one:system:iSRC:installationStatus",
      "unit": null
@@ -7579,7 +7579,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "System \u2013 Support status",
+     "original_name": "System \u2013 Variable tariff \u2013 support",
      "translation_key": "support_status",
      "unique_id": "gateway-one:system:variableTariff:supportStatus:values",
      "unit": null

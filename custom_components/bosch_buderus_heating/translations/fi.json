@@ -1439,10 +1439,10 @@
         "name": "Altaan tavoitelämpötila"
       },
       "heating_temperature": {
-        "name": "Lämmitys"
+        "name": "Lämmityslämpötila"
       },
       "reduced_temperature": {
-        "name": "Alennettu"
+        "name": "Alennuslämpötila"
       },
       "extra_hot_water_duration": {
         "name": "Lisälämpimän käyttöveden kesto"
@@ -2109,7 +2109,7 @@
         }
       },
       "support_status": {
-        "name": "Tuen tila",
+        "name": "Muuttuva tariffi – tuki",
         "state": {
           "not_supported": "Ei tuettu",
           "supported": "Tuettu",
