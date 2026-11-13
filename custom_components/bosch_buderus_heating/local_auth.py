@@ -11,7 +11,6 @@ from types import SimpleNamespace
 import aiohttp
 from yarl import URL
 
-from .ha_compat import local_header_limits
 from .local_api.json import JsonLimits, load_json
 from .local_budget import BudgetDeferred, BudgetLease, LocalReadBudget
 from .local_credentials import (
@@ -32,6 +31,7 @@ from .local_transport import (
     _current,
     _inspect,
     _retry_after,
+    create_local_session,
 )
 
 MAX_AUTH_BODY = 16 * 1024
@@ -221,16 +221,9 @@ async def _request_local_token(
                     lease=lease,
                 )
             async with (
-                aiohttp.ClientSession(
-                    trust_env=False,
-                    cookie_jar=aiohttp.DummyCookieJar(),
-                    auto_decompress=False,
-                    connector=aiohttp.TCPConnector(force_close=True, limit=1),
-                    max_line_size=4096,
-                    max_field_size=4096,
-                    trace_configs=[trace],
-                    **local_header_limits(),
-                ) as session,
+                # The token POST carries the label credentials, so it shares
+                # every session hardening of the resource reads.
+                create_local_session(trace_configs=[trace]) as session,
                 session.post(
                     URL.build(
                         scheme="https",
