@@ -440,10 +440,13 @@ and `hs1/failurelist` answer 404. The diagnostic held no active notification,
 so the format of an iCom notification entry is still unconfirmed.
 
 **Further iCom paths, not in R199 to R243 (expected, untested):** writing
-`temporaryRoomSetpoint` (−1 clears it), `roomtemperature`, `charge`,
+`temporaryRoomSetpoint` (−1 clears it; written by the heating circuit climate
+in automatic mode since 0.9.0, see
+[Heating controls](heating-controls.md#temporary-setpoint-in-automatic-mode)),
+`roomtemperature`, `charge`,
 `chargeDuration` and `singleChargeSetpoint`, the pool values below
 `/heatSources`, the energy histories below `/recordings`, `/gateway/serialId`,
 `/system/brand`, `suWiThreshold`, `cooling/outdoorThreshold`,
 `switchProgramMode` and `/notifications`. Reading most of these works through
-the generic discovery already; writing `temporaryRoomSetpoint`, the pool and
-the energy histories is not part of alpha.6.
+the generic discovery already; writing the pool and the energy histories is
+not part of 0.9.0.

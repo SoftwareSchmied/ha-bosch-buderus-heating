@@ -14,7 +14,8 @@ described below.
 
 | Entity | Sources in the same discovered circuit | Supported commands |
 | --- | --- | --- |
-| Heating-circuit climate | `operationMode`, `manualRoomSetpoint`, `currentRoomSetpoint`, valid `roomtemperature` and known heating context | Offered Off, Heat/manual and Auto modes; manual target only in manual mode |
+| Heating-circuit climate | `operationMode`, `manualRoomSetpoint`, `currentRoomSetpoint`, `temporaryRoomSetpoint`, valid `roomtemperature` and known heating context | Offered Off, Heat/manual and Auto modes; manual target in manual mode; in Auto mode a temporary target where the circuit offers a writable temporary setpoint |
+| Clear temporary setpoint (button) | `temporaryRoomSetpoint`, `operationMode` | Writes -1 to end an active temporary setpoint in Auto mode; only where the reported limits include -1 |
 | PointT hot water | `actualTemp`, `currentSetpoint`, `operationMode` | Offered, understood operating modes; the active target is read-only |
 
 The combined entities use existing polling data and remain on the same appliance

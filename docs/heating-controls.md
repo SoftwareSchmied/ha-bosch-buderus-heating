@@ -84,7 +84,7 @@ The supported PointT codes map as follows:
 | PointT | Home Assistant | Temperature |
 | --- | --- | --- |
 | `manual` | Heat | Reads and writes `manualRoomSetpoint` |
-| `auto` | Auto | Exposes `currentRoomSetpoint` as the temperature attribute; changes disabled |
+| `auto` | Auto | Writes `temporaryRoomSetpoint` when the circuit offers it; otherwise exposes `currentRoomSetpoint` as the temperature attribute, changes disabled |
 | `off` | Off | No temperature command |
 
 Only advertised, understood codes appear. An unknown current mode makes
@@ -93,10 +93,56 @@ codes. A temperature call never changes a mode. Combined mode/temperature
 calls are rejected before any write; select the mode separately first.
 Bounds and units come from that circuit. I convert temperatures and steps
 between the reported unit and Home Assistant's configured unit.
-Home Assistant's standard thermostat does not display a target control in
-automatic mode because this mode does not support temperature commands.
-The reported target remains available through the climate's `temperature`
-attribute and the existing current-target sensor.
+Without a writable temporary setpoint, Home Assistant's standard thermostat
+does not display a target control in automatic mode because this mode does
+not support temperature commands there. The reported target remains
+available through the climate's `temperature` attribute and the existing
+current-target sensor.
+
+### Temporary setpoint in automatic mode
+
+Since 0.9.0, a heating circuit that reports a writable
+`temporaryRoomSetpoint` with limits takes a target in automatic mode as well.
+This is meant for heating circuits without a room controller; the zones of a
+room controller keep their own climates (see
+[Room controllers](room-controllers.md)), and their circuits get no heating
+circuit climate.
+
+- **Target.** In automatic mode the climate writes the target to
+  `temporaryRoomSetpoint`. The program stays selected; the controller
+  replaces the target for now. In manual mode the climate keeps writing
+  `manualRoomSetpoint`.
+- **Limits and step.** The target lies within the limits the circuit reports
+  for the temporary setpoint and on its reported step, counted from the
+  reported minimum (0.5 K without a step). Some circuits report -1 or 0 as
+  the minimum because these values end the temporary setpoint or switch the
+  circuit off for now. The climate never writes them as a target: its lower
+  limit is then the minimum of the manual setpoint, and without one the
+  climate offers no target in automatic mode.
+- **Shown target.** While a temporary setpoint is active (a reading of 0 or
+  more), the climate shows it and the attribute `temporary_override` is
+  `true`. A negative reading (-1) means none; the climate then shows the
+  program's target from `currentRoomSetpoint` and the attribute is `false`.
+  A reading of 0 (switched off for now) counts as active, but the climate
+  shows the program's target.
+- **Clear button.** A button "Clear temporary setpoint" ends an active
+  temporary setpoint by writing -1. I add it only when the reported limits
+  include -1 (on the reported step). Otherwise no button is created, and the
+  temporary setpoint ends at the controller's own time. The button is
+  available only in automatic mode while a temporary setpoint is active.
+- **Write rules.** Each change reads the mode, the temporary setpoint and the
+  known heating context on the appliance first and refuses the write when
+  one of them has changed. It then sends exactly one request and confirms
+  the value by reading it back; it never sends the request again. A
+  circuit with the control type `constants` takes no target.
+- **No entity of its own.** The temporary setpoint gets no number entity and
+  no row in the controls dialog. The existing sensor of the temporary
+  setpoint stays as it was.
+
+When a temporary setpoint ends by itself (for example at the next switch
+point of the program), the climate shows it until the next regular reading
+of the temporary setpoint. This whole function is expected, untested on a
+real device; reports are welcome.
 
 When the circuit reports the control type `constants` (`controlType`), I
 treat it as a circuit that cannot be controlled. Since 0.9.0-alpha.6 the
@@ -117,8 +163,8 @@ Cooling is outside this climate implementation. A reported cooling-only
 circuit, active cooling or stale/unknown heating context makes the climate
 unavailable. Existing individual controls remain available under their own
 contracts. The mode, target and known heating context are checked again on
-the appliance before a climate write. Scheduling, temporary overrides and
-cooling setpoints are not changed by this climate.
+the appliance before a climate write. Scheduling and cooling setpoints are
+not changed by this climate; a temporary setpoint only as described above.
 This includes the central actual heating/cooling status when reported, even
 when the heating circuit has no individual status resource.
 
