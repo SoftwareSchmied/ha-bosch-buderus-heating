@@ -418,7 +418,11 @@ def parse_token_list(payload: object) -> tuple[GatewayToken, ...]:
         created_at = item.get("created_at")
         if type(created_at) not in (int, float):
             raise ValueError("invalid_token_list")
-        created = float(cast(int | float, created_at))
+        try:
+            created = float(cast(int | float, created_at))
+        except OverflowError:
+            # A JSON integer too large for a float is no creation time.
+            raise ValueError("invalid_token_list") from None
         if not math.isfinite(created) or created < 0:
             raise ValueError("invalid_token_list")
         seen.add(token_id)
