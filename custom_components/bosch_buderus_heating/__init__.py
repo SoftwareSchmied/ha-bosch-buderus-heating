@@ -444,7 +444,10 @@ async def async_remove_entry(
     counter_source_store(hass).discard_owner(entry.entry_id)
     from .local_setup_history import async_forget_local_setup_history
 
-    await async_forget_local_setup_history(hass, entry.entry_id)
+    try:
+        await async_forget_local_setup_history(hass, entry.entry_id)
+    except Exception:  # the rest is still cleaned up
+        _LOGGER.warning("Local setup history could not be deleted")
     from homeassistant.data_entry_flow import UnknownFlow
 
     from .config_flow import LOCAL_FIRST_START

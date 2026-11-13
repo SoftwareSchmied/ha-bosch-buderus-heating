@@ -110,6 +110,15 @@ if TYPE_CHECKING:
     from .managed_entry import ManagedEntry
 
 
+async def _local_setup_attempts(
+    hass: HomeAssistant, entry_id: str
+) -> list[dict[str, str | None]]:
+    try:
+        return await local_setup_history(hass, entry_id).async_attempts()
+    except Exception:  # the rest of the report stays available
+        return []
+
+
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: BoschBuderusConfigEntry
 ) -> dict[str, Any]:
@@ -141,9 +150,7 @@ async def async_get_config_entry_diagnostics(
         },
         "update_load": update_load_diagnostics(hass),
         # Schema 47: the last local setup attempts, codes and times only.
-        "local_setup_attempts": await local_setup_history(
-            hass, entry.entry_id
-        ).async_attempts(),
+        "local_setup_attempts": await _local_setup_attempts(hass, entry.entry_id),
     }
     if isinstance(runtime, ManagedEntry):
         return _managed_diagnostics(base, runtime)

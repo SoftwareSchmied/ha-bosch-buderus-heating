@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import json
 import logging
+import re
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
@@ -1063,6 +1064,16 @@ def test_a_missing_or_faulty_table_gives_one_warning(tmp_path, caplog, content):
     assert len(warnings) == 1
     assert "heat generator model table" in warnings[0].getMessage()
     assert str(tmp_path) not in warnings[0].getMessage()
+
+
+def test_any_error_of_the_table_gives_the_warning(monkeypatch, caplog) -> None:
+    def broken(data):
+        raise re.error("bad pattern")
+
+    monkeypatch.setattr(heat_generator, "parse_table", broken)
+    with caplog.at_level(logging.WARNING):
+        assert heat_generator.load_shipped_table() is None
+    assert len(caplog.records) == 1
 
 
 def test_the_shipped_table_loads_without_a_warning(caplog) -> None:

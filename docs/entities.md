@@ -961,13 +961,18 @@ documentation.
 ## Using the heat pump hydraulic card
 
 The hydraulic card for Home Assistant (`custom:heatpump-hydraulic-card`) has
-a preset `bosch_buderus_heating`. The preset finds the cloud entities by
-their unique IDs in the entity registry and uses only enabled entities;
-entity names, entity IDs and the language do not matter. It does not use the
-readings only the local access provides. I checked the preset's mappings
-against the 0.9.0 entity set; I have not tested 0.9.0 with the card on a real
-installation yet.
+a preset `bosch_buderus_heating`. The preset finds the entities by their
+unique IDs in the entity registry and uses only enabled entities; entity
+names, entity IDs and the language do not matter. The preset in the card's
+current release uses only cloud entities. An updated preset is proposed for
+the card; once it is accepted, it covers installations with only the cloud,
+with the cloud and a local access, and with only a local access. On my
+installation I compared the updated preset live while the heat pump was
+heating, and with recorded states for defrost, hot water and standby. With
+only a local access it is untested on a real installation.
 
+- 0.9.1 only changed display names; the preset maps by unique ID, so
+  nothing changes for it.
 - Unique IDs, translation keys, states and units of the mapped entities are
   unchanged in 0.9.0.
 - On a new installation with a single heat pump, the total starts

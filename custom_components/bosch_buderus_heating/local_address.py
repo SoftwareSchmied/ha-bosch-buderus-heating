@@ -20,6 +20,7 @@ import asyncio
 from collections import deque
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
+from functools import partial
 from time import monotonic
 from typing import Any, cast
 
@@ -54,6 +55,8 @@ from .repair_scope import repair_data, repair_id
 
 _CANDIDATES = f"{DOMAIN}.local_address_candidates"
 _CHECKS = f"{DOMAIN}.local_address_checks"
+# Entries whose unload already drops their offers (one hook per entry).
+_UNLOAD_HOOKS = f"{DOMAIN}.local_address_unload_hooks"
 # One handshake per announced address within this time; the result is kept.
 CHECK_INTERVAL = 300.0
 # Handshakes of all announcements together within ``CHECK_WINDOW``.
@@ -207,6 +210,14 @@ def withdraw(hass: HomeAssistant, issue_id: str) -> None:
 
 
 @callback
+def _forget_entry(hass: HomeAssistant, entry_id: str) -> None:
+    cast(set[str], hass.data.get(_UNLOAD_HOOKS, set())).discard(entry_id)
+    for issue_id, item in list(_candidates(hass).items()):
+        if item.entry_id == entry_id:
+            withdraw(hass, issue_id)
+
+
+@callback
 def _offer(hass: HomeAssistant, found: _Access, endpoint: LocalEndpoint) -> str:
     entry, connection_id = found.entry, found.connection_id
     issue_id = issue_id_for(entry, connection_id)
@@ -237,15 +248,13 @@ def _offer(hass: HomeAssistant, found: _Access, endpoint: LocalEndpoint) -> str:
     if callable(subscribe):
         item.unsubscribe = subscribe(recheck, local_values=False)
 
-    def forget() -> None:
-        if candidates.get(issue_id) is item:
-            withdraw(hass, issue_id)
-
-    # Unloading the entry (also a reload or its removal) drops the offer: the
-    # runtime the note listened to is gone.
+    # Unloading the entry (also a reload or its removal) drops its offers:
+    # the runtime the note listened to is gone.
+    hooks = cast(set[str], hass.data.setdefault(_UNLOAD_HOOKS, set()))
     on_unload = getattr(entry, "async_on_unload", None)
-    if callable(on_unload):
-        on_unload(forget)
+    if callable(on_unload) and entry.entry_id not in hooks:
+        hooks.add(entry.entry_id)
+        on_unload(partial(_forget_entry, hass, entry.entry_id))
     ir.async_create_issue(
         hass,
         DOMAIN,

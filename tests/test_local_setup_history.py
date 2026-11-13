@@ -280,3 +280,23 @@ async def test_a_failed_stage_shown_in_the_pending_form_is_one_attempt(
     assert _shape(attempts) == [
         ("local_certificate", "failed", "unexpected:ValueError")
     ]
+
+
+async def test_a_broken_history_never_stops_the_dialog_or_the_report(
+    hass, supported, journal, monkeypatch
+):
+    from custom_components.bosch_buderus_heating import diagnostics
+
+    entry, _, _, target = registered(hass)
+
+    def broken(*args):
+        raise RuntimeError("no history")
+
+    monkeypatch.setattr(flow, "local_setup_history", broken)
+    monkeypatch.setattr(diagnostics, "local_setup_history", broken)
+    manager = hass.config_entries.options
+    result = await start(hass, entry, target)
+    result = await submit(hass, manager, result, {"address": SECRET_ADDRESS})
+    assert result["errors"] == {"address": "local_invalid_address"}
+    report = await async_get_config_entry_diagnostics(hass, entry)
+    assert report["local_setup_attempts"] == []

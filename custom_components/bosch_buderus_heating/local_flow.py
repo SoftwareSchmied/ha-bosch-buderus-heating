@@ -263,8 +263,9 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
     def _local_reported(self, error: BaseException) -> str:
         """The shown code of a failed step; keeps an unexpected error's type."""
         code = reported_local_error(error)
-        if code == "local_unexpected":
-            self._local_unexpected = type(error).__name__
+        self._local_unexpected = (
+            type(error).__name__ if code == "local_unexpected" else None
+        )
         return code
 
     def _local_attempt(self, step: str, error: str | None) -> None:
@@ -274,7 +275,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         if error == "local_unexpected" and self._local_unexpected:
             error = f"unexpected:{self._local_unexpected}"
         self._local_unexpected = None
-        local_setup_history(self.hass, self._local_owner_id).add(step, error)
+        try:
+            local_setup_history(self.hass, self._local_owner_id).add(step, error)
+        except Exception:  # the history only explains; it never stops a dialog
+            _LOGGER.debug("Local setup attempt not noted")
 
     def _local_form(
         self,

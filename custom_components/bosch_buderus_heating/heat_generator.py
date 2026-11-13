@@ -402,14 +402,7 @@ def load_shipped_table(path: Path = TABLE_PATH) -> ModelTable | None:
     faulty; the rest of the integration works without it."""
     try:
         return load_table(path)
-    except (
-        OSError,
-        ValueError,
-        RecursionError,
-        TypeError,
-        KeyError,
-        AttributeError,
-    ) as err:
+    except Exception as err:  # a faulty table never stops the integration
         _LOGGER.warning(
             "The heat generator model table could not be loaded (%s); "
             "the heat generator sensor is not created",
