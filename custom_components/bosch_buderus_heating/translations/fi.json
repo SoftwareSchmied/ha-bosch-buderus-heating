@@ -2222,6 +2222,36 @@
           "active": "Aktiivinen"
         }
       },
+      "signal_eebus_status": {
+        "name": "EEBus-tila",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Ei otettu käyttöön",
+          "no_lan_connection": "Ei verkkoyhteyttä",
+          "no_hp_connection": "Ei yhteyttä lämpöpumppuun",
+          "no_updateserver_connection": "Ei yhteyttä päivityspalvelimeen",
+          "no_eebus_connection": "Ei EEBus-yhteyttä",
+          "no_eebus_no_trust": "Ei EEBus-yhteyttä (ei luotettua kumppania)",
+          "no_eebus_no_usecase_active": "Ei EEBus-yhteyttä (ei aktiivista käyttötapausta)",
+          "power_limitation_active": "Tehonrajoitus aktiivinen",
+          "ohpcf_active": "Kompressorin joustavuus (OHPCF) aktiivinen",
+          "internal_error": "Sisäinen virhe"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "EEBus-käyttöönotto",
+        "state": {
+          "commissioned": "Otettu käyttöön",
+          "not_commissioned": "Ei otettu käyttöön"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Käynnistystarkistus",
+        "state": {
+          "startup_completed": "Valmis",
+          "startup_inprogress": "Käynnissä"
+        }
+      },
       "signal_true_false": {
         "name": "Tila",
         "state": {

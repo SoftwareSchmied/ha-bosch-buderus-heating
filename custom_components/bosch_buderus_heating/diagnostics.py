@@ -44,6 +44,7 @@ from .holidays import (
     parse_holiday_write_configuration,
 )
 from .icom_diagnostics import icom_diagnostics
+from .local_only import hybrid_evidence, volume_flow_path
 from .observations import (
     Observation,
     from_cloud_snapshot,
@@ -100,7 +101,7 @@ from .writes import (
     context_of,
 )
 
-DIAGNOSTICS_SCHEMA_VERSION = 46
+DIAGNOSTICS_SCHEMA_VERSION = 47
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -315,6 +316,8 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
         # P49b: systems shown from their local readings alone (count only).
         "local_plant_targets": len(runtime.connections.target_views()),
         "views_without_cloud": _views_without_cloud(runtime, targets),
+        # Schema 47: a detected hybrid system; its volume flows stay unverified.
+        "hybrid_volume_flow": _hybrid_volume_flow(runtime, targets),
         "inventory": {
             "healthy": runtime.inventory.healthy,
             "retained_entity_count": len(runtime.inventory.entities),
@@ -431,6 +434,56 @@ def _observation_pairs(
                     "counters": counters,
                 }
             )
+    return reports
+
+
+def _hybrid_volume_flow(
+    runtime: ManagedEntry, targets: dict[str, int]
+) -> list[dict[str, Any]]:
+    """Schema 47: whether a system is a hybrid system, per target.
+
+    Its volume flows are shown as reported, never rescaled; on a hybrid
+    system they are marked as unverified until a comparison with the
+    device's own display confirms them. Fixed codes and counts only: no
+    values, paths or identifiers.
+    """
+    state = runtime.connections
+    snapshot = state.snapshot
+    reports = []
+    for target_key, number in targets.items():
+        readings: list[tuple[str, object]] = []
+        for binding_key, binding in snapshot.bindings.items():
+            if binding.target_id != target_key:
+                continue
+            value = state.source_data(binding_key)
+            if isinstance(value, BoschBuderusDataUpdateCoordinator):
+                data = value.data or {}
+                for path, resource in value.resources.items():
+                    current = data[path].resource if path in data else resource
+                    readings.append(
+                        (path, current.value if current.has_value else None)
+                    )
+            elif binding.adapter == "k40_local":
+                local_state = state.local_state(binding_key)
+                if local_state is not None:
+                    readings.extend(
+                        (item.request.path, getattr(item.data, "value", None))
+                        for item in local_state.current_observations
+                    )
+        if not readings:
+            continue
+        evidence = hybrid_evidence(readings)
+        reports.append(
+            {
+                "target": number,
+                "hybrid_detected": bool(evidence),
+                "evidence": list(evidence),
+                "volume_flow_readings": len(
+                    {path for path, _ in readings if volume_flow_path(path)}
+                ),
+                "volume_flow": "unverified" if evidence else "as_reported",
+            }
+        )
     return reports
 
 

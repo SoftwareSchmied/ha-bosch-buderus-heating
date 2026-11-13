@@ -2222,6 +2222,36 @@
           "active": "Aktivní"
         }
       },
+      "signal_eebus_status": {
+        "name": "Stav EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Neuvedeno do provozu",
+          "no_lan_connection": "Žádné síťové připojení",
+          "no_hp_connection": "Žádné spojení s tepelným čerpadlem",
+          "no_updateserver_connection": "Žádné spojení s aktualizačním serverem",
+          "no_eebus_connection": "Žádné připojení EEBus",
+          "no_eebus_no_trust": "Žádné připojení EEBus (žádný důvěryhodný partner)",
+          "no_eebus_no_usecase_active": "Žádné připojení EEBus (žádný aktivní případ užití)",
+          "power_limitation_active": "Omezení výkonu aktivní",
+          "ohpcf_active": "Flexibilita kompresoru (OHPCF) aktivní",
+          "internal_error": "Interní chyba"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Uvedení EEBus do provozu",
+        "state": {
+          "commissioned": "Uvedeno do provozu",
+          "not_commissioned": "Neuvedeno do provozu"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Kontrola při spuštění",
+        "state": {
+          "startup_completed": "Dokončeno",
+          "startup_inprogress": "Probíhá"
+        }
+      },
       "signal_true_false": {
         "name": "Stav",
         "state": {

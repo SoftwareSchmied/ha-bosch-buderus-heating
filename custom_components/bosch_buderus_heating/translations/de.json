@@ -2222,6 +2222,36 @@
           "active": "Aktiv"
         }
       },
+      "signal_eebus_status": {
+        "name": "EEBus-Status",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Nicht in Betrieb genommen",
+          "no_lan_connection": "Keine Netzwerkverbindung",
+          "no_hp_connection": "Keine Verbindung zur Wärmepumpe",
+          "no_updateserver_connection": "Keine Verbindung zum Update-Server",
+          "no_eebus_connection": "Keine EEBus-Verbindung",
+          "no_eebus_no_trust": "Keine EEBus-Verbindung (kein vertrauenswürdiger Partner)",
+          "no_eebus_no_usecase_active": "Keine EEBus-Verbindung (kein aktiver Anwendungsfall)",
+          "power_limitation_active": "Leistungsbegrenzung aktiv",
+          "ohpcf_active": "Kompressorflexibilität (OHPCF) aktiv",
+          "internal_error": "Interner Fehler"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "EEBus-Inbetriebnahme",
+        "state": {
+          "commissioned": "In Betrieb genommen",
+          "not_commissioned": "Nicht in Betrieb genommen"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Startprüfung",
+        "state": {
+          "startup_completed": "Abgeschlossen",
+          "startup_inprogress": "Läuft"
+        }
+      },
       "signal_true_false": {
         "name": "Zustand",
         "state": {

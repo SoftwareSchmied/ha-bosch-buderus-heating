@@ -2222,6 +2222,36 @@
           "active": "Aktivno"
         }
       },
+      "signal_eebus_status": {
+        "name": "Stanje EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Ni zagnano",
+          "no_lan_connection": "Ni omrežne povezave",
+          "no_hp_connection": "Ni povezave s toplotno črpalko",
+          "no_updateserver_connection": "Ni povezave s strežnikom za posodobitve",
+          "no_eebus_connection": "Ni povezave EEBus",
+          "no_eebus_no_trust": "Ni povezave EEBus (ni zaupanja vrednega partnerja)",
+          "no_eebus_no_usecase_active": "Ni povezave EEBus (ni aktivnega primera uporabe)",
+          "power_limitation_active": "Omejitev moči aktivna",
+          "ohpcf_active": "Prilagodljivost kompresorja (OHPCF) aktivna",
+          "internal_error": "Notranja napaka"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Zagon EEBus",
+        "state": {
+          "commissioned": "Zagnano",
+          "not_commissioned": "Ni zagnano"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Preverjanje ob zagonu",
+        "state": {
+          "startup_completed": "Dokončano",
+          "startup_inprogress": "V teku"
+        }
+      },
       "signal_true_false": {
         "name": "Stanje",
         "state": {

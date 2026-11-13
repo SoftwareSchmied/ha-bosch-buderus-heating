@@ -66,6 +66,12 @@ _UNITS = frozenset(
         "kWh",
         "l/h",
         "l/min",
+        # Pressure spellings of generic signals (for example a pressure
+        # difference); only recognized, never converted.
+        "mbar",
+        "hPa",
+        "kPa",
+        "Pa",
         "min",
         "mins",
         "h",

@@ -2222,6 +2222,36 @@
           "active": "Aktivno"
         }
       },
+      "signal_eebus_status": {
+        "name": "Status EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Nije pušteno u rad",
+          "no_lan_connection": "Nema mrežne veze",
+          "no_hp_connection": "Nema veze s dizalicom topline",
+          "no_updateserver_connection": "Nema veze s poslužiteljem za ažuriranja",
+          "no_eebus_connection": "Nema EEBus veze",
+          "no_eebus_no_trust": "Nema EEBus veze (nema pouzdanog partnera)",
+          "no_eebus_no_usecase_active": "Nema EEBus veze (nema aktivnog slučaja upotrebe)",
+          "power_limitation_active": "Ograničenje snage aktivno",
+          "ohpcf_active": "Fleksibilnost kompresora (OHPCF) aktivna",
+          "internal_error": "Interna pogreška"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Puštanje EEBus u rad",
+        "state": {
+          "commissioned": "Pušteno u rad",
+          "not_commissioned": "Nije pušteno u rad"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Provjera pri pokretanju",
+        "state": {
+          "startup_completed": "Dovršeno",
+          "startup_inprogress": "U tijeku"
+        }
+      },
       "signal_true_false": {
         "name": "Stanje",
         "state": {

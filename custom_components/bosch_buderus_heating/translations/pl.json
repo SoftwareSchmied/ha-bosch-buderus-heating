@@ -2222,6 +2222,36 @@
           "active": "Aktywny"
         }
       },
+      "signal_eebus_status": {
+        "name": "Stan EEBus",
+        "state": {
+          "ok": "OK",
+          "not_commissioned": "Nie uruchomiono",
+          "no_lan_connection": "Brak połączenia sieciowego",
+          "no_hp_connection": "Brak połączenia z pompą ciepła",
+          "no_updateserver_connection": "Brak połączenia z serwerem aktualizacji",
+          "no_eebus_connection": "Brak połączenia EEBus",
+          "no_eebus_no_trust": "Brak połączenia EEBus (brak zaufanego partnera)",
+          "no_eebus_no_usecase_active": "Brak połączenia EEBus (brak aktywnego przypadku użycia)",
+          "power_limitation_active": "Ograniczenie mocy aktywne",
+          "ohpcf_active": "Elastyczność sprężarki (OHPCF) aktywna",
+          "internal_error": "Błąd wewnętrzny"
+        }
+      },
+      "signal_eebus_commissioning": {
+        "name": "Uruchomienie EEBus",
+        "state": {
+          "commissioned": "Uruchomiono",
+          "not_commissioned": "Nie uruchomiono"
+        }
+      },
+      "signal_startup_check": {
+        "name": "Kontrola rozruchu",
+        "state": {
+          "startup_completed": "Zakończono",
+          "startup_inprogress": "W toku"
+        }
+      },
       "signal_true_false": {
         "name": "Stan",
         "state": {
