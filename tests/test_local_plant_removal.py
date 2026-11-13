@@ -87,8 +87,7 @@ def startup_finished(backend) -> bool:
     """Every gateway read at the start has had its fault read."""
     gateways = {call[1] for call in backend.calls if call[0] == "bulk"}
     return bool(gateways) and all(
-        ("bulk", gateway, ("/notifications",)) in backend.calls
-        for gateway in gateways
+        ("bulk", gateway, ("/notifications",)) in backend.calls for gateway in gateways
     )
 
 
