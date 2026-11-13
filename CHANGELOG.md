@@ -133,8 +133,7 @@ only; none of them is checked on a real device or a fresh installation yet.
 - **"Cloud access" in messages:** connection, error and rate-limit messages
   and the titles of the firmware repair notes no longer use the internal
   service name; the rate-limit message of the controls dialog now says that
-  the cloud limits the requests. The names of the request count sensors stay
-  for now.
+  the cloud limits the requests.
 - **Translated messages:** the errors of the holiday calendar and of a select
   option that is no longer offered now follow the language of Home
   Assistant, and the event types of the system notifications are shown as
@@ -164,6 +163,69 @@ only; none of them is checked on a real device or a fresh installation yet.
 - **README:** the load figures in the README are replaced by what the code
   does; my measurement, with what it compares, is now in the
   [release checks](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/main/docs/release.md#load-measurement-for-090-alpha2).
+
+#### Entities: defaults, names and statistics
+
+I checked these changes with automated tests and simulated data, the valve
+positions and the hot water heat-up also against the recorded history of my
+own heat pump (it does not cool). I have not yet checked them on a real
+installation after an update. Existing entities keep their entity ID, their
+unique ID, a name you set yourself and whether they are enabled; an entity
+without a name of your own shows its new name.
+
+- **Duplicates created disabled:** with exactly one heat source, the total
+  starts and the total system run time of all heat sources show the same
+  values as the counters of that heat source, and on a heat pump without a
+  second heat source or a hybrid manager the burner status follows the
+  compressor. New entities of these three readings are now created
+  disabled. With a cascade, a hybrid system or a boiler they stay enabled.
+- **Valve positions checked on my heat pump:** the 4-way valve (VR4) showed
+  *Cooling/defrost* during every recorded defrost and *Heating* otherwise;
+  the hot water 3-way valve (VW1) showed *Hot water* during every hot water
+  charge and in the last minute of each defrost. These recorded moments are
+  now part of the tests. The relay of VW1, a disabled second source, now
+  shows the same position texts instead of on and off. Other outdoor units
+  are not confirmed.
+- **Hot water heat-up as on/off:** the signal `SRC.IntDHW.HeatUpActive`
+  showed the raw states `false` and `heat`. It is now an on/off sensor
+  named "Hot water heat-up active", where heat and post-heat count as on;
+  it was on during every hot water charge on my heat pump. It stays
+  disabled by default.
+- **Long-term statistics for local run times:** the compressor run times
+  for heating, hot water and cooling, those of a hybrid manager and the run
+  time of a ventilation unit now have statistics as a growing total, like
+  the operating times from the cloud. The statistics start with the
+  update; remaining times and timers keep none.
+- **Room controller settings without a control:** the read-only sensor of
+  a setting that offers no control (not writable, a single season mode,
+  no limits, or the temperature of the open window detection) is now
+  enabled when it is created, as the only place its value is shown. While
+  the control exists, the sensor stays a disabled duplicate. I tested this
+  with simulated data only.
+- **Ventilation fan level:** the exhaust fan level select is now created
+  disabled, because no ventilation unit has confirmed it yet.
+- **Names after the controller:** German names say *Kompressor* instead of
+  *Verdichter*, as the Info menu of my MX400 does, and signal names use
+  *HK1*. English names use *Drip pan temperature (TA4)*, *Flow rate HC1
+  (PC1)* and *Heating circuit pump HC1 (PC1)*. The flow of the heat source
+  is *Primary flow rate*, the season signal is *Current heating/cooling
+  status (signal)*, because it repeats that cloud value, and the cylinder
+  and outdoor temperature signals got names. The request count sensors are
+  now *Cloud requests total*, *Cloud requests – last hour* and *Cloud
+  response time – last hour*. On a room controller, the hot water level
+  `high` is named *Hot water temperature* instead of *Comfort start
+  temperature*. The new and changed texts are drafts in all languages
+  except English and German.
+- **Hydraulic card preset:** I checked the `bosch_buderus_heating` preset of
+  the hydraulic card against these entities. The unique IDs, translation
+  keys, states and units of its mappings are unchanged. On a new
+  installation with a single heat pump, the total starts and the total
+  system run time are created disabled, so the preset no longer shows them
+  among its additional values; its starts and run time tiles use the heat
+  pump's own counters, which stay enabled. I have not tested this with the
+  card on a real installation. The
+  [entity documentation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/main/docs/entities.md#using-the-heat-pump-hydraulic-card)
+  lists which entity suits which card key.
 
 #### Release tooling
 
