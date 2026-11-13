@@ -35,6 +35,7 @@ from .pointt.retry_after import (
     MAX_CLOUD_PAUSE_SECONDS,
     MIN_CLOUD_PAUSE_SECONDS,
 )
+from .source_restarts import StartHistory, StartReason
 
 _LOGGER = logging.getLogger(__name__)
 CLOSE_TIMEOUT = 5.0
@@ -396,6 +397,9 @@ class ConnectionRuntime:
         # B04/B08: failed attempts per binding and per connection.
         self._source_failures: dict[str, FailureSeries] = {}
         self._connection_failures: dict[str, FailureSeries] = {}
+        # Why each access and source started, recent starts with their time.
+        self._connection_starts = StartHistory()
+        self._source_starts = StartHistory()
         self._closed = False
         self._started = False
         self._unsubscribe: list[Callable[[], None]] = []
@@ -509,6 +513,8 @@ class ConnectionRuntime:
             if key not in snapshot.bindings:
                 # R1: a view of the target waits until these have stopped.
                 self._target_waits.setdefault(binding.target_id, set()).add(key)
+        for key in changes.bindings:
+            self._source_starts.note(key, StartReason.CONFIGURATION)
         self.snapshot = snapshot
         for key in changes.connections:
             self._stop_connection(key, retain=True)
@@ -530,6 +536,8 @@ class ConnectionRuntime:
             for key in tuple(failures):
                 if key not in current:
                     del failures[key]
+        self._source_starts.keep(snapshot.bindings)
+        self._connection_starts.keep(snapshot.connections)
         options = section(snapshot.to_options(), "connections")
         for key, connection in snapshot.connections.items():
             enabled = options[key]["enabled"]
@@ -779,6 +787,7 @@ class ConnectionRuntime:
         bindings = self._bindings(run.identifier)
         for key, source in tuple(run.sources.items()):
             if key not in bindings or not self._generations.accepts(source.generation):
+                self._source_starts.note(key, StartReason.CONFIGURATION)
                 if source.task is not None and not source.task.cancelling():
                     source.task.cancel()
                 run.sources.pop(key)
@@ -796,9 +805,12 @@ class ConnectionRuntime:
     def _stop_connection(self, key: str, *, retain: bool = False) -> None:
         run = self._runs.pop(key, None)
         if run is not None:
+            # Stopped from outside its own loop: by the configuration.
+            self._connection_starts.note(key, StartReason.CONFIGURATION)
             if run.task is not None and not run.task.cancelling():
                 run.task.cancel()
             for binding_id, source in run.sources.items():
+                self._source_starts.note(binding_id, StartReason.CONFIGURATION)
                 if source.task is not None and not source.task.cancelling():
                     source.task.cancel()
                 if source.task is not None and not source.task.done():
@@ -936,8 +948,17 @@ class ConnectionRuntime:
         series = self._connection_failures.get(connection_id, FailureSeries())
         return series.diagnostics()
 
+    def source_starts(self, binding_id: str) -> dict[str, object]:
+        """Recent starts of a source and why, for diagnostics."""
+        return self._source_starts.diagnostics(binding_id)
+
+    def connection_starts(self, connection_id: str) -> dict[str, object]:
+        """Recent starts of an access and why, for diagnostics."""
+        return self._connection_starts.diagnostics(connection_id)
+
     async def _connection_loop(self, run: _ConnectionRun) -> None:
         subject = _CONNECTION_KINDS.get(run.record.kind, "unsupported") + " access"
+        failed: Exception | None = None
         while self._active(run):
             driver: ConnectionDriver | None = None
             delay = RETRY_BASE_SECONDS
@@ -945,6 +966,12 @@ class ConnectionRuntime:
                 run.identifier, FailureSeries()
             )
             series.started = False
+            if failed is None:
+                self._connection_starts.started(run.identifier)
+            else:
+                self._connection_starts.started(
+                    run.identifier, StartReason.FAILURE, failure=type(failed).__name__
+                )
             try:
                 driver = self._factories[run.record.kind](run.identifier, run.record)
                 run.driver = driver
@@ -962,6 +989,7 @@ class ConnectionRuntime:
             except Exception as error:
                 if not self._active(run):
                     return
+                failed = error
                 failure = self._failure(error)
                 delay = self._failed(
                     series,
@@ -987,6 +1015,8 @@ class ConnectionRuntime:
                 for task in tasks:
                     if not task.cancelling():
                         task.cancel()
+                for key in run.sources:
+                    self._source_starts.note(key, StartReason.ACCESS)
                 if tasks:
                     await asyncio.wait(tasks, timeout=CLOSE_TIMEOUT)
                 run.sources.clear()
@@ -1011,6 +1041,7 @@ class ConnectionRuntime:
         binding: StoredBinding,
         source: _SourceRun,
     ) -> None:
+        restart: tuple[StartReason, str | None] | None = None
         while (
             self._active(run)
             and self.accepts(source.generation)
@@ -1022,12 +1053,18 @@ class ConnectionRuntime:
             delay = RETRY_BASE_SECONDS
             series = self._source_failures.setdefault(binding_id, FailureSeries())
             series.started = False
+            if restart is None:
+                self._source_starts.started(binding_id)
+            else:
+                self._source_starts.started(binding_id, restart[0], failure=restart[1])
+            ended = False
             try:
                 assert run.driver is not None
                 driver = run.driver.source(binding_id, binding)
                 source.driver = driver
                 await driver.run(context)
                 if context.current:
+                    ended = True
                     raise SourceFailure()
                 return
             except asyncio.CancelledError:
@@ -1035,6 +1072,11 @@ class ConnectionRuntime:
             except Exception as error:
                 if not self._active(run) or not context.current:
                     return
+                restart = (
+                    (StartReason.ENDED, None)
+                    if ended
+                    else (StartReason.FAILURE, type(error).__name__)
+                )
                 failure = self._failure(error)
                 delay = self._failed(
                     series,
@@ -1604,6 +1646,7 @@ class ConnectionRuntime:
         if key is None or self.source_context(key) is not context:
             raise ConfigurationError("binding_unavailable")
         run = self._runs[context.generation.connection_id]
+        self._source_starts.note(key, StartReason.REQUESTED)
         self._generations.invalidate_binding(key)
         self._data.pop(key, None)
         self._synchronize_sources(run)

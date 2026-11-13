@@ -98,7 +98,7 @@ from .writes import (
     context_of,
 )
 
-DIAGNOSTICS_SCHEMA_VERSION = 45
+DIAGNOSTICS_SCHEMA_VERSION = 46
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -229,6 +229,8 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
             "phase": state.connection_phase(key).value,
             # Schema 44 (B08): failed connection attempts, without messages.
             "failures": state.connection_failures(key),
+            # Schema 46: the recent starts of the access and why.
+            "starts": state.connection_starts(key),
             "request_metrics": {},
         }
         if record.kind == CLOUD_KIND:
@@ -269,6 +271,8 @@ def _managed_diagnostics(base: dict[str, Any], runtime: ManagedEntry) -> dict[st
                 "phase": state.source_phase(key).value,
                 # Schema 44 (B08): failed source attempts, without messages.
                 "failures": state.source_failures(key),
+                # Schema 46: the recent starts of the source and why.
+                "starts": state.source_starts(key),
             }
         )
         value = state.source_data(key)
