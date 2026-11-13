@@ -48,7 +48,7 @@ def test_every_browser_script_has_a_runner() -> None:
 def test_release_publishes_only_after_the_ci_checks() -> None:
     ci = _jobs("ci.yml")
     release = _jobs("release.yml")
-    assert release["release"]["needs"] == ["verify"]
+    assert release["release"]["needs"] == ["tag", "verify"]
     assert set(release["verify"]["needs"]) == {
         "frontend",
         "compatibility",
@@ -75,3 +75,39 @@ def test_documented_required_checks_cover_every_ci_job() -> None:
     documented = set(re.findall(r"`([\w-]+)`", line.group(1)))
     assert documented == set(_jobs("ci.yml")) | {"analyze"}
     assert "analyze" in _jobs("codeql.yml")
+
+
+def test_release_checks_the_tag_before_any_other_job() -> None:
+    workflow = yaml.safe_load((WORKFLOWS / "release.yml").read_text(encoding="utf-8"))
+    release = workflow["jobs"]
+    # Two runs of the same tag never publish at the same time.
+    assert workflow["concurrency"] == {
+        "group": "release-${{ github.ref }}",
+        "cancel-in-progress": False,
+    }
+    assert "needs" not in release["tag"]
+    assert release["tag"]["permissions"] == {"contents": "read"}
+    for name in ("frontend", "compatibility", "minimum-version"):
+        assert release[name]["needs"] == ["tag"], name
+    check = "\n".join(step.get("run", "") for step in release["tag"]["steps"])
+    assert "git/ref/tags/${RELEASE_TAG}" in check
+    assert "compare/main...${GITHUB_SHA}" in check
+    assert "python scripts/release_tag.py" in check
+    assert release["tag"]["outputs"] == {
+        "prerelease": "${{ steps.check.outputs.prerelease }}"
+    }
+
+
+def test_release_sets_draft_and_pre_release_explicitly() -> None:
+    publish = next(
+        step
+        for step in _jobs("release.yml")["release"]["steps"]
+        if step.get("name") == "Publish GitHub release"
+    )
+    assert publish["env"]["PRERELEASE"] == "${{ needs.tag.outputs.prerelease }}"
+    run = publish["run"]
+    assert 'release_flags=(--draft=false "--prerelease=${PRERELEASE}")' in run
+    assert run.count('"${release_flags[@]}"') == 2
+    assert "--verify-tag" in run
+    # The type comes only from the checked tag, not from a second rule.
+    assert "*-*" not in run

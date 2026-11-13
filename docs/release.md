@@ -813,20 +813,47 @@ After the build, `dist/bosch_buderus_heating.zip` and
 extract the ZIP into an empty directory. `manifest.json` must be located at the
 archive root.
 
+The build refuses to run while the integration directory has changed, staged,
+deleted or untracked files, because the archive would then differ from the one
+the workflow builds from the tag. `--allow-dirty` builds such a state anyway;
+use it only for a local trial, never for an archive that I compare with the
+published one. The archive contains the files that `git ls-files` reports for
+the integration directory, in the plain order of their POSIX paths, so Linux,
+macOS and Windows produce the same entries in the same order.
+
+`scripts/release_notes.py` takes the release notes from the CHANGELOG section
+of the version. It stops when the section points to another section with
+"below" or "above" (for example "the notes of alpha.1 below"), because the
+published notes contain only this one section. Describe such content in the
+section itself or link to it.
+
 ## Publication
 
 1. Ensure that the version in `manifest.json`, `pyproject.toml`, and the
    heading in `CHANGELOG.md` match.
 2. Require a clean working tree and successful local checks.
 3. Push the verified state to GitHub only after explicit release approval.
-4. Create and push the signed or annotated version tag.
+4. Create and push the signed or annotated version tag (`git tag -a` or
+   `git tag -s`). A stable version tag must point to a commit on `main`.
 
-The tag starts the release workflow. It repeats the browser tests of the
-dialogs, the full suite on both older Home Assistant versions, tests, type
-checks, formatting, linting, dependency auditing, hassfest, and HACS
-validation. Only then does it create the GitHub release with the ZIP and
-checksum. A tag therefore cannot publish dialogs whose browser tests fail, even
-if a required check is missing from the branch protection.
+The tag starts the release workflow. It first checks the tag: a lightweight
+tag, a tag name that is not `v<version>` and a stable tag on a commit outside
+`main` stop the workflow before any other job runs. Pre-release tags (with a
+`-`, such as `v1.2.0-beta.1`) may also point to a feature branch. Runs for the
+same tag wait for each other.
+
+Then it repeats the browser tests of the dialogs, the full suite on both older
+Home Assistant versions, tests, type checks, formatting, linting, dependency
+auditing, hassfest, and HACS validation. Only then does it create the GitHub
+release with the ZIP and checksum. A tag therefore cannot publish dialogs whose
+browser tests fail, even if a required check is missing from the branch
+protection.
+
+The workflow sets the release type explicitly: `--draft=false` always, and
+`--prerelease=true` or `--prerelease=false` from the tag. An existing draft
+with the same tag is therefore published, and an existing release of the tag
+gets the type that matches the tag. A new release is only created for a tag
+that already exists on GitHub.
 
 ## Field validation before 0.8.1
 
