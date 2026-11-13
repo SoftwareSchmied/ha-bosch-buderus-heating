@@ -474,6 +474,7 @@
           "connection_discover": "Pretraži i odaberi uređaje",
           "connection_polling": "Učestalost dohvaćanja",
           "local_setup": "Promjena lokalnog pristupa",
+          "local_tokens": "Tokeni na pristupniku",
           "local_polling": "Učestalost lokalnog dohvaćanja i stanje",
           "local_values": "Koristi lokalne vrijednosti za postojeće entitete",
           "back": "← Natrag"
@@ -511,7 +512,8 @@
         "title": "Ukloni pristup",
         "description": "Podaci za prijavu bit će uklonjeni. Sustavi i entiteti se zadržavaju, čak i ako je ovo posljednji pristup. Bez dostupne veze entiteti ne mogu prikazivati trenutne vrijednosti.",
         "data": {
-          "confirm": "Ukloni ovaj pristup"
+          "confirm": "Ukloni ovaj pristup",
+          "revoke": "Najprije opozovi token ove integracije na pristupniku"
         }
       },
       "connection_polling": {
@@ -653,6 +655,34 @@
       "rescan": {
         "title": "Ponovno pretraživanje sustava",
         "description": "Još jednom pretražuje sustav u potrazi za dijelovima i mjernim vrijednostima, putem pristupa putem oblaka i lokalnog pristupa. Koristite to nakon dodavanja ili promjene komponenti. Pretraživanje se izvodi pri sljedećem redovitom ažuriranju i unutar uobičajenih ograničenja zahtjeva; nikada ne uklanja entitet, a mjerne vrijednosti koje ponovno ne pronađe ostaju kakve jesu."
+      },
+      "local_tokens": {
+        "title": "Tokeni na pristupniku",
+        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostali klijenti** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Svaka prijava s oznakom uređaja stvara novi token, pa stariji tokeni ove integracije obično potječu iz ranijih postavljanja. Da biste opozvali jedan, odaberite ga prema vremenu stvaranja. Bez odabira ništa se ne mijenja.",
+        "data": {
+          "token": "Token za opoziv"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Opoziv tokena prije uklanjanja",
+        "description": "Pristupnik vodi **{count}** tokena. Vrijednosti tokena nikada se ne prikazuju.\n\n**Ova integracija** (prema vremenu stvaranja):\n{own}\n\n**Ostali klijenti** (nikada se ne nude za opoziv):\n{others}\n\nOvaj je pristup posljednji put postavljen {confirmed}. Odaberite token koji će se opozvati prije uklanjanja pristupa. Bez odabira pristup se uklanja bez opoziva. Da biste zadržali pristup, zatvorite ovaj dijalog.",
+        "data": {
+          "token": "Token za opoziv"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Potvrda certifikata prijave",
+        "description": "Usluga prijave na **{host}:{port}** prikazuje certifikat koji za ovaj pristup nikada nije potvrđen. Potvrdite da je to vaš pristupnik prije nego što se onamo pošalje token pristupa. Potvrda vrijedi samo za ovaj dijalog.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Opoziv tokena",
+        "description": "Opozvati token ove integracije stvoren {created} na pristupniku na **{host}**?\n\nPristupnik ga trajno briše. Ako je to token koji koristi ovaj pristup, lokalni pristup završava: pristup se isključuje i treba novu prijavu s oznakom uređaja. Popis se ponovno čita neposredno prije, a zahtjev se šalje samo jednom.",
+        "data": {
+          "confirm": "Opozovi ovaj token na pristupniku"
+        }
       }
     },
     "error": {
@@ -759,7 +789,11 @@
       "cloud_local_first_conflict": "Oblak i lokalni pristup ne opisuju isti sustav. Ništa nije spremljeno. Poništite odabir ovog sustava kako biste ga i dalje koristili samo putem lokalnog pristupa.",
       "local_plant_known": "Ovaj pristupnik već pripada konfiguriranom sustavu. Odaberite taj sustav umjesto novog.",
       "auth_expired": "Ovaj pokušaj prijave je istekao. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno.",
-      "auth_restart": "Ovaj pokušaj prijave više se ne može koristiti. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno."
+      "auth_restart": "Ovaj pokušaj prijave više se ne može koristiti. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno.",
+      "local_tokens_rejected": "Pristupnik nije prihvatio token ovog pristupa. Ništa nije promijenjeno.",
+      "local_tokens_forbidden": "Usluga prijave pristupnika odbila je zahtjev. Ništa nije promijenjeno.",
+      "local_tokens_unsupported": "Ovaj pristupnik ne nudi popis tokena. Ništa nije promijenjeno.",
+      "local_tokens_invalid": "Popis tokena pristupnika nije bilo moguće provjeriti (neočekivan ili prevelik odgovor). Ništa nije promijenjeno."
     },
     "abort": {
       "no_notification_gateways": "Nije konfiguriran nijedan sustav grijanja.",
@@ -816,7 +850,15 @@
       "connection_saved": "Promjena je spremljena.",
       "connection_removed": "Pristup je uklonjen.",
       "notifications_saved": "Postavke obavijesti su spremljene.",
-      "rrc_program_saved": "Točka prebacivanja je spremljena i potvrđena ponovnim čitanjem."
+      "rrc_program_saved": "Točka prebacivanja je spremljena i potvrđena ponovnim čitanjem.",
+      "local_tokens_unavailable": "Ovaj pristup nema upotrebljiv spremljeni token za popis tokena. Najprije ponovno postavite lokalni pristup.",
+      "local_tokens_changed": "Popis tokena u međuvremenu se promijenio. Ništa nije opozvano ni uklonjeno. Ponovno otvorite popis.",
+      "local_token_revoked": "Token je opozvan; pristupnik ga više ne navodi.",
+      "local_token_access_ended": "To je bio token koji je koristio ovaj pristup. Lokalni pristup je završio i pristup je isključen. Ponovno ga postavite s oznakom uređaja ili ga uklonite.",
+      "local_token_revoke_rejected": "Pristupnik je odbio opoziv; token je i dalje na popisu.",
+      "local_token_revoke_unclear": "Pristupnik nije potvrdio opoziv. Ništa nije ponovljeno. Ponovno otvorite popis tokena radi provjere.",
+      "local_token_revoked_removed": "Token je opozvan na pristupniku i pristup je uklonjen.",
+      "local_token_not_removed": "Opoziv nije potvrđen, pa pristup nije uklonjen. Provjerite popis tokena, a zatim ponovno uklonite pristup."
     },
     "progress": {
       "local_work": "Provjera lokalne veze. Pričekajte."

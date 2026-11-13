@@ -474,6 +474,7 @@
           "connection_discover": "Søk etter og velg enheter",
           "connection_polling": "Forespørselsfrekvens",
           "local_setup": "Endre lokal tilgang",
+          "local_tokens": "Tokens på gatewayen",
           "local_polling": "Lokal forespørselsfrekvens og status",
           "local_values": "Bruk lokale verdier for eksisterende entiteter",
           "back": "← Tilbake"
@@ -511,7 +512,8 @@
         "title": "Fjern tilgang",
         "description": "Påloggingsopplysningene fjernes. Anlegg og entiteter beholdes, selv om dette er den siste tilgangen. Uten en tilgjengelig tilkobling kan ikke entitetene vise gjeldende verdier.",
         "data": {
-          "confirm": "Fjern denne tilgangen"
+          "confirm": "Fjern denne tilgangen",
+          "revoke": "Tilbakekall først en token fra denne integrasjonen på gatewayen"
         }
       },
       "connection_polling": {
@@ -653,6 +655,34 @@
       "rescan": {
         "title": "Søk i anlegget på nytt",
         "description": "Søker i anlegget en gang til etter deler og måleverdier, via skytilgangen og den lokale tilgangen. Bruk det etter at du har lagt til eller endret komponenter. Søket kjøres ved neste vanlige oppdatering og innenfor de vanlige grensene for forespørsler; det fjerner aldri en entitet, og måleverdier som ikke finnes igjen, blir som de er."
+      },
+      "local_tokens": {
+        "title": "Tokens på gatewayen",
+        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre klienter** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Hver pålogging med enhetsetiketten oppretter en ny token, så eldre tokens fra denne integrasjonen stammer vanligvis fra tidligere oppsett. Velg en token etter opprettelsestidspunktet for å tilbakekalle den. Uten et valg endres ingenting.",
+        "data": {
+          "token": "Token som skal tilbakekalles"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Tilbakekall en token før fjerning",
+        "description": "Gatewayen har **{count}** tokens. Tokenverdier vises aldri.\n\n**Denne integrasjonen** (etter opprettelsestidspunkt):\n{own}\n\n**Andre klienter** (tilbys aldri for tilbakekalling):\n{others}\n\nDenne tilgangen ble sist satt opp {confirmed}. Velg tokenen som skal tilbakekalles før tilgangen fjernes. Uten et valg fjernes tilgangen uten at noe tilbakekalles. Lukk denne dialogen for å beholde tilgangen.",
+        "data": {
+          "token": "Token som skal tilbakekalles"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Bekreft påloggingssertifikatet",
+        "description": "Påloggingstjenesten på **{host}:{port}** viser et sertifikat som aldri er bekreftet for denne tilgangen. Bekreft at dette er gatewayen din før tilgangens token sendes dit. Bekreftelsen gjelder bare for denne dialogen.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Jeg bekrefter denne gatewayen og sertifikatet"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Tilbakekall token",
+        "description": "Tilbakekalle tokenen fra denne integrasjonen, opprettet {created}, på gatewayen på **{host}**?\n\nGatewayen sletter den permanent. Hvis det er tokenen denne tilgangen bruker, avsluttes den lokale tilgangen: tilgangen slås av og trenger en ny pålogging med enhetsetiketten. Listen leses på nytt rett før, og forespørselen sendes bare én gang.",
+        "data": {
+          "confirm": "Tilbakekall denne tokenen på gatewayen"
+        }
       }
     },
     "error": {
@@ -759,7 +789,11 @@
       "cloud_local_first_conflict": "Skyen og den lokale tilgangen beskriver ikke det samme anlegget. Ingenting ble lagret. Fjern valget av dette anlegget for å fortsette å bruke det bare via lokal tilgang.",
       "local_plant_known": "Denne gatewayen hører allerede til et konfigurert anlegg. Velg det anlegget i stedet for et nytt.",
       "auth_expired": "Dette påloggingsforsøket er utløpt. Åpne den nye SingleKey ID-lenken som vises ovenfor, og logg på igjen.",
-      "auth_restart": "Dette påloggingsforsøket kan ikke brukes lenger. Åpne den nye SingleKey ID-lenken som vises ovenfor, og logg på igjen."
+      "auth_restart": "Dette påloggingsforsøket kan ikke brukes lenger. Åpne den nye SingleKey ID-lenken som vises ovenfor, og logg på igjen.",
+      "local_tokens_rejected": "Gatewayen godtok ikke tokenen for denne tilgangen. Ingenting ble endret.",
+      "local_tokens_forbidden": "Påloggingstjenesten på gatewayen avviste forespørselen. Ingenting ble endret.",
+      "local_tokens_unsupported": "Denne gatewayen tilbyr ingen tokenliste. Ingenting ble endret.",
+      "local_tokens_invalid": "Tokenlisten til gatewayen kunne ikke kontrolleres (uventet eller for stort svar). Ingenting ble endret."
     },
     "abort": {
       "no_notification_gateways": "Ingen varmeanlegg er konfigurert.",
@@ -816,7 +850,15 @@
       "connection_saved": "Endringen ble lagret.",
       "connection_removed": "Tilgangen ble fjernet.",
       "notifications_saved": "Varslingsinnstillingene ble lagret.",
-      "rrc_program_saved": "Koblingspunktet ble lagret og bekreftet ved tilbakelesing."
+      "rrc_program_saved": "Koblingspunktet ble lagret og bekreftet ved tilbakelesing.",
+      "local_tokens_unavailable": "Denne tilgangen har ingen brukbar lagret token for tokenlisten. Sett opp den lokale tilgangen på nytt først.",
+      "local_tokens_changed": "Tokenlisten er endret i mellomtiden. Ingenting ble tilbakekalt eller fjernet. Åpne listen på nytt.",
+      "local_token_revoked": "Tokenen ble tilbakekalt; gatewayen viser den ikke lenger.",
+      "local_token_access_ended": "Det var tokenen denne tilgangen brukte. Den lokale tilgangen er avsluttet, og tilgangen ble slått av. Sett den opp på nytt med enhetsetiketten, eller fjern den.",
+      "local_token_revoke_rejected": "Gatewayen avviste tilbakekallingen; tokenen står fortsatt på listen.",
+      "local_token_revoke_unclear": "Gatewayen bekreftet ikke tilbakekallingen. Ingenting ble gjentatt. Åpne tokenlisten på nytt for å kontrollere.",
+      "local_token_revoked_removed": "Tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet.",
+      "local_token_not_removed": "Tilbakekallingen ble ikke bekreftet, så tilgangen ble ikke fjernet. Kontroller tokenlisten, og fjern deretter tilgangen på nytt."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale tilkoblingen. Vent litt."

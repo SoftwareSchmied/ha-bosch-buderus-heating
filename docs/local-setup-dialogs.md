@@ -81,7 +81,10 @@ certificate confirmed for an address and port is accepted again for that address
 and port when its fingerprint is identical, for example after Continue. Received
 tokens can be rechecked; unknown creation outcomes allow only deliberate discard
 or continuing later. Discard requires its own confirmation and removes only the local pending
-copy. Gateway tokens are never automatically revoked.
+copy. Gateway tokens are never automatically revoked. The options of an existing
+local access show the gateway's token list and can revoke an old token of this
+integration after a confirmation; see
+[tokens on the gateway](local-enrollment.md#tokens-on-the-gateway).
 
 Resource and authentication `Retry-After` share the persistent
 [gateway budget](local-budget.md). Closing or reopening the form, acknowledging

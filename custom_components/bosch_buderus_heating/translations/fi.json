@@ -474,6 +474,7 @@
           "connection_discover": "Etsi ja valitse laitteita",
           "connection_polling": "Kyselytiheys",
           "local_setup": "Muuta paikallista yhteyttä",
+          "local_tokens": "Yhdyskäytävän tunnukset",
           "local_polling": "Paikallinen kyselytiheys ja tila",
           "local_values": "Käytä paikallisia arvoja olemassa oleville entiteeteille",
           "back": "← Takaisin"
@@ -511,7 +512,8 @@
         "title": "Poista yhteys",
         "description": "Tunnistetiedot poistetaan. Järjestelmät ja entiteetit säilyvät, vaikka tämä olisi viimeinen yhteys. Ilman käytettävissä olevaa yhteyttä entiteetit eivät voi näyttää ajantasaisia arvoja.",
         "data": {
-          "confirm": "Poista tämä yhteys"
+          "confirm": "Poista tämä yhteys",
+          "revoke": "Peru ensin tämän integraation tunnus yhdyskäytävästä"
         }
       },
       "connection_polling": {
@@ -653,6 +655,34 @@
       "rescan": {
         "title": "Etsi järjestelmä uudelleen",
         "description": "Etsii järjestelmästä osat ja mittausarvot vielä kerran pilviyhteyden ja paikallisen yhteyden kautta. Käytä tätä komponenttien lisäämisen tai muuttamisen jälkeen. Etsintä suoritetaan seuraavan säännöllisen päivityksen yhteydessä ja pyyntöjen tavanomaisissa rajoissa; se ei koskaan poista entiteettiä, ja mittausarvot, joita se ei löydä uudelleen, pysyvät ennallaan."
+      },
+      "local_tokens": {
+        "title": "Yhdyskäytävän tunnukset",
+        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut asiakkaat** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Jokainen kirjautuminen laitteen tarran tiedoilla luo uuden tunnuksen, joten tämän integraation vanhemmat tunnukset ovat yleensä peräisin aiemmista määrityksistä. Valitse peruttava tunnus sen luontiajan mukaan. Ilman valintaa mikään ei muutu.",
+        "data": {
+          "token": "Peruttava tunnus"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Peru tunnus ennen poistamista",
+        "description": "Yhdyskäytävässä on **{count}** tunnusta. Tunnusten arvoja ei koskaan näytetä.\n\n**Tämä integraatio** (luontiajan mukaan):\n{own}\n\n**Muut asiakkaat** (ei koskaan tarjota peruttaviksi):\n{others}\n\nTämä yhteys määritettiin viimeksi {confirmed}. Valitse tunnus, joka perutaan ennen yhteyden poistamista. Ilman valintaa yhteys poistetaan perumatta mitään. Jos haluat säilyttää yhteyden, sulje tämä ikkuna.",
+        "data": {
+          "token": "Peruttava tunnus"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Vahvista kirjautumispalvelun varmenne",
+        "description": "Kirjautumispalvelu osoitteessa **{host}:{port}** esittää varmenteen, jota ei ole koskaan vahvistettu tälle yhteydelle. Vahvista, että tämä on yhdyskäytäväsi, ennen kuin yhteyden tunnus lähetetään sinne. Vahvistus koskee vain tätä ikkunaa.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Peru tunnus",
+        "description": "Perutaanko tämän integraation tunnus, joka luotiin {created}, yhdyskäytävästä osoitteessa **{host}**?\n\nYhdyskäytävä poistaa sen pysyvästi. Jos se on tämän yhteyden käyttämä tunnus, paikallinen yhteys päättyy: yhteys poistetaan käytöstä ja tarvitsee uuden kirjautumisen laitteen tarran tiedoilla. Luettelo luetaan uudelleen juuri ennen, ja pyyntö lähetetään vain kerran.",
+        "data": {
+          "confirm": "Peru tämä tunnus yhdyskäytävästä"
+        }
       }
     },
     "error": {
@@ -759,7 +789,11 @@
       "cloud_local_first_conflict": "Pilvi ja paikallinen yhteys eivät kuvaa samaa järjestelmää. Mitään ei tallennettu. Poista tämän järjestelmän valinta, jos haluat jatkaa sen käyttöä vain paikallisen yhteyden kautta.",
       "local_plant_known": "Tämä yhdyskäytävä kuuluu jo määritettyyn järjestelmään. Valitse kyseinen järjestelmä uuden sijaan.",
       "auth_expired": "Tämä kirjautumisyritys on vanhentunut. Avaa yllä näkyvä uusi SingleKey ID -linkki ja kirjaudu uudelleen.",
-      "auth_restart": "Tätä kirjautumisyritystä ei voi enää käyttää. Avaa yllä näkyvä uusi SingleKey ID -linkki ja kirjaudu uudelleen."
+      "auth_restart": "Tätä kirjautumisyritystä ei voi enää käyttää. Avaa yllä näkyvä uusi SingleKey ID -linkki ja kirjaudu uudelleen.",
+      "local_tokens_rejected": "Yhdyskäytävä ei hyväksynyt tämän yhteyden tunnusta. Mitään ei muutettu.",
+      "local_tokens_forbidden": "Yhdyskäytävän kirjautumispalvelu hylkäsi pyynnön. Mitään ei muutettu.",
+      "local_tokens_unsupported": "Tämä yhdyskäytävä ei tarjoa tunnusluetteloa. Mitään ei muutettu.",
+      "local_tokens_invalid": "Yhdyskäytävän tunnusluetteloa ei voitu tarkistaa (odottamaton tai liian suuri vastaus). Mitään ei muutettu."
     },
     "abort": {
       "no_notification_gateways": "Lämmitysjärjestelmää ei ole määritetty.",
@@ -816,7 +850,15 @@
       "connection_saved": "Muutos tallennettiin.",
       "connection_removed": "Yhteys poistettiin.",
       "notifications_saved": "Ilmoitusasetukset tallennettiin.",
-      "rrc_program_saved": "Kytkentäpiste tallennettiin ja vahvistettiin lukemalla se takaisin."
+      "rrc_program_saved": "Kytkentäpiste tallennettiin ja vahvistettiin lukemalla se takaisin.",
+      "local_tokens_unavailable": "Tällä yhteydellä ei ole tunnusluetteloon kelpaavaa tallennettua tunnusta. Määritä paikallinen yhteys ensin uudelleen.",
+      "local_tokens_changed": "Tunnusluettelo on muuttunut sillä välin. Mitään ei peruttu eikä poistettu. Avaa luettelo uudelleen.",
+      "local_token_revoked": "Tunnus peruttiin; yhdyskäytävä ei enää luettele sitä.",
+      "local_token_access_ended": "Se oli tämän yhteyden käyttämä tunnus. Paikallinen yhteys on päättynyt, ja yhteys poistettiin käytöstä. Määritä se uudelleen laitteen tarran tiedoilla tai poista se.",
+      "local_token_revoke_rejected": "Yhdyskäytävä hylkäsi perumisen; tunnus on yhä luettelossa.",
+      "local_token_revoke_unclear": "Yhdyskäytävä ei vahvistanut perumista. Mitään ei toistettu. Avaa tunnusluettelo uudelleen tarkistaaksesi.",
+      "local_token_revoked_removed": "Tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin.",
+      "local_token_not_removed": "Perumista ei vahvistettu, joten yhteyttä ei poistettu. Tarkista tunnusluettelo ja poista yhteys sitten uudelleen."
     },
     "progress": {
       "local_work": "Tarkistetaan paikallista yhteyttä. Odota."
