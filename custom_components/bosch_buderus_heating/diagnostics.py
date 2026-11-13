@@ -46,6 +46,7 @@ from .holidays import (
 )
 from .icom_diagnostics import icom_diagnostics
 from .local_only import hybrid_evidence, volume_flow_path
+from .local_setup_history import local_setup_history
 from .observations import (
     Observation,
     from_cloud_snapshot,
@@ -139,6 +140,10 @@ async def async_get_config_entry_diagnostics(
             else 0,
         },
         "update_load": update_load_diagnostics(hass),
+        # Schema 47: the last local setup attempts, codes and times only.
+        "local_setup_attempts": await local_setup_history(
+            hass, entry.entry_id
+        ).async_attempts(),
     }
     if isinstance(runtime, ManagedEntry):
         return _managed_diagnostics(base, runtime)

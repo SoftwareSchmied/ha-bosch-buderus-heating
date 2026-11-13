@@ -442,6 +442,9 @@ async def async_remove_entry(
     except LocalEnrollmentError:
         _LOGGER.warning("Pending local setup storage could not be cleared")
     counter_source_store(hass).discard_owner(entry.entry_id)
+    from .local_setup_history import async_forget_local_setup_history
+
+    await async_forget_local_setup_history(hass, entry.entry_id)
     from homeassistant.data_entry_flow import UnknownFlow
 
     from .config_flow import LOCAL_FIRST_START

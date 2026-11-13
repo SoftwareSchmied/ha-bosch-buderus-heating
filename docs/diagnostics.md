@@ -22,6 +22,18 @@ section, which holds no values, paths, names or identifiers:
   on a hybrid system that is not yet confirmed against the device's own
   display.
 
+Schema 47 also adds `local_setup_attempts`: the last 10 attempts to set up
+or change a local access of this entry, oldest first, kept across restarts
+and deleted with the entry. Each attempt has only `at` (UTC, ISO 8601, to
+the second), `step` (the dialog step, for example `local_auth`), `result`
+(`failed` or `succeeded`) and `error` (the code the dialog showed, for
+example `local_invalid_credentials`, `local_unlock_required`,
+`local_token_database_full` or `local_invalid_address`, and
+`unexpected:<type>` with only the type of an unexpected error; `null` on
+success). Login, password, token, address, certificate data and gateway
+identifiers are never part of it. Each failed attempt is also logged once at
+the info level with only its code.
+
 Schema 46 (0.9.0) adds fields, again without values, names or identifiers:
 
 - `starts` in each entry under `connections[]` and `sources[]`: why the

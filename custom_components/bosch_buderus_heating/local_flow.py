@@ -59,6 +59,7 @@ from .local_setup import (
     prepare_local_configuration,
     verify_local_setup,
 )
+from .local_setup_history import local_setup_history
 from .local_support import setup_support
 from .local_transport import (
     CertificateBinding,
@@ -221,6 +222,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
     _local_task: asyncio.Task[None] | None = None
     _local_retry: Callable[[], Awaitable[None]] | None = None
     _local_error: str | None = None
+    # The type of the last unexpected error, for the attempt history only.
+    _local_unexpected: str | None = None
+    # A failed stage noted already; the form that shows it adds no attempt.
+    _local_noted: str | None = None
     _local_address = ""
     _local_choices: tuple[LocalEndpoint, ...] = ()
     _local_discovery: ZeroconfServiceInfo | None = None
@@ -255,6 +260,22 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             return self.async_abort(reason="local_session_changed")
         return None
 
+    def _local_reported(self, error: BaseException) -> str:
+        """The shown code of a failed step; keeps an unexpected error's type."""
+        code = reported_local_error(error)
+        if code == "local_unexpected":
+            self._local_unexpected = type(error).__name__
+        return code
+
+    def _local_attempt(self, step: str, error: str | None) -> None:
+        """Note an attempt in the entry's history: codes only, never data."""
+        if not self._local_owner_id:
+            return
+        if error == "local_unexpected" and self._local_unexpected:
+            error = f"unexpected:{self._local_unexpected}"
+        self._local_unexpected = None
+        local_setup_history(self.hass, self._local_owner_id).add(step, error)
+
     def _local_form(
         self,
         step: str,
@@ -264,6 +285,12 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         placeholders: dict[str, str] | None = None,
     ) -> ConfigFlowResult:
         self._local_phase = step
+        noted, self._local_noted = self._local_noted, None
+        if errors and step != "local_retry":
+            # The error the dialog shows now: the general one first.
+            code = errors.get("base") or errors[min(errors)]
+            if code != noted:
+                self._local_attempt(step, code)
         return self.async_show_form(
             step_id=step,
             data_schema=schema or vol.Schema({}),
@@ -526,7 +553,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                 )
                 self._local_address = endpoint.host
             except ValueError as error:
-                errors["address"] = reported_local_error(error)
+                errors["address"] = self._local_reported(error)
             else:
                 self._local_phase = "local_method"
                 return await self.async_step_local_method()
@@ -581,7 +608,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                         is_active=self._local_active,
                     )
                 except (LocalCredentialError, ValueError) as error:
-                    errors["base"] = reported_local_error(error)
+                    errors["base"] = self._local_reported(error)
                 else:
                     return await self._local_start(
                         lambda: self._local_inspect(PortRole.RESOURCES)
@@ -637,6 +664,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         self, operation: Callable[[], Awaitable[None]]
     ) -> ConfigFlowResult:
         self._local_retry = operation
+        origin = self._local_phase
         self._local_phase = "local_progress"
         self._local_error = None
 
@@ -646,8 +674,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             except asyncio.CancelledError:
                 raise
             except Exception as error:
-                self._local_error = reported_local_error(error)
+                self._local_error = self._local_reported(error)
                 self._local_phase = "local_retry"
+                self._local_attempt(origin, self._local_error)
+                self._local_noted = self._local_error
 
         self._local_task = self.hass.async_create_task(run(), "local setup stage")
         try:
@@ -863,7 +893,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             except LocalCredentialError:
                 errors["token"] = "local_invalid_token"
             except ValueError as error:
-                errors["base"] = reported_local_error(error)
+                errors["base"] = self._local_reported(error)
             else:
                 return await self._local_start(
                     lambda: self._local_inspect(PortRole.RESOURCES)
@@ -942,11 +972,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                 elif action not in actions:
                     return self.async_abort(reason="local_session_changed")
         except ValueError as error:
-            return self.async_abort(
-                reason="local_storage_failed"
-                if local_error(error) == "local_storage_failed"
-                else "local_session_changed"
-            )
+            if local_error(error) == "local_storage_failed":
+                self._local_attempt("local_pending", "local_storage_failed")
+                return self.async_abort(reason="local_storage_failed")
+            return self.async_abort(reason="local_session_changed")
         if status == RecoveryStatus.CONFLICT:
             errors["base"] = "local_configuration_changed"
         return self._local_form(
@@ -1052,6 +1081,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
                 proof,
                 contract=contract,
             )
+            self._local_attempt("local_result", None)
             self._local_phase = "local_done"
             dismiss_configured_discoveries(self.hass)
         else:

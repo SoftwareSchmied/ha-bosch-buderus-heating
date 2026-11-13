@@ -101,6 +101,15 @@ Versioning after its first tagged preview.
     gateway I only checked, with one handshake and without the token, that it
     still presents the certificate confirmed at setup. A real address change of
     a gateway has not been tested yet; reports are welcome.
+- **Setup attempts in the diagnostics:** the diagnostics now list the last
+  10 attempts to set up or change the local access of an entry, with the
+  time, the dialog step and the error the dialog showed, for example a
+  rejected device label or a gateway that was not unlocked. Login,
+  password, token, address and certificate data are never part of it. The
+  list survives a restart and is deleted with the entry. This helps to find
+  out why a setup needed several tries.
+  - I tested it with automated tests of the setup dialog, not yet on a real
+    setup.
 - **Tip for a fixed address:** while the local access cannot reach its gateway,
   its status under **Configure → Connections** and a failed **Test connection
   now** suggest reserving the gateway's IP address in the router (DHCP
