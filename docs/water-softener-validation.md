@@ -8,8 +8,10 @@ Der Melder von [Issue #60](https://github.com/SoftwareSchmied/ha-bosch-buderus-h
 hat inzwischen Salzfüllstand, verfügbare Weichwassermenge, Durchfluss,
 Regenerationsaktivität und Restdauer bis zur nächsten Regeneration mit MyBuderus
 verglichen und bestätigt. Die App zeigt ebenfalls keine Phase oder genauen
-Zeitstempel der letzten beziehungsweise nächsten Regeneration. Die Prüfung
-der korrigierten Salzwarnung nach einem erfolgreichen Update bleibt offen.
+Zeitstempel der letzten beziehungsweise nächsten Regeneration. Nach dem
+Update auf 0.8.3 hat der Melder am 2026-11-04 bestätigt, dass die Salzwarnung
+verfügbar ist und den Ersatz-Schwellenwert nutzt. Die Steuerungen (Regeneration
+starten, Urlaubsmodus) sind standardmäßig deaktiviert und noch nicht geprüft.
 
 ### Anzeigen vergleichen
 
@@ -56,8 +58,10 @@ Thank you for the diagnostics and the details about the WE800i.
 The reporter in [issue #60](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/60)
 has now confirmed that salt level, available soft water, flow, regeneration
 activity and time until the next regeneration match MyBuderus. The app also
-does not show a phase or exact last/next regeneration timestamps. Confirmation
-of the corrected low-salt indicator after a successful update remains open.
+does not show a phase or exact last/next regeneration timestamps. After the
+update to 0.8.3, the reporter confirmed on 2026-11-04 that the low-salt
+indicator is available and uses the fallback threshold. The controls (start
+regeneration, holiday mode) are disabled by default and not checked yet.
 
 ### Compare the readings
 

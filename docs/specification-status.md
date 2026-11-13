@@ -29,7 +29,8 @@ MyBuderus on a WLW186i with MX400. His 2026-11-01 report also confirms timely
 transitions at several heating and hot-water switch points. Issue #95 is
 closed. This field report covers that installation; the clock-change behavior
 remains covered by automated tests. See the
-[release verification](release.md#083-verification).
+[release verification](release.md#083-verification). All installations
+reported so far are listed in [confirmed installations](confirmed-installations.md).
 
 ## Previous stable release: 0.8.2
 

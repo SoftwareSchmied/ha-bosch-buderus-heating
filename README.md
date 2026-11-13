@@ -221,13 +221,13 @@ listed gateway does not by itself guarantee that every entity or control is
 available. Missing capabilities are simply omitted without affecting the rest
 of the integration.
 
-Systems registered in the IVT Anywhere II app, and Worcester or Vulcano
-systems registered in the Bosch HomeCom Easy app, use the same cloud. They
-should work when you select **Bosch** during setup and sign in with the
-SingleKey ID of that app. The local access also recognises K40/K40RF gateways
-of these brands. No IVT, Worcester or Vulcano system has been confirmed yet,
-neither with the cloud nor with the local access; if you use one, please share
-your experience in
+Systems registered in the IVT Anywhere II app, and Junkers, Nefit, Worcester
+or Vulcano systems registered in the Bosch HomeCom Easy app, use the same
+cloud. They should work when you select **Bosch** during setup and sign in
+with the SingleKey ID of that app. The local access also recognises K40/K40RF
+gateways of IVT, Vulcano and Worcester. No IVT, Junkers, Nefit, Worcester or
+Vulcano system has been confirmed yet, neither with the cloud nor with the
+local access; if you use one, please share your experience in
 [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81).
 
 Home Assistant shows a uniquely identified MX300/MX400 internet module as the
