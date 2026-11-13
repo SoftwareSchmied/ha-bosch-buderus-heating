@@ -2,11 +2,14 @@
 
 ## Published releases
 
-Since 2026-11-08 the 0.9.0 line is in pre-release testing (versions
-0.9.0-alpha.N, see the [CHANGELOG](../CHANGELOG.md)); the stable line is
-described below.
+Since 2026-11-13, **0.9.0 is Stable/Latest**. It adds the local access to
+K40/K40RF gateways, operation without the cloud, the room controllers of the
+RRC 2.0 platform, the weekly schedule editor and the firmware entity; the
+[CHANGELOG](../CHANGELOG.md) lists what was confirmed on real devices. The
+text that follows describes the 0.8 line, which remains the base of these
+features.
 
-As of 2026-11-02, **0.8.3 is Stable/Latest** and includes the work from all
+On 2026-11-02, **0.8.3 became Stable/Latest** and includes the work from all
 0.8.2 betas plus the compatible maintenance updates and sign-in guide changes.
 It fixes platform imports on Home Assistant 2026.9.2, includes compatible
 maintenance updates from PRs #97 through #99 and promotes the read-only time

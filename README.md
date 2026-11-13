@@ -19,30 +19,29 @@
 > The illustrated [setup guide](docs/setup.md) explains installation and
 > sign-in step by step.
 
-> [!TIP]
-> ### Testers wanted for the 0.9 alpha pre-releases
->
-> **What's new**
-> - **Local access:** reads K40/K40RF gateways (for example the Buderus MX400 internet module) directly in your home network. It only reads; changes still go through the cloud.
-> - **More and fresher readings:** many values update more often, and some are only available locally (for example refrigerant circuit, compressor and pump values).
-> - **Works without the cloud:** your readings stay available when the cloud is not.
-> - **Fewer cloud requests:** since 0.9.0-alpha.3, while an entity shows the value of the local access, its cloud copy is read only every 15 minutes; counters and values that can be changed keep their normal interval.
-> - **Less load on Home Assistant, without losing any functionality:** entities write a new state only when their value, availability or source changes. My measurements are in the [release checks](docs/release.md#load-measurement-for-090-alpha2).
-> - **More robust:** since 0.9.0-alpha.4, many rare error and outage situations are handled better, the zones of the TC100.2 room controller are read, and unexpected errors are logged more clearly.
-> - **Room controllers and languages:** since 0.9.0-alpha.5, room controllers of the RRC 2.0 platform (TC100.2, CT200) get their zone climates, programs, absences, hot water, heating circuit and radio devices, fault and maintenance notifications are clearer, and the texts come in 19 languages. On a TC100.2 the zone climates, program selection, temporary setpoint, open window detection, a one-day absence, hot water mode, boost and away mode are confirmed; the other room controller functions are expected to work but untested on a real controller.
-> - **Schedules, iCom and a way back:** since 0.9.0-alpha.6, the weekly heating and hot water schedules of EMS and iCom gateways can be changed in the Configure dialog, iCom gateways get a cloud-friendly load profile, each cloud gateway shows its firmware and offered updates, the menus of the Configure dialog lead back, and the fan, pump and refrigerant circuit readings of the local access are enabled by default. Except for the readings, these functions are tested with simulated data only and are expected to work but untested on a real device.
->
-> **Tested on:** my own heat pump (Logamatic BC400 controller, MX400 internet module reported as K40RF gateway, firmware 15.00.01), where it runs without problems.
->
-> **Looking for:** more testers and feedback, especially with other gateways, firmware versions and device families, so that a stable 0.9 is checked on as many installations as possible.
->
-> **How to test:** make a backup, show pre-releases for this repository in HACS and install the latest alpha from the [releases](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases). Please share your experience in the [0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) and report bugs as [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new?template=bug.yml).
+> [!IMPORTANT]
+> **0.9.0 is the current stable version.** It needs Home Assistant 2026.5.0
+> or newer and moves the configuration entry to storage format 4, which
+> 0.8.x cannot load. Make a full Home Assistant backup before you update;
+> going back to 0.8.x is only possible by restoring it. See the
+> [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0).
 
-> [!NOTE]
-> **0.9.0-alpha.6 is the current pre-release.** It needs Home Assistant
-> 2026.5.0 or newer, and 0.8.x cannot load its storage format, so make a full
-> backup first. See the
-> [release notes](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.6).
+## What's new in 0.9
+
+- **Local access:** reads K40/K40RF gateways (for example the MX300 or MX400 internet module) directly in your home network. It only reads; changes still go through the cloud. Confirmed on my own heat pump and on two further Logatherm WLW186i heat pumps with an MX400.
+- **More and fresher readings:** many values update more often, and some are only available locally (for example refrigerant circuit, compressor and pump values).
+- **Works without the cloud:** with a local access, your readings stay available when the cloud is not.
+- **Cloud and local access in one entry:** **Configure → Connections** shows, tests, signs in again, switches off or removes each access.
+- **Fewer cloud requests:** while an entity shows the value of the local access, its cloud copy is read at most every 15 minutes, as a whole multiple of its normal interval and only for readings polled every 7.5 minutes or more often; counters, values that can be changed and values that a control or a calculated entity reads keep their normal interval.
+- **Less load on Home Assistant, without losing any functionality:** entities write a new state only when their value, availability or source changes. My measurements are in the [release checks](docs/release.md#load-measurement-for-090-alpha2).
+- **More robust:** cloud outages at start-up, missing parts, firmware updates, rate-limit pauses and an exchanged gateway no longer need a restart, and readings stay shown within their validity during short outages.
+- **Room controllers:** room controllers of the RRC 2.0 platform (TC100.2, CT200) get their zone climates, programs, absences, hot water, heating circuit and radio devices. On a TC100.2 the zone climates, program selection, temporary setpoint, open window detection, a one-day absence, hot water mode, boost, away mode and advancing the next switch point are confirmed; the other room controller functions and the CT200 are expected to work but untested on a real controller.
+- **Schedules, iCom and firmware:** the weekly heating and hot water schedules of EMS and iCom gateways can be changed in the Configure dialog, iCom gateways get a cloud-friendly load profile, and each cloud gateway shows its firmware and offered updates. A heating circuit without a room controller that offers a temporary setpoint takes a target in automatic mode as well. These functions are tested with simulated data only and are expected to work but untested on a real device.
+- **Faults and languages:** fault and maintenance notifications are clearer, and the texts come in 19 languages.
+
+**Tested on:** my own heat pump (Logamatic BC400 controller, MX400 internet module reported as K40RF gateway, firmware 15.00.01), where it runs without problems, and the [confirmed installations](#confirmed-installations).
+
+**Feedback:** please share your experience in the [0.9 feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) and report bugs as [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new?template=bug.yml).
 
 Bosch/Buderus Home Comfort (formerly Bosch/Buderus Heating) is an unofficial Home Assistant custom integration.
 It discovers PointT heating-system resources and uses separate cloud adapters
@@ -173,8 +172,8 @@ back, it takes over the same entities with their history. See [operation without
   rolling 60-minute request and latency metrics, and a bounded sanitized log
   of individual HTTP attempts
 - German and English entity names and state translations, plus Czech and
-  Slovak reviewed (their room controller texts of
-  alpha.5 are still drafts), and Swedish, Norwegian Bokmål, Finnish, Danish,
+  Slovak reviewed (their texts added since 0.9.0-alpha.5 are still drafts),
+  and Swedish, Norwegian Bokmål, Finnish, Danish,
   French, Spanish, Italian, Portuguese, Dutch, Polish, Greek, Bulgarian,
   Croatian, Slovenian and Irish as drafts awaiting review by native
   speakers; the
@@ -202,11 +201,11 @@ on Home Assistant 2026.5.4, 2026.9.2 and the current release.
 | Status | Systems |
 |---|---|
 | In use | Many installations with heat pumps and gas condensing boilers |
-| Brands | Cloud access: systems registered in the Bosch or Buderus app. Local access: gateways of Bosch, Buderus, IVT, Vulcano and Worcester |
+| Brands | Cloud access: systems registered in the Bosch or Buderus app; IVT, Junkers, Nefit, Worcester and Vulcano systems should work, not confirmed. Local access: K40/K40RF gateways of Bosch, Buderus, IVT, Vulcano and Worcester, confirmed with Buderus |
 | Tested on my system | Buderus heat pump with a Logamatic BC400 controller and an MX400 internet module (K40/K40RF gateway), cloud and local access |
 | Designed for | Systems with an MX300 or MX400 internet module or a K30 RF/K40 RF Connect-Key, reported by PointT as K30/K30RF or K40/K40RF gateways |
 | Optional when reported | Solar, pool, ventilation, room zones, room devices, PV status, hybrid and tariff resources |
-| Room controllers (RRC 2.0) | TC100.2: zone readings, manual/schedule mode and manual setpoint confirmed with 0.9.0-alpha.4; program selection, temporary setpoint with its clear button, open window detection of a zone, a one-day absence, hot water mode, boost and away mode confirmed with 0.9.0-alpha.5, and the system and radio device readings look right. Editing switch points, other absence changes, the other hot water settings, heating circuit, fault and maintenance sensors, energy history and radio device settings: expected, untested. CT200: expected, untested. Cloud only, no local access. See [room controllers](docs/room-controllers.md) |
+| Room controllers (RRC 2.0) | TC100.2: zone readings, manual/schedule mode and manual setpoint confirmed with 0.9.0-alpha.4; program selection, temporary setpoint with its clear button, open window detection of a zone, a one-day absence, hot water mode, boost and away mode confirmed with 0.9.0-alpha.5; advancing the next switch point confirmed with 0.9.0-alpha.6; the system and radio device readings look right. Editing switch points, other absence changes, the other hot water settings, heating circuit, fault and maintenance sensors, energy history and radio device settings: expected, untested. CT200: expected, untested. Cloud only, no local access. See [room controllers](docs/room-controllers.md) |
 | Additional device families | Midea/RWH water heaters, Midea Climate Series, seven air purifier families, Dry 4000i/6000i/8000i and read-only wallboxes |
 | Optional local access | K40/K40RF gateways with firmware 15.00.01 or newer, read-only over the local network next to the cloud access; only the heating system, not air conditioners, wallboxes or other devices of the account. See [compatibility](docs/compatibility.md) |
 | Not covered | Matter devices, arbitrary MQTT devices and gateway network administration |
@@ -250,9 +249,10 @@ mean it does not work. The same list is also available as
 |---|---|---|---|---|---|---|
 | Buderus | Logatherm WLW176i | WLW176i-12 TP70, WLW-10 MB AR | air-to-water heat pump (monobloc) | Logamatic BC400 | MX400, K40RF | readings, heating setpoint, hot water mode, holidays, time programs (read-only), faults and notifications, energy counters, local access, operation without cloud |
 | Buderus | Logatherm WLW186i | WLW186i-12 TP70, WLW186i-12 E (outdoor unit WLW MB-5 AR) | air-to-water heat pump (monobloc) | Logamatic BC400 | MX400, K40RF | readings, heating controls, time programs (read-only), local access (WLW186i-12 E) |
+| Buderus | Logatherm WLW186i | WLW186i-12 TP70 W (7 kW) | air-to-water heat pump (monobloc) | – | MX400, K40RF (firmware 15.00.01) | readings, local access |
 | Buderus | Logatherm WLW196i | WLW196i AR | air-to-water heat pump (split) | – | MX300, K30 | readings, holidays (read-only) |
 | Buderus | Logamax plus GB172 | – | gas condensing boiler, wall-hung | Logamatic RC310 | Logamatic web KM200 | readings |
-| Buderus | Logano plus GB212 | GB212-22 H | gas condensing boiler, floor-standing | Logamatic TC100.2 | built-in Wi-Fi | readings, faults and notifications, RRC zones from 0.9.0-alpha.4 without a local patch: room temperature, active setpoint, zone names, operating mode and manual setpoint changed from Home Assistant (also shown in the manufacturer's app); with 0.9.0-alpha.5 (controller firmware 05.04.00), each change checked in the manufacturer's app and set back: program switch, temporary setpoint in the schedule mode with its clear button, `heat` with a target and back to `auto`, open window detection of a zone off and on, a one-day absence created and deleted, hot water mode `ownprogram` → `high` → `ownprogram`, boost on and off, away mode on and off with a refused zone target while it is on; heating schedule selection on all five zones with the controller's program names; readings that look right: zone climates with next setpoint and zone status, window sensors, system pressure, outdoor temperature, humidity, display and cause code, boost settings, away temperature, hot water mode and temperature, 8 radiator thermostats as separate devices in the right areas with battery and valve state |
+| Buderus | Logano plus GB212 | GB212-22 H | gas condensing boiler, floor-standing | Logamatic TC100.2 | built-in Wi-Fi | readings, faults and notifications, RRC zones from 0.9.0-alpha.4 without a local patch: room temperature, active setpoint, zone names, operating mode and manual setpoint changed from Home Assistant (also shown in the manufacturer's app); with 0.9.0-alpha.5 (controller firmware 05.04.00), each change checked in the manufacturer's app and set back: program switch, temporary setpoint in the schedule mode with its clear button, `heat` with a target and back to `auto`, open window detection of a zone off and on, a one-day absence created and deleted, hot water mode `ownprogram` → `high` → `ownprogram`, boost on and off, away mode on and off with a refused zone target while it is on; heating schedule selection on all five zones with the controller's program names; with 0.9.0-alpha.6, advance next switch point checked in the manufacturer's app; readings that look right: zone climates with next setpoint and zone status, window sensors, system pressure, outdoor temperature, humidity, display and cause code, boost settings, away temperature, hot water mode and temperature, 8 radiator thermostats as separate devices in the right areas with battery and valve state |
 | Buderus | Logano G125 BE | G125 BE ECO-21 | oil boiler with burner | – | – | start counter (with the reporter's own fix) |
 
 The Logatherm WLW176i is my own reference installation. "–" means not stated
@@ -261,7 +261,7 @@ in the report.
 Is your system missing, or have you checked further features? Please post your
 heater, controller, gateway and the features you checked in
 [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81), or in the
-[0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) if you are testing a 0.9 alpha.
+[0.9 feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) if you use a 0.9 version.
 I will add it to the list.
 
 ## Installation

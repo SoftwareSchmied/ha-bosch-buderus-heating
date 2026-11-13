@@ -5,6 +5,124 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-13
+
+> [!IMPORTANT]
+> **Before you update**
+>
+> - **Make a full Home Assistant backup first.** On its first start, 0.9.0
+>   moves the configuration entry to storage format 4. Versions 0.8.x cannot
+>   load it, so going back to 0.8.x is only possible by restoring that
+>   backup.
+> - **Home Assistant 2026.5.0 or newer** is required.
+> - Entity IDs, names, areas and history are kept. New entities appear; some
+>   of them are disabled by default and can be enabled in the entity
+>   settings.
+
+0.9.0 is the first stable release of the 0.9 line. It contains everything
+from the six 0.9.0 alpha pre-releases and the changes since alpha.6. Coming
+from 0.8.x, the highlights give the overview; the detailed notes of each
+alpha are linked at the end of this section.
+
+### Highlights of 0.9
+
+- **Local access:** a K40/K40RF gateway in the home network, for example an
+  MX300 or MX400 internet module with firmware 15.00.01 or newer, can be
+  added with the sign-in details from its label, next to the cloud access
+  or on its own. It only reads, updates many readings more often and adds
+  readings the cloud does not offer, such as refrigerant circuit,
+  compressor and pump values. Changes always go through the cloud.
+  Confirmed on my own heat pump and on two further Logatherm WLW186i heat
+  pumps with an MX400.
+- **Operation without the cloud:** when the cloud needs a new sign-in, is
+  paused, switched off or unreachable, a system with a local access keeps
+  showing its readings, and current faults follow the gateway's local error
+  list. When the cloud is back, it continues with the same entities and
+  their history. Confirmed on my own system.
+- **Accesses in one entry:** the setup offers the cloud access, cloud and
+  local access, or local access only. **Configure → Connections** shows the
+  state of every access, tests it on request, signs it in again, switches it
+  off or removes it. A system set up with local access only can get its
+  cloud access later and keeps its entities.
+- **More robust, less load:** a cloud outage during start-up, missing parts,
+  a firmware update, rate-limit pauses and an exchanged gateway no longer
+  need a restart. During short outages readings stay shown within their
+  validity. Entities write a new state only when their value, availability
+  or source changes, and while an entity shows the value of the local
+  access, its cloud copy is read at most every 15 minutes.
+- **Room controllers of the RRC 2.0 platform (TC100.2, CT200):** zone
+  climates, programs, absences, hot water, heating circuit settings, radio
+  devices, faults and the energy history. On a real TC100.2 the zone
+  climates, the program selection, the temporary setpoint, the open window
+  detection, a one-day absence, the hot water mode, boost, away mode and
+  advancing the next switch point are confirmed. Editing switch points and
+  the other functions are expected to work but untested on a real
+  controller; the CT200 is expected to work but untested. Room controllers
+  use the cloud only.
+- **Weekly schedule editor:** the heating and hot water schedules of EMS and
+  iCom gateways can be changed under **Configure**. Tested with simulated
+  data only; expected to work, untested on a real device.
+- **Firmware entity and iCom profile:** each cloud gateway shows its
+  firmware and offered updates (read-only), and iCom gateways (KM200, KM100,
+  KM50, MB LAN 2 and others) get a cloud-friendly load profile. Tested with
+  simulated data only.
+- **Temporary setpoint of heating circuits:** a heating circuit without a
+  room controller that reports a writable temporary room setpoint takes a
+  target in automatic mode as well, with a button to clear it. Tested with
+  simulated data only; expected to work, untested on a real device.
+- **Faults, entities and languages:** clearer fault and maintenance
+  notifications, and the fault documentation explains where current and
+  past faults are. Every reading becomes an entity; readings not needed in
+  everyday operation are disabled by default, and names follow the menus of
+  the controller. The texts come in 19 languages: English and German are
+  maintained with the code, Czech and Slovak were reviewed up to 2026-11-10,
+  all other texts are drafts awaiting review.
+
+What was confirmed on a real device is named as confirmed; everything else
+is tested with automated tests and simulated data. Reports from other
+systems are very welcome in the
+[0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111),
+bugs as [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new/choose).
+
+### Thank you
+
+- [obvius1](https://github.com/obvius1), for testing the room controller
+  functions on a TC100.2 with alpha.4 to alpha.6 and for the analyses and
+  diagnostics in
+  [#113](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/113)
+  and [#122](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/122),
+  each change checked in the manufacturer's app.
+- [lanebe](https://github.com/lanebe), for the exact deprecation warnings
+  and for confirming the local access on a WLW186i-12 E in
+  [#106](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/106).
+- [gejomo](https://github.com/gejomo), for the diagnostics and logs in
+  [#104](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/104)
+  and [#105](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/105),
+  which showed the start-up failures and the timing of an iCom gateway.
+- [ssteve111](https://github.com/ssteve111), for the report of a Logatherm
+  WLW186i-12 TP70 W with an MX400 and the local access in the
+  [0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111).
+- [ColinFinck](https://github.com/ColinFinck), for pointing out in
+  [#120](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/120)
+  that current and past faults were hard to find, which led to the new
+  section of the fault documentation.
+
+### Documentation and earlier notes
+
+- [Setup](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/setup.md),
+  [cloud and local access](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/operation-without-cloud.md),
+  [room controllers](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/room-controllers.md),
+  [heating controls and schedules](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/heating-controls.md),
+  [faults](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/faults.md),
+  [confirmed installations](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.0/docs/confirmed-installations.md).
+- The detailed notes of the pre-releases:
+  [alpha.1](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.1),
+  [alpha.2](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.2),
+  [alpha.3](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.3),
+  [alpha.4](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.4),
+  [alpha.5](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.5),
+  [alpha.6](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/releases/tag/v0.9.0-alpha.6).
+
 ### What changed since alpha.6
 
 #### Room controllers and start counters

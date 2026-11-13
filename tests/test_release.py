@@ -22,7 +22,7 @@ from scripts.build_release import (
 from scripts.release_notes import CHANGELOG, extract_release_notes
 from scripts.release_tag import ReleaseTag, check_release_tag
 
-RELEASE_VERSION = "0.9.0-alpha.6"
+RELEASE_VERSION = "0.9.0"
 # The last section written before release notes had to stand on their own.
 LAST_SECTION_WITH_CROSS_REFERENCES = "0.9.0-alpha.6"
 
@@ -319,6 +319,21 @@ def test_changelog_sections_since_the_rule_stand_on_their_own() -> None:
     # The rule recognises the pointer that the earlier sections still carry.
     with pytest.raises(ValueError, match="points to other sections"):
         extract_release_notes(changelog, LAST_SECTION_WITH_CROSS_REFERENCES)
+
+
+def test_stable_release_notes_open_with_what_to_do_before_the_update() -> None:
+    """Who updates from an older stable version reads only this section."""
+    if "-" in RELEASE_VERSION:
+        pytest.skip("only the notes of a stable release need the box")
+    notes = extract_release_notes(
+        CHANGELOG.read_text(encoding="utf-8"), RELEASE_VERSION
+    )
+    box = notes.split("\n\n", 1)[0]
+    assert box.startswith("> [!IMPORTANT]\n> **Before you update**")
+    text = " ".join(line.removeprefix(">").strip() for line in box.splitlines())
+    assert "backup" in text
+    assert "storage format 4" in text
+    assert "Home Assistant 2026.5.0 or newer" in text
 
 
 def _git(root: Path, *arguments: str) -> None:
