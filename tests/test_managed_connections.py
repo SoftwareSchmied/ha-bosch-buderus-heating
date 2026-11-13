@@ -193,7 +193,9 @@ async def test_managed_reauth_requires_an_existing_explicit_cloud_connection(
         "none",
         "wrong_account",
         "pointt_service",
+        "pointt_rate_limited",
         "bacon_service",
+        "bacon_rate_limited",
         "bacon_auth",
     ],
 )
@@ -220,9 +222,13 @@ async def test_cloud_reauth_dialog_confirms_the_account(
         bacon.return_value = (("softener",), "another-account")
     if mode == "pointt_service":
         pointt.side_effect = ServiceUnavailable()
+    if mode == "pointt_rate_limited":
+        pointt.side_effect = RateLimited(120)
     if mode.startswith("bacon_"):
         bacon.side_effect = BaconError(
-            "authentication" if mode == "bacon_auth" else "service_unavailable"
+            {"bacon_auth": "authentication", "bacon_rate_limited": "rate_limited"}.get(
+                mode, "service_unavailable"
+            )
         )
     with (
         patch(FLOW + ".OAuthClient.exchange_code", AsyncMock(return_value=tokens)),
@@ -252,18 +258,24 @@ async def test_cloud_reauth_dialog_confirms_the_account(
         else:
             assert entry.data == before
             assert result["errors"] == {
-                "base": "reauth_targets_missing"
-                if mode == "none"
-                else "invalid_auth"
-                if mode == "bacon_auth"
-                else "cannot_connect"
+                "base": {
+                    "none": "reauth_targets_missing",
+                    "bacon_auth": "invalid_auth",
+                    "pointt_rate_limited": "cloud_rate_limited",
+                    "bacon_rate_limited": "cloud_rate_limited",
+                }.get(mode, "cannot_connect")
             }
-            assert result["step_id"] == ("auth" if mode == "bacon_auth" else "retry")
+            # Without a found system only a new sign-in can help, so a fresh
+            # link is offered instead of repeating the same tokens.
+            assert result["step_id"] == (
+                "auth" if mode in ("bacon_auth", "none") else "retry"
+            )
             if mode == "none":
                 pointt.return_value = (Gateway("000123"), Gateway("gateway-b"))
                 bacon.return_value = (("softener",), bacon.return_value[1])
                 result = await hass.config_entries.flow.async_configure(
-                    result["flow_id"], {}
+                    result["flow_id"],
+                    {"redirect_url": _redirect_from_result(result, Brand.BUDERUS)},
                 )
                 assert result["reason"] == "reauth_successful"
     assert entry.data["connections"]["local"] == before["connections"]["local"]

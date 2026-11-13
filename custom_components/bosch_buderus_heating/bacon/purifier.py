@@ -8,7 +8,7 @@ from typing import Any
 from homeassistant.const import UnitOfTemperature
 from homeassistant.util.unit_conversion import TemperatureConverter
 
-from .metadata import metadata, writable
+from .metadata import CELSIUS, metadata, writable
 from .models import Device
 
 FAMILIES = {
@@ -49,7 +49,6 @@ SENSORS = {
     "filter_status": "filterCapacity",
 }
 QUALITY = {1: "good", 2: "fair", 3: "poor", 4: "bad"}
-CELSIUS = ("C", "degC", "Celsius", "°C")
 FAHRENHEIT = ("degF", "Fahrenheit")
 
 

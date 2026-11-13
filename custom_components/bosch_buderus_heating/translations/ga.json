@@ -70,6 +70,10 @@
           "owner": "Socrú atá ann cheana"
         }
       },
+      "local_discovered": {
+        "title": "Aimsíodh geata",
+        "description": "D'aimsigh Home Assistant geata ag {host} sa líonra baile, agus níl an comhtháthú seo socraithe fós.\n\nLean ar aghaidh chun é a shocrú le **Rochtain áitiúil amháin**: cruthaítear iontráil gan néal, agus ansin osclaítear a socrú áitiúil. Ní dhéanann an rochtain áitiúil ach léamh. Is féidir rochtain néil a chur leis an iontráil chéanna níos déanaí."
+      },
       "local_target": {
         "title": "Roghnaigh an tsuiteáil",
         "description": "Roghnaigh an tsuiteáil atá le nascadh go háitiúil. Seicfear féiniúlacht a gheata sula sábhálfar é.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Tá an iarracht shínithe isteach seo imithe in éag. Oscail an nasc nua SingleKey ID a thaispeántar thuas agus sínigh isteach arís.",
       "auth_restart": "Ní féidir an iarracht shínithe isteach seo a úsáid a thuilleadh. Oscail an nasc nua SingleKey ID a thaispeántar thuas agus sínigh isteach arís.",
-      "cannot_connect": "Ní féidir an tseirbhís PointT a bhaint amach. Seiceáil an nasc idirlín, fan nóiméad, agus déan iarracht arís.",
+      "cannot_connect": "Ní féidir an rochtain néil a bhaint amach. Seiceáil an nasc idirlín, fan nóiméad, agus déan iarracht arís.",
       "invalid_auth": "Dhiúltaigh SingleKey ID don údarú nó chuir sé in éag é. Úsáid an nasc nua SingleKey ID a thaispeántar thuas agus déan an síniú isteach arís.",
       "invalid_redirect": "Níorbh fhéidir le Home Assistant an seoladh seo a úsáid. Cóipeáil an seoladh iomlán aipe ón teachtaireacht ‘Failed to launch’ i gconsól Chrome. Caithfidh sé tosú leis an scéim a thaispeántar thuas agus baint leis an iarracht reatha shínithe isteach.",
       "gateway_changed": "Athraíodh liosta na ngeataí cé go raibh an dialóg seo oscailte. Dún an dialóg agus oscail Athchumraigh arís.",
       "select_gateway": "Roghnaigh gléas amháin ar a laghad ón liosta sula leanann tú ar aghaidh.",
-      "unknown": "Tharla earráid PointT gan choinne. Fan nóiméad agus déan iarracht arís.",
+      "unknown": "Tharla earráid gan choinne sa rochtain néil. Fan nóiméad agus déan iarracht arís.",
       "bacon_unavailable": "Níl liosta na ngléasanna breise néil ar fáil faoi láthair. Fan nóiméad amháin ar a laghad agus déan iarracht arís.",
       "bacon_selection_unavailable": "Níorbh fhéidir gléasanna breise néil a cheistiú an uair seo. Is féidir leat geataí téimh inrochtana a roghnú. Coinneofar na gléasanna néil roghnaithe atá ann cheana.",
       "reauth_targets_missing": "Ní bhfuair an síniú isteach seo aon cheann de na córais ná de na gléasanna atá casta air. Coinnítear na dintiúir roimhe seo. Seiceáil gur shínigh tú isteach leis an gcuntas céanna agus a bhí roimhe. Má baineadh na córais den chuntas, oscail Cumraigh → Naisc → an rochtain néil: cas air córas atá fós sa chuntas faoi **Úsáid do chórais agus do ghléasanna**, nó cas as iad siúd a baineadh agus bain iad le **Déan dearmad ar chórais dhíroghnaithe**. Mura bhfuil aon cheann fágtha, bain an rochtain néil agus ceangail arís í.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Minicíocht fiosraithe",
-        "description": "Léann Caighdeánach luachanna oibríochta reatha téimh gach nóiméad, socruithe agus luachanna fuinnimh gach 5 nóiméad agus eolas níos moille gach 15 nóiméad. Dúblaíonn Spárálach leis an néal na heatraimh seo. Seiceáiltear lochtanna gníomhacha gach nóiméad sa dá phróifíl. Baineann an phróifíl le fiosrú téimh PointT agus luchtaire balla an naisc néil roghnaithe; tuairiscíonn gléasanna breise néil athruithe mar theachtaireachtaí. Is féidir le síniú isteach, seiceálacha gléis agus an deimhniú tar éis athraithe iarratais a chur leis lasmuigh den sceideal seo. Má thógann timthriall fiosraithe níos faide ná a eatramh, tosaíonn an chéad cheann eile níos déanaí.",
+        "description": "Léann Caighdeánach luachanna oibríochta reatha téimh gach nóiméad, socruithe agus luachanna fuinnimh gach 5 nóiméad agus eolas níos moille gach 15 nóiméad. Dúblaíonn Spárálach leis an néal na heatraimh seo. Seiceáiltear lochtanna gníomhacha gach nóiméad sa dá phróifíl. Baineann an phróifíl le fiosrú téimh agus luchtaire balla an naisc néil roghnaithe; tuairiscíonn gléasanna breise néil athruithe mar theachtaireachtaí. Is féidir le síniú isteach, seiceálacha gléis agus an deimhniú tar éis athraithe iarratais a chur leis lasmuigh den sceideal seo. Má thógann timthriall fiosraithe níos faide ná a eatramh, tosaíonn an chéad cheann eile níos déanaí.",
         "data": {
           "polling_profile": "Próifíl fiosraithe"
         }
@@ -663,7 +667,7 @@
       "write_failed": "Níorbh fhéidir socruithe na saoire a athrú.",
       "write_busy": "Tá an córas téimh á léamh nó tá athrú eile fós ar siúl. Níor seoladh aon rud. Déan iarracht arís i gceann tamaill.",
       "write_not_confirmed": "Níorbh fhéidir an t-athrú a dheimhniú go hiomlán. B'fhéidir go bhfuil roinnt socruithe sábháilte cheana. Oscail an tsaoire arís agus seiceáil a socruithe reatha.",
-      "write_rate_limited": "Tá néal PointT ag cur srian le hiarratais faoi láthair. Fan sula ndéanann tú iarracht arís.",
+      "write_rate_limited": "Tá an néal ag cur srian le hiarratais faoi láthair. Fan sula ndéanann tú iarracht arís.",
       "write_validation_failed": "Ní thacaíonn an córas téimh le rogha amháin ar a laghad a thuilleadh. Dún an dialóg, athnuaigh an comhtháthú, agus déan iarracht arís.",
       "holiday_end_not_after_start": "Caithfidh an deireadh a bheith tar éis an tosaithe. Roghnaigh deireadh níos déanaí.",
       "rrc_time": "Roghnaigh am i gcéimeanna cúig nóiméad, gan soicindí.",
@@ -691,7 +695,7 @@
       "controls_invalid": "Tá ionchur neamhbhailí nó athraíodh na luachanna a thaispeántar. Seiceáil d'ionchuir nó athlódáil na luachanna. Níor scríobhadh aon rud.",
       "controls_changed": "Athraíodh socrú nó níl sé ar fáil a thuilleadh. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Athlódáil na luachanna sula ndéanann tú iarracht arís.",
       "controls_auth": "Tá an fíordheimhniú imithe in éag. Athfhíordheimhnigh an comhtháthú le do thoil. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Athlódáil na luachanna sula ndéanann tú iarracht arís.",
-      "controls_rate_limit": "Tá an trealamh ag cur srian le hiarratais faoi láthair. Fan sula ndéanann tú iarracht arís. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Athlódáil na luachanna sula ndéanann tú iarracht arís.",
+      "controls_rate_limit": "Tá an néal ag cur srian le hiarratais faoi láthair. Fan sula ndéanann tú iarracht arís. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Athlódáil na luachanna sula ndéanann tú iarracht arís.",
       "controls_unconfirmed": "Níorbh fhéidir an t-athrú deireanach a dheimhniú. B'fhéidir go bhfuil sé i bhfeidhm cheana ar an trealamh. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Athlódáil na luachanna sula ndéanann tú iarracht arís.",
       "controls_failed": "Theip ar an gcumarsáid leis an trealamh. B'fhéidir go bhfuil an t-athrú deireanach i bhfeidhm cheana. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Athlódáil na luachanna sula ndéanann tú iarracht arís.",
       "controls_busy": "Tá an trealamh á léamh nó tá athrú eile fós ar siúl. Níor seoladh an t-athrú seo. Fanann athruithe a deimhníodh roimhe seo i bhfeidhm. Déan iarracht arís i gceann tamaill.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "D'iarr an néal sos. Fan sula ndéanann tú iarracht arís.",
       "invalid_auth": "Dhiúltaigh SingleKey ID don údarú nó chuir sé in éag é. Úsáid an nasc nua SingleKey ID a thaispeántar thuas agus déan an síniú isteach arís.",
       "invalid_redirect": "Níorbh fhéidir le Home Assistant an seoladh seo a úsáid. Cóipeáil an seoladh iomlán aipe ón teachtaireacht ‘Failed to launch’ i gconsól Chrome. Caithfidh sé tosú leis an scéim a thaispeántar thuas agus baint leis an iarracht reatha shínithe isteach.",
-      "cannot_connect": "Ní féidir an tseirbhís PointT a bhaint amach. Seiceáil an nasc idirlín, fan nóiméad, agus déan iarracht arís.",
+      "cannot_connect": "Ní féidir an rochtain néil a bhaint amach. Seiceáil an nasc idirlín, fan nóiméad, agus déan iarracht arís.",
       "select_gateway": "Roghnaigh gléas amháin ar a laghad ón liosta sula leanann tú ar aghaidh.",
       "no_gateways": "Ní bhfuarthas aon ghléas. Seiceáil go bhfuil an branda roghnaithe agus an cuntas SingleKey ID ag teacht le d'aip. Ní thaispeántar rialaitheoir seomra a bhfuil dochtearraí níos sine air go dtí go mbeidh a dhochtearraí nuashonraithe agus go mbeidh sé socraithe san aip reatha le do SingleKey ID.",
       "local_invalid_address": "Cuir isteach seoladh IP nó óstainm gan URL, cosán ná dintiúir.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "Athraíodh cumais PointT tar éis nuashonraithe dochtearraí",
+      "title": "Athraíodh na cumais tar éis nuashonraithe dochtearraí",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Aimsigh cumais PointT arís",
-            "description": "Fuair Bosch/Buderus Home Comfort {conflict_count} cumas aitheanta nach bhfuil a gcineál sonraí nó a n-aonad ag teacht a thuilleadh leis an scéimre PointT atá tacaithe go sábháilte. Roghnaigh **Cuir isteach** chun an comhtháthú a athlódáil agus na cumais ar fad a scrúdú arís. Má fhilleann an rabhadh, íoslódáil diagnóisic an chomhtháthaithe agus tuairiscigh an scéimre athraithe gan dintiúir ná amhluachanna a roinnt."
+            "title": "Aimsigh na cumais arís",
+            "description": "Fuair Bosch/Buderus Home Comfort {conflict_count} cumas aitheanta nach bhfuil a gcineál sonraí nó a n-aonad ag teacht a thuilleadh leis an scéimre atá tacaithe go sábháilte. Roghnaigh **Cuir isteach** chun an comhtháthú a athlódáil agus na cumais ar fad a scrúdú arís. Má fhilleann an rabhadh, íoslódáil diagnóisic an chomhtháthaithe agus tuairiscigh an scéimre athraithe gan dintiúir ná amhluachanna a roinnt."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "Athraíodh cumais PointT tar éis nuashonraithe dochtearraí",
+      "title": "Athraíodh na cumais tar éis nuashonraithe dochtearraí",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Aimsigh cumais PointT arís",
+            "title": "Aimsigh na cumais arís",
             "description": "Tuairiscíonn an córas téimh seo {conflict_count} cumas aitheanta le cineál sonraí nó aonad gan choinne. Scrúdaigh a chumais arís. Ní atosaíonn ach an fhoinse seo; fanann córais agus naisc eile gníomhach. Coinnítear aitheantóirí aonán atá ann cheana agus socruithe saincheaptha."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "Tarlaíonn an t-am tosaithe nó deiridh roghnaithe faoi dhó toisc go dtéann an clog siar i gcrios ama an chórais téimh. Roghnaigh am gan débhrí."
     },
+    "holiday_changes_unavailable": {
+      "message": "Ní cheadaíonn an córas téimh seo athruithe ar shaoirí faoi láthair."
+    },
+    "holiday_create_failed": {
+      "message": "Níorbh fhéidir an tsaoire a chruthú ná a dheimhniú."
+    },
+    "holiday_change_unsafe": {
+      "message": "Ní féidir an tsaoire seo a athrú go sábháilte faoi láthair."
+    },
+    "holiday_update_failed": {
+      "message": "Níorbh fhéidir an tsaoire a athrú ná a dheimhniú."
+    },
+    "holiday_not_deletable": {
+      "message": "Ní féidir an tsaoire seo a scriosadh anseo."
+    },
+    "holiday_delete_failed": {
+      "message": "Níorbh fhéidir an tsaoire a scriosadh ná a dheimhniú."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Ní thacaítear le saoirí athfhillteacha."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Níl cur síos ná suíomh ag saoirí. Bain iad agus déan iarracht arís."
+    },
+    "select_option_unavailable": {
+      "message": "Ní thairgeann an córas téimh an rogha seo a thuilleadh. Athlódáil na luachanna agus roghnaigh arís."
+    },
     "rrc_mode_locked": {
       "message": "Cuireann an rialaitheoir glas faoi láthair ar mhód téimh an chriosa seo, mar shampla agus an córas ag fuarú. Taispeántar an mód reatha fós. Déan iarracht arís níos déanaí."
     },
@@ -1080,13 +1111,28 @@
       "message": "Níl síniú isteach an néil bailí a thuilleadh. Athfhíordheimhnigh Bosch/Buderus Home Comfort sula ndéanann tú iarracht arís."
     },
     "write_rate_limited": {
-      "message": "Tá néal PointT ag cur srian le hiarratais faoi láthair. Fan sula ndéanann tú iarracht an t-athrú arís."
+      "message": "Tá an néal ag cur srian le hiarratais faoi láthair. Fan sula ndéanann tú iarracht an t-athrú arís."
     },
     "write_failed": {
       "message": "Níorbh fhéidir an t-athrú a chríochnú agus níor dheimhnigh an córas téimh é. Nuashonraítear an luach a thaispeántar leis an gcéad léamh eile."
     },
     "write_busy": {
       "message": "Tá an córas téimh á léamh nó tá athrú eile fós ar siúl. Níor seoladh aon rud. Déan iarracht arís i gceann tamaill."
+    },
+    "command_cloud_auth_required": {
+      "message": "Ní féidir anois: teastaíonn síniú isteach nua don rochtain néil. Níor seoladh aon rud."
+    },
+    "command_cloud_stopped": {
+      "message": "Ní féidir anois: tá an rochtain néil stoptha nó á hatosú. Níor seoladh aon rud."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Ní féidir anois: tá iarratais curtha ar sos tar éis teorainn rátaí an néil go dtí thart ar {until}. Níor seoladh aon rud."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Ní féidir anois: tá iarratais curtha ar sos tar éis earráidí arís agus arís eile ón néal go dtí thart ar {until}. Níor seoladh aon rud."
+    },
+    "command_cloud_unreachable": {
+      "message": "Ní féidir anois: níl an néal inrochtana. Níor seoladh aon rud. Déan iarracht arís nuair a thaispeántar luachanna reatha."
     },
     "holiday_end_not_after_start": {
       "message": "Caithfidh an deireadh a bheith tar éis an tosaithe. Roghnaigh deireadh níos déanaí."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Teachtaireachtaí an chórais"
+        "name": "Teachtaireachtaí an chórais",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Tharla",
+              "resolved": "Réitithe"
+            }
+          }
+        }
       }
     },
     "button": {

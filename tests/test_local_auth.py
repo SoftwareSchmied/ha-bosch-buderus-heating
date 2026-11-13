@@ -311,6 +311,30 @@ async def test_close_after_post_and_inactive_after_success(auth_gateway):
     assert len(calls) == 1
 
 
+async def test_token_post_uses_the_shared_hardened_local_session(
+    auth_gateway, monkeypatch
+):
+    calls, _, binding = await auth_gateway()
+    sessions = []
+    shared = transport.create_local_session
+
+    def recording(**kwargs):
+        session = shared(**kwargs)
+        sessions.append((kwargs, session))
+        return session
+
+    monkeypatch.setattr(auth, "create_local_session", recording)
+    assert (await request(binding)).state == AuthState.RECEIVED
+    assert len(calls) == 1
+    assert len(sessions) == 1
+    kwargs, session = sessions[0]
+    assert set(kwargs) == {"trace_configs"} and len(kwargs["trace_configs"]) == 1
+    assert session.closed
+    assert session.trust_env is False
+    assert isinstance(session.cookie_jar, transport.aiohttp.DummyCookieJar)
+    assert session.auto_decompress is False
+
+
 @pytest.mark.parametrize(
     "login,password",
     [("", "a"), ("x" * 129, "a"), ("a\nb", "a"), ("a", "---"), ("a", "x ")],

@@ -70,6 +70,10 @@
           "owner": "Befintlig konfiguration"
         }
       },
+      "local_discovered": {
+        "title": "Gateway hittad",
+        "description": "Home Assistant hittade en gateway på {host} i hemnätverket, och den här integrationen är inte konfigurerad än.\n\nFortsätt för att konfigurera den med **Endast lokal åtkomst**: en post utan moln skapas och därefter öppnas dess lokala konfiguration. Den lokala åtkomsten läser bara. En molnåtkomst kan läggas till i samma post senare."
+      },
       "local_target": {
         "title": "Välj installationen",
         "description": "Välj den installation som ska anslutas lokalt. Gatewayens identitet kontrolleras innan du sparar.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Det här inloggningsförsöket har gått ut. Öppna den nya SingleKey ID-länken som visas ovan och logga in igen.",
       "auth_restart": "Det här inloggningsförsöket kan inte längre användas. Öppna den nya SingleKey ID-länken som visas ovan och logga in igen.",
-      "cannot_connect": "PointT-tjänsten kan inte nås. Kontrollera internetanslutningen, vänta en stund och försök igen.",
+      "cannot_connect": "Molnåtkomsten kan inte nås. Kontrollera internetanslutningen, vänta en stund och försök igen.",
       "invalid_auth": "SingleKey ID avvisade auktoriseringen eller lät den gå ut. Använd den nya SingleKey ID-länken som visas ovan och upprepa inloggningen.",
       "invalid_redirect": "Home Assistant kunde inte använda den här adressen. Kopiera hela appadressen från meddelandet “Failed to launch” i Chromes konsol. Den måste börja med det schema som visas ovan och tillhöra det aktuella inloggningsförsöket.",
       "gateway_changed": "Gatewaylistan ändrades medan den här dialogrutan var öppen. Stäng dialogrutan och öppna Konfigurera om igen.",
       "select_gateway": "Välj minst en enhet i listan innan du fortsätter.",
-      "unknown": "Ett oväntat PointT-fel inträffade. Vänta en stund och försök igen.",
+      "unknown": "Ett oväntat fel inträffade i molnåtkomsten. Vänta en stund och försök igen.",
       "bacon_unavailable": "Listan över ytterligare molnenheter är inte tillgänglig just nu. Vänta minst en minut och försök igen.",
       "bacon_selection_unavailable": "Ytterligare molnenheter kunde inte frågas just nu. Du kan välja värmegateways som går att nå. Befintliga val av molnenheter behålls.",
       "reauth_targets_missing": "Den här inloggningen hittade inga av de aktiverade anläggningarna och enheterna. De tidigare inloggningsuppgifterna behålls. Kontrollera att du loggade in med samma konto som tidigare. Om anläggningarna har tagits bort från kontot, öppna Konfigurera → Anslutningar → molnåtkomsten: aktivera en anläggning som fortfarande finns i kontot under **Använd för anläggningar och enheter**, eller inaktivera de borttagna och ta bort dem med **Glöm bortvalda anläggningar**. Om ingen finns kvar, ta bort molnåtkomsten och anslut den igen.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Förfrågningsfrekvens",
-        "description": "Standard läser aktuella driftvärden för värmen varje minut, inställningar och energivärden var 5:e minut och långsammare information var 15:e minut. Molnvänlig fördubblar dessa intervall. Aktiva fel kontrolleras varje minut i båda profilerna. Profilen gäller förfrågningar för PointT-värme och laddbox i den valda molnanslutningen. Ytterligare molnenheter rapporterar ändringar som meddelanden. Inloggning, enhetskontroller och bekräftelsen efter en ändring kan lägga till förfrågningar utanför det här schemat. Om en förfrågningscykel tar längre tid än sitt intervall startar nästa senare.",
+        "description": "Standard läser aktuella driftvärden för värmen varje minut, inställningar och energivärden var 5:e minut och långsammare information var 15:e minut. Molnvänlig fördubblar dessa intervall. Aktiva fel kontrolleras varje minut i båda profilerna. Profilen gäller förfrågningar för värme och laddbox i den valda molnanslutningen. Ytterligare molnenheter rapporterar ändringar som meddelanden. Inloggning, enhetskontroller och bekräftelsen efter en ändring kan lägga till förfrågningar utanför det här schemat. Om en förfrågningscykel tar längre tid än sitt intervall startar nästa senare.",
         "data": {
           "polling_profile": "Förfrågningsprofil"
         }
@@ -663,7 +667,7 @@
       "write_failed": "Semesterinställningarna kunde inte ändras.",
       "write_busy": "Värmesystemet läses av eller en annan ändring pågår fortfarande. Inget skickades. Försök igen om en stund.",
       "write_not_confirmed": "Ändringen kunde inte bekräftas fullt ut. Vissa inställningar kan redan ha sparats. Öppna semestern igen och kontrollera dess aktuella inställningar.",
-      "write_rate_limited": "PointT-molnet begränsar förfrågningar just nu. Vänta innan du försöker igen.",
+      "write_rate_limited": "Molnet begränsar förfrågningar just nu. Vänta innan du försöker igen.",
       "write_validation_failed": "Minst ett val stöds inte längre av värmesystemet. Stäng dialogrutan, uppdatera integrationen och försök igen.",
       "holiday_end_not_after_start": "Slutet måste ligga efter starten. Välj ett senare slut.",
       "rrc_time": "Välj en tid i femminutersteg, utan sekunder.",
@@ -691,7 +695,7 @@
       "controls_invalid": "En inmatning är ogiltig eller så har de visade värdena ändrats. Kontrollera dina inmatningar eller läs in värdena igen. Inget skrevs.",
       "controls_changed": "En inställning har ändrats eller är inte längre tillgänglig. Tidigare bekräftade ändringar förblir tillämpade. Läs in värdena igen innan du försöker på nytt.",
       "controls_auth": "Autentiseringen har gått ut. Autentisera integrationen igen. Tidigare bekräftade ändringar förblir tillämpade. Läs in värdena igen innan du försöker på nytt.",
-      "controls_rate_limit": "Apparaten begränsar förfrågningar just nu. Vänta innan du försöker igen. Tidigare bekräftade ändringar förblir tillämpade. Läs in värdena igen innan du försöker på nytt.",
+      "controls_rate_limit": "Molnet begränsar förfrågningar just nu. Vänta innan du försöker igen. Tidigare bekräftade ändringar förblir tillämpade. Läs in värdena igen innan du försöker på nytt.",
       "controls_unconfirmed": "Den senaste ändringen kunde inte bekräftas. Den kan redan ha trätt i kraft på apparaten. Tidigare bekräftade ändringar förblir tillämpade. Läs in värdena igen innan du försöker på nytt.",
       "controls_failed": "Kommunikationen med apparaten misslyckades. Den senaste ändringen kan redan ha trätt i kraft. Tidigare bekräftade ändringar förblir tillämpade. Läs in värdena igen innan du försöker på nytt.",
       "controls_busy": "Apparaten läses av eller en annan ändring pågår fortfarande. Den här ändringen skickades inte. Tidigare bekräftade ändringar förblir tillämpade. Försök igen om en stund.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "Molnet har begärt en paus. Vänta innan du försöker igen.",
       "invalid_auth": "SingleKey ID avvisade auktoriseringen eller lät den gå ut. Använd den nya SingleKey ID-länken som visas ovan och upprepa inloggningen.",
       "invalid_redirect": "Home Assistant kunde inte använda den här adressen. Kopiera hela appadressen från meddelandet ‘Failed to launch’ i Chromes konsol. Den måste börja med det schema som visas ovan och tillhöra det aktuella inloggningsförsöket.",
-      "cannot_connect": "PointT-tjänsten kan inte nås. Kontrollera internetanslutningen, vänta en stund och försök igen.",
+      "cannot_connect": "Molnåtkomsten kan inte nås. Kontrollera internetanslutningen, vänta en stund och försök igen.",
       "select_gateway": "Välj minst en enhet i listan innan du fortsätter.",
       "no_gateways": "Inga enheter hittades. Kontrollera att det valda märket och SingleKey ID-kontot stämmer med din app. En rumsregulator med äldre firmware visas först när dess firmware har uppdaterats och den har konfigurerats i den aktuella appen med ditt SingleKey ID.",
       "local_invalid_address": "Ange en IP-adress eller ett värdnamn utan URL, sökväg eller inloggningsuppgifter.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "PointT-funktionerna ändrades efter en firmwareuppdatering",
+      "title": "Funktionerna ändrades efter en firmwareuppdatering",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Sök PointT-funktionerna igen",
-            "description": "Bosch/Buderus Home Comfort hittade {conflict_count} kända funktioner vars datatyp eller enhet inte längre stämmer med det PointT-schema som stöds på ett säkert sätt. Välj **Skicka** för att läsa in integrationen på nytt och granska alla funktioner igen. Om varningen kommer tillbaka, ladda ner integrationens diagnostik och rapportera det ändrade schemat utan att dela inloggningsuppgifter eller råa värden."
+            "title": "Sök funktionerna igen",
+            "description": "Bosch/Buderus Home Comfort hittade {conflict_count} kända funktioner vars datatyp eller enhet inte längre stämmer med det schema som stöds på ett säkert sätt. Välj **Skicka** för att läsa in integrationen på nytt och granska alla funktioner igen. Om varningen kommer tillbaka, ladda ner integrationens diagnostik och rapportera det ändrade schemat utan att dela inloggningsuppgifter eller råa värden."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "PointT-funktionerna ändrades efter en firmwareuppdatering",
+      "title": "Funktionerna ändrades efter en firmwareuppdatering",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Sök PointT-funktionerna igen",
+            "title": "Sök funktionerna igen",
             "description": "Det här värmesystemet rapporterar {conflict_count} kända funktioner med en oväntad datatyp eller enhet. Granska dess funktioner igen. Endast den här källan startas om. Andra anläggningar och anslutningar förblir aktiva. Befintliga entitets-ID:n och egna inställningar behålls."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "Den valda start- eller sluttiden förekommer två gånger eftersom klockan ställs tillbaka i värmesystemets tidszon. Välj en entydig tid."
     },
+    "holiday_changes_unavailable": {
+      "message": "Det här värmesystemet tillåter inga ändringar av semestrar just nu."
+    },
+    "holiday_create_failed": {
+      "message": "Semestern kunde inte skapas eller bekräftas."
+    },
+    "holiday_change_unsafe": {
+      "message": "Den här semestern kan inte ändras säkert just nu."
+    },
+    "holiday_update_failed": {
+      "message": "Semestern kunde inte ändras eller bekräftas."
+    },
+    "holiday_not_deletable": {
+      "message": "Den här semestern kan inte tas bort här."
+    },
+    "holiday_delete_failed": {
+      "message": "Semestern kunde inte tas bort eller bekräftas."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Återkommande semestrar stöds inte."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Semestrar har ingen beskrivning eller plats. Ta bort dem och försök igen."
+    },
+    "select_option_unavailable": {
+      "message": "Värmesystemet erbjuder inte längre det här alternativet. Läs in värdena igen och välj på nytt."
+    },
     "rrc_mode_locked": {
       "message": "Regulatorn låser just nu värmeläget för den här zonen, till exempel medan anläggningen kyler. Det aktuella läget visas fortfarande. Försök igen senare."
     },
@@ -1080,13 +1111,28 @@
       "message": "Molninloggningen är inte längre giltig. Autentisera Bosch/Buderus Home Comfort igen innan du försöker på nytt."
     },
     "write_rate_limited": {
-      "message": "PointT-molnet begränsar förfrågningar just nu. Vänta innan du försöker ändra igen."
+      "message": "Molnet begränsar förfrågningar just nu. Vänta innan du försöker ändra igen."
     },
     "write_failed": {
       "message": "Ändringen kunde inte slutföras och bekräftades inte av värmesystemet. Det visade värdet uppdateras vid nästa avläsning."
     },
     "write_busy": {
       "message": "Värmesystemet läses av eller en annan ändring pågår fortfarande. Inget skickades. Försök igen om en stund."
+    },
+    "command_cloud_auth_required": {
+      "message": "Inte möjligt just nu: molnåtkomsten behöver en ny inloggning. Inget skickades."
+    },
+    "command_cloud_stopped": {
+      "message": "Inte möjligt just nu: molnåtkomsten är stoppad eller håller på att startas om. Inget skickades."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Inte möjligt just nu: förfrågningar är pausade efter en begränsning från molnet till ungefär {until}. Inget skickades."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Inte möjligt just nu: förfrågningar är pausade efter upprepade molnfel till ungefär {until}. Inget skickades."
+    },
+    "command_cloud_unreachable": {
+      "message": "Inte möjligt just nu: molnet går inte att nå. Inget skickades. Försök igen när aktuella värden visas."
     },
     "holiday_end_not_after_start": {
       "message": "Slutet måste ligga efter starten. Välj ett senare slut."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Systemmeddelanden"
+        "name": "Systemmeddelanden",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Uppstått",
+              "resolved": "Löst"
+            }
+          }
+        }
       }
     },
     "button": {

@@ -10,7 +10,7 @@ from homeassistant.const import EntityCategory
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
 
-from ..const import DOMAIN
+from ..const import DEFAULT_MANUFACTURER, DOMAIN
 from ..device import registered_device
 from .access import BaconAccess
 from .models import device_key
@@ -70,7 +70,7 @@ class BaconEntity(Entity):
     def device_info(self) -> DeviceInfo:
         info = DeviceInfo(
             identifiers={(DOMAIN, self._identity)},
-            manufacturer="Bosch Thermotechnik",
+            manufacturer=DEFAULT_MANUFACTURER,
         )
         if self.hass is None or not registered_device(self.hass, self._identity):
             # C8: a new device is named without the brand.

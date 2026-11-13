@@ -18,7 +18,7 @@ from homeassistant.components.climate.const import HVACMode
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.bosch_buderus_heating import (
@@ -153,10 +153,10 @@ async def test_metric_sensor_writes_only_changes_once_a_minute(
         await hass.async_block_till_done()
         assert write.call_count == 2
         assert entity.native_value == 3
-        # ... and when the entity is removed with a newer state.
+        # Removal writes nothing: the counts start anew with the next start.
         _record(metrics)
         await entity.async_will_remove_from_hass()
-        assert write.call_count == 3
+        assert write.call_count == 2
     for remove in entity._on_remove or ():
         remove()
 
@@ -750,11 +750,13 @@ async def test_climate_stays_available_with_valid_readings(
     assert entity.available
     assert entity.hvac_mode is HVACMode.HEAT
     assert entity.native_target_temperature == 19
-    # Changes still need a ready cloud.
-    with pytest.raises(ServiceValidationError):
+    # Changes still need a ready cloud, and the message says so.
+    with pytest.raises(HomeAssistantError) as refused:
         await entity.async_set_hvac_mode(HVACMode.OFF)
-    with pytest.raises(ServiceValidationError):
+    assert refused.value.translation_key == "command_cloud_unreachable"
+    with pytest.raises(HomeAssistantError) as refused:
         await entity.async_set_temperature(temperature=20)
+    assert refused.value.translation_key == "command_cloud_unreachable"
     coordinator._write_service.async_write_enum.assert_not_awaited()
     # An expired reading makes it unavailable, like a sensor.
     old = datetime.now(UTC) - timedelta(days=1)
@@ -901,21 +903,22 @@ async def test_local_only_sensor_keeps_its_unit_and_statistics(
         assert fresh.capability_attributes == {"state_class": "measurement"}
 
 
-async def test_removal_write_is_skipped_without_a_platform_state(
+async def test_removal_neither_writes_nor_changes_the_platform_state(
     hass: HomeAssistant,
 ) -> None:
-    from homeassistant.helpers.entity import Entity
-
     metrics = RequestMetrics()
     entity = _metric("pointt_api_requests_total", metrics)
     entity.hass = hass
     _record(metrics)
-    with (
-        patch.object(Entity, "_platform_state", None),
-        patch.object(entity, "async_write_ha_state") as write,
-    ):
+    platform_states = []
+
+    def write() -> None:
+        platform_states.append(getattr(entity, "_platform_state", None))
+
+    with patch.object(entity, "async_write_ha_state", side_effect=write):
+        before = getattr(entity, "_platform_state", None)
         await entity.async_will_remove_from_hass()
-    write.assert_not_called()
-    # A failing write never stops the removal.
-    with patch.object(entity, "async_write_ha_state", side_effect=RuntimeError):
-        await entity.async_will_remove_from_hass()
+        assert getattr(entity, "_platform_state", None) is before
+    # The base class removal only; no state write that needs a private
+    # platform state of Home Assistant.
+    assert platform_states == []

@@ -70,6 +70,10 @@
           "owner": "Configuración existente"
         }
       },
+      "local_discovered": {
+        "title": "Pasarela encontrada",
+        "description": "Home Assistant ha encontrado una pasarela en {host} en la red doméstica, y esta integración aún no está configurada.\n\nContinúa para configurarla con **Solo acceso local**: se crea una entrada sin nube y, a continuación, se abre su configuración local. El acceso local solo lee. Más adelante se puede añadir un acceso a la nube a la misma entrada."
+      },
       "local_target": {
         "title": "Elegir la instalación",
         "description": "Selecciona la instalación que se conectará de forma local. Se comprobará la identidad de su pasarela antes de guardar.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Este intento de inicio de sesión ha caducado. Abre el nuevo enlace de SingleKey ID que aparece arriba e inicia sesión de nuevo.",
       "auth_restart": "Este intento de inicio de sesión ya no se puede usar. Abre el nuevo enlace de SingleKey ID que aparece arriba e inicia sesión de nuevo.",
-      "cannot_connect": "No se puede acceder al servicio PointT. Comprueba la conexión a internet, espera un momento e inténtalo de nuevo.",
+      "cannot_connect": "El acceso a la nube no está disponible. Comprueba la conexión a internet, espera un momento e inténtalo de nuevo.",
       "invalid_auth": "SingleKey ID ha rechazado la autorización o ha caducado. Usa el nuevo enlace de SingleKey ID que aparece arriba y repite el inicio de sesión.",
       "invalid_redirect": "Home Assistant no pudo usar esta dirección. Copia la dirección completa de la aplicación del mensaje ‘Failed to launch’ de la consola de Chrome. Debe empezar por el esquema que aparece arriba y pertenecer al intento de inicio de sesión actual.",
       "gateway_changed": "La lista de pasarelas cambió mientras este cuadro de diálogo estaba abierto. Cierra el cuadro de diálogo y abre Volver a configurar de nuevo.",
       "select_gateway": "Selecciona al menos un dispositivo de la lista antes de continuar.",
-      "unknown": "Se ha producido un error inesperado de PointT. Espera un momento e inténtalo de nuevo.",
+      "unknown": "Se ha producido un error inesperado en el acceso a la nube. Espera un momento e inténtalo de nuevo.",
       "bacon_unavailable": "La lista de dispositivos adicionales en la nube no está disponible en este momento. Espera al menos un minuto e inténtalo de nuevo.",
       "bacon_selection_unavailable": "No se pudieron consultar los dispositivos adicionales en la nube en este momento. Puedes seleccionar pasarelas de calefacción accesibles. Se conservarán las selecciones existentes de dispositivos en la nube.",
       "reauth_targets_missing": "Este inicio de sesión no encontró ninguna de las instalaciones y dispositivos activados. Se conservan las credenciales anteriores. Comprueba que has iniciado sesión con la misma cuenta que antes. Si las instalaciones se eliminaron de la cuenta, abre Configurar → Conexiones → el acceso a la nube: activa una instalación que siga en la cuenta en **Usar para instalaciones y dispositivos**, o desactiva las eliminadas y quítalas con **Olvidar las instalaciones desmarcadas**. Si no queda ninguna, elimina el acceso a la nube y vuelve a conectarlo.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Frecuencia de consulta",
-        "description": "Estándar lee los valores de funcionamiento actuales de la calefacción cada minuto, los ajustes y los valores de energía cada 5 minutos y la información más lenta cada 15 minutos. Ligero para la nube duplica estos intervalos. Las averías activas se comprueban cada minuto en ambos perfiles. El perfil se aplica a la consulta de calefacción y punto de recarga PointT de la conexión a la nube seleccionada; los dispositivos adicionales en la nube notifican los cambios como mensajes. El inicio de sesión, las comprobaciones de dispositivos y la confirmación tras un cambio pueden añadir solicitudes fuera de este calendario. Si un ciclo de consulta tarda más que su intervalo, el siguiente empieza más tarde.",
+        "description": "Estándar lee los valores de funcionamiento actuales de la calefacción cada minuto, los ajustes y los valores de energía cada 5 minutos y la información más lenta cada 15 minutos. Ligero para la nube duplica estos intervalos. Las averías activas se comprueban cada minuto en ambos perfiles. El perfil se aplica a la consulta de calefacción y punto de recarga de la conexión a la nube seleccionada; los dispositivos adicionales en la nube notifican los cambios como mensajes. El inicio de sesión, las comprobaciones de dispositivos y la confirmación tras un cambio pueden añadir solicitudes fuera de este calendario. Si un ciclo de consulta tarda más que su intervalo, el siguiente empieza más tarde.",
         "data": {
           "polling_profile": "Perfil de consulta"
         }
@@ -663,7 +667,7 @@
       "write_failed": "No se pudieron cambiar los ajustes de las vacaciones.",
       "write_busy": "Se está leyendo la instalación de calefacción o todavía hay otro cambio en curso. No se envió nada. Inténtalo de nuevo dentro de un momento.",
       "write_not_confirmed": "No se pudo confirmar el cambio por completo. Puede que algunos ajustes ya se hayan guardado. Vuelve a abrir las vacaciones y comprueba sus ajustes actuales.",
-      "write_rate_limited": "La nube de PointT está limitando las solicitudes en este momento. Espera antes de volver a intentarlo.",
+      "write_rate_limited": "La nube está limitando las solicitudes en este momento. Espera antes de volver a intentarlo.",
       "write_validation_failed": "La instalación de calefacción ya no admite al menos una de las selecciones. Cierra el cuadro de diálogo, actualiza la integración e inténtalo de nuevo.",
       "holiday_end_not_after_start": "El fin debe ser posterior al inicio. Elige un fin posterior.",
       "rrc_time": "Elige una hora en pasos de cinco minutos, sin segundos.",
@@ -691,7 +695,7 @@
       "controls_invalid": "Un dato introducido no es válido o los valores mostrados han cambiado. Comprueba lo que has introducido o vuelve a cargar los valores. No se escribió nada.",
       "controls_changed": "Un ajuste ha cambiado o ya no está disponible. Los cambios confirmados anteriormente siguen aplicados. Vuelve a cargar los valores antes de volver a intentarlo.",
       "controls_auth": "La autenticación ha caducado. Vuelve a autenticar la integración. Los cambios confirmados anteriormente siguen aplicados. Vuelve a cargar los valores antes de volver a intentarlo.",
-      "controls_rate_limit": "El equipo está limitando las solicitudes en este momento. Espera antes de volver a intentarlo. Los cambios confirmados anteriormente siguen aplicados. Vuelve a cargar los valores antes de volver a intentarlo.",
+      "controls_rate_limit": "La nube está limitando las solicitudes en este momento. Espera antes de volver a intentarlo. Los cambios confirmados anteriormente siguen aplicados. Vuelve a cargar los valores antes de volver a intentarlo.",
       "controls_unconfirmed": "No se pudo confirmar el último cambio. Puede que ya haya surtido efecto en el equipo. Los cambios confirmados anteriormente siguen aplicados. Vuelve a cargar los valores antes de volver a intentarlo.",
       "controls_failed": "Falló la comunicación con el equipo. Puede que el último cambio ya haya surtido efecto. Los cambios confirmados anteriormente siguen aplicados. Vuelve a cargar los valores antes de volver a intentarlo.",
       "controls_busy": "Se está leyendo el equipo o todavía hay otro cambio en curso. Este cambio no se envió. Los cambios confirmados anteriormente siguen aplicados. Inténtalo de nuevo dentro de un momento.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "La nube ha solicitado una pausa. Espera antes de volver a intentarlo.",
       "invalid_auth": "SingleKey ID ha rechazado la autorización o ha caducado. Usa el nuevo enlace de SingleKey ID que aparece arriba y repite el inicio de sesión.",
       "invalid_redirect": "Home Assistant no pudo usar esta dirección. Copia la dirección completa de la aplicación del mensaje ‘Failed to launch’ de la consola de Chrome. Debe empezar por el esquema que aparece arriba y pertenecer al intento de inicio de sesión actual.",
-      "cannot_connect": "No se puede acceder al servicio PointT. Comprueba la conexión a internet, espera un momento e inténtalo de nuevo.",
+      "cannot_connect": "El acceso a la nube no está disponible. Comprueba la conexión a internet, espera un momento e inténtalo de nuevo.",
       "select_gateway": "Selecciona al menos un dispositivo de la lista antes de continuar.",
       "no_gateways": "No se encontró ningún dispositivo. Comprueba que la marca seleccionada y la cuenta de SingleKey ID coinciden con tu aplicación. Un regulador de ambiente con un firmware antiguo solo aparece cuando su firmware se ha actualizado y se ha configurado en la aplicación actual con tu SingleKey ID.",
       "local_invalid_address": "Introduce una dirección IP o un nombre de host sin URL, ruta ni credenciales.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "Las funciones de PointT cambiaron tras una actualización de firmware",
+      "title": "Las funciones cambiaron tras una actualización de firmware",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Volver a detectar las funciones de PointT",
-            "description": "Bosch/Buderus Home Comfort encontró {conflict_count} funciones conocidas cuyo tipo de datos o unidad ya no coincide con el esquema de PointT admitido de forma segura. Selecciona **Enviar** para volver a cargar la integración e inspeccionar de nuevo todas las funciones. Si la advertencia vuelve a aparecer, descarga el diagnóstico de la integración e informa del esquema modificado sin compartir credenciales ni valores sin procesar."
+            "title": "Volver a detectar las funciones",
+            "description": "Bosch/Buderus Home Comfort encontró {conflict_count} funciones conocidas cuyo tipo de datos o unidad ya no coincide con el esquema admitido de forma segura. Selecciona **Enviar** para volver a cargar la integración e inspeccionar de nuevo todas las funciones. Si la advertencia vuelve a aparecer, descarga el diagnóstico de la integración e informa del esquema modificado sin compartir credenciales ni valores sin procesar."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "Las funciones de PointT cambiaron tras una actualización de firmware",
+      "title": "Las funciones cambiaron tras una actualización de firmware",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Volver a detectar las funciones de PointT",
+            "title": "Volver a detectar las funciones",
             "description": "Esta instalación de calefacción informa de {conflict_count} funciones conocidas con un tipo de datos o una unidad inesperados. Inspecciona de nuevo sus funciones. Solo se reinicia esta fuente; las demás instalaciones y conexiones siguen activas. Se conservan los ID de entidad existentes y los ajustes personalizados."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "La hora de inicio o de fin seleccionada se produce dos veces porque el reloj se atrasa en la zona horaria de la instalación de calefacción. Elige una hora inequívoca."
     },
+    "holiday_changes_unavailable": {
+      "message": "Esta instalación de calefacción no permite cambios en las vacaciones en este momento."
+    },
+    "holiday_create_failed": {
+      "message": "No se pudieron crear ni confirmar las vacaciones."
+    },
+    "holiday_change_unsafe": {
+      "message": "Estas vacaciones no se pueden cambiar de forma segura en este momento."
+    },
+    "holiday_update_failed": {
+      "message": "No se pudieron cambiar ni confirmar las vacaciones."
+    },
+    "holiday_not_deletable": {
+      "message": "Estas vacaciones no se pueden eliminar aquí."
+    },
+    "holiday_delete_failed": {
+      "message": "No se pudieron eliminar ni confirmar las vacaciones."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Las vacaciones periódicas no son compatibles."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Las vacaciones no tienen descripción ni ubicación. Elimínalas e inténtalo de nuevo."
+    },
+    "select_option_unavailable": {
+      "message": "La instalación de calefacción ya no ofrece esta opción. Vuelve a cargar los valores y elige de nuevo."
+    },
     "rrc_mode_locked": {
       "message": "El regulador bloquea actualmente el modo de calefacción de esta zona, por ejemplo mientras la instalación refrigera. Se sigue mostrando el modo actual. Inténtalo de nuevo más tarde."
     },
@@ -1080,13 +1111,28 @@
       "message": "El inicio de sesión en la nube ya no es válido. Vuelve a autenticar Bosch/Buderus Home Comfort antes de volver a intentarlo."
     },
     "write_rate_limited": {
-      "message": "La nube de PointT está limitando las solicitudes en este momento. Espera antes de volver a intentar el cambio."
+      "message": "La nube está limitando las solicitudes en este momento. Espera antes de volver a intentar el cambio."
     },
     "write_failed": {
       "message": "No se pudo completar el cambio y la instalación de calefacción no lo confirmó. El valor mostrado se actualiza con la siguiente lectura."
     },
     "write_busy": {
       "message": "Se está leyendo la instalación de calefacción o todavía hay otro cambio en curso. No se envió nada. Inténtalo de nuevo dentro de un momento."
+    },
+    "command_cloud_auth_required": {
+      "message": "No es posible ahora: el acceso a la nube necesita un nuevo inicio de sesión. No se envió nada."
+    },
+    "command_cloud_stopped": {
+      "message": "No es posible ahora: el acceso a la nube está detenido o se está reiniciando. No se envió nada."
+    },
+    "command_cloud_rate_limited": {
+      "message": "No es posible ahora: las solicitudes están en pausa tras un límite de la nube hasta aproximadamente las {until}. No se envió nada."
+    },
+    "command_cloud_protection_pause": {
+      "message": "No es posible ahora: las solicitudes están en pausa tras errores repetidos de la nube hasta aproximadamente las {until}. No se envió nada."
+    },
+    "command_cloud_unreachable": {
+      "message": "No es posible ahora: la nube no es accesible. No se envió nada. Inténtalo de nuevo cuando se muestren valores actuales."
     },
     "holiday_end_not_after_start": {
       "message": "El fin debe ser posterior al inicio. Elige un fin posterior."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Notificaciones de la instalación"
+        "name": "Notificaciones de la instalación",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Aparecido",
+              "resolved": "Resuelto"
+            }
+          }
+        }
       }
     },
     "button": {

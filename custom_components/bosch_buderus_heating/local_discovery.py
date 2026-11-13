@@ -107,7 +107,7 @@ def dismiss_configured_discoveries(hass: HomeAssistant) -> None:
         DOMAIN, match_context={"source": "zeroconf"}
     ):
         if (
-            result.get("step_id") == "local_owner"
+            result.get("step_id") in ("local_owner", "local_discovered")
             and (endpoints := flows.get(result["flow_id"]))
             and configured_discovery(hass, endpoints)
         ):

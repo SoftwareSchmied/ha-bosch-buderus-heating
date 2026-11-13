@@ -179,6 +179,30 @@ entities kept their states and attributes. A longer run, the load and request
 measurements on my own system and any check of the estimated energy sensor on
 a real device are still pending.
 
+## Load measurement for 0.9.0-alpha.2
+
+I measured the load of Home Assistant on my own system (heat pump with BC400
+controller and MX400 internet module, K40RF gateway, cloud and local access)
+with the same read-only script for 60 minutes each: before, the development
+state shortly before 0.9.0-alpha.2; after, the 0.9.0-alpha.2 state, starting
+about 20 minutes after I installed it on 2026-11-08. The numbers compare these
+two 0.9 pre-release states only. I did not measure 0.8.3 this way, so they say
+nothing about the change from 0.8.3.
+
+| Measure | Before | After | Change |
+|---|---|---|---|
+| CPU load of the Home Assistant core, average | 67.2 % of one core | 17.2 % of one core | −74 % |
+| CPU load, maximum | 71.7 % | 23.0 % | −68 % |
+| Memory, average | 893 MB | 815 MB | −78 MB |
+| Recorder rows per hour | 4,367 | 1,098 | −75 % |
+| of these from the cloud request count sensor | 3,413 | 60 | −98 % |
+| Cloud requests per hour | 76 | 76 | unchanged |
+| Cloud items per hour | 1,916 | 1,657 | −14 % |
+
+The later measurement for alpha.3 is in the
+[alpha.3 verification](#090-alpha3-verification). Other systems were not
+measured.
+
 ## 0.9.0-alpha.1 verification
 
 I am preparing **0.9.0-alpha.1 as a pre-release** for testing from commit

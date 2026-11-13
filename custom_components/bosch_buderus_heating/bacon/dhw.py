@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from .metadata import CELSIUS
 from .metadata import metadata as metadata
 from .metadata import writable as writable
 from .models import Device
@@ -58,7 +59,7 @@ def temperature(value: object, meta: dict[str, Any] | None) -> int | None:
         type(value) is not int
         or not 0 <= value <= 100
         or meta is None
-        or meta.get("unit") not in ("C", "°C")
+        or meta.get("unit") not in CELSIUS
     ):
         return None
     for key, lower in (("min", True), ("max", False)):
@@ -97,7 +98,7 @@ def target_range(device: Device) -> TemperatureRange | None:
         or type(step) is not int
         or not 0 <= minimum < maximum <= 100
         or not 1 <= step <= maximum - minimum
-        or meta.get("unit") not in ("C", "°C")
+        or meta.get("unit") not in CELSIUS
     ):
         return None
     ceiling = device.state.reported.get("setTempMax") if device.state else None

@@ -70,6 +70,10 @@
           "owner": "Bestaande configuratie"
         }
       },
+      "local_discovered": {
+        "title": "Gateway gevonden",
+        "description": "Home Assistant heeft in het thuisnetwerk een gateway op {host} gevonden, en deze integratie is nog niet ingesteld.\n\nGa verder om hem in te stellen met **Alleen lokale toegang**: er wordt een item zonder cloud aangemaakt en daarna opent de lokale configuratie ervan. De lokale toegang leest alleen. Een cloudtoegang kan later aan hetzelfde item worden toegevoegd."
+      },
       "local_target": {
         "title": "Installatie kiezen",
         "description": "Selecteer de installatie waarmee lokaal verbinding moet worden gemaakt. De identiteit van de gateway wordt vóór het opslaan gecontroleerd.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Deze aanmeldpoging is verlopen. Open de nieuwe SingleKey ID-link die hierboven wordt getoond en meld je opnieuw aan.",
       "auth_restart": "Deze aanmeldpoging kan niet meer worden gebruikt. Open de nieuwe SingleKey ID-link die hierboven wordt getoond en meld je opnieuw aan.",
-      "cannot_connect": "De PointT-service is niet bereikbaar. Controleer de internetverbinding, wacht even en probeer het opnieuw.",
+      "cannot_connect": "De cloudtoegang is niet bereikbaar. Controleer de internetverbinding, wacht even en probeer het opnieuw.",
       "invalid_auth": "SingleKey ID heeft de autorisatie geweigerd of laten verlopen. Gebruik de nieuwe SingleKey ID-link die hierboven wordt getoond en herhaal de aanmelding.",
       "invalid_redirect": "Home Assistant kon dit adres niet gebruiken. Kopieer het volledige app-adres uit de melding ‘Failed to launch’ in de Chrome-console. Het moet beginnen met het hierboven getoonde schema en bij de huidige aanmeldpoging horen.",
       "gateway_changed": "De gatewaylijst is gewijzigd terwijl dit dialoogvenster open was. Sluit het dialoogvenster en open Opnieuw configureren opnieuw.",
       "select_gateway": "Selecteer minstens één apparaat uit de lijst voordat je verdergaat.",
-      "unknown": "Er is een onverwachte PointT-fout opgetreden. Wacht even en probeer het opnieuw.",
+      "unknown": "Er is een onverwachte fout in de cloudtoegang opgetreden. Wacht even en probeer het opnieuw.",
       "bacon_unavailable": "De lijst met extra cloudapparaten is momenteel niet beschikbaar. Wacht minstens één minuut en probeer het opnieuw.",
       "bacon_selection_unavailable": "Extra cloudapparaten konden nu niet worden opgevraagd. Je kunt bereikbare verwarmingsgateways selecteren. Bestaande selecties van cloudapparaten blijven behouden.",
       "reauth_targets_missing": "Bij deze aanmelding is geen van de ingeschakelde installaties en apparaten gevonden. De vorige inloggegevens blijven behouden. Controleer of je je met hetzelfde account hebt aangemeld als eerder. Als de installaties uit het account zijn verwijderd, open dan Configureren → Verbindingen → de cloudtoegang: schakel een installatie in die nog in het account staat onder **Gebruiken voor installaties en apparaten**, of schakel de verwijderde installaties uit en verwijder ze met **Niet-geselecteerde installaties vergeten**. Als er geen meer over is, verwijder dan de cloudtoegang en verbind deze opnieuw.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Opvraagfrequentie",
-        "description": "Standaard leest actuele bedrijfswaarden van de verwarming elke minuut, instellingen en energiewaarden elke 5 minuten en tragere informatie elke 15 minuten. Cloudvriendelijk verdubbelt deze intervallen. Actieve storingen worden in beide profielen elke minuut gecontroleerd. Het profiel geldt voor de opvraging van PointT-verwarming en laadpaal van de geselecteerde cloudverbinding; extra cloudapparaten melden wijzigingen als berichten. Aanmelden, apparaatcontroles en de bevestiging na een wijziging kunnen buiten dit schema extra verzoeken veroorzaken. Als een opvraagcyclus langer duurt dan het interval, begint de volgende later.",
+        "description": "Standaard leest actuele bedrijfswaarden van de verwarming elke minuut, instellingen en energiewaarden elke 5 minuten en tragere informatie elke 15 minuten. Cloudvriendelijk verdubbelt deze intervallen. Actieve storingen worden in beide profielen elke minuut gecontroleerd. Het profiel geldt voor de opvraging van verwarming en laadpaal van de geselecteerde cloudverbinding; extra cloudapparaten melden wijzigingen als berichten. Aanmelden, apparaatcontroles en de bevestiging na een wijziging kunnen buiten dit schema extra verzoeken veroorzaken. Als een opvraagcyclus langer duurt dan het interval, begint de volgende later.",
         "data": {
           "polling_profile": "Opvraagprofiel"
         }
@@ -663,7 +667,7 @@
       "write_failed": "De vakantie-instellingen konden niet worden gewijzigd.",
       "write_busy": "De verwarmingsinstallatie wordt gelezen of een andere wijziging loopt nog. Er is niets verzonden. Probeer het over een moment opnieuw.",
       "write_not_confirmed": "De wijziging kon niet volledig worden bevestigd. Sommige instellingen zijn mogelijk al opgeslagen. Open de vakantie opnieuw en controleer de huidige instellingen.",
-      "write_rate_limited": "De PointT-cloud beperkt momenteel het aantal verzoeken. Wacht voordat je het opnieuw probeert.",
+      "write_rate_limited": "De cloud beperkt momenteel het aantal verzoeken. Wacht voordat je het opnieuw probeert.",
       "write_validation_failed": "Minstens één selectie wordt niet meer ondersteund door de verwarmingsinstallatie. Sluit het dialoogvenster, vernieuw de integratie en probeer het opnieuw.",
       "holiday_end_not_after_start": "Het einde moet na het begin liggen. Kies een later einde.",
       "rrc_time": "Kies een tijd in stappen van vijf minuten, zonder seconden.",
@@ -691,7 +695,7 @@
       "controls_invalid": "Een invoer is ongeldig of de getoonde waarden zijn gewijzigd. Controleer je invoer of laad de waarden opnieuw. Er is niets geschreven.",
       "controls_changed": "Een instelling is gewijzigd of niet meer beschikbaar. Eerder bevestigde wijzigingen blijven toegepast. Laad de waarden opnieuw voordat je het opnieuw probeert.",
       "controls_auth": "De authenticatie is verlopen. Authenticeer de integratie opnieuw. Eerder bevestigde wijzigingen blijven toegepast. Laad de waarden opnieuw voordat je het opnieuw probeert.",
-      "controls_rate_limit": "Het apparaat beperkt momenteel het aantal verzoeken. Wacht voordat je het opnieuw probeert. Eerder bevestigde wijzigingen blijven toegepast. Laad de waarden opnieuw voordat je het opnieuw probeert.",
+      "controls_rate_limit": "De cloud beperkt momenteel het aantal verzoeken. Wacht voordat je het opnieuw probeert. Eerder bevestigde wijzigingen blijven toegepast. Laad de waarden opnieuw voordat je het opnieuw probeert.",
       "controls_unconfirmed": "De laatste wijziging kon niet worden bevestigd. Ze is mogelijk al van kracht op het apparaat. Eerder bevestigde wijzigingen blijven toegepast. Laad de waarden opnieuw voordat je het opnieuw probeert.",
       "controls_failed": "De communicatie met het apparaat is mislukt. De laatste wijziging is mogelijk al van kracht. Eerder bevestigde wijzigingen blijven toegepast. Laad de waarden opnieuw voordat je het opnieuw probeert.",
       "controls_busy": "Het apparaat wordt gelezen of een andere wijziging loopt nog. Deze wijziging is niet verzonden. Eerder bevestigde wijzigingen blijven toegepast. Probeer het over een moment opnieuw.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "De cloud heeft om een pauze gevraagd. Wacht even voordat je het opnieuw probeert.",
       "invalid_auth": "SingleKey ID heeft de autorisatie geweigerd of laten verlopen. Gebruik de nieuwe SingleKey ID-link die hierboven wordt getoond en herhaal de aanmelding.",
       "invalid_redirect": "Home Assistant kon dit adres niet gebruiken. Kopieer het volledige app-adres uit de melding ‘Failed to launch’ in de Chrome-console. Het moet beginnen met het hierboven getoonde schema en bij de huidige aanmeldpoging horen.",
-      "cannot_connect": "De PointT-service is niet bereikbaar. Controleer de internetverbinding, wacht even en probeer het opnieuw.",
+      "cannot_connect": "De cloudtoegang is niet bereikbaar. Controleer de internetverbinding, wacht even en probeer het opnieuw.",
       "select_gateway": "Selecteer minstens één apparaat uit de lijst voordat je verdergaat.",
       "no_gateways": "Er zijn geen apparaten gevonden. Controleer of het geselecteerde merk en het SingleKey ID-account bij je app passen. Een kamerregelaar met oudere firmware verschijnt pas als de firmware is bijgewerkt en hij in de huidige app met je SingleKey ID is ingesteld.",
       "local_invalid_address": "Voer een IP-adres of hostnaam in zonder URL, pad of inloggegevens.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "PointT-mogelijkheden zijn gewijzigd na een firmware-update",
+      "title": "Mogelijkheden zijn gewijzigd na een firmware-update",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "PointT-mogelijkheden opnieuw zoeken",
-            "description": "Bosch/Buderus Home Comfort heeft {conflict_count} bekende mogelijkheden gevonden waarvan het gegevenstype of de eenheid niet meer overeenkomt met het veilig ondersteunde PointT-schema. Selecteer **Verzenden** om de integratie opnieuw te laden en alle mogelijkheden opnieuw te inspecteren. Als de waarschuwing terugkomt, download dan de diagnostiek van de integratie en meld het gewijzigde schema zonder inloggegevens of ruwe waarden te delen."
+            "title": "Mogelijkheden opnieuw zoeken",
+            "description": "Bosch/Buderus Home Comfort heeft {conflict_count} bekende mogelijkheden gevonden waarvan het gegevenstype of de eenheid niet meer overeenkomt met het veilig ondersteunde schema. Selecteer **Verzenden** om de integratie opnieuw te laden en alle mogelijkheden opnieuw te inspecteren. Als de waarschuwing terugkomt, download dan de diagnostiek van de integratie en meld het gewijzigde schema zonder inloggegevens of ruwe waarden te delen."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "PointT-mogelijkheden zijn gewijzigd na een firmware-update",
+      "title": "Mogelijkheden zijn gewijzigd na een firmware-update",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "PointT-mogelijkheden opnieuw zoeken",
+            "title": "Mogelijkheden opnieuw zoeken",
             "description": "Deze verwarmingsinstallatie meldt {conflict_count} bekende mogelijkheden met een onverwacht gegevenstype of een onverwachte eenheid. Inspecteer de mogelijkheden opnieuw. Alleen deze bron wordt herstart; andere installaties en verbindingen blijven actief. Bestaande entiteits-ID's en aangepaste instellingen blijven behouden."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "De geselecteerde begin- of eindtijd komt twee keer voor omdat de klok in de tijdzone van de verwarmingsinstallatie terug gaat. Kies een ondubbelzinnige tijd."
     },
+    "holiday_changes_unavailable": {
+      "message": "Deze verwarmingsinstallatie staat momenteel geen wijzigingen van vakanties toe."
+    },
+    "holiday_create_failed": {
+      "message": "De vakantie kon niet worden aangemaakt of bevestigd."
+    },
+    "holiday_change_unsafe": {
+      "message": "Deze vakantie kan momenteel niet veilig worden gewijzigd."
+    },
+    "holiday_update_failed": {
+      "message": "De vakantie kon niet worden gewijzigd of bevestigd."
+    },
+    "holiday_not_deletable": {
+      "message": "Deze vakantie kan hier niet worden verwijderd."
+    },
+    "holiday_delete_failed": {
+      "message": "De vakantie kon niet worden verwijderd of bevestigd."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Terugkerende vakanties worden niet ondersteund."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Vakanties hebben geen beschrijving of locatie. Verwijder die en probeer het opnieuw."
+    },
+    "select_option_unavailable": {
+      "message": "De verwarmingsinstallatie biedt deze optie niet meer aan. Laad de waarden opnieuw en kies opnieuw."
+    },
     "rrc_mode_locked": {
       "message": "De regelaar vergrendelt momenteel de verwarmingsmodus van deze zone, bijvoorbeeld terwijl de installatie koelt. De huidige modus blijft zichtbaar. Probeer het later opnieuw."
     },
@@ -1080,13 +1111,28 @@
       "message": "De cloudaanmelding is niet meer geldig. Authenticeer Bosch/Buderus Home Comfort opnieuw voordat je het opnieuw probeert."
     },
     "write_rate_limited": {
-      "message": "De PointT-cloud beperkt momenteel het aantal verzoeken. Wacht voordat je de wijziging opnieuw probeert."
+      "message": "De cloud beperkt momenteel het aantal verzoeken. Wacht voordat je de wijziging opnieuw probeert."
     },
     "write_failed": {
       "message": "De wijziging kon niet worden voltooid en is niet door de verwarmingsinstallatie bevestigd. De getoonde waarde wordt bijgewerkt bij de volgende meting."
     },
     "write_busy": {
       "message": "De verwarmingsinstallatie wordt gelezen of een andere wijziging loopt nog. Er is niets verzonden. Probeer het over een moment opnieuw."
+    },
+    "command_cloud_auth_required": {
+      "message": "Nu niet mogelijk: de cloudtoegang vereist een nieuwe aanmelding. Er is niets verzonden."
+    },
+    "command_cloud_stopped": {
+      "message": "Nu niet mogelijk: de cloudtoegang is gestopt of wordt opnieuw gestart. Er is niets verzonden."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Nu niet mogelijk: verzoeken zijn gepauzeerd na een limiet van de cloud tot ongeveer {until}. Er is niets verzonden."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Nu niet mogelijk: verzoeken zijn gepauzeerd na herhaalde cloudfouten tot ongeveer {until}. Er is niets verzonden."
+    },
+    "command_cloud_unreachable": {
+      "message": "Nu niet mogelijk: de cloud is niet bereikbaar. Er is niets verzonden. Probeer het opnieuw zodra actuele waarden worden getoond."
     },
     "holiday_end_not_after_start": {
       "message": "Het einde moet na het begin liggen. Kies een later einde."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Installatiemeldingen"
+        "name": "Installatiemeldingen",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Opgetreden",
+              "resolved": "Opgelost"
+            }
+          }
+        }
       }
     },
     "button": {

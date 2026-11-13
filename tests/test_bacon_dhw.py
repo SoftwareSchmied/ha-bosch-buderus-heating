@@ -16,6 +16,7 @@ from custom_components.bosch_buderus_heating.bacon.dhw_status import (
     track_status,
 )
 from custom_components.bosch_buderus_heating.bacon.models import BaconError, Device
+from custom_components.bosch_buderus_heating.const import DEFAULT_MANUFACTURER
 from custom_components.bosch_buderus_heating.ha_compat import temperature_unit
 from custom_components.bosch_buderus_heating.water_heater import (
     BaconWaterHeater,
@@ -150,6 +151,18 @@ def test_invalid_current_temperature_is_never_zero(value):
     data["sensor"]["items"][0].update(timestamp=3, currentTemp=value)
     emit(account, "topics/sensor", data["sensor"])
     assert heater.native_current_temperature is None
+
+
+@pytest.mark.parametrize("unit", ["C", "°C", "degC", "Celsius"])
+def test_every_celsius_spelling_of_the_device_families_is_accepted(unit):
+    account, heater, data = configured()
+    data["metadata"]["topics"]["sensor"]["currentTemp"]["unit"] = unit
+    data["metadata"]["shadows"]["state"]["tempSetpoint"]["unit"] = unit
+    emit(account, "topics/meta", data["metadata"])
+    assert heater.native_current_temperature is not None
+    assert heater.native_target_temperature is not None
+    # One manufacturer value for every device family.
+    assert heater.device_info["manufacturer"] == DEFAULT_MANUFACTURER
 
 
 @pytest.mark.parametrize(

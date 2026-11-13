@@ -24,7 +24,6 @@ from .configuration import (
     CLOUD_KIND,
     STORAGE_MINOR_VERSION,
     STORAGE_VERSION,
-    SUPPORTED_MINOR_VERSIONS,
     ConfigurationError,
     ConfigurationSnapshot,
     JsonObject,
@@ -198,10 +197,7 @@ def _read_entries(
     for entry in hass.config_entries.async_entries(DOMAIN):
         if entry.source == SOURCE_IGNORE:
             continue
-        if entry.version > STORAGE_VERSION or (
-            entry.version == STORAGE_VERSION
-            and entry.minor_version > max(SUPPORTED_MINOR_VERSIONS)
-        ):
+        if entry.version > STORAGE_VERSION:
             raise ConfigurationError("unsupported_version")
         snapshot: ConfigurationSnapshot | None
         try:

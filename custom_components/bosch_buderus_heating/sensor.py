@@ -33,7 +33,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity import EntityPlatformState
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.event import (
     async_track_time_interval,
@@ -808,7 +807,11 @@ class BoschBuderusRequestMetricSensor(SensorEntity):
         self._stop_unsub: CALLBACK_TYPE | None = None
 
     async def async_added_to_hass(self) -> None:
-        """Check for changed values once a minute; no other listener."""
+        """Check for changed values once a minute; no other listener.
+
+        Removal writes nothing: the counts start anew with the next start, and
+        stopping Home Assistant records the last ones.
+        """
         await super().async_added_to_hass()
         # Home Assistant writes this first state right after this method.
         self._summary = self._metrics.entity_summary()
@@ -822,20 +825,6 @@ class BoschBuderusRequestMetricSensor(SensorEntity):
             EVENT_HOMEASSISTANT_STOP, self._stopping
         )
         self.async_on_remove(self._cancel_stop)
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Record the last counts; removal otherwise skips the state write."""
-        state = getattr(self, "_platform_state", None)
-        # Without Home Assistant's platform state the write is skipped.
-        if state is not None and self._changed():
-            self._platform_state = EntityPlatformState.ADDED
-            try:
-                self.async_write_ha_state()
-            except Exception:  # removal must go on
-                _LOGGER.debug("The last request counts could not be written")
-            finally:
-                self._platform_state = state
-        await super().async_will_remove_from_hass()
 
     @callback
     def _minute_reached(self, _now: datetime) -> None:

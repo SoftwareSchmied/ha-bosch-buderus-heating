@@ -7,9 +7,11 @@ import hashlib
 import logging
 import math
 from collections.abc import Awaitable, Callable
+from contextlib import suppress
 from typing import Any, cast
 
 from homeassistant.config_entries import (
+    ConfigEntry,
     ConfigEntryBaseFlow,
     ConfigFlow,
     ConfigFlowResult,
@@ -220,6 +222,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
     _local_error: str | None = None
     _local_address = ""
     _local_choices: tuple[LocalEndpoint, ...] = ()
+    _local_discovery: ZeroconfServiceInfo | None = None
     _local_gateway = ""
     # FLOW-5: fingerprints confirmed in this dialog, by entry, address and port.
     _local_confirmed: dict[tuple[str, LocalEndpoint, PortRole], bytes] | None = None
@@ -267,10 +270,26 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             description_placeholders=placeholders,
         )
 
+    def _local_owner_entries(self) -> dict[str, ConfigEntry]:
+        return {
+            entry.entry_id: entry
+            for entry in self.hass.config_entries.async_entries(
+                DOMAIN, include_ignore=False
+            )
+            if entry.version == 4
+        }
+
+    async def _local_new_entry(self) -> ConfigFlowResult:
+        """Create an entry without any access; only the config flow can."""
+        return self.async_abort(reason="local_existing_owner_required")
+
     async def async_step_zeroconf(
         self, discovery_info: ZeroconfServiceInfo
     ) -> ConfigFlowResult:
-        if not self.local_available():
+        # Without any entry the integration is not set up yet, so the local
+        # runtime cannot be ready: the new entry's own local setup checks it.
+        owners = self._local_owner_entries()
+        if owners and not self.local_available():
             return self.async_abort(reason="local_setup_unavailable")
         try:
             self._local_choices = remember_discovery(self.hass, discovery_info)
@@ -286,7 +305,36 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         if not track_discovery_flow(self.hass, self.flow_id, self._local_choices):
             return self.async_abort(reason="already_in_progress")
         self.context["title_placeholders"] = {"host": self._local_choices[0].host}
+        if not owners:
+            self._local_discovery = discovery_info
+            return await self.async_step_local_discovered()
         return await self.async_step_local_setup()
+
+    async def async_step_local_discovered(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """A gateway found without any entry: set up a new local-only entry."""
+        if user_input is None:
+            return self._local_form(
+                "local_discovered",
+                placeholders={"host": markdown_literal(self._local_choices[0].host)},
+            )
+        if self._local_phase != "local_discovered" or self._local_closed:
+            return self.async_abort(reason="local_session_changed")
+        if configured_discovery(self.hass, self._local_choices):
+            return self.async_abort(reason="already_configured")
+        if self._local_owner_entries():
+            # An entry was added meanwhile: the gateway joins an existing one.
+            if not self.local_available():
+                return self.async_abort(reason="local_setup_unavailable")
+            self._local_phase = ""
+            return await self.async_step_local_setup()
+        if self._local_discovery is not None:
+            # The notice may be older than the hint; the address step of the
+            # new entry offers the found address again.
+            with suppress(LocalProbeError, AttributeError):
+                remember_discovery(self.hass, self._local_discovery)
+        return await self._local_new_entry()
 
     async def async_step_local_setup(
         self, user_input: dict[str, Any] | None = None
@@ -308,13 +356,7 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
     ) -> ConfigFlowResult:
         if denied := self._local_guard("local_owner"):
             return denied
-        entries = {
-            entry.entry_id: entry
-            for entry in self.hass.config_entries.async_entries(
-                DOMAIN, include_ignore=False
-            )
-            if entry.version == 4
-        }
+        entries = self._local_owner_entries()
         if not entries:
             return self.async_abort(reason="local_existing_owner_required")
         if user_input is not None:
@@ -1070,4 +1112,5 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         self._local_auth_pin = self._local_resource_pin = None
         self._local_confirmed = None
         self._local_retry = None
+        self._local_discovery = None
         super().async_remove()

@@ -270,8 +270,25 @@ def test_unknown_minor_versions_are_not_silently_rewritten(minor):
     data, options = proposed()
     with pytest.raises(ConfigurationError, match="unsupported_minor_version"):
         convert_legacy_configuration(OWNER, legacy(), {}, minor_version=minor)
+    if minor == 3:
+        return  # a newer minor version is read, see below
     with pytest.raises(ConfigurationError, match="unsupported_minor_version"):
         load_configuration(OWNER, data, options, minor_version=minor)
+
+
+@pytest.mark.parametrize("minor", [3, 7])
+def test_a_newer_minor_version_is_read_and_keeps_its_unknown_data(minor):
+    data, options = proposed()
+    data["later_optional_data"] = {"kept": True}
+    options["later_optional_option"] = 1
+    snapshot = load_configuration(OWNER, data, options, minor_version=minor)
+    # Its own version stays, so saving never lowers it.
+    assert snapshot.minor_version == minor
+    assert snapshot.to_data() == data and snapshot.to_options() == options
+    assert (
+        snapshot.connections.keys()
+        == load_configuration(OWNER, data, options, minor_version=2).connections.keys()
+    )
 
 
 def test_snapshot_and_every_export_are_detached_and_read_only():

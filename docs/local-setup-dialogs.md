@@ -11,12 +11,20 @@ Local setup requires both storage-format support and a registered
 registers its provider during integration setup, with entry version 4.2.
 Changing the minor version alone cannot expose these dialogs.
 Menus, discovery and direct calls to every setup stage enforce this boundary.
+The one exception is a discovery notice while no entry exists: the integration
+is not set up then, so its runtime cannot be ready yet. The notice only offers
+to create an entry, and the local setup of that entry checks the boundary as
+usual.
 
 An existing entry with the provider available offers local setup in its
 options and local connection settings. A native Zeroconf announcement first asks
-the user to select an existing owner and installation. It never creates another
-entry or silently changes a saved address; to set up a system without the cloud,
-add the integration with **Local access only**.
+the user to select an existing owner and installation; it never creates another
+entry there or silently changes a saved address. Without any entry, the notice
+offers the setup with **Local access only** directly: after the user continues,
+it creates the same entry as that choice and opens its local setup, with the
+found address offered again. Nothing is created before the user continues. If
+an entry was added while the notice was open, continuing asks for the owner
+instead. An ignored notice stays ignored.
 
 Adding the integration offers three choices: cloud access, cloud and local
 access, and local access only. With cloud and local access, the new entry's

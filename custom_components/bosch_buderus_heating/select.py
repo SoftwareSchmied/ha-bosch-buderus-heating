@@ -20,6 +20,7 @@ from .bacon.purifier_entities import (
 from .bacon.purifier_entities import (
     track_entities as track_purifier_entities,
 )
+from .const import DOMAIN
 from .control import HeldCapabilities, async_set_control, track_control_entities
 from .control_presentation import control_category, control_icon, control_name
 from .coordinator import (
@@ -328,7 +329,9 @@ class BoschBuderusSelect(
         """Set the raw PointT enum and rely on the coordinator's read-back."""
         raw = self._options_map.get(option)
         if raw is None:
-            raise ServiceValidationError("The option is no longer advertised")
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="select_option_unavailable"
+            )
         await async_set_control(
             self.coordinator,
             self.entity_description.resource_path,

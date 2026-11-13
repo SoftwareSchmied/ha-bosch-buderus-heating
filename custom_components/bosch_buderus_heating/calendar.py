@@ -169,9 +169,7 @@ class BoschBuderusHolidayCalendar(
         self._validate_event_fields(kwargs)
         configuration = parse_holiday_write_configuration(self._available_resources)
         if configuration is None:
-            raise HomeAssistantError(
-                "This heating system does not currently allow holiday changes"
-            )
+            raise _error("holiday_changes_unavailable")
         try:
             values = create_holiday_values(
                 kwargs[EVENT_START],
@@ -202,9 +200,7 @@ class BoschBuderusHolidayCalendar(
         except WriteBusy as err:
             raise _busy() from err
         except (KeyError, PointTError, TypeError, ValueError) as err:
-            raise HomeAssistantError(
-                "The holiday could not be created or confirmed"
-            ) from err
+            raise _error("holiday_create_failed") from err
 
     @override
     async def async_update_event(
@@ -227,7 +223,7 @@ class BoschBuderusHolidayCalendar(
         )
         holiday_id = holiday_period_id(period) if period is not None else None
         if configuration is None or period is None or holiday_id is None:
-            raise HomeAssistantError("This holiday cannot currently be changed safely")
+            raise _error("holiday_change_unsafe")
         try:
             values = update_holiday_values(
                 period,
@@ -255,9 +251,7 @@ class BoschBuderusHolidayCalendar(
         except WriteBusy as err:
             raise _busy() from err
         except (KeyError, PointTError, TypeError, ValueError) as err:
-            raise HomeAssistantError(
-                "The holiday could not be changed or confirmed"
-            ) from err
+            raise _error("holiday_update_failed") from err
 
     @override
     async def async_delete_event(
@@ -277,12 +271,10 @@ class BoschBuderusHolidayCalendar(
             else parse_holiday_write_configuration(self._available_resources)
         )
         if configuration is None or not configuration.can_delete:
-            raise HomeAssistantError(
-                "This heating system does not currently allow holiday changes"
-            )
+            raise _error("holiday_changes_unavailable")
         holiday_id = holiday_period_id(period) if period is not None else None
         if holiday_id is None:
-            raise HomeAssistantError("This holiday has no writable PointT ID")
+            raise _error("holiday_not_deletable")
         try:
             # C40: like the options dialog, delete only the holiday this
             # event showed; the gateway's current entry is compared first.
@@ -293,9 +285,7 @@ class BoschBuderusHolidayCalendar(
         except WriteBusy as err:
             raise _busy() from err
         except PointTError as err:
-            raise HomeAssistantError(
-                "The holiday could not be deleted or confirmed"
-            ) from err
+            raise _error("holiday_delete_failed") from err
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -355,16 +345,14 @@ class BoschBuderusHolidayCalendar(
         # The HA frontend sends an empty string for "this event", including
         # ordinary non-recurring events edited or dragged in the calendar.
         if recurrence_range:
-            raise HomeAssistantError("Recurring holidays are not supported")
+            raise _error("holiday_recurring_unsupported")
 
     @staticmethod
     def _validate_event_fields(event: dict[str, Any]) -> None:
         if event.get(EVENT_RRULE):
-            raise HomeAssistantError("Recurring holidays are not supported")
+            raise _error("holiday_recurring_unsupported")
         if event.get(EVENT_DESCRIPTION) or event.get(EVENT_LOCATION):
-            raise HomeAssistantError(
-                "PointT holidays do not support descriptions or locations"
-            )
+            raise _error("holiday_fields_unsupported")
 
     def _event_from_period(self, period: HolidayPeriod) -> CalendarEvent:
         return CalendarEvent(
@@ -403,7 +391,12 @@ class BoschBuderusHolidayCalendar(
 
 
 def _busy() -> HomeAssistantError:
-    return HomeAssistantError(translation_domain=DOMAIN, translation_key="write_busy")
+    return _error("write_busy")
+
+
+def _error(key: str) -> HomeAssistantError:
+    """A translated message; the text follows the user's language."""
+    return HomeAssistantError(translation_domain=DOMAIN, translation_key=key)
 
 
 def _as_utc(value: datetime) -> datetime:

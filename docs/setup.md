@@ -248,6 +248,10 @@ are in [operation without the cloud](operation-without-cloud.md).
 When Home Assistant finds a gateway in the network, it shows a discovery
 notice. If you select **Ignore**, that notice stays ignored, also after a
 restart; you can still add the local access from the entry's options.
+Without any entry of this integration yet, the notice sets the gateway up with
+**Local access only**: continuing creates an entry without a cloud and opens
+its local setup, with the found address offered. With an entry, the notice asks
+which existing setup the gateway belongs to.
 
 <a id="everyday-operation-in-the-development-version"></a>
 
@@ -481,11 +485,12 @@ wait in seconds. Wait for that interval and select **Submit** to obtain a new
 sign-in link. Submitting early does not send another token request or extend
 the wait. Without a usable wait time from the server, the pause is five minutes.
 
-### PointT service cannot be reached
+### The cloud access cannot be reached
 
 Check the Home Assistant internet connection and wait briefly. If Home
 Assistant displays **Retry gateway discovery**, select **Submit** again; no new
-sign-in is required.
+sign-in is required. The same applies when the step says that the cloud has
+requested a pause: wait, then select **Submit**.
 
 ### No gateway is found
 
@@ -518,6 +523,8 @@ again.
 
 A sign-in that finds none of the switched-on systems and devices, or that
 belongs to a different account, is refused, and the previous sign-in is kept.
+When it finds none of them, the dialog shows a new sign-in link right away,
+so you can sign in again with the right account.
 
 ### The local gateway certificate changed
 

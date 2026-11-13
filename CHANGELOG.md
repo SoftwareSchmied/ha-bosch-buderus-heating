@@ -98,6 +98,59 @@ not yet on the plant itself.
   that showed the counter and program forms, and for checking the button on
   your controller.
 
+### Setup, messages and smaller fixes
+
+I tested the following changes with the automated tests and simulated data
+only; none of them is checked on a real device or a fresh installation yet.
+
+- **A found gateway can be set up directly:** when Home Assistant finds a
+  gateway in the home network and the integration has no entry yet, the
+  discovery notice now offers the setup with **Local access only**. Continuing
+  creates the same entry as that choice and opens its local setup, with the
+  found address offered. Before, such a notice was dropped silently. With an
+  entry, the notice still asks which setup the gateway belongs to.
+- **New sign-in link instead of a useless retry:** when a new sign-in of the
+  cloud access finds none of its systems and devices, the dialog now shows a
+  fresh sign-in link with the explanation, instead of a retry with the same
+  sign-in. A cloud pause during this check is reported as a pause, not as an
+  unreachable service.
+- **Commands during a cloud pause or outage say why:** a heating circuit
+  climate command or a control change during a cloud pause, a protection
+  pause after repeated errors, an outage, a stopped cloud access or a needed
+  new sign-in now names that reason, with the end of the pause when it is
+  known. Before, the message spoke of the manual heating mode or of a setting
+  that could not be changed safely. Nothing is sent in these cases, as before.
+- **"Cloud access" in messages:** connection, error and rate-limit messages
+  and the titles of the firmware repair notes no longer use the internal
+  service name; the rate-limit message of the controls dialog now says that
+  the cloud limits the requests. The names of the request count sensors stay
+  for now.
+- **Translated messages:** the errors of the holiday calendar and of a select
+  option that is no longer offered now follow the language of Home
+  Assistant, and the event types of the system notifications are shown as
+  "Appeared" and "Resolved" in every language. The new texts are drafts in all
+  languages except English and German.
+- **One manufacturer name:** additional cloud devices and wallboxes now show
+  the same manufacturer as heating systems that report no brand, instead of
+  two other spellings, and water heaters among the additional cloud devices
+  also accept temperatures reported in "degC" or "Celsius".
+- **A later minor version of the entry is read:** an entry saved by a later
+  0.9.x version with a higher minor version of format 4 now loads, read like
+  this version's format; data it does not know stays stored. So a return from
+  a later 0.9.x to this version needs no backup. Before, such an entry did not
+  start.
+- **Request count sensors:** they no longer write their last counts when they
+  are removed, which relied on Home Assistant internals; stopping Home
+  Assistant still records them, and the counts start anew at every start
+  anyway.
+- **Local sign-in:** the token request with the gateway label now uses the
+  same hardened connection settings as all other local requests. Nothing
+  changes in its behavior.
+- **Integration category:** the manifest declares the category "climate".
+- **README:** the load figures in the README are replaced by what the code
+  does; my measurement, with what it compares, is now in the
+  [release checks](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/main/docs/release.md#load-measurement-for-090-alpha2).
+
 ## [0.9.0-alpha.6] - 2026-11-12
 
 > [!IMPORTANT]
