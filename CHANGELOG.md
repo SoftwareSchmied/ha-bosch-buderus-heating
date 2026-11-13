@@ -5,6 +5,44 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Room controllers and start counters
+
+- **Start counters per heat source on a TC100.2:** the counters of `hs1`
+  and `hs2` come as a list with one entry (total, heating, hot water) on
+  that controller, which the integration did not read. A list of up to
+  eight entries is read now, so total, heating and hot water starts get
+  values. I have tested this only with simulated data in the reported form.
+- **Missing start counter parts disabled:** a part of a start counter that
+  the reading does not contain when its entity is first created, for
+  example cooling starts on a gas boiler, is now created disabled, like the
+  pool starts. Existing entities keep their setting; you can disable such a
+  sensor yourself.
+- **Switch points of a TC100.2 editable:** the week programs of that
+  controller have an extra whole-number field `name` on each switch point,
+  and its day programs have no weekday field, so the switch point dialog
+  stayed read-only. The integration now accepts exactly this form and
+  nothing else: a change is sent as day, time and temperature for every
+  point of that day, without `name`, and before and after the change only
+  day, time and temperature are compared. Reading the form is tested with
+  simulated data in the shape the diagnostics reported; writing it is
+  expected, untested on a real controller, and I would be glad about a
+  report. Any other extra field, or a `name` that is not a whole number,
+  keeps the program read-only (new diagnostics code `optional_key_type`).
+- **Diagnostics:** `rrc_programs.schedules` lists the form of the switch
+  points per program kind (key names and value types only, never a value);
+  the boost settings report the last reason they had no limits and how long
+  ago it was seen; `rrc_profile.confirmation` now matches the confirmed
+  functions instead of always saying `unconfirmed`; and the energy history
+  names why a cycle without an error imported nothing (`no_records`,
+  `no_completed_days`, `all_series_empty`) and counts the daily records it
+  read, without values.
+- **Advance next switch point confirmed:** the button is now listed as
+  confirmed on a TC100.2 in the diagnostics and in the room controller
+  documentation. Thank you, @obvius1, for the diagnostics in
+  [#122](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/122)
+  that showed the counter and program forms, and for checking the button on
+  your controller.
+
 ## [0.9.0-alpha.6] - 2026-11-12
 
 > [!IMPORTANT]

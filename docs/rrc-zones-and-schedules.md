@@ -78,18 +78,28 @@ from the system language.
 
 The reviewed format is `weekProgram` with a `value` array. Every point has
 `d` (`Mo Tu We Th Fr Sa Su`), `t` (minutes since midnight) and `Th`
-(Celsius). `week` supplies all weekdays. A day is written through the
-corresponding lowercase English path, such as `/programs/pg3/monday`,
-with a body shaped as `{"value":[{"d":"Mo","t":425,"Th":21.5}]}`.
-This is a synthetic format example, not a suggested setting.
+(Celsius), and may have `name`, a whole number. `week` supplies all
+weekdays. A day program (`dayProgram`) may leave out `d`; its weekday is
+then the one of its path. A day is written through the corresponding
+lowercase English path, such as `/programs/pg3/monday`, with a body shaped
+as `{"value":[{"d":"Mo","t":425,"Th":21.5}]}`: every point of that day with
+`d`, `t` and `Th`, without `name`. This is a synthetic format example, not
+a suggested setting.
+
+The form with `name` and the day programs without `d` are the ones a
+TC100.2 reported. Reading them is checked against those reports; writing
+them is expected, untested. Before the change, and when the change is read
+back, the integration compares only the day, time and temperature of each
+point; a different `name` does not stop the change, and it is not sent.
 
 The editor permits the reviewed five-minute time raster and 5 to 30 °C in
 0.5 °C steps. It changes one existing point and preserves the other points
 of that day. It does not add or remove points or create programs because
 the supported capacity and those lifecycle operations are not established.
 Empty, unsorted, duplicate or extended formats remain unchanged. Supported
-readable formats can be viewed; unknown fields prevent editing and survive
-an unchanged parser/encoder round trip. An unsupported shape is not
+readable formats can be viewed; unknown fields, a point key other than `d`,
+`t`, `Th` and `name`, or a `name` that is not a whole number prevent
+editing and survive an unchanged parser/encoder round trip. An unsupported shape is not
 presented as a valid schedule.
 
 These are recurring local wall-clock times, without calendar dates or UTC

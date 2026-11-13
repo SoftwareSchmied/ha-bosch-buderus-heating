@@ -512,9 +512,11 @@ No current counts, raw marker numbers or unknown field names are included.
 When a part reads as `invalid_structure`, `structure` describes the form of
 the reading without values: `reason` (`item_not_object`), `value` and
 `values` as types, list lengths and key names (for example
-`list[2]<dict{ch:int,total:int}>`; a key that does not look like a plain
+`list[2]<dict{ch:int,total:int}|int>`; a key that does not look like a plain
 name shows as `?`), and `values_count`. It helps to learn a counter form
-that the integration does not read yet.
+that the integration does not read yet. Since 0.9.0 a list of up to eight
+objects in `value` is read as the parts of the counter, so this form no
+longer shows as `invalid_structure`.
 
 The per-gateway `start_counter_recovery` section reports registered-path count,
 paths waiting for their first response and whether the shared path budget
@@ -656,8 +658,13 @@ and fixed codes only, never program names or current values:
 | `program_list_empty` | The program list is valid but contains no programs. |
 
 `schedules` counts the week and day programs (`week`, `day`): `count`,
-`readable` (the integration understands the form), `editable` and `issues`,
-how often each reason below occurs. Each program's capability entry adds
+`readable` (the integration understands the form), `editable`, `issues`,
+how often each reason below occurs, and `point_shapes`, how many programs
+have switch points of each form. A form names the keys of a point and the
+types of their values, never a value, for example
+`dict{Th:float,d:str,name:int,t:int}`; a key that does not look like a plain
+name shows as `?`, more than four forms in one program end with `more`, and
+at most eight forms are listed. Each program's capability entry adds
 `rrc_contract.schedule_issues`, its reasons in a fixed order. A program
 without a reason can be edited; the form is never changed on a guess.
 
@@ -668,14 +675,15 @@ without a reason can be edited; the form is never changed on a guess.
 | `has_references`, `has_values`, `no_value`, `not_a_list` | The program has no list of switch points. |
 | `too_many_points` | More than 512 switch points. |
 | `point_not_object` | A switch point is not an object. |
-| `day_missing_d` | A switch point has no day (`d`). |
+| `day_missing_d` | A switch point of a week program has no day (`d`); a day program may leave it out. |
 | `day_invalid` | A switch point names no known day. |
 | `day_mismatch` | A point of a day program names another day. |
 | `minute_invalid` | The time (`t`) is no whole minute of the day. |
 | `temperature_invalid` | The temperature (`Th`) is no number from 0 to 30 °C. |
 | `not_writable` | Read-only: the controller does not allow changing the program. |
 | `unknown_fields` | Read-only: the program carries fields the integration does not know. |
-| `extra_key` | Read-only: a switch point has a key besides `d`, `t` and `Th`. |
+| `extra_key` | Read-only: a switch point has a key besides `d`, `t`, `Th` and `name`. |
+| `optional_key_type` | Read-only: a switch point has `name`, but not as a whole number. |
 | `unsorted` | Read-only: the points of a day are not in ascending time order. |
 | `off_grid_minute` | Read-only: a time is not on the 5-minute grid. |
 | `temperature_range` | Read-only: a temperature is outside 5 to 30 °C. |
@@ -701,8 +709,12 @@ device identifiers or radio keys. On other gateways it contains only
 
 - `profile`: `rrc2`, and `evidence`: what showed it (`device_type`,
   `product_type`, `zones`);
-- `confirmation`: `unconfirmed` until a controller of the kind has been
-  tested with this integration; `physical_device_verified` is `false`;
+- `confirmation`: the confirmation of the room controller functions as a
+  whole, the same as `rrc_features.confirmation` (`partly_confirmed` while
+  some functions are confirmed on a real controller), with `confirmed_on`
+  (`tc100_2`, otherwise `null`); `physical_device_verified` stays `false`,
+  because the diagnostics cannot tell which controller model this is. A
+  confirmation on a TC100.2 does not confirm a CT200;
 - `local_access`: `not_available`, as these controllers have none;
 - `product_type`: `RRC 2.0`, `other` or `null`; `firmware`: the controller's
   firmware version;
@@ -748,7 +760,13 @@ It was added in 0.9.0-alpha.5 within schema 44. The functions are described in
   `gas_unit_unconfirmed`, `history_change_outside_window`,
   `heat_source_type_unavailable`, while days with the older keys wait for
   the plant type, or `legacy_keys_ambiguous`, when the plant type could not
-  be read for 24 hours and the older keys were left out),
+  be read for 24 hours and the older keys were left out; after a cycle
+  without an error that still has nothing to import: `no_records`, when no
+  answer held a valid daily record, `no_completed_days`, when the records
+  were only of the running day or outside the import window, or
+  `all_series_empty`, when every value of the imported days was zero),
+  `records_seen` (the valid daily records in the answers, a record read
+  again counts again; a count, no value),
   `heat_source_type_unreadable_seconds` (how long the plant type has been
   answered with a server error, a duration, no date) and
   `heat_source_type_failed_cycles`, `cycles`,
@@ -763,7 +781,7 @@ It was added in 0.9.0-alpha.5 within schema 44. The functions are described in
 | Entry | Counts |
 | --- | --- |
 | `zone` | `zones`, `override_paths`, `overrides_active` (only zones in the schedule mode, where a temporary setpoint acts), `next_setpoint_none`, `status_unknown`, `window_status_unknown`, `window_detection_paths` |
-| `absence` | `events` (`lists`, `lists_readable`, `events_away`, `events_weekday`, `entries_skipped`, `write_issue`), `boost` (`writable`, `missing` or why it cannot be written), the boost limits and, for each, why there are none (`boost_temperature_limits_issue`, `boost_duration_limits_issue`: `missing`, `type`, `flags`, `unit`, `range`, `step` or `null`) |
+| `absence` | `events` (`lists`, `lists_readable`, `events_away`, `events_weekday`, `entries_skipped`, `write_issue`), `boost` (`writable`, `missing` or why it cannot be written), the boost limits and, for each, why there are none (`boost_temperature_limits_issue`, `boost_duration_limits_issue`: `missing`, `type`, `flags`, `unit`, `range`, `step` or `null`); the last such reason seen in a fresh reading since Home Assistant started, also after it went away, and how many seconds ago it was last seen (`boost_temperature_limits_last_issue`, `boost_temperature_limits_last_issue_age_s`, and the same for the duration; `missing` is not kept) |
 | `dhw` | hot water circuits, offered options, extra hot water states, time types, programs and unknown levels |
 | `circuit` | `circuits` and per setting `present`, `writable`, `unavailable`, `with_limits` (and `offered_modes` for the season mode) |
 | `system` | no counts of its own, only `confirmation` and `writes` |
