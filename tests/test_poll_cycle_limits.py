@@ -406,7 +406,7 @@ async def test_a_request_held_back_by_the_shared_pause_is_no_new_event(
     shared.remaining = 400.0
     client.get_resources_bulk.side_effect = RateLimited(400.0)
     caplog.set_level(logging.WARNING, logger=coordinator_module.__name__)
-    with pytest.raises(UpdateFailed, match="backoff"):
+    with pytest.raises(UpdateFailed, match="rate-limit pause"):
         await coordinator._async_update_data()
     client.get_resources_bulk.assert_not_awaited()
     assert coordinator._cloud_backoff_until == clock.now + 400.0
