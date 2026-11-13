@@ -18,7 +18,7 @@ from homeassistant.components.climate.const import HVACMode
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.bosch_buderus_heating import (
@@ -750,11 +750,13 @@ async def test_climate_stays_available_with_valid_readings(
     assert entity.available
     assert entity.hvac_mode is HVACMode.HEAT
     assert entity.native_target_temperature == 19
-    # Changes still need a ready cloud.
-    with pytest.raises(ServiceValidationError):
+    # Changes still need a ready cloud, and the message says so.
+    with pytest.raises(HomeAssistantError) as refused:
         await entity.async_set_hvac_mode(HVACMode.OFF)
-    with pytest.raises(ServiceValidationError):
+    assert refused.value.translation_key == "command_cloud_unreachable"
+    with pytest.raises(HomeAssistantError) as refused:
         await entity.async_set_temperature(temperature=20)
+    assert refused.value.translation_key == "command_cloud_unreachable"
     coordinator._write_service.async_write_enum.assert_not_awaited()
     # An expired reading makes it unavailable, like a sensor.
     old = datetime.now(UTC) - timedelta(days=1)

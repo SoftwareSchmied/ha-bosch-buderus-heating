@@ -70,6 +70,10 @@
           "owner": "Vorhandene Einrichtung"
         }
       },
+      "local_discovered": {
+        "title": "Gateway gefunden",
+        "description": "Home Assistant hat im Heimnetz ein Gateway unter {host} gefunden, und diese Integration ist noch nicht eingerichtet.\n\nFahre fort, um es mit **Nur lokaler Zugang** einzurichten: Es entsteht ein Eintrag ohne Cloud, und danach öffnet sich seine lokale Einrichtung. Der lokale Zugang liest nur. Ein Cloud-Zugang lässt sich später im selben Eintrag ergänzen."
+      },
       "local_target": {
         "title": "Anlage auswählen",
         "description": "Wähle die Anlage für den lokalen Zugang. Vor dem Speichern wird geprüft, ob die Gateway-Kennung dazu passt.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Dieser Anmeldeversuch ist abgelaufen. Öffne den oben neu angezeigten SingleKey-ID-Link und melde dich erneut an.",
       "auth_restart": "Dieser Anmeldeversuch kann nicht mehr verwendet werden. Öffne den oben neu angezeigten SingleKey-ID-Link und melde dich erneut an.",
-      "cannot_connect": "Der PointT-Dienst ist nicht erreichbar. Prüfe die Internetverbindung, warte kurz und versuche es erneut.",
+      "cannot_connect": "Der Cloud-Zugang ist nicht erreichbar. Prüfe die Internetverbindung, warte kurz und versuche es erneut.",
       "invalid_auth": "SingleKey ID hat die Autorisierung abgelehnt oder sie ist abgelaufen. Verwende den neu angezeigten SingleKey-ID-Link und wiederhole die Anmeldung.",
       "invalid_redirect": "Home Assistant konnte diese Adresse nicht verwenden. Kopiere in der Chrome-Konsole aus der Meldung „Failed to launch“ die vollständige App-Adresse. Sie muss mit dem oben genannten Schema beginnen und zum aktuellen Anmeldeversuch gehören.",
       "gateway_changed": "Die Gateway-Liste hat sich geändert, während dieser Dialog geöffnet war. Schließe den Dialog und öffne Neu konfigurieren erneut.",
       "select_gateway": "Wähle mindestens ein Gerät aus der Liste aus, bevor du fortfährst.",
-      "unknown": "Ein unerwarteter PointT-Fehler ist aufgetreten. Warte kurz und versuche es erneut.",
+      "unknown": "Beim Cloud-Zugang ist ein unerwarteter Fehler aufgetreten. Warte kurz und versuche es erneut.",
       "bacon_unavailable": "Die Liste der weiteren Cloud-Geräte ist derzeit nicht verfügbar. Warte mindestens eine Minute und versuche es erneut.",
       "bacon_selection_unavailable": "Die weiteren Cloud-Geräte konnten derzeit nicht abgefragt werden. Du kannst die erreichbaren Heizungs-Gateways auswählen. Bereits eingerichtete Cloud-Geräte bleiben unverändert ausgewählt.",
       "reauth_targets_missing": "Mit dieser Anmeldung wurde keine der eingeschalteten Anlagen und Geräte gefunden. Die bisherigen Zugangsdaten bleiben erhalten. Prüfe, ob du dich mit demselben Konto wie bisher angemeldet hast. Wurden die Anlagen aus dem Konto entfernt, öffne Konfigurieren → Verbindungen → den Cloud-Zugang: Schalte unter **Verwendung für Anlagen und Geräte** eine Anlage ein, die noch im Konto ist, oder schalte die entfernten aus und vergiss sie mit **Abgewählte Anlagen vergessen**. Ist keine mehr übrig, entferne den Cloud-Zugang und verbinde ihn neu.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Abfragehäufigkeit",
-        "description": "Standard liest aktuelle Heizungsbetriebswerte jede Minute, Einstellungen und Energiewerte alle 5 Minuten und langsamere Angaben alle 15 Minuten. Cloud-schonend verdoppelt diese Abstände. Aktive Störungen werden in beiden Profilen jede Minute geprüft. Das Profil gilt für die PointT-Abfragen von Heizung und Wallbox des ausgewählten Cloud-Zugangs; weitere Cloud-Geräte melden Änderungen als Nachrichten. Anmeldung, Geräteprüfung und die Bestätigung nach einer Änderung können zusätzliche Anfragen außerhalb dieses Rasters auslösen. Dauert ein Abrufdurchlauf länger als sein Intervall, beginnt der nächste entsprechend später.",
+        "description": "Standard liest aktuelle Heizungsbetriebswerte jede Minute, Einstellungen und Energiewerte alle 5 Minuten und langsamere Angaben alle 15 Minuten. Cloud-schonend verdoppelt diese Abstände. Aktive Störungen werden in beiden Profilen jede Minute geprüft. Das Profil gilt für die Abfragen von Heizung und Wallbox des ausgewählten Cloud-Zugangs; weitere Cloud-Geräte melden Änderungen als Nachrichten. Anmeldung, Geräteprüfung und die Bestätigung nach einer Änderung können zusätzliche Anfragen außerhalb dieses Rasters auslösen. Dauert ein Abrufdurchlauf länger als sein Intervall, beginnt der nächste entsprechend später.",
         "data": {
           "polling_profile": "Abfrageprofil"
         }
@@ -663,7 +667,7 @@
       "write_failed": "Die Urlaubseinstellungen konnten nicht geändert werden.",
       "write_busy": "Die Heizungsanlage wird gerade abgefragt oder eine andere Änderung läuft noch. Es wurde nichts gesendet. Versuche es gleich noch einmal.",
       "write_not_confirmed": "Die Änderung konnte nicht vollständig bestätigt werden. Einzelne Einstellungen können bereits gespeichert sein. Öffne die Urlaubszeit erneut und prüfe die aktuellen Angaben.",
-      "write_rate_limited": "Die PointT-Cloud begrenzt derzeit die Anfragen. Warte, bevor du die Änderung erneut versuchst.",
+      "write_rate_limited": "Die Cloud begrenzt derzeit die Anfragen. Warte, bevor du die Änderung erneut versuchst.",
       "write_validation_failed": "Mindestens eine Auswahl wird von der Heizungsanlage nicht mehr unterstützt. Schließe den Dialog, aktualisiere die Integration und versuche es erneut.",
       "holiday_end_not_after_start": "Das Ende muss nach dem Beginn liegen. Bitte wähle ein späteres Ende.",
       "rrc_time": "Bitte wähle eine Uhrzeit in Schritten von fünf Minuten, ohne Sekunden.",
@@ -691,7 +695,7 @@
       "controls_invalid": "Eine Eingabe ist ungültig oder die angezeigten Werte haben sich geändert. Prüfe die Eingaben oder lade die Werte neu. Es wurde nichts geschrieben.",
       "controls_changed": "Eine Einstellung wurde inzwischen geändert oder ist nicht mehr verfügbar. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
       "controls_auth": "Die Anmeldung ist abgelaufen. Bitte melde die Integration erneut an. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
-      "controls_rate_limit": "Die Anlage begrenzt gerade die Anfragen. Bitte warte vor dem nächsten Versuch. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
+      "controls_rate_limit": "Die Cloud begrenzt gerade die Anfragen. Bitte warte vor dem nächsten Versuch. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
       "controls_unconfirmed": "Die letzte Änderung konnte nicht bestätigt werden. Sie kann an der Anlage bereits wirksam sein. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
       "controls_failed": "Die Verbindung zur Anlage ist fehlgeschlagen. Die letzte Änderung kann bereits wirksam sein. Bereits bestätigte Änderungen bleiben bestehen. Lade die Werte neu, bevor du es erneut versuchst.",
       "controls_busy": "Die Anlage wird gerade abgefragt oder eine andere Änderung läuft noch. Diese Änderung wurde nicht gesendet. Bereits bestätigte Änderungen bleiben bestehen. Versuche es gleich noch einmal.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "Die Cloud verlangt eine Abfragepause. Bitte warte vor dem nächsten Versuch.",
       "invalid_auth": "SingleKey ID hat die Autorisierung abgelehnt oder sie ist abgelaufen. Verwende den neu angezeigten SingleKey-ID-Link und wiederhole die Anmeldung.",
       "invalid_redirect": "Home Assistant konnte diese Adresse nicht verwenden. Kopiere in der Chrome-Konsole aus der Meldung „Failed to launch“ die vollständige App-Adresse. Sie muss mit dem oben genannten Schema beginnen und zum aktuellen Anmeldeversuch gehören.",
-      "cannot_connect": "Der PointT-Dienst ist nicht erreichbar. Prüfe die Internetverbindung, warte kurz und versuche es erneut.",
+      "cannot_connect": "Der Cloud-Zugang ist nicht erreichbar. Prüfe die Internetverbindung, warte kurz und versuche es erneut.",
       "select_gateway": "Wähle mindestens ein Gerät aus der Liste aus, bevor du fortfährst.",
       "no_gateways": "Es wurden keine Geräte gefunden. Prüfe, ob Marke und SingleKey-ID-Konto zur verwendeten App passen. Ein Raumregler mit älterer Firmware erscheint erst, wenn seine Firmware aktualisiert und er in der aktuellen App mit deiner SingleKey-ID eingerichtet ist.",
       "local_invalid_address": "Gib eine IP-Adresse oder einen Hostnamen ohne URL, Pfad oder Zugangsdaten ein.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "PointT-Fähigkeiten haben sich nach einem Firmwareupdate geändert",
+      "title": "Fähigkeiten haben sich nach einem Firmwareupdate geändert",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "PointT-Fähigkeiten neu erkennen",
-            "description": "Bosch/Buderus Home Comfort hat {conflict_count} bekannte Fähigkeiten gefunden, deren Datentyp oder Einheit nicht mehr zum sicher unterstützten PointT-Schema passt. Wähle **Senden**, um die Integration neu zu laden und alle Fähigkeiten erneut zu prüfen. Falls die Warnung wiederkehrt, lade die Integrationsdiagnose herunter und melde das geänderte Schema, ohne Zugangsdaten oder Rohwerte zu teilen."
+            "title": "Fähigkeiten neu erkennen",
+            "description": "Bosch/Buderus Home Comfort hat {conflict_count} bekannte Fähigkeiten gefunden, deren Datentyp oder Einheit nicht mehr zum sicher unterstützten Schema passt. Wähle **Senden**, um die Integration neu zu laden und alle Fähigkeiten erneut zu prüfen. Falls die Warnung wiederkehrt, lade die Integrationsdiagnose herunter und melde das geänderte Schema, ohne Zugangsdaten oder Rohwerte zu teilen."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "PointT-Fähigkeiten haben sich nach einem Firmwareupdate geändert",
+      "title": "Fähigkeiten haben sich nach einem Firmwareupdate geändert",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "PointT-Fähigkeiten neu erkennen",
+            "title": "Fähigkeiten neu erkennen",
             "description": "Bei dieser Anlage entsprechen {conflict_count} bekannte Funktionen nicht mehr dem unterstützten Datentyp oder der Einheit. Prüfe ihre Funktionen erneut. Nur diese Anlage wird neu abgefragt; andere Anlagen und Zugänge bleiben aktiv. Bestehende Entitäts-IDs und eigene Einstellungen bleiben erhalten."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "Die gewählte Start- oder Endzeit kommt wegen der Zeitumstellung in der Zeitzone der Heizungsanlage zweimal vor. Bitte wähle eine eindeutige Uhrzeit."
     },
+    "holiday_changes_unavailable": {
+      "message": "Diese Heizungsanlage erlaubt gerade keine Änderungen an Urlaubszeiten."
+    },
+    "holiday_create_failed": {
+      "message": "Die Urlaubszeit konnte nicht angelegt oder bestätigt werden."
+    },
+    "holiday_change_unsafe": {
+      "message": "Diese Urlaubszeit lässt sich gerade nicht sicher ändern."
+    },
+    "holiday_update_failed": {
+      "message": "Die Urlaubszeit konnte nicht geändert oder bestätigt werden."
+    },
+    "holiday_not_deletable": {
+      "message": "Diese Urlaubszeit lässt sich hier nicht löschen."
+    },
+    "holiday_delete_failed": {
+      "message": "Die Urlaubszeit konnte nicht gelöscht oder bestätigt werden."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Wiederkehrende Urlaubszeiten werden nicht unterstützt."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Urlaubszeiten haben keine Beschreibung und keinen Ort. Entferne sie und versuche es erneut."
+    },
+    "select_option_unavailable": {
+      "message": "Die Heizungsanlage bietet diese Option nicht mehr an. Lade die Werte neu und wähle erneut."
+    },
     "rrc_mode_locked": {
       "message": "Der Regler sperrt die Heizungsbetriebsart dieser Zone gerade, zum Beispiel während die Anlage kühlt. Die aktuelle Betriebsart bleibt sichtbar. Versuche es später erneut."
     },
@@ -1080,13 +1111,28 @@
       "message": "Die Cloud-Anmeldung ist nicht mehr gültig. Authentifiziere Bosch/Buderus Home Comfort erneut und versuche es danach noch einmal."
     },
     "write_rate_limited": {
-      "message": "Die PointT-Cloud begrenzt derzeit die Anfragen. Warte, bevor du die Änderung erneut versuchst."
+      "message": "Die Cloud begrenzt derzeit die Anfragen. Warte, bevor du die Änderung erneut versuchst."
     },
     "write_failed": {
       "message": "Die Änderung konnte nicht abgeschlossen werden und wurde von der Heizungsanlage nicht bestätigt. Der angezeigte Wert wird beim nächsten Lesen aktualisiert."
     },
     "write_busy": {
       "message": "Die Heizungsanlage wird gerade abgefragt oder eine andere Änderung läuft noch. Es wurde nichts gesendet. Versuche es gleich noch einmal."
+    },
+    "command_cloud_auth_required": {
+      "message": "Gerade nicht möglich: Der Cloud-Zugang braucht eine neue Anmeldung. Es wurde nichts gesendet."
+    },
+    "command_cloud_stopped": {
+      "message": "Gerade nicht möglich: Der Cloud-Zugang ist angehalten oder startet neu. Es wurde nichts gesendet."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Gerade nicht möglich: Die Cloud hat eine Abfragepause bis etwa {until} verlangt. Es wurde nichts gesendet."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Gerade nicht möglich: Nach wiederholten Cloud-Fehlern sind die Anfragen bis etwa {until} pausiert. Es wurde nichts gesendet."
+    },
+    "command_cloud_unreachable": {
+      "message": "Gerade nicht möglich: Die Cloud ist nicht erreichbar. Es wurde nichts gesendet. Versuche es erneut, sobald aktuelle Werte angezeigt werden."
     },
     "holiday_end_not_after_start": {
       "message": "Das Ende muss nach dem Beginn liegen. Bitte wähle ein späteres Ende."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Anlagenmeldungen"
+        "name": "Anlagenmeldungen",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Aufgetreten",
+              "resolved": "Behoben"
+            }
+          }
+        }
       }
     },
     "button": {

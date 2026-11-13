@@ -70,6 +70,10 @@
           "owner": "Istniejąca konfiguracja"
         }
       },
+      "local_discovered": {
+        "title": "Znaleziono bramkę",
+        "description": "Home Assistant znalazł w sieci domowej bramkę pod adresem {host}, a ta integracja nie jest jeszcze skonfigurowana.\n\nKontynuuj, aby ją skonfigurować z opcją **Tylko dostęp lokalny**: zostanie utworzony wpis bez chmury, a następnie otworzy się jego konfiguracja lokalna. Dostęp lokalny tylko odczytuje. Dostęp przez chmurę można później dodać do tego samego wpisu."
+      },
       "local_target": {
         "title": "Wybierz instalację",
         "description": "Wybierz instalację, z którą ma zostać nawiązane połączenie lokalne. Tożsamość jej bramki zostanie sprawdzona przed zapisaniem.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Ta próba logowania wygasła. Otwórz nowy link SingleKey ID wyświetlony powyżej i zaloguj się ponownie.",
       "auth_restart": "Tej próby logowania nie można już użyć. Otwórz nowy link SingleKey ID wyświetlony powyżej i zaloguj się ponownie.",
-      "cannot_connect": "Usługa PointT jest nieosiągalna. Sprawdź połączenie z internetem, zaczekaj chwilę i spróbuj ponownie.",
+      "cannot_connect": "Dostęp przez chmurę jest nieosiągalny. Sprawdź połączenie z internetem, zaczekaj chwilę i spróbuj ponownie.",
       "invalid_auth": "SingleKey ID odrzucił autoryzację lub jej ważność wygasła. Użyj nowego linku SingleKey ID wyświetlonego powyżej i powtórz logowanie.",
       "invalid_redirect": "Home Assistant nie mógł użyć tego adresu. Skopiuj pełny adres aplikacji z komunikatu ‘Failed to launch’ w konsoli Chrome. Musi zaczynać się od schematu wyświetlonego powyżej i należeć do bieżącej próby logowania.",
       "gateway_changed": "Lista bramek zmieniła się, gdy to okno było otwarte. Zamknij okno i ponownie otwórz opcję Skonfiguruj ponownie.",
       "select_gateway": "Przed kontynuowaniem wybierz z listy co najmniej jedno urządzenie.",
-      "unknown": "Wystąpił nieoczekiwany błąd PointT. Zaczekaj chwilę i spróbuj ponownie.",
+      "unknown": "Wystąpił nieoczekiwany błąd dostępu przez chmurę. Zaczekaj chwilę i spróbuj ponownie.",
       "bacon_unavailable": "Lista dodatkowych urządzeń w chmurze jest obecnie niedostępna. Zaczekaj co najmniej minutę i spróbuj ponownie.",
       "bacon_selection_unavailable": "Nie można teraz odpytać dodatkowych urządzeń w chmurze. Możesz wybrać osiągalne bramki grzewcze. Dotychczasowy wybór urządzeń w chmurze zostanie zachowany.",
       "reauth_targets_missing": "To logowanie nie znalazło żadnej z włączonych instalacji i żadnego z włączonych urządzeń. Poprzednie dane logowania zostają zachowane. Sprawdź, czy zalogowałeś się na to samo konto co wcześniej. Jeśli instalacje zostały usunięte z konta, otwórz Konfiguruj → Połączenia → dostęp przez chmurę: włącz w sekcji **Używaj dla instalacji i urządzeń** instalację, która nadal jest na koncie, albo wyłącz usunięte i usuń je opcją **Zapomnij odznaczone instalacje**. Jeśli żadna nie pozostała, usuń dostęp przez chmurę i połącz go ponownie.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Częstotliwość odpytywania",
-        "description": "Profil standardowy odczytuje bieżące wartości robocze instalacji grzewczej co minutę, ustawienia i wartości energii co 5 minut, a wolniej zmieniające się informacje co 15 minut. Profil oszczędzający chmurę podwaja te odstępy. Aktywne usterki są sprawdzane co minutę w obu profilach. Profil dotyczy odpytywania instalacji grzewczej PointT i stacji ładowania w wybranym połączeniu z chmurą; dodatkowe urządzenia w chmurze zgłaszają zmiany jako komunikaty. Logowanie, sprawdzanie urządzeń i potwierdzenie po zmianie mogą dodać żądania poza tym harmonogramem. Jeśli cykl odpytywania trwa dłużej niż jego odstęp, następny rozpoczyna się później.",
+        "description": "Profil standardowy odczytuje bieżące wartości robocze instalacji grzewczej co minutę, ustawienia i wartości energii co 5 minut, a wolniej zmieniające się informacje co 15 minut. Profil oszczędzający chmurę podwaja te odstępy. Aktywne usterki są sprawdzane co minutę w obu profilach. Profil dotyczy odpytywania instalacji grzewczej i stacji ładowania w wybranym połączeniu z chmurą; dodatkowe urządzenia w chmurze zgłaszają zmiany jako komunikaty. Logowanie, sprawdzanie urządzeń i potwierdzenie po zmianie mogą dodać żądania poza tym harmonogramem. Jeśli cykl odpytywania trwa dłużej niż jego odstęp, następny rozpoczyna się później.",
         "data": {
           "polling_profile": "Profil odpytywania"
         }
@@ -663,7 +667,7 @@
       "write_failed": "Nie udało się zmienić ustawień urlopu.",
       "write_busy": "Instalacja grzewcza jest odczytywana albo trwa jeszcze inna zmiana. Nic nie wysłano. Spróbuj ponownie za chwilę.",
       "write_not_confirmed": "Nie udało się w pełni potwierdzić zmiany. Niektóre ustawienia mogły już zostać zapisane. Ponownie otwórz urlop i sprawdź jego bieżące ustawienia.",
-      "write_rate_limited": "Chmura PointT obecnie ogranicza liczbę żądań. Zaczekaj przed ponowną próbą.",
+      "write_rate_limited": "Chmura obecnie ogranicza liczbę żądań. Zaczekaj przed ponowną próbą.",
       "write_validation_failed": "Co najmniej jeden wybór nie jest już obsługiwany przez instalację grzewczą. Zamknij okno, odśwież integrację i spróbuj ponownie.",
       "holiday_end_not_after_start": "Koniec musi być po początku. Wybierz późniejszy koniec.",
       "rrc_time": "Wybierz godzinę w krokach pięciominutowych, bez sekund.",
@@ -691,7 +695,7 @@
       "controls_invalid": "Wprowadzone dane są nieprawidłowe lub wyświetlane wartości uległy zmianie. Sprawdź wprowadzone dane lub wczytaj wartości ponownie. Nic nie zostało zapisane.",
       "controls_changed": "Ustawienie uległo zmianie lub nie jest już dostępne. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
       "controls_auth": "Uwierzytelnienie wygasło. Uwierzytelnij integrację ponownie. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
-      "controls_rate_limit": "Urządzenie obecnie ogranicza liczbę żądań. Zaczekaj przed ponowną próbą. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
+      "controls_rate_limit": "Chmura obecnie ogranicza liczbę żądań. Zaczekaj przed ponowną próbą. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
       "controls_unconfirmed": "Nie udało się potwierdzić ostatniej zmiany. Mogła już zacząć obowiązywać na urządzeniu. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
       "controls_failed": "Komunikacja z urządzeniem nie powiodła się. Ostatnia zmiana mogła już zacząć obowiązywać. Wcześniej potwierdzone zmiany pozostają zastosowane. Przed ponowną próbą wczytaj wartości ponownie.",
       "controls_busy": "Urządzenie jest odczytywane albo trwa jeszcze inna zmiana. Ta zmiana nie została wysłana. Wcześniej potwierdzone zmiany pozostają zastosowane. Spróbuj ponownie za chwilę.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "Chmura zażądała przerwy. Zaczekaj przed ponowną próbą.",
       "invalid_auth": "SingleKey ID odrzucił autoryzację lub jej ważność wygasła. Użyj nowego linku SingleKey ID wyświetlonego powyżej i powtórz logowanie.",
       "invalid_redirect": "Home Assistant nie mógł użyć tego adresu. Skopiuj pełny adres aplikacji z komunikatu ‘Failed to launch’ w konsoli Chrome. Musi zaczynać się od schematu wyświetlonego powyżej i należeć do bieżącej próby logowania.",
-      "cannot_connect": "Usługa PointT jest nieosiągalna. Sprawdź połączenie z internetem, zaczekaj chwilę i spróbuj ponownie.",
+      "cannot_connect": "Dostęp przez chmurę jest nieosiągalny. Sprawdź połączenie z internetem, zaczekaj chwilę i spróbuj ponownie.",
       "select_gateway": "Przed kontynuowaniem wybierz z listy co najmniej jedno urządzenie.",
       "no_gateways": "Nie znaleziono żadnych urządzeń. Sprawdź, czy wybrana marka i konto SingleKey ID odpowiadają Twojej aplikacji. Regulator pokojowy ze starszym oprogramowaniem układowym pojawi się dopiero po aktualizacji oprogramowania i skonfigurowaniu go w aktualnej aplikacji przy użyciu Twojego SingleKey ID.",
       "local_invalid_address": "Wprowadź adres IP lub nazwę hosta bez adresu URL, ścieżki i danych logowania.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "Możliwości PointT zmieniły się po aktualizacji oprogramowania układowego",
+      "title": "Możliwości zmieniły się po aktualizacji oprogramowania układowego",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Wykryj możliwości PointT na nowo",
-            "description": "Bosch/Buderus Home Comfort wykrył znane możliwości, których typ danych lub jednostka nie odpowiadają już bezpiecznie obsługiwanemu schematowi PointT (liczba: {conflict_count}). Wybierz **Prześlij**, aby przeładować integrację i ponownie sprawdzić wszystkie możliwości. Jeśli ostrzeżenie wróci, pobierz diagnostykę integracji i zgłoś zmieniony schemat bez udostępniania danych logowania ani surowych wartości."
+            "title": "Wykryj możliwości na nowo",
+            "description": "Bosch/Buderus Home Comfort wykrył znane możliwości, których typ danych lub jednostka nie odpowiadają już bezpiecznie obsługiwanemu schematowi (liczba: {conflict_count}). Wybierz **Prześlij**, aby przeładować integrację i ponownie sprawdzić wszystkie możliwości. Jeśli ostrzeżenie wróci, pobierz diagnostykę integracji i zgłoś zmieniony schemat bez udostępniania danych logowania ani surowych wartości."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "Możliwości PointT zmieniły się po aktualizacji oprogramowania układowego",
+      "title": "Możliwości zmieniły się po aktualizacji oprogramowania układowego",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Wykryj możliwości PointT na nowo",
+            "title": "Wykryj możliwości na nowo",
             "description": "Ta instalacja grzewcza zgłasza możliwości z nieoczekiwanym typem danych lub jednostką (liczba: {conflict_count}). Sprawdź jej możliwości ponownie. Uruchamia się ponownie tylko to źródło; pozostałe instalacje i połączenia pozostają aktywne. Istniejące identyfikatory encji i własne ustawienia są zachowane."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "Wybrana godzina rozpoczęcia lub zakończenia występuje dwukrotnie, ponieważ zegar w strefie czasowej instalacji grzewczej cofa się. Wybierz jednoznaczną godzinę."
     },
+    "holiday_changes_unavailable": {
+      "message": "Ta instalacja grzewcza obecnie nie pozwala na zmiany urlopów."
+    },
+    "holiday_create_failed": {
+      "message": "Nie udało się utworzyć ani potwierdzić urlopu."
+    },
+    "holiday_change_unsafe": {
+      "message": "Tego urlopu nie można teraz bezpiecznie zmienić."
+    },
+    "holiday_update_failed": {
+      "message": "Nie udało się zmienić ani potwierdzić urlopu."
+    },
+    "holiday_not_deletable": {
+      "message": "Tego urlopu nie można tutaj usunąć."
+    },
+    "holiday_delete_failed": {
+      "message": "Nie udało się usunąć ani potwierdzić urlopu."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Powtarzające się urlopy nie są obsługiwane."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Urlopy nie mają opisu ani lokalizacji. Usuń je i spróbuj ponownie."
+    },
+    "select_option_unavailable": {
+      "message": "Instalacja grzewcza nie oferuje już tej opcji. Wczytaj wartości ponownie i wybierz jeszcze raz."
+    },
     "rrc_mode_locked": {
       "message": "Regulator obecnie blokuje tryb grzania tej strefy, na przykład gdy instalacja chłodzi. Bieżący tryb pozostaje wyświetlany. Spróbuj ponownie później."
     },
@@ -1080,13 +1111,28 @@
       "message": "Logowanie do chmury nie jest już ważne. Uwierzytelnij ponownie Bosch/Buderus Home Comfort, zanim spróbujesz ponownie."
     },
     "write_rate_limited": {
-      "message": "Chmura PointT obecnie ogranicza liczbę żądań. Zaczekaj przed ponowną próbą zmiany."
+      "message": "Chmura obecnie ogranicza liczbę żądań. Zaczekaj przed ponowną próbą zmiany."
     },
     "write_failed": {
       "message": "Nie udało się zakończyć zmiany i instalacja grzewcza jej nie potwierdziła. Wyświetlana wartość zostanie zaktualizowana przy następnym odczycie."
     },
     "write_busy": {
       "message": "Instalacja grzewcza jest odczytywana albo trwa jeszcze inna zmiana. Nic nie wysłano. Spróbuj ponownie za chwilę."
+    },
+    "command_cloud_auth_required": {
+      "message": "Teraz niemożliwe: dostęp przez chmurę wymaga nowego logowania. Nic nie wysłano."
+    },
+    "command_cloud_stopped": {
+      "message": "Teraz niemożliwe: dostęp przez chmurę jest zatrzymany lub uruchamiany ponownie. Nic nie wysłano."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Teraz niemożliwe: żądania są wstrzymane po przekroczeniu limitu chmury do około {until}. Nic nie wysłano."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Teraz niemożliwe: żądania są wstrzymane po powtarzających się błędach chmury do około {until}. Nic nie wysłano."
+    },
+    "command_cloud_unreachable": {
+      "message": "Teraz niemożliwe: chmura jest nieosiągalna. Nic nie wysłano. Spróbuj ponownie, gdy pojawią się aktualne wartości."
     },
     "holiday_end_not_after_start": {
       "message": "Koniec musi być po początku. Wybierz późniejszy koniec."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Komunikaty instalacji"
+        "name": "Komunikaty instalacji",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Wystąpiło",
+              "resolved": "Rozwiązane"
+            }
+          }
+        }
       }
     },
     "button": {

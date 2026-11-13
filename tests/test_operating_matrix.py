@@ -20,7 +20,7 @@ from unittest.mock import patch
 import pytest
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.data_entry_flow import FlowResultType
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
@@ -865,9 +865,10 @@ async def test_a_write_after_an_inventory_start_is_refused_without_a_request(
             blocking=True,
         )
         assert len(backend.calls) == calls
-        with pytest.raises(ServiceValidationError) as error:
+        # Its last cycle failed: the message names the cloud, not the setting.
+        with pytest.raises(HomeAssistantError) as error:
             await number.async_set_native_value(22)
-        assert error.value.translation_key == "write_validation_failed"
+        assert error.value.translation_key == "command_cloud_unreachable"
         assert len(backend.calls) == calls
         assert backend.values[HEAT] == 20.0
         assert hass.states.get(number.entity_id).state == "unavailable"

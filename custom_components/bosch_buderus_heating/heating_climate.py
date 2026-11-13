@@ -24,7 +24,7 @@ from homeassistant.util.unit_conversion import (
 
 from . import rrc
 from .const import DOMAIN
-from .control import HeldCapabilities, async_set_control
+from .control import HeldCapabilities, async_set_control, cloud_down_error
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
 from .entity_resources import fresh_resource, temperature
@@ -352,6 +352,8 @@ class HeatingCircuitClimate(
         return device_info_for_resource(self.coordinator, self.root)
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
+        if (down := cloud_down_error(self.coordinator)) is not None:
+            raise down
         mode = self._checked_mode(strict=True)
         context = self._checked_context(strict=True)
         if (
@@ -371,6 +373,8 @@ class HeatingCircuitClimate(
         )
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
+        if (down := cloud_down_error(self.coordinator)) is not None:
+            raise down
         value = kwargs.get(ATTR_TEMPERATURE)
         mode = self._checked_mode(strict=True)
         target = self._checked_target(strict=True)

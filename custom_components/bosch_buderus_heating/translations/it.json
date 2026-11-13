@@ -70,6 +70,10 @@
           "owner": "Impianto esistente"
         }
       },
+      "local_discovered": {
+        "title": "Gateway trovato",
+        "description": "Home Assistant ha trovato un gateway all'indirizzo {host} nella rete domestica e questa integrazione non è ancora configurata.\n\nContinua per configurarlo con **Solo accesso locale**: viene creata una voce senza cloud e subito dopo si apre la sua configurazione locale. L'accesso locale si limita a leggere. Un accesso cloud può essere aggiunto in seguito alla stessa voce."
+      },
       "local_target": {
         "title": "Scegli l'installazione",
         "description": "Seleziona l'installazione da collegare in locale. L'identità del suo gateway verrà verificata prima del salvataggio.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Questo tentativo di login è scaduto. Apri il nuovo link SingleKey ID mostrato sopra ed effettua di nuovo il login.",
       "auth_restart": "Questo tentativo di login non può più essere usato. Apri il nuovo link SingleKey ID mostrato sopra ed effettua di nuovo il login.",
-      "cannot_connect": "Il servizio PointT non è raggiungibile. Controlla la connessione a Internet, attendi un momento e riprova.",
+      "cannot_connect": "L'accesso cloud non è raggiungibile. Controlla la connessione a Internet, attendi un momento e riprova.",
       "invalid_auth": "SingleKey ID ha rifiutato l'autorizzazione o ne ha fatto scadere la validità. Usa il nuovo link SingleKey ID mostrato sopra e ripeti il login.",
       "invalid_redirect": "Home Assistant non ha potuto usare questo indirizzo. Copia l'indirizzo completo dell'app dal messaggio “Failed to launch” della console di Chrome. Deve iniziare con lo schema mostrato sopra e appartenere al tentativo di login attuale.",
       "gateway_changed": "L'elenco dei gateway è cambiato mentre questa finestra era aperta. Chiudi la finestra e apri di nuovo Riconfigura.",
       "select_gateway": "Seleziona almeno un dispositivo dall'elenco prima di continuare.",
-      "unknown": "Si è verificato un errore PointT imprevisto. Attendi un momento e riprova.",
+      "unknown": "Si è verificato un errore imprevisto nell'accesso cloud. Attendi un momento e riprova.",
       "bacon_unavailable": "L'elenco dei dispositivi cloud aggiuntivi non è al momento disponibile. Attendi almeno un minuto e riprova.",
       "bacon_selection_unavailable": "Al momento non è stato possibile interrogare i dispositivi cloud aggiuntivi. Puoi selezionare i gateway di riscaldamento raggiungibili. Le selezioni esistenti dei dispositivi cloud verranno mantenute.",
       "reauth_targets_missing": "Con questo login non è stato trovato nessuno degli impianti e dispositivi attivi. Le credenziali precedenti vengono mantenute. Controlla di aver effettuato il login con lo stesso account di prima. Se gli impianti sono stati rimossi dall'account, apri Configura → Connessioni → l'accesso cloud: attiva un impianto ancora presente nell'account sotto **Usa per impianti e dispositivi**, oppure disattiva quelli rimossi e rimuovili con **Dimentica gli impianti deselezionati**. Se non ne rimane nessuno, rimuovi l'accesso cloud e collegalo di nuovo.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Frequenza di interrogazione",
-        "description": "Standard legge i valori di funzionamento attuali del riscaldamento ogni minuto, le impostazioni e i valori energetici ogni 5 minuti e le informazioni più lente ogni 15 minuti. Leggero per il cloud raddoppia questi intervalli. Le anomalie attive vengono controllate ogni minuto in entrambi i profili. Il profilo si applica all'interrogazione di riscaldamento PointT e wallbox della connessione cloud selezionata; i dispositivi cloud aggiuntivi segnalano le modifiche come messaggi. Login, controlli dei dispositivi e la conferma dopo una modifica possono aggiungere richieste al di fuori di questa pianificazione. Se un ciclo di interrogazione dura più del suo intervallo, il successivo inizia più tardi.",
+        "description": "Standard legge i valori di funzionamento attuali del riscaldamento ogni minuto, le impostazioni e i valori energetici ogni 5 minuti e le informazioni più lente ogni 15 minuti. Leggero per il cloud raddoppia questi intervalli. Le anomalie attive vengono controllate ogni minuto in entrambi i profili. Il profilo si applica all'interrogazione di riscaldamento e wallbox della connessione cloud selezionata; i dispositivi cloud aggiuntivi segnalano le modifiche come messaggi. Login, controlli dei dispositivi e la conferma dopo una modifica possono aggiungere richieste al di fuori di questa pianificazione. Se un ciclo di interrogazione dura più del suo intervallo, il successivo inizia più tardi.",
         "data": {
           "polling_profile": "Profilo di interrogazione"
         }
@@ -663,7 +667,7 @@
       "write_failed": "Non è stato possibile modificare le impostazioni della vacanza.",
       "write_busy": "L'impianto di riscaldamento è in lettura oppure è ancora in corso un'altra modifica. Non è stato inviato nulla. Riprova tra un momento.",
       "write_not_confirmed": "Non è stato possibile confermare completamente la modifica. Alcune impostazioni potrebbero essere già state salvate. Riapri la vacanza e controlla le impostazioni attuali.",
-      "write_rate_limited": "Il cloud PointT sta attualmente limitando le richieste. Attendi prima di riprovare.",
+      "write_rate_limited": "Il cloud sta attualmente limitando le richieste. Attendi prima di riprovare.",
       "write_validation_failed": "Almeno una selezione non è più supportata dall'impianto di riscaldamento. Chiudi la finestra, aggiorna l'integrazione e riprova.",
       "holiday_end_not_after_start": "La fine deve essere successiva all'inizio. Scegli una fine più tarda.",
       "rrc_time": "Scegli un orario a passi di cinque minuti, senza secondi.",
@@ -691,7 +695,7 @@
       "controls_invalid": "Un valore inserito non è valido oppure i valori mostrati sono cambiati. Controlla i valori inseriti o ricarica i valori. Non è stato scritto nulla.",
       "controls_changed": "Un'impostazione è cambiata o non è più disponibile. Le modifiche già confermate restano applicate. Ricarica i valori prima di riprovare.",
       "controls_auth": "L'autenticazione è scaduta. Autentica di nuovo l'integrazione. Le modifiche già confermate restano applicate. Ricarica i valori prima di riprovare.",
-      "controls_rate_limit": "L'apparecchio sta attualmente limitando le richieste. Attendi prima di riprovare. Le modifiche già confermate restano applicate. Ricarica i valori prima di riprovare.",
+      "controls_rate_limit": "Il cloud sta attualmente limitando le richieste. Attendi prima di riprovare. Le modifiche già confermate restano applicate. Ricarica i valori prima di riprovare.",
       "controls_unconfirmed": "Non è stato possibile confermare l'ultima modifica. Potrebbe essere già diventata effettiva sull'apparecchio. Le modifiche già confermate restano applicate. Ricarica i valori prima di riprovare.",
       "controls_failed": "La comunicazione con l'apparecchio non è riuscita. L'ultima modifica potrebbe essere già diventata effettiva. Le modifiche già confermate restano applicate. Ricarica i valori prima di riprovare.",
       "controls_busy": "L'apparecchio è in lettura oppure è ancora in corso un'altra modifica. Questa modifica non è stata inviata. Le modifiche già confermate restano applicate. Riprova tra un momento.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "Il cloud ha richiesto una pausa. Attendi prima di riprovare.",
       "invalid_auth": "SingleKey ID ha rifiutato l'autorizzazione o ne ha fatto scadere la validità. Usa il nuovo link SingleKey ID mostrato sopra e ripeti il login.",
       "invalid_redirect": "Home Assistant non ha potuto usare questo indirizzo. Copia l'indirizzo completo dell'app dal messaggio “Failed to launch” della console di Chrome. Deve iniziare con lo schema mostrato sopra e appartenere al tentativo di login attuale.",
-      "cannot_connect": "Il servizio PointT non è raggiungibile. Controlla la connessione a Internet, attendi un momento e riprova.",
+      "cannot_connect": "L'accesso cloud non è raggiungibile. Controlla la connessione a Internet, attendi un momento e riprova.",
       "select_gateway": "Seleziona almeno un dispositivo dall'elenco prima di continuare.",
       "no_gateways": "Non è stato trovato nessun dispositivo. Controlla che la marca selezionata e l'account SingleKey ID corrispondano alla tua app. Un regolatore ambiente con un firmware meno recente compare solo dopo che il suo firmware è stato aggiornato ed è stato configurato nell'app attuale con il tuo SingleKey ID.",
       "local_invalid_address": "Inserisci un indirizzo IP o un nome host senza URL, percorso o credenziali.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "Le funzioni PointT sono cambiate dopo un aggiornamento del firmware",
+      "title": "Le funzioni sono cambiate dopo un aggiornamento del firmware",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Rileva di nuovo le funzioni PointT",
-            "description": "Bosch/Buderus Home Comfort ha trovato {conflict_count} funzioni note il cui tipo di dati o la cui unità non corrispondono più allo schema PointT supportato in sicurezza. Seleziona **Invia** per ricaricare l'integrazione ed esaminare di nuovo tutte le funzioni. Se l'avviso ricompare, scarica la diagnostica dell'integrazione e segnala lo schema modificato senza condividere credenziali o valori grezzi."
+            "title": "Rileva di nuovo le funzioni",
+            "description": "Bosch/Buderus Home Comfort ha trovato {conflict_count} funzioni note il cui tipo di dati o la cui unità non corrispondono più allo schema supportato in sicurezza. Seleziona **Invia** per ricaricare l'integrazione ed esaminare di nuovo tutte le funzioni. Se l'avviso ricompare, scarica la diagnostica dell'integrazione e segnala lo schema modificato senza condividere credenziali o valori grezzi."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "Le funzioni PointT sono cambiate dopo un aggiornamento del firmware",
+      "title": "Le funzioni sono cambiate dopo un aggiornamento del firmware",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Rileva di nuovo le funzioni PointT",
+            "title": "Rileva di nuovo le funzioni",
             "description": "Questo impianto di riscaldamento segnala {conflict_count} funzioni note con un tipo di dati o un'unità inattesi. Esamina di nuovo le sue funzioni. Si riavvia solo questa sorgente; gli altri impianti e connessioni restano attivi. Gli ID delle entità esistenti e le impostazioni personalizzate vengono conservati."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "L'orario di inizio o di fine selezionato si presenta due volte perché nel fuso orario dell'impianto di riscaldamento l'orologio torna indietro. Scegli un orario univoco."
     },
+    "holiday_changes_unavailable": {
+      "message": "Questo impianto di riscaldamento al momento non consente modifiche alle vacanze."
+    },
+    "holiday_create_failed": {
+      "message": "Non è stato possibile creare o confermare la vacanza."
+    },
+    "holiday_change_unsafe": {
+      "message": "Questa vacanza al momento non può essere modificata in sicurezza."
+    },
+    "holiday_update_failed": {
+      "message": "Non è stato possibile modificare o confermare la vacanza."
+    },
+    "holiday_not_deletable": {
+      "message": "Questa vacanza non può essere eliminata qui."
+    },
+    "holiday_delete_failed": {
+      "message": "Non è stato possibile eliminare o confermare la vacanza."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Le vacanze ricorrenti non sono supportate."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Le vacanze non hanno descrizione né luogo. Rimuovili e riprova."
+    },
+    "select_option_unavailable": {
+      "message": "L'impianto di riscaldamento non offre più questa opzione. Ricarica i valori e scegli di nuovo."
+    },
     "rrc_mode_locked": {
       "message": "Il regolatore al momento blocca la modalità di riscaldamento di questa zona, ad esempio mentre l'impianto raffresca. Resta mostrata la modalità attuale. Riprova più tardi."
     },
@@ -1080,13 +1111,28 @@
       "message": "Il login al cloud non è più valido. Autenticati di nuovo in Bosch/Buderus Home Comfort prima di riprovare."
     },
     "write_rate_limited": {
-      "message": "Il cloud PointT sta attualmente limitando le richieste. Attendi prima di riprovare la modifica."
+      "message": "Il cloud sta attualmente limitando le richieste. Attendi prima di riprovare la modifica."
     },
     "write_failed": {
       "message": "Non è stato possibile completare la modifica e l'impianto di riscaldamento non l'ha confermata. Il valore mostrato viene aggiornato con la prossima lettura."
     },
     "write_busy": {
       "message": "L'impianto di riscaldamento è in lettura oppure è ancora in corso un'altra modifica. Non è stato inviato nulla. Riprova tra un momento."
+    },
+    "command_cloud_auth_required": {
+      "message": "Non possibile al momento: l'accesso cloud richiede un nuovo login. Non è stato inviato nulla."
+    },
+    "command_cloud_stopped": {
+      "message": "Non possibile al momento: l'accesso cloud è fermo o in fase di riavvio. Non è stato inviato nulla."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Non possibile al momento: le richieste sono in pausa dopo un limite del cloud fino a circa {until}. Non è stato inviato nulla."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Non possibile al momento: le richieste sono in pausa dopo ripetuti errori del cloud fino a circa {until}. Non è stato inviato nulla."
+    },
+    "command_cloud_unreachable": {
+      "message": "Non possibile al momento: il cloud non è raggiungibile. Non è stato inviato nulla. Riprova quando vengono mostrati valori attuali."
     },
     "holiday_end_not_after_start": {
       "message": "La fine deve essere successiva all'inizio. Scegli una fine più tarda."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Messaggi dell'impianto"
+        "name": "Messaggi dell'impianto",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Comparso",
+              "resolved": "Risolto"
+            }
+          }
+        }
       }
     },
     "button": {

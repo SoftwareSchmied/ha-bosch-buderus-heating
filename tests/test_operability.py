@@ -385,7 +385,9 @@ def test_pause_end_text_has_a_date_when_not_today(freezer) -> None:
     import re
     from datetime import timedelta
 
-    from custom_components.bosch_buderus_heating.controls_flow import _until_text
+    from custom_components.bosch_buderus_heating.control import (
+        pause_end_text as _until_text,
+    )
 
     # D48: a fixed time; 11:00 UTC stays on one local date for every offset.
     freezer.move_to("2026-11-10T11:00:00+00:00")

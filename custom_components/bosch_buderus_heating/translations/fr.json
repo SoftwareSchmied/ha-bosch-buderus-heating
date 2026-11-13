@@ -70,6 +70,10 @@
           "owner": "Installation existante"
         }
       },
+      "local_discovered": {
+        "title": "Passerelle trouvée",
+        "description": "Home Assistant a trouvé une passerelle à l'adresse {host} sur le réseau domestique, et cette intégration n'est pas encore configurée.\n\nContinuez pour la configurer avec **Accès local uniquement** : une entrée sans cloud est créée, puis sa configuration locale s'ouvre. L'accès local ne fait que lire. Un accès cloud peut être ajouté plus tard à la même entrée."
+      },
       "local_target": {
         "title": "Choisir l'installation",
         "description": "Sélectionnez l'installation à connecter en local. L'identité de sa passerelle sera vérifiée avant l'enregistrement.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Cette tentative de connexion a expiré. Ouvrez le nouveau lien SingleKey ID affiché ci-dessus et reconnectez-vous.",
       "auth_restart": "Cette tentative de connexion ne peut plus être utilisée. Ouvrez le nouveau lien SingleKey ID affiché ci-dessus et reconnectez-vous.",
-      "cannot_connect": "Le service PointT est inaccessible. Vérifiez la connexion internet, patientez un instant et réessayez.",
+      "cannot_connect": "L'accès cloud est inaccessible. Vérifiez la connexion internet, patientez un instant et réessayez.",
       "invalid_auth": "SingleKey ID a rejeté l'autorisation ou celle-ci a expiré. Utilisez le nouveau lien SingleKey ID affiché ci-dessus et répétez la connexion.",
       "invalid_redirect": "Home Assistant n'a pas pu utiliser cette adresse. Copiez l'adresse complète de l'application depuis le message « Failed to launch » de la console Chrome. Elle doit commencer par le schéma indiqué ci-dessus et appartenir à la tentative de connexion en cours.",
       "gateway_changed": "La liste des passerelles a changé pendant que cette boîte de dialogue était ouverte. Fermez la boîte de dialogue et rouvrez Reconfigurer.",
       "select_gateway": "Sélectionnez au moins un appareil dans la liste avant de continuer.",
-      "unknown": "Une erreur PointT inattendue s'est produite. Patientez un instant et réessayez.",
+      "unknown": "Une erreur inattendue s'est produite dans l'accès cloud. Patientez un instant et réessayez.",
       "bacon_unavailable": "La liste des appareils cloud supplémentaires est actuellement indisponible. Patientez au moins une minute et réessayez.",
       "bacon_selection_unavailable": "Les appareils cloud supplémentaires n'ont pas pu être interrogés pour le moment. Vous pouvez sélectionner les passerelles de chauffage joignables. Les sélections existantes d'appareils cloud seront conservées.",
       "reauth_targets_missing": "Cette connexion n'a trouvé aucune des installations et aucun des appareils activés. Les identifiants précédents sont conservés. Vérifiez que vous vous êtes connecté avec le même compte qu'auparavant. Si les installations ont été supprimées du compte, ouvrez Configurer → Connexions → l'accès cloud : activez une installation qui figure encore dans le compte sous **Utiliser pour les installations et appareils**, ou désactivez celles qui ont été supprimées et retirez-les avec **Oublier les installations désélectionnées**. S'il n'en reste aucune, supprimez l'accès cloud et reconnectez-le.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Fréquence d'interrogation",
-        "description": "**Standard** lit les valeurs de fonctionnement actuelles du chauffage chaque minute, les réglages et les valeurs d'énergie toutes les 5 minutes et les informations plus lentes toutes les 15 minutes. **Léger pour le cloud** double ces intervalles. Les défauts actifs sont vérifiés chaque minute dans les deux profils. Le profil s'applique à l'interrogation PointT du chauffage et de la borne de recharge de la connexion cloud sélectionnée ; les appareils cloud supplémentaires signalent les changements sous forme de messages. La connexion, les vérifications d'appareils et la confirmation après une modification peuvent ajouter des requêtes en dehors de ce calendrier. Si un cycle d'interrogation dure plus longtemps que son intervalle, le suivant démarre plus tard.",
+        "description": "**Standard** lit les valeurs de fonctionnement actuelles du chauffage chaque minute, les réglages et les valeurs d'énergie toutes les 5 minutes et les informations plus lentes toutes les 15 minutes. **Léger pour le cloud** double ces intervalles. Les défauts actifs sont vérifiés chaque minute dans les deux profils. Le profil s'applique à l'interrogation du chauffage et de la borne de recharge de la connexion cloud sélectionnée ; les appareils cloud supplémentaires signalent les changements sous forme de messages. La connexion, les vérifications d'appareils et la confirmation après une modification peuvent ajouter des requêtes en dehors de ce calendrier. Si un cycle d'interrogation dure plus longtemps que son intervalle, le suivant démarre plus tard.",
         "data": {
           "polling_profile": "Profil d'interrogation"
         }
@@ -663,7 +667,7 @@
       "write_failed": "Les réglages des vacances n'ont pas pu être modifiés.",
       "write_busy": "L'installation de chauffage est en cours de lecture ou une autre modification est encore en cours. Rien n'a été envoyé. Réessayez dans un instant.",
       "write_not_confirmed": "La modification n'a pas pu être entièrement confirmée. Certains réglages ont peut-être déjà été enregistrés. Rouvrez les vacances et vérifiez leurs réglages actuels.",
-      "write_rate_limited": "Le cloud PointT limite actuellement les requêtes. Patientez avant de réessayer.",
+      "write_rate_limited": "Le cloud limite actuellement les requêtes. Patientez avant de réessayer.",
       "write_validation_failed": "Au moins une sélection n'est plus prise en charge par l'installation de chauffage. Fermez la boîte de dialogue, actualisez l'intégration et réessayez.",
       "holiday_end_not_after_start": "La fin doit être postérieure au début. Veuillez choisir une fin plus tardive.",
       "rrc_time": "Choisissez une heure par pas de cinq minutes, sans secondes.",
@@ -691,7 +695,7 @@
       "controls_invalid": "Une saisie n'est pas valide ou les valeurs affichées ont changé. Vérifiez vos saisies ou rechargez les valeurs. Rien n'a été écrit.",
       "controls_changed": "Un réglage a changé ou n'est plus disponible. Les modifications précédemment confirmées restent appliquées. Rechargez les valeurs avant de réessayer.",
       "controls_auth": "L'authentification a expiré. Veuillez réauthentifier l'intégration. Les modifications précédemment confirmées restent appliquées. Rechargez les valeurs avant de réessayer.",
-      "controls_rate_limit": "L'appareil limite actuellement les requêtes. Veuillez patienter avant de réessayer. Les modifications précédemment confirmées restent appliquées. Rechargez les valeurs avant de réessayer.",
+      "controls_rate_limit": "Le cloud limite actuellement les requêtes. Veuillez patienter avant de réessayer. Les modifications précédemment confirmées restent appliquées. Rechargez les valeurs avant de réessayer.",
       "controls_unconfirmed": "La dernière modification n'a pas pu être confirmée. Elle a peut-être déjà pris effet sur l'appareil. Les modifications précédemment confirmées restent appliquées. Rechargez les valeurs avant de réessayer.",
       "controls_failed": "La communication avec l'appareil a échoué. La dernière modification a peut-être déjà pris effet. Les modifications précédemment confirmées restent appliquées. Rechargez les valeurs avant de réessayer.",
       "controls_busy": "L'appareil est en cours de lecture ou une autre modification est encore en cours. Cette modification n'a pas été envoyée. Les modifications précédemment confirmées restent appliquées. Réessayez dans un instant.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "Le cloud a demandé une pause. Veuillez patienter avant de réessayer.",
       "invalid_auth": "SingleKey ID a rejeté l'autorisation ou celle-ci a expiré. Utilisez le nouveau lien SingleKey ID affiché ci-dessus et répétez la connexion.",
       "invalid_redirect": "Home Assistant n'a pas pu utiliser cette adresse. Copiez l'adresse complète de l'application depuis le message « Failed to launch » de la console Chrome. Elle doit commencer par le schéma indiqué ci-dessus et appartenir à la tentative de connexion en cours.",
-      "cannot_connect": "Le service PointT est inaccessible. Vérifiez la connexion internet, patientez un instant et réessayez.",
+      "cannot_connect": "L'accès cloud est inaccessible. Vérifiez la connexion internet, patientez un instant et réessayez.",
       "select_gateway": "Sélectionnez au moins un appareil dans la liste avant de continuer.",
       "no_gateways": "Aucun appareil n'a été trouvé. Vérifiez que la marque sélectionnée et le compte SingleKey ID correspondent à votre application. Un régulateur d'ambiance doté d'un micrologiciel plus ancien n'apparaît qu'une fois son micrologiciel mis à jour et après sa configuration dans l'application actuelle avec votre SingleKey ID.",
       "local_invalid_address": "Saisissez une adresse IP ou un nom d'hôte sans URL, chemin ni identifiants.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "Les capacités PointT ont changé après une mise à jour du micrologiciel",
+      "title": "Les capacités ont changé après une mise à jour du micrologiciel",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Redécouvrir les capacités PointT",
-            "description": "Bosch/Buderus Home Comfort a trouvé {conflict_count} capacités connues dont le type de données ou l'unité ne correspond plus au schéma PointT pris en charge de façon sûre. Sélectionnez **Valider** pour recharger l'intégration et inspecter à nouveau toutes les capacités. Si l'avertissement revient, téléchargez les diagnostics de l'intégration et signalez le schéma modifié sans partager d'identifiants ni de valeurs brutes."
+            "title": "Redécouvrir les capacités",
+            "description": "Bosch/Buderus Home Comfort a trouvé {conflict_count} capacités connues dont le type de données ou l'unité ne correspond plus au schéma pris en charge de façon sûre. Sélectionnez **Valider** pour recharger l'intégration et inspecter à nouveau toutes les capacités. Si l'avertissement revient, téléchargez les diagnostics de l'intégration et signalez le schéma modifié sans partager d'identifiants ni de valeurs brutes."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "Les capacités PointT ont changé après une mise à jour du micrologiciel",
+      "title": "Les capacités ont changé après une mise à jour du micrologiciel",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Redécouvrir les capacités PointT",
+            "title": "Redécouvrir les capacités",
             "description": "Cette installation de chauffage signale {conflict_count} capacités connues avec un type de données ou une unité inattendus. Inspectez à nouveau ses capacités. Seule cette source redémarre ; les autres installations et connexions restent actives. Les ID d'entité existants et les réglages personnalisés sont conservés."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "L'heure de début ou de fin sélectionnée se produit deux fois, car l'horloge recule dans le fuseau horaire de l'installation de chauffage. Choisissez une heure non ambiguë."
     },
+    "holiday_changes_unavailable": {
+      "message": "Cette installation de chauffage n'autorise actuellement aucune modification des vacances."
+    },
+    "holiday_create_failed": {
+      "message": "Les vacances n'ont pas pu être créées ou confirmées."
+    },
+    "holiday_change_unsafe": {
+      "message": "Ces vacances ne peuvent pas être modifiées en toute sécurité pour le moment."
+    },
+    "holiday_update_failed": {
+      "message": "Les vacances n'ont pas pu être modifiées ou confirmées."
+    },
+    "holiday_not_deletable": {
+      "message": "Ces vacances ne peuvent pas être supprimées ici."
+    },
+    "holiday_delete_failed": {
+      "message": "Les vacances n'ont pas pu être supprimées ou confirmées."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Les vacances récurrentes ne sont pas prises en charge."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Les vacances n'ont ni description ni lieu. Supprimez-les et réessayez."
+    },
+    "select_option_unavailable": {
+      "message": "L'installation de chauffage ne propose plus cette option. Rechargez les valeurs et choisissez à nouveau."
+    },
     "rrc_mode_locked": {
       "message": "Le régulateur verrouille actuellement le mode chauffage de cette zone, par exemple pendant que l'installation rafraîchit. Le mode actuel reste affiché. Réessayez plus tard."
     },
@@ -1080,13 +1111,28 @@
       "message": "La connexion au compte cloud n'est plus valide. Réauthentifiez Bosch/Buderus Home Comfort avant de réessayer."
     },
     "write_rate_limited": {
-      "message": "Le cloud PointT limite actuellement les requêtes. Patientez avant de réessayer la modification."
+      "message": "Le cloud limite actuellement les requêtes. Patientez avant de réessayer la modification."
     },
     "write_failed": {
       "message": "La modification n'a pas pu être effectuée et n'a pas été confirmée par l'installation de chauffage. La valeur affichée est mise à jour à la prochaine lecture."
     },
     "write_busy": {
       "message": "L'installation de chauffage est en cours de lecture ou une autre modification est encore en cours. Rien n'a été envoyé. Réessayez dans un instant."
+    },
+    "command_cloud_auth_required": {
+      "message": "Impossible pour le moment : l'accès cloud nécessite une nouvelle connexion. Rien n'a été envoyé."
+    },
+    "command_cloud_stopped": {
+      "message": "Impossible pour le moment : l'accès cloud est arrêté ou en cours de redémarrage. Rien n'a été envoyé."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Impossible pour le moment : les requêtes sont en pause après une limitation de débit du cloud jusqu'à environ {until}. Rien n'a été envoyé."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Impossible pour le moment : les requêtes sont en pause après des erreurs répétées du cloud jusqu'à environ {until}. Rien n'a été envoyé."
+    },
+    "command_cloud_unreachable": {
+      "message": "Impossible pour le moment : le cloud est inaccessible. Rien n'a été envoyé. Réessayez dès que des valeurs actuelles s'affichent."
     },
     "holiday_end_not_after_start": {
       "message": "La fin doit être postérieure au début. Veuillez choisir une fin plus tardive."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Messages de l'installation"
+        "name": "Messages de l'installation",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Apparu",
+              "resolved": "Résolu"
+            }
+          }
+        }
       }
     },
     "button": {

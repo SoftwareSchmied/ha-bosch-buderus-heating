@@ -70,6 +70,10 @@
           "owner": "Eksisterende setup"
         }
       },
+      "local_discovered": {
+        "title": "Gateway fundet",
+        "description": "Home Assistant fandt en gateway på {host} i hjemmenetværket, og denne integration er endnu ikke sat op.\n\nFortsæt for at sætte den op med **Kun lokal adgang**: der oprettes en post uden cloud, og derefter åbnes dens lokale opsætning. Den lokale adgang læser kun. En cloudadgang kan tilføjes til samme post senere."
+      },
       "local_target": {
         "title": "Vælg anlægget",
         "description": "Vælg det anlæg, der skal forbindes lokalt. Gatewayens identitet kontrolleres, før der gemmes.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Dette loginforsøg er udløbet. Åbn det nye SingleKey ID-link ovenfor, og log ind igen.",
       "auth_restart": "Dette loginforsøg kan ikke længere bruges. Åbn det nye SingleKey ID-link ovenfor, og log ind igen.",
-      "cannot_connect": "PointT-tjenesten kan ikke nås. Kontrollér internetforbindelsen, vent et øjeblik, og prøv igen.",
+      "cannot_connect": "Cloudadgangen kan ikke nås. Kontrollér internetforbindelsen, vent et øjeblik, og prøv igen.",
       "invalid_auth": "SingleKey ID afviste godkendelsen eller lod den udløbe. Brug det nye SingleKey ID-link ovenfor, og gentag login.",
       "invalid_redirect": "Home Assistant kunne ikke bruge denne adresse. Kopiér den komplette appadresse fra Chrome-konsollens ‘Failed to launch’-meddelelse. Den skal begynde med det skema, der vises ovenfor, og høre til det aktuelle loginforsøg.",
       "gateway_changed": "Gatewaylisten blev ændret, mens denne dialog var åben. Luk dialogen, og åbn Omkonfigurer igen.",
       "select_gateway": "Vælg mindst én enhed på listen, før du fortsætter.",
-      "unknown": "Der opstod en uventet PointT-fejl. Vent et øjeblik, og prøv igen.",
+      "unknown": "Der opstod en uventet fejl i cloudadgangen. Vent et øjeblik, og prøv igen.",
       "bacon_unavailable": "Listen over yderligere cloudenheder er ikke tilgængelig lige nu. Vent mindst et minut, og prøv igen.",
       "bacon_selection_unavailable": "Yderligere cloudenheder kunne ikke forespørges på nuværende tidspunkt. Du kan vælge tilgængelige varmegateways. Eksisterende valg af cloudenheder bevares.",
       "reauth_targets_missing": "Dette login fandt ingen af de aktiverede anlæg og enheder. De tidligere loginoplysninger bevares. Kontrollér, at du loggede ind med den samme konto som før. Hvis anlæggene er fjernet fra kontoen, skal du åbne Konfigurer → Forbindelser → cloudadgangen: aktivér et anlæg, der stadig findes på kontoen, under **Brug til anlæg og enheder**, eller deaktivér de fjernede, og fjern dem med **Glem fravalgte anlæg**. Hvis der ikke er flere tilbage, skal du fjerne cloudadgangen og forbinde den igen.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Forespørgselsfrekvens",
-        "description": "Standard læser aktuelle driftsværdier for varmeanlægget hvert minut, indstillinger og energiværdier hvert 5. minut og langsommere oplysninger hvert 15. minut. Cloudvenlig fordobler disse intervaller. Aktive fejl kontrolleres hvert minut i begge profiler. Profilen gælder for PointT-forespørgsler til varme og ladeboks i den valgte cloudforbindelse; yderligere cloudenheder rapporterer ændringer som meddelelser. Login, enhedskontroller og bekræftelsen efter en ændring kan give flere forespørgsler uden for dette skema. Hvis en forespørgselscyklus tager længere tid end sit interval, starter den næste senere.",
+        "description": "Standard læser aktuelle driftsværdier for varmeanlægget hvert minut, indstillinger og energiværdier hvert 5. minut og langsommere oplysninger hvert 15. minut. Cloudvenlig fordobler disse intervaller. Aktive fejl kontrolleres hvert minut i begge profiler. Profilen gælder for forespørgsler til varme og ladeboks i den valgte cloudforbindelse; yderligere cloudenheder rapporterer ændringer som meddelelser. Login, enhedskontroller og bekræftelsen efter en ændring kan give flere forespørgsler uden for dette skema. Hvis en forespørgselscyklus tager længere tid end sit interval, starter den næste senere.",
         "data": {
           "polling_profile": "Forespørgselsprofil"
         }
@@ -663,7 +667,7 @@
       "write_failed": "Ferieindstillingerne kunne ikke ændres.",
       "write_busy": "Varmeanlægget bliver aflæst, eller en anden ændring kører stadig. Der blev ikke sendt noget. Prøv igen om et øjeblik.",
       "write_not_confirmed": "Ændringen kunne ikke bekræftes fuldt ud. Nogle indstillinger er muligvis allerede gemt. Åbn ferien igen, og kontrollér dens aktuelle indstillinger.",
-      "write_rate_limited": "PointT-cloud'en begrænser forespørgsler lige nu. Vent, før du prøver igen.",
+      "write_rate_limited": "Cloud'en begrænser forespørgsler lige nu. Vent, før du prøver igen.",
       "write_validation_failed": "Mindst ét valg understøttes ikke længere af varmeanlægget. Luk dialogen, opdatér integrationen, og prøv igen.",
       "holiday_end_not_after_start": "Slutningen skal ligge efter starten. Vælg en senere slutning.",
       "rrc_time": "Vælg et tidspunkt i trin på fem minutter uden sekunder.",
@@ -691,7 +695,7 @@
       "controls_invalid": "Et input er ugyldigt, eller de viste værdier er ændret. Kontrollér dine indtastninger, eller indlæs værdierne igen. Der blev ikke skrevet noget.",
       "controls_changed": "En indstilling er ændret eller ikke længere tilgængelig. Tidligere bekræftede ændringer er stadig anvendt. Indlæs værdierne igen, før du prøver igen.",
       "controls_auth": "Godkendelsen er udløbet. Godkend integrationen igen. Tidligere bekræftede ændringer er stadig anvendt. Indlæs værdierne igen, før du prøver igen.",
-      "controls_rate_limit": "Apparatet begrænser forespørgsler lige nu. Vent, før du prøver igen. Tidligere bekræftede ændringer er stadig anvendt. Indlæs værdierne igen, før du prøver igen.",
+      "controls_rate_limit": "Cloud'en begrænser forespørgsler lige nu. Vent, før du prøver igen. Tidligere bekræftede ændringer er stadig anvendt. Indlæs værdierne igen, før du prøver igen.",
       "controls_unconfirmed": "Den sidste ændring kunne ikke bekræftes. Den kan allerede have trådt i kraft på apparatet. Tidligere bekræftede ændringer er stadig anvendt. Indlæs værdierne igen, før du prøver igen.",
       "controls_failed": "Kommunikationen med apparatet mislykkedes. Den sidste ændring kan allerede have trådt i kraft. Tidligere bekræftede ændringer er stadig anvendt. Indlæs værdierne igen, før du prøver igen.",
       "controls_busy": "Apparatet bliver aflæst, eller en anden ændring kører stadig. Denne ændring blev ikke sendt. Tidligere bekræftede ændringer er stadig anvendt. Prøv igen om et øjeblik.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "Cloud'en har bedt om en pause. Vent, før du prøver igen.",
       "invalid_auth": "SingleKey ID afviste godkendelsen eller lod den udløbe. Brug det nye SingleKey ID-link ovenfor, og gentag login.",
       "invalid_redirect": "Home Assistant kunne ikke bruge denne adresse. Kopiér den komplette appadresse fra Chrome-konsollens ‘Failed to launch’-meddelelse. Den skal begynde med det skema, der vises ovenfor, og høre til det aktuelle loginforsøg.",
-      "cannot_connect": "PointT-tjenesten kan ikke nås. Kontrollér internetforbindelsen, vent et øjeblik, og prøv igen.",
+      "cannot_connect": "Cloudadgangen kan ikke nås. Kontrollér internetforbindelsen, vent et øjeblik, og prøv igen.",
       "select_gateway": "Vælg mindst én enhed på listen, før du fortsætter.",
       "no_gateways": "Der blev ikke fundet nogen enheder. Kontrollér, at det valgte mærke og SingleKey ID-kontoen passer til din app. En rumregulator med ældre firmware vises først, når dens firmware er opdateret, og den er sat op i den aktuelle app med dit SingleKey ID.",
       "local_invalid_address": "Indtast en IP-adresse eller et værtsnavn uden URL, sti eller loginoplysninger.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "PointT-funktioner ændret efter en firmwareopdatering",
+      "title": "Funktioner ændret efter en firmwareopdatering",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Find PointT-funktioner igen",
-            "description": "Bosch/Buderus Home Comfort fandt {conflict_count} kendte funktioner, hvis datatype eller enhed ikke længere svarer til det sikkert understøttede PointT-skema. Vælg **Send** for at genindlæse integrationen og undersøge alle funktioner igen. Hvis advarslen vender tilbage, skal du hente integrationens diagnosticering og rapportere det ændrede skema uden at dele loginoplysninger eller rå værdier."
+            "title": "Find funktionerne igen",
+            "description": "Bosch/Buderus Home Comfort fandt {conflict_count} kendte funktioner, hvis datatype eller enhed ikke længere svarer til det sikkert understøttede skema. Vælg **Send** for at genindlæse integrationen og undersøge alle funktioner igen. Hvis advarslen vender tilbage, skal du hente integrationens diagnosticering og rapportere det ændrede skema uden at dele loginoplysninger eller rå værdier."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "PointT-funktioner ændret efter en firmwareopdatering",
+      "title": "Funktioner ændret efter en firmwareopdatering",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Find PointT-funktioner igen",
+            "title": "Find funktionerne igen",
             "description": "Dette varmeanlæg rapporterer {conflict_count} kendte funktioner med en uventet datatype eller enhed. Undersøg dets funktioner igen. Kun denne kilde genstarter; andre anlæg og forbindelser forbliver aktive. Eksisterende entitets-id'er og egne indstillinger bevares."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "Det valgte start- eller sluttidspunkt forekommer to gange, fordi uret stilles tilbage i varmeanlæggets tidszone. Vælg et entydigt tidspunkt."
     },
+    "holiday_changes_unavailable": {
+      "message": "Dette varmeanlæg tillader ikke ændringer af ferier lige nu."
+    },
+    "holiday_create_failed": {
+      "message": "Ferien kunne ikke oprettes eller bekræftes."
+    },
+    "holiday_change_unsafe": {
+      "message": "Denne ferie kan ikke ændres sikkert lige nu."
+    },
+    "holiday_update_failed": {
+      "message": "Ferien kunne ikke ændres eller bekræftes."
+    },
+    "holiday_not_deletable": {
+      "message": "Denne ferie kan ikke slettes her."
+    },
+    "holiday_delete_failed": {
+      "message": "Ferien kunne ikke slettes eller bekræftes."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Gentagne ferier understøttes ikke."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Ferier har ingen beskrivelse eller placering. Fjern dem, og prøv igen."
+    },
+    "select_option_unavailable": {
+      "message": "Varmeanlægget tilbyder ikke længere denne mulighed. Indlæs værdierne igen, og vælg igen."
+    },
     "rrc_mode_locked": {
       "message": "Regulatoren låser i øjeblikket opvarmningsformen for denne zone, f.eks. mens anlægget køler. Den aktuelle form vises stadig. Prøv igen senere."
     },
@@ -1080,13 +1111,28 @@
       "message": "Cloudlogin er ikke længere gyldigt. Godkend Bosch/Buderus Home Comfort igen, før du prøver igen."
     },
     "write_rate_limited": {
-      "message": "PointT-cloud'en begrænser forespørgsler lige nu. Vent, før du prøver ændringen igen."
+      "message": "Cloud'en begrænser forespørgsler lige nu. Vent, før du prøver ændringen igen."
     },
     "write_failed": {
       "message": "Ændringen kunne ikke gennemføres og blev ikke bekræftet af varmeanlægget. Den viste værdi opdateres ved næste aflæsning."
     },
     "write_busy": {
       "message": "Varmeanlægget bliver aflæst, eller en anden ændring kører stadig. Der blev ikke sendt noget. Prøv igen om et øjeblik."
+    },
+    "command_cloud_auth_required": {
+      "message": "Ikke muligt lige nu: cloudadgangen kræver et nyt login. Der blev ikke sendt noget."
+    },
+    "command_cloud_stopped": {
+      "message": "Ikke muligt lige nu: cloudadgangen er stoppet eller bliver genstartet. Der blev ikke sendt noget."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Ikke muligt lige nu: forespørgsler er sat på pause efter en hastighedsgrænse fra cloud'en indtil ca. {until}. Der blev ikke sendt noget."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Ikke muligt lige nu: forespørgsler er sat på pause efter gentagne cloudfejl indtil ca. {until}. Der blev ikke sendt noget."
+    },
+    "command_cloud_unreachable": {
+      "message": "Ikke muligt lige nu: cloud'en kan ikke nås. Der blev ikke sendt noget. Prøv igen, når der vises aktuelle værdier."
     },
     "holiday_end_not_after_start": {
       "message": "Slutningen skal ligge efter starten. Vælg en senere slutning."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Systemnotifikationer"
+        "name": "Systemnotifikationer",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Opstået",
+              "resolved": "Løst"
+            }
+          }
+        }
       }
     },
     "button": {

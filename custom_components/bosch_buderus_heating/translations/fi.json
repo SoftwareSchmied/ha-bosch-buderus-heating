@@ -70,6 +70,10 @@
           "owner": "Olemassa oleva asennus"
         }
       },
+      "local_discovered": {
+        "title": "Yhdyskäytävä löytyi",
+        "description": "Home Assistant löysi kotiverkosta yhdyskäytävän osoitteesta {host}, eikä tätä integraatiota ole vielä määritetty.\n\nJatka määrittääksesi sen valinnalla **Vain paikallinen yhteys**: luodaan merkintä ilman pilveä, ja sen jälkeen avautuu sen paikallinen määritys. Paikallinen yhteys vain lukee. Pilviyhteyden voi lisätä samaan merkintään myöhemmin."
+      },
       "local_target": {
         "title": "Valitse asennus",
         "description": "Valitse asennus, johon yhdistetään paikallisesti. Sen yhdyskäytävän tunnus tarkistetaan ennen tallennusta.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Tämä kirjautumisyritys on vanhentunut. Avaa yllä näkyvä uusi SingleKey ID -linkki ja kirjaudu uudelleen.",
       "auth_restart": "Tätä kirjautumisyritystä ei voi enää käyttää. Avaa yllä näkyvä uusi SingleKey ID -linkki ja kirjaudu uudelleen.",
-      "cannot_connect": "PointT-palveluun ei saada yhteyttä. Tarkista internetyhteys, odota hetki ja yritä uudelleen.",
+      "cannot_connect": "Pilviyhteyteen ei saada yhteyttä. Tarkista internetyhteys, odota hetki ja yritä uudelleen.",
       "invalid_auth": "SingleKey ID hylkäsi valtuutuksen tai se vanheni. Käytä yllä näkyvää uutta SingleKey ID -linkkiä ja toista kirjautuminen.",
       "invalid_redirect": "Home Assistant ei voinut käyttää tätä osoitetta. Kopioi koko sovellusosoite Chromen konsolin ”Failed to launch” -viestistä. Sen on alettava yllä näytetyllä skeemalla ja kuuluttava nykyiseen kirjautumisyritykseen.",
       "gateway_changed": "Yhdyskäytäväluettelo muuttui tämän ikkunan ollessa auki. Sulje ikkuna ja avaa Määritä uudelleen uudelleen.",
       "select_gateway": "Valitse luettelosta vähintään yksi laite ennen jatkamista.",
-      "unknown": "Tapahtui odottamaton PointT-virhe. Odota hetki ja yritä uudelleen.",
+      "unknown": "Pilviyhteydessä tapahtui odottamaton virhe. Odota hetki ja yritä uudelleen.",
       "bacon_unavailable": "Muiden pilvilaitteiden luettelo ei ole tällä hetkellä saatavilla. Odota vähintään minuutti ja yritä uudelleen.",
       "bacon_selection_unavailable": "Muita pilvilaitteita ei voitu kysyä tällä hetkellä. Voit valita tavoitettavissa olevia lämmitysyhdyskäytäviä. Olemassa olevat pilvilaitevalinnat säilyvät.",
       "reauth_targets_missing": "Tämä kirjautuminen ei löytänyt yhtään käytössä olevaa järjestelmää tai laitetta. Aiemmat tunnistetiedot säilyvät. Tarkista, että kirjauduit samalla tilillä kuin aiemmin. Jos järjestelmät poistettiin tililtä, avaa Määritä → Yhteydet → pilviyhteys: ota käyttöön järjestelmä, joka on edelleen tilillä, kohdassa **Käytä järjestelmille ja laitteille**, tai poista poistetut käytöstä ja poista ne valinnalla **Unohda valitsemattomat järjestelmät**. Jos mitään ei ole jäljellä, poista pilviyhteys ja yhdistä se uudelleen.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Kyselytiheys",
-        "description": "Vakio lukee lämmityksen nykyiset käyttöarvot kerran minuutissa, asetukset ja energia-arvot 5 minuutin välein ja hitaammin muuttuvat tiedot 15 minuutin välein. Pilviystävällinen kaksinkertaistaa nämä välit. Aktiiviset viat tarkistetaan minuutin välein molemmissa profiileissa. Profiili koskee valitun pilviyhteyden PointT-lämmityksen ja latausaseman kyselyä; muut pilvilaitteet ilmoittavat muutokset viesteinä. Kirjautuminen, laitetarkistukset ja muutoksen jälkeinen vahvistus voivat lisätä pyyntöjä tämän aikataulun ulkopuolella. Jos kyselykierros kestää pidempään kuin sen väli, seuraava alkaa myöhemmin.",
+        "description": "Vakio lukee lämmityksen nykyiset käyttöarvot kerran minuutissa, asetukset ja energia-arvot 5 minuutin välein ja hitaammin muuttuvat tiedot 15 minuutin välein. Pilviystävällinen kaksinkertaistaa nämä välit. Aktiiviset viat tarkistetaan minuutin välein molemmissa profiileissa. Profiili koskee valitun pilviyhteyden lämmityksen ja latausaseman kyselyä; muut pilvilaitteet ilmoittavat muutokset viesteinä. Kirjautuminen, laitetarkistukset ja muutoksen jälkeinen vahvistus voivat lisätä pyyntöjä tämän aikataulun ulkopuolella. Jos kyselykierros kestää pidempään kuin sen väli, seuraava alkaa myöhemmin.",
         "data": {
           "polling_profile": "Kyselyprofiili"
         }
@@ -663,7 +667,7 @@
       "write_failed": "Lomaasetuksia ei voitu muuttaa.",
       "write_busy": "Lämmitysjärjestelmää luetaan tai toinen muutos on vielä käynnissä. Mitään ei lähetetty. Yritä hetken kuluttua uudelleen.",
       "write_not_confirmed": "Muutosta ei voitu vahvistaa kokonaan. Osa asetuksista on voitu jo tallentaa. Avaa loma uudelleen ja tarkista sen nykyiset asetukset.",
-      "write_rate_limited": "PointT-pilvi rajoittaa tällä hetkellä pyyntöjä. Odota ennen uutta yritystä.",
+      "write_rate_limited": "Pilvi rajoittaa tällä hetkellä pyyntöjä. Odota ennen uutta yritystä.",
       "write_validation_failed": "Lämmitysjärjestelmä ei enää tue vähintään yhtä valintaa. Sulje ikkuna, päivitä integraatio ja yritä uudelleen.",
       "holiday_end_not_after_start": "Päättymisen on oltava alkamisen jälkeen. Valitse myöhäisempi päättymisaika.",
       "rrc_time": "Valitse aika viiden minuutin portain, ilman sekunteja.",
@@ -691,7 +695,7 @@
       "controls_invalid": "Syöte on virheellinen tai näytetyt arvot ovat muuttuneet. Tarkista syötteesi tai lataa arvot uudelleen. Mitään ei kirjoitettu.",
       "controls_changed": "Asetus on muuttunut tai ei ole enää käytettävissä. Aiemmin vahvistetut muutokset pysyvät voimassa. Lataa arvot uudelleen ennen uutta yritystä.",
       "controls_auth": "Todennus on vanhentunut. Todenna integraatio uudelleen. Aiemmin vahvistetut muutokset pysyvät voimassa. Lataa arvot uudelleen ennen uutta yritystä.",
-      "controls_rate_limit": "Laite rajoittaa tällä hetkellä pyyntöjä. Odota ennen uutta yritystä. Aiemmin vahvistetut muutokset pysyvät voimassa. Lataa arvot uudelleen ennen uutta yritystä.",
+      "controls_rate_limit": "Pilvi rajoittaa tällä hetkellä pyyntöjä. Odota ennen uutta yritystä. Aiemmin vahvistetut muutokset pysyvät voimassa. Lataa arvot uudelleen ennen uutta yritystä.",
       "controls_unconfirmed": "Viimeisintä muutosta ei voitu vahvistaa. Se on voinut jo tulla voimaan laitteessa. Aiemmin vahvistetut muutokset pysyvät voimassa. Lataa arvot uudelleen ennen uutta yritystä.",
       "controls_failed": "Yhteys laitteeseen epäonnistui. Viimeisin muutos on voinut jo tulla voimaan. Aiemmin vahvistetut muutokset pysyvät voimassa. Lataa arvot uudelleen ennen uutta yritystä.",
       "controls_busy": "Laitetta luetaan tai toinen muutos on vielä käynnissä. Tätä muutosta ei lähetetty. Aiemmin vahvistetut muutokset pysyvät voimassa. Yritä hetken kuluttua uudelleen.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "Pilvi on pyytänyt taukoa. Odota ennen uutta yritystä.",
       "invalid_auth": "SingleKey ID hylkäsi valtuutuksen tai se vanheni. Käytä yllä näkyvää uutta SingleKey ID -linkkiä ja toista kirjautuminen.",
       "invalid_redirect": "Home Assistant ei voinut käyttää tätä osoitetta. Kopioi koko sovellusosoite Chromen konsolin ‘Failed to launch’ -viestistä. Sen on alettava yllä näytetyllä skeemalla ja kuuluttava nykyiseen kirjautumisyritykseen.",
-      "cannot_connect": "PointT-palveluun ei saada yhteyttä. Tarkista internetyhteys, odota hetki ja yritä uudelleen.",
+      "cannot_connect": "Pilviyhteyteen ei saada yhteyttä. Tarkista internetyhteys, odota hetki ja yritä uudelleen.",
       "select_gateway": "Valitse luettelosta vähintään yksi laite ennen jatkamista.",
       "no_gateways": "Laitteita ei löytynyt. Tarkista, että valittu merkki ja SingleKey ID -tili vastaavat sovellustasi. Vanhemmalla laiteohjelmistolla varustettu huonesäädin näkyy vasta, kun sen laiteohjelmisto on päivitetty ja se on otettu käyttöön nykyisessä sovelluksessa SingleKey ID:lläsi.",
       "local_invalid_address": "Syötä IP-osoite tai isäntänimi ilman URL-osoitetta, polkua tai tunnistetietoja.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "PointT-ominaisuudet muuttuivat laiteohjelmistopäivityksen jälkeen",
+      "title": "Ominaisuudet muuttuivat laiteohjelmistopäivityksen jälkeen",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Etsi PointT-ominaisuudet uudelleen",
-            "description": "Bosch/Buderus Home Comfort löysi {conflict_count} tunnettua ominaisuutta, joiden tietotyyppi tai yksikkö ei enää vastaa turvallisesti tuettua PointT-skeemaa. Valitse **Lähetä** ladataksesi integraation uudelleen ja tarkistaaksesi kaikki ominaisuudet uudelleen. Jos varoitus palaa, lataa integraation diagnostiikka ja ilmoita muuttunut skeema jakamatta tunnistetietoja tai raaka-arvoja."
+            "title": "Etsi ominaisuudet uudelleen",
+            "description": "Bosch/Buderus Home Comfort löysi {conflict_count} tunnettua ominaisuutta, joiden tietotyyppi tai yksikkö ei enää vastaa turvallisesti tuettua skeemaa. Valitse **Lähetä** ladataksesi integraation uudelleen ja tarkistaaksesi kaikki ominaisuudet uudelleen. Jos varoitus palaa, lataa integraation diagnostiikka ja ilmoita muuttunut skeema jakamatta tunnistetietoja tai raaka-arvoja."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "PointT-ominaisuudet muuttuivat laiteohjelmistopäivityksen jälkeen",
+      "title": "Ominaisuudet muuttuivat laiteohjelmistopäivityksen jälkeen",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Etsi PointT-ominaisuudet uudelleen",
+            "title": "Etsi ominaisuudet uudelleen",
             "description": "Tämä lämmitysjärjestelmä ilmoittaa {conflict_count} tunnettua ominaisuutta, joiden tietotyyppi tai yksikkö on odottamaton. Tarkista sen ominaisuudet uudelleen. Vain tämä lähde käynnistyy uudelleen; muut järjestelmät ja yhteydet pysyvät aktiivisina. Olemassa olevat entiteettitunnukset ja mukautetut asetukset säilyvät."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "Valittu alkamis- tai päättymisaika toistuu kahdesti, koska kello siirtyy taaksepäin lämmitysjärjestelmän aikavyöhykkeellä. Valitse yksiselitteinen aika."
     },
+    "holiday_changes_unavailable": {
+      "message": "Tämä lämmitysjärjestelmä ei tällä hetkellä salli lomien muuttamista."
+    },
+    "holiday_create_failed": {
+      "message": "Lomaa ei voitu luoda tai vahvistaa."
+    },
+    "holiday_change_unsafe": {
+      "message": "Tätä lomaa ei voi tällä hetkellä muuttaa turvallisesti."
+    },
+    "holiday_update_failed": {
+      "message": "Lomaa ei voitu muuttaa tai vahvistaa."
+    },
+    "holiday_not_deletable": {
+      "message": "Tätä lomaa ei voi poistaa täällä."
+    },
+    "holiday_delete_failed": {
+      "message": "Lomaa ei voitu poistaa tai vahvistaa."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Toistuvia lomia ei tueta."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Lomilla ei ole kuvausta eikä sijaintia. Poista ne ja yritä uudelleen."
+    },
+    "select_option_unavailable": {
+      "message": "Lämmitysjärjestelmä ei enää tarjoa tätä vaihtoehtoa. Lataa arvot uudelleen ja valitse uudelleen."
+    },
     "rrc_mode_locked": {
       "message": "Säädin lukitsee tämän vyöhykkeen lämmitystilan tällä hetkellä, esimerkiksi järjestelmän jäähdyttäessä. Nykyinen tila pysyy näkyvissä. Yritä myöhemmin uudelleen."
     },
@@ -1080,13 +1111,28 @@
       "message": "Pilvikirjautuminen ei ole enää voimassa. Todenna Bosch/Buderus Home Comfort uudelleen ennen kuin yrität uudelleen."
     },
     "write_rate_limited": {
-      "message": "PointT-pilvi rajoittaa tällä hetkellä pyyntöjä. Odota ennen muutoksen yrittämistä uudelleen."
+      "message": "Pilvi rajoittaa tällä hetkellä pyyntöjä. Odota ennen muutoksen yrittämistä uudelleen."
     },
     "write_failed": {
       "message": "Muutosta ei voitu suorittaa loppuun, eikä lämmitysjärjestelmä vahvistanut sitä. Näytetty arvo päivittyy seuraavalla lukukerralla."
     },
     "write_busy": {
       "message": "Lämmitysjärjestelmää luetaan tai toinen muutos on vielä käynnissä. Mitään ei lähetetty. Yritä hetken kuluttua uudelleen."
+    },
+    "command_cloud_auth_required": {
+      "message": "Ei mahdollista juuri nyt: pilviyhteys tarvitsee uuden kirjautumisen. Mitään ei lähetetty."
+    },
+    "command_cloud_stopped": {
+      "message": "Ei mahdollista juuri nyt: pilviyhteys on pysäytetty tai käynnistyy uudelleen. Mitään ei lähetetty."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Ei mahdollista juuri nyt: pyynnöt ovat tauolla pilven pyyntörajoituksen vuoksi noin kello {until} asti. Mitään ei lähetetty."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Ei mahdollista juuri nyt: pyynnöt ovat tauolla toistuvien pilvivirheiden vuoksi noin kello {until} asti. Mitään ei lähetetty."
+    },
+    "command_cloud_unreachable": {
+      "message": "Ei mahdollista juuri nyt: pilveä ei tavoiteta. Mitään ei lähetetty. Yritä uudelleen, kun ajantasaiset arvot näkyvät."
     },
     "holiday_end_not_after_start": {
       "message": "Päättymisen on oltava alkamisen jälkeen. Valitse myöhäisempi päättymisaika."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Järjestelmäilmoitukset"
+        "name": "Järjestelmäilmoitukset",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Ilmennyt",
+              "resolved": "Ratkaistu"
+            }
+          }
+        }
       }
     },
     "button": {

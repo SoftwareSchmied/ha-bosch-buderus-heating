@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Mapping
+from datetime import datetime
 from typing import Any
 
 from homeassistant.core import callback
@@ -11,6 +12,7 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import Entity, EntityDescription
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
@@ -230,6 +232,47 @@ def unused_translation_key(path: str) -> str:
     )
 
 
+# Why the cloud cannot take a command now, as the message of the command.
+_CLOUD_DOWN_KEYS = {
+    "auth_required": "command_cloud_auth_required",
+    "cloud_stopped": "command_cloud_stopped",
+    "rate_limited": "command_cloud_rate_limited",
+    "protection_pause": "command_cloud_protection_pause",
+    "cloud_unreachable": "command_cloud_unreachable",
+}
+
+
+def pause_end_text(until: datetime | None) -> str:
+    """Local end of a pause; with the date when it is not today."""
+    if until is None:
+        return ""
+    local = dt_util.as_local(until)
+    if local.date() == dt_util.now().date():
+        return local.strftime("%H:%M")
+    return local.strftime("%Y-%m-%d %H:%M")
+
+
+def cloud_down_error(coordinator: object) -> HomeAssistantError | None:
+    """The message for a command while the cloud cannot be used, else None.
+
+    A paused, limited, stopped or unreachable cloud, or one that needs a new
+    sign-in, rejects every command; saying so is more useful than a message
+    about the command itself. Nothing has been sent at this point.
+    """
+    status = getattr(coordinator, "control_status", None)
+    if not callable(status):
+        return None
+    reason, until = status()
+    key = _CLOUD_DOWN_KEYS.get(reason or "")
+    if key is None:
+        return None
+    return HomeAssistantError(
+        translation_domain=DOMAIN,
+        translation_key=key,
+        translation_placeholders={"until": pause_end_text(until)},
+    )
+
+
 async def async_set_control(
     coordinator: BoschBuderusDataUpdateCoordinator,
     path: str,
@@ -260,6 +303,8 @@ async def async_set_control(
             translation_domain=DOMAIN, translation_key=err.translation_key
         ) from err
     except WriteValidationError as err:
+        if (down := cloud_down_error(coordinator)) is not None:
+            raise down from err
         raise ServiceValidationError(
             translation_domain=DOMAIN, translation_key="write_validation_failed"
         ) from err

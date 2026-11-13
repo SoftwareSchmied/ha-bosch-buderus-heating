@@ -70,6 +70,10 @@
           "owner": "Eksisterende oppsett"
         }
       },
+      "local_discovered": {
+        "title": "Gateway funnet",
+        "description": "Home Assistant fant en gateway på {host} i hjemmenettverket, og denne integrasjonen er ikke satt opp ennå.\n\nFortsett for å sette den opp med **Bare lokal tilgang**: det opprettes en oppføring uten sky, og deretter åpnes det lokale oppsettet. Den lokale tilgangen leser bare. En skytilgang kan legges til i samme oppføring senere."
+      },
       "local_target": {
         "title": "Velg anlegget",
         "description": "Velg anlegget som skal kobles til lokalt. Gateway-identiteten kontrolleres før lagring.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Dette påloggingsforsøket er utløpt. Åpne den nye SingleKey ID-lenken som vises ovenfor, og logg på igjen.",
       "auth_restart": "Dette påloggingsforsøket kan ikke brukes lenger. Åpne den nye SingleKey ID-lenken som vises ovenfor, og logg på igjen.",
-      "cannot_connect": "PointT-tjenesten kan ikke nås. Sjekk internettforbindelsen, vent litt og prøv igjen.",
+      "cannot_connect": "Skytilgangen kan ikke nås. Sjekk internettforbindelsen, vent litt og prøv igjen.",
       "invalid_auth": "SingleKey ID avviste autorisasjonen eller lot den utløpe. Bruk den nye SingleKey ID-lenken som vises ovenfor, og gjenta påloggingen.",
       "invalid_redirect": "Home Assistant kunne ikke bruke denne adressen. Kopier hele appadressen fra meldingen ‘Failed to launch’ i Chrome-konsollen. Den må begynne med skjemaet som vises ovenfor og tilhøre det gjeldende påloggingsforsøket.",
       "gateway_changed": "Gatewaylisten endret seg mens denne dialogen var åpen. Lukk dialogen og åpne Konfigurer på nytt.",
       "select_gateway": "Velg minst én enhet fra listen før du fortsetter.",
-      "unknown": "Det oppstod en uventet PointT-feil. Vent litt og prøv igjen.",
+      "unknown": "Det oppstod en uventet feil i skytilgangen. Vent litt og prøv igjen.",
       "bacon_unavailable": "Listen over flere skyenheter er ikke tilgjengelig akkurat nå. Vent minst ett minutt og prøv igjen.",
       "bacon_selection_unavailable": "Flere skyenheter kunne ikke spørres akkurat nå. Du kan velge tilgjengelige varmegatewayer. Eksisterende valg av skyenheter beholdes.",
       "reauth_targets_missing": "Denne påloggingen fant ingen av de påslåtte anleggene og enhetene. De tidligere påloggingsopplysningene beholdes. Sjekk at du logget på med samme konto som før. Hvis anleggene er fjernet fra kontoen, åpner du Konfigurer → Tilkoblinger → skytilgangen: slå på et anlegg som fortsatt finnes i kontoen under **Bruk for anlegg og enheter**, eller slå av de fjernede og fjern dem med **Glem fravalgte anlegg**. Hvis ingen er igjen, fjerner du skytilgangen og kobler den til på nytt.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Forespørselsfrekvens",
-        "description": "Standard leser gjeldende driftsverdier for oppvarming hvert minutt, innstillinger og energiverdier hvert 5. minutt og tregere informasjon hvert 15. minutt. Skyvennlig dobler disse intervallene. Aktive feil sjekkes hvert minutt i begge profilene. Profilen gjelder PointT-forespørsler for oppvarming og ladeboks for den valgte skytilkoblingen; flere skyenheter melder endringer som meldinger. Pålogging, enhetssjekker og bekreftelsen etter en endring kan gi ekstra forespørsler utenfor denne tidsplanen. Hvis en forespørselssyklus tar lengre tid enn intervallet, starter den neste senere.",
+        "description": "Standard leser gjeldende driftsverdier for oppvarming hvert minutt, innstillinger og energiverdier hvert 5. minutt og tregere informasjon hvert 15. minutt. Skyvennlig dobler disse intervallene. Aktive feil sjekkes hvert minutt i begge profilene. Profilen gjelder forespørsler for oppvarming og ladeboks for den valgte skytilkoblingen; flere skyenheter melder endringer som meldinger. Pålogging, enhetssjekker og bekreftelsen etter en endring kan gi ekstra forespørsler utenfor denne tidsplanen. Hvis en forespørselssyklus tar lengre tid enn intervallet, starter den neste senere.",
         "data": {
           "polling_profile": "Forespørselsprofil"
         }
@@ -663,7 +667,7 @@
       "write_failed": "Ferieinnstillingene kunne ikke endres.",
       "write_busy": "Varmeanlegget leses av, eller en annen endring pågår fortsatt. Ingenting ble sendt. Prøv igjen om et øyeblikk.",
       "write_not_confirmed": "Endringen kunne ikke bekreftes fullstendig. Noen innstillinger kan allerede være lagret. Åpne ferien på nytt og sjekk de gjeldende innstillingene.",
-      "write_rate_limited": "PointT-skyen begrenser forespørsler akkurat nå. Vent før du prøver igjen.",
+      "write_rate_limited": "Skyen begrenser forespørsler akkurat nå. Vent før du prøver igjen.",
       "write_validation_failed": "Minst ett valg støttes ikke lenger av varmeanlegget. Lukk dialogen, oppdater integrasjonen og prøv igjen.",
       "holiday_end_not_after_start": "Slutten må være etter starten. Velg en senere slutt.",
       "rrc_time": "Velg et tidspunkt i femminutters trinn, uten sekunder.",
@@ -691,7 +695,7 @@
       "controls_invalid": "En inndata er ugyldig, eller de viste verdiene har endret seg. Sjekk inndataene dine eller last verdiene på nytt. Ingenting ble skrevet.",
       "controls_changed": "En innstilling har endret seg eller er ikke lenger tilgjengelig. Tidligere bekreftede endringer forblir brukt. Last verdiene på nytt før du prøver igjen.",
       "controls_auth": "Autentiseringen er utløpt. Autentiser integrasjonen på nytt. Tidligere bekreftede endringer forblir brukt. Last verdiene på nytt før du prøver igjen.",
-      "controls_rate_limit": "Apparatet begrenser forespørsler akkurat nå. Vent før du prøver igjen. Tidligere bekreftede endringer forblir brukt. Last verdiene på nytt før du prøver igjen.",
+      "controls_rate_limit": "Skyen begrenser forespørsler akkurat nå. Vent før du prøver igjen. Tidligere bekreftede endringer forblir brukt. Last verdiene på nytt før du prøver igjen.",
       "controls_unconfirmed": "Den siste endringen kunne ikke bekreftes. Den kan allerede ha trådt i kraft på apparatet. Tidligere bekreftede endringer forblir brukt. Last verdiene på nytt før du prøver igjen.",
       "controls_failed": "Kommunikasjonen med apparatet mislyktes. Den siste endringen kan allerede ha trådt i kraft. Tidligere bekreftede endringer forblir brukt. Last verdiene på nytt før du prøver igjen.",
       "controls_busy": "Apparatet leses av, eller en annen endring pågår fortsatt. Denne endringen ble ikke sendt. Tidligere bekreftede endringer forblir brukt. Prøv igjen om et øyeblikk.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "Skyen har bedt om en pause. Vent før du prøver igjen.",
       "invalid_auth": "SingleKey ID avviste autorisasjonen eller lot den utløpe. Bruk den nye SingleKey ID-lenken som vises ovenfor, og gjenta påloggingen.",
       "invalid_redirect": "Home Assistant kunne ikke bruke denne adressen. Kopier hele appadressen fra meldingen ‘Failed to launch’ i Chrome-konsollen. Den må begynne med skjemaet som vises ovenfor og tilhøre det gjeldende påloggingsforsøket.",
-      "cannot_connect": "PointT-tjenesten kan ikke nås. Sjekk internettforbindelsen, vent litt og prøv igjen.",
+      "cannot_connect": "Skytilgangen kan ikke nås. Sjekk internettforbindelsen, vent litt og prøv igjen.",
       "select_gateway": "Velg minst én enhet fra listen før du fortsetter.",
       "no_gateways": "Ingen enheter ble funnet. Sjekk at det valgte merket og SingleKey ID-kontoen samsvarer med appen din. En romregulator med eldre fastvare vises først når fastvaren er oppdatert og den er satt opp i den nåværende appen med din SingleKey ID.",
       "local_invalid_address": "Skriv inn en IP-adresse eller et vertsnavn uten URL, bane eller påloggingsopplysninger.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "PointT-funksjonene endret seg etter en fastvareoppdatering",
+      "title": "Funksjonene endret seg etter en fastvareoppdatering",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Finn PointT-funksjonene på nytt",
-            "description": "Bosch/Buderus Home Comfort fant {conflict_count} kjente funksjoner der datatypen eller enheten ikke lenger samsvarer med det trygt støttede PointT-skjemaet. Velg **Send** for å laste integrasjonen på nytt og undersøke alle funksjoner igjen. Hvis advarselen kommer tilbake, last ned integrasjonens diagnostikk og meld fra om det endrede skjemaet uten å dele påloggingsopplysninger eller rå måleverdier."
+            "title": "Finn funksjonene på nytt",
+            "description": "Bosch/Buderus Home Comfort fant {conflict_count} kjente funksjoner der datatypen eller enheten ikke lenger samsvarer med det trygt støttede skjemaet. Velg **Send** for å laste integrasjonen på nytt og undersøke alle funksjoner igjen. Hvis advarselen kommer tilbake, last ned integrasjonens diagnostikk og meld fra om det endrede skjemaet uten å dele påloggingsopplysninger eller rå måleverdier."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "PointT-funksjonene endret seg etter en fastvareoppdatering",
+      "title": "Funksjonene endret seg etter en fastvareoppdatering",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Finn PointT-funksjonene på nytt",
+            "title": "Finn funksjonene på nytt",
             "description": "Dette varmeanlegget melder {conflict_count} kjente funksjoner med uventet datatype eller enhet. Undersøk funksjonene på nytt. Bare denne kilden starter på nytt; andre anlegg og tilkoblinger forblir aktive. Eksisterende entitets-ID-er og egne innstillinger beholdes."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "Det valgte start- eller sluttidspunktet forekommer to ganger fordi klokken stilles tilbake i varmeanleggets tidssone. Velg et entydig tidspunkt."
     },
+    "holiday_changes_unavailable": {
+      "message": "Dette varmeanlegget tillater ikke endringer av ferier akkurat nå."
+    },
+    "holiday_create_failed": {
+      "message": "Ferien kunne ikke opprettes eller bekreftes."
+    },
+    "holiday_change_unsafe": {
+      "message": "Denne ferien kan ikke endres trygt akkurat nå."
+    },
+    "holiday_update_failed": {
+      "message": "Ferien kunne ikke endres eller bekreftes."
+    },
+    "holiday_not_deletable": {
+      "message": "Denne ferien kan ikke slettes her."
+    },
+    "holiday_delete_failed": {
+      "message": "Ferien kunne ikke slettes eller bekreftes."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Gjentakende ferier støttes ikke."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Ferier har ingen beskrivelse eller plassering. Fjern dem og prøv igjen."
+    },
+    "select_option_unavailable": {
+      "message": "Varmeanlegget tilbyr ikke lenger dette alternativet. Last verdiene på nytt og velg igjen."
+    },
     "rrc_mode_locked": {
       "message": "Regulatoren låser for øyeblikket oppvarmingsmodusen for denne sonen, for eksempel mens anlegget kjøler. Den gjeldende modusen vises fortsatt. Prøv igjen senere."
     },
@@ -1080,13 +1111,28 @@
       "message": "Skypåloggingen er ikke lenger gyldig. Autentiser Bosch/Buderus Home Comfort på nytt før du prøver igjen."
     },
     "write_rate_limited": {
-      "message": "PointT-skyen begrenser forespørsler akkurat nå. Vent før du prøver endringen igjen."
+      "message": "Skyen begrenser forespørsler akkurat nå. Vent før du prøver endringen igjen."
     },
     "write_failed": {
       "message": "Endringen kunne ikke fullføres og ble ikke bekreftet av varmeanlegget. Verdien som vises, oppdateres ved neste avlesning."
     },
     "write_busy": {
       "message": "Varmeanlegget leses av, eller en annen endring pågår fortsatt. Ingenting ble sendt. Prøv igjen om et øyeblikk."
+    },
+    "command_cloud_auth_required": {
+      "message": "Ikke mulig akkurat nå: skytilgangen trenger en ny pålogging. Ingenting ble sendt."
+    },
+    "command_cloud_stopped": {
+      "message": "Ikke mulig akkurat nå: skytilgangen er stoppet eller startes på nytt. Ingenting ble sendt."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Ikke mulig akkurat nå: forespørsler er satt på pause etter en forespørselsgrense i skyen til omtrent {until}. Ingenting ble sendt."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Ikke mulig akkurat nå: forespørsler er satt på pause etter gjentatte skyfeil til omtrent {until}. Ingenting ble sendt."
+    },
+    "command_cloud_unreachable": {
+      "message": "Ikke mulig akkurat nå: skyen kan ikke nås. Ingenting ble sendt. Prøv igjen når gjeldende verdier vises."
     },
     "holiday_end_not_after_start": {
       "message": "Slutten må være etter starten. Velg en senere slutt."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Systemmeldinger"
+        "name": "Systemmeldinger",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Oppstått",
+              "resolved": "Løst"
+            }
+          }
+        }
       }
     },
     "button": {

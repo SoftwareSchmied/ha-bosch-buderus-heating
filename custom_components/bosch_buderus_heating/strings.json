@@ -70,6 +70,10 @@
           "owner": "Existing setup"
         }
       },
+      "local_discovered": {
+        "title": "Gateway found",
+        "description": "Home Assistant found a gateway at {host} in the home network, and this integration is not set up yet.\n\nContinue to set it up with **Local access only**: an entry without a cloud is created, and its local setup opens next. The local access only reads. A cloud access can be added to the same entry later."
+      },
       "local_target": {
         "title": "Choose the installation",
         "description": "Select the installation to connect locally. Its gateway identity will be checked before saving.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "This sign-in attempt has expired. Open the new SingleKey ID link shown above and sign in again.",
       "auth_restart": "This sign-in attempt can no longer be used. Open the new SingleKey ID link shown above and sign in again.",
-      "cannot_connect": "The PointT service cannot be reached. Check the internet connection, wait a moment, and try again.",
+      "cannot_connect": "The cloud access cannot be reached. Check the internet connection, wait a moment, and try again.",
       "invalid_auth": "SingleKey ID rejected or expired the authorization. Use the new SingleKey ID link shown above and repeat sign-in.",
       "invalid_redirect": "Home Assistant could not use this address. Copy the complete app address from the Chrome console's ‘Failed to launch’ message. It must begin with the scheme shown above and belong to the current sign-in attempt.",
       "gateway_changed": "The gateway list changed while this dialog was open. Close the dialog and open Reconfigure again.",
       "select_gateway": "Select at least one device from the list before continuing.",
-      "unknown": "An unexpected PointT error occurred. Wait a moment and try again.",
+      "unknown": "An unexpected error occurred in the cloud access. Wait a moment and try again.",
       "bacon_unavailable": "The additional cloud device list is currently unavailable. Wait at least one minute and try again.",
       "bacon_selection_unavailable": "Additional cloud devices could not be queried at this time. You can select reachable heating gateways. Existing cloud device selections will be preserved.",
       "reauth_targets_missing": "This sign-in found none of the switched-on systems and devices. The previous credentials are kept. Check that you signed in with the same account as before. If the systems were removed from the account, open Configure → Connections → the cloud access: switch on a system that is still in the account under **Use for systems and devices**, or switch the removed ones off and remove them with **Forget deselected systems**. If none is left, remove the cloud access and connect it again.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Polling frequency",
-        "description": "Standard reads current heating operating values every minute, settings and energy values every 5 minutes and slower information every 15 minutes. Cloud-friendly doubles these intervals. Active faults are checked every minute in both profiles. The profile applies to PointT heating and wallbox polling of the selected cloud connection; additional cloud devices report changes as messages. Sign-in, device checks and the confirmation after a change can add requests outside this schedule. If a polling cycle takes longer than its interval, the next one starts later.",
+        "description": "Standard reads current heating operating values every minute, settings and energy values every 5 minutes and slower information every 15 minutes. Cloud-friendly doubles these intervals. Active faults are checked every minute in both profiles. The profile applies to the heating and wallbox polling of the selected cloud connection; additional cloud devices report changes as messages. Sign-in, device checks and the confirmation after a change can add requests outside this schedule. If a polling cycle takes longer than its interval, the next one starts later.",
         "data": {
           "polling_profile": "Polling profile"
         }
@@ -663,7 +667,7 @@
       "write_failed": "The holiday settings could not be changed.",
       "write_busy": "The heating system is being read or another change is still running. Nothing was sent. Try again in a moment.",
       "write_not_confirmed": "The change could not be fully confirmed. Some settings may already have been saved. Reopen the holiday and check its current settings.",
-      "write_rate_limited": "The PointT cloud is currently limiting requests. Wait before trying again.",
+      "write_rate_limited": "The cloud is currently limiting requests. Wait before trying again.",
       "write_validation_failed": "At least one selection is no longer supported by the heating system. Close the dialog, refresh the integration, and try again.",
       "holiday_end_not_after_start": "The end must be after the start. Please choose a later end.",
       "rrc_time": "Choose a time in five-minute steps, without seconds.",
@@ -691,7 +695,7 @@
       "controls_invalid": "An input is invalid or the displayed values have changed. Check your inputs or reload the values. Nothing was written.",
       "controls_changed": "A setting has changed or is no longer available. Previously confirmed changes remain applied. Reload the values before trying again.",
       "controls_auth": "Authentication has expired. Please reauthenticate the integration. Previously confirmed changes remain applied. Reload the values before trying again.",
-      "controls_rate_limit": "The appliance is currently limiting requests. Please wait before trying again. Previously confirmed changes remain applied. Reload the values before trying again.",
+      "controls_rate_limit": "The cloud is currently limiting requests. Please wait before trying again. Previously confirmed changes remain applied. Reload the values before trying again.",
       "controls_unconfirmed": "The last change could not be confirmed. It may already have taken effect on the appliance. Previously confirmed changes remain applied. Reload the values before trying again.",
       "controls_failed": "Communication with the appliance failed. The last change may already have taken effect. Previously confirmed changes remain applied. Reload the values before trying again.",
       "controls_busy": "The appliance is being read or another change is still running. This change was not sent. Previously confirmed changes remain applied. Try again in a moment.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "The cloud has requested a pause. Please wait before trying again.",
       "invalid_auth": "SingleKey ID rejected or expired the authorization. Use the new SingleKey ID link shown above and repeat sign-in.",
       "invalid_redirect": "Home Assistant could not use this address. Copy the complete app address from the Chrome console's ‘Failed to launch’ message. It must begin with the scheme shown above and belong to the current sign-in attempt.",
-      "cannot_connect": "The PointT service cannot be reached. Check the internet connection, wait a moment, and try again.",
+      "cannot_connect": "The cloud access cannot be reached. Check the internet connection, wait a moment, and try again.",
       "select_gateway": "Select at least one device from the list before continuing.",
       "no_gateways": "No devices were found. Check that the selected brand and SingleKey ID account match your app. A room controller with older firmware only appears once its firmware has been updated and it has been set up in the current app with your SingleKey ID.",
       "local_invalid_address": "Enter an IP address or hostname without a URL, path or credentials.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "PointT capabilities changed after a firmware update",
+      "title": "Capabilities changed after a firmware update",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Rediscover PointT capabilities",
-            "description": "Bosch/Buderus Home Comfort found {conflict_count} known capabilities whose data type or unit no longer matches the safely supported PointT schema. Select **Submit** to reload the integration and inspect all capabilities again. If the warning returns, download the integration diagnostics and report the changed schema without sharing credentials or raw values."
+            "title": "Rediscover the capabilities",
+            "description": "Bosch/Buderus Home Comfort found {conflict_count} known capabilities whose data type or unit no longer matches the safely supported schema. Select **Submit** to reload the integration and inspect all capabilities again. If the warning returns, download the integration diagnostics and report the changed schema without sharing credentials or raw values."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "PointT capabilities changed after a firmware update",
+      "title": "Capabilities changed after a firmware update",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Rediscover PointT capabilities",
+            "title": "Rediscover the capabilities",
             "description": "This heating system reports {conflict_count} known capabilities with an unexpected data type or unit. Inspect its capabilities again. Only this source restarts; other systems and connections remain active. Existing entity IDs and custom settings are retained."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "The selected start or end time occurs twice because the clock moves back in the heating system's time zone. Choose an unambiguous time."
     },
+    "holiday_changes_unavailable": {
+      "message": "This heating system does not currently allow holiday changes."
+    },
+    "holiday_create_failed": {
+      "message": "The holiday could not be created or confirmed."
+    },
+    "holiday_change_unsafe": {
+      "message": "This holiday cannot currently be changed safely."
+    },
+    "holiday_update_failed": {
+      "message": "The holiday could not be changed or confirmed."
+    },
+    "holiday_not_deletable": {
+      "message": "This holiday cannot be deleted here."
+    },
+    "holiday_delete_failed": {
+      "message": "The holiday could not be deleted or confirmed."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Recurring holidays are not supported."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Holidays have no description or location. Remove them and try again."
+    },
+    "select_option_unavailable": {
+      "message": "The heating system no longer offers this option. Reload the values and choose again."
+    },
     "rrc_mode_locked": {
       "message": "The controller currently locks the heating mode of this zone, for example while the system cools. The current mode stays shown. Try again later."
     },
@@ -1080,13 +1111,28 @@
       "message": "The cloud sign-in is no longer valid. Reauthenticate Bosch/Buderus Home Comfort before trying again."
     },
     "write_rate_limited": {
-      "message": "The PointT cloud is currently limiting requests. Wait before trying the change again."
+      "message": "The cloud is currently limiting requests. Wait before trying the change again."
     },
     "write_failed": {
       "message": "The change could not be completed and was not confirmed by the heating system. The value shown is updated with the next reading."
     },
     "write_busy": {
       "message": "The heating system is being read or another change is still running. Nothing was sent. Try again in a moment."
+    },
+    "command_cloud_auth_required": {
+      "message": "Not possible right now: the cloud access needs a new sign-in. Nothing was sent."
+    },
+    "command_cloud_stopped": {
+      "message": "Not possible right now: the cloud access is stopped or being restarted. Nothing was sent."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Not possible right now: requests are paused after a rate limit of the cloud until about {until}. Nothing was sent."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Not possible right now: requests are paused after repeated cloud errors until about {until}. Nothing was sent."
+    },
+    "command_cloud_unreachable": {
+      "message": "Not possible right now: the cloud is not reachable. Nothing was sent. Try again once current values are shown."
     },
     "holiday_end_not_after_start": {
       "message": "The end must be after the start. Please choose a later end."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "System notifications"
+        "name": "System notifications",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Appeared",
+              "resolved": "Resolved"
+            }
+          }
+        }
       }
     },
     "button": {

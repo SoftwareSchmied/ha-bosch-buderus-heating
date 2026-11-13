@@ -70,6 +70,10 @@
           "owner": "Existujúce nastavenie"
         }
       },
+      "local_discovered": {
+        "title": "Nájdená brána",
+        "description": "Home Assistant našiel v domácej sieti bránu na adrese {host} a táto integrácia ešte nie je nastavená.\n\nPokračujte a nastavte ju s voľbou **Iba lokálny prístup**: vytvorí sa záznam bez cloudu a potom sa otvorí jeho lokálne nastavenie. Lokálny prístup iba číta. Cloudový prístup možno neskôr pridať do toho istého záznamu."
+      },
       "local_target": {
         "title": "Výber inštalácie",
         "description": "Vyberte inštaláciu, ktorá sa má pripojiť lokálne. Identita jej brány sa pred uložením overí.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Platnosť tohto pokusu o prihlásenie vypršala. Otvorte nový odkaz SingleKey ID zobrazený vyššie a prihláste sa znova.",
       "auth_restart": "Tento pokus o prihlásenie sa už nedá použiť. Otvorte nový odkaz SingleKey ID zobrazený vyššie a prihláste sa znova.",
-      "cannot_connect": "Služba PointT nie je dostupná. Skontrolujte internetové pripojenie, chvíľu počkajte a skúste to znova.",
+      "cannot_connect": "Cloudový prístup nie je dostupný. Skontrolujte internetové pripojenie, chvíľu počkajte a skúste to znova.",
       "invalid_auth": "SingleKey ID odmietlo oprávnenie alebo jeho platnosť vypršala. Použite nový odkaz SingleKey ID zobrazený vyššie a zopakujte prihlásenie.",
       "invalid_redirect": "Home Assistant nemohol túto adresu použiť. Skopírujte úplnú adresu aplikácie z hlásenia ‘Failed to launch’ v konzole prehliadača Chrome. Musí začínať schémou zobrazenou vyššie a patriť k aktuálnemu pokusu o prihlásenie.",
       "gateway_changed": "Zoznam brán sa zmenil, kým bolo toto okno otvorené. Zatvorte okno a znova otvorte Prekonfigurovať.",
       "select_gateway": "Pred pokračovaním vyberte zo zoznamu aspoň jedno zariadenie.",
-      "unknown": "Vyskytla sa neočakávaná chyba PointT. Chvíľu počkajte a skúste to znova.",
+      "unknown": "V cloudovom prístupe sa vyskytla neočakávaná chyba. Chvíľu počkajte a skúste to znova.",
       "bacon_unavailable": "Zoznam ďalších cloudových zariadení momentálne nie je dostupný. Počkajte aspoň minútu a skúste to znova.",
       "bacon_selection_unavailable": "Ďalšie cloudové zariadenia sa teraz nepodarilo dopytovať. Môžete vybrať dosiahnuteľné vykurovacie brány. Existujúci výber cloudových zariadení zostane zachovaný.",
       "reauth_targets_missing": "Toto prihlásenie nenašlo žiadny zo zapnutých systémov a zariadení. Predchádzajúce prihlasovacie údaje zostávajú zachované. Skontrolujte, či ste sa prihlásili rovnakým účtom ako predtým. Ak boli systémy z účtu odstránené, otvorte Konfigurovať → Pripojenia → cloudový prístup: pod **Použiť pre systémy a zariadenia** zapnite systém, ktorý je v účte stále k dispozícii, alebo vypnite odstránené systémy a odstráňte ich pomocou **Zabudnúť zrušené systémy**. Ak žiadny nezostal, odstráňte cloudový prístup a pripojte ho znova.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Frekvencia dopytovania",
-        "description": "Štandardný profil číta aktuálne prevádzkové hodnoty vykurovania každú minútu, nastavenia a hodnoty energie každých 5 minút a pomalšie sa meniace informácie každých 15 minút. Profil Šetrný ku cloudu tieto intervaly zdvojnásobuje. Aktívne poruchy sa v oboch profiloch kontrolujú každú minútu. Profil sa vzťahuje na dopytovanie vykurovania PointT a nabíjacej stanice (wallbox) vybraného cloudového pripojenia; ďalšie cloudové zariadenia hlásia zmeny formou správ. Prihlásenie, kontroly zariadení a potvrdenie po zmene môžu pridať požiadavky mimo tohto plánu. Ak cyklus dopytovania trvá dlhšie než jeho interval, ďalší sa spustí neskôr.",
+        "description": "Štandardný profil číta aktuálne prevádzkové hodnoty vykurovania každú minútu, nastavenia a hodnoty energie každých 5 minút a pomalšie sa meniace informácie každých 15 minút. Profil Šetrný ku cloudu tieto intervaly zdvojnásobuje. Aktívne poruchy sa v oboch profiloch kontrolujú každú minútu. Profil sa vzťahuje na dopytovanie vykurovania a nabíjacej stanice (wallbox) vybraného cloudového pripojenia; ďalšie cloudové zariadenia hlásia zmeny formou správ. Prihlásenie, kontroly zariadení a potvrdenie po zmene môžu pridať požiadavky mimo tohto plánu. Ak cyklus dopytovania trvá dlhšie než jeho interval, ďalší sa spustí neskôr.",
         "data": {
           "polling_profile": "Profil dopytovania"
         }
@@ -663,7 +667,7 @@
       "write_failed": "Nastavenia dovolenky sa nepodarilo zmeniť.",
       "write_busy": "Vykurovací systém sa práve číta alebo ešte prebieha iná zmena. Nič sa neodoslalo. Skúste to o chvíľu znova.",
       "write_not_confirmed": "Zmenu sa nepodarilo úplne potvrdiť. Niektoré nastavenia už mohli byť uložené. Znova otvorte dovolenku a skontrolujte jej aktuálne nastavenia.",
-      "write_rate_limited": "Cloud PointT momentálne obmedzuje požiadavky. Pred ďalším pokusom počkajte.",
+      "write_rate_limited": "Cloud momentálne obmedzuje požiadavky. Pred ďalším pokusom počkajte.",
       "write_validation_failed": "Aspoň jedna voľba už nie je vykurovacím systémom podporovaná. Zatvorte okno, obnovte integráciu a skúste to znova.",
       "holiday_end_not_after_start": "Koniec musí byť po začiatku. Vyberte neskorší koniec.",
       "rrc_time": "Vyberte čas v päťminútových krokoch, bez sekúnd.",
@@ -691,7 +695,7 @@
       "controls_invalid": "Niektorý vstup je neplatný alebo sa zobrazené hodnoty zmenili. Skontrolujte svoje vstupy alebo hodnoty znova načítajte. Nič sa nezapísalo.",
       "controls_changed": "Nastavenie sa zmenilo alebo už nie je dostupné. Predtým potvrdené zmeny zostávajú použité. Pred ďalším pokusom hodnoty znova načítajte.",
       "controls_auth": "Platnosť overenia vypršala. Integráciu znova overte. Predtým potvrdené zmeny zostávajú použité. Pred ďalším pokusom hodnoty znova načítajte.",
-      "controls_rate_limit": "Zariadenie momentálne obmedzuje požiadavky. Pred ďalším pokusom počkajte. Predtým potvrdené zmeny zostávajú použité. Pred ďalším pokusom hodnoty znova načítajte.",
+      "controls_rate_limit": "Cloud momentálne obmedzuje požiadavky. Pred ďalším pokusom počkajte. Predtým potvrdené zmeny zostávajú použité. Pred ďalším pokusom hodnoty znova načítajte.",
       "controls_unconfirmed": "Poslednú zmenu sa nepodarilo potvrdiť. Na zariadení sa mohla už prejaviť. Predtým potvrdené zmeny zostávajú použité. Pred ďalším pokusom hodnoty znova načítajte.",
       "controls_failed": "Komunikácia so zariadením zlyhala. Posledná zmena sa mohla už prejaviť. Predtým potvrdené zmeny zostávajú použité. Pred ďalším pokusom hodnoty znova načítajte.",
       "controls_busy": "Zariadenie sa práve číta alebo ešte prebieha iná zmena. Táto zmena sa neodoslala. Predtým potvrdené zmeny zostávajú použité. Skúste to o chvíľu znova.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "Cloud požiadal o pauzu. Pred ďalším pokusom počkajte.",
       "invalid_auth": "SingleKey ID odmietlo oprávnenie alebo jeho platnosť vypršala. Použite nový odkaz SingleKey ID zobrazený vyššie a zopakujte prihlásenie.",
       "invalid_redirect": "Home Assistant nemohol túto adresu použiť. Skopírujte úplnú adresu aplikácie z hlásenia ‘Failed to launch’ v konzole prehliadača Chrome. Musí začínať schémou zobrazenou vyššie a patriť k aktuálnemu pokusu o prihlásenie.",
-      "cannot_connect": "Služba PointT nie je dostupná. Skontrolujte internetové pripojenie, chvíľu počkajte a skúste to znova.",
+      "cannot_connect": "Cloudový prístup nie je dostupný. Skontrolujte internetové pripojenie, chvíľu počkajte a skúste to znova.",
       "select_gateway": "Pred pokračovaním vyberte zo zoznamu aspoň jedno zariadenie.",
       "no_gateways": "Nenašli sa žiadne zariadenia. Skontrolujte, či vybraná značka a účet SingleKey ID zodpovedajú vašej aplikácii. Izbový regulátor so starším firmvérom sa zobrazí až po aktualizácii firmvéru a po jeho nastavení v aktuálnej aplikácii s vaším SingleKey ID.",
       "local_invalid_address": "Zadajte adresu IP alebo názov hostiteľa bez adresy URL, cesty a prihlasovacích údajov.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "Funkcie PointT sa zmenili po aktualizácii firmvéru",
+      "title": "Funkcie sa zmenili po aktualizácii firmvéru",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Znova vyhľadať funkcie PointT",
-            "description": "Bosch/Buderus Home Comfort našiel známe funkcie, ktorých dátový typ alebo jednotka už nezodpovedá bezpečne podporovanej schéme PointT. Počet: {conflict_count}. Výberom **Odoslať** integráciu znova načítate a všetky funkcie znova skontrolujete. Ak sa upozornenie vráti, stiahnite diagnostiku integrácie a nahláste zmenenú schému bez zdieľania prihlasovacích údajov alebo surových hodnôt."
+            "title": "Znova vyhľadať funkcie",
+            "description": "Bosch/Buderus Home Comfort našiel známe funkcie, ktorých dátový typ alebo jednotka už nezodpovedá bezpečne podporovanej schéme. Počet: {conflict_count}. Výberom **Odoslať** integráciu znova načítate a všetky funkcie znova skontrolujete. Ak sa upozornenie vráti, stiahnite diagnostiku integrácie a nahláste zmenenú schému bez zdieľania prihlasovacích údajov alebo surových hodnôt."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "Funkcie PointT sa zmenili po aktualizácii firmvéru",
+      "title": "Funkcie sa zmenili po aktualizácii firmvéru",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Znova vyhľadať funkcie PointT",
+            "title": "Znova vyhľadať funkcie",
             "description": "Tento vykurovací systém hlási známe funkcie s neočakávaným dátovým typom alebo jednotkou. Počet: {conflict_count}. Skontrolujte jeho funkcie znova. Reštartuje sa iba tento zdroj; ostatné systémy a pripojenia zostanú aktívne. Existujúce ID entít a vlastné nastavenia zostanú zachované."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "Vybraný čas začiatku alebo konca nastane dvakrát, pretože sa v časovom pásme vykurovacieho systému posúvajú hodiny dozadu. Vyberte jednoznačný čas."
     },
+    "holiday_changes_unavailable": {
+      "message": "Tento vykurovací systém momentálne nepovoľuje zmeny dovoleniek."
+    },
+    "holiday_create_failed": {
+      "message": "Dovolenku sa nepodarilo vytvoriť ani potvrdiť."
+    },
+    "holiday_change_unsafe": {
+      "message": "Túto dovolenku teraz nemožno bezpečne zmeniť."
+    },
+    "holiday_update_failed": {
+      "message": "Dovolenku sa nepodarilo zmeniť ani potvrdiť."
+    },
+    "holiday_not_deletable": {
+      "message": "Túto dovolenku tu nemožno odstrániť."
+    },
+    "holiday_delete_failed": {
+      "message": "Dovolenku sa nepodarilo odstrániť ani potvrdiť."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Opakujúce sa dovolenky nie sú podporované."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Dovolenky nemajú popis ani miesto. Odstráňte ich a skúste to znova."
+    },
+    "select_option_unavailable": {
+      "message": "Vykurovací systém už túto možnosť neponúka. Znova načítajte hodnoty a vyberte znova."
+    },
     "rrc_mode_locked": {
       "message": "Regulátor momentálne zamyká režim vykurovania tejto zóny, napríklad počas chladenia systému. Aktuálny režim zostáva zobrazený. Skúste to neskôr."
     },
@@ -1080,13 +1111,28 @@
       "message": "Cloudové prihlásenie už nie je platné. Pred ďalším pokusom znova overte Bosch/Buderus Home Comfort."
     },
     "write_rate_limited": {
-      "message": "Cloud PointT momentálne obmedzuje požiadavky. Pred ďalším pokusom o zmenu počkajte."
+      "message": "Cloud momentálne obmedzuje požiadavky. Pred ďalším pokusom o zmenu počkajte."
     },
     "write_failed": {
       "message": "Zmenu sa nepodarilo dokončiť a vykurovací systém ju nepotvrdil. Zobrazená hodnota sa aktualizuje pri nasledujúcom čítaní."
     },
     "write_busy": {
       "message": "Vykurovací systém sa práve číta alebo ešte prebieha iná zmena. Nič sa neodoslalo. Skúste to o chvíľu znova."
+    },
+    "command_cloud_auth_required": {
+      "message": "Teraz to nie je možné: cloudový prístup vyžaduje nové prihlásenie. Nič sa neodoslalo."
+    },
+    "command_cloud_stopped": {
+      "message": "Teraz to nie je možné: cloudový prístup je zastavený alebo sa reštartuje. Nič sa neodoslalo."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Teraz to nie je možné: požiadavky sú po obmedzení cloudu pozastavené približne do {until}. Nič sa neodoslalo."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Teraz to nie je možné: požiadavky sú po opakovaných chybách cloudu pozastavené približne do {until}. Nič sa neodoslalo."
+    },
+    "command_cloud_unreachable": {
+      "message": "Teraz to nie je možné: cloud nie je dosiahnuteľný. Nič sa neodoslalo. Skúste to znova, keď sa zobrazia aktuálne hodnoty."
     },
     "holiday_end_not_after_start": {
       "message": "Koniec musí byť po začiatku. Vyberte neskorší koniec."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Hlásenia systému"
+        "name": "Hlásenia systému",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Vzniklo",
+              "resolved": "Vyriešené"
+            }
+          }
+        }
       }
     },
     "button": {

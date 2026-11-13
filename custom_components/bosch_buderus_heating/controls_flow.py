@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping
 from dataclasses import replace
-from datetime import datetime
 from typing import Any, override
 
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
@@ -16,10 +15,10 @@ from homeassistant.helpers.selector import (
     SelectSelectorConfig,
 )
 from homeassistant.helpers.translation import async_get_translations
-from homeassistant.util import dt as dt_util
 
 from . import rrc_contracts
 from .const import DOMAIN
+from .control import pause_end_text
 from .control_presentation import control_category, control_icon, control_label
 from .coordinator import BoschBuderusDataUpdateCoordinator
 from .entity_resources import fresh_resource
@@ -278,16 +277,6 @@ def _offered_options(
     return tuple(offered)
 
 
-def _until_text(until: datetime | None) -> str:
-    """Local end of a pause; with the date when it is not today."""
-    if until is None:
-        return ""
-    local = dt_util.as_local(until)
-    if local.date() == dt_util.now().date():
-        return local.strftime("%H:%M")
-    return local.strftime("%Y-%m-%d %H:%M")
-
-
 def _missing_cloud_reason(entry: ConfigEntry) -> str:
     """Why no cloud appliance is loaded: sign-in, unreachable, starting or none."""
     from .configuration import CLOUD_KIND
@@ -408,7 +397,7 @@ class ControlsOptionsFlow(NavigatingOptionsFlow):
             # controls whose writes would be rejected right away.
             return self.async_abort(
                 reason=f"controls_{reason or 'none'}",
-                description_placeholders={"until": _until_text(until)},
+                description_placeholders={"until": pause_end_text(until)},
             )
         if self._control_displayed is None:
             self._control_displayed = current

@@ -70,6 +70,10 @@
           "owner": "Postojeća konfiguracija"
         }
       },
+      "local_discovered": {
+        "title": "Pronađen je pristupnik",
+        "description": "Home Assistant pronašao je pristupnik na adresi {host} u kućnoj mreži, a ova integracija još nije postavljena.\n\nNastavite kako biste ga postavili s opcijom **Samo lokalni pristup**: stvara se unos bez oblaka, a zatim se otvara njegovo lokalno postavljanje. Lokalni pristup samo čita. Pristup putem oblaka može se kasnije dodati istom unosu."
+      },
       "local_target": {
         "title": "Odabir instalacije",
         "description": "Odaberite instalaciju koju treba lokalno povezati. Identitet njezina pristupnika provjerit će se prije spremanja.",
@@ -144,12 +148,12 @@
     "error": {
       "auth_expired": "Ovaj pokušaj prijave je istekao. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno.",
       "auth_restart": "Ovaj pokušaj prijave više se ne može koristiti. Otvorite novu poveznicu SingleKey ID prikazanu iznad i prijavite se ponovno.",
-      "cannot_connect": "Usluga PointT nije dostupna. Provjerite internetsku vezu, pričekajte trenutak i pokušajte ponovno.",
+      "cannot_connect": "Pristup putem oblaka nije dostupan. Provjerite internetsku vezu, pričekajte trenutak i pokušajte ponovno.",
       "invalid_auth": "SingleKey ID je odbio ili poništio ovlaštenje. Upotrijebite novu poveznicu SingleKey ID prikazanu iznad i ponovite prijavu.",
       "invalid_redirect": "Home Assistant nije mogao koristiti ovu adresu. Kopirajte cijelu adresu aplikacije iz poruke ‘Failed to launch’ u konzoli preglednika Chrome. Mora započinjati shemom prikazanom iznad i pripadati trenutnom pokušaju prijave.",
       "gateway_changed": "Popis pristupnika promijenio se dok je ovaj dijalog bio otvoren. Zatvorite dijalog i ponovno otvorite Ponovnu konfiguraciju.",
       "select_gateway": "Prije nastavka odaberite barem jedan uređaj s popisa.",
-      "unknown": "Došlo je do neočekivane greške PointT. Pričekajte trenutak i pokušajte ponovno.",
+      "unknown": "Došlo je do neočekivane greške u pristupu putem oblaka. Pričekajte trenutak i pokušajte ponovno.",
       "bacon_unavailable": "Popis dodatnih uređaja u oblaku trenutno nije dostupan. Pričekajte najmanje jednu minutu i pokušajte ponovno.",
       "bacon_selection_unavailable": "Dodatni uređaji u oblaku trenutno se nisu mogli dohvatiti. Možete odabrati dostupne pristupnike grijanja. Postojeći odabiri uređaja u oblaku bit će zadržani.",
       "reauth_targets_missing": "Ova prijava nije pronašla nijedan od uključenih sustava i uređaja. Prethodni podaci za prijavu su zadržani. Provjerite jeste li se prijavili istim računom kao prije. Ako su sustavi uklonjeni s računa, otvorite Konfiguriraj → Veze → pristup putem oblaka: uključite sustav koji je još na računu pod **Koristi za sustave i uređaje** ili isključite uklonjene i uklonite ih pomoću **Zaboravi isključene sustave**. Ako nijedan nije ostao, uklonite pristup putem oblaka i ponovno ga povežite.",
@@ -512,7 +516,7 @@
       },
       "connection_polling": {
         "title": "Učestalost dohvaćanja",
-        "description": "Standardno dohvaća trenutne radne vrijednosti grijanja svake minute, postavke i vrijednosti energije svakih 5 minuta, a sporije informacije svakih 15 minuta. Poštedno za oblak udvostručuje te intervale. Aktivne smetnje provjeravaju se svake minute u oba profila. Profil se odnosi na dohvaćanje podataka grijanja i zidnog punjača putem PointT za odabranu vezu s oblakom; dodatni uređaji u oblaku prijavljuju promjene kao poruke. Prijava, provjere uređaja i potvrda nakon promjene mogu dodati zahtjeve izvan ovog rasporeda. Ako ciklus dohvaćanja traje dulje od svog intervala, sljedeći počinje kasnije.",
+        "description": "Standardno dohvaća trenutne radne vrijednosti grijanja svake minute, postavke i vrijednosti energije svakih 5 minuta, a sporije informacije svakih 15 minuta. Poštedno za oblak udvostručuje te intervale. Aktivne smetnje provjeravaju se svake minute u oba profila. Profil se odnosi na dohvaćanje podataka grijanja i zidnog punjača za odabranu vezu s oblakom; dodatni uređaji u oblaku prijavljuju promjene kao poruke. Prijava, provjere uređaja i potvrda nakon promjene mogu dodati zahtjeve izvan ovog rasporeda. Ako ciklus dohvaćanja traje dulje od svog intervala, sljedeći počinje kasnije.",
         "data": {
           "polling_profile": "Profil dohvaćanja"
         }
@@ -663,7 +667,7 @@
       "write_failed": "Postavke odmora nisu se mogle promijeniti.",
       "write_busy": "Sustav grijanja se čita ili je u tijeku druga promjena. Ništa nije poslano. Pokušajte ponovno za trenutak.",
       "write_not_confirmed": "Promjena se nije mogla u potpunosti potvrditi. Neke postavke možda su već spremljene. Ponovno otvorite odmor i provjerite njegove trenutne postavke.",
-      "write_rate_limited": "Oblak PointT trenutno ograničava zahtjeve. Pričekajte prije ponovnog pokušaja.",
+      "write_rate_limited": "Oblak trenutno ograničava zahtjeve. Pričekajte prije ponovnog pokušaja.",
       "write_validation_failed": "Sustav grijanja više ne podržava barem jedan odabir. Zatvorite dijalog, osvježite integraciju i pokušajte ponovno.",
       "holiday_end_not_after_start": "Kraj mora biti nakon početka. Odaberite kasniji kraj.",
       "rrc_time": "Odaberite vrijeme u koracima od pet minuta, bez sekundi.",
@@ -691,7 +695,7 @@
       "controls_invalid": "Unos nije valjan ili su se prikazane vrijednosti promijenile. Provjerite unose ili ponovno učitajte vrijednosti. Ništa nije zapisano.",
       "controls_changed": "Postavka se promijenila ili više nije dostupna. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
       "controls_auth": "Autentifikacija je istekla. Ponovno autentificirajte integraciju. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
-      "controls_rate_limit": "Uređaj trenutno ograničava zahtjeve. Pričekajte prije ponovnog pokušaja. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
+      "controls_rate_limit": "Oblak trenutno ograničava zahtjeve. Pričekajte prije ponovnog pokušaja. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
       "controls_unconfirmed": "Posljednja promjena nije se mogla potvrditi. Možda je već stupila na snagu na uređaju. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
       "controls_failed": "Komunikacija s uređajem nije uspjela. Posljednja promjena možda je već stupila na snagu. Prethodno potvrđene promjene ostaju primijenjene. Ponovno učitajte vrijednosti prije ponovnog pokušaja.",
       "controls_busy": "Uređaj se čita ili je u tijeku druga promjena. Ova promjena nije poslana. Prethodno potvrđene promjene ostaju primijenjene. Pokušajte ponovno za trenutak.",
@@ -710,7 +714,7 @@
       "cloud_rate_limited": "Oblak je zatražio stanku. Pričekajte prije ponovnog pokušaja.",
       "invalid_auth": "SingleKey ID je odbio ili poništio ovlaštenje. Upotrijebite novu poveznicu SingleKey ID prikazanu iznad i ponovite prijavu.",
       "invalid_redirect": "Home Assistant nije mogao koristiti ovu adresu. Kopirajte cijelu adresu aplikacije iz poruke ‘Failed to launch’ u konzoli preglednika Chrome. Mora započinjati shemom prikazanom iznad i pripadati trenutnom pokušaju prijave.",
-      "cannot_connect": "Usluga PointT nije dostupna. Provjerite internetsku vezu, pričekajte trenutak i pokušajte ponovno.",
+      "cannot_connect": "Pristup putem oblaka nije dostupan. Provjerite internetsku vezu, pričekajte trenutak i pokušajte ponovno.",
       "select_gateway": "Prije nastavka odaberite barem jedan uređaj s popisa.",
       "no_gateways": "Nije pronađen nijedan uređaj. Provjerite podudaraju li se odabrana marka i račun SingleKey ID s vašom aplikacijom. Sobni regulator sa starijim firmverom pojavljuje se tek nakon što se njegov firmver ažurira i nakon što se postavi u trenutačnoj aplikaciji s vašim računom SingleKey ID.",
       "local_invalid_address": "Unesite IP adresu ili naziv hosta bez URL-a, putanje ili podataka za prijavu.",
@@ -838,12 +842,12 @@
       }
     },
     "incompatible_firmware": {
-      "title": "Mogućnosti PointT promijenile su se nakon ažuriranja firmvera",
+      "title": "Mogućnosti su se promijenile nakon ažuriranja firmvera",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Ponovno otkrivanje mogućnosti PointT",
-            "description": "Bosch/Buderus Home Comfort pronašao je poznate mogućnosti ({conflict_count}) čiji se tip podataka ili jedinica više ne podudara sa sigurno podržanom shemom PointT. Odaberite **Podnijeti** za ponovno učitavanje integracije i ponovni pregled svih mogućnosti. Ako se upozorenje vrati, preuzmite dijagnostiku integracije i prijavite promijenjenu shemu bez dijeljenja podataka za prijavu ili neobrađenih vrijednosti."
+            "title": "Ponovno otkrivanje mogućnosti",
+            "description": "Bosch/Buderus Home Comfort pronašao je poznate mogućnosti ({conflict_count}) čiji se tip podataka ili jedinica više ne podudara sa sigurno podržanom shemom. Odaberite **Podnijeti** za ponovno učitavanje integracije i ponovni pregled svih mogućnosti. Ako se upozorenje vrati, preuzmite dijagnostiku integracije i prijavite promijenjenu shemu bez dijeljenja podataka za prijavu ili neobrađenih vrijednosti."
           }
         },
         "abort": {
@@ -867,11 +871,11 @@
       }
     },
     "managed_firmware": {
-      "title": "Mogućnosti PointT promijenile su se nakon ažuriranja firmvera",
+      "title": "Mogućnosti su se promijenile nakon ažuriranja firmvera",
       "fix_flow": {
         "step": {
           "confirm": {
-            "title": "Ponovno otkrivanje mogućnosti PointT",
+            "title": "Ponovno otkrivanje mogućnosti",
             "description": "Ovaj sustav grijanja prijavljuje poznate mogućnosti ({conflict_count}) s neočekivanim tipom podataka ili jedinicom. Ponovno pregledajte njegove mogućnosti. Ponovno se pokreće samo ovaj izvor; ostali sustavi i veze ostaju aktivni. Postojeći ID-jevi entiteta i prilagođene postavke se zadržavaju."
           }
         },
@@ -1049,6 +1053,33 @@
     "holiday_time_ambiguous": {
       "message": "Odabrano vrijeme početka ili završetka pojavljuje se dvaput jer se sat u vremenskoj zoni sustava grijanja pomiče unatrag. Odaberite jednoznačno vrijeme."
     },
+    "holiday_changes_unavailable": {
+      "message": "Ovaj sustav grijanja trenutno ne dopušta promjene odmora."
+    },
+    "holiday_create_failed": {
+      "message": "Odmor nije bilo moguće stvoriti ni potvrditi."
+    },
+    "holiday_change_unsafe": {
+      "message": "Ovaj odmor trenutno se ne može sigurno promijeniti."
+    },
+    "holiday_update_failed": {
+      "message": "Odmor nije bilo moguće promijeniti ni potvrditi."
+    },
+    "holiday_not_deletable": {
+      "message": "Ovaj odmor ovdje se ne može izbrisati."
+    },
+    "holiday_delete_failed": {
+      "message": "Odmor nije bilo moguće izbrisati ni potvrditi."
+    },
+    "holiday_recurring_unsupported": {
+      "message": "Ponavljajući odmori nisu podržani."
+    },
+    "holiday_fields_unsupported": {
+      "message": "Odmori nemaju opis ni lokaciju. Uklonite ih i pokušajte ponovno."
+    },
+    "select_option_unavailable": {
+      "message": "Sustav grijanja više ne nudi ovu opciju. Ponovno učitajte vrijednosti i odaberite ponovno."
+    },
     "rrc_mode_locked": {
       "message": "Regulator trenutno zaključava način grijanja ove zone, na primjer dok sustav hladi. Trenutni način ostaje prikazan. Pokušajte ponovno kasnije."
     },
@@ -1080,13 +1111,28 @@
       "message": "Prijava u oblak više nije valjana. Ponovno autentificirajte Bosch/Buderus Home Comfort prije ponovnog pokušaja."
     },
     "write_rate_limited": {
-      "message": "Oblak PointT trenutno ograničava zahtjeve. Pričekajte prije ponovnog pokušaja promjene."
+      "message": "Oblak trenutno ograničava zahtjeve. Pričekajte prije ponovnog pokušaja promjene."
     },
     "write_failed": {
       "message": "Promjena se nije mogla dovršiti i sustav grijanja je nije potvrdio. Prikazana vrijednost ažurira se sljedećim čitanjem."
     },
     "write_busy": {
       "message": "Sustav grijanja se čita ili je u tijeku druga promjena. Ništa nije poslano. Pokušajte ponovno za trenutak."
+    },
+    "command_cloud_auth_required": {
+      "message": "Trenutno nije moguće: pristup putem oblaka treba novu prijavu. Ništa nije poslano."
+    },
+    "command_cloud_stopped": {
+      "message": "Trenutno nije moguće: pristup putem oblaka je zaustavljen ili se ponovno pokreće. Ništa nije poslano."
+    },
+    "command_cloud_rate_limited": {
+      "message": "Trenutno nije moguće: zahtjevi su pauzirani nakon ograničenja oblaka, otprilike do {until}. Ništa nije poslano."
+    },
+    "command_cloud_protection_pause": {
+      "message": "Trenutno nije moguće: zahtjevi su pauzirani nakon ponovljenih grešaka oblaka, otprilike do {until}. Ništa nije poslano."
+    },
+    "command_cloud_unreachable": {
+      "message": "Trenutno nije moguće: oblak nije dostupan. Ništa nije poslano. Pokušajte ponovno kada se prikažu trenutne vrijednosti."
     },
     "holiday_end_not_after_start": {
       "message": "Kraj mora biti nakon početka. Odaberite kasniji kraj."
@@ -2372,7 +2418,15 @@
     },
     "event": {
       "system_notifications": {
-        "name": "Poruke sustava"
+        "name": "Poruke sustava",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "appeared": "Pojavilo se",
+              "resolved": "Riješeno"
+            }
+          }
+        }
       }
     },
     "button": {
