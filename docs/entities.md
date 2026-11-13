@@ -960,12 +960,14 @@ documentation.
 
 ## Using the heat pump hydraulic card
 
-The hydraulic card for Home Assistant (`custom:heatpump-hydraulic-card`) has
+The [Heat Pump Hydraulic Card](https://github.com/Sturmi77/heatpump-hydraulic-card)
+for Home Assistant (`custom:heatpump-hydraulic-card`) has
 a preset `bosch_buderus_heating`. The preset finds the entities by their
 unique IDs in the entity registry and uses only enabled entities; entity
 names, entity IDs and the language do not matter. The preset in the card's
-current release uses only cloud entities. An updated preset is proposed for
-the card; once it is accepted, it covers installations with only the cloud,
+current release uses only cloud entities. An updated preset is proposed in
+[the card's pull request #408](https://github.com/Sturmi77/heatpump-hydraulic-card/pull/408);
+once it is accepted, it covers installations with only the cloud,
 with the cloud and a local access, and with only a local access. On my
 installation I compared the updated preset live while the heat pump was
 heating, and with recorded states for defrost, hot water and standby. With

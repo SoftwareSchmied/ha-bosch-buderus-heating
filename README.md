@@ -325,6 +325,11 @@ The [entity and polling catalog](docs/entities.md) documents every entity in
 the reference installation, its PointT resource, write status, default state,
 and polling interval.
 
+For a hydraulic view of the heat pump on a dashboard, the
+[Heat Pump Hydraulic Card](https://github.com/Sturmi77/heatpump-hydraulic-card)
+has a preset for this integration (`preset: bosch_buderus_heating`). See
+[using the hydraulic card](docs/entities.md#using-the-heat-pump-hydraulic-card).
+
 ### System faults and notifications
 
 When the installation exposes PointT notifications, the integration creates:
