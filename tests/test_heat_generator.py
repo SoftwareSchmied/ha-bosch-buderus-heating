@@ -594,6 +594,7 @@ def test_the_reference_installation() -> None:
             "construction": "monobloc",
             "power_kw": None,
             "brand_family": "bosch_group",
+            "outdoor_power_kw": 10,
         },
         "outdoor_unit": OUTDOOR,
         "source": "cloud",
@@ -626,6 +627,7 @@ def test_the_example_of_the_official_documentation() -> None:
         "construction": None,
         "power_kw": None,
         "brand_family": "bosch_group",
+        "outdoor_power_kw": None,  # no power class documented for AW 4 OR-S
     }
     assert heat_generator.diagnostics(None, result)["unmapped_modules"] == []
 
@@ -658,6 +660,7 @@ def test_a_split_unit_as_the_table_says() -> None:
         "construction": "split",
         "power_kw": 8,
         "brand_family": None,
+        "outdoor_power_kw": None,
     }
     assert result.outdoor_unit == "Example ODU"
     # The outdoor unit has no product entry: not known, nothing guessed.
@@ -672,6 +675,7 @@ def test_a_gas_boiler_alone() -> None:
     assert result.state == "Example Gas 25"
     assert result.primary.role == "boiler"
     assert result.outdoor_unit is None
+    assert result.attributes()["primary"]["outdoor_power_kw"] is None
     assert result.known is True
 
 
@@ -722,6 +726,30 @@ def test_a_cascade_of_two_heat_pumps_in_a_stable_order() -> None:
         ("outdoor_unit", OUTDOOR),
     ]
     assert result.known is False  # the second stage has no product entry
+    # Several outdoor units: the first in the stable order gives the power.
+    assert result.attributes()["primary"]["outdoor_power_kw"] == 10
+
+
+def test_the_first_outdoor_unit_of_a_cascade_gives_the_power() -> None:
+    models = table(
+        {"match": {"hardware_type": "IN"}, "role": "heat_source"},
+        {"match": {"hardware_type": "OUT"}, "role": "outdoor_unit"},
+        {"match": {"product_name": "Example ODU 12"}, "power_kw": 12},
+        {"match": {"product_name": "Example ODU 8"}, "power_kw": 8},
+    )
+    listed = (
+        ("Example Indoor", "IN"),
+        ("Example ODU 8", "OUT"),
+        ("Example ODU 12", "OUT"),
+    )
+    result = interpret(rows(*listed), "cloud", table=models)
+    reversed_order = interpret(rows(*reversed(listed)), "cloud", table=models)
+    assert result is not None and reversed_order is not None
+    assert result.outdoor_unit == "Example ODU 12"
+    assert result.attributes()["primary"]["outdoor_power_kw"] == 12
+    assert reversed_order.attributes()["primary"]["outdoor_power_kw"] == 12
+    # The main heat generator keeps its own (unset) power class.
+    assert result.attributes()["primary"]["power_kw"] is None
 
 
 def test_modules_without_a_product_name_never_count() -> None:

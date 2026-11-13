@@ -482,18 +482,21 @@ class HeatGenerators:
         return self.primary.product_name
 
     @property
-    def outdoor_unit(self) -> str | None:
+    def _first_outdoor_unit(self) -> Generator | None:
+        """The first outdoor unit in the stable order (one of a cascade)."""
         return next(
-            (
-                item.product_name
-                for item in self.generators
-                if item.role == "outdoor_unit"
-            ),
+            (item for item in self.generators if item.role == "outdoor_unit"),
             None,
         )
 
+    @property
+    def outdoor_unit(self) -> str | None:
+        outdoor = self._first_outdoor_unit
+        return outdoor.product_name if outdoor is not None else None
+
     def attributes(self) -> dict[str, object]:
         primary = self.primary
+        outdoor = self._first_outdoor_unit
         return {
             "heat_generators": [
                 item.attribute() for item in self.generators[:MAX_GENERATORS]
@@ -503,6 +506,8 @@ class HeatGenerators:
                 "construction": primary.construction,
                 "power_kw": primary.power_kw,
                 "brand_family": primary.brand_family,
+                # The power class belongs to the outdoor unit.
+                "outdoor_power_kw": outdoor.power_kw if outdoor else None,
             },
             "outdoor_unit": self.outdoor_unit,
             "source": self.source,

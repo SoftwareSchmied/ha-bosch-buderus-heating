@@ -408,7 +408,7 @@ are fixed English keys; their values are never translated.
 |---|---|
 | state | Product name of the main heat generator: the first module with the role `heat_source`, otherwise `boiler`, otherwise the first module of the list; at most 255 characters without control characters; `unknown` before the first module list |
 | `heat_generators` | One entry per module with `role`, `product_name`, `hardware_type`, `family`, `construction` and `power_kw`, sorted by role and then by product name (at most 16 entries). Cascades and hybrid systems give several entries. |
-| `primary` | `family`, `construction`, `power_kw` and `brand_family` of the main heat generator, for simple card queries |
+| `primary` | `family`, `construction`, `power_kw` and `brand_family` of the main heat generator, and `outdoor_power_kw`: the `power_kw` of its outdoor unit (with several outdoor units, for example in a cascade, the first one in the order of `heat_generators`), otherwise `null`; for simple card queries |
 | `outdoor_unit` | Product name of the (first) outdoor unit, otherwise `null` |
 | `source` | `cloud` or `local`: which access supplied the shown list |
 | `table_version` | Version of the model table that interpreted the list |
@@ -475,6 +475,7 @@ primary:
   construction: monobloc
   power_kw: null
   brand_family: bosch_group
+  outdoor_power_kw: 10
 outdoor_unit: WLW-10 MB AR
 source: local
 table_version: 1
