@@ -25,7 +25,7 @@ Automated checks on the release state (2026-11-13, run locally):
 | Repeated runs of the request count after removing the cloud | Home Assistant 2026.11.0 and 2026.5.4, under extra CPU load | 500 of 500 passed on each version |
 | Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 221 files; Ruff clean; 610 files formatted |
 | Frontend tests and dialog browser tests | Home Assistant 2026.11.0 with its frontend, local | npm tests passed; 12 browser tests passed |
-| Release archive and SHA-256 | local build on a clean tree | ARCHIVE_PENDING |
+| Release archive and SHA-256 | local build on a clean tree | built for version 0.9.1 with 271 files (1,782,289 bytes) under Linux, without tests or bytecode; SHA-256 `32ddff8e8cc246f2cf169aa6a11d970527b31d6c5030aa3fd02010a3b8e73a70`; the release notes come from this version's CHANGELOG section |
 | GitHub checks | PR and release workflow | pending: all required checks of the PR must pass before the merge |
 
 Not yet confirmed on a real installation: a complete cloud sign-in with a
