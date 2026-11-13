@@ -5,163 +5,148 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
-### Added
+## [0.9.1] - 2026-11-13
 
-- **Tokens on the gateway:** the settings of a local access have a new entry
-  that shows the gateway's token list: how many tokens it holds, which client
-  created each one and when. This helps when a new sign-in fails because the
-  gateway's token list is full.
-  - The list is read only when you open it. Token values are never part of
-    it, and nothing of the list is saved, logged or included in diagnostics.
-  - It needs a working local access, because the gateway only shows the list
-    to a valid token.
-  - I tested it against a synthetic gateway only. I have not opened the list
-    on my own gateway yet, so the count shown for a real gateway is still
-    unconfirmed.
-- **Revoking an old token:** from that list, an old token of this integration
-  can be revoked on the gateway, one at a time and only after a confirmation.
-  Tokens of other apps and clients are never offered.
-  - The gateway does not say which token an access uses, so you choose by
-    creation time; the dialog shows when the access was last set up. Right
-    before the revocation the list is read again, the request is sent exactly
-    once, and the list is read once more to confirm the result. If the
-    gateway confirms nothing, the dialog says so and repeats nothing.
-  - If the revoked token was the one the access used, the access is switched
-    off instead of failing; a new sign-in with the device label sets it up
-    again.
-  - **Remove access** for a local access can revoke a token of this
-    integration first, if you tick that choice. Without it, removing an access
-    or the whole entry still never revokes anything.
-  - I tested this against a synthetic gateway only (a lost answer, a changed
-    list, a refused revocation, the access's own token and more). I have not
-    revoked a token on a real gateway yet, so how a real gateway answers a
-    revocation is still unconfirmed.
+> [!IMPORTANT]
+> **Before you update**
+>
+> - **From 0.9.0:** nothing special is needed. The storage format stays 4,
+>   and existing setups keep their sign-in, entity IDs and settings. Each
+>   gateway that reports its modules gets one new diagnostic sensor **Heat
+>   generator**. Three readings show corrected names unless you named them
+>   yourself.
+> - **From 0.8.x:** make a full Home Assistant backup first. The first start
+>   moves the configuration entry to storage format 4, which 0.8.x cannot
+>   load; going back is only possible by restoring that backup. Home
+>   Assistant 2026.5.0 or newer is required.
 
-- **Heat generator models:** every gateway with a module list gets one new
-  diagnostic sensor **Heat generator**, enabled by default. Its state is the
-  product name of the main heat generator; its attributes list every heat
-  generator module by role (indoor unit, outdoor unit, boiler, hybrid
-  manager, further cascade stages) with family, construction and power
-  class, and give `primary`, `outdoor_unit`, `source`, `table_version` and
-  `known`. Dashboard cards can choose a matching drawing from it. Details:
-  [heat generator models](docs/entities.md#heat-generator-models).
-  - The sensor sends no request of its own: it uses the module lists the
-    cloud and the local access already read. Its unique ID does not depend
-    on the source or the order of the modules, so it stays the same with
-    only the cloud, only the local access, both, and after a device
-    exchange. Serial numbers are never read, shown or stored.
-  - Family, construction and power come only from a model table; every
-    entry is either observed in a real module list or documented by the
-    manufacturer, with the address of the datasheet. Nothing is guessed
-    from a name. The table holds the modules of my own installation
-    (Logatherm WLW176i-12 TP70 with the monobloc outdoor unit WLW-10 MB AR),
-    which I read from its module list, and the hardware types of the indoor
-    and the outdoor unit. From the manufacturers' brochures and product
-    pages it also knows the WLW176i/WLW186i indoor units with the WLW MB AR
-    outdoor units, the CS5800i/CS6800i AW indoor units with the AW OR-S/OR-T
-    outdoor units, and the outdoor units of the CS3800i AW and CS8800i AW.
-    The power class belongs to the outdoor unit and is shown only where a
-    document states it (for example 10 kW for WLW-10 MB AR); the
-    construction only where a document names it. For the WLW176i and
-    WLW186i indoor units it comes from the system documentation, which names
-    the monobloc WLW MB AR as the only outdoor unit of these systems, not
-    from a statement about the indoor unit itself. Other models show their
-    product name and hardware type, but no family, construction or power
-    yet.
-  - If your model shows `known: false`, the diagnostics list it under
-    `heat_generator.unmapped_modules`, without serial numbers. Please post
-    that part in an issue; one new table entry is then enough.
-  - So far I have tested the sensor with automated tests only, not yet on a
-    running installation. iCom gateways follow the same rules; whether their
-    module list names the boiler is not known yet. Room controllers and
-    gateways without a named module get no such sensor. Existing entities
-    and devices stay unchanged.
-  - The diagnostics schema is now 47, with the new `heat_generator` block
-    (see [heat generator modules](docs/diagnostics.md#heat-generator-modules)).
-  - The entity name is translated into all languages; outside English and
-    German these are drafts.
+0.9.1 fixes the cloud sign-in of 0.9.0. It also improves the local access,
+names the heat generator models and shows texts for more gateway states.
+
+### Fixed
+
+- **Cloud sign-in:** in 0.9.0, a new sign-in and a renewed sign-in showed
+  the SingleKey ID page "Misconfigured application" instead of the sign-in
+  form, for both brands of the sign-in choice. A new cloud access could
+  therefore not be set up, and an access that needed a new sign-in could
+  not be signed in again. Existing setups with a working sign-in were not
+  affected. The sign-in link had asked for a smaller set of permissions
+  without `email`, which the sign-in service does not accept for this
+  integration. Every sign-in link now asks for the same permissions as
+  0.8.x again; the fallback for a rejected set, which never took effect,
+  was removed. Token renewal is unchanged.
+  - I checked that the links of the fixed version open the SingleKey ID
+    sign-in page for both brands, for a new and a renewed sign-in. A
+    complete sign-in with a real account on this version is still to be
+    confirmed.
+  - Thank you, [wt4km8bkkg-ux](https://github.com/wt4km8bkkg-ux), for
+    reporting it in
+    [#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127).
 
 ### Local access
 
+- **Tokens on the gateway:** the settings of a local access have a new entry
+  that shows the gateway's token list: how many tokens it holds, which
+  client created each one and when. This helps when a new sign-in fails
+  because the token list is full. The list is read only when you open it;
+  token values are never part of it, and nothing of it is saved, logged or
+  included in diagnostics.
+- **Revoking an old token:** from that list, an old token of this
+  integration can be revoked, one at a time and only after a confirmation.
+  Tokens of other apps are never offered. Right before the revocation the
+  list is read again, the request is sent exactly once, and the list is
+  read once more to confirm the result. If the revoked token was the one
+  the access used, the access is switched off; a new sign-in with the
+  device label sets it up again. **Remove access** can revoke a token of
+  this integration first if you tick that choice; otherwise removing still
+  never revokes anything.
+  - I tested the list and the revocation against a synthetic gateway only.
+    How a real gateway counts its tokens and answers a revocation is still
+    unconfirmed.
 - **New gateway address after a DHCP change:** when the local access can no
-  longer reach its gateway and the gateway announces itself in the network at a
-  new private or link-local address, the integration checks that address with
-  a single TLS handshake, without the token and without any request; a public
-  address is never contacted. Only if the gateway presents
-  exactly the certificate confirmed during setup, a repair note under
-  **Settings → System → Repairs** offers to use the new address. The address is
-  saved only after you confirm it, and the certificate is checked once more
-  right before. The token and the confirmed certificate stay, so no new sign-in
-  with the device label is needed. Nothing is offered while the local access
-  works, for any other certificate, or when several accesses know the same
-  certificate.
-  - I tested this with synthetic gateways in the automated tests: the same and
-    a different certificate at the new address, two gateways, a forged
-    announcement and an announcement during normal operation. On my own
-    gateway I only checked, with one handshake and without the token, that it
-    still presents the certificate confirmed at setup. A real address change of
-    a gateway has not been tested yet; reports are welcome.
-- **Setup attempts in the diagnostics:** the diagnostics now list the last
-  10 attempts to set up or change the local access of an entry, with the
-  time, the dialog step and the error the dialog showed, for example a
-  rejected device label or a gateway that was not unlocked. Login,
-  password, token, address and certificate data are never part of it. The
-  list survives a restart and is deleted with the entry. This helps to find
-  out why a setup needed several tries.
-  - I tested it with automated tests of the setup dialog, not yet on a real
-    setup.
-- **Tip for a fixed address:** while the local access cannot reach its gateway,
-  its status under **Configure → Connections** and a failed **Test connection
-  now** suggest reserving the gateway's IP address in the router (DHCP
-  reservation) or entering its host name. The setup guide explains both ways.
-  - The new texts in languages other than English and German are drafts.
+  longer reach its gateway and the gateway announces itself at a new
+  private or link-local address, the integration checks that address with
+  one TLS handshake, without the token and without any request; a public
+  address is never contacted. Only if the gateway presents exactly the
+  certificate confirmed during setup, a repair note under **Settings →
+  System → Repairs** offers the new address. It is saved only after you
+  confirm it, and the certificate is checked once more right before. The
+  token and the certificate stay, so no new sign-in is needed.
+  - I tested this with synthetic gateways: the same and a different
+    certificate at the new address, two gateways, a forged announcement and
+    an announcement during normal operation. On my own gateway I only
+    checked, with one handshake and without the token, that it presents the
+    certificate confirmed at setup. A real address change has not been
+    tested yet; reports are welcome.
+- **Tip for a fixed address:** while the local access cannot reach its
+  gateway, its status under **Configure → Connections** and a failed **Test
+  connection now** suggest a DHCP reservation in the router or the
+  gateway's host name.
+- **Setup attempts in the diagnostics:** the diagnostics list the last 10
+  attempts to set up or change the local access of an entry, with the time,
+  the dialog step and the error the dialog showed, for example a rejected
+  device label or a gateway that was not unlocked. Login, password, token,
+  address and certificate data are never part of it. This helps to find out
+  why a setup needed several tries. Tested with automated tests of the
+  setup dialog only.
 
-### Local access signals
+### Heat generator models
 
-- **Pressure units:** a controller signal reported in `mbar`, `hPa`, `kPa`
-  or `Pa` (for example a pressure difference) now shows its value with that
-  unit as a pressure, like one in `bar`. I only recognize these spellings;
-  the value is never converted. Such entities stay disabled and diagnostic.
-  My own system has no such signal, so this is tested with synthetic
-  answers only and not verified on a real system.
-- **Volume flow on hybrid systems:** I do not know yet whether a hybrid
-  system reports its volume flows in other steps than a heat pump alone, so
-  I do not change them: they are shown as the gateway reports them. The
-  diagnostics now tell when a system is detected as a hybrid system and
-  mark its volume flows as unverified. My own system is not a hybrid
-  system. If you have one, please compare the volume flow shown in Home
-  Assistant with the display of your device and let me know the result; a
-  correction will only follow such a comparison.
+- **Heat generator sensor:** every gateway with a module list gets one new
+  diagnostic sensor **Heat generator**, enabled by default. Its state is
+  the product name of the main heat generator; its attributes list each
+  heat generator module by role (indoor unit, outdoor unit, boiler, hybrid
+  manager, further cascade stages) with family, construction and power
+  class, and give `primary` (with `outdoor_power_kw`, the power class of
+  the outdoor unit), `outdoor_unit`, `source`, `table_version` and `known`.
+  Dashboard cards can choose a matching drawing from it. See
+  [heat generator models](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/v0.9.1/docs/entities.md#heat-generator-models).
+  - The sensor sends no request of its own; it uses the module lists the
+    cloud and the local access already read. Serial numbers are never read,
+    shown or stored.
+  - Family, construction and power come only from a model table whose
+    entries are observed in a real module list or documented by the
+    manufacturer; nothing is guessed from a name. It knows my own
+    installation (Logatherm WLW176i-12 TP70 with the monobloc outdoor unit
+    WLW-10 MB AR, 10 kW) and, from the manufacturers' documents, the
+    WLW176i/WLW186i indoor units with the WLW MB AR outdoor units, the
+    CS5800i/CS6800i AW indoor units with the AW OR-S/OR-T outdoor units and
+    the outdoor units of the CS3800i AW and CS8800i AW. For the WLW176i and
+    WLW186i indoor units the construction comes from the system
+    documentation, which names the monobloc WLW MB AR as their only outdoor
+    unit.
+  - If your model shows `known: false`, the diagnostics list it under
+    `heat_generator.unmapped_modules`, without serial numbers. Please post
+    that part in an issue; one new table entry is then enough.
+  - Tested with automated tests only, not yet on a running installation.
+    Room controllers and gateways without a named module get no such
+    sensor.
+
+### Gateway signals and names
+
 - **Texts for gateway states:** the EEBus status, the EEBus commissioning
-  and the start-up check of the heat pump now show texts instead of keys
-  such as `not_commissioned` or `startup_inprogress`, in every language of
-  the integration. The states are those my own gateway declares; a state a
-  gateway declares in addition is still shown as reported. Names, entity
-  IDs and settings of existing entities stay. The texts in languages other
-  than English and German are drafts and have not been reviewed yet.
-
-### Entities
-
-- **Corrected names:** three readings now say what they measure. Entity
-  IDs, unique IDs, states, the default activation and names you set yourself
-  stay; only an entity without a name of your own shows the new name.
-  - *System supply temperature* / *Vorlauftemperatur Anlage* (before
-    *Supply temperature* / *Vorlauftemperatur*) for
-    `/heatSources/actualSupplyTemperature`. Under the heat pump device the
-    old name read like the heat pump's flow. On my heat pump with a buffer
-    cylinder it is the heating side's flow behind the buffer; the heat
-    pump's own flow is *Primary supply temperature (TC1)*.
-  - *Liquid line temperature heating (TR3)* and *Liquid line temperature
-    cooling (TR4)* (before *Condenser temperature heating/cooling*), in
-    German *Temperatur Flüssigkeitsleitung Heizen/Kühlen*, as the API
-    documentation calls them. The condensing temperature is JR1. I compared
-    the readings on my heat pump while it was heating; the cooling mode is
-    untested, because it does not cool.
-  - The hot water level names stay: I checked them again, `eco` is Eco+,
-    `low` Eco and `high` Comfort. The entity page now explains why the Eco+
-    and Eco start temperatures can have the entity IDs
-    `…_eco_start_temperature` and `…_eco_start_temperature_2`.
-  - The new texts are drafts in every language except English and German.
+  and the start-up check of the heat pump show texts instead of keys such
+  as `not_commissioned` or `startup_inprogress`. The states are those my
+  own gateway declares; any other state is still shown as reported.
+- **Pressure units:** a controller signal in `mbar`, `hPa`, `kPa` or `Pa`
+  now shows its value with that unit as a pressure; the value is never
+  converted. My own system has no such signal, so this is tested with
+  synthetic answers only.
+- **Volume flow on hybrid systems:** volume flows are still shown as the
+  gateway reports them. The diagnostics now tell when a system is detected
+  as a hybrid system and mark its volume flows as unverified. If you have a
+  hybrid system, please compare the volume flow in Home Assistant with the
+  display of your device and let me know; a correction will only follow
+  such a comparison.
+- **Corrected names:** *System supply temperature* (before *Supply
+  temperature*) for `/heatSources/actualSupplyTemperature`, which on my heat
+  pump with a buffer cylinder is the heating side's flow behind the buffer,
+  and *Liquid line temperature heating (TR3)* / *cooling (TR4)* (before
+  *Condenser temperature heating/cooling*), as the API documentation calls
+  them. Entity IDs, unique IDs and names you set yourself stay. I compared
+  the readings on my heat pump while it was heating; the cooling mode is
+  untested.
+- The new texts are drafts in every language except English and German.
 
 ### Documentation
 
@@ -174,6 +159,8 @@ Versioning after its first tagged preview.
 - **Confirmed installations:** a Logamax plus GBH192i.2-25 H gas condensing
   boiler with an MX300 was added, and the table was simplified. Thank you,
   Alex79, for the report in the Home Assistant community.
+- **Stable address:** the setup guide explains how to keep the gateway's
+  address stable.
 
 ## [0.9.0] - 2026-11-13
 

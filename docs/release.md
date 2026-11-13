@@ -4,6 +4,46 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.1 verification
+
+I am preparing **0.9.1 as a stable release**. It fixes the cloud sign-in of
+0.9.0 ([#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127)):
+every sign-in link asks for the full set of permissions of 0.8.x again. It
+also adds the token list and the revocation of an old token for a local
+access, follows a gateway to a new address after a confirmation, lists the
+last local setup attempts in the diagnostics, adds the heat generator sensor,
+shows texts for more gateway states and corrects three entity names. It
+keeps storage format 4 and Home Assistant 2026.5.0 as the minimum; updating
+from 0.9.0 needs no new setup.
+
+Automated checks on the release state (2026-11-13, run locally):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite with coverage, current version | Home Assistant 2026.11.0, local, four parallel workers | 11046 passed; coverage 95.97 % |
+| Full suite, minimum version | Home Assistant 2026.5.4, local, four parallel workers | 11044 passed, 2 skipped (version-dependent) |
+| Repeated runs of the request count after removing the cloud | Home Assistant 2026.11.0 and 2026.5.4, under extra CPU load | 500 of 500 passed on each version |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 221 files; Ruff clean; 610 files formatted |
+| Frontend tests and dialog browser tests | Home Assistant 2026.11.0 with its frontend, local | npm tests passed; 12 browser tests passed |
+| Release archive and SHA-256 | local build on a clean tree | ARCHIVE_PENDING |
+| GitHub checks | PR and release workflow | pending: all required checks of the PR must pass before the merge |
+
+Not yet confirmed on a real installation: a complete cloud sign-in with a
+real account on 0.9.1, the token list and the revocation on a real gateway,
+a real change of the gateway's address, and the heat generator sensor on a
+running installation.
+
+### 0.9.1 release checklist
+
+1. All required checks of the PR are green (quality, dependency audit,
+   hassfest, HACS, analyze, compatibility, frontend, minimum version).
+2. Squash-merge the PR into `main`.
+3. Create the annotated tag `v0.9.1` on the squash commit in `main`, not on
+   the feature branch; the release workflow refuses a tag that is not on
+   `main` or not annotated.
+4. Compare the published archive and its SHA-256 with the local build.
+5. Answer in #127 once the release is out.
+
 ## 0.9.0 verification
 
 I am preparing **0.9.0 as the stable release** of the 0.9 line. It needs
