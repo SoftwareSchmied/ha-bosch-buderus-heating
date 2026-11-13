@@ -344,6 +344,7 @@ counters—not holiday dates, names, or raw configuration data.
 | Brand | Diagnostic sensor | `/system/brand` | No | No | startup only |
 | Country (disabled) | Diagnostic sensor | `/system/country` | No | No | startup only |
 | System information (disabled) | Text diagnostic sensor with module names, versions, and sanitized attributes | `/system/info` | No | No | startup only |
+| Heat generator | Diagnostic sensor, enabled (see [heat generator models](#heat-generator-models)) | module list of `/system/info` (cloud) or `/system/basicInfo` (local access) | No | No | with these reads, no own request |
 | System bus | Diagnostic sensor | `/system/bus` | No | No | 15 min |
 | Season switching | Select | `/system/seasonOptimizer/mode` | Capability-dependent | Yes, with advertised options and write permission | 5 min; read back after change |
 | Current heating/cooling status (disabled) | Diagnostic sensor | `/system/globalSeasonOptimizer/currentMode` | No | No | 60 s |
@@ -379,6 +380,93 @@ that only reveal new devices, zones, solar circuits or ventilation zones and
 give no entity (for example `/devices/list` or `/zones/list`) are read hourly.
 On a room controller the zone list is read every five minutes, because it
 shows the open window and the standby of each zone.
+
+### Heat generator models
+
+Since 0.9.1 every gateway with a module list has one diagnostic sensor
+**Heat generator** (translation key `heat_generator`). It tells cards and
+automations which heat generators the gateway reports: indoor unit, outdoor
+unit, boiler, hybrid manager and further cascade stages. The hydraulic card,
+for example, can pick a matching drawing from it. The sensor is enabled by
+default and belongs to the system device.
+
+The sensor sends no request of its own. It reads the module list that the
+cloud (`/system/info`) and the local access (`/system/basicInfo`) already
+read, and it writes its state only when what it shows changes. Of each
+module only the product name and the hardware type are read; serial
+numbers, tokens, versions and type numbers are never shown, stored or
+logged. Rows without a product name (the gateway, the user interface) do
+not count.
+
+The unique ID is `<gateway>:heat_generator`. It does not depend on the
+position of a module, on the source or on the language, so the entity stays
+the same with only the cloud, only the local access, both of them, after a
+change between them and after a device exchange. The attribute keys below
+are fixed English keys; their values are never translated.
+
+| Attribute | Content |
+|---|---|
+| state | Product name of the main heat generator: the first module with the role `heat_source`, otherwise `boiler`, otherwise the first module of the list; at most 255 characters without control characters; `unknown` before the first module list |
+| `heat_generators` | One entry per module with `role`, `product_name`, `hardware_type`, `family`, `construction` and `power_kw`, sorted by role and then by product name (at most 16 entries). Cascades and hybrid systems give several entries. |
+| `primary` | `family`, `construction`, `power_kw` and `brand_family` of the main heat generator, for simple card queries |
+| `outdoor_unit` | Product name of the (first) outdoor unit, otherwise `null` |
+| `source` | `cloud` or `local`: which access supplied the shown list |
+| `table_version` | Version of the model table that interpreted the list |
+| `known` | `true` when the model table describes the product of every module |
+
+The roles are `heat_source`, `boiler`, `outdoor_unit`, `hybrid_manager` and
+`other`; `construction` is `monobloc`, `split` or `compact`. The product
+name and the hardware type are always reported as the gateway sends them.
+Role, family, construction, power and brand family come only from the model
+table `heat_generator_models.json` and stay `null` without a matching entry;
+nothing is derived from parts of a name or from the position of a module in
+the list. The role comes from the hardware type. The table contains only entries
+with evidence. In 0.9.1 these are the modules of one installation
+(Logatherm WLW176i-12 TP70 with the monobloc outdoor unit WLW-10 MB AR) and
+the hardware types `XCU_THH` (indoor unit) and `XCU_SRH` (outdoor unit),
+which the official local API documentation shows as well. The power class
+stays `null` until it is proven. A further model needs one table entry and a
+test; the entity, its keys and the structure stay as they are. Modules
+without a table entry for their product are listed in the diagnostics under
+`heat_generator.unmapped_modules`; such a report lets the table grow.
+
+Example of the installation above:
+
+```yaml
+state: Logatherm WLW176i-12 TP70
+heat_generators:
+  - role: heat_source
+    product_name: Logatherm WLW176i-12 TP70
+    hardware_type: XCU_THH
+    family: WLW176i
+    construction: monobloc
+    power_kw: null
+  - role: outdoor_unit
+    product_name: WLW-10 MB AR
+    hardware_type: XCU_SRH
+    family: null
+    construction: monobloc
+    power_kw: null
+primary:
+  family: WLW176i
+  construction: monobloc
+  power_kw: null
+  brand_family: bosch_group
+outdoor_unit: WLW-10 MB AR
+source: local
+table_version: 1
+known: true
+```
+
+With the cloud and the local access, the newer list is shown when both
+agree. When they disagree, the list shown last stays, and the diagnostics
+report the disagreement (`heat_generator.conflict`). Every gateway follows
+the same rules, iCom gateways included; a module whose hardware type has no
+table entry gets the role `other`. Without a module with a product name (an
+empty list, older firmware) there is no entity and no log message. Room
+controllers never get the entity; their module list names no heat
+generator. A start from the stored inventory, which keeps no module list,
+keeps the last state of an existing entity.
 
 ### Firmware update
 

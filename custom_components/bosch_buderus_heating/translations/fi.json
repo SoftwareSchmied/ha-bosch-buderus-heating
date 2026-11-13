@@ -2071,6 +2071,9 @@
       "next_holiday": {
         "name": "Seuraava loma"
       },
+      "heat_generator": {
+        "name": "Lämmönlähde"
+      },
       "pointt_api_requests_total": {
         "name": "Pilvipyynnöt yhteensä"
       },

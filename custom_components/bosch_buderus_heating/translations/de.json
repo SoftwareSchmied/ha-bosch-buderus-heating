@@ -2071,6 +2071,9 @@
       "next_holiday": {
         "name": "Nächster Urlaub"
       },
+      "heat_generator": {
+        "name": "Wärmeerzeuger"
+      },
       "pointt_api_requests_total": {
         "name": "Cloud-Anfragen gesamt"
       },

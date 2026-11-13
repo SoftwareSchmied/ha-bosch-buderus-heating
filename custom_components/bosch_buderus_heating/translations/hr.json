@@ -2071,6 +2071,9 @@
       "next_holiday": {
         "name": "Sljedeći odmor"
       },
+      "heat_generator": {
+        "name": "Izvor topline"
+      },
       "pointt_api_requests_total": {
         "name": "Ukupno zahtjeva prema oblaku"
       },

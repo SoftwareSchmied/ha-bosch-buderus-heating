@@ -7058,6 +7058,18 @@
     {
      "capabilities": null,
      "device_class": null,
+     "disabled_by": null,
+     "domain": "sensor",
+     "entity_category": "diagnostic",
+     "original_icon": "mdi:heat-pump-outline",
+     "original_name": "Heat generator",
+     "translation_key": "heat_generator",
+     "unique_id": "gateway-one:heat_generator",
+     "unit": null
+    },
+    {
+     "capabilities": null,
+     "device_class": null,
      "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",

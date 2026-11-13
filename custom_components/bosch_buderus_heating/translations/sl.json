@@ -2071,6 +2071,9 @@
       "next_holiday": {
         "name": "Naslednje počitnice"
       },
+      "heat_generator": {
+        "name": "Vir toplote"
+      },
       "pointt_api_requests_total": {
         "name": "Zahteve v oblak skupaj"
       },

@@ -2071,6 +2071,9 @@
       "next_holiday": {
         "name": "Следваща ваканция"
       },
+      "heat_generator": {
+        "name": "Топлинен източник"
+      },
       "pointt_api_requests_total": {
         "name": "Общо заявки към облака"
       },
