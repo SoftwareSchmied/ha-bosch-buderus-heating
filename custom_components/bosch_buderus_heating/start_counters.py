@@ -15,6 +15,10 @@ START_COUNTER_KEYS = ("total", "ch", "cooling", "dhw", "pool")
 # heats a pool.
 OPTIONAL_START_COUNTER_KEY = "pool"
 MAX_START_COUNT = 2**53 - 1  # Preserve exact integers in downstream numeric storage.
+# Some controllers send the parts as a short list of objects in `value`
+# (for example one object with total, heating and hot water). More parts than
+# this are not a counter form.
+MAX_START_COUNTER_PARTS = 8
 _SOURCE_PATH = re.compile(r"^/heatSources/[^/:]+/numberOfStarts$")
 
 
@@ -74,6 +78,14 @@ class StartCounterAssessment:
     supported: bool
     reason: str | None = None
     readings: tuple[tuple[str | None, CounterReading], ...] = ()
+    # Part keys present in at least one object of a structurally valid,
+    # non-empty multipart reading; ``None`` when that is not known (scalar,
+    # empty or invalid payload).
+    reported_keys: frozenset[str] | None = None
+
+    def part_reported(self, key: str | None) -> bool:
+        """Whether a part occurs in the reading; unknown counts as present."""
+        return self.reported_keys is None or key is None or key in self.reported_keys
 
     def reading(self, key: str | None) -> CounterReading:
         """Keep a previously created entity unknown after a schema change."""
@@ -126,11 +138,16 @@ def assess_start_counter(resource: Resource) -> StartCounterAssessment:
 
     # The parser normalizes an object in `values` to a one-item tuple. Retain
     # the existing object-in-`value` form too, but never manufacture totals.
-    items = (
-        (resource.value, *resource.values)
-        if resource.value is not None
-        else resource.values
-    )
+    # A list in `value` holds the parts directly, bounded in length.
+    raw = resource.value
+    head: tuple[object, ...]
+    if isinstance(raw, list):
+        head = tuple(raw) if 0 < len(raw) <= MAX_START_COUNTER_PARTS else (raw,)
+    elif raw is not None:
+        head = (raw,)
+    else:
+        head = ()
+    items = (*head, *resource.values)
     if any(not isinstance(item, dict) for item in items):
         return StartCounterAssessment(
             True,
@@ -155,7 +172,19 @@ def assess_start_counter(resource: Resource) -> StartCounterAssessment:
         else:
             reading = parts[0]
         readings.append((key, reading))
-    return StartCounterAssessment(True, readings=tuple(readings))
+    reported = (
+        frozenset(
+            key
+            for key in START_COUNTER_KEYS
+            for item in items
+            if isinstance(item, dict) and key in item
+        )
+        if items
+        else None
+    )
+    return StartCounterAssessment(
+        True, readings=tuple(readings), reported_keys=reported
+    )
 
 
 _KEY_TOKEN = re.compile(r"[A-Za-z][A-Za-z0-9_]{0,23}")
@@ -163,7 +192,7 @@ _MAX_KEYS = 12
 _MAX_ITEMS = 5
 
 
-def _shape(value: object, depth: int = 0) -> str:
+def value_shape(value: object, depth: int = 0) -> str:
     """A value-free form of one item: types, list lengths and key names
     (an unusual key becomes ``?``), never a value."""
     if value is None:
@@ -179,7 +208,7 @@ def _shape(value: object, depth: int = 0) -> str:
     if isinstance(value, list | tuple):
         if depth >= 2:
             return f"list[{len(value)}]"
-        kinds = sorted({_shape(item, depth + 1) for item in value[:_MAX_ITEMS]})
+        kinds = sorted({value_shape(item, depth + 1) for item in value[:_MAX_ITEMS]})
         return f"list[{len(value)}]<{'|'.join(kinds)}>"
     if isinstance(value, dict):
         keys = sorted(
@@ -189,7 +218,7 @@ def _shape(value: object, depth: int = 0) -> str:
         if depth >= 2:
             return f"dict[{len(keys)}]"
         fields = ",".join(
-            f"{key}:{_shape(value[key], depth + 1)}" if key != "?" else "?"
+            f"{key}:{value_shape(value[key], depth + 1)}" if key != "?" else "?"
             for key in keys[:_MAX_KEYS]
         )
         more = ",..." if len(keys) > _MAX_KEYS else ""
@@ -211,7 +240,7 @@ def structure_summary(resource: Resource) -> dict[str, object] | None:
         return None
     return {
         "reason": "item_not_object",
-        "value": _shape(resource.value),
+        "value": value_shape(resource.value),
         "values_count": len(resource.values),
-        "values": [_shape(item) for item in resource.values[:_MAX_ITEMS]],
+        "values": [value_shape(item) for item in resource.values[:_MAX_ITEMS]],
     }

@@ -194,7 +194,10 @@ async def test_large_ct200_plant_reaches_every_platform_within_the_budget(
         profile = gateway_report["rrc_profile"]
         assert gateway_report["device_profile"] == "rrc2"
         assert profile["profile"] == "rrc2"
-        assert profile["confirmation"] == "unconfirmed"
+        # The functions as a whole, confirmed on a TC100.2 only.
+        assert profile["confirmation"] == "partly_confirmed"
+        assert profile["confirmed_on"] == "tc100_2"
+        assert profile["physical_device_verified"] is False
         assert profile["local_access"] == "not_available"
         assert profile["product_type"] == "RRC 2.0"
         assert profile["firmware"] == "05.04.00"

@@ -16,6 +16,7 @@ from homeassistant.util import dt as dt_util
 from . import (
     BoschBuderusConfigEntry,
     rrc,
+    rrc_boost,
     rrc_confirmations,
     rrc_contracts,
     rrc_devices,
@@ -66,6 +67,7 @@ from .rrc_programs import (
     DAY,
     WEEK,
     parse_schedule,
+    point_shapes,
     program_names,
     schedule_issues,
     selection_issue,
@@ -795,11 +797,18 @@ def _rrc_program_diagnostics(
     }
 
 
+_MAX_SUMMARY_SHAPES = 8
+
+
 def _rrc_schedule_summary(
     coordinator: BoschBuderusDataUpdateCoordinator,
 ) -> dict[str, object]:
     """R4 (T4): per kind (week, day) how many programs are read and editable,
-    and how often each reason occurs; no values, keys or names."""
+    and how often each reason occurs; no values or names.
+
+    ``point_shapes`` counts the programs per switch point form: the key
+    names and value types of a point, never a value.
+    """
     snapshots = coordinator.data or {}
     summary: dict[str, object] = {}
     for kind, pattern in (("week", WEEK), ("day", DAY)):
@@ -812,13 +821,16 @@ def _rrc_schedule_summary(
         ]
         schedules = [parse_schedule(resource) for resource in programs]
         issues: Counter[str] = Counter()
+        shapes: Counter[str] = Counter()
         for resource in programs:
             issues.update(schedule_issues(resource))
+            shapes.update(point_shapes(resource))
         summary[kind] = {
             "count": len(programs),
             "readable": sum(item is not None for item in schedules),
             "editable": sum(item is not None and item.editable for item in schedules),
             "issues": dict(sorted(issues.items())),
+            "point_shapes": dict(sorted(shapes.items())[:_MAX_SUMMARY_SHAPES]),
         }
     return summary
 
@@ -854,10 +866,18 @@ def _rrc_feature_diagnostics(
     reports = rrc_contracts.diagnostics(resources)
     stats = coordinator.rrc_write_stats
     contracts: dict[str, object] = {}
+    watch = rrc_boost.limit_watch(coordinator)
     for name in (*reports, CORE_CONTRACT):
         report = reports.get(name)
         contracts[name] = {
             **(report if isinstance(report, dict) else rrc_confirmations.report(name)),
+            # The last reason the boost settings had no limits, with its
+            # age in seconds, also after it went away.
+            **(
+                watch.diagnostics(monotonic())
+                if name == "absence" and watch is not None and isinstance(report, dict)
+                else {}
+            ),
             "writes": stats.snapshot(name),
         }
     return {
@@ -876,8 +896,10 @@ def _rrc_profile_diagnostics(
     """C8 (CT-A02 to CT-A04, E02, E04): an RRC 2.0 room controller.
 
     Counts, stable tokens and the firmware version only; no names, no device
-    identifiers and no radio keys. ``confirmation`` stays ``unconfirmed``
-    until a controller of the kind has been tested with this integration.
+    identifiers and no radio keys. ``confirmation`` is the one of the room
+    controller functions as a whole (``rrc_confirmations.overall``), with the
+    controller they were confirmed on; ``physical_device_verified`` stays
+    ``false``, since the diagnostics cannot tell which controller this is.
     """
     snapshots = coordinator.data or {}
     resources = dict(coordinator.resources)
@@ -906,7 +928,10 @@ def _rrc_profile_diagnostics(
     return {
         "profile": "rrc2",
         "evidence": list(evidence),
-        "confirmation": "unconfirmed",
+        "confirmation": (confirmation := rrc_confirmations.overall()),
+        "confirmed_on": rrc_confirmations.CONFIRMED_ON
+        if confirmation != rrc_confirmations.UNCONFIRMED
+        else None,
         "physical_device_verified": False,
         "local_access": "not_available",
         "product_type": None

@@ -1126,12 +1126,17 @@ def build_sensor_descriptions(
                 unknown_descriptions.append(_unknown_description(resource, unknown))
             continue
         if is_start_counter_path(resource.path):
+            assessment = assess_start_counter(resource)
             descriptions.extend(
                 replace(description, entity_registry_enabled_default=False)
                 # C4 (revised): pool starts always exist, disabled by default.
+                # A part absent from the reading this entity is created from
+                # is created disabled as well; registered entities keep the
+                # user's choice.
                 if key == OPTIONAL_START_COUNTER_KEY
+                or not assessment.part_reported(key)
                 else description
-                for key, _ in assess_start_counter(resource).readings
+                for key, _ in assessment.readings
                 for description in (
                     _description(resource, key, "value" if key is None else "nested"),
                 )

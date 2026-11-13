@@ -353,6 +353,7 @@ async def test_diagnostics_name_the_reason_per_zone_without_names(environment):
                 "readable": 0,
                 "editable": 0,
                 "issues": {},
+                "point_shapes": {},
             }
             for kind in ("week", "day")
         },
@@ -460,13 +461,19 @@ def test_day_programs_are_read_like_the_vendor_app():
     assert [point.minute for point in schedule.points] == [420, 1380]
     # A week stays a week program.
     assert parse_schedule(week(type="dayProgram")) is None
-    # An extra placeholder field stays readable but is not editable.
-    extra = day(value=[{"d": "Mo", "t": 420, "Th": 19, "name": 0}])
+    # An integer ``name`` is allowed; another extra field stays
+    # readable but is not editable.
+    named = parse_schedule(day(value=[{"d": "Mo", "t": 420, "Th": 19, "name": 0}]))
+    assert named is not None and named.editable
+    extra = day(value=[{"d": "Mo", "t": 420, "Th": 19, "note": 0}])
     parsed = parse_schedule(extra)
     assert parsed is not None and not parsed.editable
     assert parsed.encode() == extra.value
-    # Without a day key, or for another day, there is no interpretation.
-    assert parse_schedule(day(value=[{"t": 420, "Th": 19}])) is None
+    # Without a day key the path names the day; another day has no
+    # interpretation.
+    plain = parse_schedule(day(value=[{"t": 420, "Th": 19}]))
+    assert plain is not None and plain.editable
+    assert [point.day for point in plain.points] == ["Mo"]
     assert parse_schedule(day(value=[{"d": "Tu", "t": 420, "Th": 19}])) is None
     assert parse_schedule(day(type="programArray")) is None
 
@@ -495,8 +502,8 @@ async def test_day_program_with_unknown_fields_is_not_written(environment):
         week(),
         day(
             value=[
-                {"d": "Mo", "t": 420, "Th": 19, "name": 0},
-                {"d": "Mo", "t": 1380, "Th": 15, "name": 0},
+                {"d": "Mo", "t": 420, "Th": 19, "note": 0},
+                {"d": "Mo", "t": 1380, "Th": 15, "note": 0},
             ]
         ),
     )

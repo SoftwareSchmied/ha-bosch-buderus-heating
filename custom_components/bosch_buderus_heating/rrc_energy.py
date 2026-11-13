@@ -434,6 +434,9 @@ class HistoryState:
     last_requests: int = 0
     imported_days: int = 0
     invalid_records: int = 0
+    # Valid daily records in the answers, taken or not; a record read again
+    # counts again (a count, never a value).
+    records_seen: int = 0
     old_changes: int = 0
 
     def to_dict(self) -> dict[str, object]:
@@ -477,6 +480,7 @@ class HistoryState:
             "last_requests": self.last_requests,
             "imported_days": self.imported_days,
             "invalid_records": self.invalid_records,
+            "records_seen": self.records_seen,
             "old_changes": self.old_changes,
         }
 
@@ -543,6 +547,7 @@ class HistoryState:
             last_requests=integer("last_requests") or 0,
             imported_days=integer("imported_days") or 0,
             invalid_records=integer("invalid_records") or 0,
+            records_seen=integer("records_seen") or 0,
             old_changes=integer("old_changes") or 0,
         )
 
@@ -863,6 +868,17 @@ async def run_cycle(
         state.reason = "history_change_outside_window"
     if state.reason is None and state.gas_unit_confirmed is not True and state.gas_seen:
         state.reason = "gas_unit_unconfirmed"
+    if state.reason is None and not any(
+        importable(KEY_BY_SLUG[slug], state) for slug in state.active
+    ):
+        # A cycle without an error that still has no statistic to import.
+        state.reason = (
+            "no_records"
+            if state.records_seen == 0
+            else "no_completed_days"
+            if state.imported_days == 0
+            else "all_series_empty"
+        )
     state.last_requests = result.requests
     result.reason = state.reason
     return result
@@ -956,6 +972,7 @@ async def _entry_pages(
             continue
         aligning = False
         state.invalid_records += invalid
+        state.records_seen += len(records)
         await _write(write, merge(state, records, today))
         if (running := _running(items, today)) is not None:
             state.position = start + running
@@ -1007,6 +1024,7 @@ async def _date_pages(
         if kind == "jump" and not progressed:
             continue  # nothing from the limit on: step on from the known day
         state.invalid_records += invalid
+        state.records_seen += len(records)
         await _write(write, merge(state, records, today))
         if progressed:
             assert newest is not None

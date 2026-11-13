@@ -344,6 +344,7 @@ async def test_room_controller_diagnostics_point_and_confirm(
         zone = features["contracts"]["zone"]
         assert zone["confirmation"] == "partly_confirmed"
         assert zone["confirmed_functions"] == [
+            "advance_switch_point",
             "temporary_setpoint",
             "zone_window_detection",
         ]
@@ -378,9 +379,11 @@ SOURCE = "/heatSources/hs1/numberOfStarts"
     ("fields", "form"),
     [
         ({"values": [42]}, {"value": "null", "values": ["int"]}),
+        # A list of objects in ``value`` is read now (0.9.0); one that holds
+        # something else is still described.
         (
-            {"value": [{"total": 12, "ch": 3}, {"dhw": 4}], "values": []},
-            {"value": "list[2]<dict{ch:int,total:int}|dict{dhw:int}>", "values": []},
+            {"value": [{"total": 12, "ch": 3}, 4], "values": []},
+            {"value": "list[2]<dict{ch:int,total:int}|int>", "values": []},
         ),
         (
             {"value": "777", "values": [["x", 9]]},
@@ -424,13 +427,13 @@ def test_unusual_keys_are_masked() -> None:
         {
             "id": SOURCE,
             "type": "emonValue",
-            "value": [{"1234567890": 1, "a" * 30: 2, "ok_key": 3}],
+            "value": [{"1234567890": 1, "a" * 30: 2, "ok_key": 3}, 0],
             "values": [],
         }
     )
     summary = start_counters.structure_summary(resource)
     assert summary is not None
-    assert summary["value"] == "list[1]<dict{?,?,ok_key:int}>"
+    assert summary["value"] == "list[2]<dict{?,?,ok_key:int}|int>"
 
 
 def _limit(name: str, **fields: object):

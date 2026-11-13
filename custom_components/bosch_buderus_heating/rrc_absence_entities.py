@@ -18,6 +18,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from time import monotonic
 from types import MappingProxyType
 from typing import Any, Final
 from weakref import WeakKeyDictionary
@@ -29,6 +30,7 @@ from homeassistant.components.number import (
 )
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.const import EntityCategory, Platform, UnitOfTemperature, UnitOfTime
+from homeassistant.core import callback
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityDescription
@@ -48,6 +50,7 @@ from .pointt import Resource, WriteValidationError
 from .rrc_boost import BOOST_PATH, Boost, Preset, Setting
 from .rrc_event_calendar import RrcEventCalendar, async_run_rrc_write
 from .rrc_platforms import Tracker
+from .write_policies import context_of
 from .writes import ContractRejected, ControlContext, ControlLocked
 
 _CALENDAR_KEY: Final = "rrc_events_calendar"
@@ -498,6 +501,38 @@ def _track_numbers(
     track_rrc_entities(
         entry, coordinator, async_add_entities, build_numbers, RrcBoostNumber
     )
+    _watch_boost_limits(entry, coordinator)
+
+
+def _watch_boost_limits(
+    entry: DiscoveryLifecycle, coordinator: BoschBuderusDataUpdateCoordinator
+) -> None:
+    """Note after every update why a boost setting has no limits, from
+    the fresh readings only; the diagnostics show the last reason."""
+    watch = rrc_boost.limit_watch(coordinator, create=True)
+    assert watch is not None
+
+    @callback
+    def observe() -> None:
+        if not context_of(coordinator).rrc_plant:
+            return
+        data = coordinator.data or {}
+        if BOOST_PATH not in data:
+            return
+        fresh = {
+            path: snapshot.resource
+            for path in (
+                rrc_boost.BOOST_TEMPERATURE_PATH,
+                rrc_boost.BOOST_DURATION_PATH,
+            )
+            if (snapshot := data.get(path)) is not None
+            and snapshot.available
+            and snapshot.freshness is Freshness.FRESH
+        }
+        watch.observe(rrc_boost.setting_leaves(fresh), monotonic())
+
+    entry.async_on_unload(coordinator.async_add_listener(observe))
+    observe()
 
 
 TRACKERS: Mapping[Platform, Tracker] = MappingProxyType(
