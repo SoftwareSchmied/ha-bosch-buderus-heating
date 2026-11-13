@@ -5611,7 +5611,7 @@
      "domain": "number",
      "entity_category": "config",
      "original_icon": "mdi:thermometer",
-     "original_name": "DHW 1: Eco+ start temperature",
+     "original_name": "DHW 1: Start threshold Eco+",
      "translation_key": "hot_water_eco_plus",
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:eco:control",
      "unit": "\u00b0C"
@@ -5628,7 +5628,7 @@
      "domain": "number",
      "entity_category": "config",
      "original_icon": "mdi:thermometer",
-     "original_name": "DHW 1: Comfort start temperature",
+     "original_name": "DHW 1: Start threshold Comfort",
      "translation_key": "hot_water_comfort",
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:high:control",
      "unit": "\u00b0C"
@@ -5645,7 +5645,7 @@
      "domain": "number",
      "entity_category": "config",
      "original_icon": "mdi:thermometer",
-     "original_name": "DHW 1: Eco start temperature",
+     "original_name": "DHW 1: Start threshold Eco",
      "translation_key": "hot_water_eco",
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:low:control",
      "unit": "\u00b0C"
@@ -6057,7 +6057,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Hot water 1 \u2013 Eco+ start temperature",
+     "original_name": "Hot water 1 \u2013 Start threshold Eco+",
      "translation_key": null,
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:eco",
      "unit": "\u00b0C"
@@ -6071,7 +6071,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Hot water 1 \u2013 Comfort start temperature",
+     "original_name": "Hot water 1 \u2013 Start threshold Comfort",
      "translation_key": null,
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:high",
      "unit": "\u00b0C"
@@ -6085,7 +6085,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Hot water 1 \u2013 Eco start temperature",
+     "original_name": "Hot water 1 \u2013 Start threshold Eco",
      "translation_key": null,
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:low",
      "unit": "\u00b0C"
@@ -6099,7 +6099,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
-     "original_name": "Hot water 1 \u2013 Off",
+     "original_name": "Hot water 1 \u2013 Setpoint level off",
      "translation_key": null,
      "unique_id": "gateway-one:dhwCircuits:dhw1:temperatureLevels:off",
      "unit": "\u00b0C"

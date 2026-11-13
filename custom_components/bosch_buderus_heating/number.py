@@ -302,7 +302,7 @@ def _number_identity(path: str) -> tuple[str, str]:
         ),
         "comfort2": ("heating_temperature", "Heizen"),
         "eco": (
-            ("hot_water_eco_plus", "Eco+ Starttemperatur")
+            ("hot_water_eco_plus", "Startschwelle Eco+")
             if path.startswith("/dhwCircuits/")
             else ("reduced_temperature", "Absenken")
         ),
@@ -311,7 +311,7 @@ def _number_identity(path: str) -> tuple[str, str]:
             "extra_hot_water_setpoint",
             "Solltemperatur Extra-Warmwasser",
         ),
-        "high": ("hot_water_comfort", "Komfort Starttemperatur"),
-        "low": ("hot_water_eco", "Eco Starttemperatur"),
+        "high": ("hot_water_comfort", "Startschwelle Komfort"),
+        "low": ("hot_water_eco", "Startschwelle Eco"),
         "setpointTemp": ("pool_setpoint_temperature", "Pool-Solltemperatur"),
     }[tail]

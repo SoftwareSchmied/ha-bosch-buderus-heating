@@ -1656,12 +1656,12 @@ def resource_name(
         base = temperature_names.get(tail, _humanize(tail))
     elif "/dhwCircuits/" in path and "/temperatureLevels/" in path:
         temperature_names = {
-            "eco": localize(language, "Eco+ Starttemperatur", "Eco+ start temperature"),
+            "eco": localize(language, "Startschwelle Eco+", "Start threshold Eco+"),
             "high": localize(
-                language, "Komfort Starttemperatur", "Comfort start temperature"
+                language, "Startschwelle Komfort", "Start threshold Comfort"
             ),
-            "low": localize(language, "Eco Starttemperatur", "Eco start temperature"),
-            "off": localize(language, "Aus", "Off"),
+            "low": localize(language, "Startschwelle Eco", "Start threshold Eco"),
+            "off": localize(language, "Sollwert Stufe Aus", "Setpoint level off"),
         }
         base = temperature_names.get(tail, _humanize(tail))
     elif _PROGRAM_NAME.fullmatch(tail):

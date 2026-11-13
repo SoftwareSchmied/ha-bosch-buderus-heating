@@ -7,8 +7,10 @@
   circuit's supply temperature keeps its name.
 - TR3 and TR4 are liquid line temperatures ("liquid pipe heating/cooling"
   in the API documentation), not the condensing temperature (JR1).
-- The hot water levels keep their names, which match the mode labels:
-  ``eco`` is Eco+, ``low`` is Eco, ``high`` is Comfort.
+- The hot water levels keep their level names, which match the mode labels:
+  ``eco`` is Eco+, ``low`` is Eco, ``high`` is Comfort. Their temperatures
+  are the start thresholds of a charge, and the ``off`` level's value is its
+  setpoint; the names say so.
 
 Only names change: unique IDs, translation keys, entity IDs of existing
 entities and the default activation stay.
@@ -49,11 +51,18 @@ TR4 = "/heatSources/hs1/refrigerant/liquidPipeCoolingTemp"
 OLD_ENGLISH = (
     "Condenser temperature heating (TR3)",
     "Condenser temperature cooling (TR4)",
+    "Eco+ start temperature",
+    "Eco start temperature",
+    "Comfort start temperature",
 )
 NEW_ENGLISH = (
     "System supply temperature",
     "Liquid line temperature heating (TR3)",
     "Liquid line temperature cooling (TR4)",
+    "Start threshold Eco+",
+    "Start threshold Eco",
+    "Start threshold Comfort",
+    "Setpoint level off",
 )
 OTHER_LANGUAGES = [code for code in LANGUAGES if code not in ("en", "de")]
 
@@ -128,17 +137,42 @@ def test_every_language_has_the_corrected_names(code) -> None:
 @pytest.mark.parametrize(
     ("level", "english", "german"),
     [
-        ("eco", "Eco+ start temperature", "Eco+ Starttemperatur"),
-        ("low", "Eco start temperature", "Eco Starttemperatur"),
-        ("high", "Comfort start temperature", "Komfort Starttemperatur"),
+        ("eco", "Start threshold Eco+", "Startschwelle Eco+"),
+        ("low", "Start threshold Eco", "Startschwelle Eco"),
+        ("high", "Start threshold Comfort", "Startschwelle Komfort"),
     ],
 )
-def test_the_hot_water_levels_keep_their_names(level, english, german) -> None:
+def test_the_hot_water_levels_name_their_start_thresholds(
+    level, english, german
+) -> None:
     path = f"/dhwCircuits/dhw1/temperatureLevels/{level}"
     assert resource_name(path, language="en") == english
     assert resource_name(path, language="de") == german
     assert control_label(path, "fallback", "en") == english
     assert control_label(path, "fallback", "de") == german
+
+
+def test_the_off_level_names_its_setpoint() -> None:
+    path = "/dhwCircuits/dhw1/temperatureLevels/off"
+    assert resource_name(path, language="en") == "Setpoint level off"
+    assert resource_name(path, language="de") == "Sollwert Stufe Aus"
+
+
+def test_the_number_controls_name_the_start_thresholds() -> None:
+    for name, labels in (
+        ("translations/en.json", ("Start threshold Eco+", "Start threshold Eco")),
+        ("translations/de.json", ("Startschwelle Eco+", "Startschwelle Eco")),
+    ):
+        numbers = json.loads((COMPONENT / name).read_text(encoding="utf-8"))["entity"][
+            "number"
+        ]
+        assert (
+            numbers["hot_water_eco_plus"]["name"],
+            numbers["hot_water_eco"]["name"],
+        ) == labels
+        assert "threshold" in numbers["hot_water_comfort"]["name"].lower() or (
+            numbers["hot_water_comfort"]["name"] == "Startschwelle Komfort"
+        )
 
 
 def test_the_hot_water_mode_labels_match_the_levels() -> None:
@@ -232,3 +266,36 @@ async def test_an_existing_tr3_entity_keeps_its_entity_id(
     assert entry is not None
     assert entry.unique_id == local_only_unique_id("gateway-one", TR3)
     assert entry.original_name.endswith("Liquid line temperature heating (TR3)")
+
+
+async def test_an_existing_hot_water_level_keeps_its_entity_id(
+    hass: HomeAssistant,
+) -> None:
+    from tests.test_sensor import _sensor
+
+    assert await async_setup_component(hass, "sensor", {})
+    sensor = _sensor(
+        hass,
+        Resource(
+            path="/dhwCircuits/dhw1/temperatureLevels/eco",
+            value=40.0,
+            has_value=True,
+            metadata=ResourceMetadata(resource_type="floatValue", unit="C"),
+        ),
+    )
+    registry = er.async_get(hass)
+    old = registry.async_get_or_create(
+        "sensor",
+        "sensor",
+        sensor.unique_id,
+        suggested_object_id="k40_hot_water_eco_start_temperature",
+        original_name="Hot water \N{EN DASH} Eco+ start temperature",
+    )
+    await add_without_device(hass, sensor)
+    await hass.async_block_till_done()
+    assert sensor.entity_id == "sensor.k40_hot_water_eco_start_temperature"
+    entry = registry.async_get(old.entity_id)
+    assert entry is not None
+    assert entry.unique_id == old.unique_id
+    assert entry.original_name.endswith("Start threshold Eco+")
+    assert hass.states.get(old.entity_id).state == "40.0"

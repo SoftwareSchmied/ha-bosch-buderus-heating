@@ -52,14 +52,10 @@ def control_label(
         level = path.rsplit("/", 1)[-1]
         if path.startswith("/dhwCircuits/"):
             level_labels = {
-                "eco": localize(
-                    language, "Eco+ Starttemperatur", "Eco+ start temperature"
-                ),
-                "low": localize(
-                    language, "Eco Starttemperatur", "Eco start temperature"
-                ),
+                "eco": localize(language, "Startschwelle Eco+", "Start threshold Eco+"),
+                "low": localize(language, "Startschwelle Eco", "Start threshold Eco"),
                 "high": localize(
-                    language, "Komfort Starttemperatur", "Comfort start temperature"
+                    language, "Startschwelle Komfort", "Start threshold Comfort"
                 ),
             }
             if level in level_labels:

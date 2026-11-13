@@ -644,10 +644,10 @@ reported.
 | Reduce temperature on alarm | Sensor and switch | `/dhwCircuits/{dhw}/reduceTempOnAlarm` | Yes | Yes | 5 min; read back after change |
 | Extra hot-water setpoint | Sensor and number control | `/dhwCircuits/{dhw}/singleChargeSetpoint` | Yes | Yes | 5 min; read back after change |
 | Thermal disinfection | Sensor | `/dhwCircuits/{dhw}/tdMode` | No | No | 60 s |
-| Eco+ start temperature | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/eco` | Yes | Yes | 5 min; read back after change |
-| Comfort start temperature | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/high` | Yes | Yes | 5 min; read back after change |
-| Eco start temperature | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/low` | Yes | Yes | 5 min; read back after change |
-| Off | Sensor | `/dhwCircuits/{dhw}/temperatureLevels/off` | No | No | 15 min |
+| Start threshold Eco+ | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/eco` | Yes | Yes | 5 min; read back after change |
+| Start threshold Comfort | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/high` | Yes | Yes | 5 min; read back after change |
+| Start threshold Eco | Sensor and number control | `/dhwCircuits/{dhw}/temperatureLevels/low` | Yes | Yes | 5 min; read back after change |
+| Setpoint level off | Sensor | `/dhwCircuits/{dhw}/temperatureLevels/off` | No | No | 15 min |
 | Time program A | Diagnostic enum sensor | `/dhwCircuits/{dhw}/switchPrograms/A` | Yes | Yes, under Configure (since 0.9.0-alpha.6) | 15/30 min; scheduled level recalculated locally each minute; read back after change |
 
 Number controls use the minimum and maximum reported by the gateway. They are
@@ -680,7 +680,13 @@ visible in the local expert menu.
 
 The PointT levels and the app's names belong together as follows: `eco` is
 Eco+, `low` is Eco and `high` is Comfort, in the mode select, the hot water
-entity and the three start temperatures. On my heat pump the Eco+ start
+entity and the three start thresholds. A start threshold is the hot water
+temperature below which the heat pump starts a charge in that level; the
+controller calls it the start temperature, and its stop temperature is not
+available. Since 0.9.1 they are named *Start threshold Eco+*, *Start
+threshold Eco* and *Start threshold Comfort* (before *… start temperature*);
+the sensor of the `off` level is *Setpoint level off* (before *Off*), the
+value set for that level (0 °C on my heat pump). On my heat pump the Eco+ start
 temperature is the lowest (40 °C), Eco and Comfort follow (51 °C and
 53 °C). Home Assistant drops the "+" when it builds an entity ID, so the
 Eco+ and the Eco start temperature get the same base ID: one ends in

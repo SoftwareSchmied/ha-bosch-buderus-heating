@@ -39,7 +39,7 @@ def test_cooling_level_is_a_temperature_not_an_on_off_label(language):
         ) == ("Absenken" if german else "Reduced")
     assert resource_name(
         "/dhwCircuits/dhw2/temperatureLevels/eco", language=language
-    ) == ("Eco+ Starttemperatur" if german else "Eco+ start temperature")
+    ) == ("Startschwelle Eco+" if german else "Start threshold Eco+")
     assert resource_name("/unknown/on", language=language) == "On"
 
 
