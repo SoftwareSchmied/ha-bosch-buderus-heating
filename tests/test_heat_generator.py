@@ -305,16 +305,104 @@ def test_the_shipped_table_follows_its_schema() -> None:
                 assert generator.brand_family == item["brand_family"]
 
 
-def test_the_first_entries_are_the_proven_modules_only() -> None:
+def test_the_entries_are_observed_or_documented_by_the_manufacturer() -> None:
     raw = json.loads(TABLE_PATH.read_text(encoding="utf-8"))
-    assert [entry["match"] for entry in raw["entries"]] == [
+    kinds = [entry["evidence"]["kind"] for entry in raw["entries"]]
+    observed = [
+        entry["match"]
+        for entry in raw["entries"]
+        if entry["evidence"]["kind"] == "observed"
+    ]
+    assert observed == [
         {"product_name": INDOOR},
         {"product_name": OUTDOOR},
         {"hardware_type": "XCU_THH"},
         {"hardware_type": "XCU_SRH"},
     ]
-    # No power class without proof (no derivation from the name).
-    assert all(entry.get("power_kw") is None for entry in raw["entries"])
+    assert set(kinds) == {"observed", "documented"}
+    for entry in raw["entries"]:
+        evidence = entry["evidence"]
+        if evidence["kind"] == "documented":
+            assert evidence["source"].startswith("https://www.")
+        # Roles come from hardware types only, never from a product name.
+        if "product_name" in entry["match"]:
+            assert "role" not in entry, entry["match"]
+        # A power class only where a document states it for that unit.
+        if entry.get("power_kw") is not None:
+            assert evidence["kind"] == "documented"
+            assert "power class" in evidence["note"] or "nominal" in evidence["note"]
+
+
+# The product names as they appear in real module lists and in the example
+# of the official documentation, with the meaning the table gives them.
+@pytest.mark.parametrize(
+    ("name", "family", "construction", "power_kw"),
+    [
+        (INDOOR, "wlw176i", "monobloc", None),
+        ("WLW176i-12 E", "wlw176i", "monobloc", None),
+        ("Logatherm WLW186i-12 E", "wlw186i", "monobloc", None),
+        ("Logatherm WLW186i-12 TP70", "wlw186i", "monobloc", None),
+        (OUTDOOR, "wlw_mb_ar", "monobloc", 10),
+        ("WLW-5 MB AR", "wlw_mb_ar", "monobloc", 5),
+        ("Logatherm WLW-7 MB AR", "wlw_mb_ar", "monobloc", 7),
+        ("WLW-12 MB AR", "wlw_mb_ar", "monobloc", 12),
+        ("Compress CS6800iAW 12 E", "cs6800i_aw", None, None),
+        ("CS6800i AW 12 MB", "cs6800i_aw", None, None),
+        ("CS5800iAW 12 M", "cs5800i_aw", None, None),
+        ("AW 4 OR-S", "aw_or", None, None),
+        ("AW 12 OR-T", "aw_or", None, None),
+        ("AW 10 OR-T", "aw_or", None, 10),
+        ("CS3800i AW 6 O-S", "cs3800i_aw", None, None),
+        ("CS3800i AW 10 O-T", "cs3800i_aw", None, None),
+        ("CS8800i AW 13 O-T (B)", "cs8800i_aw", None, None),
+    ],
+)
+def test_documented_models(name, family, construction, power_kw) -> None:
+    generator = heat_generator.interpret_row(ModuleRow(name, None))
+    assert (generator.family, generator.construction, generator.power_kw) == (
+        family,
+        construction,
+        power_kw,
+    )
+    assert generator.known is True
+    assert generator.brand_family == "bosch_group"
+    # Without a hardware type the role stays open.
+    assert generator.role == "other"
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        # Not in any manufacturer document in this spelling.
+        "Logatherm WLW MB-5 AR",
+        # Sizes or variants no document lists.
+        "WLW-4 MB AR",
+        "WLW-8 MB AR",
+        "Logatherm WLW176i-5 E",
+        "Logatherm WLW186i-12 T180",
+        "WLW-11 MBE+ AR",
+        "AW 6 OR-S",
+        "AW 10 OR-S",
+        "CS6800iAW 7 E",
+        "CS3800i AW 5 O-S",
+        "CS8800i AW 12 O-T",
+        # Other brand lines and split units without a document.
+        "Logatherm WLW196i-8 AR",
+        "Logatherm WLW-8 SP AR",
+        "Compress 7001i AW 9 OR-S",
+        "WLW-10 MB AR extra",
+    ],
+)
+def test_undocumented_names_stay_unmapped(name) -> None:
+    generator = heat_generator.interpret_row(ModuleRow(name, "XCU_SRH"))
+    assert generator.known is False
+    assert (
+        generator.family,
+        generator.construction,
+        generator.power_kw,
+        generator.brand_family,
+    ) == (None, None, None, None)
+    assert generator.role == "outdoor_unit"  # from the hardware type alone
 
 
 @pytest.mark.parametrize(
@@ -458,7 +546,7 @@ def test_a_documented_entry_cites_a_manufacturer_page(source) -> None:
 
 
 def test_the_shipped_entries_are_observed_and_the_sources_are_manufacturers() -> None:
-    assert {entry.evidence for entry in TABLE.entries} == {"observed"}
+    assert {entry.evidence for entry in TABLE.entries} == {"observed", "documented"}
     raw = json.loads(TABLE_PATH.read_text(encoding="utf-8"))
     assert "github.com/bosch-home-comfort" in raw["documented_sources"]
     with pytest.raises(ValueError, match="invalid_table"):
@@ -488,7 +576,7 @@ def test_the_reference_installation() -> None:
                 "role": "heat_source",
                 "product_name": INDOOR,
                 "hardware_type": "XCU_THH",
-                "family": "WLW176i",
+                "family": "wlw176i",
                 "construction": "monobloc",
                 "power_kw": None,
             },
@@ -496,13 +584,13 @@ def test_the_reference_installation() -> None:
                 "role": "outdoor_unit",
                 "product_name": OUTDOOR,
                 "hardware_type": "XCU_SRH",
-                "family": None,
+                "family": "wlw_mb_ar",
                 "construction": "monobloc",
-                "power_kw": None,
+                "power_kw": 10,
             },
         ],
         "primary": {
-            "family": "WLW176i",
+            "family": "wlw176i",
             "construction": "monobloc",
             "power_kw": None,
             "brand_family": "bosch_group",
@@ -515,7 +603,8 @@ def test_the_reference_installation() -> None:
 
 
 def test_the_example_of_the_official_documentation() -> None:
-    """Two modules; roles from the hardware type, no proven meaning."""
+    """Two modules: roles from the hardware type, the products from the
+    manufacturer's pages; no construction and no power class proven."""
     observation = read(DOCUMENTED)
     result = interpret(rows_from_local(observation.data.modules), "local")
     assert result is not None
@@ -525,30 +614,20 @@ def test_the_example_of_the_official_documentation() -> None:
         ("outdoor_unit", "AW 4 OR-S"),
     ]
     # Nothing guessed from the names (no "split" from "OR-S", no 12 kW).
-    assert all(
-        item.family is None and item.construction is None and item.power_kw is None
-        for item in result.generators
-    )
-    assert result.known is False
+    assert [
+        (item.family, item.construction, item.power_kw) for item in result.generators
+    ] == [
+        ("cs6800i_aw", None, None),
+        ("aw_or", None, None),
+    ]
+    assert result.known is True
     assert result.attributes()["primary"] == {
-        "family": None,
+        "family": "cs6800i_aw",
         "construction": None,
         "power_kw": None,
-        "brand_family": None,
+        "brand_family": "bosch_group",
     }
-    report = heat_generator.diagnostics(None, result)
-    assert report["unmapped_modules"] == [
-        {
-            "role": "heat_source",
-            "product_name": "Compress CS6800iAW 12 E",
-            "hardware_type": "XCU_THH",
-        },
-        {
-            "role": "outdoor_unit",
-            "product_name": "AW 4 OR-S",
-            "hardware_type": "XCU_SRH",
-        },
-    ]
+    assert heat_generator.diagnostics(None, result)["unmapped_modules"] == []
 
 
 def test_a_split_unit_as_the_table_says() -> None:
@@ -1024,10 +1103,13 @@ def test_the_role_comes_from_the_hardware_type_never_the_position() -> None:
     assert outdoor_first is not None
     assert outdoor_first.state == "Logatherm WLW186i-12 E"
     assert outdoor_first.outdoor_unit == "Logatherm WLW MB-5 AR"
-    # No table entry for these products: nothing derived from the names.
+    # The indoor unit is documented; this spelling of the outdoor unit is
+    # not, so it stays without meaning (nothing derived from the name).
     assert outdoor_first.known is False
+    assert outdoor_first.primary.family == "wlw186i"
     assert outdoor_first.attributes()["primary"]["power_kw"] is None
-    assert outdoor_first.primary.construction is None
+    assert outdoor_first.generators[1].family is None
+    assert outdoor_first.generators[1].power_kw is None
     # Without hardware types every module is ``other``.
     unknown = interpret(
         rows(("Logatherm WLW MB-5 AR", None), ("Logatherm WLW186i-12 E", None)),

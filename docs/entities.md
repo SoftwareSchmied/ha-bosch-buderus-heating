@@ -424,12 +424,28 @@ the list. The role comes from the hardware type. Every table entry names its
 evidence: `observed` (seen in the module list of a real installation) or
 `documented` (stated in a datasheet or on a product page of the
 manufacturer; the entry keeps the address, and only the manufacturer sites
-listed in the table are accepted). In 0.9.1 the table holds the observed
-modules of one installation (Logatherm WLW176i-12 TP70 with the monobloc
-outdoor unit WLW-10 MB AR) and the hardware types `XCU_THH` (indoor unit)
-and `XCU_SRH` (outdoor unit), which the official local API documentation
-shows as well. The power class belongs to the outdoor unit, not to the
-name of the indoor unit; it stays `null` until an entry proves it. A further model needs one table entry and a
+listed in the table are accepted). In 0.9.1 the table holds:
+
+- observed: the modules of one installation (Logatherm WLW176i-12 TP70 with
+  the monobloc outdoor unit WLW-10 MB AR) and the hardware types `XCU_THH`
+  (indoor unit) and `XCU_SRH` (outdoor unit), which the official local API
+  documentation shows as well;
+- documented: the indoor units WLW176i-12 E/TP70 and WLW186i-12 E/TP70 and
+  the monobloc outdoor units WLW-5/7/10/12 MB AR with their power classes,
+  the indoor units CS5800i AW 12 and CS6800i AW 12 (E, M, MB), the outdoor
+  units AW 4/5/7 OR-S and AW 10/12 OR-T, and the outdoor units of the
+  CS3800i AW and CS8800i AW.
+
+Families are kept per product line (`wlw176i`, `wlw186i`, `wlw_mb_ar`,
+`cs5800i_aw`, `cs6800i_aw`, `aw_or`, `cs3800i_aw`, `cs8800i_aw`); lines of
+different brands are never equated. An outdoor unit that serves several
+indoor lines has its own family, and the indoor unit names the line.
+`construction` is set only where a manufacturer document names it. The
+power class belongs to the outdoor unit, not to the name of the indoor
+unit, and is set only where a document states it for that unit (for
+example 10 for WLW-10 MB AR and AW 10 OR-T); otherwise it stays `null`.
+Other spellings, sizes and lines stay without meaning until an entry
+covers them. A further model needs one table entry and a
 test; the entity, its keys and the structure stay as they are. Modules
 without a table entry for their product are listed in the diagnostics under
 `heat_generator.unmapped_modules`; such a report lets the table grow.
@@ -442,17 +458,17 @@ heat_generators:
   - role: heat_source
     product_name: Logatherm WLW176i-12 TP70
     hardware_type: XCU_THH
-    family: WLW176i
+    family: wlw176i
     construction: monobloc
     power_kw: null
   - role: outdoor_unit
     product_name: WLW-10 MB AR
     hardware_type: XCU_SRH
-    family: null
+    family: wlw_mb_ar
     construction: monobloc
-    power_kw: null
+    power_kw: 10
 primary:
-  family: WLW176i
+  family: wlw176i
   construction: monobloc
   power_kw: null
   brand_family: bosch_group

@@ -23,13 +23,18 @@ Versioning after its first tagged preview.
   - Family, construction and power come only from a model table; every
     entry is either observed in a real module list or documented by the
     manufacturer, with the address of the datasheet. Nothing is guessed
-    from a name. For now the table holds the modules of my own
-    installation (Logatherm WLW176i-12 TP70 with the monobloc outdoor unit
-    WLW-10 MB AR), which I read from its module list, and the hardware
-    types of the indoor and the outdoor unit. Other models show their
+    from a name. The table holds the modules of my own installation
+    (Logatherm WLW176i-12 TP70 with the monobloc outdoor unit WLW-10 MB AR),
+    which I read from its module list, and the hardware types of the indoor
+    and the outdoor unit. From the manufacturers' brochures and product
+    pages it also knows the WLW176i/WLW186i indoor units with the WLW MB AR
+    outdoor units, the CS5800i/CS6800i AW indoor units with the AW OR-S/OR-T
+    outdoor units, and the outdoor units of the CS3800i AW and CS8800i AW.
+    The power class belongs to the outdoor unit and is shown only where a
+    document states it (for example 10 kW for WLW-10 MB AR); the
+    construction only where a document names it. Other models show their
     product name and hardware type, but no family, construction or power
-    yet. The power class belongs to the outdoor unit and stays empty until
-    an entry proves it, also for my installation.
+    yet.
   - If your model shows `known: false`, the diagnostics list it under
     `heat_generator.unmapped_modules`, without serial numbers. Please post
     that part in an issue; one new table entry is then enough.
