@@ -7,8 +7,9 @@ no more strongly than the report itself. A feature that is not listed was not
 reported, which does not mean it does not work.
 
 To add your installation, please post it in the
-[0.9 alpha feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111)
-if you use a 0.9 version, or in
+[0.9.x feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111)
+if you use a 0.9 version (let Home Assistant run for a few hours first and
+attach the [diagnostics](diagnostics.md#download-diagnostics)), or in
 [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81)
 for any other version. Please report bugs as
 [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new/choose),

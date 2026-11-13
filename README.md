@@ -43,7 +43,7 @@
 
 **Tested on:** my own heat pump (Logamatic BC400 controller, MX400 internet module reported as K40RF gateway, firmware 15.00.01), where it runs without problems, and the [confirmed installations](#confirmed-installations).
 
-**Feedback:** please share your experience in the [0.9 feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) and report bugs as [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new?template=bug.yml).
+**Feedback:** please share your experience in the [0.9.x feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) and report bugs as [issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new?template=bug.yml).
 
 Bosch/Buderus Home Comfort (formerly Bosch/Buderus Heating) is an unofficial Home Assistant custom integration.
 It discovers PointT heating-system resources and uses separate cloud adapters
@@ -263,7 +263,7 @@ in the report.
 Is your system missing, or have you checked further features? Please post your
 heater, controller, gateway and the features you checked in
 [Share your installation](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/81), or in the
-[0.9 feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) if you use a 0.9 version.
+[0.9.x feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111) if you use a 0.9 version.
 I will add it to the list.
 
 ## Installation
@@ -514,6 +514,8 @@ The post includes a template. Unknown details can be left out, and there is no
 need to change settings just to report your installation. I distinguish reported
 installations, checked readings and individually confirmed controls when
 assessing compatibility.
+
+**Feedback on 0.9.x:** please share how the integration works on your system in the [0.9.x feedback discussion](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/111). Let Home Assistant run for at least a few hours first (ideally half a day, so that slower readings, counters and the firmware check have values), then attach the diagnostics: **Settings → Devices & services → Bosch/Buderus Home Comfort → ⋮ → Download diagnostics**. The file is redacted (no serial numbers, tokens, e-mail or addresses), but please have a quick look before posting. It lets me check that everything on your system is read and shown correctly, and it adds your heat generator model to the model table.
 
 Please continue to use
 [Issues](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/new/choose)
