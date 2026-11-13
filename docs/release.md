@@ -4,6 +4,47 @@ Releases are built from a verified Git tag. The HACS archive contains the
 integration directly at its root and is published together with a SHA-256
 checksum file.
 
+## 0.9.0 verification
+
+I am preparing **0.9.0 as the stable release** of the 0.9 line. It needs
+Home Assistant 2026.5.0 or newer and keeps storage format 4 of the
+pre-releases; updating from a 0.9.0 alpha needs no new setup. From 0.8.x the
+configuration entry moves to format 4 on the first start, so the release
+notes open with the backup advice.
+
+Automated checks on the release state (2026-11-13, run locally):
+
+| Check | Environment | Result |
+|---|---|---|
+| Full suite with coverage, current version | Home Assistant 2026.11.0, local, four parallel workers | 10726 passed; coverage 96.03 % |
+| Full suite with coverage, minimum version | Home Assistant 2026.5.4, local, four parallel workers | 10724 passed, 2 skipped (version-dependent); coverage 96.02 % |
+| Files changed since the review, one process | Home Assistant 2026.5.4, local | 570 passed in 13 test files |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 216 files (2026.11.0); Ruff clean; 599 files formatted |
+| Browser tests of the dialogs | Chromium, local | `npm test` passed; the 12 Home Assistant frontend tests passed (Home Assistant 2026.11.0 with frontend 20261028.4 as browser environment) |
+| Release archive, SHA-256 and release notes | local build on a clean tree | built for version 0.9.0 with 265 files (1,716,822 bytes) under Linux, without tests or bytecode; SHA-256 `4d6eddd1e7383f1bff9b3e8518a3fae6109e528e3ee4fed96f6f8d974d5fd7a5`; the release notes come from this version's CHANGELOG section |
+| GitHub checks | PR and release workflow | pending: the PR checks, including hassfest and HACS with the new manifest category, must pass before the merge |
+
+What a real device confirmed is named as confirmed in the CHANGELOG; the
+other functions are tested with automated tests and simulated data only.
+
+### 0.9.0 release checklist
+
+1. All required checks of PR #110 are green (quality, dependency audit,
+   hassfest, HACS, analyze, compatibility, frontend, minimum version).
+2. Squash-merge PR #110 into `main`.
+3. Create the annotated tag `v0.9.0` on the squash commit in `main`, not on
+   the feature branch; the release workflow refuses a tag that is not on
+   `main` or not annotated.
+4. Compare the published archive and its SHA-256 with the local build.
+
+> [!WARNING]
+> **HACS and older versions.** From 0.9.0 on, `main` and every release store
+> the configuration entry in format 4. Never publish another release that
+> uses format 3. HACS still offers the 0.8.x releases under **Redownload**;
+> 0.8.x cannot load a format 4 entry, so going back is only possible by
+> restoring the backup made before the update. The release notes and the
+> README say so.
+
 ## 0.9.0-alpha.6 verification
 
 I am publishing **0.9.0-alpha.6 as a pre-release** for testing from the commit
