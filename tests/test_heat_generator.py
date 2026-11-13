@@ -26,6 +26,7 @@ from custom_components.bosch_buderus_heating.diagnostics import (
     _gateway_diagnostics,
 )
 from custom_components.bosch_buderus_heating.heat_generator import (
+    EMPTY_TABLE,
     MAX_NAME_LENGTH,
     TABLE,
     TABLE_PATH,
@@ -1044,6 +1045,48 @@ async def test_a_registered_entity_without_kept_data_is_unknown(hass) -> None:
     coordinator.async_update_listeners()
     await hass.async_block_till_done()
     assert shown(hass, entity).state == INDOOR
+    await coordinator.async_shutdown()
+
+
+@pytest.mark.parametrize(
+    "content",
+    [None, "not json", '{"schema": 2}', '{"schema": 1, "entries": 7}', "[]"],
+    ids=["missing", "not_json", "other_schema", "faulty", "not_an_object"],
+)
+def test_a_missing_or_faulty_table_gives_one_warning(tmp_path, caplog, content):
+    path = tmp_path / "heat_generator_models.json"
+    if content is not None:
+        path.write_text(content, encoding="utf-8")
+    with caplog.at_level(logging.WARNING):
+        assert heat_generator.load_shipped_table(path) is None
+    warnings = [r for r in caplog.records if r.levelno >= logging.WARNING]
+    assert len(warnings) == 1
+    assert "heat generator model table" in warnings[0].getMessage()
+    assert str(tmp_path) not in warnings[0].getMessage()
+
+
+def test_the_shipped_table_loads_without_a_warning(caplog) -> None:
+    with caplog.at_level(logging.WARNING):
+        assert heat_generator.load_shipped_table() == TABLE
+    assert caplog.records == []
+    assert heat_generator.TABLE_AVAILABLE is True
+
+
+async def test_without_a_table_there_is_no_entity(hass, monkeypatch) -> None:
+    monkeypatch.setattr(heat_generator, "TABLE_AVAILABLE", False)
+    coordinator = coordinator_for(hass)
+    added_entities: list = []
+    track_heat_generator_sensor(
+        SimpleNamespace(async_on_unload=Mock()), coordinator, added_entities.extend
+    )
+    set_cloud(coordinator, OWN_CLOUD)
+    coordinator.async_update_listeners()
+    assert added_entities == []
+    # The diagnostics still work, with the empty table.
+    report = heat_generator.diagnostics(
+        interpret(rows_from_cloud(OWN_CLOUD), "cloud", table=EMPTY_TABLE), None
+    )
+    assert report["modules"] and report["known"] is False
     await coordinator.async_shutdown()
 
 

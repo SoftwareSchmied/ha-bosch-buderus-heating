@@ -25,6 +25,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.restore_state import ExtraStoredData, RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from . import heat_generator
 from .const import DOMAIN
 from .control import track_entity_once
 from .device import device_info_for_resource, is_rrc_plant
@@ -210,7 +211,10 @@ def track_heat_generator_sensor(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Add the entity once a module list exists, or at once when it is
-    registered already (it then keeps its last state)."""
+    registered already (it then keeps its last state). Without a valid
+    model table there is no entity."""
+    if not heat_generator.TABLE_AVAILABLE:
+        return
     inputs = HeatGeneratorInputs(coordinator)
     unique_id = heat_generator_unique_id(coordinator.gateway.gateway_id)
 

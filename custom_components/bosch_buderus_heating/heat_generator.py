@@ -20,6 +20,7 @@ Pure logic without Home Assistant imports.
 from __future__ import annotations
 
 import json
+import logging
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -30,6 +31,8 @@ from urllib.parse import urlsplit
 
 TABLE_PATH: Final = Path(__file__).with_name("heat_generator_models.json")
 TABLE_SCHEMA: Final = 1
+
+_LOGGER = logging.getLogger(__name__)
 
 # The roles in their fixed order: the first module of the sorted list is the
 # main heat generator (a heat source before a boiler before the rest).
@@ -390,8 +393,35 @@ def load_table(path: Path = TABLE_PATH) -> ModelTable:
     return parse_table(json.loads(path.read_text(encoding="utf-8")))
 
 
+# Without a valid table nothing has a meaning and no entity is created.
+EMPTY_TABLE: Final = ModelTable(0, frozenset(), frozenset(), (), ())
+
+
+def load_shipped_table(path: Path = TABLE_PATH) -> ModelTable | None:
+    """The shipped table, or ``None`` with one warning if it is missing or
+    faulty; the rest of the integration works without it."""
+    try:
+        return load_table(path)
+    except (
+        OSError,
+        ValueError,
+        RecursionError,
+        TypeError,
+        KeyError,
+        AttributeError,
+    ) as err:
+        _LOGGER.warning(
+            "The heat generator model table could not be loaded (%s); "
+            "the heat generator sensor is not created",
+            type(err).__name__,
+        )
+        return None
+
+
 # Read once on import (in the import executor), never in the event loop.
-TABLE: Final = load_table()
+_SHIPPED: Final = load_shipped_table()
+TABLE: Final = _SHIPPED if _SHIPPED is not None else EMPTY_TABLE
+TABLE_AVAILABLE: Final = _SHIPPED is not None
 
 
 # ------------------------------------------------------------ interpretation
