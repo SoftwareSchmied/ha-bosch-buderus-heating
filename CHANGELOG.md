@@ -336,7 +336,7 @@ without a name of your own shows its new name.
   it was on during every hot water charge on my heat pump. It stays
   disabled by default. If you enabled it and use `heat` or `false` in an
   automation, change it to `on` or `off`; earlier history entries keep the
-  old states.
+  old states. It is no longer listed under the diagnostic entities.
 - **Long-term statistics for local run times:** the compressor run times
   for heating, hot water and cooling, those of a hybrid manager and the run
   time of a ventilation unit now have statistics as a growing total, like
