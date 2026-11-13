@@ -5,6 +5,38 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Added
+
+- **Tokens on the gateway:** the settings of a local access have a new entry
+  that shows the gateway's token list: how many tokens it holds, which client
+  created each one and when. This helps when a new sign-in fails because the
+  gateway's token list is full.
+  - The list is read only when you open it. Token values are never part of
+    it, and nothing of the list is saved, logged or included in diagnostics.
+  - It needs a working local access, because the gateway only shows the list
+    to a valid token.
+  - I tested it against a synthetic gateway only. I have not opened the list
+    on my own gateway yet, so the count shown for a real gateway is still
+    unconfirmed.
+- **Revoking an old token:** from that list, an old token of this integration
+  can be revoked on the gateway, one at a time and only after a confirmation.
+  Tokens of other apps and clients are never offered.
+  - The gateway does not say which token an access uses, so you choose by
+    creation time; the dialog shows when the access was last set up. Right
+    before the revocation the list is read again, the request is sent exactly
+    once, and the list is read once more to confirm the result. If the
+    gateway confirms nothing, the dialog says so and repeats nothing.
+  - If the revoked token was the one the access used, the access is switched
+    off instead of failing; a new sign-in with the device label sets it up
+    again.
+  - **Remove access** for a local access can revoke a token of this
+    integration first, if you tick that choice. Without it, removing an access
+    or the whole entry still never revokes anything.
+  - I tested this against a synthetic gateway only (a lost answer, a changed
+    list, a refused revocation, the access's own token and more). I have not
+    revoked a token on a real gateway yet, so how a real gateway answers a
+    revocation is still unconfirmed.
+
 ### Local access
 
 - **New gateway address after a DHCP change:** when the local access can no

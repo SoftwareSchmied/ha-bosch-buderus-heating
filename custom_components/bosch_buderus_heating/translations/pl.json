@@ -475,6 +475,7 @@
           "connection_discover": "Wyszukaj i wybierz urządzenia",
           "connection_polling": "Częstotliwość odpytywania",
           "local_setup": "Zmień dostęp lokalny",
+          "local_tokens": "Tokeny na bramce",
           "local_polling": "Częstotliwość odpytywania lokalnego i stan",
           "local_values": "Używaj wartości lokalnych dla istniejących encji",
           "back": "← Wstecz"
@@ -512,7 +513,8 @@
         "title": "Usuń dostęp",
         "description": "Dane logowania zostaną usunięte. Instalacje i encje są zachowane, nawet jeśli jest to ostatni dostęp. Bez dostępnego połączenia encje nie mogą pokazywać wartości bieżących.",
         "data": {
-          "confirm": "Usuń ten dostęp"
+          "confirm": "Usuń ten dostęp",
+          "revoke": "Najpierw unieważnij token tej integracji na bramce"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "Wyszukaj instalację ponownie",
         "description": "Wyszukuje w instalacji jeszcze raz części i odczyty, przez dostęp przez chmurę i dostęp lokalny. Użyj tego po dodaniu lub zmianie komponentów. Wyszukiwanie odbywa się przy następnej regularnej aktualizacji i w zwykłych limitach żądań; nigdy nie usuwa encji, a odczyty, których nie znajdzie ponownie, pozostają bez zmian."
+      },
+      "local_tokens": {
+        "title": "Tokeny na bramce",
+        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inni klienci** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Każde logowanie za pomocą etykiety urządzenia tworzy nowy token, dlatego starsze tokeny tej integracji zwykle pozostają po wcześniejszych konfiguracjach. Aby unieważnić token, wybierz go według czasu utworzenia. Bez wyboru nic się nie zmienia.",
+        "data": {
+          "token": "Token do unieważnienia"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Unieważnij token przed usunięciem",
+        "description": "Bramka przechowuje **{count}** tokenów. Wartości tokenów nigdy nie są pokazywane.\n\n**Ta integracja** (według czasu utworzenia):\n{own}\n\n**Inni klienci** (nigdy nie są proponowani do unieważnienia):\n{others}\n\nTen dostęp skonfigurowano ostatnio {confirmed}. Wybierz token, który zostanie unieważniony przed usunięciem dostępu. Bez wyboru dostęp zostanie usunięty bez unieważniania czegokolwiek. Aby zachować dostęp, zamknij to okno.",
+        "data": {
+          "token": "Token do unieważnienia"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Potwierdź certyfikat logowania",
+        "description": "Usługa logowania pod adresem **{host}:{port}** przedstawia certyfikat, który nigdy nie został potwierdzony dla tego dostępu. Potwierdź, że to Twoja bramka, zanim zostanie tam wysłany token dostępu. Potwierdzenie obowiązuje tylko w tym oknie.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Potwierdzam tę bramkę i jej certyfikat"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Unieważnij token",
+        "description": "Unieważnić token tej integracji utworzony {created} na bramce pod adresem **{host}**?\n\nBramka usuwa go na stałe. Jeśli to token używany przez ten dostęp, dostęp lokalny się kończy: dostęp zostaje wyłączony i wymaga ponownego logowania za pomocą etykiety urządzenia. Lista jest odczytywana ponownie tuż przed tym, a żądanie jest wysyłane tylko raz.",
+        "data": {
+          "confirm": "Unieważnij ten token na bramce"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "Chmura i dostęp lokalny nie opisują tej samej instalacji. Nic nie zapisano. Odznacz tę instalację, aby nadal używać jej tylko przez dostęp lokalny.",
       "local_plant_known": "Ta bramka należy już do skonfigurowanej instalacji. Wybierz tę instalację zamiast nowej.",
       "auth_expired": "Ta próba logowania wygasła. Otwórz nowy link SingleKey ID wyświetlony powyżej i zaloguj się ponownie.",
-      "auth_restart": "Tej próby logowania nie można już użyć. Otwórz nowy link SingleKey ID wyświetlony powyżej i zaloguj się ponownie."
+      "auth_restart": "Tej próby logowania nie można już użyć. Otwórz nowy link SingleKey ID wyświetlony powyżej i zaloguj się ponownie.",
+      "local_tokens_rejected": "Bramka nie zaakceptowała tokenu tego dostępu. Nic nie zostało zmienione.",
+      "local_tokens_forbidden": "Usługa logowania bramki odrzuciła żądanie. Nic nie zostało zmienione.",
+      "local_tokens_unsupported": "Ta bramka nie udostępnia listy tokenów. Nic nie zostało zmienione.",
+      "local_tokens_invalid": "Nie udało się sprawdzić listy tokenów bramki (nieoczekiwana lub zbyt duża odpowiedź). Nic nie zostało zmienione."
     },
     "abort": {
       "no_notification_gateways": "Nie skonfigurowano żadnej instalacji grzewczej.",
@@ -817,7 +851,15 @@
       "connection_saved": "Zmiana została zapisana.",
       "connection_removed": "Dostęp został usunięty.",
       "notifications_saved": "Ustawienia powiadomień zostały zapisane.",
-      "rrc_program_saved": "Punkt przełączenia został zapisany i potwierdzony ponownym odczytem."
+      "rrc_program_saved": "Punkt przełączenia został zapisany i potwierdzony ponownym odczytem.",
+      "local_tokens_unavailable": "Ten dostęp nie ma zapisanego tokenu, którego można użyć do listy tokenów. Najpierw ponownie skonfiguruj dostęp lokalny.",
+      "local_tokens_changed": "Lista tokenów zmieniła się w międzyczasie. Nic nie zostało unieważnione ani usunięte. Otwórz listę ponownie.",
+      "local_token_revoked": "Token został unieważniony; bramka już go nie wyświetla.",
+      "local_token_access_ended": "Był to token używany przez ten dostęp. Dostęp lokalny zakończył się, a dostęp został wyłączony. Skonfiguruj go ponownie za pomocą etykiety urządzenia albo go usuń.",
+      "local_token_revoke_rejected": "Bramka odrzuciła unieważnienie; token nadal jest na liście.",
+      "local_token_revoke_unclear": "Bramka nie potwierdziła unieważnienia. Nic nie zostało powtórzone. Otwórz ponownie listę tokenów, aby to sprawdzić.",
+      "local_token_revoked_removed": "Token został unieważniony na bramce, a dostęp usunięty.",
+      "local_token_not_removed": "Unieważnienie nie zostało potwierdzone, dlatego dostęp nie został usunięty. Sprawdź listę tokenów, a następnie usuń dostęp ponownie."
     },
     "progress": {
       "local_work": "Sprawdzanie połączenia lokalnego. Proszę czekać."

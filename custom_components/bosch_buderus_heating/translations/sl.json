@@ -475,6 +475,7 @@
           "connection_discover": "Poišči in izberi naprave",
           "connection_polling": "Pogostost poizvedovanja",
           "local_setup": "Spremeni lokalni dostop",
+          "local_tokens": "Žetoni na prehodu",
           "local_polling": "Pogostost lokalnega poizvedovanja in stanje",
           "local_values": "Uporabi lokalne vrednosti za obstoječe entitete",
           "back": "← Nazaj"
@@ -512,7 +513,8 @@
         "title": "Odstrani dostop",
         "description": "Poverilnice bodo odstranjene. Sistemi in entitete so ohranjeni, tudi če je to zadnji dostop. Brez razpoložljive povezave entitete ne morejo prikazovati trenutnih vrednosti.",
         "data": {
-          "confirm": "Odstrani ta dostop"
+          "confirm": "Odstrani ta dostop",
+          "revoke": "Najprej prekliči žeton te integracije na prehodu"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "Ponovno preišči sistem",
         "description": "Še enkrat preišče sistem za dele in izmerjene vrednosti prek dostopa prek oblaka in lokalnega dostopa. Uporabite po dodajanju ali spreminjanju komponent. Iskanje poteka ob naslednji redni posodobitvi in v običajnih omejitvah zahtev; entitete nikoli ne odstrani, izmerjene vrednosti, ki jih znova ne najde, pa ostanejo take, kot so."
+      },
+      "local_tokens": {
+        "title": "Žetoni na prehodu",
+        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Drugi odjemalci** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Vsaka prijava z oznako na napravi ustvari nov žeton, zato starejši žetoni te integracije običajno ostanejo od prejšnjih nastavitev. Če želite enega preklicati, ga izberite po času ustvarjanja. Brez izbire se nič ne spremeni.",
+        "data": {
+          "token": "Žeton za preklic"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Preklic žetona pred odstranitvijo",
+        "description": "Prehod vodi **{count}** žetonov. Vrednosti žetonov niso nikoli prikazane.\n\n**Ta integracija** (po času ustvarjanja):\n{own}\n\n**Drugi odjemalci** (nikoli ponujeni za preklic):\n{others}\n\nTa dostop je bil nazadnje nastavljen {confirmed}. Izberite žeton, ki bo preklican pred odstranitvijo dostopa. Brez izbire se dostop odstrani, ne da bi se karkoli preklicalo. Če želite dostop obdržati, zaprite to pogovorno okno.",
+        "data": {
+          "token": "Žeton za preklic"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Potrditev certifikata prijave",
+        "description": "Storitev prijave na **{host}:{port}** prikazuje certifikat, ki za ta dostop ni bil nikoli potrjen. Preden se tja pošlje žeton dostopa, potrdite, da je to vaš prehod. Potrditev velja samo za to pogovorno okno.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Potrjujem ta prehod in njegov certifikat"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Preklic žetona",
+        "description": "Želite preklicati žeton te integracije, ustvarjen {created}, na prehodu na **{host}**?\n\nPrehod ga trajno izbriše. Če je to žeton, ki ga uporablja ta dostop, se lokalni dostop konča: dostop se izklopi in potrebuje novo prijavo z oznako na napravi. Seznam se tik pred tem ponovno prebere, zahteva pa se pošlje samo enkrat.",
+        "data": {
+          "confirm": "Prekliči ta žeton na prehodu"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "Oblak in lokalni dostop ne opisujeta istega sistema. Nič ni bilo shranjeno. Prekličite izbiro tega sistema, da ga še naprej uporabljate samo prek lokalnega dostopa.",
       "local_plant_known": "Ta prehod že pripada nastavljenemu sistemu. Izberite ta sistem namesto novega.",
       "auth_expired": "Ta poskus prijave je potekel. Odprite novo povezavo SingleKey ID, prikazano zgoraj, in se znova prijavite.",
-      "auth_restart": "Tega poskusa prijave ni več mogoče uporabiti. Odprite novo povezavo SingleKey ID, prikazano zgoraj, in se znova prijavite."
+      "auth_restart": "Tega poskusa prijave ni več mogoče uporabiti. Odprite novo povezavo SingleKey ID, prikazano zgoraj, in se znova prijavite.",
+      "local_tokens_rejected": "Prehod ni sprejel žetona tega dostopa. Nič ni bilo spremenjeno.",
+      "local_tokens_forbidden": "Storitev prijave prehoda je zavrnila zahtevo. Nič ni bilo spremenjeno.",
+      "local_tokens_unsupported": "Ta prehod ne ponuja seznama žetonov. Nič ni bilo spremenjeno.",
+      "local_tokens_invalid": "Seznama žetonov prehoda ni bilo mogoče preveriti (nepričakovan ali prevelik odgovor). Nič ni bilo spremenjeno."
     },
     "abort": {
       "no_notification_gateways": "Noben ogrevalni sistem ni nastavljen.",
@@ -817,7 +851,15 @@
       "connection_saved": "Sprememba je bila shranjena.",
       "connection_removed": "Dostop je bil odstranjen.",
       "notifications_saved": "Nastavitve obvestil so bile shranjene.",
-      "rrc_program_saved": "Preklopna točka je bila shranjena in potrjena s ponovnim branjem."
+      "rrc_program_saved": "Preklopna točka je bila shranjena in potrjena s ponovnim branjem.",
+      "local_tokens_unavailable": "Ta dostop nima uporabnega shranjenega žetona za seznam žetonov. Najprej znova nastavite lokalni dostop.",
+      "local_tokens_changed": "Seznam žetonov se je medtem spremenil. Nič ni bilo preklicano ali odstranjeno. Znova odprite seznam.",
+      "local_token_revoked": "Žeton je bil preklican; prehod ga ne navaja več.",
+      "local_token_access_ended": "To je bil žeton, ki ga je uporabljal ta dostop. Lokalni dostop se je končal in dostop je bil izklopljen. Znova ga nastavite z oznako na napravi ali ga odstranite.",
+      "local_token_revoke_rejected": "Prehod je zavrnil preklic; žeton je še vedno na seznamu.",
+      "local_token_revoke_unclear": "Prehod ni potrdil preklica. Nič ni bilo ponovljeno. Za preverjanje znova odprite seznam žetonov.",
+      "local_token_revoked_removed": "Žeton je bil na prehodu preklican in dostop je bil odstranjen.",
+      "local_token_not_removed": "Preklic ni bil potrjen, zato dostop ni bil odstranjen. Preverite seznam žetonov in nato znova odstranite dostop."
     },
     "progress": {
       "local_work": "Preverjanje lokalne povezave. Prosimo, počakajte."

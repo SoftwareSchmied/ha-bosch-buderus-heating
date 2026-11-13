@@ -475,6 +475,7 @@
           "connection_discover": "Pesquisar e selecionar dispositivos",
           "connection_polling": "Frequência de consulta",
           "local_setup": "Alterar acesso local",
+          "local_tokens": "Tokens no gateway",
           "local_polling": "Frequência de consulta local e estado",
           "local_values": "Utilizar valores locais para entidades existentes",
           "back": "← Voltar"
@@ -512,7 +513,8 @@
         "title": "Remover acesso",
         "description": "As credenciais serão removidas. As instalações e as entidades são mantidas, mesmo que este seja o último acesso. Sem uma ligação disponível, as entidades não podem mostrar valores atuais.",
         "data": {
-          "confirm": "Remover este acesso"
+          "confirm": "Remover este acesso",
+          "revoke": "Revogar primeiro um token desta integração no gateway"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "Pesquisar a instalação novamente",
         "description": "Pesquisa novamente na instalação por componentes e valores, através do acesso à cloud e do acesso local. Utilize esta opção depois de adicionar ou alterar componentes. A pesquisa decorre na próxima atualização regular e dentro dos limites habituais de pedidos; nunca remove uma entidade e os valores que não voltar a encontrar mantêm-se como estão."
+      },
+      "local_tokens": {
+        "title": "Tokens no gateway",
+        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outros clientes** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. Cada início de sessão com a etiqueta do dispositivo cria um novo token, pelo que os tokens mais antigos desta integração costumam ficar de configurações anteriores. Para revogar um, escolha-o pela hora de criação. Sem escolha nada muda.",
+        "data": {
+          "token": "Token a revogar"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Revogar um token antes de remover",
+        "description": "O gateway lista **{count}** tokens. Os valores dos tokens nunca são mostrados.\n\n**Esta integração** (por hora de criação):\n{own}\n\n**Outros clientes** (nunca propostos para revogação):\n{others}\n\nEste acesso foi configurado pela última vez em {confirmed}. Escolha o token a revogar antes de o acesso ser removido. Sem escolha, o acesso é removido sem revogar nada. Para manter o acesso, feche esta caixa de diálogo.",
+        "data": {
+          "token": "Token a revogar"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Confirmar o certificado do início de sessão",
+        "description": "O serviço de início de sessão em **{host}:{port}** apresenta um certificado que nunca foi confirmado para este acesso. Confirme que é o seu gateway antes de o token do acesso ser enviado para lá. A confirmação só vale para esta caixa de diálogo.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Confirmo este gateway e o respetivo certificado"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Revogar token",
+        "description": "Revogar o token desta integração criado em {created} no gateway em **{host}**?\n\nO gateway elimina-o definitivamente. Se for o token que este acesso usa, o acesso local termina: o acesso é desligado e precisa de um novo início de sessão com a etiqueta do dispositivo. A lista é lida de novo imediatamente antes, e o pedido é enviado apenas uma vez.",
+        "data": {
+          "confirm": "Revogar este token no gateway"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "A cloud e o acesso local não descrevem a mesma instalação. Nada foi guardado. Desselecione esta instalação para continuar a utilizá-la apenas através do respetivo acesso local.",
       "local_plant_known": "Este gateway já pertence a um sistema configurado. Escolha esse sistema em vez de um novo.",
       "auth_expired": "Esta tentativa de início de sessão expirou. Abra a nova ligação do SingleKey ID apresentada acima e inicie sessão novamente.",
-      "auth_restart": "Esta tentativa de início de sessão já não pode ser utilizada. Abra a nova ligação do SingleKey ID apresentada acima e inicie sessão novamente."
+      "auth_restart": "Esta tentativa de início de sessão já não pode ser utilizada. Abra a nova ligação do SingleKey ID apresentada acima e inicie sessão novamente.",
+      "local_tokens_rejected": "O gateway não aceitou o token deste acesso. Nada foi alterado.",
+      "local_tokens_forbidden": "O serviço de início de sessão do gateway recusou o pedido. Nada foi alterado.",
+      "local_tokens_unsupported": "Este gateway não disponibiliza uma lista de tokens. Nada foi alterado.",
+      "local_tokens_invalid": "Não foi possível verificar a lista de tokens do gateway (resposta inesperada ou demasiado grande). Nada foi alterado."
     },
     "abort": {
       "no_notification_gateways": "Não está configurado nenhum sistema de aquecimento.",
@@ -817,7 +851,15 @@
       "connection_saved": "A alteração foi guardada.",
       "connection_removed": "O acesso foi removido.",
       "notifications_saved": "As definições de notificações foram guardadas.",
-      "rrc_program_saved": "O ponto de comutação foi guardado e confirmado por releitura."
+      "rrc_program_saved": "O ponto de comutação foi guardado e confirmado por releitura.",
+      "local_tokens_unavailable": "Este acesso não tem um token guardado utilizável para a lista de tokens. Configure primeiro de novo o acesso local.",
+      "local_tokens_changed": "A lista de tokens mudou entretanto. Nada foi revogado nem removido. Abra a lista de novo.",
+      "local_token_revoked": "O token foi revogado; o gateway já não o lista.",
+      "local_token_access_ended": "Era o token que este acesso usava. O acesso local terminou e o acesso foi desligado. Configure-o de novo com a etiqueta do dispositivo ou remova-o.",
+      "local_token_revoke_rejected": "O gateway recusou a revogação; o token continua na lista.",
+      "local_token_revoke_unclear": "O gateway não confirmou a revogação. Nada foi repetido. Abra de novo a lista de tokens para verificar.",
+      "local_token_revoked_removed": "O token foi revogado no gateway e o acesso foi removido.",
+      "local_token_not_removed": "A revogação não foi confirmada, por isso o acesso não foi removido. Verifique a lista de tokens e depois remova o acesso de novo."
     },
     "progress": {
       "local_work": "A verificar a ligação local. Aguarde."

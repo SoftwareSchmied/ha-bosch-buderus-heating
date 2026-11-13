@@ -109,6 +109,7 @@ from .i18n import localize
 from .legacy_holidays import WDDW2_HOLIDAY_PATH
 from .local_credentials import LOCAL_STORAGE_MINOR_VERSION
 from .local_flow import LocalSetupFlow
+from .local_token_flow import LocalTokenFlow
 from .markdown_text import markdown_literal
 from .notifications import (
     gateway_notification_key,
@@ -978,6 +979,7 @@ class _HolidayChoice:
 
 
 class BoschBuderusOptionsFlow(
+    LocalTokenFlow,
     LocalSetupFlow,
     ControlsOptionsFlow,
     RrcScheduleOptionsFlow,

@@ -475,6 +475,7 @@
           "connection_discover": "Buscar y seleccionar dispositivos",
           "connection_polling": "Frecuencia de consulta",
           "local_setup": "Cambiar el acceso local",
+          "local_tokens": "Tokens en la pasarela",
           "local_polling": "Frecuencia de consulta local y estado",
           "local_values": "Usar valores locales para las entidades existentes",
           "back": "← Atrás"
@@ -512,7 +513,8 @@
         "title": "Eliminar el acceso",
         "description": "Se eliminarán las credenciales. Se conservan las instalaciones y las entidades, incluso si este es el último acceso. Sin una conexión disponible, las entidades no pueden mostrar valores actuales.",
         "data": {
-          "confirm": "Eliminar este acceso"
+          "confirm": "Eliminar este acceso",
+          "revoke": "Revocar antes un token de esta integración en la pasarela"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "Volver a buscar en la instalación",
         "description": "Vuelve a buscar en la instalación componentes y valores, a través del acceso a la nube y del acceso local. Úsalo después de añadir o cambiar componentes. La búsqueda se ejecuta con la siguiente actualización periódica y dentro de los límites habituales de consultas; nunca elimina una entidad y los valores que no vuelva a encontrar se quedan como están."
+      },
+      "local_tokens": {
+        "title": "Tokens en la pasarela",
+        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otros clientes** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. Cada inicio de sesión con la etiqueta del dispositivo crea un token nuevo, por lo que los tokens más antiguos de esta integración suelen proceder de configuraciones anteriores. Para revocar uno, elígelo por su fecha de creación. Sin elección no cambia nada.",
+        "data": {
+          "token": "Token que se revocará"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Revocar un token antes de eliminar",
+        "description": "La pasarela tiene **{count}** tokens. Los valores de los tokens nunca se muestran.\n\n**Esta integración** (por fecha de creación):\n{own}\n\n**Otros clientes** (nunca se ofrecen para revocar):\n{others}\n\nEste acceso se configuró por última vez el {confirmed}. Elige el token que se revocará antes de eliminar el acceso. Sin elección, el acceso se elimina sin revocar nada. Para conservar el acceso, cierra este diálogo.",
+        "data": {
+          "token": "Token que se revocará"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Confirmar el certificado del inicio de sesión",
+        "description": "El servicio de inicio de sesión en **{host}:{port}** presenta un certificado que nunca se confirmó para este acceso. Confirma que es tu pasarela antes de enviar allí el token del acceso. La confirmación solo vale para este diálogo.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Confirmo esta pasarela y su certificado"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Revocar token",
+        "description": "¿Revocar el token de esta integración creado el {created} en la pasarela de **{host}**?\n\nLa pasarela lo elimina definitivamente. Si es el token que usa este acceso, el acceso local termina: el acceso se desactiva y necesita un nuevo inicio de sesión con la etiqueta del dispositivo. La lista se vuelve a leer justo antes y la solicitud se envía una sola vez.",
+        "data": {
+          "confirm": "Revocar este token en la pasarela"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "La nube y el acceso local no describen la misma instalación. No se guardó nada. Desmarca esta instalación para seguir usándola solo a través de su acceso local.",
       "local_plant_known": "Esta pasarela ya pertenece a una instalación configurada. Elige esa instalación en lugar de una nueva.",
       "auth_expired": "Este intento de inicio de sesión ha caducado. Abre el nuevo enlace de SingleKey ID que aparece arriba e inicia sesión de nuevo.",
-      "auth_restart": "Este intento de inicio de sesión ya no se puede usar. Abre el nuevo enlace de SingleKey ID que aparece arriba e inicia sesión de nuevo."
+      "auth_restart": "Este intento de inicio de sesión ya no se puede usar. Abre el nuevo enlace de SingleKey ID que aparece arriba e inicia sesión de nuevo.",
+      "local_tokens_rejected": "La pasarela no aceptó el token de este acceso. No se ha cambiado nada.",
+      "local_tokens_forbidden": "El servicio de inicio de sesión de la pasarela rechazó la solicitud. No se ha cambiado nada.",
+      "local_tokens_unsupported": "Esta pasarela no ofrece una lista de tokens. No se ha cambiado nada.",
+      "local_tokens_invalid": "No se pudo comprobar la lista de tokens de la pasarela (respuesta inesperada o demasiado grande). No se ha cambiado nada."
     },
     "abort": {
       "no_notification_gateways": "No hay ninguna instalación de calefacción configurada.",
@@ -817,7 +851,15 @@
       "connection_saved": "El cambio se guardó.",
       "connection_removed": "El acceso se eliminó.",
       "notifications_saved": "Los ajustes de notificaciones se guardaron.",
-      "rrc_program_saved": "El punto de conmutación se guardó y se confirmó al volver a leerlo."
+      "rrc_program_saved": "El punto de conmutación se guardó y se confirmó al volver a leerlo.",
+      "local_tokens_unavailable": "Este acceso no tiene un token guardado que sirva para la lista de tokens. Configura antes de nuevo el acceso local.",
+      "local_tokens_changed": "La lista de tokens ha cambiado entretanto. No se ha revocado ni eliminado nada. Abre la lista de nuevo.",
+      "local_token_revoked": "El token se ha revocado; la pasarela ya no lo muestra.",
+      "local_token_access_ended": "Era el token que usaba este acceso. El acceso local ha terminado y el acceso se ha desactivado. Configúralo de nuevo con la etiqueta del dispositivo o elimínalo.",
+      "local_token_revoke_rejected": "La pasarela rechazó la revocación; el token sigue en la lista.",
+      "local_token_revoke_unclear": "La pasarela no confirmó la revocación. No se ha repetido nada. Abre de nuevo la lista de tokens para comprobarlo.",
+      "local_token_revoked_removed": "El token se revocó en la pasarela y el acceso se eliminó.",
+      "local_token_not_removed": "La revocación no se confirmó, así que el acceso no se eliminó. Revisa la lista de tokens y vuelve a eliminar el acceso."
     },
     "progress": {
       "local_work": "Comprobando la conexión local. Espera, por favor."

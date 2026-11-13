@@ -475,6 +475,7 @@
           "connection_discover": "Geräte suchen und auswählen",
           "connection_polling": "Abfragehäufigkeit",
           "local_setup": "Lokalen Zugang ändern",
+          "local_tokens": "Tokens auf dem Gateway",
           "local_polling": "Lokale Abfragehäufigkeit und Status",
           "local_values": "Lokale Werte für vorhandene Entitäten",
           "back": "← Zurück"
@@ -512,7 +513,8 @@
         "title": "Zugang entfernen",
         "description": "Die Zugangsdaten werden entfernt. Anlagen und Entitäten bleiben erhalten, auch wenn dies der letzte Zugang ist. Ohne einen verfügbaren Zugang zeigen die Entitäten keine aktuellen Werte.",
         "data": {
-          "confirm": "Diesen Zugang entfernen"
+          "confirm": "Diesen Zugang entfernen",
+          "revoke": "Vorher einen Token dieser Integration auf dem Gateway widerrufen"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "Anlage neu durchsuchen",
         "description": "Durchsucht die Anlage noch einmal nach Bauteilen und Messwerten, über den Cloud-Zugang und den lokalen Zugang. Sinnvoll, nachdem Komponenten hinzugekommen sind oder sich geändert haben. Die Suche läuft mit der nächsten regulären Aktualisierung und innerhalb der üblichen Grenzen für Anfragen; sie entfernt keine Entität, und Messwerte, die sie nicht erneut findet, bleiben erhalten."
+      },
+      "local_tokens": {
+        "title": "Tokens auf dem Gateway",
+        "description": "Das Gateway führt **{count}** Tokens. Token-Werte werden nie angezeigt.\n\n**Diese Integration** (nach Erstellzeit):\n{own}\n\n**Andere Clients** (werden nie zum Widerruf angeboten):\n{others}\n\nDieser Zugang wurde zuletzt am {confirmed} eingerichtet. Jede Anmeldung mit dem Geräteaufkleber legt einen neuen Token an; ältere Tokens dieser Integration stammen daher meist von früheren Einrichtungen. Wähle einen zum Widerruf nach seiner Erstellzeit. Ohne Auswahl ändert sich nichts.",
+        "data": {
+          "token": "Zu widerrufender Token"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Token vor dem Entfernen widerrufen",
+        "description": "Das Gateway führt **{count}** Tokens. Token-Werte werden nie angezeigt.\n\n**Diese Integration** (nach Erstellzeit):\n{own}\n\n**Andere Clients** (werden nie zum Widerruf angeboten):\n{others}\n\nDieser Zugang wurde zuletzt am {confirmed} eingerichtet. Wähle den Token, der vor dem Entfernen des Zugangs widerrufen wird. Ohne Auswahl wird der Zugang entfernt, ohne etwas zu widerrufen. Um den Zugang zu behalten, schließe diesen Dialog.",
+        "data": {
+          "token": "Zu widerrufender Token"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Zertifikat der Anmeldung bestätigen",
+        "description": "Der Anmeldedienst unter **{host}:{port}** zeigt ein Zertifikat, das für diesen Zugang nie bestätigt wurde. Bestätige, dass dies dein Gateway ist, bevor der Token des Zugangs dorthin gesendet wird. Die Bestätigung gilt nur für diesen Dialog.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Ich bestätige dieses Gateway und sein Zertifikat"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Token widerrufen",
+        "description": "Den am {created} erstellten Token dieser Integration auf dem Gateway unter **{host}** widerrufen?\n\nDas Gateway löscht ihn endgültig. Ist es der Token, den dieser Zugang nutzt, endet der lokale Zugang: Er wird ausgeschaltet und braucht eine neue Anmeldung mit dem Geräteaufkleber. Die Liste wird direkt vorher neu gelesen, und die Anfrage wird nur einmal gesendet.",
+        "data": {
+          "confirm": "Diesen Token auf dem Gateway widerrufen"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "Die Cloud und der lokale Zugang beschreiben nicht dieselbe Anlage. Es wurde nichts gespeichert. Wähle diese Anlage ab, um sie weiter nur über ihren lokalen Zugang zu nutzen.",
       "local_plant_known": "Dieses Gateway gehört bereits zu einer eingerichteten Anlage. Wähle diese Anlage statt einer neuen.",
       "auth_expired": "Dieser Anmeldeversuch ist abgelaufen. Öffne den oben neu angezeigten SingleKey-ID-Link und melde dich erneut an.",
-      "auth_restart": "Dieser Anmeldeversuch kann nicht mehr verwendet werden. Öffne den oben neu angezeigten SingleKey-ID-Link und melde dich erneut an."
+      "auth_restart": "Dieser Anmeldeversuch kann nicht mehr verwendet werden. Öffne den oben neu angezeigten SingleKey-ID-Link und melde dich erneut an.",
+      "local_tokens_rejected": "Das Gateway hat den Token dieses Zugangs nicht angenommen. Es wurde nichts geändert.",
+      "local_tokens_forbidden": "Der Anmeldedienst des Gateways hat die Anfrage abgelehnt. Es wurde nichts geändert.",
+      "local_tokens_unsupported": "Dieses Gateway bietet keine Token-Liste an. Es wurde nichts geändert.",
+      "local_tokens_invalid": "Die Token-Liste des Gateways ließ sich nicht prüfen (unerwartete oder zu große Antwort). Es wurde nichts geändert."
     },
     "abort": {
       "no_notification_gateways": "Es ist keine Anlage konfiguriert.",
@@ -817,7 +851,15 @@
       "connection_saved": "Die Änderung wurde gespeichert.",
       "connection_removed": "Der Zugang wurde entfernt.",
       "notifications_saved": "Die Benachrichtigungseinstellungen wurden gespeichert.",
-      "rrc_program_saved": "Der Schaltpunkt wurde gespeichert und durch Zurücklesen bestätigt."
+      "rrc_program_saved": "Der Schaltpunkt wurde gespeichert und durch Zurücklesen bestätigt.",
+      "local_tokens_unavailable": "Dieser Zugang hat keinen nutzbaren gespeicherten Token für die Token-Liste. Richte den lokalen Zugang zuerst neu ein.",
+      "local_tokens_changed": "Die Token-Liste hat sich inzwischen geändert. Es wurde nichts widerrufen oder entfernt. Öffne die Liste erneut.",
+      "local_token_revoked": "Der Token wurde widerrufen; das Gateway führt ihn nicht mehr.",
+      "local_token_access_ended": "Es war der Token, den dieser Zugang genutzt hat. Der lokale Zugang ist beendet und wurde ausgeschaltet. Richte ihn mit dem Geräteaufkleber neu ein oder entferne ihn.",
+      "local_token_revoke_rejected": "Das Gateway hat den Widerruf abgelehnt; der Token ist weiter aufgeführt.",
+      "local_token_revoke_unclear": "Das Gateway hat den Widerruf nicht bestätigt. Es wurde nichts wiederholt. Öffne die Token-Liste erneut, um es zu prüfen.",
+      "local_token_revoked_removed": "Der Token wurde auf dem Gateway widerrufen und der Zugang entfernt.",
+      "local_token_not_removed": "Der Widerruf wurde nicht bestätigt, daher wurde der Zugang nicht entfernt. Prüfe die Token-Liste und entferne den Zugang dann erneut."
     },
     "progress": {
       "local_work": "Die lokale Verbindung wird geprüft. Bitte warte einen Moment."

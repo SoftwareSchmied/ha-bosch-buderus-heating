@@ -475,6 +475,7 @@
           "connection_discover": "Rechercher et sélectionner des appareils",
           "connection_polling": "Fréquence d'interrogation",
           "local_setup": "Modifier l'accès local",
+          "local_tokens": "Jetons sur la passerelle",
           "local_polling": "Fréquence et état de l'interrogation locale",
           "local_values": "Utiliser les valeurs locales pour les entités existantes",
           "back": "← Retour"
@@ -512,7 +513,8 @@
         "title": "Supprimer l'accès",
         "description": "Les identifiants seront supprimés. Les installations et les entités sont conservées, même s'il s'agit du dernier accès. Sans connexion disponible, les entités ne peuvent pas afficher de valeurs actuelles.",
         "data": {
-          "confirm": "Supprimer cet accès"
+          "confirm": "Supprimer cet accès",
+          "revoke": "Révoquer d'abord un jeton de cette intégration sur la passerelle"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "Rechercher à nouveau dans l'installation",
         "description": "Recherche à nouveau dans l'installation les composants et les valeurs, via l'accès cloud et l'accès local. Utilisez cette option après l'ajout ou la modification de composants. La recherche s'exécute lors de la prochaine mise à jour régulière et dans les limites habituelles de requêtes ; elle ne supprime jamais d'entité, et les valeurs qu'elle ne retrouve pas restent telles quelles."
+      },
+      "local_tokens": {
+        "title": "Jetons sur la passerelle",
+        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres clients** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Chaque connexion avec l'étiquette de l'appareil crée un nouveau jeton ; les jetons plus anciens de cette intégration proviennent donc généralement de configurations antérieures. Pour en révoquer un, choisissez-le d'après sa date de création. Sans choix, rien ne change.",
+        "data": {
+          "token": "Jeton à révoquer"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Révoquer un jeton avant la suppression",
+        "description": "La passerelle répertorie **{count}** jetons. Les valeurs des jetons ne sont jamais affichées.\n\n**Cette intégration** (par date de création) :\n{own}\n\n**Autres clients** (jamais proposés à la révocation) :\n{others}\n\nCet accès a été configuré pour la dernière fois le {confirmed}. Choisissez le jeton à révoquer avant la suppression de l'accès. Sans choix, l'accès est supprimé sans rien révoquer. Pour conserver l'accès, fermez cette boîte de dialogue.",
+        "data": {
+          "token": "Jeton à révoquer"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Confirmer le certificat de connexion",
+        "description": "Le service de connexion sur **{host}:{port}** présente un certificat qui n'a jamais été confirmé pour cet accès. Confirmez qu'il s'agit de votre passerelle avant que le jeton de l'accès y soit envoyé. La confirmation ne vaut que pour cette boîte de dialogue.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Je confirme cette passerelle et son certificat"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Révoquer le jeton",
+        "description": "Révoquer le jeton de cette intégration créé le {created} sur la passerelle à **{host}** ?\n\nLa passerelle le supprime définitivement. S'il s'agit du jeton utilisé par cet accès, l'accès local prend fin : l'accès est désactivé et nécessite une nouvelle connexion avec l'étiquette de l'appareil. La liste est relue juste avant, et la requête n'est envoyée qu'une seule fois.",
+        "data": {
+          "confirm": "Révoquer ce jeton sur la passerelle"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "Le cloud et l'accès local ne décrivent pas la même installation. Rien n'a été enregistré. Désélectionnez cette installation pour continuer à l'utiliser uniquement via son accès local.",
       "local_plant_known": "Cette passerelle appartient déjà à une installation configurée. Choisissez cette installation plutôt qu'une nouvelle.",
       "auth_expired": "Cette tentative de connexion a expiré. Ouvrez le nouveau lien SingleKey ID affiché ci-dessus et reconnectez-vous.",
-      "auth_restart": "Cette tentative de connexion ne peut plus être utilisée. Ouvrez le nouveau lien SingleKey ID affiché ci-dessus et reconnectez-vous."
+      "auth_restart": "Cette tentative de connexion ne peut plus être utilisée. Ouvrez le nouveau lien SingleKey ID affiché ci-dessus et reconnectez-vous.",
+      "local_tokens_rejected": "La passerelle n'a pas accepté le jeton de cet accès. Rien n'a été modifié.",
+      "local_tokens_forbidden": "Le service de connexion de la passerelle a refusé la requête. Rien n'a été modifié.",
+      "local_tokens_unsupported": "Cette passerelle ne fournit pas de liste de jetons. Rien n'a été modifié.",
+      "local_tokens_invalid": "La liste de jetons de la passerelle n'a pas pu être vérifiée (réponse inattendue ou trop volumineuse). Rien n'a été modifié."
     },
     "abort": {
       "no_notification_gateways": "Aucune installation de chauffage n'est configurée.",
@@ -817,7 +851,15 @@
       "connection_saved": "La modification a été enregistrée.",
       "connection_removed": "L'accès a été supprimé.",
       "notifications_saved": "Les paramètres de notification ont été enregistrés.",
-      "rrc_program_saved": "Le point de commutation a été enregistré et confirmé par relecture."
+      "rrc_program_saved": "Le point de commutation a été enregistré et confirmé par relecture.",
+      "local_tokens_unavailable": "Cet accès n'a pas de jeton enregistré utilisable pour la liste de jetons. Configurez d'abord à nouveau l'accès local.",
+      "local_tokens_changed": "La liste de jetons a changé entre-temps. Rien n'a été révoqué ni supprimé. Ouvrez à nouveau la liste.",
+      "local_token_revoked": "Le jeton a été révoqué ; la passerelle ne le répertorie plus.",
+      "local_token_access_ended": "C'était le jeton utilisé par cet accès. L'accès local a pris fin et l'accès a été désactivé. Configurez-le à nouveau avec l'étiquette de l'appareil ou supprimez-le.",
+      "local_token_revoke_rejected": "La passerelle a refusé la révocation ; le jeton figure toujours dans la liste.",
+      "local_token_revoke_unclear": "La passerelle n'a pas confirmé la révocation. Rien n'a été répété. Ouvrez à nouveau la liste de jetons pour vérifier.",
+      "local_token_revoked_removed": "Le jeton a été révoqué sur la passerelle et l'accès a été supprimé.",
+      "local_token_not_removed": "La révocation n'a pas été confirmée ; l'accès n'a donc pas été supprimé. Vérifiez la liste de jetons, puis supprimez à nouveau l'accès."
     },
     "progress": {
       "local_work": "Vérification de la connexion locale. Veuillez patienter."

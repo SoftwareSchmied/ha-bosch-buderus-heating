@@ -475,6 +475,7 @@
           "connection_discover": "Search and select devices",
           "connection_polling": "Polling frequency",
           "local_setup": "Change local access",
+          "local_tokens": "Tokens on the gateway",
           "local_polling": "Local polling frequency and status",
           "local_values": "Use local values for existing entities",
           "back": "← Back"
@@ -512,7 +513,8 @@
         "title": "Remove access",
         "description": "The credentials will be removed. Systems and entities are retained, even if this is the last access. Without an available connection, entities cannot show current values.",
         "data": {
-          "confirm": "Remove this access"
+          "confirm": "Remove this access",
+          "revoke": "First revoke a token of this integration on the gateway"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "Search the system again",
         "description": "Searches the system once more for parts and readings, through the cloud access and the local access. Use it after adding or changing components. The search runs with the next regular update and within the usual limits for requests; it never removes an entity, and readings it does not find again stay as they are."
+      },
+      "local_tokens": {
+        "title": "Tokens on the gateway",
+        "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other clients** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. Every sign-in with the device label creates a new token, so older tokens of this integration usually remain from earlier setups. To revoke one, choose it by its creation time. Without a choice nothing changes.",
+        "data": {
+          "token": "Token to revoke"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Revoke a token before removing",
+        "description": "The gateway lists **{count}** tokens. Token values are never shown.\n\n**This integration** (by creation time):\n{own}\n\n**Other clients** (never offered for revocation):\n{others}\n\nThis access was last set up on {confirmed}. Choose the token to revoke before the access is removed. Without a choice the access is removed without revoking anything. To keep the access, close this dialog.",
+        "data": {
+          "token": "Token to revoke"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Confirm the sign-in certificate",
+        "description": "The sign-in service at **{host}:{port}** shows a certificate that was never confirmed for this access. Confirm that this is your gateway before the access's token is sent there. The confirmation applies to this dialog only.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "I confirm this gateway and its certificate"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Revoke token",
+        "description": "Revoke the token of this integration created on {created} on the gateway at **{host}**?\n\nThe gateway deletes it for good. If it is the token this access uses, local access ends: the access is switched off and needs a new sign-in with the device label. The list is read again right before, and the request is sent only once.",
+        "data": {
+          "confirm": "Revoke this token on the gateway"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "The cloud and the local access do not describe the same system. Nothing was saved. Deselect this system to keep using it through its local access only.",
       "local_plant_known": "This gateway already belongs to a configured system. Choose that system instead of a new one.",
       "auth_expired": "This sign-in attempt has expired. Open the new SingleKey ID link shown above and sign in again.",
-      "auth_restart": "This sign-in attempt can no longer be used. Open the new SingleKey ID link shown above and sign in again."
+      "auth_restart": "This sign-in attempt can no longer be used. Open the new SingleKey ID link shown above and sign in again.",
+      "local_tokens_rejected": "The gateway did not accept the token of this access. Nothing was changed.",
+      "local_tokens_forbidden": "The gateway's sign-in service refused the request. Nothing was changed.",
+      "local_tokens_unsupported": "This gateway does not provide a token list. Nothing was changed.",
+      "local_tokens_invalid": "The gateway's token list could not be checked (unexpected or too large answer). Nothing was changed."
     },
     "abort": {
       "no_notification_gateways": "No heating system is configured.",
@@ -817,7 +851,15 @@
       "connection_saved": "The change was saved.",
       "connection_removed": "The access was removed.",
       "notifications_saved": "The notification settings were saved.",
-      "rrc_program_saved": "The switch point was saved and confirmed by reading it back."
+      "rrc_program_saved": "The switch point was saved and confirmed by reading it back.",
+      "local_tokens_unavailable": "This access has no usable stored token for the token list. Set up local access again first.",
+      "local_tokens_changed": "The token list changed in the meantime. Nothing was revoked or removed. Open the list again.",
+      "local_token_revoked": "The token was revoked; the gateway no longer lists it.",
+      "local_token_access_ended": "It was the token this access used. Local access has ended and the access was switched off. Set it up again with the device label, or remove it.",
+      "local_token_revoke_rejected": "The gateway refused the revocation; the token is still listed.",
+      "local_token_revoke_unclear": "The gateway did not confirm the revocation. Nothing was repeated. Open the token list again to check.",
+      "local_token_revoked_removed": "The token was revoked on the gateway and the access was removed.",
+      "local_token_not_removed": "The revocation was not confirmed, so the access was not removed. Check the token list, then remove the access again."
     },
     "progress": {
       "local_work": "Checking the local connection. Please wait."

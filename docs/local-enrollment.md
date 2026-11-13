@@ -133,7 +133,51 @@ access and **Change local access**. After confirming the new certificate, the
 current token can be kept; it is read again against the confirmed certificate
 before anything is saved, so no new token is created on the gateway. While the
 gateway refuses a resource (403), the access shows **access denied** instead of
-**not reachable**. Tokens are never revoked automatically.
+**not reachable**. Tokens are never revoked automatically: not when an access
+or the whole entry is removed, not when an attempt is discarded and not when a
+new token replaces an old one.
+
+## Tokens on the gateway
+
+Every sign-in with the device label creates another token on the gateway, and
+the gateway holds only a limited number of them. Once it is full, a new sign-in
+fails with the message about the full token list (507). Two actions in the
+options of a local access help with this. Both need a working stored token, so
+they are available only while a local access exists; after a 507 without any
+access the message stays as before.
+
+- **Tokens on the gateway** reads the token list once, when it is opened
+  (`GET /auth/token` on port 9442 with the access's token). It shows the number
+  of tokens and, for each, the client name and the creation time; token values
+  are never part of the answer, and the token IDs are not shown. The list is
+  not saved and does not appear in the log or in diagnostics. Client names come
+  from the gateway and are shown as literal text.
+- **Revoking a token** is offered only for entries with this integration's
+  client name (`Home Assistant Home Comfort`); tokens of other clients are
+  never offered. The list has no token values, so the dialog cannot tell which
+  of these entries the access itself uses. The user chooses by creation time;
+  the dialog shows when the access was last set up as a guide. The revocation
+  needs its own confirmation. Right before it, the list is read again, and
+  nothing is sent unless the chosen entry is still listed unchanged. Then
+  exactly one `POST /auth/revoke` (`token_id`, `usage_type=private`) is sent,
+  without any retry, and the list is read once more to confirm it. If the
+  gateway confirms neither way, the dialog says so and repeats nothing.
+- If the revoked token was the one the access uses, the gateway refuses the
+  read-back. The dialog then reports that local access has ended and switches
+  the access off, instead of leaving it failing; a new sign-in with the device
+  label sets it up again.
+- **Remove access** for a local access has an extra choice to revoke a token
+  of this integration first. Only with that choice is anything sent; the access
+  is removed only after the revocation was confirmed (or when no token is
+  chosen).
+
+All three requests use the confirmed certificate of the sign-in port and the
+shared [gateway budget](local-budget.md): they wait for an exclusive turn,
+respect its pauses and finish within its two-minute limit. The revocation is
+sent only while the remaining time still covers it and its read-back. An access
+set up with an entered token has no confirmed certificate for the sign-in port;
+the same certificate as on the confirmed data port is accepted, any other one
+needs a confirmation that is valid for the open dialog only.
 
 ## Validation
 
@@ -142,5 +186,13 @@ atomic files, reconstruction after restart, lost responses, cancellation, storag
 failure and concurrent attempts. Recovery is also exercised through fresh TLS
 resource reads and the existing configuration proposal. No real gateway tokens,
 appliance writes or installation changes are part of these tests.
+
+The token list and the revocation were tested the same way, against a
+synthetic gateway on the loopback interface: an empty, a full and an oversized
+list, unusable answers, refusals (401, 403, 404, 429, 503), a changed
+certificate, a paused access, a foreign entry and a disguised one, a list that
+changed before the revocation, a lost answer, a failed read-back, a refused
+revocation and the revocation of the access's own token. They have not been run
+against a real gateway yet.
 
 Protocol reference: [official K40/MX400 documentation](https://github.com/bosch-home-comfort/api-docs/blob/78e36b3b57e11ac6266558acba96c13bee88ceff/docs/k-40-rf.md).

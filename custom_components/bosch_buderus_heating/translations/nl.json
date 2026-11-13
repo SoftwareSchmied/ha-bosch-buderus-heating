@@ -475,6 +475,7 @@
           "connection_discover": "Apparaten zoeken en selecteren",
           "connection_polling": "Opvraagfrequentie",
           "local_setup": "Lokale toegang wijzigen",
+          "local_tokens": "Tokens op de gateway",
           "local_polling": "Lokale opvraagfrequentie en status",
           "local_values": "Lokale waarden gebruiken voor bestaande entiteiten",
           "back": "← Terug"
@@ -512,7 +513,8 @@
         "title": "Toegang verwijderen",
         "description": "De inloggegevens worden verwijderd. Installaties en entiteiten blijven behouden, ook als dit de laatste toegang is. Zonder beschikbare verbinding kunnen entiteiten geen actuele waarden tonen.",
         "data": {
-          "confirm": "Deze toegang verwijderen"
+          "confirm": "Deze toegang verwijderen",
+          "revoke": "Eerst een token van deze integratie op de gateway intrekken"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "De installatie opnieuw zoeken",
         "description": "Zoekt de installatie nog eens naar onderdelen en meetwaarden, via de cloudtoegang en de lokale toegang. Gebruik dit na het toevoegen of wijzigen van componenten. Het zoeken gebeurt bij de volgende reguliere update en binnen de gebruikelijke limieten voor verzoeken; er wordt nooit een entiteit verwijderd en meetwaarden die niet opnieuw worden gevonden, blijven zoals ze zijn."
+      },
+      "local_tokens": {
+        "title": "Tokens op de gateway",
+        "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere clients** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Elke aanmelding met het label op het apparaat maakt een nieuw token aan; oudere tokens van deze integratie zijn daarom meestal over van eerdere instellingen. Kies een token op aanmaaktijd om het in te trekken. Zonder keuze verandert er niets.",
+        "data": {
+          "token": "In te trekken token"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Token intrekken vóór het verwijderen",
+        "description": "De gateway heeft **{count}** tokens. Tokenwaarden worden nooit getoond.\n\n**Deze integratie** (op aanmaaktijd):\n{own}\n\n**Andere clients** (nooit aangeboden om in te trekken):\n{others}\n\nDeze toegang is voor het laatst ingesteld op {confirmed}. Kies het token dat wordt ingetrokken voordat de toegang wordt verwijderd. Zonder keuze wordt de toegang verwijderd zonder iets in te trekken. Sluit dit venster om de toegang te behouden.",
+        "data": {
+          "token": "In te trekken token"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Certificaat van de aanmelding bevestigen",
+        "description": "De aanmeldservice op **{host}:{port}** toont een certificaat dat voor deze toegang nooit is bevestigd. Bevestig dat dit je gateway is voordat het token van de toegang daarheen wordt gestuurd. De bevestiging geldt alleen voor dit venster.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Token intrekken",
+        "description": "Het token van deze integratie dat op {created} is aangemaakt intrekken op de gateway op **{host}**?\n\nDe gateway verwijdert het definitief. Als het het token is dat deze toegang gebruikt, eindigt de lokale toegang: de toegang wordt uitgeschakeld en heeft een nieuwe aanmelding met het label op het apparaat nodig. De lijst wordt vlak ervoor opnieuw gelezen en het verzoek wordt maar één keer verstuurd.",
+        "data": {
+          "confirm": "Dit token op de gateway intrekken"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "De cloud en de lokale toegang beschrijven niet dezelfde installatie. Er is niets opgeslagen. Deselecteer deze installatie om haar alleen via haar lokale toegang te blijven gebruiken.",
       "local_plant_known": "Deze gateway hoort al bij een geconfigureerde installatie. Kies die installatie in plaats van een nieuwe.",
       "auth_expired": "Deze aanmeldpoging is verlopen. Open de nieuwe SingleKey ID-link die hierboven wordt getoond en meld je opnieuw aan.",
-      "auth_restart": "Deze aanmeldpoging kan niet meer worden gebruikt. Open de nieuwe SingleKey ID-link die hierboven wordt getoond en meld je opnieuw aan."
+      "auth_restart": "Deze aanmeldpoging kan niet meer worden gebruikt. Open de nieuwe SingleKey ID-link die hierboven wordt getoond en meld je opnieuw aan.",
+      "local_tokens_rejected": "De gateway heeft het token van deze toegang niet geaccepteerd. Er is niets gewijzigd.",
+      "local_tokens_forbidden": "De aanmeldservice van de gateway heeft het verzoek geweigerd. Er is niets gewijzigd.",
+      "local_tokens_unsupported": "Deze gateway biedt geen tokenlijst. Er is niets gewijzigd.",
+      "local_tokens_invalid": "De tokenlijst van de gateway kon niet worden gecontroleerd (onverwacht of te groot antwoord). Er is niets gewijzigd."
     },
     "abort": {
       "no_notification_gateways": "Er is geen verwarmingsinstallatie geconfigureerd.",
@@ -817,7 +851,15 @@
       "connection_saved": "De wijziging is opgeslagen.",
       "connection_removed": "De toegang is verwijderd.",
       "notifications_saved": "De meldingsinstellingen zijn opgeslagen.",
-      "rrc_program_saved": "Het schakelpunt is opgeslagen en bevestigd door het terug te lezen."
+      "rrc_program_saved": "Het schakelpunt is opgeslagen en bevestigd door het terug te lezen.",
+      "local_tokens_unavailable": "Deze toegang heeft geen bruikbaar opgeslagen token voor de tokenlijst. Stel de lokale toegang eerst opnieuw in.",
+      "local_tokens_changed": "De tokenlijst is intussen gewijzigd. Er is niets ingetrokken of verwijderd. Open de lijst opnieuw.",
+      "local_token_revoked": "Het token is ingetrokken; de gateway vermeldt het niet meer.",
+      "local_token_access_ended": "Het was het token dat deze toegang gebruikte. De lokale toegang is beëindigd en de toegang is uitgeschakeld. Stel hem opnieuw in met het label op het apparaat of verwijder hem.",
+      "local_token_revoke_rejected": "De gateway heeft het intrekken geweigerd; het token staat nog in de lijst.",
+      "local_token_revoke_unclear": "De gateway heeft het intrekken niet bevestigd. Er is niets herhaald. Open de tokenlijst opnieuw om het te controleren.",
+      "local_token_revoked_removed": "Het token is op de gateway ingetrokken en de toegang is verwijderd.",
+      "local_token_not_removed": "Het intrekken is niet bevestigd, dus de toegang is niet verwijderd. Controleer de tokenlijst en verwijder de toegang daarna opnieuw."
     },
     "progress": {
       "local_work": "De lokale verbinding wordt gecontroleerd. Een moment geduld."

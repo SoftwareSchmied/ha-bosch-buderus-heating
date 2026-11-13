@@ -475,6 +475,7 @@
           "connection_discover": "Sök och välj enheter",
           "connection_polling": "Förfrågningsfrekvens",
           "local_setup": "Ändra lokal åtkomst",
+          "local_tokens": "Tokens på gatewayen",
           "local_polling": "Lokal förfrågningsfrekvens och status",
           "local_values": "Använd lokala värden för befintliga entiteter",
           "back": "← Tillbaka"
@@ -512,7 +513,8 @@
         "title": "Ta bort åtkomst",
         "description": "Inloggningsuppgifterna tas bort. Anläggningar och entiteter behålls, även om detta är den sista åtkomsten. Utan en tillgänglig anslutning kan entiteter inte visa aktuella värden.",
         "data": {
-          "confirm": "Ta bort den här åtkomsten"
+          "confirm": "Ta bort den här åtkomsten",
+          "revoke": "Återkalla först en token från den här integrationen på gatewayen"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "Sök igen i anläggningen",
         "description": "Söker i anläggningen en gång till efter delar och mätvärden, via molnåtkomsten och den lokala åtkomsten. Använd den efter att du har lagt till eller ändrat komponenter. Sökningen körs vid nästa regelbundna uppdatering och inom de vanliga gränserna för förfrågningar. Den tar aldrig bort en entitet, och mätvärden som den inte hittar igen förblir som de är."
+      },
+      "local_tokens": {
+        "title": "Tokens på gatewayen",
+        "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra klienter** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Varje inloggning med enhetsetiketten skapar en ny token, så äldre tokens från den här integrationen kommer oftast från tidigare konfigurationer. Välj en token efter dess skapandetid för att återkalla den. Utan ett val ändras ingenting.",
+        "data": {
+          "token": "Token som ska återkallas"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Återkalla en token före borttagning",
+        "description": "Gatewayen har **{count}** tokens. Tokenvärden visas aldrig.\n\n**Den här integrationen** (efter skapandetid):\n{own}\n\n**Andra klienter** (erbjuds aldrig för återkallelse):\n{others}\n\nDen här åtkomsten konfigurerades senast {confirmed}. Välj den token som ska återkallas innan åtkomsten tas bort. Utan ett val tas åtkomsten bort utan att något återkallas. Stäng den här dialogen för att behålla åtkomsten.",
+        "data": {
+          "token": "Token som ska återkallas"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Bekräfta inloggningscertifikatet",
+        "description": "Inloggningstjänsten på **{host}:{port}** visar ett certifikat som aldrig har bekräftats för den här åtkomsten. Bekräfta att detta är din gateway innan åtkomstens token skickas dit. Bekräftelsen gäller bara den här dialogen.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Jag bekräftar den här gatewayen och dess certifikat"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Återkalla token",
+        "description": "Återkalla token från den här integrationen, skapad {created}, på gatewayen på **{host}**?\n\nGatewayen raderar den permanent. Om det är den token som den här åtkomsten använder upphör den lokala åtkomsten: åtkomsten stängs av och behöver en ny inloggning med enhetsetiketten. Listan läses igen precis innan, och begäran skickas bara en gång.",
+        "data": {
+          "confirm": "Återkalla den här token på gatewayen"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "Molnet och den lokala åtkomsten beskriver inte samma anläggning. Inget sparades. Avmarkera den här anläggningen för att fortsätta använda den bara via dess lokala åtkomst.",
       "local_plant_known": "Den här gatewayen tillhör redan en konfigurerad anläggning. Välj den anläggningen i stället för en ny.",
       "auth_expired": "Det här inloggningsförsöket har gått ut. Öppna den nya SingleKey ID-länken som visas ovan och logga in igen.",
-      "auth_restart": "Det här inloggningsförsöket kan inte längre användas. Öppna den nya SingleKey ID-länken som visas ovan och logga in igen."
+      "auth_restart": "Det här inloggningsförsöket kan inte längre användas. Öppna den nya SingleKey ID-länken som visas ovan och logga in igen.",
+      "local_tokens_rejected": "Gatewayen godtog inte token för den här åtkomsten. Ingenting ändrades.",
+      "local_tokens_forbidden": "Gatewayens inloggningstjänst avvisade begäran. Ingenting ändrades.",
+      "local_tokens_unsupported": "Den här gatewayen erbjuder ingen tokenlista. Ingenting ändrades.",
+      "local_tokens_invalid": "Gatewayens tokenlista kunde inte kontrolleras (oväntat eller för stort svar). Ingenting ändrades."
     },
     "abort": {
       "no_notification_gateways": "Inget värmesystem är konfigurerat.",
@@ -817,7 +851,15 @@
       "connection_saved": "Ändringen sparades.",
       "connection_removed": "Åtkomsten togs bort.",
       "notifications_saved": "Aviseringsinställningarna sparades.",
-      "rrc_program_saved": "Kopplingspunkten sparades och bekräftades genom återläsning."
+      "rrc_program_saved": "Kopplingspunkten sparades och bekräftades genom återläsning.",
+      "local_tokens_unavailable": "Den här åtkomsten har ingen användbar sparad token för tokenlistan. Konfigurera den lokala åtkomsten igen först.",
+      "local_tokens_changed": "Tokenlistan har ändrats under tiden. Ingenting återkallades eller togs bort. Öppna listan igen.",
+      "local_token_revoked": "Token återkallades; gatewayen visar den inte längre.",
+      "local_token_access_ended": "Det var den token som den här åtkomsten använde. Den lokala åtkomsten har upphört och åtkomsten stängdes av. Konfigurera den igen med enhetsetiketten, eller ta bort den.",
+      "local_token_revoke_rejected": "Gatewayen avvisade återkallelsen; token finns kvar i listan.",
+      "local_token_revoke_unclear": "Gatewayen bekräftade inte återkallelsen. Ingenting upprepades. Öppna tokenlistan igen för att kontrollera.",
+      "local_token_revoked_removed": "Token återkallades på gatewayen och åtkomsten togs bort.",
+      "local_token_not_removed": "Återkallelsen bekräftades inte, så åtkomsten togs inte bort. Kontrollera tokenlistan och ta sedan bort åtkomsten igen."
     },
     "progress": {
       "local_work": "Kontrollerar den lokala anslutningen. Vänta."

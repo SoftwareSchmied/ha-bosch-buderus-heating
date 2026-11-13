@@ -475,6 +475,7 @@
           "connection_discover": "Vyhľadať a vybrať zariadenia",
           "connection_polling": "Frekvencia dopytovania",
           "local_setup": "Zmeniť lokálny prístup",
+          "local_tokens": "Tokeny na bráne",
           "local_polling": "Frekvencia dopytovania a stav lokálneho prístupu",
           "local_values": "Použiť lokálne hodnoty pre existujúce entity",
           "back": "← Späť"
@@ -512,7 +513,8 @@
         "title": "Odstránenie prístupu",
         "description": "Prihlasovacie údaje sa odstránia. Systémy a entity zostanú zachované, aj keď ide o posledný prístup. Bez dostupného pripojenia entity nemôžu zobrazovať aktuálne hodnoty.",
         "data": {
-          "confirm": "Odstrániť tento prístup"
+          "confirm": "Odstrániť tento prístup",
+          "revoke": "Najprv odvolať token tejto integrácie na bráne"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "Znova vyhľadať systém",
         "description": "Znova vyhľadá v systéme súčasti a hodnoty, cez cloudový aj lokálny prístup. Použite to po pridaní alebo zmene komponentov. Vyhľadávanie prebehne pri najbližšej pravidelnej aktualizácii a v rámci obvyklých limitov pre požiadavky; nikdy neodstráni žiadnu entitu a hodnoty, ktoré sa znova nenájdu, zostanú také, aké sú."
+      },
+      "local_tokens": {
+        "title": "Tokeny na bráne",
+        "description": "Brána vedie **{count}** tokenov. Hodnoty tokenov sa nikdy nezobrazujú.\n\n**Táto integrácia** (podľa času vytvorenia):\n{own}\n\n**Iní klienti** (nikdy sa neponúkajú na odvolanie):\n{others}\n\nTento prístup bol naposledy nastavený {confirmed}. Každé prihlásenie pomocou štítka zariadenia vytvorí nový token, staršie tokeny tejto integrácie preto zvyčajne zostávajú z predchádzajúcich nastavení. Ak chcete niektorý odvolať, vyberte ho podľa času vytvorenia. Bez výberu sa nič nezmení.",
+        "data": {
+          "token": "Token na odvolanie"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Odvolanie tokenu pred odstránením",
+        "description": "Brána vedie **{count}** tokenov. Hodnoty tokenov sa nikdy nezobrazujú.\n\n**Táto integrácia** (podľa času vytvorenia):\n{own}\n\n**Iní klienti** (nikdy sa neponúkajú na odvolanie):\n{others}\n\nTento prístup bol naposledy nastavený {confirmed}. Vyberte token, ktorý sa odvolá pred odstránením prístupu. Bez výberu sa prístup odstráni bez toho, aby sa čokoľvek odvolalo. Ak chcete prístup zachovať, zatvorte tento dialóg.",
+        "data": {
+          "token": "Token na odvolanie"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Potvrdenie certifikátu prihlasovacej služby",
+        "description": "Prihlasovacia služba na **{host}:{port}** predkladá certifikát, ktorý pre tento prístup nikdy nebol potvrdený. Skôr než sa tam odošle token prístupu, potvrďte, že ide o vašu bránu. Potvrdenie platí len pre tento dialóg.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Potvrdzujem túto bránu a jej certifikát"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Odvolanie tokenu",
+        "description": "Odvolať token tejto integrácie vytvorený {created} na bráne **{host}**?\n\nBrána ho natrvalo odstráni. Ak ide o token, ktorý tento prístup používa, lokálny prístup skončí: prístup sa vypne a bude potrebovať nové prihlásenie pomocou štítka zariadenia. Zoznam sa tesne predtým načíta znova a požiadavka sa odošle len raz.",
+        "data": {
+          "confirm": "Odvolať tento token na bráne"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "Cloud a lokálny prístup nepopisujú ten istý systém. Nič sa neuložilo. Zrušte výber tohto systému, ak ho chcete naďalej používať iba cez lokálny prístup.",
       "local_plant_known": "Táto brána už patrí do nakonfigurovaného systému. Vyberte tento systém namiesto nového.",
       "auth_expired": "Platnosť tohto pokusu o prihlásenie vypršala. Otvorte nový odkaz SingleKey ID zobrazený vyššie a prihláste sa znova.",
-      "auth_restart": "Tento pokus o prihlásenie sa už nedá použiť. Otvorte nový odkaz SingleKey ID zobrazený vyššie a prihláste sa znova."
+      "auth_restart": "Tento pokus o prihlásenie sa už nedá použiť. Otvorte nový odkaz SingleKey ID zobrazený vyššie a prihláste sa znova.",
+      "local_tokens_rejected": "Brána neprijala token tohto prístupu. Nič sa nezmenilo.",
+      "local_tokens_forbidden": "Prihlasovacia služba brány požiadavku odmietla. Nič sa nezmenilo.",
+      "local_tokens_unsupported": "Táto brána neposkytuje zoznam tokenov. Nič sa nezmenilo.",
+      "local_tokens_invalid": "Zoznam tokenov brány sa nepodarilo overiť (neočakávaná alebo príliš veľká odpoveď). Nič sa nezmenilo."
     },
     "abort": {
       "no_notification_gateways": "Nie je nakonfigurovaný žiadny vykurovací systém.",
@@ -817,7 +851,15 @@
       "connection_saved": "Zmena bola uložená.",
       "connection_removed": "Prístup bol odstránený.",
       "notifications_saved": "Nastavenia upozornení boli uložené.",
-      "rrc_program_saved": "Spínací bod bol uložený a potvrdený spätným načítaním."
+      "rrc_program_saved": "Spínací bod bol uložený a potvrdený spätným načítaním.",
+      "local_tokens_unavailable": "Tento prístup nemá použiteľný uložený token pre zoznam tokenov. Najprv znova nastavte lokálny prístup.",
+      "local_tokens_changed": "Zoznam tokenov sa medzitým zmenil. Nič nebolo odvolané ani odstránené. Otvorte zoznam znova.",
+      "local_token_revoked": "Token bol odvolaný; brána ho už nevedie.",
+      "local_token_access_ended": "Bol to token, ktorý tento prístup používal. Lokálny prístup skončil a prístup bol vypnutý. Nastavte ho znova pomocou štítka zariadenia alebo ho odstráňte.",
+      "local_token_revoke_rejected": "Brána odvolanie odmietla; token je stále v zozname.",
+      "local_token_revoke_unclear": "Brána odvolanie nepotvrdila. Nič sa neopakovalo. Na kontrolu otvorte zoznam tokenov znova.",
+      "local_token_revoked_removed": "Token bol na bráne odvolaný a prístup bol odstránený.",
+      "local_token_not_removed": "Odvolanie nebolo potvrdené, preto prístup nebol odstránený. Skontrolujte zoznam tokenov a potom prístup odstráňte znova."
     },
     "progress": {
       "local_work": "Kontroluje sa lokálne pripojenie. Čakajte, prosím."

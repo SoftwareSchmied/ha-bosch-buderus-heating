@@ -475,6 +475,7 @@
           "connection_discover": "Cerca e seleziona i dispositivi",
           "connection_polling": "Frequenza di interrogazione",
           "local_setup": "Modifica accesso locale",
+          "local_tokens": "Token sul gateway",
           "local_polling": "Frequenza di interrogazione locale e stato",
           "local_values": "Usa i valori locali per le entità esistenti",
           "back": "← Indietro"
@@ -512,7 +513,8 @@
         "title": "Rimuovi accesso",
         "description": "Le credenziali verranno rimosse. Impianti ed entità vengono conservati, anche se questo è l'ultimo accesso. Senza una connessione disponibile, le entità non possono mostrare valori aggiornati.",
         "data": {
-          "confirm": "Rimuovi questo accesso"
+          "confirm": "Rimuovi questo accesso",
+          "revoke": "Revoca prima un token di questa integrazione sul gateway"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "Cerca di nuovo nell'impianto",
         "description": "Cerca ancora una volta nell'impianto componenti e valori, tramite l'accesso cloud e l'accesso locale. Usalo dopo aver aggiunto o modificato dei componenti. La ricerca viene eseguita con il prossimo aggiornamento regolare e nei limiti consueti per le richieste; non rimuove mai un'entità e i valori che non vengono ritrovati restano come sono."
+      },
+      "local_tokens": {
+        "title": "Token sul gateway",
+        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altri client** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Ogni login con l'etichetta del dispositivo crea un nuovo token, quindi i token più vecchi di questa integrazione di solito provengono da configurazioni precedenti. Per revocarne uno, sceglilo in base alla data di creazione. Senza una scelta non cambia nulla.",
+        "data": {
+          "token": "Token da revocare"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Revoca un token prima della rimozione",
+        "description": "Il gateway elenca **{count}** token. I valori dei token non vengono mai mostrati.\n\n**Questa integrazione** (per data di creazione):\n{own}\n\n**Altri client** (mai proposti per la revoca):\n{others}\n\nQuesto accesso è stato configurato l'ultima volta il {confirmed}. Scegli il token da revocare prima di rimuovere l'accesso. Senza una scelta l'accesso viene rimosso senza revocare nulla. Per mantenere l'accesso, chiudi questa finestra.",
+        "data": {
+          "token": "Token da revocare"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Conferma il certificato del login",
+        "description": "Il servizio di login su **{host}:{port}** presenta un certificato mai confermato per questo accesso. Conferma che si tratta del tuo gateway prima che vi venga inviato il token dell'accesso. La conferma vale solo per questa finestra.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Confermo questo gateway e il suo certificato"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Revoca token",
+        "description": "Revocare il token di questa integrazione creato il {created} sul gateway su **{host}**?\n\nIl gateway lo elimina definitivamente. Se è il token usato da questo accesso, l'accesso locale termina: l'accesso viene disattivato e richiede un nuovo login con l'etichetta del dispositivo. L'elenco viene riletto subito prima e la richiesta viene inviata una sola volta.",
+        "data": {
+          "confirm": "Revoca questo token sul gateway"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "Il cloud e l'accesso locale non descrivono lo stesso impianto. Non è stato salvato nulla. Deseleziona questo impianto per continuare a usarlo solo tramite il suo accesso locale.",
       "local_plant_known": "Questo gateway appartiene già a un impianto configurato. Scegli quell'impianto invece di uno nuovo.",
       "auth_expired": "Questo tentativo di login è scaduto. Apri il nuovo link SingleKey ID mostrato sopra ed effettua di nuovo il login.",
-      "auth_restart": "Questo tentativo di login non può più essere usato. Apri il nuovo link SingleKey ID mostrato sopra ed effettua di nuovo il login."
+      "auth_restart": "Questo tentativo di login non può più essere usato. Apri il nuovo link SingleKey ID mostrato sopra ed effettua di nuovo il login.",
+      "local_tokens_rejected": "Il gateway non ha accettato il token di questo accesso. Non è stato modificato nulla.",
+      "local_tokens_forbidden": "Il servizio di login del gateway ha rifiutato la richiesta. Non è stato modificato nulla.",
+      "local_tokens_unsupported": "Questo gateway non fornisce un elenco dei token. Non è stato modificato nulla.",
+      "local_tokens_invalid": "Non è stato possibile verificare l'elenco dei token del gateway (risposta inattesa o troppo grande). Non è stato modificato nulla."
     },
     "abort": {
       "no_notification_gateways": "Nessun impianto di riscaldamento configurato.",
@@ -817,7 +851,15 @@
       "connection_saved": "La modifica è stata salvata.",
       "connection_removed": "L'accesso è stato rimosso.",
       "notifications_saved": "Le impostazioni delle notifiche sono state salvate.",
-      "rrc_program_saved": "Il punto di commutazione è stato salvato e confermato rileggendolo."
+      "rrc_program_saved": "Il punto di commutazione è stato salvato e confermato rileggendolo.",
+      "local_tokens_unavailable": "Questo accesso non ha un token salvato utilizzabile per l'elenco dei token. Configura prima di nuovo l'accesso locale.",
+      "local_tokens_changed": "Nel frattempo l'elenco dei token è cambiato. Non è stato revocato né rimosso nulla. Apri di nuovo l'elenco.",
+      "local_token_revoked": "Il token è stato revocato; il gateway non lo elenca più.",
+      "local_token_access_ended": "Era il token usato da questo accesso. L'accesso locale è terminato e l'accesso è stato disattivato. Configuralo di nuovo con l'etichetta del dispositivo oppure rimuovilo.",
+      "local_token_revoke_rejected": "Il gateway ha rifiutato la revoca; il token è ancora elencato.",
+      "local_token_revoke_unclear": "Il gateway non ha confermato la revoca. Non è stato ripetuto nulla. Apri di nuovo l'elenco dei token per verificare.",
+      "local_token_revoked_removed": "Il token è stato revocato sul gateway e l'accesso è stato rimosso.",
+      "local_token_not_removed": "La revoca non è stata confermata, quindi l'accesso non è stato rimosso. Controlla l'elenco dei token, poi rimuovi di nuovo l'accesso."
     },
     "progress": {
       "local_work": "Verifica della connessione locale in corso. Attendi."

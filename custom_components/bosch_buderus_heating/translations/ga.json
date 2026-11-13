@@ -475,6 +475,7 @@
           "connection_discover": "Cuardaigh agus roghnaigh gléasanna",
           "connection_polling": "Minicíocht fiosraithe",
           "local_setup": "Athraigh rochtain áitiúil",
+          "local_tokens": "Comharthaí ar an ngeata",
           "local_polling": "Minicíocht fiosraithe áitiúil agus stádas",
           "local_values": "Úsáid luachanna áitiúla d'aonáin atá ann cheana",
           "back": "← Siar"
@@ -512,7 +513,8 @@
         "title": "Bain rochtain",
         "description": "Bainfear na dintiúir. Coinnítear córais agus aonáin, fiú más í seo an rochtain dheireanach. Gan nasc atá ar fáil, ní féidir le haonáin luachanna reatha a thaispeáint.",
         "data": {
-          "confirm": "Bain an rochtain seo"
+          "confirm": "Bain an rochtain seo",
+          "revoke": "Cúlghair comhartha den chomhtháthú seo ar an ngeata ar dtús"
         }
       },
       "connection_polling": {
@@ -654,6 +656,34 @@
       "rescan": {
         "title": "Cuardaigh an córas arís",
         "description": "Cuardaíonn sé seo an córas uair amháin eile le haghaidh páirteanna agus léamh, tríd an rochtain néil agus an rochtain áitiúil. Úsáid é tar éis comhpháirteanna a chur leis nó a athrú. Ritheann an cuardach leis an gcéad nuashonrú rialta eile agus laistigh de na teorainneacha is gnách d'iarratais; ní bhaineann sé aonán riamh, agus fanann léamh nach bhfaigheann sé arís mar atá siad."
+      },
+      "local_tokens": {
+        "title": "Comharthaí ar an ngeata",
+        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Cliaint eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Cruthaíonn gach síniú isteach leis an lipéad gléis comhartha nua, mar sin is ó shocruithe níos luaithe a thagann comharthaí níos sine an chomhtháthaithe seo de ghnáth. Chun ceann a chúlghairm, roghnaigh é de réir a ama cruthaithe. Gan rogha ní athraíonn aon rud.",
+        "data": {
+          "token": "Comhartha le cúlghairm"
+        }
+      },
+      "local_tokens_remove": {
+        "title": "Cúlghair comhartha sula mbaintear é",
+        "description": "Tá **{count}** comhartha ar liosta an gheata. Ní thaispeántar luachanna na gcomharthaí riamh.\n\n**An comhtháthú seo** (de réir am cruthaithe):\n{own}\n\n**Cliaint eile** (ní thairgtear riamh le cúlghairm):\n{others}\n\nSocraíodh an rochtain seo den uair dheireanach ar {confirmed}. Roghnaigh an comhartha a chúlghairfear sula mbaintear an rochtain. Gan rogha, baintear an rochtain gan aon rud a chúlghairm. Chun an rochtain a choinneáil, dún an dialóg seo.",
+        "data": {
+          "token": "Comhartha le cúlghairm"
+        }
+      },
+      "local_tokens_certificate": {
+        "title": "Deimhnigh deimhniú an tsínithe isteach",
+        "description": "Taispeánann an tseirbhís síniú isteach ag **{host}:{port}** deimhniú nár deimhníodh riamh don rochtain seo. Deimhnigh gurb é seo do gheata sula seoltar comhartha na rochtana ann. Ní bhaineann an deimhniú ach leis an dialóg seo.\n\nSHA-256: `{fingerprint}`",
+        "data": {
+          "confirm": "Deimhním an geata seo agus a dheimhniú"
+        }
+      },
+      "local_token_revoke": {
+        "title": "Cúlghair comhartha",
+        "description": "An bhfuil tú ag iarraidh comhartha an chomhtháthaithe seo a cruthaíodh ar {created} a chúlghairm ar an ngeata ag **{host}**?\n\nScriosann an geata é go buan. Más é an comhartha a úsáideann an rochtain seo é, críochnaíonn an rochtain áitiúil: múchtar an rochtain agus teastaíonn síniú isteach nua leis an lipéad gléis. Léitear an liosta arís díreach roimhe sin, agus ní sheoltar an t-iarratas ach uair amháin.",
+        "data": {
+          "confirm": "Cúlghair an comhartha seo ar an ngeata"
+        }
       }
     },
     "error": {
@@ -760,7 +790,11 @@
       "cloud_local_first_conflict": "Ní chuireann an néal agus an rochtain áitiúil cur síos ar an gcóras céanna. Níor sábháladh aon rud. Díroghnaigh an córas seo chun leanúint á úsáid trína rochtain áitiúil amháin.",
       "local_plant_known": "Baineann an geata seo le córas cumraithe cheana. Roghnaigh an córas sin in ionad ceann nua.",
       "auth_expired": "Tá an iarracht shínithe isteach seo imithe in éag. Oscail an nasc nua SingleKey ID a thaispeántar thuas agus sínigh isteach arís.",
-      "auth_restart": "Ní féidir an iarracht shínithe isteach seo a úsáid a thuilleadh. Oscail an nasc nua SingleKey ID a thaispeántar thuas agus sínigh isteach arís."
+      "auth_restart": "Ní féidir an iarracht shínithe isteach seo a úsáid a thuilleadh. Oscail an nasc nua SingleKey ID a thaispeántar thuas agus sínigh isteach arís.",
+      "local_tokens_rejected": "Níor ghlac an geata le comhartha na rochtana seo. Níor athraíodh aon rud.",
+      "local_tokens_forbidden": "Dhiúltaigh seirbhís síniú isteach an gheata don iarratas. Níor athraíodh aon rud.",
+      "local_tokens_unsupported": "Ní sholáthraíonn an geata seo liosta comharthaí. Níor athraíodh aon rud.",
+      "local_tokens_invalid": "Níorbh fhéidir liosta comharthaí an gheata a sheiceáil (freagra gan choinne nó rómhór). Níor athraíodh aon rud."
     },
     "abort": {
       "no_notification_gateways": "Níl aon chóras téimh cumraithe.",
@@ -817,7 +851,15 @@
       "connection_saved": "Sábháladh an t-athrú.",
       "connection_removed": "Baineadh an rochtain.",
       "notifications_saved": "Sábháladh na socruithe fógraí.",
-      "rrc_program_saved": "Sábháladh an pointe aistrithe agus deimhníodh é trína léamh ar ais."
+      "rrc_program_saved": "Sábháladh an pointe aistrithe agus deimhníodh é trína léamh ar ais.",
+      "local_tokens_unavailable": "Níl comhartha stóráilte inúsáidte ag an rochtain seo don liosta comharthaí. Socraigh an rochtain áitiúil arís ar dtús.",
+      "local_tokens_changed": "D'athraigh liosta na gcomharthaí idir an dá linn. Níor cúlghaireadh ná níor baineadh aon rud. Oscail an liosta arís.",
+      "local_token_revoked": "Cúlghaireadh an comhartha; níl sé ar liosta an gheata a thuilleadh.",
+      "local_token_access_ended": "Ba é sin an comhartha a d'úsáid an rochtain seo. Tá deireadh leis an rochtain áitiúil agus múchadh an rochtain. Socraigh arís í leis an lipéad gléis, nó bain í.",
+      "local_token_revoke_rejected": "Dhiúltaigh an geata don chúlghairm; tá an comhartha fós ar an liosta.",
+      "local_token_revoke_unclear": "Níor dheimhnigh an geata an chúlghairm. Níor athdhéanadh aon rud. Oscail liosta na gcomharthaí arís chun é a sheiceáil.",
+      "local_token_revoked_removed": "Cúlghaireadh an comhartha ar an ngeata agus baineadh an rochtain.",
+      "local_token_not_removed": "Níor deimhníodh an chúlghairm, mar sin níor baineadh an rochtain. Seiceáil liosta na gcomharthaí, ansin bain an rochtain arís."
     },
     "progress": {
       "local_work": "Ag seiceáil an naisc áitiúil. Fan, le do thoil."
