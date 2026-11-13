@@ -140,7 +140,7 @@
     "DHW": "CWU",
     "disabled": "wyłączony",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Odrzucenie tego powiadomienia nie potwierdza ani nie resetuje usterki w instalacji grzewczej.",
-    "Drain pan temperature (TA4)": "Temperatura tacy ociekowej (TA4)",
+    "Drip pan temperature (TA4)": "Temperatura tacy ociekowej (TA4)",
     "Drip pan heater": "Grzałka tacy ociekowej",
     "Eco start temperature": "Temperatura startowa Eco",
     "Eco+ start temperature": "Temperatura startowa Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Wersja oprogramowania układowego",
     "First detected": "Pierwsze wykrycie",
     "Flow temperature limit": "Limit temperatury zasilania",
-    "Four-way valve": "Zawór 4-drogowy",
+    "4-way valve": "Zawór 4-drogowy",
     "Fresh-water primary pump": "Pompa pierwotna wody świeżej",
     "Gas flow": "Przepływ gazu",
     "Gas heating (kWh)": "Gaz – grzanie (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Prędkość nagrzewania",
     "Heating": "Grzanie",
     "Heating circuit": "Obieg grzewczy",
-    "Heating circuit 1 flow rate (PC1)": "Przepływ w obiegu grzewczym 1 (PC1)",
-    "Heating circuit 1 pump (PC1)": "Pompa obiegu grzewczego 1 (PC1)",
+    "Flow rate HC1 (PC1)": "Przepływ w obiegu grzewczym 1 (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Pompa obiegu grzewczego 1 (PC1)",
     "Heating circuit pump": "Pompa obiegu grzewczego",
     "Heating curve base point": "Punkt początkowy krzywej grzewczej",
     "Heating curve end point": "Punkt końcowy krzywej grzewczej",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: usterki rozwiązane",
     "{name}: heating system fault": "{name}: usterka instalacji grzewczej",
     "{name}: heating system notifications": "{name}: komunikaty instalacji grzewczej",
-    "{name}: notifications cleared": "{name}: komunikaty zakończone"
+    "{name}: notifications cleared": "{name}: komunikaty zakończone",
+    "Primary flow rate": "Przepływ pierwotny",
+    "Current heating/cooling status (signal)": "Bieżący stan grzania/chłodzenia (sygnał)",
+    "Cylinder temperature (signal)": "Temperatura zasobnika (sygnał)",
+    "Outdoor temperature (signal)": "Temperatura zewnętrzna (sygnał)",
+    "Hot water heat-up active": "Podgrzewanie ciepłej wody użytkowej aktywne"
   }
 }

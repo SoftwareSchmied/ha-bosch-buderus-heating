@@ -140,7 +140,7 @@
     "DHW": "VV",
     "disabled": "deaktiveret",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Hvis du afviser denne notifikation, kvitteres der ikke for en fejl på varmeanlægget, og den nulstilles ikke.",
-    "Drain pan temperature (TA4)": "Temperatur i drypbakke (TA4)",
+    "Drip pan temperature (TA4)": "Temperatur i drypbakke (TA4)",
     "Drip pan heater": "Drypbakkevarmer",
     "Eco start temperature": "Starttemperatur for Eco",
     "Eco+ start temperature": "Starttemperatur for Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Firmwareversion",
     "First detected": "Første gang opdaget",
     "Flow temperature limit": "Grænse for fremløbstemperatur",
-    "Four-way valve": "4-vejsventil",
+    "4-way valve": "4-vejsventil",
     "Fresh-water primary pump": "Primær pumpe til friskvand",
     "Gas flow": "Gasflow",
     "Gas heating (kWh)": "Gas: til opvarmning (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Opvarmningshastighed",
     "Heating": "Opvarmning",
     "Heating circuit": "Varmekreds",
-    "Heating circuit 1 flow rate (PC1)": "Varmekreds 1 flow (PC1)",
-    "Heating circuit 1 pump (PC1)": "Varmekreds 1 pumpe (PC1)",
+    "Flow rate HC1 (PC1)": "Varmekreds 1 flow (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Varmekreds 1 pumpe (PC1)",
     "Heating circuit pump": "Varmekredspumpe",
     "Heating curve base point": "Varmekurvens startpunkt",
     "Heating curve end point": "Varmekurvens slutpunkt",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: fejl løst",
     "{name}: heating system fault": "{name}: fejl i varmeanlægget",
     "{name}: heating system notifications": "{name}: notifikationer fra varmeanlægget",
-    "{name}: notifications cleared": "{name}: notifikationer afsluttet"
+    "{name}: notifications cleared": "{name}: notifikationer afsluttet",
+    "Primary flow rate": "Primært flow",
+    "Current heating/cooling status (signal)": "Aktuel status for opvarmning/køling (signal)",
+    "Cylinder temperature (signal)": "Beholdertemperatur (signal)",
+    "Outdoor temperature (signal)": "Udetemperatur (signal)",
+    "Hot water heat-up active": "Opvarmning af varmt brugsvand aktiv"
   }
 }

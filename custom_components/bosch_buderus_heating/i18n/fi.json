@@ -140,7 +140,7 @@
     "DHW": "LKV",
     "disabled": "ei käytössä",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Tämän ilmoituksen sulkeminen ei kuittaa eikä nollaa lämmitysjärjestelmän vikaa.",
-    "Drain pan temperature (TA4)": "Valutusastian lämpötila (TA4)",
+    "Drip pan temperature (TA4)": "Valutusastian lämpötila (TA4)",
     "Drip pan heater": "Valutusastian lämmitin",
     "Eco start temperature": "Eco-käynnistyslämpötila",
     "Eco+ start temperature": "Eco+-käynnistyslämpötila",
@@ -188,7 +188,7 @@
     "Firmware version": "Laiteohjelmistoversio",
     "First detected": "Havaittu ensimmäisen kerran",
     "Flow temperature limit": "Menolämpötilan raja",
-    "Four-way valve": "Nelitieventtiili",
+    "4-way valve": "4-tieventtiili",
     "Fresh-water primary pump": "Tuoreveden primääripumppu",
     "Gas flow": "Kaasuvirtaus",
     "Gas heating (kWh)": "Kaasu: lämmitykseen (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Lämmitysnopeus",
     "Heating": "Lämmitys",
     "Heating circuit": "Lämmityspiiri",
-    "Heating circuit 1 flow rate (PC1)": "Lämmityspiirin 1 virtaama (PC1)",
-    "Heating circuit 1 pump (PC1)": "Lämmityspiirin 1 pumppu (PC1)",
+    "Flow rate HC1 (PC1)": "Lämmityspiirin 1 virtaama (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Lämmityspiirin 1 pumppu (PC1)",
     "Heating circuit pump": "Lämmityspiirin pumppu",
     "Heating curve base point": "Lämmityskäyrän alkupiste",
     "Heating curve end point": "Lämmityskäyrän loppupiste",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: viat ratkaistu",
     "{name}: heating system fault": "{name}: lämmitysjärjestelmän vika",
     "{name}: heating system notifications": "{name}: lämmitysjärjestelmän ilmoitukset",
-    "{name}: notifications cleared": "{name}: ilmoitukset päättyneet"
+    "{name}: notifications cleared": "{name}: ilmoitukset päättyneet",
+    "Primary flow rate": "Primääripiirin virtaama",
+    "Current heating/cooling status (signal)": "Nykyinen lämmitys-/jäähdytystila (signaali)",
+    "Cylinder temperature (signal)": "Varaajan lämpötila (signaali)",
+    "Outdoor temperature (signal)": "Ulkolämpötila (signaali)",
+    "Hot water heat-up active": "Lämpimän käyttöveden lämmitys käynnissä"
   }
 }

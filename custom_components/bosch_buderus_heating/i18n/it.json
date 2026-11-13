@@ -140,7 +140,7 @@
     "DHW": "ACS",
     "disabled": "disabilitato",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Eliminare questa notifica non conferma né ripristina un'anomalia dell'impianto di riscaldamento.",
-    "Drain pan temperature (TA4)": "Temperatura della vaschetta di scarico (TA4)",
+    "Drip pan temperature (TA4)": "Temperatura della vaschetta (TA4)",
     "Drip pan heater": "Resistenza della vaschetta",
     "Eco start temperature": "Temperatura di avvio Eco",
     "Eco+ start temperature": "Temperatura di avvio Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Versione firmware",
     "First detected": "Prima rilevazione",
     "Flow temperature limit": "Limite della temperatura di mandata",
-    "Four-way valve": "Valvola a quattro vie",
+    "4-way valve": "Valvola a 4 vie",
     "Fresh-water primary pump": "Pompa primaria acqua fresca",
     "Gas flow": "Portata del gas",
     "Gas heating (kWh)": "Gas, riscaldamento (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Velocità di riscaldamento",
     "Heating": "Riscaldamento",
     "Heating circuit": "Circuito di riscaldamento",
-    "Heating circuit 1 flow rate (PC1)": "Portata circuito di riscaldamento 1 (PC1)",
-    "Heating circuit 1 pump (PC1)": "Pompa circuito di riscaldamento 1 (PC1)",
+    "Flow rate HC1 (PC1)": "Portata circuito di riscaldamento 1 (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Pompa circuito di riscaldamento 1 (PC1)",
     "Heating circuit pump": "Pompa del circuito di riscaldamento",
     "Heating curve base point": "Punto base della curva di riscaldamento",
     "Heating curve end point": "Punto finale della curva di riscaldamento",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: anomalie risolte",
     "{name}: heating system fault": "{name}: anomalia dell'impianto di riscaldamento",
     "{name}: heating system notifications": "{name}: messaggi dell'impianto di riscaldamento",
-    "{name}: notifications cleared": "{name}: messaggi conclusi"
+    "{name}: notifications cleared": "{name}: messaggi conclusi",
+    "Primary flow rate": "Portata primaria",
+    "Current heating/cooling status (signal)": "Stato attuale riscaldamento/raffrescamento (segnale)",
+    "Cylinder temperature (signal)": "Temperatura del bollitore (segnale)",
+    "Outdoor temperature (signal)": "Temperatura esterna (segnale)",
+    "Hot water heat-up active": "Riscaldamento acqua calda attivo"
   }
 }

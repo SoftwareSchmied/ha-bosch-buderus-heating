@@ -140,7 +140,7 @@
     "DHW": "Teplá voda",
     "disabled": "vypnuto",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Skrytí tohoto oznámení nepotvrzuje ani neresetuje poruchu na topné soustavě.",
-    "Drain pan temperature (TA4)": "Teplota odkapní vany (TA4)",
+    "Drip pan temperature (TA4)": "Teplota odkapní vany (TA4)",
     "Drip pan heater": "Ohřev odkapní vany",
     "Eco start temperature": "Počáteční teplota Eco",
     "Eco+ start temperature": "Počáteční teplota Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Verze firmwaru",
     "First detected": "První zjištění",
     "Flow temperature limit": "Limit výstupní teploty",
-    "Four-way valve": "Čtyřcestný ventil",
+    "4-way valve": "Čtyřcestný ventil",
     "Fresh-water primary pump": "Primární čerpadlo čerstvé vody",
     "Gas flow": "Průtok plynu",
     "Gas heating (kWh)": "Plyn pro topení (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Rychlost ohřevu",
     "Heating": "Topení",
     "Heating circuit": "Topný okruh",
-    "Heating circuit 1 flow rate (PC1)": "Průtok topného okruhu 1 (PC1)",
-    "Heating circuit 1 pump (PC1)": "Čerpadlo topného okruhu 1 (PC1)",
+    "Flow rate HC1 (PC1)": "Průtok topného okruhu 1 (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Čerpadlo topného okruhu 1 (PC1)",
     "Heating circuit pump": "Čerpadlo topného okruhu",
     "Heating curve base point": "Počáteční bod topné křivky",
     "Heating curve end point": "Koncový bod topné křivky",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: poruchy vyřešeny",
     "{name}: heating system fault": "{name}: porucha topné soustavy",
     "{name}: heating system notifications": "{name}: hlášení topné soustavy",
-    "{name}: notifications cleared": "{name}: hlášení ukončena"
+    "{name}: notifications cleared": "{name}: hlášení ukončena",
+    "Primary flow rate": "Primární průtok",
+    "Current heating/cooling status (signal)": "Aktuální stav topení/chlazení (signál)",
+    "Cylinder temperature (signal)": "Teplota zásobníku (signál)",
+    "Outdoor temperature (signal)": "Venkovní teplota (signál)",
+    "Hot water heat-up active": "Ohřev teplé vody aktivní"
   }
 }

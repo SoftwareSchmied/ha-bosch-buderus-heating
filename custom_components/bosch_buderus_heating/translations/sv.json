@@ -1413,6 +1413,9 @@
       "rrc_extra_dhw_duration": {
         "name": "Varaktighet extra varmvatten"
       },
+      "rrc_hot_water_temperature": {
+        "name": "Varmvattentemperatur"
+      },
       "rrc_heat_curve_min": {
         "name": "Värmekurvans startpunkt"
       },
@@ -2069,13 +2072,13 @@
         "name": "Nästa semester"
       },
       "pointt_api_requests_total": {
-        "name": "PointT API-förfrågningar totalt"
+        "name": "Förfrågningar till molnet totalt"
       },
       "pointt_api_requests_last_hour": {
-        "name": "PointT API-förfrågningar – senaste timmen"
+        "name": "Förfrågningar till molnet – senaste timmen"
       },
       "pointt_api_response_time_last_hour": {
-        "name": "PointT API-svarstid – senaste timmen"
+        "name": "Molnets svarstid – senaste timmen"
       },
       "softener_regeneration_phase": {
         "state": {

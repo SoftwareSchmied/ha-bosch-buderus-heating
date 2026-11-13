@@ -1413,6 +1413,9 @@
       "rrc_extra_dhw_duration": {
         "name": "Varighed af ekstra varmt vand"
       },
+      "rrc_hot_water_temperature": {
+        "name": "Temperatur for varmt brugsvand"
+      },
       "rrc_heat_curve_min": {
         "name": "Varmekurvens startpunkt"
       },
@@ -2069,13 +2072,13 @@
         "name": "Næste ferie"
       },
       "pointt_api_requests_total": {
-        "name": "PointT API-forespørgsler i alt"
+        "name": "Cloud-forespørgsler i alt"
       },
       "pointt_api_requests_last_hour": {
-        "name": "PointT API-forespørgsler – seneste time"
+        "name": "Cloud-forespørgsler – seneste time"
       },
       "pointt_api_response_time_last_hour": {
-        "name": "PointT API-svartid – seneste time"
+        "name": "Cloud-svartid – seneste time"
       },
       "softener_regeneration_phase": {
         "state": {

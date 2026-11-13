@@ -1048,12 +1048,14 @@ def _enable_new_default_entities(
     """
     if entry.pref_disable_new_entities:
         return
+    from . import rrc_contracts
     from .binary_sensor import build_binary_sensor_descriptions
     from .sensor import build_sensor_descriptions, sensor_unique_suffix
 
     entity_registry = er.async_get(hass)
     for coordinator in coordinators:
         gateway_id = coordinator.gateway.gateway_id
+        rrc_plant = context_of(coordinator).rrc_plant
         candidates: tuple[tuple[str, list[tuple[Any, str]]], ...] = (
             (
                 "sensor",
@@ -1080,6 +1082,10 @@ def _enable_new_default_entities(
             for description, suffix in descriptions:
                 if is_start_counter_path(description.resource_path):
                     # Existing counter activation choices survive this update.
+                    continue
+                if rrc_plant and rrc_contracts.is_mirror(description.resource_path):
+                    # A read-only setting without a control is enabled only
+                    # when it is first registered; an existing entry stays.
                     continue
                 if not description.entity_registry_enabled_default:
                     continue

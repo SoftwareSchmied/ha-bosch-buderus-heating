@@ -140,7 +140,7 @@
     "DHW": "ΖΝΧ",
     "disabled": "απενεργοποιημένο",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Η απόρριψη αυτής της ειδοποίησης δεν επιβεβαιώνει ούτε επαναφέρει βλάβη στο σύστημα θέρμανσης.",
-    "Drain pan temperature (TA4)": "Θερμοκρασία λεκάνης συμπυκνωμάτων (TA4)",
+    "Drip pan temperature (TA4)": "Θερμοκρασία λεκάνης συμπυκνωμάτων (TA4)",
     "Drip pan heater": "Θερμαντικό λεκάνης συμπυκνωμάτων",
     "Eco start temperature": "Θερμοκρασία έναρξης Eco",
     "Eco+ start temperature": "Θερμοκρασία έναρξης Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Έκδοση υλικολογισμικού",
     "First detected": "Πρώτη ανίχνευση",
     "Flow temperature limit": "Όριο θερμοκρασίας προσαγωγής",
-    "Four-way valve": "Τετράοδη βαλβίδα",
+    "4-way valve": "Τετράοδη βαλβίδα",
     "Fresh-water primary pump": "Πρωτεύων κυκλοφορητής φρέσκου νερού",
     "Gas flow": "Παροχή αερίου",
     "Gas heating (kWh)": "Αέριο – θέρμανση (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Ταχύτητα προθέρμανσης",
     "Heating": "Θέρμανση",
     "Heating circuit": "Κύκλωμα θέρμανσης",
-    "Heating circuit 1 flow rate (PC1)": "Παροχή κυκλώματος θέρμανσης 1 (PC1)",
-    "Heating circuit 1 pump (PC1)": "Κυκλοφορητής κυκλώματος θέρμανσης 1 (PC1)",
+    "Flow rate HC1 (PC1)": "Παροχή κυκλώματος θέρμανσης 1 (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Κυκλοφορητής κυκλώματος θέρμανσης 1 (PC1)",
     "Heating circuit pump": "Κυκλοφορητής κυκλώματος θέρμανσης",
     "Heating curve base point": "Σημείο βάσης καμπύλης θέρμανσης",
     "Heating curve end point": "Τελικό σημείο καμπύλης θέρμανσης",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: βλάβες επιλύθηκαν",
     "{name}: heating system fault": "{name}: βλάβη συστήματος θέρμανσης",
     "{name}: heating system notifications": "{name}: μηνύματα συστήματος θέρμανσης",
-    "{name}: notifications cleared": "{name}: τα μηνύματα έληξαν"
+    "{name}: notifications cleared": "{name}: τα μηνύματα έληξαν",
+    "Primary flow rate": "Παροχή πρωτεύοντος κυκλώματος",
+    "Current heating/cooling status (signal)": "Τρέχουσα κατάσταση θέρμανσης/ψύξης (σήμα)",
+    "Cylinder temperature (signal)": "Θερμοκρασία δοχείου (σήμα)",
+    "Outdoor temperature (signal)": "Εξωτερική θερμοκρασία (σήμα)",
+    "Hot water heat-up active": "Θέρμανση ζεστού νερού ενεργή"
   }
 }

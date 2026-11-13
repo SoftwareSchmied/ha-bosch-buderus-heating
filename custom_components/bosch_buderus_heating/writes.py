@@ -146,7 +146,8 @@ WDDW2_HOLIDAY_POLICY = EnumWritePolicy(
     known_only=True,
 )
 # The exhaust fan levels documented for the local interface; any other
-# advertised level makes the whole control unavailable.
+# advertised level makes the whole control unavailable. Not tested on a
+# ventilation unit yet, so the select is created disabled.
 VENTILATION_FAN_LEVELS = ("off", "min", "red", "nom", "max", "dem")
 VENTILATION_FAN_LEVEL_POLICY = EnumWritePolicy(
     r"^/ventilation/zone[^/]+/exhaustFanLevel$",
@@ -154,6 +155,7 @@ VENTILATION_FAN_LEVEL_POLICY = EnumWritePolicy(
     frozenset(VENTILATION_FAN_LEVELS),
     known_only=True,
     options_rule="subset",
+    enabled_by_default=False,
 )
 POOL_ENABLED_POLICY = EnumWritePolicy(
     r"^/pool/enabled$",

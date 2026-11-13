@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from functools import partial
 from typing import TYPE_CHECKING
@@ -46,6 +46,7 @@ from .resource_catalog import (
     CapabilityMaturity,
     capability_maturity,
     entity_enabled_by_default,
+    plant_duplicate_paths,
     resource_name,
     supports_entity,
 )
@@ -418,9 +419,20 @@ def build_binary_sensor_descriptions(
             descriptions.extend(_description(resource, key) for key in keys)
         elif _is_boolean_resource(resource):
             descriptions.append(_description(resource, None))
+    if duplicates := plant_duplicate_paths(resources):
+        # As for the sensors: a burner status that follows the compressor.
+        descriptions = [
+            replace(item, entity_registry_enabled_default=False)
+            if item.resource_path in duplicates
+            else item
+            for item in descriptions
+        ]
     if rrc_plant:
         return tuple(
-            generic_presentation(item, Platform.BINARY_SENSOR) for item in descriptions
+            generic_presentation(
+                item, Platform.BINARY_SENSOR, resources.get(item.resource_path)
+            )
+            for item in descriptions
         )
     return tuple(descriptions)
 

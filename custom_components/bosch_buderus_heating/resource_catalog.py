@@ -6,7 +6,7 @@ import base64
 import binascii
 import math
 import re
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from functools import lru_cache
@@ -1308,6 +1308,42 @@ def capability_maturity(path: str, *, rrc_plant: bool = False) -> CapabilityMatu
     ):
         return CapabilityMaturity.UNDERSTOOD
     return CapabilityMaturity.OBSERVED
+
+
+_HEAT_SOURCE_ID = re.compile(r"^/heatSources/(hs\d+)(?:/|$)")
+_HEAT_PUMP_TYPE = re.compile(r"^/heatSources/hs\d+/heatPumpType$")
+SOURCE_TOTAL_PATHS = frozenset(
+    {"/heatSources/numberOfStarts", "/heatSources/workingTime/totalSystem"}
+)
+FLAME_STATUS_PATH = "/heatSources/flameStatus"
+
+
+def plant_duplicate_paths(paths: Iterable[str]) -> frozenset[str]:
+    """Paths whose entities only repeat another entity on this plant.
+
+    With exactly one heat source, the totals of all heat sources (starts and
+    system run time) are the counters of that heat source. On a heat pump
+    without a second heat source or a hybrid manager, the burner status
+    follows the compressor. Such entities are created disabled; an entity
+    that already exists keeps its setting, because Home Assistant applies an
+    enabled default only when it registers an entity.
+    """
+    known = tuple(paths)
+    sources = {
+        match.group(1)
+        for path in known
+        if (match := _HEAT_SOURCE_ID.match(path)) is not None
+    }
+    duplicates: set[str] = set()
+    if len(sources) == 1:
+        duplicates.update(SOURCE_TOTAL_PATHS)
+    if (
+        len(sources) <= 1
+        and any(_HEAT_PUMP_TYPE.fullmatch(path) for path in known)
+        and not any(path.startswith("/heatSources/hybrid") for path in known)
+    ):
+        duplicates.add(FLAME_STATUS_PATH)
+    return frozenset(duplicates)
 
 
 def entity_enabled_by_default(path: str, *, rrc_plant: bool = False) -> bool:

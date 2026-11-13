@@ -7,7 +7,10 @@ CT200-class controller, a TC100.2-shaped controller and a K40 heat pump.
 Record it again only on purpose (``W0_WRITE_BASELINE=1``), after a review.
 The packages W1 to W6 add entities and requests to the RRC plants on
 purpose; the snapshot is recorded again after they are merged and pins the
-shipped state. The K40 heat pump must stay unchanged.
+shipped state. The K40 heat pump must stay unchanged; the 0.9.0 entity
+review changed it on purpose: a fresh setup creates the totals of its only
+heat source and its burner status disabled, and the request sensors carry
+neutral names.
 """
 
 from __future__ import annotations

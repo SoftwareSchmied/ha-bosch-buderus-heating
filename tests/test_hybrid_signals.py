@@ -221,9 +221,12 @@ def test_timers_and_run_times() -> None:
     hours = definition_for("/signals/HYBMAN.OpTimeCompressorHeating")
     assert hours.kind == DURATION
     assert unit_and_class(hours, None) == ("h", SensorDeviceClass.DURATION)
-    # Like every local run time: no statistics, so a lower count after a
-    # device reset never becomes a negative consumption.
-    assert state_class(hours) is None
+    # Like every cumulative local run time since 0.9.0: a growing total. A
+    # lower count after a device reset starts a new cycle of the statistics,
+    # never a negative run time.
+    assert state_class(hours) is SensorStateClass.TOTAL_INCREASING
+    remaining = definition_for("/signals/HYBMAN.TimeTillNextCompressorStart")
+    assert state_class(remaining) is None
     temperature = definition_for("/signals/HYBMAN.TempSysReturn")
     assert state_class(temperature) is SensorStateClass.MEASUREMENT
 

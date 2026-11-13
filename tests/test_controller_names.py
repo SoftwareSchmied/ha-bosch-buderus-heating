@@ -79,8 +79,9 @@ NAMES = {
     ),
     HP1 + "DripPanTemp": (
         "Kondensatwannentemperatur (TA4)",
-        "Drain pan temperature (TA4)",
+        "Drip pan temperature (TA4)",
     ),
+    HP1 + "DripPanHeater": ("Kondensatwannenheizung", "Drip pan heater"),
     HP1 + "ExpansionValveActual": ("Expansionsventil VR1", "Expansion valve VR1"),
     HP1 + "ReceiverValveActual": ("Expansionsventil VR0", "Expansion valve VR0"),
     HP1 + "FourwayValve": ("4-Wege-Ventil (VR4)", "4-way valve (VR4)"),
@@ -94,15 +95,50 @@ NAMES = {
     ),
     "/signals/SRC.CUHP.CH.HC1PumpRelay": (
         "Heizkreispumpe HK1 (PC1)",
-        "Heating circuit 1 pump (PC1)",
+        "Heating circuit pump HC1 (PC1)",
     ),
     "/signals/SRC.HC1.FlowCtrl.PumpVolumeFlow": (
-        "Volumenstrom Heizkreis 1 (PC1)",
-        "Heating circuit 1 flow rate (PC1)",
+        "Volumenstrom HK1 (PC1)",
+        "Flow rate HC1 (PC1)",
     ),
     HP1 + "Timer.CompressorRestart": (
         "Verzögerung Kompressorstart",
         "Compressor start delay",
+    ),
+    # Since 0.9.0 the controller's word "Kompressor" in every German name.
+    "/signals/SRC.CUHP.HMI.CompressorActive": ("Kompressor", "Compressor"),
+    HP1 + "CompressorStatus": ("Kompressor (Status)", "Compressor (status)"),
+    HP1 + "CompressorPower": (
+        "Wärmeleistung (Kompressor)",
+        "Heat output (compressor)",
+    ),
+    HP1 + "Stats.CompressorDHW": (
+        "Kompressorlaufzeit Warmwasser",
+        "Compressor run time hot water",
+    ),
+    HS + "/refrigerant/compressorActualSpeed": (
+        "Kompressordrehzahl",
+        "Compressor speed",
+    ),
+    HS + "/refrigerant/compressorTemp": (
+        "Kompressortemperatur",
+        "Compressor temperature",
+    ),
+    "/heatSources/compressor/powerElecActual": (
+        "Elektrische Leistung Kompressor",
+        "Compressor electric power",
+    ),
+    "/signals/HYBMAN.CAN.FourWayValveActive": ("4-Wege-Ventil", "4-way valve"),
+    # The flow of the primary heating pump PC0, as its second source.
+    HS + "/pumpVolumeFlow": ("Volumenstrom primär", "Primary flow rate"),
+    # The season signal repeats the cloud's current heating/cooling status.
+    "/signals/SC.SeasonOpt.Mode": (
+        "Aktueller Heiz-/Kühlstatus (Signal)",
+        "Current heating/cooling status (signal)",
+    ),
+    "/signals/SRC.IntDHW.HeatUpActive": (
+        "Warmwasserbereitung aktiv",
+        "Hot water heat-up active",
     ),
 }
 
@@ -119,6 +155,8 @@ SECOND_SOURCES = {
     ),
     "/signals/SRC.RelayStatus.3WayValve": "Hot water 3-way valve relay (signal)",
     "/signals/SRC.RelayStatus.CHPump": "Primary heating pump relay (signal)",
+    "/signals/SRC.IntDHW.CylTemp": "Cylinder temperature (signal)",
+    "/signals/SRC.OutdoorTemp": "Outdoor temperature (signal)",
 }
 
 
@@ -144,17 +182,33 @@ def test_new_signals_have_a_reviewed_meaning():
 
 
 @pytest.mark.parametrize(
-    "path", ["/signals/SRC.RelayStatus.3WayValve", "/signals/SRC.RelayStatus.CHPump"]
+    ("path", "texts"),
+    [
+        # The relay of VW1 shows the valve's position like VW1 (since 0.9.0).
+        ("/signals/SRC.RelayStatus.3WayValve", "dhw_valve_position"),
+        ("/signals/SRC.RelayStatus.CHPump", "on_off_state"),
+    ],
 )
-def test_named_relay_signals_stay_diagnostic(path):
+def test_named_relay_signals_stay_diagnostic(path, texts):
     # Their true/false answer makes them an on/off state; as before they stay
     # in the diagnostic section.
     answer = SimpleNamespace(
         type="stringValue", data=SimpleNamespace(value="true", allowed_values=())
     )
     resolved = for_reading(definition_for(path), answer)
-    assert (resolved.kind, resolved.translation_key) == (FLAG, "on_off_state")
+    assert (resolved.kind, resolved.translation_key) == (FLAG, texts)
     assert diagnostic(resolved)
+
+
+def test_a_relay_read_as_a_number_has_no_state_texts():
+    # Should the relay answer with a plain number, it is a number: the valve
+    # texts belong to its on/off form only.
+    answer = SimpleNamespace(
+        type="floatValue", data=SimpleNamespace(value=1, states=(), unit=None)
+    )
+    path = "/signals/SRC.RelayStatus.3WayValve"
+    resolved = for_reading(definition_for(path), answer)
+    assert (resolved.kind, resolved.translation_key) == (GENERIC, None)
 
 
 @pytest.mark.parametrize(("path", "name"), SECOND_SOURCES.items())

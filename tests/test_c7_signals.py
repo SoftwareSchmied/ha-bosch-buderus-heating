@@ -234,7 +234,9 @@ def test_reviewed_measurements() -> None:
     definition = sensor.definition
     assert definition.kind == DURATION and sensor.enabled
     assert definition.suggested_unit == UnitOfTime.HOURS
-    assert state_class(definition) is None  # like every local run time
+    # Since 0.9.0 a cumulative run time is a growing total with long-term
+    # statistics, like the cloud's working times.
+    assert state_class(definition) is SensorStateClass.TOTAL_INCREASING
     assert value == 1250704
     sensor, _ = shown(signal("SRC.CUHP.HP1.CompressorPower", 2.4, unit="kW"))
     assert sensor.definition.kind == POWER and sensor.device_class is (

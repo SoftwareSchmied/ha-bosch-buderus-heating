@@ -117,6 +117,7 @@ from .resource_catalog import (
     is_additional_app_scalar,
     is_opt_in_diagnostic_resource,
     is_read_only_control_mirror,
+    plant_duplicate_paths,
     poll_group,
     resource_name,
     supports_entity,
@@ -1185,6 +1186,15 @@ def build_sensor_descriptions(
     ):
         descriptions.append(_pressure_status_description())
     descriptions.extend(_dew_point_descriptions(resources))
+    if duplicates := plant_duplicate_paths(resources):
+        # Totals of the only heat source and the burner status of a heat
+        # pump repeat other entities: new ones are created disabled.
+        descriptions = [
+            replace(item, entity_registry_enabled_default=False)
+            if item.resource_path in duplicates
+            else item
+            for item in descriptions
+        ]
     # An unknown resource never takes the ID of a known entity.
     taken_keys = {item.unique_key for item in descriptions}
     for item in unknown_descriptions:
@@ -1194,15 +1204,19 @@ def build_sensor_descriptions(
         taken_keys.add(item.unique_key)
         descriptions.append(item)
     if rrc_plant:
-        return tuple(_rrc_presentation(item) for item in descriptions)
+        return tuple(
+            _rrc_presentation(item, resources.get(item.resource_path))
+            for item in descriptions
+        )
     return tuple(descriptions)
 
 
 def _rrc_presentation(
     description: BoschBuderusSensorEntityDescription,
+    resource: Resource | None = None,
 ) -> BoschBuderusSensorEntityDescription:
     """Apply an RRC contract's choices to a generic sensor (W1 to W6)."""
-    return generic_presentation(description, Platform.SENSOR)
+    return generic_presentation(description, Platform.SENSOR, resource)
 
 
 def _pressure_status_description() -> BoschBuderusSensorEntityDescription:

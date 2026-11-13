@@ -180,6 +180,9 @@ DISINFECTION_TIME_POLICY: Final = NumberWritePolicy(
 
 NAMES: Final = MappingProxyType(
     {
+        # The level "high" is the hot water temperature of the controller,
+        # not a start temperature as on other gateways.
+        LEVEL_HIGH: ("Warmwassertemperatur", "Hot water temperature"),
         EXTRA: ("Extra-Warmwasser", "Extra hot water"),
         EXTRA_DURATION: ("Dauer Extra-Warmwasser", "Extra hot water duration"),
         DISINFECTION: ("Thermische Desinfektion", "Thermal disinfection"),
@@ -219,7 +222,7 @@ CONTRACT = RrcContract(
     entity_keys=MappingProxyType(
         {
             MODE: MappingProxyType({"select": "hot_water_operation_mode"}),
-            LEVEL_HIGH: MappingProxyType({"number": "hot_water_comfort"}),
+            LEVEL_HIGH: MappingProxyType({"number": "rrc_hot_water_temperature"}),
             EXTRA: MappingProxyType({"switch": "rrc_extra_dhw"}),
             EXTRA_DURATION: MappingProxyType({"number": "rrc_extra_dhw_duration"}),
             DISINFECTION: MappingProxyType({"switch": "rrc_thermal_disinfection"}),

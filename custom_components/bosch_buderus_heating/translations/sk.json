@@ -1413,6 +1413,9 @@
       "rrc_extra_dhw_duration": {
         "name": "Trvanie extra ohrevu"
       },
+      "rrc_hot_water_temperature": {
+        "name": "Teplota teplej vody"
+      },
       "rrc_heat_curve_min": {
         "name": "Počiatočný bod vykurovacej krivky"
       },
@@ -2069,13 +2072,13 @@
         "name": "Nasledujúca dovolenka"
       },
       "pointt_api_requests_total": {
-        "name": "Požiadavky PointT API celkom"
+        "name": "Požiadavky na cloud celkom"
       },
       "pointt_api_requests_last_hour": {
-        "name": "Požiadavky PointT API – posledná hodina"
+        "name": "Požiadavky na cloud – posledná hodina"
       },
       "pointt_api_response_time_last_hour": {
-        "name": "Doba odpovede PointT API – posledná hodina"
+        "name": "Doba odpovede cloudu – posledná hodina"
       },
       "softener_regeneration_phase": {
         "state": {

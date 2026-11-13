@@ -1413,6 +1413,9 @@
       "rrc_extra_dhw_duration": {
         "name": "Durée de l'eau chaude supplémentaire"
       },
+      "rrc_hot_water_temperature": {
+        "name": "Température de l'eau chaude"
+      },
       "rrc_heat_curve_min": {
         "name": "Point de base de la courbe de chauffe"
       },
@@ -2069,13 +2072,13 @@
         "name": "Prochaines vacances"
       },
       "pointt_api_requests_total": {
-        "name": "Requêtes API PointT au total"
+        "name": "Requêtes au cloud au total"
       },
       "pointt_api_requests_last_hour": {
-        "name": "Requêtes API PointT – dernière heure"
+        "name": "Requêtes au cloud – dernière heure"
       },
       "pointt_api_response_time_last_hour": {
-        "name": "Temps de réponse de l'API PointT – dernière heure"
+        "name": "Temps de réponse du cloud – dernière heure"
       },
       "softener_regeneration_phase": {
         "state": {

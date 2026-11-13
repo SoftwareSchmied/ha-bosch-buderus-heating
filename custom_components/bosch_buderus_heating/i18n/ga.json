@@ -140,7 +140,7 @@
     "DHW": "UT",
     "disabled": "díchumasaithe",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Ní admhaítear locht ar an gcóras téimh ná ní athshocraítear é tríd an bhfógra seo a dhúnadh.",
-    "Drain pan temperature (TA4)": "Teocht na pana draenála (TA4)",
+    "Drip pan temperature (TA4)": "Teocht na pana sileadh (TA4)",
     "Drip pan heater": "Téitheoir na pana sileadh",
     "Eco start temperature": "Teocht tosaithe Eco",
     "Eco+ start temperature": "Teocht tosaithe Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Leagan dochtearraí",
     "First detected": "Braite den chéad uair",
     "Flow temperature limit": "Teorainn teochta an tsreafa",
-    "Four-way valve": "Comhla 4 bhealach",
+    "4-way valve": "Comhla 4 bhealach",
     "Fresh-water primary pump": "Príomhchaidéal an uisce úir",
     "Gas flow": "Sreabhadh gáis",
     "Gas heating (kWh)": "Gás – téamh (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Luas teasaithe",
     "Heating": "Téamh",
     "Heating circuit": "Ciorcad téimh",
-    "Heating circuit 1 flow rate (PC1)": "Ráta sreafa an chiorcaid téimh 1 (PC1)",
-    "Heating circuit 1 pump (PC1)": "Caidéal an chiorcaid téimh 1 (PC1)",
+    "Flow rate HC1 (PC1)": "Ráta sreafa an chiorcaid téimh 1 (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Caidéal an chiorcaid téimh 1 (PC1)",
     "Heating circuit pump": "Caidéal an chiorcaid téimh",
     "Heating curve base point": "Bunphointe an chuair téimh",
     "Heating curve end point": "Críochphointe an chuair téimh",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: lochtanna réitithe",
     "{name}: heating system fault": "{name}: locht ar an gcóras téimh",
     "{name}: heating system notifications": "{name}: teachtaireachtaí an chórais téimh",
-    "{name}: notifications cleared": "{name}: teachtaireachtaí críochnaithe"
+    "{name}: notifications cleared": "{name}: teachtaireachtaí críochnaithe",
+    "Primary flow rate": "Ráta sreafa príomhúil",
+    "Current heating/cooling status (signal)": "Stádas reatha téimh/fuaraithe (comhartha)",
+    "Cylinder temperature (signal)": "Teocht an tsorcóra (comhartha)",
+    "Outdoor temperature (signal)": "Teocht lasmuigh (comhartha)",
+    "Hot water heat-up active": "Téamh an uisce te gníomhach"
   }
 }

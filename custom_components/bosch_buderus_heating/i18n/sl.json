@@ -140,7 +140,7 @@
     "DHW": "TSV",
     "disabled": "onemogočeno",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Opustitev tega obvestila ne potrdi ali ponastavi napake na ogrevalnem sistemu.",
-    "Drain pan temperature (TA4)": "Temperatura odtočnega korita (TA4)",
+    "Drip pan temperature (TA4)": "Temperatura odtočnega korita (TA4)",
     "Drip pan heater": "Grelnik odtočnega korita",
     "Eco start temperature": "Začetna temperatura Eco",
     "Eco+ start temperature": "Začetna temperatura Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Različica vdelane programske opreme",
     "First detected": "Prvič zaznano",
     "Flow temperature limit": "Omejitev temperature dvižnega voda",
-    "Four-way valve": "4-potni ventil",
+    "4-way valve": "4-potni ventil",
     "Fresh-water primary pump": "Primarna črpalka sveže vode",
     "Gas flow": "Pretok plina",
     "Gas heating (kWh)": "Plin za ogrevanje (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Hitrost segrevanja",
     "Heating": "Ogrevanje",
     "Heating circuit": "Ogrevalni krog",
-    "Heating circuit 1 flow rate (PC1)": "Pretok ogrevalnega kroga 1 (PC1)",
-    "Heating circuit 1 pump (PC1)": "Črpalka ogrevalnega kroga 1 (PC1)",
+    "Flow rate HC1 (PC1)": "Pretok ogrevalnega kroga 1 (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Črpalka ogrevalnega kroga 1 (PC1)",
     "Heating circuit pump": "Črpalka ogrevalnega kroga",
     "Heating curve base point": "Začetna točka ogrevalne krivulje",
     "Heating curve end point": "Končna točka ogrevalne krivulje",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: napake odpravljene",
     "{name}: heating system fault": "{name}: napaka ogrevalnega sistema",
     "{name}: heating system notifications": "{name}: sporočila ogrevalnega sistema",
-    "{name}: notifications cleared": "{name}: sporočila zaključena"
+    "{name}: notifications cleared": "{name}: sporočila zaključena",
+    "Primary flow rate": "Primarni pretok",
+    "Current heating/cooling status (signal)": "Trenutno stanje ogrevanja/hlajenja (signal)",
+    "Cylinder temperature (signal)": "Temperatura hranilnika (signal)",
+    "Outdoor temperature (signal)": "Zunanja temperatura (signal)",
+    "Hot water heat-up active": "Ogrevanje tople vode aktivno"
   }
 }

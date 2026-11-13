@@ -735,7 +735,7 @@ def test_compressor_power_signal_is_named_as_heat_output() -> None:
     definition = local_only.definition_for("/signals/SRC.CUHP.HP1.CompressorPower")
     assert definition is not None
     assert definition.names == (
-        "Wärmeleistung (Verdichter)",
+        "Wärmeleistung (Kompressor)",
         "Heat output (compressor)",
     )
     assert definition.key == "compressor_output"

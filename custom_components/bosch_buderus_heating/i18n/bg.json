@@ -140,7 +140,7 @@
     "DHW": "БГВ",
     "disabled": "изключен",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Отхвърлянето на това известие не потвърждава и не нулира повреда на отоплителната система.",
-    "Drain pan temperature (TA4)": "Температура на тавата за конденз (TA4)",
+    "Drip pan temperature (TA4)": "Температура на тавата за конденз (TA4)",
     "Drip pan heater": "Нагревател на тавата за конденз",
     "Eco start temperature": "Начална температура Eco",
     "Eco+ start temperature": "Начална температура Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Версия на фърмуера",
     "First detected": "Първо засичане",
     "Flow temperature limit": "Ограничение на температурата на подаване",
-    "Four-way valve": "4-пътен вентил",
+    "4-way valve": "4-пътен вентил",
     "Fresh-water primary pump": "Първична помпа за прясна вода",
     "Gas flow": "Дебит на газ",
     "Gas heating (kWh)": "Газ – отопление (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Скорост на загряване",
     "Heating": "Отопление",
     "Heating circuit": "Отоплителен кръг",
-    "Heating circuit 1 flow rate (PC1)": "Дебит на отоплителен кръг 1 (PC1)",
-    "Heating circuit 1 pump (PC1)": "Помпа на отоплителен кръг 1 (PC1)",
+    "Flow rate HC1 (PC1)": "Дебит на отоплителен кръг 1 (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Помпа на отоплителен кръг 1 (PC1)",
     "Heating circuit pump": "Помпа на отоплителния кръг",
     "Heating curve base point": "Базова точка на отоплителната крива",
     "Heating curve end point": "Крайна точка на отоплителната крива",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: повредите са отстранени",
     "{name}: heating system fault": "{name}: повреда на отоплителната система",
     "{name}: heating system notifications": "{name}: известия на отоплителната система",
-    "{name}: notifications cleared": "{name}: известията са приключени"
+    "{name}: notifications cleared": "{name}: известията са приключени",
+    "Primary flow rate": "Първичен дебит",
+    "Current heating/cooling status (signal)": "Текущо състояние на отопление/охлаждане (сигнал)",
+    "Cylinder temperature (signal)": "Температура на бойлера (сигнал)",
+    "Outdoor temperature (signal)": "Външна температура (сигнал)",
+    "Hot water heat-up active": "Загряване на горещата вода активно"
   }
 }

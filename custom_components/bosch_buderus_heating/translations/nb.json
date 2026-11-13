@@ -1413,6 +1413,9 @@
       "rrc_extra_dhw_duration": {
         "name": "Varighet for ekstra varmtvann"
       },
+      "rrc_hot_water_temperature": {
+        "name": "Varmtvanntemperatur"
+      },
       "rrc_heat_curve_min": {
         "name": "Varmekurvens startpunkt"
       },
@@ -2069,13 +2072,13 @@
         "name": "Neste ferie"
       },
       "pointt_api_requests_total": {
-        "name": "PointT API-forespørsler totalt"
+        "name": "Forespørsler til skyen totalt"
       },
       "pointt_api_requests_last_hour": {
-        "name": "PointT API-forespørsler – siste time"
+        "name": "Forespørsler til skyen – siste time"
       },
       "pointt_api_response_time_last_hour": {
-        "name": "PointT API-responstid – siste time"
+        "name": "Responstid for skyen – siste time"
       },
       "softener_regeneration_phase": {
         "state": {

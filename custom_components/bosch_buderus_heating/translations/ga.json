@@ -1413,6 +1413,9 @@
       "rrc_extra_dhw_duration": {
         "name": "Fad an uisce te bhreise"
       },
+      "rrc_hot_water_temperature": {
+        "name": "Teocht an uisce te"
+      },
       "rrc_heat_curve_min": {
         "name": "Bunphointe an chuair téimh"
       },
@@ -2069,13 +2072,13 @@
         "name": "An chéad saoire eile"
       },
       "pointt_api_requests_total": {
-        "name": "Iarratais API PointT san iomlán"
+        "name": "Iarratais chuig an néal san iomlán"
       },
       "pointt_api_requests_last_hour": {
-        "name": "Iarratais API PointT – uair an chloig seo caite"
+        "name": "Iarratais chuig an néal – uair an chloig seo caite"
       },
       "pointt_api_response_time_last_hour": {
-        "name": "Am freagartha API PointT – uair an chloig seo caite"
+        "name": "Am freagartha an néil – uair an chloig seo caite"
       },
       "softener_regeneration_phase": {
         "state": {

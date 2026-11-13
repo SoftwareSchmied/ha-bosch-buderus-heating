@@ -1,0 +1,64 @@
+{
+  "provenance": {
+    "kind": "history_reconstruction",
+    "system": "air/water heat pump with an MX400 gateway, firmware 15.00.01",
+    "source": "Home Assistant history of the reference heat pump, read only",
+    "form": "the answers of k40rf-heat-pump-2026-11-08.jsonl; on/off as true/false, the hot water heat-up as its declared number",
+    "note": "Each moment lies inside a phase that Home Assistant recorded for every reading listed; a reading missing from a moment was not recorded in that phase."
+  },
+  "moments": [
+    {
+      "time": "2026-11-13T01:40:00Z",
+      "phase": "heating",
+      "refrigerant": "heating",
+      "four_way_valve": "false",
+      "dhw_valve": "false",
+      "dhw_valve_relay": "false",
+      "heat_up": 0
+    },
+    {
+      "time": "2026-11-13T01:50:00Z",
+      "phase": "defrost, first stage",
+      "refrigerant": "defrost",
+      "four_way_valve": "true",
+      "dhw_valve": "false",
+      "dhw_valve_relay": "false",
+      "heat_up": 0
+    },
+    {
+      "time": "2026-11-13T01:53:10Z",
+      "phase": "defrost, second stage with the hot water side",
+      "refrigerant": "defrost",
+      "four_way_valve": "true",
+      "dhw_valve": "true",
+      "heat_up": 0
+    },
+    {
+      "time": "2026-11-13T01:56:00Z",
+      "phase": "heating after the defrost",
+      "refrigerant": "heating",
+      "four_way_valve": "false",
+      "dhw_valve": "false",
+      "dhw_valve_relay": "false",
+      "heat_up": 0
+    },
+    {
+      "time": "2026-11-11T11:20:00Z",
+      "phase": "hot water charge",
+      "refrigerant": "dhw",
+      "four_way_valve": "false",
+      "dhw_valve": "true",
+      "dhw_valve_relay": "true",
+      "heat_up": 1
+    },
+    {
+      "time": "2026-11-09T11:35:30Z",
+      "phase": "defrost during a hot water charge",
+      "refrigerant": "defrost",
+      "four_way_valve": "true",
+      "dhw_valve": "true",
+      "dhw_valve_relay": "true",
+      "heat_up": 0
+    }
+  ]
+}

@@ -140,7 +140,7 @@
     "DHW": "WW",
     "disabled": "uitgeschakeld",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Het negeren van deze notificatie bevestigt of reset geen storing van de verwarmingsinstallatie.",
-    "Drain pan temperature (TA4)": "Temperatuur condensbak (TA4)",
+    "Drip pan temperature (TA4)": "Temperatuur condensbak (TA4)",
     "Drip pan heater": "Condensbakverwarming",
     "Eco start temperature": "Starttemperatuur Eco",
     "Eco+ start temperature": "Starttemperatuur Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Firmwareversie",
     "First detected": "Eerst gedetecteerd",
     "Flow temperature limit": "Aanvoertemperatuurlimiet",
-    "Four-way valve": "4-wegklep",
+    "4-way valve": "4-wegklep",
     "Fresh-water primary pump": "Primaire pomp tapwaterstation",
     "Gas flow": "Gasdebiet",
     "Gas heating (kWh)": "Gas: voor verwarmen (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Opwarmsnelheid",
     "Heating": "Verwarmen",
     "Heating circuit": "Verwarmingscircuit",
-    "Heating circuit 1 flow rate (PC1)": "Debiet verwarmingscircuit 1 (PC1)",
-    "Heating circuit 1 pump (PC1)": "Pomp verwarmingscircuit 1 (PC1)",
+    "Flow rate HC1 (PC1)": "Debiet verwarmingscircuit 1 (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Pomp verwarmingscircuit 1 (PC1)",
     "Heating circuit pump": "Pomp verwarmingscircuit",
     "Heating curve base point": "Stooklijn voetpunt",
     "Heating curve end point": "Stooklijn eindpunt",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: storingen opgelost",
     "{name}: heating system fault": "{name}: storing van de verwarmingsinstallatie",
     "{name}: heating system notifications": "{name}: meldingen van de verwarmingsinstallatie",
-    "{name}: notifications cleared": "{name}: meldingen beëindigd"
+    "{name}: notifications cleared": "{name}: meldingen beëindigd",
+    "Primary flow rate": "Primair debiet",
+    "Current heating/cooling status (signal)": "Actuele status verwarmen/koelen (signaal)",
+    "Cylinder temperature (signal)": "Boilertemperatuur (signaal)",
+    "Outdoor temperature (signal)": "Buitentemperatuur (signaal)",
+    "Hot water heat-up active": "Opwarmen warm water actief"
   }
 }

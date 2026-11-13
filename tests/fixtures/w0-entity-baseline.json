@@ -2051,7 +2051,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": "mdi:cloud-sync-outline",
-     "original_name": "PointT API requests \u2013 last hour",
+     "original_name": "Cloud requests \u2013 last hour",
      "translation_key": "pointt_api_requests_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour",
      "unit": "requests"
@@ -2065,7 +2065,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": "mdi:counter",
-     "original_name": "PointT API requests total",
+     "original_name": "Cloud requests total",
      "translation_key": "pointt_api_requests_total",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_total",
      "unit": "requests"
@@ -2079,7 +2079,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": "mdi:timer-outline",
-     "original_name": "PointT API response time \u2013 last hour",
+     "original_name": "Cloud response time \u2013 last hour",
      "translation_key": "pointt_api_response_time_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour",
      "unit": "ms"
@@ -5819,7 +5819,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": "mdi:cloud-sync-outline",
-     "original_name": "PointT API requests \u2013 last hour",
+     "original_name": "Cloud requests \u2013 last hour",
      "translation_key": "pointt_api_requests_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour",
      "unit": "requests"
@@ -5833,7 +5833,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": "mdi:counter",
-     "original_name": "PointT API requests total",
+     "original_name": "Cloud requests total",
      "translation_key": "pointt_api_requests_total",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_total",
      "unit": "requests"
@@ -5847,7 +5847,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": "mdi:timer-outline",
-     "original_name": "PointT API response time \u2013 last hour",
+     "original_name": "Cloud response time \u2013 last hour",
      "translation_key": "pointt_api_response_time_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour",
      "unit": "ms"
@@ -6753,7 +6753,7 @@
       ]
      },
      "device_class": "enum",
-     "disabled_by": null,
+     "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
@@ -6948,7 +6948,7 @@
       "state_class": "total_increasing"
      },
      "device_class": null,
-     "disabled_by": null,
+     "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
@@ -7046,7 +7046,7 @@
       "state_class": "total_increasing"
      },
      "device_class": "duration",
-     "disabled_by": null,
+     "disabled_by": "integration",
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": null,
@@ -8181,7 +8181,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": "mdi:cloud-sync-outline",
-     "original_name": "PointT API requests \u2013 last hour",
+     "original_name": "Cloud requests \u2013 last hour",
      "translation_key": "pointt_api_requests_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_last_hour",
      "unit": "requests"
@@ -8195,7 +8195,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": "mdi:counter",
-     "original_name": "PointT API requests total",
+     "original_name": "Cloud requests total",
      "translation_key": "pointt_api_requests_total",
      "unique_id": "<entry>:request_metrics:pointt_api_requests_total",
      "unit": "requests"
@@ -8209,7 +8209,7 @@
      "domain": "sensor",
      "entity_category": "diagnostic",
      "original_icon": "mdi:timer-outline",
-     "original_name": "PointT API response time \u2013 last hour",
+     "original_name": "Cloud response time \u2013 last hour",
      "translation_key": "pointt_api_response_time_last_hour",
      "unique_id": "<entry>:request_metrics:pointt_api_response_time_last_hour",
      "unit": "ms"

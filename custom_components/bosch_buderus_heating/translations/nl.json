@@ -1413,6 +1413,9 @@
       "rrc_extra_dhw_duration": {
         "name": "Duur extra warm water"
       },
+      "rrc_hot_water_temperature": {
+        "name": "Warmwatertemperatuur"
+      },
       "rrc_heat_curve_min": {
         "name": "Stooklijn voetpunt"
       },
@@ -2069,13 +2072,13 @@
         "name": "Volgende vakantie"
       },
       "pointt_api_requests_total": {
-        "name": "PointT-API-verzoeken totaal"
+        "name": "Cloudverzoeken totaal"
       },
       "pointt_api_requests_last_hour": {
-        "name": "PointT-API-verzoeken – laatste uur"
+        "name": "Cloudverzoeken – laatste uur"
       },
       "pointt_api_response_time_last_hour": {
-        "name": "PointT-API-responstijd – laatste uur"
+        "name": "Responstijd van de cloud – laatste uur"
       },
       "softener_regeneration_phase": {
         "state": {

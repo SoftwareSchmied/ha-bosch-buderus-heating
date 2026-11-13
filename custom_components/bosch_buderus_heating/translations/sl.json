@@ -1413,6 +1413,9 @@
       "rrc_extra_dhw_duration": {
         "name": "Trajanje dodatne tople vode"
       },
+      "rrc_hot_water_temperature": {
+        "name": "Temperatura tople vode"
+      },
       "rrc_heat_curve_min": {
         "name": "Začetna točka ogrevalne krivulje"
       },
@@ -2069,13 +2072,13 @@
         "name": "Naslednje počitnice"
       },
       "pointt_api_requests_total": {
-        "name": "Zahteve API PointT skupaj"
+        "name": "Zahteve v oblak skupaj"
       },
       "pointt_api_requests_last_hour": {
-        "name": "Zahteve API PointT – zadnja ura"
+        "name": "Zahteve v oblak – zadnja ura"
       },
       "pointt_api_response_time_last_hour": {
-        "name": "Odzivni čas API PointT – zadnja ura"
+        "name": "Odzivni čas oblaka – zadnja ura"
       },
       "softener_regeneration_phase": {
         "state": {

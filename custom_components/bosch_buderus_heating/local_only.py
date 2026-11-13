@@ -116,6 +116,11 @@ class LocalOnlyDefinition:
     # C7-4: the unit Home Assistant shows for a new entity (for example a
     # run time reported in seconds shown in hours).
     suggested_unit: str | None = None
+    # A run time that only grows (long-term statistics as a counter).
+    counter: bool = False
+    # Declared states of an on/off signal that mean "on" (besides the
+    # usual true/on/1), for example the hot water heat-up phases.
+    on_states: frozenset[str] = frozenset()
 
 
 def _define(
@@ -127,9 +132,17 @@ def _define(
     enabled: bool = False,
     translation_key: str | None = None,
     options: tuple[str, ...] = (),
+    counter: bool = False,
 ) -> LocalOnlyDefinition:
     return LocalOnlyDefinition(
-        re.compile(pattern), key, kind, enabled, names, translation_key, options
+        re.compile(pattern),
+        key,
+        kind,
+        enabled,
+        names,
+        translation_key,
+        options,
+        counter=counter,
     )
 
 
@@ -163,6 +176,7 @@ def _hybrid(
     unit: str | None = None,
     *,
     flag: tuple[str, str] | None = None,
+    counter: bool = False,
 ) -> LocalOnlyDefinition:
     """C10-b: one signal of a hybrid manager (HM200), disabled by default."""
     path = re.escape("/signals/HYBMAN." + signal)
@@ -197,6 +211,7 @@ def _hybrid(
         default_unit=unit,
         alternate=alternate,
         unverified=True,
+        counter=counter,
     )
 
 
@@ -211,6 +226,8 @@ def _signal(
     options: tuple[str, ...] = (),
     suggested_unit: str | None = None,
     default_unit: str | None = None,
+    counter: bool = False,
+    on_states: frozenset[str] = frozenset(),
 ) -> LocalOnlyDefinition:
     """C7: one controller signal with a reviewed meaning."""
     if kind == FLAG:
@@ -227,6 +244,8 @@ def _signal(
         options,
         suggested_unit=suggested_unit,
         default_unit=default_unit,
+        counter=counter,
+        on_states=on_states,
     )
 
 
@@ -237,14 +256,14 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "SRC.CUHP.HMI.CompressorActive",
         "compressor_active",
         FLAG,
-        ("Verdichter", "Compressor"),
+        ("Kompressor", "Compressor"),
         enabled=True,
     ),
     _signal(
         _HP1 + "CompressorStatus",
         "compressor_status",
         FLAG,
-        ("Verdichter (Status)", "Compressor (status)"),
+        ("Kompressor (Status)", "Compressor (status)"),
     ),
     _signal(
         _HP1 + "DHWValve",
@@ -253,6 +272,18 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         ("3-Wege-Ventil Warmwasser (VW1)", "Hot water 3-way valve (VW1)"),
         enabled=True,
         translation_key="dhw_valve_position",
+    ),
+    # The hot water heat-up as on/off; the controller declares FALSE,
+    # HEAT and POSTHEAT. On the reference heat pump HEAT matched every hot
+    # water charge (the 3-way valve VW1 at hot water, the 4-way valve VR4 at
+    # heating); POSTHEAT was not seen and counts as heating up as well.
+    # Disabled: VW1 and the refrigerant circuit status show it already.
+    _signal(
+        "SRC.IntDHW.HeatUpActive",
+        "hot_water_heat_up",
+        FLAG,
+        ("Warmwasserbereitung aktiv", "Hot water heat-up active"),
+        on_states=frozenset({"heat", "postheat"}),
     ),
     _signal(
         _HP1 + "FourwayValve",
@@ -297,7 +328,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "SRC.CUHP.CH.HC1PumpRelay",
         "circuit_1_pump_relay",
         FLAG,
-        ("Heizkreispumpe HK1 (PC1)", "Heating circuit 1 pump (PC1)"),
+        ("Heizkreispumpe HK1 (PC1)", "Heating circuit pump HC1 (PC1)"),
     ),
     _signal(
         "SRC.CUHP.Cooling.Active",
@@ -332,7 +363,10 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "SC.SeasonOpt.Mode",
         "season_mode",
         STATE,
-        ("Saisonbetrieb", "Season mode"),
+        (
+            "Aktueller Heiz-/Kühlstatus (Signal)",
+            "Current heating/cooling status (signal)",
+        ),
         enabled=True,
         translation_key="signal_season_mode",
         options=("heating", "idle", "cooling"),
@@ -365,7 +399,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         _HP1 + "DripPanTemp",
         "drip_pan_temperature",
         TEMPERATURE,
-        ("Kondensatwannentemperatur (TA4)", "Drain pan temperature (TA4)"),
+        ("Kondensatwannentemperatur (TA4)", "Drip pan temperature (TA4)"),
         enabled=True,
     ),
     # O100: despite its name the heat output, not the electric power (it
@@ -374,7 +408,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         _HP1 + "CompressorPower",
         "compressor_output",
         POWER,
-        ("Wärmeleistung (Verdichter)", "Heat output (compressor)"),
+        ("Wärmeleistung (Kompressor)", "Heat output (compressor)"),
         enabled=True,
     ),
     _signal(
@@ -410,22 +444,24 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
             # is registered before its first reading.
             default_unit="s",
             suggested_unit=UnitOfTime.HOURS,
+            # Cumulative, so with long-term statistics as a counter.
+            counter=True,
         )
         for mode, key, names in (
             (
                 "CH",
                 "heating",
-                ("Verdichterlaufzeit Heizen", "Compressor run time heating"),
+                ("Kompressorlaufzeit Heizen", "Compressor run time heating"),
             ),
             (
                 "DHW",
                 "hot_water",
-                ("Verdichterlaufzeit Warmwasser", "Compressor run time hot water"),
+                ("Kompressorlaufzeit Warmwasser", "Compressor run time hot water"),
             ),
             (
                 "Cooling",
                 "cooling",
-                ("Verdichterlaufzeit Kühlen", "Compressor run time cooling"),
+                ("Kompressorlaufzeit Kühlen", "Compressor run time cooling"),
             ),
         )
     ),
@@ -433,18 +469,27 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "SRC.HC1.FlowCtrl.PumpVolumeFlow",
         "circuit_1_volume_flow",
         FLOW,
-        ("Volumenstrom Heizkreis 1 (PC1)", "Heating circuit 1 flow rate (PC1)"),
+        ("Volumenstrom HK1 (PC1)", "Flow rate HC1 (PC1)"),
         enabled=True,
     ),
     # Second sources of readings other entities already show: named after the
     # controller, but generic and disabled like any other signal (C3).
     *(
-        _signal(signal, key, GENERIC, names)
+        _signal(
+            signal,
+            key,
+            GENERIC,
+            names,
+            # The relay of VW1 shows the valve's position, like VW1.
+            translation_key=(
+                "dhw_valve_position" if key == "dhw_valve_relay_signal" else None
+            ),
+        )
         for signal, key, names in (
             (
                 _HP1 + "CompressorSpeedActual",
                 "compressor_speed_signal",
-                ("Verdichterdrehzahl (Signal)", "Compressor speed (signal)"),
+                ("Kompressordrehzahl (Signal)", "Compressor speed (signal)"),
             ),
             (
                 _HP1 + "CHPumpSpeed",
@@ -490,6 +535,16 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
                     "Angeforderte Vorlauftemperatur HK1 (Signal)",
                     "Requested supply temperature HC1 (signal)",
                 ),
+            ),
+            (
+                "SRC.IntDHW.CylTemp",
+                "cylinder_temperature_signal",
+                ("Speichertemperatur (Signal)", "Cylinder temperature (signal)"),
+            ),
+            (
+                "SRC.OutdoorTemp",
+                "outdoor_temperature_signal",
+                ("Außentemperatur (Signal)", "Outdoor temperature (signal)"),
             ),
             (
                 "SRC.RelayStatus.3WayValve",
@@ -625,14 +680,14 @@ HYBRID_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "ODUMONITOR.CompressorSpeedCurr",
         "hybrid_odu_compressor_speed",
         PERCENT,
-        ("Verdichterdrehzahl Außeneinheit", "Outdoor unit compressor speed"),
+        ("Kompressordrehzahl Außeneinheit", "Outdoor unit compressor speed"),
         "%",
     ),
     _hybrid(
         "CAN.CompressorSetp",
         "hybrid_compressor_setpoint",
         PERCENT,
-        ("Verdichterdrehzahl Sollwert", "Compressor speed setpoint"),
+        ("Kompressordrehzahl Sollwert", "Compressor speed setpoint"),
         "%",
     ),
     _hybrid(
@@ -646,29 +701,31 @@ HYBRID_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "TimeTillNextCompressorStart",
         "hybrid_time_to_compressor_start",
         DURATION,
-        ("Zeit bis zum Verdichterstart", "Time until compressor start"),
+        ("Zeit bis zum Kompressorstart", "Time until compressor start"),
         "min",
     ),
     _hybrid(
         "TimeTillNextCompressorStop",
         "hybrid_time_to_compressor_stop",
         DURATION,
-        ("Zeit bis zum Verdichterstopp", "Time until compressor stop"),
+        ("Zeit bis zum Kompressorstopp", "Time until compressor stop"),
         "min",
     ),
     _hybrid(
         "OpTimeCompressorHeating",
         "hybrid_compressor_hours_heating",
         DURATION,
-        ("Verdichterlaufzeit Heizen", "Compressor run time heating"),
+        ("Kompressorlaufzeit Heizen", "Compressor run time heating"),
         "h",
+        counter=True,
     ),
     _hybrid(
         "OpTimeCompressorDHW",
         "hybrid_compressor_hours_hot_water",
         DURATION,
-        ("Verdichterlaufzeit Warmwasser", "Compressor run time hot water"),
+        ("Kompressorlaufzeit Warmwasser", "Compressor run time hot water"),
         "h",
+        counter=True,
     ),
     _hybrid(
         "SmartGridMode",
@@ -688,7 +745,7 @@ HYBRID_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "CAN.FourWayValveActive",
         "hybrid_four_way_valve",
         FLAG,
-        ("Vierwegeventil", "Four-way valve"),
+        ("4-Wege-Ventil", "4-way valve"),
     ),
     _hybrid(
         "CAN.DripPanHeaterActive",
@@ -713,7 +770,7 @@ HYBRID_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "hybrid_compressor_limited",
         FLAG,
         (
-            "Verdichter durch leisen Betrieb begrenzt",
+            "Kompressor durch leisen Betrieb begrenzt",
             "Compressor limited by low-noise operation",
         ),
     ),
@@ -736,14 +793,14 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         HS + "/pumpVolumeFlow",
         "volume_flow",
         FLOW,
-        ("Volumenstrom", "Volume flow"),
+        ("Volumenstrom primär", "Primary flow rate"),
         enabled=True,
     ),
     _define(
         "/heatSources/compressor/powerElecActual",
         "compressor_power",
         POWER,
-        ("Elektrische Leistung Verdichter", "Compressor electric power"),
+        ("Elektrische Leistung Kompressor", "Compressor electric power"),
         enabled=True,
     ),
     _define(
@@ -832,7 +889,7 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
             (
                 "compressorTemp",
                 "compressor_temperature",
-                ("Verdichtertemperatur", "Compressor temperature"),
+                ("Kompressortemperatur", "Compressor temperature"),
                 False,
             ),
             (
@@ -889,7 +946,8 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         enabled=True,
     ),
     # Enabled since 0.9.0-alpha.6: the fan and the primary heating pump
-    # speeds; the compressor speed waits for the entity review.
+    # speeds. The compressor speed stays disabled: it is practically
+    # the enabled compressor modulation.
     _define(
         HS + "/oduFanSpeed",
         "outdoor_fan_speed",
@@ -908,7 +966,7 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         REFRIGERANT + "/compressorActualSpeed",
         "compressor_speed",
         PERCENT,
-        ("Verdichterdrehzahl", "Compressor speed"),
+        ("Kompressordrehzahl", "Compressor speed"),
     ),
     _define(
         "/heatSources/additionalHeater/flowTemp",
@@ -923,7 +981,7 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         "compressor_power_refrigerant",
         POWER,
         (
-            "Elektrische Leistung Verdichter (Kältekreis)",
+            "Elektrische Leistung Kompressor (Kältekreis)",
             "Compressor electric power (refrigerant circuit)",
         ),
     ),
@@ -936,7 +994,14 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
     # Disabled: readings of a ventilation unit (P31). The units below are the
     # documented ones; a reading in another unit is not shown.
     *(
-        _define(VENTILATION + "/" + name, key, kind, names)
+        _define(
+            VENTILATION + "/" + name,
+            key,
+            kind,
+            names,
+            # The unit's run time only grows; the filter time counts down.
+            counter=key == "ventilation_run_time",
+        )
         for name, key, kind, names in (
             (
                 "sensors/exhaustTemp",
@@ -1190,12 +1255,13 @@ def generic_form(
                 translation_key=_MAP_TRANSLATIONS.get(frozenset(declared)),
             )
         if declared or state_key(getattr(data, "value", None)) in _TRUE_FALSE:
-            # O107: declared or answered true/false is an on/off state.
+            # O107: declared or answered true/false is an on/off state; a
+            # named second source keeps its own state texts.
             return replace(
                 definition,
                 kind=FLAG,
                 options=_FLAG_OPTIONS,
-                translation_key="on_off_state",
+                translation_key=definition.translation_key or "on_off_state",
             )
         return None
     names = tuple(getattr(state, "name", "") for state in getattr(data, "states", ()))
@@ -1211,7 +1277,7 @@ def generic_form(
                 definition,
                 kind=FLAG,
                 options=_FLAG_OPTIONS,
-                translation_key="on_off_state",
+                translation_key=definition.translation_key or "on_off_state",
             )
         return replace(
             definition,
@@ -1219,6 +1285,9 @@ def generic_form(
             options=keys,
             translation_key=_MAP_TRANSLATIONS.get(frozenset(keys)),
         )
+    if definition.translation_key is not None:
+        # State texts belong to the on/off form only, never to a number.
+        return replace(definition, translation_key=None)
     return definition
 
 
@@ -1367,8 +1436,14 @@ def state_class(
 ) -> SensorStateClass | None:
     """Statistics for measurements: reviewed ones, and controller signals
     whose reading has the unit of a measurement (``unit``, as Home Assistant
-    shows it). States, text, times and other generic readings get none."""
-    # Run and remaining times are counters, not measurements: no statistics.
+    shows it). States, text, times and other generic readings get none.
+
+    A cumulative run time (``counter``) is a growing total, like the
+    cloud's working times; remaining times and timers get no statistics.
+    """
+    if definition.counter and definition.kind == DURATION:
+        return SensorStateClass.TOTAL_INCREASING
+    # Remaining times and timers are no measurements: no statistics.
     if definition.kind in (
         TEMPERATURE,
         POWER,
@@ -1435,6 +1510,13 @@ def flag_state(value: object) -> str | None:
     return _flag(value)
 
 
+def _flag_of(definition: LocalOnlyDefinition, value: object) -> str | None:
+    """on/off of a value; a declared "on" state of the definition is on."""
+    if definition.on_states and state_key(value) in definition.on_states:
+        return "on"
+    return _flag(value)
+
+
 def _flag(value: object) -> str | None:
     if isinstance(value, bool):
         return "on" if value else "off"
@@ -1492,7 +1574,7 @@ def native_value(
         return mode if mode in state_options(definition, observation) else None
     if definition.kind == FLAG and observation.matched:
         # A declared state of an on/off signal.
-        return _flag(observation.matched[0])
+        return _flag_of(definition, observation.matched[0])
     if definition.kind == STATE and observation.matched:
         # C7-2: a declared state, shown by its name.
         key = state_key(observation.matched[0])
@@ -1508,7 +1590,7 @@ def native_value(
         key = state_key(value)
         return key if key in state_options(definition, observation) else None
     if definition.kind == FLAG:
-        return _flag(value)
+        return _flag_of(definition, value)
     # Some documented examples report the error marker without declaring it as
     # a state; like the cloud readings, never show it as a value.
     if (

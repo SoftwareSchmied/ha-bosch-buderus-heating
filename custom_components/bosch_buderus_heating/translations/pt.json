@@ -1413,6 +1413,9 @@
       "rrc_extra_dhw_duration": {
         "name": "Duração da água quente extra"
       },
+      "rrc_hot_water_temperature": {
+        "name": "Temperatura da água quente"
+      },
       "rrc_heat_curve_min": {
         "name": "Ponto base da curva de aquecimento"
       },
@@ -2069,13 +2072,13 @@
         "name": "Próximas férias"
       },
       "pointt_api_requests_total": {
-        "name": "Total de pedidos à API PointT"
+        "name": "Total de pedidos à cloud"
       },
       "pointt_api_requests_last_hour": {
-        "name": "Pedidos à API PointT – última hora"
+        "name": "Pedidos à cloud – última hora"
       },
       "pointt_api_response_time_last_hour": {
-        "name": "Tempo de resposta da API PointT – última hora"
+        "name": "Tempo de resposta da cloud – última hora"
       },
       "softener_regeneration_phase": {
         "state": {

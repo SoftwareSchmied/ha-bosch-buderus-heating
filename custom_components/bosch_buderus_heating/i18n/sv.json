@@ -140,7 +140,7 @@
     "DHW": "VV",
     "disabled": "inaktiverad",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Att stänga den här aviseringen kvitterar eller återställer inte ett fel på värmesystemet.",
-    "Drain pan temperature (TA4)": "Temperatur avloppskärl (TA4)",
+    "Drip pan temperature (TA4)": "Temperatur i droppskål (TA4)",
     "Drip pan heater": "Värmare för droppskål",
     "Eco start temperature": "Starttemperatur Eco",
     "Eco+ start temperature": "Starttemperatur Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Firmwareversion",
     "First detected": "Första gången upptäckt",
     "Flow temperature limit": "Gräns för framledningstemperatur",
-    "Four-way valve": "Fyrvägsventil",
+    "4-way valve": "4-vägsventil",
     "Fresh-water primary pump": "Primärpump färskvatten",
     "Gas flow": "Gasflöde",
     "Gas heating (kWh)": "Gas: till värme (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Uppvärmningshastighet",
     "Heating": "Värme",
     "Heating circuit": "Värmekrets",
-    "Heating circuit 1 flow rate (PC1)": "Värmekrets 1 flöde (PC1)",
-    "Heating circuit 1 pump (PC1)": "Värmekrets 1 pump (PC1)",
+    "Flow rate HC1 (PC1)": "Värmekrets 1 flöde (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Värmekrets 1 pump (PC1)",
     "Heating circuit pump": "Värmekretspump",
     "Heating curve base point": "Värmekurvans startpunkt",
     "Heating curve end point": "Värmekurvans slutpunkt",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: fel åtgärdade",
     "{name}: heating system fault": "{name}: fel i värmesystemet",
     "{name}: heating system notifications": "{name}: meddelanden från värmesystemet",
-    "{name}: notifications cleared": "{name}: meddelanden avslutade"
+    "{name}: notifications cleared": "{name}: meddelanden avslutade",
+    "Primary flow rate": "Primärflöde",
+    "Current heating/cooling status (signal)": "Aktuell värme-/kylstatus (signal)",
+    "Cylinder temperature (signal)": "Beredartemperatur (signal)",
+    "Outdoor temperature (signal)": "Utomhustemperatur (signal)",
+    "Hot water heat-up active": "Varmvattenuppvärmning aktiv"
   }
 }

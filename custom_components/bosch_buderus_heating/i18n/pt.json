@@ -140,7 +140,7 @@
     "DHW": "AQS",
     "disabled": "desativado",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Dispensar esta notificação não confirma nem repõe uma avaria no sistema de aquecimento.",
-    "Drain pan temperature (TA4)": "Temperatura do tabuleiro de condensados (TA4)",
+    "Drip pan temperature (TA4)": "Temperatura do tabuleiro de condensados (TA4)",
     "Drip pan heater": "Aquecimento do tabuleiro de condensados",
     "Eco start temperature": "Temperatura de arranque Eco",
     "Eco+ start temperature": "Temperatura de arranque Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Versão do firmware",
     "First detected": "Detetada pela primeira vez",
     "Flow temperature limit": "Limite da temperatura de ida",
-    "Four-way valve": "Válvula de quatro vias",
+    "4-way valve": "Válvula de 4 vias",
     "Fresh-water primary pump": "Bomba primária de água doce",
     "Gas flow": "Caudal de gás",
     "Gas heating (kWh)": "Gás, aquecimento (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Velocidade de aquecimento",
     "Heating": "Aquecimento",
     "Heating circuit": "Circuito de aquecimento",
-    "Heating circuit 1 flow rate (PC1)": "Caudal do circuito de aquecimento 1 (PC1)",
-    "Heating circuit 1 pump (PC1)": "Bomba do circuito de aquecimento 1 (PC1)",
+    "Flow rate HC1 (PC1)": "Caudal do circuito de aquecimento 1 (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Bomba do circuito de aquecimento 1 (PC1)",
     "Heating circuit pump": "Bomba do circuito de aquecimento",
     "Heating curve base point": "Ponto base da curva de aquecimento",
     "Heating curve end point": "Ponto final da curva de aquecimento",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name}: avarias resolvidas",
     "{name}: heating system fault": "{name}: avaria do sistema de aquecimento",
     "{name}: heating system notifications": "{name}: mensagens do sistema de aquecimento",
-    "{name}: notifications cleared": "{name}: notificações terminadas"
+    "{name}: notifications cleared": "{name}: notificações terminadas",
+    "Primary flow rate": "Caudal primário",
+    "Current heating/cooling status (signal)": "Estado atual de aquecimento/arrefecimento (sinal)",
+    "Cylinder temperature (signal)": "Temperatura do depósito (sinal)",
+    "Outdoor temperature (signal)": "Temperatura exterior (sinal)",
+    "Hot water heat-up active": "Aquecimento da água quente ativo"
   }
 }

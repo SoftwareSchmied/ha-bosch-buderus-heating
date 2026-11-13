@@ -1413,6 +1413,9 @@
       "rrc_extra_dhw_duration": {
         "name": "Dauer Extra-Warmwasser"
       },
+      "rrc_hot_water_temperature": {
+        "name": "Warmwassertemperatur"
+      },
       "rrc_heat_curve_min": {
         "name": "Heizkurve Fußpunkt"
       },
@@ -2069,13 +2072,13 @@
         "name": "Nächster Urlaub"
       },
       "pointt_api_requests_total": {
-        "name": "PointT-API-Aufrufe gesamt"
+        "name": "Cloud-Anfragen gesamt"
       },
       "pointt_api_requests_last_hour": {
-        "name": "PointT-API-Aufrufe – letzte Stunde"
+        "name": "Cloud-Anfragen – letzte Stunde"
       },
       "pointt_api_response_time_last_hour": {
-        "name": "PointT-API-Antwortzeit – letzte Stunde"
+        "name": "Cloud-Antwortzeit – letzte Stunde"
       },
       "softener_regeneration_phase": {
         "state": {

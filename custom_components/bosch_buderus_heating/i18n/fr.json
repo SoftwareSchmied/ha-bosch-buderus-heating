@@ -140,7 +140,7 @@
     "DHW": "ECS",
     "disabled": "désactivé",
     "Dismissing this notification does not acknowledge or reset a fault on the heating system.": "Le fait de fermer cette notification n'acquitte ni ne réinitialise aucun défaut du système de chauffage.",
-    "Drain pan temperature (TA4)": "Température du bac de récupération (TA4)",
+    "Drip pan temperature (TA4)": "Température du bac de récupération (TA4)",
     "Drip pan heater": "Résistance du bac de récupération",
     "Eco start temperature": "Température de démarrage Eco",
     "Eco+ start temperature": "Température de démarrage Eco+",
@@ -188,7 +188,7 @@
     "Firmware version": "Version du micrologiciel",
     "First detected": "Première détection",
     "Flow temperature limit": "Limite de la température de départ",
-    "Four-way valve": "Vanne quatre voies",
+    "4-way valve": "Vanne 4 voies",
     "Fresh-water primary pump": "Pompe primaire d'eau fraîche",
     "Gas flow": "Débit de gaz",
     "Gas heating (kWh)": "Gaz, chauffage (kWh)",
@@ -220,8 +220,8 @@
     "Heat-up speed": "Vitesse de chauffe",
     "Heating": "Chauffage",
     "Heating circuit": "Circuit de chauffage",
-    "Heating circuit 1 flow rate (PC1)": "Débit du circuit de chauffage 1 (PC1)",
-    "Heating circuit 1 pump (PC1)": "Pompe du circuit de chauffage 1 (PC1)",
+    "Flow rate HC1 (PC1)": "Débit du circuit de chauffage 1 (PC1)",
+    "Heating circuit pump HC1 (PC1)": "Pompe du circuit de chauffage 1 (PC1)",
     "Heating circuit pump": "Pompe du circuit de chauffage",
     "Heating curve base point": "Point de base de la courbe de chauffe",
     "Heating curve end point": "Point final de la courbe de chauffe",
@@ -576,6 +576,11 @@
     "{name}: faults resolved": "{name} : défauts résolus",
     "{name}: heating system fault": "{name} : défaut de l'installation de chauffage",
     "{name}: heating system notifications": "{name} : messages de l'installation de chauffage",
-    "{name}: notifications cleared": "{name} : messages terminés"
+    "{name}: notifications cleared": "{name} : messages terminés",
+    "Primary flow rate": "Débit primaire",
+    "Current heating/cooling status (signal)": "État actuel chauffage/rafraîchissement (signal)",
+    "Cylinder temperature (signal)": "Température du ballon (signal)",
+    "Outdoor temperature (signal)": "Température extérieure (signal)",
+    "Hot water heat-up active": "Chauffe de l'eau chaude active"
   }
 }

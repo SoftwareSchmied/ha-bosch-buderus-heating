@@ -208,10 +208,11 @@ def test_signals_follow_the_local_only_rules() -> None:
     sensors = [local_sensor(item)[0] for item in signals()]
     kinds = Counter(sensor.definition.kind for sensor in sensors if sensor)
     assert kinds == {
-        # text true/false (C7-1) and the two TRUE/FALSE state maps (O107)
-        "flag": 53,
+        # text true/false (C7-1), the two TRUE/FALSE state maps (O107) and
+        # the hot water heat-up (FALSE/HEAT/POSTHEAT) since 0.9.0
+        "flag": 54,
         "generic": 26,  # named second sources stay generic
-        "state": 17,  # state maps of real names, no unit (C7-2)
+        "state": 16,  # state maps of real names, no unit (C7-2)
         "duration": 3,
         "temperature": 2,
         "power": 1,
@@ -265,9 +266,11 @@ def test_the_local_plant_view_builds_from_the_capture() -> None:
     # cylinder temperature disabled; C7: 25 signals enabled
     # (with the second expansion valve VR0); since alpha.6 the outdoor unit
     # fan (PL3) and the primary heating pump (PC0) speeds, TC1, TL2 and the
-    # refrigerant circuit temperatures TR3, TR5, TR6, JR0 and JR1.
+    # refrigerant circuit temperatures TR3, TR5, TR6, JR0 and JR1. Since
+    # 0.9.0 the totals of the only heat source (starts, system run time) and
+    # the burner status of this heat pump are created disabled.
     assert Counter(platform for platform, _ in shapes) == {"sensor": 191}
-    assert sum(bool(shape.enabled) for shape in shapes.values()) == 87
+    assert sum(bool(shape.enabled) for shape in shapes.values()) == 84
 
 
 async def test_with_the_cloud_the_same_signals_become_entities(hass) -> None:
