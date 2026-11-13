@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Níl socrú áitiúil ar fáil go dtí go mbeidh soláthar rialta sonraí áitiúla réidh.",
       "local_session_changed": "Tá deireadh leis an seisiún socraithe seo nó athraíodh a rogha. Oscail an socrú áitiúil arís chun leanúint ar aghaidh.",
       "local_discovery_invalid": "Ní chuireann an fógra aimsithe seo cur síos ar chríochphointe geata áitiúil tacaithe.",
+      "local_address_moved": "Freagraíonn geata rochtana áitiúla cumraithe ag seoladh nua. Tairgeann nóta deisiúcháin é a úsáid.",
       "local_existing_owner_required": "Socraigh córas gan an néal le “Rochtain áitiúil amháin” agus an comhtháthú á chur leis. Is féidir geata a aimsíodh a chur le socrú atá ann cheana.",
       "local_target_required": "Níl aon tsuiteáil oiriúnach coinnithe ag an socrú seo le haghaidh nasc áitiúil.",
       "local_setup_complete": "Socraíodh an rochtain áitiúil.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "Níl an iontráil lena mbaineann ann a thuilleadh.",
           "configuration_changed": "Tá an rochtain nó an córas téimh athraithe. Oscail an deisiúchán arís."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Geata áitiúil aimsithe ag seoladh nua",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Úsáid seoladh nua an gheata",
+            "description": "Ní féidir leis an rochtain áitiúil a geata a bhaint amach ag {previous}. Freagraíonn an geata céanna anois ag {address}: taispeánann sé an deimhniú a deimhníodh le linn an tsocraithe. Níor seoladh aon chomhartha chuig an seoladh nua.\n\nDeimhnigh thíos chun an seoladh nua a shábháil. Tosaíonn an rochtain áitiúil arís leis ansin; ní athraítear an comhartha ná an deimhniú deimhnithe. Chun é seo a sheachaint amach anseo, cuir seoladh an gheata in áirithe sa ródaire (áirithint DHCP).",
+            "data": {
+              "confirm": "Úsáid an seoladh nua"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Deimhnigh le leanúint ar aghaidh, le do thoil."
+        },
+        "abort": {
+          "entry_not_found": "Níl an iontráil lena mbaineann den chomhtháthú seo ann a thuilleadh.",
+          "configuration_changed": "Tá an rochtain nó an córas athraithe. Oscail an deisiúchán arís.",
+          "local_address_expired": "Níl an nóta seo cothrom le dáta a thuilleadh. Níor athraíodh aon rud.",
+          "local_address_recovered": "Baineann an rochtain áitiúil a geata amach arís. Níor athraíodh aon rud.",
+          "local_address_unproven": "Níorbh fhéidir an geata ag an seoladh nua a dheimhniú arís. Níor athraíodh aon rud."
         }
       }
     },

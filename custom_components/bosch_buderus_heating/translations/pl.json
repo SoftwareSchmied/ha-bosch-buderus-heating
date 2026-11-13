@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Konfiguracja lokalna jest niedostępna, dopóki regularne zasilanie danymi lokalnymi nie będzie gotowe.",
       "local_session_changed": "Ta sesja konfiguracji została zakończona albo zmienił się jej wybór. Ponownie otwórz konfigurację lokalną, aby kontynuować.",
       "local_discovery_invalid": "To ogłoszenie wykrycia nie opisuje obsługiwanego lokalnego punktu końcowego bramki.",
+      "local_address_moved": "Bramka skonfigurowanego dostępu lokalnego odpowiada pod nowym adresem. Powiadomienie o naprawie proponuje jego użycie.",
       "local_existing_owner_required": "Instalację bez chmury skonfiguruj opcją „Tylko dostęp lokalny” przy dodawaniu integracji. Wykrytą bramkę można dodać do istniejącej konfiguracji.",
       "local_target_required": "Ta konfiguracja nie ma odpowiedniej zachowanej instalacji do połączenia lokalnego.",
       "local_setup_complete": "Dostęp lokalny został skonfigurowany.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "Dotyczący wpis już nie istnieje.",
           "configuration_changed": "Dostęp lub instalacja grzewcza uległy zmianie. Otwórz naprawę ponownie."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokalna bramka znaleziona pod nowym adresem",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Użyj nowego adresu bramki",
+            "description": "Dostęp lokalny nie może połączyć się ze swoją bramką pod adresem {previous}. Ta sama bramka odpowiada teraz pod adresem {address}: przedstawia certyfikat potwierdzony podczas konfiguracji. Na nowy adres nie wysłano żadnego tokenu.\n\nPotwierdź poniżej, aby zapisać nowy adres. Dostęp lokalny uruchomi się wtedy ponownie z tym adresem; token i potwierdzony certyfikat pozostaną bez zmian. Aby uniknąć tego w przyszłości, zarezerwuj adres bramki w routerze (rezerwacja DHCP).",
+            "data": {
+              "confirm": "Użyj nowego adresu"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Potwierdź, aby kontynuować."
+        },
+        "abort": {
+          "entry_not_found": "Dotyczący wpis tej integracji już nie istnieje.",
+          "configuration_changed": "Dostęp lub instalacja uległy zmianie. Otwórz naprawę ponownie.",
+          "local_address_expired": "To powiadomienie nie jest już aktualne. Nic nie zostało zmienione.",
+          "local_address_recovered": "Dostęp lokalny znów łączy się ze swoją bramką. Nic nie zostało zmienione.",
+          "local_address_unproven": "Nie udało się ponownie potwierdzić bramki pod nowym adresem. Nic nie zostało zmienione."
         }
       }
     },

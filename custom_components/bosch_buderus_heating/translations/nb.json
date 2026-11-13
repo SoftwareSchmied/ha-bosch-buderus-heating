@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Lokalt oppsett er ikke tilgjengelig før den vanlige lokale datatilførselen er klar.",
       "local_session_changed": "Denne oppsettsøkten er avsluttet, eller valget endret seg. Åpne lokalt oppsett på nytt for å fortsette.",
       "local_discovery_invalid": "Denne oppdagelsesmeldingen beskriver ikke et støttet lokalt gateway-endepunkt.",
+      "local_address_moved": "Gatewayen til en konfigurert lokal tilgang svarer på en ny adresse. En reparasjonsmelding tilbyr å bruke den.",
       "local_existing_owner_required": "Sett opp et anlegg uten skyen med «Bare lokal tilgang» når du legger til integrasjonen. En funnet gateway kan legges til i et eksisterende oppsett.",
       "local_target_required": "Dette oppsettet har ikke noe egnet lagret anlegg for en lokal tilkobling.",
       "local_setup_complete": "Den lokale tilgangen er satt opp.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "Den berørte oppføringen finnes ikke lenger.",
           "configuration_changed": "Tilgangen eller varmeanlegget har endret seg. Åpne reparasjonen på nytt."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokal gateway funnet på en ny adresse",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Bruk gatewayens nye adresse",
+            "description": "Den lokale tilgangen når ikke gatewayen sin på {previous}. Den samme gatewayen svarer nå på {address}: den viser sertifikatet som ble bekreftet under oppsettet. Ingen token ble sendt til den nye adressen.\n\nBekreft nedenfor for å lagre den nye adressen. Den lokale tilgangen starter deretter på nytt med den; token og bekreftet sertifikat forblir uendret. For å unngå dette senere kan du reservere gatewayens adresse i ruteren (DHCP-reservasjon).",
+            "data": {
+              "confirm": "Bruk den nye adressen"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Bekreft for å fortsette."
+        },
+        "abort": {
+          "entry_not_found": "Den berørte oppføringen i denne integrasjonen finnes ikke lenger.",
+          "configuration_changed": "Tilgangen eller anlegget har endret seg. Åpne reparasjonen på nytt.",
+          "local_address_expired": "Denne meldingen er ikke lenger aktuell. Ingenting ble endret.",
+          "local_address_recovered": "Den lokale tilgangen når gatewayen sin igjen. Ingenting ble endret.",
+          "local_address_unproven": "Gatewayen på den nye adressen kunne ikke bekreftes på nytt. Ingenting ble endret."
         }
       }
     },

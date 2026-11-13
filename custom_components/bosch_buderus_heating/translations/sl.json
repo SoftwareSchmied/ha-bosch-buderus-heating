@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Lokalna nastavitev ni na voljo, dokler redna lokalna oskrba s podatki ni pripravljena.",
       "local_session_changed": "Ta seja nastavitve se je končala ali se je njena izbira spremenila. Za nadaljevanje znova odprite lokalno nastavitev.",
       "local_discovery_invalid": "To obvestilo o odkritju ne opisuje podprte končne točke lokalnega prehoda.",
+      "local_address_moved": "Prehod nastavljenega lokalnega dostopa odgovarja na novem naslovu. Obvestilo o popravilu ponuja njegovo uporabo.",
       "local_existing_owner_required": "Sistem brez oblaka nastavite z možnostjo »Samo lokalni dostop« ob dodajanju integracije. Odkriti prehod je mogoče dodati obstoječi nastavitvi.",
       "local_target_required": "Ta nastavitev nima primerne ohranjene napeljave za lokalno povezavo.",
       "local_setup_complete": "Lokalni dostop je nastavljen.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "Prizadeti vnos ne obstaja več.",
           "configuration_changed": "Dostop ali ogrevalni sistem se je spremenil. Znova odprite popravilo."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokalni prehod najden na novem naslovu",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Uporabi nov naslov prehoda",
+            "description": "Lokalni dostop ne doseže svojega prehoda na naslovu {previous}. Isti prehod zdaj odgovarja na naslovu {address}: predstavi potrdilo, potrjeno pri nastavitvi. Na nov naslov ni bil poslan noben žeton.\n\nPotrdite spodaj, da shranite nov naslov. Lokalni dostop se nato znova zažene z njim; žeton in potrjeno potrdilo ostaneta nespremenjena. Da se temu v prihodnje izognete, rezervirajte naslov prehoda v usmerjevalniku (rezervacija DHCP).",
+            "data": {
+              "confirm": "Uporabi nov naslov"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Potrdite za nadaljevanje."
+        },
+        "abort": {
+          "entry_not_found": "Prizadeti vnos te integracije ne obstaja več.",
+          "configuration_changed": "Dostop ali sistem se je spremenil. Znova odprite popravilo.",
+          "local_address_expired": "To obvestilo ni več aktualno. Nič ni bilo spremenjeno.",
+          "local_address_recovered": "Lokalni dostop znova doseže svoj prehod. Nič ni bilo spremenjeno.",
+          "local_address_unproven": "Prehoda na novem naslovu ni bilo mogoče znova potrditi. Nič ni bilo spremenjeno."
         }
       }
     },

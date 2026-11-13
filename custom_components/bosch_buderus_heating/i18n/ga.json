@@ -530,6 +530,7 @@
     "Time until next regeneration": "Am go dtí an chéad athghiniúint eile",
     "Time zone": "Crios ama",
     "Times observed by Home Assistant ({zone}).": "Amanna mar a fheiceann Home Assistant iad ({zone}).",
+    "Tip: if the gateway's address changes, for example after a router restart, a fixed address helps: reserve its IP address in the router (DHCP reservation) or enter the gateway's host name. If the gateway announces itself at a new address, a repair note offers to use it.": "Leid: má athraíonn seoladh an gheata, mar shampla tar éis don ródaire atosú, cabhraíonn seoladh seasta: cuir a sheoladh IP in áirithe sa ródaire (áirithint DHCP) nó cuir isteach ainm óstach an gheata. Má fhógraíonn an geata é féin ag seoladh nua, tairgeann nóta deisiúcháin é a úsáid.",
     "Total": "Iomlán",
     "Total electricity consumption": "Ídiú iomlán leictreachais",
     "Total gas consumption": "Ídiú iomlán gháis",

@@ -217,6 +217,7 @@
       "local_setup_unavailable": "A configuração local não está disponível até que o fornecimento regular de dados locais esteja pronto.",
       "local_session_changed": "Esta sessão de configuração terminou ou a sua seleção foi alterada. Abra novamente a configuração local para continuar.",
       "local_discovery_invalid": "Este anúncio de deteção não descreve um ponto de acesso de gateway local suportado.",
+      "local_address_moved": "O gateway de um acesso local configurado responde num novo endereço. Uma nota de reparação propõe utilizá-lo.",
       "local_existing_owner_required": "Configure uma instalação sem a cloud com \"Apenas acesso local\" ao adicionar a integração. Um gateway detetado pode ser adicionado a uma configuração existente.",
       "local_target_required": "Esta configuração não tem nenhuma instalação adequada retida para uma ligação local.",
       "local_setup_complete": "O acesso local foi configurado.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "A entrada afetada já não existe.",
           "configuration_changed": "O acesso ou o sistema de aquecimento foi alterado. Abra novamente a reparação."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Gateway local encontrado num novo endereço",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Utilizar o novo endereço do gateway",
+            "description": "O acesso local não consegue alcançar o seu gateway em {previous}. O mesmo gateway responde agora em {address}: apresenta o certificado confirmado durante a configuração. Não foi enviado nenhum token para o novo endereço.\n\nConfirme abaixo para guardar o novo endereço. O acesso local reinicia depois com ele; o token e o certificado confirmado mantêm-se inalterados. Para evitar isto no futuro, reserve o endereço do gateway no router (reserva DHCP).",
+            "data": {
+              "confirm": "Utilizar o novo endereço"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Confirme para continuar."
+        },
+        "abort": {
+          "entry_not_found": "A entrada afetada desta integração já não existe.",
+          "configuration_changed": "O acesso ou a instalação foi alterado. Abra novamente a reparação.",
+          "local_address_expired": "Esta nota já não está atual. Nada foi alterado.",
+          "local_address_recovered": "O acesso local volta a alcançar o seu gateway. Nada foi alterado.",
+          "local_address_unproven": "Não foi possível confirmar novamente o gateway no novo endereço. Nada foi alterado."
         }
       }
     },

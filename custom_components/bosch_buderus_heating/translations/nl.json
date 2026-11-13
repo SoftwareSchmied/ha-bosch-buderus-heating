@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Lokale configuratie is niet beschikbaar totdat de reguliere lokale gegevenslevering gereed is.",
       "local_session_changed": "Deze configuratiesessie is beëindigd of de selectie is gewijzigd. Open de lokale configuratie opnieuw om verder te gaan.",
       "local_discovery_invalid": "Deze ontdekkingsaankondiging beschrijft geen ondersteund lokaal gatewayeindpunt.",
+      "local_address_moved": "De gateway van een ingestelde lokale toegang antwoordt op een nieuw adres. Een reparatiemelding biedt aan het te gebruiken.",
       "local_existing_owner_required": "Configureer een installatie zonder de cloud met \"Alleen lokale toegang\" bij het toevoegen van de integratie. Een gevonden gateway kan aan een bestaande configuratie worden toegevoegd.",
       "local_target_required": "Deze configuratie heeft geen geschikte bewaarde installatie voor een lokale verbinding.",
       "local_setup_complete": "De lokale toegang is ingesteld.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "De betreffende invoer bestaat niet meer.",
           "configuration_changed": "De toegang of de verwarmingsinstallatie is gewijzigd. Open de reparatie opnieuw."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokale gateway gevonden op een nieuw adres",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Het nieuwe adres van de gateway gebruiken",
+            "description": "De lokale toegang bereikt zijn gateway niet op {previous}. Dezelfde gateway antwoordt nu op {address}: hij toont het certificaat dat bij het instellen is bevestigd. Er is geen token naar het nieuwe adres verzonden.\n\nBevestig hieronder om het nieuwe adres op te slaan. De lokale toegang start daarna opnieuw met dit adres; het token en het bevestigde certificaat blijven ongewijzigd. Reserveer het adres van de gateway in de router (DHCP-reservering) om dit in de toekomst te voorkomen.",
+            "data": {
+              "confirm": "Het nieuwe adres gebruiken"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Bevestig om door te gaan."
+        },
+        "abort": {
+          "entry_not_found": "De betreffende invoer van deze integratie bestaat niet meer.",
+          "configuration_changed": "De toegang of de installatie is gewijzigd. Open de reparatie opnieuw.",
+          "local_address_expired": "Deze melding is niet meer actueel. Er is niets gewijzigd.",
+          "local_address_recovered": "De lokale toegang bereikt zijn gateway weer. Er is niets gewijzigd.",
+          "local_address_unproven": "De gateway op het nieuwe adres kon niet opnieuw worden bevestigd. Er is niets gewijzigd."
         }
       }
     },

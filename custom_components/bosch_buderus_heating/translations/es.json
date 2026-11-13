@@ -217,6 +217,7 @@
       "local_setup_unavailable": "La configuración local no está disponible hasta que el suministro regular de datos locales esté listo.",
       "local_session_changed": "Esta sesión de configuración ha terminado o ha cambiado su selección. Vuelve a abrir la configuración local para continuar.",
       "local_discovery_invalid": "Este anuncio de detección no describe un punto de acceso de pasarela local compatible.",
+      "local_address_moved": "La pasarela de un acceso local configurado responde en una dirección nueva. Un aviso de reparación ofrece usarla.",
       "local_existing_owner_required": "Configura una instalación sin la nube con «Solo acceso local» al añadir la integración. Una pasarela detectada se puede añadir a una configuración existente.",
       "local_target_required": "Esta configuración no tiene ninguna instalación conservada adecuada para una conexión local.",
       "local_setup_complete": "El acceso local se ha configurado.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "La entrada afectada ya no existe.",
           "configuration_changed": "El acceso o la instalación de calefacción ha cambiado. Vuelve a abrir la reparación."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Pasarela local encontrada en una dirección nueva",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Usar la nueva dirección de la pasarela",
+            "description": "El acceso local no puede alcanzar su pasarela en {previous}. La misma pasarela responde ahora en {address}: presenta el certificado confirmado durante la configuración. No se ha enviado ningún token a la nueva dirección.\n\nConfirme abajo para guardar la nueva dirección. Después, el acceso local se reinicia con ella; el token y el certificado confirmado no cambian. Para evitarlo en el futuro, reserve la dirección de la pasarela en el router (reserva DHCP).",
+            "data": {
+              "confirm": "Usar la nueva dirección"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Confirma para continuar."
+        },
+        "abort": {
+          "entry_not_found": "La entrada afectada de esta integración ya no existe.",
+          "configuration_changed": "El acceso o la instalación ha cambiado. Vuelve a abrir la reparación.",
+          "local_address_expired": "Este aviso ya no está vigente. No se ha cambiado nada.",
+          "local_address_recovered": "El acceso local vuelve a alcanzar su pasarela. No se ha cambiado nada.",
+          "local_address_unproven": "No se ha podido confirmar de nuevo la pasarela en la nueva dirección. No se ha cambiado nada."
         }
       }
     },

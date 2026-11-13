@@ -85,3 +85,12 @@ nothing; the pauses themselves still apply.
 
 Invalid credentials are not treated as a rate limit. Home Assistant uses the
 separate **Reauthenticate** flow for that condition.
+
+When the gateway of a local access answers at a new address (for example after
+a router restart), a note **Local gateway found at a new address** offers to use
+it. The gateway was recognized by the certificate confirmed during setup, with
+one TLS handshake and without the token. Tick the box and submit to save the
+address; the certificate is checked once more right before. The token and the
+certificate stay, so no new sign-in is needed. The note disappears on its own
+when the access reaches its gateway again or Home Assistant restarts. Details
+are in [a new gateway address](local-setup-dialogs.md#a-new-gateway-address).

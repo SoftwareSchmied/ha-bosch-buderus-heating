@@ -245,6 +245,27 @@ entities show the current local readings; a choice saved before stays.
 Without the cloud, local readings are shown whatever this option says. Details
 are in [operation without the cloud](operation-without-cloud.md).
 
+### Keep the gateway's address stable
+
+Many routers hand out a different IP address after a restart. The local access
+then cannot reach its gateway until the address is updated. Give the gateway a
+fixed address in one of two ways:
+
+- **DHCP reservation:** reserve the gateway's current IP address in the
+  router's device list. This works everywhere and is the recommended way.
+- **Host name:** enter the gateway's host name instead of its IP address. The
+  address step offers it when Home Assistant found the gateway in the network.
+  This only helps if the computer running Home Assistant can resolve that name;
+  if in doubt, use the reservation.
+
+While the local access cannot reach its gateway, its status in **Configure →
+Connections** repeats this tip. If the gateway announces itself at a new
+address, the integration checks that address with one TLS handshake, without
+sending the token. Only when the gateway presents exactly the certificate
+confirmed during setup does a repair note offer to use the new address; see
+[a new gateway address](local-setup-dialogs.md#a-new-gateway-address). The
+address changes only after you confirm it there.
+
 When Home Assistant finds a gateway in the network, it shows a discovery
 notice. If you select **Ignore**, that notice stays ignored, also after a
 restart; you can still add the local access from the entry's options.

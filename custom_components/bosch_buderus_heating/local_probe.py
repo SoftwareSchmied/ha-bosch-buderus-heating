@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import hmac
 import ipaddress
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import ClassVar
@@ -26,6 +27,9 @@ MAX_BODY_BYTES = 256 * 1024
 MAX_JSON_DEPTH = 32
 MAX_JSON_VALUES = 8192
 MAX_DISCOVERY_ADDRESSES = 16
+# Announced addresses checked by one TLS handshake each when a configured
+# gateway may have moved; the rest of an announcement is not contacted.
+MAX_ADDRESS_CHECKS = 2
 _HOST_LABEL = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?")
 _NUMERIC_HOST = re.compile(r"(?:0x[0-9a-f]+|[0-9]+)(?:\.(?:0x[0-9a-f]+|[0-9]+))*")
 _SCOPE = re.compile(r"[A-Za-z0-9_.-]{1,64}")
@@ -189,6 +193,51 @@ def parse_discovery_candidate(
     if not endpoints:
         raise LocalProbeError(ProbeProblem.NO_ADDRESS)
     return DiscoveryCandidate(tuple(endpoints), rejected)
+
+
+def address_candidates(
+    endpoints: Sequence[LocalEndpoint],
+    *,
+    configured: Collection[LocalEndpoint] = (),
+    limit: int = MAX_ADDRESS_CHECKS,
+) -> tuple[LocalEndpoint, ...]:
+    """Announced IP addresses worth one certificate check, IPv4 first.
+
+    Announced names are never resolved for this: an address follow-up looks
+    only at the literal addresses of the announcement, and never at one that
+    is configured already. The result is bounded; it is not a network scan.
+    """
+    ranked: list[tuple[int, int, LocalEndpoint]] = []
+    for position, endpoint in enumerate(dict.fromkeys(endpoints)):
+        if endpoint in configured:
+            continue
+        try:
+            address = ipaddress.ip_address(endpoint.host.partition("%")[0])
+        except ValueError:
+            continue
+        if isinstance(address, ipaddress.IPv4Address):
+            rank = 0
+        else:
+            rank = 2 if address.is_link_local else 1
+        ranked.append((rank, position, endpoint))
+    return tuple(endpoint for _, _, endpoint in sorted(ranked)[: max(0, limit)])
+
+
+def certificate_matches(observed: object, pinned: object) -> bool:
+    """Whether a full-leaf SHA-256 equals a stored certificate binding exactly.
+
+    The stored binding is the lowercase hex digest saved at setup. Anything
+    malformed never matches; the comparison takes the same time for every
+    value of the same length.
+    """
+    if (
+        not isinstance(observed, bytes)
+        or len(observed) != 32
+        or not isinstance(pinned, str)
+        or re.fullmatch(r"[0-9a-f]{64}", pinned) is None
+    ):
+        return False
+    return hmac.compare_digest(observed, bytes.fromhex(pinned))
 
 
 class ProbePath(StrEnum):

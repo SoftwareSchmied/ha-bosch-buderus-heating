@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Paikallinen asennus ei ole käytettävissä, ennen kuin säännöllinen paikallinen tiedonsaanti on valmis.",
       "local_session_changed": "Tämä asennusistunto on päättynyt tai sen valinta muuttui. Avaa paikallinen asennus uudelleen jatkaaksesi.",
       "local_discovery_invalid": "Tämä löytöilmoitus ei kuvaa tuettua paikallista yhdyskäytäväpäätepistettä.",
+      "local_address_moved": "Määritetyn paikallisen yhteyden yhdyskäytävä vastaa uudessa osoitteessa. Korjausilmoitus tarjoaa sen käyttöä.",
       "local_existing_owner_required": "Määritä järjestelmä ilman pilveä valinnalla ”Vain paikallinen yhteys” integraatiota lisättäessä. Löydetyn yhdyskäytävän voi lisätä olemassa olevaan asennukseen.",
       "local_target_required": "Tässä asennuksessa ei ole paikalliseen yhteyteen sopivaa säilytettyä asennusta.",
       "local_setup_complete": "Paikallinen yhteys on määritetty.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "Kyseistä merkintää ei enää ole.",
           "configuration_changed": "Yhteys tai lämmitysjärjestelmä on muuttunut. Avaa korjaus uudelleen."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Paikallinen yhdyskäytävä löytyi uudesta osoitteesta",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Käytä yhdyskäytävän uutta osoitetta",
+            "description": "Paikallinen yhteys ei tavoita yhdyskäytäväänsä osoitteessa {previous}. Sama yhdyskäytävä vastaa nyt osoitteessa {address}: se esittää asennuksessa vahvistetun varmenteen. Uuteen osoitteeseen ei lähetetty tunnistetta.\n\nVahvista alla, niin uusi osoite tallennetaan. Paikallinen yhteys käynnistyy sen jälkeen uudelleen sillä; tunniste ja vahvistettu varmenne pysyvät ennallaan. Välttääksesi tämän jatkossa varaa yhdyskäytävän osoite reitittimessä (DHCP-varaus).",
+            "data": {
+              "confirm": "Käytä uutta osoitetta"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Vahvista jatkaaksesi."
+        },
+        "abort": {
+          "entry_not_found": "Tämän integraation kyseistä merkintää ei enää ole.",
+          "configuration_changed": "Yhteys tai järjestelmä on muuttunut. Avaa korjaus uudelleen.",
+          "local_address_expired": "Tämä ilmoitus ei ole enää ajankohtainen. Mitään ei muutettu.",
+          "local_address_recovered": "Paikallinen yhteys tavoittaa yhdyskäytävänsä taas. Mitään ei muutettu.",
+          "local_address_unproven": "Uuden osoitteen yhdyskäytävää ei voitu vahvistaa uudelleen. Mitään ei muutettu."
         }
       }
     },

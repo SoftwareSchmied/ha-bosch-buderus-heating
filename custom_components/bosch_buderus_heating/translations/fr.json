@@ -217,6 +217,7 @@
       "local_setup_unavailable": "La configuration locale n'est pas disponible tant que l'alimentation régulière en données locales n'est pas prête.",
       "local_session_changed": "Cette session de configuration est terminée ou sa sélection a changé. Rouvrez la configuration locale pour continuer.",
       "local_discovery_invalid": "Cette annonce de découverte ne décrit pas un point d'accès de passerelle locale pris en charge.",
+      "local_address_moved": "La passerelle d'un accès local configuré répond à une nouvelle adresse. Une note de réparation propose de l'utiliser.",
       "local_existing_owner_required": "Configurez une installation sans le cloud avec « Accès local uniquement » lors de l'ajout de l'intégration. Une passerelle découverte peut être ajoutée à une installation existante.",
       "local_target_required": "Cette configuration ne comporte aucune installation conservée adaptée à une connexion locale.",
       "local_setup_complete": "L'accès local a été configuré.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "L'entrée concernée n'existe plus.",
           "configuration_changed": "L'accès ou l'installation de chauffage a changé. Ouvrez à nouveau la réparation."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Passerelle locale trouvée à une nouvelle adresse",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Utiliser la nouvelle adresse de la passerelle",
+            "description": "L'accès local ne joint plus sa passerelle à l'adresse {previous}. La même passerelle répond maintenant à l'adresse {address} : elle présente le certificat confirmé lors de la configuration. Aucun jeton n'a été envoyé à la nouvelle adresse.\n\nConfirmez ci-dessous pour enregistrer la nouvelle adresse. L'accès local redémarre ensuite avec elle ; le jeton et le certificat confirmé restent inchangés. Pour éviter cela à l'avenir, réservez l'adresse de la passerelle dans le routeur (réservation DHCP).",
+            "data": {
+              "confirm": "Utiliser la nouvelle adresse"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Veuillez confirmer pour continuer."
+        },
+        "abort": {
+          "entry_not_found": "L'entrée concernée de cette intégration n'existe plus.",
+          "configuration_changed": "L'accès ou l'installation a changé. Ouvrez à nouveau la réparation.",
+          "local_address_expired": "Cette note n'est plus d'actualité. Rien n'a été modifié.",
+          "local_address_recovered": "L'accès local joint de nouveau sa passerelle. Rien n'a été modifié.",
+          "local_address_unproven": "La passerelle à la nouvelle adresse n'a pas pu être confirmée à nouveau. Rien n'a été modifié."
         }
       }
     },

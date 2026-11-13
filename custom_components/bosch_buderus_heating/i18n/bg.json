@@ -530,6 +530,7 @@
     "Time until next regeneration": "Време до следващата регенерация",
     "Time zone": "Часова зона",
     "Times observed by Home Assistant ({zone}).": "Часовете се наблюдават от Home Assistant ({zone}).",
+    "Tip: if the gateway's address changes, for example after a router restart, a fixed address helps: reserve its IP address in the router (DHCP reservation) or enter the gateway's host name. If the gateway announces itself at a new address, a repair note offers to use it.": "Съвет: ако адресът на шлюза се промени, например след рестартиране на рутера, помага фиксиран адрес: резервирайте IP адреса му в рутера (DHCP резервация) или въведете името на хоста на шлюза. Ако шлюзът се обяви на нов адрес, съобщение за поправка предлага да се използва.",
     "Total": "Общо",
     "Total electricity consumption": "Общо потребление на електроенергия",
     "Total gas consumption": "Общо потребление на газ",

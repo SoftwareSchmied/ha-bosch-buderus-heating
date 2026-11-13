@@ -530,6 +530,7 @@
     "Time until next regeneration": "Tijd tot volgende regeneratie",
     "Time zone": "Tijdzone",
     "Times observed by Home Assistant ({zone}).": "Tijden zoals waargenomen door Home Assistant ({zone}).",
+    "Tip: if the gateway's address changes, for example after a router restart, a fixed address helps: reserve its IP address in the router (DHCP reservation) or enter the gateway's host name. If the gateway announces itself at a new address, a repair note offers to use it.": "Tip: als het adres van de gateway verandert, bijvoorbeeld na een herstart van de router, helpt een vast adres: reserveer het IP-adres in de router (DHCP-reservering) of voer de hostnaam van de gateway in. Meldt de gateway zich op een nieuw adres, dan biedt een reparatiemelding aan dit te gebruiken.",
     "Total": "Totaal",
     "Total electricity consumption": "Totaal stroomverbruik",
     "Total gas consumption": "Totaal gasverbruik",

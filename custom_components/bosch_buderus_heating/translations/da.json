@@ -217,6 +217,7 @@
       "local_setup_unavailable": "Lokal opsætning er ikke tilgængelig, før den almindelige lokale dataforsyning er klar.",
       "local_session_changed": "Denne opsætningssession er afsluttet, eller dens valg er ændret. Åbn den lokale opsætning igen for at fortsætte.",
       "local_discovery_invalid": "Denne opdagelsesmeddelelse beskriver ikke et understøttet lokalt gateway-endepunkt.",
+      "local_address_moved": "Gatewayen for en konfigureret lokal adgang svarer på en ny adresse. En reparationsmeddelelse tilbyder at bruge den.",
       "local_existing_owner_required": "Sæt et anlæg op uden cloud med \"Kun lokal adgang\", når du tilføjer integrationen. En fundet gateway kan føjes til et eksisterende setup.",
       "local_target_required": "Dette setup har intet egnet bevaret anlæg til en lokal forbindelse.",
       "local_setup_complete": "Den lokale adgang er sat op.",
@@ -946,6 +947,30 @@
         "abort": {
           "entry_not_found": "Den berørte post findes ikke længere.",
           "configuration_changed": "Adgangen eller varmeanlægget er ændret. Åbn reparationen igen."
+        }
+      }
+    },
+    "local_address_moved": {
+      "title": "Lokal gateway fundet på en ny adresse",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Brug gatewayens nye adresse",
+            "description": "Den lokale adgang kan ikke nå sin gateway på {previous}. Den samme gateway svarer nu på {address}: den viser det certifikat, der blev bekræftet ved opsætningen. Der blev ikke sendt noget token til den nye adresse.\n\nBekræft nedenfor for at gemme den nye adresse. Den lokale adgang starter derefter igen med den; token og bekræftet certifikat forbliver uændrede. For at undgå dette fremover kan du reservere gatewayens adresse i routeren (DHCP-reservation).",
+            "data": {
+              "confirm": "Brug den nye adresse"
+            }
+          }
+        },
+        "error": {
+          "confirmation_required": "Bekræft for at fortsætte."
+        },
+        "abort": {
+          "entry_not_found": "Den berørte post i denne integration findes ikke længere.",
+          "configuration_changed": "Adgangen eller anlægget er ændret. Åbn reparationen igen.",
+          "local_address_expired": "Denne meddelelse er ikke længere aktuel. Intet blev ændret.",
+          "local_address_recovered": "Den lokale adgang når sin gateway igen. Intet blev ændret.",
+          "local_address_unproven": "Gatewayen på den nye adresse kunne ikke bekræftes igen. Intet blev ændret."
         }
       }
     },

@@ -101,7 +101,13 @@ Settings → Connections lists every access with its state, for example
 request and its polling profile, for the LAN access also the values available
 locally, the target interval and whether local values are used. All of this
 comes from what the running connections already know; opening the dialog never
-starts a request.
+starts a request. While the LAN access cannot reach its gateway (not reachable,
+or pausing after failed connections), the description and a failed test add a
+tip: reserve the gateway's IP address in the router (DHCP reservation) or enter
+its host name, so the address stays the same after a router restart. If the
+gateway announces itself at a new address, a repair note offers to use it after
+a certificate check (see
+[a new gateway address](local-setup-dialogs.md#a-new-gateway-address)).
 
 These states, the description and the test result are built on the Home
 Assistant server and therefore use its server language (Settings → System →
@@ -240,7 +246,14 @@ Beispiel „Cloud-Zugang (1): verbunden“, „… Anmeldung nötig“, „… p
 stehen die letzte erfolgreiche Abfrage und das Abfrageprofil darüber, beim
 LAN-Zugang zusätzlich die lokal verfügbaren Werte, das Zielintervall und ob
 lokale Werte verwendet werden. Alles stammt aus dem, was die laufenden Zugänge
-bereits wissen; das Öffnen startet keine Abfrage.
+bereits wissen; das Öffnen startet keine Abfrage. Solange der LAN-Zugang sein
+Gateway nicht erreicht (nicht erreichbar oder pausiert nach fehlgeschlagenen
+Verbindungen), ergänzen Beschreibung und ein fehlgeschlagener Test einen Tipp:
+die IP-Adresse des Gateways im Router reservieren (DHCP-Reservierung) oder
+seinen Hostnamen eintragen, damit die Adresse nach einem Router-Neustart gleich
+bleibt. Meldet sich das Gateway unter einer neuen Adresse, bietet eine
+Reparaturmeldung nach einer Zertifikatsprüfung an, sie zu übernehmen (siehe
+[a new gateway address](local-setup-dialogs.md#a-new-gateway-address)).
 
 Zustände, Beschreibung und Testergebnis entstehen auf dem Home-Assistant-Server.
 Sie erscheinen deshalb wie Entitätsnamen in der Serversprache (Einstellungen →

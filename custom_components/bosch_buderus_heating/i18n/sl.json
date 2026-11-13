@@ -530,6 +530,7 @@
     "Time until next regeneration": "Čas do naslednje regeneracije",
     "Time zone": "Časovni pas",
     "Times observed by Home Assistant ({zone}).": "Časi, kot jih beleži Home Assistant ({zone}).",
+    "Tip: if the gateway's address changes, for example after a router restart, a fixed address helps: reserve its IP address in the router (DHCP reservation) or enter the gateway's host name. If the gateway announces itself at a new address, a repair note offers to use it.": "Namig: če se naslov prehoda spreminja, na primer po ponovnem zagonu usmerjevalnika, pomaga stalen naslov: rezervirajte njegov naslov IP v usmerjevalniku (rezervacija DHCP) ali vnesite ime gostitelja prehoda. Če se prehod oglasi na novem naslovu, obvestilo o popravilu ponudi njegovo uporabo.",
     "Total": "Skupaj",
     "Total electricity consumption": "Skupna poraba električne energije",
     "Total gas consumption": "Skupna poraba plina",
