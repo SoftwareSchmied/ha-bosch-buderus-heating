@@ -293,6 +293,13 @@ def _languages() -> dict[str, dict]:
     }
 
 
+# The gateway states named in 0.9.1 are named generic signals.
+NAMED_KEYS = {
+    "GWEEBUS.Status": ("eebus_status_signal",),
+    "GWEEBUS.CommissioningStatus": ("eebus_commissioning_signal",),
+}
+
+
 @pytest.mark.parametrize("name", sorted(GATEWAY_STATES))
 @pytest.mark.parametrize("form", ["text", "map"])
 def test_named_gateway_states_get_their_texts(name, form) -> None:
@@ -310,7 +317,8 @@ def test_named_gateway_states_get_their_texts(name, form) -> None:
     assert sensor.definition.translation_key == key
     assert value == declared[0].lower()
     # Still the generic signal: disabled, diagnostic, the same unique ID.
-    assert sensor.definition.key == "signal" and not sensor.enabled
+    assert sensor.definition.key in ("signal", *NAMED_KEYS.get(name, ()))
+    assert not sensor.enabled
     assert sensor.unique_suffix == f"local_only:signals:{name}"
 
 
@@ -378,13 +386,23 @@ async def test_gateway_state_entities_keep_their_entity_id(hass) -> None:
     )
     sensor = entity(hass, path, [observation])
     assert sensor.translation_key == "signal_eebus_status"
-    # The name stays the generic signal name, so does the entity ID.
-    assert sensor.name.endswith("Signal GWEEBUS.Status")
+    # Named in 0.9.1; an entity registered under the former name keeps its
+    # entity ID and unique ID.
+    assert sensor.name.endswith("EEBus status")
     assert sensor.unique_id == local_only_unique_id("gateway-one", path)
+    registry = er.async_get(hass)
+    old = registry.async_get_or_create(
+        "sensor",
+        "sensor",
+        sensor.unique_id,
+        suggested_object_id="mx400_system_signal_gweebus_status",
+        original_name="System \N{EN DASH} Signal GWEEBUS.Status",
+    )
     await add_without_device(hass, sensor)
     await hass.async_block_till_done()
+    assert sensor.entity_id == old.entity_id
     assert sensor.entity_id.endswith("signal_gweebus_status")
-    registered = er.async_get(hass).async_get(sensor.entity_id)
+    registered = registry.async_get(sensor.entity_id)
     assert registered is not None
     assert registered.translation_key == "signal_eebus_status"
     assert registered.unique_id == local_only_unique_id("gateway-one", path)

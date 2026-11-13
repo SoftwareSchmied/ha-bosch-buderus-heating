@@ -587,7 +587,7 @@ _GERMAN_NAMES = {
     "waterFlow": "Wasserdurchfluss",
     "waterTotalConsumption": "Wasserverbrauch gesamt",
     "zoneId": "Zonenzuordnung",
-    "flameStatus": "Brennerstatus",
+    "flameStatus": "Wärmeerzeuger aktiv",
     "heatCoolMode": "Heiz-/Kühlbetrieb",
     "heatingType": "Heizsystem",
     "heatPumpType": "Wärmepumpentyp",
@@ -609,7 +609,7 @@ _GERMAN_NAMES = {
     "tdMode": "Thermische Desinfektion",
     "timeZone": "Zeitzone",
     "type": "Anlagentyp",
-    "uuid": "Gateway-UUID",
+    "uuid": "Gateway-ID",
     "versionFirmware": "Firmwareversion",
     "versionHardware": "Hardwareversion",
     "workingTime": "Betriebszeit",
@@ -617,6 +617,7 @@ _GERMAN_NAMES = {
     "outdoorTemperatureSource": "Quelle der Außentemperatur",
     "supportStatus": "Unterstützungsstatus",
     "info": "Systeminformationen",
+    "swPrefix": "Softwarefamilie",
 }
 
 # The heat sources' supply temperature is the system supply ("system supply
@@ -641,7 +642,7 @@ _GERMAN_PATH_NAMES = {
     "/system/appliance/enabled": "Anlage aktiviert",
     "/system/powerGuard/active": "Power Guard aktiv",
     "/system/powerLimitation/active": "Leistungsbegrenzung aktiv",
-    "/system/silentMode/enabled": "Silent Mode aktiviert",
+    "/system/silentMode/enabled": "Flüstermodus aktiviert",
     "/pv/enable": "Photovoltaik aktiviert",
     "/pv/surplusAvailable": "PV-Überschuss verfügbar",
     "/holidayMode/activeModes": "Aktive Urlaubsmodi",
@@ -651,6 +652,8 @@ _GERMAN_PATH_NAMES = {
     "/system/globalSeasonOptimizer/currentMode": "Aktueller Heiz-/Kühlstatus",
     "/system/seasonOptimizer/mode": "Saisonumschaltung",
     "/system/iSRC/supportStatus": "iSRC-Unterstützung",
+    "/system/iSRC/installationStatus": "iSRC-Installationsstatus",
+    "/system/variableTariff/supportStatus": "Variabler Tarif \N{EN DASH} Unterstützung",
 }
 
 _ENGLISH_NAMES = {
@@ -752,7 +755,7 @@ _ENGLISH_NAMES = {
     "waterFlow": "Water flow",
     "waterTotalConsumption": "Total water consumption",
     "zoneId": "Zone assignment",
-    "flameStatus": "Burner status",
+    "flameStatus": "Heat source active",
     "heatCoolMode": "Heating/cooling mode",
     "heatingType": "Heating system",
     "heatPumpType": "Heat pump type",
@@ -774,7 +777,7 @@ _ENGLISH_NAMES = {
     "tdMode": "Thermal disinfection",
     "timeZone": "Time zone",
     "type": "System type",
-    "uuid": "Gateway UUID",
+    "uuid": "Gateway ID",
     "versionFirmware": "Firmware version",
     "versionHardware": "Hardware version",
     "workingTime": "Operating time",
@@ -782,6 +785,7 @@ _ENGLISH_NAMES = {
     "outdoorTemperatureSource": "Outdoor temperature source",
     "supportStatus": "Support status",
     "info": "System information",
+    "swPrefix": "Software family",
 }
 
 _ENGLISH_PATH_NAMES = {
@@ -812,6 +816,8 @@ _ENGLISH_PATH_NAMES = {
     "/system/globalSeasonOptimizer/currentMode": "Current heating/cooling status",
     "/system/seasonOptimizer/mode": "Season switching",
     "/system/iSRC/supportStatus": "iSRC support",
+    "/system/iSRC/installationStatus": "iSRC installation status",
+    "/system/variableTariff/supportStatus": "Variable tariff \N{EN DASH} support",
 }
 
 # Reviewed names whose meaning depends on the parent resource. A wildcard
@@ -1602,6 +1608,7 @@ _APP_PATH_ROOT = re.compile(
     r"^/(heatingCircuits|dhwCircuits|solarCircuits|ventilation)/[^/]+/"
 )
 _PROGRAM_NAME = re.compile(r"name[A-Z0-9]+")
+_HEAT_SOURCE_TYPE = re.compile(r"/heatSources(?:/hs\d+)?/type")
 _CAMEL_BOUNDARY = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
 
 
@@ -1650,8 +1657,8 @@ def resource_name(
         base = localize(language, *app_names)
     elif "/heatingCircuits/" in path and "/temperatureLevels/" in path:
         temperature_names = {
-            "comfort2": localize(language, "Heizen", "Heating"),
-            "eco": localize(language, "Absenken", "Reduced"),
+            "comfort2": localize(language, "Heiztemperatur", "Heating temperature"),
+            "eco": localize(language, "Absenktemperatur", "Setback temperature"),
         }
         base = temperature_names.get(tail, _humanize(tail))
     elif "/dhwCircuits/" in path and "/temperatureLevels/" in path:
@@ -1673,6 +1680,9 @@ def resource_name(
         base = localize(language, "Softwareupdate", "Software update")
     elif path in _ENGLISH_PATH_NAMES:
         base = _name(language, _GERMAN_PATH_NAMES, _ENGLISH_PATH_NAMES, path)
+    elif _HEAT_SOURCE_TYPE.fullmatch(path):
+        # The kind of heat source, told apart from the system type.
+        base = localize(language, "Typ des Wärmeerzeugers", "Heat source type")
     elif tail in _ENGLISH_NAMES:
         base = _name(language, _GERMAN_NAMES, _ENGLISH_NAMES, tail)
     else:

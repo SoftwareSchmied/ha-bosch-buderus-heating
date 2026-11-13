@@ -1449,10 +1449,10 @@
         "name": "Pool-Solltemperatur"
       },
       "heating_temperature": {
-        "name": "Heizen"
+        "name": "Heiztemperatur"
       },
       "reduced_temperature": {
-        "name": "Absenken"
+        "name": "Absenktemperatur"
       },
       "extra_hot_water_duration": {
         "name": "Dauer Extra-Warmwasser"
@@ -2119,7 +2119,7 @@
         }
       },
       "support_status": {
-        "name": "Unterstützungsstatus",
+        "name": "Variabler Tarif – Unterstützung",
         "state": {
           "not_supported": "Nicht unterstützt",
           "supported": "Unterstützt",

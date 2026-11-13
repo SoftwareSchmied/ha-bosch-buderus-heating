@@ -1449,10 +1449,10 @@
         "name": "Temperatura desiderata piscina"
       },
       "heating_temperature": {
-        "name": "Riscaldamento"
+        "name": "Temperatura di riscaldamento"
       },
       "reduced_temperature": {
-        "name": "Ridotta"
+        "name": "Temperatura di abbassamento"
       },
       "extra_hot_water_duration": {
         "name": "Durata acqua calda extra"
@@ -2119,7 +2119,7 @@
         }
       },
       "support_status": {
-        "name": "Stato del supporto",
+        "name": "Tariffa variabile – supporto",
         "state": {
           "not_supported": "Non supportato",
           "supported": "Supportato",

@@ -1449,10 +1449,10 @@
         "name": "Teocht sprice an linn snámha"
       },
       "heating_temperature": {
-        "name": "Téamh"
+        "name": "Teocht téimh"
       },
       "reduced_temperature": {
-        "name": "Laghdaithe"
+        "name": "Teocht laghdaithe"
       },
       "extra_hot_water_duration": {
         "name": "Fad an uisce te bhreise"
@@ -2119,7 +2119,7 @@
         }
       },
       "support_status": {
-        "name": "Stádas tacaíochta",
+        "name": "Taraif athraitheach – tacaíocht",
         "state": {
           "not_supported": "Gan tacaíocht",
           "supported": "Le tacaíocht",

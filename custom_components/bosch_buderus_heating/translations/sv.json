@@ -1449,10 +1449,10 @@
         "name": "Önskad temperatur pool"
       },
       "heating_temperature": {
-        "name": "Värme"
+        "name": "Värmetemperatur"
       },
       "reduced_temperature": {
-        "name": "Sänkt"
+        "name": "Sänkningstemperatur"
       },
       "extra_hot_water_duration": {
         "name": "Varaktighet extra varmvatten"
@@ -2119,7 +2119,7 @@
         }
       },
       "support_status": {
-        "name": "Supportstatus",
+        "name": "Rörlig tariff – stöd",
         "state": {
           "not_supported": "Stöds inte",
           "supported": "Stöds",

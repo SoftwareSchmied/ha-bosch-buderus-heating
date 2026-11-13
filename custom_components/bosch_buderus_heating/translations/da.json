@@ -1449,10 +1449,10 @@
         "name": "Ønsket pooltemperatur"
       },
       "heating_temperature": {
-        "name": "Opvarmning"
+        "name": "Opvarmningstemperatur"
       },
       "reduced_temperature": {
-        "name": "Nedsat"
+        "name": "Nedsænkningstemperatur"
       },
       "extra_hot_water_duration": {
         "name": "Varighed af ekstra varmt vand"
@@ -2119,7 +2119,7 @@
         }
       },
       "support_status": {
-        "name": "Supportstatus",
+        "name": "Variabel tarif – understøttelse",
         "state": {
           "not_supported": "Understøttes ikke",
           "supported": "Understøttet",

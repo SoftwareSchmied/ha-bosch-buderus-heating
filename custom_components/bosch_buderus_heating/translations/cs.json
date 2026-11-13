@@ -1449,10 +1449,10 @@
         "name": "Požadovaná teplota bazénu"
       },
       "heating_temperature": {
-        "name": "Topení"
+        "name": "Teplota topení"
       },
       "reduced_temperature": {
-        "name": "Snížená"
+        "name": "Teplota útlumu"
       },
       "extra_hot_water_duration": {
         "name": "Doba extra ohřevu"
@@ -2119,7 +2119,7 @@
         }
       },
       "support_status": {
-        "name": "Stav podpory",
+        "name": "Variabilní tarif – podpora",
         "state": {
           "not_supported": "Nepodporováno",
           "supported": "Podporováno",

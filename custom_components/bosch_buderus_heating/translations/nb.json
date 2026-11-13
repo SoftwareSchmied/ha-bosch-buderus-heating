@@ -1449,10 +1449,10 @@
         "name": "Ønsket bassengtemperatur"
       },
       "heating_temperature": {
-        "name": "Oppvarming"
+        "name": "Oppvarmingstemperatur"
       },
       "reduced_temperature": {
-        "name": "Redusert"
+        "name": "Senkingstemperatur"
       },
       "extra_hot_water_duration": {
         "name": "Varighet for ekstra varmtvann"
@@ -2119,7 +2119,7 @@
         }
       },
       "support_status": {
-        "name": "Støttestatus",
+        "name": "Variabel tariff – støtte",
         "state": {
           "not_supported": "Støttes ikke",
           "supported": "Støttes",

@@ -1449,10 +1449,10 @@
         "name": "Temperatura deseada de la piscina"
       },
       "heating_temperature": {
-        "name": "Calefacción"
+        "name": "Temperatura de calefacción"
       },
       "reduced_temperature": {
-        "name": "Reducida"
+        "name": "Temperatura de reducción"
       },
       "extra_hot_water_duration": {
         "name": "Duración del agua caliente extra"
@@ -2119,7 +2119,7 @@
         }
       },
       "support_status": {
-        "name": "Estado de compatibilidad",
+        "name": "Tarifa variable – compatibilidad",
         "state": {
           "not_supported": "No compatible",
           "supported": "Compatible",

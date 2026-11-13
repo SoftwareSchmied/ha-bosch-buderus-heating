@@ -1449,10 +1449,10 @@
         "name": "Gewenste temperatuur zwembad"
       },
       "heating_temperature": {
-        "name": "Verwarmen"
+        "name": "Verwarmingstemperatuur"
       },
       "reduced_temperature": {
-        "name": "Verlaagd"
+        "name": "Verlaagde temperatuur"
       },
       "extra_hot_water_duration": {
         "name": "Duur extra warm water"
@@ -2119,7 +2119,7 @@
         }
       },
       "support_status": {
-        "name": "Ondersteuningsstatus",
+        "name": "Variabel tarief – ondersteuning",
         "state": {
           "not_supported": "Niet ondersteund",
           "supported": "Ondersteund",

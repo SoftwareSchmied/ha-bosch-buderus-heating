@@ -233,7 +233,7 @@ class BoschBuderusSelect(
         self.entity_description = description
         if description.write_policy is SILENT_MODE_POLICY:
             display_name = localize(
-                coordinator.hass.config.language, "Silent Mode", "Silent mode"
+                coordinator.hass.config.language, "Flüstermodus", "Silent mode"
             )
         elif description.write_policy is AUXILIARY_HEATER_OPERATION_MODE_POLICY:
             display_name = localize(

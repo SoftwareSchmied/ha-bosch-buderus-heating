@@ -1449,10 +1449,10 @@
         "name": "Température cible de la piscine"
       },
       "heating_temperature": {
-        "name": "Chauffage"
+        "name": "Température de chauffage"
       },
       "reduced_temperature": {
-        "name": "Réduit"
+        "name": "Température réduite"
       },
       "extra_hot_water_duration": {
         "name": "Durée de l'eau chaude supplémentaire"
@@ -2119,7 +2119,7 @@
         }
       },
       "support_status": {
-        "name": "État de la prise en charge",
+        "name": "Tarif variable – prise en charge",
         "state": {
           "not_supported": "Non pris en charge",
           "supported": "Pris en charge",

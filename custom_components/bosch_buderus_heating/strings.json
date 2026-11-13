@@ -1449,10 +1449,10 @@
         "name": "Pool target temperature"
       },
       "heating_temperature": {
-        "name": "Heating"
+        "name": "Heating temperature"
       },
       "reduced_temperature": {
-        "name": "Reduced"
+        "name": "Setback temperature"
       },
       "extra_hot_water_duration": {
         "name": "Extra hot water duration"
@@ -2119,7 +2119,7 @@
         }
       },
       "support_status": {
-        "name": "Support status",
+        "name": "Variable tariff – support",
         "state": {
           "not_supported": "Not supported",
           "supported": "Supported",

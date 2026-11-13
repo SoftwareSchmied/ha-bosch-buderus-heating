@@ -86,7 +86,7 @@ NAMES = {
     ),
     HP1 + "DripPanHeater": ("Kondensatwannenheizung", "Drip pan heater"),
     HP1 + "ExpansionValveActual": ("Expansionsventil VR1", "Expansion valve VR1"),
-    HP1 + "ReceiverValveActual": ("Expansionsventil VR0", "Expansion valve VR0"),
+    HP1 + "ReceiverValveActual": ("Sammlerventil (VR0)", "Receiver valve (VR0)"),
     HP1 + "FourwayValve": ("4-Wege-Ventil (VR4)", "4-way valve (VR4)"),
     HP1 + "DHWValve": (
         "3-Wege-Ventil Warmwasser (VW1)",
@@ -109,11 +109,17 @@ NAMES = {
         "Compressor start delay",
     ),
     # Since 0.9.0 the controller's word "Kompressor" in every German name.
-    "/signals/SRC.CUHP.HMI.CompressorActive": ("Kompressor", "Compressor"),
-    HP1 + "CompressorStatus": ("Kompressor (Status)", "Compressor (status)"),
+    "/signals/SRC.CUHP.HMI.CompressorActive": (
+        "Kompressor läuft (Anzeigesignal)",
+        "Compressor running (display signal)",
+    ),
+    HP1 + "CompressorStatus": (
+        "Kompressor läuft (Wärmepumpensignal)",
+        "Compressor running (heat pump signal)",
+    ),
     HP1 + "CompressorPower": (
-        "Wärmeleistung (Kompressor)",
-        "Heat output (compressor)",
+        "Heizleistung (thermisch)",
+        "Heat output (thermal)",
     ),
     HP1 + "Stats.CompressorDHW": (
         "Kompressorlaufzeit Warmwasser",

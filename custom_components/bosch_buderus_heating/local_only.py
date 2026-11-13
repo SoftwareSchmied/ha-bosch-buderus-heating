@@ -262,14 +262,17 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "SRC.CUHP.HMI.CompressorActive",
         "compressor_active",
         FLAG,
-        ("Kompressor", "Compressor"),
+        ("Kompressor läuft (Anzeigesignal)", "Compressor running (display signal)"),
         enabled=True,
     ),
     _signal(
         _HP1 + "CompressorStatus",
         "compressor_status",
         FLAG,
-        ("Kompressor (Status)", "Compressor (status)"),
+        (
+            "Kompressor läuft (Wärmepumpensignal)",
+            "Compressor running (heat pump signal)",
+        ),
     ),
     _signal(
         _HP1 + "DHWValve",
@@ -347,7 +350,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         "SRC.CUHP.SilentModeActive",
         "silent_mode_active",
         FLAG,
-        ("Leiser Betrieb aktiv", "Low-noise mode active"),
+        ("Flüstermodus aktiv (Signal)", "Silent mode active (signal)"),
         enabled=True,
     ),
     _signal(
@@ -414,7 +417,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         _HP1 + "CompressorPower",
         "compressor_output",
         POWER,
-        ("Wärmeleistung (Kompressor)", "Heat output (compressor)"),
+        ("Heizleistung (thermisch)", "Heat output (thermal)"),
         enabled=True,
     ),
     _signal(
@@ -428,7 +431,7 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
         _HP1 + "ReceiverValveActual",
         "expansion_valve_vr0",
         PERCENT,
-        ("Expansionsventil VR0", "Expansion valve VR0"),
+        ("Sammlerventil (VR0)", "Receiver valve (VR0)"),
         enabled=True,
     ),
     _signal(
@@ -569,6 +572,126 @@ CONTROLLER_SIGNALS: tuple[LocalOnlyDefinition, ...] = (
                 ),
             ),
         )
+    ),
+    # Controller signals whose meaning follows from their path and the
+    # recorded values (0.9.1): named instead of showing the signal path.
+    # They stay generic, disabled diagnostic entities like every other signal;
+    # only their names change. Signals whose meaning is open (for example the
+    # four "permitted temperature" flags) keep the path as their name.
+    *(
+        _signal(signal, key, GENERIC, names)
+        for signal, key, names in (
+            (
+                "SC.HC1.MaxFlowTempSetp",
+                "circuit_1_max_supply_signal",
+                (
+                    "Maximale Vorlauftemperatur HK1 (Signal)",
+                    "Maximum supply temperature HC1 (signal)",
+                ),
+            ),
+            (
+                "SC.HC1.RTSD.CurrentRoomTempSetp",
+                "circuit_1_room_setpoint_signal",
+                (
+                    "Aktueller Raum-Sollwert HK1 (Signal)",
+                    "Current room setpoint HC1 (signal)",
+                ),
+            ),
+            (
+                "SC.HC1.HolidayMode",
+                "circuit_1_holiday_mode_signal",
+                ("Urlaubsmodus HK1", "Holiday mode HC1"),
+            ),
+            (
+                "SRC.CHPumpModulation",
+                "heating_pump_modulation_signal",
+                (
+                    "Modulation primäre Heizungspumpe (PC0, Signal)",
+                    "Primary heating pump modulation (PC0, signal)",
+                ),
+            ),
+            (
+                _HP1 + "CompressorSpeedMax",
+                "compressor_speed_max_signal",
+                ("Maximale Kompressordrehzahl", "Maximum compressor speed"),
+            ),
+            (
+                "SRC.CUHP.Additional.ExternBlocked",
+                "auxiliary_heater_blocked_signal",
+                ("Zuheizer extern gesperrt", "Auxiliary heater blocked externally"),
+            ),
+            (
+                "SRC.CUHP.CH.ExternBlocked",
+                "heating_blocked_signal",
+                ("Heizen extern gesperrt", "Heating blocked externally"),
+            ),
+            (
+                "SRC.CUHP.DHW.ExternBlocked",
+                "hot_water_blocked_signal",
+                ("Warmwasser extern gesperrt", "Hot water blocked externally"),
+            ),
+            (
+                _HP1 + "CompressorExtBlocked",
+                "compressor_blocked_signal",
+                ("Kompressor extern gesperrt", "Compressor blocked externally"),
+            ),
+            (
+                "SRC.CUHP.HMI.BuzzerActive",
+                "buzzer_active_signal",
+                ("Summer aktiv", "Buzzer active"),
+            ),
+            (
+                "GWEEBUS.Status",
+                "eebus_status_signal",
+                ("EEBus-Status", "EEBus status"),
+            ),
+            (
+                "GWEEBUS.CommissioningStatus",
+                "eebus_commissioning_signal",
+                ("EEBus-Inbetriebnahmestatus", "EEBus commissioning status"),
+            ),
+            (
+                "SRC.CUHP.Stats.ControlUnit",
+                "controller_operating_time_signal",
+                ("Betriebszeit Regler", "Controller operating time"),
+            ),
+            (
+                _HP1 + "BrineTempHeatingLow",
+                "brine_too_cold_signal",
+                ("Soletemperatur zu niedrig", "Brine temperature too low"),
+            ),
+            (
+                _HP1 + "CollectorCircuitPressureSwitch",
+                "collector_pressure_switch_signal",
+                ("Druckschalter Kollektorkreis", "Collector circuit pressure switch"),
+            ),
+            (
+                "SRC.RelayStatus.Fan",
+                "fan_relay_signal",
+                ("Relais Lüfter", "Fan relay"),
+            ),
+            (
+                "SRC.RelayStatus.GasValve1",
+                "gas_valve_1_relay_signal",
+                ("Relais Gasventil 1", "Gas valve 1 relay"),
+            ),
+            (
+                "SRC.RelayStatus.GasValve2",
+                "gas_valve_2_relay_signal",
+                ("Relais Gasventil 2", "Gas valve 2 relay"),
+            ),
+            (
+                _HP1 + "Stats.CompStartsCooling",
+                "compressor_starts_cooling_signal",
+                ("Kompressorstarts Kühlen", "Compressor starts cooling"),
+            ),
+        )
+    ),
+    _define(
+        r"/signals/SC\.HolidayNew\.(\d+)\.State",
+        "holiday_slot_state_signal",
+        GENERIC,
+        ("Urlaubsplatz {} Status", "Holiday slot {} state"),
     ),
     # C7-3: the parts of the installation date (the date itself is derived).
     *(

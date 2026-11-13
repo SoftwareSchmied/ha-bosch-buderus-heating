@@ -77,7 +77,9 @@ def test_every_hybrid_signal_is_disabled_and_named() -> None:
         german, english = (entity_name(definition, path, lang) for lang in ("de", "en"))
         assert german and english and "HYBMAN" not in german + english
     # Other signals stay generic.
-    assert definition_for("/signals/SRC.CUHP.Stats.ControlUnit").key == "signal"
+    assert (
+        definition_for("/signals/SRC.CUHP.HP1.HighestPermittedAirTemp").key == "signal"
+    )
 
 
 def test_a_temperature_uses_the_expected_unit_only_without_its_own() -> None:

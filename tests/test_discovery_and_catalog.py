@@ -642,10 +642,16 @@ def test_catalog_privacy_polling_devices_and_names() -> None:
     )
     assert (
         resource_name("/system/variableTariff/supportStatus", language="en")
-        == "Support status"
+        == "Variable tariff \N{EN DASH} support"
     )
-    assert resource_name("/heatingCircuits/hc1/temperatureLevels/comfort2") == "Heizen"
-    assert resource_name("/heatingCircuits/hc1/temperatureLevels/eco") == "Absenken"
+    assert (
+        resource_name("/heatingCircuits/hc1/temperatureLevels/comfort2")
+        == "Heiztemperatur"
+    )
+    assert (
+        resource_name("/heatingCircuits/hc1/temperatureLevels/eco")
+        == "Absenktemperatur"
+    )
     assert resource_name("/dhwCircuits/dhw1/temperatureLevels/high") == (
         "Startschwelle Komfort"
     )
