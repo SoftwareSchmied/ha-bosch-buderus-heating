@@ -2019,7 +2019,8 @@ class BoschBuderusDataUpdateCoordinator(
             self._poll_failures += 1
             # No answer: the last confirmed fault state stays shown within its
             # validity, and the sources are read again once the cloud answers.
-            self.faults.mark_unavailable(hold=True)
+            # A rejected sign-in or an unexpected error ends it.
+            self.faults.mark_unavailable(hold=isinstance(err, UpdateFailed))
             self._fault_reread_due = True
             if isinstance(err, UpdateFailed):
                 self._refresh_outage.failed(err)
@@ -2776,13 +2777,6 @@ class BoschBuderusDataUpdateCoordinator(
         urgent = tuple(path for path in self._urgent_reads if path in self.resources)
         fault_sources = set(paths_by_group.get(PollGroup.NOTIFICATIONS, ()))
         fault_reread = self._fault_reread_due and bool(fault_sources)
-        if fault_reread:
-            # Read again in this cycle, whether due or not (paused ones stay).
-            urgent += tuple(
-                path
-                for path in paths_by_group.get(PollGroup.NOTIFICATIONS, ())
-                if path in self.resources
-            )
         candidate_paths = list(
             dict.fromkeys((*candidate_paths, *(path for _, path in early), *urgent))
         )
@@ -2791,6 +2785,17 @@ class BoschBuderusDataUpdateCoordinator(
             for path in candidate_paths
             if not self._resource_is_paused(path, now_monotonic)
         ]
+        if fault_reread and any(path not in fault_sources for path in paths):
+            # Read again with a cycle that requests other readings anyway,
+            # whether due or not; paused ones stay paused.
+            known = set(paths)
+            paths += [
+                path
+                for path in paths_by_group.get(PollGroup.NOTIFICATIONS, ())
+                if path in self.resources
+                and path not in known
+                and not self._resource_is_paused(path, now_monotonic)
+            ]
         # Resume work skipped by an interrupted cycle before repeating earlier
         # batches. A consistently failing batch must not starve later resources.
         path_set = set(paths)
@@ -2841,8 +2846,13 @@ class BoschBuderusDataUpdateCoordinator(
             for path in paths
             if path not in self._failing_batch_paths and path not in fault_sources
         ]
-        if set(paths) <= self._failing_batch_paths and (
-            probe := self._outage_probe(paths_by_group, now_monotonic)
+        # With a fault read after the others, the fault sources cannot tell
+        # them apart either: then only the rest has to be the failing batch.
+        probed = set(paths) - fault_sources if fault_reread else set(paths)
+        if (
+            probed
+            and probed <= self._failing_batch_paths
+            and (probe := self._outage_probe(paths_by_group, now_monotonic))
         ):
             # COORD-3: only the failing batch is due. Its failure alone cannot
             # tell a broken batch from a cloud outage: one answered reading,
@@ -2860,7 +2870,7 @@ class BoschBuderusDataUpdateCoordinator(
             self._icom_bulk.size if self._icom_bulk is not None else MAX_BULK_PATHS
         )
         cycle_timed_out = False
-        fault_chunks = chunk_resource_paths(faults, size=MAX_BULK_PATHS)
+        fault_chunks = tuple(chunk_resource_paths(faults, size=MAX_BULK_PATHS))
         reading_chunks = (
             *chunk_resource_paths(others, size=bulk_size),
             *chunk_resource_paths(failing, size=bulk_size),
@@ -2870,15 +2880,23 @@ class BoschBuderusDataUpdateCoordinator(
             if faults_last
             else (*fault_chunks, *reading_chunks)
         )
-        bulk_server_errors = 0
+        bulk_server_errors: list[BatchItemResult] = []
         for chunk in chunks:
-            if attempted_paths and monotonic() - now_monotonic >= CYCLE_BUDGET_SECONDS:
-                over_budget = True
-                self._cycles_over_budget += 1
-                _LOGGER.debug(
-                    "PointT cycle budget reached; %d readings move to the next cycle",
-                    len(paths) - len(attempted_paths),
-                )
+            if (
+                attempted_paths
+                and monotonic() - now_monotonic >= CYCLE_BUDGET_SECONDS
+                and not (faults_last and chunk in fault_chunks)
+            ):
+                if not over_budget:
+                    over_budget = True
+                    self._cycles_over_budget += 1
+                    _LOGGER.debug(
+                        "PointT cycle budget reached; %d readings move to the "
+                        "next cycle",
+                        len(paths) - len(attempted_paths),
+                    )
+                if faults_last:
+                    continue  # the fault sources read after the others still follow
                 break
             attempted_paths.update(chunk)
             attempted_at = datetime.now(UTC)
@@ -2955,7 +2973,9 @@ class BoschBuderusDataUpdateCoordinator(
             gateway_unanswered = _gateway_unanswered(results)
             if result_source is SnapshotSource.BATCH:
                 self._log_unusable_bulk_results(results)
-                bulk_server_errors += sum(_server_error_item(item) for item in results)
+                bulk_server_errors.extend(
+                    item for item in results if _server_error_item(item)
+                )
                 if not gateway_unanswered and not any(
                     result.status == 429 for result in results
                 ):
@@ -3002,9 +3022,7 @@ class BoschBuderusDataUpdateCoordinator(
                 gateway_failure = True
                 break
 
-        self._log_bulk_server_errors(
-            bulk_server_errors, cycle_results, failed=bool(failed_chunks)
-        )
+        self._log_bulk_server_errors(bulk_server_errors, failed=bool(failed_chunks))
         if attempted_faults := fault_sources & attempted_paths:
             answered = {
                 result.path
@@ -4368,24 +4386,17 @@ class BoschBuderusDataUpdateCoordinator(
         )
 
     def _log_bulk_server_errors(
-        self,
-        count: int,
-        results: Iterable[BatchItemResult],
-        *,
-        failed: bool,
+        self, items: list[BatchItemResult], *, failed: bool
     ) -> None:
         """Warn once per outage when an answered batch request returned
         server errors for readings; only a cycle without them (and without a
         failed batch) ends that outage."""
+        count = len(items)
         if not count:
             if not failed:
                 self._bulk_server_errors_logged = False
             return
-        statuses = ", ".join(
-            sorted(
-                {str(result.status) for result in results if _server_error_item(result)}
-            )
-        )
+        statuses = ", ".join(sorted({str(item.status) for item in items}))
         if self._bulk_server_errors_logged:
             _LOGGER.debug(
                 "PointT answered a batch request again with server errors for "

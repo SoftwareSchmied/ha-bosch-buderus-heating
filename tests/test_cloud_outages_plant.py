@@ -440,6 +440,91 @@ async def test_the_fault_list_is_read_once_the_cloud_answers_again(
         await coordinator.async_shutdown()
 
 
+async def test_the_fault_list_is_not_read_alone_after_a_failure(
+    hass: HomeAssistant,
+) -> None:
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, cloud):
+        await _confirmed_start(coordinator, cloud, clock)
+        cloud.all_status = cloud.get_status = 504
+        clock.now += INTERVAL
+        await _refresh(coordinator)
+        assert coordinator._fault_reread_due
+        # Nothing else is due (for example every other reading is paused):
+        # the cycle stays without a request, as before.
+        sent = len(cloud.batches)
+        for group in coordinator._poll_intervals:
+            coordinator._next_update[group] = clock.now + 3600
+        coordinator._deferred_poll_paths = ()
+        clock.now += INTERVAL
+        await _refresh(coordinator)
+        assert len(cloud.batches) == sent
+        assert not coordinator.last_update_success
+        assert coordinator._fault_reread_due
+        await coordinator.async_shutdown()
+
+
+async def test_a_failing_batch_still_gets_its_probe_before_a_fault_read(
+    hass: HomeAssistant,
+) -> None:
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, cloud):
+        await _confirmed_start(coordinator, cloud, clock)
+        fast = coordinator._paths_by_group[PollGroup.FAST]
+        # The live values failed as a batch beside answered readings before,
+        # and the fault list waits for its read after a failure.
+        coordinator._failing_batch_paths = frozenset(fast)
+        coordinator._fault_reread_due = True
+        cloud.failing = dict.fromkeys(fast, 504)
+        clock.now += INTERVAL
+        start = len(cloud.batches)
+        # Only the failing batch is due, no reading of another group.
+        with patch.object(coordinator, "_early_reads", return_value=()):
+            await _refresh(coordinator)
+        # One answered reading first tells the broken batch from an outage.
+        first = cloud.batches[start][1]
+        assert len(first) == 1 and first[0] not in fast
+        assert coordinator.last_update_success
+        await coordinator.async_shutdown()
+
+
+async def test_the_cycle_budget_never_postpones_the_fault_read(
+    hass: HomeAssistant,
+) -> None:
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, cloud):
+        await _confirmed_start(coordinator, cloud, clock)
+        cloud.all_status = cloud.get_status = 504
+        clock.now += INTERVAL
+        await _refresh(coordinator)
+        # The cloud answers again, but slowly: the others use up the budget.
+        cloud.all_status = cloud.get_status = None
+        cloud.seconds = 55.0
+        clock.now += INTERVAL
+        start = clock.now
+        await _refresh(coordinator)
+        assert coordinator.last_update_success
+        assert cloud.read_in(start, NOTIFICATIONS)
+        assert coordinator.faults.current_state_confirmed
+        await coordinator.async_shutdown()
+
+
+async def test_an_unexpected_error_ends_a_held_fault_state(
+    hass: HomeAssistant,
+) -> None:
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, cloud):
+        await _confirmed_start(coordinator, cloud, clock)
+        sensor = BoschBuderusActiveFaultsSensor(coordinator)
+        coordinator.client.get_resources_bulk.side_effect = RuntimeError("bug")
+        clock.now += INTERVAL
+        await _refresh(coordinator)
+        assert not coordinator.last_update_success
+        assert not coordinator.faults.held
+        assert not sensor.available
+        await coordinator.async_shutdown()
+
+
 async def test_a_slow_fault_list_is_still_paused_while_the_rest_answers(
     hass: HomeAssistant,
 ) -> None:

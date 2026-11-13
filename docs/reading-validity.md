@@ -89,7 +89,7 @@ control:
   answer, for three intervals of the fault list (15 minutes, 3 minutes while
   a notification is active), extended like a reading by the longest cycle
   since. An explicit answer for a fault source (for example 403), invalid
-  entries or a stopped cloud connection end it at once. Nothing is resolved
+  entries, a rejected sign-in or a stopped cloud connection end it at once. Nothing is resolved
   or announced meanwhile.
 
 The fault sources are read again in the first cycle that answers after such a
