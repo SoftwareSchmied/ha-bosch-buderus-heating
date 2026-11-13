@@ -259,6 +259,11 @@ class BoschBuderusConfigFlow(
         )
 
     @override
+    async def _local_new_entry(self) -> ConfigFlowResult:
+        """A gateway found without any entry starts like "Local access only"."""
+        return await self.async_step_local_only()
+
+    @override
     async def async_on_create_entry(self, result: ConfigFlowResult) -> ConfigFlowResult:
         """Open the local setup of the new entry right away (P49b step 7)."""
         entry = result.get("result")
@@ -730,17 +735,26 @@ class BoschBuderusConfigFlow(
             if str(error) in ("reauth_wrong_account", "reauth_no_targets"):
                 return self.async_abort(reason=str(error))
             if str(error) in ("reauth_targets_missing", "unverifiable_targets"):
-                return self.async_show_form(
-                    step_id="retry", errors={"base": "reauth_targets_missing"}
-                )
+                # Repeating the same tokens cannot change the result; only a
+                # new sign-in (possibly with the right account) can.
+                return self._restart_authorization(error="reauth_targets_missing")
             return self.async_abort(reason="configuration_changed")
         except AuthenticationError:
             return self._restart_authorization(error="invalid_auth")
         except BaconError as error:
             if error.category in {"authentication", "account_changed"}:
                 return self._restart_authorization(error="invalid_auth")
+            if error.category == "rate_limited":
+                return self.async_show_form(
+                    step_id="retry", errors={"base": "cloud_rate_limited"}
+                )
             return self.async_show_form(
                 step_id="retry", errors={"base": "cannot_connect"}
+            )
+        except RateLimited:
+            # An active cloud pause; retrying after it keeps the sign-in.
+            return self.async_show_form(
+                step_id="retry", errors={"base": "cloud_rate_limited"}
             )
         except PointTError:
             return self.async_show_form(

@@ -343,12 +343,105 @@ async def test_an_ignored_discovery_stays_ignored(hass, supported, journal):
     assert entry.unique_id == entry.entry_id  # existing entries keep theirs
 
 
-async def test_discovery_without_owner_does_not_create_installation(hass, supported):
-    result = await hass.config_entries.flow.async_init(
+async def test_discovery_without_any_entry_offers_a_local_only_setup(hass):
+    # A fresh installation: without an entry the integration is not set up,
+    # so the local runtime is not ready yet; the notice appears anyway.
+    assert SUPPORT_KEY not in hass.data
+    manager = hass.config_entries.flow
+    result = await manager.async_init(
         DOMAIN, context={"source": "zeroconf"}, data=info()
     )
-    assert result["reason"] == "local_existing_owner_required"
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "local_discovered"
+    assert result["description_placeholders"] == {"host": "192.0.2.1"}
+    progress = manager.async_get(result["flow_id"])
+    # It can be ignored like any notice, and nothing is created before the
+    # user continues.
+    assert progress["context"]["unique_id"] == flow.discovery_unique_id(info())
     assert not hass.config_entries.async_entries(DOMAIN)
+    again = await manager.async_init(
+        DOMAIN, context={"source": "zeroconf"}, data=info()
+    )
+    assert again["type"] is FlowResultType.ABORT
+
+
+async def test_a_discovered_gateway_without_entry_is_set_up_locally(
+    hass, supported, journal
+):
+    from homeassistant.config_entries import FlowType
+
+    manager = hass.config_entries.flow
+    with patch(
+        "custom_components.bosch_buderus_heating.async_setup_entry",
+        AsyncMock(return_value=True),
+    ):
+        result = await manager.async_init(
+            DOMAIN, context={"source": "zeroconf"}, data=info()
+        )
+        assert result["step_id"] == "local_discovered"
+        # The notice may be older than the address hint in memory.
+        hass.data.pop(discovery._HINTS, None)
+        result = await manager.async_configure(result["flow_id"], {})
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    entry = result["result"]
+    assert entry.title == "Home Comfort (local)" and entry.version == 4
+    assert entry.data["connections"] == {} and entry.data["targets"] == {}
+    assert entry.unique_id.startswith("installation_")
+    assert not manager.async_progress_by_handler(DOMAIN)
+    flow_type, _ = result["next_flow"]
+    assert flow_type == FlowType.OPTIONS_FLOW
+    options = hass.config_entries.options
+    # As the frontend does: a new options flow takes over at the address,
+    # which offers the found gateway.
+    step = await options.async_init(entry.entry_id)
+    assert step["step_id"] == "local_address"
+    assert "192.0.2.1" in str(next(iter(step["data_schema"].schema.values())).config)
+    step = await submit(hass, options, step, {"address": "192.0.2.1"})
+    step = await submit(hass, options, step, {"method": "token"})
+    step = await submit(hass, options, step, {"token": TOKEN})
+    step = await submit(hass, options, step, {"confirm": True})
+    step = await submit(hass, options, step, {"confirm": True})
+    assert step["reason"] == "local_setup_complete"
+    assert [e.entry_id for e in hass.config_entries.async_entries(DOMAIN)] == [
+        entry.entry_id
+    ]
+    # Configured now: the same announcement no longer shows a notice.
+    later = await manager.async_init(
+        DOMAIN, context={"source": "zeroconf"}, data=info()
+    )
+    assert later["reason"] == "already_configured"
+
+
+async def test_an_untouched_notice_ends_once_its_gateway_is_configured(
+    hass, monkeypatch
+):
+    manager = hass.config_entries.flow
+    result = await manager.async_init(
+        DOMAIN, context={"source": "zeroconf"}, data=info()
+    )
+    assert result["step_id"] == "local_discovered"
+    discovery.dismiss_configured_discoveries(hass)
+    assert manager.async_progress_by_handler(DOMAIN)
+    # Set up meanwhile through "Local access only": the notice is dismissed.
+    monkeypatch.setattr(discovery, "configured_discovery", lambda *_: True)
+    discovery.dismiss_configured_discoveries(hass)
+    assert not manager.async_progress_by_handler(DOMAIN)
+
+
+async def test_an_entry_added_meanwhile_turns_the_notice_into_an_owner_choice(
+    hass, supported, journal
+):
+    manager = hass.config_entries.flow
+    result = await manager.async_init(
+        DOMAIN, context={"source": "zeroconf"}, data=info()
+    )
+    assert result["step_id"] == "local_discovered"
+    entry, _, _, _ = registered(hass)
+    result = await manager.async_configure(result["flow_id"], {})
+    assert result["step_id"] == "local_owner"
+    owners = next(iter(result["data_schema"].schema.values())).config["options"]
+    assert [item["value"] for item in owners] == [entry.entry_id]
+    assert len(hass.config_entries.async_entries(DOMAIN)) == 1
 
 
 def test_discovery_hints_are_bounded_expiring_and_not_identities(hass, monkeypatch):
