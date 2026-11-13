@@ -362,9 +362,15 @@ complete read confirmed, as long as the requests only get no answer: for
 Nothing is resolved or announced meanwhile. The first cycle that answers
 again reads the fault sources at once, after its other readings. An explicit
 answer such as 403, invalid entries, a rejected sign-in or a stopped cloud
-connection end that state at once, and the entities are unavailable until the next complete read.
+connection end that state at once, and the entities are unavailable until
+the next complete read.
+
 A gateway timeout (504) of the fault sources pauses them for 15 minutes only
-when other readings of the same cycle answered.
+when other readings of the same cycle answered. When they are read after the
+other readings and keep failing with any server error (5xx) while those
+answered, they are paused for 15 minutes as well, also when several fault
+sources fail together. A fault source whose single read still answered keeps
+its normal interval.
 
 Baselines saved by older versions have no source evidence. Their existing
 faults remain conservatively retained until reobserved, after which normal

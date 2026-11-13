@@ -16,6 +16,7 @@ Replayed outages:
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 from collections.abc import Callable, Iterator
@@ -325,7 +326,7 @@ async def test_a_cycle_in_progress_extends_the_limit_up_to_one_interval(
         await _confirmed_start(coordinator, cloud, clock)
         snapshot = coordinator.data[COMPRESSOR]
         base = coordinator.validity_limit(snapshot)
-        coordinator._cycle_running_since = clock.now
+        coordinator._cycles_running.append(clock.now)
         clock.now += 20.0
         assert coordinator.validity_limit(snapshot) == timedelta(
             seconds=(INTERVAL + 20.0) * 3
@@ -334,7 +335,7 @@ async def test_a_cycle_in_progress_extends_the_limit_up_to_one_interval(
         assert coordinator.validity_limit(snapshot) == timedelta(
             seconds=INTERVAL * 2 * 3
         )
-        coordinator._cycle_running_since = None
+        coordinator._cycles_running.clear()
         assert coordinator.validity_limit(snapshot) == base
         await coordinator.async_shutdown()
 
@@ -720,4 +721,204 @@ async def test_display_values_keep_their_value_when_their_readings_fail(
             clock.now += INTERVAL
             await _refresh(coordinator)
         assert not status.available
+        await coordinator.async_shutdown()
+
+
+# ----------------------------------- fault sources with a lasting server error
+
+ACTIVE_FAILURE = "/heatSources/hs1/activefailure"
+
+
+def _second_fault_source(
+    coordinator: BoschBuderusDataUpdateCoordinator, cloud: Cloud, clock: Clock
+) -> None:
+    """A heat pump that reports its active failure as a second fault source."""
+    resource = Resource(ACTIVE_FAILURE, values=(), has_values=True)
+    cloud.resources[ACTIVE_FAILURE] = resource
+    coordinator.resources[ACTIVE_FAILURE] = resource
+    coordinator.data[ACTIVE_FAILURE] = ResourceSnapshot(resource, True, clock.utc())
+    coordinator._rebuild_poll_groups()
+    assert set(coordinator._paths_by_group[PollGroup.NOTIFICATIONS]) == {
+        NOTIFICATIONS,
+        ACTIVE_FAILURE,
+    }
+
+
+async def _cycles_with_failing_fault_sources(
+    coordinator: BoschBuderusDataUpdateCoordinator,
+    cloud: Cloud,
+    clock: Clock,
+    sources: tuple[str, ...],
+) -> None:
+    """Ten cycles after the fault sources started failing."""
+    outcome = []
+    for _ in range(10):
+        clock.now += INTERVAL
+        _due(coordinator, clock, PollGroup.NOTIFICATIONS)
+        start = clock.now
+        await _refresh(coordinator)
+        outcome.append(coordinator.last_update_success)
+        if coordinator.last_update_success:
+            assert coordinator.data[COMPRESSOR].last_success >= _utc(start)
+    # Read first, the failure cost one cycle; after the others, they are
+    # paused for 15 minutes and every further cycle answers.
+    assert outcome == [False, *[True] * 9]
+    for path in sources:
+        remaining = coordinator.resource_pause_remaining_seconds(path)
+        assert 0 < remaining <= GATEWAY_TIMEOUT_PAUSE.total_seconds()
+    assert not coordinator._fault_reread_due
+
+
+async def test_a_fault_list_with_a_lasting_server_error_fails_no_further_cycle(
+    hass: HomeAssistant,
+) -> None:
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, cloud):
+        await _confirmed_start(coordinator, cloud, clock)
+        cloud.failing = {NOTIFICATIONS: 503}
+        cloud.get_status = 503
+        sent = len(cloud.batches)
+        await _cycles_with_failing_fault_sources(
+            coordinator, cloud, clock, (NOTIFICATIONS,)
+        )
+        # Requested twice: first, then after the others; not every minute.
+        requests = [p for _, p in cloud.batches[sent:] if NOTIFICATIONS in p]
+        assert len(requests) == 2
+        # After the pause it is read again.
+        clock.now += GATEWAY_TIMEOUT_PAUSE.total_seconds()
+        cloud.failing, cloud.get_status = {}, None
+        _due(coordinator, clock, PollGroup.NOTIFICATIONS)
+        start = clock.now
+        await _refresh(coordinator)
+        assert coordinator.last_update_success
+        assert cloud.read_in(start, NOTIFICATIONS)
+        assert coordinator.faults.current_state_confirmed
+        await coordinator.async_shutdown()
+
+
+async def test_several_fault_sources_timing_out_together_fail_no_further_cycle(
+    hass: HomeAssistant,
+) -> None:
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, cloud):
+        _second_fault_source(coordinator, cloud, clock)
+        await _confirmed_start(coordinator, cloud, clock)
+        cloud.failing = {NOTIFICATIONS: 504, ACTIVE_FAILURE: 504}
+        cloud.get_status = 504
+        sent = len(cloud.batches)
+        await _cycles_with_failing_fault_sources(
+            coordinator, cloud, clock, (NOTIFICATIONS, ACTIVE_FAILURE)
+        )
+        requests = [p for _, p in cloud.batches[sent:] if NOTIFICATIONS in p]
+        assert len(requests) == 2
+        assert all(set(p) == {NOTIFICATIONS, ACTIVE_FAILURE} for p in requests)
+        await coordinator.async_shutdown()
+
+
+async def test_a_fault_source_answered_by_its_single_read_keeps_its_cadence(
+    hass: HomeAssistant,
+) -> None:
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, cloud):
+        await _confirmed_start(coordinator, cloud, clock)
+        # Read after the others; its batch item fails, its single read answers.
+        coordinator._fault_reread_due = True
+        cloud.failing = {NOTIFICATIONS: 503}
+        clock.now += INTERVAL
+        await _refresh(coordinator)
+        assert coordinator.last_update_success
+        assert cloud.batches[-1][1] == (NOTIFICATIONS,)
+        assert cloud.gets[-1][1] == NOTIFICATIONS
+        assert NOTIFICATIONS not in coordinator._negative_until
+        assert coordinator.faults.current_state_confirmed
+        await coordinator.async_shutdown()
+
+
+# --------------------------------------- the warning for a lasting server error
+
+
+async def test_a_lasting_slow_reading_warns_once_until_it_answers_again(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
+    caplog.set_level(logging.DEBUG, logger=coordinator_module.__name__)
+    clock = Clock()
+
+    def warnings() -> list[str]:
+        return [
+            record.getMessage()
+            for record in caplog.records
+            if record.name == coordinator_module.__name__
+            and record.levelno == logging.WARNING
+        ]
+
+    with _plant(hass, clock) as (coordinator, cloud):
+        await _confirmed_start(coordinator, cloud, clock)
+        cloud.failing = {COMPRESSOR: 504}
+        cloud.get_status = 504
+        sent = len(cloud.batches)
+        # Over an hour: paused for 15 minutes each time it timed out.
+        for _ in range(70):
+            clock.now += INTERVAL
+            await _refresh(coordinator)
+            assert coordinator.last_update_success
+        reads = [at for at, paths in cloud.batches[sent:] if COMPRESSOR in paths]
+        assert len(reads) >= 4
+        assert len(warnings()) == 1
+        # It answers again: the outage ended, a new server error warns again.
+        cloud.failing, cloud.get_status = {}, None
+        clock.now += GATEWAY_TIMEOUT_PAUSE.total_seconds()
+        await _refresh(coordinator)
+        assert coordinator.data[COMPRESSOR].available
+        assert not coordinator._bulk_server_error_paths
+        cloud.failing = {COMPRESSOR: 502}
+        cloud.get_status = 502
+        clock.now += INTERVAL
+        await _refresh(coordinator)
+        assert len(warnings()) == 2
+        assert "HTTP 502" in warnings()[-1]
+        await coordinator.async_shutdown()
+
+
+# ------------------------------------------------------ overlapping refreshes
+
+
+async def test_a_refresh_waiting_for_another_one_still_counts_as_running(
+    hass: HomeAssistant,
+) -> None:
+    clock = Clock()
+    with _plant(hass, clock) as (coordinator, cloud):
+        await _confirmed_start(coordinator, cloud, clock)
+        gates = {"first": asyncio.Event(), "second": asyncio.Event()}
+        tasks: dict[str, asyncio.Task] = {}
+        arrived = {"first": asyncio.Event(), "second": asyncio.Event()}
+        answer = cloud.bulk
+
+        async def held_bulk(gateway: str, paths) -> tuple[BatchItemResult, ...]:
+            name = "first" if asyncio.current_task() is tasks["first"] else "second"
+            arrived[name].set()
+            await gates[name].wait()
+            return await answer(gateway, paths)
+
+        coordinator.client.get_resources_bulk.side_effect = held_bulk
+        # The groups stay due, so the second refresh has readings to request.
+        with patch.object(coordinator, "_advance_groups"):
+            clock.now += INTERVAL
+            _due(coordinator, clock, PollGroup.FAST)
+            tasks["first"] = asyncio.create_task(coordinator._async_update_data())
+            await arrived["first"].wait()
+            clock.now += 20.0
+            second_started = clock.now
+            tasks["second"] = asyncio.create_task(coordinator._async_update_data())
+            await asyncio.sleep(0)
+            gates["first"].set()
+            await tasks["first"]
+            await arrived["second"].wait()
+            # The first one ended; the second is still on its way.
+            clock.now += 30.0
+            since = clock.utc() - timedelta(hours=1)
+            longest = coordinator._longest_cycle_since(since)
+            assert longest >= timedelta(seconds=clock.now - second_started)
+            gates["second"].set()
+            await tasks["second"]
+        assert coordinator._cycles_running == []
         await coordinator.async_shutdown()

@@ -580,9 +580,9 @@ class BoschBuderusDataUpdateCoordinator(
         self._circuit_outage_since: float | None = None
         # O81: the failed batch request was reported once in this outage.
         self._batch_failure_logged = False
-        # An answered batch with server errors for its readings was reported
-        # once; a cycle without such readings ends that outage.
-        self._bulk_server_errors_logged = False
+        # Readings that came back with server errors in an answered batch
+        # request; reported once, the outage ends when they answered again.
+        self._bulk_server_error_paths: set[str] = set()
         # The fault sources are read in the first cycle that answers again
         # after their state was lost to a failure (see ``_fault_order``).
         self._fault_reread_due = False
@@ -607,8 +607,9 @@ class BoschBuderusDataUpdateCoordinator(
         # (finished, seconds) of the cycles, the durations strictly falling:
         # the first entry finished after a time is the longest cycle since.
         self._cycle_durations: deque[tuple[datetime, float]] = deque()
-        # Monotonic start of the cycle in progress; None between cycles.
-        self._cycle_running_since: float | None = None
+        # Monotonic starts of the cycles in progress: a refresh started while
+        # another one runs waits for it and is in progress as well.
+        self._cycles_running: list[float] = []
         # Paths of a due group already read in an earlier, budget-limited
         # cycle -> monotonic read time: they are not read again until the
         # group completes (P41), while it keeps making progress (``_progress``).
@@ -1936,7 +1937,7 @@ class BoschBuderusDataUpdateCoordinator(
 
     async def _async_update_data(self) -> dict[str, ResourceSnapshot]:
         started = monotonic()
-        self._cycle_running_since = started
+        self._cycles_running.append(started)
         self._polls_total += 1
         try:
             async with self._update_lock:
@@ -2031,7 +2032,7 @@ class BoschBuderusDataUpdateCoordinator(
             raise
         finally:
             duration = (monotonic() - started) * 1000
-            self._cycle_running_since = None
+            self._cycles_running.remove(started)
             self._note_cycle_duration(duration)
             self._total_poll_duration_ms += duration
             self._maximum_poll_duration_ms = max(
@@ -2153,9 +2154,8 @@ class BoschBuderusDataUpdateCoordinator(
             ),
             0.0,
         )
-        running = self._cycle_running_since
-        if running is not None:
-            longest = max(longest, monotonic() - running)
+        if self._cycles_running:
+            longest = max(longest, monotonic() - min(self._cycles_running))
         return timedelta(seconds=longest)
 
     def _fault_state_limit(self, confirmed_at: datetime) -> timedelta | None:
@@ -2986,6 +2986,12 @@ class BoschBuderusDataUpdateCoordinator(
             # themselves. Without such an answer it is an outage, and they are
             # read again as soon as the cloud answers.
             timeout_pause = successful > 0 or fault_sources.isdisjoint(chunk)
+            # Read after other readings that answered, the fault sources are
+            # slow themselves with any server error, also when all of several
+            # failed together: paused, they fail no other cycle.
+            pause_slow_faults = (
+                faults_last and successful > 0 and not fault_sources.isdisjoint(chunk)
+            )
             cycle_results.extend(results)
             successful += self._apply_results(
                 snapshots,
@@ -3006,6 +3012,10 @@ class BoschBuderusDataUpdateCoordinator(
                     source=SnapshotSource.FALLBACK,
                     timeout_pause=timeout_pause,
                 )
+            if pause_slow_faults:
+                self._pause_slow_fault_sources(
+                    results, bulk_item_fallback, fault_sources, now_monotonic
+                )
             if any(result.status == 429 for result in results):
                 interrupted_paths.update(chunk)
                 self._activate_rate_limit_backoff(
@@ -3022,7 +3032,14 @@ class BoschBuderusDataUpdateCoordinator(
                 gateway_failure = True
                 break
 
-        self._log_bulk_server_errors(bulk_server_errors, failed=bool(failed_chunks))
+        self._log_bulk_server_errors(
+            bulk_server_errors,
+            answered={
+                result.path
+                for result in cycle_results
+                if result.resource is not None or _explicit_client_error(result.status)
+            },
+        )
         if attempted_faults := fault_sources & attempted_paths:
             answered = {
                 result.path
@@ -4160,6 +4177,32 @@ class BoschBuderusDataUpdateCoordinator(
                 now_monotonic + pause.total_seconds()
             )
 
+    def _pause_slow_fault_sources(
+        self,
+        results: tuple[BatchItemResult, ...],
+        single_reads: tuple[BatchItemResult, ...],
+        fault_sources: set[str],
+        now_monotonic: float,
+    ) -> None:
+        """Pause fault sources that kept a server error after answered readings.
+
+        A single read that answered (a value or an explicit client error)
+        keeps the source's cadence.
+        """
+        answered = {
+            item.path
+            for item in single_reads
+            if item.resource is not None or _explicit_client_error(item.status)
+        }
+        until = now_monotonic + GATEWAY_TIMEOUT_PAUSE.total_seconds()
+        for item in results:
+            if (
+                item.path in fault_sources
+                and item.path not in answered
+                and _server_error_item(item)
+            ):
+                self._negative_until[item.path] = until
+
     def _outage_probe(
         self, paths_by_group: dict[PollGroup, tuple[str, ...]], now_monotonic: float
     ) -> str | None:
@@ -4386,18 +4429,29 @@ class BoschBuderusDataUpdateCoordinator(
         )
 
     def _log_bulk_server_errors(
-        self, items: list[BatchItemResult], *, failed: bool
+        self, items: list[BatchItemResult], *, answered: set[str]
     ) -> None:
         """Warn once per outage when an answered batch request returned
-        server errors for readings; only a cycle without them (and without a
-        failed batch) ends that outage."""
+        server errors for readings.
+
+        The outage ends only when each of those readings answered again in a
+        later request: a reading that keeps failing (and is paused meanwhile)
+        stays one outage.
+        """
+        ongoing = bool(self._bulk_server_error_paths)
+        failing = {item.path for item in items}
+        # A reading no longer in the inventory cannot answer again.
+        self._bulk_server_error_paths = {
+            path
+            for path in self._bulk_server_error_paths
+            if path not in answered
+            and (path in self.resources or path in self._manual_setpoint_candidates)
+        } | failing
         count = len(items)
         if not count:
-            if not failed:
-                self._bulk_server_errors_logged = False
             return
         statuses = ", ".join(sorted({str(item.status) for item in items}))
-        if self._bulk_server_errors_logged:
+        if ongoing:
             _LOGGER.debug(
                 "PointT answered a batch request again with server errors for "
                 "%d readings (HTTP %s)",
@@ -4405,7 +4459,6 @@ class BoschBuderusDataUpdateCoordinator(
                 statuses,
             )
             return
-        self._bulk_server_errors_logged = True
         _LOGGER.warning(
             "PointT answered a batch request, but %d readings came back with "
             "server errors (HTTP %s). Further such answers of this outage are "

@@ -89,8 +89,13 @@ not yet on the plant itself.
   the first cycle that answers, after the other readings. A gateway timeout
   of the fault list no longer pauses it for 15 minutes when nothing else
   answered either; after a two-minute outage the fault entities were
-  unavailable for 17 minutes. A fault list that is slow while the rest
-  answers is still paused as before.
+  unavailable for 17 minutes.
+- **Fault sources with a lasting server error:** fault sources that keep
+  failing with a server error while the other readings of the cycle answer
+  are paused for 15 minutes, with any server error and also when several
+  fault sources fail together. Before, only a single fault source with a
+  gateway timeout was paused; otherwise every other cycle failed and the
+  fault sources were asked every minute.
 - **Display values keep their last value:** **System pressure status
   (calculated)**, **Holiday mode active**, **Next holiday** and the **Holiday
   periods** calendar now keep their last value within its validity limit when
@@ -100,7 +105,9 @@ not yet on the plant itself.
 - **Warning for server errors inside an answered batch:** when the cloud
   answers a batch request but readings in it come back with server errors
   (for example gateway timeouts), the log now shows one warning per outage.
-  Before, such outages left no log entry.
+  The outage ends only when these readings answered again, so a single
+  reading that keeps timing out and is paused meanwhile does not warn again
+  every 15 minutes. Before, such outages left no log entry.
 - **Diagnostics schema 46:** each access and each source lists its recent
   starts with the time and a fixed reason (`start`, `configuration_changed`,
   `after_failure` with the error class, `source_ended`, `access_restarted`,
