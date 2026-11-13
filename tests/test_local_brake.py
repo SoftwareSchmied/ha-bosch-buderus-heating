@@ -192,10 +192,14 @@ async def test_rate_limit_sample_excludes_saving_the_pause(
     handle = await manager.budget(binding.context)
     persist = manager.persist
 
-    # Saving takes two seconds; the loopback answer, even on a loaded test
-    # machine, far less. A time with the saving in it would be over 2000 ms.
+    # Saving takes two seconds on the read client's clock (nothing really
+    # waits); the loopback answer, even on a loaded test machine, far less.
+    # A time with the saving in it would be over 2000 ms.
+    real, saved = reader.monotonic, [0.0]
+    monkeypatch.setattr(reader, "monotonic", lambda: real() + saved[0])
+
     async def slow_persist():
-        await asyncio.sleep(2.0)
+        saved[0] += 2.0
         await persist()
 
     monkeypatch.setattr(manager, "persist", slow_persist)

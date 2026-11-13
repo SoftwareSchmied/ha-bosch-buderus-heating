@@ -3,7 +3,7 @@
 import asyncio
 import json
 import ssl
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -224,6 +224,29 @@ def ready(owner, serial=A):
         and access.device.state_generation == access.generation
         and access.device.metadata_generation == access.generation
     )
+
+
+class _InstantPause:
+    """``asyncio`` for the session module, with a reconnect pause that only
+    records its length (no five real seconds per reconnect)."""
+
+    def __init__(self, pauses: list[float]) -> None:
+        self._pauses = pauses
+
+    def __getattr__(self, name):
+        return getattr(asyncio, name)
+
+    async def sleep(self, delay, result=None):
+        self._pauses.append(delay)
+        return await asyncio.sleep(0, result)
+
+
+@contextmanager
+def instant_reconnect_pause():
+    """The session reconnects without waiting; the pauses it chose are kept."""
+    pauses: list[float] = []
+    with patch(ROOT + ".bacon.session.asyncio", _InstantPause(pauses)):
+        yield pauses
 
 
 @asynccontextmanager
@@ -626,6 +649,14 @@ async def test_new_login_replaces_session_even_without_disabled_devices(hass, mi
 @pytest.mark.parametrize("reason", ["token_rotation", "disconnect"])
 async def test_mqtt_reconnect_keeps_pointt_and_device_access(hass, reason):
     broker = Broker()
+    with instant_reconnect_pause() as pauses:
+        await _reconnect_keeps_pointt_and_device_access(hass, broker, reason)
+    # A planned renewal reconnects at once; a lost connection after the
+    # first backoff step.
+    assert pauses == ([] if reason == "token_rotation" else [5.0])
+
+
+async def _reconnect_keeps_pointt_and_device_access(hass, broker, reason):
     async with connected(hass, broker) as (_, _, owner, _):
         await eventually(lambda: ready(owner) and source_for(owner, HEAT))
         previous, heating = view(owner), source_for(owner, HEAT)
@@ -733,6 +764,12 @@ async def test_reenabled_device_recovers_from_unchanged_retained_information(has
 
 async def test_reconnect_with_only_retained_information_keeps_the_device(hass):
     broker = Broker()
+    with instant_reconnect_pause() as pauses:
+        await _reconnect_with_only_retained_information(hass, broker)
+    assert pauses == [5.0]
+
+
+async def _reconnect_with_only_retained_information(hass, broker):
     async with connected(hass, broker) as (_, _, owner, _):
         await eventually(lambda: ready(owner))
         access = view(owner)

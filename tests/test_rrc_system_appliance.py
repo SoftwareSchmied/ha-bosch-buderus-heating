@@ -76,7 +76,6 @@ async def setup(hass: HomeAssistant, cloud: RrcCloud, gateway: Gateway | None = 
     entry = _entry(hass)
     clock = Clock()
     stack = cloud_patches(cloud, clock, gateway or Gateway(GW))
-    stack.__enter__()
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     return entry, clock, stack
@@ -85,7 +84,7 @@ async def setup(hass: HomeAssistant, cloud: RrcCloud, gateway: Gateway | None = 
 async def teardown(hass: HomeAssistant, entry, stack) -> None:
     await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
-    stack.__exit__(None, None, None)
+    stack.close()
 
 
 def state_of(hass: HomeAssistant, entry, unique_id: str):

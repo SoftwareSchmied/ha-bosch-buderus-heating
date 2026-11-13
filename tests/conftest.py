@@ -6,6 +6,7 @@ import pytest
 
 from custom_components.bosch_buderus_heating.config_flow import BoschBuderusConfigFlow
 from custom_components.bosch_buderus_heating.pointt import PointTClient
+from tests.helpers.open_patches import close_open_stacks
 
 _MISSING = object()
 _CLIENT = dict(vars(PointTClient))
@@ -36,16 +37,23 @@ def _restore_client() -> list[str]:
 
 @pytest.hookimpl(wrapper=True)
 def pytest_runtest_teardown(item, nextitem):
-    """Fail the test that leaves the PointT client patched and restore it.
+    """Fail the test that leaves patches behind and undo them.
 
-    Checked after all fixtures of the test are finished. Without this, every
-    later test of the same run talks to the leftover fake answers and waits
-    for sources that never come up.
+    Checked after all fixtures of the test are finished. Open fake-cloud
+    patches (a test that failed before its own teardown) are closed first;
+    whatever is still patched on the PointT client is then put back. Without
+    this, every later test of the same run talks to the leftover fake answers
+    and waits for sources that never come up.
     """
     try:
         result = yield
     finally:
-        left = _restore_client()
+        try:
+            stacks = close_open_stacks()
+        finally:
+            left = _restore_client()
+    if stacks:
+        pytest.fail(f"The test left {stacks} fake-cloud patch stack(s) open")
     if left:
         pytest.fail(f"The test left PointTClient patched: {', '.join(left)}")
     return result

@@ -670,21 +670,41 @@ def test_the_synonym_priority_does_not_depend_on_the_hash_seed() -> None:
     import os
     import subprocess
     import sys
+    from pathlib import Path
 
+    package = Path(__file__).parents[1] / "custom_components" / "bosch_buderus_heating"
     script = (
+        # Only the holidays module and what it imports: the package itself
+        # would load Home Assistant first, which takes most of the time.
+        "import sys, types\n"
+        f"for name, path in (('custom_components', {str(package.parent)!r}),"
+        f" ('custom_components.bosch_buderus_heating', {str(package)!r})):\n"
+        "    sys.modules[name] = types.ModuleType(name)\n"
+        "    sys.modules[name].__path__ = [path]\n"
         "from custom_components.bosch_buderus_heating import holidays as h\n"
         "row = {k: str(i) for i, k in enumerate(h._START_KEYS + h._END_KEYS)}\n"
         "print(h._find_value(row, h._START_KEYS), h._find_value(row, h._END_KEYS))\n"
     )
-    seen = set()
-    for seed in ("1", "2", "3", "4"):
-        result = subprocess.run(
+    # The four interpreters run side by side; each one only imports and prints.
+    processes = [
+        subprocess.Popen(
             [sys.executable, "-c", script],
-            capture_output=True,
-            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
             env={**os.environ, "PYTHONHASHSEED": seed},
-            timeout=60,
         )
-        seen.add(result.stdout.strip())
+        for seed in ("1", "2", "3", "4")
+    ]
+    seen = set()
+    try:
+        for process in processes:
+            output, errors = process.communicate(timeout=60)
+            assert process.returncode == 0, errors
+            seen.add(output.strip())
+    finally:
+        for process in processes:
+            if process.poll() is None:
+                process.kill()
+                process.communicate()
     assert seen == {"0 12"}

@@ -49,6 +49,7 @@ from custom_components.bosch_buderus_heating.pointt import (
     ServiceUnavailable,
 )
 from custom_components.bosch_buderus_heating.pointt.parsers import parse_resource
+from tests.helpers.open_patches import TrackedStack
 
 FIXTURES = Path(__file__).parents[1] / "fixtures" / "contracts"
 COORDINATOR = "custom_components.bosch_buderus_heating.coordinator"
@@ -314,8 +315,13 @@ class RrcCloud:
 def cloud_patches(
     cloud: RrcCloud, clock: Clock, gateway: Gateway = GATEWAY
 ) -> ExitStack:
-    """Route the PointT client of a real setup to ``cloud``."""
-    stack = ExitStack()
+    """Route the PointT client of a real setup to ``cloud``.
+
+    The patches are active from here on, also without ``with``. A test that
+    fails before its own teardown leaves them to the teardown check in
+    ``tests/conftest.py``, which closes them.
+    """
+    stack = TrackedStack()
     for item in (
         patch(f"{COORDINATOR}.monotonic", clock),
         patch.object(PointTClient, "get_gateways", AsyncMock(return_value=(gateway,))),

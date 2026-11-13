@@ -752,7 +752,6 @@ async def test_event_entries_are_never_read_and_never_block_setup(
     cloud = RrcCloud(_events_tree(*failing))
     entry = _entry(hass)
     stack = cloud_patches(cloud, Clock(), RRC_GATEWAY)
-    stack.__enter__()
     try:
         await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()

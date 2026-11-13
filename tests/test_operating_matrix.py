@@ -306,6 +306,18 @@ async def test_a_device_i_disabled_stays_disabled_across_replacement_and_restart
 # ------------------------------------------- 7: two systems with the same name
 
 
+def no_read_back_pause(*coordinators) -> list[float]:
+    """The pause before each write's read-back is recorded, not waited."""
+    pauses: list[float] = []
+
+    async def pause(delay: float) -> None:
+        pauses.append(delay)
+
+    for item in coordinators:
+        item._write_service._sleep = pause
+    return pauses
+
+
 async def test_two_systems_with_the_same_name_keep_apart(hass) -> None:
     backend = Backend()
     async with running(hass, backend) as (entry, _, owner, _):
@@ -333,6 +345,7 @@ async def test_two_systems_with_the_same_name_keep_apart(hass) -> None:
         assert first.entity_id != second.entity_id
         assert_no_duplicates(hass, entry)
 
+        pauses = no_read_back_pause(first.coordinator, second.coordinator)
         await hass.services.async_call(
             "number",
             "set_value",
@@ -346,6 +359,7 @@ async def test_two_systems_with_the_same_name_keep_apart(hass) -> None:
             blocking=True,
         )
         assert backend.values == {HEAT: 23, PEER: 18}
+        assert len(pauses) == 2  # one read-back per write
         assert [call for call in backend.calls if call[0] == "PUT"] == [
             ("PUT", PEER, TEMP),
             ("PUT", HEAT, TEMP),
@@ -459,12 +473,15 @@ async def test_a_write_after_the_gateway_exchange_goes_to_the_new_gateway(
         await exchanged(hass, entry, cloud, owner)
         await _real_cycle(hass, entry, backend, number)
         since = len(backend.calls)
+        target = native(entry.runtime_data, "number", NEW + SETPOINT)
+        pauses = no_read_back_pause(target.coordinator)
         await hass.services.async_call(
             "number",
             "set_value",
             {"entity_id": number.entity_id, "value": 23},
             blocking=True,
         )
+        assert pauses  # the write was confirmed by its read-back
         sent = backend.calls[since:]
         assert [call for call in sent if call[0] == "PUT"] == [("PUT", NEW, TEMP)]
         assert not any(OLD in call for call in sent)
@@ -754,16 +771,17 @@ async def tls_local(hass, monkeypatch, gateways, tmp_path):
     return SimpleNamespace(configure=configure, seen=seen, clock=clock)
 
 
-async def polled(owner, clock, predicate):
+async def polled(owner, clock, predicate, *, step=1.0):
     """Let the local scheduler run on its test clock until ``predicate``.
 
-    The test clock moves 20 s per real second: a local reading stays valid
-    for 180 s, so a slow run cannot expire the first reading before the
-    second one arrives.
+    The test clock moves 20 s per real second (``step`` 1): a local reading
+    stays valid for 180 s, so a slow run cannot expire the first reading
+    before the second one arrives. A larger step suits a wait where an
+    expired reading changes nothing that is checked.
     """
     async with asyncio.timeout(30):
         while not predicate():
-            clock.advance(1)
+            clock.advance(step)
             driver = owner.connections.connection_driver("local")
             source = driver.sources.get("local") if driver is not None else None
             if source is not None and source.service is not None:
@@ -800,12 +818,15 @@ async def test_a_certificate_change_at_runtime_stops_only_the_local_source(
             tmp_path / "synthetic-2.pem", tmp_path / "synthetic-2.key"
         )
         sent = len(tls_local.seen)
+        # Until the next read meets the new certificate (about one period);
+        # whether the first reading expires meanwhile does not matter here.
         await polled(
             owner,
             tls_local.clock,
             lambda: (
                 owner.connections.source_phase("local") is ConnectionPhase.AUTH_REQUIRED
             ),
+            step=5.0,
         )
         issue = ir.async_get(hass).async_get_issue(
             DOMAIN, source._certificate_issue_id()

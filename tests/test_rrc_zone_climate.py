@@ -98,7 +98,6 @@ async def setup(hass: HomeAssistant, cloud: RrcCloud, clock: Clock | None = None
     clock = clock or Clock()
     entry = _entry(hass)
     stack = cloud_patches(cloud, clock, GATEWAY)
-    stack.__enter__()
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     coordinator = entry.runtime_data.coordinators[0]

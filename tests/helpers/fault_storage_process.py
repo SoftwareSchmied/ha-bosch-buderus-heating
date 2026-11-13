@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import errno
 import json
+import os
 import sys
 import threading
+import time
+import traceback
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -133,5 +137,60 @@ async def run(directory: Path, stage: str) -> None:
     remove()
 
 
+def _child(directory: str, stage: str) -> int:
+    """One stage: what it prints goes to ``<stage>.out``, a failure to
+    ``<stage>.err``."""
+    folder = Path(directory)
+    with (folder / f"{stage}.out").open("w", encoding="utf-8") as output:
+        try:
+            with contextlib.redirect_stdout(output):
+                asyncio.run(run(folder, stage))
+        except BaseException:
+            (folder / f"{stage}.err").write_text(
+                traceback.format_exc(), encoding="utf-8"
+            )
+            return 1
+    return 0
+
+
+def _status(pid: int, timeout: float) -> int | None:
+    """The exit status (negative: the signal), or None while it runs."""
+    deadline = time.monotonic() + timeout
+    while True:
+        done, status = os.waitpid(pid, os.WNOHANG)
+        if done:
+            return os.waitstatus_to_exitcode(status)
+        if time.monotonic() >= deadline:
+            return None
+        time.sleep(0.005)
+
+
+def serve() -> None:
+    """Fork one process per stage from this interpreter, which has imported
+    Home Assistant once. Requests and answers are JSON lines on stdin and
+    stdout: ``{"run": [directory, stage]}`` answers the process ID,
+    ``{"wait": pid, "timeout": seconds}`` its exit status or None."""
+    for line in sys.stdin:
+        request = json.loads(line)
+        if "run" in request:
+            pid = os.fork()
+            if pid == 0:  # the stage process
+                code = 1
+                try:
+                    devnull = os.open(os.devnull, os.O_RDWR)
+                    os.dup2(devnull, 0)
+                    os.dup2(devnull, 1)
+                    code = _child(*request["run"])
+                finally:
+                    os._exit(code)
+            answer = pid
+        else:
+            answer = _status(request["wait"], request["timeout"])
+        print(json.dumps(answer), flush=True)
+
+
 if __name__ == "__main__":
-    asyncio.run(run(Path(sys.argv[1]), sys.argv[2]))
+    if sys.argv[1:] == ["--serve"]:
+        serve()
+    else:
+        asyncio.run(run(Path(sys.argv[1]), sys.argv[2]))

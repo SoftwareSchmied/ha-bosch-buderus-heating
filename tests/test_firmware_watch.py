@@ -401,7 +401,10 @@ async def test_local_firmware_change_below_the_minimum_pauses_access(
             if await within(lambda: len(client.calls) > 1, 1.0):
                 break
         assert len(client.calls) >= 2
-        await within(lambda: service.condition is LocalCondition.UNAVAILABLE, 2.0)
+        # The service takes the new version and decides on the pause in the
+        # same step; waiting for the version avoids waiting out a pause that
+        # must not come.
+        assert await within(lambda: service.planner.firmware == new, 2.0)
         assert (service.condition is LocalCondition.UNAVAILABLE) is blocked
         assert (service.snapshot().problem == "firmware_update_required") is blocked
     finally:
