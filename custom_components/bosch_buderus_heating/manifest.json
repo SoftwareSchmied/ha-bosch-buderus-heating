@@ -2,6 +2,7 @@
   "domain": "bosch_buderus_heating",
   "name": "Bosch/Buderus Home Comfort",
   "after_dependencies": ["frontend", "http", "recorder", "zeroconf"],
+  "categories": ["climate"],
   "codeowners": ["@SoftwareSchmied"],
   "config_flow": true,
   "dependencies": ["persistent_notification"],
