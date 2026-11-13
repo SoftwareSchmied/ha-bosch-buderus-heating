@@ -6347,7 +6347,7 @@
      "domain": "sensor",
      "entity_category": null,
      "original_icon": null,
-     "original_name": "Heat pump \u2013 Supply temperature",
+     "original_name": "Heat pump \u2013 System supply temperature",
      "translation_key": null,
      "unique_id": "gateway-one:gateway:supply_temperature",
      "unit": "\u00b0C"

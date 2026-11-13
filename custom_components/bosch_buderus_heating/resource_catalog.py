@@ -619,8 +619,13 @@ _GERMAN_NAMES = {
     "info": "Systeminformationen",
 }
 
+# The heat sources' supply temperature is the system supply ("system supply
+# flow temperature" in the API documentation): behind a buffer cylinder it is
+# the heating side's flow, not the heat pump's own flow (TC1). The name of a
+# heating circuit's supply temperature stays.
 _GERMAN_PATH_NAMES = {
     "/gateway/dataProcessing/status": "Datenverarbeitungsstatus",
+    "/heatSources/actualSupplyTemperature": "Vorlauftemperatur Anlage",
     "/heatSources/Source/eHeater/status": "Status elektrischer Zuheizer",
     "/heatSources/additionalHeater/operationMode": "Betriebsart des Zuheizers",
     "/heatSources/additionalHeater/primary/status": "Status des primären Zuheizers",
@@ -781,6 +786,7 @@ _ENGLISH_NAMES = {
 
 _ENGLISH_PATH_NAMES = {
     "/gateway/dataProcessing/status": "Data processing status",
+    "/heatSources/actualSupplyTemperature": "System supply temperature",
     "/heatSources/Source/eHeater/status": "Auxiliary heater status",
     "/heatSources/additionalHeater/operationMode": "Auxiliary heater operation mode",
     "/heatSources/additionalHeater/primary/status": "Primary auxiliary heater status",

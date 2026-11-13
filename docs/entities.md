@@ -323,7 +323,7 @@ counters—not holiday dates, names, or raw configuration data.
 | Auxiliary-heater operation mode | Diagnostic sensor (disabled) and select | `/heatSources/additionalHeater/operationMode` | Yes | Yes | 5 min; staggered read-back after change |
 | Primary auxiliary-heater type (disabled) | Diagnostic sensor | `/heatSources/additionalHeater/primary/type` | No | No | startup only |
 | Emergency mode | Sensor | `/heatSources/currentEmergencyMode` | No | No | 60 s |
-| Supply temperature | Sensor | `/heatSources/actualSupplyTemperature` | No | No | 60 s |
+| System supply temperature (before 0.9.1 *Supply temperature*) | Sensor | `/heatSources/actualSupplyTemperature` | No | No | 60 s |
 | Energy management status | Sensor | `/heatSources/emStatus` | No | No | 60 s |
 | Flame status | Sensor; on a heat pump created disabled from 0.9.0 (see [default activation](#maturity-and-default-activation)) | `/heatSources/flameStatus` | No | No | 60 s |
 | Return temperature | Sensor | `/heatSources/returnTemperature` | No | No | 60 s |
@@ -370,6 +370,20 @@ switching shown as a read-only sensor show translated states. Device spellings s
 unknown value stays as reported. Since 0.9.0-alpha.2 the state values of these
 entities are therefore different: automations and templates that check the
 raw values need the new ones.
+
+The **system supply temperature** (`/heatSources/actualSupplyTemperature`,
+"system supply flow temperature" in the API documentation) is the supply
+temperature of the heating system, not necessarily the heat pump's own
+flow. On my heat pump with a buffer cylinder it is the flow of the heating
+side behind the buffer: during a hot water charge it stayed at about 21 °C
+while the heat pump's flow (TC1, *Primary supply temperature (TC1)*) was at
+about 52 °C, and in heating it reads a few tenths of a kelvin below TC1. The
+controller's Info menu shows it as *Vorlauftemperatur*. Up to 0.9.0 the
+entity was called *Supply temperature* and, under the heat pump device, read
+like the heat pump's flow; since 0.9.1 it is *System supply temperature*
+(*Vorlauftemperatur Anlage*). Its entity ID, unique ID and history stay; a
+name you set yourself stays as well. The supply temperature of a heating
+circuit (`/heatingCircuits/{hc}/actualSupplyTemperature`) keeps its name.
 
 The software update status, the outdoor temperature source, the iSRC
 installation status and the variable-tariff support status rarely change.
@@ -664,6 +678,17 @@ The K40 also referenced stop temperatures (`highStop`, `lowStop`,
 them. They cannot be exposed as Home Assistant entities even though they are
 visible in the local expert menu.
 
+The PointT levels and the app's names belong together as follows: `eco` is
+Eco+, `low` is Eco and `high` is Comfort, in the mode select, the hot water
+entity and the three start temperatures. On my heat pump the Eco+ start
+temperature is the lowest (40 °C), Eco and Comfort follow (51 °C and
+53 °C). Home Assistant drops the "+" when it builds an entity ID, so the
+Eco+ and the Eco start temperature get the same base ID: one ends in
+`…_eco_start_temperature`, the other in `…_eco_start_temperature_2`. On my
+installation the first one is Eco+ and the second one Eco. The names always
+show the right level; if in doubt, the unique ID ends in
+`temperatureLevels:eco` (Eco+) or `temperatureLevels:low` (Eco).
+
 ## Heat sources
 
 The core counters and information are created for every available heat source.
@@ -755,8 +780,8 @@ stored inventory or from its local readings alone (see
 
 | Enabled | Readings |
 | --- | --- |
-| yes | current supply setpoint, primary flow rate (L/h), compressor and electric heater power (W), refrigerant circuit status, heating circuit pump, thermal disinfection running, silent mode, utility power block; since 0.9.0-alpha.6 also outdoor unit fan (PL3) and primary heating pump (PC0) speed (%), primary supply temperature (TC1), air intake temperature (TL2), hot gas (TR6), condenser heating (TR3), high-pressure (JR1), low-pressure (JR0) and suction line (TR5) temperatures |
-| no | cylinder temperature (the same value as the hot water temperature), condenser cooling (TR4) and compressor temperatures; compressor speed (%, practically the same value as the enabled compressor modulation); a second compressor power reading and a coarse electric heater power; ventilation readings: exhaust, extract, outdoor and supply air temperatures, indoor, outdoor and highest humidity (%), indoor, outdoor and highest air quality (ppm, no device class), exhaust and supply fan power, summer bypass flap and auxiliary heater power (%), exhaust fan speed (rpm), supply fan speed (no device class or statistics), run time (min, from 0.9.0 with long-term statistics) and filter remaining time (min, no statistics) and the exhaust fan level |
+| yes | current supply setpoint, primary flow rate (L/h), compressor and electric heater power (W), refrigerant circuit status, heating circuit pump, thermal disinfection running, silent mode, utility power block; since 0.9.0-alpha.6 also outdoor unit fan (PL3) and primary heating pump (PC0) speed (%), primary supply temperature (TC1), air intake temperature (TL2), hot gas (TR6), liquid line heating (TR3), high-pressure (JR1), low-pressure (JR0) and suction line (TR5) temperatures |
+| no | cylinder temperature (the same value as the hot water temperature), liquid line cooling (TR4) and compressor temperatures; compressor speed (%, practically the same value as the enabled compressor modulation); a second compressor power reading and a coarse electric heater power; ventilation readings: exhaust, extract, outdoor and supply air temperatures, indoor, outdoor and highest humidity (%), indoor, outdoor and highest air quality (ppm, no device class), exhaust and supply fan power, summer bypass flap and auxiliary heater power (%), exhaust fan speed (rpm), supply fan speed (no device class or statistics), run time (min, from 0.9.0 with long-term statistics) and filter remaining time (min, no statistics) and the exhaust fan level |
 | no, diagnostic | the controller's other internal signals (`/signals/…`) with numeric readings: unit taken from the reading, long-term statistics when that unit is one of a measurement (not for run and remaining times), meaning not documented in detail. Identifiers, addresses or keys (for example the energy-management link ID) and free text are never offered. |
 
 The readings enabled in 0.9.0-alpha.6 are what a hydraulic view of the
@@ -878,6 +903,30 @@ entity without a name of your own shows the new name:
 - The hot water heat-up, the cylinder temperature and the outdoor
   temperature signals got names instead of *Signal SRC.…*.
 
+Since 0.9.1 two refrigerant circuit names say what the sensors measure,
+also where the controller's wording differs. The Info menu calls TR3 and
+TR4 *Verflüssigertemp. Heizung* and *Verflüssigertemp. Kühlung*; the API
+documentation calls them liquid pipe temperatures, and that is what they
+read. The condensing temperature is the high-pressure temperature (JR1), the
+evaporating temperature the low-pressure temperature (JR0).
+
+- *Liquid line temperature heating (TR3)* / *Temperatur Flüssigkeitsleitung
+  Heizen (TR3)* (before *Condenser temperature heating (TR3)* /
+  *Verflüssigertemperatur Heizen (TR3)*): the liquid refrigerant behind the
+  water-side heat exchanger while heating. On my heat pump it reads a little
+  below JR1 and the condenser outlet water temperature (TC3).
+- *Liquid line temperature cooling (TR4)* / *Temperatur Flüssigkeitsleitung
+  Kühlen (TR4)* (before *Condenser temperature cooling (TR4)* /
+  *Verflüssigertemperatur Kühlen (TR4)*): the liquid line of the cooling
+  mode. While heating, the sensor sits at the evaporator inlet; on my heat
+  pump, which does not cool, it then reads about the low-pressure
+  temperature (JR0), below the air intake temperature (TL2).
+- The system supply temperature, see [Gateway and system](#gateway-and-system).
+
+Entity IDs (`…_liquid_line_heating`, `…_liquid_line_cooling`), unique IDs,
+the default activation (TR3 enabled, TR4 disabled) and names you set yourself
+stay.
+
 Hybrid systems with an HM200 hybrid manager report additional readings of the
 outdoor unit and the hybrid manager through the local access: temperatures of
 the outdoor unit, heat pump supply and return, compressor and pump speeds,
@@ -937,7 +986,7 @@ IDs depend on your installation):
 | --- | --- |
 | `flow` | Primary supply temperature (TC1) |
 | `return` | Return temperature (the main entity, not its `… (cloud)` or `… (local)` copy) |
-| `hc_flow` | Supply temperature (behind a buffer cylinder, the heating circuit flow) |
+| `hc_flow` | System supply temperature (behind a buffer cylinder, the heating circuit flow) |
 | `hc_setpoint` | Current supply setpoint |
 | `compressor` | Compressor |
 | `valve` | Hot water 3-way valve (VW1) |
@@ -954,7 +1003,7 @@ IDs depend on your installation):
 | `evap_temp` | Low-pressure temperature (JR0) |
 | `cond_temp` | High-pressure temperature (JR1) |
 | `suction_temp` | Suction line temperature (TR5) |
-| `liquid_temp` | Condenser temperature heating (TR3) |
+| `liquid_temp` | Liquid line temperature heating (TR3) |
 | `eev` | Expansion valve VR1 |
 
 The refrigerant circuit temperatures for the details are enabled by default

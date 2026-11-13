@@ -3,7 +3,10 @@
 The reference heat pump's controller (MX400, firmware 15.00.01) shows these
 readings in its Info menu with sensor codes such as TL2 or VR4. The entities
 use the same wording, so its display and Home Assistant can be compared line
-by line. Only names and state texts change: the unique IDs depend on the path.
+by line. TR3 and TR4 are the exception since 0.9.1: the display calls them
+condenser temperatures, the API documentation liquid pipe temperatures, which
+is what they measure (the condensing temperature is JR1). Only names and state
+texts change: the unique IDs depend on the path.
 """
 
 from __future__ import annotations
@@ -46,12 +49,12 @@ NAMES = {
         "Air intake temperature (TL2)",
     ),
     HS + "/refrigerant/liquidPipeHeatingTemp": (
-        "Verflüssigertemperatur Heizen (TR3)",
-        "Condenser temperature heating (TR3)",
+        "Temperatur Flüssigkeitsleitung Heizen (TR3)",
+        "Liquid line temperature heating (TR3)",
     ),
     HS + "/refrigerant/liquidPipeCoolingTemp": (
-        "Verflüssigertemperatur Kühlen (TR4)",
-        "Condenser temperature cooling (TR4)",
+        "Temperatur Flüssigkeitsleitung Kühlen (TR4)",
+        "Liquid line temperature cooling (TR4)",
     ),
     HS + "/refrigerant/suctionGasTemp": (
         "Temperatur Saugleitung (TR5)",

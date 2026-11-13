@@ -885,10 +885,13 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
         options=("active", "inactive"),
     ),
     # The refrigerant circuit temperatures. Since 0.9.0-alpha.6 the ones a
-    # hydraulic view of the heat pump shows are enabled (hot gas TR6,
-    # condenser heating TR3, high and low pressure JR1/JR0, suction line
-    # TR5); the compressor and the condenser cooling temperature stay
-    # disabled.
+    # hydraulic view of the heat pump shows are enabled (hot gas TR6, liquid
+    # line heating TR3, high and low pressure JR1/JR0, suction line TR5); the
+    # compressor and the liquid line cooling temperature stay disabled.
+    # TR3 and TR4 are liquid line temperatures ("liquid pipe" in the API
+    # documentation), not the condensing temperature, which JR1 gives: while
+    # heating, TR3 reads the liquid behind the water-side heat exchanger and
+    # TR4, at the evaporator inlet, about the low-pressure temperature (JR0).
     *(
         _define(REFRIGERANT + "/" + name, key, TEMPERATURE, names, enabled=enabled)
         for name, key, names, enabled in (
@@ -914,8 +917,8 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
                 "liquidPipeCoolingTemp",
                 "liquid_line_cooling",
                 (
-                    "Verflüssigertemperatur Kühlen (TR4)",
-                    "Condenser temperature cooling (TR4)",
+                    "Temperatur Flüssigkeitsleitung Kühlen (TR4)",
+                    "Liquid line temperature cooling (TR4)",
                 ),
                 False,
             ),
@@ -923,8 +926,8 @@ CATALOG: tuple[LocalOnlyDefinition, ...] = (
                 "liquidPipeHeatingTemp",
                 "liquid_line_heating",
                 (
-                    "Verflüssigertemperatur Heizen (TR3)",
-                    "Condenser temperature heating (TR3)",
+                    "Temperatur Flüssigkeitsleitung Heizen (TR3)",
+                    "Liquid line temperature heating (TR3)",
                 ),
                 True,
             ),

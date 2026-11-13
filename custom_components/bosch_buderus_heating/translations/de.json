@@ -1716,7 +1716,7 @@
         "name": "Außentemperatur"
       },
       "supply_temperature": {
-        "name": "Vorlauftemperatur"
+        "name": "Vorlauftemperatur Anlage"
       },
       "return_temperature": {
         "name": "Rücklauftemperatur"

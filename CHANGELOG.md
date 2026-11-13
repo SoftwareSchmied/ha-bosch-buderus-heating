@@ -43,7 +43,8 @@ Versioning after its first tagged preview.
   generator module by role (indoor unit, outdoor unit, boiler, hybrid
   manager, further cascade stages) with family, construction and power
   class, and give `primary`, `outdoor_unit`, `source`, `table_version` and
-  `known`. Dashboard cards can choose a matching drawing from it. Details: [heat generator models](docs/entities.md#heat-generator-models).
+  `known`. Dashboard cards can choose a matching drawing from it. Details:
+  [heat generator models](docs/entities.md#heat-generator-models).
   - The sensor sends no request of its own: it uses the module lists the
     cloud and the local access already read. Its unique ID does not depend
     on the source or the order of the modules, so it stays the same with
@@ -129,6 +130,29 @@ Versioning after its first tagged preview.
   gateway declares in addition is still shown as reported. Names, entity
   IDs and settings of existing entities stay. The texts in languages other
   than English and German are drafts and have not been reviewed yet.
+
+### Entities
+
+- **Corrected names:** three readings now say what they measure. Entity
+  IDs, unique IDs, states, the default activation and names you set yourself
+  stay; only an entity without a name of your own shows the new name.
+  - *System supply temperature* / *Vorlauftemperatur Anlage* (before
+    *Supply temperature* / *Vorlauftemperatur*) for
+    `/heatSources/actualSupplyTemperature`. Under the heat pump device the
+    old name read like the heat pump's flow. On my heat pump with a buffer
+    cylinder it is the heating side's flow behind the buffer; the heat
+    pump's own flow is *Primary supply temperature (TC1)*.
+  - *Liquid line temperature heating (TR3)* and *Liquid line temperature
+    cooling (TR4)* (before *Condenser temperature heating/cooling*), in
+    German *Temperatur Flüssigkeitsleitung Heizen/Kühlen*, as the API
+    documentation calls them. The condensing temperature is JR1. I compared
+    the readings on my heat pump while it was heating; the cooling mode is
+    untested, because it does not cool.
+  - The hot water level names stay: I checked them again, `eco` is Eco+,
+    `low` Eco and `high` Comfort. The entity page now explains why the Eco+
+    and Eco start temperatures can have the entity IDs
+    `…_eco_start_temperature` and `…_eco_start_temperature_2`.
+  - The new texts are drafts in every language except English and German.
 
 ### Documentation
 

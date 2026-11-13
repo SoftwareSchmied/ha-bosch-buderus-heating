@@ -223,7 +223,7 @@ PointT codes and app display names for operation mode:
 | `/heatSources` | Available heat sources | R | Internal: dynamic discovery |
 | `/heatSources/actualHeatDemand` | Current heat demand | R | Heating, hot water, and/or frost protection |
 | `/heatSources/actualModulation` | Current modulation | R | Measurement in % |
-| `/heatSources/actualSupplyTemperature` | Supply temperature | R | Temperature sensor |
+| `/heatSources/actualSupplyTemperature` | System supply temperature | R | Temperature sensor; the supply of the heating system (behind a buffer cylinder the heating side's flow), not necessarily the heat pump's own flow (TC1) |
 | `/heatSources/chStatus` | Central heating status | R | Optional status; probed when omitted from the reference tree |
 | `/heatSources/compressor/status` | Compressor status | R | Operating mode including heating, cooling, hot water, defrost, and alarm |
 | `/heatSources/Source/eHeater/status` | Auxiliary-heater status | R | Operating mode including heating, hot water, defrost, and blocked states |

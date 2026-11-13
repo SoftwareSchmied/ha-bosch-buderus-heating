@@ -37,10 +37,11 @@ German, Czech and Slovak included. The same holds for the texts added in
 of heating circuits, the setup from a found gateway and the renamed
 entities) and for the texts added in 0.9.1 (the token list and token
 revocation of a local access, the new gateway address, the texts of gateway
-states and the heat generator entity). All other languages except English
-and German are a careful first draft. They follow the glossary of their
-language, but nobody who speaks them as a mother tongue has checked them
-yet. Corrections are very welcome (see
+states, the heat generator entity and the corrected names of the system
+supply temperature and the liquid line temperatures TR3 and TR4). All other
+languages except English and German are a careful first draft. They follow
+the glossary of their language, but nobody who speaks them as a mother
+tongue has checked them yet. Corrections are very welcome (see
 [Contributing corrections](#contributing-corrections)). The
 glossary below
 covers Swedish, Norwegian Bokmål, Finnish and Danish; every other draft has

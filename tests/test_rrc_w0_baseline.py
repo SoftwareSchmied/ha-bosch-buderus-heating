@@ -11,7 +11,8 @@ shipped state. The K40 heat pump must stay unchanged; the 0.9.0 entity
 review changed it on purpose: a fresh setup creates the totals of its only
 heat source and its burner status disabled, and the request sensors carry
 neutral names. 0.9.1 adds the heat generator sensor of the module list on
-purpose, without a request of its own.
+purpose, without a request of its own, and corrected the name of its system
+supply temperature (before "Supply temperature"); its unique ID stays.
 """
 
 from __future__ import annotations

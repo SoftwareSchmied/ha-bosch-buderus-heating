@@ -1716,7 +1716,7 @@
         "name": "Outdoor temperature"
       },
       "supply_temperature": {
-        "name": "Supply temperature"
+        "name": "System supply temperature"
       },
       "return_temperature": {
         "name": "Return temperature"

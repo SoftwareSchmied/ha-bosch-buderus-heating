@@ -1716,7 +1716,7 @@
         "name": "Temperatura exterior"
       },
       "supply_temperature": {
-        "name": "Temperatura de ida"
+        "name": "Temperatura de ida da instalação"
       },
       "return_temperature": {
         "name": "Temperatura de retorno"

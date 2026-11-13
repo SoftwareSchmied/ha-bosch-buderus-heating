@@ -1716,7 +1716,7 @@
         "name": "Ulkolämpötila"
       },
       "supply_temperature": {
-        "name": "Menolämpötila"
+        "name": "Järjestelmän menolämpötila"
       },
       "return_temperature": {
         "name": "Paluulämpötila"
