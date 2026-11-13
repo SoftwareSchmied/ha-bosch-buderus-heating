@@ -5,20 +5,68 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
-- **Release tooling:**
-  - The release notes of a version must stand on their own. Publishing stops
-    when the CHANGELOG section sends readers to the notes of another version
-    further down, because the GitHub release and the update dialog show only
-    this one section.
-  - The installation archive lists its files in the plain order of their
-    paths, so it comes out the same on every platform, and a local build
-    refuses to run while the integration directory has uncommitted changes.
-  - Only an annotated tag publishes a release, and a stable release only from
-    a commit on `main`. The workflow now sets the draft and pre-release state
-    explicitly, so an existing draft is published with the right type, and
-    two runs of the same tag no longer publish at the same time.
-  - I tested these checks with automated tests only; the workflow changes
-    take effect with the next release tag.
+### What changed since alpha.6
+
+#### Room controllers and start counters
+
+- **Start counters per heat source on a TC100.2:** the counters of `hs1`
+  and `hs2` come as a list with one entry (total, heating, hot water) on
+  that controller, which the integration did not read. A list of up to
+  eight entries is read now, so total, heating and hot water starts get
+  values. I have tested this only with simulated data in the reported form.
+- **Missing start counter parts disabled:** a part of a start counter that
+  the reading does not contain when its entity is first created, for
+  example cooling starts on a gas boiler, is now created disabled, like the
+  pool starts. Existing entities keep their setting; you can disable such a
+  sensor yourself.
+- **Switch points of a TC100.2 editable:** the week programs of that
+  controller have an extra whole-number field `name` on each switch point,
+  and its day programs have no weekday field, so the switch point dialog
+  stayed read-only. The integration now accepts exactly this form and
+  nothing else: a change is sent as day, time and temperature for every
+  point of that day, without `name`, and before and after the change only
+  day, time and temperature are compared. Reading the form is tested with
+  simulated data in the shape the diagnostics reported; writing it is
+  expected, untested on a real controller, and I would be glad about a
+  report. Any other extra field, or a `name` that is not a whole number,
+  keeps the program read-only (new diagnostics code `optional_key_type`).
+- **Diagnostics (schema 46):** `rrc_programs.schedules` lists the form of the switch
+  points per program kind (key names and value types only, never a value);
+  the boost settings report the last reason they had no limits and how long
+  ago it was seen; `rrc_profile.confirmation` now matches the confirmed
+  functions instead of always saying `unconfirmed`; and the energy history
+  names why a cycle without an error imported nothing (`no_records`,
+  `no_completed_days`, `all_series_empty`) and counts the daily records it
+  read, without values.
+- **Advance next switch point confirmed:** the button is now listed as
+  confirmed on a TC100.2 in the diagnostics and in the room controller
+  documentation. Thank you, @obvius1, for the diagnostics in
+  [#122](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/122)
+  that showed the counter and program forms, and for checking the button on
+  your controller.
+
+#### Temporary setpoint of heating circuits
+
+- **Target in automatic mode:** a heating circuit without a room controller
+  that reports a writable temporary room setpoint with limits now takes a
+  target in automatic mode as well. The climate writes it as a temporary
+  setpoint; the program stays selected. In manual mode the climate keeps
+  writing the manual setpoint, as before. The target follows the reported
+  limits and step. Values the circuit uses to end the temporary setpoint or
+  to switch off for now (-1 and 0) are never written as a target.
+- **Clear button and attribute:** a new button "Clear temporary setpoint"
+  ends an active temporary setpoint. It is created only when the reported
+  limits include the clear value -1, and it is available only in automatic
+  mode while a temporary setpoint is active. The climate attribute
+  `temporary_override` shows whether one is active.
+- **Write rules as everywhere:** each change reads the mode, the temporary
+  setpoint and the heating context on the appliance first, sends exactly
+  one request and confirms it by reading it back. The temporary setpoint
+  gets no number entity of its own and no row in the controls dialog; its
+  existing sensor stays.
+- **Tested:** only with simulated data in automated tests. On a real device
+  this is expected, untested; I would be glad about reports, especially from
+  iCom gateways.
 
 #### Short cloud outages
 
@@ -60,45 +108,7 @@ not yet on the plant itself.
   or the cloud source can be seen in the next diagnostics. The fault section
   shows `state_held`.
 
-### Room controllers and start counters
-
-- **Start counters per heat source on a TC100.2:** the counters of `hs1`
-  and `hs2` come as a list with one entry (total, heating, hot water) on
-  that controller, which the integration did not read. A list of up to
-  eight entries is read now, so total, heating and hot water starts get
-  values. I have tested this only with simulated data in the reported form.
-- **Missing start counter parts disabled:** a part of a start counter that
-  the reading does not contain when its entity is first created, for
-  example cooling starts on a gas boiler, is now created disabled, like the
-  pool starts. Existing entities keep their setting; you can disable such a
-  sensor yourself.
-- **Switch points of a TC100.2 editable:** the week programs of that
-  controller have an extra whole-number field `name` on each switch point,
-  and its day programs have no weekday field, so the switch point dialog
-  stayed read-only. The integration now accepts exactly this form and
-  nothing else: a change is sent as day, time and temperature for every
-  point of that day, without `name`, and before and after the change only
-  day, time and temperature are compared. Reading the form is tested with
-  simulated data in the shape the diagnostics reported; writing it is
-  expected, untested on a real controller, and I would be glad about a
-  report. Any other extra field, or a `name` that is not a whole number,
-  keeps the program read-only (new diagnostics code `optional_key_type`).
-- **Diagnostics:** `rrc_programs.schedules` lists the form of the switch
-  points per program kind (key names and value types only, never a value);
-  the boost settings report the last reason they had no limits and how long
-  ago it was seen; `rrc_profile.confirmation` now matches the confirmed
-  functions instead of always saying `unconfirmed`; and the energy history
-  names why a cycle without an error imported nothing (`no_records`,
-  `no_completed_days`, `all_series_empty`) and counts the daily records it
-  read, without values.
-- **Advance next switch point confirmed:** the button is now listed as
-  confirmed on a TC100.2 in the diagnostics and in the room controller
-  documentation. Thank you, @obvius1, for the diagnostics in
-  [#122](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/122)
-  that showed the counter and program forms, and for checking the button on
-  your controller.
-
-### Setup, messages and smaller fixes
+#### Setup, messages and smaller fixes
 
 I tested the following changes with the automated tests and simulated data
 only; none of them is checked on a real device or a fresh installation yet.
@@ -115,10 +125,10 @@ only; none of them is checked on a real device or a fresh installation yet.
   sign-in. A cloud pause during this check is reported as a pause, not as an
   unreachable service.
 - **Commands during a cloud pause or outage say why:** a heating circuit
-  climate command or a control change during a cloud pause, a protection
-  pause after repeated errors, an outage, a stopped cloud access or a needed
-  new sign-in now names that reason, with the end of the pause when it is
-  known. Before, the message spoke of the manual heating mode or of a setting
+  climate command, the new button to clear a temporary setpoint or a control
+  change during a cloud pause, a protection pause after repeated errors, an
+  outage, a stopped cloud access or a needed new sign-in now names that
+  reason, with the end of the pause when it is known. Before, the message spoke of the manual heating mode or of a setting
   that could not be changed safely. Nothing is sent in these cases, as before.
 - **"Cloud access" in messages:** connection, error and rate-limit messages
   and the titles of the firmware repair notes no longer use the internal
@@ -151,28 +161,22 @@ only; none of them is checked on a real device or a fresh installation yet.
   does; my measurement, with what it compares, is now in the
   [release checks](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/blob/main/docs/release.md#load-measurement-for-090-alpha2).
 
-### Temporary setpoint of heating circuits
+#### Release tooling
 
-- **Target in automatic mode:** a heating circuit without a room controller
-  that reports a writable temporary room setpoint with limits now takes a
-  target in automatic mode as well. The climate writes it as a temporary
-  setpoint; the program stays selected. In manual mode the climate keeps
-  writing the manual setpoint, as before. The target follows the reported
-  limits and step. Values the circuit uses to end the temporary setpoint or
-  to switch off for now (-1 and 0) are never written as a target.
-- **Clear button and attribute:** a new button "Clear temporary setpoint"
-  ends an active temporary setpoint. It is created only when the reported
-  limits include the clear value -1, and it is available only in automatic
-  mode while a temporary setpoint is active. The climate attribute
-  `temporary_override` shows whether one is active.
-- **Write rules as everywhere:** each change reads the mode, the temporary
-  setpoint and the heating context on the appliance first, sends exactly
-  one request and confirms it by reading it back. The temporary setpoint
-  gets no number entity of its own and no row in the controls dialog; its
-  existing sensor stays.
-- **Tested:** only with simulated data in automated tests. On a real device
-  this is expected, untested; I would be glad about reports, especially from
-  iCom gateways.
+I tested these checks with automated tests only; the workflow changes take
+effect with the next release tag.
+
+- The release notes of a version must stand on their own. Publishing stops
+  when the CHANGELOG section sends readers to the notes of another version
+  further down, because the GitHub release and the update dialog show only
+  this one section.
+- The installation archive lists its files in the plain order of their
+  paths, so it comes out the same on every platform, and a local build
+  refuses to run while the integration directory has uncommitted changes.
+- Only an annotated tag publishes a release, and a stable release only from
+  a commit on `main`. The workflow now sets the draft and pre-release state
+  explicitly, so an existing draft is published with the right type, and
+  two runs of the same tag no longer publish at the same time.
 
 ## [0.9.0-alpha.6] - 2026-11-12
 
