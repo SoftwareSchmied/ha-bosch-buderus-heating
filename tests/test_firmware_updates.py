@@ -698,7 +698,6 @@ async def _setup(
     )
     gateway = Gateway(GATEWAY_ID, device_type="rrc2", firmware_version="1.4.0")
     stack = cloud_patches(cloud, CloudClock(), gateway)
-    stack.__enter__()
     stack.enter_context(patch.object(PointTClient, "get_firmware_updates", reads))
     entry = _entry(hass)
     try:

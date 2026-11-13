@@ -509,7 +509,6 @@ async def test_no_devices_no_leaves() -> None:
 async def _setup(hass: HomeAssistant, cloud: RrcCloud, clock: Clock, gateway=GATEWAY):
     entry = _entry(hass)
     stack = cloud_patches(cloud, clock, gateway)
-    stack.__enter__()
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     _no_wait(entry)

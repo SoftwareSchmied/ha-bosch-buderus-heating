@@ -178,7 +178,6 @@ async def advance(
 async def start(hass: HomeAssistant, cloud: RrcCloud, entry=None, gateway=None):
     entry = entry or _entry(hass)
     stack = cloud_patches(cloud, Clock(), gateway or Gateway(GW))
-    stack.__enter__()
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     return entry, stack
@@ -187,7 +186,7 @@ async def start(hass: HomeAssistant, cloud: RrcCloud, entry=None, gateway=None):
 async def stop(hass: HomeAssistant, entry, stack) -> None:
     await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
-    stack.__exit__(None, None, None)
+    stack.close()
 
 
 @pytest.fixture

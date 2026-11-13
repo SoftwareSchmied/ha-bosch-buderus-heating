@@ -532,7 +532,6 @@ async def test_installer_levels_on_a_real_room_controller(
     cloud, clock = RrcCloud(tree), Clock()
     entry = _entry(hass)
     stack = cloud_patches(cloud, clock, Gateway(GW))
-    stack.__enter__()
     try:
         with patch(f"{PACKAGE}.async_migrate_entry", AsyncMock(return_value=True)):
             assert await hass.config_entries.async_setup(entry.entry_id)

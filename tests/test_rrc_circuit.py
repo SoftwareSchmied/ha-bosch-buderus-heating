@@ -609,7 +609,6 @@ async def _setup(
         )
     clock = Clock()
     stack = cloud_patches(cloud, clock, gateway)
-    stack.__enter__()
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     coordinator = entry.runtime_data.coordinators[0]

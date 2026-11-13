@@ -511,7 +511,6 @@ async def _setup(hass: HomeAssistant, cloud: RrcCloud, clock_: Clock, enable=())
         # Entities disabled by default, enabled for the test.
         registry.async_get_or_create(domain, DOMAIN, unique_id, config_entry=entry)
     stack = cloud_patches(cloud, clock_, RRC_GATEWAY)
-    stack.__enter__()
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     coordinator = entry.runtime_data.coordinators[0]
