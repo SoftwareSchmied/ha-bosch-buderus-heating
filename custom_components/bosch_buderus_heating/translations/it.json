@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Conferma il certificato del gateway",
-        "description": "Home Assistant ha raggiunto **{host}:{port}**. Conferma che si tratta del tuo gateway prima di inviare le credenziali. Un'impronta digitale da sola non è una prova di identità.\n\nSHA-256: `{fingerprint}`\n\nImpronta precedente: `{previous}`. Un punto interrogativo significa che per questo indirizzo e questa porta non c'è nessun certificato salvato.",
+        "description": "Home Assistant ha raggiunto **{host}:{port}**. Conferma che si tratta del tuo gateway prima di inviare le credenziali. Un'impronta digitale da sola non è una prova di identità.\n\nSHA-256: `{fingerprint}`\n\nImpronta precedente: `{previous}`. Un punto interrogativo significa che per questo indirizzo e questa porta non c'è nessun certificato salvato.\n\nIl gateway ha un proprio certificato per ogni porta. La porta 9442 è la porta di login e viene verificata prima del login; la porta 9443 è la porta dati e viene verificata dopo. Per questo motivo questa pagina può comparire due volte.",
         "data": {
           "confirm": "Confermo questo gateway e il suo certificato"
         }
       },
       "local_auth": {
         "title": "Login con l'etichetta del dispositivo",
-        "description": "Inserisci Login e Pass riportati sull'etichetta del gateway. Per sbloccare il login locale, premi insieme i pulsanti Wi-Fi e wireless per circa due secondi, meno di tre, e rilasciali insieme. Conferma il breve segnale blu e continua entro cinque minuti. L'accesso resta sull'indirizzo LAN selezionato. È la risposta del gateway a stabilire se il login è stato sbloccato. Login e password non vengono salvati.",
+        "description": "Inserisci Login e Pass riportati sull'etichetta del gateway. Per sbloccare il login locale, premi insieme i pulsanti Wi-Fi e wireless per 1 secondo e rilasciali insieme. Conferma il breve segnale blu e continua entro cinque minuti. Dopo un errore di digitazione, premi di nuovo i pulsanti: il gateway accetta un login solo entro cinque minuti dallo sblocco. L'accesso resta sull'indirizzo LAN selezionato. È la risposta del gateway a stabilire se il login è stato sbloccato. Login e password non vengono salvati.",
         "data": {
           "login": "Login sull'etichetta del dispositivo",
           "password": "Pass sull'etichetta del dispositivo",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Inserisci un indirizzo IP o un nome host senza URL, percorso o credenziali.",
       "local_interface_required": "Questo indirizzo IPv6 richiede l'interfaccia di rete sull'host di Home Assistant.",
       "local_invalid_token": "Il formato del token non è valido. Copia il token completo senza spazi.",
-      "local_invalid_credentials": "Controlla Login e Pass sull'etichetta del gateway e inseriscili di nuovo.",
-      "local_unlock_required": "Sblocca il login locale sul gateway e conferma il segnale blu prima di riprovare.",
+      "local_invalid_credentials": "Il gateway ha rifiutato Login e Pass. Controlla entrambi sull'etichetta del gateway e inseriscili di nuovo.",
+      "local_invalid_label_format": "Login o Pass contiene caratteri che un'etichetta del dispositivo non ha, ad esempio uno spazio all'interno del valore. Al gateway non è stato inviato nulla. Controlla l'inserimento e inseriscilo di nuovo.",
+      "local_unlock_confirm_required": "Spunta questa casella dopo aver sbloccato il login locale sul gateway e aver visto il segnale blu.",
+      "local_unlock_required": "Il gateway non ha sbloccato il login locale oppure sono trascorsi i cinque minuti dallo sblocco. Premi insieme i pulsanti Wi-Fi e wireless per 1 secondo, attendi il segnale blu e riprova entro cinque minuti.",
       "local_token_database_full": "Il database dei token del gateway è pieno. Controlla i token esistenti prima di crearne un altro. Nessun token è stato eliminato.",
       "local_rate_limited": "Il gateway ha richiesto una pausa. Attendi che sia trascorso il tempo indicato.",
+      "local_rate_limited_wait": "Il gateway ha richiesto una pausa. Riprova tra {seconds} secondi.",
       "local_service_unavailable": "Il servizio del gateway è temporaneamente non disponibile. Attendi e riprova.",
       "local_timeout": "Il gateway locale non ha risposto in tempo. Controlla la connessione e riprova.",
       "local_connection_failed": "Home Assistant non ha potuto raggiungere questo gateway. Controlla il suo indirizzo e la connessione di rete.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Conferma il certificato del gateway",
-        "description": "Home Assistant ha raggiunto **{host}:{port}**. Conferma che si tratta del tuo gateway prima di inviare le credenziali. Un'impronta digitale da sola non è una prova di identità.\n\nSHA-256: `{fingerprint}`\n\nImpronta precedente: `{previous}`. Un punto interrogativo significa che per questo indirizzo e questa porta non c'è nessun certificato salvato.",
+        "description": "Home Assistant ha raggiunto **{host}:{port}**. Conferma che si tratta del tuo gateway prima di inviare le credenziali. Un'impronta digitale da sola non è una prova di identità.\n\nSHA-256: `{fingerprint}`\n\nImpronta precedente: `{previous}`. Un punto interrogativo significa che per questo indirizzo e questa porta non c'è nessun certificato salvato.\n\nIl gateway ha un proprio certificato per ogni porta. La porta 9442 è la porta di login e viene verificata prima del login; la porta 9443 è la porta dati e viene verificata dopo. Per questo motivo questa pagina può comparire due volte.",
         "data": {
           "confirm": "Confermo questo gateway e il suo certificato"
         }
       },
       "local_auth": {
         "title": "Login con l'etichetta del dispositivo",
-        "description": "Inserisci Login e Pass riportati sull'etichetta del gateway. Per sbloccare il login locale, premi insieme i pulsanti Wi-Fi e wireless per circa due secondi, meno di tre, e rilasciali insieme. Conferma il breve segnale blu e continua entro cinque minuti. L'accesso resta sull'indirizzo LAN selezionato. È la risposta del gateway a stabilire se il login è stato sbloccato. Login e password non vengono salvati.",
+        "description": "Inserisci Login e Pass riportati sull'etichetta del gateway. Per sbloccare il login locale, premi insieme i pulsanti Wi-Fi e wireless per 1 secondo e rilasciali insieme. Conferma il breve segnale blu e continua entro cinque minuti. Dopo un errore di digitazione, premi di nuovo i pulsanti: il gateway accetta un login solo entro cinque minuti dallo sblocco. L'accesso resta sull'indirizzo LAN selezionato. È la risposta del gateway a stabilire se il login è stato sbloccato. Login e password non vengono salvati.",
         "data": {
           "login": "Login sull'etichetta del dispositivo",
           "password": "Pass sull'etichetta del dispositivo",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Inserisci un indirizzo IP o un nome host senza URL, percorso o credenziali.",
       "local_interface_required": "Questo indirizzo IPv6 richiede l'interfaccia di rete sull'host di Home Assistant.",
       "local_invalid_token": "Il formato del token non è valido. Copia il token completo senza spazi.",
-      "local_invalid_credentials": "Controlla Login e Pass sull'etichetta del gateway e inseriscili di nuovo.",
-      "local_unlock_required": "Sblocca il login locale sul gateway e conferma il segnale blu prima di riprovare.",
+      "local_invalid_credentials": "Il gateway ha rifiutato Login e Pass. Controlla entrambi sull'etichetta del gateway e inseriscili di nuovo.",
+      "local_invalid_label_format": "Login o Pass contiene caratteri che un'etichetta del dispositivo non ha, ad esempio uno spazio all'interno del valore. Al gateway non è stato inviato nulla. Controlla l'inserimento e inseriscilo di nuovo.",
+      "local_unlock_confirm_required": "Spunta questa casella dopo aver sbloccato il login locale sul gateway e aver visto il segnale blu.",
+      "local_unlock_required": "Il gateway non ha sbloccato il login locale oppure sono trascorsi i cinque minuti dallo sblocco. Premi insieme i pulsanti Wi-Fi e wireless per 1 secondo, attendi il segnale blu e riprova entro cinque minuti.",
       "local_token_database_full": "Il database dei token del gateway è pieno. Controlla i token esistenti prima di crearne un altro. Nessun token è stato eliminato.",
       "local_rate_limited": "Il gateway ha richiesto una pausa. Attendi che sia trascorso il tempo indicato.",
+      "local_rate_limited_wait": "Il gateway ha richiesto una pausa. Riprova tra {seconds} secondi.",
       "local_service_unavailable": "Il servizio del gateway è temporaneamente non disponibile. Attendi e riprova.",
       "local_timeout": "Il gateway locale non ha risposto in tempo. Controlla la connessione e riprova.",
       "local_connection_failed": "Home Assistant non ha potuto raggiungere questo gateway. Controlla il suo indirizzo e la connessione di rete.",
@@ -1445,13 +1451,13 @@
         "name": "Setpoint acqua calda extra"
       },
       "hot_water_eco_plus": {
-        "name": "Temperatura di avvio Eco+"
+        "name": "Soglia di avvio Eco+"
       },
       "hot_water_comfort": {
-        "name": "Temperatura di avvio Comfort"
+        "name": "Soglia di avvio Comfort"
       },
       "hot_water_eco": {
-        "name": "Temperatura di avvio Eco"
+        "name": "Soglia di avvio Eco"
       },
       "maximum_supply_temperature": {
         "name": "Temperatura di mandata massima"

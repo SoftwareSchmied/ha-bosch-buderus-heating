@@ -113,7 +113,9 @@ async def test_a_first_setup_keeps_its_attempts_in_the_new_entry(hass, backend, 
         ("redirect_submitted", "failed", "state_mismatch"),
         ("success", "succeeded", None),
     ]
-    assert _own(caplog) == ["A cloud sign-in attempt failed: state_mismatch"]
+    assert _own(caplog) == [
+        "A cloud sign-in attempt failed in step redirect_submitted: state_mismatch"
+    ]
     report = await async_get_config_entry_diagnostics(hass, entry)
     assert report["cloud_sign_in_attempts"] == attempts
     # Kept apart from the local setup attempts.

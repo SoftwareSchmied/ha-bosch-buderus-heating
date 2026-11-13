@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Confirmar el certificado de la pasarela",
-        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.",
+        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.\n\nLa pasarela tiene su propio certificado para cada puerto. El puerto 9442 es el puerto de inicio de sesión y se comprueba antes del inicio de sesión; el puerto 9443 es el puerto de datos y se comprueba después. Por eso esta página puede aparecer dos veces.",
         "data": {
           "confirm": "Confirmo esta pasarela y su certificado"
         }
       },
       "local_auth": {
         "title": "Iniciar sesión con la etiqueta del dispositivo",
-        "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante unos dos segundos, menos de tres, y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El login y la contraseña no se guardan.",
+        "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. Si te equivocas al escribir, vuelve a pulsar los botones: la pasarela solo acepta un inicio de sesión en los cinco minutos posteriores a la habilitación. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El login y la contraseña no se guardan.",
         "data": {
           "login": "Login de la etiqueta del dispositivo",
           "password": "Pass de la etiqueta del dispositivo",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Introduce una dirección IP o un nombre de host sin URL, ruta ni credenciales.",
       "local_interface_required": "Esta dirección IPv6 necesita la interfaz de red del host de Home Assistant.",
       "local_invalid_token": "El formato del token no es válido. Copia el token completo sin espacios.",
-      "local_invalid_credentials": "Comprueba el Login y el Pass de la etiqueta de la pasarela e introdúcelos de nuevo.",
-      "local_unlock_required": "Habilita el inicio de sesión local en la pasarela y confirma la señal azul antes de volver a intentarlo.",
+      "local_invalid_credentials": "La pasarela ha rechazado el Login y el Pass. Comprueba ambos en la etiqueta de la pasarela e introdúcelos de nuevo.",
+      "local_invalid_label_format": "El Login o el Pass contiene caracteres que no aparecen en la etiqueta de un dispositivo, por ejemplo un espacio dentro del valor. No se ha enviado nada a la pasarela. Comprueba lo introducido y vuelve a introducirlo.",
+      "local_unlock_confirm_required": "Marca esta casilla cuando hayas habilitado el inicio de sesión local en la pasarela y hayas visto la señal azul.",
+      "local_unlock_required": "La pasarela no ha habilitado el inicio de sesión local, o han pasado los cinco minutos posteriores a la habilitación. Pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo, espera la señal azul y vuelve a intentarlo en un plazo de cinco minutos.",
       "local_token_database_full": "La base de datos de tokens de la pasarela está llena. Revisa sus tokens existentes antes de crear otro. No se ha eliminado ningún token.",
       "local_rate_limited": "La pasarela ha solicitado una pausa. Espera hasta que haya transcurrido el tiempo indicado.",
+      "local_rate_limited_wait": "La pasarela ha pedido una pausa. Vuelve a intentarlo dentro de {seconds} segundos.",
       "local_service_unavailable": "El servicio de la pasarela no está disponible temporalmente. Espera e inténtalo de nuevo.",
       "local_timeout": "La pasarela local no respondió a tiempo. Comprueba la conexión e inténtalo de nuevo.",
       "local_connection_failed": "Home Assistant no pudo acceder a esta pasarela. Comprueba su dirección y la conexión de red.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Confirmar el certificado de la pasarela",
-        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.",
+        "description": "Home Assistant ha llegado a **{host}:{port}**. Confirma que es tu pasarela antes de enviar las credenciales. Una huella digital no es por sí sola una prueba de identidad.\n\nSHA-256: `{fingerprint}`\n\nHuella digital anterior: `{previous}`. Un signo de interrogación significa que no hay ningún certificado guardado para esta dirección y este puerto.\n\nLa pasarela tiene su propio certificado para cada puerto. El puerto 9442 es el puerto de inicio de sesión y se comprueba antes del inicio de sesión; el puerto 9443 es el puerto de datos y se comprueba después. Por eso esta página puede aparecer dos veces.",
         "data": {
           "confirm": "Confirmo esta pasarela y su certificado"
         }
       },
       "local_auth": {
         "title": "Iniciar sesión con la etiqueta del dispositivo",
-        "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante unos dos segundos, menos de tres, y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El login y la contraseña no se guardan.",
+        "description": "Introduce el Login y el Pass de la etiqueta de la pasarela. Para habilitar el inicio de sesión local, pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo y suéltalos a la vez. Confirma la breve señal azul y continúa en un plazo de cinco minutos. Si te equivocas al escribir, vuelve a pulsar los botones: la pasarela solo acepta un inicio de sesión en los cinco minutos posteriores a la habilitación. El acceso se mantiene en la dirección de la red local que has seleccionado. La respuesta de la pasarela determina si se habilitó el inicio de sesión. El login y la contraseña no se guardan.",
         "data": {
           "login": "Login de la etiqueta del dispositivo",
           "password": "Pass de la etiqueta del dispositivo",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Introduce una dirección IP o un nombre de host sin URL, ruta ni credenciales.",
       "local_interface_required": "Esta dirección IPv6 necesita la interfaz de red del host de Home Assistant.",
       "local_invalid_token": "El formato del token no es válido. Copia el token completo sin espacios.",
-      "local_invalid_credentials": "Comprueba el Login y el Pass de la etiqueta de la pasarela e introdúcelos de nuevo.",
-      "local_unlock_required": "Habilita el inicio de sesión local en la pasarela y confirma la señal azul antes de volver a intentarlo.",
+      "local_invalid_credentials": "La pasarela ha rechazado el Login y el Pass. Comprueba ambos en la etiqueta de la pasarela e introdúcelos de nuevo.",
+      "local_invalid_label_format": "El Login o el Pass contiene caracteres que no aparecen en la etiqueta de un dispositivo, por ejemplo un espacio dentro del valor. No se ha enviado nada a la pasarela. Comprueba lo introducido y vuelve a introducirlo.",
+      "local_unlock_confirm_required": "Marca esta casilla cuando hayas habilitado el inicio de sesión local en la pasarela y hayas visto la señal azul.",
+      "local_unlock_required": "La pasarela no ha habilitado el inicio de sesión local, o han pasado los cinco minutos posteriores a la habilitación. Pulsa a la vez los botones de Wi-Fi y de conexión inalámbrica durante 1 segundo, espera la señal azul y vuelve a intentarlo en un plazo de cinco minutos.",
       "local_token_database_full": "La base de datos de tokens de la pasarela está llena. Revisa sus tokens existentes antes de crear otro. No se ha eliminado ningún token.",
       "local_rate_limited": "La pasarela ha solicitado una pausa. Espera hasta que haya transcurrido el tiempo indicado.",
+      "local_rate_limited_wait": "La pasarela ha pedido una pausa. Vuelve a intentarlo dentro de {seconds} segundos.",
       "local_service_unavailable": "El servicio de la pasarela no está disponible temporalmente. Espera e inténtalo de nuevo.",
       "local_timeout": "La pasarela local no respondió a tiempo. Comprueba la conexión e inténtalo de nuevo.",
       "local_connection_failed": "Home Assistant no pudo acceder a esta pasarela. Comprueba su dirección y la conexión de red.",
@@ -1445,13 +1451,13 @@
         "name": "Consigna del agua caliente extra"
       },
       "hot_water_eco_plus": {
-        "name": "Temperatura de arranque Eco+"
+        "name": "Umbral de arranque Eco+"
       },
       "hot_water_comfort": {
-        "name": "Temperatura de arranque Confort"
+        "name": "Umbral de arranque Confort"
       },
       "hot_water_eco": {
-        "name": "Temperatura de arranque Eco"
+        "name": "Umbral de arranque Eco"
       },
       "maximum_supply_temperature": {
         "name": "Temperatura de impulsión máxima"

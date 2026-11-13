@@ -72,7 +72,7 @@ async def test_attempts_keep_only_time_step_and_code(hass, caplog) -> None:
         assert at.utcoffset().total_seconds() == 0 and at.microsecond == 0
     # One line per failed attempt, with the code only.
     assert [r.getMessage() for r in caplog.records] == [
-        "A local setup attempt failed: local_invalid_credentials"
+        "A local setup attempt failed in step local_auth: local_invalid_credentials"
     ]
     assert caplog.records[0].levelno == logging.INFO
 
@@ -194,14 +194,18 @@ async def test_a_rejected_sign_in_and_the_success_are_noted_without_data(
     attempts = await local_setup_history(hass, entry.entry_id).async_attempts()
     assert _shape(attempts) == [
         ("local_address", "failed", "local_invalid_address"),
-        ("local_auth", "failed", "local_unlock_required"),
+        ("local_auth", "failed", "local_unlock_confirm_required"),
         ("local_auth", "failed", "local_invalid_credentials"),
         ("local_result", "succeeded", None),
     ]
+    # What reached the gateway: nothing for the unticked box, a 401 after it.
+    assert [a.get("detail") for a in attempts] == [None, "not_sent", "http_401", None]
     assert _own(caplog) == [
-        "A local setup attempt failed: local_invalid_address",
-        "A local setup attempt failed: local_unlock_required",
-        "A local setup attempt failed: local_invalid_credentials",
+        "A local setup attempt failed in step local_address: local_invalid_address",
+        "A local setup attempt failed in step local_auth:"
+        " local_unlock_confirm_required (not_sent)",
+        "A local setup attempt failed in step local_auth:"
+        " local_invalid_credentials (http_401)",
     ]
     report = await async_get_config_entry_diagnostics(hass, entry)
     assert report["local_setup_attempts"] == attempts

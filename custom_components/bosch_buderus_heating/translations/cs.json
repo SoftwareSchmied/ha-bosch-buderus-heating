@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Potvrzení certifikátu brány",
-        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.",
+        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.\n\nBrána má pro každý port vlastní certifikát. Port 9442 je přihlašovací port a kontroluje se před přihlášením; port 9443 je datový port a kontroluje se po něm. Proto se tato stránka může zobrazit dvakrát.",
         "data": {
           "confirm": "Potvrzuji tuto bránu a její certifikát"
         }
       },
       "local_auth": {
         "title": "Přihlášení pomocí údajů ze štítku zařízení",
-        "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení asi na dvě sekundy, ne však na tři, a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a heslo se neukládají.",
+        "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Po překlepu tlačítka stiskněte znovu: brána přijme přihlášení jen do pěti minut po uvolnění. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a heslo se neukládají.",
         "data": {
           "login": "Login na štítku zařízení",
           "password": "Pass na štítku zařízení",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Zadejte IP adresu nebo název hostitele bez URL, cesty a přihlašovacích údajů.",
       "local_interface_required": "Tato adresa IPv6 vyžaduje síťové rozhraní na hostiteli Home Assistantu.",
       "local_invalid_token": "Formát tokenu je neplatný. Zkopírujte celý token bez mezer.",
-      "local_invalid_credentials": "Zkontrolujte Login a Pass na štítku brány a zadejte je znovu.",
-      "local_unlock_required": "Povolte na bráně místní přihlášení a před dalším pokusem potvrďte modrý signál.",
+      "local_invalid_credentials": "Brána odmítla Login a Pass. Zkontrolujte obojí na štítku brány a zadejte je znovu.",
+      "local_invalid_label_format": "Login nebo Pass obsahuje znaky, které štítek zařízení nemá, například mezeru uvnitř hodnoty. Bráně nebylo nic odesláno. Zkontrolujte zadání a zadejte je znovu.",
+      "local_unlock_confirm_required": "Zaškrtněte toto políčko, jakmile jste na bráně povolili místní přihlášení a viděli modrý signál.",
+      "local_unlock_required": "Brána nepovolila místní přihlášení, nebo uplynulo pět minut po povolení. Stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu, počkejte na modrý signál a zkuste to znovu do pěti minut.",
       "local_token_database_full": "Databáze tokenů brány je plná. Před vytvořením dalšího zkontrolujte stávající tokeny. Žádné tokeny nebyly odstraněny.",
       "local_rate_limited": "Brána požádala o pauzu. Počkejte, dokud neuplyne zobrazená doba.",
+      "local_rate_limited_wait": "Brána požádala o pauzu. Zkuste to znovu za {seconds} s.",
       "local_service_unavailable": "Služba brány je dočasně nedostupná. Počkejte a zkuste to znovu.",
       "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
       "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Potvrzení certifikátu brány",
-        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.",
+        "description": "Home Assistant se spojil s **{host}:{port}**. Před odesláním přihlašovacích údajů potvrďte, že jde o vaši bránu. Samotný otisk certifikátu není důkazem identity.\n\nSHA-256: `{fingerprint}`\n\nPředchozí otisk: `{previous}`. Otazník znamená, že pro tuto adresu a port neexistuje žádný uložený certifikát.\n\nBrána má pro každý port vlastní certifikát. Port 9442 je přihlašovací port a kontroluje se před přihlášením; port 9443 je datový port a kontroluje se po něm. Proto se tato stránka může zobrazit dvakrát.",
         "data": {
           "confirm": "Potvrzuji tuto bránu a její certifikát"
         }
       },
       "local_auth": {
         "title": "Přihlášení pomocí údajů ze štítku zařízení",
-        "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení asi na dvě sekundy, ne však na tři, a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a heslo se neukládají.",
+        "description": "Zadejte Login a Pass ze štítku brány. Pro povolení místního přihlášení stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu a pusťte je společně. Potvrďte krátký modrý signál a pokračujte do pěti minut. Po překlepu tlačítka stiskněte znovu: brána přijme přihlášení jen do pěti minut po uvolnění. Přístup zůstává na vybrané adrese v LAN. Zda bylo přihlášení povoleno, určuje odpověď brány. Login a heslo se neukládají.",
         "data": {
           "login": "Login na štítku zařízení",
           "password": "Pass na štítku zařízení",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Zadejte IP adresu nebo název hostitele bez URL, cesty a přihlašovacích údajů.",
       "local_interface_required": "Tato adresa IPv6 vyžaduje síťové rozhraní na hostiteli Home Assistantu.",
       "local_invalid_token": "Formát tokenu je neplatný. Zkopírujte celý token bez mezer.",
-      "local_invalid_credentials": "Zkontrolujte Login a Pass na štítku brány a zadejte je znovu.",
-      "local_unlock_required": "Povolte na bráně místní přihlášení a před dalším pokusem potvrďte modrý signál.",
+      "local_invalid_credentials": "Brána odmítla Login a Pass. Zkontrolujte obojí na štítku brány a zadejte je znovu.",
+      "local_invalid_label_format": "Login nebo Pass obsahuje znaky, které štítek zařízení nemá, například mezeru uvnitř hodnoty. Bráně nebylo nic odesláno. Zkontrolujte zadání a zadejte je znovu.",
+      "local_unlock_confirm_required": "Zaškrtněte toto políčko, jakmile jste na bráně povolili místní přihlášení a viděli modrý signál.",
+      "local_unlock_required": "Brána nepovolila místní přihlášení, nebo uplynulo pět minut po povolení. Stiskněte současně tlačítka Wi-Fi a bezdrátového spojení na 1 sekundu, počkejte na modrý signál a zkuste to znovu do pěti minut.",
       "local_token_database_full": "Databáze tokenů brány je plná. Před vytvořením dalšího zkontrolujte stávající tokeny. Žádné tokeny nebyly odstraněny.",
       "local_rate_limited": "Brána požádala o pauzu. Počkejte, dokud neuplyne zobrazená doba.",
+      "local_rate_limited_wait": "Brána požádala o pauzu. Zkuste to znovu za {seconds} s.",
       "local_service_unavailable": "Služba brány je dočasně nedostupná. Počkejte a zkuste to znovu.",
       "local_timeout": "Místní brána neodpověděla včas. Zkontrolujte připojení a zkuste to znovu.",
       "local_connection_failed": "Home Assistant se k této bráně nemohl připojit. Zkontrolujte její adresu a síťové připojení.",
@@ -1445,13 +1451,13 @@
         "name": "Požadovaná hodnota extra ohřevu"
       },
       "hot_water_eco_plus": {
-        "name": "Počáteční teplota Eco+"
+        "name": "Práh spuštění Eco+"
       },
       "hot_water_comfort": {
-        "name": "Počáteční teplota Komfort"
+        "name": "Práh spuštění Komfort"
       },
       "hot_water_eco": {
-        "name": "Počáteční teplota Eco"
+        "name": "Práh spuštění Eco"
       },
       "maximum_supply_temperature": {
         "name": "Maximální výstupní teplota"

@@ -235,9 +235,19 @@ pauses the local access (see [compatibility](compatibility.md#checked-systems)).
 2. Select the discovered gateway address or enter its IP address or hostname.
 3. Confirm the gateway certificate when Home Assistant asks for it.
 4. Sign in with the device label: enter **Login** and **Pass** from the label
-   on the gateway. Home Assistant does not save them.
-5. When asked, press the buttons on the gateway as described in the dialog to
-   release the local sign-in, then continue within five minutes.
+   on the gateway. The login is shown as you type it; the pass field can be
+   shown with its eye symbol. Spaces and line breaks at the start or end, for
+   example from copying, are removed. Home Assistant does not save them.
+5. Release the local sign-in on the gateway: press the Wi-Fi and wireless
+   buttons together for 1 second, wait for the blue signal and continue within
+   five minutes. After a typo, press the buttons again, because the gateway
+   accepts a sign-in only within five minutes after the release.
+6. Confirm the certificate once more. The gateway has its own certificate for
+   the sign-in port 9442 and for the data port 9443, so this page can appear
+   twice.
+
+If Home Assistant shows more than one "Discovered" card for the gateway, open
+the one of Bosch/Buderus Home Comfort.
 
 The local access only reads. With the first local access of a system,
 **Use local values for existing entities** is switched on, so existing

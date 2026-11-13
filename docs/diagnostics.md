@@ -30,9 +30,11 @@ the second), `step` (the dialog step, for example `local_auth`), `result`
 example `local_invalid_credentials`, `local_unlock_required`,
 `local_token_database_full` or `local_invalid_address`, and
 `unexpected:<type>` with only the type of an unexpected error; `null` on
-success). Login, password, token, address, certificate data and gateway
-identifiers are never part of it. Each failed attempt is also logged once at
-the info level with only its code.
+success). A failed attempt can also have `detail`: `http_<status>` when the
+gateway answered with an error status, or `not_sent` when the input check
+stopped it before any request. Login, password, token, address, certificate
+data and gateway identifiers are never part of it. Each failed attempt is also
+logged once at the info level with only its step, its code and this detail.
 
 `cloud_sign_in_attempts` is a separate list in the same form for the cloud
 sign-ins of this entry: a new cloud access in the setup, adding one under

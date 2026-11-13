@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Confirmer le certificat de la passerelle",
-        "description": "Home Assistant a atteint **{host}:{port}**. Confirmez qu'il s'agit bien de votre passerelle avant d'envoyer des identifiants. Une empreinte ne constitue pas à elle seule une preuve d'identité.\n\nSHA-256 : `{fingerprint}`\n\nEmpreinte précédente : `{previous}`. Un point d'interrogation signifie qu'aucun certificat enregistré ne s'applique à cette adresse et à ce port.",
+        "description": "Home Assistant a atteint **{host}:{port}**. Confirmez qu'il s'agit bien de votre passerelle avant d'envoyer des identifiants. Une empreinte ne constitue pas à elle seule une preuve d'identité.\n\nSHA-256 : `{fingerprint}`\n\nEmpreinte précédente : `{previous}`. Un point d'interrogation signifie qu'aucun certificat enregistré ne s'applique à cette adresse et à ce port.\n\nLa passerelle possède son propre certificat pour chaque port. Le port 9442 est le port de connexion et est vérifié avant la connexion ; le port 9443 est le port de données et est vérifié après. C'est pourquoi cette page peut apparaître deux fois.",
         "data": {
           "confirm": "Je confirme cette passerelle et son certificat"
         }
       },
       "local_auth": {
         "title": "Se connecter avec l'étiquette de l'appareil",
-        "description": "Saisissez les valeurs Login et Pass de l'étiquette de la passerelle. Pour autoriser la connexion locale, appuyez ensemble sur les boutons Wi-Fi et sans fil pendant environ deux secondes (moins de trois secondes), puis relâchez-les ensemble. Confirmez le bref signal bleu et continuez dans les cinq minutes. L'accès reste sur l'adresse LAN que vous avez sélectionnée. La réponse de la passerelle détermine si la connexion a été autorisée. Le login et le mot de passe ne sont pas enregistrés.",
+        "description": "Saisissez les valeurs Login et Pass de l'étiquette de la passerelle. Pour autoriser la connexion locale, appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, puis relâchez-les ensemble. Confirmez le bref signal bleu et continuez dans les cinq minutes. Après une faute de frappe, appuyez de nouveau sur les boutons : la passerelle n'accepte une connexion que dans les cinq minutes suivant l'autorisation. L'accès reste sur l'adresse LAN que vous avez sélectionnée. La réponse de la passerelle détermine si la connexion a été autorisée. Le login et le mot de passe ne sont pas enregistrés.",
         "data": {
           "login": "Login de l'étiquette de l'appareil",
           "password": "Pass de l'étiquette de l'appareil",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Saisissez une adresse IP ou un nom d'hôte sans URL, chemin ni identifiants.",
       "local_interface_required": "Cette adresse IPv6 nécessite l'interface réseau de l'hôte Home Assistant.",
       "local_invalid_token": "Le format du jeton n'est pas valide. Copiez le jeton complet sans espaces.",
-      "local_invalid_credentials": "Vérifiez les valeurs Login et Pass de l'étiquette de la passerelle et saisissez-les à nouveau.",
-      "local_unlock_required": "Autorisez la connexion locale sur la passerelle et confirmez le signal bleu avant de réessayer.",
+      "local_invalid_credentials": "La passerelle a rejeté les valeurs Login et Pass. Vérifiez-les toutes deux sur l'étiquette de la passerelle et saisissez-les à nouveau.",
+      "local_invalid_label_format": "Login ou Pass contient des caractères qu'une étiquette d'appareil ne comporte pas, par exemple un espace à l'intérieur de la valeur. Rien n'a été envoyé à la passerelle. Vérifiez la saisie et saisissez-la à nouveau.",
+      "local_unlock_confirm_required": "Cochez cette case une fois que vous avez autorisé la connexion locale sur la passerelle et vu le signal bleu.",
+      "local_unlock_required": "La passerelle n'a pas autorisé la connexion locale, ou les cinq minutes suivant l'autorisation sont écoulées. Appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, attendez le signal bleu et réessayez dans les cinq minutes.",
       "local_token_database_full": "La base de jetons de la passerelle est pleine. Examinez ses jetons existants avant d'en créer un autre. Aucun jeton n'a été supprimé.",
       "local_rate_limited": "La passerelle a demandé une pause. Patientez jusqu'à l'expiration du délai affiché.",
+      "local_rate_limited_wait": "La passerelle a demandé une pause. Réessayez dans {seconds} secondes.",
       "local_service_unavailable": "Le service de la passerelle est temporairement indisponible. Patientez et réessayez.",
       "local_timeout": "La passerelle locale n'a pas répondu à temps. Vérifiez la connexion et réessayez.",
       "local_connection_failed": "Home Assistant n'a pas pu joindre cette passerelle. Vérifiez son adresse et la connexion réseau.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Confirmer le certificat de la passerelle",
-        "description": "Home Assistant a atteint **{host}:{port}**. Confirmez qu'il s'agit bien de votre passerelle avant d'envoyer des identifiants. Une empreinte ne constitue pas à elle seule une preuve d'identité.\n\nSHA-256 : `{fingerprint}`\n\nEmpreinte précédente : `{previous}`. Un point d'interrogation signifie qu'aucun certificat enregistré ne s'applique à cette adresse et à ce port.",
+        "description": "Home Assistant a atteint **{host}:{port}**. Confirmez qu'il s'agit bien de votre passerelle avant d'envoyer des identifiants. Une empreinte ne constitue pas à elle seule une preuve d'identité.\n\nSHA-256 : `{fingerprint}`\n\nEmpreinte précédente : `{previous}`. Un point d'interrogation signifie qu'aucun certificat enregistré ne s'applique à cette adresse et à ce port.\n\nLa passerelle possède son propre certificat pour chaque port. Le port 9442 est le port de connexion et est vérifié avant la connexion ; le port 9443 est le port de données et est vérifié après. C'est pourquoi cette page peut apparaître deux fois.",
         "data": {
           "confirm": "Je confirme cette passerelle et son certificat"
         }
       },
       "local_auth": {
         "title": "Se connecter avec l'étiquette de l'appareil",
-        "description": "Saisissez les valeurs Login et Pass de l'étiquette de la passerelle. Pour autoriser la connexion locale, appuyez ensemble sur les boutons Wi-Fi et sans fil pendant environ deux secondes (moins de trois secondes), puis relâchez-les ensemble. Confirmez le bref signal bleu et continuez dans les cinq minutes. L'accès reste sur l'adresse LAN que vous avez sélectionnée. La réponse de la passerelle détermine si la connexion a été autorisée. Le login et le mot de passe ne sont pas enregistrés.",
+        "description": "Saisissez les valeurs Login et Pass de l'étiquette de la passerelle. Pour autoriser la connexion locale, appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, puis relâchez-les ensemble. Confirmez le bref signal bleu et continuez dans les cinq minutes. Après une faute de frappe, appuyez de nouveau sur les boutons : la passerelle n'accepte une connexion que dans les cinq minutes suivant l'autorisation. L'accès reste sur l'adresse LAN que vous avez sélectionnée. La réponse de la passerelle détermine si la connexion a été autorisée. Le login et le mot de passe ne sont pas enregistrés.",
         "data": {
           "login": "Login de l'étiquette de l'appareil",
           "password": "Pass de l'étiquette de l'appareil",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Saisissez une adresse IP ou un nom d'hôte sans URL, chemin ni identifiants.",
       "local_interface_required": "Cette adresse IPv6 nécessite l'interface réseau de l'hôte Home Assistant.",
       "local_invalid_token": "Le format du jeton n'est pas valide. Copiez le jeton complet sans espaces.",
-      "local_invalid_credentials": "Vérifiez les valeurs Login et Pass de l'étiquette de la passerelle et saisissez-les à nouveau.",
-      "local_unlock_required": "Autorisez la connexion locale sur la passerelle et confirmez le signal bleu avant de réessayer.",
+      "local_invalid_credentials": "La passerelle a rejeté les valeurs Login et Pass. Vérifiez-les toutes deux sur l'étiquette de la passerelle et saisissez-les à nouveau.",
+      "local_invalid_label_format": "Login ou Pass contient des caractères qu'une étiquette d'appareil ne comporte pas, par exemple un espace à l'intérieur de la valeur. Rien n'a été envoyé à la passerelle. Vérifiez la saisie et saisissez-la à nouveau.",
+      "local_unlock_confirm_required": "Cochez cette case une fois que vous avez autorisé la connexion locale sur la passerelle et vu le signal bleu.",
+      "local_unlock_required": "La passerelle n'a pas autorisé la connexion locale, ou les cinq minutes suivant l'autorisation sont écoulées. Appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, attendez le signal bleu et réessayez dans les cinq minutes.",
       "local_token_database_full": "La base de jetons de la passerelle est pleine. Examinez ses jetons existants avant d'en créer un autre. Aucun jeton n'a été supprimé.",
       "local_rate_limited": "La passerelle a demandé une pause. Patientez jusqu'à l'expiration du délai affiché.",
+      "local_rate_limited_wait": "La passerelle a demandé une pause. Réessayez dans {seconds} secondes.",
       "local_service_unavailable": "Le service de la passerelle est temporairement indisponible. Patientez et réessayez.",
       "local_timeout": "La passerelle locale n'a pas répondu à temps. Vérifiez la connexion et réessayez.",
       "local_connection_failed": "Home Assistant n'a pas pu joindre cette passerelle. Vérifiez son adresse et la connexion réseau.",
@@ -1445,13 +1451,13 @@
         "name": "Consigne d'eau chaude supplémentaire"
       },
       "hot_water_eco_plus": {
-        "name": "Température de démarrage Eco+"
+        "name": "Seuil de démarrage Eco+"
       },
       "hot_water_comfort": {
-        "name": "Température de démarrage Confort"
+        "name": "Seuil de démarrage Confort"
       },
       "hot_water_eco": {
-        "name": "Température de démarrage Eco"
+        "name": "Seuil de démarrage Eco"
       },
       "maximum_supply_temperature": {
         "name": "Température de départ maximale"

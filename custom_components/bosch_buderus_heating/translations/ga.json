@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Deimhnigh deimhniú an gheata",
-        "description": "Shroich Home Assistant **{host}:{port}**. Deimhnigh gur do gheata é seo sula seoltar dintiúir. Ní cruthúnas féiniúlachta é méarloirg ar a son féin.\n\nSHA-256: `{fingerprint}`\n\nMéarloirg roimhe seo: `{previous}`. Ciallaíonn comhartha ceiste nach bhfuil aon deimhniú sábháilte i bhfeidhm don seoladh agus don phort seo.",
+        "description": "Shroich Home Assistant **{host}:{port}**. Deimhnigh gur do gheata é seo sula seoltar dintiúir. Ní cruthúnas féiniúlachta é méarloirg ar a son féin.\n\nSHA-256: `{fingerprint}`\n\nMéarloirg roimhe seo: `{previous}`. Ciallaíonn comhartha ceiste nach bhfuil aon deimhniú sábháilte i bhfeidhm don seoladh agus don phort seo.\n\nTá deimhniú dá chuid féin ag an geata do gach port. Is é port 9442 an port síniú isteach agus seiceáiltear é roimh an síniú isteach; is é port 9443 an port sonraí agus seiceáiltear é ina dhiaidh. Sin é an fáth gur féidir leis an leathanach seo teacht chun solais faoi dhó.",
         "data": {
           "confirm": "Deimhním an geata seo agus a dheimhniú"
         }
       },
       "local_auth": {
         "title": "Sínigh isteach leis an lipéad gléis",
-        "description": "Cuir isteach an Login agus an Pass ó lipéad an gheata. Chun síniú isteach áitiúil a scaoileadh, brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh thart ar dhá shoicind, faoi bhun trí shoicind, agus scaoil le chéile iad. Deimhnigh an comhartha gorm gearr agus lean ar aghaidh laistigh de chúig nóiméad. Fanann an rochtain ar do sheoladh LAN roghnaithe. Socraíonn freagra an gheata cé acu a scaoileadh an síniú isteach. Ní shábháiltear an Login ná an focal faire.",
+        "description": "Cuir isteach an Login agus an Pass ó lipéad an gheata. Chun síniú isteach áitiúil a scaoileadh, brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind agus scaoil le chéile iad. Deimhnigh an comhartha gorm gearr agus lean ar aghaidh laistigh de chúig nóiméad. Tar éis botún clóscríofa, brúigh na cnaipí arís: ní ghlacann an geata le síniú isteach ach laistigh de chúig nóiméad tar éis an scaoilte. Fanann an rochtain ar do sheoladh LAN roghnaithe. Socraíonn freagra an gheata cé acu a scaoileadh an síniú isteach. Ní shábháiltear an Login ná an focal faire.",
         "data": {
           "login": "Login ar lipéad an ghléis",
           "password": "Pass ar lipéad an ghléis",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Cuir isteach seoladh IP nó óstainm gan URL, cosán ná dintiúir.",
       "local_interface_required": "Teastaíonn comhéadan líonra ar óstríomhaire Home Assistant don seoladh IPv6 seo.",
       "local_invalid_token": "Tá formáid an chomhartha neamhbhailí. Cóipeáil an comhartha iomlán gan spásanna.",
-      "local_invalid_credentials": "Seiceáil Login agus Pass ar lipéad an gheata agus cuir isteach arís iad.",
-      "local_unlock_required": "Scaoil síniú isteach áitiúil ar an ngeata agus deimhnigh an comhartha gorm sula ndéanann tú iarracht arís.",
+      "local_invalid_credentials": "Dhiúltaigh an geata don Login agus don Pass. Seiceáil an dá cheann ar lipéad an gheata agus cuir isteach arís iad.",
+      "local_invalid_label_format": "Tá carachtair sa Login nó sa Pass nach bhfuil ar lipéad feiste, mar shampla space laistigh den luach. Níor seoladh aon rud chuig an geata. Seiceáil an t-ionchur agus cuir isteach arís é.",
+      "local_unlock_confirm_required": "Cuir tic sa bhosca seo nuair a scaoil tú síniú isteach áitiúil ar an ngeata agus go bhfaca tú an comhartha gorm.",
+      "local_unlock_required": "Níor scaoil an geata síniú isteach áitiúil, nó tá na cúig nóiméad tar éis an scaoilte caite. Brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind, fan leis an gcomhartha gorm agus bain triail eile as laistigh de chúig nóiméad.",
       "local_token_database_full": "Tá bunachar sonraí comharthaí an gheata lán. Athbhreithnigh na comharthaí atá ann cheana sula gcruthaíonn tú ceann eile. Níor scriosadh aon chomhartha.",
       "local_rate_limited": "D'iarr an geata sos. Fan go mbeidh an t-am a thaispeántar caite.",
+      "local_rate_limited_wait": "D'iarr an geata sos. Bain triail eile as i gceann {seconds} soicind.",
       "local_service_unavailable": "Níl seirbhís an gheata ar fáil go sealadach. Fan agus déan iarracht arís.",
       "local_timeout": "Níor fhreagair an geata áitiúil in am. Seiceáil an nasc agus déan iarracht arís.",
       "local_connection_failed": "Níorbh fhéidir le Home Assistant an geata seo a bhaint amach. Seiceáil a sheoladh agus an nasc líonra.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Deimhnigh deimhniú an gheata",
-        "description": "Shroich Home Assistant **{host}:{port}**. Deimhnigh gur do gheata é seo sula seoltar dintiúir. Ní cruthúnas féiniúlachta é méarloirg ar a son féin.\n\nSHA-256: `{fingerprint}`\n\nMéarloirg roimhe seo: `{previous}`. Ciallaíonn comhartha ceiste nach bhfuil aon deimhniú sábháilte i bhfeidhm don seoladh agus don phort seo.",
+        "description": "Shroich Home Assistant **{host}:{port}**. Deimhnigh gur do gheata é seo sula seoltar dintiúir. Ní cruthúnas féiniúlachta é méarloirg ar a son féin.\n\nSHA-256: `{fingerprint}`\n\nMéarloirg roimhe seo: `{previous}`. Ciallaíonn comhartha ceiste nach bhfuil aon deimhniú sábháilte i bhfeidhm don seoladh agus don phort seo.\n\nTá deimhniú dá chuid féin ag an geata do gach port. Is é port 9442 an port síniú isteach agus seiceáiltear é roimh an síniú isteach; is é port 9443 an port sonraí agus seiceáiltear é ina dhiaidh. Sin é an fáth gur féidir leis an leathanach seo teacht chun solais faoi dhó.",
         "data": {
           "confirm": "Deimhním an geata seo agus a dheimhniú"
         }
       },
       "local_auth": {
         "title": "Sínigh isteach leis an lipéad gléis",
-        "description": "Cuir isteach an Login agus an Pass ó lipéad an gheata. Chun síniú isteach áitiúil a scaoileadh, brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh thart ar dhá shoicind, faoi bhun trí shoicind, agus scaoil le chéile iad. Deimhnigh an comhartha gorm gearr agus lean ar aghaidh laistigh de chúig nóiméad. Fanann an rochtain ar do sheoladh LAN roghnaithe. Socraíonn freagra an gheata cé acu a scaoileadh an síniú isteach. Ní shábháiltear an Login ná an focal faire.",
+        "description": "Cuir isteach an Login agus an Pass ó lipéad an gheata. Chun síniú isteach áitiúil a scaoileadh, brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind agus scaoil le chéile iad. Deimhnigh an comhartha gorm gearr agus lean ar aghaidh laistigh de chúig nóiméad. Tar éis botún clóscríofa, brúigh na cnaipí arís: ní ghlacann an geata le síniú isteach ach laistigh de chúig nóiméad tar éis an scaoilte. Fanann an rochtain ar do sheoladh LAN roghnaithe. Socraíonn freagra an gheata cé acu a scaoileadh an síniú isteach. Ní shábháiltear an Login ná an focal faire.",
         "data": {
           "login": "Login ar lipéad an ghléis",
           "password": "Pass ar lipéad an ghléis",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Cuir isteach seoladh IP nó óstainm gan URL, cosán ná dintiúir.",
       "local_interface_required": "Teastaíonn comhéadan líonra ar óstríomhaire Home Assistant don seoladh IPv6 seo.",
       "local_invalid_token": "Tá formáid an chomhartha neamhbhailí. Cóipeáil an comhartha iomlán gan spásanna.",
-      "local_invalid_credentials": "Seiceáil Login agus Pass ar lipéad an gheata agus cuir isteach arís iad.",
-      "local_unlock_required": "Scaoil síniú isteach áitiúil ar an ngeata agus deimhnigh an comhartha gorm sula ndéanann tú iarracht arís.",
+      "local_invalid_credentials": "Dhiúltaigh an geata don Login agus don Pass. Seiceáil an dá cheann ar lipéad an gheata agus cuir isteach arís iad.",
+      "local_invalid_label_format": "Tá carachtair sa Login nó sa Pass nach bhfuil ar lipéad feiste, mar shampla space laistigh den luach. Níor seoladh aon rud chuig an geata. Seiceáil an t-ionchur agus cuir isteach arís é.",
+      "local_unlock_confirm_required": "Cuir tic sa bhosca seo nuair a scaoil tú síniú isteach áitiúil ar an ngeata agus go bhfaca tú an comhartha gorm.",
+      "local_unlock_required": "Níor scaoil an geata síniú isteach áitiúil, nó tá na cúig nóiméad tar éis an scaoilte caite. Brúigh na cnaipí Wi-Fi agus gan sreang le chéile ar feadh 1 soicind, fan leis an gcomhartha gorm agus bain triail eile as laistigh de chúig nóiméad.",
       "local_token_database_full": "Tá bunachar sonraí comharthaí an gheata lán. Athbhreithnigh na comharthaí atá ann cheana sula gcruthaíonn tú ceann eile. Níor scriosadh aon chomhartha.",
       "local_rate_limited": "D'iarr an geata sos. Fan go mbeidh an t-am a thaispeántar caite.",
+      "local_rate_limited_wait": "D'iarr an geata sos. Bain triail eile as i gceann {seconds} soicind.",
       "local_service_unavailable": "Níl seirbhís an gheata ar fáil go sealadach. Fan agus déan iarracht arís.",
       "local_timeout": "Níor fhreagair an geata áitiúil in am. Seiceáil an nasc agus déan iarracht arís.",
       "local_connection_failed": "Níorbh fhéidir le Home Assistant an geata seo a bhaint amach. Seiceáil a sheoladh agus an nasc líonra.",
@@ -1445,13 +1451,13 @@
         "name": "Socphointe an uisce te bhreise"
       },
       "hot_water_eco_plus": {
-        "name": "Teocht tosaithe Eco+"
+        "name": "Tairseach tosaithe Eco+"
       },
       "hot_water_comfort": {
-        "name": "Teocht tosaithe Compord"
+        "name": "Tairseach tosaithe Compord"
       },
       "hot_water_eco": {
-        "name": "Teocht tosaithe Eco"
+        "name": "Tairseach tosaithe Eco"
       },
       "maximum_supply_temperature": {
         "name": "Uasteocht an tsreafa"

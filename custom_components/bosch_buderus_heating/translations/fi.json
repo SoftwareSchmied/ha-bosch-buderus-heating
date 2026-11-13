@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Vahvista yhdyskäytävän varmenne",
-        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.",
+        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.\n\nYhdyskäytävällä on oma varmenne jokaiselle portille. Portti 9442 on kirjautumisportti, ja se tarkistetaan ennen kirjautumista; portti 9443 on dataportti, ja se tarkistetaan kirjautumisen jälkeen. Siksi tämä sivu voi tulla näkyviin kahdesti.",
         "data": {
           "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
         }
       },
       "local_auth": {
         "title": "Kirjaudu laitteen tarran tiedoilla",
-        "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa noin kaksi sekuntia, alle kolme sekuntia, ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja salasanaa ei tallenneta.",
+        "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Jos syötit jotain väärin, paina painikkeita uudelleen: yhdyskäytävä hyväksyy kirjautumisen vain viiden minuutin kuluessa vapautuksesta. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja salasanaa ei tallenneta.",
         "data": {
           "login": "Login laitteen tarrassa",
           "password": "Pass laitteen tarrassa",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Syötä IP-osoite tai isäntänimi ilman URL-osoitetta, polkua tai tunnistetietoja.",
       "local_interface_required": "Tämä IPv6-osoite vaatii verkkoliittymän Home Assistant -isännällä.",
       "local_invalid_token": "Tunnuksen muoto on virheellinen. Kopioi koko tunnus ilman välilyöntejä.",
-      "local_invalid_credentials": "Tarkista yhdyskäytävän tarran Login ja Pass ja syötä ne uudelleen.",
-      "local_unlock_required": "Vapauta paikallinen kirjautuminen yhdyskäytävällä ja vahvista sininen merkkivalo ennen kuin yrität uudelleen.",
+      "local_invalid_credentials": "Yhdyskäytävä hylkäsi Loginin ja Passin. Tarkista molemmat yhdyskäytävän tarrasta ja syötä ne uudelleen.",
+      "local_invalid_label_format": "Login tai Pass sisältää merkkejä, joita laitteen tarrassa ei ole, esimerkiksi välilyönnin arvon sisällä. Yhdyskäytävälle ei lähetetty mitään. Tarkista syöte ja syötä se uudelleen.",
+      "local_unlock_confirm_required": "Rastita tämä ruutu, kun olet vapauttanut paikallisen kirjautumisen yhdyskäytävällä ja nähnyt sinisen merkkivalon.",
+      "local_unlock_required": "Yhdyskäytävä ei ole vapauttanut paikallista kirjautumista, tai vapautuksesta on kulunut yli viisi minuuttia. Paina Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan, odota sinistä merkkivaloa ja yritä uudelleen viiden minuutin kuluessa.",
       "local_token_database_full": "Yhdyskäytävän tunnustietokanta on täynnä. Tarkista sen olemassa olevat tunnukset ennen kuin luot uuden. Tunnuksia ei poistettu.",
       "local_rate_limited": "Yhdyskäytävä pyysi taukoa. Odota, kunnes näytetty aika on kulunut.",
+      "local_rate_limited_wait": "Yhdyskäytävä pyysi taukoa. Yritä uudelleen {seconds} sekunnin kuluttua.",
       "local_service_unavailable": "Yhdyskäytävän palvelu ei ole tilapäisesti käytettävissä. Odota ja yritä uudelleen.",
       "local_timeout": "Paikallinen yhdyskäytävä ei vastannut ajoissa. Tarkista yhteys ja yritä uudelleen.",
       "local_connection_failed": "Home Assistant ei tavoittanut tätä yhdyskäytävää. Tarkista sen osoite ja verkkoyhteys.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Vahvista yhdyskäytävän varmenne",
-        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.",
+        "description": "Home Assistant otti yhteyden osoitteeseen **{host}:{port}**. Vahvista, että tämä on sinun yhdyskäytäväsi, ennen kuin lähetät tunnistetietoja. Sormenjälki ei yksinään todista henkilöllisyyttä.\n\nSHA-256: `{fingerprint}`\n\nEdellinen sormenjälki: `{previous}`. Kysymysmerkki tarkoittaa, ettei tälle osoitteelle ja portille ole tallennettua varmennetta.\n\nYhdyskäytävällä on oma varmenne jokaiselle portille. Portti 9442 on kirjautumisportti, ja se tarkistetaan ennen kirjautumista; portti 9443 on dataportti, ja se tarkistetaan kirjautumisen jälkeen. Siksi tämä sivu voi tulla näkyviin kahdesti.",
         "data": {
           "confirm": "Vahvistan tämän yhdyskäytävän ja sen varmenteen"
         }
       },
       "local_auth": {
         "title": "Kirjaudu laitteen tarran tiedoilla",
-        "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa noin kaksi sekuntia, alle kolme sekuntia, ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja salasanaa ei tallenneta.",
+        "description": "Syötä yhdyskäytävän tarrassa olevat Login ja Pass. Vapauta paikallinen kirjautuminen painamalla Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan ja vapauta ne yhtä aikaa. Vahvista lyhyt sininen merkkivalo ja jatka viiden minuutin kuluessa. Jos syötit jotain väärin, paina painikkeita uudelleen: yhdyskäytävä hyväksyy kirjautumisen vain viiden minuutin kuluessa vapautuksesta. Yhteys pysyy valitsemassasi LAN-osoitteessa. Yhdyskäytävän vastaus ratkaisee, vapautettiinko kirjautuminen. Loginia ja salasanaa ei tallenneta.",
         "data": {
           "login": "Login laitteen tarrassa",
           "password": "Pass laitteen tarrassa",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Syötä IP-osoite tai isäntänimi ilman URL-osoitetta, polkua tai tunnistetietoja.",
       "local_interface_required": "Tämä IPv6-osoite vaatii verkkoliittymän Home Assistant -isännällä.",
       "local_invalid_token": "Tunnuksen muoto on virheellinen. Kopioi koko tunnus ilman välilyöntejä.",
-      "local_invalid_credentials": "Tarkista yhdyskäytävän tarran Login ja Pass ja syötä ne uudelleen.",
-      "local_unlock_required": "Vapauta paikallinen kirjautuminen yhdyskäytävällä ja vahvista sininen merkkivalo ennen kuin yrität uudelleen.",
+      "local_invalid_credentials": "Yhdyskäytävä hylkäsi Loginin ja Passin. Tarkista molemmat yhdyskäytävän tarrasta ja syötä ne uudelleen.",
+      "local_invalid_label_format": "Login tai Pass sisältää merkkejä, joita laitteen tarrassa ei ole, esimerkiksi välilyönnin arvon sisällä. Yhdyskäytävälle ei lähetetty mitään. Tarkista syöte ja syötä se uudelleen.",
+      "local_unlock_confirm_required": "Rastita tämä ruutu, kun olet vapauttanut paikallisen kirjautumisen yhdyskäytävällä ja nähnyt sinisen merkkivalon.",
+      "local_unlock_required": "Yhdyskäytävä ei ole vapauttanut paikallista kirjautumista, tai vapautuksesta on kulunut yli viisi minuuttia. Paina Wi-Fi- ja langaton-painikkeita yhtä aikaa 1 sekunnin ajan, odota sinistä merkkivaloa ja yritä uudelleen viiden minuutin kuluessa.",
       "local_token_database_full": "Yhdyskäytävän tunnustietokanta on täynnä. Tarkista sen olemassa olevat tunnukset ennen kuin luot uuden. Tunnuksia ei poistettu.",
       "local_rate_limited": "Yhdyskäytävä pyysi taukoa. Odota, kunnes näytetty aika on kulunut.",
+      "local_rate_limited_wait": "Yhdyskäytävä pyysi taukoa. Yritä uudelleen {seconds} sekunnin kuluttua.",
       "local_service_unavailable": "Yhdyskäytävän palvelu ei ole tilapäisesti käytettävissä. Odota ja yritä uudelleen.",
       "local_timeout": "Paikallinen yhdyskäytävä ei vastannut ajoissa. Tarkista yhteys ja yritä uudelleen.",
       "local_connection_failed": "Home Assistant ei tavoittanut tätä yhdyskäytävää. Tarkista sen osoite ja verkkoyhteys.",
@@ -1445,13 +1451,13 @@
         "name": "Lisälämpimän käyttöveden asetusarvo"
       },
       "hot_water_eco_plus": {
-        "name": "Eco+-käynnistyslämpötila"
+        "name": "Eco+-käynnistysraja"
       },
       "hot_water_comfort": {
-        "name": "Mukavuuden käynnistyslämpötila"
+        "name": "Mukavuuden käynnistysraja"
       },
       "hot_water_eco": {
-        "name": "Eco-käynnistyslämpötila"
+        "name": "Eco-käynnistysraja"
       },
       "maximum_supply_temperature": {
         "name": "Suurin menolämpötila"

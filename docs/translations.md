@@ -42,7 +42,16 @@ supply temperature and the liquid line temperatures TR3 and TR4). All other
 languages except English and German are a careful first draft. They follow
 the glossary of their language, but nobody who speaks them as a mother
 tongue has checked them yet. Corrections are very welcome (see
-[Contributing corrections](#contributing-corrections)). The
+[Contributing corrections](#contributing-corrections)).
+
+Some texts in the options dialog are composed by the integration itself: the
+list and the status of the connections, their hints and the back entries. They
+follow the language of the Home Assistant server, not the profile language of
+the person who opens the dialog, because Home Assistant does not tell an
+options dialog which language its user has chosen. Texts from the translation
+files, such as titles, fields and error messages, follow the profile language.
+
+The
 glossary below
 covers Swedish, Norwegian Bokmål, Finnish and Danish; every other draft has
 its own glossary in `docs/glossary/<code>.md` with the terms and the form of

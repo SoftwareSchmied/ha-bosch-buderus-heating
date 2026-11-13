@@ -59,8 +59,20 @@ The user can supply a local token or sign in with the device label. An imported
 token does not require the authentication port. Label authentication first
 inspects that port's certificate, obtains explicit confirmation and asks for the
 physical release. Device login and password are neither saved nor returned as
-form defaults. A blue-signal checkbox is a user action, not proof that the gateway
-has accepted the physical release.
+form defaults. The login field shows what is typed; the pass field is masked
+with its show switch. Spaces and line breaks at the edges of both are removed
+before the check; a value with other characters a label does not have, such as
+a space inside it, is refused without a request. A blue-signal checkbox is a
+user action, not proof that the gateway has accepted the physical release.
+
+Each case has its own message: input the label cannot have (nothing sent), the
+unticked checkbox (nothing sent), Login and Pass rejected by the gateway (400),
+sign-in not released or the five minutes after the release passed (412, with
+the button instruction of 1 second), a pause the gateway asked for (429, with
+the remaining seconds when the gateway names them) and no answer in time. A
+certificate that changed during the dialog leads back to its check instead of
+repeating the sign-in. The second certificate page is the data port (9443);
+its text says why it appears.
 
 Resource trust is checked separately after credentials exist. Previously stored
 trust applies only to the same address and port role with the exact full leaf

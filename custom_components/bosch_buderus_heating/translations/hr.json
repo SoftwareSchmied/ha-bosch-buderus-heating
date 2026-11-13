@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Potvrda certifikata pristupnika",
-        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.",
+        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.\n\nPristupnik ima vlastiti certifikat za svaki port. Port 9442 je port za prijavu i provjerava se prije prijave; port 9443 je port za podatke i provjerava se nakon nje. Zato se ova stranica može prikazati dvaput.",
         "data": {
           "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
         }
       },
       "local_auth": {
         "title": "Prijava s oznakom uređaja",
-        "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze oko dvije sekunde, kraće od tri sekunde, i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i lozinka se ne spremaju.",
+        "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Nakon pogreške pri unosu ponovno pritisnite tipke: pristupnik prihvaća prijavu samo u roku od pet minuta nakon otpuštanja. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i lozinka se ne spremaju.",
         "data": {
           "login": "Login s oznake uređaja",
           "password": "Pass s oznake uređaja",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Unesite IP adresu ili naziv hosta bez URL-a, putanje ili podataka za prijavu.",
       "local_interface_required": "Ova IPv6 adresa zahtijeva mrežno sučelje na hostu Home Assistanta.",
       "local_invalid_token": "Format tokena nije valjan. Kopirajte cijeli token bez razmaka.",
-      "local_invalid_credentials": "Provjerite Login i Pass na oznaci pristupnika i unesite ih ponovno.",
-      "local_unlock_required": "Otpustite lokalnu prijavu na pristupniku i potvrdite plavi signal prije ponovnog pokušaja.",
+      "local_invalid_credentials": "Pristupnik je odbio Login i Pass. Provjerite oboje na oznaci pristupnika i unesite ih ponovno.",
+      "local_invalid_label_format": "Login ili Pass sadrži znakove kakve oznaka uređaja nema, na primjer razmak unutar vrijednosti. Pristupniku nije poslano ništa. Provjerite unos i unesite ga ponovno.",
+      "local_unlock_confirm_required": "Označite ovaj okvir kada otpustite lokalnu prijavu na pristupniku i vidite plavi signal.",
+      "local_unlock_required": "Pristupnik nije otpustio lokalnu prijavu ili je prošlo pet minuta nakon otpuštanja. Istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu, pričekajte plavi signal i pokušajte ponovno u roku od pet minuta.",
       "local_token_database_full": "Baza tokena pristupnika je puna. Pregledajte njegove postojeće tokene prije stvaranja novog. Nijedan token nije obrisan.",
       "local_rate_limited": "Pristupnik je zatražio stanku. Pričekajte da prikazano vrijeme istekne.",
+      "local_rate_limited_wait": "Pristupnik je zatražio stanku. Pokušajte ponovno za {seconds} s.",
       "local_service_unavailable": "Usluga pristupnika privremeno nije dostupna. Pričekajte i pokušajte ponovno.",
       "local_timeout": "Lokalni pristupnik nije odgovorio na vrijeme. Provjerite vezu i pokušajte ponovno.",
       "local_connection_failed": "Home Assistant nije mogao doseći ovaj pristupnik. Provjerite njegovu adresu i mrežnu vezu.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Potvrda certifikata pristupnika",
-        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.",
+        "description": "Home Assistant je uspostavio vezu s **{host}:{port}**. Prije slanja podataka za prijavu potvrdite da je to vaš pristupnik. Otisak sam po sebi nije dokaz identiteta.\n\nSHA-256: `{fingerprint}`\n\nPrethodni otisak: `{previous}`. Upitnik znači da za ovu adresu i ovaj priključak ne postoji spremljeni certifikat.\n\nPristupnik ima vlastiti certifikat za svaki port. Port 9442 je port za prijavu i provjerava se prije prijave; port 9443 je port za podatke i provjerava se nakon nje. Zato se ova stranica može prikazati dvaput.",
         "data": {
           "confirm": "Potvrđujem ovaj pristupnik i njegov certifikat"
         }
       },
       "local_auth": {
         "title": "Prijava s oznakom uređaja",
-        "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze oko dvije sekunde, kraće od tri sekunde, i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i lozinka se ne spremaju.",
+        "description": "Unesite Login i Pass s oznake pristupnika. Za otpuštanje lokalne prijave istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu i istodobno ih otpustite. Potvrdite kratki plavi signal i nastavite u roku od pet minuta. Nakon pogreške pri unosu ponovno pritisnite tipke: pristupnik prihvaća prijavu samo u roku od pet minuta nakon otpuštanja. Pristup ostaje na vašoj odabranoj LAN adresi. Odgovor pristupnika određuje je li prijava otpuštena. Login i lozinka se ne spremaju.",
         "data": {
           "login": "Login s oznake uređaja",
           "password": "Pass s oznake uređaja",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Unesite IP adresu ili naziv hosta bez URL-a, putanje ili podataka za prijavu.",
       "local_interface_required": "Ova IPv6 adresa zahtijeva mrežno sučelje na hostu Home Assistanta.",
       "local_invalid_token": "Format tokena nije valjan. Kopirajte cijeli token bez razmaka.",
-      "local_invalid_credentials": "Provjerite Login i Pass na oznaci pristupnika i unesite ih ponovno.",
-      "local_unlock_required": "Otpustite lokalnu prijavu na pristupniku i potvrdite plavi signal prije ponovnog pokušaja.",
+      "local_invalid_credentials": "Pristupnik je odbio Login i Pass. Provjerite oboje na oznaci pristupnika i unesite ih ponovno.",
+      "local_invalid_label_format": "Login ili Pass sadrži znakove kakve oznaka uređaja nema, na primjer razmak unutar vrijednosti. Pristupniku nije poslano ništa. Provjerite unos i unesite ga ponovno.",
+      "local_unlock_confirm_required": "Označite ovaj okvir kada otpustite lokalnu prijavu na pristupniku i vidite plavi signal.",
+      "local_unlock_required": "Pristupnik nije otpustio lokalnu prijavu ili je prošlo pet minuta nakon otpuštanja. Istodobno pritisnite tipke Wi-Fi i bežične veze na 1 sekundu, pričekajte plavi signal i pokušajte ponovno u roku od pet minuta.",
       "local_token_database_full": "Baza tokena pristupnika je puna. Pregledajte njegove postojeće tokene prije stvaranja novog. Nijedan token nije obrisan.",
       "local_rate_limited": "Pristupnik je zatražio stanku. Pričekajte da prikazano vrijeme istekne.",
+      "local_rate_limited_wait": "Pristupnik je zatražio stanku. Pokušajte ponovno za {seconds} s.",
       "local_service_unavailable": "Usluga pristupnika privremeno nije dostupna. Pričekajte i pokušajte ponovno.",
       "local_timeout": "Lokalni pristupnik nije odgovorio na vrijeme. Provjerite vezu i pokušajte ponovno.",
       "local_connection_failed": "Home Assistant nije mogao doseći ovaj pristupnik. Provjerite njegovu adresu i mrežnu vezu.",
@@ -1445,13 +1451,13 @@
         "name": "Zadana vrijednost dodatne tople vode"
       },
       "hot_water_eco_plus": {
-        "name": "Početna temperatura Eco+"
+        "name": "Prag pokretanja Eco+"
       },
       "hot_water_comfort": {
-        "name": "Početna temperatura Komfor"
+        "name": "Prag pokretanja Komfor"
       },
       "hot_water_eco": {
-        "name": "Početna temperatura Eco"
+        "name": "Prag pokretanja Eco"
       },
       "maximum_supply_temperature": {
         "name": "Maksimalna temperatura polaznog voda"

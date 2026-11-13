@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Het certificaat van de gateway bevestigen",
-        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.",
+        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.\n\nDe gateway heeft voor elke poort een eigen certificaat. Poort 9442 is de aanmeldpoort en wordt vóór de aanmelding gecontroleerd; poort 9443 is de datapoort en wordt erna gecontroleerd. Daarom kan deze pagina twee keer verschijnen.",
         "data": {
           "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
         }
       },
       "local_auth": {
         "title": "Aanmelden met het label op het apparaat",
-        "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen ongeveer twee seconden in, korter dan drie seconden, en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en wachtwoord worden niet opgeslagen.",
+        "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen 1 seconde in en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. Druk na een typefout de knoppen opnieuw in: de gateway accepteert een aanmelding alleen binnen vijf minuten na de vrijgave. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en wachtwoord worden niet opgeslagen.",
         "data": {
           "login": "Login op het label van het apparaat",
           "password": "Pass op het label van het apparaat",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Voer een IP-adres of hostnaam in zonder URL, pad of inloggegevens.",
       "local_interface_required": "Dit IPv6-adres vereist de netwerkinterface op de Home Assistant-host.",
       "local_invalid_token": "Het tokenformaat is ongeldig. Kopieer het volledige token zonder spaties.",
-      "local_invalid_credentials": "Controleer Login en Pass op het label van de gateway en voer ze opnieuw in.",
-      "local_unlock_required": "Geef de lokale aanmelding op de gateway vrij en bevestig het blauwe signaal voordat je het opnieuw probeert.",
+      "local_invalid_credentials": "De gateway heeft Login en Pass geweigerd. Controleer beide op het label van de gateway en voer ze opnieuw in.",
+      "local_invalid_label_format": "Login of Pass bevat tekens die een apparaatlabel niet heeft, bijvoorbeeld een spatie in de waarde. Er is niets naar de gateway gestuurd. Controleer de invoer en voer die opnieuw in.",
+      "local_unlock_confirm_required": "Vink dit vakje aan zodra je de lokale aanmelding op de gateway hebt vrijgegeven en het blauwe signaal hebt gezien.",
+      "local_unlock_required": "De gateway heeft de lokale aanmelding niet vrijgegeven, of de vijf minuten na de vrijgave zijn verstreken. Druk de Wi-Fi- en de draadloosknop samen 1 seconde in, wacht op het blauwe signaal en probeer het binnen vijf minuten opnieuw.",
       "local_token_database_full": "De tokendatabase van de gateway is vol. Bekijk de bestaande tokens voordat je een nieuw token aanmaakt. Er zijn geen tokens verwijderd.",
       "local_rate_limited": "De gateway heeft om een pauze gevraagd. Wacht tot de getoonde tijd is verstreken.",
+      "local_rate_limited_wait": "De gateway heeft om een pauze gevraagd. Probeer het over {seconds} seconden opnieuw.",
       "local_service_unavailable": "De gatewayservice is tijdelijk niet beschikbaar. Wacht even en probeer het opnieuw.",
       "local_timeout": "De lokale gateway reageerde niet op tijd. Controleer de verbinding en probeer het opnieuw.",
       "local_connection_failed": "Home Assistant kon deze gateway niet bereiken. Controleer het adres en de netwerkverbinding.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Het certificaat van de gateway bevestigen",
-        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.",
+        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.\n\nDe gateway heeft voor elke poort een eigen certificaat. Poort 9442 is de aanmeldpoort en wordt vóór de aanmelding gecontroleerd; poort 9443 is de datapoort en wordt erna gecontroleerd. Daarom kan deze pagina twee keer verschijnen.",
         "data": {
           "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
         }
       },
       "local_auth": {
         "title": "Aanmelden met het label op het apparaat",
-        "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen ongeveer twee seconden in, korter dan drie seconden, en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en wachtwoord worden niet opgeslagen.",
+        "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen 1 seconde in en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. Druk na een typefout de knoppen opnieuw in: de gateway accepteert een aanmelding alleen binnen vijf minuten na de vrijgave. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en wachtwoord worden niet opgeslagen.",
         "data": {
           "login": "Login op het label van het apparaat",
           "password": "Pass op het label van het apparaat",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Voer een IP-adres of hostnaam in zonder URL, pad of inloggegevens.",
       "local_interface_required": "Dit IPv6-adres vereist de netwerkinterface op de Home Assistant-host.",
       "local_invalid_token": "Het tokenformaat is ongeldig. Kopieer het volledige token zonder spaties.",
-      "local_invalid_credentials": "Controleer Login en Pass op het label van de gateway en voer ze opnieuw in.",
-      "local_unlock_required": "Geef de lokale aanmelding op de gateway vrij en bevestig het blauwe signaal voordat je het opnieuw probeert.",
+      "local_invalid_credentials": "De gateway heeft Login en Pass geweigerd. Controleer beide op het label van de gateway en voer ze opnieuw in.",
+      "local_invalid_label_format": "Login of Pass bevat tekens die een apparaatlabel niet heeft, bijvoorbeeld een spatie in de waarde. Er is niets naar de gateway gestuurd. Controleer de invoer en voer die opnieuw in.",
+      "local_unlock_confirm_required": "Vink dit vakje aan zodra je de lokale aanmelding op de gateway hebt vrijgegeven en het blauwe signaal hebt gezien.",
+      "local_unlock_required": "De gateway heeft de lokale aanmelding niet vrijgegeven, of de vijf minuten na de vrijgave zijn verstreken. Druk de Wi-Fi- en de draadloosknop samen 1 seconde in, wacht op het blauwe signaal en probeer het binnen vijf minuten opnieuw.",
       "local_token_database_full": "De tokendatabase van de gateway is vol. Bekijk de bestaande tokens voordat je een nieuw token aanmaakt. Er zijn geen tokens verwijderd.",
       "local_rate_limited": "De gateway heeft om een pauze gevraagd. Wacht tot de getoonde tijd is verstreken.",
+      "local_rate_limited_wait": "De gateway heeft om een pauze gevraagd. Probeer het over {seconds} seconden opnieuw.",
       "local_service_unavailable": "De gatewayservice is tijdelijk niet beschikbaar. Wacht even en probeer het opnieuw.",
       "local_timeout": "De lokale gateway reageerde niet op tijd. Controleer de verbinding en probeer het opnieuw.",
       "local_connection_failed": "Home Assistant kon deze gateway niet bereiken. Controleer het adres en de netwerkverbinding.",
@@ -1445,13 +1451,13 @@
         "name": "Instelwaarde extra warm water"
       },
       "hot_water_eco_plus": {
-        "name": "Starttemperatuur Eco+"
+        "name": "Startdrempel Eco+"
       },
       "hot_water_comfort": {
-        "name": "Starttemperatuur Comfort"
+        "name": "Startdrempel Comfort"
       },
       "hot_water_eco": {
-        "name": "Starttemperatuur Eco"
+        "name": "Startdrempel Eco"
       },
       "maximum_supply_temperature": {
         "name": "Maximale aanvoertemperatuur"

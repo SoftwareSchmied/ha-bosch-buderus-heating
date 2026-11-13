@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Potvrdenie certifikátu brány",
-        "description": "Home Assistant sa pripojil k **{host}:{port}**. Pred odoslaním prihlasovacích údajov potvrďte, že ide o vašu bránu. Odtlačok sám o sebe nie je dôkazom identity.\n\nSHA-256: `{fingerprint}`\n\nPredchádzajúci odtlačok: `{previous}`. Otáznik znamená, že pre túto adresu a port neexistuje žiadny uložený certifikát.",
+        "description": "Home Assistant sa pripojil k **{host}:{port}**. Pred odoslaním prihlasovacích údajov potvrďte, že ide o vašu bránu. Odtlačok sám o sebe nie je dôkazom identity.\n\nSHA-256: `{fingerprint}`\n\nPredchádzajúci odtlačok: `{previous}`. Otáznik znamená, že pre túto adresu a port neexistuje žiadny uložený certifikát.\n\nBrána má pre každý port vlastný certifikát. Port 9442 je port na prihlásenie a kontroluje sa pred prihlásením; port 9443 je dátový port a kontroluje sa po ňom. Preto sa môže táto stránka zobraziť dvakrát.",
         "data": {
           "confirm": "Potvrdzujem túto bránu a jej certifikát"
         }
       },
       "local_auth": {
         "title": "Prihlásenie pomocou štítka zariadenia",
-        "description": "Zadajte Login a Pass zo štítka brány. Na uvoľnenie lokálneho prihlásenia stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na približne dve sekundy, menej než tri sekundy, a potom ich súčasne uvoľnite. Potvrďte krátky modrý signál a pokračujte do piatich minút. Prístup zostáva na vami vybranej adrese LAN. Odpoveď brány určuje, či bolo prihlásenie uvoľnené. Login a heslo sa neukladajú.",
+        "description": "Zadajte Login a Pass zo štítka brány. Na uvoľnenie lokálneho prihlásenia stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na 1 sekundu a potom ich súčasne uvoľnite. Potvrďte krátky modrý signál a pokračujte do piatich minút. Po preklepe tlačidlá stlačte znova: brána prijme prihlásenie len do piatich minút po uvoľnení. Prístup zostáva na vami vybranej adrese LAN. Odpoveď brány určuje, či bolo prihlásenie uvoľnené. Login a heslo sa neukladajú.",
         "data": {
           "login": "Login zo štítka zariadenia",
           "password": "Pass zo štítka zariadenia",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Zadajte adresu IP alebo názov hostiteľa bez adresy URL, cesty a prihlasovacích údajov.",
       "local_interface_required": "Táto adresa IPv6 vyžaduje sieťové rozhranie na hostiteľovi Home Assistant.",
       "local_invalid_token": "Formát tokenu je neplatný. Skopírujte celý token bez medzier.",
-      "local_invalid_credentials": "Skontrolujte Login a Pass na štítku brány a zadajte ich znova.",
-      "local_unlock_required": "Pred ďalším pokusom uvoľnite lokálne prihlásenie na bráne a potvrďte modrý signál.",
+      "local_invalid_credentials": "Brána odmietla Login a Pass. Skontrolujte oba údaje na štítku brány a zadajte ich znova.",
+      "local_invalid_label_format": "Login alebo Pass obsahuje znaky, ktoré štítok zariadenia nemá, napríklad medzeru vo vnútri hodnoty. Bráne sa nič neodoslalo. Skontrolujte zadanie a zadajte ho znova.",
+      "local_unlock_confirm_required": "Označte toto políčko, keď ste na bráne uvoľnili lokálne prihlásenie a videli modrý signál.",
+      "local_unlock_required": "Brána neuvoľnila lokálne prihlásenie, alebo uplynulo päť minút od uvoľnenia. Stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na 1 sekundu, počkajte na modrý signál a skúste to znova do piatich minút.",
       "local_token_database_full": "Databáza tokenov brány je plná. Pred vytvorením ďalšieho si skontrolujte jej existujúce tokeny. Žiadne tokeny neboli odstránené.",
       "local_rate_limited": "Brána požiadala o pauzu. Počkajte, kým uplynie zobrazený čas.",
+      "local_rate_limited_wait": "Brána požiadala o pauzu. Skúste to znova o {seconds} s.",
       "local_service_unavailable": "Služba brány je dočasne nedostupná. Počkajte a skúste to znova.",
       "local_timeout": "Lokálna brána neodpovedala včas. Skontrolujte pripojenie a skúste to znova.",
       "local_connection_failed": "Home Assistant sa k tejto bráne nedokázal pripojiť. Skontrolujte jej adresu a sieťové pripojenie.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Potvrdenie certifikátu brány",
-        "description": "Home Assistant sa pripojil k **{host}:{port}**. Pred odoslaním prihlasovacích údajov potvrďte, že ide o vašu bránu. Odtlačok sám o sebe nie je dôkazom identity.\n\nSHA-256: `{fingerprint}`\n\nPredchádzajúci odtlačok: `{previous}`. Otáznik znamená, že pre túto adresu a port neexistuje žiadny uložený certifikát.",
+        "description": "Home Assistant sa pripojil k **{host}:{port}**. Pred odoslaním prihlasovacích údajov potvrďte, že ide o vašu bránu. Odtlačok sám o sebe nie je dôkazom identity.\n\nSHA-256: `{fingerprint}`\n\nPredchádzajúci odtlačok: `{previous}`. Otáznik znamená, že pre túto adresu a port neexistuje žiadny uložený certifikát.\n\nBrána má pre každý port vlastný certifikát. Port 9442 je port na prihlásenie a kontroluje sa pred prihlásením; port 9443 je dátový port a kontroluje sa po ňom. Preto sa môže táto stránka zobraziť dvakrát.",
         "data": {
           "confirm": "Potvrdzujem túto bránu a jej certifikát"
         }
       },
       "local_auth": {
         "title": "Prihlásenie pomocou štítka zariadenia",
-        "description": "Zadajte Login a Pass zo štítka brány. Na uvoľnenie lokálneho prihlásenia stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na približne dve sekundy, menej než tri sekundy, a potom ich súčasne uvoľnite. Potvrďte krátky modrý signál a pokračujte do piatich minút. Prístup zostáva na vami vybranej adrese LAN. Odpoveď brány určuje, či bolo prihlásenie uvoľnené. Login a heslo sa neukladajú.",
+        "description": "Zadajte Login a Pass zo štítka brány. Na uvoľnenie lokálneho prihlásenia stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na 1 sekundu a potom ich súčasne uvoľnite. Potvrďte krátky modrý signál a pokračujte do piatich minút. Po preklepe tlačidlá stlačte znova: brána prijme prihlásenie len do piatich minút po uvoľnení. Prístup zostáva na vami vybranej adrese LAN. Odpoveď brány určuje, či bolo prihlásenie uvoľnené. Login a heslo sa neukladajú.",
         "data": {
           "login": "Login zo štítka zariadenia",
           "password": "Pass zo štítka zariadenia",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Zadajte adresu IP alebo názov hostiteľa bez adresy URL, cesty a prihlasovacích údajov.",
       "local_interface_required": "Táto adresa IPv6 vyžaduje sieťové rozhranie na hostiteľovi Home Assistant.",
       "local_invalid_token": "Formát tokenu je neplatný. Skopírujte celý token bez medzier.",
-      "local_invalid_credentials": "Skontrolujte Login a Pass na štítku brány a zadajte ich znova.",
-      "local_unlock_required": "Pred ďalším pokusom uvoľnite lokálne prihlásenie na bráne a potvrďte modrý signál.",
+      "local_invalid_credentials": "Brána odmietla Login a Pass. Skontrolujte oba údaje na štítku brány a zadajte ich znova.",
+      "local_invalid_label_format": "Login alebo Pass obsahuje znaky, ktoré štítok zariadenia nemá, napríklad medzeru vo vnútri hodnoty. Bráne sa nič neodoslalo. Skontrolujte zadanie a zadajte ho znova.",
+      "local_unlock_confirm_required": "Označte toto políčko, keď ste na bráne uvoľnili lokálne prihlásenie a videli modrý signál.",
+      "local_unlock_required": "Brána neuvoľnila lokálne prihlásenie, alebo uplynulo päť minút od uvoľnenia. Stlačte súčasne tlačidlá Wi-Fi a bezdrôtového pripojenia na 1 sekundu, počkajte na modrý signál a skúste to znova do piatich minút.",
       "local_token_database_full": "Databáza tokenov brány je plná. Pred vytvorením ďalšieho si skontrolujte jej existujúce tokeny. Žiadne tokeny neboli odstránené.",
       "local_rate_limited": "Brána požiadala o pauzu. Počkajte, kým uplynie zobrazený čas.",
+      "local_rate_limited_wait": "Brána požiadala o pauzu. Skúste to znova o {seconds} s.",
       "local_service_unavailable": "Služba brány je dočasne nedostupná. Počkajte a skúste to znova.",
       "local_timeout": "Lokálna brána neodpovedala včas. Skontrolujte pripojenie a skúste to znova.",
       "local_connection_failed": "Home Assistant sa k tejto bráne nedokázal pripojiť. Skontrolujte jej adresu a sieťové pripojenie.",
@@ -1445,13 +1451,13 @@
         "name": "Požadovaná hodnota extra ohrevu"
       },
       "hot_water_eco_plus": {
-        "name": "Štartovacia teplota Eco+"
+        "name": "Prah štartu Eco+"
       },
       "hot_water_comfort": {
-        "name": "Štartovacia teplota Komfort"
+        "name": "Prah štartu Komfort"
       },
       "hot_water_eco": {
-        "name": "Štartovacia teplota Eco"
+        "name": "Prah štartu Eco"
       },
       "maximum_supply_temperature": {
         "name": "Maximálna výstupná teplota"

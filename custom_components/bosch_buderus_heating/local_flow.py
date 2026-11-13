@@ -35,7 +35,7 @@ from .const import DOMAIN
 from .ha_schema import validation as vol
 from .i18n import localize
 from .local_address import follow_address
-from .local_auth import AuthState, LabelCredentials
+from .local_auth import AuthProblem, AuthState, LabelCredentials, rejection_status
 from .local_budget import LocalReadBudget, local_budget_manager
 from .local_completion import LOCAL_FIRST, RecoveryStatus, ScopedIdentityContract
 from .local_credentials import LocalCredentialError, load_local_access
@@ -59,7 +59,7 @@ from .local_setup import (
     prepare_local_configuration,
     verify_local_setup,
 )
-from .local_setup_history import local_setup_history
+from .local_setup_history import NOT_SENT, local_setup_history
 from .local_support import setup_support
 from .local_transport import (
     CertificateBinding,
@@ -226,6 +226,10 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
     _local_unexpected: str | None = None
     # A failed stage noted already; the form that shows it adds no attempt.
     _local_noted: str | None = None
+    # What reached the gateway in the last failed attempt, for the history.
+    _local_detail: str | None = None
+    # Seconds of a pause the gateway asked for, shown with the next form.
+    _local_wait: int | None = None
     _local_address = ""
     _local_choices: tuple[LocalEndpoint, ...] = ()
     _local_discovery: ZeroconfServiceInfo | None = None
@@ -275,8 +279,11 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         if error == "local_unexpected" and self._local_unexpected:
             error = f"unexpected:{self._local_unexpected}"
         self._local_unexpected = None
+        detail, self._local_detail = self._local_detail, None
         try:
-            local_setup_history(self.hass, self._local_owner_id).add(step, error)
+            local_setup_history(self.hass, self._local_owner_id).add(
+                step, error, detail=detail if error is not None else None
+            )
         except Exception:  # the history only explains; it never stops a dialog
             _LOGGER.debug("Local setup attempt not noted")
 
@@ -788,9 +795,15 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             return self.async_abort(reason="local_session_changed")
         if user_input is not None and user_input.get("confirm") is True:
             return await self._local_start(self._local_accept_certificate)
+        errors = {}
+        if user_input is None and self._local_error:
+            # Back here because the certificate changed during the sign-in.
+            errors["base"] = self._local_error
+            self._local_error = None
         return self._local_form(
             "local_certificate",
             vol.Schema({vol.Required("confirm", default=False): BooleanSelector()}),
+            errors=errors,
             placeholders={
                 "host": markdown_literal(self._local_address),
                 "port": str(observation.role.port),
@@ -825,36 +838,51 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         if denied := self._local_guard("local_auth"):
             return denied
         errors = {}
+        placeholders: dict[str, str] | None = None
         if user_input is None and self._local_error:
             # The reason of the rejected attempt before (FLOW-5).
             errors["base"] = self._local_error
             self._local_error = None
+            if errors["base"] == "local_rate_limited" and self._local_wait:
+                errors["base"] = "local_rate_limited_wait"
+                placeholders = {"seconds": str(self._local_wait)}
+            self._local_wait = None
         if user_input is not None:
+            # Spaces and line breaks at the edges come from copying; the label
+            # itself has none. Inside a value nothing is changed.
+            login = str(user_input.get("login", "")).strip()
+            password = str(user_input.get("password", "")).strip()
             if user_input.get("unlocked") is not True:
-                errors["unlocked"] = "local_unlock_required"
+                errors["unlocked"] = "local_unlock_confirm_required"
+                self._local_detail = NOT_SENT
             else:
                 try:
-                    label = LabelCredentials(
-                        user_input.get("login", ""), user_input.get("password", "")
-                    )
+                    label = LabelCredentials(login, password)
                 except ValueError:
-                    errors["base"] = "local_invalid_credentials"
+                    errors["base"] = "local_invalid_label_format"
+                    self._local_detail = NOT_SENT
                 else:
                     # The retry callback never retains device-label credentials.
                     result = await self._local_start(lambda: self._local_create(label))
                     self._local_retry = self._local_resume_pending
                     return result
-        secret = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
         return self._local_form(
             "local_auth",
             vol.Schema(
                 {
-                    vol.Required("login"): secret,
-                    vol.Required("password"): secret,
+                    # The login is visible, so a typo can be seen; the pass
+                    # field has its own show and hide switch.
+                    vol.Required("login"): TextSelector(
+                        TextSelectorConfig(type=TextSelectorType.TEXT)
+                    ),
+                    vol.Required("password"): TextSelector(
+                        TextSelectorConfig(type=TextSelectorType.PASSWORD)
+                    ),
                     vol.Required("unlocked", default=False): BooleanSelector(),
                 }
             ),
             errors=errors,
+            placeholders=placeholders,
         )
 
     async def _local_create(self, label: LabelCredentials) -> None:
@@ -868,11 +896,23 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             is_active=self._local_active,
         )
         if self._local_record.state != AuthState.RECEIVED:
-            self._local_error = local_error(self._local_record.problem)
+            problem = self._local_record.problem
+            self._local_error = local_error(problem)
+            status = rejection_status(problem)
+            self._local_detail = f"http_{status}" if status is not None else None
+            if problem is AuthProblem.RATE_LIMITED:
+                pause = await journal.remaining_pause(self._local_record)
+                self._local_wait = math.ceil(pause) if pause > 0 else None
             if self._local_record.resolved:
                 # FLOW-5: certainly no token; sign in again right away with
                 # the certificate already confirmed.
                 self._local_record = None
+                if problem in (AuthProblem.CERTIFICATE_CHANGED, AuthProblem.TLS):
+                    # Check the sign-in port again instead of repeating a
+                    # sign-in that cannot work with the old certificate.
+                    self._local_auth_pin = None
+                    await self._local_inspect(PortRole.AUTHENTICATION)
+                    return
                 self._local_phase = "local_auth"
                 return
             self._local_phase = "local_pending"

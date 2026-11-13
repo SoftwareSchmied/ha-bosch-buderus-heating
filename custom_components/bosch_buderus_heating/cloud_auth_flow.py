@@ -101,7 +101,9 @@ class CloudAuthorizationFlow(ConfigEntryBaseFlow):
             if error is not None:
                 # Once per failed attempt, with nothing but the code.
                 _LOGGER.info(
-                    "A cloud sign-in attempt failed: %s", safe_code(error) or "unknown"
+                    "A cloud sign-in attempt failed in step %s: %s",
+                    step,
+                    safe_code(error) or "unknown",
                 )
             owner = self._auth_history_owner()
             if owner is not None:

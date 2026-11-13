@@ -13,8 +13,8 @@ Versioning after its first tagged preview.
 > - **From 0.9.0:** nothing special is needed. The storage format stays 4,
 >   and existing setups keep their sign-in, entity IDs and settings. Each
 >   gateway that reports its modules gets one new diagnostic sensor **Heat
->   generator**. Three readings show corrected names unless you named them
->   yourself.
+>   generator**. Some readings, among them the hot water start thresholds,
+>   show corrected names unless you named them yourself.
 > - **From 0.8.x:** make a full Home Assistant backup first. The first start
 >   moves the configuration entry to storage format 4, which 0.8.x cannot
 >   load; going back is only possible by restoring that backup. Home
@@ -63,6 +63,27 @@ names the heat generator models and shows texts for more gateway states.
   - I tested the list and the revocation against a synthetic gateway only.
     How a real gateway counts its tokens and answers a revocation is still
     unconfirmed.
+- **Sign-in with the device label:** the login is now visible while you
+  type it, and the pass field has its show switch. Spaces and line breaks at
+  the start or end, for example from copying, are removed; inside a value
+  nothing is changed, because the official documentation only names the
+  hyphens of the pass as removable. Each problem has its own message:
+  input a label cannot have (nothing is sent), the unticked box, Login and
+  Pass rejected by the gateway, sign-in not released or the five minutes
+  after the release passed (with the button instruction), a pause the
+  gateway asked for (with the remaining seconds) and no answer in time. The
+  button instruction now says 1 second, as the official documentation does,
+  instead of about two. A certificate that changed during the dialog leads
+  back to its check instead of repeating the same error, and the second
+  certificate page explains why it appears (data port 9443). Each failed
+  attempt is logged once at the info level with its step, its code and the
+  HTTP status or "not sent".
+  - I tested this with a synthetic gateway in the automated tests, not yet
+    with a real gateway.
+  - Texts that the integration composes itself in the options dialog, such
+    as the list of connections, still follow the server language: Home
+    Assistant does not tell an options dialog the profile language of its
+    user.
 - **New gateway address after a DHCP change:** when the local access can no
   longer reach its gateway and the gateway announces itself at a new
   private or link-local address, the integration checks that address with
@@ -88,7 +109,9 @@ names the heat generator models and shows texts for more gateway states.
   Connections**, or signing in again). Each attempt has the time, the
   dialog step and the error the dialog showed, for example a rejected
   device label, a gateway that was not unlocked or a pasted address that
-  did not belong to the sign-in. Login, password, token, address,
+  did not belong to the sign-in, and for the local access whether the
+  gateway answered with an error status or nothing was sent. Login,
+  password, token, address,
   certificate data, sign-in links and codes, e-mail addresses and account
   or gateway identifiers are never part of it. This helps to find out why a
   setup needed several tries.
@@ -153,6 +176,12 @@ names the heat generator models and shows texts for more gateway states.
   them. Entity IDs, unique IDs and names you set yourself stay. I compared
   the readings on my heat pump while it was heating; the cooling mode is
   untested.
+- **Hot water start thresholds:** the three hot water temperatures of the
+  Eco+, Eco and Comfort levels are the thresholds below which a charge
+  starts, so the sensors and number controls are now named *Start threshold
+  Eco+*, *Start threshold Eco* and *Start threshold Comfort* (before *…
+  start temperature*). The sensor of the off level, before only *Off*, is
+  now *Setpoint level off*. Entity IDs and unique IDs stay.
 - The new texts are drafts in every language except English and German.
 
 ### Documentation

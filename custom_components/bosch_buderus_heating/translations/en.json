@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Confirm the gateway certificate",
-        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.",
+        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.\n\nThe gateway has its own certificate for each port. Port 9442 is the sign-in port and is checked before the sign-in; port 9443 is the data port and is checked after it. That is why this page can appear twice.",
         "data": {
           "confirm": "I confirm this gateway and its certificate"
         }
       },
       "local_auth": {
         "title": "Sign in with the device label",
-        "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for about two seconds, under three seconds, and release them together. Confirm the brief blue signal and continue within five minutes. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and password are not saved.",
+        "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for 1 second and release them together. Confirm the brief blue signal and continue within five minutes. After a typo, press the buttons again: the gateway accepts a sign-in only within five minutes after the release. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and password are not saved.",
         "data": {
           "login": "Login on device label",
           "password": "Pass on device label",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Enter an IP address or hostname without a URL, path or credentials.",
       "local_interface_required": "This IPv6 address needs the network interface on the Home Assistant host.",
       "local_invalid_token": "The token format is invalid. Copy the complete token without spaces.",
-      "local_invalid_credentials": "Check Login and Pass on the gateway label and enter them again.",
-      "local_unlock_required": "Release local sign-in on the gateway and confirm the blue signal before trying again.",
+      "local_invalid_credentials": "The gateway rejected Login and Pass. Check both on the gateway label and enter them again.",
+      "local_invalid_label_format": "Login or Pass contains characters a device label does not have, for example a space inside the value. Nothing was sent to the gateway. Check the input and enter it again.",
+      "local_unlock_confirm_required": "Tick this box once you have released local sign-in on the gateway and seen the blue signal.",
+      "local_unlock_required": "The gateway has not released local sign-in, or the five minutes after the release have passed. Press the Wi-Fi and wireless buttons together for 1 second, wait for the blue signal and try again within five minutes.",
       "local_token_database_full": "The gateway token database is full. Review its existing tokens before creating another. No tokens were deleted.",
       "local_rate_limited": "The gateway requested a pause. Wait until the displayed time has elapsed.",
+      "local_rate_limited_wait": "The gateway asked for a pause. Try again in {seconds} seconds.",
       "local_service_unavailable": "The gateway service is temporarily unavailable. Wait and try again.",
       "local_timeout": "The local gateway did not respond in time. Check the connection and try again.",
       "local_connection_failed": "Home Assistant could not reach this gateway. Check its address and the network connection.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Confirm the gateway certificate",
-        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.",
+        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.\n\nThe gateway has its own certificate for each port. Port 9442 is the sign-in port and is checked before the sign-in; port 9443 is the data port and is checked after it. That is why this page can appear twice.",
         "data": {
           "confirm": "I confirm this gateway and its certificate"
         }
       },
       "local_auth": {
         "title": "Sign in with the device label",
-        "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for about two seconds, under three seconds, and release them together. Confirm the brief blue signal and continue within five minutes. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and password are not saved.",
+        "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for 1 second and release them together. Confirm the brief blue signal and continue within five minutes. After a typo, press the buttons again: the gateway accepts a sign-in only within five minutes after the release. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and password are not saved.",
         "data": {
           "login": "Login on device label",
           "password": "Pass on device label",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Enter an IP address or hostname without a URL, path or credentials.",
       "local_interface_required": "This IPv6 address needs the network interface on the Home Assistant host.",
       "local_invalid_token": "The token format is invalid. Copy the complete token without spaces.",
-      "local_invalid_credentials": "Check Login and Pass on the gateway label and enter them again.",
-      "local_unlock_required": "Release local sign-in on the gateway and confirm the blue signal before trying again.",
+      "local_invalid_credentials": "The gateway rejected Login and Pass. Check both on the gateway label and enter them again.",
+      "local_invalid_label_format": "Login or Pass contains characters a device label does not have, for example a space inside the value. Nothing was sent to the gateway. Check the input and enter it again.",
+      "local_unlock_confirm_required": "Tick this box once you have released local sign-in on the gateway and seen the blue signal.",
+      "local_unlock_required": "The gateway has not released local sign-in, or the five minutes after the release have passed. Press the Wi-Fi and wireless buttons together for 1 second, wait for the blue signal and try again within five minutes.",
       "local_token_database_full": "The gateway token database is full. Review its existing tokens before creating another. No tokens were deleted.",
       "local_rate_limited": "The gateway requested a pause. Wait until the displayed time has elapsed.",
+      "local_rate_limited_wait": "The gateway asked for a pause. Try again in {seconds} seconds.",
       "local_service_unavailable": "The gateway service is temporarily unavailable. Wait and try again.",
       "local_timeout": "The local gateway did not respond in time. Check the connection and try again.",
       "local_connection_failed": "Home Assistant could not reach this gateway. Check its address and the network connection.",
@@ -1445,13 +1451,13 @@
         "name": "Extra hot water setpoint"
       },
       "hot_water_eco_plus": {
-        "name": "Eco+ start temperature"
+        "name": "Start threshold Eco+"
       },
       "hot_water_comfort": {
-        "name": "Comfort start temperature"
+        "name": "Start threshold Comfort"
       },
       "hot_water_eco": {
-        "name": "Eco start temperature"
+        "name": "Start threshold Eco"
       },
       "maximum_supply_temperature": {
         "name": "Maximum supply temperature"

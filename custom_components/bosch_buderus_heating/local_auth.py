@@ -122,6 +122,14 @@ class LabelCredentials:
         }
 
 
+_STATUS_OF_PROBLEM = {problem: status for status, problem in _REJECTIONS.items()}
+
+
+def rejection_status(problem: AuthProblem | None) -> int | None:
+    """The HTTP status the sign-in service answered a problem with, if any."""
+    return _STATUS_OF_PROBLEM.get(problem) if problem is not None else None
+
+
 @dataclass(frozen=True, slots=True)
 class AuthOutcome:
     state: AuthState

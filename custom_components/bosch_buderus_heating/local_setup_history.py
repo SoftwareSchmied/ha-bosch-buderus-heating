@@ -38,12 +38,15 @@ _CODE: Final = re.compile(
 )
 SUCCEEDED: Final = "succeeded"
 FAILED: Final = "failed"
+# What reached the gateway: ``http_<status>`` or ``not_sent`` (input check).
+_DETAIL: Final = re.compile(r"http_[1-5][0-9]{2}|not_sent")
+NOT_SENT: Final = "not_sent"
 
 LOCAL: Final = "local"
 CLOUD: Final = "cloud"
 _KINDS: Final = {
-    LOCAL: ("local_setup_history", "A local setup attempt failed: %s"),
-    CLOUD: ("cloud_sign_in_history", "A cloud sign-in attempt failed: %s"),
+    LOCAL: ("local_setup_history", "A local setup attempt failed in step %s: %s"),
+    CLOUD: ("cloud_sign_in_history", "A cloud sign-in attempt failed in step %s: %s"),
 }
 
 _HISTORIES: HassKey[dict[tuple[str, str], LocalSetupHistory]] = HassKey(
@@ -71,11 +74,12 @@ def _attempt(value: object) -> dict[str, str | None] | None:
     """A stored attempt with exactly the known fields, or None."""
     if not isinstance(value, Mapping):
         return None
-    at, step, result, error = (
+    at, step, result, error, detail = (
         value.get("at"),
         value.get("step"),
         value.get("result"),
         value.get("error"),
+        value.get("detail"),
     )
     if not isinstance(at, str) or not isinstance(step, str):
         return None
@@ -85,10 +89,22 @@ def _attempt(value: object) -> dict[str, str | None] | None:
         return None
     if parsed.tzinfo is None or not _STEP.fullmatch(step):
         return None
+    if detail is not None and not (
+        isinstance(detail, str) and _DETAIL.fullmatch(detail)
+    ):
+        detail = None
     if result == SUCCEEDED and error is None:
         return {"at": at, "step": step, "result": result, "error": None}
     if result == FAILED and (code := safe_code(error)) is not None:
-        return {"at": at, "step": step, "result": result, "error": code}
+        attempt: dict[str, str | None] = {
+            "at": at,
+            "step": step,
+            "result": result,
+            "error": code,
+        }
+        if detail is not None:
+            attempt["detail"] = detail
+        return attempt
     return None
 
 
@@ -113,6 +129,7 @@ class LocalSetupHistory:
         *,
         at: str | None = None,
         log: bool = True,
+        detail: str | None = None,
     ) -> None:
         """Note one attempt: failed with ``error``, or succeeded without.
 
@@ -121,13 +138,20 @@ class LocalSetupHistory:
         """
         if not _STEP.fullmatch(step):
             return
+        attempt: dict[str, str | None]
         if error is None:
             attempt = {"result": SUCCEEDED, "error": None}
         else:
             attempt = {"result": FAILED, "error": safe_code(error) or "unknown"}
+            if detail is not None and _DETAIL.fullmatch(detail):
+                attempt["detail"] = detail
             if log:
-                # Once per failed attempt, with nothing but the code.
-                _LOGGER.info(self._message, attempt["error"])
+                # Once per failed attempt: the step and the code only, with
+                # the HTTP status or "not sent" when known.
+                code = attempt["error"]
+                if "detail" in attempt:
+                    code = f"{code} ({attempt['detail']})"
+                _LOGGER.info(self._message, step, code)
         when = (
             at
             if at is not None and _attempt({"at": at, "step": step, **attempt})

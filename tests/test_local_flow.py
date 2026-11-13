@@ -643,7 +643,7 @@ async def test_label_dialog_posts_once_and_preserves_outcome(
     assert result["step_id"] == "local_auth" and not calls
     values = {"login": LABEL.login, "password": LABEL.password, "unlocked": True}
     result = await submit(hass, manager, result, {**values, "unlocked": False})
-    assert result["errors"] == {"unlocked": "local_unlock_required"}
+    assert result["errors"] == {"unlocked": "local_unlock_confirm_required"}
     result = await submit(hass, manager, result, values)
     assert len(calls) == 1 and management.current().minor_version == 1
     assert (
@@ -669,11 +669,17 @@ async def test_label_dialog_posts_once_and_preserves_outcome(
         # FLOW-5: certainly rejected, so the label form returns at once with
         # the reason; nothing has to be discarded first.
         assert result["step_id"] == "local_auth"
-        assert result["errors"] == {"base": expected}
         record = (await journal.records())[0]
         assert record.state == AuthState.REJECTED and record.resolved
         if status == 429:
-            assert await journal.remaining_pause(record) > 0
+            # The pause the gateway asked for is shown with its length.
+            remaining = await journal.remaining_pause(record)
+            assert remaining > 0
+            assert result["errors"] == {"base": "local_rate_limited_wait"}
+            seconds = int(result["description_placeholders"]["seconds"])
+            assert 0 < seconds <= remaining + 1
+        else:
+            assert result["errors"] == {"base": expected}
     assert len(calls) == 1
 
 

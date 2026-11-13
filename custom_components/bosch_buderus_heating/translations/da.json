@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Bekræft gatewayens certifikat",
-        "description": "Home Assistant nåede **{host}:{port}**. Bekræft, at det er din gateway, før der sendes loginoplysninger. Et fingeraftryk er ikke i sig selv bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidligere fingeraftryk: `{previous}`. Et spørgsmålstegn betyder, at der ikke findes et gemt certifikat for denne adresse og port.",
+        "description": "Home Assistant nåede **{host}:{port}**. Bekræft, at det er din gateway, før der sendes loginoplysninger. Et fingeraftryk er ikke i sig selv bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidligere fingeraftryk: `{previous}`. Et spørgsmålstegn betyder, at der ikke findes et gemt certifikat for denne adresse og port.\n\nGatewayen har sit eget certifikat for hver port. Port 9442 er login-porten og kontrolleres før login; port 9443 er dataporten og kontrolleres efter. Derfor kan denne side vises to gange.",
         "data": {
           "confirm": "Jeg bekræfter denne gateway og dens certifikat"
         }
       },
       "local_auth": {
         "title": "Log ind med enhedsmærkaten",
-        "description": "Indtast Login og Pass fra gatewayens mærkat. For at frigive lokalt login skal du trykke på Wi-Fi-knappen og trådløsknappen samtidig i ca. to sekunder, under tre sekunder, og slippe dem samtidig. Bekræft det korte blå signal, og fortsæt inden for fem minutter. Adgangen forbliver på din valgte LAN-adresse. Gatewayens svar afgør, om login blev frigivet. Login og adgangskode gemmes ikke.",
+        "description": "Indtast Login og Pass fra gatewayens mærkat. For at frigive lokalt login skal du trykke på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund og slippe dem samtidig. Bekræft det korte blå signal, og fortsæt inden for fem minutter. Efter en tastefejl skal du trykke på knapperne igen: gatewayen accepterer kun et login inden for fem minutter efter frigivelsen. Adgangen forbliver på din valgte LAN-adresse. Gatewayens svar afgør, om login blev frigivet. Login og adgangskode gemmes ikke.",
         "data": {
           "login": "Login på enhedsmærkat",
           "password": "Pass på enhedsmærkat",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Indtast en IP-adresse eller et værtsnavn uden URL, sti eller loginoplysninger.",
       "local_interface_required": "Denne IPv6-adresse kræver netværksgrænsefladen på Home Assistant-værten.",
       "local_invalid_token": "Tokenets format er ugyldigt. Kopiér det komplette token uden mellemrum.",
-      "local_invalid_credentials": "Kontrollér Login og Pass på gatewayens mærkat, og indtast dem igen.",
-      "local_unlock_required": "Frigiv lokalt login på gatewayen, og bekræft det blå signal, før du prøver igen.",
+      "local_invalid_credentials": "Gatewayen afviste Login og Pass. Kontrollér begge på gatewayens mærkat, og indtast dem igen.",
+      "local_invalid_label_format": "Login eller Pass indeholder tegn, som en enhedsmærkat ikke har, for eksempel et mellemrum i værdien. Der blev ikke sendt noget til gatewayen. Kontrollér indtastningen, og indtast den igen.",
+      "local_unlock_confirm_required": "Sæt kryds her, når du har frigivet lokalt login på gatewayen og har set det blå signal.",
+      "local_unlock_required": "Gatewayen har ikke frigivet lokalt login, eller de fem minutter efter frigivelsen er gået. Tryk på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund, vent på det blå signal, og prøv igen inden for fem minutter.",
       "local_token_database_full": "Gatewayens tokendatabase er fuld. Gennemgå de eksisterende tokens, før du opretter et nyt. Der blev ikke slettet nogen tokens.",
       "local_rate_limited": "Gatewayen har bedt om en pause. Vent, til den viste tid er gået.",
+      "local_rate_limited_wait": "Gatewayen bad om en pause. Prøv igen om {seconds} sekunder.",
       "local_service_unavailable": "Gatewayens tjeneste er midlertidigt utilgængelig. Vent, og prøv igen.",
       "local_timeout": "Den lokale gateway svarede ikke i tide. Kontrollér forbindelsen, og prøv igen.",
       "local_connection_failed": "Home Assistant kunne ikke nå denne gateway. Kontrollér dens adresse og netværksforbindelsen.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Bekræft gatewayens certifikat",
-        "description": "Home Assistant nåede **{host}:{port}**. Bekræft, at det er din gateway, før der sendes loginoplysninger. Et fingeraftryk er ikke i sig selv bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidligere fingeraftryk: `{previous}`. Et spørgsmålstegn betyder, at der ikke findes et gemt certifikat for denne adresse og port.",
+        "description": "Home Assistant nåede **{host}:{port}**. Bekræft, at det er din gateway, før der sendes loginoplysninger. Et fingeraftryk er ikke i sig selv bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidligere fingeraftryk: `{previous}`. Et spørgsmålstegn betyder, at der ikke findes et gemt certifikat for denne adresse og port.\n\nGatewayen har sit eget certifikat for hver port. Port 9442 er login-porten og kontrolleres før login; port 9443 er dataporten og kontrolleres efter. Derfor kan denne side vises to gange.",
         "data": {
           "confirm": "Jeg bekræfter denne gateway og dens certifikat"
         }
       },
       "local_auth": {
         "title": "Log ind med enhedsmærkaten",
-        "description": "Indtast Login og Pass fra gatewayens mærkat. For at frigive lokalt login skal du trykke på Wi-Fi-knappen og trådløsknappen samtidig i ca. to sekunder, under tre sekunder, og slippe dem samtidig. Bekræft det korte blå signal, og fortsæt inden for fem minutter. Adgangen forbliver på din valgte LAN-adresse. Gatewayens svar afgør, om login blev frigivet. Login og adgangskode gemmes ikke.",
+        "description": "Indtast Login og Pass fra gatewayens mærkat. For at frigive lokalt login skal du trykke på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund og slippe dem samtidig. Bekræft det korte blå signal, og fortsæt inden for fem minutter. Efter en tastefejl skal du trykke på knapperne igen: gatewayen accepterer kun et login inden for fem minutter efter frigivelsen. Adgangen forbliver på din valgte LAN-adresse. Gatewayens svar afgør, om login blev frigivet. Login og adgangskode gemmes ikke.",
         "data": {
           "login": "Login på enhedsmærkat",
           "password": "Pass på enhedsmærkat",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Indtast en IP-adresse eller et værtsnavn uden URL, sti eller loginoplysninger.",
       "local_interface_required": "Denne IPv6-adresse kræver netværksgrænsefladen på Home Assistant-værten.",
       "local_invalid_token": "Tokenets format er ugyldigt. Kopiér det komplette token uden mellemrum.",
-      "local_invalid_credentials": "Kontrollér Login og Pass på gatewayens mærkat, og indtast dem igen.",
-      "local_unlock_required": "Frigiv lokalt login på gatewayen, og bekræft det blå signal, før du prøver igen.",
+      "local_invalid_credentials": "Gatewayen afviste Login og Pass. Kontrollér begge på gatewayens mærkat, og indtast dem igen.",
+      "local_invalid_label_format": "Login eller Pass indeholder tegn, som en enhedsmærkat ikke har, for eksempel et mellemrum i værdien. Der blev ikke sendt noget til gatewayen. Kontrollér indtastningen, og indtast den igen.",
+      "local_unlock_confirm_required": "Sæt kryds her, når du har frigivet lokalt login på gatewayen og har set det blå signal.",
+      "local_unlock_required": "Gatewayen har ikke frigivet lokalt login, eller de fem minutter efter frigivelsen er gået. Tryk på Wi-Fi-knappen og trådløsknappen samtidig i 1 sekund, vent på det blå signal, og prøv igen inden for fem minutter.",
       "local_token_database_full": "Gatewayens tokendatabase er fuld. Gennemgå de eksisterende tokens, før du opretter et nyt. Der blev ikke slettet nogen tokens.",
       "local_rate_limited": "Gatewayen har bedt om en pause. Vent, til den viste tid er gået.",
+      "local_rate_limited_wait": "Gatewayen bad om en pause. Prøv igen om {seconds} sekunder.",
       "local_service_unavailable": "Gatewayens tjeneste er midlertidigt utilgængelig. Vent, og prøv igen.",
       "local_timeout": "Den lokale gateway svarede ikke i tide. Kontrollér forbindelsen, og prøv igen.",
       "local_connection_failed": "Home Assistant kunne ikke nå denne gateway. Kontrollér dens adresse og netværksforbindelsen.",
@@ -1445,13 +1451,13 @@
         "name": "Sætpunkt for ekstra varmt vand"
       },
       "hot_water_eco_plus": {
-        "name": "Starttemperatur for Eco+"
+        "name": "Startgrænse Eco+"
       },
       "hot_water_comfort": {
-        "name": "Starttemperatur for komfort"
+        "name": "Startgrænse komfort"
       },
       "hot_water_eco": {
-        "name": "Starttemperatur for Eco"
+        "name": "Startgrænse Eco"
       },
       "maximum_supply_temperature": {
         "name": "Maksimal fremløbstemperatur"

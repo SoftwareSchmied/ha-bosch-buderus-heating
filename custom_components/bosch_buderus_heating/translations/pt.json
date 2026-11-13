@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Confirmar o certificado do gateway",
-        "description": "O Home Assistant alcançou **{host}:{port}**. Confirme que este é o seu gateway antes de enviar credenciais. Uma impressão digital, por si só, não é prova de identidade.\n\nSHA-256: `{fingerprint}`\n\nImpressão digital anterior: `{previous}`. Um ponto de interrogação significa que nenhum certificado guardado se aplica a este endereço e porta.",
+        "description": "O Home Assistant alcançou **{host}:{port}**. Confirme que este é o seu gateway antes de enviar credenciais. Uma impressão digital, por si só, não é prova de identidade.\n\nSHA-256: `{fingerprint}`\n\nImpressão digital anterior: `{previous}`. Um ponto de interrogação significa que nenhum certificado guardado se aplica a este endereço e porta.\n\nO gateway tem um certificado próprio para cada porta. A porta 9442 é a porta de início de sessão e é verificada antes do início de sessão; a porta 9443 é a porta de dados e é verificada depois. Por isso, esta página pode aparecer duas vezes.",
         "data": {
           "confirm": "Confirmo este gateway e o respetivo certificado"
         }
       },
       "local_auth": {
         "title": "Iniciar sessão com a etiqueta do dispositivo",
-        "description": "Introduza o Login e a Pass da etiqueta do gateway. Para libertar o início de sessão local, prima em conjunto os botões Wi-Fi e wireless durante cerca de dois segundos, menos de três segundos, e solte-os em conjunto. Confirme o breve sinal azul e continue no prazo de cinco minutos. O acesso mantém-se no endereço LAN selecionado. A resposta do gateway determina se o início de sessão foi libertado. O login e a palavra-passe não são guardados.",
+        "description": "Introduza o Login e a Pass da etiqueta do gateway. Para libertar o início de sessão local, prima em conjunto os botões Wi-Fi e wireless durante 1 segundo e solte-os em conjunto. Confirme o breve sinal azul e continue no prazo de cinco minutos. Após um erro de escrita, prima os botões novamente: o gateway só aceita um início de sessão nos cinco minutos seguintes à libertação. O acesso mantém-se no endereço LAN selecionado. A resposta do gateway determina se o início de sessão foi libertado. O login e a palavra-passe não são guardados.",
         "data": {
           "login": "Login na etiqueta do dispositivo",
           "password": "Pass na etiqueta do dispositivo",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Introduza um endereço IP ou um nome de anfitrião sem URL, caminho ou credenciais.",
       "local_interface_required": "Este endereço IPv6 necessita da interface de rede no anfitrião do Home Assistant.",
       "local_invalid_token": "O formato do token é inválido. Copie o token completo sem espaços.",
-      "local_invalid_credentials": "Verifique o Login e a Pass na etiqueta do gateway e introduza-os novamente.",
-      "local_unlock_required": "Liberte o início de sessão local no gateway e confirme o sinal azul antes de tentar novamente.",
+      "local_invalid_credentials": "O gateway rejeitou o Login e a Pass. Verifique ambos na etiqueta do gateway e introduza-os novamente.",
+      "local_invalid_label_format": "O Login ou a Pass contém carateres que uma etiqueta de dispositivo não tem, por exemplo um espaço dentro do valor. Não foi enviado nada ao gateway. Verifique a introdução e introduza-a novamente.",
+      "local_unlock_confirm_required": "Assinale esta caixa depois de libertar o início de sessão local no gateway e ver o sinal azul.",
+      "local_unlock_required": "O gateway não libertou o início de sessão local, ou os cinco minutos seguintes à libertação já passaram. Prima em conjunto os botões Wi-Fi e wireless durante 1 segundo, aguarde o sinal azul e tente novamente no prazo de cinco minutos.",
       "local_token_database_full": "A base de dados de tokens do gateway está cheia. Reveja os tokens existentes antes de criar outro. Nenhum token foi eliminado.",
       "local_rate_limited": "O gateway solicitou uma pausa. Aguarde até que o tempo apresentado tenha decorrido.",
+      "local_rate_limited_wait": "O gateway solicitou uma pausa. Tente novamente dentro de {seconds} segundos.",
       "local_service_unavailable": "O serviço do gateway está temporariamente indisponível. Aguarde e tente novamente.",
       "local_timeout": "O gateway local não respondeu a tempo. Verifique a ligação e tente novamente.",
       "local_connection_failed": "O Home Assistant não conseguiu alcançar este gateway. Verifique o seu endereço e a ligação de rede.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Confirmar o certificado do gateway",
-        "description": "O Home Assistant alcançou **{host}:{port}**. Confirme que este é o seu gateway antes de enviar credenciais. Uma impressão digital, por si só, não é prova de identidade.\n\nSHA-256: `{fingerprint}`\n\nImpressão digital anterior: `{previous}`. Um ponto de interrogação significa que nenhum certificado guardado se aplica a este endereço e porta.",
+        "description": "O Home Assistant alcançou **{host}:{port}**. Confirme que este é o seu gateway antes de enviar credenciais. Uma impressão digital, por si só, não é prova de identidade.\n\nSHA-256: `{fingerprint}`\n\nImpressão digital anterior: `{previous}`. Um ponto de interrogação significa que nenhum certificado guardado se aplica a este endereço e porta.\n\nO gateway tem um certificado próprio para cada porta. A porta 9442 é a porta de início de sessão e é verificada antes do início de sessão; a porta 9443 é a porta de dados e é verificada depois. Por isso, esta página pode aparecer duas vezes.",
         "data": {
           "confirm": "Confirmo este gateway e o respetivo certificado"
         }
       },
       "local_auth": {
         "title": "Iniciar sessão com a etiqueta do dispositivo",
-        "description": "Introduza o Login e a Pass da etiqueta do gateway. Para libertar o início de sessão local, prima em conjunto os botões Wi-Fi e wireless durante cerca de dois segundos, menos de três segundos, e solte-os em conjunto. Confirme o breve sinal azul e continue no prazo de cinco minutos. O acesso mantém-se no endereço LAN selecionado. A resposta do gateway determina se o início de sessão foi libertado. O login e a palavra-passe não são guardados.",
+        "description": "Introduza o Login e a Pass da etiqueta do gateway. Para libertar o início de sessão local, prima em conjunto os botões Wi-Fi e wireless durante 1 segundo e solte-os em conjunto. Confirme o breve sinal azul e continue no prazo de cinco minutos. Após um erro de escrita, prima os botões novamente: o gateway só aceita um início de sessão nos cinco minutos seguintes à libertação. O acesso mantém-se no endereço LAN selecionado. A resposta do gateway determina se o início de sessão foi libertado. O login e a palavra-passe não são guardados.",
         "data": {
           "login": "Login na etiqueta do dispositivo",
           "password": "Pass na etiqueta do dispositivo",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Introduza um endereço IP ou um nome de anfitrião sem URL, caminho ou credenciais.",
       "local_interface_required": "Este endereço IPv6 necessita da interface de rede no anfitrião do Home Assistant.",
       "local_invalid_token": "O formato do token é inválido. Copie o token completo sem espaços.",
-      "local_invalid_credentials": "Verifique o Login e a Pass na etiqueta do gateway e introduza-os novamente.",
-      "local_unlock_required": "Liberte o início de sessão local no gateway e confirme o sinal azul antes de tentar novamente.",
+      "local_invalid_credentials": "O gateway rejeitou o Login e a Pass. Verifique ambos na etiqueta do gateway e introduza-os novamente.",
+      "local_invalid_label_format": "O Login ou a Pass contém carateres que uma etiqueta de dispositivo não tem, por exemplo um espaço dentro do valor. Não foi enviado nada ao gateway. Verifique a introdução e introduza-a novamente.",
+      "local_unlock_confirm_required": "Assinale esta caixa depois de libertar o início de sessão local no gateway e ver o sinal azul.",
+      "local_unlock_required": "O gateway não libertou o início de sessão local, ou os cinco minutos seguintes à libertação já passaram. Prima em conjunto os botões Wi-Fi e wireless durante 1 segundo, aguarde o sinal azul e tente novamente no prazo de cinco minutos.",
       "local_token_database_full": "A base de dados de tokens do gateway está cheia. Reveja os tokens existentes antes de criar outro. Nenhum token foi eliminado.",
       "local_rate_limited": "O gateway solicitou uma pausa. Aguarde até que o tempo apresentado tenha decorrido.",
+      "local_rate_limited_wait": "O gateway solicitou uma pausa. Tente novamente dentro de {seconds} segundos.",
       "local_service_unavailable": "O serviço do gateway está temporariamente indisponível. Aguarde e tente novamente.",
       "local_timeout": "O gateway local não respondeu a tempo. Verifique a ligação e tente novamente.",
       "local_connection_failed": "O Home Assistant não conseguiu alcançar este gateway. Verifique o seu endereço e a ligação de rede.",
@@ -1445,13 +1451,13 @@
         "name": "Valor de referência da água quente extra"
       },
       "hot_water_eco_plus": {
-        "name": "Temperatura de arranque Eco+"
+        "name": "Limiar de arranque Eco+"
       },
       "hot_water_comfort": {
-        "name": "Temperatura de arranque Conforto"
+        "name": "Limiar de arranque Conforto"
       },
       "hot_water_eco": {
-        "name": "Temperatura de arranque Eco"
+        "name": "Limiar de arranque Eco"
       },
       "maximum_supply_temperature": {
         "name": "Temperatura de ida máxima"

@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Bekräfta gatewayens certifikat",
-        "description": "Home Assistant nådde **{host}:{port}**. Bekräfta att detta är din gateway innan uppgifter skickas. Ett fingeravtryck är inte i sig ett bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidigare fingeravtryck: `{previous}`. Ett frågetecken betyder att inget sparat certifikat gäller för den här adressen och porten.",
+        "description": "Home Assistant nådde **{host}:{port}**. Bekräfta att detta är din gateway innan uppgifter skickas. Ett fingeravtryck är inte i sig ett bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidigare fingeravtryck: `{previous}`. Ett frågetecken betyder att inget sparat certifikat gäller för den här adressen och porten.\n\nGatewayen har ett eget certifikat för varje port. Port 9442 är inloggningsporten och kontrolleras före inloggningen; port 9443 är dataporten och kontrolleras efter den. Därför kan den här sidan visas två gånger.",
         "data": {
           "confirm": "Jag bekräftar den här gatewayen och dess certifikat"
         }
       },
       "local_auth": {
         "title": "Logga in med enhetsetiketten",
-        "description": "Ange Login och Pass från gatewayens etikett. För att frigöra lokal inloggning trycker du samtidigt på knapparna för Wi-Fi och trådlöst i ungefär två sekunder, under tre sekunder, och släpper dem samtidigt. Bekräfta den korta blå signalen och fortsätt inom fem minuter. Åtkomsten sker alltid via den LAN-adress du har valt. Gatewayens svar avgör om inloggningen har frigjorts. Login och lösenord sparas inte.",
+        "description": "Ange Login och Pass från gatewayens etikett. För att frigöra lokal inloggning trycker du samtidigt på knapparna för Wi-Fi och trådlöst i 1 sekund och släpper dem samtidigt. Bekräfta den korta blå signalen och fortsätt inom fem minuter. Efter ett skrivfel trycker du på knapparna igen: gatewayen godtar en inloggning endast inom fem minuter efter frigörandet. Åtkomsten sker alltid via den LAN-adress du har valt. Gatewayens svar avgör om inloggningen har frigjorts. Login och lösenord sparas inte.",
         "data": {
           "login": "Login på enhetsetiketten",
           "password": "Pass på enhetsetiketten",
@@ -161,10 +161,13 @@
       "local_invalid_address": "Ange en IP-adress eller ett värdnamn utan URL, sökväg eller inloggningsuppgifter.",
       "local_interface_required": "Den här IPv6-adressen kräver nätverksgränssnittet på Home Assistant-värden.",
       "local_invalid_token": "Tokenformatet är ogiltigt. Kopiera hela tokenen utan mellanslag.",
-      "local_invalid_credentials": "Kontrollera Login och Pass på gatewayens etikett och ange dem igen.",
-      "local_unlock_required": "Frigör lokal inloggning på gatewayen och bekräfta den blå signalen innan du försöker igen.",
+      "local_invalid_credentials": "Gatewayen avvisade Login och Pass. Kontrollera båda på gatewayens etikett och ange dem igen.",
+      "local_invalid_label_format": "Login eller Pass innehåller tecken som en enhetsetikett inte har, till exempel ett mellanslag inne i värdet. Ingenting skickades till gatewayen. Kontrollera inmatningen och ange den igen.",
+      "local_unlock_confirm_required": "Markera den här rutan när du har frigjort lokal inloggning på gatewayen och sett den blå signalen.",
+      "local_unlock_required": "Gatewayen har inte frigjort lokal inloggning, eller så har de fem minuterna efter frigörandet gått. Tryck samtidigt på knapparna för Wi-Fi och trådlöst i 1 sekund, vänta på den blå signalen och försök igen inom fem minuter.",
       "local_token_database_full": "Gatewayens tokendatabas är full. Gå igenom de befintliga tokens innan du skapar en ny. Inga tokens har tagits bort.",
       "local_rate_limited": "Gatewayen har begärt en paus. Vänta tills den visade tiden har gått.",
+      "local_rate_limited_wait": "Gatewayen bad om en paus. Försök igen om {seconds} sekunder.",
       "local_service_unavailable": "Gatewayens tjänst är tillfälligt otillgänglig. Vänta och försök igen.",
       "local_timeout": "Den lokala gatewayen svarade inte i tid. Kontrollera anslutningen och försök igen.",
       "local_connection_failed": "Home Assistant kunde inte nå den här gatewayen. Kontrollera adressen och nätverksanslutningen.",
@@ -599,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Bekräfta gatewayens certifikat",
-        "description": "Home Assistant nådde **{host}:{port}**. Bekräfta att detta är din gateway innan uppgifter skickas. Ett fingeravtryck är inte i sig ett bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidigare fingeravtryck: `{previous}`. Ett frågetecken betyder att inget sparat certifikat gäller för den här adressen och porten.",
+        "description": "Home Assistant nådde **{host}:{port}**. Bekräfta att detta är din gateway innan uppgifter skickas. Ett fingeravtryck är inte i sig ett bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidigare fingeravtryck: `{previous}`. Ett frågetecken betyder att inget sparat certifikat gäller för den här adressen och porten.\n\nGatewayen har ett eget certifikat för varje port. Port 9442 är inloggningsporten och kontrolleras före inloggningen; port 9443 är dataporten och kontrolleras efter den. Därför kan den här sidan visas två gånger.",
         "data": {
           "confirm": "Jag bekräftar den här gatewayen och dess certifikat"
         }
       },
       "local_auth": {
         "title": "Logga in med enhetsetiketten",
-        "description": "Ange Login och Pass från gatewayens etikett. För att frigöra lokal inloggning trycker du samtidigt på knapparna för Wi-Fi och trådlöst i ungefär två sekunder, under tre sekunder, och släpper dem samtidigt. Bekräfta den korta blå signalen och fortsätt inom fem minuter. Åtkomsten sker alltid via den LAN-adress du har valt. Gatewayens svar avgör om inloggningen har frigjorts. Login och lösenord sparas inte.",
+        "description": "Ange Login och Pass från gatewayens etikett. För att frigöra lokal inloggning trycker du samtidigt på knapparna för Wi-Fi och trådlöst i 1 sekund och släpper dem samtidigt. Bekräfta den korta blå signalen och fortsätt inom fem minuter. Efter ett skrivfel trycker du på knapparna igen: gatewayen godtar en inloggning endast inom fem minuter efter frigörandet. Åtkomsten sker alltid via den LAN-adress du har valt. Gatewayens svar avgör om inloggningen har frigjorts. Login och lösenord sparas inte.",
         "data": {
           "login": "Login på enhetsetiketten",
           "password": "Pass på enhetsetiketten",
@@ -751,10 +754,13 @@
       "local_invalid_address": "Ange en IP-adress eller ett värdnamn utan URL, sökväg eller inloggningsuppgifter.",
       "local_interface_required": "Den här IPv6-adressen kräver nätverksgränssnittet på Home Assistant-värden.",
       "local_invalid_token": "Tokenformatet är ogiltigt. Kopiera hela tokenen utan mellanslag.",
-      "local_invalid_credentials": "Kontrollera Login och Pass på gatewayens etikett och ange dem igen.",
-      "local_unlock_required": "Frigör lokal inloggning på gatewayen och bekräfta den blå signalen innan du försöker igen.",
+      "local_invalid_credentials": "Gatewayen avvisade Login och Pass. Kontrollera båda på gatewayens etikett och ange dem igen.",
+      "local_invalid_label_format": "Login eller Pass innehåller tecken som en enhetsetikett inte har, till exempel ett mellanslag inne i värdet. Ingenting skickades till gatewayen. Kontrollera inmatningen och ange den igen.",
+      "local_unlock_confirm_required": "Markera den här rutan när du har frigjort lokal inloggning på gatewayen och sett den blå signalen.",
+      "local_unlock_required": "Gatewayen har inte frigjort lokal inloggning, eller så har de fem minuterna efter frigörandet gått. Tryck samtidigt på knapparna för Wi-Fi och trådlöst i 1 sekund, vänta på den blå signalen och försök igen inom fem minuter.",
       "local_token_database_full": "Gatewayens tokendatabas är full. Gå igenom de befintliga tokens innan du skapar en ny. Inga tokens har tagits bort.",
       "local_rate_limited": "Gatewayen har begärt en paus. Vänta tills den visade tiden har gått.",
+      "local_rate_limited_wait": "Gatewayen bad om en paus. Försök igen om {seconds} sekunder.",
       "local_service_unavailable": "Gatewayens tjänst är tillfälligt otillgänglig. Vänta och försök igen.",
       "local_timeout": "Den lokala gatewayen svarade inte i tid. Kontrollera anslutningen och försök igen.",
       "local_connection_failed": "Home Assistant kunde inte nå den här gatewayen. Kontrollera adressen och nätverksanslutningen.",
@@ -1445,13 +1451,13 @@
         "name": "Börvärde extra varmvatten"
       },
       "hot_water_eco_plus": {
-        "name": "Starttemperatur Eco+"
+        "name": "Starttröskel Eco+"
       },
       "hot_water_comfort": {
-        "name": "Starttemperatur Komfort"
+        "name": "Starttröskel Komfort"
       },
       "hot_water_eco": {
-        "name": "Starttemperatur Eco"
+        "name": "Starttröskel Eco"
       },
       "maximum_supply_temperature": {
         "name": "Maximal framledningstemperatur"
