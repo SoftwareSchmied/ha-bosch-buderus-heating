@@ -647,15 +647,17 @@ def test_catalog_privacy_polling_devices_and_names() -> None:
     assert resource_name("/heatingCircuits/hc1/temperatureLevels/comfort2") == "Heizen"
     assert resource_name("/heatingCircuits/hc1/temperatureLevels/eco") == "Absenken"
     assert resource_name("/dhwCircuits/dhw1/temperatureLevels/high") == (
-        "Komfort Starttemperatur"
+        "Startschwelle Komfort"
     )
     assert resource_name("/dhwCircuits/dhw1/temperatureLevels/low") == (
-        "Eco Starttemperatur"
+        "Startschwelle Eco"
     )
     assert resource_name("/dhwCircuits/dhw1/temperatureLevels/eco") == (
-        "Eco+ Starttemperatur"
+        "Startschwelle Eco+"
     )
-    assert resource_name("/dhwCircuits/dhw1/temperatureLevels/off") == "Aus"
+    assert resource_name("/dhwCircuits/dhw1/temperatureLevels/off") == (
+        "Sollwert Stufe Aus"
+    )
     assert (
         resource_name("/heatingCircuits/hc1/switchPrograms/nameA")
         == "Name des Zeitprogramms A"
