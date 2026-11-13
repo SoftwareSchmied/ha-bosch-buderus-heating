@@ -11,19 +11,21 @@ I am preparing **0.9.1 as a stable release**. It fixes the cloud sign-in of
 every sign-in link asks for the full set of permissions of 0.8.x again. It
 also adds the token list and the revocation of an old token for a local
 access, follows a gateway to a new address after a confirmation, lists the
-last local setup and cloud sign-in attempts in the diagnostics, adds the heat generator sensor,
-shows texts for more gateway states and corrects three entity names. It
+last local setup and cloud sign-in attempts in the diagnostics, makes the
+sign-in with the device label easier to get right, adds the heat generator
+sensor, shows texts for more gateway states, corrects entity names and
+clarifies dialog texts. It
 keeps storage format 4 and Home Assistant 2026.5.0 as the minimum; updating
 from 0.9.0 needs no new setup.
 
-Automated checks on the release state (2026-11-13, run locally):
+Automated checks on the release state (2026-11-14, run locally):
 
 | Check | Environment | Result |
 |---|---|---|
-| Full suite with coverage, current version | Home Assistant 2026.11.0, local, four parallel workers | 11056 passed; coverage 95.98 % |
-| Full suite, minimum version | Home Assistant 2026.5.4, local, four parallel workers | 11054 passed, 2 skipped (version-dependent) |
+| Full suite with coverage, current version | Home Assistant 2026.11.0, local, four parallel workers | 11171 passed; coverage 95.99 % |
+| Full suite, minimum version | Home Assistant 2026.5.4, local, four parallel workers | 11169 passed, 2 skipped (version-dependent) |
 | Repeated runs of the request count after removing the cloud | Home Assistant 2026.11.0 and 2026.5.4, under extra CPU load | 500 of 500 passed on each version |
-| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 221 files; Ruff clean; 611 files formatted |
+| Strict Mypy, Ruff lint and formatting | local | Mypy without findings in 221 files; Ruff clean; 613 files formatted |
 | Frontend tests and dialog browser tests | Home Assistant 2026.11.0 with its frontend, local | npm tests passed; 12 browser tests passed |
 | Release archive and SHA-256 | local build on a clean tree | built for version 0.9.1 with 271 files (1,784,355 bytes) under Linux, without tests or bytecode; SHA-256 `fd88dbf9d5be49bd576a14be4403ec0109930c9fcaa9e07d7fd31b3b24d7152b`; the release notes come from this version's CHANGELOG section |
 | GitHub checks | PR and release workflow | pending: all required checks of the PR must pass before the merge |
