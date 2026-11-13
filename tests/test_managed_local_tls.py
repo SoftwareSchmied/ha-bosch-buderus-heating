@@ -13,6 +13,7 @@ from custom_components.bosch_buderus_heating.local_credentials import (
     StoredLocalAccess,
     import_local_token,
 )
+from custom_components.bosch_buderus_heating.local_polling import service as polling
 from custom_components.bosch_buderus_heating.local_probe import LocalEndpoint, ProbePath
 from custom_components.bosch_buderus_heating.local_state import LocalCondition
 from tests.test_connection_runtime import Harness, entry_for
@@ -65,6 +66,9 @@ async def test_managed_source_real_tls_uses_confirmed_trust_before_reading(
     )
     data["connections"]["local"] = {**data["connections"]["local"], **access.to_data()}
     hass.config_entries.async_update_entry(entry, data=data, minor_version=2)
+    # No start offset: the hinted reading is due at once and must start
+    # without waiting for another occasion (next_wake).
+    monkeypatch.setattr(polling, "start_offset", lambda scope: 0)
     original = module.LocalPollingService
 
     def service(*args, **kwargs):

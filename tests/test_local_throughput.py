@@ -18,9 +18,13 @@ from custom_components.bosch_buderus_heating.local_polling import service as mod
 from custom_components.bosch_buderus_heating.local_polling.inventory import (
     ResourceInventory,
 )
-from custom_components.bosch_buderus_heating.local_polling.planner import PollPlanner
+from custom_components.bosch_buderus_heating.local_polling.planner import (
+    Lane,
+    PollPlanner,
+)
 from custom_components.bosch_buderus_heating.local_polling.policy import (
     SECTION_RESERVE,
+    SLICE_ATTEMPTS,
 )
 from custom_components.bosch_buderus_heating.local_polling.service import (
     LocalPollingService,
@@ -303,6 +307,39 @@ def test_next_wake_reports_pending_explicit_work():
     no_discovery(planner)
     planner.explicit((REQUEST,), 1)
     assert planner.next_wake(2) == 2
+
+
+def test_next_wake_starts_a_due_unconfirmed_record_after_the_search():
+    """A not yet confirmed record that is due after a finished search starts
+    at once, as a pick would take it, not only at the next rescan."""
+    planner = PollPlanner(ResourceInventory(CONTEXT.identity), 0)
+    no_discovery(planner)
+    planner.inventory.add(OTHER, 1)
+    planner.inventory.records[OTHER.target].due = 10
+    assert planner.next_wake(5) == 10
+    assert planner.next_wake(12) == 12
+    work = planner.pick(12)
+    assert work is not None and work.request == OTHER
+    # In flight, it is no longer due; nothing else is left before the rescan.
+    assert planner.next_wake(12.5) == planner.rescan_at
+
+
+def test_next_wake_keeps_the_search_slice_limit_for_unconfirmed_records():
+    planner = PollPlanner(ResourceInventory(CONTEXT.identity), 0)
+    no_discovery(planner)
+    for request in (OTHER, THIRD):
+        planner.inventory.add(request, 1)
+        planner.inventory.records[request.target].due = 10
+    planner.slice_attempts = SLICE_ATTEMPTS - 1
+    work = planner.pick(12)
+    assert work is not None and work.lane is Lane.DISCOVERY
+    # The running read takes the last attempt of the slice: no start now, and
+    # no busy loop, until it finishes.
+    assert planner.pick(13) is None
+    assert planner.next_wake(13) > 13
+    planner.finish(work, missing(work.request), 14)
+    # The finished slice pauses the search.
+    assert planner.next_wake(14) == planner.discovery_pause_until > 14
 
 
 def test_planner_uses_the_spacing_it_is_given():

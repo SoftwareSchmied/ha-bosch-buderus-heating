@@ -156,6 +156,10 @@ only; none of them is checked on a real device or a fresh installation yet.
 - **Local sign-in:** the token request with the gateway label now uses the
   same hardened connection settings as all other local requests. Nothing
   changes in its behavior.
+- **Local readings asked again after the search:** a local reading that
+  was not confirmed yet and is due again after the search of the local
+  resources has finished, for example after a firmware change, now starts
+  at once instead of waiting for the next other local reading.
 - **Integration category:** the manifest declares the category "climate".
 - **README:** the load figures in the README are replaced by what the code
   does; my measurement, with what it compares, is now in the

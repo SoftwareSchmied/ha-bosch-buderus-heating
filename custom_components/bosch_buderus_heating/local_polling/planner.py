@@ -318,6 +318,12 @@ class PollPlanner:
             return now
         # Unexamined candidates and skipped known candidates need bounded progress.
         searching = not self.exhausted and now >= self.discovery_pause_until
+        # A not yet confirmed record that is already due starts at once as
+        # well, under the same limits of the search slice as in ``_discovery``;
+        # otherwise it waited for the next other occasion after a finished
+        # search.
+        reserved = sum(w.lane is Lane.DISCOVERY for w in self.inflight.values())
+        search_room = room and self.slice_attempts + reserved < SLICE_ATTEMPTS
         due: list[float] = []
         for target, r in self.inventory.records.items():
             if not r.active or target in self.inflight:
@@ -327,6 +333,8 @@ class PollPlanner:
                     return now
                 due.append(r.due)
             elif now >= self.discovery_pause_until:
+                if search_room and r.due <= now:
+                    return now
                 due.append(r.due)
         if searching:
             return now + self.start_gap
