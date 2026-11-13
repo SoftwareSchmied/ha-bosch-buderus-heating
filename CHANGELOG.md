@@ -61,7 +61,10 @@ Versioning after its first tagged preview.
     outdoor units, and the outdoor units of the CS3800i AW and CS8800i AW.
     The power class belongs to the outdoor unit and is shown only where a
     document states it (for example 10 kW for WLW-10 MB AR); the
-    construction only where a document names it. Other models show their
+    construction only where a document names it. For the WLW176i and
+    WLW186i indoor units it comes from the system documentation, which names
+    the monobloc WLW MB AR as the only outdoor unit of these systems, not
+    from a statement about the indoor unit itself. Other models show their
     product name and hardware type, but no family, construction or power
     yet.
   - If your model shows `known: false`, the diagnostics list it under

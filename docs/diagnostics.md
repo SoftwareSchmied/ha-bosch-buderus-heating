@@ -7,8 +7,8 @@ cloud requests.
 Schema 47 (0.9.1) adds `gateways[].heat_generator` and the same block in
 `views_without_cloud[]`: the heat generator modules of the module list with
 their product names and hardware types, never serial numbers (see
-[heat generator modules](#heat-generator-modules)). It also adds a section
-without values, paths, names or identifiers:
+[heat generator modules](#heat-generator-modules)). It also adds a second
+section, which holds no values, paths, names or identifiers:
 
 - `hybrid_volume_flow`: one entry per system with cloud or local readings.
   `hybrid_detected` is `true` when the readings show a hybrid system;
