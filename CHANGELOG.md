@@ -5,6 +5,18 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Documentation
+
+- **Confirmed:** changing the hot water schedule (program A) in the
+  Configure dialog was confirmed on a Logatherm WLW186i-12 E with an MX400,
+  in both directions between Home Assistant and the manufacturer's app. The
+  heating schedules stay untested on a real device. Thank you,
+  [lanebe](https://github.com/lanebe), for testing it in
+  [#125](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/discussions/125).
+- **Confirmed installations:** a Logamax plus GBH192i.2-25 H gas condensing
+  boiler with an MX300 was added, and the table was simplified. Thank you,
+  Alex79, for the report in the Home Assistant community.
+
 ## [0.9.0] - 2026-11-13
 
 > [!IMPORTANT]

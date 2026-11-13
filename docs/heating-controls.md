@@ -222,10 +222,12 @@ both programs can be read and are valid. The options are `a` and `b`; the
 reported names are in the attributes `program_names` and `program_name`.
 With a single program, as on my heat pump, there is no selection.
 
-So far tested with simulated data only: both functions are expected to work
-but untested on a real gateway. A test on my heat pump (heating circuit 1,
-program A, and hot water program A) is planned. Program B, iCom gateways and
-programs with absolute temperatures stay expected, untested.
+Changing hot water program A was confirmed on a Logatherm WLW186i-12 E with
+an MX400: a switch point changed in Home Assistant showed up in the
+manufacturer's app, and setting it back there showed up in Home Assistant
+shortly afterwards. The heating programs, the selection of the active
+schedule, program B, iCom gateways and programs with absolute temperatures
+are tested with simulated data only and stay expected, untested.
 
 ## Deutsch
 
@@ -412,8 +414,9 @@ ist und beide Programme lesbar und gültig sind. Die Optionen sind `a` und
 `program_name`. Mit nur einem Programm, wie an meiner Wärmepumpe, gibt es
 keine Auswahl.
 
-Bisher nur mit simulierten Daten getestet: Beide Funktionen sollten
-funktionieren, sind aber an einem echten Gateway ungetestet. Ein Test an
-meiner Wärmepumpe (Heizkreis 1, Programm A, und Warmwasserprogramm A) ist
-geplant. Programm B, iCom-Gateways und Programme mit absoluten Temperaturen
-bleiben erwartet, ungetestet.
+Das Ändern des Warmwasserprogramms A ist an einer Logatherm WLW186i-12 E
+mit MX400 bestätigt: Ein in Home Assistant geänderter Schaltpunkt erschien in
+der App des Herstellers, und das Zurückstellen dort erschien kurz darauf in
+Home Assistant. Die Heizprogramme, die Auswahl des aktiven Zeitprogramms,
+Programm B, iCom-Gateways und Programme mit absoluten Temperaturen sind nur
+mit simulierten Daten getestet und bleiben erwartet, ungetestet.
