@@ -184,6 +184,20 @@ names the heat generator models and shows texts for more gateway states.
   now *Setpoint level off*. Entity IDs and unique IDs stay.
 - The new texts are drafts in every language except English and German.
 
+### Dialogs
+
+- **Clearer dialog texts:** I reworded several texts in the setup and
+  Configure dialogs. In German the button is now called **OK** instead of
+  "Senden". The messages after a sign-in failure now say how to sign in
+  again and where to find it in Home Assistant. The room controller
+  schedules menu no longer uses the abbreviation, and the holiday end
+  fields say what happens at the end date. The certificate page and the
+  note about a moved gateway address now say what to do if you do not want
+  to accept them, and the local address page has a tip to reserve the
+  address in the router. I only checked the texts in the translation tests;
+  I have not looked at them in the Home Assistant interface. The texts in
+  the other languages are drafts.
+
 ### Documentation
 
 - **Confirmed:** changing the hot water schedule (program A) in the

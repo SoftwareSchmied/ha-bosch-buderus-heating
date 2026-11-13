@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Endereço do gateway local",
-        "description": "Escolha um endereço detetado ou introduza um endereço IP ou um nome de anfitrião. A deteção não altera nenhuma ligação guardada.",
+        "description": "Escolha um endereço detetado ou introduza um endereço IP ou um nome de anfitrião. Sugestão: reserve o endereço do gateway no router (reserva DHCP) para que se mantenha o mesmo.",
         "data": {
           "address": "Endereço IP ou nome de anfitrião"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Confirmar o certificado do gateway",
-        "description": "O Home Assistant alcançou **{host}:{port}**. Confirme que este é o seu gateway antes de enviar credenciais. Uma impressão digital, por si só, não é prova de identidade.\n\nSHA-256: `{fingerprint}`\n\nImpressão digital anterior: `{previous}`. Um ponto de interrogação significa que nenhum certificado guardado se aplica a este endereço e porta.\n\nO gateway tem um certificado próprio para cada porta. A porta 9442 é a porta de início de sessão e é verificada antes do início de sessão; a porta 9443 é a porta de dados e é verificada depois. Por isso, esta página pode aparecer duas vezes.",
+        "description": "O Home Assistant alcançou **{host}:{port}**. Confirme que este é o seu gateway antes de enviar credenciais. Uma impressão digital, por si só, não é prova de identidade.\n\nSHA-256: `{fingerprint}`\n\nImpressão digital anterior: `{previous}`. Um ponto de interrogação significa que nenhum certificado guardado se aplica a este endereço e porta.\n\nO gateway tem um certificado próprio para cada porta. A porta 9442 é a porta de início de sessão e é verificada antes do início de sessão; a porta 9443 é a porta de dados e é verificada depois. Por isso, esta página pode aparecer duas vezes.\n\nSe o certificado não pertencer ao seu gateway, feche a caixa de diálogo; nada é enviado.",
         "data": {
           "confirm": "Confirmo este gateway e o respetivo certificado"
         }
       },
       "local_auth": {
         "title": "Iniciar sessão com a etiqueta do dispositivo",
-        "description": "Introduza o Login e a Pass da etiqueta do gateway. Para libertar o início de sessão local, prima em conjunto os botões Wi-Fi e wireless durante 1 segundo e solte-os em conjunto. Confirme o breve sinal azul e continue no prazo de cinco minutos. Após um erro de escrita, prima os botões novamente: o gateway só aceita um início de sessão nos cinco minutos seguintes à libertação. O acesso mantém-se no endereço LAN selecionado. A resposta do gateway determina se o início de sessão foi libertado. O login e a palavra-passe não são guardados.",
+        "description": "Introduza o Login e a Pass da etiqueta do gateway. Para libertar o início de sessão local, prima em conjunto os botões Wi-Fi e wireless durante 1 segundo e solte-os em conjunto. Confirme o breve sinal azul e continue no prazo de cinco minutos. Se a correção de um erro de escrita demorar mais de cinco minutos, prima os botões novamente. O acesso mantém-se no endereço LAN selecionado. A resposta do gateway determina se o início de sessão foi libertado. O Login e a Pass não são guardados.",
         "data": {
           "login": "Login na etiqueta do dispositivo",
           "password": "Pass na etiqueta do dispositivo",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Retomar a configuração local",
-        "description": "Existe uma tentativa anterior guardada. Se foi recebido um token, continue com esse token. Se a resposta se perdeu, pode existir um token no gateway mesmo que o Home Assistant não o tenha conseguido guardar. Ao rejeitar, remove apenas a cópia local pendente e permite outra tentativa; não revoga os tokens do gateway.\n\nPausa restante do servidor: {seconds} segundos.",
+        "description": "Existe uma tentativa anterior guardada. Se foi recebido um token, continue com esse token. Se a resposta se perdeu, pode existir um token no gateway mesmo que o Home Assistant não o tenha conseguido guardar. Ao rejeitar, remove apenas a cópia local pendente e permite outra tentativa; não revoga os tokens do gateway.\n\nPausa restante do gateway: {seconds} segundos (0 significa que pode continuar já).",
         "data": {
           "action": "Ação seguinte",
           "confirm": "Compreendo e quero rejeitar esta tentativa pendente"
@@ -201,14 +201,14 @@
       "already_configured": "Esta conta de aquecimento ou pelo menos um gateway selecionado já está configurado no Home Assistant.",
       "invalid_flow": "Esta sessão de configuração está incompleta ou expirou. Feche a caixa de diálogo e adicione novamente o Bosch/Buderus Home Comfort.",
       "no_gateways": "Não foram encontrados dispositivos. Verifique se a marca selecionada e a conta SingleKey ID correspondem à sua aplicação. Um regulador de ambiente com firmware mais antigo só aparece depois de o firmware ter sido atualizado e de ter sido configurado na aplicação atual com o seu SingleKey ID.",
-      "reauth_required": "A autorização guardada já não é válida. Feche esta caixa de diálogo e selecione Autenticar novamente para o Bosch/Buderus Home Comfort.",
+      "reauth_required": "O início de sessão guardado já não é válido. Feche esta caixa de diálogo e selecione **Reconfigurar** para esta integração em Definições → Dispositivos e serviços.",
       "reauth_successful": "O início de sessão foi renovado com êxito.",
       "reauth_wrong_account": "A conta selecionada não corresponde aos dispositivos configurados. Inicie sessão com a conta original.",
       "reauth_no_targets": "Este acesso à cloud já não tem instalações nem dispositivos e não é possível confirmar a conta a que pertence. As credenciais anteriores foram mantidas. Para voltar a utilizar uma conta na cloud, remova o acesso à cloud em Configurar → Ligações e ligue-o novamente.",
       "reauth_successful_targets_missing": "O início de sessão foi renovado. {count} instalações ou dispositivos ativados não foram encontrados na conta; mantêm-se configurados. Uma nota de reparação identifica-os e explica como esquecê-los.",
       "reconfigure_successful": "As definições foram guardadas. O Bosch/Buderus Home Comfort está a recarregar e a detetar novamente todos os recursos disponíveis.",
-      "connection_required": "Selecione a ligação em Definições antes de iniciar sessão novamente.",
-      "connection_settings_required": "Gira este acesso em Definições e Ligações.",
+      "connection_required": "Escolha primeiro, em **Configurar → Ligações**, o acesso em que quer iniciar sessão novamente.",
+      "connection_settings_required": "Gira este acesso em **Configurar → Ligações**.",
       "cloud_already_connected": "Já existe uma ligação à cloud configurada. Utilize as respetivas definições de ligação para selecionar mais dispositivos ou iniciar sessão novamente. Ainda não é possível um segundo início de sessão paralelo na cloud.",
       "cloud_setup_in_progress": "Já está aberta outra configuração da cloud. Conclua ou feche primeiro essa caixa de diálogo.",
       "cloud_setup_taken_over": "Uma caixa de diálogo de configuração da cloud mais recente substituiu esta. Feche esta caixa de diálogo e continue na mais recente.",
@@ -223,7 +223,7 @@
       "local_address_moved": "O gateway de um acesso local configurado responde num novo endereço. Uma nota de reparação propõe utilizá-lo.",
       "local_existing_owner_required": "Configure uma instalação sem a cloud com \"Apenas acesso local\" ao adicionar a integração. Um gateway detetado pode ser adicionado a uma configuração existente.",
       "local_target_required": "Esta configuração não tem nenhuma instalação adequada retida para uma ligação local.",
-      "local_setup_complete": "O acesso local foi configurado.",
+      "local_setup_complete": "O acesso local foi configurado. O estado e a frequência de consulta encontram-se em Configurar → Ligações.",
       "local_pending_saved": "A tentativa pendente foi mantida. Pode retomá-la a partir da configuração local.",
       "local_storage_failed": "Não foi possível ler ou guardar o registo privado da configuração. Verifique o armazenamento do Home Assistant antes de continuar.",
       "already_in_progress": "A configuração deste gateway local já está em curso.",
@@ -242,7 +242,7 @@
         "menu_options": {
           "notifications": "Notificações",
           "holidays": "Gerir períodos de férias",
-          "rrc_programs": "Programas horários de aquecimento RRC",
+          "rrc_programs": "Programas horários do regulador de ambiente",
           "switch_programs": "Programas horários do aquecimento e da água quente",
           "controls": "Controlar o equipamento",
           "connections": "Ligações",
@@ -279,7 +279,7 @@
         "data": {
           "holiday_name": "Nome",
           "holiday_start": "Início",
-          "holiday_end": "Fim (exclusivo)",
+          "holiday_end": "Fim (a partir daqui, funcionamento normal)",
           "holiday_assigned_to": "Aplicar a",
           "holiday_heating_mode": "Aquecimento central",
           "holiday_dhw_mode": "Água quente",
@@ -302,7 +302,7 @@
         "data": {
           "holiday_name": "Nome",
           "holiday_start": "Início",
-          "holiday_end": "Fim (exclusivo)",
+          "holiday_end": "Fim (a partir daqui, funcionamento normal)",
           "holiday_assigned_to": "Aplicar a",
           "holiday_heating_mode": "Aquecimento central",
           "holiday_dhw_mode": "Água quente",
@@ -317,7 +317,7 @@
         "data": {
           "holiday_name": "Nome",
           "holiday_start": "Início",
-          "holiday_end": "Fim (exclusivo)",
+          "holiday_end": "Fim (primeiro dia após as férias)",
           "holiday_assigned_to": "Aplicar a",
           "holiday_heating_mode": "Aquecimento central",
           "holiday_dhw_mode": "Água quente",
@@ -333,7 +333,7 @@
         "data": {
           "holiday_name": "Nome",
           "holiday_start": "Início",
-          "holiday_end": "Fim (exclusivo)",
+          "holiday_end": "Fim (primeiro dia após as férias)",
           "holiday_assigned_to": "Aplicar a",
           "holiday_heating_mode": "Aquecimento central",
           "holiday_dhw_mode": "Água quente",
@@ -448,7 +448,7 @@
       },
       "operate": {
         "title": "Controlar o equipamento",
-        "description": "Escolha uma secção e ajuste as definições. Aplicar grava apenas as suas alterações. Ao alterar várias definições, cada uma é confirmada individualmente.",
+        "description": "Escolha uma secção e ajuste as definições. **Aplicar** envia apenas as suas alterações, uma a seguir à outra, e verifica cada uma lendo-a de novo.",
         "data": {
           "controls": "Controlos"
         },
@@ -485,10 +485,10 @@
         }
       },
       "connection_enabled": {
-        "title": "Ativar acesso",
+        "title": "Ativar ou desativar o acesso",
         "description": "Desativar afeta apenas este acesso. As outras ligações continuam em funcionamento. As instalações e as entidades são mantidas.",
         "data": {
-          "enabled": "Ativado"
+          "enabled": "Acesso ativado"
         }
       },
       "connection_forget": {
@@ -581,7 +581,7 @@
       },
       "local_address": {
         "title": "Endereço do gateway local",
-        "description": "Escolha um endereço detetado ou introduza um endereço IP ou um nome de anfitrião. A deteção não altera nenhuma ligação guardada.",
+        "description": "Escolha um endereço detetado ou introduza um endereço IP ou um nome de anfitrião. Sugestão: reserve o endereço do gateway no router (reserva DHCP) para que se mantenha o mesmo.",
         "data": {
           "address": "Endereço IP ou nome de anfitrião"
         }
@@ -602,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Confirmar o certificado do gateway",
-        "description": "O Home Assistant alcançou **{host}:{port}**. Confirme que este é o seu gateway antes de enviar credenciais. Uma impressão digital, por si só, não é prova de identidade.\n\nSHA-256: `{fingerprint}`\n\nImpressão digital anterior: `{previous}`. Um ponto de interrogação significa que nenhum certificado guardado se aplica a este endereço e porta.\n\nO gateway tem um certificado próprio para cada porta. A porta 9442 é a porta de início de sessão e é verificada antes do início de sessão; a porta 9443 é a porta de dados e é verificada depois. Por isso, esta página pode aparecer duas vezes.",
+        "description": "O Home Assistant alcançou **{host}:{port}**. Confirme que este é o seu gateway antes de enviar credenciais. Uma impressão digital, por si só, não é prova de identidade.\n\nSHA-256: `{fingerprint}`\n\nImpressão digital anterior: `{previous}`. Um ponto de interrogação significa que nenhum certificado guardado se aplica a este endereço e porta.\n\nO gateway tem um certificado próprio para cada porta. A porta 9442 é a porta de início de sessão e é verificada antes do início de sessão; a porta 9443 é a porta de dados e é verificada depois. Por isso, esta página pode aparecer duas vezes.\n\nSe o certificado não pertencer ao seu gateway, feche a caixa de diálogo; nada é enviado.",
         "data": {
           "confirm": "Confirmo este gateway e o respetivo certificado"
         }
       },
       "local_auth": {
         "title": "Iniciar sessão com a etiqueta do dispositivo",
-        "description": "Introduza o Login e a Pass da etiqueta do gateway. Para libertar o início de sessão local, prima em conjunto os botões Wi-Fi e wireless durante 1 segundo e solte-os em conjunto. Confirme o breve sinal azul e continue no prazo de cinco minutos. Após um erro de escrita, prima os botões novamente: o gateway só aceita um início de sessão nos cinco minutos seguintes à libertação. O acesso mantém-se no endereço LAN selecionado. A resposta do gateway determina se o início de sessão foi libertado. O login e a palavra-passe não são guardados.",
+        "description": "Introduza o Login e a Pass da etiqueta do gateway. Para libertar o início de sessão local, prima em conjunto os botões Wi-Fi e wireless durante 1 segundo e solte-os em conjunto. Confirme o breve sinal azul e continue no prazo de cinco minutos. Se a correção de um erro de escrita demorar mais de cinco minutos, prima os botões novamente. O acesso mantém-se no endereço LAN selecionado. A resposta do gateway determina se o início de sessão foi libertado. O Login e a Pass não são guardados.",
         "data": {
           "login": "Login na etiqueta do dispositivo",
           "password": "Pass na etiqueta do dispositivo",
@@ -625,7 +625,7 @@
       },
       "local_pending": {
         "title": "Retomar a configuração local",
-        "description": "Existe uma tentativa anterior guardada. Se foi recebido um token, continue com esse token. Se a resposta se perdeu, pode existir um token no gateway mesmo que o Home Assistant não o tenha conseguido guardar. Ao rejeitar, remove apenas a cópia local pendente e permite outra tentativa; não revoga os tokens do gateway.\n\nPausa restante do servidor: {seconds} segundos.",
+        "description": "Existe uma tentativa anterior guardada. Se foi recebido um token, continue com esse token. Se a resposta se perdeu, pode existir um token no gateway mesmo que o Home Assistant não o tenha conseguido guardar. Ao rejeitar, remove apenas a cópia local pendente e permite outra tentativa; não revoga os tokens do gateway.\n\nPausa restante do gateway: {seconds} segundos (0 significa que pode continuar já).",
         "data": {
           "action": "Ação seguinte",
           "confirm": "Compreendo e quero rejeitar esta tentativa pendente"
@@ -697,7 +697,7 @@
       "holiday_time_step": "Escolha uma hora de quarto em quarto de hora: minutos 00, 15, 30 ou 45.",
       "holiday_time_nonexistent": "A hora de início ou de fim selecionada não existe porque o relógio avança no fuso horário do sistema de aquecimento. Escolha outra hora.",
       "holiday_time_ambiguous": "A hora de início ou de fim selecionada ocorre duas vezes porque o relógio recua no fuso horário do sistema de aquecimento. Escolha uma hora inequívoca.",
-      "write_authentication_failed": "O início de sessão na cloud já não é válido. Autentique novamente o Bosch/Buderus Home Comfort antes de tentar novamente.",
+      "write_authentication_failed": "O início de sessão na cloud já não é válido. Inicie sessão novamente em Configurar → Ligações → acesso à cloud → **Iniciar sessão novamente** e tente de novo.",
       "write_failed": "Não foi possível alterar as definições de férias.",
       "write_busy": "O sistema de aquecimento está a ser lido ou outra alteração ainda está em curso. Nada foi enviado. Tente novamente dentro de instantes.",
       "write_not_confirmed": "Não foi possível confirmar totalmente a alteração. Algumas definições podem já ter sido guardadas. Abra novamente o período de férias e verifique as definições atuais.",
@@ -817,7 +817,7 @@
       "holiday_create_unconfirmed": "Não foi possível confirmar o pedido de criação. O período de férias pode já existir. Verifique Gerir períodos de férias ou a aplicação do fabricante. Durante os próximos 10 minutos, uma nova tentativa verifica o resultado deste pedido sem criar um segundo período de férias.",
       "holiday_create_adjusted": "O sistema de aquecimento devolveu um novo período de férias, mas as definições diferem do seu pedido. Período pedido: {requested}. Período devolvido: {actual}. Abra Gerir períodos de férias para verificar e editar esta entrada.",
       "holiday_update_adjusted": "O sistema de aquecimento devolveu definições que diferem da alteração pedida. Período pedido: {requested}. Período devolvido: {actual}. Abra Gerir períodos de férias para verificar e editar a entrada atual.",
-      "no_rrc_schedules": "Não existe nenhum programa horário semanal RRC atual e suportado disponível.",
+      "no_rrc_schedules": "Não existe nenhum programa horário semanal atual e suportado de um regulador de ambiente disponível.",
       "no_switch_programs": "Aqui não é possível alterar nenhum programa horário atual de um circuito de aquecimento ou da água quente.",
       "switch_program_changed": "O programa horário foi alterado entretanto ou já não pode ser alterado. Abra-o novamente para ver os pontos de comutação atuais.",
       "switch_program_saved": "O programa horário {program} foi guardado e confirmado por nova leitura.\n\nPontos de comutação anteriores dos dias alterados:\n\n{before}",
@@ -831,7 +831,7 @@
       "controls_none": "Este equipamento não comunica atualmente nenhuma definição que possa ser alterada aqui.",
       "configuration_changed": "As definições da ligação foram alteradas enquanto esta caixa de diálogo estava aberta. Feche-a e tente novamente.",
       "no_connections": "Não está configurado nenhum acesso. As instalações e as entidades existentes são mantidas.",
-      "connection_reauth_started": "Foi solicitado o início de sessão. Abra o pedido de autenticação para esta entrada.",
+      "connection_reauth_started": "O novo início de sessão está preparado. Feche esta caixa de diálogo e selecione **Reconfigurar** para esta integração em Definições → Dispositivos e serviços, na secção **Requer atenção**.",
       "cloud_already_connected": "Já existe uma ligação à cloud configurada. Utilize as respetivas definições de ligação para selecionar mais dispositivos ou iniciar sessão novamente. Ainda não é possível um segundo início de sessão paralelo na cloud.",
       "cloud_setup_in_progress": "Já está aberta outra configuração da cloud. Conclua ou feche primeiro essa caixa de diálogo.",
       "cloud_setup_taken_over": "Uma caixa de diálogo de configuração da cloud mais recente substituiu esta. Feche esta caixa de diálogo e continue na mais recente.",
@@ -845,7 +845,7 @@
       "local_discovery_invalid": "Este anúncio de deteção não descreve um ponto de acesso de gateway local suportado.",
       "local_existing_owner_required": "Configure uma instalação sem a cloud com \"Apenas acesso local\" ao adicionar a integração. Um gateway detetado pode ser adicionado a uma configuração existente.",
       "local_target_required": "Esta configuração não tem nenhuma instalação adequada retida para uma ligação local.",
-      "local_setup_complete": "O acesso local foi configurado.",
+      "local_setup_complete": "O acesso local foi configurado. O estado e a frequência de consulta encontram-se em Configurar → Ligações.",
       "local_pending_saved": "A tentativa pendente foi mantida. Pode retomá-la a partir da configuração local.",
       "local_storage_failed": "Não foi possível ler ou guardar o registo privado da configuração. Verifique o armazenamento do Home Assistant antes de continuar.",
       "cloud_local_first_other_entry": "Esta instalação já está configurada através do respetivo acesso local noutra entrada desta integração. Adicione o acesso à cloud nessa entrada.",
@@ -936,7 +936,7 @@
     },
     "local_certificate_changed": {
       "title": "O certificado do gateway local foi alterado",
-      "description": "O gateway de um acesso local apresenta um certificado diferente. A integração não o aceita por si só e deixa de ler localmente. Se souber por que motivo o certificado foi alterado (por exemplo, após uma atualização ou reposição do gateway), abra as opções da integração, escolha o acesso local e selecione \"Alterar acesso local\". Aí confirma o novo certificado. Recomenda-se um novo início de sessão com a etiqueta do dispositivo; mantenha o token atual apenas se tiver a certeza de que o novo certificado pertence ao seu próprio gateway."
+      "description": "O gateway de um acesso local apresenta um certificado diferente. A integração não o aceita por si só e deixa de ler localmente. Se souber por que motivo o certificado foi alterado (por exemplo, após uma atualização ou reposição do gateway), abra Configurar → Ligações na integração, escolha o acesso LAN e selecione \"Alterar acesso local\". Aí confirma o novo certificado. Recomenda-se um novo início de sessão com a etiqueta do dispositivo; mantenha o token atual apenas se tiver a certeza de que o novo certificado pertence ao seu próprio gateway."
     },
     "local_start_certificate": {
       "title": "O acesso local não consegue ligar-se de forma segura",
@@ -1004,7 +1004,7 @@
         "step": {
           "confirm": {
             "title": "Utilizar o novo endereço do gateway",
-            "description": "O acesso local não consegue alcançar o seu gateway em {previous}. O mesmo gateway responde agora em {address}: apresenta o certificado confirmado durante a configuração. Não foi enviado nenhum token para o novo endereço.\n\nConfirme abaixo para guardar o novo endereço. O acesso local reinicia depois com ele; o token e o certificado confirmado mantêm-se inalterados. Para evitar isto no futuro, reserve o endereço do gateway no router (reserva DHCP).",
+            "description": "O acesso local não consegue alcançar o seu gateway em {previous}. O mesmo gateway responde agora em {address}: apresenta o certificado confirmado durante a configuração. Não foi enviado nenhum token para o novo endereço.\n\nConfirme abaixo para guardar o novo endereço. O acesso local reinicia depois com ele; o token e o certificado confirmado mantêm-se inalterados. Para evitar isto no futuro, reserve o endereço do gateway no router (reserva DHCP).\n\nSe não quiser usar o endereço, feche a caixa de diálogo ou selecione **Ignorar**.",
             "data": {
               "confirm": "Utilizar o novo endereço"
             }
@@ -1016,7 +1016,7 @@
         "abort": {
           "entry_not_found": "A entrada afetada desta integração já não existe.",
           "configuration_changed": "O acesso ou a instalação foi alterado. Abra novamente a reparação.",
-          "local_address_expired": "Esta nota já não está atual. Nada foi alterado.",
+          "local_address_expired": "Este aviso já não está atual, por exemplo após um reinício. Nada foi alterado. Volta a aparecer se o gateway voltar a responder num novo endereço.",
           "local_address_recovered": "O acesso local volta a alcançar o seu gateway. Nada foi alterado.",
           "local_address_unproven": "Não foi possível confirmar novamente o gateway no novo endereço. Nada foi alterado."
         }
@@ -1095,7 +1095,7 @@
     },
     "setup_unfinished": {
       "title": "Configuração não concluída",
-      "description": "A entrada \"{title}\" ainda não tem nenhum acesso. Abra as respetivas opções de configuração e escolha \"Configurar o acesso local\" (ou adicione um acesso à cloud) para concluir a configuração."
+      "description": "A entrada \"{title}\" ainda não tem nenhum acesso. Selecione **Configurar** nela e depois \"Configurar o acesso local\" (ou ligue um acesso à cloud)."
     }
   },
   "exceptions": {
