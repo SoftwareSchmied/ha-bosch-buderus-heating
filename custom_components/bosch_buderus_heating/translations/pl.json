@@ -1101,7 +1101,10 @@
       "message": "Zmień temperaturę i tryb pracy osobno, aby każdą zmianę można było potwierdzić."
     },
     "heating_climate_command": {
-      "message": "To polecenie termostatu nie jest obecnie dostępne. Temperatury można zmieniać tylko w ręcznym trybie grzania. Wybierz tryb osobno i sprawdź, czy urządzenie dostarcza bieżące wartości."
+      "message": "To polecenie termostatu nie jest obecnie dostępne. Temperatury można zmieniać tylko w ręcznym trybie grzania lub w trybie automatycznym, gdy obieg grzewczy oferuje tymczasową wartość zadaną. Wybierz tryb osobno i sprawdź, czy urządzenie dostarcza bieżące wartości."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Ten obieg grzewczy nie ma w tej chwili tymczasowej wartości zadanej do usunięcia."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "Bieżącą wartość zadaną ciepłej wody użytkowej określa urządzenie. Osobne temperatury startowe trybów możesz dostosować w sekcji Obsługa urządzenia."
@@ -2380,6 +2383,9 @@
         "name": "Rozpocznij regenerację"
       },
       "rrc_override_clear": {
+        "name": "Usuń tymczasową wartość zadaną"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Usuń tymczasową wartość zadaną"
       },
       "rrc_override_advance": {

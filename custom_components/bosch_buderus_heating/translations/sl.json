@@ -1101,7 +1101,10 @@
       "message": "Temperaturo in način delovanja spremenite ločeno, da je mogoče vsako spremembo potrditi."
     },
     "heating_climate_command": {
-      "message": "Ta ukaz termostata trenutno ni na voljo. Temperature je mogoče spreminjati le v ročnem načinu ogrevanja. Način izberite ločeno in preverite, ali naprava zagotavlja trenutne vrednosti."
+      "message": "Ta ukaz termostata trenutno ni na voljo. Temperature je mogoče spreminjati le v ročnem načinu ogrevanja ali v samodejnem načinu, ko ogrevalni krog ponuja začasno nastavljeno vrednost. Način izberite ločeno in preverite, ali naprava zagotavlja trenutne vrednosti."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Ta ogrevalni krog trenutno nima začasne nastavljene vrednosti, ki bi jo bilo mogoče preklicati."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "Trenutno nastavljeno vrednost tople vode določa naprava. Ločene začetne temperature načinov lahko prilagodite v razdelku Upravljanje naprave."
@@ -2380,6 +2383,9 @@
         "name": "Zaženi regeneracijo"
       },
       "rrc_override_clear": {
+        "name": "Prekliči začasno nastavljeno vrednost"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Prekliči začasno nastavljeno vrednost"
       },
       "rrc_override_advance": {

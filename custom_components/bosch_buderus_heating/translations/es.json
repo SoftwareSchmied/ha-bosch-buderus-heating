@@ -1101,7 +1101,10 @@
       "message": "Cambia la temperatura y el modo de funcionamiento por separado para que cada cambio se pueda confirmar."
     },
     "heating_climate_command": {
-      "message": "Este comando del termostato no está disponible en este momento. Las temperaturas solo se pueden cambiar en el modo de calefacción manual. Selecciona el modo por separado y comprueba que el equipo proporciona valores actuales."
+      "message": "Este comando del termostato no está disponible en este momento. Las temperaturas solo se pueden cambiar en el modo de calefacción manual o en el modo automático, cuando el circuito de calefacción ofrece una consigna temporal. Selecciona el modo por separado y comprueba que el equipo proporciona valores actuales."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Este circuito de calefacción no tiene ahora ninguna consigna temporal que anular."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "El equipo determina la consigna actual del agua caliente. Puedes ajustar las temperaturas de arranque de los modos por separado en Manejar el equipo."
@@ -2380,6 +2383,9 @@
         "name": "Iniciar regeneración"
       },
       "rrc_override_clear": {
+        "name": "Anular la consigna temporal"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Anular la consigna temporal"
       },
       "rrc_override_advance": {

@@ -1101,7 +1101,10 @@
       "message": "Ændr temperatur og driftsform hver for sig, så hver ændring kan bekræftes."
     },
     "heating_climate_command": {
-      "message": "Denne termostatkommando er ikke tilgængelig lige nu. Temperaturer kan kun ændres i manuel opvarmningsform. Vælg formen separat, og kontrollér, at apparatet leverer aktuelle værdier."
+      "message": "Denne termostatkommando er ikke tilgængelig lige nu. Temperaturer kan kun ændres i manuel opvarmningsform eller i automatisk form, når varmekredsen tilbyder et midlertidigt sætpunkt. Vælg formen separat, og kontrollér, at apparatet leverer aktuelle værdier."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Denne varmekreds har i øjeblikket intet midlertidigt sætpunkt, der kan ophæves."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "Apparatet bestemmer det aktuelle sætpunkt for varmt brugsvand. Du kan justere de separate starttemperaturer for formerne under Betjen apparat."
@@ -2380,6 +2383,9 @@
         "name": "Start regenerering"
       },
       "rrc_override_clear": {
+        "name": "Ophæv midlertidigt sætpunkt"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Ophæv midlertidigt sætpunkt"
       },
       "rrc_override_advance": {

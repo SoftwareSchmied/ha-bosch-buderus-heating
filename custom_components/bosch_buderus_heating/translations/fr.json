@@ -1101,7 +1101,10 @@
       "message": "Veuillez modifier séparément la température et le mode de fonctionnement afin que chaque modification puisse être confirmée."
     },
     "heating_climate_command": {
-      "message": "Cette commande de thermostat n'est actuellement pas disponible. Les températures ne peuvent être modifiées qu'en mode chauffage manuel. Sélectionnez le mode séparément et vérifiez que l'appareil fournit des valeurs actuelles."
+      "message": "Cette commande de thermostat n'est actuellement pas disponible. Les températures ne peuvent être modifiées qu'en mode chauffage manuel, ou en mode automatique lorsque le circuit de chauffage propose une consigne temporaire. Sélectionnez le mode séparément et vérifiez que l'appareil fournit des valeurs actuelles."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Ce circuit de chauffage n'a actuellement aucune consigne temporaire à annuler."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "L'appareil détermine la consigne d'eau chaude actuelle. Vous pouvez ajuster les températures de démarrage des modes distincts sous Commander l'appareil."
@@ -2380,6 +2383,9 @@
         "name": "Démarrer la régénération"
       },
       "rrc_override_clear": {
+        "name": "Annuler la consigne temporaire"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Annuler la consigne temporaire"
       },
       "rrc_override_advance": {

@@ -154,9 +154,22 @@ def controls(coordinator: BoschBuderusDataUpdateCoordinator) -> dict[str, Resour
             assessment.eligible
             and assessment.current_value_issue is None
             and assessment.platform != "button"
+            and _dialog_policy(assessment.policy)
         ):
             result[path] = resource
     return result
+
+
+def _dialog_policy(policy: EnumWritePolicy | NumberWritePolicy | None) -> bool:
+    """A generic number without an entity of its own (``create_entity``),
+    such as a heating circuit's temporary setpoint, belongs to the entity
+    that writes it, not to the dialog. A contract's settings keep their own
+    rule (``rrc_contracts.in_dialog``)."""
+    return (
+        not isinstance(policy, NumberWritePolicy)
+        or policy.create_entity
+        or rrc_contracts.owns(policy)
+    )
 
 
 def _weather_control_off(

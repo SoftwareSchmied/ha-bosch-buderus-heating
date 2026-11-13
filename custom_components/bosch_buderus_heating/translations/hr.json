@@ -1101,7 +1101,10 @@
       "message": "Promijenite temperaturu i način rada zasebno kako bi se svaka promjena mogla potvrditi."
     },
     "heating_climate_command": {
-      "message": "Ova naredba termostata trenutno nije dostupna. Temperature se mogu mijenjati samo u ručnom načinu grijanja. Odaberite način zasebno i provjerite pruža li uređaj trenutne vrijednosti."
+      "message": "Ova naredba termostata trenutno nije dostupna. Temperature se mogu mijenjati samo u ručnom načinu grijanja ili u automatskom načinu kada krug grijanja nudi privremenu zadanu vrijednost. Odaberite način zasebno i provjerite pruža li uređaj trenutne vrijednosti."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Ovaj krug grijanja trenutačno nema privremenu zadanu vrijednost koju bi bilo moguće poništiti."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "Uređaj određuje trenutnu zadanu vrijednost tople vode. Zasebne početne temperature načina možete prilagoditi pod Upravljanje uređajem."
@@ -2380,6 +2383,9 @@
         "name": "Pokreni regeneraciju"
       },
       "rrc_override_clear": {
+        "name": "Poništi privremenu zadanu vrijednost"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Poništi privremenu zadanu vrijednost"
       },
       "rrc_override_advance": {

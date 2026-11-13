@@ -14,6 +14,7 @@ from . import BoschBuderusConfigEntry, rrc_contracts, rrc_platforms
 from .control import async_set_control, track_control_entities
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness
 from .device import device_info_for_resource, grouped_entity_name
+from .heating_climate import track_temporary_clear_buttons
 from .i18n import localize
 from .platform_scope import PlatformScope, setup_platform
 from .pointt import Resource
@@ -46,7 +47,9 @@ def _setup_entities(
     entry: PlatformScope,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Expose only the reviewed regeneration start command, initially disabled."""
+    """Expose only the reviewed regeneration start command, initially
+    disabled, and the clear button of a heating circuit's temporary
+    setpoint."""
     for coordinator in entry.coordinators:
         track_control_entities(
             entry,
@@ -55,6 +58,7 @@ def _setup_entities(
             build_button_descriptions,
             BoschBuderusRegenerationButton,
         )
+        track_temporary_clear_buttons(entry, coordinator, async_add_entities)
         rrc_platforms.track(Platform.BUTTON, entry, coordinator, async_add_entities)
 
 

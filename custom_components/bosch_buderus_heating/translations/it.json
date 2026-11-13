@@ -1101,7 +1101,10 @@
       "message": "Modifica separatamente temperatura e modalità di funzionamento, così che ogni modifica possa essere confermata."
     },
     "heating_climate_command": {
-      "message": "Questo comando del termostato al momento non è disponibile. Le temperature possono essere modificate solo in modalità di riscaldamento manuale. Seleziona la modalità separatamente e controlla che l'apparecchio fornisca valori aggiornati."
+      "message": "Questo comando del termostato al momento non è disponibile. Le temperature possono essere modificate solo in modalità di riscaldamento manuale, oppure in modalità automatica quando il circuito di riscaldamento offre un setpoint temporaneo. Seleziona la modalità separatamente e controlla che l'apparecchio fornisca valori aggiornati."
+    },
+    "heating_temporary_setpoint_not_active": {
+      "message": "Questo circuito di riscaldamento al momento non ha nessun setpoint temporaneo da annullare."
     },
     "pointt_dhw_temperature_read_only": {
       "message": "L'apparecchio determina il setpoint attuale dell'acqua calda. Puoi regolare le temperature di avvio delle singole modalità in Comanda l'apparecchio."
@@ -2380,6 +2383,9 @@
         "name": "Avvia rigenerazione"
       },
       "rrc_override_clear": {
+        "name": "Annulla il setpoint temporaneo"
+      },
+      "heating_temporary_setpoint_clear": {
         "name": "Annulla il setpoint temporaneo"
       },
       "rrc_override_advance": {
