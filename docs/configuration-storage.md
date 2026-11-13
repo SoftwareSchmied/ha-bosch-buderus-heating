@@ -43,8 +43,10 @@ A minor version only adds optional data, which older code can ignore; an
 incompatible change needs a new major version. The loader therefore reads a
 later minor version of 4, such as 4.3, like 4.2: unknown fields stay stored
 and unused, and the entry keeps its minor version, so saving never lowers it.
-A return within the same major version (for example from a later 0.9.x to
-0.9.0) thus needs no backup. A later major version is not loaded.
+A later major version is not loaded. This covers only the configuration
+entry: a later version may also change other data stored by the
+integration, so make a backup before you go back to an earlier version,
+also within 0.9.x.
 
 ## Preparing an existing entry
 

@@ -872,7 +872,7 @@ class ManagedPointTCoordinator(
         if self.counter_guard is not None:
             self.counter_guard.forget_shown()
         self.last_update_success = False
-        self.last_exception = UpdateFailed("PointT source is unavailable")
+        self.last_exception = UpdateFailed("The cloud source is unavailable")
         if retain and not self.local_retained:
             return  # released while stopping; the release closed everything
         DataUpdateCoordinator.async_update_listeners(self)

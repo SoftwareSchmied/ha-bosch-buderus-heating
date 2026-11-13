@@ -175,16 +175,19 @@ On 2026-11-08 I installed a development build of this state on my own system
 cloud and local access) after a full Home Assistant backup. Apart from the
 version number, its files are identical to this release. It started without
 warnings or errors from the integration, and the climate and water heater
-entities kept their states and attributes. A longer run, the load and request
-measurements on my own system and any check of the estimated energy sensor on
-a real device are still pending.
+entities kept their states and attributes. I measured the load and the
+requests later the same day, see
+[Load measurement for 0.9.0-alpha.2](#load-measurement-for-090-alpha2). A
+longer run and any check of the estimated energy sensor on a real device
+were still pending at that time.
 
 ## Load measurement for 0.9.0-alpha.2
 
 I measured the load of Home Assistant on my own system (heat pump with BC400
 controller and MX400 internet module, K40RF gateway, cloud and local access)
-with the same read-only script for 60 minutes each: before, the development
-state shortly before 0.9.0-alpha.2; after, the 0.9.0-alpha.2 state, starting
+with the same read-only script for 60 minutes each: before, a development
+build of the 0.9.0-alpha.1 line shortly before 0.9.0-alpha.2; after, the
+0.9.0-alpha.2 state, starting
 about 20 minutes after I installed it on 2026-11-08. The numbers compare these
 two 0.9 pre-release states only. I did not measure 0.8.3 this way, so they say
 nothing about the change from 0.8.3.

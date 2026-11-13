@@ -1193,7 +1193,7 @@ async def test_rate_limit_starts_bounded_no_request_backoff(
 
     with pytest.raises(UpdateFailed, match="no usable resources"):
         await coordinator._async_update_data()
-    with pytest.raises(UpdateFailed, match="backoff"):
+    with pytest.raises(UpdateFailed, match="rate-limit pause"):
         await coordinator._async_update_data()
 
     assert client.get_resources_bulk.await_count == 1
@@ -1460,7 +1460,7 @@ async def test_repeated_gateway_failure_opens_circuit_breaker(
         with pytest.raises(UpdateFailed, match="no usable resources"):
             await coordinator._async_update_data()
 
-    with pytest.raises(UpdateFailed, match="circuit breaker"):
+    with pytest.raises(UpdateFailed, match="protection pause"):
         await coordinator._async_update_data()
 
     assert client.get_resources_bulk.await_count == CIRCUIT_FAILURE_THRESHOLD

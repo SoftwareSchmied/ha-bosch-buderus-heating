@@ -2742,9 +2742,9 @@ class BoschBuderusDataUpdateCoordinator(
                 self._cloud_backoff_until, now_monotonic + shared
             )
         if now_monotonic < self._cloud_backoff_until:
-            raise UpdateFailed("PointT rate-limit backoff is active")
+            raise UpdateFailed("The cloud rate-limit pause is active")
         if now_monotonic < self._circuit_open_until:
-            raise UpdateFailed("PointT gateway circuit breaker is active")
+            raise UpdateFailed("The cloud protection pause after gateway errors is active")
         due_groups = tuple(
             group
             for group in self._poll_intervals
@@ -2814,7 +2814,7 @@ class BoschBuderusDataUpdateCoordinator(
             if not self.last_update_success:
                 # B03: nothing confirmed the cloud since the failed cycle; a
                 # normal return would report it recovered to Home Assistant.
-                raise IdleAfterFailure("PointT cycle after a failure requested nothing")
+                raise IdleAfterFailure("The cloud cycle after a failure requested nothing")
             return dict(self.data or {})
 
         snapshots = dict(self.data or {})
@@ -3112,7 +3112,7 @@ class BoschBuderusDataUpdateCoordinator(
                 # readings that failed explicitly in this cycle.
                 self.async_update_listeners()
             raise UpdateFailed(
-                "PointT returned no usable resources ("
+                "The cloud returned no usable resources ("
                 f"{failure_category or _cycle_failure_category(cycle_results)})"
             )
         confirmed_paths = {
@@ -3241,11 +3241,11 @@ class BoschBuderusDataUpdateCoordinator(
             raise ConfigEntryAuthFailed from err
         except RateLimited as err:
             self._activate_rate_limit_backoff(err, monotonic(), counted=not held_back)
-            raise UpdateFailed("PointT rate limit reached during discovery") from err
+            raise UpdateFailed("The cloud rate limit was reached during discovery") from err
         except PointTError as err:
-            raise UpdateFailed("PointT resources could not be discovered") from err
+            raise UpdateFailed("The cloud resources could not be discovered") from err
         if not resources:
-            raise UpdateFailed("PointT discovery returned no resources")
+            raise UpdateFailed("The cloud discovery returned no resources")
 
         successful_resources = dict(resources)
         candidates = tuple(

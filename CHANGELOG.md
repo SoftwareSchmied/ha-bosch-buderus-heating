@@ -30,14 +30,6 @@ Versioning after its first tagged preview.
   expected, untested on a real controller, and I would be glad about a
   report. Any other extra field, or a `name` that is not a whole number,
   keeps the program read-only (new diagnostics code `optional_key_type`).
-- **Diagnostics (schema 46):** `rrc_programs.schedules` lists the form of the switch
-  points per program kind (key names and value types only, never a value);
-  the boost settings report the last reason they had no limits and how long
-  ago it was seen; `rrc_profile.confirmation` now matches the confirmed
-  functions instead of always saying `unconfirmed`; and the energy history
-  names why a cycle without an error imported nothing (`no_records`,
-  `no_completed_days`, `all_series_empty`) and counts the daily records it
-  read, without values.
 - **Advance next switch point confirmed:** the button is now listed as
   confirmed on a TC100.2 in the diagnostics and in the room controller
   documentation. Thank you, @obvius1, for the diagnostics in
@@ -80,7 +72,8 @@ not yet on the plant itself.
   cycle duration. This is now the longest cycle since the reading was last
   received, not the last one. After a slow failed cycle (10.6 s) and a quick
   one, a live value such as the compressor status ran out 8 s before the
-  next answer; now it stays shown.
+  next answer; now it stays shown. A refresh that waits for another one
+  counts as running as well.
 - **Fault entities survive a short outage:** **System fault**, **Active
   faults** and **Active notifications** keep the last state that a complete
   read confirmed, for 15 minutes after that read (3 minutes while a
@@ -108,12 +101,23 @@ not yet on the plant itself.
   The outage ends only when these readings answered again, so a single
   reading that keeps timing out and is paused meanwhile does not warn again
   every 15 minutes. Before, such outages left no log entry.
-- **Diagnostics schema 46:** each access and each source lists its recent
-  starts with the time and a fixed reason (`start`, `configuration_changed`,
-  `after_failure` with the error class, `source_ended`, `access_restarted`,
-  `requested`, `other`), so the cause of an unexpected restart of the local
-  or the cloud source can be seen in the next diagnostics. The fault section
-  shows `state_held`.
+
+#### Diagnostics (schema 46)
+
+- **Starts of accesses and sources:** each access and each source lists its
+  recent starts with the time (UTC) and a fixed reason (`start`,
+  `configuration_changed`, `after_failure` with the error class,
+  `source_ended`, `access_restarted`, `requested`, `other`), so the cause of
+  an unexpected restart of the local or the cloud source can be seen in the
+  next diagnostics. The fault section shows `state_held`.
+- **Room controllers:** `rrc_programs.schedules` lists the form of the
+  switch points per program kind (key names and value types only, never a
+  value); the boost settings report the last reason they had no limits and
+  how long ago it was seen; `rrc_profile.confirmation` now matches the
+  confirmed functions instead of always saying `unconfirmed`; and the energy
+  history names why a cycle without an error imported nothing
+  (`no_records`, `no_completed_days`, `all_series_empty`) and counts the
+  daily records it read, without values.
 
 #### Setup, messages and smaller fixes
 
@@ -148,10 +152,11 @@ only; none of them is checked on a real device or a fresh installation yet.
   shown as active from a reading that is still valid but was missing in the
   last cycle, the button now asks to try again instead of saying that no
   temporary setpoint is active. Nothing is sent.
-- **"Cloud access" in messages:** connection, error and rate-limit messages
-  and the titles of the firmware repair notes no longer use the internal
-  service name; the rate-limit message of the controls dialog now says that
-  the cloud limits the requests.
+- **"Cloud access" in messages:** connection, error and rate-limit messages,
+  the reasons of a failed refresh that Home Assistant can show on the
+  integration card, and the titles of the firmware repair notes no longer
+  use the internal service name; the rate-limit message of the controls
+  dialog now says that the cloud limits the requests.
 - **Translated messages:** the errors of the holiday calendar and of a select
   option that is no longer offered now follow the language of Home
   Assistant, and the event types of the system notifications are shown as
@@ -163,9 +168,9 @@ only; none of them is checked on a real device or a fresh installation yet.
   also accept temperatures reported in "degC" or "Celsius".
 - **A later minor version of the entry is read:** an entry saved by a later
   0.9.x version with a higher minor version of format 4 now loads, read like
-  this version's format; data it does not know stays stored. So a return from
-  a later 0.9.x to this version needs no backup. Before, such an entry did not
-  start.
+  this version's format; data it does not know stays stored. Before, such an
+  entry did not start. This covers only the entry itself; make a backup
+  before you go back to an earlier version, also within 0.9.x.
 - **Request count sensors:** they no longer write their last counts when they
   are removed, which relied on Home Assistant internals; stopping Home
   Assistant still records them, and the counts start anew at every start
