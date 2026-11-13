@@ -1181,7 +1181,7 @@
       "message": "De wijziging is naar de kamerregelaar gestuurd, maar die heeft haar nog niet bevestigd. De regelaar past haar mogelijk met vertraging toe; de waarde wordt bijgewerkt bij de volgende uitlezing."
     },
     "write_authentication_failed": {
-      "message": "De cloudaanmelding is niet meer geldig. Authenticeer Bosch/Buderus Home Comfort opnieuw voordat je het opnieuw probeert."
+      "message": "De cloudaanmelding is niet meer geldig. Meld je opnieuw aan onder Configureren → Verbindingen → cloudtoegang → Opnieuw aanmelden en probeer het daarna opnieuw."
     },
     "write_rate_limited": {
       "message": "De cloud beperkt momenteel het aantal verzoeken. Wacht voordat je de wijziging opnieuw probeert."

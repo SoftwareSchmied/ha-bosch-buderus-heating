@@ -1181,7 +1181,7 @@
       "message": "Muutos lähetettiin huonesäätimelle, mutta se ei ole vielä vahvistanut sitä. Säädin voi ottaa sen käyttöön viiveellä; arvo päivittyy seuraavalla lukukerralla."
     },
     "write_authentication_failed": {
-      "message": "Pilvikirjautuminen ei ole enää voimassa. Todenna Bosch/Buderus Home Comfort uudelleen ennen kuin yrität uudelleen."
+      "message": "Pilvikirjautuminen ei ole enää voimassa. Kirjaudu uudelleen kohdassa Määritä → Yhteydet → pilviyhteys → Kirjaudu uudelleen ja yritä sen jälkeen uudelleen."
     },
     "write_rate_limited": {
       "message": "Pilvi rajoittaa tällä hetkellä pyyntöjä. Odota ennen muutoksen yrittämistä uudelleen."

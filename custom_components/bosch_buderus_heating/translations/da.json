@@ -1181,7 +1181,7 @@
       "message": "Ændringen blev sendt til rumregulatoren, men den har endnu ikke bekræftet den. Regulatoren anvender den muligvis med forsinkelse; værdien opdateres ved næste aflæsning."
     },
     "write_authentication_failed": {
-      "message": "Cloudlogin er ikke længere gyldigt. Godkend Bosch/Buderus Home Comfort igen, før du prøver igen."
+      "message": "Cloudlogin er ikke længere gyldigt. Log ind igen under Konfigurer → Forbindelser → cloudadgang → Log ind igen, og prøv derefter igen."
     },
     "write_rate_limited": {
       "message": "Cloud'en begrænser forespørgsler lige nu. Vent, før du prøver ændringen igen."

@@ -1181,7 +1181,7 @@
       "message": "Endringen ble sendt til romregulatoren, men den har ikke bekreftet den ennå. Regulatoren kan ta den i bruk med forsinkelse; verdien oppdateres ved neste avlesning."
     },
     "write_authentication_failed": {
-      "message": "Skypåloggingen er ikke lenger gyldig. Autentiser Bosch/Buderus Home Comfort på nytt før du prøver igjen."
+      "message": "Skypåloggingen er ikke lenger gyldig. Logg på igjen under Konfigurer → Tilkoblinger → skytilgang → Logg på igjen, og prøv deretter på nytt."
     },
     "write_rate_limited": {
       "message": "Skyen begrenser forespørsler akkurat nå. Vent før du prøver endringen igjen."

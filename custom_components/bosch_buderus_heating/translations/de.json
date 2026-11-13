@@ -1181,7 +1181,7 @@
       "message": "Die Änderung wurde an den Raumregler gesendet, aber noch nicht bestätigt. Der Regler übernimmt sie eventuell verzögert; der Wert wird beim nächsten Lesen aktualisiert."
     },
     "write_authentication_failed": {
-      "message": "Die Cloud-Anmeldung ist nicht mehr gültig. Authentifiziere Bosch/Buderus Home Comfort erneut und versuche es danach noch einmal."
+      "message": "Die Cloud-Anmeldung ist nicht mehr gültig. Melde dich unter Konfigurieren → Verbindungen → Cloud-Zugang → Erneut anmelden neu an und versuche es dann noch einmal."
     },
     "write_rate_limited": {
       "message": "Die Cloud begrenzt derzeit die Anfragen. Warte, bevor du die Änderung erneut versuchst."

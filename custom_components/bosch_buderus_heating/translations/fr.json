@@ -1181,7 +1181,7 @@
       "message": "La modification a été envoyée au régulateur d'ambiance, mais il ne l'a pas encore confirmée. Il se peut qu'il l'applique avec un retard ; la valeur sera mise à jour à la prochaine lecture."
     },
     "write_authentication_failed": {
-      "message": "La connexion au compte cloud n'est plus valide. Réauthentifiez Bosch/Buderus Home Comfort avant de réessayer."
+      "message": "La connexion au compte cloud n'est plus valide. Reconnectez-vous sous Configurer → Connexions → accès cloud → Se reconnecter, puis réessayez."
     },
     "write_rate_limited": {
       "message": "Le cloud limite actuellement les requêtes. Patientez avant de réessayer la modification."

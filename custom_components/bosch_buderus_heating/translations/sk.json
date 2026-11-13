@@ -1181,7 +1181,7 @@
       "message": "Zmena bola odoslaná do izbového regulátora, ten ju však zatiaľ nepotvrdil. Regulátor ju môže prevziať s oneskorením; hodnota sa aktualizuje pri nasledujúcom čítaní."
     },
     "write_authentication_failed": {
-      "message": "Cloudové prihlásenie už nie je platné. Pred ďalším pokusom znova overte Bosch/Buderus Home Comfort."
+      "message": "Cloudové prihlásenie už nie je platné. Prihláste sa znova v Konfigurovať → Pripojenia → cloudový prístup → Prihlásiť sa znova a potom to skúste ešte raz."
     },
     "write_rate_limited": {
       "message": "Cloud momentálne obmedzuje požiadavky. Pred ďalším pokusom o zmenu počkajte."

@@ -1181,7 +1181,7 @@
       "message": "The change was sent to the room controller, but it has not confirmed it yet. The controller may apply it with a delay; the value is updated with the next reading."
     },
     "write_authentication_failed": {
-      "message": "The cloud sign-in is no longer valid. Reauthenticate Bosch/Buderus Home Comfort before trying again."
+      "message": "The cloud sign-in is no longer valid. Sign in again under Configure → Connections → cloud access → Sign in again, then try again."
     },
     "write_rate_limited": {
       "message": "The cloud is currently limiting requests. Wait before trying the change again."

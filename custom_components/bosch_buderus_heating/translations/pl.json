@@ -1181,7 +1181,7 @@
       "message": "Zmiana została wysłana do regulatora pokojowego, ale jeszcze jej nie potwierdził. Regulator może zastosować ją z opóźnieniem; wartość zostanie zaktualizowana przy następnym odczycie."
     },
     "write_authentication_failed": {
-      "message": "Logowanie do chmury nie jest już ważne. Uwierzytelnij ponownie Bosch/Buderus Home Comfort, zanim spróbujesz ponownie."
+      "message": "Logowanie do chmury nie jest już ważne. Zaloguj się ponownie w Konfiguruj → Połączenia → dostęp przez chmurę → Zaloguj się ponownie, a następnie spróbuj jeszcze raz."
     },
     "write_rate_limited": {
       "message": "Chmura obecnie ogranicza liczbę żądań. Zaczekaj przed ponowną próbą zmiany."

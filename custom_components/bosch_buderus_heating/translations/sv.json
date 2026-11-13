@@ -1181,7 +1181,7 @@
       "message": "Ändringen skickades till rumsregulatorn, men den har ännu inte bekräftat den. Regulatorn kan tillämpa den med fördröjning; värdet uppdateras vid nästa avläsning."
     },
     "write_authentication_failed": {
-      "message": "Molninloggningen är inte längre giltig. Autentisera Bosch/Buderus Home Comfort igen innan du försöker på nytt."
+      "message": "Molninloggningen är inte längre giltig. Logga in igen under Konfigurera → Anslutningar → molnåtkomst → Logga in igen och försök sedan på nytt."
     },
     "write_rate_limited": {
       "message": "Molnet begränsar förfrågningar just nu. Vänta innan du försöker ändra igen."

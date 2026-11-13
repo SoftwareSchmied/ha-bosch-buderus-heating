@@ -1181,7 +1181,7 @@
       "message": "Promjena je poslana sobnom regulatoru, ali ju on još nije potvrdio. Regulator je možda primjenjuje s odgodom; vrijednost se ažurira pri sljedećem očitanju."
     },
     "write_authentication_failed": {
-      "message": "Prijava u oblak više nije valjana. Ponovno autentificirajte Bosch/Buderus Home Comfort prije ponovnog pokušaja."
+      "message": "Prijava u oblak više nije valjana. Ponovno se prijavite u Konfiguriraj → Veze → pristup putem oblaka → Ponovna prijava, pa pokušajte ponovno."
     },
     "write_rate_limited": {
       "message": "Oblak trenutno ograničava zahtjeve. Pričekajte prije ponovnog pokušaja promjene."

@@ -1181,7 +1181,7 @@
       "message": "La modifica è stata inviata al regolatore ambiente, ma questo non l'ha ancora confermata. Il regolatore potrebbe applicarla con ritardo; il valore verrà aggiornato alla prossima lettura."
     },
     "write_authentication_failed": {
-      "message": "Il login al cloud non è più valido. Autenticati di nuovo in Bosch/Buderus Home Comfort prima di riprovare."
+      "message": "Il login al cloud non è più valido. Accedi di nuovo in Configura → Connessioni → accesso cloud → Accedi di nuovo, poi riprova."
     },
     "write_rate_limited": {
       "message": "Il cloud sta attualmente limitando le richieste. Attendi prima di riprovare la modifica."

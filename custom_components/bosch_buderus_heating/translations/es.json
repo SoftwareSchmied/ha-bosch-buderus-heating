@@ -1181,7 +1181,7 @@
       "message": "El cambio se envió al regulador de ambiente, pero este aún no lo ha confirmado. Es posible que lo aplique con retraso; el valor se actualizará en la próxima lectura."
     },
     "write_authentication_failed": {
-      "message": "El inicio de sesión en la nube ya no es válido. Vuelve a autenticar Bosch/Buderus Home Comfort antes de volver a intentarlo."
+      "message": "El inicio de sesión en la nube ya no es válido. Vuelve a iniciar sesión en Configurar → Conexiones → acceso a la nube → Volver a iniciar sesión y vuelve a intentarlo."
     },
     "write_rate_limited": {
       "message": "La nube está limitando las solicitudes en este momento. Espera antes de volver a intentar el cambio."

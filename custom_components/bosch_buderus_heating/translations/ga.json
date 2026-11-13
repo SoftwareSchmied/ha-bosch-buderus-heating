@@ -1181,7 +1181,7 @@
       "message": "Seoladh an t-athrú chuig an rialaitheoir seomra, ach níor dheimhnigh sé go fóill é. Is féidir leis an rialaitheoir é a chur i bhfeidhm le moill; nuashonrófar an luach leis an gcéad léamh eile."
     },
     "write_authentication_failed": {
-      "message": "Níl síniú isteach an néil bailí a thuilleadh. Athfhíordheimhnigh Bosch/Buderus Home Comfort sula ndéanann tú iarracht arís."
+      "message": "Níl síniú isteach an néil bailí a thuilleadh. Sínigh isteach arís faoi Cumraigh → Naisc → rochtain néil → Sínigh isteach arís, ansin déan iarracht arís."
     },
     "write_rate_limited": {
       "message": "Tá an néal ag cur srian le hiarratais faoi láthair. Fan sula ndéanann tú iarracht an t-athrú arís."
