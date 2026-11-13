@@ -740,6 +740,53 @@ def test_a_local_only_entry_is_removed_when_unclear(hass, case) -> None:
     assert registry.async_get_entity_id("sensor", DOMAIN, cloud_id) == existing
 
 
+VENTILATION_RUN_TIME = "/ventilation/zone1/applianceRunTime"
+
+
+@pytest.mark.parametrize("unit", ["mins", "h"])
+def test_a_local_ventilation_run_time_continues_with_its_statistics(
+    hass, unit
+) -> None:
+    """The local run time is a growing total; the cloud's reading is one too."""
+    entry = MockConfigEntry(domain=DOMAIN, entry_id="sensor-entry")
+    entry.add_to_hass(hass)
+    resource = parse_resource(
+        {
+            "id": VENTILATION_RUN_TIME,
+            "type": "floatValue",
+            "value": 1234.0,
+            "unitOfMeasure": unit,
+            "writeable": False,
+        }
+    )
+    coordinator = SimpleNamespace(
+        config_entry=entry,
+        hass=hass,
+        gateway=SimpleNamespace(gateway_id=GATEWAY),
+        resources={VENTILATION_RUN_TIME: resource},
+    )
+    (cloud,) = local_only_sensor._cloud_sensors(coordinator)[VENTILATION_RUN_TIME]
+    assert cloud.state_class == "total_increasing"
+    native_unit = "min" if unit == "mins" else "h"
+    registry = er.async_get(hass)
+    entity_id = registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        local_only_unique_id(GATEWAY, VENTILATION_RUN_TIME),
+        config_entry=entry,
+        capabilities={"state_class": "total_increasing"},
+        unit_of_measurement=native_unit,
+    ).entity_id
+    registry.async_update_entity_options(
+        entity_id, DOMAIN, {"native_unit": native_unit}
+    )
+    local_only_sensor._remove_registered(coordinator)
+    # Entity ID and history stay: the entry continues as the cloud sensor.
+    assert registry.async_get_entity_id("sensor", DOMAIN, cloud.unique_id) == (
+        entity_id
+    )
+
+
 def _sensor_platform(hass, entry):
     import logging
     from datetime import timedelta

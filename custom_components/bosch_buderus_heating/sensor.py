@@ -1443,6 +1443,10 @@ _UNKNOWN_KINDS: dict[str, ValueKind] = {
     "flag": "unknown_flag",
 }
 
+# The run time of a ventilation unit only grows: a growing total, as the same
+# reading from the local access, so that entity can continue as this one.
+_VENTILATION_RUN_TIME = re.compile(r"^/ventilation/zone[^/]+/applianceRunTime$")
+
 
 def _unknown_description(
     resource: Resource, kind: str
@@ -1454,12 +1458,17 @@ def _unknown_description(
     options: list[str] | None = None
     translation_key: str | None = None
     scale = 1.0
+    state_class: SensorStateClass | None = None
     if kind == UNKNOWN_NUMBER:
         # Only mapped units: an unknown one is not shown (the number is). A
         # mapped unit comes with its conversion (for example kBtu to kWh),
         # applied like for a known reading. Unit and kind are fixed when the
         # entity is created: a later unit change shows after a restart.
         unit, device_class, _, scale = _measurement_attributes(resource, None)
+        if device_class is SensorDeviceClass.DURATION and _VENTILATION_RUN_TIME.fullmatch(
+            resource.path
+        ):
+            state_class = SensorStateClass.TOTAL_INCREASING
     elif kind == UNKNOWN_ENUM:
         options = list(
             dict.fromkeys(
@@ -1478,7 +1487,7 @@ def _unknown_description(
         value_scale=scale,
         native_unit_of_measurement=unit,
         device_class=device_class,
-        state_class=None,
+        state_class=state_class,
         options=options,
         translation_key=translation_key,
         entity_category=EntityCategory.DIAGNOSTIC,

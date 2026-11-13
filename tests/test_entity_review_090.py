@@ -233,6 +233,35 @@ async def test_a_new_installation_creates_the_duplicates_disabled(
     assert states["gateway-one:heatSources:hs1:numberOfStarts:total"] is None
 
 
+async def test_duplicates_stay_disabled_when_a_later_inventory_is_incomplete(
+    hass: HomeAssistant, legacy_setup
+) -> None:
+    """Created disabled on a new installation, a duplicate is not enabled
+    later when the rule does not hold for a while, for example because the
+    heat pump type is missing from an incomplete inventory."""
+
+    def prepare(registry: er.EntityRegistry, entry) -> None:
+        for path in (RUN_TIME, FLAME):
+            registry.async_get_or_create(
+                "sensor",
+                DOMAIN,
+                "gateway-one:" + path.strip("/").replace("/", ":"),
+                config_entry=entry,
+                disabled_by=er.RegistryEntryDisabler.INTEGRATION,
+            )
+
+    with (
+        patch(f"{PACKAGE}.sensor.plant_duplicate_paths", return_value=frozenset()),
+        patch(
+            f"{PACKAGE}.binary_sensor.plant_duplicate_paths", return_value=frozenset()
+        ),
+    ):
+        states = await _set_up_k40(hass, prepare)
+    for path in (RUN_TIME, FLAME):
+        unique_id = "gateway-one:" + path.strip("/").replace("/", ":")
+        assert states[unique_id] is er.RegistryEntryDisabler.INTEGRATION, path
+
+
 # ------------------------------------------- valves and hot water heat-up
 
 

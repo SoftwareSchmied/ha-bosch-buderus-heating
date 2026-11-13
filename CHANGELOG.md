@@ -186,6 +186,9 @@ without a name of your own shows its new name.
   second heat source or a hybrid manager the burner status follows the
   compressor. New entities of these three readings are now created
   disabled. With a cascade, a hybrid system or a boiler they stay enabled.
+  The integration never enables such an entity later on its own, also when
+  a later start does not see the heat pump type or sees a second heat
+  source for a while.
 - **Valve positions checked on my heat pump:** the 4-way valve (VR4) showed
   *Cooling/defrost* during every recorded defrost and *Heating* otherwise;
   the hot water 3-way valve (VW1) showed *Hot water* during every hot water
@@ -197,12 +200,17 @@ without a name of your own shows its new name.
   showed the raw states `false` and `heat`. It is now an on/off sensor
   named "Hot water heat-up active", where heat and post-heat count as on;
   it was on during every hot water charge on my heat pump. It stays
-  disabled by default.
+  disabled by default. If you enabled it and use `heat` or `false` in an
+  automation, change it to `on` or `off`; earlier history entries keep the
+  old states.
 - **Long-term statistics for local run times:** the compressor run times
   for heating, hot water and cooling, those of a hybrid manager and the run
   time of a ventilation unit now have statistics as a growing total, like
   the operating times from the cloud. The statistics start with the
-  update; remaining times and timers keep none.
+  update; remaining times and timers keep none. The cloud's reading of the
+  ventilation run time gets the same statistics, so the local entity still
+  continues as the cloud entity, with its entity ID and history, when a
+  cloud access reports that reading later.
 - **Room controller settings without a control:** the read-only sensor of
   a setting that offers no control (not writable, a single season mode,
   no limits, or the temperature of the open window detection) is now

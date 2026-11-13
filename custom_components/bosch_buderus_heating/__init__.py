@@ -74,6 +74,8 @@ from .pointt import (
     RateLimited,
 )
 from .resource_catalog import (
+    FLAME_STATUS_PATH,
+    SOURCE_TOTAL_PATHS,
     CapabilityMaturity,
     capability_maturity,
     configured_device_name,
@@ -1035,6 +1037,9 @@ def _former_field_entity(
     )
 
 
+_PLANT_DUPLICATE_CANDIDATES = SOURCE_TOTAL_PATHS | {FLAME_STATUS_PATH}
+
+
 def _enable_new_default_entities(
     hass: HomeAssistant,
     entry: BoschBuderusConfigEntry,
@@ -1086,6 +1091,11 @@ def _enable_new_default_entities(
                 if rrc_plant and rrc_contracts.is_mirror(description.resource_path):
                     # A read-only setting without a control is enabled only
                     # when it is first registered; an existing entry stays.
+                    continue
+                if description.resource_path in _PLANT_DUPLICATE_CANDIDATES:
+                    # Whether these repeat another entity depends on the
+                    # inventory of the moment: their default applies only
+                    # when they are first registered, never later.
                     continue
                 if not description.entity_registry_enabled_default:
                     continue
