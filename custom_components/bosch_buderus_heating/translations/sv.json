@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Lokal gatewayadress",
-        "description": "Välj en hittad adress eller ange en IP-adress eller ett värdnamn. Sökningen ändrar ingen sparad anslutning.",
+        "description": "Välj en hittad adress eller ange en IP-adress eller ett värdnamn. Tips: Reservera gatewayens adress i routern (DHCP-reservation) så att den förblir densamma.",
         "data": {
           "address": "IP-adress eller värdnamn"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Bekräfta gatewayens certifikat",
-        "description": "Home Assistant nådde **{host}:{port}**. Bekräfta att detta är din gateway innan uppgifter skickas. Ett fingeravtryck är inte i sig ett bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidigare fingeravtryck: `{previous}`. Ett frågetecken betyder att inget sparat certifikat gäller för den här adressen och porten.\n\nGatewayen har ett eget certifikat för varje port. Port 9442 är inloggningsporten och kontrolleras före inloggningen; port 9443 är dataporten och kontrolleras efter den. Därför kan den här sidan visas två gånger.",
+        "description": "Home Assistant nådde **{host}:{port}**. Bekräfta att detta är din gateway innan uppgifter skickas. Ett fingeravtryck är inte i sig ett bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidigare fingeravtryck: `{previous}`. Ett frågetecken betyder att inget sparat certifikat gäller för den här adressen och porten.\n\nGatewayen har ett eget certifikat för varje port. Port 9442 är inloggningsporten och kontrolleras före inloggningen; port 9443 är dataporten och kontrolleras efter den. Därför kan den här sidan visas två gånger.\n\nOm certifikatet inte tillhör din gateway, stäng dialogrutan; ingenting skickas.",
         "data": {
           "confirm": "Jag bekräftar den här gatewayen och dess certifikat"
         }
       },
       "local_auth": {
         "title": "Logga in med enhetsetiketten",
-        "description": "Ange Login och Pass från gatewayens etikett. För att frigöra lokal inloggning trycker du samtidigt på knapparna för Wi-Fi och trådlöst i 1 sekund och släpper dem samtidigt. Bekräfta den korta blå signalen och fortsätt inom fem minuter. Efter ett skrivfel trycker du på knapparna igen: gatewayen godtar en inloggning endast inom fem minuter efter frigörandet. Åtkomsten sker alltid via den LAN-adress du har valt. Gatewayens svar avgör om inloggningen har frigjorts. Login och lösenord sparas inte.",
+        "description": "Ange Login och Pass från gatewayens etikett. För att frigöra lokal inloggning trycker du samtidigt på knapparna för Wi-Fi och trådlöst i 1 sekund och släpper dem samtidigt. Bekräfta den korta blå signalen och fortsätt inom fem minuter. Om det tar längre än fem minuter att rätta ett skrivfel trycker du på knapparna igen. Åtkomsten sker alltid via den LAN-adress du har valt. Gatewayens svar avgör om inloggningen har frigjorts. Login och Pass sparas inte.",
         "data": {
           "login": "Login på enhetsetiketten",
           "password": "Pass på enhetsetiketten",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Återuppta lokal konfiguration",
-        "description": "Ett tidigare försök är sparat. Om en token togs emot, fortsätt med den. Om svaret gick förlorat kan en token finnas på gatewayen även om Home Assistant inte kunde spara den. Att förkasta tar bara bort den lokala väntande kopian och tillåter ett nytt försök. Det återkallar inga gatewaytokens.\n\nÅterstående serverpaus: {seconds} sekunder.",
+        "description": "Ett tidigare försök är sparat. Om en token togs emot, fortsätt med den. Om svaret gick förlorat kan en token finnas på gatewayen även om Home Assistant inte kunde spara den. Att förkasta tar bara bort den lokala väntande kopian och tillåter ett nytt försök. Det återkallar inga gatewaytokens.\n\nÅterstående paus för gatewayen: {seconds} sekunder (0 betyder att du kan fortsätta direkt).",
         "data": {
           "action": "Nästa åtgärd",
           "confirm": "Jag förstår och vill förkasta det här väntande försöket"
@@ -201,14 +201,14 @@
       "already_configured": "Det här värmekontot eller minst en vald gateway är redan konfigurerad i Home Assistant.",
       "invalid_flow": "Den här konfigurationssessionen är ofullständig eller har gått ut. Stäng dialogrutan och lägg till Bosch/Buderus Home Comfort igen.",
       "no_gateways": "Inga enheter hittades. Kontrollera att det valda märket och SingleKey ID-kontot stämmer med din app. En rumsregulator med äldre firmware visas först när dess firmware har uppdaterats och den har konfigurerats i den aktuella appen med ditt SingleKey ID.",
-      "reauth_required": "Den sparade auktoriseringen är inte längre giltig. Stäng den här dialogrutan och välj Autentisera igen för Bosch/Buderus Home Comfort.",
+      "reauth_required": "Den sparade inloggningen är inte längre giltig. Stäng den här dialogrutan och välj **Konfigurera om** för den här integrationen under Inställningar → Enheter och tjänster.",
       "reauth_successful": "Inloggningen förnyades.",
       "reauth_wrong_account": "Det valda kontot stämmer inte med de konfigurerade enheterna. Logga in med det ursprungliga kontot.",
       "reauth_no_targets": "Den här molnåtkomsten har inga anläggningar eller enheter kvar, och kontot den tillhör kan inte bekräftas. De tidigare inloggningsuppgifterna behålls. Om du vill använda ett molnkonto igen, ta bort molnåtkomsten under Konfigurera → Anslutningar och anslut den igen.",
       "reauth_successful_targets_missing": "Inloggningen förnyades. {count} aktiverade anläggningar eller enheter hittades inte i kontot. De förblir konfigurerade. En reparationsnotis namnger dem och förklarar hur du glömmer dem.",
       "reconfigure_successful": "Inställningarna sparades. Bosch/Buderus Home Comfort läses in på nytt och söker igen efter alla tillgängliga resurser.",
-      "connection_required": "Välj anslutningen under Inställningar innan du loggar in igen.",
-      "connection_settings_required": "Hantera den här åtkomsten under Inställningar och Anslutningar.",
+      "connection_required": "Välj först under **Konfigurera → Anslutningar** den åtkomst du vill logga in på igen.",
+      "connection_settings_required": "Hantera den här åtkomsten under **Konfigurera → Anslutningar**.",
       "cloud_already_connected": "En molnanslutning är redan konfigurerad. Använd dess anslutningsinställningar för att välja fler enheter eller logga in igen. En andra parallell molninloggning stöds inte ännu.",
       "cloud_setup_in_progress": "En annan molnkonfiguration är redan öppen. Slutför eller stäng den dialogrutan först.",
       "cloud_setup_taken_over": "En nyare molnkonfigurationsdialog har ersatt den här. Stäng den här dialogrutan och fortsätt i den nyare.",
@@ -223,7 +223,7 @@
       "local_address_moved": "Gatewayen för en konfigurerad lokal åtkomst svarar på en ny adress. Ett reparationsmeddelande erbjuder att använda den.",
       "local_existing_owner_required": "Konfigurera en anläggning utan molnet med “Endast lokal åtkomst” när du lägger till integrationen. En hittad gateway kan läggas till i en befintlig konfiguration.",
       "local_target_required": "Den här konfigurationen har ingen lämplig sparad installation för en lokal anslutning.",
-      "local_setup_complete": "Den lokala åtkomsten har konfigurerats.",
+      "local_setup_complete": "Den lokala åtkomsten har konfigurerats. Dess status och avfrågningsfrekvens finns under Konfigurera → Anslutningar.",
       "local_pending_saved": "Det väntande försöket är sparat. Du kan återuppta det från den lokala konfigurationen.",
       "local_storage_failed": "Den privata konfigurationsposten kunde inte läsas eller sparas. Kontrollera Home Assistants lagring innan du fortsätter.",
       "already_in_progress": "Konfigurationen av den här lokala gatewayen pågår redan.",
@@ -242,7 +242,7 @@
         "menu_options": {
           "notifications": "Aviseringar",
           "holidays": "Hantera semesterperioder",
-          "rrc_programs": "RRC-värmeprogram",
+          "rrc_programs": "Tidsprogram för rumsregulator",
           "switch_programs": "Tidsprogram för värme och varmvatten",
           "controls": "Styr apparaten",
           "connections": "Anslutningar",
@@ -279,7 +279,7 @@
         "data": {
           "holiday_name": "Namn",
           "holiday_start": "Start",
-          "holiday_end": "Slut (exklusive)",
+          "holiday_end": "Slut (härifrån normal drift igen)",
           "holiday_assigned_to": "Gäller för",
           "holiday_heating_mode": "Värme",
           "holiday_dhw_mode": "Varmvatten",
@@ -302,7 +302,7 @@
         "data": {
           "holiday_name": "Namn",
           "holiday_start": "Start",
-          "holiday_end": "Slut (exklusive)",
+          "holiday_end": "Slut (härifrån normal drift igen)",
           "holiday_assigned_to": "Gäller för",
           "holiday_heating_mode": "Värme",
           "holiday_dhw_mode": "Varmvatten",
@@ -317,7 +317,7 @@
         "data": {
           "holiday_name": "Namn",
           "holiday_start": "Start",
-          "holiday_end": "Slut (exklusive)",
+          "holiday_end": "Slut (första dagen efter semestern)",
           "holiday_assigned_to": "Gäller för",
           "holiday_heating_mode": "Värme",
           "holiday_dhw_mode": "Varmvatten",
@@ -333,7 +333,7 @@
         "data": {
           "holiday_name": "Namn",
           "holiday_start": "Start",
-          "holiday_end": "Slut (exklusive)",
+          "holiday_end": "Slut (första dagen efter semestern)",
           "holiday_assigned_to": "Gäller för",
           "holiday_heating_mode": "Värme",
           "holiday_dhw_mode": "Varmvatten",
@@ -448,7 +448,7 @@
       },
       "operate": {
         "title": "Styr apparaten",
-        "description": "Välj ett avsnitt och justera inställningarna. Tillämpa skriver bara dina ändringar. När du ändrar flera inställningar bekräftas varje ändring för sig.",
+        "description": "Välj ett avsnitt och justera inställningarna. **Tillämpa** skickar bara dina ändringar, en efter en, och kontrollerar varje ändring genom att läsa tillbaka den.",
         "data": {
           "controls": "Styrning"
         },
@@ -470,7 +470,7 @@
         "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Testa anslutningen nu",
-          "connection_enabled": "Aktivera eller inaktivera åtkomst",
+          "connection_enabled": "Slå på eller av åtkomst",
           "connection_forget": "Glöm bortvalda anläggningar",
           "connection_targets": "Använd för anläggningar och enheter",
           "connection_reauthenticate": "Logga in igen",
@@ -485,10 +485,10 @@
         }
       },
       "connection_enabled": {
-        "title": "Aktivera åtkomst",
+        "title": "Slå på eller av åtkomst",
         "description": "Inaktivering påverkar bara den här åtkomsten. Andra anslutningar fortsätter att köra. Anläggningar och entiteter behålls.",
         "data": {
-          "enabled": "Aktiverad"
+          "enabled": "Åtkomst påslagen"
         }
       },
       "connection_forget": {
@@ -581,7 +581,7 @@
       },
       "local_address": {
         "title": "Lokal gatewayadress",
-        "description": "Välj en hittad adress eller ange en IP-adress eller ett värdnamn. Sökningen ändrar ingen sparad anslutning.",
+        "description": "Välj en hittad adress eller ange en IP-adress eller ett värdnamn. Tips: Reservera gatewayens adress i routern (DHCP-reservation) så att den förblir densamma.",
         "data": {
           "address": "IP-adress eller värdnamn"
         }
@@ -602,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Bekräfta gatewayens certifikat",
-        "description": "Home Assistant nådde **{host}:{port}**. Bekräfta att detta är din gateway innan uppgifter skickas. Ett fingeravtryck är inte i sig ett bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidigare fingeravtryck: `{previous}`. Ett frågetecken betyder att inget sparat certifikat gäller för den här adressen och porten.\n\nGatewayen har ett eget certifikat för varje port. Port 9442 är inloggningsporten och kontrolleras före inloggningen; port 9443 är dataporten och kontrolleras efter den. Därför kan den här sidan visas två gånger.",
+        "description": "Home Assistant nådde **{host}:{port}**. Bekräfta att detta är din gateway innan uppgifter skickas. Ett fingeravtryck är inte i sig ett bevis på identitet.\n\nSHA-256: `{fingerprint}`\n\nTidigare fingeravtryck: `{previous}`. Ett frågetecken betyder att inget sparat certifikat gäller för den här adressen och porten.\n\nGatewayen har ett eget certifikat för varje port. Port 9442 är inloggningsporten och kontrolleras före inloggningen; port 9443 är dataporten och kontrolleras efter den. Därför kan den här sidan visas två gånger.\n\nOm certifikatet inte tillhör din gateway, stäng dialogrutan; ingenting skickas.",
         "data": {
           "confirm": "Jag bekräftar den här gatewayen och dess certifikat"
         }
       },
       "local_auth": {
         "title": "Logga in med enhetsetiketten",
-        "description": "Ange Login och Pass från gatewayens etikett. För att frigöra lokal inloggning trycker du samtidigt på knapparna för Wi-Fi och trådlöst i 1 sekund och släpper dem samtidigt. Bekräfta den korta blå signalen och fortsätt inom fem minuter. Efter ett skrivfel trycker du på knapparna igen: gatewayen godtar en inloggning endast inom fem minuter efter frigörandet. Åtkomsten sker alltid via den LAN-adress du har valt. Gatewayens svar avgör om inloggningen har frigjorts. Login och lösenord sparas inte.",
+        "description": "Ange Login och Pass från gatewayens etikett. För att frigöra lokal inloggning trycker du samtidigt på knapparna för Wi-Fi och trådlöst i 1 sekund och släpper dem samtidigt. Bekräfta den korta blå signalen och fortsätt inom fem minuter. Om det tar längre än fem minuter att rätta ett skrivfel trycker du på knapparna igen. Åtkomsten sker alltid via den LAN-adress du har valt. Gatewayens svar avgör om inloggningen har frigjorts. Login och Pass sparas inte.",
         "data": {
           "login": "Login på enhetsetiketten",
           "password": "Pass på enhetsetiketten",
@@ -625,7 +625,7 @@
       },
       "local_pending": {
         "title": "Återuppta lokal konfiguration",
-        "description": "Ett tidigare försök är sparat. Om en token togs emot, fortsätt med den. Om svaret gick förlorat kan en token finnas på gatewayen även om Home Assistant inte kunde spara den. Att förkasta tar bara bort den lokala väntande kopian och tillåter ett nytt försök. Det återkallar inga gatewaytokens.\n\nÅterstående serverpaus: {seconds} sekunder.",
+        "description": "Ett tidigare försök är sparat. Om en token togs emot, fortsätt med den. Om svaret gick förlorat kan en token finnas på gatewayen även om Home Assistant inte kunde spara den. Att förkasta tar bara bort den lokala väntande kopian och tillåter ett nytt försök. Det återkallar inga gatewaytokens.\n\nÅterstående paus för gatewayen: {seconds} sekunder (0 betyder att du kan fortsätta direkt).",
         "data": {
           "action": "Nästa åtgärd",
           "confirm": "Jag förstår och vill förkasta det här väntande försöket"
@@ -697,7 +697,7 @@
       "holiday_time_step": "Välj en tid i kvartar: minuterna 00, 15, 30 eller 45.",
       "holiday_time_nonexistent": "Den valda start- eller sluttiden finns inte eftersom klockan ställs fram i värmesystemets tidszon. Välj en annan tid.",
       "holiday_time_ambiguous": "Den valda start- eller sluttiden förekommer två gånger eftersom klockan ställs tillbaka i värmesystemets tidszon. Välj en entydig tid.",
-      "write_authentication_failed": "Molninloggningen är inte längre giltig. Autentisera Bosch/Buderus Home Comfort igen innan du försöker på nytt.",
+      "write_authentication_failed": "Molninloggningen är inte längre giltig. Logga in igen under Konfigurera → Anslutningar → molnåtkomst → **Logga in igen** och försök sedan på nytt.",
       "write_failed": "Semesterinställningarna kunde inte ändras.",
       "write_busy": "Värmesystemet läses av eller en annan ändring pågår fortfarande. Inget skickades. Försök igen om en stund.",
       "write_not_confirmed": "Ändringen kunde inte bekräftas fullt ut. Vissa inställningar kan redan ha sparats. Öppna semestern igen och kontrollera dess aktuella inställningar.",
@@ -817,7 +817,7 @@
       "holiday_create_unconfirmed": "Skapandeförfrågan kunde inte bekräftas. Semestern kan redan finnas. Kontrollera Hantera semesterperioder eller tillverkarens app. Under de närmaste 10 minuterna kontrollerar ett nytt försök resultatet av den här förfrågan utan att skapa en andra semester.",
       "holiday_create_adjusted": "Värmesystemet returnerade en ny semester, men dess inställningar skiljer sig från din förfrågan. Begärd period: {requested}. Returnerad period: {actual}. Öppna Hantera semesterperioder för att kontrollera och redigera den här posten.",
       "holiday_update_adjusted": "Värmesystemet returnerade inställningar som skiljer sig från din begärda ändring. Begärd period: {requested}. Returnerad period: {actual}. Öppna Hantera semesterperioder för att kontrollera och redigera den aktuella posten.",
-      "no_rrc_schedules": "Inget aktuellt, stött RRC-veckoprogram är tillgängligt.",
+      "no_rrc_schedules": "Inget aktuellt, stött veckoprogram för en rumsregulator är tillgängligt.",
       "no_switch_programs": "Det finns inget aktuellt tidsprogram för en värmekrets eller för varmvattnet som kan ändras här.",
       "switch_program_changed": "Tidsprogrammet har ändrats under tiden eller kan inte längre ändras. Öppna det igen för att se de aktuella växlingspunkterna.",
       "switch_program_saved": "Tidsprogrammet {program} sparades och bekräftades genom att läsas tillbaka.\n\nTidigare växlingspunkter för de ändrade dagarna:\n\n{before}",
@@ -831,7 +831,7 @@
       "controls_none": "Den här apparaten rapporterar för närvarande inga inställningar som kan ändras här.",
       "configuration_changed": "Anslutningsinställningarna ändrades medan den här dialogrutan var öppen. Stäng den och försök igen.",
       "no_connections": "Ingen åtkomst är konfigurerad. Befintliga anläggningar och entiteter behålls.",
-      "connection_reauth_started": "Inloggning har begärts. Öppna inloggningsuppmaningen för den här posten.",
+      "connection_reauth_started": "Den nya inloggningen är förberedd. Stäng den här dialogrutan och välj **Konfigurera om** för den här integrationen under Inställningar → Enheter och tjänster, i avsnittet **Kräver uppmärksamhet**.",
       "cloud_already_connected": "En molnanslutning är redan konfigurerad. Använd dess anslutningsinställningar för att välja fler enheter eller logga in igen. En andra parallell molninloggning stöds inte ännu.",
       "cloud_setup_in_progress": "En annan molnkonfiguration är redan öppen. Slutför eller stäng den dialogrutan först.",
       "cloud_setup_taken_over": "En nyare molnkonfigurationsdialog har ersatt den här. Stäng den här dialogrutan och fortsätt i den nyare.",
@@ -845,7 +845,7 @@
       "local_discovery_invalid": "Det här upptäcktsmeddelandet beskriver inte en lokal gatewayändpunkt som stöds.",
       "local_existing_owner_required": "Konfigurera en anläggning utan molnet med “Endast lokal åtkomst” när du lägger till integrationen. En hittad gateway kan läggas till i en befintlig konfiguration.",
       "local_target_required": "Den här konfigurationen har ingen lämplig sparad installation för en lokal anslutning.",
-      "local_setup_complete": "Den lokala åtkomsten har konfigurerats.",
+      "local_setup_complete": "Den lokala åtkomsten har konfigurerats. Dess status och avfrågningsfrekvens finns under Konfigurera → Anslutningar.",
       "local_pending_saved": "Det väntande försöket är sparat. Du kan återuppta det från den lokala konfigurationen.",
       "local_storage_failed": "Den privata konfigurationsposten kunde inte läsas eller sparas. Kontrollera Home Assistants lagring innan du fortsätter.",
       "cloud_local_first_other_entry": "Den här anläggningen är redan konfigurerad via sin lokala åtkomst i en annan post för den här integrationen. Lägg till molnåtkomsten i den posten i stället.",
@@ -936,7 +936,7 @@
     },
     "local_certificate_changed": {
       "title": "Den lokala gatewayens certifikat har ändrats",
-      "description": "Gatewayen för en lokal åtkomst visar ett annat certifikat. Integrationen godtar det inte på egen hand och slutar läsa lokalt. Om du vet varför certifikatet ändrades (till exempel efter en gatewayuppdatering eller återställning), öppna integrationens alternativ, välj den lokala åtkomsten och välj “Ändra lokal åtkomst”. Där bekräftar du det nya certifikatet. En ny inloggning med enhetsetiketten rekommenderas. Behåll den nuvarande tokenen bara om du är säker på att det nya certifikatet tillhör din egen gateway."
+      "description": "Gatewayen för en lokal åtkomst visar ett annat certifikat. Integrationen godtar det inte på egen hand och slutar läsa lokalt. Om du vet varför certifikatet ändrades (till exempel efter en gatewayuppdatering eller återställning), öppna Konfigurera → Anslutningar för integrationen, välj LAN-åtkomsten och välj “Ändra lokal åtkomst”. Där bekräftar du det nya certifikatet. En ny inloggning med enhetsetiketten rekommenderas. Behåll den nuvarande tokenen bara om du är säker på att det nya certifikatet tillhör din egen gateway."
     },
     "local_start_certificate": {
       "title": "Den lokala åtkomsten kan inte ansluta säkert",
@@ -1004,7 +1004,7 @@
         "step": {
           "confirm": {
             "title": "Använd gatewayens nya adress",
-            "description": "Den lokala åtkomsten når inte sin gateway på {previous}. Samma gateway svarar nu på {address}: den visar certifikatet som bekräftades vid installationen. Ingen token skickades till den nya adressen.\n\nBekräfta nedan för att spara den nya adressen. Den lokala åtkomsten startar sedan om med den; token och bekräftat certifikat förblir oförändrade. För att undvika detta i framtiden kan du reservera gatewayens adress i routern (DHCP-reservation).",
+            "description": "Den lokala åtkomsten når inte sin gateway på {previous}. Samma gateway svarar nu på {address}: den visar certifikatet som bekräftades vid installationen. Ingen token skickades till den nya adressen.\n\nBekräfta nedan för att spara den nya adressen. Den lokala åtkomsten startar sedan om med den; token och bekräftat certifikat förblir oförändrade. För att undvika detta i framtiden kan du reservera gatewayens adress i routern (DHCP-reservation).\n\nOm du inte vill använda adressen, stäng dialogrutan eller välj **Ignorera**.",
             "data": {
               "confirm": "Använd den nya adressen"
             }
@@ -1016,7 +1016,7 @@
         "abort": {
           "entry_not_found": "Den berörda posten för den här integrationen finns inte längre.",
           "configuration_changed": "Åtkomsten eller anläggningen har ändrats. Öppna reparationen igen.",
-          "local_address_expired": "Det här meddelandet är inte längre aktuellt. Inget ändrades.",
+          "local_address_expired": "Den här notisen är inte längre aktuell, till exempel efter en omstart. Inget ändrades. Den visas igen om gatewayen åter svarar på en ny adress.",
           "local_address_recovered": "Den lokala åtkomsten når sin gateway igen. Inget ändrades.",
           "local_address_unproven": "Gatewayen på den nya adressen kunde inte bekräftas igen. Inget ändrades."
         }
@@ -1095,7 +1095,7 @@
     },
     "setup_unfinished": {
       "title": "Konfigurationen är inte klar",
-      "description": "Posten “{title}” har ännu ingen åtkomst. Öppna dess konfigurationsalternativ och välj “Konfigurera lokal åtkomst” (eller lägg till en molnåtkomst) för att slutföra konfigurationen."
+      "description": "Posten “{title}” har ännu ingen åtkomst. Välj **Konfigurera** på den och sedan “Konfigurera lokal åtkomst” (eller anslut en molnåtkomst)."
     }
   },
   "exceptions": {

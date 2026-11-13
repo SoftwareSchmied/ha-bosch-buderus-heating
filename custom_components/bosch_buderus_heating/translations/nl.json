@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Lokaal gatewayadres",
-        "description": "Kies een gevonden adres of voer een IP-adres of hostnaam in. Het zoeken wijzigt geen opgeslagen verbinding.",
+        "description": "Kies een gevonden adres of voer een IP-adres of hostnaam in. Tip: reserveer het adres van de gateway in de router (DHCP-reservering), dan blijft het hetzelfde.",
         "data": {
           "address": "IP-adres of hostnaam"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Het certificaat van de gateway bevestigen",
-        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.\n\nDe gateway heeft voor elke poort een eigen certificaat. Poort 9442 is de aanmeldpoort en wordt vóór de aanmelding gecontroleerd; poort 9443 is de datapoort en wordt erna gecontroleerd. Daarom kan deze pagina twee keer verschijnen.",
+        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.\n\nDe gateway heeft voor elke poort een eigen certificaat. Poort 9442 is de aanmeldpoort en wordt vóór de aanmelding gecontroleerd; poort 9443 is de datapoort en wordt erna gecontroleerd. Daarom kan deze pagina twee keer verschijnen.\n\nHoort het certificaat niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
         "data": {
           "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
         }
       },
       "local_auth": {
         "title": "Aanmelden met het label op het apparaat",
-        "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen 1 seconde in en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. Druk na een typefout de knoppen opnieuw in: de gateway accepteert een aanmelding alleen binnen vijf minuten na de vrijgave. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en wachtwoord worden niet opgeslagen.",
+        "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen 1 seconde in en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. Duurt het corrigeren van een typefout langer dan vijf minuten, druk de knoppen dan opnieuw in. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en Pass worden niet opgeslagen.",
         "data": {
           "login": "Login op het label van het apparaat",
           "password": "Pass op het label van het apparaat",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Lokale configuratie hervatten",
-        "description": "Een eerdere poging is opgeslagen. Als er een token is ontvangen, ga dan verder met dat token. Als het antwoord verloren is gegaan, bestaat er mogelijk een token op de gateway, ook al kon Home Assistant het niet opslaan. Verwerpen verwijdert alleen de lokale kopie van de lopende poging en staat een nieuwe poging toe; tokens op de gateway worden niet ingetrokken.\n\nResterende pauze van de server: {seconds} seconden.",
+        "description": "Een eerdere poging is opgeslagen. Als er een token is ontvangen, ga dan verder met dat token. Als het antwoord verloren is gegaan, bestaat er mogelijk een token op de gateway, ook al kon Home Assistant het niet opslaan. Verwerpen verwijdert alleen de lokale kopie van de lopende poging en staat een nieuwe poging toe; tokens op de gateway worden niet ingetrokken.\n\nResterende pauze van de gateway: {seconds} seconden (0 betekent dat je meteen kunt doorgaan).",
         "data": {
           "action": "Volgende actie",
           "confirm": "Ik begrijp het en wil deze lopende poging verwerpen"
@@ -201,14 +201,14 @@
       "already_configured": "Dit verwarmingsaccount of minstens één geselecteerde gateway is al geconfigureerd in Home Assistant.",
       "invalid_flow": "Deze configuratiesessie is onvolledig of verlopen. Sluit het dialoogvenster en voeg Bosch/Buderus Home Comfort opnieuw toe.",
       "no_gateways": "Er zijn geen apparaten gevonden. Controleer of het geselecteerde merk en het SingleKey ID-account bij je app passen. Een kamerregelaar met oudere firmware verschijnt pas als de firmware is bijgewerkt en hij in de huidige app met je SingleKey ID is ingesteld.",
-      "reauth_required": "De opgeslagen autorisatie is niet meer geldig. Sluit dit dialoogvenster en selecteer Opnieuw authenticeren voor Bosch/Buderus Home Comfort.",
+      "reauth_required": "De opgeslagen aanmelding is niet meer geldig. Sluit dit dialoogvenster en selecteer **Opnieuw configureren** voor deze integratie onder Instellingen → Apparaten en services.",
       "reauth_successful": "De aanmelding is vernieuwd.",
       "reauth_wrong_account": "Het geselecteerde account komt niet overeen met de geconfigureerde apparaten. Meld je aan met het oorspronkelijke account.",
       "reauth_no_targets": "Deze cloudtoegang heeft geen installaties of apparaten meer en het account waartoe hij behoort kan niet worden bevestigd. De vorige inloggegevens blijven behouden. Om weer een cloudaccount te gebruiken, verwijder je de cloudtoegang onder Configureren → Verbindingen en verbind je deze opnieuw.",
       "reauth_successful_targets_missing": "De aanmelding is vernieuwd. {count} ingeschakelde installaties of apparaten zijn niet in het account gevonden; ze blijven geconfigureerd. Een reparatiemelding noemt ze en legt uit hoe je ze kunt vergeten.",
       "reconfigure_successful": "De instellingen zijn opgeslagen. Bosch/Buderus Home Comfort wordt opnieuw geladen en zoekt alle beschikbare bronnen opnieuw.",
-      "connection_required": "Selecteer de verbinding onder Instellingen voordat je je opnieuw aanmeldt.",
-      "connection_settings_required": "Beheer deze toegang onder Instellingen en Verbindingen.",
+      "connection_required": "Kies eerst onder **Configureren → Verbindingen** de toegang waarmee je je opnieuw wilt aanmelden.",
+      "connection_settings_required": "Beheer deze toegang onder **Configureren → Verbindingen**.",
       "cloud_already_connected": "Er is al een cloudverbinding geconfigureerd. Gebruik de verbindingsinstellingen daarvan om meer apparaten te selecteren of je opnieuw aan te melden. Een tweede parallelle cloudaanmelding wordt nog niet ondersteund.",
       "cloud_setup_in_progress": "Er is al een andere cloudconfiguratie geopend. Voltooi of sluit dat dialoogvenster eerst.",
       "cloud_setup_taken_over": "Een nieuwer cloudconfiguratie-dialoogvenster heeft dit venster vervangen. Sluit dit dialoogvenster en ga verder in het nieuwere.",
@@ -223,7 +223,7 @@
       "local_address_moved": "De gateway van een ingestelde lokale toegang antwoordt op een nieuw adres. Een reparatiemelding biedt aan het te gebruiken.",
       "local_existing_owner_required": "Configureer een installatie zonder de cloud met \"Alleen lokale toegang\" bij het toevoegen van de integratie. Een gevonden gateway kan aan een bestaande configuratie worden toegevoegd.",
       "local_target_required": "Deze configuratie heeft geen geschikte bewaarde installatie voor een lokale verbinding.",
-      "local_setup_complete": "De lokale toegang is ingesteld.",
+      "local_setup_complete": "De lokale toegang is ingesteld. De status en de pollfrequentie vind je onder Configureren → Verbindingen.",
       "local_pending_saved": "De lopende poging blijft bewaard. Je kunt deze hervatten vanuit de lokale configuratie.",
       "local_storage_failed": "Het privéconfiguratiebestand kon niet worden gelezen of opgeslagen. Controleer de opslag van Home Assistant voordat je verdergaat.",
       "already_in_progress": "De configuratie van deze lokale gateway is al bezig.",
@@ -242,7 +242,7 @@
         "menu_options": {
           "notifications": "Notificaties",
           "holidays": "Vakantieperiodes beheren",
-          "rrc_programs": "RRC-verwarmingstijdprogramma's",
+          "rrc_programs": "Tijdprogramma's van de kamerregelaar",
           "switch_programs": "Tijdprogramma's voor verwarming en warm water",
           "controls": "Apparaat bedienen",
           "connections": "Verbindingen",
@@ -279,7 +279,7 @@
         "data": {
           "holiday_name": "Naam",
           "holiday_start": "Begin",
-          "holiday_end": "Einde (exclusief)",
+          "holiday_end": "Einde (vanaf hier weer normaal bedrijf)",
           "holiday_assigned_to": "Toepassen voor",
           "holiday_heating_mode": "Centrale verwarming",
           "holiday_dhw_mode": "Warm water",
@@ -302,7 +302,7 @@
         "data": {
           "holiday_name": "Naam",
           "holiday_start": "Begin",
-          "holiday_end": "Einde (exclusief)",
+          "holiday_end": "Einde (vanaf hier weer normaal bedrijf)",
           "holiday_assigned_to": "Toepassen voor",
           "holiday_heating_mode": "Centrale verwarming",
           "holiday_dhw_mode": "Warm water",
@@ -317,7 +317,7 @@
         "data": {
           "holiday_name": "Naam",
           "holiday_start": "Begin",
-          "holiday_end": "Einde (exclusief)",
+          "holiday_end": "Einde (eerste dag na de vakantie)",
           "holiday_assigned_to": "Toepassen voor",
           "holiday_heating_mode": "Centrale verwarming",
           "holiday_dhw_mode": "Warm water",
@@ -333,7 +333,7 @@
         "data": {
           "holiday_name": "Naam",
           "holiday_start": "Begin",
-          "holiday_end": "Einde (exclusief)",
+          "holiday_end": "Einde (eerste dag na de vakantie)",
           "holiday_assigned_to": "Toepassen voor",
           "holiday_heating_mode": "Centrale verwarming",
           "holiday_dhw_mode": "Warm water",
@@ -448,7 +448,7 @@
       },
       "operate": {
         "title": "Apparaat bedienen",
-        "description": "Kies een onderdeel en pas de instellingen aan. Toepassen schrijft alleen je wijzigingen. Als je meerdere instellingen wijzigt, wordt elke afzonderlijk bevestigd.",
+        "description": "Kies een onderdeel en pas de instellingen aan. **Toepassen** verstuurt alleen je wijzigingen, na elkaar, en controleert elke door deze terug te lezen.",
         "data": {
           "controls": "Bediening"
         },
@@ -485,10 +485,10 @@
         }
       },
       "connection_enabled": {
-        "title": "Toegang inschakelen",
+        "title": "Toegang in- of uitschakelen",
         "description": "Uitschakelen heeft alleen invloed op deze toegang. Andere verbindingen blijven actief. Installaties en entiteiten blijven behouden.",
         "data": {
-          "enabled": "Ingeschakeld"
+          "enabled": "Toegang ingeschakeld"
         }
       },
       "connection_forget": {
@@ -581,7 +581,7 @@
       },
       "local_address": {
         "title": "Lokaal gatewayadres",
-        "description": "Kies een gevonden adres of voer een IP-adres of hostnaam in. Het zoeken wijzigt geen opgeslagen verbinding.",
+        "description": "Kies een gevonden adres of voer een IP-adres of hostnaam in. Tip: reserveer het adres van de gateway in de router (DHCP-reservering), dan blijft het hetzelfde.",
         "data": {
           "address": "IP-adres of hostnaam"
         }
@@ -602,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Het certificaat van de gateway bevestigen",
-        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.\n\nDe gateway heeft voor elke poort een eigen certificaat. Poort 9442 is de aanmeldpoort en wordt vóór de aanmelding gecontroleerd; poort 9443 is de datapoort en wordt erna gecontroleerd. Daarom kan deze pagina twee keer verschijnen.",
+        "description": "Home Assistant heeft **{host}:{port}** bereikt. Bevestig dat dit jouw gateway is voordat je inloggegevens verstuurt. Een vingerafdruk is op zichzelf geen bewijs van identiteit.\n\nSHA-256: `{fingerprint}`\n\nVorige vingerafdruk: `{previous}`. Een vraagteken betekent dat er voor dit adres en deze poort geen opgeslagen certificaat bestaat.\n\nDe gateway heeft voor elke poort een eigen certificaat. Poort 9442 is de aanmeldpoort en wordt vóór de aanmelding gecontroleerd; poort 9443 is de datapoort en wordt erna gecontroleerd. Daarom kan deze pagina twee keer verschijnen.\n\nHoort het certificaat niet bij je gateway, sluit dan het dialoogvenster; er wordt niets verzonden.",
         "data": {
           "confirm": "Ik bevestig deze gateway en het bijbehorende certificaat"
         }
       },
       "local_auth": {
         "title": "Aanmelden met het label op het apparaat",
-        "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen 1 seconde in en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. Druk na een typefout de knoppen opnieuw in: de gateway accepteert een aanmelding alleen binnen vijf minuten na de vrijgave. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en wachtwoord worden niet opgeslagen.",
+        "description": "Voer Login en Pass van het label op de gateway in. Om de lokale aanmelding vrij te geven, druk je de Wi-Fi- en de draadloosknop samen 1 seconde in en laat je ze samen los. Bevestig het korte blauwe signaal en ga binnen vijf minuten verder. Duurt het corrigeren van een typefout langer dan vijf minuten, druk de knoppen dan opnieuw in. De toegang blijft op het door jou gekozen LAN-adres. Het antwoord van de gateway bepaalt of de aanmelding is vrijgegeven. Login en Pass worden niet opgeslagen.",
         "data": {
           "login": "Login op het label van het apparaat",
           "password": "Pass op het label van het apparaat",
@@ -625,7 +625,7 @@
       },
       "local_pending": {
         "title": "Lokale configuratie hervatten",
-        "description": "Een eerdere poging is opgeslagen. Als er een token is ontvangen, ga dan verder met dat token. Als het antwoord verloren is gegaan, bestaat er mogelijk een token op de gateway, ook al kon Home Assistant het niet opslaan. Verwerpen verwijdert alleen de lokale kopie van de lopende poging en staat een nieuwe poging toe; tokens op de gateway worden niet ingetrokken.\n\nResterende pauze van de server: {seconds} seconden.",
+        "description": "Een eerdere poging is opgeslagen. Als er een token is ontvangen, ga dan verder met dat token. Als het antwoord verloren is gegaan, bestaat er mogelijk een token op de gateway, ook al kon Home Assistant het niet opslaan. Verwerpen verwijdert alleen de lokale kopie van de lopende poging en staat een nieuwe poging toe; tokens op de gateway worden niet ingetrokken.\n\nResterende pauze van de gateway: {seconds} seconden (0 betekent dat je meteen kunt doorgaan).",
         "data": {
           "action": "Volgende actie",
           "confirm": "Ik begrijp het en wil deze lopende poging verwerpen"
@@ -697,7 +697,7 @@
       "holiday_time_step": "Kies een tijd in kwartieren: minuten 00, 15, 30 of 45.",
       "holiday_time_nonexistent": "De geselecteerde begin- of eindtijd bestaat niet omdat de klok in de tijdzone van de verwarmingsinstallatie vooruit gaat. Kies een andere tijd.",
       "holiday_time_ambiguous": "De geselecteerde begin- of eindtijd komt twee keer voor omdat de klok in de tijdzone van de verwarmingsinstallatie terug gaat. Kies een ondubbelzinnige tijd.",
-      "write_authentication_failed": "De cloudaanmelding is niet meer geldig. Authenticeer Bosch/Buderus Home Comfort opnieuw voordat je het opnieuw probeert.",
+      "write_authentication_failed": "De cloudaanmelding is niet meer geldig. Meld je opnieuw aan onder Configureren → Verbindingen → cloudtoegang → **Opnieuw aanmelden** en probeer het daarna opnieuw.",
       "write_failed": "De vakantie-instellingen konden niet worden gewijzigd.",
       "write_busy": "De verwarmingsinstallatie wordt gelezen of een andere wijziging loopt nog. Er is niets verzonden. Probeer het over een moment opnieuw.",
       "write_not_confirmed": "De wijziging kon niet volledig worden bevestigd. Sommige instellingen zijn mogelijk al opgeslagen. Open de vakantie opnieuw en controleer de huidige instellingen.",
@@ -817,7 +817,7 @@
       "holiday_create_unconfirmed": "Het aanmaakverzoek kon niet worden bevestigd. De vakantie bestaat mogelijk al. Controleer Vakantieperiodes beheren of de app van de fabrikant. Een nieuwe poging controleert de komende 10 minuten het resultaat van dit verzoek zonder een tweede vakantie aan te maken.",
       "holiday_create_adjusted": "De verwarmingsinstallatie heeft een nieuwe vakantie teruggegeven, maar de instellingen wijken af van je verzoek. Gevraagde periode: {requested}. Teruggegeven periode: {actual}. Open Vakantieperiodes beheren om deze invoer te controleren en te bewerken.",
       "holiday_update_adjusted": "De verwarmingsinstallatie heeft instellingen teruggegeven die afwijken van je gevraagde wijziging. Gevraagde periode: {requested}. Teruggegeven periode: {actual}. Open Vakantieperiodes beheren om de huidige invoer te controleren en te bewerken.",
-      "no_rrc_schedules": "Er is geen actueel, ondersteund RRC-weektijdprogramma beschikbaar.",
+      "no_rrc_schedules": "Er is geen actueel, ondersteund weektijdprogramma van een kamerregelaar beschikbaar.",
       "no_switch_programs": "Hier kan geen actueel tijdprogramma van een verwarmingscircuit of van het warm water worden gewijzigd.",
       "switch_program_changed": "Het tijdprogramma is intussen gewijzigd of kan niet meer worden gewijzigd. Open het opnieuw om de huidige schakelpunten te zien.",
       "switch_program_saved": "Het tijdprogramma {program} is opgeslagen en door teruglezen bevestigd.\n\nVorige schakelpunten van de gewijzigde dagen:\n\n{before}",
@@ -831,7 +831,7 @@
       "controls_none": "Dit apparaat meldt momenteel geen instellingen die hier kunnen worden gewijzigd.",
       "configuration_changed": "De verbindingsinstellingen zijn gewijzigd terwijl dit dialoogvenster open was. Sluit het en probeer het opnieuw.",
       "no_connections": "Er is geen toegang geconfigureerd. Bestaande installaties en entiteiten blijven behouden.",
-      "connection_reauth_started": "Er is om aanmelding gevraagd. Open de authenticatieprompt voor deze invoer.",
+      "connection_reauth_started": "Het opnieuw aanmelden is voorbereid. Sluit dit dialoogvenster en selecteer **Opnieuw configureren** voor deze integratie onder Instellingen → Apparaten en services, in het gedeelte **Aandacht vereist**.",
       "cloud_already_connected": "Er is al een cloudverbinding geconfigureerd. Gebruik de verbindingsinstellingen daarvan om meer apparaten te selecteren of je opnieuw aan te melden. Een tweede parallelle cloudaanmelding wordt nog niet ondersteund.",
       "cloud_setup_in_progress": "Er is al een andere cloudconfiguratie geopend. Voltooi of sluit dat dialoogvenster eerst.",
       "cloud_setup_taken_over": "Een nieuwer cloudconfiguratie-dialoogvenster heeft dit venster vervangen. Sluit dit dialoogvenster en ga verder in het nieuwere.",
@@ -845,7 +845,7 @@
       "local_discovery_invalid": "Deze ontdekkingsaankondiging beschrijft geen ondersteund lokaal gatewayeindpunt.",
       "local_existing_owner_required": "Configureer een installatie zonder de cloud met \"Alleen lokale toegang\" bij het toevoegen van de integratie. Een gevonden gateway kan aan een bestaande configuratie worden toegevoegd.",
       "local_target_required": "Deze configuratie heeft geen geschikte bewaarde installatie voor een lokale verbinding.",
-      "local_setup_complete": "De lokale toegang is ingesteld.",
+      "local_setup_complete": "De lokale toegang is ingesteld. De status en de pollfrequentie vind je onder Configureren → Verbindingen.",
       "local_pending_saved": "De lopende poging blijft bewaard. Je kunt deze hervatten vanuit de lokale configuratie.",
       "local_storage_failed": "Het privéconfiguratiebestand kon niet worden gelezen of opgeslagen. Controleer de opslag van Home Assistant voordat je verdergaat.",
       "cloud_local_first_other_entry": "Deze installatie is al via de lokale toegang ingesteld in een andere invoer van deze integratie. Voeg de cloudtoegang in plaats daarvan toe in die invoer.",
@@ -936,7 +936,7 @@
     },
     "local_certificate_changed": {
       "title": "Certificaat van de lokale gateway gewijzigd",
-      "description": "De gateway van een lokale toegang presenteert een ander certificaat. De integratie accepteert dit niet uit zichzelf en stopt met lokaal lezen. Als je weet waarom het certificaat is gewijzigd (bijvoorbeeld na een update of reset van de gateway), open dan de opties van de integratie, kies de lokale toegang en selecteer \"Lokale toegang wijzigen\". Daar bevestig je het nieuwe certificaat. Een nieuwe aanmelding met het label op het apparaat wordt aanbevolen; behoud het huidige token alleen als je zeker weet dat het nieuwe certificaat bij je eigen gateway hoort."
+      "description": "De gateway van een lokale toegang presenteert een ander certificaat. De integratie accepteert dit niet uit zichzelf en stopt met lokaal lezen. Als je weet waarom het certificaat is gewijzigd (bijvoorbeeld na een update of reset van de gateway), open dan bij de integratie Configureren → Verbindingen, kies de LAN-toegang en selecteer \"Lokale toegang wijzigen\". Daar bevestig je het nieuwe certificaat. Een nieuwe aanmelding met het label op het apparaat wordt aanbevolen; behoud het huidige token alleen als je zeker weet dat het nieuwe certificaat bij je eigen gateway hoort."
     },
     "local_start_certificate": {
       "title": "Lokale toegang kan geen beveiligde verbinding maken",
@@ -1004,7 +1004,7 @@
         "step": {
           "confirm": {
             "title": "Het nieuwe adres van de gateway gebruiken",
-            "description": "De lokale toegang bereikt zijn gateway niet op {previous}. Dezelfde gateway antwoordt nu op {address}: hij toont het certificaat dat bij het instellen is bevestigd. Er is geen token naar het nieuwe adres verzonden.\n\nBevestig hieronder om het nieuwe adres op te slaan. De lokale toegang start daarna opnieuw met dit adres; het token en het bevestigde certificaat blijven ongewijzigd. Reserveer het adres van de gateway in de router (DHCP-reservering) om dit in de toekomst te voorkomen.",
+            "description": "De lokale toegang bereikt zijn gateway niet op {previous}. Dezelfde gateway antwoordt nu op {address}: hij toont het certificaat dat bij het instellen is bevestigd. Er is geen token naar het nieuwe adres verzonden.\n\nBevestig hieronder om het nieuwe adres op te slaan. De lokale toegang start daarna opnieuw met dit adres; het token en het bevestigde certificaat blijven ongewijzigd. Reserveer het adres van de gateway in de router (DHCP-reservering) om dit in de toekomst te voorkomen.\n\nWil je het adres niet gebruiken, sluit dan het dialoogvenster of kies **Negeren**.",
             "data": {
               "confirm": "Het nieuwe adres gebruiken"
             }
@@ -1016,7 +1016,7 @@
         "abort": {
           "entry_not_found": "De betreffende invoer van deze integratie bestaat niet meer.",
           "configuration_changed": "De toegang of de installatie is gewijzigd. Open de reparatie opnieuw.",
-          "local_address_expired": "Deze melding is niet meer actueel. Er is niets gewijzigd.",
+          "local_address_expired": "Deze melding is niet meer actueel, bijvoorbeeld na een herstart. Er is niets gewijzigd. Ze verschijnt opnieuw als de gateway weer op een nieuw adres antwoordt.",
           "local_address_recovered": "De lokale toegang bereikt zijn gateway weer. Er is niets gewijzigd.",
           "local_address_unproven": "De gateway op het nieuwe adres kon niet opnieuw worden bevestigd. Er is niets gewijzigd."
         }
@@ -1095,7 +1095,7 @@
     },
     "setup_unfinished": {
       "title": "Configuratie niet voltooid",
-      "description": "De invoer \"{title}\" heeft nog geen toegang. Open de configuratieopties en kies \"Lokale toegang instellen\" (of voeg een cloudtoegang toe) om de configuratie te voltooien."
+      "description": "De invoer \"{title}\" heeft nog geen toegang. Kies **Configureren** bij deze invoer en daarna \"Lokale toegang instellen\" (of verbind een cloudtoegang)."
     }
   },
   "exceptions": {

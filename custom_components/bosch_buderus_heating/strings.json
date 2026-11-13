@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Local gateway address",
-        "description": "Choose a discovered address or enter an IP address or hostname. Discovery does not change any saved connection.",
+        "description": "Choose a discovered address or enter an IP address or hostname. Tip: reserve the gateway's address in the router (DHCP reservation) so it stays the same.",
         "data": {
           "address": "IP address or hostname"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Confirm the gateway certificate",
-        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.\n\nThe gateway has its own certificate for each port. Port 9442 is the sign-in port and is checked before the sign-in; port 9443 is the data port and is checked after it. That is why this page can appear twice.",
+        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.\n\nThe gateway has its own certificate for each port. Port 9442 is the sign-in port and is checked before the sign-in; port 9443 is the data port and is checked after it. That is why this page can appear twice.\n\nIf the certificate does not belong to your gateway, close the dialog; nothing is sent.",
         "data": {
           "confirm": "I confirm this gateway and its certificate"
         }
       },
       "local_auth": {
         "title": "Sign in with the device label",
-        "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for 1 second and release them together. Confirm the brief blue signal and continue within five minutes. After a typo, press the buttons again: the gateway accepts a sign-in only within five minutes after the release. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and password are not saved.",
+        "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for 1 second and release them together. Confirm the brief blue signal and continue within five minutes. If correcting a typo takes longer than five minutes, press the buttons again. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and Pass are not saved.",
         "data": {
           "login": "Login on device label",
           "password": "Pass on device label",
@@ -127,17 +127,17 @@
       },
       "local_pending": {
         "title": "Resume local setup",
-        "description": "A previous attempt is saved. If a token was received, continue with that token. If the response was lost, a token may exist on the gateway even though Home Assistant could not save it. Discarding removes only the local pending copy and permits another attempt; it does not revoke gateway tokens.\n\nRemaining server pause: {seconds} seconds.",
+        "description": "A previous attempt is saved. If a token was received, continue with that token. If the response was lost, a token may exist on the gateway even though Home Assistant could not save it. Discarding removes only the local pending copy and permits another attempt; it does not revoke gateway tokens.\n\nGateway pause remaining: {seconds} seconds (0 means you can continue now).",
         "data": {
           "action": "Next action",
           "confirm": "I understand and want to discard this pending attempt"
         }
       },
       "local_result": {
-        "title": "Confirm the local connection",
+        "title": "Confirm the local access",
         "description": "The read check for **{host}** succeeded and gateway **{gateway}** matches the selected installation. Saving checks the current data again and adds or updates this access on the existing setup.",
         "data": {
-          "confirm": "Save this local connection"
+          "confirm": "Save this local access"
         }
       },
       "local_retry": {
@@ -201,14 +201,14 @@
       "already_configured": "This heating account or at least one selected gateway is already configured in Home Assistant.",
       "invalid_flow": "This setup session is incomplete or expired. Close the dialog and add Bosch/Buderus Home Comfort again.",
       "no_gateways": "No devices were found. Check that the selected brand and SingleKey ID account match your app. A room controller with older firmware only appears once its firmware has been updated and it has been set up in the current app with your SingleKey ID.",
-      "reauth_required": "The saved authorization is no longer valid. Close this dialog and select Reauthenticate for Bosch/Buderus Home Comfort.",
+      "reauth_required": "The saved sign-in is no longer valid. Close this dialog and select **Reconfigure** for this integration under Settings → Devices & services.",
       "reauth_successful": "Sign-in was renewed successfully.",
       "reauth_wrong_account": "The selected account does not match the configured devices. Sign in with the original account.",
       "reauth_no_targets": "This cloud access has no systems or devices left, and the account it belongs to cannot be confirmed. The previous credentials are kept. To use a cloud account again, remove the cloud access under Configure → Connections and connect it again.",
       "reauth_successful_targets_missing": "Sign-in was renewed. {count} switched-on systems or devices were not found in the account; they stay configured. A repair note names them and explains how to forget them.",
       "reconfigure_successful": "The settings were saved. Bosch/Buderus Home Comfort is reloading and discovering all available resources again.",
-      "connection_required": "Select the connection under Settings before signing in again.",
-      "connection_settings_required": "Manage this access under Settings and Connections.",
+      "connection_required": "First choose the access to sign in again under **Configure → Connections**.",
+      "connection_settings_required": "Manage this access under **Configure → Connections**.",
       "cloud_already_connected": "A cloud connection is already configured. Use its connection settings to select more devices or sign in again. A second parallel cloud sign-in is not supported yet.",
       "cloud_setup_in_progress": "Another cloud setup is already open. Finish or close that dialog first.",
       "cloud_setup_taken_over": "A newer cloud setup dialog has replaced this one. Close this dialog and continue in the newer one.",
@@ -223,7 +223,7 @@
       "local_address_moved": "The gateway of a configured local access answers at a new address. A repair note offers to use it.",
       "local_existing_owner_required": "Set up a system without the cloud with \"Local access only\" when adding the integration. A discovered gateway can be added to an existing setup.",
       "local_target_required": "This setup has no suitable retained installation for a local connection.",
-      "local_setup_complete": "The local access has been set up.",
+      "local_setup_complete": "The local access has been set up. Its status and polling frequency are under Configure → Connections.",
       "local_pending_saved": "The pending attempt is retained. You can resume it from local setup.",
       "local_storage_failed": "The private setup record could not be read or saved. Check Home Assistant storage before continuing.",
       "already_in_progress": "Setup for this local gateway is already in progress.",
@@ -242,7 +242,7 @@
         "menu_options": {
           "notifications": "Notifications",
           "holidays": "Manage holiday periods",
-          "rrc_programs": "RRC heating schedules",
+          "rrc_programs": "Room controller schedules",
           "switch_programs": "Heating and hot water schedules",
           "controls": "Operate appliance",
           "connections": "Connections",
@@ -279,10 +279,10 @@
         "data": {
           "holiday_name": "Name",
           "holiday_start": "Start",
-          "holiday_end": "End (exclusive)",
-          "holiday_assigned_to": "Apply for",
-          "holiday_heating_mode": "Central Heating",
-          "holiday_dhw_mode": "Hot Water",
+          "holiday_end": "End (normal operation from here)",
+          "holiday_assigned_to": "Apply to",
+          "holiday_heating_mode": "Heating",
+          "holiday_dhw_mode": "Hot water",
           "holiday_ventilation_mode": "Ventilation",
           "holiday_thermal_disinfection": "Thermal disinfection",
           "holiday_fix_temperature": "Constant temperature",
@@ -302,10 +302,10 @@
         "data": {
           "holiday_name": "Name",
           "holiday_start": "Start",
-          "holiday_end": "End (exclusive)",
-          "holiday_assigned_to": "Apply for",
-          "holiday_heating_mode": "Central Heating",
-          "holiday_dhw_mode": "Hot Water",
+          "holiday_end": "End (normal operation from here)",
+          "holiday_assigned_to": "Apply to",
+          "holiday_heating_mode": "Heating",
+          "holiday_dhw_mode": "Hot water",
           "holiday_ventilation_mode": "Ventilation",
           "holiday_thermal_disinfection": "Thermal disinfection",
           "holiday_fix_temperature": "Constant temperature"
@@ -317,10 +317,10 @@
         "data": {
           "holiday_name": "Name",
           "holiday_start": "Start",
-          "holiday_end": "End (exclusive)",
-          "holiday_assigned_to": "Apply for",
-          "holiday_heating_mode": "Central Heating",
-          "holiday_dhw_mode": "Hot Water",
+          "holiday_end": "End (first day after the holiday)",
+          "holiday_assigned_to": "Apply to",
+          "holiday_heating_mode": "Heating",
+          "holiday_dhw_mode": "Hot water",
           "holiday_ventilation_mode": "Ventilation",
           "holiday_thermal_disinfection": "Thermal disinfection",
           "holiday_fix_temperature": "Constant temperature",
@@ -333,10 +333,10 @@
         "data": {
           "holiday_name": "Name",
           "holiday_start": "Start",
-          "holiday_end": "End (exclusive)",
-          "holiday_assigned_to": "Apply for",
-          "holiday_heating_mode": "Central Heating",
-          "holiday_dhw_mode": "Hot Water",
+          "holiday_end": "End (first day after the holiday)",
+          "holiday_assigned_to": "Apply to",
+          "holiday_heating_mode": "Heating",
+          "holiday_dhw_mode": "Hot water",
           "holiday_ventilation_mode": "Ventilation",
           "holiday_thermal_disinfection": "Thermal disinfection",
           "holiday_fix_temperature": "Constant temperature"
@@ -448,7 +448,7 @@
       },
       "operate": {
         "title": "Operate appliance",
-        "description": "Choose a section and adjust the settings. Apply writes only your changes. When changing several settings, each is confirmed individually.",
+        "description": "Choose a section and adjust the settings. **Apply** sends only your changes, one after another, and checks each by reading it back.",
         "data": {
           "controls": "Controls"
         },
@@ -466,11 +466,11 @@
         "description": "{result}"
       },
       "connection": {
-        "title": "Manage connection",
+        "title": "Manage access",
         "description": "{result}{status}",
         "menu_options": {
           "connection_test": "Test connection now",
-          "connection_enabled": "Enable or disable access",
+          "connection_enabled": "Switch access on or off",
           "connection_forget": "Forget deselected systems",
           "connection_targets": "Use for systems and devices",
           "connection_reauthenticate": "Sign in again",
@@ -485,10 +485,10 @@
         }
       },
       "connection_enabled": {
-        "title": "Enable access",
+        "title": "Switch access on or off",
         "description": "Disabling affects only this access. Other connections continue running. Systems and entities are retained.",
         "data": {
-          "enabled": "Enabled"
+          "enabled": "Access switched on"
         }
       },
       "connection_forget": {
@@ -581,7 +581,7 @@
       },
       "local_address": {
         "title": "Local gateway address",
-        "description": "Choose a discovered address or enter an IP address or hostname. Discovery does not change any saved connection.",
+        "description": "Choose a discovered address or enter an IP address or hostname. Tip: reserve the gateway's address in the router (DHCP reservation) so it stays the same.",
         "data": {
           "address": "IP address or hostname"
         }
@@ -602,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Confirm the gateway certificate",
-        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.\n\nThe gateway has its own certificate for each port. Port 9442 is the sign-in port and is checked before the sign-in; port 9443 is the data port and is checked after it. That is why this page can appear twice.",
+        "description": "Home Assistant reached **{host}:{port}**. Confirm that this is your gateway before sending credentials. A fingerprint is not proof of identity on its own.\n\nSHA-256: `{fingerprint}`\n\nPrevious fingerprint: `{previous}`. A question mark means no saved certificate applies to this address and port.\n\nThe gateway has its own certificate for each port. Port 9442 is the sign-in port and is checked before the sign-in; port 9443 is the data port and is checked after it. That is why this page can appear twice.\n\nIf the certificate does not belong to your gateway, close the dialog; nothing is sent.",
         "data": {
           "confirm": "I confirm this gateway and its certificate"
         }
       },
       "local_auth": {
         "title": "Sign in with the device label",
-        "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for 1 second and release them together. Confirm the brief blue signal and continue within five minutes. After a typo, press the buttons again: the gateway accepts a sign-in only within five minutes after the release. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and password are not saved.",
+        "description": "Enter the Login and Pass from the gateway label. To release local sign-in, press the Wi-Fi and wireless buttons together for 1 second and release them together. Confirm the brief blue signal and continue within five minutes. If correcting a typo takes longer than five minutes, press the buttons again. Access stays on your selected LAN address. The gateway response determines whether sign-in was released. Login and Pass are not saved.",
         "data": {
           "login": "Login on device label",
           "password": "Pass on device label",
@@ -625,17 +625,17 @@
       },
       "local_pending": {
         "title": "Resume local setup",
-        "description": "A previous attempt is saved. If a token was received, continue with that token. If the response was lost, a token may exist on the gateway even though Home Assistant could not save it. Discarding removes only the local pending copy and permits another attempt; it does not revoke gateway tokens.\n\nRemaining server pause: {seconds} seconds.",
+        "description": "A previous attempt is saved. If a token was received, continue with that token. If the response was lost, a token may exist on the gateway even though Home Assistant could not save it. Discarding removes only the local pending copy and permits another attempt; it does not revoke gateway tokens.\n\nGateway pause remaining: {seconds} seconds (0 means you can continue now).",
         "data": {
           "action": "Next action",
           "confirm": "I understand and want to discard this pending attempt"
         }
       },
       "local_result": {
-        "title": "Confirm the local connection",
+        "title": "Confirm the local access",
         "description": "The read check for **{host}** succeeded and gateway **{gateway}** matches the selected installation. Saving checks the current data again and adds or updates this access on the existing setup.",
         "data": {
-          "confirm": "Save this local connection"
+          "confirm": "Save this local access"
         }
       },
       "local_retry": {
@@ -697,7 +697,7 @@
       "holiday_time_step": "Please choose a quarter-hour time: minutes 00, 15, 30 or 45.",
       "holiday_time_nonexistent": "The selected start or end time does not exist because the clock moves forward in the heating system's time zone. Choose another time.",
       "holiday_time_ambiguous": "The selected start or end time occurs twice because the clock moves back in the heating system's time zone. Choose an unambiguous time.",
-      "write_authentication_failed": "The cloud sign-in is no longer valid. Reauthenticate Bosch/Buderus Home Comfort before trying again.",
+      "write_authentication_failed": "The cloud sign-in is no longer valid. Sign in again under Configure → Connections → cloud access → **Sign in again**, then try again.",
       "write_failed": "The holiday settings could not be changed.",
       "write_busy": "The heating system is being read or another change is still running. Nothing was sent. Try again in a moment.",
       "write_not_confirmed": "The change could not be fully confirmed. Some settings may already have been saved. Reopen the holiday and check its current settings.",
@@ -817,7 +817,7 @@
       "holiday_create_unconfirmed": "The creation request could not be confirmed. The holiday may already exist. Check Manage holiday periods or the manufacturer app. For the next 10 minutes, another attempt checks the result of this request without creating a second holiday.",
       "holiday_create_adjusted": "The heating system returned a new holiday, but its settings differ from your request. Requested period: {requested}. Returned period: {actual}. Open Manage holiday periods to check and edit this entry.",
       "holiday_update_adjusted": "The heating system returned settings that differ from your requested change. Requested period: {requested}. Returned period: {actual}. Open Manage holiday periods to check and edit the current entry.",
-      "no_rrc_schedules": "No current, supported RRC weekly schedule is available.",
+      "no_rrc_schedules": "No current, supported weekly schedule of a room controller is available.",
       "no_switch_programs": "No current schedule of a heating circuit or of the hot water can be changed here.",
       "switch_program_changed": "The schedule has changed in the meantime or can no longer be changed. Reopen it to see the current switch points.",
       "switch_program_saved": "The schedule {program} was saved and confirmed by reading it back.\n\nPrevious switch points of the changed days:\n\n{before}",
@@ -831,7 +831,7 @@
       "controls_none": "This appliance currently reports no settings that can be changed here.",
       "configuration_changed": "The connection settings changed while this dialog was open. Please close it and try again.",
       "no_connections": "No access is configured. Existing systems and entities are retained.",
-      "connection_reauth_started": "Sign-in has been requested. Open the authentication prompt for this entry.",
+      "connection_reauth_started": "Signing in again is prepared. Close this dialog and select **Reconfigure** for this integration under Settings → Devices & services, in the **Attention required** section.",
       "cloud_already_connected": "A cloud connection is already configured. Use its connection settings to select more devices or sign in again. A second parallel cloud sign-in is not supported yet.",
       "cloud_setup_in_progress": "Another cloud setup is already open. Finish or close that dialog first.",
       "cloud_setup_taken_over": "A newer cloud setup dialog has replaced this one. Close this dialog and continue in the newer one.",
@@ -845,7 +845,7 @@
       "local_discovery_invalid": "This discovery announcement does not describe a supported local gateway endpoint.",
       "local_existing_owner_required": "Set up a system without the cloud with \"Local access only\" when adding the integration. A discovered gateway can be added to an existing setup.",
       "local_target_required": "This setup has no suitable retained installation for a local connection.",
-      "local_setup_complete": "The local access has been set up.",
+      "local_setup_complete": "The local access has been set up. Its status and polling frequency are under Configure → Connections.",
       "local_pending_saved": "The pending attempt is retained. You can resume it from local setup.",
       "local_storage_failed": "The private setup record could not be read or saved. Check Home Assistant storage before continuing.",
       "cloud_local_first_other_entry": "This system is already set up through its local access in another entry of this integration. Add the cloud access in that entry instead.",
@@ -936,7 +936,7 @@
     },
     "local_certificate_changed": {
       "title": "Local gateway certificate changed",
-      "description": "The gateway of a local access presents a different certificate. The integration does not accept it on its own and stops reading locally. If you know why the certificate changed (for example after a gateway update or reset), open the integration options, choose the local access and select \"Change local access\". You confirm the new certificate there. A new sign-in with the device label is recommended; keep the current token only if you are sure the new certificate belongs to your own gateway."
+      "description": "The gateway of a local access presents a different certificate. The integration does not accept it on its own and stops reading locally. If you know why the certificate changed (for example after a gateway update or reset), open **Configure → Connections** for the integration, choose the LAN access and select \"Change local access\". You confirm the new certificate there. A new sign-in with the device label is recommended; keep the current token only if you are sure the new certificate belongs to your own gateway."
     },
     "local_start_certificate": {
       "title": "Local access cannot connect securely",
@@ -1004,7 +1004,7 @@
         "step": {
           "confirm": {
             "title": "Use the new gateway address",
-            "description": "The local access cannot reach its gateway at {previous}. The same gateway now answers at {address}: it presents the certificate confirmed during setup. No token was sent to the new address.\n\nConfirm below to save the new address. The local access then starts again with it; the token and the confirmed certificate stay unchanged. To avoid this in future, reserve the gateway's address in the router (DHCP reservation).",
+            "description": "The local access cannot reach its gateway at {previous}. The same gateway now answers at {address}: it presents the certificate confirmed during setup. No token was sent to the new address.\n\nConfirm below to save the new address. The local access then starts again with it; the token and the confirmed certificate stay unchanged. To avoid this in future, reserve the gateway's address in the router (DHCP reservation).\n\nIf you do not want to use the address, close the dialog or select **Ignore**.",
             "data": {
               "confirm": "Use the new address"
             }
@@ -1016,7 +1016,7 @@
         "abort": {
           "entry_not_found": "The affected entry of this integration no longer exists.",
           "configuration_changed": "The access or the system has changed. Open the repair again.",
-          "local_address_expired": "This note is no longer current. Nothing was changed.",
+          "local_address_expired": "This note is no longer current, for example after a restart. Nothing was changed. It appears again if the gateway answers at a new address again.",
           "local_address_recovered": "The local access reaches its gateway again. Nothing was changed.",
           "local_address_unproven": "The gateway at the new address could not be confirmed again. Nothing was changed."
         }
@@ -1095,7 +1095,7 @@
     },
     "setup_unfinished": {
       "title": "Setup not finished",
-      "description": "The entry \"{title}\" has no access yet. Open its configuration options and choose \"Set up local access\" (or add a cloud access) to finish the setup."
+      "description": "The entry \"{title}\" has no access yet. Select **Configure** on it and then \"Set up local access\" (or connect a cloud access)."
     }
   },
   "exceptions": {
@@ -1350,7 +1350,7 @@
       "options": {
         "saturday": "As Saturday",
         "fix_temperature": "Constant temperature",
-        "off": "OFF",
+        "off": "Off",
         "eco": "Setback",
         "auto_sat": "As Saturday",
         "fix_temp": "Constant temperature"
@@ -1359,19 +1359,19 @@
     "holiday_dhw_mode": {
       "options": {
         "saturday": "As Saturday",
-        "off": "OFF",
+        "off": "Off",
         "eco": "Eco+",
         "low": "Eco",
         "high": "Comfort",
-        "off_td": "OFF with Thermal Disinfection",
+        "off_td": "Off with thermal disinfection",
         "auto_sat": "As Saturday",
-        "td_off": "OFF with Thermal Disinfection"
+        "td_off": "Off with thermal disinfection"
       }
     },
     "holiday_ventilation_mode": {
       "options": {
         "saturday": "As Saturday",
-        "off": "OFF",
+        "off": "Off",
         "min": "Fan level 1",
         "red": "Fan level 2",
         "nom": "Fan level 3",

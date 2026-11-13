@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Adresse de la passerelle locale",
-        "description": "Choisissez une adresse découverte ou saisissez une adresse IP ou un nom d'hôte. La découverte ne modifie aucune connexion enregistrée.",
+        "description": "Choisissez une adresse découverte ou saisissez une adresse IP ou un nom d'hôte. Conseil : réservez l'adresse de la passerelle dans le routeur (réservation DHCP) pour qu'elle reste identique.",
         "data": {
           "address": "Adresse IP ou nom d'hôte"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Confirmer le certificat de la passerelle",
-        "description": "Home Assistant a atteint **{host}:{port}**. Confirmez qu'il s'agit bien de votre passerelle avant d'envoyer des identifiants. Une empreinte ne constitue pas à elle seule une preuve d'identité.\n\nSHA-256 : `{fingerprint}`\n\nEmpreinte précédente : `{previous}`. Un point d'interrogation signifie qu'aucun certificat enregistré ne s'applique à cette adresse et à ce port.\n\nLa passerelle possède son propre certificat pour chaque port. Le port 9442 est le port de connexion et est vérifié avant la connexion ; le port 9443 est le port de données et est vérifié après. C'est pourquoi cette page peut apparaître deux fois.",
+        "description": "Home Assistant a atteint **{host}:{port}**. Confirmez qu'il s'agit bien de votre passerelle avant d'envoyer des identifiants. Une empreinte ne constitue pas à elle seule une preuve d'identité.\n\nSHA-256 : `{fingerprint}`\n\nEmpreinte précédente : `{previous}`. Un point d'interrogation signifie qu'aucun certificat enregistré ne s'applique à cette adresse et à ce port.\n\nLa passerelle possède son propre certificat pour chaque port. Le port 9442 est le port de connexion et est vérifié avant la connexion ; le port 9443 est le port de données et est vérifié après. C'est pourquoi cette page peut apparaître deux fois.\n\nSi le certificat n'appartient pas à votre passerelle, fermez la boîte de dialogue ; rien n'est envoyé.",
         "data": {
           "confirm": "Je confirme cette passerelle et son certificat"
         }
       },
       "local_auth": {
         "title": "Se connecter avec l'étiquette de l'appareil",
-        "description": "Saisissez les valeurs Login et Pass de l'étiquette de la passerelle. Pour autoriser la connexion locale, appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, puis relâchez-les ensemble. Confirmez le bref signal bleu et continuez dans les cinq minutes. Après une faute de frappe, appuyez de nouveau sur les boutons : la passerelle n'accepte une connexion que dans les cinq minutes suivant l'autorisation. L'accès reste sur l'adresse LAN que vous avez sélectionnée. La réponse de la passerelle détermine si la connexion a été autorisée. Le login et le mot de passe ne sont pas enregistrés.",
+        "description": "Saisissez les valeurs Login et Pass de l'étiquette de la passerelle. Pour autoriser la connexion locale, appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, puis relâchez-les ensemble. Confirmez le bref signal bleu et continuez dans les cinq minutes. Si la correction d'une faute de frappe prend plus de cinq minutes, appuyez de nouveau sur les boutons. L'accès reste sur l'adresse LAN que vous avez sélectionnée. La réponse de la passerelle détermine si la connexion a été autorisée. Le Login et le Pass ne sont pas enregistrés.",
         "data": {
           "login": "Login de l'étiquette de l'appareil",
           "password": "Pass de l'étiquette de l'appareil",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Reprendre la configuration locale",
-        "description": "Une tentative précédente est enregistrée. Si un jeton a été reçu, continuez avec ce jeton. Si la réponse a été perdue, un jeton peut exister sur la passerelle même si Home Assistant n'a pas pu l'enregistrer. L'abandon supprime uniquement la copie locale en attente et autorise une nouvelle tentative ; il ne révoque pas les jetons de la passerelle.\n\nPause restante côté serveur : {seconds} secondes.",
+        "description": "Une tentative précédente est enregistrée. Si un jeton a été reçu, continuez avec ce jeton. Si la réponse a été perdue, un jeton peut exister sur la passerelle même si Home Assistant n'a pas pu l'enregistrer. L'abandon supprime uniquement la copie locale en attente et autorise une nouvelle tentative ; il ne révoque pas les jetons de la passerelle.\n\nPause restante de la passerelle : {seconds} secondes (0 signifie que vous pouvez continuer tout de suite).",
         "data": {
           "action": "Action suivante",
           "confirm": "Je comprends et je souhaite abandonner cette tentative en attente"
@@ -201,14 +201,14 @@
       "already_configured": "Ce compte de chauffage ou au moins une passerelle sélectionnée est déjà configuré dans Home Assistant.",
       "invalid_flow": "Cette session de configuration est incomplète ou a expiré. Fermez la boîte de dialogue et ajoutez à nouveau Bosch/Buderus Home Comfort.",
       "no_gateways": "Aucun appareil n'a été trouvé. Vérifiez que la marque sélectionnée et le compte SingleKey ID correspondent à votre application. Un régulateur d'ambiance doté d'un micrologiciel plus ancien n'apparaît qu'une fois son micrologiciel mis à jour et après sa configuration dans l'application actuelle avec votre SingleKey ID.",
-      "reauth_required": "L'autorisation enregistrée n'est plus valide. Fermez cette boîte de dialogue et sélectionnez Se réauthentifier pour Bosch/Buderus Home Comfort.",
+      "reauth_required": "La connexion enregistrée n'est plus valide. Fermez cette boîte de dialogue et sélectionnez **Reconfigurer** pour cette intégration sous Paramètres → Appareils et services.",
       "reauth_successful": "La connexion a été renouvelée avec succès.",
       "reauth_wrong_account": "Le compte sélectionné ne correspond pas aux appareils configurés. Connectez-vous avec le compte d'origine.",
       "reauth_no_targets": "Cet accès cloud n'a plus aucune installation ni aucun appareil, et le compte auquel il appartient ne peut pas être confirmé. Les identifiants précédents sont conservés. Pour utiliser à nouveau un compte cloud, supprimez l'accès cloud sous Configurer → Connexions et reconnectez-le.",
       "reauth_successful_targets_missing": "La connexion a été renouvelée. {count} installations ou appareils activés n'ont pas été trouvés dans le compte ; ils restent configurés. Une note de réparation les nomme et explique comment les oublier.",
       "reconfigure_successful": "Les paramètres ont été enregistrés. Bosch/Buderus Home Comfort se recharge et redécouvre toutes les ressources disponibles.",
-      "connection_required": "Sélectionnez la connexion sous Paramètres avant de vous reconnecter.",
-      "connection_settings_required": "Gérez cet accès sous Paramètres et Connexions.",
+      "connection_required": "Choisissez d'abord, sous **Configurer → Connexions**, l'accès auquel vous voulez vous reconnecter.",
+      "connection_settings_required": "Gérez cet accès sous **Configurer → Connexions**.",
       "cloud_already_connected": "Une connexion cloud est déjà configurée. Utilisez ses paramètres de connexion pour sélectionner d'autres appareils ou vous reconnecter. Une seconde connexion cloud en parallèle n'est pas encore prise en charge.",
       "cloud_setup_in_progress": "Une autre configuration cloud est déjà ouverte. Terminez ou fermez d'abord cette boîte de dialogue.",
       "cloud_setup_taken_over": "Une boîte de dialogue de configuration cloud plus récente a remplacé celle-ci. Fermez cette boîte de dialogue et continuez dans la plus récente.",
@@ -223,7 +223,7 @@
       "local_address_moved": "La passerelle d'un accès local configuré répond à une nouvelle adresse. Une note de réparation propose de l'utiliser.",
       "local_existing_owner_required": "Configurez une installation sans le cloud avec « Accès local uniquement » lors de l'ajout de l'intégration. Une passerelle découverte peut être ajoutée à une installation existante.",
       "local_target_required": "Cette configuration ne comporte aucune installation conservée adaptée à une connexion locale.",
-      "local_setup_complete": "L'accès local a été configuré.",
+      "local_setup_complete": "L'accès local a été configuré. Son état et sa fréquence d'interrogation se trouvent sous Configurer → Connexions.",
       "local_pending_saved": "La tentative en attente est conservée. Vous pouvez la reprendre depuis la configuration locale.",
       "local_storage_failed": "L'enregistrement privé de la configuration n'a pas pu être lu ou enregistré. Vérifiez le stockage de Home Assistant avant de continuer.",
       "already_in_progress": "La configuration de cette passerelle locale est déjà en cours.",
@@ -242,7 +242,7 @@
         "menu_options": {
           "notifications": "Notifications",
           "holidays": "Gérer les périodes de vacances",
-          "rrc_programs": "Programmes de chauffage RRC",
+          "rrc_programs": "Programmes horaires du régulateur d'ambiance",
           "switch_programs": "Programmes horaires du chauffage et de l'eau chaude",
           "controls": "Commander l'appareil",
           "connections": "Connexions",
@@ -279,7 +279,7 @@
         "data": {
           "holiday_name": "Nom",
           "holiday_start": "Début",
-          "holiday_end": "Fin (exclue)",
+          "holiday_end": "Fin (retour au fonctionnement normal à partir d'ici)",
           "holiday_assigned_to": "Appliquer à",
           "holiday_heating_mode": "Chauffage central",
           "holiday_dhw_mode": "Eau chaude",
@@ -302,7 +302,7 @@
         "data": {
           "holiday_name": "Nom",
           "holiday_start": "Début",
-          "holiday_end": "Fin (exclue)",
+          "holiday_end": "Fin (retour au fonctionnement normal à partir d'ici)",
           "holiday_assigned_to": "Appliquer à",
           "holiday_heating_mode": "Chauffage central",
           "holiday_dhw_mode": "Eau chaude",
@@ -317,7 +317,7 @@
         "data": {
           "holiday_name": "Nom",
           "holiday_start": "Début",
-          "holiday_end": "Fin (exclue)",
+          "holiday_end": "Fin (premier jour après les vacances)",
           "holiday_assigned_to": "Appliquer à",
           "holiday_heating_mode": "Chauffage central",
           "holiday_dhw_mode": "Eau chaude",
@@ -333,7 +333,7 @@
         "data": {
           "holiday_name": "Nom",
           "holiday_start": "Début",
-          "holiday_end": "Fin (exclue)",
+          "holiday_end": "Fin (premier jour après les vacances)",
           "holiday_assigned_to": "Appliquer à",
           "holiday_heating_mode": "Chauffage central",
           "holiday_dhw_mode": "Eau chaude",
@@ -448,7 +448,7 @@
       },
       "operate": {
         "title": "Commander l'appareil",
-        "description": "Choisissez une section et ajustez les réglages. Appliquer n'écrit que vos modifications. Lorsque vous modifiez plusieurs réglages, chacun est confirmé individuellement.",
+        "description": "Choisissez une section et ajustez les réglages. **Appliquer** n'envoie que vos modifications, l'une après l'autre, et vérifie chacune en la relisant.",
         "data": {
           "controls": "Commandes"
         },
@@ -485,10 +485,10 @@
         }
       },
       "connection_enabled": {
-        "title": "Activer l'accès",
+        "title": "Activer ou désactiver l'accès",
         "description": "La désactivation n'affecte que cet accès. Les autres connexions continuent de fonctionner. Les installations et les entités sont conservées.",
         "data": {
-          "enabled": "Activé"
+          "enabled": "Accès activé"
         }
       },
       "connection_forget": {
@@ -581,7 +581,7 @@
       },
       "local_address": {
         "title": "Adresse de la passerelle locale",
-        "description": "Choisissez une adresse découverte ou saisissez une adresse IP ou un nom d'hôte. La découverte ne modifie aucune connexion enregistrée.",
+        "description": "Choisissez une adresse découverte ou saisissez une adresse IP ou un nom d'hôte. Conseil : réservez l'adresse de la passerelle dans le routeur (réservation DHCP) pour qu'elle reste identique.",
         "data": {
           "address": "Adresse IP ou nom d'hôte"
         }
@@ -602,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Confirmer le certificat de la passerelle",
-        "description": "Home Assistant a atteint **{host}:{port}**. Confirmez qu'il s'agit bien de votre passerelle avant d'envoyer des identifiants. Une empreinte ne constitue pas à elle seule une preuve d'identité.\n\nSHA-256 : `{fingerprint}`\n\nEmpreinte précédente : `{previous}`. Un point d'interrogation signifie qu'aucun certificat enregistré ne s'applique à cette adresse et à ce port.\n\nLa passerelle possède son propre certificat pour chaque port. Le port 9442 est le port de connexion et est vérifié avant la connexion ; le port 9443 est le port de données et est vérifié après. C'est pourquoi cette page peut apparaître deux fois.",
+        "description": "Home Assistant a atteint **{host}:{port}**. Confirmez qu'il s'agit bien de votre passerelle avant d'envoyer des identifiants. Une empreinte ne constitue pas à elle seule une preuve d'identité.\n\nSHA-256 : `{fingerprint}`\n\nEmpreinte précédente : `{previous}`. Un point d'interrogation signifie qu'aucun certificat enregistré ne s'applique à cette adresse et à ce port.\n\nLa passerelle possède son propre certificat pour chaque port. Le port 9442 est le port de connexion et est vérifié avant la connexion ; le port 9443 est le port de données et est vérifié après. C'est pourquoi cette page peut apparaître deux fois.\n\nSi le certificat n'appartient pas à votre passerelle, fermez la boîte de dialogue ; rien n'est envoyé.",
         "data": {
           "confirm": "Je confirme cette passerelle et son certificat"
         }
       },
       "local_auth": {
         "title": "Se connecter avec l'étiquette de l'appareil",
-        "description": "Saisissez les valeurs Login et Pass de l'étiquette de la passerelle. Pour autoriser la connexion locale, appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, puis relâchez-les ensemble. Confirmez le bref signal bleu et continuez dans les cinq minutes. Après une faute de frappe, appuyez de nouveau sur les boutons : la passerelle n'accepte une connexion que dans les cinq minutes suivant l'autorisation. L'accès reste sur l'adresse LAN que vous avez sélectionnée. La réponse de la passerelle détermine si la connexion a été autorisée. Le login et le mot de passe ne sont pas enregistrés.",
+        "description": "Saisissez les valeurs Login et Pass de l'étiquette de la passerelle. Pour autoriser la connexion locale, appuyez ensemble sur les boutons Wi-Fi et sans fil pendant 1 seconde, puis relâchez-les ensemble. Confirmez le bref signal bleu et continuez dans les cinq minutes. Si la correction d'une faute de frappe prend plus de cinq minutes, appuyez de nouveau sur les boutons. L'accès reste sur l'adresse LAN que vous avez sélectionnée. La réponse de la passerelle détermine si la connexion a été autorisée. Le Login et le Pass ne sont pas enregistrés.",
         "data": {
           "login": "Login de l'étiquette de l'appareil",
           "password": "Pass de l'étiquette de l'appareil",
@@ -625,7 +625,7 @@
       },
       "local_pending": {
         "title": "Reprendre la configuration locale",
-        "description": "Une tentative précédente est enregistrée. Si un jeton a été reçu, continuez avec ce jeton. Si la réponse a été perdue, un jeton peut exister sur la passerelle même si Home Assistant n'a pas pu l'enregistrer. L'abandon supprime uniquement la copie locale en attente et autorise une nouvelle tentative ; il ne révoque pas les jetons de la passerelle.\n\nPause restante côté serveur : {seconds} secondes.",
+        "description": "Une tentative précédente est enregistrée. Si un jeton a été reçu, continuez avec ce jeton. Si la réponse a été perdue, un jeton peut exister sur la passerelle même si Home Assistant n'a pas pu l'enregistrer. L'abandon supprime uniquement la copie locale en attente et autorise une nouvelle tentative ; il ne révoque pas les jetons de la passerelle.\n\nPause restante de la passerelle : {seconds} secondes (0 signifie que vous pouvez continuer tout de suite).",
         "data": {
           "action": "Action suivante",
           "confirm": "Je comprends et je souhaite abandonner cette tentative en attente"
@@ -697,7 +697,7 @@
       "holiday_time_step": "Veuillez choisir une heure au quart d'heure : minutes 00, 15, 30 ou 45.",
       "holiday_time_nonexistent": "L'heure de début ou de fin sélectionnée n'existe pas, car l'horloge avance dans le fuseau horaire de l'installation de chauffage. Choisissez une autre heure.",
       "holiday_time_ambiguous": "L'heure de début ou de fin sélectionnée se produit deux fois, car l'horloge recule dans le fuseau horaire de l'installation de chauffage. Choisissez une heure non ambiguë.",
-      "write_authentication_failed": "La connexion au compte cloud n'est plus valide. Réauthentifiez Bosch/Buderus Home Comfort avant de réessayer.",
+      "write_authentication_failed": "La connexion au compte cloud n'est plus valide. Reconnectez-vous sous Configurer → Connexions → accès cloud → **Se reconnecter**, puis réessayez.",
       "write_failed": "Les réglages des vacances n'ont pas pu être modifiés.",
       "write_busy": "L'installation de chauffage est en cours de lecture ou une autre modification est encore en cours. Rien n'a été envoyé. Réessayez dans un instant.",
       "write_not_confirmed": "La modification n'a pas pu être entièrement confirmée. Certains réglages ont peut-être déjà été enregistrés. Rouvrez les vacances et vérifiez leurs réglages actuels.",
@@ -817,7 +817,7 @@
       "holiday_create_unconfirmed": "La requête de création n'a pas pu être confirmée. Les vacances existent peut-être déjà. Vérifiez Gérer les périodes de vacances ou l'application du fabricant. Pendant les 10 minutes suivantes, une nouvelle tentative vérifie le résultat de cette requête sans créer de seconde période de vacances.",
       "holiday_create_adjusted": "L'installation de chauffage a renvoyé de nouvelles vacances, mais leurs réglages diffèrent de votre demande. Période demandée : {requested}. Période renvoyée : {actual}. Ouvrez Gérer les périodes de vacances pour vérifier et modifier cette entrée.",
       "holiday_update_adjusted": "L'installation de chauffage a renvoyé des réglages qui diffèrent de la modification demandée. Période demandée : {requested}. Période renvoyée : {actual}. Ouvrez Gérer les périodes de vacances pour vérifier et modifier l'entrée actuelle.",
-      "no_rrc_schedules": "Aucun programme hebdomadaire RRC actuel et pris en charge n'est disponible.",
+      "no_rrc_schedules": "Aucun programme hebdomadaire actuel et pris en charge d'un régulateur d'ambiance n'est disponible.",
       "no_switch_programs": "Aucun programme horaire actuel d'un circuit de chauffage ou de l'eau chaude ne peut être modifié ici.",
       "switch_program_changed": "Le programme horaire a changé entre-temps ou ne peut plus être modifié. Rouvrez-le pour voir les points de commutation actuels.",
       "switch_program_saved": "Le programme horaire {program} a été enregistré et confirmé par relecture.\n\nPoints de commutation précédents des jours modifiés :\n\n{before}",
@@ -831,7 +831,7 @@
       "controls_none": "Cet appareil ne signale actuellement aucun réglage modifiable ici.",
       "configuration_changed": "Les paramètres de connexion ont changé pendant que cette boîte de dialogue était ouverte. Veuillez la fermer et réessayer.",
       "no_connections": "Aucun accès n'est configuré. Les installations et entités existantes sont conservées.",
-      "connection_reauth_started": "La connexion a été demandée. Ouvrez la fenêtre d'authentification de cette entrée.",
+      "connection_reauth_started": "La nouvelle connexion est préparée. Fermez cette boîte de dialogue et sélectionnez **Reconfigurer** pour cette intégration sous Paramètres → Appareils et services, dans la section **Attention requise**.",
       "cloud_already_connected": "Une connexion cloud est déjà configurée. Utilisez ses paramètres de connexion pour sélectionner d'autres appareils ou vous reconnecter. Une seconde connexion cloud en parallèle n'est pas encore prise en charge.",
       "cloud_setup_in_progress": "Une autre configuration cloud est déjà ouverte. Terminez ou fermez d'abord cette boîte de dialogue.",
       "cloud_setup_taken_over": "Une boîte de dialogue de configuration cloud plus récente a remplacé celle-ci. Fermez cette boîte de dialogue et continuez dans la plus récente.",
@@ -845,7 +845,7 @@
       "local_discovery_invalid": "Cette annonce de découverte ne décrit pas un point d'accès de passerelle locale pris en charge.",
       "local_existing_owner_required": "Configurez une installation sans le cloud avec « Accès local uniquement » lors de l'ajout de l'intégration. Une passerelle découverte peut être ajoutée à une installation existante.",
       "local_target_required": "Cette configuration ne comporte aucune installation conservée adaptée à une connexion locale.",
-      "local_setup_complete": "L'accès local a été configuré.",
+      "local_setup_complete": "L'accès local a été configuré. Son état et sa fréquence d'interrogation se trouvent sous Configurer → Connexions.",
       "local_pending_saved": "La tentative en attente est conservée. Vous pouvez la reprendre depuis la configuration locale.",
       "local_storage_failed": "L'enregistrement privé de la configuration n'a pas pu être lu ou enregistré. Vérifiez le stockage de Home Assistant avant de continuer.",
       "cloud_local_first_other_entry": "Cette installation est déjà configurée via son accès local dans une autre entrée de cette intégration. Ajoutez plutôt l'accès cloud dans cette entrée.",
@@ -936,7 +936,7 @@
     },
     "local_certificate_changed": {
       "title": "Le certificat de la passerelle locale a changé",
-      "description": "La passerelle d'un accès local présente un autre certificat. L'intégration ne l'accepte pas d'elle-même et cesse la lecture locale. Si vous savez pourquoi le certificat a changé (par exemple après une mise à jour ou une réinitialisation de la passerelle), ouvrez les options de l'intégration, choisissez l'accès local et sélectionnez « Modifier l'accès local ». Vous y confirmez le nouveau certificat. Une nouvelle connexion avec l'étiquette de l'appareil est recommandée ; conservez le jeton actuel uniquement si vous êtes certain que le nouveau certificat appartient à votre propre passerelle."
+      "description": "La passerelle d'un accès local présente un autre certificat. L'intégration ne l'accepte pas d'elle-même et cesse la lecture locale. Si vous savez pourquoi le certificat a changé (par exemple après une mise à jour ou une réinitialisation de la passerelle), ouvrez Configurer → Connexions pour l'intégration, choisissez l'accès LAN et sélectionnez « Modifier l'accès local ». Vous y confirmez le nouveau certificat. Une nouvelle connexion avec l'étiquette de l'appareil est recommandée ; conservez le jeton actuel uniquement si vous êtes certain que le nouveau certificat appartient à votre propre passerelle."
     },
     "local_start_certificate": {
       "title": "L'accès local ne peut pas se connecter de façon sécurisée",
@@ -1004,7 +1004,7 @@
         "step": {
           "confirm": {
             "title": "Utiliser la nouvelle adresse de la passerelle",
-            "description": "L'accès local ne joint plus sa passerelle à l'adresse {previous}. La même passerelle répond maintenant à l'adresse {address} : elle présente le certificat confirmé lors de la configuration. Aucun jeton n'a été envoyé à la nouvelle adresse.\n\nConfirmez ci-dessous pour enregistrer la nouvelle adresse. L'accès local redémarre ensuite avec elle ; le jeton et le certificat confirmé restent inchangés. Pour éviter cela à l'avenir, réservez l'adresse de la passerelle dans le routeur (réservation DHCP).",
+            "description": "L'accès local ne joint plus sa passerelle à l'adresse {previous}. La même passerelle répond maintenant à l'adresse {address} : elle présente le certificat confirmé lors de la configuration. Aucun jeton n'a été envoyé à la nouvelle adresse.\n\nConfirmez ci-dessous pour enregistrer la nouvelle adresse. L'accès local redémarre ensuite avec elle ; le jeton et le certificat confirmé restent inchangés. Pour éviter cela à l'avenir, réservez l'adresse de la passerelle dans le routeur (réservation DHCP).\n\nSi vous ne souhaitez pas utiliser l'adresse, fermez la boîte de dialogue ou sélectionnez **Ignorer**.",
             "data": {
               "confirm": "Utiliser la nouvelle adresse"
             }
@@ -1016,7 +1016,7 @@
         "abort": {
           "entry_not_found": "L'entrée concernée de cette intégration n'existe plus.",
           "configuration_changed": "L'accès ou l'installation a changé. Ouvrez à nouveau la réparation.",
-          "local_address_expired": "Cette note n'est plus d'actualité. Rien n'a été modifié.",
+          "local_address_expired": "Cette note n'est plus d'actualité, par exemple après un redémarrage. Rien n'a été modifié. Elle réapparaît si la passerelle répond de nouveau à une nouvelle adresse.",
           "local_address_recovered": "L'accès local joint de nouveau sa passerelle. Rien n'a été modifié.",
           "local_address_unproven": "La passerelle à la nouvelle adresse n'a pas pu être confirmée à nouveau. Rien n'a été modifié."
         }
@@ -1095,7 +1095,7 @@
     },
     "setup_unfinished": {
       "title": "Configuration non terminée",
-      "description": "L'entrée « {title} » n'a pas encore d'accès. Ouvrez ses options de configuration et choisissez « Configurer l'accès local » (ou ajoutez un accès cloud) pour terminer la configuration."
+      "description": "L'entrée « {title} » n'a pas encore d'accès. Sélectionnez **Configurer** sur celle-ci, puis « Configurer l'accès local » (ou connectez un accès cloud)."
     }
   },
   "exceptions": {

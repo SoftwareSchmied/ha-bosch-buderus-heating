@@ -83,7 +83,7 @@
       },
       "local_address": {
         "title": "Adres lokalnej bramki",
-        "description": "Wybierz wykryty adres albo wprowadź adres IP lub nazwę hosta. Wykrywanie nie zmienia żadnego zapisanego połączenia.",
+        "description": "Wybierz wykryty adres albo wprowadź adres IP lub nazwę hosta. Wskazówka: zarezerwuj adres bramki w routerze (rezerwacja DHCP), aby się nie zmieniał.",
         "data": {
           "address": "Adres IP lub nazwa hosta"
         }
@@ -104,14 +104,14 @@
       },
       "local_certificate": {
         "title": "Potwierdź certyfikat bramki",
-        "description": "Home Assistant połączył się z **{host}:{port}**. Przed wysłaniem danych logowania potwierdź, że jest to Twoja bramka. Sam odcisk palca nie jest dowodem tożsamości.\n\nSHA-256: `{fingerprint}`\n\nPoprzedni odcisk palca: `{previous}`. Znak zapytania oznacza, że dla tego adresu i portu nie ma zapisanego certyfikatu.\n\nBramka ma własny certyfikat dla każdego portu. Port 9442 jest portem logowania i jest sprawdzany przed logowaniem; port 9443 jest portem danych i jest sprawdzany po nim. Dlatego ta strona może pojawić się dwukrotnie.",
+        "description": "Home Assistant połączył się z **{host}:{port}**. Przed wysłaniem danych logowania potwierdź, że jest to Twoja bramka. Sam odcisk palca nie jest dowodem tożsamości.\n\nSHA-256: `{fingerprint}`\n\nPoprzedni odcisk palca: `{previous}`. Znak zapytania oznacza, że dla tego adresu i portu nie ma zapisanego certyfikatu.\n\nBramka ma własny certyfikat dla każdego portu. Port 9442 jest portem logowania i jest sprawdzany przed logowaniem; port 9443 jest portem danych i jest sprawdzany po nim. Dlatego ta strona może pojawić się dwukrotnie.\n\nJeśli certyfikat nie należy do Twojej bramki, zamknij okno; nic nie zostanie wysłane.",
         "data": {
           "confirm": "Potwierdzam tę bramkę i jej certyfikat"
         }
       },
       "local_auth": {
         "title": "Zaloguj się za pomocą etykiety urządzenia",
-        "description": "Wprowadź Login i Pass z etykiety bramki. Aby odblokować logowanie lokalne, naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę i zwolnij je jednocześnie. Potwierdź krótki niebieski sygnał i kontynuuj w ciągu pięciu minut. Po literówce naciśnij przyciski ponownie: bramka akceptuje logowanie tylko w ciągu pięciu minut od odblokowania. Dostęp pozostaje na wybranym adresie LAN. To odpowiedź bramki rozstrzyga, czy logowanie zostało odblokowane. Login i hasło nie są zapisywane.",
+        "description": "Wprowadź Login i Pass z etykiety bramki. Aby odblokować logowanie lokalne, naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę i zwolnij je jednocześnie. Potwierdź krótki niebieski sygnał i kontynuuj w ciągu pięciu minut. Jeśli poprawienie literówki trwa dłużej niż pięć minut, naciśnij przyciski ponownie. Dostęp pozostaje na wybranym adresie LAN. To odpowiedź bramki rozstrzyga, czy logowanie zostało odblokowane. Login i Pass nie są zapisywane.",
         "data": {
           "login": "Login z etykiety urządzenia",
           "password": "Pass z etykiety urządzenia",
@@ -127,7 +127,7 @@
       },
       "local_pending": {
         "title": "Wznów konfigurację lokalną",
-        "description": "Poprzednia próba jest zapisana. Jeśli token został otrzymany, kontynuuj z tym tokenem. Jeśli odpowiedź zaginęła, na bramce może istnieć token, mimo że Home Assistant nie mógł go zapisać. Odrzucenie usuwa tylko lokalną kopię oczekującą i pozwala na kolejną próbę; nie unieważnia tokenów na bramce.\n\nPozostała pauza serwera: {seconds} s.",
+        "description": "Poprzednia próba jest zapisana. Jeśli token został otrzymany, kontynuuj z tym tokenem. Jeśli odpowiedź zaginęła, na bramce może istnieć token, mimo że Home Assistant nie mógł go zapisać. Odrzucenie usuwa tylko lokalną kopię oczekującą i pozwala na kolejną próbę; nie unieważnia tokenów na bramce.\n\nPozostała pauza bramki: {seconds} s (0 oznacza, że możesz od razu kontynuować).",
         "data": {
           "action": "Następna czynność",
           "confirm": "Rozumiem i chcę odrzucić tę oczekującą próbę"
@@ -201,14 +201,14 @@
       "already_configured": "To konto instalacji grzewczej lub co najmniej jedna wybrana bramka jest już skonfigurowana w Home Assistant.",
       "invalid_flow": "Ta sesja konfiguracji jest niekompletna lub wygasła. Zamknij okno i ponownie dodaj Bosch/Buderus Home Comfort.",
       "no_gateways": "Nie znaleziono żadnych urządzeń. Sprawdź, czy wybrana marka i konto SingleKey ID odpowiadają Twojej aplikacji. Regulator pokojowy ze starszym oprogramowaniem układowym pojawi się dopiero po aktualizacji oprogramowania i skonfigurowaniu go w aktualnej aplikacji przy użyciu Twojego SingleKey ID.",
-      "reauth_required": "Zapisane uwierzytelnienie nie jest już ważne. Zamknij to okno i wybierz Uwierzytelnij ponownie dla Bosch/Buderus Home Comfort.",
+      "reauth_required": "Zapisane logowanie nie jest już ważne. Zamknij to okno i wybierz **Skonfiguruj ponownie** dla tej integracji w Ustawienia → Urządzenia i usługi.",
       "reauth_successful": "Logowanie zostało pomyślnie odnowione.",
       "reauth_wrong_account": "Wybrane konto nie odpowiada skonfigurowanym urządzeniom. Zaloguj się na oryginalne konto.",
       "reauth_no_targets": "Ten dostęp przez chmurę nie ma już żadnych instalacji ani urządzeń, a konta, do którego należy, nie można potwierdzić. Poprzednie dane logowania zostają zachowane. Aby ponownie użyć konta w chmurze, usuń dostęp przez chmurę w sekcji Konfiguruj → Połączenia i połącz go ponownie.",
       "reauth_successful_targets_missing": "Logowanie zostało odnowione. Nie znaleziono na koncie włączonych instalacji lub urządzeń. Liczba: {count}. Pozostają skonfigurowane. Naprawa wymienia je i wyjaśnia, jak je zapomnieć.",
       "reconfigure_successful": "Ustawienia zostały zapisane. Bosch/Buderus Home Comfort przeładowuje się i ponownie wykrywa wszystkie dostępne zasoby.",
-      "connection_required": "Przed ponownym logowaniem wybierz połączenie w Ustawieniach.",
-      "connection_settings_required": "Zarządzaj tym dostępem w Ustawieniach i Połączeniach.",
+      "connection_required": "Najpierw wybierz w **Konfiguruj → Połączenia** dostęp, do którego chcesz zalogować się ponownie.",
+      "connection_settings_required": "Zarządzaj tym dostępem w **Konfiguruj → Połączenia**.",
       "cloud_already_connected": "Połączenie z chmurą jest już skonfigurowane. Użyj jego ustawień połączenia, aby wybrać więcej urządzeń lub zalogować się ponownie. Drugie równoległe logowanie do chmury nie jest jeszcze obsługiwane.",
       "cloud_setup_in_progress": "Otwarta jest już inna konfiguracja chmury. Najpierw zakończ lub zamknij to okno.",
       "cloud_setup_taken_over": "Nowsze okno konfiguracji chmury zastąpiło to okno. Zamknij to okno i kontynuuj w nowszym.",
@@ -223,7 +223,7 @@
       "local_address_moved": "Bramka skonfigurowanego dostępu lokalnego odpowiada pod nowym adresem. Powiadomienie o naprawie proponuje jego użycie.",
       "local_existing_owner_required": "Instalację bez chmury skonfiguruj opcją „Tylko dostęp lokalny” przy dodawaniu integracji. Wykrytą bramkę można dodać do istniejącej konfiguracji.",
       "local_target_required": "Ta konfiguracja nie ma odpowiedniej zachowanej instalacji do połączenia lokalnego.",
-      "local_setup_complete": "Dostęp lokalny został skonfigurowany.",
+      "local_setup_complete": "Dostęp lokalny został skonfigurowany. Jego stan i częstotliwość odpytywania znajdziesz w Konfiguruj → Połączenia.",
       "local_pending_saved": "Oczekująca próba jest zachowana. Możesz ją wznowić z konfiguracji lokalnej.",
       "local_storage_failed": "Nie udało się odczytać lub zapisać prywatnego rekordu konfiguracji. Przed kontynuowaniem sprawdź pamięć masową Home Assistant.",
       "already_in_progress": "Konfiguracja dla tej lokalnej bramki jest już w toku.",
@@ -242,7 +242,7 @@
         "menu_options": {
           "notifications": "Powiadomienia",
           "holidays": "Zarządzaj okresami urlopu",
-          "rrc_programs": "Programy czasowe grzania RRC",
+          "rrc_programs": "Programy czasowe regulatora pokojowego",
           "switch_programs": "Programy czasowe grzania i ciepłej wody użytkowej",
           "controls": "Obsługa urządzenia",
           "connections": "Połączenia",
@@ -279,7 +279,7 @@
         "data": {
           "holiday_name": "Nazwa",
           "holiday_start": "Początek",
-          "holiday_end": "Koniec (wyłącznie)",
+          "holiday_end": "Koniec (od tego momentu normalna praca)",
           "holiday_assigned_to": "Zastosuj dla",
           "holiday_heating_mode": "Centralne ogrzewanie",
           "holiday_dhw_mode": "Ciepła woda użytkowa",
@@ -302,7 +302,7 @@
         "data": {
           "holiday_name": "Nazwa",
           "holiday_start": "Początek",
-          "holiday_end": "Koniec (wyłącznie)",
+          "holiday_end": "Koniec (od tego momentu normalna praca)",
           "holiday_assigned_to": "Zastosuj dla",
           "holiday_heating_mode": "Centralne ogrzewanie",
           "holiday_dhw_mode": "Ciepła woda użytkowa",
@@ -317,7 +317,7 @@
         "data": {
           "holiday_name": "Nazwa",
           "holiday_start": "Początek",
-          "holiday_end": "Koniec (wyłącznie)",
+          "holiday_end": "Koniec (pierwszy dzień po urlopie)",
           "holiday_assigned_to": "Zastosuj dla",
           "holiday_heating_mode": "Centralne ogrzewanie",
           "holiday_dhw_mode": "Ciepła woda użytkowa",
@@ -333,7 +333,7 @@
         "data": {
           "holiday_name": "Nazwa",
           "holiday_start": "Początek",
-          "holiday_end": "Koniec (wyłącznie)",
+          "holiday_end": "Koniec (pierwszy dzień po urlopie)",
           "holiday_assigned_to": "Zastosuj dla",
           "holiday_heating_mode": "Centralne ogrzewanie",
           "holiday_dhw_mode": "Ciepła woda użytkowa",
@@ -448,7 +448,7 @@
       },
       "operate": {
         "title": "Obsługa urządzenia",
-        "description": "Wybierz sekcję i dostosuj ustawienia. Zastosuj zapisuje tylko Twoje zmiany. Przy zmianie kilku ustawień każde jest potwierdzane osobno.",
+        "description": "Wybierz sekcję i dostosuj ustawienia. **Zastosuj** wysyła tylko Twoje zmiany, jedna po drugiej, i sprawdza każdą przez ponowne odczytanie.",
         "data": {
           "controls": "Elementy sterowania"
         },
@@ -485,10 +485,10 @@
         }
       },
       "connection_enabled": {
-        "title": "Włącz dostęp",
+        "title": "Włącz lub wyłącz dostęp",
         "description": "Wyłączenie dotyczy tylko tego dostępu. Pozostałe połączenia nadal działają. Instalacje i encje są zachowane.",
         "data": {
-          "enabled": "Włączony"
+          "enabled": "Dostęp włączony"
         }
       },
       "connection_forget": {
@@ -581,7 +581,7 @@
       },
       "local_address": {
         "title": "Adres lokalnej bramki",
-        "description": "Wybierz wykryty adres albo wprowadź adres IP lub nazwę hosta. Wykrywanie nie zmienia żadnego zapisanego połączenia.",
+        "description": "Wybierz wykryty adres albo wprowadź adres IP lub nazwę hosta. Wskazówka: zarezerwuj adres bramki w routerze (rezerwacja DHCP), aby się nie zmieniał.",
         "data": {
           "address": "Adres IP lub nazwa hosta"
         }
@@ -602,14 +602,14 @@
       },
       "local_certificate": {
         "title": "Potwierdź certyfikat bramki",
-        "description": "Home Assistant połączył się z **{host}:{port}**. Przed wysłaniem danych logowania potwierdź, że jest to Twoja bramka. Sam odcisk palca nie jest dowodem tożsamości.\n\nSHA-256: `{fingerprint}`\n\nPoprzedni odcisk palca: `{previous}`. Znak zapytania oznacza, że dla tego adresu i portu nie ma zapisanego certyfikatu.\n\nBramka ma własny certyfikat dla każdego portu. Port 9442 jest portem logowania i jest sprawdzany przed logowaniem; port 9443 jest portem danych i jest sprawdzany po nim. Dlatego ta strona może pojawić się dwukrotnie.",
+        "description": "Home Assistant połączył się z **{host}:{port}**. Przed wysłaniem danych logowania potwierdź, że jest to Twoja bramka. Sam odcisk palca nie jest dowodem tożsamości.\n\nSHA-256: `{fingerprint}`\n\nPoprzedni odcisk palca: `{previous}`. Znak zapytania oznacza, że dla tego adresu i portu nie ma zapisanego certyfikatu.\n\nBramka ma własny certyfikat dla każdego portu. Port 9442 jest portem logowania i jest sprawdzany przed logowaniem; port 9443 jest portem danych i jest sprawdzany po nim. Dlatego ta strona może pojawić się dwukrotnie.\n\nJeśli certyfikat nie należy do Twojej bramki, zamknij okno; nic nie zostanie wysłane.",
         "data": {
           "confirm": "Potwierdzam tę bramkę i jej certyfikat"
         }
       },
       "local_auth": {
         "title": "Zaloguj się za pomocą etykiety urządzenia",
-        "description": "Wprowadź Login i Pass z etykiety bramki. Aby odblokować logowanie lokalne, naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę i zwolnij je jednocześnie. Potwierdź krótki niebieski sygnał i kontynuuj w ciągu pięciu minut. Po literówce naciśnij przyciski ponownie: bramka akceptuje logowanie tylko w ciągu pięciu minut od odblokowania. Dostęp pozostaje na wybranym adresie LAN. To odpowiedź bramki rozstrzyga, czy logowanie zostało odblokowane. Login i hasło nie są zapisywane.",
+        "description": "Wprowadź Login i Pass z etykiety bramki. Aby odblokować logowanie lokalne, naciśnij jednocześnie przyciski Wi-Fi i łączności bezprzewodowej na 1 sekundę i zwolnij je jednocześnie. Potwierdź krótki niebieski sygnał i kontynuuj w ciągu pięciu minut. Jeśli poprawienie literówki trwa dłużej niż pięć minut, naciśnij przyciski ponownie. Dostęp pozostaje na wybranym adresie LAN. To odpowiedź bramki rozstrzyga, czy logowanie zostało odblokowane. Login i Pass nie są zapisywane.",
         "data": {
           "login": "Login z etykiety urządzenia",
           "password": "Pass z etykiety urządzenia",
@@ -625,7 +625,7 @@
       },
       "local_pending": {
         "title": "Wznów konfigurację lokalną",
-        "description": "Poprzednia próba jest zapisana. Jeśli token został otrzymany, kontynuuj z tym tokenem. Jeśli odpowiedź zaginęła, na bramce może istnieć token, mimo że Home Assistant nie mógł go zapisać. Odrzucenie usuwa tylko lokalną kopię oczekującą i pozwala na kolejną próbę; nie unieważnia tokenów na bramce.\n\nPozostała pauza serwera: {seconds} s.",
+        "description": "Poprzednia próba jest zapisana. Jeśli token został otrzymany, kontynuuj z tym tokenem. Jeśli odpowiedź zaginęła, na bramce może istnieć token, mimo że Home Assistant nie mógł go zapisać. Odrzucenie usuwa tylko lokalną kopię oczekującą i pozwala na kolejną próbę; nie unieważnia tokenów na bramce.\n\nPozostała pauza bramki: {seconds} s (0 oznacza, że możesz od razu kontynuować).",
         "data": {
           "action": "Następna czynność",
           "confirm": "Rozumiem i chcę odrzucić tę oczekującą próbę"
@@ -697,7 +697,7 @@
       "holiday_time_step": "Wybierz godzinę co kwadrans: minuty 00, 15, 30 lub 45.",
       "holiday_time_nonexistent": "Wybrana godzina rozpoczęcia lub zakończenia nie istnieje, ponieważ zegar w strefie czasowej instalacji grzewczej przesuwa się do przodu. Wybierz inną godzinę.",
       "holiday_time_ambiguous": "Wybrana godzina rozpoczęcia lub zakończenia występuje dwukrotnie, ponieważ zegar w strefie czasowej instalacji grzewczej cofa się. Wybierz jednoznaczną godzinę.",
-      "write_authentication_failed": "Logowanie do chmury nie jest już ważne. Uwierzytelnij ponownie Bosch/Buderus Home Comfort, zanim spróbujesz ponownie.",
+      "write_authentication_failed": "Logowanie do chmury nie jest już ważne. Zaloguj się ponownie w Konfiguruj → Połączenia → dostęp przez chmurę → **Zaloguj się ponownie**, a następnie spróbuj jeszcze raz.",
       "write_failed": "Nie udało się zmienić ustawień urlopu.",
       "write_busy": "Instalacja grzewcza jest odczytywana albo trwa jeszcze inna zmiana. Nic nie wysłano. Spróbuj ponownie za chwilę.",
       "write_not_confirmed": "Nie udało się w pełni potwierdzić zmiany. Niektóre ustawienia mogły już zostać zapisane. Ponownie otwórz urlop i sprawdź jego bieżące ustawienia.",
@@ -817,7 +817,7 @@
       "holiday_create_unconfirmed": "Nie udało się potwierdzić żądania utworzenia. Urlop mógł już istnieć. Sprawdź Zarządzaj okresami urlopu lub aplikację producenta. Przez następne 10 minut kolejna próba sprawdzi wynik tego żądania bez tworzenia drugiego urlopu.",
       "holiday_create_adjusted": "Instalacja grzewcza zwróciła nowy urlop, ale jego ustawienia różnią się od Twojego żądania. Żądany okres: {requested}. Zwrócony okres: {actual}. Otwórz Zarządzaj okresami urlopu, aby sprawdzić i edytować ten wpis.",
       "holiday_update_adjusted": "Instalacja grzewcza zwróciła ustawienia, które różnią się od żądanej zmiany. Żądany okres: {requested}. Zwrócony okres: {actual}. Otwórz Zarządzaj okresami urlopu, aby sprawdzić i edytować bieżący wpis.",
-      "no_rrc_schedules": "Brak aktualnego, obsługiwanego tygodniowego programu czasowego RRC.",
+      "no_rrc_schedules": "Brak aktualnego, obsługiwanego tygodniowego programu czasowego regulatora pokojowego.",
       "no_switch_programs": "Tutaj nie można zmienić żadnego aktualnego programu czasowego obiegu grzewczego ani ciepłej wody użytkowej.",
       "switch_program_changed": "Program czasowy zmienił się w międzyczasie lub nie można go już zmienić. Otwórz go ponownie, aby zobaczyć bieżące punkty przełączenia.",
       "switch_program_saved": "Program czasowy {program} został zapisany i potwierdzony ponownym odczytem.\n\nDotychczasowe punkty przełączenia zmienionych dni:\n\n{before}",
@@ -831,7 +831,7 @@
       "controls_none": "To urządzenie obecnie nie zgłasza żadnych ustawień, które można tu zmienić.",
       "configuration_changed": "Ustawienia połączenia zmieniły się, gdy to okno było otwarte. Zamknij je i spróbuj ponownie.",
       "no_connections": "Nie skonfigurowano żadnego dostępu. Istniejące instalacje i encje są zachowane.",
-      "connection_reauth_started": "Zażądano logowania. Otwórz monit uwierzytelniania dla tego wpisu.",
+      "connection_reauth_started": "Ponowne logowanie zostało przygotowane. Zamknij to okno i wybierz **Skonfiguruj ponownie** dla tej integracji w Ustawienia → Urządzenia i usługi, w sekcji **Wymaga uwagi**.",
       "cloud_already_connected": "Połączenie z chmurą jest już skonfigurowane. Użyj jego ustawień połączenia, aby wybrać więcej urządzeń lub zalogować się ponownie. Drugie równoległe logowanie do chmury nie jest jeszcze obsługiwane.",
       "cloud_setup_in_progress": "Otwarta jest już inna konfiguracja chmury. Najpierw zakończ lub zamknij to okno.",
       "cloud_setup_taken_over": "Nowsze okno konfiguracji chmury zastąpiło to okno. Zamknij to okno i kontynuuj w nowszym.",
@@ -845,7 +845,7 @@
       "local_discovery_invalid": "To ogłoszenie wykrycia nie opisuje obsługiwanego lokalnego punktu końcowego bramki.",
       "local_existing_owner_required": "Instalację bez chmury skonfiguruj opcją „Tylko dostęp lokalny” przy dodawaniu integracji. Wykrytą bramkę można dodać do istniejącej konfiguracji.",
       "local_target_required": "Ta konfiguracja nie ma odpowiedniej zachowanej instalacji do połączenia lokalnego.",
-      "local_setup_complete": "Dostęp lokalny został skonfigurowany.",
+      "local_setup_complete": "Dostęp lokalny został skonfigurowany. Jego stan i częstotliwość odpytywania znajdziesz w Konfiguruj → Połączenia.",
       "local_pending_saved": "Oczekująca próba jest zachowana. Możesz ją wznowić z konfiguracji lokalnej.",
       "local_storage_failed": "Nie udało się odczytać lub zapisać prywatnego rekordu konfiguracji. Przed kontynuowaniem sprawdź pamięć masową Home Assistant.",
       "cloud_local_first_other_entry": "Ta instalacja jest już skonfigurowana przez swój dostęp lokalny w innym wpisie tej integracji. Dodaj dostęp przez chmurę w tamtym wpisie.",
@@ -936,7 +936,7 @@
     },
     "local_certificate_changed": {
       "title": "Certyfikat lokalnej bramki uległ zmianie",
-      "description": "Bramka dostępu lokalnego przedstawia inny certyfikat. Integracja nie akceptuje go samodzielnie i przestaje odczytywać dane lokalnie. Jeśli wiesz, dlaczego certyfikat się zmienił (na przykład po aktualizacji lub resecie bramki), otwórz opcje integracji, wybierz dostęp lokalny i wybierz „Zmień dostęp lokalny”. Tam potwierdzisz nowy certyfikat. Zalecane jest nowe logowanie za pomocą etykiety urządzenia; zachowaj obecny token tylko wtedy, gdy masz pewność, że nowy certyfikat należy do Twojej własnej bramki."
+      "description": "Bramka dostępu lokalnego przedstawia inny certyfikat. Integracja nie akceptuje go samodzielnie i przestaje odczytywać dane lokalnie. Jeśli wiesz, dlaczego certyfikat się zmienił (na przykład po aktualizacji lub resecie bramki), otwórz przy integracji Konfiguruj → Połączenia, wybierz dostęp LAN i wybierz „Zmień dostęp lokalny”. Tam potwierdzisz nowy certyfikat. Zalecane jest nowe logowanie za pomocą etykiety urządzenia; zachowaj obecny token tylko wtedy, gdy masz pewność, że nowy certyfikat należy do Twojej własnej bramki."
     },
     "local_start_certificate": {
       "title": "Dostęp lokalny nie może nawiązać bezpiecznego połączenia",
@@ -1004,7 +1004,7 @@
         "step": {
           "confirm": {
             "title": "Użyj nowego adresu bramki",
-            "description": "Dostęp lokalny nie może połączyć się ze swoją bramką pod adresem {previous}. Ta sama bramka odpowiada teraz pod adresem {address}: przedstawia certyfikat potwierdzony podczas konfiguracji. Na nowy adres nie wysłano żadnego tokenu.\n\nPotwierdź poniżej, aby zapisać nowy adres. Dostęp lokalny uruchomi się wtedy ponownie z tym adresem; token i potwierdzony certyfikat pozostaną bez zmian. Aby uniknąć tego w przyszłości, zarezerwuj adres bramki w routerze (rezerwacja DHCP).",
+            "description": "Dostęp lokalny nie może połączyć się ze swoją bramką pod adresem {previous}. Ta sama bramka odpowiada teraz pod adresem {address}: przedstawia certyfikat potwierdzony podczas konfiguracji. Na nowy adres nie wysłano żadnego tokenu.\n\nPotwierdź poniżej, aby zapisać nowy adres. Dostęp lokalny uruchomi się wtedy ponownie z tym adresem; token i potwierdzony certyfikat pozostaną bez zmian. Aby uniknąć tego w przyszłości, zarezerwuj adres bramki w routerze (rezerwacja DHCP).\n\nJeśli nie chcesz użyć tego adresu, zamknij okno albo wybierz **Ignoruj**.",
             "data": {
               "confirm": "Użyj nowego adresu"
             }
@@ -1016,7 +1016,7 @@
         "abort": {
           "entry_not_found": "Dotyczący wpis tej integracji już nie istnieje.",
           "configuration_changed": "Dostęp lub instalacja uległy zmianie. Otwórz naprawę ponownie.",
-          "local_address_expired": "To powiadomienie nie jest już aktualne. Nic nie zostało zmienione.",
+          "local_address_expired": "Ta informacja nie jest już aktualna, na przykład po restarcie. Nic nie zostało zmienione. Pojawi się ponownie, jeśli bramka znów odpowie pod nowym adresem.",
           "local_address_recovered": "Dostęp lokalny znów łączy się ze swoją bramką. Nic nie zostało zmienione.",
           "local_address_unproven": "Nie udało się ponownie potwierdzić bramki pod nowym adresem. Nic nie zostało zmienione."
         }
@@ -1095,7 +1095,7 @@
     },
     "setup_unfinished": {
       "title": "Konfiguracja nie została zakończona",
-      "description": "Wpis „{title}” nie ma jeszcze żadnego dostępu. Otwórz jego opcje konfiguracji i wybierz „Skonfiguruj dostęp lokalny” (albo dodaj dostęp przez chmurę), aby zakończyć konfigurację."
+      "description": "Wpis „{title}” nie ma jeszcze żadnego dostępu. Wybierz przy nim **Konfiguruj**, a następnie „Skonfiguruj dostęp lokalny” (albo połącz dostęp przez chmurę)."
     }
   },
   "exceptions": {
