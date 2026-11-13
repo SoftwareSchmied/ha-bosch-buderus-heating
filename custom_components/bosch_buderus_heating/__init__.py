@@ -625,10 +625,13 @@ async def async_migrate_entry(
         return False
     if BoschBuderusConfigFlow.VERSION == 4 and entry.version == 4:
         if entry.minor_version > BoschBuderusConfigFlow.MINOR_VERSION:
-            _LOGGER.error(
-                "The configuration was saved by a newer version of this integration"
+            # A newer minor version only adds optional data: it is read like
+            # this version's format, and the stored data and version stay.
+            _LOGGER.warning(
+                "The configuration was saved by a newer version of this "
+                "integration; settings this version does not know are kept "
+                "but not used"
             )
-            return False
         try:
             await async_wait_for_entry_refresh(hass, entry.entry_id)
             migrate_entry_storage(

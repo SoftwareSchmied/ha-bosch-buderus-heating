@@ -34,6 +34,17 @@ class ConfigurationError(ValueError):
     """Static error codes never include credentials or object identifiers."""
 
 
+def readable_minor_version(minor_version: object) -> bool:
+    """Whether an entry of this minor version can be read.
+
+    A minor version only adds optional data, so a newer one is read like the
+    newest known one: its unknown fields are kept and ignored. An incompatible
+    change needs a new major version. This keeps a return within the same
+    major version possible without a backup.
+    """
+    return type(minor_version) is int and minor_version >= STORAGE_MINOR_VERSION
+
+
 def json_object(value: object) -> JsonObject:
     """Copy JSON-compatible input, rejecting cycles, nonfinite numbers and size."""
     remaining = MAX_JSON_NODES
@@ -403,7 +414,7 @@ def load_configuration(
     require_identifier(owner_id)
     if type(version) is not int or version != STORAGE_VERSION:
         raise ConfigurationError("unsupported_version")
-    if type(minor_version) is not int or minor_version not in SUPPORTED_MINOR_VERSIONS:
+    if not readable_minor_version(minor_version):
         raise ConfigurationError("unsupported_minor_version")
     stored, settings = json_object(data), json_object(options)
     revision = _counter(stored.get("revision"))

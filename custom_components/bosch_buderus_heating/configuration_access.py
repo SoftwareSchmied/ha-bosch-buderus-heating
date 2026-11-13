@@ -15,9 +15,9 @@ from homeassistant.config_entries import ConfigEntry
 
 from .configuration import (
     CLOUD_KIND,
-    SUPPORTED_MINOR_VERSIONS,
     ConfigurationError,
     json_object,
+    readable_minor_version,
     validate_cloud_credentials,
 )
 from .configuration_migration import legacy_cloud_connection_id
@@ -92,7 +92,7 @@ class EntryConfiguration:
             if connection_id is not None and connection_id != legacy_id:
                 raise ConfigurationError("unknown_connection")
             self.connection_id = legacy_id
-        elif entry.version == 4 and entry.minor_version in SUPPORTED_MINOR_VERSIONS:
+        elif entry.version == 4 and readable_minor_version(entry.minor_version):
             if connection_id is None:
                 raise ConfigurationError("connection_required")
             self.connection_id = connection_id

@@ -261,8 +261,12 @@ async def test_existing_v4_is_validated_without_repairing_or_rewriting(hass, cha
     )
     before = stored(entry)
     with patch.object(hass.config_entries, "async_update_entry") as update:
-        with pytest.raises(ConfigurationError):
-            migrate_entry_storage(hass, entry)
+        if change == "version":
+            # A newer minor version is read as it is, never lowered.
+            migrate_entry_storage(hass, entry, minor_version=2)
+        else:
+            with pytest.raises(ConfigurationError):
+                migrate_entry_storage(hass, entry)
         update.assert_not_called()
     assert stored(entry) == before
 

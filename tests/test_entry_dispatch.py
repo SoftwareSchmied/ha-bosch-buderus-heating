@@ -291,10 +291,7 @@ async def test_a_legacy_entry_ends_at_the_advertised_minor_version(
     )
 
 
-@pytest.mark.parametrize("problem", ["unreadable", "newer_minor"])
-async def test_an_unreadable_current_entry_is_a_setup_error(
-    hass, active_version, problem
-):
+async def test_an_unreadable_current_entry_is_a_setup_error(hass, active_version):
     from custom_components.bosch_buderus_heating.cloud_configuration import (
         check_new_cloud,
         cloud_snapshots,
@@ -302,33 +299,56 @@ async def test_an_unreadable_current_entry_is_a_setup_error(
 
     entry = legacy_entry(hass)
     migrate_entry_storage(hass, entry)
-    if problem == "unreadable":
-        hass.config_entries.async_update_entry(
-            entry, options={**entry.options, "targets": "broken"}
-        )
-    else:
-        hass.config_entries.async_update_entry(
-            entry, minor_version=BoschBuderusConfigFlow.MINOR_VERSION + 1
-        )
+    hass.config_entries.async_update_entry(
+        entry, options={**entry.options, "targets": "broken"}
+    )
     before = stored(entry)
-    if problem == "unreadable":
-        # A new cloud setup is not blocked by "configuration changed".
-        assert entry.entry_id not in {s.owner_id for s in cloud_snapshots(hass)}
-        check_new_cloud(hass, "new-flow")
-    else:
-        # A newer format is never interpreted; its ownership is unknown.
-        with pytest.raises(ValueError, match="unsupported_version"):
-            check_new_cloud(hass, "new-flow")
+    # A new cloud setup is not blocked by "configuration changed".
+    assert entry.entry_id not in {s.owner_id for s in cloud_snapshots(hass)}
+    check_new_cloud(hass, "new-flow")
     with patch(ROOT + ".async_setup_managed_entry") as setup:
         assert not await hass.config_entries.async_setup(entry.entry_id)
         setup.assert_not_called()
     assert stored(entry) == before
-    if problem == "unreadable":
-        # Not a migration error: a clear setup error, retried at every start.
-        assert entry.state is ConfigEntryState.SETUP_ERROR
-        assert entry.error_reason_translation_key == "invalid_stored_configuration"
-    else:
-        assert entry.state is ConfigEntryState.MIGRATION_ERROR
+    # Not a migration error: a clear setup error, retried at every start.
+    assert entry.state is ConfigEntryState.SETUP_ERROR
+    assert entry.error_reason_translation_key == "invalid_stored_configuration"
+
+
+async def test_a_newer_minor_version_is_read_like_the_current_format(
+    hass, active_version, caplog
+):
+    """A later minor version only adds optional data; a return stays possible."""
+    from custom_components.bosch_buderus_heating.cloud_configuration import (
+        check_new_cloud,
+        cloud_snapshots,
+    )
+    from custom_components.bosch_buderus_heating.configuration_access import (
+        EntryConfiguration,
+    )
+
+    entry = legacy_entry(hass)
+    migrate_entry_storage(hass, entry)
+    (cloud,) = entry.data["connections"]
+    newer = BoschBuderusConfigFlow.MINOR_VERSION + 1
+    hass.config_entries.async_update_entry(
+        entry,
+        data={**entry.data, "later_optional_data": {"kept": True}},
+        minor_version=newer,
+    )
+    before = stored(entry)
+    # Read, with its ownership known: a new setup sees the existing access
+    # instead of an unreadable format.
+    assert entry.entry_id in {s.owner_id for s in cloud_snapshots(hass)}
+    with pytest.raises(ValueError, match="cloud_already_connected"):
+        check_new_cloud(hass, "new-flow")
+    assert EntryConfiguration(entry, cloud).tokens() is not None
+    assert await async_migrate_entry(hass, entry)
+    # Neither lowered nor rewritten: the unknown data and the version stay.
+    assert stored(entry) == before
+    assert entry.minor_version == newer
+    assert entry.data["later_optional_data"] == {"kept": True}
+    assert "saved by a newer version" in caplog.text
 
 
 @pytest.mark.parametrize("failure", ["code", "foreign"])

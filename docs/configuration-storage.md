@@ -11,7 +11,8 @@ lifecycle tests run without a version override.
 
 ## Contracts
 
-`configuration.load_configuration` validates a version **4.1** or **4.2** snapshot.
+`configuration.load_configuration` validates a version **4.1** or **4.2** snapshot;
+a later minor version of 4 is read like 4.2.
 It returns immutable views of connections, targets and bindings, plus detached
 JSON exports for later persistence. A target can represent a PointT object, an
 independent cloud device or a local installation. A target does not establish
@@ -36,10 +37,14 @@ state; the managed lifecycle removes access and retains unavailable entities.
 
 Unknown JSON fields and adapter records survive explicit serialization. They
 do not authorize transport, establish account identity or enable writes. A future
-runtime must select only supported adapter and identity contracts. The loader
-accepts exactly versions 4.1 and 4.2; a new version needs an explicit
-compatibility decision before it can be read or rewritten. An entry saved by a
-newer minor version is not loaded.
+runtime must select only supported adapter and identity contracts.
+
+A minor version only adds optional data, which older code can ignore; an
+incompatible change needs a new major version. The loader therefore reads a
+later minor version of 4, such as 4.3, like 4.2: unknown fields stay stored
+and unused, and the entry keeps its minor version, so saving never lowers it.
+A return within the same major version (for example from a later 0.9.x to
+0.9.0) thus needs no backup. A later major version is not loaded.
 
 ## Preparing an existing entry
 

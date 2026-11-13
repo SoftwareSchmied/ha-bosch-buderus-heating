@@ -452,7 +452,11 @@ def prepare_local_configuration(
         order.append(edit.binding_id)
     data["revision"] = current.revision + 1
     return load_configuration(
-        current.owner_id, data, options, minor_version=LOCAL_STORAGE_MINOR_VERSION
+        current.owner_id,
+        data,
+        options,
+        # A newer minor version stays; it is never lowered.
+        minor_version=max(LOCAL_STORAGE_MINOR_VERSION, current.minor_version),
     )
 
 

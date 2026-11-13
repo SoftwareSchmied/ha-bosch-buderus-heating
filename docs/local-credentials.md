@@ -58,7 +58,9 @@ to the later local/cloud resource policy.
 
 ## Version transition and HA persistence
 
-Readers support the earlier 4.1 contract and the active 4.2 contract. A new
+Readers support the earlier 4.1 contract and the active 4.2 contract, and read
+a later minor version like 4.2 (see
+[configuration storage](configuration-storage.md#contracts)). A new
 provenance record is rejected when presented as 4.1 data. Legacy local preview records remain readable without inventing
 certificate trust or fresh read evidence; they need verification before reuse.
 Returning to older software requires the matching configuration backup.

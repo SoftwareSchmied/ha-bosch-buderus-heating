@@ -328,7 +328,8 @@ class ConfigurationManagement:
             raise ConfigurationError("configuration_changed")
         if (
             proposed.version != before.version
-            or proposed.minor_version != LOCAL_STORAGE_MINOR_VERSION
+            or proposed.minor_version < LOCAL_STORAGE_MINOR_VERSION
+            or proposed.minor_version < before.minor_version
         ):
             raise ConfigurationError("unsupported_minor_version")
         if proposed.minor_version != before.minor_version:
