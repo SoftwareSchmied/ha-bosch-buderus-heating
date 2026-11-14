@@ -20,8 +20,8 @@ Automated checks on the release state (2026-11-14, run locally):
 |---|---|---|
 | Full suite, current version | Home Assistant 2026.11.0, local, four parallel workers | 11245 passed, 1 skipped (the box test of stable release notes) |
 | Strict Mypy on the changed modules, Ruff lint and formatting | local | Mypy without findings; Ruff clean |
-| Release tests | local | @@REL@@ |
-| Release archive and SHA-256 | local build on a clean clone | @@ARCH@@ |
+| Release tests | local | 62 passed, 1 skipped in the release and repository tests (clean clone); the release notes come from this version's CHANGELOG section |
+| Release archive and SHA-256 | local build on a clean clone | built for version 0.9.2-beta.1 with 271 files (1,833,023 bytes) under Linux, without tests or bytecode; SHA-256 `d2ecc426f0e9c6d074b14c37c5243198cfaa0e724e29cae4c27a7bda9c17ce39` |
 | GitHub checks | PR and release workflow | pending; the minimum version and the other compatibility jobs run there |
 
 Tested with automated tests and a synthetic gateway answering `unknown`;
