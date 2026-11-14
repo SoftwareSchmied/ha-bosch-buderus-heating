@@ -47,6 +47,8 @@ RESULT_REASONS: Final = frozenset(
         "local_token_revoked_removed",
         "local_tokens_changed",
         "notifications_saved",
+        "reauth_successful",
+        "reauth_successful_targets_missing",
         "rescan_partial",
         "rescan_paused",
         "rescan_planned",

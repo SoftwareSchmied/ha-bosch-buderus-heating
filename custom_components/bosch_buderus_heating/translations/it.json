@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Risultato",
         "description": "Il programma orario {program} è stato salvato e confermato rileggendolo.\n\nPunti di commutazione precedenti dei giorni modificati:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Risultato",
+        "description": "Il login è stato rinnovato correttamente."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Risultato",
+        "description": "Il login è stato rinnovato. {count} impianti o dispositivi attivi non sono stati trovati nell'account; restano configurati. Una nota di riparazione li elenca e spiega come dimenticarli."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Abilita questa connessione cloud prima di cercare i dispositivi.",
       "cloud_rate_limited": "Il cloud ha richiesto una pausa. Attendi prima di riprovare.",
       "invalid_auth": "SingleKey ID ha rifiutato l'autorizzazione o ne ha fatto scadere la validità. Usa il nuovo link SingleKey ID mostrato sopra e ripeti il login.",
+      "reauth_targets_missing": "Con questo login non è stato trovato nessuno degli impianti e dispositivi attivi. Le credenziali precedenti vengono mantenute. Controlla di aver effettuato il login con lo stesso account di prima. Se gli impianti sono stati rimossi dall'account, apri Configura → Connessioni → l'accesso cloud: attiva un impianto ancora presente nell'account sotto **Usa per impianti e dispositivi**, oppure disattiva quelli rimossi e rimuovili con **Dimentica gli impianti deselezionati**. Se non ne rimane nessuno, rimuovi l'accesso cloud e collegalo di nuovo.",
       "invalid_redirect": "Home Assistant non ha potuto usare questo indirizzo. Copia l'indirizzo completo dell'app dal messaggio “Failed to launch” della console di Chrome. Deve iniziare con lo schema mostrato sopra e appartenere al tentativo di login attuale.",
       "singlekey_page": "Questo è l'indirizzo della pagina SingleKey ID, non l'indirizzo dell'app. Copia invece, nella console di Chrome, l'indirizzo `{redirect_scheme}://` dal messaggio rosso **Failed to launch**.",
       "cannot_connect": "L'accesso cloud non è raggiungibile. Controlla la connessione a Internet, attendi un momento e riprova.",
@@ -990,8 +999,9 @@
       "controls_not_current": "I comandi non sono ancora disponibili: il cloud non ha ancora fornito valori aggiornati. Riprova tra un momento.",
       "controls_none": "Questo apparecchio al momento non segnala impostazioni modificabili qui.",
       "configuration_changed": "Le impostazioni di connessione sono cambiate mentre questa finestra era aperta. Chiudila e riprova.",
+      "reauth_wrong_account": "L'account selezionato non corrisponde ai dispositivi configurati. Effettua il login con l'account originale.",
+      "reauth_no_targets": "Questo accesso cloud non ha più impianti o dispositivi e non è possibile confermare l'account a cui appartiene. Le credenziali precedenti vengono mantenute. Per usare di nuovo un account cloud, rimuovi l'accesso cloud in Configura → Connessioni e collegalo di nuovo.",
       "no_connections": "Nessun accesso configurato. Impianti ed entità esistenti vengono conservati.",
-      "connection_reauth_started": "Il nuovo accesso è pronto. Chiudi questa finestra e seleziona **Riconfigura** per questa integrazione in Impostazioni → Dispositivi e servizi, nella sezione **Richiede attenzione**.",
       "cloud_already_connected": "Una connessione cloud è già configurata. Usa le sue impostazioni di connessione per selezionare altri dispositivi o accedere di nuovo. Un secondo login cloud in parallelo non è ancora supportato.",
       "cloud_setup_in_progress": "È già aperta un'altra configurazione cloud. Concludi o chiudi prima quella finestra.",
       "cloud_setup_taken_over": "Una finestra di configurazione cloud più recente ha sostituito questa. Chiudi questa finestra e continua in quella più recente.",

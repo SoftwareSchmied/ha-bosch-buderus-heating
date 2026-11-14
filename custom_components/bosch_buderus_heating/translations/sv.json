@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Resultat",
         "description": "Tidsprogrammet {program} sparades och bekräftades genom att läsas tillbaka.\n\nTidigare växlingspunkter för de ändrade dagarna:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Resultat",
+        "description": "Inloggningen förnyades."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Resultat",
+        "description": "Inloggningen förnyades. {count} aktiverade anläggningar eller enheter hittades inte i kontot. De förblir konfigurerade. En reparationsnotis namnger dem och förklarar hur du glömmer dem."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Aktivera den här molnanslutningen innan du söker efter enheter.",
       "cloud_rate_limited": "Molnet har begärt en paus. Vänta innan du försöker igen.",
       "invalid_auth": "SingleKey ID avvisade auktoriseringen eller lät den gå ut. Använd den nya SingleKey ID-länken som visas ovan och upprepa inloggningen.",
+      "reauth_targets_missing": "Den här inloggningen hittade inga av de aktiverade anläggningarna och enheterna. De tidigare inloggningsuppgifterna behålls. Kontrollera att du loggade in med samma konto som tidigare. Om anläggningarna har tagits bort från kontot, öppna Konfigurera → Anslutningar → molnåtkomsten: aktivera en anläggning som fortfarande finns i kontot under **Använd för anläggningar och enheter**, eller inaktivera de borttagna och ta bort dem med **Glöm bortvalda anläggningar**. Om ingen finns kvar, ta bort molnåtkomsten och anslut den igen.",
       "invalid_redirect": "Home Assistant kunde inte använda den här adressen. Kopiera hela appadressen från meddelandet ‘Failed to launch’ i Chromes konsol. Den måste börja med det schema som visas ovan och tillhöra det aktuella inloggningsförsöket.",
       "singlekey_page": "Det här är adressen till SingleKey ID-sidan, inte appadressen. Kopiera i stället `{redirect_scheme}://`-adressen från det röda meddelandet **Failed to launch** i Chromes konsol.",
       "cannot_connect": "Molnåtkomsten kan inte nås. Kontrollera internetanslutningen, vänta en stund och försök igen.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Styrning är inte tillgänglig ännu: molnet har inte levererat aktuella värden. Försök igen om en stund.",
       "controls_none": "Den här apparaten rapporterar för närvarande inga inställningar som kan ändras här.",
       "configuration_changed": "Anslutningsinställningarna ändrades medan den här dialogrutan var öppen. Stäng den och försök igen.",
+      "reauth_wrong_account": "Det valda kontot stämmer inte med de konfigurerade enheterna. Logga in med det ursprungliga kontot.",
+      "reauth_no_targets": "Den här molnåtkomsten har inga anläggningar eller enheter kvar, och kontot den tillhör kan inte bekräftas. De tidigare inloggningsuppgifterna behålls. Om du vill använda ett molnkonto igen, ta bort molnåtkomsten under Konfigurera → Anslutningar och anslut den igen.",
       "no_connections": "Ingen åtkomst är konfigurerad. Befintliga anläggningar och entiteter behålls.",
-      "connection_reauth_started": "Den nya inloggningen är förberedd. Stäng den här dialogrutan och välj **Konfigurera om** för den här integrationen under Inställningar → Enheter och tjänster, i avsnittet **Kräver uppmärksamhet**.",
       "cloud_already_connected": "En molnanslutning är redan konfigurerad. Använd dess anslutningsinställningar för att välja fler enheter eller logga in igen. En andra parallell molninloggning stöds inte ännu.",
       "cloud_setup_in_progress": "En annan molnkonfiguration är redan öppen. Slutför eller stäng den dialogrutan först.",
       "cloud_setup_taken_over": "En nyare molnkonfigurationsdialog har ersatt den här. Stäng den här dialogrutan och fortsätt i den nyare.",

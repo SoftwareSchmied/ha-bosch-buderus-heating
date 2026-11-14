@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Výsledek",
         "description": "Časový program {program} byl uložen a potvrzen zpětným načtením.\n\nDosavadní spínací body změněných dnů:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Výsledek",
+        "description": "Přihlášení bylo úspěšně obnoveno."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Výsledek",
+        "description": "Přihlášení bylo obnoveno. Počet zapnutých soustav nebo zařízení nenalezených v účtu: {count}. Zůstávají nakonfigurovány. Oznámení o opravě je jmenuje a vysvětluje, jak je zapomenout."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Před vyhledáním zařízení zapněte toto cloudové připojení.",
       "cloud_rate_limited": "Cloud požádal o pauzu. Před dalším pokusem počkejte.",
       "invalid_auth": "SingleKey ID oprávnění odmítlo nebo mu vypršela platnost. Použijte nový odkaz SingleKey ID zobrazený výše a přihlášení zopakujte.",
+      "reauth_targets_missing": "Při tomto přihlášení nebyla nalezena žádná ze zapnutých soustav a zařízení. Předchozí přihlašovací údaje zůstávají zachovány. Zkontrolujte, zda jste se přihlásili ke stejnému účtu jako dříve. Pokud byly soustavy z účtu odebrány, otevřete Konfigurovat → Připojení → cloudový přístup: u položky **Použít pro soustavy a zařízení** zapněte soustavu, která v účtu stále je, nebo odebrané soustavy vypněte a odstraňte je pomocí **Zapomenout nevybrané soustavy**. Pokud žádná nezůstane, odstraňte cloudový přístup a připojte jej znovu.",
       "invalid_redirect": "Home Assistant nemohl tuto adresu použít. Zkopírujte úplnou adresu aplikace ze zprávy ‚Failed to launch‘ v konzoli Chrome. Musí začínat schématem zobrazeným výše a patřit k aktuálnímu pokusu o přihlášení.",
       "singlekey_page": "Toto je adresa stránky SingleKey ID, ne adresa aplikace. Místo toho zkopírujte v konzoli Chrome adresu `{redirect_scheme}://` z červené zprávy **Failed to launch**.",
       "cannot_connect": "Cloudový přístup není dostupný. Zkontrolujte připojení k internetu, chvíli počkejte a zkuste to znovu.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Ovládání zatím není dostupné: cloud nedodal aktuální hodnoty. Zkuste to za chvíli znovu.",
       "controls_none": "Tento spotřebič momentálně nehlásí žádná nastavení, která by zde šlo měnit.",
       "configuration_changed": "Nastavení připojení se během otevření tohoto okna změnilo. Zavřete je a zkuste to znovu.",
+      "reauth_wrong_account": "Vybraný účet neodpovídá nakonfigurovaným zařízením. Přihlaste se původním účtem.",
+      "reauth_no_targets": "Tento cloudový přístup již nemá žádné soustavy ani zařízení a nelze potvrdit účet, ke kterému patří. Předchozí přihlašovací údaje zůstávají zachovány. Chcete-li znovu použít cloudový účet, odstraňte cloudový přístup v Konfigurovat → Připojení a připojte jej znovu.",
       "no_connections": "Není nakonfigurován žádný přístup. Existující soustavy a entity zůstávají zachovány.",
-      "connection_reauth_started": "Nové přihlášení je připraveno. Zavřete toto okno a u této integrace vyberte v Nastavení → Zařízení a služby v části **Vyžaduje pozornost** možnost **Překonfigurovat**.",
       "cloud_already_connected": "Cloudové připojení je již nakonfigurováno. Pomocí jeho nastavení připojení vyberte další zařízení nebo se přihlaste znovu. Druhé souběžné cloudové přihlášení zatím není podporováno.",
       "cloud_setup_in_progress": "Jiné nastavení cloudu je již otevřeno. Nejprve dokončete nebo zavřete toto okno.",
       "cloud_setup_taken_over": "Toto okno nastavení cloudu nahradilo novější. Zavřete toto okno a pokračujte v novějším.",

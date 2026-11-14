@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Výsledok",
         "description": "Časový program {program} bol uložený a potvrdený spätným načítaním.\n\nDoterajšie spínacie body zmenených dní:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Výsledok",
+        "description": "Prihlásenie bolo úspešne obnovené."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Výsledok",
+        "description": "Prihlásenie bolo obnovené. Zapnuté systémy alebo zariadenia, ktoré sa v účte nenašli: {count}; zostávajú nakonfigurované. Oprava ich uvádza a vysvetľuje, ako ich zabudnúť."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Pred vyhľadávaním zariadení povoľte toto cloudové pripojenie.",
       "cloud_rate_limited": "Cloud požiadal o pauzu. Pred ďalším pokusom počkajte.",
       "invalid_auth": "SingleKey ID odmietlo oprávnenie alebo jeho platnosť vypršala. Použite nový odkaz SingleKey ID zobrazený vyššie a zopakujte prihlásenie.",
+      "reauth_targets_missing": "Toto prihlásenie nenašlo žiadny zo zapnutých systémov a zariadení. Predchádzajúce prihlasovacie údaje zostávajú zachované. Skontrolujte, či ste sa prihlásili rovnakým účtom ako predtým. Ak boli systémy z účtu odstránené, otvorte Konfigurovať → Pripojenia → cloudový prístup: pod **Použiť pre systémy a zariadenia** zapnite systém, ktorý je v účte stále k dispozícii, alebo vypnite odstránené systémy a odstráňte ich pomocou **Zabudnúť zrušené systémy**. Ak žiadny nezostal, odstráňte cloudový prístup a pripojte ho znova.",
       "invalid_redirect": "Home Assistant nemohol túto adresu použiť. Skopírujte úplnú adresu aplikácie z hlásenia ‘Failed to launch’ v konzole prehliadača Chrome. Musí začínať schémou zobrazenou vyššie a patriť k aktuálnemu pokusu o prihlásenie.",
       "singlekey_page": "Toto je adresa stránky SingleKey ID, nie adresa aplikácie. Namiesto toho skopírujte v konzole prehliadača Chrome adresu `{redirect_scheme}://` z červeného hlásenia **Failed to launch**.",
       "cannot_connect": "Cloudový prístup nie je dostupný. Skontrolujte internetové pripojenie, chvíľu počkajte a skúste to znova.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Ovládacie prvky ešte nie sú dostupné: cloud nedodal aktuálne hodnoty. Skúste to o chvíľu znova.",
       "controls_none": "Toto zariadenie momentálne nehlási žiadne nastavenia, ktoré by sa tu dali zmeniť.",
       "configuration_changed": "Nastavenia pripojenia sa zmenili, kým bolo toto okno otvorené. Zatvorte ho a skúste to znova.",
+      "reauth_wrong_account": "Vybraný účet nezodpovedá nakonfigurovaným zariadeniam. Prihláste sa pôvodným účtom.",
+      "reauth_no_targets": "Tento cloudový prístup už nemá žiadne systémy ani zariadenia a účet, ku ktorému patrí, sa nedá potvrdiť. Predchádzajúce prihlasovacie údaje zostávajú zachované. Ak chcete znova použiť cloudový účet, odstráňte cloudový prístup v časti Konfigurovať → Pripojenia a pripojte ho znova.",
       "no_connections": "Nie je nakonfigurovaný žiadny prístup. Existujúce systémy a entity zostanú zachované.",
-      "connection_reauth_started": "Nové prihlásenie je pripravené. Zatvorte toto okno a pre túto integráciu vyberte v Nastavenia → Zariadenia a služby v časti **Vyžaduje pozornosť** možnosť **Prekonfigurovať**.",
       "cloud_already_connected": "Cloudové pripojenie je už nakonfigurované. Na výber ďalších zariadení alebo na opätovné prihlásenie použite jeho nastavenia pripojenia. Druhé paralelné cloudové prihlásenie zatiaľ nie je podporované.",
       "cloud_setup_in_progress": "Iné nastavenie cloudu je už otvorené. Najprv dokončite alebo zatvorte toto okno.",
       "cloud_setup_taken_over": "Toto okno nahradilo novšie okno nastavenia cloudu. Zatvorte toto okno a pokračujte v novšom.",

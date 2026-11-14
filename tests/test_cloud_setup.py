@@ -710,11 +710,11 @@ async def test_existing_discovery_auth_failure_starts_scoped_reauthentication(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {"next_step_id": "connection_discover"}
     )
-    assert result["reason"] == "connection_reauth_started"
+    # The new sign-in follows in this dialog, with the reason.
+    assert result["step_id"] == "cloud_auth"
+    assert result["errors"] == {"base": "invalid_auth"}
     await hass.async_block_till_done()
-    flows = list(entry.async_get_active_flows(hass, {SOURCE_REAUTH}))
-    assert len(flows) == 1 and flows[0]["context"]["connection_id"] == cloud
-    hass.config_entries.flow.async_abort(flows[0]["flow_id"])
+    assert not list(entry.async_get_active_flows(hass, {SOURCE_REAUTH}))
 
 
 @pytest.mark.parametrize("phase", ["new", "reconnect"])

@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Resultat",
         "description": "Tidsprogrammet {program} ble lagret og bekreftet ved å lese det på nytt.\n\nTidligere koblingspunkter for de endrede dagene:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Resultat",
+        "description": "Påloggingen ble fornyet."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Resultat",
+        "description": "Påloggingen ble fornyet. {count} påslåtte anlegg eller enheter ble ikke funnet i kontoen; de forblir konfigurert. En reparasjonsmelding nevner dem og forklarer hvordan du glemmer dem."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Aktiver denne skytilkoblingen før du søker etter enheter.",
       "cloud_rate_limited": "Skyen har bedt om en pause. Vent før du prøver igjen.",
       "invalid_auth": "SingleKey ID avviste autorisasjonen eller lot den utløpe. Bruk den nye SingleKey ID-lenken som vises ovenfor, og gjenta påloggingen.",
+      "reauth_targets_missing": "Denne påloggingen fant ingen av de påslåtte anleggene og enhetene. De tidligere påloggingsopplysningene beholdes. Sjekk at du logget på med samme konto som før. Hvis anleggene er fjernet fra kontoen, åpner du Konfigurer → Tilkoblinger → skytilgangen: slå på et anlegg som fortsatt finnes i kontoen under **Bruk for anlegg og enheter**, eller slå av de fjernede og fjern dem med **Glem fravalgte anlegg**. Hvis ingen er igjen, fjerner du skytilgangen og kobler den til på nytt.",
       "invalid_redirect": "Home Assistant kunne ikke bruke denne adressen. Kopier hele appadressen fra meldingen ‘Failed to launch’ i Chrome-konsollen. Den må begynne med skjemaet som vises ovenfor og tilhøre det gjeldende påloggingsforsøket.",
       "singlekey_page": "Dette er adressen til SingleKey ID-siden, ikke appadressen. Kopier i stedet `{redirect_scheme}://`-adressen fra den røde meldingen **Failed to launch** i Chrome-konsollen.",
       "cannot_connect": "Skytilgangen kan ikke nås. Sjekk internettforbindelsen, vent litt og prøv igjen.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Styring er ikke tilgjengelig ennå: skyen har ikke levert gjeldende verdier. Prøv igjen om et øyeblikk.",
       "controls_none": "Dette apparatet melder for øyeblikket ingen innstillinger som kan endres her.",
       "configuration_changed": "Tilkoblingsinnstillingene endret seg mens denne dialogen var åpen. Lukk den og prøv igjen.",
+      "reauth_wrong_account": "Den valgte kontoen samsvarer ikke med de konfigurerte enhetene. Logg på med den opprinnelige kontoen.",
+      "reauth_no_targets": "Denne skytilgangen har ingen anlegg eller enheter igjen, og kontoen den hører til kan ikke bekreftes. De tidligere påloggingsopplysningene beholdes. For å bruke en skykonto igjen fjerner du skytilgangen under Konfigurer → Tilkoblinger og kobler den til på nytt.",
       "no_connections": "Ingen tilgang er konfigurert. Eksisterende anlegg og entiteter beholdes.",
-      "connection_reauth_started": "Den nye påloggingen er klargjort. Lukk denne dialogen og velg **Konfigurer på nytt** for denne integrasjonen under Innstillinger → Enheter og tjenester, i delen **Krever oppmerksomhet**.",
       "cloud_already_connected": "Det er allerede konfigurert en skytilkobling. Bruk tilkoblingsinnstillingene til å velge flere enheter eller logge på igjen. En andre parallell skypålogging støttes ikke ennå.",
       "cloud_setup_in_progress": "Et annet skyoppsett er allerede åpent. Fullfør eller lukk den dialogen først.",
       "cloud_setup_taken_over": "En nyere skyoppsettsdialog har erstattet denne. Lukk denne dialogen og fortsett i den nyere.",

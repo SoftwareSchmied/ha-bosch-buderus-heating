@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Tulos",
         "description": "Aikaohjelma {program} tallennettiin ja vahvistettiin lukemalla se takaisin.\n\nMuutettujen päivien aiemmat kytkentäpisteet:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Tulos",
+        "description": "Kirjautuminen uusittiin onnistuneesti."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Tulos",
+        "description": "Kirjautuminen uusittiin. {count} käytössä olevaa järjestelmää tai laitetta ei löytynyt tililtä. Ne pysyvät määritettyinä. Korjausilmoitus nimeää ne ja kertoo, miten ne unohdetaan."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Ota tämä pilviyhteys käyttöön ennen laitteiden etsimistä.",
       "cloud_rate_limited": "Pilvi on pyytänyt taukoa. Odota ennen uutta yritystä.",
       "invalid_auth": "SingleKey ID hylkäsi valtuutuksen tai se vanheni. Käytä yllä näkyvää uutta SingleKey ID -linkkiä ja toista kirjautuminen.",
+      "reauth_targets_missing": "Tämä kirjautuminen ei löytänyt yhtään käytössä olevaa järjestelmää tai laitetta. Aiemmat tunnistetiedot säilyvät. Tarkista, että kirjauduit samalla tilillä kuin aiemmin. Jos järjestelmät poistettiin tililtä, avaa Määritä → Yhteydet → pilviyhteys: ota käyttöön järjestelmä, joka on edelleen tilillä, kohdassa **Käytä järjestelmille ja laitteille**, tai poista poistetut käytöstä ja poista ne valinnalla **Unohda valitsemattomat järjestelmät**. Jos mitään ei ole jäljellä, poista pilviyhteys ja yhdistä se uudelleen.",
       "invalid_redirect": "Home Assistant ei voinut käyttää tätä osoitetta. Kopioi koko sovellusosoite Chromen konsolin ‘Failed to launch’ -viestistä. Sen on alettava yllä näytetyllä skeemalla ja kuuluttava nykyiseen kirjautumisyritykseen.",
       "singlekey_page": "Tämä on SingleKey ID -sivun osoite, ei sovellusosoite. Kopioi sen sijaan Chromen konsolista `{redirect_scheme}://`-osoite punaisesta **Failed to launch** -viestistä.",
       "cannot_connect": "Pilviyhteyteen ei saada yhteyttä. Tarkista internetyhteys, odota hetki ja yritä uudelleen.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Ohjaukset eivät ole vielä käytettävissä: pilvi ei ole toimittanut ajantasaisia arvoja. Yritä hetken kuluttua uudelleen.",
       "controls_none": "Tämä laite ei tällä hetkellä ilmoita asetuksia, joita voisi muuttaa täällä.",
       "configuration_changed": "Yhteysasetukset muuttuivat tämän ikkunan ollessa auki. Sulje se ja yritä uudelleen.",
+      "reauth_wrong_account": "Valittu tili ei vastaa määritettyjä laitteita. Kirjaudu alkuperäisellä tilillä.",
+      "reauth_no_targets": "Tällä pilviyhteydellä ei ole enää järjestelmiä tai laitteita, eikä tiliä, johon se kuuluu, voida vahvistaa. Aiemmat tunnistetiedot säilyvät. Jos haluat käyttää pilvitiliä uudelleen, poista pilviyhteys kohdassa Määritä → Yhteydet ja yhdistä se uudelleen.",
       "no_connections": "Yhtään yhteyttä ei ole määritetty. Olemassa olevat järjestelmät ja entiteetit säilyvät.",
-      "connection_reauth_started": "Uusi kirjautuminen on valmisteltu. Sulje tämä ikkuna ja valitse tälle integraatiolle **Määritä uudelleen** kohdassa Asetukset → Laitteet ja palvelut, osiossa **Vaatii huomiota**.",
       "cloud_already_connected": "Pilviyhteys on jo määritetty. Käytä sen yhteysasetuksia valitaksesi lisää laitteita tai kirjautuaksesi uudelleen. Toista rinnakkaista pilvikirjautumista ei vielä tueta.",
       "cloud_setup_in_progress": "Toinen pilviasennus on jo auki. Viimeistele tai sulje se ikkuna ensin.",
       "cloud_setup_taken_over": "Uudempi pilviasennusikkuna on korvannut tämän. Sulje tämä ikkuna ja jatka uudemmassa.",

@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Toradh",
         "description": "Sábháladh an sceideal {program} agus deimhníodh é trína léamh arís.\n\nPointí lasctha roimhe seo na laethanta a athraíodh:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Toradh",
+        "description": "Athnuadh an síniú isteach go rathúil."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Toradh",
+        "description": "Athnuadh an síniú isteach. Ní bhfuarthas {count} córas nó gléas casta air sa chuntas; fanann siad cumraithe. Ainmníonn nóta deisiúcháin iad agus míníonn sé conas dearmad a dhéanamh orthu."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Cumasaigh an nasc néil seo sula gcuardaíonn tú gléasanna.",
       "cloud_rate_limited": "D'iarr an néal sos. Fan sula ndéanann tú iarracht arís.",
       "invalid_auth": "Dhiúltaigh SingleKey ID don údarú nó chuir sé in éag é. Úsáid an nasc nua SingleKey ID a thaispeántar thuas agus déan an síniú isteach arís.",
+      "reauth_targets_missing": "Ní bhfuair an síniú isteach seo aon cheann de na córais ná de na gléasanna atá casta air. Coinnítear na dintiúir roimhe seo. Seiceáil gur shínigh tú isteach leis an gcuntas céanna agus a bhí roimhe. Má baineadh na córais den chuntas, oscail Cumraigh → Naisc → an rochtain néil: cas air córas atá fós sa chuntas faoi **Úsáid do chórais agus do ghléasanna**, nó cas as iad siúd a baineadh agus bain iad le **Déan dearmad ar chórais dhíroghnaithe**. Mura bhfuil aon cheann fágtha, bain an rochtain néil agus ceangail arís í.",
       "invalid_redirect": "Níorbh fhéidir le Home Assistant an seoladh seo a úsáid. Cóipeáil an seoladh iomlán aipe ón teachtaireacht ‘Failed to launch’ i gconsól Chrome. Caithfidh sé tosú leis an scéim a thaispeántar thuas agus baint leis an iarracht reatha shínithe isteach.",
       "singlekey_page": "Is é seo seoladh leathanach SingleKey ID, ní seoladh na haipe. Ina ionad sin, cóipeáil i gconsól Chrome an seoladh `{redirect_scheme}://` ón teachtaireacht dhearg **Failed to launch**.",
       "cannot_connect": "Ní féidir an rochtain néil a bhaint amach. Seiceáil an nasc idirlín, fan nóiméad, agus déan iarracht arís.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Níl rialuithe ar fáil go fóill: níor sheachaid an néal luachanna reatha. Déan iarracht arís i gceann tamaill.",
       "controls_none": "Ní thuairiscíonn an trealamh seo aon socruithe is féidir a athrú anseo faoi láthair.",
       "configuration_changed": "Athraíodh na socruithe nasctha cé go raibh an dialóg seo oscailte. Dún í agus déan iarracht arís.",
+      "reauth_wrong_account": "Ní hionann an cuntas roghnaithe agus na gléasanna cumraithe. Sínigh isteach leis an gcuntas bunaidh.",
+      "reauth_no_targets": "Níl aon chóras ná gléas fágtha ag an rochtain néil seo, agus ní féidir an cuntas lena mbaineann sí a dheimhniú. Coinnítear na dintiúir roimhe seo. Chun cuntas néil a úsáid arís, bain an rochtain néil faoi Cumraigh → Naisc agus ceangail arís í.",
       "no_connections": "Níl aon rochtain cumraithe. Coinnítear córais agus aonáin atá ann cheana.",
-      "connection_reauth_started": "Tá an síniú isteach nua réidh. Dún an dialóg seo agus roghnaigh **Athchumraigh** don chomhtháthú seo faoi Socruithe → Feistí & seirbhísí, sa chuid **Aird ag teastáil**.",
       "cloud_already_connected": "Tá nasc néil cumraithe cheana. Úsáid a shocruithe nasctha chun tuilleadh gléasanna a roghnú nó chun síniú isteach arís. Ní thacaítear go fóill le dara síniú isteach néil comhthreomhar.",
       "cloud_setup_in_progress": "Tá socrú néil eile oscailte cheana. Críochnaigh nó dún an dialóg sin ar dtús.",
       "cloud_setup_taken_over": "Tá dialóg socraithe néil níos nuaí tar éis an ceann seo a chur ina háit. Dún an dialóg seo agus lean ar aghaidh sa cheann níos nuaí.",

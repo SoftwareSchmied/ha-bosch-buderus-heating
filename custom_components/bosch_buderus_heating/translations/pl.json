@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Wynik",
         "description": "Program czasowy {program} został zapisany i potwierdzony ponownym odczytem.\n\nDotychczasowe punkty przełączenia zmienionych dni:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Wynik",
+        "description": "Logowanie zostało pomyślnie odnowione."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Wynik",
+        "description": "Logowanie zostało odnowione. Nie znaleziono na koncie włączonych instalacji lub urządzeń. Liczba: {count}. Pozostają skonfigurowane. Naprawa wymienia je i wyjaśnia, jak je zapomnieć."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Włącz to połączenie z chmurą przed wyszukiwaniem urządzeń.",
       "cloud_rate_limited": "Chmura zażądała przerwy. Zaczekaj przed ponowną próbą.",
       "invalid_auth": "SingleKey ID odrzucił autoryzację lub jej ważność wygasła. Użyj nowego linku SingleKey ID wyświetlonego powyżej i powtórz logowanie.",
+      "reauth_targets_missing": "To logowanie nie znalazło żadnej z włączonych instalacji i żadnego z włączonych urządzeń. Poprzednie dane logowania zostają zachowane. Sprawdź, czy zalogowałeś się na to samo konto co wcześniej. Jeśli instalacje zostały usunięte z konta, otwórz Konfiguruj → Połączenia → dostęp przez chmurę: włącz w sekcji **Używaj dla instalacji i urządzeń** instalację, która nadal jest na koncie, albo wyłącz usunięte i usuń je opcją **Zapomnij odznaczone instalacje**. Jeśli żadna nie pozostała, usuń dostęp przez chmurę i połącz go ponownie.",
       "invalid_redirect": "Home Assistant nie mógł użyć tego adresu. Skopiuj pełny adres aplikacji z komunikatu ‘Failed to launch’ w konsoli Chrome. Musi zaczynać się od schematu wyświetlonego powyżej i należeć do bieżącej próby logowania.",
       "singlekey_page": "To jest adres strony SingleKey ID, a nie adres aplikacji. Zamiast tego skopiuj w konsoli Chrome adres `{redirect_scheme}://` z czerwonego komunikatu **Failed to launch**.",
       "cannot_connect": "Dostęp przez chmurę jest nieosiągalny. Sprawdź połączenie z internetem, zaczekaj chwilę i spróbuj ponownie.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Sterowanie nie jest jeszcze dostępne: chmura nie dostarczyła bieżących wartości. Spróbuj ponownie za chwilę.",
       "controls_none": "To urządzenie obecnie nie zgłasza żadnych ustawień, które można tu zmienić.",
       "configuration_changed": "Ustawienia połączenia zmieniły się, gdy to okno było otwarte. Zamknij je i spróbuj ponownie.",
+      "reauth_wrong_account": "Wybrane konto nie odpowiada skonfigurowanym urządzeniom. Zaloguj się na oryginalne konto.",
+      "reauth_no_targets": "Ten dostęp przez chmurę nie ma już żadnych instalacji ani urządzeń, a konta, do którego należy, nie można potwierdzić. Poprzednie dane logowania zostają zachowane. Aby ponownie użyć konta w chmurze, usuń dostęp przez chmurę w sekcji Konfiguruj → Połączenia i połącz go ponownie.",
       "no_connections": "Nie skonfigurowano żadnego dostępu. Istniejące instalacje i encje są zachowane.",
-      "connection_reauth_started": "Ponowne logowanie zostało przygotowane. Zamknij to okno i wybierz **Skonfiguruj ponownie** dla tej integracji w Ustawienia → Urządzenia i usługi, w sekcji **Wymaga uwagi**.",
       "cloud_already_connected": "Połączenie z chmurą jest już skonfigurowane. Użyj jego ustawień połączenia, aby wybrać więcej urządzeń lub zalogować się ponownie. Drugie równoległe logowanie do chmury nie jest jeszcze obsługiwane.",
       "cloud_setup_in_progress": "Otwarta jest już inna konfiguracja chmury. Najpierw zakończ lub zamknij to okno.",
       "cloud_setup_taken_over": "Nowsze okno konfiguracji chmury zastąpiło to okno. Zamknij to okno i kontynuuj w nowszym.",

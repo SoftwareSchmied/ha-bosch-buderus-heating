@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Resultaat",
         "description": "Het tijdprogramma {program} is opgeslagen en door teruglezen bevestigd.\n\nVorige schakelpunten van de gewijzigde dagen:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Resultaat",
+        "description": "De aanmelding is vernieuwd."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Resultaat",
+        "description": "De aanmelding is vernieuwd. {count} ingeschakelde installaties of apparaten zijn niet in het account gevonden; ze blijven geconfigureerd. Een reparatiemelding noemt ze en legt uit hoe je ze kunt vergeten."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Schakel deze cloudverbinding in voordat je naar apparaten zoekt.",
       "cloud_rate_limited": "De cloud heeft om een pauze gevraagd. Wacht even voordat je het opnieuw probeert.",
       "invalid_auth": "SingleKey ID heeft de autorisatie geweigerd of laten verlopen. Gebruik de nieuwe SingleKey ID-link die hierboven wordt getoond en herhaal de aanmelding.",
+      "reauth_targets_missing": "Bij deze aanmelding is geen van de ingeschakelde installaties en apparaten gevonden. De vorige inloggegevens blijven behouden. Controleer of je je met hetzelfde account hebt aangemeld als eerder. Als de installaties uit het account zijn verwijderd, open dan Configureren → Verbindingen → de cloudtoegang: schakel een installatie in die nog in het account staat onder **Gebruiken voor installaties en apparaten**, of schakel de verwijderde installaties uit en verwijder ze met **Niet-geselecteerde installaties vergeten**. Als er geen meer over is, verwijder dan de cloudtoegang en verbind deze opnieuw.",
       "invalid_redirect": "Home Assistant kon dit adres niet gebruiken. Kopieer het volledige app-adres uit de melding ‘Failed to launch’ in de Chrome-console. Het moet beginnen met het hierboven getoonde schema en bij de huidige aanmeldpoging horen.",
       "singlekey_page": "Dit is het adres van de SingleKey ID-pagina, niet het app-adres. Kopieer in plaats daarvan in de Chrome-console het `{redirect_scheme}://`-adres uit de rode melding **Failed to launch**.",
       "cannot_connect": "De cloudtoegang is niet bereikbaar. Controleer de internetverbinding, wacht even en probeer het opnieuw.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Bediening is nog niet beschikbaar: de cloud heeft nog geen actuele waarden geleverd. Probeer het over een moment opnieuw.",
       "controls_none": "Dit apparaat meldt momenteel geen instellingen die hier kunnen worden gewijzigd.",
       "configuration_changed": "De verbindingsinstellingen zijn gewijzigd terwijl dit dialoogvenster open was. Sluit het en probeer het opnieuw.",
+      "reauth_wrong_account": "Het geselecteerde account komt niet overeen met de geconfigureerde apparaten. Meld je aan met het oorspronkelijke account.",
+      "reauth_no_targets": "Deze cloudtoegang heeft geen installaties of apparaten meer en het account waartoe hij behoort kan niet worden bevestigd. De vorige inloggegevens blijven behouden. Om weer een cloudaccount te gebruiken, verwijder je de cloudtoegang onder Configureren → Verbindingen en verbind je deze opnieuw.",
       "no_connections": "Er is geen toegang geconfigureerd. Bestaande installaties en entiteiten blijven behouden.",
-      "connection_reauth_started": "Het opnieuw aanmelden is voorbereid. Sluit dit dialoogvenster en selecteer **Opnieuw configureren** voor deze integratie onder Instellingen → Apparaten en services, in het gedeelte **Aandacht vereist**.",
       "cloud_already_connected": "Er is al een cloudverbinding geconfigureerd. Gebruik de verbindingsinstellingen daarvan om meer apparaten te selecteren of je opnieuw aan te melden. Een tweede parallelle cloudaanmelding wordt nog niet ondersteund.",
       "cloud_setup_in_progress": "Er is al een andere cloudconfiguratie geopend. Voltooi of sluit dat dialoogvenster eerst.",
       "cloud_setup_taken_over": "Een nieuwer cloudconfiguratie-dialoogvenster heeft dit venster vervangen. Sluit dit dialoogvenster en ga verder in het nieuwere.",

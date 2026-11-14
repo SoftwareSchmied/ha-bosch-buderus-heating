@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Resultado",
         "description": "O programa horário {program} foi guardado e confirmado por nova leitura.\n\nPontos de comutação anteriores dos dias alterados:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Resultado",
+        "description": "O início de sessão foi renovado com êxito."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Resultado",
+        "description": "O início de sessão foi renovado. {count} instalações ou dispositivos ativados não foram encontrados na conta; mantêm-se configurados. Uma nota de reparação identifica-os e explica como esquecê-los."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Ative esta ligação à cloud antes de procurar dispositivos.",
       "cloud_rate_limited": "A cloud solicitou uma pausa. Aguarde antes de tentar novamente.",
       "invalid_auth": "O SingleKey ID rejeitou a autorização ou esta expirou. Utilize a nova ligação do SingleKey ID apresentada acima e repita o início de sessão.",
+      "reauth_targets_missing": "Este início de sessão não encontrou nenhuma das instalações e dispositivos ativados. As credenciais anteriores foram mantidas. Verifique se iniciou sessão com a mesma conta de antes. Se as instalações foram removidas da conta, abra Configurar → Ligações → o acesso à cloud: ative uma instalação que ainda exista na conta em **Utilizar para instalações e dispositivos** ou desative as removidas e remova-as com **Esquecer instalações desselecionadas**. Se não restar nenhuma, remova o acesso à cloud e ligue-o novamente.",
       "invalid_redirect": "O Home Assistant não conseguiu utilizar este endereço. Copie o endereço completo da aplicação da mensagem ‘Failed to launch’ da consola do Chrome. Tem de começar pelo esquema indicado acima e pertencer à tentativa de início de sessão atual.",
       "singlekey_page": "Este é o endereço da página SingleKey ID, não o endereço da aplicação. Em vez disso, copie na consola do Chrome o endereço `{redirect_scheme}://` da mensagem vermelha **Failed to launch**.",
       "cannot_connect": "Não é possível alcançar o acesso à cloud. Verifique a ligação à internet, aguarde um momento e tente novamente.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Os controlos ainda não estão disponíveis: a cloud ainda não entregou valores atuais. Tente novamente dentro de instantes.",
       "controls_none": "Este equipamento não comunica atualmente nenhuma definição que possa ser alterada aqui.",
       "configuration_changed": "As definições da ligação foram alteradas enquanto esta caixa de diálogo estava aberta. Feche-a e tente novamente.",
+      "reauth_wrong_account": "A conta selecionada não corresponde aos dispositivos configurados. Inicie sessão com a conta original.",
+      "reauth_no_targets": "Este acesso à cloud já não tem instalações nem dispositivos e não é possível confirmar a conta a que pertence. As credenciais anteriores foram mantidas. Para voltar a utilizar uma conta na cloud, remova o acesso à cloud em Configurar → Ligações e ligue-o novamente.",
       "no_connections": "Não está configurado nenhum acesso. As instalações e as entidades existentes são mantidas.",
-      "connection_reauth_started": "O novo início de sessão está preparado. Feche esta caixa de diálogo e selecione **Reconfigurar** para esta integração em Definições → Dispositivos e serviços, na secção **Requer atenção**.",
       "cloud_already_connected": "Já existe uma ligação à cloud configurada. Utilize as respetivas definições de ligação para selecionar mais dispositivos ou iniciar sessão novamente. Ainda não é possível um segundo início de sessão paralelo na cloud.",
       "cloud_setup_in_progress": "Já está aberta outra configuração da cloud. Conclua ou feche primeiro essa caixa de diálogo.",
       "cloud_setup_taken_over": "Uma caixa de diálogo de configuração da cloud mais recente substituiu esta. Feche esta caixa de diálogo e continue na mais recente.",

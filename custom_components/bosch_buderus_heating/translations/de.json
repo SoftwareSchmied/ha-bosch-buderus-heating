@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Ergebnis",
         "description": "Das Zeitprogramm {program} wurde gespeichert und durch Zurücklesen bestätigt.\n\nBisherige Schaltpunkte der geänderten Tage:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Ergebnis",
+        "description": "Die Anmeldung wurde erfolgreich erneuert."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Ergebnis",
+        "description": "Die Anmeldung wurde erneuert. {count} eingeschaltete Anlagen oder Geräte wurden im Konto nicht gefunden; sie bleiben eingerichtet. Ein Reparaturhinweis nennt sie und erklärt, wie du sie vergisst."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Aktiviere diesen Cloud-Zugang, bevor du nach Geräten suchst.",
       "cloud_rate_limited": "Die Cloud verlangt eine Abfragepause. Bitte warte vor dem nächsten Versuch.",
       "invalid_auth": "SingleKey ID hat die Autorisierung abgelehnt oder sie ist abgelaufen. Verwende den neu angezeigten SingleKey-ID-Link und wiederhole die Anmeldung.",
+      "reauth_targets_missing": "Mit dieser Anmeldung wurde keine der eingeschalteten Anlagen und Geräte gefunden. Die bisherigen Zugangsdaten bleiben erhalten. Prüfe, ob du dich mit demselben Konto wie bisher angemeldet hast. Wurden die Anlagen aus dem Konto entfernt, öffne Konfigurieren → Verbindungen → den Cloud-Zugang: Schalte unter **Verwendung für Anlagen und Geräte** eine Anlage ein, die noch im Konto ist, oder schalte die entfernten aus und vergiss sie mit **Abgewählte Anlagen vergessen**. Ist keine mehr übrig, entferne den Cloud-Zugang und verbinde ihn neu.",
       "invalid_redirect": "Home Assistant konnte diese Adresse nicht verwenden. Kopiere in der Chrome-Konsole aus der Meldung „Failed to launch“ die vollständige App-Adresse. Sie muss mit dem oben genannten Schema beginnen und zum aktuellen Anmeldeversuch gehören.",
       "singlekey_page": "Das ist die Adresse der SingleKey-ID-Seite, nicht die App-Adresse. Kopiere stattdessen in der Chrome-Konsole die `{redirect_scheme}://`-Adresse aus der roten Meldung **Failed to launch**.",
       "cannot_connect": "Der Cloud-Zugang ist nicht erreichbar. Prüfe die Internetverbindung, warte kurz und versuche es erneut.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Bedienung noch nicht möglich: Die Cloud hat noch keine aktuellen Werte geliefert. Versuche es gleich noch einmal.",
       "controls_none": "Diese Anlage meldet derzeit keine Einstellungen, die hier geändert werden können.",
       "configuration_changed": "Die Verbindungseinstellungen haben sich geändert, während dieser Dialog geöffnet war. Bitte schließe ihn und versuche es erneut.",
+      "reauth_wrong_account": "Das gewählte Konto passt nicht zu den eingerichteten Geräten. Melde dich mit dem ursprünglichen Konto an.",
+      "reauth_no_targets": "Diesem Cloud-Zugang sind keine Anlagen oder Geräte mehr zugeordnet, und das zugehörige Konto lässt sich nicht bestätigen. Die bisherigen Zugangsdaten bleiben erhalten. Um wieder ein Cloud-Konto zu verwenden, entferne den Cloud-Zugang unter Konfigurieren → Verbindungen und verbinde ihn neu.",
       "no_connections": "Es ist kein Zugang eingerichtet. Vorhandene Anlagen und Entitäten bleiben erhalten.",
-      "connection_reauth_started": "Die erneute Anmeldung ist vorbereitet. Schließe diesen Dialog und wähle unter Einstellungen → Geräte & Dienste im Bereich **Aufmerksamkeit erforderlich** bei dieser Integration **Neu konfigurieren**.",
       "cloud_already_connected": "Es ist bereits ein Cloud-Zugang eingerichtet. Über dessen Einstellungen kannst du weitere Geräte auswählen oder dich erneut anmelden. Eine zweite parallele Cloud-Anmeldung wird vorerst nicht unterstützt.",
       "cloud_setup_in_progress": "Eine andere Cloud-Einrichtung ist bereits geöffnet. Bitte beende oder schließe zuerst diesen Dialog.",
       "cloud_setup_taken_over": "Ein neuerer Dialog zur Cloud-Einrichtung hat diesen abgelöst. Bitte schließe diesen Dialog und fahre im neueren fort.",

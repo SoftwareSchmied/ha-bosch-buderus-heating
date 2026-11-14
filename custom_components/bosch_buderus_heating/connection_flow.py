@@ -4,11 +4,7 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-from homeassistant.config_entries import (
-    ConfigEntry,
-    ConfigFlowContext,
-    ConfigFlowResult,
-)
+from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.helpers.selector import (
     BooleanSelector,
     NumberSelector,
@@ -533,21 +529,3 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         return await self.async_step_connection_remove(user_input)
-
-    async def async_step_connection_reauthenticate(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        edit = self._connection_edit
-        try:
-            if edit is None or self._management().edit(edit.connection_id) != edit:
-                return self.async_abort(reason="configuration_changed")
-            kind = self._management().current().connections[edit.connection_id].kind
-        except ConfigurationError:
-            return self.async_abort(reason="configuration_changed")
-        if kind != CLOUD_KIND:
-            return self.async_abort(reason="configuration_changed")
-        self._entry.async_start_reauth(
-            self.hass,
-            context=cast(ConfigFlowContext, {"connection_id": edit.connection_id}),
-        )
-        return self.async_abort(reason="connection_reauth_started")

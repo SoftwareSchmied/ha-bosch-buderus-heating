@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Result",
         "description": "The schedule {program} was saved and confirmed by reading it back.\n\nPrevious switch points of the changed days:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Result",
+        "description": "Sign-in was renewed successfully."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Result",
+        "description": "Sign-in was renewed. {count} switched-on systems or devices were not found in the account; they stay configured. A repair note names them and explains how to forget them."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Enable this cloud connection before searching for devices.",
       "cloud_rate_limited": "The cloud has requested a pause. Please wait before trying again.",
       "invalid_auth": "SingleKey ID rejected or expired the authorization. Use the new SingleKey ID link shown above and repeat sign-in.",
+      "reauth_targets_missing": "This sign-in found none of the switched-on systems and devices. The previous credentials are kept. Check that you signed in with the same account as before. If the systems were removed from the account, open Configure → Connections → the cloud access: switch on a system that is still in the account under **Use for systems and devices**, or switch the removed ones off and remove them with **Forget deselected systems**. If none is left, remove the cloud access and connect it again.",
       "invalid_redirect": "Home Assistant could not use this address. Copy the complete app address from the Chrome console's ‘Failed to launch’ message. It must begin with the scheme shown above and belong to the current sign-in attempt.",
       "singlekey_page": "This is the address of the SingleKey ID page, not the app address. In the Chrome console, copy the `{redirect_scheme}://` address from the red **Failed to launch** message instead.",
       "cannot_connect": "The cloud access cannot be reached. Check the internet connection, wait a moment, and try again.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Controls are not available yet: the cloud has not delivered current values. Try again in a moment.",
       "controls_none": "This appliance currently reports no settings that can be changed here.",
       "configuration_changed": "The connection settings changed while this dialog was open. Please close it and try again.",
+      "reauth_wrong_account": "The selected account does not match the configured devices. Sign in with the original account.",
+      "reauth_no_targets": "This cloud access has no systems or devices left, and the account it belongs to cannot be confirmed. The previous credentials are kept. To use a cloud account again, remove the cloud access under Configure → Connections and connect it again.",
       "no_connections": "No access is configured. Existing systems and entities are retained.",
-      "connection_reauth_started": "Signing in again is prepared. Close this dialog and select **Reconfigure** for this integration under Settings → Devices & services, in the **Attention required** section.",
       "cloud_already_connected": "A cloud connection is already configured. Use its connection settings to select more devices or sign in again. A second parallel cloud sign-in is not supported yet.",
       "cloud_setup_in_progress": "Another cloud setup is already open. Finish or close that dialog first.",
       "cloud_setup_taken_over": "A newer cloud setup dialog has replaced this one. Close this dialog and continue in the newer one.",

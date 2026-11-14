@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Résultat",
         "description": "Le programme horaire {program} a été enregistré et confirmé par relecture.\n\nPoints de commutation précédents des jours modifiés :\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Résultat",
+        "description": "La connexion a été renouvelée avec succès."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Résultat",
+        "description": "La connexion a été renouvelée. {count} installations ou appareils activés n'ont pas été trouvés dans le compte ; ils restent configurés. Une note de réparation les nomme et explique comment les oublier."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Activez cette connexion cloud avant de rechercher des appareils.",
       "cloud_rate_limited": "Le cloud a demandé une pause. Veuillez patienter avant de réessayer.",
       "invalid_auth": "SingleKey ID a rejeté l'autorisation ou celle-ci a expiré. Utilisez le nouveau lien SingleKey ID affiché ci-dessus et répétez la connexion.",
+      "reauth_targets_missing": "Cette connexion n'a trouvé aucune des installations et aucun des appareils activés. Les identifiants précédents sont conservés. Vérifiez que vous vous êtes connecté avec le même compte qu'auparavant. Si les installations ont été supprimées du compte, ouvrez Configurer → Connexions → l'accès cloud : activez une installation qui figure encore dans le compte sous **Utiliser pour les installations et appareils**, ou désactivez celles qui ont été supprimées et retirez-les avec **Oublier les installations désélectionnées**. S'il n'en reste aucune, supprimez l'accès cloud et reconnectez-le.",
       "invalid_redirect": "Home Assistant n'a pas pu utiliser cette adresse. Copiez l'adresse complète de l'application depuis le message « Failed to launch » de la console Chrome. Elle doit commencer par le schéma indiqué ci-dessus et appartenir à la tentative de connexion en cours.",
       "singlekey_page": "Il s'agit de l'adresse de la page SingleKey ID, et non de l'adresse de l'application. Copiez plutôt, dans la console Chrome, l'adresse `{redirect_scheme}://` du message rouge **Failed to launch**.",
       "cannot_connect": "L'accès cloud est inaccessible. Vérifiez la connexion internet, patientez un instant et réessayez.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Les commandes ne sont pas encore disponibles : le cloud n'a pas encore fourni de valeurs actuelles. Réessayez dans un instant.",
       "controls_none": "Cet appareil ne signale actuellement aucun réglage modifiable ici.",
       "configuration_changed": "Les paramètres de connexion ont changé pendant que cette boîte de dialogue était ouverte. Veuillez la fermer et réessayer.",
+      "reauth_wrong_account": "Le compte sélectionné ne correspond pas aux appareils configurés. Connectez-vous avec le compte d'origine.",
+      "reauth_no_targets": "Cet accès cloud n'a plus aucune installation ni aucun appareil, et le compte auquel il appartient ne peut pas être confirmé. Les identifiants précédents sont conservés. Pour utiliser à nouveau un compte cloud, supprimez l'accès cloud sous Configurer → Connexions et reconnectez-le.",
       "no_connections": "Aucun accès n'est configuré. Les installations et entités existantes sont conservées.",
-      "connection_reauth_started": "La nouvelle connexion est préparée. Fermez cette boîte de dialogue et sélectionnez **Reconfigurer** pour cette intégration sous Paramètres → Appareils et services, dans la section **Attention requise**.",
       "cloud_already_connected": "Une connexion cloud est déjà configurée. Utilisez ses paramètres de connexion pour sélectionner d'autres appareils ou vous reconnecter. Une seconde connexion cloud en parallèle n'est pas encore prise en charge.",
       "cloud_setup_in_progress": "Une autre configuration cloud est déjà ouverte. Terminez ou fermez d'abord cette boîte de dialogue.",
       "cloud_setup_taken_over": "Une boîte de dialogue de configuration cloud plus récente a remplacé celle-ci. Fermez cette boîte de dialogue et continuez dans la plus récente.",

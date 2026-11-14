@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Resultat",
         "description": "Tidsprogrammet {program} blev gemt og bekræftet ved at læse det igen.\n\nTidligere koblingspunkter for de ændrede dage:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Resultat",
+        "description": "Login blev fornyet."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Resultat",
+        "description": "Login blev fornyet. {count} aktiverede anlæg eller enheder blev ikke fundet på kontoen; de forbliver konfigureret. En reparationsnote nævner dem og forklarer, hvordan du glemmer dem."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Aktivér denne cloudforbindelse, før du søger efter enheder.",
       "cloud_rate_limited": "Cloud'en har bedt om en pause. Vent, før du prøver igen.",
       "invalid_auth": "SingleKey ID afviste godkendelsen eller lod den udløbe. Brug det nye SingleKey ID-link ovenfor, og gentag login.",
+      "reauth_targets_missing": "Dette login fandt ingen af de aktiverede anlæg og enheder. De tidligere loginoplysninger bevares. Kontrollér, at du loggede ind med den samme konto som før. Hvis anlæggene er fjernet fra kontoen, skal du åbne Konfigurer → Forbindelser → cloudadgangen: aktivér et anlæg, der stadig findes på kontoen, under **Brug til anlæg og enheder**, eller deaktivér de fjernede, og fjern dem med **Glem fravalgte anlæg**. Hvis der ikke er flere tilbage, skal du fjerne cloudadgangen og forbinde den igen.",
       "invalid_redirect": "Home Assistant kunne ikke bruge denne adresse. Kopiér den komplette appadresse fra Chrome-konsollens ‘Failed to launch’-meddelelse. Den skal begynde med det skema, der vises ovenfor, og høre til det aktuelle loginforsøg.",
       "singlekey_page": "Dette er adressen på SingleKey ID-siden, ikke appadressen. Kopiér i stedet `{redirect_scheme}://`-adressen fra den røde meddelelse **Failed to launch** i Chrome-konsollen.",
       "cannot_connect": "Cloudadgangen kan ikke nås. Kontrollér internetforbindelsen, vent et øjeblik, og prøv igen.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Styring er endnu ikke tilgængelig: cloud'en har ikke leveret aktuelle værdier. Prøv igen om et øjeblik.",
       "controls_none": "Dette apparat rapporterer i øjeblikket ingen indstillinger, der kan ændres her.",
       "configuration_changed": "Forbindelsesindstillingerne blev ændret, mens denne dialog var åben. Luk den, og prøv igen.",
+      "reauth_wrong_account": "Den valgte konto passer ikke til de konfigurerede enheder. Log ind med den oprindelige konto.",
+      "reauth_no_targets": "Denne cloudadgang har ingen anlæg eller enheder tilbage, og den konto, den hører til, kan ikke bekræftes. De tidligere loginoplysninger bevares. For at bruge en cloudkonto igen skal du fjerne cloudadgangen under Konfigurer → Forbindelser og forbinde den igen.",
       "no_connections": "Der er ikke konfigureret nogen adgang. Eksisterende anlæg og entiteter bevares.",
-      "connection_reauth_started": "Det nye login er forberedt. Luk denne dialog, og vælg **Genkonfigurer** for denne integration under Indstillinger → Enheder og tjenester i området **Kræver opmærksomhed**.",
       "cloud_already_connected": "Der er allerede konfigureret en cloudforbindelse. Brug dens forbindelsesindstillinger til at vælge flere enheder eller logge ind igen. Et andet parallelt cloudlogin understøttes endnu ikke.",
       "cloud_setup_in_progress": "En anden cloudopsætning er allerede åben. Afslut eller luk først den dialog.",
       "cloud_setup_taken_over": "En nyere cloudopsætningsdialog har erstattet denne. Luk denne dialog, og fortsæt i den nyere.",

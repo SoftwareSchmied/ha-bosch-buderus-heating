@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Rezultat",
         "description": "Časovni program {program} je bil shranjen in potrjen s ponovnim branjem.\n\nDosedanje preklopne točke spremenjenih dni:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Rezultat",
+        "description": "Prijava je bila uspešno obnovljena."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Rezultat",
+        "description": "Prijava je bila obnovljena. V računu ni bilo najdenih {count} vklopljenih sistemov ali naprav; ostanejo nastavljeni. Opomba o popravilu jih navaja in pojasnjuje, kako jih pozabiti."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Pred iskanjem naprav omogočite to povezavo z oblakom.",
       "cloud_rate_limited": "Oblak je zahteval premor. Počakajte, preden poskusite znova.",
       "invalid_auth": "SingleKey ID je zavrnil ali razveljavil pooblastilo. Uporabite novo povezavo SingleKey ID, prikazano zgoraj, in ponovite prijavo.",
+      "reauth_targets_missing": "Ta prijava ni našla nobenega vklopljenega sistema ali naprave. Prejšnje poverilnice so ohranjene. Preverite, ali ste se prijavili z istim računom kot prej. Če so bili sistemi odstranjeni iz računa, odprite Konfiguriraj → Povezave → dostop prek oblaka: pod **Uporabi za sisteme in naprave** vklopite sistem, ki je še v računu, ali izklopite odstranjene in jih odstranite z **Pozabi neizbrane sisteme**. Če ni ostal noben, odstranite dostop prek oblaka in ga znova povežite.",
       "invalid_redirect": "Home Assistant tega naslova ni mogel uporabiti. Iz konzole Chrome kopirajte celoten naslov aplikacije iz sporočila ‘Failed to launch’. Začeti se mora s shemo, prikazano zgoraj, in pripadati trenutnemu poskusu prijave.",
       "singlekey_page": "To je naslov strani SingleKey ID, ne naslov aplikacije. Namesto tega v konzoli Chrome kopirajte naslov `{redirect_scheme}://` iz rdečega sporočila **Failed to launch**.",
       "cannot_connect": "Dostopa prek oblaka ni mogoče doseči. Preverite internetno povezavo, malo počakajte in poskusite znova.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Upravljanje še ni na voljo: oblak ni dostavil trenutnih vrednosti. Poskusite znova čez trenutek.",
       "controls_none": "Ta naprava trenutno ne sporoča nobenih nastavitev, ki bi jih bilo mogoče spremeniti tu.",
       "configuration_changed": "Nastavitve povezave so se spremenile, medtem ko je bil ta pogovorni okvir odprt. Zaprite ga in poskusite znova.",
+      "reauth_wrong_account": "Izbrani račun ne ustreza nastavljenim napravam. Prijavite se z izvirnim računom.",
+      "reauth_no_targets": "Ta dostop prek oblaka nima več sistemov ali naprav, računa, ki mu pripada, pa ni mogoče potrditi. Prejšnje poverilnice so ohranjene. Če želite znova uporabljati račun v oblaku, odstranite dostop prek oblaka v razdelku Konfiguriraj → Povezave in ga znova povežite.",
       "no_connections": "Noben dostop ni nastavljen. Obstoječi sistemi in entitete so ohranjeni.",
-      "connection_reauth_started": "Ponovna prijava je pripravljena. Zaprite ta pogovorni okvir in za to integracijo izberite **Znova konfiguriraj** v Nastavitve → Naprave in storitve, v razdelku **Zahteva pozornost**.",
       "cloud_already_connected": "Povezava z oblakom je že nastavljena. V njenih nastavitvah povezave izberite več naprav ali se znova prijavite. Druga vzporedna prijava v oblak še ni podprta.",
       "cloud_setup_in_progress": "Druga nastavitev oblaka je že odprta. Najprej dokončajte ali zaprite tisti pogovorni okvir.",
       "cloud_setup_taken_over": "Novejši pogovorni okvir za nastavitev oblaka je nadomestil tega. Zaprite ta pogovorni okvir in nadaljujte v novejšem.",

@@ -849,6 +849,14 @@
       "result_switch_program_saved": {
         "title": "Resultado",
         "description": "El programa horario {program} se guardó y se confirmó al volver a leerlo.\n\nPuntos de conmutación anteriores de los días cambiados:\n\n{before}"
+      },
+      "result_reauth_successful": {
+        "title": "Resultado",
+        "description": "El inicio de sesión se ha renovado correctamente."
+      },
+      "result_reauth_successful_targets_missing": {
+        "title": "Resultado",
+        "description": "El inicio de sesión se ha renovado. {count} instalaciones o dispositivos activados no se encontraron en la cuenta; siguen configurados. Una nota de reparación los nombra y explica cómo olvidarlos."
       }
     },
     "error": {
@@ -909,6 +917,7 @@
       "cloud_connection_disabled": "Habilita esta conexión a la nube antes de buscar dispositivos.",
       "cloud_rate_limited": "La nube ha solicitado una pausa. Espera antes de volver a intentarlo.",
       "invalid_auth": "SingleKey ID ha rechazado la autorización o ha caducado. Usa el nuevo enlace de SingleKey ID que aparece arriba y repite el inicio de sesión.",
+      "reauth_targets_missing": "Este inicio de sesión no encontró ninguna de las instalaciones y dispositivos activados. Se conservan las credenciales anteriores. Comprueba que has iniciado sesión con la misma cuenta que antes. Si las instalaciones se eliminaron de la cuenta, abre Configurar → Conexiones → el acceso a la nube: activa una instalación que siga en la cuenta en **Usar para instalaciones y dispositivos**, o desactiva las eliminadas y quítalas con **Olvidar las instalaciones desmarcadas**. Si no queda ninguna, elimina el acceso a la nube y vuelve a conectarlo.",
       "invalid_redirect": "Home Assistant no pudo usar esta dirección. Copia la dirección completa de la aplicación del mensaje ‘Failed to launch’ de la consola de Chrome. Debe empezar por el esquema que aparece arriba y pertenecer al intento de inicio de sesión actual.",
       "singlekey_page": "Esta es la dirección de la página de SingleKey ID, no la dirección de la aplicación. Copia en su lugar, en la consola de Chrome, la dirección `{redirect_scheme}://` del mensaje rojo **Failed to launch**.",
       "cannot_connect": "El acceso a la nube no está disponible. Comprueba la conexión a internet, espera un momento e inténtalo de nuevo.",
@@ -990,8 +999,9 @@
       "controls_not_current": "Los controles aún no están disponibles: la nube no ha entregado valores actuales. Inténtalo de nuevo dentro de un momento.",
       "controls_none": "Este equipo no informa actualmente de ningún ajuste que se pueda cambiar aquí.",
       "configuration_changed": "Los ajustes de conexión cambiaron mientras este cuadro de diálogo estaba abierto. Ciérralo e inténtalo de nuevo.",
+      "reauth_wrong_account": "La cuenta seleccionada no coincide con los dispositivos configurados. Inicia sesión con la cuenta original.",
+      "reauth_no_targets": "Este acceso a la nube ya no tiene instalaciones ni dispositivos, y no se puede confirmar la cuenta a la que pertenece. Se conservan las credenciales anteriores. Para volver a usar una cuenta en la nube, elimina el acceso a la nube en Configurar → Conexiones y vuelve a conectarlo.",
       "no_connections": "No hay ningún acceso configurado. Se conservan las instalaciones y las entidades existentes.",
-      "connection_reauth_started": "El nuevo inicio de sesión está preparado. Cierra este cuadro de diálogo y selecciona **Reconfigurar** para esta integración en Ajustes → Dispositivos y servicios, en la sección **Requiere atención**.",
       "cloud_already_connected": "Ya hay una conexión a la nube configurada. Usa sus ajustes de conexión para seleccionar más dispositivos o volver a iniciar sesión. Todavía no se admite un segundo inicio de sesión paralelo en la nube.",
       "cloud_setup_in_progress": "Ya hay otra configuración de la nube abierta. Termina o cierra primero ese cuadro de diálogo.",
       "cloud_setup_taken_over": "Un cuadro de diálogo de configuración de la nube más reciente ha sustituido a este. Cierra este cuadro de diálogo y continúa en el más reciente.",
