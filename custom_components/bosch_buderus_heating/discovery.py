@@ -10,6 +10,12 @@ from enum import StrEnum
 from itertools import islice
 
 from . import rrc_contracts
+from .discovery_containers import (
+    ContainerProbe,
+    ContainerProbes,
+    DirectProbeDiagnostic,
+    known_child_suffixes,
+)
 from .holidays import HOLIDAY_RESOURCE_PATHS
 from .legacy_holidays import (
     ICOM_FIELDS,
@@ -33,7 +39,7 @@ from .pointt import (
     UnexpectedHttpStatus,
 )
 from .pointt.const import MAX_BULK_PATHS
-from .pointt.redaction import resource_path_template
+from .pointt.redaction import diagnostic_resource_path, resource_path_template
 from .resource_catalog import is_never_read
 from .rrc import (
     DEVICE_LIST,
@@ -141,10 +147,16 @@ class DiscoveryDiagnostics:
     device_profile: str = "generic"
     # C8: what showed an RRC controller (device_type, product_type, zones).
     rrc_evidence: tuple[str, ...] = ()
+    # Containers whose known children were requested directly, because their
+    # directory was refused, empty, or shorter than a sibling's.
+    direct_probes: dict[str, DirectProbeDiagnostic] = field(default_factory=dict)
+    direct_probes_over_limit: int = 0
 
     def reset(self) -> None:
         """Clear a previous run before rediscovery."""
         self.paths.clear()
+        self.direct_probes.clear()
+        self.direct_probes_over_limit = 0
         self.completed = False
         self.stop_reason = "running"
         self.depth_limit_reached = False
@@ -245,6 +257,45 @@ class DiscoveryDiagnostics:
                     ).items()
                 )
             ),
+            **self._direct_probe_snapshot(),
+        }
+
+    def _direct_probe_snapshot(self) -> dict[str, object]:
+        """Which containers had their children requested directly, and why."""
+        entries: list[dict[str, object]] = []
+        scheduled = discovered = 0
+        for container, record in sorted(
+            self.direct_probes.items(),
+            key=lambda entry: diagnostic_resource_path(entry[0]),
+        ):
+            probes = tuple(
+                item
+                for path in record.paths
+                if (item := self.paths.get(path)) is not None
+            )
+            found = sum(item.discovered for item in probes)
+            scheduled += len(probes)
+            discovered += found
+            entries.append(
+                {
+                    "container": diagnostic_resource_path(container),
+                    "reason": record.reason,
+                    "reference_containers": sorted(
+                        diagnostic_resource_path(path) for path in record.references
+                    ),
+                    "paths_scheduled": len(probes),
+                    "paths_requested": sum(
+                        item.bulk_result != "not_attempted" for item in probes
+                    ),
+                    "resources_discovered": found,
+                }
+            )
+        return {
+            "direct_probe_containers": len(entries),
+            "direct_probe_paths": scheduled,
+            "direct_probe_paths_discovered": discovered,
+            "direct_probe_paths_over_limit": self.direct_probes_over_limit,
+            "direct_probes": entries,
         }
 
     def _access_reason(self, forbidden: int) -> str | None:
@@ -538,6 +589,23 @@ _DEVICE_OPTIONAL_SUFFIXES = (
     "/zoneId",
 )
 
+# Every known child per circuit kind, for direct reads below a container
+# that cannot be listed (#130); the always-requested children are included
+# for nested containers such as ``cooling`` or ``temperatureLevels``.
+_DIRECT_CHILD_SUFFIXES = known_child_suffixes(
+    {
+        "heatingCircuits": (
+            *_HEATING_CIRCUIT_CATALOG_SUFFIXES,
+            *_HEATING_CIRCUIT_OPTIONAL_SUFFIXES,
+        ),
+        "dhwCircuits": _DHW_CIRCUIT_OPTIONAL_SUFFIXES,
+        "heatSources": _HEAT_SOURCE_OPTIONAL_SUFFIXES,
+        "solarCircuits": _SOLAR_CIRCUIT_OPTIONAL_SUFFIXES,
+        "ventilation": _VENTILATION_ZONE_OPTIONAL_SUFFIXES,
+        "zones": _ZONE_OPTIONAL_SUFFIXES,
+    }
+)
+
 
 async def async_discover_resources(
     client: PointTClient,
@@ -603,6 +671,11 @@ async def async_discover_resources(
     consecutive_5xx = 0
     processed: set[str] = set()
     depth_limited: set[str] = set()
+    containers = ContainerProbes(
+        _DIRECT_CHILD_SUFFIXES,
+        known=report.paths.__contains__,
+        records=report.direct_probes,
+    )
 
     def schedule(path: str, depth: int, source: DiscoveryPathSource) -> None:
         report.scheduled(path, source)
@@ -648,6 +721,18 @@ async def async_discover_resources(
             if queue is not target:
                 queue.pop(path, None)
         target[path] = depth
+
+    def schedule_direct(probes: list[ContainerProbe]) -> None:
+        """#130: children of a container read without its directory."""
+        for probe in probes:
+            schedule(
+                probe.path,
+                probe.depth,
+                DiscoveryPathSource.CATALOG
+                if probe.core
+                else DiscoveryPathSource.OPTIONAL,
+            )
+        report.direct_probes_over_limit = len(containers.over_limit)
 
     def enable_rrc_lists(depth: int) -> None:
         nonlocal rrc_enabled, allowed_roots
@@ -871,6 +956,7 @@ async def async_discover_resources(
             depth = frontier_entries[result.path]
             resource = result.resource
             if resource is None:
+                schedule_direct(containers.refused(result.path, result.status, depth))
                 _LOGGER.debug(
                     "Ignoring PointT discovery item %s: status=%s, error=%s (%s)",
                     resource_path_template(result.path),
@@ -917,6 +1003,7 @@ async def async_discover_resources(
                     continue
                 schedule(child, depth + 1, DiscoveryPathSource.REFERENCE)
                 schedule_children(child, depth + 1)
+            schedule_direct(containers.listed(result.path, resource, depth))
     else:
         report.completed = not report.depth_limit_reached
         report.stop_reason = "complete" if report.completed else "depth_limit"

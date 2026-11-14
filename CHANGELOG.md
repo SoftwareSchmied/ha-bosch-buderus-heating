@@ -5,6 +5,31 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Second heating circuit without name and without target in Auto:** some
+  controllers refuse the directory of a heating circuit while its values stay
+  readable one by one. The integration then never requested the values it
+  only learns from that directory, among them the circuit's name, its current
+  room setpoint, status, summer/winter state and time program. The circuit
+  showed the generic name "Heating circuit 2" and no target temperature in
+  Auto.
+  - Discovery now reads the known children of such a container directly: the
+    children a readable sibling of the same kind lists and the children known
+    for that kind. This works for every advertised heating circuit, hot-water
+    circuit, heat source, solar circuit, ventilation zone and zone, also for
+    refused directories below them such as a time program directory, and for
+    empty directories or lists shorter than a sibling's.
+  - Nothing is requested for a circuit the controller does not advertise or
+    a container it answers with "not found". The extra reads happen only
+    during discovery, at most 256 of them, within its usual budget.
+  - The diagnostics list each container that was read this way, why, and how
+    many of its values were found.
+  - Thank you to markus1783 for the report and the diagnostics in
+    [#130](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/130).
+    I tested it with automated tests in the shape of that report; it is not
+    yet confirmed on a real installation.
+
 ## [0.9.2-beta.1] - 2026-11-14
 
 > [!IMPORTANT]
