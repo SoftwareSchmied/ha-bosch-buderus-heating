@@ -214,9 +214,13 @@ def cloud_sign_in_history(hass: HomeAssistant, entry_id: str) -> LocalSetupHisto
 
 
 async def async_forget_local_setup_history(hass: HomeAssistant, entry_id: str) -> None:
-    """Delete both histories of a removed entry."""
+    """Delete both histories of a removed entry; a failure of one does not
+    keep the other."""
     for kind in _KINDS:
         history = hass.data.setdefault(_HISTORIES, {}).pop((kind, entry_id), None)
         if history is None:
             history = LocalSetupHistory(hass, entry_id, kind)
-        await history.async_remove()
+        try:
+            await history.async_remove()
+        except Exception:  # the other history is still deleted
+            _LOGGER.warning("A setup history could not be deleted")

@@ -304,3 +304,52 @@ async def test_a_broken_history_never_stops_the_dialog_or_the_report(
     assert result["errors"] == {"address": "local_invalid_address"}
     report = await async_get_config_entry_diagnostics(hass, entry)
     assert report["local_setup_attempts"] == []
+
+
+async def test_a_failure_of_one_history_still_deletes_the_other(
+    hass, hass_storage, monkeypatch, caplog
+) -> None:
+    for kind in (history.LOCAL, history.CLOUD):
+        item = history._history(hass, "entry", kind)
+        item.add("local_auth", "local_timeout")
+        await item.async_attempts()
+        await flush_store(item._store)
+    cloud_key = "bosch_buderus_heating.cloud_sign_in_history.entry"
+    assert KEY.format("entry") in hass_storage and cloud_key in hass_storage
+    original = history.LocalSetupHistory.async_remove
+
+    async def remove(self):
+        if self._message == history._KINDS[history.LOCAL][1]:
+            raise OSError("storage")
+        await original(self)
+
+    monkeypatch.setattr(history.LocalSetupHistory, "async_remove", remove)
+    with caplog.at_level(logging.WARNING, logger=history.__name__):
+        await async_forget_local_setup_history(hass, "entry")
+    assert cloud_key not in hass_storage
+    assert "A setup history could not be deleted" in caplog.text
+
+
+def _attempt_owner(hass, owner):
+    from types import SimpleNamespace
+
+    return SimpleNamespace(
+        hass=hass, _local_owner_id=owner, _local_unexpected=None, _local_detail=None
+    )
+
+
+async def test_a_removed_entry_gets_no_new_local_history(hass) -> None:
+    from tests.ha_test_helpers import MockConfigEntry
+
+    entry = MockConfigEntry(domain="bosch_buderus_heating")
+    entry.add_to_hass(hass)
+    flow.LocalSetupFlow._local_attempt(
+        _attempt_owner(hass, "removed-entry"), "local_auth", "local_timeout"
+    )
+    histories = hass.data.get(history._HISTORIES, {})
+    assert (history.LOCAL, "removed-entry") not in histories
+    flow.LocalSetupFlow._local_attempt(
+        _attempt_owner(hass, entry.entry_id), "local_auth", "local_timeout"
+    )
+    attempts = await local_setup_history(hass, entry.entry_id).async_attempts()
+    assert [a["error"] for a in attempts] == ["local_timeout"]

@@ -251,3 +251,19 @@ async def test_a_link_replaced_before_use_is_noted_at_the_next_attempt(hass):
     assert _shape(await _attempts(hass, entry.entry_id)) == [
         ("link_created", "failed", "abandoned_after_link")
     ]
+
+
+async def test_removing_the_entry_with_an_open_sign_in_keeps_no_history(
+    hass,
+) -> None:
+    from custom_components.bosch_buderus_heating import local_setup_history as history
+
+    entry = _reauth_entry(hass)
+    await _reauth_link(hass, entry)
+    # Home Assistant deletes the entry's data first and closes the open
+    # sign-in afterwards: that must not bring the history back.
+    await hass.config_entries.async_remove(entry.entry_id)
+    await hass.async_block_till_done()
+    assert not hass.config_entries.flow.async_progress_by_handler(DOMAIN)
+    histories = hass.data.get(history._HISTORIES, {})
+    assert (history.CLOUD, entry.entry_id) not in histories

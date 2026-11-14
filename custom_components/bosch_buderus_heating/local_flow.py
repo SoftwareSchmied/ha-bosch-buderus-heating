@@ -276,6 +276,9 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         """Note an attempt in the entry's history: codes only, never data."""
         if not self._local_owner_id:
             return
+        if self.hass.config_entries.async_get_entry(self._local_owner_id) is None:
+            # Removed meanwhile: its deleted history must not come back.
+            return
         if error == "local_unexpected" and self._local_unexpected:
             error = f"unexpected:{self._local_unexpected}"
         self._local_unexpected = None
@@ -888,7 +891,12 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
         )
 
     async def _local_create(self, label: LabelCredentials) -> None:
-        assert self._local_edit is not None and self._local_auth_pin is not None
+        assert self._local_edit is not None
+        if self._local_auth_pin is None:
+            # The sign-in port's certificate is not confirmed (again): check
+            # it first; nothing is sent with the label.
+            await self._local_inspect(PortRole.AUTHENTICATION)
+            return
         journal = enrollment_journal(self.hass)
         self._local_record = await journal.create(
             self._local_edit,
@@ -968,7 +976,15 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             ),
             None,
         )
-        self._local_phase = "local_pending" if self._local_record else "local_auth"
+        if self._local_record is not None:
+            self._local_phase = "local_pending"
+        elif self._local_auth_pin is None:
+            # After a changed certificate whose new check failed: retrying
+            # means checking the sign-in port again, not a sign-in without
+            # a confirmed certificate.
+            await self._local_inspect(PortRole.AUTHENTICATION)
+        else:
+            self._local_phase = "local_auth"
 
     async def async_step_local_pending(
         self, user_input: dict[str, Any] | None = None

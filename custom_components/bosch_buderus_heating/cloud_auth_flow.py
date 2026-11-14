@@ -107,7 +107,10 @@ class CloudAuthorizationFlow(ConfigEntryBaseFlow):
                 )
             owner = self._auth_history_owner()
             if owner is not None:
-                cloud_sign_in_history(self.hass, owner).add(step, error, log=False)
+                # A dialog closed because its entry was removed would bring
+                # the deleted history back.
+                if self.hass.config_entries.async_get_entry(owner) is not None:
+                    cloud_sign_in_history(self.hass, owner).add(step, error, log=False)
                 return
             pending = self._auth_pending or []
             pending.append((now_text(), step, error))

@@ -183,6 +183,58 @@ async def test_a_changed_certificate_leads_back_to_its_check(
     assert result["step_id"] == "local_auth" and not result["errors"]
 
 
+async def test_a_failed_check_after_a_changed_certificate_is_retried_as_a_check(
+    hass, supported, journal, monkeypatch
+):
+    """The new check of the sign-in port fails once: retrying checks it again
+    instead of a sign-in without a confirmed certificate (a loop)."""
+    from custom_components.bosch_buderus_heating.local_transport import (
+        LocalTransportError,
+        TransportFailure,
+    )
+
+    entry, _, _, target = registered(hass)
+    answers = [b"a" * 32, LocalTransportError(TransportFailure.TIMEOUT), b"b" * 32]
+    inspections, creations = [], []
+
+    async def inspect(context, role, *, is_current, budget):
+        inspections.append(role)
+        answer = answers.pop(0)
+        if isinstance(answer, Exception):
+            raise answer
+        return CertificateObservation(context, role, answer, "192.0.2.1", "TLSv1.3")
+
+    async def create(*args, **kwargs):
+        creations.append(args)
+        return SimpleNamespace(
+            state=AuthState.REJECTED,
+            problem=AuthProblem.CERTIFICATE_CHANGED,
+            resolved=True,
+        )
+
+    monkeypatch.setattr(flow, "inspect_local_certificate", inspect)
+    monkeypatch.setattr(type(journal), "create", create)
+    manager = hass.config_entries.options
+    result = await start(hass, entry, target)
+    result = await submit(hass, manager, result, {"address": "gateway.example.invalid"})
+    result = await submit(hass, manager, result, {"method": "label"})
+    result = await submit(hass, manager, result, {"confirm": True})
+    values = {"login": LABEL.login, "password": LABEL.password, "unlocked": True}
+    result = await submit(hass, manager, result, values)
+    assert result["step_id"] == "local_retry"
+    assert result["errors"] == {"base": "local_timeout"}
+    result = await submit(hass, manager, result, {})
+    assert result["step_id"] == "local_certificate"
+    assert result["description_placeholders"]["fingerprint"] == (b"b" * 32).hex()
+    assert inspections == [PortRole.AUTHENTICATION] * 3
+    # Nothing was sent with the label after the first attempt.
+    assert len(creations) == 1
+    result = await submit(hass, manager, result, {"confirm": True})
+    assert result["step_id"] == "local_auth" and not result["errors"]
+    attempts = await local_setup_history(hass, entry.entry_id).async_attempts()
+    assert all(not str(a["error"]).startswith("unexpected") for a in attempts)
+
+
 def test_the_texts_give_the_documented_button_time() -> None:
     from pathlib import Path
 
