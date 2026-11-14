@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Tilbagekald token",
-        "description": "Tilbagekald tokenet fra denne integration, oprettet {created}, på gatewayen på **{host}**?\n\nGatewayen sletter det permanent. Hvis det er det token, denne adgang bruger, ophører den lokale adgang: adgangen slås fra og kræver et nyt login med enhedsmærkaten. Listen læses igen lige før, og anmodningen sendes kun én gang. Lad feltet være uafkrydset for at gå tilbage uden tilbagekaldelse. Vises et andet felt, er det det token, denne adgang sandsynligvis bruger; sæt kryds i det også for at bekræfte, at den lokale adgang ophører.",
+        "description": "Tilbagekald tokenet fra denne integration, oprettet {created}, på gatewayen på **{host}**?\n\nGatewayen sletter det permanent. Hvis det er det token, denne adgang bruger, ophører den lokale adgang: adgangen slås fra og kræver et nyt login med enhedsmærkaten. Listen læses igen lige før, og anmodningen sendes kun én gang. Lad feltet være uafkrydset for at gå tilbage uden tilbagekaldelse. {use} Sæt også kryds i det andet felt for at bekræfte det.",
         "data": {
           "confirm": "Tilbagekald dette token på gatewayen",
-          "confirm_end": "Dermed ophører den lokale adgang"
+          "confirm_end": "En lokal adgang, der bruger dette token, ophører"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Gatewayens login-tjeneste afviste anmodningen. Intet blev ændret.",
       "local_tokens_unsupported": "Denne gateway tilbyder ingen tokenliste. Intet blev ændret.",
       "local_tokens_invalid": "Gatewayens tokenliste kunne ikke kontrolleres (uventet eller for stort svar). Intet blev ændret.",
-      "local_token_end_unconfirmed": "Dette token bruges sandsynligvis af denne adgang. Sæt også kryds ved \"Dermed ophører den lokale adgang\", eller lad det første felt være uafkrydset for at gå tilbage. Der blev intet sendt."
+      "local_token_end_unconfirmed": "Tilbagekaldelse af dette token kan afslutte en lokal adgang. Sæt også kryds i det andet felt, eller lad det første være uafkrydset for at gå tilbage. Intet blev sendt.",
+      "connection_remove_unconfirmed": "Sæt også kryds i „Fjern denne adgang“: et token tilbagekaldes kun sammen med fjernelsen af adgangen. Intet blev sendt eller fjernet."
     },
     "abort": {
       "no_notification_gateways": "Der er ikke konfigureret noget varmeanlæg.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "Gatewayen afviste tilbagekaldelsen; tokenet står stadig på listen.",
       "local_token_revoke_unclear": "Gatewayen bekræftede ikke tilbagekaldelsen. Intet blev gentaget. Åbn tokenlisten igen for at kontrollere.",
       "local_token_revoked_removed": "Tokenet blev tilbagekaldt på gatewayen, og adgangen blev fjernet.",
-      "local_token_not_removed": "Tilbagekaldelsen blev ikke bekræftet, så adgangen blev ikke fjernet. Kontrollér tokenlisten, og fjern derefter adgangen igen."
+      "local_token_not_removed": "Tilbagekaldelsen blev ikke bekræftet, så adgangen blev ikke fjernet. Kontrollér tokenlisten, og fjern derefter adgangen igen.",
+      "local_token_old_revoked_removed": "Det valgte token blev tilbagekaldt på gatewayen, og adgangen blev fjernet. Det token, denne adgang selv brugte, er stadig på gatewayen.",
+      "local_token_access_end_failed": "Det var det token, denne adgang brugte, så den lokale adgang er ophørt, men adgangen kunne ikke slås fra. Slå den fra, fjern den, eller sæt den op igen med enhedsmærkaten."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale forbindelse. Vent venligst."

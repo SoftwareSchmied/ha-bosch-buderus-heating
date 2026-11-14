@@ -414,7 +414,7 @@
     "Remaining time": "Gjenstående tid",
     "Requested supply temperature HC1 (signal)": "Forespurt turtemperatur VK1 (signal)",
     "Return temperature": "Returtemperatur",
-    "Return temperature (TC0, signal)": "Returtemperatur (TC0, signal)",
+    "Return to the heat pump (TC0, signal)": "Retur til varmepumpen (TC0, signal)",
     "RF connection lost since": "Radiotilkobling tapt siden",
     "Room controller": "Romregulator",
     "Room controller assignment": "Tilordning av romregulator",
@@ -609,6 +609,11 @@
     "Holiday slot {} state": "Status for feriespor {}",
     "used by this access": "brukt av denne tilgangen",
     "not readable": "kan ikke leses",
-    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Denne tilgangen bruker en token som ble skrevet inn manuelt. Det kan ikke fastslås hvilken oppføring i listen det er, så ingen er markert. Den kan stå under «Andre apper», hvis tokens aldri tilbys for tilbakekalling."
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Denne tilgangen bruker en token som ble skrevet inn manuelt. Det kan ikke fastslås hvilken oppføring i listen det er, så ingen er markert. Den kan stå under «Andre apper», hvis tokens aldri tilbys for tilbakekalling.",
+    "Return to the heat source": "Retur til varmekilden",
+    "used by another access": "brukes av en annen tilgang",
+    "It is most likely the token this access uses: revoking it ends this local access.": "Det er sannsynligvis tokenen denne tilgangen bruker: tilbakekalles den, avsluttes denne lokale tilgangen.",
+    "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Det er sannsynligvis tokenen til en annen lokal tilgang til denne gatewayen: tilbakekalles den, avsluttes den tilgangen.",
+    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Hvilken token en tilgang bruker, kan ikke fastslås sikkert, for eksempel når en annen Home Assistant bruker denne gatewayen. Tilbakekalles en token i bruk, avsluttes den lokale tilgangen som bruker den."
   }
 }

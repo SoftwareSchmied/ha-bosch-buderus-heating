@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Återkalla token",
-        "description": "Återkalla token från den här integrationen, skapad {created}, på gatewayen på **{host}**?\n\nGatewayen raderar den permanent. Om det är den token som den här åtkomsten använder upphör den lokala åtkomsten: åtkomsten stängs av och behöver en ny inloggning med enhetsetiketten. Listan läses igen precis innan, och begäran skickas bara en gång. Lämna rutan tom för att gå tillbaka utan att återkalla. Om en andra ruta visas är det den token som den här åtkomsten troligen använder; kryssa i den också för att bekräfta att den lokala åtkomsten upphör.",
+        "description": "Återkalla token från den här integrationen, skapad {created}, på gatewayen på **{host}**?\n\nGatewayen raderar den permanent. Om det är den token som den här åtkomsten använder upphör den lokala åtkomsten: åtkomsten stängs av och behöver en ny inloggning med enhetsetiketten. Listan läses igen precis innan, och begäran skickas bara en gång. Lämna rutan tom för att gå tillbaka utan att återkalla. {use} Kryssa även i den andra rutan för att bekräfta det.",
         "data": {
           "confirm": "Återkalla den här token på gatewayen",
-          "confirm_end": "Därmed upphör den lokala åtkomsten"
+          "confirm_end": "En lokal åtkomst som använder denna token upphör"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Gatewayens inloggningstjänst avvisade begäran. Ingenting ändrades.",
       "local_tokens_unsupported": "Den här gatewayen erbjuder ingen tokenlista. Ingenting ändrades.",
       "local_tokens_invalid": "Gatewayens tokenlista kunde inte kontrolleras (oväntat eller för stort svar). Ingenting ändrades.",
-      "local_token_end_unconfirmed": "Den här token används troligen av den här åtkomsten. Kryssa också i ”Därmed upphör den lokala åtkomsten” eller lämna den första rutan tom för att gå tillbaka. Ingenting skickades."
+      "local_token_end_unconfirmed": "Att återkalla denna token kan avsluta en lokal åtkomst. Kryssa även i den andra rutan, eller lämna den första tom för att gå tillbaka. Ingenting skickades.",
+      "connection_remove_unconfirmed": "Kryssa även i ”Ta bort den här åtkomsten”: en token återkallas bara tillsammans med att åtkomsten tas bort. Ingenting skickades eller togs bort."
     },
     "abort": {
       "no_notification_gateways": "Inget värmesystem är konfigurerat.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "Gatewayen avvisade återkallelsen; token finns kvar i listan.",
       "local_token_revoke_unclear": "Gatewayen bekräftade inte återkallelsen. Ingenting upprepades. Öppna tokenlistan igen för att kontrollera.",
       "local_token_revoked_removed": "Token återkallades på gatewayen och åtkomsten togs bort.",
-      "local_token_not_removed": "Återkallelsen bekräftades inte, så åtkomsten togs inte bort. Kontrollera tokenlistan och ta sedan bort åtkomsten igen."
+      "local_token_not_removed": "Återkallelsen bekräftades inte, så åtkomsten togs inte bort. Kontrollera tokenlistan och ta sedan bort åtkomsten igen.",
+      "local_token_old_revoked_removed": "Den valda token återkallades på gatewayen och åtkomsten togs bort. Den token som den här åtkomsten själv använde finns kvar på gatewayen.",
+      "local_token_access_end_failed": "Det var den token som den här åtkomsten använde, så den lokala åtkomsten har upphört, men åtkomsten kunde inte stängas av. Stäng av den, ta bort den eller konfigurera den igen med enhetsetiketten."
     },
     "progress": {
       "local_work": "Kontrollerar den lokala anslutningen. Vänta."

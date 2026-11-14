@@ -414,7 +414,7 @@
     "Remaining time": "Jäljellä oleva aika",
     "Requested supply temperature HC1 (signal)": "Pyydetty menolämpötila LP1 (signaali)",
     "Return temperature": "Paluulämpötila",
-    "Return temperature (TC0, signal)": "Paluulämpötila (TC0, signaali)",
+    "Return to the heat pump (TC0, signal)": "Paluu lämpöpumpulle (TC0, signaali)",
     "RF connection lost since": "Radioyhteys katkennut alkaen",
     "Room controller": "Huonesäädin",
     "Room controller assignment": "Huonesäätimen liitos",
@@ -609,6 +609,11 @@
     "Holiday slot {} state": "Lomapaikan {} tila",
     "used by this access": "tämän yhteyden käyttämä",
     "not readable": "ei luettavissa",
-    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Tämä yhteys käyttää käsin syötettyä tunnusta. Ei voida tunnistaa, mikä luettelon merkintä se on, joten mitään ei ole merkitty. Se voi näkyä kohdassa ”Muut sovellukset”, joiden tunnuksia ei koskaan tarjota peruttaviksi."
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Tämä yhteys käyttää käsin syötettyä tunnusta. Ei voida tunnistaa, mikä luettelon merkintä se on, joten mitään ei ole merkitty. Se voi näkyä kohdassa ”Muut sovellukset”, joiden tunnuksia ei koskaan tarjota peruttaviksi.",
+    "Return to the heat source": "Paluu lämmönlähteelle",
+    "used by another access": "toisen yhteyden käytössä",
+    "It is most likely the token this access uses: revoking it ends this local access.": "Se on todennäköisesti tunnus, jota tämä yhteys käyttää: sen peruminen päättää tämän paikallisen yhteyden.",
+    "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Se on todennäköisesti toisen tämän yhdyskäytävän paikallisen yhteyden tunnus: sen peruminen päättää sen yhteyden.",
+    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Ei voida varmasti tietää, mitä tunnusta yhteys käyttää, esimerkiksi kun toinen Home Assistant käyttää tätä yhdyskäytävää. Käytössä olevan tunnuksen peruminen päättää sitä käyttävän paikallisen yhteyden."
   }
 }

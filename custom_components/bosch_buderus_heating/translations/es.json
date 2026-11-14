@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Revocar token",
-        "description": "¿Revocar el token de esta integración creado el {created} en la pasarela de **{host}**?\n\nLa pasarela lo elimina definitivamente. Si es el token que usa este acceso, el acceso local termina: el acceso se desactiva y necesita un nuevo inicio de sesión con la etiqueta del dispositivo. La lista se vuelve a leer justo antes y la solicitud se envía una sola vez. Deja la casilla sin marcar para volver sin revocar. Si aparece una segunda casilla, es el token que este acceso probablemente usa; márcala también para confirmar que el acceso local termina.",
+        "description": "¿Revocar el token de esta integración creado el {created} en la pasarela de **{host}**?\n\nLa pasarela lo elimina definitivamente. Si es el token que usa este acceso, el acceso local termina: el acceso se desactiva y necesita un nuevo inicio de sesión con la etiqueta del dispositivo. La lista se vuelve a leer justo antes y la solicitud se envía una sola vez. Deja la casilla sin marcar para volver sin revocar. {use} Marca también la segunda casilla para confirmarlo.",
         "data": {
           "confirm": "Revocar este token en la pasarela",
-          "confirm_end": "Con esto termina el acceso local"
+          "confirm_end": "Un acceso local que use este token termina"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "El servicio de inicio de sesión de la pasarela rechazó la solicitud. No se ha cambiado nada.",
       "local_tokens_unsupported": "Esta pasarela no ofrece una lista de tokens. No se ha cambiado nada.",
       "local_tokens_invalid": "No se pudo comprobar la lista de tokens de la pasarela (respuesta inesperada o demasiado grande). No se ha cambiado nada.",
-      "local_token_end_unconfirmed": "Este acceso probablemente usa este token. Marca también «Con esto termina el acceso local» o deja la primera casilla sin marcar para volver. No se ha enviado nada."
+      "local_token_end_unconfirmed": "Revocar este token puede terminar un acceso local. Marca también la segunda casilla o deja la primera sin marcar para volver. No se ha enviado nada.",
+      "connection_remove_unconfirmed": "Marca también «Eliminar este acceso»: un token solo se revoca junto con la eliminación del acceso. No se ha enviado ni eliminado nada."
     },
     "abort": {
       "no_notification_gateways": "No hay ninguna instalación de calefacción configurada.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "La pasarela rechazó la revocación; el token sigue en la lista.",
       "local_token_revoke_unclear": "La pasarela no confirmó la revocación. No se ha repetido nada. Abre de nuevo la lista de tokens para comprobarlo.",
       "local_token_revoked_removed": "El token se revocó en la pasarela y el acceso se eliminó.",
-      "local_token_not_removed": "La revocación no se confirmó, así que el acceso no se eliminó. Revisa la lista de tokens y vuelve a eliminar el acceso."
+      "local_token_not_removed": "La revocación no se confirmó, así que el acceso no se eliminó. Revisa la lista de tokens y vuelve a eliminar el acceso.",
+      "local_token_old_revoked_removed": "El token elegido se revocó en la pasarela y el acceso se eliminó. El token que usaba este acceso sigue en la pasarela.",
+      "local_token_access_end_failed": "Era el token que usaba este acceso, así que el acceso local ha terminado, pero el acceso no se pudo desactivar. Desactívalo, elimínalo o configúralo de nuevo con la etiqueta del dispositivo."
     },
     "progress": {
       "local_work": "Comprobando la conexión local. Espera, por favor."

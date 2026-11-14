@@ -414,7 +414,7 @@
     "Remaining time": "Zostávajúci čas",
     "Requested supply temperature HC1 (signal)": "Vyžiadaná výstupná teplota okruhu 1 (signál)",
     "Return temperature": "Vratná teplota",
-    "Return temperature (TC0, signal)": "Vratná teplota (TC0, signál)",
+    "Return to the heat pump (TC0, signal)": "Spiatočka do tepelného čerpadla (TC0, signál)",
     "RF connection lost since": "Rádiové spojenie stratené od",
     "Room controller": "Izbový regulátor",
     "Room controller assignment": "Priradenie izbového regulátora",
@@ -609,6 +609,11 @@
     "Holiday slot {} state": "Stav slotu dovolenky {}",
     "used by this access": "používa ho tento prístup",
     "not readable": "nečitateľné",
-    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Tento prístup používa ručne zadaný token. Nedá sa zistiť, ktorý záznam zoznamu to je, preto žiadny nie je označený. Môže byť uvedený v časti „Iné aplikácie“, ktorých tokeny sa nikdy neponúkajú na odvolanie."
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Tento prístup používa ručne zadaný token. Nedá sa zistiť, ktorý záznam zoznamu to je, preto žiadny nie je označený. Môže byť uvedený v časti „Iné aplikácie“, ktorých tokeny sa nikdy neponúkajú na odvolanie.",
+    "Return to the heat source": "Spiatočka do zdroja tepla",
+    "used by another access": "používa iný prístup",
+    "It is most likely the token this access uses: revoking it ends this local access.": "Pravdepodobne ide o token, ktorý tento prístup používa: jeho odvolaním tento lokálny prístup skončí.",
+    "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Pravdepodobne ide o token iného lokálneho prístupu k tejto bráne: jeho odvolaním ten prístup skončí.",
+    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Ktorý token prístup používa, sa nedá s istotou zistiť, napríklad keď túto bránu používa iný Home Assistant. Odvolaním používaného tokenu skončí lokálny prístup, ktorý ho používa."
   }
 }

@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Tilbakekall token",
-        "description": "Tilbakekalle tokenen fra denne integrasjonen, opprettet {created}, på gatewayen på **{host}**?\n\nGatewayen sletter den permanent. Hvis det er tokenen denne tilgangen bruker, avsluttes den lokale tilgangen: tilgangen slås av og trenger en ny pålogging med enhetsetiketten. Listen leses på nytt rett før, og forespørselen sendes bare én gang. La boksen stå tom for å gå tilbake uten tilbakekalling. Hvis en andre boks vises, er dette tokenen denne tilgangen sannsynligvis bruker; merk den også for å bekrefte at den lokale tilgangen avsluttes.",
+        "description": "Tilbakekalle tokenen fra denne integrasjonen, opprettet {created}, på gatewayen på **{host}**?\n\nGatewayen sletter den permanent. Hvis det er tokenen denne tilgangen bruker, avsluttes den lokale tilgangen: tilgangen slås av og trenger en ny pålogging med enhetsetiketten. Listen leses på nytt rett før, og forespørselen sendes bare én gang. La boksen stå tom for å gå tilbake uten tilbakekalling. {use} Merk også den andre boksen for å bekrefte det.",
         "data": {
           "confirm": "Tilbakekall denne tokenen på gatewayen",
-          "confirm_end": "Dermed avsluttes den lokale tilgangen"
+          "confirm_end": "En lokal tilgang som bruker denne tokenen, avsluttes"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Påloggingstjenesten på gatewayen avviste forespørselen. Ingenting ble endret.",
       "local_tokens_unsupported": "Denne gatewayen tilbyr ingen tokenliste. Ingenting ble endret.",
       "local_tokens_invalid": "Tokenlisten til gatewayen kunne ikke kontrolleres (uventet eller for stort svar). Ingenting ble endret.",
-      "local_token_end_unconfirmed": "Denne tokenen brukes sannsynligvis av denne tilgangen. Merk også «Dermed avsluttes den lokale tilgangen», eller la den første boksen stå tom for å gå tilbake. Ingenting ble sendt."
+      "local_token_end_unconfirmed": "Å tilbakekalle denne tokenen kan avslutte en lokal tilgang. Merk også den andre boksen, eller la den første stå tom for å gå tilbake. Ingenting ble sendt.",
+      "connection_remove_unconfirmed": "Merk også «Fjern denne tilgangen»: en token tilbakekalles bare sammen med at tilgangen fjernes. Ingenting ble sendt eller fjernet."
     },
     "abort": {
       "no_notification_gateways": "Ingen varmeanlegg er konfigurert.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "Gatewayen avviste tilbakekallingen; tokenen står fortsatt på listen.",
       "local_token_revoke_unclear": "Gatewayen bekreftet ikke tilbakekallingen. Ingenting ble gjentatt. Åpne tokenlisten på nytt for å kontrollere.",
       "local_token_revoked_removed": "Tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet.",
-      "local_token_not_removed": "Tilbakekallingen ble ikke bekreftet, så tilgangen ble ikke fjernet. Kontroller tokenlisten, og fjern deretter tilgangen på nytt."
+      "local_token_not_removed": "Tilbakekallingen ble ikke bekreftet, så tilgangen ble ikke fjernet. Kontroller tokenlisten, og fjern deretter tilgangen på nytt.",
+      "local_token_old_revoked_removed": "Den valgte tokenen ble tilbakekalt på gatewayen, og tilgangen ble fjernet. Tokenen denne tilgangen selv brukte, er fortsatt på gatewayen.",
+      "local_token_access_end_failed": "Det var tokenen denne tilgangen brukte, så den lokale tilgangen er avsluttet, men tilgangen kunne ikke slås av. Slå den av, fjern den, eller sett den opp på nytt med enhetsetiketten."
     },
     "progress": {
       "local_work": "Kontrollerer den lokale tilkoblingen. Vent litt."

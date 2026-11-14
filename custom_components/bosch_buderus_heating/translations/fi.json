@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Peru tunnus",
-        "description": "Perutaanko tämän integraation tunnus, joka luotiin {created}, yhdyskäytävästä osoitteessa **{host}**?\n\nYhdyskäytävä poistaa sen pysyvästi. Jos se on tämän yhteyden käyttämä tunnus, paikallinen yhteys päättyy: yhteys poistetaan käytöstä ja tarvitsee uuden kirjautumisen laitteen tarran tiedoilla. Luettelo luetaan uudelleen juuri ennen, ja pyyntö lähetetään vain kerran. Jätä valintaruutu tyhjäksi palataksesi perumatta. Jos näkyviin tulee toinen valintaruutu, tämä on tunnus, jota tämä yhteys todennäköisesti käyttää; valitse myös se vahvistaaksesi, että paikallinen yhteys päättyy.",
+        "description": "Perutaanko tämän integraation tunnus, joka luotiin {created}, yhdyskäytävästä osoitteessa **{host}**?\n\nYhdyskäytävä poistaa sen pysyvästi. Jos se on tämän yhteyden käyttämä tunnus, paikallinen yhteys päättyy: yhteys poistetaan käytöstä ja tarvitsee uuden kirjautumisen laitteen tarran tiedoilla. Luettelo luetaan uudelleen juuri ennen, ja pyyntö lähetetään vain kerran. Jätä valintaruutu tyhjäksi palataksesi perumatta. {use} Valitse myös toinen valintaruutu vahvistaaksesi tämän.",
         "data": {
           "confirm": "Peru tämä tunnus yhdyskäytävästä",
-          "confirm_end": "Tämä päättää paikallisen yhteyden"
+          "confirm_end": "Tätä tunnusta käyttävä paikallinen yhteys päättyy"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Yhdyskäytävän kirjautumispalvelu hylkäsi pyynnön. Mitään ei muutettu.",
       "local_tokens_unsupported": "Tämä yhdyskäytävä ei tarjoa tunnusluetteloa. Mitään ei muutettu.",
       "local_tokens_invalid": "Yhdyskäytävän tunnusluetteloa ei voitu tarkistaa (odottamaton tai liian suuri vastaus). Mitään ei muutettu.",
-      "local_token_end_unconfirmed": "Tämä yhteys käyttää todennäköisesti tätä tunnusta. Valitse myös ”Tämä päättää paikallisen yhteyden” tai jätä ensimmäinen valintaruutu tyhjäksi palataksesi. Mitään ei lähetetty."
+      "local_token_end_unconfirmed": "Tämän tunnuksen peruminen voi päättää paikallisen yhteyden. Valitse myös toinen valintaruutu tai jätä ensimmäinen tyhjäksi palataksesi. Mitään ei lähetetty.",
+      "connection_remove_unconfirmed": "Valitse myös ”Poista tämä yhteys”: tunnus perutaan vain yhdessä yhteyden poistamisen kanssa. Mitään ei lähetetty eikä poistettu."
     },
     "abort": {
       "no_notification_gateways": "Lämmitysjärjestelmää ei ole määritetty.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "Yhdyskäytävä hylkäsi perumisen; tunnus on yhä luettelossa.",
       "local_token_revoke_unclear": "Yhdyskäytävä ei vahvistanut perumista. Mitään ei toistettu. Avaa tunnusluettelo uudelleen tarkistaaksesi.",
       "local_token_revoked_removed": "Tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin.",
-      "local_token_not_removed": "Perumista ei vahvistettu, joten yhteyttä ei poistettu. Tarkista tunnusluettelo ja poista yhteys sitten uudelleen."
+      "local_token_not_removed": "Perumista ei vahvistettu, joten yhteyttä ei poistettu. Tarkista tunnusluettelo ja poista yhteys sitten uudelleen.",
+      "local_token_old_revoked_removed": "Valittu tunnus peruttiin yhdyskäytävästä ja yhteys poistettiin. Tunnus, jota tämä yhteys itse käytti, on yhä yhdyskäytävässä.",
+      "local_token_access_end_failed": "Se oli tämän yhteyden käyttämä tunnus, joten paikallinen yhteys on päättynyt, mutta yhteyttä ei voitu poistaa käytöstä. Poista se käytöstä, poista se tai määritä se uudelleen laitteen tarran tiedoilla."
     },
     "progress": {
       "local_work": "Tarkistetaan paikallista yhteyttä. Odota."

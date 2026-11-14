@@ -459,10 +459,16 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
         edit = self._connection_edit
         if edit is None:
             return self.async_abort(reason="configuration_changed")
+        errors: dict[str, str] = {}
         if user_input is not None:
-            if not user_input.get("confirm"):
+            if user_input.get("revoke") is True and not user_input.get("confirm"):
+                # A revocation only comes with the removal: say so instead of
+                # going back without a word. Nothing was sent.
+                errors["base"] = "connection_remove_unconfirmed"
+            elif not user_input.get("confirm"):
                 return await self.async_step_connection()
-            return await self._remove_access(edit, "connection_removed")
+            else:
+                return await self._remove_access(edit, "connection_removed")
         stored = self._management().current().connections.get(edit.connection_id)
         fields: dict[Any, Any] = {
             vol.Required("confirm", default=False): BooleanSelector()
@@ -482,6 +488,7 @@ class ConnectionOptionsFlow(NavigatingOptionsFlow):
             if stored is not None and stored.kind == CLOUD_KIND
             else "connection_remove",
             data_schema=vol.Schema(fields),
+            errors=errors,
         )
 
     async def _remove_access(

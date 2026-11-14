@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Odvolanie tokenu",
-        "description": "Odvolať token tejto integrácie vytvorený {created} na bráne **{host}**?\n\nBrána ho natrvalo odstráni. Ak ide o token, ktorý tento prístup používa, lokálny prístup skončí: prístup sa vypne a bude potrebovať nové prihlásenie pomocou štítka zariadenia. Zoznam sa tesne predtým načíta znova a požiadavka sa odošle len raz. Nechajte políčko nezaškrtnuté, ak sa chcete vrátiť bez odvolania. Ak sa zobrazí druhé políčko, ide o token, ktorý tento prístup pravdepodobne používa; zaškrtnite aj ho, aby ste potvrdili, že lokálny prístup skončí.",
+        "description": "Odvolať token tejto integrácie vytvorený {created} na bráne **{host}**?\n\nBrána ho natrvalo odstráni. Ak ide o token, ktorý tento prístup používa, lokálny prístup skončí: prístup sa vypne a bude potrebovať nové prihlásenie pomocou štítka zariadenia. Zoznam sa tesne predtým načíta znova a požiadavka sa odošle len raz. Nechajte políčko nezaškrtnuté, ak sa chcete vrátiť bez odvolania. {use} Zaškrtnite aj druhé políčko, aby ste to potvrdili.",
         "data": {
           "confirm": "Odvolať tento token na bráne",
-          "confirm_end": "Tým lokálny prístup skončí"
+          "confirm_end": "Lokálny prístup, ktorý používa tento token, skončí"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Prihlasovacia služba brány požiadavku odmietla. Nič sa nezmenilo.",
       "local_tokens_unsupported": "Táto brána neposkytuje zoznam tokenov. Nič sa nezmenilo.",
       "local_tokens_invalid": "Zoznam tokenov brány sa nepodarilo overiť (neočakávaná alebo príliš veľká odpoveď). Nič sa nezmenilo.",
-      "local_token_end_unconfirmed": "Tento token tento prístup pravdepodobne používa. Zaškrtnite aj „Tým lokálny prístup skončí“, alebo nechajte prvé políčko nezaškrtnuté a vráťte sa. Nič sa neodoslalo."
+      "local_token_end_unconfirmed": "Odvolanie tohto tokenu môže ukončiť lokálny prístup. Zaškrtnite aj druhé políčko alebo nechajte prvé nezaškrtnuté a vráťte sa. Nič sa neodoslalo.",
+      "connection_remove_unconfirmed": "Zaškrtnite aj „Odstrániť tento prístup“: token sa odvolá len spolu s odstránením prístupu. Nič sa neodoslalo ani neodstránilo."
     },
     "abort": {
       "no_notification_gateways": "Nie je nakonfigurovaný žiadny vykurovací systém.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "Brána odvolanie odmietla; token je stále v zozname.",
       "local_token_revoke_unclear": "Brána odvolanie nepotvrdila. Nič sa neopakovalo. Na kontrolu otvorte zoznam tokenov znova.",
       "local_token_revoked_removed": "Token bol na bráne odvolaný a prístup bol odstránený.",
-      "local_token_not_removed": "Odvolanie nebolo potvrdené, preto prístup nebol odstránený. Skontrolujte zoznam tokenov a potom prístup odstráňte znova."
+      "local_token_not_removed": "Odvolanie nebolo potvrdené, preto prístup nebol odstránený. Skontrolujte zoznam tokenov a potom prístup odstráňte znova.",
+      "local_token_old_revoked_removed": "Vybraný token bol na bráne odvolaný a prístup bol odstránený. Token, ktorý tento prístup sám používal, na bráne zostáva.",
+      "local_token_access_end_failed": "Bol to token, ktorý tento prístup používal, takže lokálny prístup skončil, ale prístup sa nepodarilo vypnúť. Vypnite ho, odstráňte ho alebo ho nastavte znova pomocou štítka zariadenia."
     },
     "progress": {
       "local_work": "Kontroluje sa lokálne pripojenie. Čakajte, prosím."

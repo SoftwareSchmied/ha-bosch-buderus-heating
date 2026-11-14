@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Token widerrufen",
-        "description": "Den am {created} erstellten Token dieser Integration auf dem Gateway unter **{host}** widerrufen?\n\nDas Gateway löscht ihn endgültig. Ist es der Token, den dieser Zugang nutzt, endet der lokale Zugang: Er wird ausgeschaltet und braucht eine neue Anmeldung mit dem Geräteaufkleber. Die Liste wird direkt vorher neu gelesen, und die Anfrage wird nur einmal gesendet. Lass das Häkchen frei, um ohne Widerruf zurückzukehren. Erscheint ein zweites Häkchen, ist dies der Token, den dieser Zugang sehr wahrscheinlich nutzt; setze es ebenfalls, um zu bestätigen, dass der lokale Zugang endet.",
+        "description": "Den am {created} erstellten Token dieser Integration auf dem Gateway unter **{host}** widerrufen?\n\nDas Gateway löscht ihn endgültig. Ist es der Token, den dieser Zugang nutzt, endet der lokale Zugang: Er wird ausgeschaltet und braucht eine neue Anmeldung mit dem Geräteaufkleber. Die Liste wird direkt vorher neu gelesen, und die Anfrage wird nur einmal gesendet. Lass das Häkchen frei, um ohne Widerruf zurückzukehren. {use} Setze auch das zweite Häkchen, um das zu bestätigen.",
         "data": {
           "confirm": "Diesen Token auf dem Gateway widerrufen",
-          "confirm_end": "Damit endet der lokale Zugang"
+          "confirm_end": "Ein lokaler Zugang, der diesen Token nutzt, endet"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Der Anmeldedienst des Gateways hat die Anfrage abgelehnt. Es wurde nichts geändert.",
       "local_tokens_unsupported": "Dieses Gateway bietet keine Token-Liste an. Es wurde nichts geändert.",
       "local_tokens_invalid": "Die Token-Liste des Gateways ließ sich nicht prüfen (unerwartete oder zu große Antwort). Es wurde nichts geändert.",
-      "local_token_end_unconfirmed": "Dieser Token wird von diesem Zugang sehr wahrscheinlich genutzt. Setze auch das Häkchen „Damit endet der lokale Zugang“ oder lass das erste Häkchen frei, um zurückzukehren. Es wurde nichts gesendet."
+      "local_token_end_unconfirmed": "Der Widerruf dieses Tokens kann einen lokalen Zugang beenden. Setze auch das zweite Häkchen oder lass das erste frei, um zurückzukehren. Es wurde nichts gesendet.",
+      "connection_remove_unconfirmed": "Setze auch das Häkchen „Diesen Zugang entfernen“: Ein Token wird nur zusammen mit dem Entfernen des Zugangs widerrufen. Es wurde nichts gesendet oder entfernt."
     },
     "abort": {
       "no_notification_gateways": "Es ist keine Anlage konfiguriert.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "Das Gateway hat den Widerruf abgelehnt; der Token ist weiter aufgeführt.",
       "local_token_revoke_unclear": "Das Gateway hat den Widerruf nicht bestätigt. Es wurde nichts wiederholt. Öffne die Token-Liste erneut, um es zu prüfen.",
       "local_token_revoked_removed": "Der Token wurde auf dem Gateway widerrufen und der Zugang entfernt.",
-      "local_token_not_removed": "Der Widerruf wurde nicht bestätigt, daher wurde der Zugang nicht entfernt. Prüfe die Token-Liste und entferne den Zugang dann erneut."
+      "local_token_not_removed": "Der Widerruf wurde nicht bestätigt, daher wurde der Zugang nicht entfernt. Prüfe die Token-Liste und entferne den Zugang dann erneut.",
+      "local_token_old_revoked_removed": "Der gewählte Token wurde auf dem Gateway widerrufen und der Zugang entfernt. Der Token, den dieser Zugang selbst genutzt hat, bleibt auf dem Gateway.",
+      "local_token_access_end_failed": "Es war der Token, den dieser Zugang genutzt hat. Der lokale Zugang ist damit beendet, er konnte aber nicht ausgeschaltet werden. Schalte ihn aus, entferne ihn oder richte ihn mit dem Geräteaufkleber neu ein."
     },
     "progress": {
       "local_work": "Die lokale Verbindung wird geprüft. Bitte warte einen Moment."

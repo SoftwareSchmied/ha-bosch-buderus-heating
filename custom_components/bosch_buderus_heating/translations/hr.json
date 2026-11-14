@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Opoziv tokena",
-        "description": "Opozvati token ove integracije stvoren {created} na pristupniku na **{host}**?\n\nPristupnik ga trajno briše. Ako je to token koji koristi ovaj pristup, lokalni pristup završava: pristup se isključuje i treba novu prijavu s oznakom uređaja. Popis se ponovno čita neposredno prije, a zahtjev se šalje samo jednom. Ostavite kvačicu neoznačenom da se vratite bez opoziva. Ako se pojavi druga kvačica, to je token koji ovaj pristup najvjerojatnije koristi; označite i nju kako biste potvrdili da lokalni pristup završava.",
+        "description": "Opozvati token ove integracije stvoren {created} na pristupniku na **{host}**?\n\nPristupnik ga trajno briše. Ako je to token koji koristi ovaj pristup, lokalni pristup završava: pristup se isključuje i treba novu prijavu s oznakom uređaja. Popis se ponovno čita neposredno prije, a zahtjev se šalje samo jednom. Ostavite kvačicu neoznačenom da se vratite bez opoziva. {use} Označite i drugu kvačicu kako biste to potvrdili.",
         "data": {
           "confirm": "Opozovi ovaj token na pristupniku",
-          "confirm_end": "Time lokalni pristup završava"
+          "confirm_end": "Lokalni pristup koji koristi ovaj token završava"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Usluga prijave pristupnika odbila je zahtjev. Ništa nije promijenjeno.",
       "local_tokens_unsupported": "Ovaj pristupnik ne nudi popis tokena. Ništa nije promijenjeno.",
       "local_tokens_invalid": "Popis tokena pristupnika nije bilo moguće provjeriti (neočekivan ili prevelik odgovor). Ništa nije promijenjeno.",
-      "local_token_end_unconfirmed": "Ovaj token ovaj pristup najvjerojatnije koristi. Označite i „Time lokalni pristup završava” ili ostavite prvu kvačicu neoznačenom da se vratite. Ništa nije poslano."
+      "local_token_end_unconfirmed": "Opoziv ovog tokena može završiti lokalni pristup. Označite i drugu kvačicu ili ostavite prvu neoznačenom da se vratite. Ništa nije poslano.",
+      "connection_remove_unconfirmed": "Označite i „Ukloni ovaj pristup”: token se opoziva samo zajedno s uklanjanjem pristupa. Ništa nije poslano ni uklonjeno."
     },
     "abort": {
       "no_notification_gateways": "Nije konfiguriran nijedan sustav grijanja.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "Pristupnik je odbio opoziv; token je i dalje na popisu.",
       "local_token_revoke_unclear": "Pristupnik nije potvrdio opoziv. Ništa nije ponovljeno. Ponovno otvorite popis tokena radi provjere.",
       "local_token_revoked_removed": "Token je opozvan na pristupniku i pristup je uklonjen.",
-      "local_token_not_removed": "Opoziv nije potvrđen, pa pristup nije uklonjen. Provjerite popis tokena, a zatim ponovno uklonite pristup."
+      "local_token_not_removed": "Opoziv nije potvrđen, pa pristup nije uklonjen. Provjerite popis tokena, a zatim ponovno uklonite pristup.",
+      "local_token_old_revoked_removed": "Odabrani token je opozvan na pristupniku i pristup je uklonjen. Token koji je sam ovaj pristup koristio ostaje na pristupniku.",
+      "local_token_access_end_failed": "To je bio token koji je koristio ovaj pristup, pa je lokalni pristup završio, ali pristup nije bilo moguće isključiti. Isključite ga, uklonite ga ili ga ponovno postavite s oznakom uređaja."
     },
     "progress": {
       "local_work": "Provjera lokalne veze. Pričekajte."

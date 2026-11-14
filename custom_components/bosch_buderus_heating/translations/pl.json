@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Unieważnij token",
-        "description": "Unieważnić token tej integracji utworzony {created} na bramce pod adresem **{host}**?\n\nBramka usuwa go na stałe. Jeśli to token używany przez ten dostęp, dostęp lokalny się kończy: dostęp zostaje wyłączony i wymaga ponownego logowania za pomocą etykiety urządzenia. Lista jest odczytywana ponownie tuż przed tym, a żądanie jest wysyłane tylko raz. Pozostaw pole niezaznaczone, aby wrócić bez unieważniania. Jeśli pojawi się drugie pole, jest to token, którego ten dostęp najprawdopodobniej używa; zaznacz je również, aby potwierdzić, że dostęp lokalny się kończy.",
+        "description": "Unieważnić token tej integracji utworzony {created} na bramce pod adresem **{host}**?\n\nBramka usuwa go na stałe. Jeśli to token używany przez ten dostęp, dostęp lokalny się kończy: dostęp zostaje wyłączony i wymaga ponownego logowania za pomocą etykiety urządzenia. Lista jest odczytywana ponownie tuż przed tym, a żądanie jest wysyłane tylko raz. Pozostaw pole niezaznaczone, aby wrócić bez unieważniania. {use} Zaznacz również drugie pole, aby to potwierdzić.",
         "data": {
           "confirm": "Unieważnij ten token na bramce",
-          "confirm_end": "To kończy dostęp lokalny"
+          "confirm_end": "Dostęp lokalny używający tego tokenu się kończy"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Usługa logowania bramki odrzuciła żądanie. Nic nie zostało zmienione.",
       "local_tokens_unsupported": "Ta bramka nie udostępnia listy tokenów. Nic nie zostało zmienione.",
       "local_tokens_invalid": "Nie udało się sprawdzić listy tokenów bramki (nieoczekiwana lub zbyt duża odpowiedź). Nic nie zostało zmienione.",
-      "local_token_end_unconfirmed": "Ten token jest najprawdopodobniej używany przez ten dostęp. Zaznacz także „To kończy dostęp lokalny” albo pozostaw pierwsze pole niezaznaczone, aby wrócić. Nic nie zostało wysłane."
+      "local_token_end_unconfirmed": "Unieważnienie tego tokenu może zakończyć dostęp lokalny. Zaznacz również drugie pole albo pozostaw pierwsze niezaznaczone, aby wrócić. Nic nie zostało wysłane.",
+      "connection_remove_unconfirmed": "Zaznacz również „Usuń ten dostęp”: token jest unieważniany tylko razem z usunięciem dostępu. Nic nie zostało wysłane ani usunięte."
     },
     "abort": {
       "no_notification_gateways": "Nie skonfigurowano żadnej instalacji grzewczej.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "Bramka odrzuciła unieważnienie; token nadal jest na liście.",
       "local_token_revoke_unclear": "Bramka nie potwierdziła unieważnienia. Nic nie zostało powtórzone. Otwórz ponownie listę tokenów, aby to sprawdzić.",
       "local_token_revoked_removed": "Token został unieważniony na bramce, a dostęp usunięty.",
-      "local_token_not_removed": "Unieważnienie nie zostało potwierdzone, dlatego dostęp nie został usunięty. Sprawdź listę tokenów, a następnie usuń dostęp ponownie."
+      "local_token_not_removed": "Unieważnienie nie zostało potwierdzone, dlatego dostęp nie został usunięty. Sprawdź listę tokenów, a następnie usuń dostęp ponownie.",
+      "local_token_old_revoked_removed": "Wybrany token został unieważniony na bramce, a dostęp usunięty. Token, którego używał ten dostęp, pozostaje na bramce.",
+      "local_token_access_end_failed": "Był to token używany przez ten dostęp, więc dostęp lokalny się zakończył, ale nie udało się wyłączyć dostępu. Wyłącz go, usuń go albo skonfiguruj ponownie za pomocą etykiety urządzenia."
     },
     "progress": {
       "local_work": "Sprawdzanie połączenia lokalnego. Proszę czekać."

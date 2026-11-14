@@ -414,7 +414,7 @@
     "Remaining time": "Оставащо време",
     "Requested supply temperature HC1 (signal)": "Заявена температура на подаване ОК 1 (сигнал)",
     "Return temperature": "Температура на връщане",
-    "Return temperature (TC0, signal)": "Температура на връщане (TC0, сигнал)",
+    "Return to the heat pump (TC0, signal)": "Връщане към термопомпата (TC0, сигнал)",
     "RF connection lost since": "Радиовръзката е изгубена от",
     "Room controller": "Стаен регулатор",
     "Room controller assignment": "Назначение на стайния регулатор",
@@ -609,6 +609,11 @@
     "Holiday slot {} state": "Състояние на ваканционен слот {}",
     "used by this access": "използва се от този достъп",
     "not readable": "не може да се прочете",
-    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Този достъп използва ръчно въведен токен. Не може да се установи кой запис от списъка е той, затова нито един не е отбелязан. Може да е посочен под „Други приложения“, чиито токени никога не се предлагат за отмяна."
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Този достъп използва ръчно въведен токен. Не може да се установи кой запис от списъка е той, затова нито един не е отбелязан. Може да е посочен под „Други приложения“, чиито токени никога не се предлагат за отмяна.",
+    "Return to the heat source": "Връщане към топлоизточника",
+    "used by another access": "използва се от друг достъп",
+    "It is most likely the token this access uses: revoking it ends this local access.": "Най-вероятно това е токенът, който този достъп използва: отмяната му прекратява този локален достъп.",
+    "It is most likely the token of another local access to this gateway: revoking it ends that access.": "Най-вероятно това е токенът на друг локален достъп до този шлюз: отмяната му прекратява онзи достъп.",
+    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Кой токен използва даден достъп, не може да се определи със сигурност, например когато друг Home Assistant използва този шлюз. Отмяната на използван токен прекратява локалния достъп, който го използва."
   }
 }

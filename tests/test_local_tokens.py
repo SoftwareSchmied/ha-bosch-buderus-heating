@@ -52,6 +52,8 @@ from tests.test_local_transport import wire_reply
 pytestmark = pytest.mark.usefixtures("socket_enabled")
 
 TOKEN = "synthetic-access-token"
+# Revoking any own token needs both boxes.
+BOTH = {"confirm": True, "confirm_end": True}
 FOREIGN_NAME = "[other](https://example.invalid/x)"
 OWN = {
     "token_type": "Bearer",
@@ -593,7 +595,7 @@ async def test_an_old_token_is_revoked_only_after_the_confirmation(hass, dialog)
         flow, {"next_step_id": "local_tokens"}
     )
     result = await hass.config_entries.options.async_configure(flow, {"token": oldest})
-    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    result = await hass.config_entries.options.async_configure(flow, BOTH)
     assert result["step_id"] == "connection"
     assert await outcome(hass, result) == "local_token_revoked"
     ((_, form),) = gateway.posts
@@ -628,7 +630,7 @@ async def test_a_list_changed_before_the_confirmation_revokes_nothing(hass, dial
         flow, {"token": next(iter(_choices(result).values()))}
     )
     gateway.tokens = [t for t in gateway.tokens if t["token_id"] != "tid-own-old"]
-    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    result = await hass.config_entries.options.async_configure(flow, BOTH)
     assert await outcome(hass, result) == "local_tokens_changed"
     assert gateway.posts == []
 
@@ -685,10 +687,43 @@ async def test_removing_with_the_choice_revokes_first(hass, dialog):
         flow, {"token": next(iter(_choices(result).values()))}
     )
     assert result["step_id"] == "local_token_revoke"
-    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
-    assert await outcome(hass, result) == "local_token_revoked_removed"
+    result = await hass.config_entries.options.async_configure(flow, BOTH)
+    # The chosen old token is revoked; the access's own token stays, and the
+    # note says so.
+    assert await outcome(hass, result) == "local_token_old_revoked_removed"
     assert "local" not in entry.data["connections"]
     assert len(gateway.posts) == 1
+
+
+async def test_removing_with_the_used_token_revoked_says_it_is_gone(hass, dialog):
+    gateway = Gateway()
+    entry, _ = await dialog(gateway)
+    flow, result = await _remove_with_revoke(hass, entry)
+    result = await _select(hass, result, 1)
+    result = await hass.config_entries.options.async_configure(flow, BOTH)
+    assert await outcome(hass, result) == "local_token_revoked_removed"
+    assert "local" not in entry.data["connections"] and len(gateway.posts) == 1
+
+
+async def test_only_the_revoke_box_on_removal_says_what_is_missing(hass, dialog):
+    gateway = Gateway()
+    entry, requests = await dialog(gateway)
+    result = await _open_menu(hass, entry)
+    flow = result["flow_id"]
+    await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "connection_remove"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow, {"confirm": False, "revoke": True}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "connection_remove"
+    assert result["errors"] == {"base": "connection_remove_unconfirmed"}
+    assert "local" in entry.data["connections"]
+    assert requests == [] and gateway.posts == []
+    # Without either box it still goes back without a word.
+    result = await hass.config_entries.options.async_configure(flow, {})
+    assert result["type"] is FlowResultType.MENU and result["step_id"] == "connection"
 
 
 async def test_an_unconfirmed_revocation_keeps_the_access(hass, dialog):
@@ -707,7 +742,7 @@ async def test_an_unconfirmed_revocation_keeps_the_access(hass, dialog):
     result = await hass.config_entries.options.async_configure(
         flow, {"token": next(iter(_choices(result).values()))}
     )
-    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    result = await hass.config_entries.options.async_configure(flow, BOTH)
     assert await outcome(hass, result) == "local_token_not_removed"
     assert "local" in entry.data["connections"] and len(gateway.posts) == 1
 
@@ -920,7 +955,7 @@ async def test_an_unconfirmed_revocation_is_reported(hass, dialog, status, drop,
     await hass.config_entries.options.async_configure(
         flow, {"token": next(iter(_choices(result).values()))}
     )
-    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    result = await hass.config_entries.options.async_configure(flow, BOTH)
     assert await outcome(hass, result) == note
     assert len(gateway.posts) == 1
 
@@ -934,7 +969,7 @@ async def test_a_gateway_out_of_reach_keeps_the_confirmation(hass, dialog, monke
         flow, {"token": next(iter(_choices(result).values()))}
     )
     monkeypatch.setattr(LocalEndpoint, "auth_port", 1)
-    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    result = await hass.config_entries.options.async_configure(flow, BOTH)
     assert result["step_id"] == "local_token_revoke"
     assert result["errors"] == {"base": "local_connection_failed"}
     assert gateway.posts == []
@@ -951,7 +986,7 @@ async def test_a_changed_access_ends_the_dialog(hass, dialog):
     data = deepcopy(dict(entry.data))
     data["connections"]["local"]["credentials"]["token"] = "another-token"
     hass.config_entries.async_update_entry(entry, data=data)
-    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    result = await hass.config_entries.options.async_configure(flow, BOTH)
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "configuration_changed"
     assert len(requests) == 1 and gateway.posts == []
@@ -1162,16 +1197,170 @@ async def test_revoking_the_used_token_needs_the_second_confirmation(hass, dialo
     assert len(gateway.posts) == 1
 
 
-async def test_an_older_token_needs_no_second_confirmation(hass, dialog):
+async def test_an_older_token_also_needs_the_second_confirmation(hass, dialog):
+    # The mark is an assumption (clocks, another Home Assistant): any own token
+    # may be in use, so the second box is always asked for.
     gateway = Gateway()
     entry, _ = await dialog(gateway)
     result = await _open_list(hass, entry)
+    flow = result["flow_id"]
     result = await _select(hass, result, 0)
-    assert {str(key) for key in result["data_schema"].schema} == {"confirm"}
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"], {"confirm": True}
-    )
+    assert {str(key) for key in result["data_schema"].schema} == {
+        "confirm",
+        "confirm_end",
+    }
+    assert "cannot be told for certain" in result["description_placeholders"]["use"]
+    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    assert result["errors"] == {"base": "local_token_end_unconfirmed"}
+    assert gateway.posts == []
+    result = await hass.config_entries.options.async_configure(flow, BOTH)
     assert await outcome(hass, result) == "local_token_revoked"
+    assert len(gateway.posts) == 1
+
+
+async def test_the_revoke_dialog_says_whose_token_it_most_likely_is(hass, dialog):
+    entry, _ = await dialog(Gateway())
+    result = await _open_list(hass, entry)
+    used = await _select(hass, result, 1)
+    assert "token this access uses" in used["description_placeholders"]["use"]
+    hass.config.language = "de"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"confirm": False}
+    )
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "local_tokens"}
+    )
+    used = await _select(hass, result, 1)
+    assert "den dieser Zugang nutzt" in used["description_placeholders"]["use"]
+
+
+def _other_access(verified_at, *, created=True, gateway_id="000123", token="other"):
+    from types import SimpleNamespace
+
+    return (
+        "other-entry",
+        "local",
+        SimpleNamespace(
+            verified_at=verified_at,
+            gateway_id=gateway_id,
+            credentials=SimpleNamespace(
+                token=token,
+                origin=TokenOrigin.CREATED if created else TokenOrigin.IMPORTED,
+            ),
+        ),
+    )
+
+
+async def test_the_token_of_another_access_is_marked_and_confirmed(
+    hass, dialog, monkeypatch
+):
+    from custom_components.bosch_buderus_heating import local_token_flow
+
+    others = [
+        _other_access(OLD["created_at"] + 30),
+        # Another gateway, and the same token as this access: not another use.
+        _other_access(OWN["created_at"] + 30, gateway_id="999999"),
+        _other_access(OLD["created_at"] + 30, token=TOKEN),
+    ]
+    monkeypatch.setattr(
+        local_token_flow, "saved_local_accesses", lambda hass: iter(others)
+    )
+    gateway = Gateway()
+    entry, _ = await dialog(gateway)
+    result = await _open_list(hass, entry)
+    labels = list(_choices(result))
+    assert labels[0].endswith("(used by another access)")
+    assert labels[1].endswith(f"({MARKER})")
+    lines = result["description_placeholders"]["own"].split("\n")
+    assert lines[0].endswith("(used by another access)")
+    flow = result["flow_id"]
+    result = await _select(hass, result, 0)
+    assert "another local access" in result["description_placeholders"]["use"]
+    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    assert result["errors"] == {"base": "local_token_end_unconfirmed"}
+    assert gateway.posts == []
+
+
+async def test_saved_accesses_of_every_entry_are_found(hass, dialog):
+    from custom_components.bosch_buderus_heating.local_address import (
+        saved_local_accesses,
+    )
+
+    entry, _ = await dialog(Gateway())
+    found = [
+        (entry_id, key, access.gateway_id, access.verified_at)
+        for entry_id, key, access in saved_local_accesses(hass)
+    ]
+    assert found == [(entry.entry_id, "local", "000123", OWN["created_at"] + 30)]
+
+
+async def test_a_gateway_clock_ahead_marks_no_older_token(hass, dialog, monkeypatch):
+    from custom_components.bosch_buderus_heating import local_token_flow
+
+    # The token in use looks newer than the setup (the clocks differ): the
+    # older token must not be marked as the one in use.
+    entry, _ = await dialog(Gateway(), verified_at=OLD["created_at"] + 30)
+    result = await _open_list(hass, entry)
+    assert all("used by" not in label for label in _choices(result))
+    # Explained by another access, the older one is this access's again.
+    monkeypatch.setattr(
+        local_token_flow,
+        "saved_local_accesses",
+        lambda hass: iter([_other_access(OWN["created_at"] + 30)]),
+    )
+    result = await hass.config_entries.options.async_configure(result["flow_id"], {})
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "local_tokens"}
+    )
+    labels = list(_choices(result))
+    assert labels[0].endswith(f"({MARKER})")
+    assert labels[1].endswith("(used by another access)")
+
+
+@pytest.mark.parametrize(
+    "created,verified_at,others,this,other",
+    [
+        ([1000, 2000], 2500, [], [2000], []),
+        # A newer token nobody explains: nothing is marked for this access.
+        ([1000, 2000, 3000], 2500, [], [], []),
+        ([1000, 2000, 3000], 2500, [(3100, True)], [2000], [3000]),
+        # Another access with a token entered by hand marks nothing.
+        ([1000, 2000], 2500, [(1100, False)], [2000], []),
+        # Another access whose likely token is this access's one: only "this".
+        ([1000, 2000], 2500, [(2050, True)], [2000], []),
+        ([1000, 2000], 1100, [(2100, True)], [1000], [2000]),
+    ],
+)
+def test_the_rule_for_the_marks(created, verified_at, others, this, other):
+    from custom_components.bosch_buderus_heating.local_token_flow import token_use
+
+    tokens = [GatewayToken(f"t{n}", CLIENT_NAME, at) for n, at in enumerate(created)]
+    use = token_use(tokens, verified_at, created=True, other_accesses=others)
+    assert [token.created_at for token in use.this] == this
+    assert [token.created_at for token in use.others] == other
+    assert token_use(tokens, verified_at, created=False).this == ()
+
+
+async def test_a_failed_switch_off_after_the_end_is_reported(hass, dialog, monkeypatch):
+    from custom_components.bosch_buderus_heating.configuration import (
+        ConfigurationError,
+    )
+    from custom_components.bosch_buderus_heating.configuration_management import (
+        ConfigurationManagement,
+    )
+
+    def refuse(self, edit, enabled):
+        raise ConfigurationError("configuration_changed")
+
+    monkeypatch.setattr(ConfigurationManagement, "set_enabled", refuse)
+    gateway = Gateway()
+    entry, _ = await dialog(gateway)
+    result = await _open_list(hass, entry)
+    flow = result["flow_id"]
+    result = await _select(hass, result, 1)
+    result = await hass.config_entries.options.async_configure(flow, BOTH)
+    assert await outcome(hass, result) == "local_token_access_end_failed"
+    assert entry.options["connections"]["local"]["enabled"] is True
     assert len(gateway.posts) == 1
 
 
@@ -1269,3 +1458,41 @@ async def test_the_plain_list_without_an_own_token_still_shows_the_form(hass, di
     entry, _ = await dialog(gateway)
     result = await _open_list(hass, entry)
     assert result["type"] is FlowResultType.FORM and result["step_id"] == "local_tokens"
+
+
+def test_other_accesses_are_those_of_this_gateway_with_another_token(
+    monkeypatch,
+) -> None:
+    from types import SimpleNamespace
+
+    from custom_components.bosch_buderus_heating import local_token_flow
+
+    def saved(verified_at, *, entry_id="other-entry", key="local", **kwargs):
+        _, _, access = _other_access(verified_at, **kwargs)
+        return entry_id, key, access
+
+    monkeypatch.setattr(
+        local_token_flow,
+        "saved_local_accesses",
+        lambda hass: iter(
+            [
+                saved(1.0),
+                saved(2.0, created=False, key="hand"),
+                saved(3.0, gateway_id="999999"),
+                saved(4.0, token=TOKEN),
+                # This access itself, in its own entry.
+                saved(5.0, entry_id="this-entry"),
+                # Another access of this entry is another access.
+                saved(6.0, entry_id="this-entry", key="second"),
+            ]
+        ),
+    )
+    flow = SimpleNamespace(_entry=SimpleNamespace(entry_id="this-entry"), hass=None)
+    access = SimpleNamespace(
+        edit=SimpleNamespace(connection_id="local"), gateway_id="000123", token=TOKEN
+    )
+    assert local_token_flow.LocalTokenFlow._token_other_accesses(flow, access) == [
+        (1.0, True),
+        (2.0, False),
+        (6.0, True),
+    ]

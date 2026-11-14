@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Token intrekken",
-        "description": "Het token van deze integratie dat op {created} is aangemaakt intrekken op de gateway op **{host}**?\n\nDe gateway verwijdert het definitief. Als het het token is dat deze toegang gebruikt, eindigt de lokale toegang: de toegang wordt uitgeschakeld en heeft een nieuwe aanmelding met het label op het apparaat nodig. De lijst wordt vlak ervoor opnieuw gelezen en het verzoek wordt maar één keer verstuurd. Laat het vakje uitgevinkt om terug te gaan zonder in te trekken. Verschijnt er een tweede vakje, dan is dit het token dat deze toegang waarschijnlijk gebruikt; vink het ook aan om te bevestigen dat de lokale toegang eindigt.",
+        "description": "Het token van deze integratie dat op {created} is aangemaakt intrekken op de gateway op **{host}**?\n\nDe gateway verwijdert het definitief. Als het het token is dat deze toegang gebruikt, eindigt de lokale toegang: de toegang wordt uitgeschakeld en heeft een nieuwe aanmelding met het label op het apparaat nodig. De lijst wordt vlak ervoor opnieuw gelezen en het verzoek wordt maar één keer verstuurd. Laat het vakje uitgevinkt om terug te gaan zonder in te trekken. {use} Vink ook het tweede vakje aan om dit te bevestigen.",
         "data": {
           "confirm": "Dit token op de gateway intrekken",
-          "confirm_end": "Hiermee eindigt de lokale toegang"
+          "confirm_end": "Een lokale toegang die dit token gebruikt, eindigt"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "De aanmeldservice van de gateway heeft het verzoek geweigerd. Er is niets gewijzigd.",
       "local_tokens_unsupported": "Deze gateway biedt geen tokenlijst. Er is niets gewijzigd.",
       "local_tokens_invalid": "De tokenlijst van de gateway kon niet worden gecontroleerd (onverwacht of te groot antwoord). Er is niets gewijzigd.",
-      "local_token_end_unconfirmed": "Dit token wordt waarschijnlijk door deze toegang gebruikt. Vink ook \"Hiermee eindigt de lokale toegang\" aan of laat het eerste vakje uitgevinkt om terug te gaan. Er is niets verzonden."
+      "local_token_end_unconfirmed": "Het intrekken van dit token kan een lokale toegang beëindigen. Vink ook het tweede vakje aan, of laat het eerste uitgevinkt om terug te gaan. Er is niets verstuurd.",
+      "connection_remove_unconfirmed": "Vink ook „Deze toegang verwijderen” aan: een token wordt alleen samen met het verwijderen van de toegang ingetrokken. Er is niets verstuurd of verwijderd."
     },
     "abort": {
       "no_notification_gateways": "Er is geen verwarmingsinstallatie geconfigureerd.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "De gateway heeft het intrekken geweigerd; het token staat nog in de lijst.",
       "local_token_revoke_unclear": "De gateway heeft het intrekken niet bevestigd. Er is niets herhaald. Open de tokenlijst opnieuw om het te controleren.",
       "local_token_revoked_removed": "Het token is op de gateway ingetrokken en de toegang is verwijderd.",
-      "local_token_not_removed": "Het intrekken is niet bevestigd, dus de toegang is niet verwijderd. Controleer de tokenlijst en verwijder de toegang daarna opnieuw."
+      "local_token_not_removed": "Het intrekken is niet bevestigd, dus de toegang is niet verwijderd. Controleer de tokenlijst en verwijder de toegang daarna opnieuw.",
+      "local_token_old_revoked_removed": "Het gekozen token is op de gateway ingetrokken en de toegang is verwijderd. Het token dat deze toegang zelf gebruikte, staat nog op de gateway.",
+      "local_token_access_end_failed": "Het was het token dat deze toegang gebruikte, dus de lokale toegang is beëindigd, maar de toegang kon niet worden uitgeschakeld. Schakel hem uit, verwijder hem of stel hem opnieuw in met het label op het apparaat."
     },
     "progress": {
       "local_work": "De lokale verbinding wordt gecontroleerd. Een moment geduld."

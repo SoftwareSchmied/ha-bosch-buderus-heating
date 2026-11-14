@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Cúlghair comhartha",
-        "description": "An bhfuil tú ag iarraidh comhartha an chomhtháthaithe seo a cruthaíodh ar {created} a chúlghairm ar an ngeata ag **{host}**?\n\nScriosann an geata é go buan. Más é an comhartha a úsáideann an rochtain seo é, críochnaíonn an rochtain áitiúil: múchtar an rochtain agus teastaíonn síniú isteach nua leis an lipéad gléis. Léitear an liosta arís díreach roimhe sin, agus ní sheoltar an t-iarratas ach uair amháin. Fág an ticbhosca gan tic chun filleadh gan cúlghairm. Má thaispeántar dara ticbhosca, is é seo an comhartha is dóichí a úsáideann an rochtain seo; cuir tic ann freisin chun a dheimhniú go gcríochnaíonn an rochtain áitiúil.",
+        "description": "An bhfuil tú ag iarraidh comhartha an chomhtháthaithe seo a cruthaíodh ar {created} a chúlghairm ar an ngeata ag **{host}**?\n\nScriosann an geata é go buan. Más é an comhartha a úsáideann an rochtain seo é, críochnaíonn an rochtain áitiúil: múchtar an rochtain agus teastaíonn síniú isteach nua leis an lipéad gléis. Léitear an liosta arís díreach roimhe sin, agus ní sheoltar an t-iarratas ach uair amháin. Fág an ticbhosca gan tic chun filleadh gan cúlghairm. {use} Cuir tic sa dara ticbhosca freisin chun é seo a dheimhniú.",
         "data": {
           "confirm": "Cúlghair an comhartha seo ar an ngeata",
-          "confirm_end": "Mar sin críochnaíonn an rochtain áitiúil"
+          "confirm_end": "Críochnaíonn rochtain áitiúil a úsáideann an comhartha seo"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Dhiúltaigh seirbhís síniú isteach an gheata don iarratas. Níor athraíodh aon rud.",
       "local_tokens_unsupported": "Ní sholáthraíonn an geata seo liosta comharthaí. Níor athraíodh aon rud.",
       "local_tokens_invalid": "Níorbh fhéidir liosta comharthaí an gheata a sheiceáil (freagra gan choinne nó rómhór). Níor athraíodh aon rud.",
-      "local_token_end_unconfirmed": "Is dócha go n-úsáideann an rochtain seo an comhartha seo. Cuir tic freisin ar \"Mar sin críochnaíonn an rochtain áitiúil\" nó fág an chéad ticbhosca gan tic chun filleadh. Níor seoladh aon rud."
+      "local_token_end_unconfirmed": "D'fhéadfadh cúlghairm an chomhartha seo deireadh a chur le rochtain áitiúil. Cuir tic sa dara ticbhosca freisin, nó fág an chéad cheann gan tic chun filleadh. Níor seoladh aon rud.",
+      "connection_remove_unconfirmed": "Cuir tic i “Bain an rochtain seo” freisin: ní chúlghairtear comhartha ach in éineacht le baint na rochtana. Níor seoladh ná níor baineadh aon rud."
     },
     "abort": {
       "no_notification_gateways": "Níl aon chóras téimh cumraithe.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "Dhiúltaigh an geata don chúlghairm; tá an comhartha fós ar an liosta.",
       "local_token_revoke_unclear": "Níor dheimhnigh an geata an chúlghairm. Níor athdhéanadh aon rud. Oscail liosta na gcomharthaí arís chun é a sheiceáil.",
       "local_token_revoked_removed": "Cúlghaireadh an comhartha ar an ngeata agus baineadh an rochtain.",
-      "local_token_not_removed": "Níor deimhníodh an chúlghairm, mar sin níor baineadh an rochtain. Seiceáil liosta na gcomharthaí, ansin bain an rochtain arís."
+      "local_token_not_removed": "Níor deimhníodh an chúlghairm, mar sin níor baineadh an rochtain. Seiceáil liosta na gcomharthaí, ansin bain an rochtain arís.",
+      "local_token_old_revoked_removed": "Cúlghaireadh an comhartha roghnaithe ar an ngeata agus baineadh an rochtain. Tá an comhartha a d'úsáid an rochtain seo féin fós ar an ngeata.",
+      "local_token_access_end_failed": "Ba é sin an comhartha a d'úsáid an rochtain seo, mar sin tá deireadh leis an rochtain áitiúil, ach níorbh fhéidir an rochtain a mhúchadh. Múch í, bain í, nó socraigh arís í leis an lipéad gléis."
     },
     "progress": {
       "local_work": "Ag seiceáil an naisc áitiúil. Fan, le do thoil."

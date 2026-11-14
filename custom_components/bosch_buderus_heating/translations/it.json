@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Revoca token",
-        "description": "Revocare il token di questa integrazione creato il {created} sul gateway su **{host}**?\n\nIl gateway lo elimina definitivamente. Se è il token usato da questo accesso, l'accesso locale termina: l'accesso viene disattivato e richiede un nuovo login con l'etichetta del dispositivo. L'elenco viene riletto subito prima e la richiesta viene inviata una sola volta. Lascia la casella deselezionata per tornare indietro senza revocare. Se compare una seconda casella, è il token che questo accesso molto probabilmente usa; selezionala anche per confermare che l'accesso locale termina.",
+        "description": "Revocare il token di questa integrazione creato il {created} sul gateway su **{host}**?\n\nIl gateway lo elimina definitivamente. Se è il token usato da questo accesso, l'accesso locale termina: l'accesso viene disattivato e richiede un nuovo login con l'etichetta del dispositivo. L'elenco viene riletto subito prima e la richiesta viene inviata una sola volta. Lascia la casella deselezionata per tornare indietro senza revocare. {use} Seleziona anche la seconda casella per confermarlo.",
         "data": {
           "confirm": "Revoca questo token sul gateway",
-          "confirm_end": "Così l'accesso locale termina"
+          "confirm_end": "Un accesso locale che usa questo token termina"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Il servizio di login del gateway ha rifiutato la richiesta. Non è stato modificato nulla.",
       "local_tokens_unsupported": "Questo gateway non fornisce un elenco dei token. Non è stato modificato nulla.",
       "local_tokens_invalid": "Non è stato possibile verificare l'elenco dei token del gateway (risposta inattesa o troppo grande). Non è stato modificato nulla.",
-      "local_token_end_unconfirmed": "Questo token è molto probabilmente usato da questo accesso. Seleziona anche «Così l'accesso locale termina» oppure lascia deselezionata la prima casella per tornare indietro. Non è stato inviato nulla."
+      "local_token_end_unconfirmed": "Revocare questo token può terminare un accesso locale. Seleziona anche la seconda casella oppure lascia la prima deselezionata per tornare indietro. Non è stato inviato nulla.",
+      "connection_remove_unconfirmed": "Seleziona anche «Rimuovi questo accesso»: un token viene revocato solo insieme alla rimozione dell'accesso. Non è stato inviato né rimosso nulla."
     },
     "abort": {
       "no_notification_gateways": "Nessun impianto di riscaldamento configurato.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "Il gateway ha rifiutato la revoca; il token è ancora elencato.",
       "local_token_revoke_unclear": "Il gateway non ha confermato la revoca. Non è stato ripetuto nulla. Apri di nuovo l'elenco dei token per verificare.",
       "local_token_revoked_removed": "Il token è stato revocato sul gateway e l'accesso è stato rimosso.",
-      "local_token_not_removed": "La revoca non è stata confermata, quindi l'accesso non è stato rimosso. Controlla l'elenco dei token, poi rimuovi di nuovo l'accesso."
+      "local_token_not_removed": "La revoca non è stata confermata, quindi l'accesso non è stato rimosso. Controlla l'elenco dei token, poi rimuovi di nuovo l'accesso.",
+      "local_token_old_revoked_removed": "Il token scelto è stato revocato sul gateway e l'accesso è stato rimosso. Il token usato da questo accesso resta sul gateway.",
+      "local_token_access_end_failed": "Era il token usato da questo accesso, quindi l'accesso locale è terminato, ma non è stato possibile disattivare l'accesso. Disattivalo, rimuovilo oppure configuralo di nuovo con l'etichetta del dispositivo."
     },
     "progress": {
       "local_work": "Verifica della connessione locale in corso. Attendi."

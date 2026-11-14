@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Preklic žetona",
-        "description": "Želite preklicati žeton te integracije, ustvarjen {created}, na prehodu na **{host}**?\n\nPrehod ga trajno izbriše. Če je to žeton, ki ga uporablja ta dostop, se lokalni dostop konča: dostop se izklopi in potrebuje novo prijavo z oznako na napravi. Seznam se tik pred tem ponovno prebere, zahteva pa se pošlje samo enkrat. Pustite potrditveno polje neoznačeno, če se želite vrniti brez preklica. Če se prikaže drugo polje, je to žeton, ki ga ta dostop najverjetneje uporablja; označite še njega, da potrdite, da se lokalni dostop konča.",
+        "description": "Želite preklicati žeton te integracije, ustvarjen {created}, na prehodu na **{host}**?\n\nPrehod ga trajno izbriše. Če je to žeton, ki ga uporablja ta dostop, se lokalni dostop konča: dostop se izklopi in potrebuje novo prijavo z oznako na napravi. Seznam se tik pred tem ponovno prebere, zahteva pa se pošlje samo enkrat. Pustite potrditveno polje neoznačeno, če se želite vrniti brez preklica. {use} Označite še drugo polje, da to potrdite.",
         "data": {
           "confirm": "Prekliči ta žeton na prehodu",
-          "confirm_end": "S tem se lokalni dostop konča"
+          "confirm_end": "Lokalni dostop, ki uporablja ta žeton, se konča"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Storitev prijave prehoda je zavrnila zahtevo. Nič ni bilo spremenjeno.",
       "local_tokens_unsupported": "Ta prehod ne ponuja seznama žetonov. Nič ni bilo spremenjeno.",
       "local_tokens_invalid": "Seznama žetonov prehoda ni bilo mogoče preveriti (nepričakovan ali prevelik odgovor). Nič ni bilo spremenjeno.",
-      "local_token_end_unconfirmed": "Ta žeton ta dostop najverjetneje uporablja. Označite tudi »S tem se lokalni dostop konča« ali pustite prvo polje neoznačeno, če se želite vrniti. Nič ni bilo poslano."
+      "local_token_end_unconfirmed": "Preklic tega žetona lahko konča lokalni dostop. Označite še drugo polje ali pustite prvo neoznačeno, da se vrnete. Nič ni bilo poslano.",
+      "connection_remove_unconfirmed": "Označite še »Odstrani ta dostop«: žeton se prekliče samo skupaj z odstranitvijo dostopa. Nič ni bilo poslano ali odstranjeno."
     },
     "abort": {
       "no_notification_gateways": "Noben ogrevalni sistem ni nastavljen.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "Prehod je zavrnil preklic; žeton je še vedno na seznamu.",
       "local_token_revoke_unclear": "Prehod ni potrdil preklica. Nič ni bilo ponovljeno. Za preverjanje znova odprite seznam žetonov.",
       "local_token_revoked_removed": "Žeton je bil na prehodu preklican in dostop je bil odstranjen.",
-      "local_token_not_removed": "Preklic ni bil potrjen, zato dostop ni bil odstranjen. Preverite seznam žetonov in nato znova odstranite dostop."
+      "local_token_not_removed": "Preklic ni bil potrjen, zato dostop ni bil odstranjen. Preverite seznam žetonov in nato znova odstranite dostop.",
+      "local_token_old_revoked_removed": "Izbrani žeton je bil na prehodu preklican in dostop je bil odstranjen. Žeton, ki ga je ta dostop sam uporabljal, ostaja na prehodu.",
+      "local_token_access_end_failed": "To je bil žeton, ki ga je uporabljal ta dostop, zato se je lokalni dostop končal, vendar dostopa ni bilo mogoče izklopiti. Izklopite ga, odstranite ga ali ga znova nastavite z oznako na napravi."
     },
     "progress": {
       "local_work": "Preverjanje lokalne povezave. Prosimo, počakajte."

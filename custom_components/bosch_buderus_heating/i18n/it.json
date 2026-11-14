@@ -414,7 +414,7 @@
     "Remaining time": "Tempo residuo",
     "Requested supply temperature HC1 (signal)": "Temperatura di mandata richiesta CR1 (segnale)",
     "Return temperature": "Temperatura di ritorno",
-    "Return temperature (TC0, signal)": "Temperatura di ritorno (TC0, segnale)",
+    "Return to the heat pump (TC0, signal)": "Ritorno alla pompa di calore (TC0, segnale)",
     "RF connection lost since": "Connessione RF persa dal",
     "Room controller": "Regolatore ambiente",
     "Room controller assignment": "Assegnazione regolatore ambiente",
@@ -609,6 +609,11 @@
     "Holiday slot {} state": "Stato slot vacanza {}",
     "used by this access": "usato da questo accesso",
     "not readable": "non leggibile",
-    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Questo accesso usa un token inserito a mano. Non è possibile stabilire quale voce dell'elenco sia, quindi nessuna è contrassegnata. Può comparire tra «Altre app», i cui token non vengono mai proposti per la revoca."
+    "This access uses a token that was entered by hand. Which entry of the list it is cannot be identified, so none is marked. It may be listed under other apps, whose tokens are never offered for revocation.": "Questo accesso usa un token inserito a mano. Non è possibile stabilire quale voce dell'elenco sia, quindi nessuna è contrassegnata. Può comparire tra «Altre app», i cui token non vengono mai proposti per la revoca.",
+    "Return to the heat source": "Ritorno al generatore di calore",
+    "used by another access": "usato da un altro accesso",
+    "It is most likely the token this access uses: revoking it ends this local access.": "È molto probabilmente il token usato da questo accesso: revocarlo termina questo accesso locale.",
+    "It is most likely the token of another local access to this gateway: revoking it ends that access.": "È molto probabilmente il token di un altro accesso locale a questo gateway: revocarlo termina quell'accesso.",
+    "Which token an access uses cannot be told for certain, for example when another Home Assistant uses this gateway. Revoking a token in use ends the local access that uses it.": "Non si può sapere con certezza quale token usa un accesso, ad esempio quando un altro Home Assistant usa questo gateway. Revocare un token in uso termina l'accesso locale che lo usa."
   }
 }

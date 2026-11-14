@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Révoquer le jeton",
-        "description": "Révoquer le jeton de cette intégration créé le {created} sur la passerelle à **{host}** ?\n\nLa passerelle le supprime définitivement. S'il s'agit du jeton utilisé par cet accès, l'accès local prend fin : l'accès est désactivé et nécessite une nouvelle connexion avec l'étiquette de l'appareil. La liste est relue juste avant, et la requête n'est envoyée qu'une seule fois. Laissez la case décochée pour revenir sans révoquer. Si une deuxième case apparaît, il s'agit du jeton que cet accès utilise très probablement ; cochez-la aussi pour confirmer que l'accès local prend fin.",
+        "description": "Révoquer le jeton de cette intégration créé le {created} sur la passerelle à **{host}** ?\n\nLa passerelle le supprime définitivement. S'il s'agit du jeton utilisé par cet accès, l'accès local prend fin : l'accès est désactivé et nécessite une nouvelle connexion avec l'étiquette de l'appareil. La liste est relue juste avant, et la requête n'est envoyée qu'une seule fois. Laissez la case décochée pour revenir sans révoquer. {use} Cochez aussi la deuxième case pour le confirmer.",
         "data": {
           "confirm": "Révoquer ce jeton sur la passerelle",
-          "confirm_end": "Cela met fin à l'accès local"
+          "confirm_end": "Un accès local qui utilise ce jeton prend fin"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "Le service de connexion de la passerelle a refusé la requête. Rien n'a été modifié.",
       "local_tokens_unsupported": "Cette passerelle ne fournit pas de liste de jetons. Rien n'a été modifié.",
       "local_tokens_invalid": "La liste de jetons de la passerelle n'a pas pu être vérifiée (réponse inattendue ou trop volumineuse). Rien n'a été modifié.",
-      "local_token_end_unconfirmed": "Ce jeton est très probablement utilisé par cet accès. Cochez aussi « Cela met fin à l'accès local » ou laissez la première case décochée pour revenir. Rien n'a été envoyé."
+      "local_token_end_unconfirmed": "Révoquer ce jeton peut mettre fin à un accès local. Cochez aussi la deuxième case, ou laissez la première décochée pour revenir. Rien n'a été envoyé.",
+      "connection_remove_unconfirmed": "Cochez aussi « Supprimer cet accès » : un jeton n'est révoqué qu'en même temps que la suppression de l'accès. Rien n'a été envoyé ni supprimé."
     },
     "abort": {
       "no_notification_gateways": "Aucune installation de chauffage n'est configurée.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "La passerelle a refusé la révocation ; le jeton figure toujours dans la liste.",
       "local_token_revoke_unclear": "La passerelle n'a pas confirmé la révocation. Rien n'a été répété. Ouvrez à nouveau la liste de jetons pour vérifier.",
       "local_token_revoked_removed": "Le jeton a été révoqué sur la passerelle et l'accès a été supprimé.",
-      "local_token_not_removed": "La révocation n'a pas été confirmée ; l'accès n'a donc pas été supprimé. Vérifiez la liste de jetons, puis supprimez à nouveau l'accès."
+      "local_token_not_removed": "La révocation n'a pas été confirmée ; l'accès n'a donc pas été supprimé. Vérifiez la liste de jetons, puis supprimez à nouveau l'accès.",
+      "local_token_old_revoked_removed": "Le jeton choisi a été révoqué sur la passerelle et l'accès a été supprimé. Le jeton qu'utilisait cet accès reste sur la passerelle.",
+      "local_token_access_end_failed": "C'était le jeton utilisé par cet accès : l'accès local a donc pris fin, mais l'accès n'a pas pu être désactivé. Désactivez-le, supprimez-le ou configurez-le à nouveau avec l'étiquette de l'appareil."
     },
     "progress": {
       "local_work": "Vérification de la connexion locale. Veuillez patienter."

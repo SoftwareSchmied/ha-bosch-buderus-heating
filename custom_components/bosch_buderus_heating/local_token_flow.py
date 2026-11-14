@@ -4,8 +4,10 @@ Both run only on an explicit request in the dialog of one local access, with
 the token and the certificate binding of that access. The list is shown and
 then forgotten; it never reaches the configuration, the diagnostics or the
 log. Only entries with this integration's own client name can be chosen for
-a revocation, and a revocation needs a confirmation of its own. Nothing here
-runs when an access or the whole entry is removed without that choice.
+a revocation, and a revocation needs a confirmation of its own. The gateway
+does not say which token an access uses, so revoking any of them also needs
+the second confirmation that a local access may end. Nothing here runs when
+an access or the whole entry is removed without that choice.
 """
 
 from __future__ import annotations
@@ -30,6 +32,7 @@ from .connection_flow import ConnectionOptionsFlow
 from .gateway_identity import GatewayNamespace, IdentityContext
 from .ha_schema import validation as vol
 from .i18n import localize
+from .local_address import saved_local_accesses
 from .local_auth import (
     AuthProblem,
     GatewayToken,
@@ -62,7 +65,9 @@ MAX_SHOWN_TOKENS = 32
 # The gateway does not say which token an access uses. The access's stored
 # setup time is taken after its token was created, so the own token created
 # last at or before that time is the likely current one. The tolerance covers
-# a small clock difference between the gateway and Home Assistant.
+# a small clock difference between the gateway and Home Assistant. It is only
+# a mark for the list: every own token needs the second confirmation, since
+# the clocks, another entry or another Home Assistant may use any of them.
 USED_TOKEN_TOLERANCE = 120.0
 
 _PROBLEM_ERRORS = {
@@ -151,6 +156,49 @@ def likely_used_tokens(
     return tuple(token for token in candidates if token.created_at == newest)
 
 
+@dataclass(frozen=True, slots=True)
+class TokenUse:
+    """Which own tokens an access most likely uses; a mark, never a proof."""
+
+    # Most likely used by this access.
+    this: tuple[GatewayToken, ...] = ()
+    # Most likely used by another saved local access to the same gateway.
+    others: tuple[GatewayToken, ...] = ()
+
+
+def token_use(
+    own: Iterable[GatewayToken],
+    verified_at: float,
+    *,
+    created: bool,
+    other_accesses: Iterable[tuple[float, bool]] = (),
+) -> TokenUse:
+    """Mark the own tokens this access and other accesses most likely use.
+
+    ``other_accesses``: setup time and whether the token was created by this
+    integration, for every other saved local access to the same gateway.
+    Nothing is marked for this access while an own token is newer than its
+    setup and no other access explains it (another Home Assistant, or the
+    clocks differ): the mark would point at an older token.
+    """
+    tokens = tuple(own)
+    others: list[GatewayToken] = []
+    for other_verified, other_created in other_accesses:
+        for token in likely_used_tokens(tokens, other_verified, created=other_created):
+            if token not in others:
+                others.append(token)
+    unexplained = any(
+        token.created_at is not None
+        and token.created_at > verified_at + USED_TOKEN_TOLERANCE
+        and token not in others
+        for token in tokens
+    )
+    this = (
+        () if unexplained else likely_used_tokens(tokens, verified_at, created=created)
+    )
+    return TokenUse(this, tuple(token for token in others if token not in this))
+
+
 class LocalTokenFlow(ConnectionOptionsFlow):
     """Show the gateway's tokens; revoke one of this integration on request."""
 
@@ -158,7 +206,7 @@ class LocalTokenFlow(ConnectionOptionsFlow):
     _token_choices: dict[str, GatewayToken] | None = None
     _token_selected: GatewayToken | None = None
     _token_observation: CertificateObservation | None = None
-    _token_used: tuple[GatewayToken, ...] = ()
+    _token_use: TokenUse = TokenUse()
     _token_removal = False
     _token_remove_none = False
     _token_closed = False
@@ -226,7 +274,7 @@ class LocalTokenFlow(ConnectionOptionsFlow):
     def _token_reset(self) -> None:
         self._token_access = self._token_choices = self._token_selected = None
         self._token_observation = None
-        self._token_used = ()
+        self._token_use = TokenUse()
         self._token_remove_none = False
 
     async def async_step_local_tokens(
@@ -416,17 +464,34 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             # not be read: the access is removed only after an explicit
             # choice, never silently.
             return self._tokens_remove_none_menu()
-        used = (
-            likely_used_tokens(own, access.verified_at, created=access.created)
+        use = (
+            token_use(
+                own,
+                access.verified_at,
+                created=access.created,
+                other_accesses=self._token_other_accesses(access),
+            )
             if access
-            else ()
+            else TokenUse()
         )
-        self._token_used = used
-        marker = localize(
-            self.hass.config.language,
-            "von diesem Zugang genutzt",
-            "used by this access",
-        )
+        self._token_use = use
+        language = self.hass.config.language
+        markers = {
+            **{
+                token: localize(
+                    language,
+                    "von einem anderen Zugang genutzt",
+                    "used by another access",
+                )
+                for token in use.others
+            },
+            **{
+                token: localize(
+                    language, "von diesem Zugang genutzt", "used by this access"
+                )
+                for token in use.this
+            },
+        }
         choices: dict[str, GatewayToken] = {}
         options: list[SelectOptionDict] = []
         labels: dict[str, int] = {}
@@ -435,8 +500,8 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             labels[label] = labels.get(label, 0) + 1
             if labels[label] > 1:
                 label = f"{label} ({labels[label]})"
-            if token in used:
-                label = f"{label} ({marker})"
+            if token in markers:
+                label = f"{label} ({markers[token]})"
             choices[f"token_{number}"] = token
             options.append(SelectOptionDict(value=f"token_{number}", label=label))
         self._token_choices = choices
@@ -452,8 +517,8 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             description_placeholders={
                 "count": "?" if tokens is None else str(len(tokens)),
                 "own": _lines(
-                    f"{_created(token.created_at)} ({marker})"
-                    if token in used
+                    f"{_created(token.created_at)} ({markers[token]})"
+                    if token in markers
                     else _created(token.created_at)
                     for token in own
                 ),
@@ -468,6 +533,21 @@ class LocalTokenFlow(ConnectionOptionsFlow):
                 "note": self._tokens_entered_note(access, tokens),
             },
         )
+
+    def _token_other_accesses(self, access: _TokenAccess) -> list[tuple[float, bool]]:
+        """Setup time and origin of the other saved accesses to this gateway,
+        in any entry of this integration; switched off ones count too."""
+        this = (self._entry.entry_id, access.edit.connection_id)
+        try:
+            return [
+                (item.verified_at, item.credentials.origin == TokenOrigin.CREATED)
+                for entry_id, connection_id, item in saved_local_accesses(self.hass)
+                if (entry_id, connection_id) != this
+                and item.gateway_id == access.gateway_id
+                and item.credentials.token != access.token
+            ]
+        except Exception:  # only the marks are missing; nothing is sent
+            return []
 
     def _tokens_entered_note(
         self, access: _TokenAccess | None, tokens: tuple[GatewayToken, ...] | None
@@ -520,10 +600,9 @@ class LocalTokenFlow(ConnectionOptionsFlow):
         fields: dict[Any, Any] = {
             vol.Required("confirm", default=False): BooleanSelector()
         }
-        if selected in self._token_used:
-            # Revoking the token the access uses ends the access: a second,
-            # separate confirmation is needed.
-            fields[vol.Optional("confirm_end", default=False)] = BooleanSelector()
+        # Which token an access uses is never certain: revoking any own token
+        # may end a local access and needs a second, separate confirmation.
+        fields[vol.Optional("confirm_end", default=False)] = BooleanSelector()
         return self.async_show_form(
             step_id="local_token_revoke",
             data_schema=vol.Schema(fields),
@@ -531,7 +610,38 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             description_placeholders={
                 "created": _created(selected.created_at),
                 "host": markdown_literal(access.context.endpoint.host),
+                "use": self._token_use_text(selected),
             },
+        )
+
+    def _token_use_text(self, selected: GatewayToken) -> str:
+        language = self.hass.config.language
+        if selected in self._token_use.this:
+            return localize(
+                language,
+                "Es ist sehr wahrscheinlich der Token, den dieser Zugang nutzt: "
+                "Widerrufst du ihn, endet dieser lokale Zugang.",
+                "It is most likely the token this access uses: revoking it ends "
+                "this local access.",
+            )
+        if selected in self._token_use.others:
+            return localize(
+                language,
+                "Es ist sehr wahrscheinlich der Token eines anderen lokalen "
+                "Zugangs zu diesem Gateway: Widerrufst du ihn, endet jener "
+                "Zugang.",
+                "It is most likely the token of another local access to this "
+                "gateway: revoking it ends that access.",
+            )
+        return localize(
+            language,
+            "Welchen Token ein Zugang nutzt, lässt sich nicht sicher erkennen, "
+            "etwa wenn ein anderes Home Assistant dieses Gateway nutzt. "
+            "Widerrufst du einen genutzten Token, endet der lokale Zugang, der "
+            "ihn nutzt.",
+            "Which token an access uses cannot be told for certain, for example "
+            "when another Home Assistant uses this gateway. Revoking a token in "
+            "use ends the local access that uses it.",
         )
 
     async def async_step_local_token_revoke(
@@ -547,9 +657,8 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             # Without the explicit confirmation nothing is sent.
             self._token_reset()
             return await self.async_step_connection()
-        if selected in self._token_used and user_input.get("confirm_end") is not True:
-            # The token this access uses: without the second confirmation
-            # nothing is sent.
+        if user_input.get("confirm_end") is not True:
+            # Without the second confirmation nothing is sent.
             return self._token_confirm_form("local_token_end_unconfirmed")
         if not self._token_current():
             self._token_reset()
@@ -581,20 +690,17 @@ class LocalTokenFlow(ConnectionOptionsFlow):
         self._token_reset()
         if outcome.state in (RevokeState.REVOKED, RevokeState.ACCESS_ENDED):
             if removal:
+                # Revoked while the access still reads: the chosen token was
+                # not the one it used, which stays on the gateway.
                 return await self._remove_access(
-                    access.edit, "local_token_revoked_removed"
+                    access.edit,
+                    "local_token_revoked_removed"
+                    if outcome.state == RevokeState.ACCESS_ENDED
+                    else "local_token_old_revoked_removed",
                 )
             if outcome.state == RevokeState.REVOKED:
                 return await self._token_note(access.edit, "local_token_revoked")
-            # The access's own token is gone: the access has ended, which is
-            # not a failure. It is switched off until it is set up again.
-            edit = access.edit
-            try:
-                self._management().set_enabled(edit, False)
-                edit = self._management().edit(edit.connection_id)
-            except ValueError, KeyError:
-                pass
-            return await self._token_note(edit, "local_token_access_ended")
+            return await self._token_end_access(access)
         if outcome.state == RevokeState.LIST_CHANGED:
             return await self._token_note(access.edit, "local_tokens_changed")
         if removal:
@@ -605,6 +711,25 @@ class LocalTokenFlow(ConnectionOptionsFlow):
             if outcome.state == RevokeState.REJECTED
             else "local_token_revoke_unclear",
         )
+
+    async def _token_end_access(self, access: _TokenAccess) -> ConfigFlowResult:
+        """The access's own token is gone: the access has ended, which is not
+        a failure. It is switched off until it is set up again; if that
+        fails, the note says so."""
+        management = self._management()
+        try:
+            edit = management.edit(access.edit.connection_id)
+            stored = load_local_access(
+                management.current().connections[edit.connection_id].to_data()
+            )
+            if stored.credentials.token != access.token:
+                # Set up again meanwhile: the new token is not affected.
+                return await self._token_note(edit, "local_token_revoked")
+            management.set_enabled(edit, False)
+            edit = management.edit(edit.connection_id)
+        except ValueError, KeyError:
+            return await self._token_note(access.edit, "local_token_access_end_failed")
+        return await self._token_note(edit, "local_token_access_ended")
 
     async def _token_note(self, edit: ConnectionEdit, reason: str) -> ConfigFlowResult:
         """Back to the access's menu with the outcome as its note."""

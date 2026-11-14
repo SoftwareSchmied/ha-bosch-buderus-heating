@@ -157,6 +157,14 @@ def _accesses(hass: HomeAssistant) -> Iterator[_Access]:
             yield _Access(entry, key, access, options[key].get("enabled") is True)
 
 
+def saved_local_accesses(
+    hass: HomeAssistant,
+) -> Iterator[tuple[str, str, StoredLocalAccess]]:
+    """Entry ID, connection ID and data of every saved local access."""
+    for item in _accesses(hass):
+        yield item.entry.entry_id, item.connection_id, item.access
+
+
 def access_down(entry: ConfigEntry[Any], connection_id: str) -> bool:
     """The running local access does not reach its gateway right now.
 

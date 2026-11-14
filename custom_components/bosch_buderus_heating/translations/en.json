@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Revoke token",
-        "description": "Revoke the token of this integration created on {created} on the gateway at **{host}**?\n\nThe gateway deletes it for good. If it is the token this access uses, local access ends: the access is switched off and needs a new sign-in with the device label. The list is read again right before, and the request is sent only once. Leave the box unticked to go back without revoking. If a second box appears, this is the token this access most likely uses; tick it as well to confirm that the local access ends.",
+        "description": "Revoke the token of this integration created on {created} on the gateway at **{host}**?\n\nThe gateway deletes it for good. If it is the token this access uses, local access ends: the access is switched off and needs a new sign-in with the device label. The list is read again right before, and the request is sent only once. Leave the box unticked to go back without revoking. {use} Tick the second box as well to confirm this.",
         "data": {
           "confirm": "Revoke this token on the gateway",
-          "confirm_end": "This ends the local access"
+          "confirm_end": "A local access using this token ends"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "The gateway's sign-in service refused the request. Nothing was changed.",
       "local_tokens_unsupported": "This gateway does not provide a token list. Nothing was changed.",
       "local_tokens_invalid": "The gateway's token list could not be checked (unexpected or too large answer). Nothing was changed.",
-      "local_token_end_unconfirmed": "This token is most likely the one this access uses. Tick \"This ends the local access\" as well, or leave the first box unticked to go back. Nothing was sent."
+      "local_token_end_unconfirmed": "Revoking this token can end a local access. Tick the second box as well, or leave the first box unticked to go back. Nothing was sent.",
+      "connection_remove_unconfirmed": "Tick “Remove this access” as well: a token is revoked only together with removing the access. Nothing was sent or removed."
     },
     "abort": {
       "no_notification_gateways": "No heating system is configured.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "The gateway refused the revocation; the token is still listed.",
       "local_token_revoke_unclear": "The gateway did not confirm the revocation. Nothing was repeated. Open the token list again to check.",
       "local_token_revoked_removed": "The token was revoked on the gateway and the access was removed.",
-      "local_token_not_removed": "The revocation was not confirmed, so the access was not removed. Check the token list, then remove the access again."
+      "local_token_not_removed": "The revocation was not confirmed, so the access was not removed. Check the token list, then remove the access again.",
+      "local_token_old_revoked_removed": "The chosen token was revoked on the gateway and the access was removed. The token this access itself used is still on the gateway.",
+      "local_token_access_end_failed": "It was the token this access used, so local access has ended, but the access could not be switched off. Switch it off or remove it, or set it up again with the device label."
     },
     "progress": {
       "local_work": "Checking the local connection. Please wait."

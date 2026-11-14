@@ -691,10 +691,10 @@
       },
       "local_token_revoke": {
         "title": "Revogar token",
-        "description": "Revogar o token desta integração criado em {created} no gateway em **{host}**?\n\nO gateway elimina-o definitivamente. Se for o token que este acesso usa, o acesso local termina: o acesso é desligado e precisa de um novo início de sessão com a etiqueta do dispositivo. A lista é lida de novo imediatamente antes, e o pedido é enviado apenas uma vez. Deixe a caixa desmarcada para voltar sem revogar. Se aparecer uma segunda caixa, é o token que este acesso provavelmente usa; marque-a também para confirmar que o acesso local termina.",
+        "description": "Revogar o token desta integração criado em {created} no gateway em **{host}**?\n\nO gateway elimina-o definitivamente. Se for o token que este acesso usa, o acesso local termina: o acesso é desligado e precisa de um novo início de sessão com a etiqueta do dispositivo. A lista é lida de novo imediatamente antes, e o pedido é enviado apenas uma vez. Deixe a caixa desmarcada para voltar sem revogar. {use} Marque também a segunda caixa para o confirmar.",
         "data": {
           "confirm": "Revogar este token no gateway",
-          "confirm_end": "Com isto, o acesso local termina"
+          "confirm_end": "Um acesso local que use este token termina"
         }
       }
     },
@@ -810,7 +810,8 @@
       "local_tokens_forbidden": "O serviço de início de sessão do gateway recusou o pedido. Nada foi alterado.",
       "local_tokens_unsupported": "Este gateway não disponibiliza uma lista de tokens. Nada foi alterado.",
       "local_tokens_invalid": "Não foi possível verificar a lista de tokens do gateway (resposta inesperada ou demasiado grande). Nada foi alterado.",
-      "local_token_end_unconfirmed": "Este token é provavelmente usado por este acesso. Marque também «Com isto, o acesso local termina» ou deixe a primeira caixa desmarcada para voltar. Nada foi enviado."
+      "local_token_end_unconfirmed": "Revogar este token pode terminar um acesso local. Marque também a segunda caixa ou deixe a primeira desmarcada para voltar. Nada foi enviado.",
+      "connection_remove_unconfirmed": "Marque também «Remover este acesso»: um token só é revogado juntamente com a remoção do acesso. Nada foi enviado nem removido."
     },
     "abort": {
       "no_notification_gateways": "Não está configurado nenhum sistema de aquecimento.",
@@ -875,7 +876,9 @@
       "local_token_revoke_rejected": "O gateway recusou a revogação; o token continua na lista.",
       "local_token_revoke_unclear": "O gateway não confirmou a revogação. Nada foi repetido. Abra de novo a lista de tokens para verificar.",
       "local_token_revoked_removed": "O token foi revogado no gateway e o acesso foi removido.",
-      "local_token_not_removed": "A revogação não foi confirmada, por isso o acesso não foi removido. Verifique a lista de tokens e depois remova o acesso de novo."
+      "local_token_not_removed": "A revogação não foi confirmada, por isso o acesso não foi removido. Verifique a lista de tokens e depois remova o acesso de novo.",
+      "local_token_old_revoked_removed": "O token escolhido foi revogado no gateway e o acesso foi removido. O token que este acesso usava continua no gateway.",
+      "local_token_access_end_failed": "Era o token que este acesso usava, por isso o acesso local terminou, mas não foi possível desligar o acesso. Desligue-o, remova-o ou configure-o de novo com a etiqueta do dispositivo."
     },
     "progress": {
       "local_work": "A verificar a ligação local. Aguarde."

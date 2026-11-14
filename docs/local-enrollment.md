@@ -165,15 +165,23 @@ access the message stays as before.
   access was last set up (a tolerance of two minutes covers a small clock
   difference between the gateway and Home Assistant; tokens that are equally
   old are all marked). The setup time is taken after the token was created,
-  so this is normally the token in use, but it remains an assumption. For an
+  so this is normally the token in use, but it remains an assumption. If a
+  token of this integration is newer than that setup time and no other access
+  explains it (another Home Assistant, or the clocks differ), nothing is
+  marked for this access, because the mark would point at an older token.
+  Tokens that other local accesses of this integration to the same gateway
+  most likely use (in any entry, also switched off ones; worked out the same
+  way from their setup times) are marked "used by another access". For an
   access that uses a token entered by hand, nothing is marked, because that
   token is not one of this integration's own; a short note below the list
   says so. Such a token usually appears among the other apps, which are never
-  offered for revocation. The mark appears in the list
-  and in the selection ("used by this access"); no token value or ID is shown.
-  The user chooses by creation time. The revocation
-  needs its own confirmation. Revoking the marked token also needs a second,
-  separate box ("This ends the local access"); without it nothing is sent.
+  offered for revocation. The marks appear in the list and in the selection;
+  no token value or ID is shown. The user chooses by creation time. The
+  revocation needs its own confirmation. Because the marks remain an
+  assumption, revoking any token of this integration also needs a second,
+  separate box ("A local access using this token ends"); without it nothing
+  is sent. The dialog says whether the token is most likely this access's,
+  another access's, or one whose use cannot be told.
   Right before the request, the list is read again, and
   nothing is sent unless the chosen entry is still listed unchanged. Then
   exactly one `POST /auth/revoke` (`token_id`, `usage_type=private`) is sent,
@@ -182,11 +190,16 @@ access the message stays as before.
 - If the revoked token was the one the access uses, the gateway refuses the
   read-back. The dialog then reports that local access has ended and switches
   the access off, instead of leaving it failing; a new sign-in with the device
-  label sets it up again.
+  label sets it up again. If the access cannot be switched off (it was changed
+  meanwhile), the dialog says so instead. An access that was set up again
+  with a new token meanwhile is left as it is.
 - **Remove access** for a local access has an extra choice to revoke a token
   of this integration first. Only with that choice is anything sent; the access
   is removed only after the revocation was confirmed (or when no token is
-  chosen in the list). If that choice is ticked but there is no token of this
+  chosen in the list). Ticking only that choice without "Remove this access"
+  shows a message and changes nothing. If an older token was revoked while
+  the access still worked, the message says that the access's own token stays
+  on the gateway. If that choice is ticked but there is no token of this
   integration to offer (the gateway lists none, or its list could not be
   read), the access is not removed silently: a step says so and offers
   "Remove without revoking" or "Cancel and keep the access". Nothing is
