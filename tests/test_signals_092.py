@@ -38,6 +38,7 @@ from custom_components.bosch_buderus_heating.local_only_sensor import (
 )
 from custom_components.bosch_buderus_heating.local_plant_view import local_sensor
 from custom_components.bosch_buderus_heating.outdoor_unit_software import (
+    BoschBuderusOutdoorUnitSoftwareSensor,
     OutdoorUnitInputs,
     OutdoorUnits,
     choose,
@@ -647,6 +648,17 @@ def test_the_inputs_read_the_cloud_module_list() -> None:
     assert OutdoorUnitInputs(coordinator).current().state == "9.16.0-dab9f463"
     snapshot.available = False
     assert OutdoorUnitInputs(coordinator).current() is None
+
+
+async def test_the_outdoor_unit_sensor_is_an_enabled_diagnostic(
+    hass: HomeAssistant,
+) -> None:
+    coordinator = coordinator_with(hass, [])
+    sensor = BoschBuderusOutdoorUnitSoftwareSensor(coordinator)
+    assert sensor.entity_registry_enabled_default is True
+    assert sensor.entity_category is EntityCategory.DIAGNOSTIC
+    assert sensor.translation_key == "outdoor_unit_software_version"
+    await coordinator.async_shutdown()
 
 
 def test_the_outdoor_unit_sensor_has_a_translated_name() -> None:

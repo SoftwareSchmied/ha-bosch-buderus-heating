@@ -316,6 +316,8 @@ class BoschBuderusOutdoorUnitSoftwareSensor(
     _attr_has_entity_name = True
     _attr_translation_key = "outdoor_unit_software_version"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
+    # Enabled by default (user decision for 0.9.2): a rarely changing text.
+    _attr_entity_registry_enabled_default = True
 
     def __init__(self, coordinator: BoschBuderusDataUpdateCoordinator) -> None:
         super().__init__(coordinator)
