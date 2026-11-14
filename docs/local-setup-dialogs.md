@@ -92,9 +92,11 @@ never identity; the only proof is the certificate binding confirmed at setup.
 
 1. Only an announcement whose addresses are all unknown to every configured
    access is considered, and only while an enabled local access does not reach
-   its gateway (not reachable, starting, certificate changed, or paused after
-   failed connections; not during a pause the gateway asked for, and never while
-   it is connected).
+   its gateway (not reachable, certificate changed, or paused after failed
+   connections; not during a pause the gateway asked for, never while it is
+   connected, and not while it is still starting before a first attempt
+   failed). So an access saved with a host name is offered another address
+   only once that name no longer reaches the gateway.
 2. At most two announced IP addresses (IPv4 first) get one TLS handshake each on
    the data port. Only addresses of a home network are considered: private
    IPv4 (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16), IPv4 link-local

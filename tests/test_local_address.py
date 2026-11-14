@@ -204,7 +204,8 @@ def test_local_source_names_its_pause_reason() -> None:
     [
         (LocalCondition.UNAVAILABLE, None, True),
         (LocalCondition.CERTIFICATE_CHANGED, None, True),
-        (LocalCondition.INITIALIZING, None, True),
+        # A start is not "down" before its first attempt failed.
+        (LocalCondition.INITIALIZING, None, False),
         (LocalCondition.PAUSED, "connection", True),
         (LocalCondition.PAUSED, None, True),
         (LocalCondition.PAUSED, "rate_limited", False),
@@ -781,3 +782,40 @@ async def test_confirmation_rechecks_after_the_handshake(
     assert await address.apply_address(hass, issue.issue_id) == expected
     assert entry.data == before.to_data() and entry.options == before.to_options()
     assert not lan.requests
+
+
+@pytest.mark.parametrize(
+    ("condition", "offered"),
+    [
+        (LocalCondition.INITIALIZING, False),
+        (LocalCondition.READY, False),
+        (LocalCondition.UNAVAILABLE, True),
+    ],
+)
+async def test_a_host_name_is_replaced_only_once_it_no_longer_reaches(
+    hass, monkeypatch, condition, offered
+):
+    # Saved with a host name, as the address tip suggests. Right after a
+    # restart the gateway announces its IP before the access had a chance;
+    # nothing may be offered until the name really fails.
+    local = ready_local()
+    local.condition = condition
+    entry = entry_with(Runtime(hass, local=local))
+    match = fake_access(LAN, "01" * 32, host="gateway.example.invalid")
+    match.entry = entry
+    monkeypatch.setattr(address, "_accesses", lambda hass: iter([match]))
+    calls, offers = [], []
+
+    async def handshake(endpoint):
+        calls.append(endpoint)
+        return b"\x01" * 32
+
+    def offer(hass, found, endpoint):
+        offers.append(endpoint)
+        return "issue"
+
+    monkeypatch.setattr(address, "_handshake", handshake)
+    monkeypatch.setattr(address, "_offer", offer)
+    result = await address.follow_address(hass, (LocalEndpoint(MOVED),))
+    assert result is offered
+    assert bool(calls) is offered and bool(offers) is offered

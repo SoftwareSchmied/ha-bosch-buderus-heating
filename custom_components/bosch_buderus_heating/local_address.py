@@ -65,8 +65,12 @@ CHECK_WINDOW = 600.0
 # Offered addresses kept at once (one per local access).
 MAX_CANDIDATES = 16
 # Access states in which the saved address may be stale. A pause is one only
-# when the gateway did not ask for it itself.
-_DOWN_STATES = frozenset({"unreachable", "certificate_changed", "starting"})
+# when the gateway did not ask for it itself. A start does not count before
+# its first attempt failed: right after a restart a gateway announces itself
+# before the access had a chance, and an access saved with a host name would
+# otherwise be offered the address that name resolves to anyway. So a saved
+# host name is only ever replaced once it no longer reaches the gateway.
+_DOWN_STATES = frozenset({"unreachable", "certificate_changed"})
 _GATEWAY_PAUSES = frozenset({"rate_limited", "service_unavailable"})
 # The handshake belongs to no access; it never shares a request budget.
 _CHECK_CONTEXT = IdentityContext(
