@@ -87,6 +87,7 @@ The event `defrost_finished` carries:
 | `stages`, `stage_minutes` | The positions of the 3-way valve VW1 during the defrost in their order (`heating`, `dhw`) and the minutes of each; empty without a valve reading |
 | `heat_withdrawn_kwh` | The dip of the produced-heat counters (heating, hot water, pool; otherwise the total) below their value at the start |
 | `electricity_kwh` | The change of the compressor and heater counters between start and end |
+| `electricity_kwh_from_power` | The electrical power of the compressor and the electric heater, integrated over the defrost: linear between the readings (trapezoid), the first and last reading held up to the start and end; `null` without power readings or when two readings, or a reading and the start or end, are more than 2.5 minutes apart |
 | `outdoor_temp_start`, `air_inlet_temp_start` | Outdoor temperature and TL2 at the start, if read |
 | `detected_by`, `derived_from` | The defrost source and every input used |
 
@@ -100,6 +101,14 @@ Limits:
 - The energy is approximate: the counters change only every few minutes
   and in 0.01 kWh steps. The event therefore comes up to 10 minutes after
   the end, once every heat counter has risen again or that time is over.
+- There are two values for the electricity. `electricity_kwh` comes from
+  the counters and has their resolution: a defrost of six minutes moves
+  them by only a few hundredths of a kWh, and the change may fall partly
+  before or after the defrost. `electricity_kwh_from_power` follows the
+  power readings, which the local access reads about every minute; a short
+  peak or dip between two readings is not seen. Without the local power
+  readings it is `null`. The counters of the defrost totals use the
+  counter-based value.
 - There is no classification as a long or intensive defrost; the raw
   duration and energy are reported instead.
 

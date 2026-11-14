@@ -30,6 +30,9 @@ Versioning after its first tagged preview.
   - Counted only while Home Assistant runs; the energy is approximate,
     because the counters change only every few minutes. The event therefore
     comes up to 10 minutes after the end.
+  - The electricity comes twice: from the counters and, with the local
+    access, integrated from the electrical power readings
+    (`electricity_kwh_from_power`).
   - I replayed a defrost recorded on a real installation in the tests; it
     has not yet run live.
 - **Net heat counters:** for each produced-heat counter a disabled counter

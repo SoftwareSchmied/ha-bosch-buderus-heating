@@ -79,6 +79,7 @@ CH = "/heatSources/emon/chConsumption"
 DHW = "/heatSources/emon/dhwConsumption"
 TOTAL = "/heatSources/emon/totalConsumption"
 BRINE_IN = "/heatSources/hs1/brineCircuit/collectorInflowTemp"
+POWER = "/heatSources/compressor/powerElecActual"
 T0 = datetime(2026, 11, 13, 1, 40, tzinfo=UTC)
 _COORDINATORS: list[BoschBuderusDataUpdateCoordinator] = []
 
@@ -605,6 +606,60 @@ async def test_a_late_dip_after_the_end_still_counts(
     assert events[0]["heat_withdrawn_kwh"] == pytest.approx(0.46)
 
 
+def test_energy_from_power_needs_dense_readings() -> None:
+    from custom_components.bosch_buderus_heating.derived_defrost import (
+        MAX_POWER_GAP,
+        _power_energy,
+    )
+
+    start = T0
+    end = T0 + timedelta(minutes=6)
+    every_minute = [(T0 + timedelta(minutes=m), 0.6) for m in range(7)]
+    assert _power_energy(every_minute, start, end) == pytest.approx(0.06)
+    # A linear rise between two readings counts as its mean.
+    two = start + timedelta(minutes=2)
+    assert _power_energy([(start, 0.0), (two, 1.2)], start, two) == 0.02
+    assert timedelta(minutes=3) > MAX_POWER_GAP
+    gap = [every_minute[0], every_minute[-1]]
+    assert _power_energy(gap, start, end) is None  # too sparse
+    late = every_minute[3:]
+    assert _power_energy(late, start, end) is None  # the start is not covered
+    early = every_minute[:3]
+    assert _power_energy(early, start, end) is None  # the end is not covered
+    assert _power_energy([], start, end) is None
+
+
+async def test_an_older_power_reading_is_not_taken(
+    hass: HomeAssistant, freezer: FrozenDateTimeFactory
+) -> None:
+    plant = air(hass, freezer)
+    monitor = await _monitor(plant)
+    events: list[dict[str, Any]] = []
+    monitor.add_event_listener(events.append)
+    monitor.update(plant.at)
+    plant.later(1).local(POWER, 600.0, unitOfMeasure="W")
+    plant.local(REFRIGERANT, "defrost")
+    monitor.update(plant.at)
+    plant.later(1).local(POWER, 600.0, unitOfMeasure="W")
+    monitor.update(plant.at)
+    # Only the other compressor reading, taken half a minute earlier.
+    now = plant.at
+    plant.at = now - timedelta(seconds=30)
+    plant.local(
+        "/heatSources/hs1/refrigerant/compressorElecPowerActual",
+        6000.0,
+        unitOfMeasure="W",
+    )
+    plant.at = now
+    plant.forget(POWER)
+    _cycle(plant, monitor, 1)
+    plant.later(1).local(POWER, 600.0, unitOfMeasure="W")
+    plant.local(REFRIGERANT, "heating")
+    monitor.update(plant.at)
+    _cycle(plant, monitor, SETTLE.total_seconds() / 60)
+    assert events[0]["electricity_kwh_from_power"] == pytest.approx(0.03)
+
+
 async def test_cloud_compressor_status_as_the_source(
     hass: HomeAssistant, freezer: FrozenDateTimeFactory
 ) -> None:
@@ -904,9 +959,16 @@ async def test_replay_of_a_recorded_defrost(
     timeline: list[tuple[int, list[tuple[str, object]]]] = [
         (0, []),
         (300, [(CH, 1234.16), (TOTAL, 392.68)]),
+        (429, [(POWER, 675.0)]),
         (435, [(REFRIGERANT, "defrost")]),
+        (489, [(POWER, 119.0)]),
+        (549, [(POWER, 675.0)]),
         (600, [(CH, 1233.91), (TOTAL, 392.72)]),
+        (609, [(POWER, 675.0)]),
+        (669, [(POWER, 676.0)]),
+        (729, [(POWER, 903.0)]),
         (757, [(VW1, True)]),
+        (789, [(POWER, 351.0)]),
         (795, [(REFRIGERANT, "heating")]),
         (817, [(VW1, False)]),
         (900, [(CH, 1233.60), (TOTAL, 392.78)]),
@@ -921,6 +983,8 @@ async def test_replay_of_a_recorded_defrost(
         for path, value in changes:
             if path == REFRIGERANT:
                 plant.local(path, value)
+            elif path == POWER:
+                plant.local(path, value, unitOfMeasure="W")
             elif path == VW1:
                 plant.flag(path, bool(value))
             elif path == TOTAL:
@@ -937,3 +1001,6 @@ async def test_replay_of_a_recorded_defrost(
     # The dip of both heat counters, the last of it after the defrost.
     assert event["heat_withdrawn_kwh"] == pytest.approx(0.64)
     assert event["electricity_kwh"] == pytest.approx(0.04)
+    # From the compressor power: lower than a constant 675 W would give,
+    # as the power fell to 119 W for a minute.
+    assert event["electricity_kwh_from_power"] == pytest.approx(0.059, abs=0.001)

@@ -47,6 +47,8 @@ class Input:
     observed_at: datetime | None
     # The cloud entity's resource, for counters with several parts.
     resource: Resource | None = None
+    # The reported unit, for readings whose unit may vary (power).
+    unit: str | None = None
 
 
 @dataclass(slots=True)
@@ -122,7 +124,14 @@ def read(coordinator: BoschBuderusDataUpdateCoordinator, path: str) -> Input | N
             return None
         resource = snapshot.resource
         origin = LOCAL if snapshot.source is SnapshotSource.LOCAL else CLOUD
-        return Input(path, resource.value, origin, snapshot.last_success, resource)
+        return Input(
+            path,
+            resource.value,
+            origin,
+            snapshot.last_success,
+            resource,
+            resource.metadata.unit,
+        )
     observation = _local_only_observation(coordinator, path)
     definition = definition_for(path)
     if observation is None or definition is None:
@@ -130,7 +139,9 @@ def read(coordinator: BoschBuderusDataUpdateCoordinator, path: str) -> Input | N
     value = native_value(definition, observation)
     if value is None:
         return None
-    return Input(path, value, LOCAL, observation.timing.received_at)
+    return Input(
+        path, value, LOCAL, observation.timing.received_at, unit=observation.unit
+    )
 
 
 def state(reading: Input | None) -> str | None:

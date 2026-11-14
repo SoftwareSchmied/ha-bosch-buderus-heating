@@ -27,6 +27,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from itertools import pairwise
 from typing import TYPE_CHECKING, Any, Final
 from weakref import WeakKeyDictionary
 
@@ -47,6 +48,7 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
+from .derived import power_kilowatts
 from .derived_activity import (
     COMPRESSOR_STATUS,
     DHW_VALVE,
@@ -84,6 +86,17 @@ MODE_COUNTERS: Final = (*HEAT_COUNTERS, "/heatSources/emon/coolingConsumption")
 PRODUCED: Final = "outputProduced"
 ELECTRIC_PARTS: Final = ("compressor", "eheater")
 OUTDOOR: Final = "/system/sensors/temperatures/outdoor_t1"
+# The electrical power during a defrost: the compressor (first path with a
+# reading) plus the electric heater, integrated over the readings.
+COMPRESSOR_POWER: Final = (
+    "/heatSources/compressor/powerElecActual",
+    "/heatSources/hs1/refrigerant/compressorElecPowerActual",
+)
+HEATER_POWER: Final = "/heatSources/eHeater/powerElecActual"
+# The longest gap between two power readings (and from the start or to the
+# end of the defrost) that is still bridged; the local access reads them
+# about every minute.
+MAX_POWER_GAP: Final = timedelta(seconds=150)
 AIR_INLET: Final = "/heatSources/sensors/evaporatorTemp_tl2"
 STAGE_HEATING: Final = "heating"
 STAGE_HOT_WATER: Final = "dhw"
@@ -123,6 +136,8 @@ def input_paths(coordinator: BoschBuderusDataUpdateCoordinator) -> tuple[str, ..
                 *MODE_COUNTERS,
                 OUTDOOR,
                 AIR_INLET,
+                *COMPRESSOR_POWER,
+                HEATER_POWER,
             )
         )
     )
@@ -150,6 +165,8 @@ class _Defrost:
     outdoor: float | None = None
     air_inlet: float | None = None
     ended_at: datetime | None = None
+    # Power readings (time, kW) while the defrost runs, each once.
+    power: list[tuple[datetime, float]] = field(default_factory=list)
 
 
 class DefrostMonitor:
@@ -260,9 +277,11 @@ class DefrostMonitor:
                 current.last_seen = observed
                 self._follow_stage(current, observed)
                 self._follow_heat(current)
+                self._follow_power(current)
             elif active is False:
                 current.ended_at = max(observed, current.started_at)
                 current.electricity_end = self._electricity(current.trace)
+                self._follow_power(current)
                 self._follow_heat(current)
             elif now - current.last_seen > GAP:
                 _LOGGER.debug("Defrost source unreadable too long; defrost dropped")
@@ -311,6 +330,29 @@ class DefrostMonitor:
         )
         self._current = current
         self._follow_stage(current, observed)
+        self._follow_power(current)
+
+    def _follow_power(self, current: _Defrost) -> None:
+        """Take the current power reading once; the heater counts when read."""
+        found = first(
+            self._coordinator,
+            COMPRESSOR_POWER,
+            lambda item: power_kilowatts(item.value, item.unit) if item else None,
+        )
+        if found is None:
+            return
+        reading, compressor = found
+        when = reading.observed_at
+        if when is None:
+            return
+        heater = read(self._coordinator, HEATER_POWER)
+        extra = power_kilowatts(heater.value, heater.unit) if heater else None
+        current.trace.note(reading)
+        if extra is not None:
+            current.trace.note(heater)
+        if current.power and current.power[-1][0] >= when:
+            return  # the same reading again
+        current.power.append((when, compressor + (extra or 0.0)))
 
     def _follow_stage(self, current: _Defrost, observed: datetime) -> None:
         found = first(
@@ -401,6 +443,9 @@ class DefrostMonitor:
             "stage_minutes": stage_minutes,
             "heat_withdrawn_kwh": heat,
             "electricity_kwh": electricity,
+            "electricity_kwh_from_power": _power_energy(
+                current.power, current.started_at, ended
+            ),
             "outdoor_temp_start": current.outdoor,
             "air_inlet_temp_start": current.air_inlet,
             "detected_by": current.detected_by,
@@ -449,6 +494,41 @@ class DefrostMonitor:
             "count": int(self.totals["count"]),
             "last_started_at": (self.last or {}).get("started_at"),
         }
+
+
+def _power_energy(
+    points: list[tuple[datetime, float]], start: datetime, end: datetime
+) -> float | None:
+    """kWh between start and end, linear between the power readings
+    (trapezoid), the first and last reading held up to the edges.
+
+    ``None`` without readings or when two readings, or a reading and the
+    start or end, are more than ``MAX_POWER_GAP`` apart.
+    """
+    if not points or end <= start:
+        return None
+    times = [moment for moment, _ in points]
+    if times[0] - start > MAX_POWER_GAP or end - times[-1] > MAX_POWER_GAP:
+        return None
+    if any(later - earlier > MAX_POWER_GAP for earlier, later in pairwise(times)):
+        return None
+
+    def at(moment: datetime) -> float:
+        if moment <= points[0][0]:
+            return points[0][1]
+        for (t0, p0), (t1, p1) in pairwise(points):
+            if t0 <= moment <= t1:
+                share = (moment - t0) / (t1 - t0) if t1 > t0 else 0.0
+                return p0 + (p1 - p0) * share
+        return points[-1][1]
+
+    inner = [(moment, power) for moment, power in points if start < moment < end]
+    curve = [(start, at(start)), *inner, (end, at(end))]
+    energy = sum(
+        (p0 + p1) / 2 * (t1 - t0).total_seconds()
+        for (t0, p0), (t1, p1) in pairwise(curve)
+    )
+    return round(energy / 3600, 3)
 
 
 def defrost_monitor(
