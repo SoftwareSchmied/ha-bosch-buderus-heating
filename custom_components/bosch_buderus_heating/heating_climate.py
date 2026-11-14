@@ -676,7 +676,7 @@ def _manual_minimum(
     auto).
 
     ``strict`` for a change: a fresh reading of the last cloud cycle. The
-    display takes the cloud reading within its validity limit (O101), so
+    display takes the cloud reading within its validity limit, so
     the range and the target do not vanish when one cycle missed it.
     """
     path = f"{root}/manualRoomSetpoint"

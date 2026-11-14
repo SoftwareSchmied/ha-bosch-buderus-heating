@@ -87,7 +87,7 @@ def _switch_on_gateway(cloud, value: str) -> None:
     cloud.state[CONTROL_TYPE] = replace(cloud.state[CONTROL_TYPE], value=value)
 
 
-# writes 2: the control type is read again before every write ---------------
+# The control type is read again before every write -----------------------
 
 
 async def test_auto_target_reads_the_control_type_with_the_guards(hass):
@@ -98,7 +98,7 @@ async def test_auto_target_reads_the_control_type_with_the_guards(hass):
 
 
 async def test_auto_target_is_refused_when_the_control_type_changed(hass):
-    """APP03-T01: changed to ``constants`` between display and write."""
+    """Changed to ``constants`` between display and write."""
     _, entity, cloud = _with_control_type(hass)
     _switch_on_gateway(cloud, "constants")
     with pytest.raises(ServiceValidationError) as error:
@@ -110,7 +110,7 @@ async def test_auto_target_is_refused_when_the_control_type_changed(hass):
 
 
 async def test_clear_button_is_refused_when_the_control_type_changed(hass):
-    """APP03-T02."""
+    """The same for the clear button."""
     coordinator, _, cloud = _with_control_type(
         hass, temporary=_temporary(22.0, minimum=-1.0)
     )
@@ -123,7 +123,7 @@ async def test_clear_button_is_refused_when_the_control_type_changed(hass):
 
 
 async def test_manual_target_is_refused_when_the_control_type_changed(hass):
-    """APP03-T03: the manual setpoint in the mode manual."""
+    """The manual setpoint in the mode manual."""
     _, entity, cloud = _with_control_type(hass, mode="manual")
     _switch_on_gateway(cloud, "roomTemperature")
     with pytest.raises(ServiceValidationError):
@@ -151,7 +151,7 @@ async def test_unchanged_control_type_lets_every_write_through(hass):
 
 
 async def test_a_circuit_without_a_control_type_writes_as_before(hass):
-    """APP03-T04: never reported (404 at discovery): no extra request."""
+    """Never reported (404 at discovery): no extra request."""
     _, entity, cloud = _circuit(hass)
     await entity.async_set_temperature(temperature=22.5)
     assert cloud.puts == [(TEMPORARY, 22.5)]
@@ -179,7 +179,7 @@ async def test_a_control_type_without_a_current_reading_refuses(hass, mode):
 
 
 async def test_isrc_allows_no_temporary_target_or_clearing(hass):
-    """APP03-T05: as the manufacturer's app, for the temporary setpoint."""
+    """As the manufacturer's app, for the temporary setpoint."""
     coordinator, entity, cloud = _with_control_type(
         hass, "ISRC", temporary=_temporary(22.0, minimum=-1.0)
     )
@@ -201,7 +201,7 @@ async def test_isrc_keeps_the_manual_setpoint(hass):
     assert cloud.puts == [(TARGET, 20.5)]
 
 
-# writes 5: the lower limit of the temporary target -------------------------
+# The lower limit of the temporary target -----------------------------------
 
 
 def _manual_not_current(coordinator) -> None:
@@ -215,7 +215,7 @@ def _manual_not_current(coordinator) -> None:
 
 
 def test_lower_limit_stays_while_the_manual_setpoint_is_valid(hass):
-    """APP03-T06: one missed reading does not drop the range."""
+    """One missed reading does not drop the range."""
     coordinator, entity, _ = _circuit(hass, temporary=_temporary(minimum=-1.0))
     assert (entity.min_temp, entity.max_temp) == (5, 30)
     _manual_not_current(coordinator)
@@ -231,7 +231,7 @@ def test_lower_limit_ends_once_the_manual_setpoint_expired(hass, monkeypatch):
 
 
 async def test_a_write_still_needs_a_fresh_manual_setpoint(hass):
-    """APP03-T08: the strict rule of a change stays."""
+    """The strict rule of a change stays."""
     coordinator, entity, cloud = _circuit(hass, temporary=_temporary(minimum=-1.0))
     _manual_not_current(coordinator)
     with pytest.raises(ServiceValidationError):
@@ -239,11 +239,11 @@ async def test_a_write_still_needs_a_fresh_manual_setpoint(hass):
     assert cloud.puts == []
 
 
-# D1: the clear value outside the advertised limits -------------------------
+# The clear value outside the advertised limits -----------------------------
 
 
 def test_clear_value_outside_the_limits_gives_a_disabled_button(hass):
-    """APP03-T09: the iCom shape (5 to 30) gets a button, created disabled;
+    """The iCom shape (5 to 30) gets a button, created disabled;
     with -1 in the limits it stays enabled as before."""
     coordinator, _, _ = _circuit(hass, temporary=_temporary(21.0))
     resources = {path: item.resource for path, item in coordinator.data.items()}
@@ -284,7 +284,7 @@ async def test_clear_outside_the_limits_writes_minus_one_once(hass):
 
 @pytest.mark.parametrize("reading", [-1.0, -2.0, -0.5])
 async def test_any_negative_reading_confirms_the_clear_value(hass, reading):
-    """APP03-T10: the app takes ``>= 0`` as active, so any negative value
+    """The app takes ``>= 0`` as active, so any negative value
     shows no temporary setpoint."""
     coordinator, _, cloud = _circuit(hass, temporary=_temporary(21.0))
 
@@ -312,7 +312,7 @@ async def test_an_unchanged_reading_leaves_the_clear_unconfirmed(hass):
 
 
 async def test_a_timed_out_clear_is_resolved_by_reading(hass):
-    """M07: the request timed out, the reading shows it applied."""
+    """The request timed out, the reading shows it applied."""
     coordinator, _, cloud = _circuit(hass, temporary=_temporary(21.0))
 
     async def timed_out(gateway, path, value):
@@ -326,7 +326,7 @@ async def test_a_timed_out_clear_is_resolved_by_reading(hass):
 
 
 async def test_a_failing_read_back_is_never_followed_by_a_second_request(hass):
-    """M09: read-back 503 throughout: not confirmed, no second PUT."""
+    """Read-back 503 throughout: not confirmed, no second PUT."""
     coordinator, _, cloud = _circuit(hass, temporary=_temporary(21.0))
     cloud.readback_error = ServiceUnavailable("unavailable")
     with pytest.raises(HomeAssistantError) as error:
@@ -336,7 +336,7 @@ async def test_a_failing_read_back_is_never_followed_by_a_second_request(hass):
 
 
 async def test_no_active_setpoint_offers_nothing_to_clear(hass):
-    """APP03-T11."""
+    """A reading of -1: nothing to clear."""
     coordinator, _, cloud = _circuit(hass, temporary=_temporary(-1.0))
     button = _button(hass, coordinator)
     assert not button.available
@@ -347,7 +347,7 @@ async def test_no_active_setpoint_offers_nothing_to_clear(hass):
 
 
 def test_not_writable_gives_no_clear_button(hass):
-    """APP03-T12: only when the gateway reports the path writable."""
+    """Only when the gateway reports the path writable."""
     coordinator, _, _ = _circuit(hass, temporary=_temporary(21.0, writable=False))
     resources = {path: item.resource for path, item in coordinator.data.items()}
     assert clear_button_descriptions(resources, GENERIC_CONTEXT) == ()
@@ -359,7 +359,7 @@ def test_not_writable_gives_no_clear_button(hass):
     ("mode", "control"), [("auto", "constants"), ("manual", None), ("off", None)]
 )
 async def test_clear_outside_the_limits_keeps_the_other_conditions(hass, mode, control):
-    """APP03-T12: a constant control type, or a mode other than auto."""
+    """A constant control type, or a mode other than auto."""
     coordinator, _, cloud = _circuit(hass, mode=mode, temporary=_temporary(21.0))
     if control is not None:
         resource = _control_type(control)
@@ -406,7 +406,7 @@ def test_the_confirmation_rule_belongs_to_the_clear_value():
     )
 
 
-# D3: the flags of every generic policy ---------------------------------------
+# The flags of every generic policy ------------------------------------------
 
 
 def _flagged(path: str, value: Any, **fields: Any):
