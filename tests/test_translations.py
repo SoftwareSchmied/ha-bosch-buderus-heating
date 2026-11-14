@@ -572,3 +572,24 @@ async def test_notification_dates_follow_the_language(
     when = datetime(2026, 10, 3, 12, tzinfo=UTC)
     text = notifications.FaultNotifications._time(None, when, language)  # type: ignore[arg-type]
     assert text.startswith(expected + " 12:00:00")
+
+
+def test_the_flow_title_formats_for_every_flow_in_every_language() -> None:
+    """A renewed sign-in gets ``name`` from Home Assistant (the entry title),
+    a discovered gateway gets ``name`` from the integration; no flow title
+    may need any other placeholder (a missing one breaks its formatting)."""
+    import json as _json
+    import string
+    from pathlib import Path as _Path
+
+    component = (
+        _Path(__file__).parents[1] / "custom_components" / "bosch_buderus_heating"
+    )
+    files = [component / "strings.json", *sorted(component.glob("translations/*.json"))]
+    assert len(files) == 20
+    for path in files:
+        title = _json.loads(path.read_text(encoding="utf-8"))["config"]["flow_title"]
+        fields = {field for _, field, _, _ in string.Formatter().parse(title) if field}
+        assert fields <= {"name"}, path.name
+        for placeholders in ({"name": "Buderus Home Comfort"}, {"name": "192.0.2.1"}):
+            title.format(**placeholders)

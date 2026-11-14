@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Relè valvola gas 2",
     "Compressor starts cooling": "Avvii compressore raffrescamento",
     "Holiday slot {} state": "Stato slot vacanza {}",
-    "used by this access": "usato da questo accesso"
+    "used by this access": "usato da questo accesso",
+    "not readable": "non leggibile"
   }
 }

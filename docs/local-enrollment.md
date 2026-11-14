@@ -149,7 +149,12 @@ access the message stays as before.
 - **Tokens on the gateway** reads the token list once, when it is opened
   (`GET /auth/token` on port 9442 with the access's token). It shows the number
   of tokens and, for each, the client name and the creation time; token values
-  are never part of the answer, and the token IDs are not shown. The list is
+  are never part of the answer, and the token IDs are not shown. The creation
+  time is accepted as the number the documentation shows and as an ISO 8601
+  text with a time zone, which firmware 15.00.01 sends (for example
+  `2026-11-13T23:55:12Z`). An entry whose name or creation time cannot be read
+  is counted and listed as not readable; it is never offered for revocation. A
+  missing or repeated token ID still makes the whole list unusable. The list is
   not saved and does not appear in the log or in diagnostics. Client names come
   from the gateway and are shown as literal text.
 - **Revoking a token** is offered only for entries with this integration's

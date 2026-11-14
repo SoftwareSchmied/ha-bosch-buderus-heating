@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Rele plinskega ventila 2",
     "Compressor starts cooling": "Zagoni kompresorja pri hlajenju",
     "Holiday slot {} state": "Stanje mesta počitnic {}",
-    "used by this access": "uporablja ga ta dostop"
+    "used by this access": "uporablja ga ta dostop",
+    "not readable": "neberljivo"
   }
 }

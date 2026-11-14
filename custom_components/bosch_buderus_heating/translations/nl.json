@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "De lokale verbinding wordt gecontroleerd. Een moment geduld."
     },
-    "flow_title": "Lokale gateway ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

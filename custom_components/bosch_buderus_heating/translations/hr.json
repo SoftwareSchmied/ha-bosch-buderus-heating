@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "Provjera lokalne veze. Pričekajte."
     },
-    "flow_title": "Lokalni pristupnik ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Relé da válvula de gás 2",
     "Compressor starts cooling": "Arranques do compressor em arrefecimento",
     "Holiday slot {} state": "Estado da posição de férias {}",
-    "used by this access": "usado por este acesso"
+    "used by this access": "usado por este acesso",
+    "not readable": "ilegível"
   }
 }

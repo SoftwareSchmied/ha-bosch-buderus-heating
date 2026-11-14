@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "Έλεγχος της τοπικής σύνδεσης. Περιμένετε."
     },
-    "flow_title": "Τοπική πύλη ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

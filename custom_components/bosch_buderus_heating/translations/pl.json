@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "Sprawdzanie połączenia lokalnego. Proszę czekać."
     },
-    "flow_title": "Lokalna bramka ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

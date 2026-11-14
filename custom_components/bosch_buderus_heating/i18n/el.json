@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Ρελέ βαλβίδας αερίου 2",
     "Compressor starts cooling": "Εκκινήσεις συμπιεστή – ψύξη",
     "Holiday slot {} state": "Κατάσταση θέσης διακοπών {}",
-    "used by this access": "χρησιμοποιείται από αυτή την πρόσβαση"
+    "used by this access": "χρησιμοποιείται από αυτή την πρόσβαση",
+    "not readable": "μη αναγνώσιμο"
   }
 }

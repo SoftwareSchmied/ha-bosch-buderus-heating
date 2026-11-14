@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Przekaźnik zaworu gazowego 2",
     "Compressor starts cooling": "Uruchomienia sprężarki: chłodzenie",
     "Holiday slot {} state": "Stan miejsca urlopu {}",
-    "used by this access": "używany przez ten dostęp"
+    "used by this access": "używany przez ten dostęp",
+    "not readable": "nieczytelny"
   }
 }

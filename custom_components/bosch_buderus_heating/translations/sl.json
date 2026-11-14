@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "Preverjanje lokalne povezave. Prosimo, počakajte."
     },
-    "flow_title": "Lokalni prehod ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

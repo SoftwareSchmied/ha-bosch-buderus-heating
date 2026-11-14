@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "Comprobando la conexión local. Espera, por favor."
     },
-    "flow_title": "Pasarela local ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

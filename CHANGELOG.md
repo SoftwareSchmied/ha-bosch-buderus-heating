@@ -42,6 +42,10 @@ names the heat generator models and shows texts for more gateway states.
   - Thank you, [wt4km8bkkg-ux](https://github.com/wt4km8bkkg-ux), for
     reporting it in
     [#127](https://github.com/SoftwareSchmied/ha-bosch-buderus-heating/issues/127).
+- **Title of a renewed sign-in:** the title of the integration's dialogs
+  in the list of discovered and pending setups needed the address of a
+  found gateway, so a renewed sign-in could not show it. It now uses the
+  placeholder Home Assistant provides for every flow.
 
 ### Local access
 
@@ -50,7 +54,12 @@ names the heat generator models and shows texts for more gateway states.
   client created each one and when. This helps when a new sign-in fails
   because the token list is full. The list is read only when you open it;
   token values are never part of it, and nothing of it is saved, logged or
-  included in diagnostics.
+  included in diagnostics. The gateway's token list format of firmware
+  15.00.01 is supported: it sends the creation time as a text with a time
+  zone instead of the number the documentation shows. An entry that cannot
+  be read is listed as not readable and never offered for revocation. I
+  found this when I read the list of my own gateway once; the revocation
+  itself is still untested on a real gateway.
 - **Revoking an old token:** from that list, an old token of this
   integration can be revoked, one at a time and only after a confirmation.
   Tokens of other apps are never offered. Right before the revocation the

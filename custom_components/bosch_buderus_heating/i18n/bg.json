@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Реле на газов вентил 2",
     "Compressor starts cooling": "Стартирания на компресора – охлаждане",
     "Holiday slot {} state": "Състояние на ваканционен слот {}",
-    "used by this access": "използва се от този достъп"
+    "used by this access": "използва се от този достъп",
+    "not readable": "не може да се прочете"
   }
 }

@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Relais gasklep 2",
     "Compressor starts cooling": "Compressorstarts koelen",
     "Holiday slot {} state": "Status vakantieslot {}",
-    "used by this access": "gebruikt door deze toegang"
+    "used by this access": "gebruikt door deze toegang",
+    "not readable": "niet leesbaar"
   }
 }

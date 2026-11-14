@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "Проверка на локалната връзка. Моля, изчакайте."
     },
-    "flow_title": "Локален шлюз ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

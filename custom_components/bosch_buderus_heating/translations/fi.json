@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "Tarkistetaan paikallista yhteyttä. Odota."
     },
-    "flow_title": "Paikallinen yhdyskäytävä ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

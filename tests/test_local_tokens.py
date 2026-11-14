@@ -6,6 +6,7 @@ no request ever reaches a real gateway.
 
 import json
 from copy import deepcopy
+from datetime import UTC, datetime
 from urllib.parse import parse_qs
 
 import pytest
@@ -175,10 +176,6 @@ async def test_an_empty_list_is_a_list(auth_gateway):
         b"not json",
         b'{"token_id": "1"}',
         json.dumps([{**OWN}, {**OWN}]).encode(),
-        json.dumps([{**OWN, "created_at": None}]).encode(),
-        json.dumps([{**OWN, "created_at": -1}]).encode(),
-        json.dumps([{**OWN, "created_at": 10**400}]).encode(),
-        json.dumps([{**OWN, "client_name": 7}]).encode(),
         json.dumps([{**OWN, "token_id": ""}]).encode(),
         json.dumps([{**OWN, "token_id": True}]).encode(),
         json.dumps(
@@ -190,10 +187,6 @@ async def test_an_empty_list_is_a_list(auth_gateway):
         "not_json",
         "not_a_list",
         "repeated_id",
-        "no_time",
-        "negative_time",
-        "time_beyond_float",
-        "name_not_text",
         "empty_id",
         "boolean_id",
         "too_many",
@@ -207,6 +200,68 @@ async def test_an_unusable_answer_is_no_list(auth_gateway, body):
     result = await list_gateway_tokens(CONTEXT, TOKEN, binding, is_current=lambda: True)
     assert result.tokens is None
     assert result.problem == AuthProblem.INVALID_RESPONSE
+
+
+# The answer of firmware 15.00.01: one entry, the creation time as text.
+FIRMWARE_15_ENTRY = {
+    "token_type": "Bearer",
+    "token_id": "1",
+    "client_name": CLIENT_NAME,
+    "created_at": "2026-11-13T23:55:12Z",
+}
+
+
+async def test_the_token_list_of_firmware_15_is_read(auth_gateway):
+    assert len(CLIENT_NAME) == 27
+    assert len(FIRMWARE_15_ENTRY["created_at"]) == 20
+    gateway = Gateway()
+    gateway.list_body = json.dumps([FIRMWARE_15_ENTRY]).encode()
+    _, binding = await _start(auth_gateway, gateway)
+    result = await list_gateway_tokens(CONTEXT, TOKEN, binding, is_current=lambda: True)
+    assert result.problem is None
+    (token,) = result.tokens
+    assert token.own and token.readable
+    assert (
+        token.created_at == datetime(2026, 11, 13, 23, 55, 12, tzinfo=UTC).timestamp()
+    )
+
+
+@pytest.mark.parametrize(
+    "created_at",
+    ["2026-11-13T23:55:12+01:00", "2026-11-13T23:55:12.250Z", 1775134322, 1.5],
+)
+def test_creation_times_as_number_or_text_with_a_zone(created_at):
+    (token,) = parse_token_list([{**OWN, "created_at": created_at}])
+    assert token.readable and token.own
+
+
+@pytest.mark.parametrize(
+    "entry",
+    [
+        {**OWN, "created_at": None},
+        {**OWN, "created_at": -1},
+        {**OWN, "created_at": 10**400},
+        {**OWN, "created_at": "2026-11-13T23:55:12"},  # no time zone
+        {**OWN, "created_at": "yesterday"},
+        {**OWN, "created_at": "x" * 41},
+        {**OWN, "client_name": 7},
+    ],
+    ids=[
+        "no_time",
+        "negative_time",
+        "time_beyond_float",
+        "no_zone",
+        "not_a_time",
+        "too_long",
+        "name_not_text",
+    ],
+)
+def test_an_unreadable_entry_is_kept_but_never_offered(entry):
+    tokens = parse_token_list([entry, OLD])
+    assert len(tokens) == 2
+    unreadable = next(t for t in tokens if t.token_id == entry["token_id"])
+    assert not unreadable.readable and not unreadable.own
+    assert next(t for t in tokens if t.token_id == OLD["token_id"]).own
 
 
 def test_a_numeric_token_id_is_kept_as_text():

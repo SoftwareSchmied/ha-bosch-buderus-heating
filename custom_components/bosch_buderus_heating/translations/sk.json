@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "Kontroluje sa lokálne pripojenie. Čakajte, prosím."
     },
-    "flow_title": "Lokálna brána ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

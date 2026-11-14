@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "Kontrollerar den lokala anslutningen. Vänta."
     },
-    "flow_title": "Lokal gateway ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

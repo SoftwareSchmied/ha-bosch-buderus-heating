@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "Ag seiceáil an naisc áitiúil. Fan, le do thoil."
     },
-    "flow_title": "Geata áitiúil ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

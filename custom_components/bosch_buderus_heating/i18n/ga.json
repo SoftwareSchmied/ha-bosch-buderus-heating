@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Athsheachadán comhla gháis 2",
     "Compressor starts cooling": "Tosaithe an chomhbhrúiteora (fuarú)",
     "Holiday slot {} state": "Stádas sliotán saoire {}",
-    "used by this access": "in úsáid ag an rochtain seo"
+    "used by this access": "in úsáid ag an rochtain seo",
+    "not readable": "ní féidir é a léamh"
   }
 }

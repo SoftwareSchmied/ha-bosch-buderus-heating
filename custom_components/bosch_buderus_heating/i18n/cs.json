@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Relé plynového ventilu 2",
     "Compressor starts cooling": "Počet startů kompresoru při chlazení",
     "Holiday slot {} state": "Stav slotu dovolené {}",
-    "used by this access": "používá tento přístup"
+    "used by this access": "používá tento přístup",
+    "not readable": "nečitelné"
   }
 }

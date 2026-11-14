@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Relä gasventil 2",
     "Compressor starts cooling": "Kompressorstarter kyla",
     "Holiday slot {} state": "Status för semesterplats {}",
-    "used by this access": "används av den här åtkomsten"
+    "used by this access": "används av den här åtkomsten",
+    "not readable": "kan inte läsas"
   }
 }

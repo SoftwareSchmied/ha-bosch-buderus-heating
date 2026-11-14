@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Kaasuventtiilin 2 rele",
     "Compressor starts cooling": "Kompressorin käynnistykset jäähdytys",
     "Holiday slot {} state": "Lomapaikan {} tila",
-    "used by this access": "tämän yhteyden käyttämä"
+    "used by this access": "tämän yhteyden käyttämä",
+    "not readable": "ei luettavissa"
   }
 }

@@ -11,6 +11,7 @@ import asyncio
 import math
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import StrEnum
 from types import SimpleNamespace
 from typing import cast
@@ -386,11 +387,47 @@ class GatewayToken:
 
     token_id: str = field(repr=False)
     client_name: str = field(repr=False)
-    created_at: float
+    # None: the entry could not be read; it is listed, never offered.
+    created_at: float | None
+
+    @property
+    def readable(self) -> bool:
+        return self.created_at is not None
 
     @property
     def own(self) -> bool:
-        return self.client_name == CLIENT_NAME
+        """An entry of this integration that may be offered for revocation."""
+        return self.readable and self.client_name == CLIENT_NAME
+
+
+def _creation_time(value: object) -> float | None:
+    """Seconds since 1970 from a number or an ISO 8601 time with a zone.
+
+    The documentation shows a number; firmware 15.00.01 sends a text such as
+    ``2026-11-13T23:55:12Z``. Anything else is no creation time.
+    """
+    if type(value) in (int, float):
+        try:
+            created = float(cast(int | float, value))
+        except OverflowError:
+            # A JSON integer too large for a float is no creation time.
+            return None
+    elif isinstance(value, str):
+        try:
+            moment = datetime.fromisoformat(value)
+        except ValueError:
+            return None
+        if moment.tzinfo is None or moment.utcoffset() is None:
+            return None
+        try:
+            created = moment.timestamp()
+        except OverflowError, OSError, ValueError:
+            return None
+    else:
+        return None
+    if not math.isfinite(created) or created < 0:
+        return None
+    return created
 
 
 def parse_token_list(payload: object) -> tuple[GatewayToken, ...]:
@@ -398,7 +435,9 @@ def parse_token_list(payload: object) -> tuple[GatewayToken, ...]:
 
     Further fields of an entry are ignored and never kept. A missing or
     repeated ID makes the whole answer unusable, so no entry can be confused
-    with another.
+    with another. An entry whose name or creation time cannot be read stays
+    in the list without them: it is counted and shown as not readable, and
+    never offered for revocation.
     """
     if not isinstance(payload, list) or len(payload) > MAX_LISTED_TOKENS:
         raise ValueError("invalid_token_list")
@@ -418,21 +457,12 @@ def parse_token_list(payload: object) -> tuple[GatewayToken, ...]:
         ):
             raise ValueError("invalid_token_list")
         client_name = item.get("client_name")
+        created = _creation_time(item.get("created_at"))
         if (
             not isinstance(client_name, str)
             or len(client_name) > MAX_CLIENT_NAME_LENGTH
         ):
-            raise ValueError("invalid_token_list")
-        created_at = item.get("created_at")
-        if type(created_at) not in (int, float):
-            raise ValueError("invalid_token_list")
-        try:
-            created = float(cast(int | float, created_at))
-        except OverflowError:
-            # A JSON integer too large for a float is no creation time.
-            raise ValueError("invalid_token_list") from None
-        if not math.isfinite(created) or created < 0:
-            raise ValueError("invalid_token_list")
+            client_name, created = "", None
         seen.add(token_id)
         tokens.append(GatewayToken(token_id, client_name, created))
     return tuple(tokens)

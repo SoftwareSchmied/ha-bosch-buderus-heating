@@ -347,7 +347,9 @@ class LocalSetupFlow(ConfigEntryBaseFlow):
             return self.async_abort(reason="already_configured")
         if not track_discovery_flow(self.hass, self.flow_id, self._local_choices):
             return self.async_abort(reason="already_in_progress")
-        self.context["title_placeholders"] = {"host": self._local_choices[0].host}
+        # The one placeholder of the flow title; Home Assistant sets the same
+        # one for a renewed sign-in (the entry title).
+        self.context["title_placeholders"] = {"name": self._local_choices[0].host}
         if not owners:
             self._local_discovery = discovery_info
             return await self.async_step_local_discovered()

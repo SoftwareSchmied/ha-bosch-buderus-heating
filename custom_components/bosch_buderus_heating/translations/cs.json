@@ -232,7 +232,7 @@
     "progress": {
       "local_work": "Kontroluje se místní připojení. Čekejte prosím."
     },
-    "flow_title": "Místní brána ({host})"
+    "flow_title": "{name}"
   },
   "options": {
     "step": {

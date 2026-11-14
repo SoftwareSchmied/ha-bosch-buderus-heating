@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass, field, replace
-from typing import Any
+from typing import Any, cast
 
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import callback
@@ -95,8 +95,10 @@ def _problem_error(problem: AuthProblem | None) -> str:
     return _PROBLEM_ERRORS.get(problem, "local_unexpected")
 
 
-def _created(value: float) -> str:
+def _created(value: float | None) -> str:
     """A creation time in the local time zone of Home Assistant."""
+    if value is None:
+        return "?"
     try:
         moment = dt_util.as_local(dt_util.utc_from_timestamp(value))
     except OverflowError, OSError, ValueError:
@@ -138,11 +140,14 @@ def likely_used_tokens(
     if not created:
         return ()
     candidates = [
-        token for token in own if token.created_at <= verified_at + USED_TOKEN_TOLERANCE
+        token
+        for token in own
+        if token.created_at is not None
+        and token.created_at <= verified_at + USED_TOKEN_TOLERANCE
     ]
     if not candidates:
         return ()
-    newest = max(token.created_at for token in candidates)
+    newest = max(cast(float, token.created_at) for token in candidates)
     return tuple(token for token in candidates if token.created_at == newest)
 
 
@@ -399,12 +404,13 @@ class LocalTokenFlow(ConnectionOptionsFlow):
         access = self._token_access
         own = sorted(
             (token for token in tokens or () if token.own),
-            key=lambda token: token.created_at,
+            key=lambda token: token.created_at or 0.0,
         )
         others = sorted(
             (token for token in tokens or () if not token.own),
-            key=lambda token: token.created_at,
+            key=lambda token: (not token.readable, token.created_at or 0.0),
         )
+        unreadable = localize(self.hass.config.language, "nicht lesbar", "not readable")
         if self._token_removal and not own:
             # Nothing of this integration can be revoked, or the list could
             # not be read: the access is removed only after an explicit
@@ -454,6 +460,8 @@ class LocalTokenFlow(ConnectionOptionsFlow):
                 "others": _lines(
                     f"{markdown_literal(token.client_name) or '?'}: "
                     f"{_created(token.created_at)}"
+                    if token.readable
+                    else unreadable
                     for token in others
                 ),
                 "confirmed": _created(access.verified_at) if access else "?",

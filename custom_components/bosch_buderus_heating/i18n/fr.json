@@ -607,6 +607,7 @@
     "Gas valve 2 relay": "Relais de la vanne gaz 2",
     "Compressor starts cooling": "Démarrages du compresseur en rafraîchissement",
     "Holiday slot {} state": "État de l'emplacement de vacances {}",
-    "used by this access": "utilisé par cet accès"
+    "used by this access": "utilisé par cet accès",
+    "not readable": "illisible"
   }
 }
