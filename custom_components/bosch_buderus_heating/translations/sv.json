@@ -1962,11 +1962,11 @@
           "none": "Inget",
           "ch": "Värme",
           "dhw": "Varmvatten",
-          "frost": "Frostskydd",
+          "frost": "Frostområde",
           "ch_dhw": "Värme och varmvatten",
-          "ch_frost": "Värme och frostskydd",
-          "dhw_frost": "Varmvatten och frostskydd",
-          "ch_dhw_frost": "Värme, varmvatten och frostskydd"
+          "ch_frost": "Värme och frostområde",
+          "dhw_frost": "Varmvatten och frostområde",
+          "ch_dhw_frost": "Värme, varmvatten och frostområde"
         }
       },
       "compressor_status": {
@@ -2160,6 +2160,9 @@
       "heat_generator": {
         "name": "Värmekälla"
       },
+      "outdoor_unit_software_version": {
+        "name": "Utomhusdelens programvaruversion"
+      },
       "pointt_api_requests_total": {
         "name": "Förfrågningar till molnet totalt"
       },
@@ -2341,6 +2344,17 @@
           "startup_inprogress": "Pågår"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Semesterläge varmvatten",
+        "state": {
+          "none": "Inget",
+          "auto_sat": "Automatiskt (AUTO_SAT)",
+          "off": "Av",
+          "on_eco": "På – eco",
+          "on_low": "På – låg",
+          "on_high": "På – hög"
+        }
+      },
       "signal_true_false": {
         "name": "Status",
         "state": {
@@ -2354,6 +2368,12 @@
             "name": "Mätområde",
             "state": {
               "below": "Under mätområdet"
+            }
+          },
+          "reported_state": {
+            "name": "Rapporterat tillstånd",
+            "state": {
+              "low_flow": "Flödet för lågt för att mätas"
             }
           }
         }
@@ -2445,6 +2465,147 @@
       },
       "rrc_update_state": {
         "name": "Status för firmwareuppdatering"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Rumstemperatur"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Aktivt värmebörvärde"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Manuellt värmebörvärde"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Tillfälligt värmebörvärde"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Värmedriftläge"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Valt värmeprogram"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Ställ in rumstemperatur"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Ställ in aktivt värmebörvärde"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Ställ in manuellt värmebörvärde"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Ställ in tillfälligt värmebörvärde"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Ställ in värmedriftläge"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Ställ in valt värmeprogram"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Värmepump: el till värme (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Värmepump: el till varmvatten (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Värmepump: el till kyla (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Panna: el till värme (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Panna: el till varmvatten (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Elpatron: el till värme (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Elpatron: el till varmvatten (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Producerad solel (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Värmepump: värme till värme (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Värmepump: värme till varmvatten (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Värmepump: kyleenergi (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Panna: värme till värme (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Panna: värme till varmvatten (kWh, ej bekräftat)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Gas: till värme (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Gas: till varmvatten (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Utomhustemperatur, dygnsmedel (ej bekräftat)"
+      },
+      "name_part_low_salt": {
+        "name": "Lågt saltinnehåll"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Typ av varmvattenenhet"
+      },
+      "name_part_mode_heating": {
+        "name": "Värme"
+      },
+      "name_part_mode_cooling": {
+        "name": "Kyla"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Tillfälligt börvärde"
+      },
+      "name_part_heating_temperature": {
+        "name": "Värmetemperatur"
+      },
+      "name_part_setback_temperature": {
+        "name": "Sänkningstemperatur"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Starttröskel Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Starttröskel Komfort"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Starttröskel Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Börvärde nivå Av"
+      },
+      "name_part_schedule_name": {
+        "name": "Namn på tidsprogram {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Programuppdatering"
+      },
+      "name_part_heat_source_type": {
+        "name": "Typ av värmekälla"
+      },
+      "name_part_consumption_total": {
+        "name": "Totalt"
+      },
+      "name_part_consumption_heating": {
+        "name": "Värme"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Varmvatten"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Kyla"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Producerad kylenergi"
       }
     },
     "binary_sensor": {
@@ -2526,6 +2687,12 @@
       },
       "rrc_refill_needed": {
         "name": "Påfyllning behövs"
+      },
+      "primary_flow_below_range": {
+        "name": "Primärflöde under mätområdet"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Flöde värmekrets 1 under mätområdet (PC1)"
       }
     },
     "calendar": {

@@ -35,6 +35,7 @@ from .faults import (
     fault_summary,
     no_active_faults_label,
 )
+from .flow_range import track_flow_range_sensors
 from .holidays import (
     HolidayState,
     is_holiday_resource_path,
@@ -111,6 +112,7 @@ def _setup_entities(
         track_status(entry, account, async_add_entities)
     for coordinator in entry.coordinators:
         _track_binary_sensors(entry, coordinator, async_add_entities)
+        track_flow_range_sensors(entry, coordinator, async_add_entities)
         track_radio_devices(
             entry, coordinator, async_add_entities, RadioBatteryLowBinarySensor
         )

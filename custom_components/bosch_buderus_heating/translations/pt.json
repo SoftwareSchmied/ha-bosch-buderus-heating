@@ -1962,11 +1962,11 @@
           "none": "Nenhuma",
           "ch": "Aquecimento",
           "dhw": "Água quente",
-          "frost": "Proteção contra o gelo",
+          "frost": "Faixa de gelo",
           "ch_dhw": "Aquecimento e água quente",
-          "ch_frost": "Aquecimento e proteção contra o gelo",
-          "dhw_frost": "Água quente e proteção contra o gelo",
-          "ch_dhw_frost": "Aquecimento, água quente e proteção contra o gelo"
+          "ch_frost": "Aquecimento e faixa de gelo",
+          "dhw_frost": "Água quente e faixa de gelo",
+          "ch_dhw_frost": "Aquecimento, água quente e faixa de gelo"
         }
       },
       "compressor_status": {
@@ -2160,6 +2160,9 @@
       "heat_generator": {
         "name": "Gerador de calor"
       },
+      "outdoor_unit_software_version": {
+        "name": "Versão de software da unidade exterior"
+      },
       "pointt_api_requests_total": {
         "name": "Total de pedidos à cloud"
       },
@@ -2341,6 +2344,17 @@
           "startup_inprogress": "Em curso"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Modo de férias da água quente",
+        "state": {
+          "none": "Nenhum",
+          "auto_sat": "Automático (AUTO_SAT)",
+          "off": "Desligado",
+          "on_eco": "Ligado – eco",
+          "on_low": "Ligado – baixo",
+          "on_high": "Ligado – alto"
+        }
+      },
       "signal_true_false": {
         "name": "Estado",
         "state": {
@@ -2354,6 +2368,12 @@
             "name": "Intervalo de medição",
             "state": {
               "below": "Abaixo do intervalo de medição"
+            }
+          },
+          "reported_state": {
+            "name": "Estado comunicado",
+            "state": {
+              "low_flow": "Caudal demasiado baixo para ser medido"
             }
           }
         }
@@ -2445,6 +2465,147 @@
       },
       "rrc_update_state": {
         "name": "Estado da atualização do firmware"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Temperatura ambiente"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Valor de referência de aquecimento ativo"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Valor de referência de aquecimento manual"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Valor de referência de aquecimento temporário"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Modo de aquecimento"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Programa horário de aquecimento selecionado"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Definir temperatura ambiente"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Definir valor de referência de aquecimento ativo"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Definir valor de referência de aquecimento manual"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Definir valor de referência de aquecimento temporário"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Definir modo de aquecimento"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Definir programa horário de aquecimento selecionado"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Eletricidade bomba de calor, aquecimento (kWh, não confirmado)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Eletricidade bomba de calor, água quente (kWh, não confirmado)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Eletricidade bomba de calor, arrefecimento (kWh, não confirmado)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Eletricidade caldeira, aquecimento (kWh, não confirmado)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Eletricidade caldeira, água quente (kWh, não confirmado)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Resistência elétrica, aquecimento (kWh, não confirmado)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Resistência elétrica, água quente (kWh, não confirmado)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Eletricidade solar produzida (kWh, não confirmado)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Calor bomba de calor, aquecimento (kWh, não confirmado)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Calor bomba de calor, água quente (kWh, não confirmado)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Energia de arrefecimento bomba de calor (kWh, não confirmado)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Calor caldeira, aquecimento (kWh, não confirmado)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Calor caldeira, água quente (kWh, não confirmado)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Gás, aquecimento (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Gás, água quente (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Temperatura exterior, média diária (não confirmada)"
+      },
+      "name_part_low_salt": {
+        "name": "Sal baixo"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Tipo de equipamento de água quente"
+      },
+      "name_part_mode_heating": {
+        "name": "Aquecimento"
+      },
+      "name_part_mode_cooling": {
+        "name": "Arrefecimento"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Valor de referência temporário"
+      },
+      "name_part_heating_temperature": {
+        "name": "Temperatura de aquecimento"
+      },
+      "name_part_setback_temperature": {
+        "name": "Temperatura reduzida"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Limiar de arranque Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Limiar de arranque Conforto"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Limiar de arranque Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Valor de referência do nível Desligado"
+      },
+      "name_part_schedule_name": {
+        "name": "Nome do programa horário {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Atualização de software"
+      },
+      "name_part_heat_source_type": {
+        "name": "Tipo de fonte de calor"
+      },
+      "name_part_consumption_total": {
+        "name": "Total"
+      },
+      "name_part_consumption_heating": {
+        "name": "Aquecimento"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Água quente"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Arrefecimento"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Energia de arrefecimento produzida"
       }
     },
     "binary_sensor": {
@@ -2526,6 +2687,12 @@
       },
       "rrc_refill_needed": {
         "name": "Reposição necessária"
+      },
+      "primary_flow_below_range": {
+        "name": "Caudal primário abaixo do intervalo de medição"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Caudal do circuito de aquecimento 1 abaixo do intervalo de medição (PC1)"
       }
     },
     "calendar": {

@@ -77,118 +77,30 @@ class EnergyKey:
     wire: str
     slug: str
     kind: Kind
-    names: tuple[str, str]
 
-
-_KWH = ("(kWh erwartet)", "(kWh expected)")
-
-
-def _energy(wire: str, slug: str, german: str, english: str) -> EnergyKey:
-    return EnergyKey(
-        wire, slug, "energy", (f"{german} {_KWH[0]}", f"{english} {_KWH[1]}")
-    )
+    @property
+    def name_key(self) -> str:
+        """The translation key of the statistic's name (``name_translations``)."""
+        return f"name_part_energy_history_{self.slug}"
 
 
 KEYS: Final[tuple[EnergyKey, ...]] = (
-    _energy(
-        "eCh",
-        "heat_pump_electricity_heating",
-        "Wärmepumpe Strom Heizen",
-        "Heat pump electricity heating",
-    ),
-    _energy(
-        "eHw",
-        "heat_pump_electricity_hot_water",
-        "Wärmepumpe Strom Warmwasser",
-        "Heat pump electricity hot water",
-    ),
-    _energy(
-        "eCo",
-        "heat_pump_electricity_cooling",
-        "Wärmepumpe Strom Kühlen",
-        "Heat pump electricity cooling",
-    ),
-    _energy(
-        "eChB",
-        "boiler_electricity_heating",
-        "Heizgerät Strom Heizen",
-        "Boiler electricity heating",
-    ),
-    _energy(
-        "eHwB",
-        "boiler_electricity_hot_water",
-        "Heizgerät Strom Warmwasser",
-        "Boiler electricity hot water",
-    ),
-    _energy(
-        "aCh",
-        "electric_heater_heating",
-        "Elektroheizstab Heizen",
-        "Electric heater heating",
-    ),
-    _energy(
-        "aHw",
-        "electric_heater_hot_water",
-        "Elektroheizstab Warmwasser",
-        "Electric heater hot water",
-    ),
-    _energy(
-        "pS",
-        "solar_electricity_produced",
-        "Solarstrom erzeugt",
-        "Solar electricity produced",
-    ),
-    _energy(
-        "pChH",
-        "heat_pump_heat_heating",
-        "Wärmepumpe Wärme Heizen",
-        "Heat pump heat heating",
-    ),
-    _energy(
-        "pHwH",
-        "heat_pump_heat_hot_water",
-        "Wärmepumpe Wärme Warmwasser",
-        "Heat pump heat hot water",
-    ),
-    _energy(
-        "pCo",
-        "heat_pump_cooling_produced",
-        "Wärmepumpe Kühlenergie",
-        "Heat pump cooling energy",
-    ),
-    _energy(
-        "pChB",
-        "boiler_heat_heating",
-        "Heizgerät Wärme Heizen",
-        "Boiler heat heating",
-    ),
-    _energy(
-        "pHwB",
-        "boiler_heat_hot_water",
-        "Heizgerät Wärme Warmwasser",
-        "Boiler heat hot water",
-    ),
-    EnergyKey(
-        "gCh",
-        "gas_heating",
-        "gas",
-        ("Gas Heizen (kWh)", "Gas heating (kWh)"),
-    ),
-    EnergyKey(
-        "gHw",
-        "gas_hot_water",
-        "gas",
-        ("Gas Warmwasser (kWh)", "Gas hot water (kWh)"),
-    ),
-    EnergyKey(
-        "T",
-        "outdoor_temperature",
-        "temperature",
-        (
-            "Außentemperatur Tagesmittel (erwartet)",
-            "Outdoor temperature daily mean (expected)",
-        ),
-    ),
+    EnergyKey("eCh", "heat_pump_electricity_heating", "energy"),
+    EnergyKey("eHw", "heat_pump_electricity_hot_water", "energy"),
+    EnergyKey("eCo", "heat_pump_electricity_cooling", "energy"),
+    EnergyKey("eChB", "boiler_electricity_heating", "energy"),
+    EnergyKey("eHwB", "boiler_electricity_hot_water", "energy"),
+    EnergyKey("aCh", "electric_heater_heating", "energy"),
+    EnergyKey("aHw", "electric_heater_hot_water", "energy"),
+    EnergyKey("pS", "solar_electricity_produced", "energy"),
+    EnergyKey("pChH", "heat_pump_heat_heating", "energy"),
+    EnergyKey("pHwH", "heat_pump_heat_hot_water", "energy"),
+    EnergyKey("pCo", "heat_pump_cooling_produced", "energy"),
+    EnergyKey("pChB", "boiler_heat_heating", "energy"),
+    EnergyKey("pHwB", "boiler_heat_hot_water", "energy"),
+    EnergyKey("gCh", "gas_heating", "gas"),
+    EnergyKey("gHw", "gas_hot_water", "gas"),
+    EnergyKey("T", "outdoor_temperature", "temperature"),
 )
 KEY_BY_SLUG: Final = {key.slug: key for key in KEYS}
 # An older key -> the key it stands for on an electric plant and on any
@@ -198,11 +110,6 @@ LEGACY_KEYS: Final[Mapping[str, tuple[str, str]]] = {
     "eHW": ("eHw", "gHw"),
 }
 _ELECTRIC_SOURCES: Final = frozenset({"heatpump", "hybrid", "hybridgas", "hybridoil"})
-
-
-def statistic_names() -> tuple[tuple[str, str], ...]:
-    """Every (German, English) statistic name, for the translation checks."""
-    return tuple(key.names for key in KEYS)
 
 
 def legacy_meaning(heat_source_type: object) -> Legacy:

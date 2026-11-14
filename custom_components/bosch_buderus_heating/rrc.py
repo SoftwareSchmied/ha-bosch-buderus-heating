@@ -12,7 +12,7 @@ from types import MappingProxyType
 from typing import Final, Literal
 
 from . import rrc_contract_absence, rrc_contract_zone, rrc_contracts
-from .i18n import localize
+from .name_translations import name_part
 from .pointt import Resource
 from .pointt.models import JsonScalar
 from .rrc_contract_base import RRC_ID as RRC_ID
@@ -568,33 +568,17 @@ def _printable_name(value: str) -> bool:
     return 1 <= len(value) <= 64 and value.isprintable()
 
 
-# German and English names of the zone leaves; other languages translate the
-# English text in their i18n data file.
-_LABELS: Final[Mapping[str, tuple[str, str]]] = MappingProxyType(
-    {
-        "temperatureActual": ("Raumtemperatur", "Room temperature"),
-        "temperatureHeatingSetpoint": (
-            "Aktiver Heizsollwert",
-            "Active heating setpoint",
-        ),
-        "manualTemperatureHeating": (
-            "Manueller Heizsollwert",
-            "Manual heating setpoint",
-        ),
-        "clockOverride/temperatureHeating": (
-            "Vorübergehender Heizsollwert",
-            "Temporary heating setpoint",
-        ),
-        "userMode": ("Heizungsbetriebsart", "Heating mode"),
-        "clockProgram": ("Gewähltes Zeitprogramm", "Selected heating schedule"),
-    }
-)
-# The names of the controls, as whole texts so that a translation need not
+# The names of the zone leaves and of their controls, as translation keys
+# (``name_translations``): whole texts, so that a translation need not
 # follow the German or English word order.
-_CONTROL_LABELS: Final[Mapping[str, tuple[str, str]]] = MappingProxyType(
+_LABELS: Final[Mapping[str, str]] = MappingProxyType(
     {
-        field: (f"{german} einstellen", f"Set {english.lower()}")
-        for field, (german, english) in _LABELS.items()
+        "temperatureActual": "room_temperature",
+        "temperatureHeatingSetpoint": "active_heating_setpoint",
+        "manualTemperatureHeating": "manual_heating_setpoint",
+        "clockOverride/temperatureHeating": "temporary_heating_setpoint",
+        "userMode": "heating_mode",
+        "clockProgram": "selected_heating_schedule",
     }
 )
 
@@ -604,4 +588,5 @@ def name(path: str, language: str, *, control: bool = False) -> str | None:
     if field is None or field not in _LABELS:
         # The zone details are named by their own entities (W1).
         return None
-    return localize(language, *(_CONTROL_LABELS if control else _LABELS)[field])
+    prefix = "name_part_rrc_set_" if control else "name_part_rrc_"
+    return name_part(language, prefix + _LABELS[field])

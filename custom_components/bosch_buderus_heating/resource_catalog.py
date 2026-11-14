@@ -15,6 +15,7 @@ from . import rrc, rrc_contracts
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .i18n import localize
 from .legacy_holidays import is_legacy_holiday_path
+from .name_translations import name_part
 from .pointt import Resource
 from .poll_group import PollGroup as PollGroup
 from .read_contracts import assess_runtime, is_monitor_collection, is_runtime_path
@@ -1638,19 +1639,19 @@ def resource_name(
         return label
     if (softener := softener_capability(path)) is not None:
         if subkey == "low_salt":
-            return localize(language, "Salzvorrat niedrig", "Low salt")
+            return name_part(language, "name_part_low_salt")
         return localize(language, softener.name_de, softener.name_en)
     if is_additional_app_scalar(path):
         if path.endswith("/dhwType"):
-            return localize(language, "Warmwasser-Gerätetyp", "Hot-water device type")
+            return name_part(language, "name_part_hot_water_device_type")
         mode = (
-            localize(language, "Heizen", "Heating")
+            name_part(language, "name_part_mode_heating")
             if "/heating/" in path
-            else localize(language, "Kühlen", "Cooling")
+            else name_part(language, "name_part_mode_cooling")
         )
         key = path.rsplit("/", 1)[-1]
         label = (
-            localize(language, "Vorübergehender Sollwert", "Temporary setpoint")
+            name_part(language, "name_part_temporary_setpoint")
             if key == "temporaryRoomSetpoint"
             else _name(language, _GERMAN_NAMES, _ENGLISH_NAMES, key)
         )
@@ -1661,51 +1662,45 @@ def resource_name(
         base = localize(language, *app_names)
     elif "/heatingCircuits/" in path and "/temperatureLevels/" in path:
         temperature_names = {
-            "comfort2": localize(language, "Heiztemperatur", "Heating temperature"),
-            "eco": localize(language, "Absenktemperatur", "Setback temperature"),
+            "comfort2": name_part(language, "name_part_heating_temperature"),
+            "eco": name_part(language, "name_part_setback_temperature"),
         }
         base = temperature_names.get(tail, _humanize(tail))
     elif "/dhwCircuits/" in path and "/temperatureLevels/" in path:
         temperature_names = {
-            "eco": localize(language, "Startschwelle Eco+", "Start threshold Eco+"),
-            "high": localize(
-                language, "Startschwelle Komfort", "Start threshold Comfort"
-            ),
-            "low": localize(language, "Startschwelle Eco", "Start threshold Eco"),
-            "off": localize(language, "Sollwert Stufe Aus", "Setpoint level off"),
+            "eco": name_part(language, "name_part_start_threshold_eco_plus"),
+            "high": name_part(language, "name_part_start_threshold_comfort"),
+            "low": name_part(language, "name_part_start_threshold_eco"),
+            "off": name_part(language, "name_part_setpoint_level_off"),
         }
         base = temperature_names.get(tail, _humanize(tail))
     elif _PROGRAM_NAME.fullmatch(tail):
         suffix = tail.removeprefix("name")
-        base = localize(
-            language, "Name des Zeitprogramms {suffix}", "Schedule {suffix} name"
-        ).format(suffix=suffix)
+        base = name_part(language, "name_part_schedule_name", suffix=suffix)
     elif path == "/gateway/update/status":
-        base = localize(language, "Softwareupdate", "Software update")
+        base = name_part(language, "name_part_software_update")
     elif path in _ENGLISH_PATH_NAMES:
         base = _name(language, _GERMAN_PATH_NAMES, _ENGLISH_PATH_NAMES, path)
     elif _HEAT_SOURCE_TYPE.fullmatch(path):
         # The kind of heat source, told apart from the system type.
-        base = localize(language, "Typ des Wärmeerzeugers", "Heat source type")
+        base = name_part(language, "name_part_heat_source_type")
     elif tail in _ENGLISH_NAMES:
         base = _name(language, _GERMAN_NAMES, _ENGLISH_NAMES, tail)
     else:
         base = _humanize(tail)
     if "/emon/" in path:
         energy_domains = {
-            "totalConsumption": localize(language, "Gesamt", "Total"),
-            "chConsumption": localize(language, "Heizung", "Heating"),
-            "dhwConsumption": localize(language, "Warmwasser", "Hot water"),
-            "coolingConsumption": localize(language, "Kühlung", "Cooling"),
+            "totalConsumption": name_part(language, "name_part_consumption_total"),
+            "chConsumption": name_part(language, "name_part_consumption_heating"),
+            "dhwConsumption": name_part(language, "name_part_consumption_hot_water"),
+            "coolingConsumption": name_part(language, "name_part_consumption_cooling"),
         }
         domain = energy_domains.get(tail, base)
         if subkey is None:
             return domain
         subname = _subkey_name(language, subkey)
         if subkey == "outputProduced" and tail == "coolingConsumption":
-            subname = localize(
-                language, "Erzeugte Kühlenergie", "Cooling energy produced"
-            )
+            subname = name_part(language, "name_part_cooling_energy_produced")
         return f"{domain} \N{EN DASH} {subname}"
     if subkey is None:
         return base

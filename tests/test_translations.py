@@ -16,6 +16,7 @@ from custom_components.bosch_buderus_heating import (
     faults,
     i18n,
     local_only,
+    name_translations,
     notifications,
     resource_catalog,
     rrc,
@@ -115,8 +116,6 @@ def code_texts() -> dict[str, str]:
         pairs.extend((german[key], english[key]) for key in english)
     pairs.extend(catalog._APP_PATH_NAMES.values())
     pairs.extend(control_presentation._LABELS.values())
-    pairs.extend(rrc._LABELS.values())
-    pairs.extend(rrc._CONTROL_LABELS.values())
     pairs.extend(rrc_devices.TYPE_LABELS.values())
     pairs.extend(rrc_contracts.texts())
     pairs.append(rrc_devices.UNKNOWN_TYPE_LABEL)
@@ -508,8 +507,12 @@ def test_rrc_zone_names_in_every_language(field: str) -> None:
         }
         assert names["de"] == names["DE-ch"] == german
         assert names["en"] == names["en-GB"] == names["eo"] == english
+        # 0.9.2: whole texts from the translation files.
+        parts = name_translations.NAMES
+        key = next(key for key, text in parts["en"].items() if text == english)
+        assert parts["de"][key] == german
         for language in i18n.CATALOGS:
-            assert names[language] == i18n.CATALOGS[language][english]
+            assert names[language] == parts[language][key]
             assert names[language] not in {german, english}, language
     assert rrc.name("/zones/znx/userMode", "sv") is None
     assert rrc.name("/zones/zn2/unknown", "sv", control=True) is None

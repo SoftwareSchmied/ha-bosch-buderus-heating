@@ -22,7 +22,6 @@ from typing import Final
 
 from .poll_group import PollGroup
 from .rrc_contract_base import RrcContract
-from .rrc_energy import statistic_names
 
 APPLIANCE: Final = "/system/appliance"
 DISPLAY_CODE: Final = f"{APPLIANCE}/displayCode"
@@ -73,5 +72,4 @@ CONTRACT = RrcContract(
         }
     ),
     read_only_mirrors=OWN_ENTITY_PATHS,
-    texts=statistic_names(),
 )

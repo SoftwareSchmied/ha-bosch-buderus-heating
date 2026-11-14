@@ -76,9 +76,12 @@ def test_every_hybrid_signal_is_disabled_and_named() -> None:
         assert definition_for(path) is definition
         german, english = (entity_name(definition, path, lang) for lang in ("de", "en"))
         assert german and english and "HYBMAN" not in german + english
-    # Other signals stay generic.
-    assert (
-        definition_for("/signals/SRC.CUHP.HP1.HighestPermittedAirTemp").key == "signal"
+    # The signals of the same names outside a hybrid manager are others.
+    assert definition_for("/signals/SRC.CUHP.HP1.HighestPermittedTemp").key == (
+        "permitted_limit_signal"
+    )
+    assert definition_for("/signals/SRC.CUHP.HP1.HighestPermittedAirTemp").key == (
+        "outdoor_above_permitted_range_signal"
     )
 
 

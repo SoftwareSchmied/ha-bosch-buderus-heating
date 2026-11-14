@@ -297,6 +297,7 @@ def _languages() -> dict[str, dict]:
 NAMED_KEYS = {
     "GWEEBUS.Status": ("eebus_status_signal",),
     "GWEEBUS.CommissioningStatus": ("eebus_commissioning_signal",),
+    "SRC.CUHP.StartUpCheck": ("startup_check_signal",),
 }
 
 

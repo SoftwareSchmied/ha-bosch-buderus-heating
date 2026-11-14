@@ -1962,11 +1962,11 @@
           "none": "Ceann ar bith",
           "ch": "Téamh",
           "dhw": "Uisce te",
-          "frost": "Cosaint ar sioc",
+          "frost": "Raon seaca",
           "ch_dhw": "Téamh agus uisce te",
-          "ch_frost": "Téamh agus cosaint ar sioc",
-          "dhw_frost": "Uisce te agus cosaint ar sioc",
-          "ch_dhw_frost": "Téamh, uisce te agus cosaint ar sioc"
+          "ch_frost": "Téamh agus raon seaca",
+          "dhw_frost": "Uisce te agus raon seaca",
+          "ch_dhw_frost": "Téamh, uisce te agus raon seaca"
         }
       },
       "compressor_status": {
@@ -2160,6 +2160,9 @@
       "heat_generator": {
         "name": "Foinse teasa"
       },
+      "outdoor_unit_software_version": {
+        "name": "Leagan bogearraí an aonaid lasmuigh"
+      },
       "pointt_api_requests_total": {
         "name": "Iarratais chuig an néal san iomlán"
       },
@@ -2341,6 +2344,17 @@
           "startup_inprogress": "Ar siúl"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Mód saoire an uisce te",
+        "state": {
+          "none": "Ceann ar bith",
+          "auto_sat": "Uathoibríoch (AUTO_SAT)",
+          "off": "As",
+          "on_eco": "Ar siúl – eco",
+          "on_low": "Ar siúl – íseal",
+          "on_high": "Ar siúl – ard"
+        }
+      },
       "signal_true_false": {
         "name": "Stádas",
         "state": {
@@ -2354,6 +2368,12 @@
             "name": "Raon tomhais",
             "state": {
               "below": "Faoi bhun an raoin tomhais"
+            }
+          },
+          "reported_state": {
+            "name": "Staid tuairiscithe",
+            "state": {
+              "low_flow": "Sreabhadh ró-íseal le tomhas"
             }
           }
         }
@@ -2445,6 +2465,147 @@
       },
       "rrc_update_state": {
         "name": "Stádas nuashonraithe dochtearraí"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Teocht an tseomra"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Socphointe téimh gníomhach"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Socphointe téimh láimhe"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Socphointe téimh sealadach"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Mód téimh"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Sceideal téimh roghnaithe"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Socraigh teocht an tseomra"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Socraigh socphointe téimh gníomhach"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Socraigh socphointe téimh láimhe"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Socraigh socphointe téimh sealadach"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Socraigh mód téimh"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Socraigh an sceideal téimh roghnaithe"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Leictreachas an chaidéil teasa – téamh (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Leictreachas an chaidéil teasa – uisce te (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Leictreachas an chaidéil teasa – fuarú (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Leictreachas an choire – téamh (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Leictreachas an choire – uisce te (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Téitheoir leictreach – téamh (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Téitheoir leictreach – uisce te (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Leictreachas gréine a ghintear (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Teas an chaidéil teasa – téamh (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Teas an chaidéil teasa – uisce te (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Fuinneamh fuaraithe an chaidéil teasa (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Teas an choire – téamh (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Teas an choire – uisce te (kWh, gan deimhniú)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Gás – téamh (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Gás – uisce te (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Meán laethúil na teochta lasmuigh (gan deimhniú)"
+      },
+      "name_part_low_salt": {
+        "name": "Salann íseal"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Cineál gléis an uisce te"
+      },
+      "name_part_mode_heating": {
+        "name": "Téamh"
+      },
+      "name_part_mode_cooling": {
+        "name": "Fuarú"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Socphointe sealadach"
+      },
+      "name_part_heating_temperature": {
+        "name": "Teocht téimh"
+      },
+      "name_part_setback_temperature": {
+        "name": "Teocht laghdaithe"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Tairseach tosaithe Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Tairseach tosaithe Compord"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Tairseach tosaithe Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Socphointe leibhéal As"
+      },
+      "name_part_schedule_name": {
+        "name": "Ainm sceidil {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Nuashonrú bogearraí"
+      },
+      "name_part_heat_source_type": {
+        "name": "Cineál na foinse teasa"
+      },
+      "name_part_consumption_total": {
+        "name": "Iomlán"
+      },
+      "name_part_consumption_heating": {
+        "name": "Téamh"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Uisce te"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Fuarú"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Fuinneamh fuaraithe a ghintear"
       }
     },
     "binary_sensor": {
@@ -2526,6 +2687,12 @@
       },
       "rrc_refill_needed": {
         "name": "Athlíonadh de dhíth"
+      },
+      "primary_flow_below_range": {
+        "name": "Príomhshreabhadh faoi bhun an raoin tomhais"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Sreabhadh an chiorcaid téimh 1 faoi bhun an raoin tomhais (PC1)"
       }
     },
     "calendar": {

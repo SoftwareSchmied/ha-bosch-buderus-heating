@@ -1962,11 +1962,11 @@
           "none": "Geen",
           "ch": "Verwarmen",
           "dhw": "Warm water",
-          "frost": "Vorstbeveiliging",
+          "frost": "Vorstbereik",
           "ch_dhw": "Verwarmen en warm water",
-          "ch_frost": "Verwarmen en vorstbeveiliging",
-          "dhw_frost": "Warm water en vorstbeveiliging",
-          "ch_dhw_frost": "Verwarmen, warm water en vorstbeveiliging"
+          "ch_frost": "Verwarmen en vorstbereik",
+          "dhw_frost": "Warm water en vorstbereik",
+          "ch_dhw_frost": "Verwarmen, warm water en vorstbereik"
         }
       },
       "compressor_status": {
@@ -2160,6 +2160,9 @@
       "heat_generator": {
         "name": "Warmteopwekker"
       },
+      "outdoor_unit_software_version": {
+        "name": "Softwareversie buitenunit"
+      },
       "pointt_api_requests_total": {
         "name": "Cloudverzoeken totaal"
       },
@@ -2341,6 +2344,17 @@
           "startup_inprogress": "Bezig"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Vakantiemodus warm water",
+        "state": {
+          "none": "Geen",
+          "auto_sat": "Automatisch (AUTO_SAT)",
+          "off": "Uit",
+          "on_eco": "Aan – eco",
+          "on_low": "Aan – laag",
+          "on_high": "Aan – hoog"
+        }
+      },
       "signal_true_false": {
         "name": "Status",
         "state": {
@@ -2354,6 +2368,12 @@
             "name": "Meetbereik",
             "state": {
               "below": "Onder het meetbereik"
+            }
+          },
+          "reported_state": {
+            "name": "Gemelde status",
+            "state": {
+              "low_flow": "Debiet te laag om te meten"
             }
           }
         }
@@ -2445,6 +2465,147 @@
       },
       "rrc_update_state": {
         "name": "Status firmware-update"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Kamertemperatuur"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Actieve instelwaarde verwarmen"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Handmatige instelwaarde verwarmen"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Tijdelijke instelwaarde verwarmen"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Verwarmingsmodus"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Geselecteerd verwarmingstijdprogramma"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Kamertemperatuur instellen"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Actieve instelwaarde verwarmen instellen"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Handmatige instelwaarde verwarmen instellen"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Tijdelijke instelwaarde verwarmen instellen"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Verwarmingsmodus instellen"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Geselecteerd verwarmingstijdprogramma instellen"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Warmtepomp: stroom voor verwarmen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Warmtepomp: stroom voor warm water (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Warmtepomp: stroom voor koelen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Ketel: stroom voor verwarmen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Ketel: stroom voor warm water (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Elektrische verwarmer: stroom voor verwarmen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Elektrische verwarmer: stroom voor warm water (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Opgewekte zonnestroom (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Warmtepomp: warmte voor verwarmen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Warmtepomp: warmte voor warm water (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Warmtepomp: koelenergie (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Ketel: warmte voor verwarmen (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Ketel: warmte voor warm water (kWh, onbevestigd)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Gas: voor verwarmen (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Gas: voor warm water (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Buitentemperatuur, daggemiddelde (onbevestigd)"
+      },
+      "name_part_low_salt": {
+        "name": "Weinig zout"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Type warmwaterapparaat"
+      },
+      "name_part_mode_heating": {
+        "name": "Verwarmen"
+      },
+      "name_part_mode_cooling": {
+        "name": "Koelen"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Tijdelijke instelwaarde"
+      },
+      "name_part_heating_temperature": {
+        "name": "Verwarmingstemperatuur"
+      },
+      "name_part_setback_temperature": {
+        "name": "Verlaagde temperatuur"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Startdrempel Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Startdrempel Comfort"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Startdrempel Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Instelwaarde niveau Uit"
+      },
+      "name_part_schedule_name": {
+        "name": "Naam tijdprogramma {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Software-update"
+      },
+      "name_part_heat_source_type": {
+        "name": "Type warmtebron"
+      },
+      "name_part_consumption_total": {
+        "name": "Totaal"
+      },
+      "name_part_consumption_heating": {
+        "name": "Verwarmen"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Warm water"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Koelen"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Opgewekte koelenergie"
       }
     },
     "binary_sensor": {
@@ -2526,6 +2687,12 @@
       },
       "rrc_refill_needed": {
         "name": "Bijvullen nodig"
+      },
+      "primary_flow_below_range": {
+        "name": "Primair debiet onder het meetbereik"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Debiet verwarmingscircuit 1 onder het meetbereik (PC1)"
       }
     },
     "calendar": {

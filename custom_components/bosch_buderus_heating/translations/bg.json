@@ -1962,11 +1962,11 @@
           "none": "Няма",
           "ch": "Отопление",
           "dhw": "Гореща вода",
-          "frost": "Защита от замръзване",
+          "frost": "Зона на замръзване",
           "ch_dhw": "Отопление и гореща вода",
-          "ch_frost": "Отопление и защита от замръзване",
-          "dhw_frost": "Гореща вода и защита от замръзване",
-          "ch_dhw_frost": "Отопление, гореща вода и защита от замръзване"
+          "ch_frost": "Отопление и зона на замръзване",
+          "dhw_frost": "Гореща вода и зона на замръзване",
+          "ch_dhw_frost": "Отопление, гореща вода и зона на замръзване"
         }
       },
       "compressor_status": {
@@ -2160,6 +2160,9 @@
       "heat_generator": {
         "name": "Топлинен източник"
       },
+      "outdoor_unit_software_version": {
+        "name": "Версия на софтуера на външното тяло"
+      },
       "pointt_api_requests_total": {
         "name": "Общо заявки към облака"
       },
@@ -2341,6 +2344,17 @@
           "startup_inprogress": "В процес"
         }
       },
+      "signal_dhw_holiday_mode": {
+        "name": "Ваканционен режим на горещата вода",
+        "state": {
+          "none": "Няма",
+          "auto_sat": "Автоматично (AUTO_SAT)",
+          "off": "Изкл.",
+          "on_eco": "Вкл. – еко",
+          "on_low": "Вкл. – ниско",
+          "on_high": "Вкл. – високо"
+        }
+      },
       "signal_true_false": {
         "name": "Състояние",
         "state": {
@@ -2354,6 +2368,12 @@
             "name": "Измервателен диапазон",
             "state": {
               "below": "Под измервателния диапазон"
+            }
+          },
+          "reported_state": {
+            "name": "Отчетено състояние",
+            "state": {
+              "low_flow": "Дебитът е твърде нисък за измерване"
             }
           }
         }
@@ -2445,6 +2465,147 @@
       },
       "rrc_update_state": {
         "name": "Състояние на актуализацията на фърмуера"
+      },
+      "name_part_rrc_room_temperature": {
+        "name": "Стайна температура"
+      },
+      "name_part_rrc_active_heating_setpoint": {
+        "name": "Активна зададена стойност за отопление"
+      },
+      "name_part_rrc_manual_heating_setpoint": {
+        "name": "Ръчна зададена стойност за отопление"
+      },
+      "name_part_rrc_temporary_heating_setpoint": {
+        "name": "Временна зададена стойност за отопление"
+      },
+      "name_part_rrc_heating_mode": {
+        "name": "Режим на отопление"
+      },
+      "name_part_rrc_selected_heating_schedule": {
+        "name": "Избрана времева програма за отопление"
+      },
+      "name_part_rrc_set_room_temperature": {
+        "name": "Задаване на стайна температура"
+      },
+      "name_part_rrc_set_active_heating_setpoint": {
+        "name": "Задаване на активна зададена стойност за отопление"
+      },
+      "name_part_rrc_set_manual_heating_setpoint": {
+        "name": "Задаване на ръчна зададена стойност за отопление"
+      },
+      "name_part_rrc_set_temporary_heating_setpoint": {
+        "name": "Задаване на временна зададена стойност за отопление"
+      },
+      "name_part_rrc_set_heating_mode": {
+        "name": "Задаване на режим на отопление"
+      },
+      "name_part_rrc_set_selected_heating_schedule": {
+        "name": "Задаване на избрана времева програма за отопление"
+      },
+      "name_part_energy_history_heat_pump_electricity_heating": {
+        "name": "Електроенергия на термопомпата – отопление (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_heat_pump_electricity_hot_water": {
+        "name": "Електроенергия на термопомпата – гореща вода (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_heat_pump_electricity_cooling": {
+        "name": "Електроенергия на термопомпата – охлаждане (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_boiler_electricity_heating": {
+        "name": "Електроенергия на котела – отопление (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_boiler_electricity_hot_water": {
+        "name": "Електроенергия на котела – гореща вода (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_electric_heater_heating": {
+        "name": "Електрически нагревател – отопление (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_electric_heater_hot_water": {
+        "name": "Електрически нагревател – гореща вода (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_solar_electricity_produced": {
+        "name": "Произведена соларна електроенергия (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_heat_pump_heat_heating": {
+        "name": "Топлина от термопомпата – отопление (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_heat_pump_heat_hot_water": {
+        "name": "Топлина от термопомпата – гореща вода (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_heat_pump_cooling_produced": {
+        "name": "Енергия за охлаждане от термопомпата (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_boiler_heat_heating": {
+        "name": "Топлина от котела – отопление (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_boiler_heat_hot_water": {
+        "name": "Топлина от котела – гореща вода (kWh, непотвърдено)"
+      },
+      "name_part_energy_history_gas_heating": {
+        "name": "Газ – отопление (kWh)"
+      },
+      "name_part_energy_history_gas_hot_water": {
+        "name": "Газ – гореща вода (kWh)"
+      },
+      "name_part_energy_history_outdoor_temperature": {
+        "name": "Дневна средна външна температура (непотвърдено)"
+      },
+      "name_part_low_salt": {
+        "name": "Малко сол"
+      },
+      "name_part_hot_water_device_type": {
+        "name": "Тип устройство за гореща вода"
+      },
+      "name_part_mode_heating": {
+        "name": "Отопление"
+      },
+      "name_part_mode_cooling": {
+        "name": "Охлаждане"
+      },
+      "name_part_temporary_setpoint": {
+        "name": "Временна зададена стойност"
+      },
+      "name_part_heating_temperature": {
+        "name": "Температура на отопление"
+      },
+      "name_part_setback_temperature": {
+        "name": "Понижена температура"
+      },
+      "name_part_start_threshold_eco_plus": {
+        "name": "Праг за стартиране Eco+"
+      },
+      "name_part_start_threshold_comfort": {
+        "name": "Праг за стартиране Комфорт"
+      },
+      "name_part_start_threshold_eco": {
+        "name": "Праг за стартиране Eco"
+      },
+      "name_part_setpoint_level_off": {
+        "name": "Зададена стойност, ниво Изключено"
+      },
+      "name_part_schedule_name": {
+        "name": "Име на времева програма {suffix}"
+      },
+      "name_part_software_update": {
+        "name": "Актуализация на софтуера"
+      },
+      "name_part_heat_source_type": {
+        "name": "Тип на източника на топлина"
+      },
+      "name_part_consumption_total": {
+        "name": "Общо"
+      },
+      "name_part_consumption_heating": {
+        "name": "Отопление"
+      },
+      "name_part_consumption_hot_water": {
+        "name": "Гореща вода"
+      },
+      "name_part_consumption_cooling": {
+        "name": "Охлаждане"
+      },
+      "name_part_cooling_energy_produced": {
+        "name": "Произведена енергия за охлаждане"
       }
     },
     "binary_sensor": {
@@ -2526,6 +2687,12 @@
       },
       "rrc_refill_needed": {
         "name": "Необходимо е допълване"
+      },
+      "primary_flow_below_range": {
+        "name": "Първичен дебит под измервателния диапазон"
+      },
+      "circuit_1_flow_below_range": {
+        "name": "Дебит на отоплителен кръг 1 под измервателния диапазон (PC1)"
       }
     },
     "calendar": {
