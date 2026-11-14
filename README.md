@@ -61,6 +61,14 @@ What changed in each version is in the [changelog](CHANGELOG.md) and the
 | RRC 2.0 room controllers (TC100.2; CT200 expected) | ✓ | – | – |
 | Other device families: water heaters, air conditioners, air purifiers, dehumidifiers, WE800i water softener, wallboxes (read only) | expected | – | – |
 
+Examples of heating systems (details in [confirmed installations](docs/confirmed-installations.md)):
+
+- **K40/K40RF:** air-to-water heat pumps Logatherm WLW176i and WLW186i, confirmed.
+- **K30/K30RF:** split heat pump Logatherm WLW196i AR and gas boiler Logamax plus GBH192i.2, confirmed (readings, partly holidays read-only).
+- **iCom:** gas boiler Logamax plus GB172 with KM200, confirmed (readings only).
+- **RRC 2.0:** gas boiler Logano plus GB212 with TC100.2, confirmed; CT200 expected, untested.
+- Other brands (IVT, Junkers, Nefit, Worcester, Vulcano) should work, not confirmed.
+
 - **Local** needs K40/K40RF firmware 15.00.01 or newer and only reads; with
   **both**, the local access reads and the cloud handles every change. Local
   access is confirmed on heat pumps, expected on boilers.
@@ -106,6 +114,11 @@ The illustrated [setup guide](docs/setup.md) shows every step, including the
 [SingleKey ID sign-in](docs/setup.md#sign-in-with-singlekey-id) and the
 [local access](docs/setup.md#set-up-the-local-access). Never share the return
 address of the sign-in; it contains a one-time code.
+
+To add, test, sign in again or remove a cloud or local access later, open the gear
+icon (**Configure**) of the entry and choose **Connections**.
+
+![Integration page with the gear icon (Configure) of the entry highlighted](docs/images/setup/configure-connections.png)
 
 ## Entities and dashboards
 
