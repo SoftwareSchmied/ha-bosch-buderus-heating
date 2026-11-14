@@ -1782,6 +1782,40 @@
       "estimated_energy": {
         "name": "Energia (szacowana na podstawie bieżącej mocy)"
       },
+      "calculated_activity": {
+        "name": "Aktywność (obliczona)",
+        "state": {
+          "heating": "Grzanie",
+          "cooling": "Chłodzenie",
+          "defrosting": "Odszranianie",
+          "idle": "Bezczynny",
+          "off": "Wyłączony"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Ostatnie odszranianie (obliczone)"
+      },
+      "calculated_defrost_count": {
+        "name": "Liczba odszraniań (obliczona)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Łączny czas odszraniania (obliczony)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Ciepło pobrane przy odszranianiu (obliczone)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Energia elektryczna podczas odszraniania (obliczona)"
+      },
+      "calculated_net_heat": {
+        "name": "Ciepło netto (obliczone)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Średni czas pracy na start, ogrzewanie (obliczony)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Zasilanie powyżej wartości zadanej (obliczone)"
+      },
       "heating_switch_program": {
         "name": "Program czasowy grzania",
         "state": {
@@ -2473,6 +2507,9 @@
       "system_fault": {
         "name": "Usterka instalacji"
       },
+      "calculated_defrost_active": {
+        "name": "Odszranianie aktywne (obliczone)"
+      },
       "bacon_connectivity": {
         "name": "Połączenie urządzenia"
       },
@@ -2549,6 +2586,16 @@
             "state": {
               "appeared": "Wystąpiło",
               "resolved": "Rozwiązane"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Odszranianie (obliczone)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Odszranianie zakończone"
             }
           }
         }

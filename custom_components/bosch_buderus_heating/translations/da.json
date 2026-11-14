@@ -1782,6 +1782,40 @@
       "estimated_energy": {
         "name": "Energi (estimeret ud fra aktuel effekt)"
       },
+      "calculated_activity": {
+        "name": "Aktivitet (beregnet)",
+        "state": {
+          "heating": "Opvarmning",
+          "cooling": "Køling",
+          "defrosting": "Afrimning",
+          "idle": "Inaktiv",
+          "off": "Fra"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Seneste afrimning (beregnet)"
+      },
+      "calculated_defrost_count": {
+        "name": "Antal afrimninger (beregnet)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Samlet afrimningstid (beregnet)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Varme hentet ved afrimning (beregnet)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Strøm under afrimning (beregnet)"
+      },
+      "calculated_net_heat": {
+        "name": "Nettovarme (beregnet)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Gennemsnitlig driftstid pr. start, opvarmning (beregnet)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Fremløb over setpunkt (beregnet)"
+      },
       "heating_switch_program": {
         "name": "Tidsprogram for opvarmning",
         "state": {
@@ -2473,6 +2507,9 @@
       "system_fault": {
         "name": "Anlægsfejl"
       },
+      "calculated_defrost_active": {
+        "name": "Afrimning aktiv (beregnet)"
+      },
       "bacon_connectivity": {
         "name": "Enhedens forbindelse"
       },
@@ -2549,6 +2586,16 @@
             "state": {
               "appeared": "Opstået",
               "resolved": "Løst"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Afrimning (beregnet)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Afrimning afsluttet"
             }
           }
         }

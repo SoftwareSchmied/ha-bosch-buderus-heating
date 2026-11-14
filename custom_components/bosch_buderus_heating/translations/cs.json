@@ -1782,6 +1782,40 @@
       "estimated_energy": {
         "name": "Energie (odhad z aktuálního výkonu)"
       },
+      "calculated_activity": {
+        "name": "Činnost (vypočteno)",
+        "state": {
+          "heating": "Topení",
+          "cooling": "Chlazení",
+          "defrosting": "Odmrazování",
+          "idle": "Nečinný",
+          "off": "Vypnuto"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Poslední odmrazování (vypočteno)"
+      },
+      "calculated_defrost_count": {
+        "name": "Počet odmrazování (vypočteno)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Celková doba odmrazování (vypočteno)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Teplo odebrané při odmrazování (vypočteno)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Elektřina při odmrazování (vypočteno)"
+      },
+      "calculated_net_heat": {
+        "name": "Čisté teplo (vypočteno)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Průměrná doba chodu na start, topení (vypočteno)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Výstup nad požadovanou hodnotou (vypočteno)"
+      },
       "heating_switch_program": {
         "name": "Časový program topení",
         "state": {
@@ -2473,6 +2507,9 @@
       "system_fault": {
         "name": "Porucha soustavy"
       },
+      "calculated_defrost_active": {
+        "name": "Odmrazování aktivní (vypočteno)"
+      },
       "bacon_connectivity": {
         "name": "Připojení zařízení"
       },
@@ -2549,6 +2586,16 @@
             "state": {
               "appeared": "Vzniklo",
               "resolved": "Vyřešeno"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Odmrazování (vypočteno)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Odmrazování dokončeno"
             }
           }
         }

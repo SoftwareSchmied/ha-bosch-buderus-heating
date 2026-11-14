@@ -1782,6 +1782,40 @@
       "estimated_energy": {
         "name": "Energi (uppskattad utifrån aktuell effekt)"
       },
+      "calculated_activity": {
+        "name": "Aktivitet (beräknad)",
+        "state": {
+          "heating": "Uppvärmning",
+          "cooling": "Kylning",
+          "defrosting": "Avfrostning",
+          "idle": "Inaktiv",
+          "off": "Av"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Senaste avfrostning (beräknad)"
+      },
+      "calculated_defrost_count": {
+        "name": "Antal avfrostningar (beräknat)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Total avfrostningstid (beräknad)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Värme uttagen vid avfrostning (beräknad)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "El under avfrostning (beräknad)"
+      },
+      "calculated_net_heat": {
+        "name": "Nettovärme (beräknad)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Genomsnittlig drifttid per start, uppvärmning (beräknad)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Framledning över börvärde (beräknad)"
+      },
       "heating_switch_program": {
         "name": "Tidsprogram värme",
         "state": {
@@ -2473,6 +2507,9 @@
       "system_fault": {
         "name": "Systemfel"
       },
+      "calculated_defrost_active": {
+        "name": "Avfrostning aktiv (beräknad)"
+      },
       "bacon_connectivity": {
         "name": "Enhetsanslutning"
       },
@@ -2549,6 +2586,16 @@
             "state": {
               "appeared": "Uppstått",
               "resolved": "Löst"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Avfrostning (beräknad)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Avfrostning avslutad"
             }
           }
         }

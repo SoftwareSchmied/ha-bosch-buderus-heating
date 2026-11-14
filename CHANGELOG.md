@@ -5,6 +5,50 @@ Versioning after its first tagged preview.
 
 ## [Unreleased]
 
+### Added
+
+- **What a heating circuit is doing:** each heating circuit has a new sensor
+  **Activity (calculated)** (heating, cooling, defrosting, idle, off), and
+  the climate entities of the heating circuits now show `hvac_action`. The
+  zones of a room controller show `defrosting` instead of `heating` while
+  the heat pump of the plant defrosts.
+  - Worked out from the compressor, the 3-way valve, the circuit pump and the
+    circuit's mode, the local reading first. Without the readings it needs,
+    the activity stays unknown instead of being guessed.
+  - I checked it with automated tests and readings recorded on a real
+    air-to-water heat pump; boilers, iCom gateways, room controllers and
+    cooling follow the same rules but are untested.
+- **Defrosts of the heat pump:** a binary sensor **Defrost active
+  (calculated)**, an event **Defrost (calculated)** for every finished
+  defrost (start, end, duration, the hot water and heating stages, the heat
+  taken back and the electricity) and a sensor **Last defrost
+  (calculated)**, all enabled. Four counters (number, time, heat withdrawn,
+  electricity) are disabled by default.
+  - Only a heat pump with evidence that it defrosts gets them: its reported
+    type, a defrost signal, the air inlet temperature or the outdoor fan, or
+    a defrost it has reported. Brine-to-water heat pumps never get them.
+  - Counted only while Home Assistant runs; the energy is approximate,
+    because the counters change only every few minutes. The event therefore
+    comes up to 10 minutes after the end.
+  - I replayed a defrost recorded on a real installation in the tests; it
+    has not yet run live.
+- **Net heat counters:** for each produced-heat counter a disabled counter
+  **Net heat … (calculated)** that holds while the heat pump defrosts and
+  counts again above its highest reading, so it is a steadily rising
+  counter. The existing heat counters stay as they are. Tested with
+  automated tests only.
+- **Run time per start and supply above setpoint:** two diagnostic sensors,
+  **Average run time per start, heating (calculated)** and **Supply above
+  setpoint (calculated)** (only while the heat source heats). Tested with
+  automated tests only.
+- **Heat source type:** the **Heat generator** sensor has the new attribute
+  `heat_source_type` (air, brine or water), from readings that exist on only
+  one kind, never from shared signal names. With such evidence but without a
+  named module the sensor is created as well, without a state and with
+  `known: false`. The diagnostics count the module rows without a product
+  name by hardware type. Tested with automated tests and fixtures shaped
+  like a real air-to-water and a real brine-to-water heat pump.
+
 ## [0.9.2-beta.1] - 2026-11-14
 
 > [!IMPORTANT]

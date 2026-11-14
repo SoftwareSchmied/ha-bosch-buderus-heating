@@ -93,6 +93,7 @@ async def async_remove_entry_stores(
     from homeassistant.helpers.storage import Store
 
     from .auth_diagnostics import STORAGE_VERSION, _cloud_connection_ids, _storage_key
+    from .derived_store import derived_store
     from .estimated_energy import estimated_energy_store
     from .faults import async_remove_fault_store
     from .notifications import async_remove_notification_store
@@ -126,6 +127,15 @@ async def async_remove_entry_stores(
                 _LOGGER,
                 logging.WARNING,
                 "Estimated energy totals could not be updated",
+                error=err,
+            )
+        try:
+            await derived_store(hass).async_forget_gateways(unused)
+        except Exception as err:  # the totals are an optional cache
+            log_failure(
+                _LOGGER,
+                logging.WARNING,
+                "Saved calculated values could not be updated",
                 error=err,
             )
 

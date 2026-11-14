@@ -14,6 +14,8 @@ from homeassistant.util import dt as dt_util
 
 from . import BoschBuderusConfigEntry
 from .coordinator import BoschBuderusDataUpdateCoordinator
+from .derived_defrost import events as defrost_events
+from .derived_defrost import track_defrost_entities
 from .device import device_info_for_resource
 from .faults import (
     FaultEventType,
@@ -47,6 +49,8 @@ def _setup_entities(
     async_add_entities(
         BoschBuderusNotificationEvent(coordinator) for coordinator in entry.coordinators
     )
+    for coordinator in entry.coordinators:
+        track_defrost_entities(entry, coordinator, async_add_entities, defrost_events)
 
 
 class BoschBuderusNotificationEvent(

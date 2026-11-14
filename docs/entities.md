@@ -427,6 +427,7 @@ are fixed English keys; their values are never translated.
 | `source` | `cloud` or `local`: which access supplied the shown list |
 | `table_version` | Version of the model table that interpreted the list |
 | `known` | `true` when the model table describes the product of every module |
+| `heat_source_type` | `air`, `brine` or `water` from evidence readings, not from the module list (see [Calculated values](calculated-values.md#heat-source-type)); `null` without evidence |
 
 The roles are `heat_source`, `boiler`, `outdoor_unit`, `hybrid_manager` and
 `other`; `construction` is `monobloc`, `split` or `compact`. The product
@@ -1137,6 +1138,16 @@ enabled; earlier periods cannot be filled in. To use it in the energy
 dashboard, enable it, wait for the first statistics (up to one hour), and add
 it, for example, under gas consumption, which accepts kWh. I have not yet
 confirmed this entity on a real device.
+
+## Calculated values
+
+The activity of each heating circuit (also the `hvac_action` of the
+climates), the defrosts of a heat pump, net heat counters without the
+defrost dips, the average run time per start and the supply above its
+setpoint are worked out from readings the integration reads anyway. Each
+entity is named "(calculated)" and lists its inputs in `derived_from`. See
+[Calculated values](calculated-values.md) for the rules, the defaults and
+their limits.
 
 ## Optional capabilities
 

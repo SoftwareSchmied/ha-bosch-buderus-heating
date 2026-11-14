@@ -41,6 +41,7 @@ from .coordinator import (
     Freshness,
     SnapshotSource,
 )
+from .derived_activity import plant_defrosting
 from .device import device_info_for_resource, grouped_entity_name
 from .ha_compat import temperature_members, temperature_unit
 from .pointt import Resource
@@ -353,7 +354,11 @@ class RrcZoneClimate(
         if self._lock(setpoint=False) == "standby":
             return HVACAction.OFF
         status = self._detail(rrc_contract_zone.STATUS)
-        return _ACTIONS.get(status) if isinstance(status, str) else None
+        action = _ACTIONS.get(status) if isinstance(status, str) else None
+        if action is HVACAction.HEATING and plant_defrosting(self.coordinator):
+            # Only on a plant whose heat pump reports a defrost.
+            return HVACAction.DEFROSTING
+        return action
 
     @property
     def native_current_temperature(self) -> float | None:

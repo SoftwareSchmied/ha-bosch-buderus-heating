@@ -471,10 +471,14 @@ async def test_rejected_sign_in_during_the_deferred_discovery_asks_for_sign_in(
         # cycle; everything else is unavailable. Nothing comes from storage.
         modulation = next(uid for uid in states if "modulation" in uid.lower())
         assert states[modulation].state == "40.0"
+        # The calculated activity follows the climate: shown while the mode
+        # reading is valid, unknown without the heat source's readings.
+        activities = {uid for uid in states if uid.endswith(":calculated_activity")}
+        assert {states[uid].state for uid in activities} <= {"unknown"}
         assert {
             state.state
             for uid, state in states.items()
-            if uid != modulation and uid not in climates
+            if uid != modulation and uid not in climates | activities
         } == {"unavailable"}
         report = coordinator.startup_inventory_diagnostics(setup.clock.now)
         assert report["discovery_result"] != "success"

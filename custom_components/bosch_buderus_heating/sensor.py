@@ -59,6 +59,7 @@ from .derived import (
     DewPointCalculation,
     calculate_dew_point,
 )
+from .derived_sensors import track_calculated_sensors
 from .device import device_info_for_resource, grouped_entity_name
 from .dhw_safety import is_dhw_safety_path
 from .energy_contracts import assess_energy, is_energy_collection
@@ -571,6 +572,7 @@ def _setup_entities(
         _track_resource_sensors(entry, coordinator, async_add_entities)
         _track_source_sensors(entry, coordinator, async_add_entities)
         track_estimated_energy_sensors(entry, coordinator, async_add_entities)
+        track_calculated_sensors(entry, coordinator, async_add_entities)
         track_local_only_sensors(entry, coordinator, async_add_entities)
         track_heat_generator_sensor(entry, coordinator, async_add_entities)
         track_radio_devices(entry, coordinator, async_add_entities, RadioSignalSensor)

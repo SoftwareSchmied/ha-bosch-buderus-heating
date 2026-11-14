@@ -35,6 +35,7 @@ from .coordinator import (
     Freshness,
     ResourceSnapshot,
 )
+from .derived_defrost import calculated_diagnostics
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .discovery import DiscoveryPathSource
 from .energy_contracts import energy_diagnostics, is_energy_collection
@@ -761,6 +762,8 @@ def _gateway_diagnostics(
             if (generators := heat_generator_diagnostics(coordinator)) is not None
             else {}
         ),
+        # The calculated defrost: states and counts only, no readings.
+        "calculated_values": calculated_diagnostics(coordinator),
         "startup_inventory": coordinator.startup_inventory_diagnostics(monotonic()),
         "firmware_changes": coordinator.firmware.diagnostics(monotonic()),
         # F1: the firmware update list (read-only); no gateway ID, no links.

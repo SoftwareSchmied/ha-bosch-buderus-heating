@@ -27,6 +27,8 @@ from .bacon.dry_entities import track_entities as track_dry_entities
 from .bacon.entity import BaconConnectivity
 from .control import track_entity_once, unchanged_input
 from .coordinator import BoschBuderusDataUpdateCoordinator, Freshness, ResourceSnapshot
+from .derived_defrost import binary_sensors as defrost_binary_sensors
+from .derived_defrost import track_defrost_entities
 from .device import device_info_for_resource, grouped_entity_name
 from .dhw_safety import assess_dhw_safety, is_dhw_safety_path
 from .faults import (
@@ -111,6 +113,9 @@ def _setup_entities(
         track_status(entry, account, async_add_entities)
     for coordinator in entry.coordinators:
         _track_binary_sensors(entry, coordinator, async_add_entities)
+        track_defrost_entities(
+            entry, coordinator, async_add_entities, defrost_binary_sensors
+        )
         track_radio_devices(
             entry, coordinator, async_add_entities, RadioBatteryLowBinarySensor
         )

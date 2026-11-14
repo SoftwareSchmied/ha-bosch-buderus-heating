@@ -1782,6 +1782,40 @@
       "estimated_energy": {
         "name": "Енергия (оценена по текущата мощност)"
       },
+      "calculated_activity": {
+        "name": "Активност (изчислена)",
+        "state": {
+          "heating": "Отопление",
+          "cooling": "Охлаждане",
+          "defrosting": "Размразяване",
+          "idle": "Неактивен",
+          "off": "Изключено"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "Последно размразяване (изчислено)"
+      },
+      "calculated_defrost_count": {
+        "name": "Брой размразявания (изчислен)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Общо време на размразяване (изчислено)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Топлина, отнета при размразяване (изчислена)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Електроенергия при размразяване (изчислена)"
+      },
+      "calculated_net_heat": {
+        "name": "Нетна топлина (изчислена)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Средно време на работа на старт, отопление (изчислено)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Подаване над зададената стойност (изчислено)"
+      },
       "heating_switch_program": {
         "name": "Времева програма за отопление",
         "state": {
@@ -2473,6 +2507,9 @@
       "system_fault": {
         "name": "Повреда на системата"
       },
+      "calculated_defrost_active": {
+        "name": "Размразяване активно (изчислено)"
+      },
       "bacon_connectivity": {
         "name": "Връзка на устройството"
       },
@@ -2549,6 +2586,16 @@
             "state": {
               "appeared": "Възникнало",
               "resolved": "Отстранено"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Размразяване (изчислено)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Размразяването приключи"
             }
           }
         }

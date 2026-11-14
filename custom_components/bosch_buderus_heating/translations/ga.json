@@ -1782,6 +1782,40 @@
       "estimated_energy": {
         "name": "Fuinneamh (measta ón gcumhacht reatha)"
       },
+      "calculated_activity": {
+        "name": "Gníomhaíocht (ríofa)",
+        "state": {
+          "heating": "Téamh",
+          "cooling": "Fuarú",
+          "defrosting": "Díreo",
+          "idle": "Díomhaoin",
+          "off": "As"
+        }
+      },
+      "calculated_last_defrost": {
+        "name": "An díreo deireanach (ríofa)"
+      },
+      "calculated_defrost_count": {
+        "name": "Líon na ndíreonna (ríofa)"
+      },
+      "calculated_defrost_duration": {
+        "name": "Am iomlán díreo (ríofa)"
+      },
+      "calculated_defrost_heat_withdrawn": {
+        "name": "Teas a baineadh le díreo (ríofa)"
+      },
+      "calculated_defrost_electricity": {
+        "name": "Leictreachas le linn díreo (ríofa)"
+      },
+      "calculated_net_heat": {
+        "name": "Glanteas (ríofa)"
+      },
+      "calculated_run_time_per_start_heating": {
+        "name": "Meán-am rite in aghaidh an tosaithe, téamh (ríofa)"
+      },
+      "calculated_supply_overshoot": {
+        "name": "Soláthar os cionn an tacphointe (ríofa)"
+      },
       "heating_switch_program": {
         "name": "Sceideal téimh",
         "state": {
@@ -2473,6 +2507,9 @@
       "system_fault": {
         "name": "Locht an chórais"
       },
+      "calculated_defrost_active": {
+        "name": "Díreo gníomhach (ríofa)"
+      },
       "bacon_connectivity": {
         "name": "Nasc an ghléis"
       },
@@ -2549,6 +2586,16 @@
             "state": {
               "appeared": "Tharla",
               "resolved": "Réitithe"
+            }
+          }
+        }
+      },
+      "calculated_defrost": {
+        "name": "Díreo (ríofa)",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "defrost_finished": "Díreo críochnaithe"
             }
           }
         }
